@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "pinyin-primer",
-  "sourceHash": "e0abaa54970a8577b4f3bfc9a6241e4fda4cf9bcf4fa0ce17063143475da9afd",
+  "sourceHash": "a9c09732333be6ba217a7833bf816f27853ee55358087cca9bbde2a41d874749",
   "engine": {
-    "postext": "1.9.0",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:21.929Z",
+  "capturedAt": "2026-10-01T06:48:56.755Z",
   "variants": {
     "en": {
-      "hash8": "3e72e404",
-      "vdtHash": "316c6d868a9fcd8c5f2d580936b4bed6271e334b",
+      "hash8": "5a5533d5",
+      "vdtHash": "ee9ec130030daadd0fe4e88625c9cbd18e373e31",
       "timings": {
-        "importMs": 360,
-        "fontsMs": 9639,
-        "buildMs": 79,
-        "totalMs": 35074,
+        "importMs": 353,
+        "fontsMs": 1182,
+        "buildMs": 15,
+        "totalMs": 2280,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 56850,
+          "bytes": 59374,
           "alt": "Opening page 36: 第一課."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 60418,
+          "bytes": 64632,
           "alt": "Opening page 37: 第二課."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1413,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 56754,
+          "bytes": 57600,
           "alt": "Opening page 38: 第三課."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1413,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 60718,
+          "bytes": 61428,
           "alt": "Opening page 39: 第四課."
         }
       ],
@@ -110,7 +110,7 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 22079
+        "bytes": 205780
       },
       "detected": {
         "apis": [
@@ -251,8 +251,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 5,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 4,
           "table": 0
         },
         "fonts": [
@@ -301,6 +301,11 @@
         },
         "findings": [
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 35: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -309,13 +314,13 @@
       }
     },
     "es": {
-      "hash8": "f5da6053",
-      "vdtHash": "d2293135b1ca77f32a280f93739ce35e0e369ecd",
+      "hash8": "8be72c35",
+      "vdtHash": "16d5d6c68d0b5cfc6d7a35df17e43eb18eb2a117",
       "timings": {
-        "importMs": 136,
-        "fontsMs": 6921,
-        "buildMs": 16,
-        "totalMs": 9638,
+        "importMs": 125,
+        "fontsMs": 135,
+        "buildMs": 8,
+        "totalMs": 979,
         "builds": 2
       },
       "specimen": {
@@ -348,7 +353,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 59246,
+          "bytes": 61804,
           "alt": "Página de apertura 36: 第一課."
         },
         {
@@ -359,7 +364,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 61696,
+          "bytes": 65940,
           "alt": "Página de apertura 37: 第二課."
         },
         {
@@ -370,7 +375,7 @@
           "h": 1413,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 56290,
+          "bytes": 57146,
           "alt": "Página de apertura 38: 第三課."
         },
         {
@@ -381,7 +386,7 @@
           "h": 1413,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 59452,
+          "bytes": 60304,
           "alt": "Página de apertura 39: 第四課."
         }
       ],
@@ -409,7 +414,7 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 22595
+        "bytes": 206245
       },
       "detected": {
         "apis": [
@@ -550,8 +555,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 5,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 4,
           "table": 0
         },
         "fonts": [
@@ -599,6 +604,11 @@
           "worst": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

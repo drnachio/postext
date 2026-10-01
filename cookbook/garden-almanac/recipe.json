@@ -51,7 +51,10 @@
       { "what": { "en": "The Italian text of the March pages, with the table captions, the notes and the colophon, written for this recipe", "es": "El texto italiano de las páginas de marzo, con los pies y las notas de las tablas y el colofón, escrito para esta receta" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" },
       { "what": { "en": "The proverb “Marzo asciutto, aprile bagnato, beato il villan che ha seminato”, a traditional Italian saying", "es": "El refrán «Marzo asciutto, aprile bagnato, beato il villan che ha seminato», un dicho tradicional italiano" }, "who": "Proverbio contadino", "license": "PD" }
     ],
-    "images": [],
+    "images": [
+      { "what": { "en": "The opener’s field of seedlings in March, a watercolour", "es": "El campo de plantones de marzo de la apertura, una acuarela" }, "who": "Generated With Diffusion Models", "license": "original", "file": "campo-1680.jpg" },
+      { "what": { "en": "The moon’s quarters and the ten crops, drawn in code in the page’s palette", "es": "Las fases de la luna y los diez cultivos, dibujados en código con la paleta de la página" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
     "fonts": [
       { "family": "Piazzolla", "license": "OFL-1.1" },
       { "family": "Gilda Display", "license": "OFL-1.1" },

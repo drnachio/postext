@@ -1,15 +1,15 @@
 ---
 title: "Cartilla de lectura con sílabas en chips"
-summary: "Una unidad de cartilla dedicada a la eme, con cada sílaba en un chip del color de su vocal y seis palabras en una tabla, cada una bajo su dibujo."
-description: "Una unidad de cartilla compuesta con Postext: un estilo de chip por vocal, palabras de sílabas en chips pegados, una tabla con dibujos y pautas de caligrafía."
+summary: "Una unidad de cartilla dedicada a la eme, con cada sílaba en un chip del color de su vocal y seis palabras en una tabla, cada una bajo su acuarela."
+description: "Una unidad de cartilla compuesta con Postext: un estilo de chip por vocal, palabras de sílabas en chips pegados, una tabla con acuarelas y pautas de caligrafía."
 question: "¿Cómo compongo sílabas en chips de colores, un color por vocal, para una cartilla de lectura?"
 aliases: ["cartilla", "sílabas", "lectoescritura", "infantil", "método silábico", "ficha de lectura"]
-pageNotes: { "1": "Una franja crema con una Mm gigante, una mariposa y una manzana; debajo, las sílabas ma, me, mi, mo, mu y am, em, im, om, um en chips del color de su vocal, y ocho palabras partidas en chips de sílabas.", "2": "Seis palabras con dibujo, mano, mapa, mesa, mimosa, mono y muñeca, en una tabla redondeada de baldosas crema, cada dibujo sobre sus sílabas; debajo, pautas para repasar m, M y las cinco sílabas.", "3": "Cuatro frases a 24 pt con las palabras nuevas en chips de sílabas, un recuadro crema de sílabas para colorear, una nota para la familia y el colofón." }
+pageNotes: { "1": "Una franja crema con una Mm gigante, una mariposa y una manzana; debajo, las sílabas ma, me, mi, mo, mu y am, em, im, om, um en chips del color de su vocal, y ocho palabras partidas en chips de sílabas.", "2": "Seis palabras con dibujo, mano, mapa, mesa, mimosa, mono y muñeca, en una tabla redondeada de baldosas crema, cada acuarela sobre sus sílabas; debajo, pautas para repasar m, M y las cinco sílabas.", "3": "Cuatro frases a 24 pt con las palabras nuevas en chips de sílabas, un recuadro crema de sílabas para colorear, una nota para la familia y el colofón." }
 ---
 
 ## Lo que vas a componer
 
-La unidad 7 de *Letra a letra*, una cartilla de lectura inventada: tres páginas dedicadas a la eme. La apertura compone una Mm de DynaPuff a 190 pt sobre una franja crema, junto a dos cosas cuyo nombre empieza por eme, una mariposa y una manzana. Las sílabas de la unidad van en chips del color de su vocal: rojo la a, naranja la e, turquesa la i, azul la o y morado la u. Las que llevan eme van rellenas y las demás, solo con el contorno, así que el niño ve qué mitad de *mesa* es de esta unidad. La página 38 reúne seis palabras con dibujo en una tabla de esquinas redondeadas y tres pautas para repasar. La 39 trae cuatro frases a 24 pt, un recuadro de sílabas para colorear y una nota para la familia.
+La unidad 7 de *Letra a letra*, una cartilla de lectura inventada: tres páginas dedicadas a la eme. La apertura compone una Mm de DynaPuff a 190 pt sobre una franja crema, junto a dos cosas cuyo nombre empieza por eme, una mariposa y una manzana. Las sílabas de la unidad van en chips del color de su vocal: rojo la a, naranja la e, turquesa la i, azul la o y morado la u. Las que llevan eme van rellenas y las demás, solo con el contorno, así que el niño ve qué mitad de *mesa* es de esta unidad. La página 38 reúne seis palabras con su acuarela en una tabla de esquinas redondeadas y tres pautas para repasar. Las acuarelas se generaron con modelos de difusión; la franja, los iconos y las pautas están dibujados en código. La 39 trae cuatro frases a 24 pt, un recuadro de sílabas para colorear y una nota para la familia.
 
 ## Elaboración
 
@@ -23,11 +23,11 @@ La unidad 7 de *Letra a letra*, una cartilla de lectura inventada: tres páginas
 
 El relleno vertical y el borde de un chip se pintan fuera de su línea y no suman interlineado, así que un chip más alto que el interlineado choca con los chips de la línea de abajo. Un chip de sílaba a 24 pt mide 10,4 mm de alto; con 30 pt de interlineado (10,6 mm), los chips de dos frases quedarían a 0,1 mm. Por eso las líneas que lee el niño llevan 45 pt y las filas de sílabas 60 pt, tres y cuatro líneas de la rejilla base de 15 pt en la que van las consignas.
 
-### 3 · Un dibujo en cada celda
+### 3 · Una acuarela en cada celda
 
 <Excerpt region="pictures" />
 
-`setCellImage` pone un dibujo encima del texto de una celda con una fracción de su ancho interior, aquí 0,72 (36,5 mm), y la fila crece para que quepa. Bajo cada dibujo va la palabra en chips de sílabas, que una celda admite como cualquier párrafo. El estilo de tabla `dibujos` redondea el marco y sus rellenos a 5 mm y separa las baldosas crema con filetes blancos de 4 pt.
+`setCellImage` pone una imagen encima del texto de una celda con una fracción de su ancho interior, aquí 0,72 (36,5 mm), y la fila crece para que quepa. Cada acuarela es un JPEG pintado sobre blanco y multiplicado por el crema de las baldosas, así que se asienta en la baldosa sin recuadro. Bajo cada acuarela va la palabra en chips de sílabas, que una celda admite como cualquier párrafo. El estilo de tabla `dibujos` redondea el marco y sus rellenos a 5 mm y separa las baldosas crema con filetes blancos de 4 pt.
 
 ### 4 · Una línea de espacio antes del recuadro
 

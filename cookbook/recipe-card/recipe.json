@@ -151,7 +151,34 @@
       }
     ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The tortilla on its plate, a photograph",
+          "es": "La tortilla en su plato, una fotografía"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "tortilla-1520.jpg"
+      },
+      {
+        "what": {
+          "en": "The bowl of gazpacho, a photograph",
+          "es": "El cuenco de gazpacho, una fotografía"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "gazpacho-1520.jpg"
+      },
+      {
+        "what": {
+          "en": "The note’s arrow and the pictograms, drawn in code in the page’s palette",
+          "es": "La flecha de la nota y los pictogramas, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
     "fonts": [
       {
         "family": "Young Serif",

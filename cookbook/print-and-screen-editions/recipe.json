@@ -63,7 +63,25 @@
       { "name": "Ignacio Ferro", "github": "drnachio" }
     ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "Radiation fog in a valley at dawn (Figure 2)",
+          "es": "Niebla de irradiación en un valle al amanecer (figura 2)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "valley-1610.jpg"
+      },
+      {
+        "what": {
+          "en": "The rain gauge, the wind rose and the part page's rain, drawn in code in both palettes",
+          "es": "El pluviómetro, la rosa de los vientos y la lluvia de la portadilla, dibujados con código en las dos paletas"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
     "fonts": [
       { "family": "Newsreader", "license": "OFL-1.1" },
       { "family": "Gloock", "license": "OFL-1.1" },

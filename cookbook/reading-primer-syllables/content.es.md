@@ -85,7 +85,7 @@ Lean juntos las sílabas de la página 37: primero en orden y después salteadas
 :::
 
 :::paragraphs{style="colofon"}
-*Letra a letra* es una cartilla inventada para el Recetario de Postext. Texto y dibujos: CC BY 4.0.
+*Letra a letra* es una cartilla inventada para el Recetario de Postext. Texto: CC BY 4.0. Acuarelas: modelos de difusión.
 
 Compuesta en Andika, DynaPuff y Playpen Sans (SIL Open Font License).
 :::

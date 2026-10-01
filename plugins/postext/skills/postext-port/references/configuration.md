@@ -888,7 +888,10 @@ Notes cited with `[^id]` (document-format.md §10.4).
 | key | default | notes |
 |---|---|---|
 | `placement` | `'column'` | `'column'` = foot of the column holding the citing line (one-column: page foot); `'chapterEnd'` = every note of the chapter after its last block, in citation order |
-| `numbering` | `'chapter'` | restarts under each level-1 heading and each document; `'document'` runs on (book chapters carry it as `continuation.footnoteNumber`) |
+| `numbering` | `'chapter'` | restarts under each level-1 heading and each document; `'document'` runs on (book chapters carry it as `continuation.footnoteNumber`); `'page'` / `'column'` (≥ 1.11) restart on every page / column, counted where the layout sets the notes (column-foot notes only; `chapterEnd` numbers by chapter) |
+| `numberFormat` | `'decimal'` | ≥ 1.11; any number-format spelling: `'lower-roman'`, `'circled-decimal'` / `'①'`, `'cjk-decimal'`, `'一'`…; circled past 50 → decimal |
+| `markerPosition` | `'auto'` | ≥ 1.11; `'superscript'` / `'inline'` (on the baseline, upright cell in vertical text); `'auto'` = inline for `circled-decimal`, else superscript. The note's own number follows |
+| `markerSize` | `1em` | ≥ 1.11; inline marker size, em = surrounding text (`0.75em` common) |
 | `chapterEndAlign` | `'foot'` | `chapterEnd` only: `'foot'` = the notes that close a column sit at its foot; `'text'` = right under the text |
 | `fontSize` | `0.8em` | em/rem = body size; body family and weights |
 | `lineHeight` | `1.25em` | em = note size; notes are **off the baseline grid** (stack up from the column foot) |

@@ -101,7 +101,34 @@
       }
     ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The pea plant on the opener, a watercolour (top of the disc)",
+          "es": "La planta de guisante de la apertura, una acuarela (parte alta del disco)"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plant-1092.jpg"
+      },
+      {
+        "what": {
+          "en": "The pea plant’s roots, the foot of the same watercolour below the band",
+          "es": "Las raíces de la planta de guisante, el pie de la misma acuarela bajo la banda"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plant-foot-1092.jpg"
+      },
+      {
+        "what": {
+          "en": "The plant's leader lines, the six food icons and the star, drawn in code in the page’s palette",
+          "es": "Las líneas de referencia de la planta, los seis iconos de alimentos y la estrella, dibujados en código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "MIT"
+      }
+    ],
     "fonts": [
       {
         "family": "Andika",

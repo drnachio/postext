@@ -23,7 +23,7 @@ This selection follows the first edition of the poems, edited by Robert Bridges 
 :::
 
 :::paragraphs{style="colophon"}
-Set in Sorts Mill Goudy, Italiana and Marcellus SC (SIL Open Font License). Text from Project Gutenberg eBook 22403, accents and indents from Wikisource. Plate and ornament drawn for this edition.
+Set in Sorts Mill Goudy, Italiana and Marcellus SC (SIL Open Font License). Text from Project Gutenberg eBook 22403, accents and indents from Wikisource. Plate made with diffusion models; ornament drawn for this edition.
 :::
 
 # God’s Grandeur

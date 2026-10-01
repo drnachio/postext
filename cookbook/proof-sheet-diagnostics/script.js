@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 055 · A galley proof with every fault marked in red ══════
 // https://postext.dev/en/cookbook/proof-sheet-diagnostics
-// Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
+// Code: MIT · Text: original (CC BY 4.0) · Map: code (CC BY 4.0) · Photo: diffusion models
 // Fonts: Charis SIL, Chivo, Fragment Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -20,7 +20,7 @@ const colorPalette = [...Object.entries(palette), ['main-color', palette.proof]]
 const [TEXT, DISPLAY, MONO] = ['Charis SIL', 'Chivo', 'Fragment Mono'];
 const [TRIM_W, TRIM_H, TOP, BOTTOM, INNER, OUTER] = [190, 253, 22, 20, 17, 14]; // mm, mirrored
 const MEASURE = TRIM_W - INNER - OUTER; // mm: 159, the text block the opener spans
-const [LEAD, ART_H, DPI] = [14, 50, 150]; // pt: the text's leading; mm: the drawing; page px/inch
+const [LEAD, ART_H, DPI] = [14, 50, 150]; // pt: leading; mm: the photograph; page px/inch
 const NONE = { top: mm(0), right: mm(0), bottom: mm(0), left: mm(0) };
 const caps = (size) => ({ fontFamily: MONO, fontSize: pt(size), letterSpacing: pt(size * 0.12),
   textTransform: 'uppercase', fontWeight: 400 });
@@ -244,53 +244,12 @@ function proofDesk(md, draft) {
   return faults;
 }
 
-// #region art: the night crossing and the route map, drawn in the page's palette
-function rng(seed) { // Mulberry32: the same drawing on every run
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// #region art: the route map, drawn in the page's palette; the crossing is a photograph
 const R = (v) => Math.round(v * 100) / 100;
 const rect = (x, y, w, h, fill, opacity = 1) => `<rect x="${R(x)}" y="${R(y)}" width="${R(w)}" `
   + `height="${R(h)}" fill="${fill}" opacity="${R(opacity)}"/>`;
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" `
   + `viewBox="0 0 ${w} ${h}">${body}</svg>`;
-function crossing() { // 159 × 50 mm, 10 units a mm
-  const [W, H, SEA] = [MEASURE * 10, ART_H * 10, 290];
-  const rand = rng(41);
-  const { ink, paper, proof, rule } = palette;
-  const land = '#34332f'; // the far bank, one step up from the ink sky
-  let s = rect(0, 0, W, H, ink) + `<circle cx="${W * 0.8}" cy="92" r="40" fill="${paper}"/>`;
-  let shore = `M0 ${SEA}`; // the far bank: Crane Landing, the cannery and its stack
-  for (let x = 0; x <= W; x += 40) shore += `L${x} ${R(SEA - 18 - rand() * 22)}`;
-  s += `<path d="${shore}L${W} ${SEA}Z" fill="${land}"/>`;
-  s += `<path d="M1040 ${SEA}V226h120v-34h64v34h56V${SEA}Z M1172 192V120h13v72Z" `
-    + `fill="${land}"/>`;
-  for (let i = 0; i < 6; i++) s += rect(1056 + i * 34, 240, 12, 8, paper, 0.8);
-  for (let y = SEA + 12; y < H; y += 13 + (y - SEA) * 0.06) { // the water: broken lines
-    for (let x = rand() * 60; x < W; x += 60 + rand() * 90) {
-      s += rect(x, y, 20 + rand() * 60, 2.4, rule, 0.16 + rand() * 0.24);
-    }
-  }
-  for (let y = SEA + 8; y < H - 6; y += 11) { // the moon's path on the water
-    const w = 26 + rand() * 54;
-    s += rect(W * 0.8 - w / 2 + (rand() - 0.5) * 28, y, w, 3, paper, 0.7);
-  }
-  const [fx, fy] = [380, SEA + 76]; // the Marram, a double-ended ferry, from abeam
-  s += `<path d="M${fx} ${fy}h400l-28 30h-344Z M${fx + 56} ${fy}v-40h288v40Z `
-    + `M${fx + 146} ${fy - 40}v-26h108v26Z" fill="${paper}"/>`;
-  for (let i = 0; i < 9; i++) s += rect(fx + 72 + i * 30, fy - 29, 15, 13, ink);
-  s += rect(fx + 197, fy - 90, 6, 24, paper) // the mast and its light, then the port light
-    + `<circle cx="${fx + 200}" cy="${fy - 96}" r="7" fill="${paper}"/>`
-    + `<circle cx="${fx + 30}" cy="${fy - 6}" r="8" fill="${proof}"/>`;
-  for (let i = 0; i < 6; i++) { // the ferry's lights on the water
-    s += rect(fx + 40 + rand() * 320, fy + 40 + i * 12, 20 + rand() * 50, 3, paper, 0.5);
-  }
-  return svg(W, H, s + rect(fx + 24, fy + 40, 12, 34, proof, 0.7));
-}
 function routeMap() { // 42 × 44 mm, 10 units a mm: south bank at the foot, the sea to the right
   const [W, H] = [420, 440];
   const { ink, paper, proof, rule } = palette;
@@ -322,10 +281,10 @@ const resources = [{ id: 'route', typeId: 'figure', kind: 'svg', createdAt: 0, u
   es: 'Plano del cruce: dos orillas, un bajo punteado y, entre dos rampas, una ruta negra recta '
     + 'y una ruta roja discontinua que se abre lejos del bajo; una flecha con una N señala el '
     + 'norte y otra, el mar.' }) },
-{ id: 'crossing', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'crossing.svg', width: MEASURE * 10, height: ART_H * 10 },
+{ id: 'crossing', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, // 159 × 50 mm
+  bitmap: { fileId: 'crossing-1590.jpg', format: 'jpeg', width: 1590, height: 500 },
   altText: t({ en: 'A ferry with lit windows and a red port light crossing a dark estuary under '
-    + 'a full moon, a cannery on the far bank.',
+    + 'a full moon, a cannery and its stack on the far bank.',
   es: 'Una barcaza con las ventanas encendidas y la luz roja de babor cruza de noche un estuario '
     + 'bajo la luna llena, con una planta en la otra orilla.' }) }];
 // #endregion
@@ -335,8 +294,8 @@ const FONTS = { 'Charis SIL': ['400', '400i', '700', '700i'], Chivo: ['400', '70
   'Fragment Mono': ['400'] }; // every face, loaded before the first build (gotcha: fonts-first)
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown), loadSvg('crossing.svg', crossing()),
-  loadSvg('route.svg', routeMap())]);
+await Promise.all([loadFonts(FONTS, markdown), loadSvg('route.svg', routeMap()),
+  loadImage('crossing-1590.jpg', asset('crossing-1590.jpg'))]);
 const $ = (id) => document.getElementById(id); // the proof desk of index.html
 const source = $('source');
 for (const el of document.querySelectorAll('#proof [data-en]')) el.textContent = el.dataset[LANG];

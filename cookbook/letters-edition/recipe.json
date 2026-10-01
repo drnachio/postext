@@ -125,8 +125,17 @@
     "images": [
       {
         "what": {
-          "en": "The cover: two folded letters and a wax seal on green morocco, drawn in code",
-          "es": "La cubierta: dos cartas plegadas y un sello de lacre sobre tafilete verde, dibujadas en código"
+          "en": "The cover: two folded letters and a wax seal, a photograph",
+          "es": "La cubierta: dos cartas plegadas y un sello de lacre, una fotografía"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "letters-1160.jpg"
+      },
+      {
+        "what": {
+          "en": "The cover’s green morocco and gilt fillet, drawn in code",
+          "es": "El tafilete verde y el filete dorado de la cubierta, dibujados en código"
         },
         "who": "Ignacio Ferro",
         "license": "CC-BY-4.0"

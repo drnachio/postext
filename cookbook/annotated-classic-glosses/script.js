@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 032 · Annotated classic with margin glosses ════════════
 // https://postext.dev/en/cookbook/annotated-classic-glosses
-// Code: MIT · Text: Lewis Carroll (public domain), glosses (CC BY 4.0) · Headpiece: in code
+// Code: MIT · Text: Lewis Carroll (PD), glosses (CC BY 4.0) · Headpiece: diffusion models
 // Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 // The mad tea-party as an annotated edition: the text keeps to one column, and its glosses stand
 // in the outer margin beside the lines they explain, changing sides with the spread.
@@ -15,10 +15,9 @@ const RECIPE = 'annotated-classic-glosses';
 // #region palette: a lawn green and a jam red on cream paper
 const palette = {
   ink: '#1f1b1a', // text: a warm near-black
-  lawn: '#1e6f6b', // glosses on words and jokes, the drop cap; the lawn in the headpiece
-  jam: '#b23a48', // glosses on history, the kicker; the headpiece's teapot and arm-chair
-  biscuit: '#cdbfae', // the headpiece's chairs, saucers, bread and butter, March Hare
-  muted: '#6e645b', // running heads, the note on this edition, the Dormouse
+  lawn: '#1e6f6b', // glosses on words and jokes, the drop cap
+  jam: '#b23a48', // glosses on history, the kicker
+  muted: '#6e645b', // running heads, the note on this edition
   paper: '#f8f3e6', // the page, and the tablecloth
 };
 // col(id): a colour linked to its entry. It carries the hex too, because 1.4.1 paints
@@ -108,7 +107,7 @@ const paragraphStyles = [
 // #endregion
 
 // #region opener: a headpiece, the chapter's numeral and title, a headnote with a drop cap
-const HEADPIECE = 72; // mm: the depth of the drawing at the head of the page
+const HEADPIECE = 72; // mm: the depth of the painting at the head of the page
 const HEADNOTE = { size: 9.8, lead: LEAD }; // pt: the headnote keeps the body's leading
 const CAPS = { text: 0.597, initial: 0.56 }; // cap heights, em: Unna and Rozha One
 // The initial's size: its capital runs from the first line's cap height down to the
@@ -120,7 +119,7 @@ const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' },
   offset: { y: mm(y) }, size: { width } });
 // The opener reserves the height of its lowest text, rounded up to the grid, and the
 // heading's default bottom margin adds one blank line: with a four-line headnote the
-// text starts on line 23. The drawing reserves nothing
+// text starts on line 23. The painting reserves nothing
 // (gotcha: opener-image-no-reserve), so the kicker, the title and the headnote hang
 // below it and carry the reserve past it.
 const opener = { enabled: true, slot: { elements: [
@@ -136,7 +135,7 @@ const opener = { enabled: true, slot: { elements: [
     fontWeight: 600, fontSize: pt(9), letterSpacing: pt(2), textTransform: 'uppercase',
     color: col('jam'), align: 'left',
     placement: { anchor: { to: 'container', edge: 'top-left' },
-      offset: { y: mm(HEADPIECE - TOP + 8) } } }, // 8 mm under the drawing's foot
+      offset: { y: mm(HEADPIECE - TOP + 8) } } }, // 8 mm under the painting's foot
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY,
     fontSize: pt(40), lineHeight: 1.05, color: col('ink'), align: 'left',
     // A longer title wraps instead of ending in '…' (gotcha: overflow-ellipsis-default).
@@ -210,112 +209,14 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: the tea-table seen from above, drawn in the page's colours
-const mulberry32 = (seed) => () => { // a seeded generator: the same leaves on every run
-  let t = (seed += 0x6d2b79f5);
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16)
-  * (1 - k) + parseInt(b.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join('')}`;
-const P = palette;
-const LEAF = mix(P.lawn, P.ink, 0.35);
-const f1 = (n) => Math.round(n * 10) / 10;
-const circle = (x, y, r, fill, extra = '') => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" `
-  + `fill="${fill}"${extra}/>`;
-const ring = (x, y, r, stroke, w) => circle(x, y, r, 'none',
-  ` stroke="${stroke}" stroke-width="${w}"`);
-const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}"${extra}/>`;
-const at = (x, y, turn, body) => `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(turn)})">`
-  + `${body}</g>`;
-const rect = (x, y, w, h, r, fill, extra = '') => `<rect x="${x}" y="${y}" width="${w}" `
-  + `height="${h}" rx="${r}" fill="${fill}"${extra}/>`;
-
-// A cup on its saucer, from above: the handle points along `turn`.
-const cup = (x, y, turn, tea = true) => at(x, y, turn, circle(0, 0, 44, P.paper,
-  ` stroke="${P.biscuit}" stroke-width="4"`) + ring(34, 0, 9, P.lawn, 6)
-  + circle(0, 0, 27, P.paper, ` stroke="${P.lawn}" stroke-width="6"`)
-  + (tea ? circle(0, 0, 19, mix(P.muted, P.biscuit, 0.35)) : ''));
-const teapot = (x, y) => at(x, y, 0, path('M54 -14C86 -20 98 -40 112 -52C106 -30 98 -6 60 16Z',
-  P.jam) + ring(-68, 0, 24, P.jam, 12) + circle(0, 0, 62, P.jam)
-  + circle(0, 0, 36, P.jam, ` stroke="${P.paper}" stroke-width="4"`) + circle(0, 0, 10, P.paper));
-// Bread and butter: three slices on a plate.
-const plate = (x, y, turn) => at(x, y, turn, circle(0, 0, 50, P.paper,
-  ` stroke="${P.lawn}" stroke-width="4"`) + [0, 120, 240].map((a) => at(0, 0, a,
-  path('M-6 -8L-30 -34L22 -34Z', P.biscuit, ` stroke="${P.paper}" stroke-width="3"`))).join(''));
-// The butter on its dish, with the bread-knife that put the crumbs in the watch.
-const butter = (x, y) => at(x, y, -8, rect(-44, -28, 88, 56, 12, P.paper,
-  ` stroke="${P.lawn}" stroke-width="4"`) + rect(-24, -16, 48, 32, 4, P.biscuit)
-  + path('M-40 44L52 44L58 50L-40 50Z', P.muted));
-// The Hatter's watch, on its chain.
-const watch = (x, y) => [0, 1, 2, 3, 4, 5, 6, 7].map((i) => circle(x - 52 - i * 15,
-  y + 18 * Math.sin(i / 1.5), 5, 'none', ` stroke="${P.muted}" stroke-width="3"`)).join('')
-  + circle(x - 40, y, 8, P.muted) + circle(x, y, 36, P.paper, ` stroke="${P.ink}" stroke-width="6"`)
-  + path(`M${x} ${y}L${x} ${y - 25}M${x} ${y}L${x + 17} ${y + 8}`, 'none',
-    ` stroke="${P.ink}" stroke-width="4" stroke-linecap="round"`) + circle(x, y, 4, P.ink);
-// The Hatter at the table's end: his silk hat from above, with a crescent of red band, a sheen
-// and the price ticket.
-const hatter = (x, y) => circle(x, y, 72, P.ink) + circle(x, y, 50, P.jam)
-  + circle(x - 7, y - 9, 47, mix(P.ink, P.muted, 0.25))
-  + path(`M${x - 38} ${y - 24}A40 40 0 0 1 ${x + 6} ${y - 50}`, 'none',
-    ` stroke="${P.paper}" stroke-opacity=".3" stroke-width="5" stroke-linecap="round"`)
-  + at(x + 34, y + 30, 40, rect(-15, -11, 30, 22, 2, P.paper));
-// The March Hare from behind, its ears laid back.
-const hare = (x, y) => [-16, 16].map((a) => at(x, y, a, path('M-18 20C-22 70 -12 116 0 122C12 116'
-  + ' 22 70 18 20Z', P.biscuit) + path('M-8 40C-10 74 -5 100 0 104C5 100 10 74 8 40Z', P.jam,
-  ' fill-opacity=".35"'))).join('') + circle(x, y, 40, P.biscuit);
-// The Dormouse asleep, curled in its tail.
-const dormouse = (x, y) => path(`M${x + 30} ${y + 8}C${x + 60} ${y + 40} ${x + 10} ${y + 64} `
-  + `${x - 24} ${y + 44}`, 'none', ` stroke="${P.muted}" stroke-width="7" stroke-linecap="round"`)
-  + circle(x, y, 32, P.muted) + circle(x - 20, y - 24, 10, P.muted) + circle(x + 6, y - 30, 10,
-    P.muted) + path(`M${x - 16} ${y - 8}q6 5 12 0`, 'none',
-    ` stroke="${P.paper}" stroke-width="3" stroke-linecap="round"`);
-const chair = (x, y, turn) => at(x, y, turn, rect(-34, -30, 68, 60, 10, P.biscuit)
-  + rect(-36, -44, 72, 12, 6, mix(P.biscuit, P.muted, 0.4)));
-// Alice's arm-chair at the far end, its back away from the table.
-const armchair = (x, y) => rect(x - 80, y - 80, 36, 160, 14, P.jam)
-  + [-80, 52].map((dy) => rect(x - 70, y + dy, 140, 28, 12, P.jam)).join('')
-  + rect(x - 46, y - 54, 112, 108, 16, mix(P.jam, P.paper, 0.25));
-
-function teaTable() {
-  const [W, H] = [TRIM_W * 10, HEADPIECE * 10]; // 0.1 mm units
-  const [X0, X1, Y0, Y1] = [220, 1390, 200, 520]; // the tablecloth
-  const rand = mulberry32(1865);
-  const leaves = [];
-  for (let i = 0; i < 70; i++) { // fallen leaves on the lawn, never on the table
-    const [x, y] = [rand() * W, rand() * H];
-    if (x > X0 - 90 && x < X1 + 170 && y > Y0 - 90 && y < Y1 + 110) continue;
-    const s = 0.6 + rand() * 0.7;
-    leaves.push(at(x, y, rand() * 360, path(`M0 ${-26 * s}C${16 * s} ${-12 * s} ${16 * s} `
-      + `${12 * s} 0 ${26 * s}C${-16 * s} ${12 * s} ${-16 * s} ${-12 * s} 0 ${-26 * s}Z`, LEAF)));
-  }
-  const scallop = (x, y) => circle(x, y, 15, P.paper);
-  const hem = []; // the cloth's scalloped edge
-  for (let x = X0; x <= X1; x += 30) hem.push(scallop(x, Y0), scallop(x, Y1));
-  for (let y = Y0; y <= Y1; y += 30) hem.push(scallop(X0, y), scallop(X1, y));
-  const places = [340, 490, 640, 790, 940, 1090];
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" `
-    + `viewBox="0 0 ${W} ${H}">${rect(0, 0, W, H, 0, P.lawn)}${leaves.join('')}`
-    + places.map((x) => chair(x, Y0 - 58, 0) + chair(x + 40, Y1 + 58, 180)).join('')
-    + armchair(150, (Y0 + Y1) / 2) + hare(1260, Y1 + 72)
-    + rect(X0, Y0, X1 - X0, Y1 - Y0, 0, P.paper) + hem.join('')
-    + rect(X0 + 28, Y0 + 28, X1 - X0 - 56, Y1 - Y0 - 56, 0, 'none',
-      ` stroke="${P.jam}" stroke-width="3"`)
-    + places.map((x, i) => cup(x, Y0 + 62, 200 + i * 23, i % 3 !== 1)
-      + cup(x + 40, Y1 - 62, 20 - i * 31, i % 2 === 0)).join('')
-    + cup(1215, 300, 150) + cup(1290, 420, 60) + cup(1195, 440, 250, false) // crowded at one end
-    + plate(470, 360, 10) + butter(595, 350) + teapot(760, 360) + watch(1010, 360)
-    + dormouse(1330, 300) + hatter(1470, 360) + '</svg>';
-}
-// #endregion
 
 // The headpiece is a resource that only the opener's design draws: never cited, never placed.
-const resources = [{ id: 'tea-table', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'tea-table.svg', width: TRIM_W * 10, height: HEADPIECE * 10 },
-  altText: 'The tea-table seen from above: a long cloth laid with cups, a red teapot, butter '
-    + 'and a watch on its chain; a red arm-chair at one end and, at the other, the Hatter’s hat, '
-    + 'the Dormouse asleep and the March Hare’s ears.' }];
+// It is a watercolour, a JPEG in assets/ cut to the trim's 156 × 72 mm, declared at its pixels.
+const resources = [{ id: 'tea-table', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'tea-table-1560.jpg', format: 'jpeg', width: 1560, height: 720 },
+  altText: 'The tea-table under a tree, seen from above: a long white cloth laid with cups, a red '
+    + 'teapot, bread and butter and a watch on its chain; the Dormouse asleep in a teapot at one '
+    + 'end and a red arm-chair at the other.' }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
@@ -326,7 +227,7 @@ const FONTS = { // text, display and label faces, loaded before the build (gotch
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
-await loadSvg('tea-table.svg', teaTable());
+await loadImage('tea-table-1560.jpg', asset('tea-table-1560.jpg'));
 const continuation = { pageNumbering: { startAt: 81 } }; // chapter VII of a book: an odd folio
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources, continuation }, config()), markdown);

@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 015 · Poems set line by line ═════════════════════════════
 // https://postext.dev/en/cookbook/poetry-collection
-// Code: MIT · Text: G. M. Hopkins, Poems, 1918 (PD) · Plate and ornament: drawn in code
+// Code: MIT · Text: G. M. Hopkins, Poems, 1918 (PD) · Plate: diffusion models · Sprig: code
 // Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -12,7 +12,7 @@ const RECIPE = 'poetry-collection';
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
 const palette = { // every colour in the config links to one of these
   ink: '#26221f', // the text: a warm near-black
-  sage: '#56673f', // the one accent: numerals, the plate's ground, the ornament's leaves
+  sage: '#56673f', // the one accent: numerals, the subtitle, the ornament's leaves
   sepia: '#8c5f3a', // used for the rowan berries only
   muted: '#746a60', // dates, folios, leaders and the colophon
   paper: '#fbf8f2', // the page
@@ -173,16 +173,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: a photogram of fern and rowan, and a rowan sprig for the ornament
-let seed = 1877; // Mulberry32, a tiny seeded PRNG: never Math.random() in a recipe
-const rand = () => {
-  let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
-  r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-  return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-};
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(parseInt(palette[a].slice(i, i + 2),
-  16) * (1 - k) + parseInt(palette[b].slice(i, i + 2), 16) * k).toString(16).padStart(2, '0'))
-  .join('')}`;
+// #region art: a rowan sprig for the ornament, drawn in code; the plate is a JPEG in assets/
 const f = (n) => n.toFixed(1);
 const path = (d, fill, a = 1) => `<path d="${d}" fill="${fill}" fill-opacity="${a}"/>`;
 const ring = (pts) => `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join('L')}Z`;
@@ -226,93 +217,6 @@ const blade = (x, y, a, l, w, teeth = 0) => {
   });
   return ring([...side(1), ...side(-1).reverse()]);
 };
-// A fern frond: a curving rachis, alternate pinnae longest near the base, each a comb of lobes.
-function fern(curve, reach, lobe) {
-  const d = [stalk(curve, 20, 3)];
-  const n = 30;
-  for (let i = 3; i < n; i++) {
-    const t = i / n;
-    const p = bez(curve, t);
-    const side = i % 2 ? 1 : -1;
-    const len = reach * Math.sin(Math.PI * Math.min(1, (1 - t) * 1.25) / 2) ** 1.2;
-    const pa = p.a + side * (1.05 - 0.35 * t); // pinnae lean towards the tip
-    const [cx, cy] = [Math.cos(pa), Math.sin(pa)];
-    const sweep = side * 0.18; // each pinna arches a little towards the tip
-    const axis = [[p.x, p.y], [p.x + cx * len / 3, p.y + cy * len / 3],
-      [p.x + Math.cos(pa - sweep) * len * 0.68, p.y + Math.sin(pa - sweep) * len * 0.68],
-      [p.x + Math.cos(pa - sweep * 2) * len, p.y + Math.sin(pa - sweep * 2) * len]];
-    d.push(stalk(axis, 5, 1.2));
-    const k = Math.max(2, Math.round(len / (lobe * 0.82)));
-    for (let j = 0; j < k; j++) {
-      const s = (j + 0.5) / (k + 0.3);
-      const q = bez(axis, s);
-      const size = lobe * (1.05 - s * 0.6) * (0.92 + rand() * 0.16);
-      for (const sgn of [1, -1]) d.push(blade(q.x, q.y, q.a + sgn * 0.95, size * 1.6, size * 0.5));
-    }
-    const tip = bez(axis, 1);
-    d.push(blade(tip.x, tip.y, tip.a, lobe * 1.2, lobe * 0.35));
-  }
-  return d.join('');
-}
-// Rowan: a woody stem, pinnate leaves of serrated leaflets and a dome of berries.
-function rowan(curve, leaves, cluster, scale = 1) {
-  const d = [stalk(curve, 22 * scale, 8 * scale)];
-  const dots = [];
-  for (const [t, side, len] of leaves) {
-    const p = bez(curve, t);
-    const a = p.a + side * 0.9;
-    const l = len * scale;
-    const rachis = [[p.x, p.y], [p.x + Math.cos(a) * l / 3, p.y + Math.sin(a) * l / 3],
-      [p.x + Math.cos(a + side * 0.12) * l * 2 / 3, p.y + Math.sin(a + side * 0.12) * l * 2 / 3],
-      [p.x + Math.cos(a + side * 0.25) * l, p.y + Math.sin(a + side * 0.25) * l]];
-    d.push(stalk(rachis, 5 * scale, 2 * scale));
-    for (let j = 0; j < 6; j++) {
-      const q = bez(rachis, 0.18 + j * 0.15);
-      const size = (130 - j * 6) * scale;
-      for (const sgn of [1, -1]) d.push(blade(q.x, q.y, q.a + sgn * 1.25, size, size * 0.22, 7));
-    }
-    const tip = bez(rachis, 1);
-    d.push(blade(tip.x, tip.y, tip.a, 125 * scale, 27 * scale, 7));
-  }
-  const [cx, cy, r] = cluster; // berries on short stalks, heaped into a dome
-  for (let i = 0; i < 34; i++) {
-    const a = -Math.PI * (0.08 + rand() * 0.84);
-    const dist = r * Math.sqrt(rand());
-    const [bx, by] = [cx + Math.cos(a) * dist * 1.25, cy + Math.sin(a) * dist * 0.8];
-    d.push(stalk([[cx, cy + r * 0.5], [cx, cy], [bx, by + 20 * scale], [bx, by]], 3 * scale,
-      2 * scale));
-    dots.push([bx, by, (17 + rand() * 5) * scale]);
-  }
-  return { d: d.join(''), dots };
-}
-
-// The frontispiece: a photogram, the specimens left in paper white on a brushed field of
-// sage, the way Anna Atkins printed her ferns in cyanotype.
-function photogram(w, h) {
-  const [W, H] = [w * PX, h * PX];
-  const [x0, y0, x1, y1] = [70, 70, W - 70, H - 170]; // the brushed-on coating
-  const phase = [rand(), rand(), rand()].map((r) => r * 6.3);
-  const wob = (v, amp) => amp * (Math.sin(v / 37 + phase[0]) * 0.5 + Math.sin(v / 13 + phase[1])
-    * 0.3 + Math.sin(v / 5.3 + phase[2]) * 0.2) + (rand() - 0.5) * amp * 0.4;
-  const edge = [];
-  for (let x = x0; x <= x1; x += 10) edge.push([x, y0 + wob(x, 7)]);
-  for (let y = y0; y <= y1; y += 10) edge.push([x1 + wob(y, 16), y]);
-  for (let x = x1; x >= x0; x -= 10) edge.push([x, y1 + wob(x + 99, 7)]);
-  for (let y = y1; y >= y0; y -= 10) edge.push([x0 + wob(y + 55, 16), y]);
-  const out = [`<defs><radialGradient id="g" cx="0.42" cy="0.38" r="0.85">`
-    + `<stop offset="0" stop-color="${mix('sage', 'paper', 0.06)}"/>`
-    + `<stop offset="1" stop-color="${mix('sage', 'ink', 0.4)}"/></radialGradient></defs>`,
-  path(ring(edge), 'url(#g)')]; // a single path with a gradient fill; only its outline is ragged
-  const frond = fern([[520, 1960], [380, 1350], [640, 700], [930, 190]], 400, 26);
-  const tree = rowan([[1090, 1960], [1160, 1450], [960, 1060], [1000, 640]],
-    [[0.2, -1, 300], [0.4, 1, 280], [0.58, -1, 290], [0.76, 1, 250]], [1000, 600, 150], 0.85);
-  // Opaque, as a photogram is: where the two specimens overlap they print one white.
-  out.push(path(frond, palette.paper), path(tree.d, palette.paper));
-  for (const [x, y, r] of tree.dots) out.push(disk(x, y, r, palette.paper), disk(x, y - r * 0.2,
-    r * 0.22, mix('sage', 'paper', 0.5)));
-  return svgOf(w, h, out.join(''));
-}
-
 // The ornament: a rowan leaf laid flat, with a bunch of berries at its tip.
 function sprig() {
   const [w, h] = [36, 12];
@@ -335,18 +239,22 @@ function sprig() {
   return svgOf(w, h, out.join(''));
 }
 
-const art = { plate: photogram(TRIM_W, TRIM_H), sprig: sprig() };
-for (const [id, svg] of Object.entries(art)) await loadSvg(`${id}.svg`, svg);
-// #endregion
+await loadSvg('sprig.svg', sprig());
+// The frontispiece is a photogram: the whole 140 × 216 mm page, its torn coating and the paper
+// under it in one JPEG, declared at its pixels.
+await loadImage('plate-1120.jpg', asset('plate-1120.jpg'));
 
 // Nothing cites them: designs show the plate and the sprig, ::resource sets the tailpiece.
 const svgResource = (id, w, h, altText) => ({ id, typeId: 'ornament', kind: 'svg', altText,
   createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`, width: w * PX, height: h * PX } });
 const resources = [
-  svgResource('plate', TRIM_W, TRIM_H, 'A photogram of a fern frond and a sprig of rowan in '
-    + 'berry, left white on a brushed sage ground.'),
+  { id: 'plate', typeId: 'ornament', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'plate-1120.jpg', format: 'jpeg', width: 1120, height: 1728 },
+    altText: 'A photogram of a fern frond and a sprig of rowan in berry, left white on a '
+      + 'brushed sage ground.' },
   svgResource('sprig', 36, 12, 'Ornament: a rowan leaf with a bunch of berries.'),
 ];
+// #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Loaded before the first build (gotcha: fonts-first). None of the three ships a bold.

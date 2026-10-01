@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "poetry-collection",
-  "sourceHash": "f67542acf3151b28cc77028e53a4c12d919af8e4c71fdb0d0948cbf2024dc7a4",
+  "sourceHash": "988ed47ce6c23cc9299cd3c18cfccf474a3b76178cf5eea72e14744b56010b20",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:05:08.907Z",
+  "capturedAt": "2026-10-01T06:50:48.734Z",
   "variants": {
     "en": {
-      "hash8": "d99a3d85",
-      "vdtHash": "00a412d5a0a9913e13d7b9c8f857fa977e51e468",
+      "hash8": "a486ccb9",
+      "vdtHash": "5d8ba73bdefd65e33b2ae86313449515085fe33e",
       "timings": {
-        "importMs": 119,
-        "fontsMs": 50,
-        "buildMs": 42,
-        "totalMs": 797,
+        "importMs": 130,
+        "fontsMs": 40,
+        "buildMs": 53,
+        "totalMs": 764,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Sorts Mill Goudy"
         ],
         "pages": 8,
-        "ownLines": 180
+        "ownLines": 172
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 1543,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 71638,
+          "bytes": 199246,
           "alt": "Opening page 2: Fern and Rowan."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1543,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 15970,
+          "bytes": 15932,
           "alt": "Opening page 3: Pied Beauty."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1543,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 60920,
+          "bytes": 62084,
           "alt": "Opening page 4: Contents."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1543,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 61364,
+          "bytes": 61478,
           "alt": "Opening page 5: I God’s Grandeur."
         },
         {
@@ -166,7 +166,7 @@
       },
       "sandbox": {
         "file": "poetry-collection.postext",
-        "bytes": 220946
+        "bytes": 370667
       },
       "detected": {
         "apis": [
@@ -318,8 +318,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -371,13 +371,7 @@
           "share": 0,
           "worst": 1.51
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

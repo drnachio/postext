@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "critical-edition-line-numbers",
-  "sourceHash": "48f37eea27fac225beaf94824bf42bcdd9a28f2a04af127d5afc682bfeea2d9f",
+  "sourceHash": "55a9c811c28b09465e489c1f9fbf249dc3db166b4c3bdc2d5ea0fba3c1256a44",
   "engine": {
-    "postext": "1.6.0",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T07:57:56.108Z",
+  "capturedAt": "2026-10-01T06:49:15.986Z",
   "variants": {
     "en": {
-      "hash8": "6b42c034",
-      "vdtHash": "ff4ba0d9d6dc6bd177c17ae5b15e392a033b1a49",
+      "hash8": "8a610ef5",
+      "vdtHash": "e64b45362d3fbc3b1cf4bae923e85995656eb549",
       "timings": {
-        "importMs": 458,
-        "fontsMs": 1365,
-        "buildMs": 38,
-        "totalMs": 4033,
+        "importMs": 357,
+        "fontsMs": 52,
+        "buildMs": 26,
+        "totalMs": 1219,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Linden Hill"
         ],
         "pages": 9,
-        "ownLines": 194
+        "ownLines": 189
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1565,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 74148,
+          "bytes": 91586,
           "alt": "Opening page 1: Lycidas."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1565,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 125180,
+          "bytes": 125870,
           "alt": "Page 9."
         }
       ],
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "critical-edition-line-numbers.postext",
-        "bytes": 38317
+        "bytes": 108618
       },
       "detected": {
         "apis": [
@@ -279,7 +279,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 244,
+        "configLeaves": 238,
         "designElements": 11,
         "directives": [
           ":::paragraphs",
@@ -291,8 +291,8 @@
           ":chip"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -348,7 +348,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -49,5 +49,5 @@ The commission agreed the night service for three years at its September meeting
 The *Tern* has been laid up at the county yard since August and is for sale. The ferry office has had two offers, both from oyster growers up the coast who want her as a work boat, and expects to decide in November.
 
 :::callout{type="colophon"}
-The Tideline, issue 41. Set in Charis SIL, Chivo and Fragment Mono (SIL OFL). Text and drawings CC BY 4.0. Port Alder and its people are fictional.
+The Tideline, issue 41. Set in Charis SIL, Chivo and Fragment Mono (SIL OFL). Text and map CC BY 4.0; generated photograph. Port Alder and its people are fictional.
 :::

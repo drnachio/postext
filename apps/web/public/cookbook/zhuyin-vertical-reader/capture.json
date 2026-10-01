@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "zhuyin-vertical-reader",
-  "sourceHash": "ec7dbccf561948db304f8d9404377d904995bb54e46e44fa7d51170168ec2b76",
+  "sourceHash": "16108bb195eff5f4ed6c6840924c28f0317be7457b44349ba458f72ce5002742",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.9.2",
+    "postextPdf": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:34:13.732Z",
+  "capturedAt": "2026-10-01T06:45:58.657Z",
   "variants": {
     "en": {
-      "hash8": "c5a2724a",
+      "hash8": "c2c9a532",
       "vdtHash": "522843d863498ed4af274649e676a64bd5ee9cc4",
       "timings": {
-        "importMs": 179,
-        "fontsMs": 355,
-        "buildMs": 11,
-        "totalMs": 1233,
+        "importMs": 954,
+        "fontsMs": 17361,
+        "buildMs": 17,
+        "totalMs": 19166,
         "builds": 2
       },
       "specimen": {
@@ -51,7 +51,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 57442,
+          "bytes": 100130,
           "alt": "Opening page 86: 第十二課 寓言兩則."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1413,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 74890,
+          "bytes": 116428,
           "alt": "Page 88: 語譯."
         },
         {
@@ -113,12 +113,12 @@
       },
       "pdf": {
         "file": "zhuyin-vertical-reader.pdf",
-        "bytes": 269167,
+        "bytes": 741202,
         "pages": 4
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 33377
+        "bytes": 507581
       },
       "detected": {
         "apis": [
@@ -302,8 +302,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [
@@ -374,13 +374,13 @@
       }
     },
     "es": {
-      "hash8": "d9d95b7b",
+      "hash8": "b3fa0945",
       "vdtHash": "add9581c8d2fc07b11d4f735eaae4d55f2ef84a9",
       "timings": {
-        "importMs": 128,
-        "fontsMs": 288,
-        "buildMs": 11,
-        "totalMs": 1046,
+        "importMs": 380,
+        "fontsMs": 15267,
+        "buildMs": 18,
+        "totalMs": 16974,
         "builds": 2
       },
       "specimen": {
@@ -414,7 +414,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 57442,
+          "bytes": 100130,
           "alt": "Página de apertura 86: 第十二課 寓言兩則."
         },
         {
@@ -436,7 +436,7 @@
           "h": 1413,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 74890,
+          "bytes": 116428,
           "alt": "Página 88: 語譯."
         },
         {
@@ -476,12 +476,12 @@
       },
       "pdf": {
         "file": "zhuyin-vertical-reader.pdf",
-        "bytes": 269319,
+        "bytes": 741351,
         "pages": 4
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 33412
+        "bytes": 507615
       },
       "detected": {
         "apis": [
@@ -665,8 +665,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [

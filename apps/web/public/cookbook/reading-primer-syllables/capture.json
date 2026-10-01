@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "reading-primer-syllables",
-  "sourceHash": "0715bd1106d89ce2ae5162704839275f298f8514d276f0ea83342632626b8f2f",
+  "sourceHash": "af5822ce0088bd38bafd51eb904f5d70b206f0c6b8ab3259fa0e6e75a10d977a",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:08:33.763Z",
+  "capturedAt": "2026-10-01T06:46:11.801Z",
   "variants": {
     "es": {
-      "hash8": "14b7ab97",
-      "vdtHash": "98ec70ff2cf0b96ecf3010ade912ad1d0088f4a0",
+      "hash8": "a1ec815f",
+      "vdtHash": "d877dbbfa2de48b77266bbc02d7611c16274a1ec",
       "timings": {
-        "importMs": 83,
-        "fontsMs": 19,
-        "buildMs": 5,
-        "totalMs": 728,
+        "importMs": 189,
+        "fontsMs": 37,
+        "buildMs": 8,
+        "totalMs": 846,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1238,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 54668,
+          "bytes": 55608,
           "alt": "Página de apertura 37: Mm."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1238,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 54260,
+          "bytes": 58076,
           "alt": "Página 38: Mira y lee."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1238,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 56452,
+          "bytes": 57134,
           "alt": "Página 39: Lee las frases."
         }
       ],
@@ -99,7 +99,7 @@
       },
       "sandbox": {
         "file": "reading-primer-syllables.postext",
-        "bytes": 28194
+        "bytes": 284549
       },
       "detected": {
         "apis": [
@@ -249,7 +249,7 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 630,
+        "configLeaves": 627,
         "designElements": 21,
         "directives": [
           ":::paragraphs",
@@ -262,8 +262,8 @@
           ":chip"
         ],
         "resources": {
-          "svg": 14,
-          "bitmap": 0,
+          "svg": 6,
+          "bitmap": 8,
           "table": 1
         },
         "fonts": [
@@ -329,7 +329,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 36 dropped (even: same page sides)"
+          }
+        ]
       }
     }
   }

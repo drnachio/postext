@@ -4,12 +4,12 @@ summary: "一段带frontmatter的Markdown字符串排成双栏杂志页，在Can
 description: "这支pen在第一次构建前加载字体，每次构建都新建配置，用frontmatter排章首页，再把各页画到Canvas上。"
 question: "怎样把一段Markdown字符串排成设计好的页面，让标题、粗体字和项目符号不再是默认的蓝色？"
 aliases: ["第一个文档", "入门", "快速上手", "Markdown转Canvas", "默认样式", "旅行专题", "杂志排版", "first document", "getting started", "hello world", "quick start", "markdown to canvas", "default skin"]
-pageNotes: { "1": "页面上部是一条靛蓝色色带：白色盐田组成的格子上，一条虚线小路爬上沙丘，通向丘顶的石堆；下方是标题The Salt Road、导语和署名。", "2": "随后的左页：页码和作为书眉的文章标题，两栏两端对齐的正文带靛蓝色小标题，一个以粗体起首词开头的破折号列表，文末符号，以及细线下的版权信息。" }
+pageNotes: { "1": "页面上部是一张照片：黄昏时的盐田，一行脚印爬上沙丘，通向丘顶的石堆；深色天空上是标题The Salt Road、导语和署名。", "2": "随后的左页：页码和作为书眉的文章标题，两栏两端对齐的正文带靛蓝色小标题，一个以粗体起首词开头的破折号列表，文末符号，以及细线下的版权信息。" }
 ---
 
 ## 成品一览
 
-小杂志*Field Notes*里一篇旅行专题的开头几页。第1页是右页章首页：靛蓝色色带占满页面上方58%，里面画着盐田和沙丘，标题用54 pt的Young Serif，下面两栏两端对齐的正文以粗体起首词开篇。翻过来的第2页在加宽字距的大写书眉下接排，结尾是文末符号和版权信息。整个设计由一个配置工厂函数和六种颜色的调色板决定。标题取自一级标题，导语、作者和日期取自Markdown字符串的frontmatter，所以只要标题能排进两行，同一支pen能排任何文章；只有那幅画专属这一篇。
+小杂志*Field Notes*里一篇旅行专题的开头几页。第1页是右页章首页：一张黄昏时盐田和沙丘的照片占满页面上方58%，标题用54 pt的Young Serif，下面两栏两端对齐的正文以粗体起首词开篇。翻过来的第2页在加宽字距的大写书眉下接排，结尾是文末符号和版权信息。整个设计由一个配置工厂函数和六种颜色的调色板决定。标题取自一级标题，导语、作者和日期取自Markdown字符串的frontmatter，所以只要标题能排进两行，同一支pen能排任何文章；只有那张照片专属这一篇。
 
 ## 做法
 
@@ -25,17 +25,17 @@ Postext用浏览器已经加载的字体测量文字，并缓存宽度，所以�
 
 配置里的每种颜色都写成`col('id')`，即调色板id加上旁边的十六进制值。`bodyText.boldColor`、`italicColor`、`referenceColor`和`unorderedLists.color`引用`ink`，`headings.color`引用强调色。引擎对标题、粗体、斜体和项目符号的默认颜色都链接到`main-color`，而这个调色板把该项指向强调色，所以你没写的那些会变成靛蓝而不是蓝色。Postext 1.4.1绘制页眉、页脚和章首页元素以及`referenceColor`时用的是十六进制值，忽略id，所以设计对象写成工厂函数：`config()`在每次构建时调用它们，`col()`每次都从`palette`里复制当前的十六进制值。文末符号是一个引用`band`的行内色块，所以换色也会影响它。默认书眉不读调色板，替换它之前一直是蓝色（第5步）。
 
-### 3 · 用代码画的插图
+### 3 · 裁成画框大小的照片
 
 <Excerpt region="art" />
 
-盐田、沙丘和石堆是一段SVG字符串，由同一个调色板和一个带种子的随机数生成器画出，所以每次运行画出的风景都一样，只有代码变了截图才会变。它按`PAGE.width` × `BAND`毫米的画框绘制，资源也按每毫米10 px声明同样的画框，所以图正好填满色带，色带加高时画出的图也更高。章首页通过一个按id引用该资源的图像元素显示它。
+盐田、沙丘和石堆是一张用扩散模型生成的照片，取的是黄昏时分，这样浅色的标题在深色天空上清晰可读。这张JPEG按色带的画框裁成`PAGE.width` × `BAND`毫米，资源声明它的像素为1440 × 1120，所以排满宽度时照片正好填满色带。色带加深时，需要一张按新画框裁好的照片。章首页通过一个按id引用该资源的图像元素显示它。
 
 ### 4 · frontmatter写出章首页
 
 <Excerpt region="opener" />
 
-一级标题横跨两栏，它的章首页是一个元素槽：一个延伸到出血的靛蓝色方框、那幅画，以及上下串联的四段文字。标题变长时会把导语和署名往下推，不会与它们重叠；但超过两行，署名就会落到浅色的盐田上。`{titleText}`是标题文字；`{subtitle}`、`{author}`和`{publishDate}`是frontmatter字段。标题里的`\\`在你指定的位置给标题换行（[标题中的换行](/zh/docs/document-format#标题中的换行)）。`minHeight`从上页边距起算，所以预留的高度止于色带下方5 mm。
+一级标题横跨两栏，它的章首页是一个元素槽：延伸到出血的照片，以及上下串联的四段文字。标题变长时会把导语和署名往下推，不会与它们重叠；但超过两行，署名就会落到浅色的盐田上。`{titleText}`是标题文字；`{subtitle}`、`{author}`和`{publishDate}`是frontmatter字段。标题里的`\\`在你指定的位置给标题换行（[标题中的换行](/zh/docs/document-format#标题中的换行)）。`minHeight`从上页边距起算，所以预留的高度止于色带下方5 mm。
 
 ### 5 · 用自己的书眉替换默认的蓝色书眉
 
@@ -62,11 +62,11 @@ Postext用浏览器已经加载的字体测量文字，并缓存宽度，所以�
 
 ### 给整页换色
 
-换掉强调色，下一次运行就会用新颜色画色带、页码、小标题和文末符号，因为`config()`每次运行时`col()`都会复制id旁的新十六进制值，风景函数每次绘制时也会读取`palette`。
+换掉强调色，下一次运行就会用新颜色画页码、小标题和文末符号，因为`config()`每次运行时`col()`都会复制id旁的新十六进制值。照片保留它自己的颜色。
 
 ```diff
--  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
-+  band: '#3f5b3a', // the one accent (a pine green): the band, the folios, the subheads
+-  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
++  band: '#3f5b3a', // the one accent (a pine green): the folios, the subheads, the end mark
 ```
 
 ### 把一页画到你自己的Canvas上

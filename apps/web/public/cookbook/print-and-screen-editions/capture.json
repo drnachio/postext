@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "print-and-screen-editions",
-  "sourceHash": "786badc12e6b6c15ef9e7ee1a7a86c4865299ed88c3e8e485d77219527c5e190",
+  "sourceHash": "1125cc673d6716df4b06d0b4d1b44be870401a0429c4c3a5c6755ffd6a5553a6",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:05:56.753Z",
+  "capturedAt": "2026-10-01T06:47:36.754Z",
   "variants": {
     "en": {
-      "hash8": "fc599160",
-      "vdtHash": "dee7c110f15b494ce679c74980fe457677ace0b8",
+      "hash8": "fbb4255f",
+      "vdtHash": "cc87c7261b2e48619ba709c49b9fb9a15ec7ee96",
       "timings": {
-        "importMs": 399,
-        "fontsMs": 1293,
-        "buildMs": 61,
-        "totalMs": 2419,
+        "importMs": 972,
+        "fontsMs": 892,
+        "buildMs": 251,
+        "totalMs": 2900,
         "builds": 3
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Reddit Sans"
         ],
         "pages": 4,
-        "ownLines": 250
+        "ownLines": 253
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1320,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 110152,
+          "bytes": 110144,
           "alt": "Opening page 2: Rain. Figure 1. The rain gauge in section: the funnel feeds a tube with a tenth of its area."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1320,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 84824,
+          "bytes": 124766,
           "alt": "Opening page 3: Fog. Figure 2. Radiation fog at dawn: cold air drains off the hills overnight and fills the valley."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1320,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 120220,
+          "bytes": 120972,
           "alt": "Opening page 4: Wind. Figure 3. Where a year of morning winds came from at the garden station: west and south-west."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 29225
+        "bytes": 186427
       },
       "detected": {
         "apis": [
@@ -262,342 +262,8 @@
           ":ref"
         ],
         "resources": {
-          "svg": 4,
-          "bitmap": 0,
-          "table": 0
-        },
-        "fonts": [
-          {
-            "family": "Gloock",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Newsreader",
-            "weight": 400,
-            "style": "italic"
-          },
-          {
-            "family": "Newsreader",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Newsreader",
-            "weight": 700,
-            "style": "normal"
-          },
-          {
-            "family": "Reddit Sans",
-            "weight": 400,
-            "style": "italic"
-          },
-          {
-            "family": "Reddit Sans",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Reddit Sans",
-            "weight": 600,
-            "style": "normal"
-          },
-          {
-            "family": "Reddit Sans",
-            "weight": 700,
-            "style": "normal"
-          }
-        ],
-        "features": [
-          "citations",
-          "column-balancing",
-          "heading-attributes",
-          "html-viewer",
-          "localised-labels",
-          "opener-band",
-          "opener-design",
-          "page-background",
-          "page-role-filters",
-          "paragraph-styles",
-          "part-dividers",
-          "resource-types",
-          "resources",
-          "screen-overrides"
-        ],
-        "suggestedLevel": 3
-      },
-      "diagnostics": {
-        "converged": true,
-        "iterationCount": 3,
-        "looseLines": {
-          "count": 0,
-          "share": 0,
-          "worst": 1.84
-        },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
-      }
-    },
-    "es": {
-      "hash8": "3cd82cd0",
-      "vdtHash": "69ce7a66aef8463e9907c22a2b121daad07c5a35",
-      "timings": {
-        "importMs": 129,
-        "fontsMs": 36,
-        "buildMs": 176,
-        "totalMs": 1125,
-        "builds": 3
-      },
-      "specimen": {
-        "trimMm": [
-          225,
-          297
-        ],
-        "dpi": 150,
-        "layoutType": "double",
-        "gutterMm": 7,
-        "mirror": true,
-        "body": {
-          "family": "Newsreader",
-          "sizePt": 10,
-          "leadingPt": 14
-        },
-        "families": [
-          "Gloock",
-          "Newsreader",
-          "Reddit Sans"
-        ],
-        "pages": 4,
-        "ownLines": 250
-      },
-      "pages": [
-        {
-          "n": 1,
-          "label": "1",
-          "role": "part",
-          "w": 1000,
-          "h": 1320,
-          "file": "p01.webp",
-          "strip": "p01.s.webp",
-          "bytes": 36800,
-          "alt": "Portadilla de parte 1: APUNTES DEL TIEMPO I Otoño."
-        },
-        {
-          "n": 2,
-          "label": "2",
-          "role": "opener",
-          "w": 1000,
-          "h": 1320,
-          "file": "p02.webp",
-          "strip": "p02.s.webp",
-          "bytes": 114430,
-          "alt": "Página de apertura 2: Lluvia. Figura 1. El pluviómetro en sección: el embudo vierte en un tubo con la décima parte de su área."
-        },
-        {
-          "n": 3,
-          "label": "3",
-          "role": "opener",
-          "w": 1000,
-          "h": 1320,
-          "file": "p03.webp",
-          "strip": "p03.s.webp",
-          "bytes": 91718,
-          "alt": "Página de apertura 3: Niebla. Figura 2. Niebla de irradiación al amanecer: el aire frío baja de las lomas y llena el valle."
-        },
-        {
-          "n": 4,
-          "label": "4",
-          "role": "opener",
-          "w": 1000,
-          "h": 1320,
-          "file": "p04.webp",
-          "strip": "p04.s.webp",
-          "bytes": 121170,
-          "alt": "Página de apertura 4: Viento. Figura 3. De dónde vino el viento de un año de mañanas en el jardín: del oeste y del suroeste."
-        }
-      ],
-      "spreads": [
-        [
-          null,
-          0
-        ],
-        [
-          1,
-          2
-        ],
-        [
-          3,
-          null
-        ]
-      ],
-      "card": {
-        "file": "card.webp",
-        "file480": "card.480.webp",
-        "w": 960,
-        "h": 720,
-        "mode": "screenshot"
-      },
-      "og": {
-        "file": "og.jpg",
-        "w": 580,
-        "h": 622
-      },
-      "sandbox": {
-        "file": "print-and-screen-editions.postext",
-        "bytes": 29914
-      },
-      "detected": {
-        "apis": [
-          "applyHtmlViewerOverrides",
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
-          "registerResourceImage",
-          "renderPageToCanvas",
-          "renderToHtml"
-        ],
-        "configKeys": [
-          "bodyText",
-          "bodyText.boldColor",
-          "bodyText.color",
-          "bodyText.firstLineIndent",
-          "bodyText.fontFamily",
-          "bodyText.fontSize",
-          "bodyText.indentAfterHeading",
-          "bodyText.italicColor",
-          "bodyText.lineHeight",
-          "bodyText.referenceColor",
-          "bodyText.textAlign",
-          "captionStyle",
-          "captionStyle.color",
-          "captionStyle.fontFamily",
-          "captionStyle.fontSize",
-          "captionStyle.gap",
-          "captionStyle.labelColor",
-          "colorPalette",
-          "colorPalette[].id",
-          "colorPalette[].name",
-          "colorPalette[].value",
-          "footer",
-          "footer.elements",
-          "footer.elements[].align",
-          "footer.elements[].color",
-          "footer.elements[].content",
-          "footer.elements[].fontFamily",
-          "footer.elements[].fontSize",
-          "footer.elements[].fontWeight",
-          "footer.elements[].id",
-          "footer.elements[].kind",
-          "footer.elements[].letterSpacing",
-          "footer.elements[].overflow",
-          "footer.elements[].pages",
-          "footer.elements[].placement",
-          "footer.elements[].textTransform",
-          "header",
-          "header.elements",
-          "headings",
-          "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
-          "headings.color",
-          "headings.fontFamily",
-          "headings.fontWeight",
-          "headings.levels",
-          "headings.levels[].advancedDesign",
-          "headings.levels[].breakBefore",
-          "headings.levels[].level",
-          "headings.levels[].marginBottom",
-          "headings.levels[].marginTop",
-          "headings.levels[].span",
-          "htmlViewer",
-          "htmlViewer.overrides",
-          "htmlViewer.overrides.bodyText",
-          "htmlViewer.overrides.captionStyle",
-          "htmlViewer.overrides.colorPalette",
-          "htmlViewer.overrides.footer",
-          "htmlViewer.overrides.headings",
-          "htmlViewer.overrides.layout",
-          "htmlViewer.overrides.page",
-          "htmlViewer.overrides.paragraphStyles",
-          "htmlViewer.overrides.parts",
-          "layout",
-          "layout.gutterWidth",
-          "layout.layoutType",
-          "locale",
-          "page",
-          "page.backgroundColor",
-          "page.dpi",
-          "page.height",
-          "page.margins",
-          "page.margins.bottom",
-          "page.margins.left",
-          "page.margins.mirror",
-          "page.margins.right",
-          "page.margins.top",
-          "page.width",
-          "paragraphStyles",
-          "paragraphStyles[].color",
-          "paragraphStyles[].firstLineIndent",
-          "paragraphStyles[].fontFamily",
-          "paragraphStyles[].fontSize",
-          "paragraphStyles[].id",
-          "paragraphStyles[].lineHeight",
-          "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign",
-          "parts",
-          "parts.bodyStyle",
-          "parts.bodyStyle.color",
-          "parts.bodyStyle.fontSize",
-          "parts.bodyStyle.lineHeight",
-          "parts.bodyStyle.numberColor",
-          "parts.design",
-          "parts.design.elements",
-          "parts.margins",
-          "parts.margins.left",
-          "parts.margins.right",
-          "parts.margins.top",
-          "resourceTypes",
-          "resourceTypes[].captionPrefix",
-          "resourceTypes[].counterFormat",
-          "resourceTypes[].id",
-          "resourceTypes[].name",
-          "resourceTypes[].namePlural",
-          "resourceTypes[].numberingTemplate",
-          "resourceTypes[].resetOn",
-          "resourceTypes[].shortLabel"
-        ],
-        "configSections": [
-          "bodyText",
-          "captionStyle",
-          "colorPalette",
-          "footer",
-          "header",
-          "headings",
-          "htmlViewer",
-          "layout",
-          "locale",
-          "page",
-          "paragraphStyles",
-          "parts",
-          "resourceTypes"
-        ],
-        "configLeaves": 336,
-        "designElements": 14,
-        "directives": [
-          ":::part",
-          ":::paragraphs"
-        ],
-        "inline": [
-          "{attrs}",
-          ":ref"
-        ],
-        "resources": {
-          "svg": 4,
-          "bitmap": 0,
+          "svg": 3,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -666,7 +332,341 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 2
+          "worst": 1.84
+        },
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "1d757813",
+      "vdtHash": "b21de88e54730916b7395c401324be276c556e68",
+      "timings": {
+        "importMs": 273,
+        "fontsMs": 70,
+        "buildMs": 139,
+        "totalMs": 1224,
+        "builds": 3
+      },
+      "specimen": {
+        "trimMm": [
+          225,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Newsreader",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Gloock",
+          "Newsreader",
+          "Reddit Sans"
+        ],
+        "pages": 4,
+        "ownLines": 253
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "part",
+          "w": 1000,
+          "h": 1320,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 36800,
+          "alt": "Portadilla de parte 1: APUNTES DEL TIEMPO I Otoño."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 114394,
+          "alt": "Página de apertura 2: Lluvia. Figura 1. El pluviómetro en sección: el embudo vierte en un tubo con la décima parte de su área."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 130342,
+          "alt": "Página de apertura 3: Niebla. Figura 2. Niebla de irradiación al amanecer: el aire frío baja de las lomas y llena el valle."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 121880,
+          "alt": "Página de apertura 4: Viento. Figura 3. De dónde vino el viento de un año de mañanas en el jardín: del oeste y del suroeste."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "print-and-screen-editions.postext",
+        "bytes": 187107
+      },
+      "detected": {
+        "apis": [
+          "applyHtmlViewerOverrides",
+          "buildDocument",
+          "clearMeasurementCache",
+          "defaultResourceTypes",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToHtml"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelColor",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.stretchAfterFloats",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "htmlViewer",
+          "htmlViewer.overrides",
+          "htmlViewer.overrides.bodyText",
+          "htmlViewer.overrides.captionStyle",
+          "htmlViewer.overrides.colorPalette",
+          "htmlViewer.overrides.footer",
+          "htmlViewer.overrides.headings",
+          "htmlViewer.overrides.layout",
+          "htmlViewer.overrides.page",
+          "htmlViewer.overrides.paragraphStyles",
+          "htmlViewer.overrides.parts",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.bodyStyle",
+          "parts.bodyStyle.color",
+          "parts.bodyStyle.fontSize",
+          "parts.bodyStyle.lineHeight",
+          "parts.bodyStyle.numberColor",
+          "parts.design",
+          "parts.design.elements",
+          "parts.margins",
+          "parts.margins.left",
+          "parts.margins.right",
+          "parts.margins.top",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "htmlViewer",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "parts",
+          "resourceTypes"
+        ],
+        "configLeaves": 336,
+        "designElements": 14,
+        "directives": [
+          ":::part",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 3,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Gloock",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Reddit Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Reddit Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citations",
+          "column-balancing",
+          "heading-attributes",
+          "html-viewer",
+          "localised-labels",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-dividers",
+          "resource-types",
+          "resources",
+          "screen-overrides"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.83
         },
         "findings": [
           {

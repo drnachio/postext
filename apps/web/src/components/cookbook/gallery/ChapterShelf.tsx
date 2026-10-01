@@ -1,35 +1,27 @@
 import { getTranslations } from "next-intl/server";
 import { RecipeCard, type PlateLabels } from "@/components/cookbook/RecipeCard";
 import { PART_CLASSES } from "@/components/brand/partColors";
-import type { CatalogRecipe, Locale } from "@/lib/cookbook/types";
+import type { CatalogRecipe } from "@/lib/cookbook/types";
 import { cn } from "@/lib/utils";
-import { chapterHref } from "./links";
 import type { GalleryChapter, GalleryData } from "./data";
-
-/** Plates per shelf; the rest are one "All N →" away. */
-const SHELF_SIZE = 4;
 
 /** One chapter of the book view: its band in the part colour (kicker,
  *  title, intro, the chapter number huge at the outer edge, an ink foot)
- *  and up to four plates. */
+ *  and every plate of the chapter. */
 function ChapterShelf({
   chapter,
   intro,
   recipes,
   labels,
-  locale,
   eager,
   partHeading,
-  allLabel,
 }: {
   chapter: GalleryChapter;
   intro?: string;
   recipes: CatalogRecipe[];
   labels: PlateLabels;
-  locale: Locale;
   eager: boolean;
   partHeading: string;
-  allLabel: string;
 }) {
   const c = PART_CLASSES[chapter.color];
   const headingId = `cb-ch-${chapter.id}-title`;
@@ -62,8 +54,8 @@ function ChapterShelf({
         <div aria-hidden="true" className="h-1.5 bg-night" />
       </header>
 
-      <ul className="cb-shelf-row mt-7 grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:[&>li:nth-child(4)]:hidden xl:[&>li:nth-child(4)]:block">
-        {recipes.slice(0, SHELF_SIZE).map((recipe) => (
+      <ul className="cb-shelf-row mt-7 grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {recipes.map((recipe) => (
           <li key={recipe.slug} className="cb-reveal">
             <RecipeCard
               recipe={recipe}
@@ -76,20 +68,6 @@ function ChapterShelf({
         ))}
       </ul>
 
-      {recipes.length > SHELF_SIZE - 1 && (
-        <p className={cn("mt-6 text-right", recipes.length === SHELF_SIZE && "hidden lg:block xl:hidden")}>
-          <a
-            href={chapterHref(locale, chapter.id)}
-            data-cb-cat={chapter.id}
-            className="group inline-flex items-center gap-1.5 rounded-sm font-sans text-sm font-semibold text-(--part-ink)"
-          >
-            {allLabel}
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
-              →
-            </span>
-          </a>
-        </p>
-      )}
     </section>
   );
 }
@@ -99,11 +77,9 @@ function ChapterShelf({
 export async function ChapterShelves({
   data,
   labels,
-  locale,
 }: {
   data: GalleryData;
   labels: PlateLabels;
-  locale: Locale;
 }) {
   const t = await getTranslations("Cookbook");
   const { parts, catalog, intros } = data;
@@ -129,10 +105,8 @@ export async function ChapterShelves({
                   intro={intros[chapter.id]}
                   recipes={recipes}
                   labels={labels}
-                  locale={locale}
                   eager={firstEager && pi === 0 && ci === 0}
                   partHeading={partHeading}
-                  allLabel={t("shelfAll", { count: recipes.length, chapter: chapter.title })}
                 />
               );
             })}

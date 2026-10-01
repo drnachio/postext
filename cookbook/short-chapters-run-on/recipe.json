@@ -196,8 +196,17 @@
     "images": [
       {
         "what": {
-          "en": "The plate of the sea off Flamengo under the Sugarloaf, and the casuarina roundel, drawn in code in the book’s palette",
-          "es": "La lámina del mar de Flamengo bajo el Pan de Azúcar y el sello de la casuarina, dibujados en código con la paleta del libro"
+          "en": "The plate of the sea off Flamengo under the Sugarloaf, a painting",
+          "es": "La lámina del mar de Flamengo bajo el Pan de Azúcar, una pintura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plate-1100.jpg"
+      },
+      {
+        "what": {
+          "en": "The casuarina roundel, drawn in code in the book’s palette",
+          "es": "El sello de la casuarina, dibujado en código con la paleta del libro"
         },
         "who": "Ignacio Ferro",
         "license": "MIT"

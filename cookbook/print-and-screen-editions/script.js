@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 011 · One source, print and screen editions ═══════════
 // https://postext.dev/en/cookbook/print-and-screen-editions
-// Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
+// Code: MIT · Text: original (CC BY 4.0) · Drawings: code (CC BY 4.0) · Photo: diffusion models
 // Fonts: Newsreader, Gloock, Reddit Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, renderToHtml, applyHtmlViewerOverrides,
   clearMeasurementCache, registerResourceImage, defaultResourceTypes,
@@ -161,6 +161,9 @@ const config = () => ({
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // #region figures: the same resources for both editions, each pointing at its edition's drawing
+// The valley is a photograph, one JPEG in assets/ that both editions share, at its pixels.
+const photo = { kind: 'bitmap', svg: undefined,
+  bitmap: { fileId: 'valley-1610.jpg', format: 'jpeg', width: 1610, height: 690 } };
 const figure = (id, edition, [width, height], placement, caption, alt) => ({ id,
   typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, placement,
   svg: { fileId: `${id}-${edition}.svg`, width, height },
@@ -174,14 +177,14 @@ const figures = (edition) => [
       + 'tube, half full, beside a graduated measuring stick.',
     es: 'La lluvia cae en un embudo sobre un vaso hundido en el césped; el embudo vierte en un '
       + 'tubo estrecho, medio lleno, junto a una regla graduada.' }),
-  figure('valley', edition, [1400, 600], { position: 'bottom', span: 'page' }, {
+  { ...figure('valley', edition, [1610, 690], { position: 'bottom', span: 'page' }, {
     en: 'Radiation fog at dawn: cold air drains off the hills overnight and fills the valley.',
     es: 'Niebla de irradiación al amanecer: el aire frío baja de las lomas y llena el valle.',
   }, {
-    en: 'A valley between two hills lies under layers of fog, with a church spire and a few '
-      + 'trees showing above it, seen from a fenced bank under a pale sun.',
-    es: 'Un valle entre dos lomas yace bajo capas de niebla; asoman la aguja de una iglesia '
-      + 'y unos árboles, vistos desde un ribazo con una cerca bajo un sol pálido.' }),
+    en: 'A valley between wooded hills lies under layers of fog at sunrise, with a church '
+      + 'tower, trees and a river showing through it, seen from a fenced bank.',
+    es: 'Un valle entre lomas boscosas yace bajo la niebla al amanecer; asoman la torre de '
+      + 'una iglesia, árboles y un río, vistos desde un ribazo con una cerca.' }), ...photo },
   figure('rose', edition, [900, 900], { position: 'top', span: 'column' }, {
     en: 'Where a year of morning winds came from at the garden station: west and south-west.',
     es: 'De dónde vino el viento de un año de mañanas en el jardín: del oeste y del suroeste.',
@@ -194,7 +197,7 @@ const figures = (edition) => [
 ];
 // #endregion
 
-// #region art: a rain gauge in section, a fogged valley, a wind rose, the part page's rain
+// #region art: a rain gauge in section, a wind rose, the part page's rain
 function mulberry(seed) { // a seeded PRNG: the same drawing on every run
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -245,34 +248,6 @@ function gauge(p) { // 300 × 420: rain, the funnel, the can sunk in the lawn, t
     + shape('path', { d: ticks, stroke: p.ink, strokeWidth: 1.2 }));
 }
 
-function valley(p, mist) { // 700 × 300: dawn over a valley full of fog, seen from a bank
-  const random = mulberry(3);
-  const skyline = (y0, amp, step) => { // a gentle ridge (or fog top) from edge to edge
-    const y = () => f1(y0 + (random() - 0.5) * amp);
-    let d = `M0 300V${y0}`;
-    for (let x = step; x <= 700; x += step) d += `Q${x - step / 2} ${y()} ${x} ${y()}`;
-    return `${d}V300Z`;
-  };
-  const slopes = 'M0 300V118C80 114 160 150 240 208C280 236 300 262 318 300Z'
-    + 'M700 300V126C630 122 550 158 480 210C446 236 424 262 408 300Z';
-  const crowns = [[292, 176, 11], [311, 172, 9], [326, 178, 8], [424, 174, 10], [441, 178, 8]]
-    .map(([cx, cy, r]) => shape('circle', { cx, cy, r, fill: p.slate }));
-  const fog = [[168, 0.3], [182, 0.38], [198, 0.45], [214, 0.5]].map(([y, a]) => // stacked
-    shape('path', { d: skyline(y, 7, 70), fill: mist, fillOpacity: a }));
-  const posts = [96, 150, 204, 258, 312].map((x, i) => `M${x} ${254 - i * 1.5}v-22`).join('');
-  return svg(700, 300, shape('rect', { width: 700, height: 300, fill: p.fog }) // the sky
-    + shape('circle', { cx: 566, cy: 66, r: 24, fill: p.rule })
-    + shape('path', { d: skyline(128, 26, 100), fill: p.rule })
-    + shape('path', { d: skyline(156, 22, 70), fill: p.muted, fillOpacity: 0.55 })
-    + shape('rect', { y: 214, width: 700, height: 86, fill: p.muted }) // the fogged valley floor
-    + shape('path', { d: slopes, fill: p.slate }) + crowns.join('')
-    + shape('path', { d: 'M358 252V162h14V252zM358 162l7 -24l7 24z', fill: p.slate }) // tower
-    + fog.join('')
-    + shape('path', { d: 'M0 300V250C130 238 250 242 380 258C480 270 590 262 700 246V300Z',
-      fill: p.slate }) // the bank we watch from, which gives the drawing its foot
-    + shape('path', { d: `${posts}M96 239L312 233`, stroke: p.slate, strokeWidth: 2.4 }));
-}
-
 function rose(p) { // 300 × 300: where a year of morning winds came from, in sixteen petals
   const share = [6, 4, 3, 2, 2, 3, 4, 6, 9, 12, 19, 22, 24, 14, 9, 7]; // N first, clockwise
   const petal = (s, i) => {
@@ -289,16 +264,16 @@ function rose(p) { // 300 × 300: where a year of morning winds came from, in si
     + shape('circle', { cx: 150, cy: 150, r: 5, fill: p.ink }));
 }
 
-async function drawFigures() { // every figure in both palettes, and the part page's rain
+async function drawFigures() { // the drawings in both palettes, the part page's rain, the photo
   const words = [[20, 26, 80, 36], [20, 100, 112, 128], [20, 206, 140, 238]]; // mm: the type
   await loadSvg('rain-field.svg', svg(225, 297, streaks(mulberry(19), 320, { x: [-10, 245],
     y: [-14, 292], len: [6, 18], width: [0.3, 0.8], color: day.paper, alpha: [0.12, 0.45],
     clear: words })));
-  for (const [edition, p, mist] of [['day', day, day.paper], ['night', night, night.muted]]) {
+  for (const [edition, p] of [['day', day], ['night', night]]) {
     await loadSvg(`gauge-${edition}.svg`, gauge(p));
-    await loadSvg(`valley-${edition}.svg`, valley(p, mist)); // night fog: pale, not black
     await loadSvg(`rose-${edition}.svg`, rose(p));
   }
+  await loadImage('valley-1610.jpg', asset('valley-1610.jpg'));
 }
 // #endregion
 

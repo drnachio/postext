@@ -63,5 +63,5 @@ title: "Salt & Olive Oil"
 **Make it ahead.** It keeps two days in a covered jug in the fridge; stir it before you pour.
 
 :::paragraphs{style="colophon"}
-*Salt & Olive Oil* · Set in Young Serif, Figtree and Caveat (SIL OFL) · Recipes and drawings: original, CC BY 4.0
+*Salt & Olive Oil* · Set in Young Serif, Figtree and Caveat (SIL OFL) · Recipes: original, CC BY 4.0 · Photos: generated
 :::

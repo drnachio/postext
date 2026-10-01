@@ -304,6 +304,17 @@ export interface SandboxLabels {
   footnotesNumberingTooltip: string;
   footnotesNumberingChapter: string;
   footnotesNumberingDocument: string;
+  footnotesNumberingPage: string;
+  footnotesNumberingColumn: string;
+  footnotesNumberFormat: string;
+  footnotesNumberFormatTooltip: string;
+  footnotesMarkerPosition: string;
+  footnotesMarkerPositionTooltip: string;
+  footnotesMarkerPositionAuto: string;
+  footnotesMarkerPositionSuperscript: string;
+  footnotesMarkerPositionInline: string;
+  footnotesMarkerSize: string;
+  footnotesMarkerSizeTooltip: string;
   footnotesChapterEndAlign: string;
   footnotesChapterEndAlignTooltip: string;
   footnotesChapterEndAlignFoot: string;

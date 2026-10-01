@@ -193,11 +193,12 @@
     "images": [
       {
         "what": {
-          "en": "The sprig of bay laurel on the first page, drawn in code in the page’s greens",
-          "es": "La rama de laurel de la primera página, dibujada en código con los verdes de la página"
+          "en": "The sprig of bay laurel on the first page, a watercolour",
+          "es": "La rama de laurel de la primera página, una acuarela"
         },
-        "who": "Ignacio Ferro",
-        "license": "CC-BY-4.0"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "laurel-1040.jpg"
       }
     ],
     "fonts": [

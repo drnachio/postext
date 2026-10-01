@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 022 · Worksheet with answer boxes and a word bank ══════
 // https://postext.dev/en/cookbook/worksheet-answer-boxes
-// Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
+// Code: MIT · Text: original (CC BY 4.0) · Plant: diffusion models · Icons: drawn in code
 // Fonts: Andika, Baloo 2, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
@@ -93,7 +93,8 @@ const review = { id: 'review', numbered: false, advancedDesign: { ...activity, s
 // #endregion
 
 const [BAND, AIR, DOT] = [76, 5, 6]; // mm: the opener's band, air under the disc, dot size
-const DISC = { x: 108, y: 5, d: 78 }; // mm: the drawing's disc on the page
+const DISC = { x: 108, y: 5, d: 78 }; // mm: the plant's disc on the page
+const EDGE = BAND - DISC.y; // mm down the disc: the band's edge, where its two pictures meet
 const at = (x, y, size, edge = 'top-left') => ({ anchor: { to: 'page', edge },
   offset: { x: mm(x), y: mm(y) }, size });
 const words = (id, content, family, size, weight, placement, extra) => ({ kind: 'text', id,
@@ -111,8 +112,9 @@ const opener = () => ({ enabled: true, minHeight: mm(DISC.y + DISC.d + AIR - TOP
   slot: { elements: [
     { kind: 'box', id: 'band', style: { backgroundColor: col('leaf') },
       placement: at(0, 0, { height: mm(BAND) }) },
-    { kind: 'image', id: 'plant', resourceId: 'plant',
-      placement: at(DISC.x, DISC.y, { width: mm(DISC.d), height: mm(DISC.d) }) },
+    ...[['plant', 0, EDGE], ['plant-foot', EDGE, DISC.d - EDGE], ['leaders', 0, DISC.d]]
+      .map(([id, y, h]) => ({ kind: 'image', id, resourceId: id, // the leaders last, on top
+        placement: at(DISC.x, DISC.y + y, { width: mm(DISC.d), height: mm(h) }) })),
     ...LABELS.map(dot),
     words('unit', '{attr.unit}', LABEL, 9, 600, at(SIDE, TOP - 4), { ...tag, color: col('ink'),
       box: { backgroundColor: col('sun'), borderRadius: mm(3),
@@ -181,9 +183,12 @@ const FOODS = t({ en: 'carrot|asparagus|lettuce|broccoli|orange|kidney beans',
 const PARTS = t({ en: 'leaf|seeds|root|fruit|stem|flower',
   es: 'hoja|semillas|raíz|fruto|tallo|flor' }).split('|');
 
-// #region art: the pea plant, the six foods and the star, in the palette's colours
-// No words in them: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts);
-// the plant's numbers are design elements set in Baloo 2 over the drawing (see the band).
+// #region art: the plant's leader lines, the six foods and the star, in the palette's colours
+// The pea plant is a watercolour already set in its disc, in two JPEGs that meet at the band's
+// edge: the top one's corners carry the band's green, the foot's are white. One picture would
+// resample its green-to-white step and print a pale line along the band's edge. No words in
+// the drawings: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts); the
+// plant's numbers are design elements set in Baloo 2 over the picture (see the band).
 // [number, x, y] in the disc's millimetres: each numbered dot, where its leader line starts.
 const LABELS = [[1, 58, 8], [2, 68, 33], [3, 9, 44], [4, 13, 20], [5, 62, 52], [6, 18, 66]];
 const n = (v) => +v.toFixed(2);
@@ -194,63 +199,18 @@ const circle = (x, y, r, fill, extra = '') => `<circle cx="${n(x)}" cy="${n(y)}"
 const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}"${extra}/>`;
 const stroke = (d, color, width) => path(d, 'none', ` stroke="${color}" stroke-width="${width}" `
   + 'stroke-linecap="round" stroke-linejoin="round"');
-const leafShape = (x, y, len, wid, turn, fill, vein) => `<g transform="translate(${n(x)} `
-  + `${n(y)}) rotate(${n(turn)})">${path(`M0 0C${n(len * 0.3)} ${n(-wid)} ${n(len * 0.8)} `
-  + `${n(-wid)} ${n(len)} 0C${n(len * 0.8)} ${n(wid)} ${n(len * 0.3)} ${n(wid)} 0 0Z`, fill)}`
-  + `${vein ? stroke(`M${n(len * 0.12)} 0L${n(len * 0.8)} 0`, vein, 0.35) : ''}</g>`;
-function plant() { // a pea plant in a white disc, its roots in a slice of soil
-  const [c, r, ground] = [39, 39, 58];
-  const dx = Math.sqrt(r * r - (ground - c) ** 2);
-  let out = circle(c, c, r, palette.paper);
-  out += path(`M${n(c - dx)} ${ground}Q20 ${ground - 2.2} 39 ${ground}T${n(c + dx)} ${ground}`
-    + `A${r} ${r} 0 0 1 ${n(c - dx)} ${ground}Z`, palette.soil);
-  for (const [x, y, rr] of [[22, 70, 0.9], [55, 66, 0.7], [47, 73, 1.1], [26, 62, 0.6]]) {
-    out += circle(x, y, rr, palette.paper, ' fill-opacity=".25"');
-  }
-  out += stroke('M39 58C38 63 36 66 33 70M39 58C40 64 43 67 46 71M38 62C35 63 31 63 27 65'
-    + 'M40 63C44 63 48 62 52 63M36 66C35 69 34 72 34 75M44 68C45 71 46 73 45 76',
-  palette.paper, 0.7); // roots
-  out += stroke('M39 58C37 50 42 44 39 36S37 22 41 11', palette.leaf, 1.5); // the stem
-  for (const [y, s] of [[49, 1], [39, -1], [28, 1], [19, -1]]) { // leaflets in pairs
-    out += leafShape(39, y, 12, 3.6, s > 0 ? -28 : -152, palette.leaf, palette.tint);
-    out += leafShape(39, y + 2, 10, 3.2, s > 0 ? -160 : -20, palette.leaf, palette.tint);
-  }
-  out += stroke('M41 12c2.5-1 4.6.4 4.2 2.6s-3 2.2-3.4.2 1.8-1.8 2.4-.4M39 27c-2.6-1.4-5.4-.6-5.2 '
-    + '1.6s2.8 2.4 3.4.6-1.4-2-2.2-.8M40 38c2.8-.8 5.2.6 4.6 2.6', palette.leaf, 0.45); // tendrils
-  // A closed pod (the fruit) on the right, its peas showing through; an open one (the seeds).
-  const calyx = (x, y, turn) => `<g transform="translate(${x} ${y}) rotate(${turn})">`
-    + path('M0 0L1.6-1.2 1.2.4 2.4 1.2.6 1.4Z', palette.leaf) + '</g>';
-  out += stroke('M40 31.5Q42 31 43.4 32', palette.leaf, 0.5)
-    + path('M43 31.6C48 30.8 54 32.4 57.6 37.8C53 38.6 47.4 36.8 43 31.6Z', palette.rule,
-      ` stroke="${palette.leaf}" stroke-width=".5"`)
-    + [[46.4, 33.4], [49.6, 34.8], [52.8, 36.1]].map(([x, y]) => circle(x, y, 1.15,
-      palette.leaf, ' fill-opacity=".35"')).join('') + calyx(42.6, 31.8, -10);
-  out += stroke('M38 36Q37 36 36.2 36.4', palette.leaf, 0.5)
-    + path('M36 36C30 37 23 40 20 45C25 47 33 43 36 36Z', palette.tint,
-      ` stroke="${palette.leaf}" stroke-width=".5"`)
-    + stroke('M35.4 36.6C31 39.6 26 42.6 20.6 44.8', palette.leaf, 0.3) + calyx(36.4, 36.4, 160);
-  for (const [x, y] of [[32.6, 39.4], [29.8, 41], [27, 42.5], [24.2, 43.9]]) {
-    out += circle(x, y, 1.25, palette.leaf);
-  }
-  // Pea flowers, seen from the front: white, as a garden pea's are, outlined in green.
-  for (const [x, y, turn] of [[42, 9, -18], [48, 20.5, 24]]) {
-    const edge = ` stroke="${palette.leaf}" stroke-width=".4"`;
-    out += `<g transform="translate(${x} ${y}) rotate(${turn})">`
-      + stroke('M0 2.6L0 4.6', palette.leaf, 0.5) + path('M-1.1 1.1L0 3 1.1 1.1Z', palette.leaf)
-      + path('M0 0C-4.2-.6-5.2-6.4-1.6-7.2C-.8-7.4-.2-6.8 0-6.2C.2-6.8.8-7.4 1.6-7.2'
-        + 'C5.2-6.4 4.2-.6 0 0Z', palette.paper, edge) // the standard petal
-      + path('M-2.6-1.4C-3.4 1.2-1 2.6 0 1.4C1 2.6 3.4 1.2 2.6-1.4C1.4-.4-1.4-.4-2.6-1.4Z',
-        palette.tint, edge) + stroke('M0-1.2L0-5', palette.rule, 0.3) + '</g>'; // the wings
-  }
-  // Where each leader ends: 2 on the pod's wall past its last pea (the fruit), 3 on a pea in
-  // the open pod (the seeds), 4 in the middle of a leaf's blade, well clear of the stem.
-  const targets = { 1: [43, 5.6], 2: [55.5, 36.6], 3: [27, 42.5], 4: [33.2, 15.9],
-    5: [39.4, 47], 6: [36.7, 64.4] };
-  for (const [num, x, y] of LABELS) { // leader lines from each dot to its part
-    const [tx, ty] = targets[num];
-    out += stroke(`M${x} ${y}L${tx} ${ty}`, palette.ink, 0.35) + circle(tx, ty, 0.7, palette.ink);
-  }
-  return svgDoc(78, 78, out);
+const leafShape = (x, y, len, wid, turn, fill) => `<g transform="translate(${n(x)} ${n(y)}) `
+  + `rotate(${n(turn)})">${path(`M0 0C${n(len * 0.3)} ${n(-wid)} ${n(len * 0.8)} ${n(-wid)} `
+  + `${n(len)} 0C${n(len * 0.8)} ${n(wid)} ${n(len * 0.3)} ${n(wid)} 0 0Z`, fill)}</g>`;
+function leaders() { // from each dot to its part, in ink on a white halo that clears the soil
+  // 1 a flower, 2 the closed pod's wall (the fruit), 3 a pea in the open pod (the seeds),
+  // 4 a leaf's blade, 5 the stem between two leaves, 6 the taproot.
+  const targets = { 1: [45.5, 11.5], 2: [50, 34], 3: [28.4, 33.2], 4: [34.6, 16.4],
+    5: [38.8, 52], 6: [38.4, 64] };
+  const lines = LABELS.map(([num, x, y]) => `M${x} ${y}L${targets[num].join(' ')}`).join('');
+  return svgDoc(78, 78, stroke(lines, palette.paper, 0.9) + stroke(lines, palette.ink, 0.35)
+    + Object.values(targets).map(([x, y]) => circle(x, y, 0.75, palette.ink,
+      ` stroke="${palette.paper}" stroke-width=".3"`)).join(''));
 }
 function star() { // the self-check's badge: a white star on a sun disc
   const pts = Array.from({ length: 10 }, (_, i) => {
@@ -288,21 +248,25 @@ const food = {
     + 'C4 3 -4 3 -4 0Z', palette.soil)}</g>`).join(''),
 };
 const ICONS = Object.keys(food); // carrot … beans: the matching table's rows, in order
-const drawings = { plant, star,
+const drawings = { leaders, star,
   ...Object.fromEntries(Object.entries(food).map(([id, draw]) => [id, () => svgDoc(24, 20,
     draw())])) };
 const ALT = { ...Object.fromEntries(ICONS.map((id, i) => [id, FOODS[i]])),
   plant: t({ en: 'A pea plant with its flower, pod, peas, leaf, stem and roots numbered 1 to 6',
     es: 'Una planta de guisante con la flor, la vaina, los guisantes, la hoja, el tallo y las '
       + 'raíces numerados del 1 al 6' }),
-  star: t({ en: 'A white star on a yellow disc',
+  leaders: '', star: t({ en: 'A white star on a yellow disc',
     es: 'Una estrella blanca en un disco amarillo' }) };
-// Each drawing is a resource that the opener, a table cell or the review heading names by
-// id. None is cited, so none is placed as a figure. Sizes in px, 10 to the millimetre.
+// Each picture is a resource that the opener, a table cell or the review heading names by
+// id. None is cited, so none is placed as a figure. Drawings in px, 10 to the millimetre.
 const pictures = Object.keys(drawings).map((id) => ({ id, typeId: 'sheet', kind: 'svg',
   altText: ALT[id], createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`,
     width: 240, height: 200,
-    ...{ plant: { width: 780, height: 780 }, star: { width: 240, height: 240 } }[id] } }));
+    ...{ leaders: { width: 780, height: 780 }, star: { width: 240, height: 240 } }[id] } }));
+// The plant's two slices, 14 px to the millimetre (356 dpi): 78 × 71 mm and 78 × 7 mm.
+pictures.push(...[['plant', 994], ['plant-foot', 98]].map(([id, h]) => ({ id, typeId: 'sheet',
+  kind: 'bitmap', altText: id === 'plant' ? ALT.plant : '', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: `${id}-1092.jpg`, format: 'jpeg', width: 1092, height: h } })));
 // #endregion
 
 const resources = [...pictures, foods()];
@@ -313,7 +277,8 @@ const FONTS = { Andika: ['400', '700'], 'Baloo 2': ['700', '800'], // (gotcha: f
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await Promise.all([loadFonts(FONTS, markdown),
-  ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
+  ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw())),
+  ...['plant-1092.jpg', 'plant-foot-1092.jpg'].map((file) => loadImage(file, asset(file)))]);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'Plants and their parts', es: 'Las plantas y sus partes' }) });
 

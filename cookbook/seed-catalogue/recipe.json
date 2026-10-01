@@ -150,11 +150,93 @@
     "images": [
       {
         "what": {
-          "en": "The cover's sunflower and tomatoes and the nine seed packets, drawn in code in the page's palette",
-          "es": "El girasol y los tomates de la cubierta y los nueve sobres de semillas, dibujados en código con la paleta de la página"
+          "en": "The cover's sunflower and tomato plant, a painting",
+          "es": "El girasol y la tomatera de la cubierta, una pintura"
         },
-        "who": "Ignacio Ferro",
-        "license": "CC-BY-4.0"
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cover-1500.jpg"
+      },
+      {
+        "what": {
+          "en": "The Brandywine seed packet",
+          "es": "El sobre de semillas de Brandywine"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "brandywine-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Cherokee Purple seed packet",
+          "es": "El sobre de semillas de Cherokee Purple"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cherokee-purple-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Gold Medal seed packet",
+          "es": "El sobre de semillas de Gold Medal"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "gold-medal-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Amish Paste seed packet",
+          "es": "El sobre de semillas de Amish Paste"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "amish-paste-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Jimmy Nardello seed packet",
+          "es": "El sobre de semillas de Jimmy Nardello"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "jimmy-nardello-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Kentucky Wonder seed packet",
+          "es": "El sobre de semillas de Kentucky Wonder"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kentucky-wonder-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Dragon Tongue seed packet",
+          "es": "El sobre de semillas de Dragon Tongue"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "dragon-tongue-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Black Beauty seed packet",
+          "es": "El sobre de semillas de Black Beauty"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "black-beauty-360.jpg"
+      },
+      {
+        "what": {
+          "en": "The Waltham Butternut seed packet",
+          "es": "El sobre de semillas de Waltham Butternut"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "waltham-butternut-360.jpg"
       }
     ],
     "fonts": [

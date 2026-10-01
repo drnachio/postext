@@ -83,5 +83,5 @@ Practise the six characters in the squares: first in the air with a finger, then
 :::
 
 :::paragraphs{style="colophon"}
-Set in LXGW WenKai TC, Noto Sans TC and Andika (SIL OFL) · Text: the Three Character Classic (13th century), zh.wikisource · Pinyin, notes and drawings: Postext Cookbook, CC BY 4.0
+Set in LXGW WenKai TC, Noto Sans TC and Andika (SIL OFL) · Text: the Three Character Classic (13th century), zh.wikisource · Pinyin and notes: Postext Cookbook, CC BY 4.0
 :::

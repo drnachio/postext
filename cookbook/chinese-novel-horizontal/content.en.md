@@ -138,5 +138,5 @@ author: "鲁迅"
 :::
 
 :::paragraphs{style="colophon"}
-Lu Xun, 故乡 (My Old Home), 1921: the first half of the story · Text: public domain, from zh.wikisource · Plate: drawn in code.
+Lu Xun, 故乡 (My Old Home), 1921: the first half of the story · Text: public domain, from zh.wikisource · Plate: a painting.
 :::

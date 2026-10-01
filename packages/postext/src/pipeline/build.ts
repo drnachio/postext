@@ -103,6 +103,8 @@ import {
   footnoteParagraphStyle,
   noteContentBlock,
   numberFootnotes,
+  numberFootnotesByPlacement,
+  sameFootnoteNumbers,
   splitFootnoteDefinitions,
   withFootnoteStyle,
 } from './footnotes';
@@ -252,6 +254,9 @@ export interface PassHints {
    *  too short for a side box or side float once the caption had taken its
    *  foot, and the box spilled over the caption. */
   captionUnder?: ReadonlySet<string>;
+  /** `footnotes.numbering: 'page'` / `'column'`: the number each note got
+   *  where the previous build set it (see `numberFootnotesByPlacement`). */
+  footnoteNumbers?: ReadonlyMap<string, string>;
 }
 
 export interface PassResult extends BandPassReport {
@@ -523,14 +528,23 @@ function placeDocumentPass(
   // come back as paragraphs after each chapter's last block.
   const footnoteSplit = splitFootnoteDefinitions(headingMarksFor(parseMarkdownMemo(markdownBody), resolved));
   const footnoteDefs = footnoteSplit.defs;
+  // Numbered by page or column (`numbering: 'page'`), a note takes the
+  // number the previous build gave it where it landed; the first build
+  // numbers by chapter (see `buildDocumentNumbered`).
   const footnoteNumbering = numberFootnotes(
     footnoteSplit.blocks,
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
+    resolved.footnotes.numberFormat,
   );
+  if (hints.footnoteNumbers) {
+    for (const [id, number] of hints.footnoteNumbers) {
+      if (footnoteNumbering.numbers.has(id)) footnoteNumbering.numbers.set(id, number);
+    }
+  }
   const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
   const parsedBlocks = chapterEndNotes
-    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs)
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, resolved.footnotes.markerPosition)
     : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -1879,7 +1893,7 @@ function placeDocumentPass(
     let m = noteMeasures.get(key);
     if (m === undefined) {
       const number = footnoteNumbering.numbers.get(id) ?? '?';
-      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number), 0, width, measureCtx, { styleOverride: noteStyle });
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, resolved.footnotes.markerPosition), 0, width, measureCtx, { styleOverride: noteStyle });
       noteMeasures.set(key, m);
     }
     return m;
@@ -5678,17 +5692,67 @@ function* buildDocumentRounds(
     const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
     if (hasTocDirective(parsed) || hasIndexDirective(parsed)) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
-      let doc = withIndexMarks(yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, 0), content);
+      let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {
         const after = outlineFromDoc(doc, outline);
         if (sameOutline(after, outline)) break;
         outline = after;
-        doc = withIndexMarks(yield* buildDocumentBalanced({ ...content, outline }, config, cache, options, round + 1), content);
+        doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, round + 1), content);
       }
       return doc;
     }
   }
-  return withIndexMarks(yield* buildDocumentBalanced(content, config, cache, options), content);
+  return withIndexMarks(yield* buildDocumentNumbered(content, config, cache, options), content);
+}
+
+/** The number each note's marker prints in `doc` (its first marker). */
+function printedFootnoteNumbers(doc: VDTDocument): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const block of doc.blocks) {
+    if (block.footnoteNote !== undefined) continue;
+    for (const line of block.lines) {
+      for (const seg of line.segments ?? []) {
+        if (seg.footnoteId !== undefined && !out.has(seg.footnoteId)) out.set(seg.footnoteId, seg.text);
+      }
+    }
+  }
+  return out;
+}
+
+/** Builds a document numbering its notes by page (or column) gets at most,
+ *  beyond the first, for the numbers to settle. */
+const MAX_FOOTNOTE_ROUNDS = 3;
+
+/**
+ * {@link buildDocumentBalanced}, with `footnotes.numbering: 'page'` /
+ * `'column'`: a note's number depends on the page the layout sets it on,
+ * so the document is numbered by chapter, laid out, numbered again where
+ * its notes landed, and laid out with those numbers until they no longer
+ * change (as the contents' page labels are). A circled marker is the same
+ * width whatever its number, so the second build reflows nothing and the
+ * numbers hold; a decimal one may move a line (9 → 10), hence the bound.
+ */
+function* buildDocumentNumbered(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+  tocRound = 0,
+): Generator<void, VDTDocument, void> {
+  let doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound);
+  const f = doc.config.footnotes;
+  if (f.placement !== 'column' || (f.numbering !== 'page' && f.numbering !== 'column')) return doc;
+  for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
+    const used = printedFootnoteNumbers(doc);
+    if (used.size === 0) break;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, f.numberFormat).numbers;
+    // A note the layout set nowhere keeps the number it had.
+    const next = new Map(used);
+    for (const [id, number] of placed) next.set(id, number);
+    if (sameFootnoteNumbers(next, used)) break;
+    doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound, next);
+  }
+  return doc;
 }
 
 const now = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -5699,6 +5763,7 @@ function* buildDocumentBalanced(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
   tocRound = 0,
+  footnoteNumbers?: ReadonlyMap<string, string>,
 ): Generator<void, VDTDocument, void> {
   // Each pass reports its own progress, numbered in build order.
   let passIndex = 0;
@@ -5713,7 +5778,7 @@ function* buildDocumentBalanced(
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
     const started = onPass ? now() : 0;
-    const result = buildDocumentPass(content, config, cache, passOptions, { ...hints, captionUnder });
+    const result = buildDocumentPass(content, config, cache, passOptions, { ...hints, captionUnder, ...(footnoteNumbers ? { footnoteNumbers } : {}) });
     for (const id of result.captionUnderProposals) captionUnder.add(id);
     onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
     return result;

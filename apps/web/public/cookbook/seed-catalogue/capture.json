@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "seed-catalogue",
-  "sourceHash": "68064cf8a89fb1c54f65acf9eb5043ccc7a1addcd276adbfdb4ae44f7d065305",
+  "sourceHash": "9523fb0fd6a742009eee56f4af448b53b348ba086b35d276ab7b2ed94ca08d97",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:37:17.397Z",
+  "capturedAt": "2026-10-01T06:50:53.042Z",
   "variants": {
     "en": {
-      "hash8": "621aaaab",
-      "vdtHash": "08f7147b8f63e109acabb88638e8a382364cf278",
+      "hash8": "2912aa53",
+      "vdtHash": "7b51fa4173870c535d343310cf1dc9e53f354c34",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 38,
-        "buildMs": 9,
-        "totalMs": 859,
+        "importMs": 130,
+        "fontsMs": 52,
+        "buildMs": 15,
+        "totalMs": 820,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Gelasio"
         ],
         "pages": 4,
-        "ownLines": 229
+        "ownLines": 231
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1316,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 98108,
+          "bytes": 156752,
           "alt": "Opening page 1: Spring Seeds."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1316,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 72224,
+          "bytes": 80612,
           "alt": "Page 2. Vegetable Seeds."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1316,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 93842,
+          "bytes": 101192,
           "alt": "Page 3: From Our Trial Garden. Vegetable Seeds (continued)."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1316,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 38362,
+          "bytes": 38460,
           "alt": "Opening page 4: Order Sheet."
         }
       ],
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "seed-catalogue.postext",
-        "bytes": 52648
+        "bytes": 713645
       },
       "detected": {
         "apis": [
@@ -304,8 +304,8 @@
           ":chip"
         ],
         "resources": {
-          "svg": 10,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 10,
           "table": 3
         },
         "fonts": [

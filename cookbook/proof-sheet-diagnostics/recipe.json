@@ -159,7 +159,25 @@
       }
     ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The night crossing at the head of page 1",
+          "es": "La travesía nocturna en la cabeza de la página 1"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "crossing-1590.jpg"
+      },
+      {
+        "what": {
+          "en": "The route map, drawn in code in the page's palette",
+          "es": "El plano de la ruta, dibujado con código con la paleta de la página"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
     "fonts": [
       {
         "family": "Charis SIL",

@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 074 · A Chinese novel page on a 28 × 28 grid ════════════
 // https://postext.dev/en/cookbook/chinese-novel-horizontal
-// Code: MIT · Text: Lu Xun, 故乡 (1921), public domain, zh.wikisource · Plate: drawn in code
+// Code: MIT · Text: Lu Xun, 故乡 (1921), public domain, zh.wikisource · Plate: diffusion models
 // Fonts: Noto Serif SC, Noto Sans SC, Ma Shan Zheng (SIL OFL 1.1) · Needs postext ≥ 1.9.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -14,10 +14,7 @@ const RECIPE = 'chinese-novel-horizontal';
 // The night of the story's memory, and ink on a cream paper.
 const palette = {
   ink: '#1f1c19', // text: a warm near-black
-  night: '#1d3150', // the accent: the deep blue sky of the plate, the opener's rule
-  moon: '#dcaa45', // the golden moon, on the plate only
-  melon: '#3c6a3b', // the green melons
-  sand: '#e4d5b0', // the sand by the sea
+  night: '#1d3150', // the accent: the deep blue of the plate's sky, the opener's rule
   rule: '#c9c1b2', // the hairline under the running heads
   muted: '#6a645b', // running heads, folios, the colophon
   paper: '#fbf8f1', // a cream book paper
@@ -111,9 +108,10 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
 // #endregion
 
 // #region plate: the moonlit melon field faces the opener, the quotation set in Kai
+// The plate, a painting: a JPEG in assets/ cut to the 140 × 203 mm trim, declared at its pixels.
 const resources = [{
-  id: 'moon', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'moon.svg', width: TRIM.width, height: TRIM.height }, // the trim's ratio
+  id: 'moon', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'plate-1120.jpg', format: 'jpeg', width: 1120, height: 1624 },
   altText: t({
     en: 'A golden full moon in a deep blue sky over a strip of sea. On the sand below, among '
       + 'rows of striped watermelons, a boy with a silver collar stabs a steel fork at the '
@@ -166,139 +164,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: the boy, the moon and the melon field, drawn in millimetres at the trim size
-function mulberry32(seed) { // a seeded PRNG: the same field on every run
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
-const mix = (hex, other, k) => `#${[1, 3, 5].map((i) => Math.round(
-  parseInt(hex.slice(i, i + 2), 16) * (1 - k) + parseInt(other.slice(i, i + 2), 16) * k)
-  .toString(16).padStart(2, '0')).join('')}`;
-const n2 = (v) => +v.toFixed(2);
-function drawPlate(W, H) {
-  const rnd = mulberry32(1921);
-  const P = palette;
-  const out = [];
-  const rect = (y0, y1, fill) => out.push(`<rect x="0" y="${n2(y0)}" width="${W}" `
-    + `height="${n2(y1 - y0)}" fill="${fill}"/>`);
-  const circle = (cx, cy, r, fill, extra = '') => out.push(`<circle cx="${n2(cx)}" `
-    + `cy="${n2(cy)}" r="${n2(r)}" fill="${fill}"${extra}/>`);
-  const line = (pts, color, w) => out.push(`<path d="M${pts.map(([x, y]) => `${n2(x)} ${n2(y)}`)
-    .join('L')}" fill="none" stroke="${color}" stroke-width="${n2(w)}" `
-    + 'stroke-linecap="round" stroke-linejoin="round"/>');
-  const HORIZON = 112; // mm: the line of the sea
-  const SHORE = 120; // mm: where the sand begins
-  // The sky in four flat steps, darkest at the top; the moon in three rings of light.
-  [[0, 0], [56, 0.06], [84, 0.12], [100, 0.19]].forEach(([y, k]) => rect(y, HORIZON,
-    mix(P.night, '#6f8fb8', k)));
-  const [MX, MY] = [98, 66];
-  [[30, 0.1], [23, 0.15], [17.5, 0.22]].forEach(([r, k]) => circle(MX, MY, r,
-    mix(P.night, '#9fb6d4', k)));
-  circle(MX, MY, 13, P.moon);
-  circle(MX - 3.8, MY - 2.6, 2.4, mix(P.moon, '#ffffff', 0.22));
-  circle(MX + 4.4, MY + 3.6, 1.6, mix(P.moon, P.night, 0.1));
-  // The sea: a dark strip, the moon's path broken on the swell.
-  rect(HORIZON, SHORE, mix(P.night, '#0f2a33', 0.55));
-  for (let i = 0; i < 9; i++) {
-    const w = 1.5 + rnd() * (4 + i * 0.8);
-    out.push(`<rect x="${n2(MX - w / 2 + (rnd() - 0.5) * 5)}" y="${n2(HORIZON + 0.8 + i * 0.8)}" `
-      + `width="${n2(w)}" height="0.35" fill="${mix(P.moon, P.night, 0.1 + i * 0.06)}"/>`);
-  }
-  // The sand, in two tones.
-  rect(SHORE, H, P.sand);
-  out.push(`<path d="M0 ${SHORE + 12}C35 ${SHORE + 6} 80 ${SHORE + 16} ${W} ${SHORE + 8}`
-    + `L${W} ${H}L0 ${H}Z" fill="${mix(P.sand, P.melon, 0.07)}"/>`);
-  // Rows of melons to the sea: each nearer row lower, larger and sparser.
-  const [leaf, stripe] = [mix(P.melon, P.ink, 0.25), mix(P.melon, P.ink, 0.5)];
-  const melon = (x, y, s) => {
-    out.push(`<ellipse cx="${n2(x)}" cy="${n2(y)}" rx="${n2(s)}" ry="${n2(s * 0.66)}" `
-      + `fill="${P.melon}"/>`);
-    for (const k of [-0.62, -0.2, 0.2, 0.62]) { // stripes follow the melon's curve
-      out.push(`<path d="M${n2(x - s * 0.96)} ${n2(y)}Q${n2(x)} ${n2(y + k * s * 1.3)} `
-        + `${n2(x + s * 0.96)} ${n2(y)}" fill="none" stroke="${stripe}" `
-        + `stroke-width="${n2(s * 0.11)}" stroke-linecap="round"/>`);
-    }
-    out.push(`<ellipse cx="${n2(x - s * 0.38)}" cy="${n2(y - s * 0.34)}" rx="${n2(s * 0.3)}" `
-      + `ry="${n2(s * 0.1)}" fill="${mix(P.melon, '#ffffff', 0.35)}"/>`);
-  };
-  const leafAt = (x, y, s, a) => out.push(`<path d="M0 0C${n2(s * 0.3)} ${n2(-s * 0.9)} `
-    + `${n2(s * 1.4)} ${n2(-s * 0.8)} ${n2(s * 1.6)} 0C${n2(s * 1.4)} ${n2(s * 0.7)} `
-    + `${n2(s * 0.3)} ${n2(s * 0.8)} 0 0Z" fill="${leaf}" `
-    + `transform="translate(${n2(x)} ${n2(y)}) rotate(${n2(a)})"/>`);
-  const rows = 8;
-  const rowY = (row) => SHORE + 3 + (H - SHORE + 8) * ((row + 1) / rows) ** 1.8;
-  const field = [];
-  for (let row = 0; row < rows; row++) {
-    const depth = (row + 1) / rows; // 0 far, 1 near
-    const y = rowY(row);
-    const s = 0.8 + 6.4 * depth ** 1.7; // a melon's half-length, mm
-    const wave = (x) => y + Math.sin(x / 11 + row * 1.7) * (0.3 + depth * 1.2);
-    const vine = [];
-    for (let x = -3; x <= W + 3; x += 3) vine.push([x, wave(x)]);
-    line(vine, leaf, 0.15 + depth * 0.45);
-    for (let x = rnd() * s * 4; x < W + s; x += s * (3.2 + rnd() * 3.4)) {
-      field.push({ row, x, y: wave(x) - s * 0.5, s, depth });
-    }
-  }
-  // The boy with the silver collar stabs at the badger-like zha, which slips between his legs.
-  const boy = { x: 47, y: rowY(4) + 2, h: 31 }; // feet on the fifth row
-  for (const m of field) {
-    if (m.row === 4 && m.x > boy.x - 14 && m.x < boy.x + 32) continue; // his patch, the fork's
-    leafAt(m.x - m.s * 0.6, m.y + m.s * 0.4, m.s * 0.9, 190 + rnd() * 40);
-    leafAt(m.x + m.s * 0.5, m.y + m.s * 0.45, m.s * 0.8, -20 + rnd() * 40);
-    melon(m.x, m.y, m.s);
-  }
-  const figure = mix(P.night, P.ink, 0.35);
-  const u = boy.h / 30; // the figure is drawn on a 30-unit height
-  const at = (x, y) => [boy.x + x * u, boy.y - y * u];
-  const xy = (x, y) => at(x, y).map(n2).join(' ');
-  const steel = mix(P.sand, '#ffffff', 0.4);
-  line([at(-1, 12), at(-5.5, 0.4)], figure, 2 * u); // the back leg
-  line([at(1.2, 12), at(6, 5.5), at(7.5, 0.4)], figure, 2 * u); // the front knee bent
-  out.push(`<path d="M${xy(-3.2, 22.6)}L${xy(3.4, 22.6)}L${xy(4.2, 11)}L${xy(-3.8, 11)}Z" `
-    + `fill="${figure}"/>`); // the tunic
-  // The silver collar round the neck: its back arc behind the neck, its front arc over it.
-  const collar = (sweep) => out.push(`<path d="M${xy(-1.2, 23.1)}A${n2(1.6 * u)} `
-    + `${n2(0.55 * u)} 0 0 ${sweep} ${xy(2, 23.1)}" fill="none" stroke="${steel}" `
-    + `stroke-width="${n2(0.55 * u)}"/>`);
-  collar(1);
-  line([at(0.4, 22.2), at(0.4, 24.4)], figure, 2 * u); // the neck
-  circle(...at(0.4, 26.4), 2.9 * u, figure); // the head
-  collar(0);
-  line([at(2.6, 21.5), at(8.2, 11.8)], figure, 1.5 * u); // both hands on the shaft
-  line([at(-2.4, 21), at(4.4, 14.3)], figure, 1.5 * u);
-  // The steel fork stabs down at the sand: a shaft, a crossbar and three parallel tines.
-  const [butt, head] = [[-3, 19.4], [19, 4.4]];
-  const len = Math.hypot(head[0] - butt[0], head[1] - butt[1]);
-  const [dx, dy] = [(head[0] - butt[0]) / len, (head[1] - butt[1]) / len];
-  const across = (k) => [head[0] - k * 1.3 * dy, head[1] + k * 1.3 * dx];
-  line([at(...butt), at(...head)], steel, 0.55 * u);
-  line([at(...across(-1)), at(...across(1))], steel, 0.45 * u);
-  for (const k of [-1, 0, 1]) {
-    const [x0, y0] = across(k);
-    line([at(x0, y0), at(x0 + 3.8 * dx, y0 + 3.8 * dy)], steel, 0.45 * u);
-  }
-  // The zha he aimed at has slipped between his legs and runs off to the left, tail up.
-  const fur = mix(P.sand, P.ink, 0.62);
-  const [zx, zy] = at(0.6, 1.6);
-  out.push(`<path d="M${n2(zx - 4.6 * u)} ${n2(zy - 0.2 * u)}L${n2(zx - 2.6 * u)} `
-    + `${n2(zy - 1.6 * u)}C${n2(zx)} ${n2(zy - 2.4 * u)} ${n2(zx + 3 * u)} ${n2(zy - 1.8 * u)} `
-    + `${n2(zx + 3.4 * u)} ${n2(zy - 0.2 * u)}C${n2(zx + 2 * u)} ${n2(zy + 1 * u)} `
-    + `${n2(zx - 2 * u)} ${n2(zy + 1 * u)} ${n2(zx - 4.6 * u)} ${n2(zy - 0.2 * u)}Z" `
-    + `fill="${fur}"/>`); // a pointed snout, a round back
-  line([[zx + 3 * u, zy - 1 * u], [zx + 4.8 * u, zy - 2.8 * u]], fur, 0.7 * u); // tail
-  [[-2, 1.8], [-0.8, 2.2], [1.4, 2], [2.6, 1.6]].forEach(([ddx, ddy], i) => line(
-    [[zx + ddx * u, zy + 0.4 * u], [zx + (ddx + (i % 2 ? 1 : -1)) * u, zy + ddy * u]],
-    fur, 0.45 * u)); // legs mid-stride
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" `
-    + `viewBox="0 0 ${W} ${H}">${out.join('')}</svg>`;
-}
-// #endregion
-
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
   'Noto Serif SC': ['400', '900'], // SONG: the text; the title
@@ -315,7 +180,7 @@ await loadCjkFonts({ [SONG]: ['400'] }, markdown);
 await loadCjkFonts({ [SONG]: ['900'] }, '故乡');
 await loadCjkFonts({ [HEI]: ['400'] }, `呐喊故乡鲁迅0123456789${colophon}`);
 await loadCjkFonts({ [KAI]: ['400'] }, part(/^# .*style="plate".*$/m));
-await loadSvg('moon.svg', drawPlate(TRIM.width, TRIM.height));
+await loadImage(resources[0].bitmap.fileId, asset(resources[0].bitmap.fileId));
 // The plate is page 70 of the book, a verso: folios and parity follow the book.
 const continuation = { pageIndexOffset: 69, pageNumbering: { startAt: 70 } };
 const doc = await buildWithFonts(

@@ -114,7 +114,7 @@ Colour a circle for each thing you can do.
 :::
 
 :::paragraphs{style="colophon"}
-Seedlings Science is an invented series made for the Postext Cookbook. Text and drawings: CC BY 4.0.
+Seedlings Science is an invented series made for the Postext Cookbook. Text: CC BY 4.0. Plant: diffusion models.
 
 Set in Andika, Baloo 2 and Fredoka (SIL Open Font License).
 :::

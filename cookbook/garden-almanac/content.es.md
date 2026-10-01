@@ -33,5 +33,5 @@ La cipolla tiene lontana la mosca della carota, e la carota quella della cipolla
 Le semine di tutto l’anno sono nella :ref{id="semine" style="full" case="lower"}, alle pagine seguenti: una riga per coltura e due caselle per ogni mese, una per quindicina.
 
 :::paragraphs{style="colophon"}
-Almanacco dell’orto 2027 · Piazzolla, Gilda Display e Commissioner (SIL OFL) · Testo e illustrazioni originali, CC BY 4.0.
+Almanacco dell’orto 2027 · Piazzolla, Gilda Display e Commissioner (SIL OFL) · Testo e icone originali, CC BY 4.0 · Acquerello generato.
 :::

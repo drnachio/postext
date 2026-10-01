@@ -2920,7 +2920,10 @@ The `footnotes` property sets where the notes cited with `[^id]` go, how they ar
 ```ts
 interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd'; // Foot of the citing column, or after the chapter.
-  numbering?: 'chapter' | 'document';  // Start again at each chapter, or run on.
+  numbering?: 'chapter' | 'document' | 'page' | 'column'; // Start again at each chapter, run on, or start again on each page / column.
+  numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  markerPosition?: 'auto' | 'superscript' | 'inline'; // Raised, or on the baseline.
+  markerSize?: Dimension;     // Inline marker size; em is the text around it.
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
   fontSize?: Dimension;       // Note size; em is the body size.
   lineHeight?: Dimension;     // Note leading; em is the note size.
@@ -2957,9 +2960,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document'</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
       <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>).</td>
+      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>). <code>'page'</code> starts again at 1 on every page and <code>'column'</code> in every column, counting the notes where the layout sets them (the columns of a page in reading order): the usual 页下注 of a Chinese book. The document is laid out, numbered where its notes landed and laid out again until the numbers hold (at most three more builds). Both apply to notes at the column foot: with <code>placement: 'chapterEnd'</code> the notes are numbered by chapter.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning.</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code> raises the marker in the text and the number that opens the note, at a reduced size. <code>'inline'</code> sets them on the baseline: the marker at <code>markerSize</code>, the note's number at the note size; in vertical text an inline circled marker stands upright in a cell of its own. <code>'auto'</code> is inline for <code>circled-decimal</code> and superscript for every other format. Either way the marker stays with the character before it and never opens a line.</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Size of an inline marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>

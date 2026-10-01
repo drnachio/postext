@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "endnotes-instead-of-footnotes",
-  "sourceHash": "9e7076cb731508241b41c8cc12b9e62877d0af2779e1594daf62b633e28a7d58",
+  "sourceHash": "d6a5f15e5152af4d6cefde92d6ed0e0a3a55c6b9067297b346269f0722723939",
   "engine": {
-    "postext": "1.6.0",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T07:57:56.095Z",
+  "capturedAt": "2026-10-01T06:55:07.213Z",
   "variants": {
     "en": {
-      "hash8": "17f9a1ea",
-      "vdtHash": "5de20703822b2a3f87d4e75bf6d838650c21f583",
+      "hash8": "99a4d31c",
+      "vdtHash": "2bceacc428ae878a57ec22b4f6c556577b50651c",
       "timings": {
-        "importMs": 806,
-        "fontsMs": 5784,
-        "buildMs": 42,
-        "totalMs": 9208,
+        "importMs": 154,
+        "fontsMs": 32,
+        "buildMs": 23,
+        "totalMs": 885,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Libre Bodoni"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 186
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 107410,
+          "bytes": 107932,
           "alt": "Opening page 15: A Candle."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 127890,
+          "bytes": 128044,
           "alt": "Opening page 19: Notes."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 27804
+        "bytes": 78027
       },
       "detected": {
         "apis": [
@@ -263,8 +263,8 @@
           "~…~"
         ],
         "resources": {
-          "svg": 3,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [
@@ -341,6 +341,11 @@
           "worst": 1.78
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

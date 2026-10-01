@@ -131,7 +131,26 @@
         "license": "CC-BY-4.0"
       }
     ],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The farmer waiting by the stump, a brush painting",
+          "es": "El campesino que espera junto al tocón, una pintura a pincel"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plate-1-1500.jpg"
+      },
+      {
+        "what": {
+          "en": "The man of Zheng hurrying home from the shoe stall, a brush painting",
+          "es": "El hombre de Zheng que vuelve deprisa del puesto de zapatos, una pintura a pincel"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plate-2-1500.jpg"
+      }
+    ],
     "fonts": [
       {
         "family": "Iansui",

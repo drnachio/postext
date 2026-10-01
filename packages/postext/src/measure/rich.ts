@@ -58,6 +58,10 @@ export interface RichToken {
   script?: 'sup' | 'sub';
   scriptFont?: string;
   baselineShift?: number;
+  /** An inline footnote marker at a size of its own
+   *  (`footnotes.markerSize`): the font it is measured and painted with,
+   *  on the baseline. */
+  markerFont?: string;
   /** One of a subscript and a superscript set over each other (see
    *  {@link stackedScriptPairs}): the `first` has width 0, the `second`
    *  the pair's advance. Neither is ever broken or hyphenated. */
@@ -156,6 +160,12 @@ export const SUBSCRIPT_SHIFT_RATIO = 0.15;
  *  superscript over it (σ17, 0.247 em), which clears room between the two. */
 export const STACKED_SUBSCRIPT_SHIFT_RATIO = 0.25;
 const FONT_SIZE_RE = /(\d*\.?\d+)px/;
+
+/** `font` at `scale` times its size. */
+export function scaledFont(font: string, scale: number): string {
+  const m = FONT_SIZE_RE.exec(font);
+  return m ? font.replace(FONT_SIZE_RE, `${parseFloat(m[1]!) * scale}px`) : font;
+}
 
 /** The font a script token is measured and painted with (`font` at the
  *  script size) and its baseline shift in px (negative: up). `stacked`: a
@@ -867,13 +877,18 @@ export function atomicSpanToken(
   }
   if (span.ref || span.footnote) {
     const scriptFields = spanScriptFields(span, normalFont, boldFont, italicFont, boldItalicFont);
-    const refFont = scriptFields.scriptFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    const scale = span.footnote?.scale;
+    const markerFont = !span.script && scale !== undefined && scale > 0 && Math.abs(scale - 1) > 1e-6
+      ? scaledFont(pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont), scale)
+      : undefined;
+    const refFont = scriptFields.scriptFont ?? markerFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
     return {
       text: span.text,
       bold: span.bold,
       italic: span.italic,
       captionLabel: span.captionLabel,
       ...scriptFields,
+      ...(markerFont ? { markerFont } : {}),
       ...(span.smallCaps ? { smallCaps: true } : {}),
       kind: 'text',
       width: textWidth(span.text, refFont, span.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(span.text)),
@@ -925,6 +940,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.footnoteId !== undefined ? { footnoteId: t.footnoteId } : {}),
     ...(t.captionLabel ? { captionLabel: true } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
+    ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
   } as PendingSegment;

@@ -45,5 +45,5 @@ La cuarta tarde, la senda deja atrás los pinos y sube a una loma pelada, y abaj
 Luego da media vuelta y echa a andar de nuevo hacia el mar. Los porteadores nunca dormían en Castrel, dice, porque las posadas del pueblo cobraban en moneda. :swatch{color="band"}
 
 :::callout{type="colophon"}
-Obra de ficción: Arvela, Sorra, Orsa y Castrel son lugares imaginarios. Compuesto en Newsreader, Young Serif e Inter Tight (SIL Open Font License) · Texto e ilustración: originales, CC BY 4.0.
+Obra de ficción: Arvela, Sorra, Orsa y Castrel son lugares imaginarios. Compuesto en Newsreader, Young Serif e Inter Tight (SIL Open Font License) · Texto: original, CC BY 4.0 · Foto: modelos de difusión.
 :::
