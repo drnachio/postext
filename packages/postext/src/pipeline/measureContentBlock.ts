@@ -268,7 +268,7 @@ export function measureContentBlock(
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
     || (vertical && (s.combineUpright || s.orientation)));
 

@@ -71,6 +71,10 @@ export interface InlineSpan {
    *  (`:sideways[12]`), the whole run turned with the line. No effect in
    *  horizontal text. */
   orientation?: 'upright' | 'sideways';
+  /** A space of the span's own width that a line neither breaks at nor
+   *  stretches or shrinks when it is justified: the gap after a footnote's
+   *  number, which keeps one width in every note. Set by the pipeline. */
+  fixedSpace?: boolean;
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */
