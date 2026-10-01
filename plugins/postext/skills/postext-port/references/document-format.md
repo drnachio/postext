@@ -551,6 +551,15 @@ Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!f
 - **Links:** PDF link annotations + named destinations (`file.pdf#nameddest=id`), HTML `<a href="#pt-a-id">`, clickable in the Sandbox.
 - **Porting:** turn LaTeX `\label{sec:x}` / `\ref{sec:x}` / `\pageref{x}` into `{#sec:x}` / `:ref{id="sec:x" style=number}` / `:ref{id="x" style=page}`; Word cross-reference fields and InDesign text anchors likewise. Keep the source's words ("see section", "véase el capítulo") outside the reference when the reference prints the number only.
 
+### 10.7 Citations and bibliography (postext ≥ 1.12)
+
+- **Syntax (Pandoc):** `[@key]`, `[@a, p. 33; @b]`, `[see @a, chap. 2, emphasis added]`, `[-@a]` (author left out), narrative `@a` and `@a [p. 33]`. Locator labels: p./pp./pág./页, chap./cap./章, sec./§, fig., vol., n., l., para.; a bare number is a page. An `@` after a letter/digit (e-mail), in code, or `\@` is text. A citation whose key the book does not define prints as written (`unknownCitationKey` warns for bracketed ones).
+- **References:** front matter `references:` (CSL-YAML list; `author: ["García, Ana"]` or `[{family, given}]`, `issued: 2020`) and/or `:::references{format=bibtex|csl-json|csl-yaml}` … `:::` (raw body, prints nothing). `nocite: "@a, @b"` / `"@*"`. References in any chapter count for the whole book.
+- **Bibliography:** `:::bibliography{title="…" scope=book|chapter}` where it goes; without it, after the last chapter (title in the document language; `title=""` none). Entries are anchors `ref-<key>`; `[text](#ref-key)` links to one.
+- **Style:** config `citations.style` (configuration.md §19a3): bundled `apa`, `chicago-author-date`, `chicago-notes-bibliography`, `modern-language-association`, `harvard-cite-them-right`, `ieee`, `elsevier-vancouver`, `american-medical-association`, `nature`, `iso690-*`, `oscola`, `china-national-standard-gb-t-7714-2015-{numeric,author-date,note}`; or `'custom'` + `customStyle` (CSL XML). Note styles turn each citation into a footnote (or 夹注 with `citations.notes: 'warichu'`).
+- **Engine:** `import 'postext-citeproc/register'` before building (render.mjs and Node scripts too); the Sandbox loads it itself. Without it citations print as written (`citationsUnavailable`).
+- **Porting:** LaTeX `\cite{a,b}` → `[@a; @b]`, `\cite[p.~33]{a}` → `[@a, p. 33]`, `\textcite{a}` → `@a`, `\parencite[see][12]{a}` → `[see @a, p. 12]`, `\nocite{*}` → `nocite: "@*"`; keep the `.bib` as a `:::references{format=bibtex}` block (or convert to front matter). Word/Zotero field citations: export the library as CSL-JSON or BibTeX and rewrite each field as `[@key]`. A printed book's hand-made bibliography can stay as text under `:::paragraphs{style=…}` when its sources are not worth re-keying.
+
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
 
 - **Inline `$…$`**:

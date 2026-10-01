@@ -928,6 +928,23 @@ crossRefs: {
 }
 ```
 
+## 19a3. `citations` — CitationsConfig (postext ≥ 1.12)
+
+Citation style and presentation (document-format.md §10.7). Needs `postext-citeproc` registered.
+
+```ts
+citations: {
+  style?: string;            // 'apa' (default) | 'ieee' | 'chicago-notes-bibliography' | … | 'custom'
+  customStyle?: string;      // CSL XML when style: 'custom'
+  locale?: string;           // CSL locale; default: document language (es → es-ES, zh-Hant → zh-TW)
+  link?: boolean;            // citations link to their entries (default true)
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'; // numbered styles; 'corner' = 〔1〕
+  collapseRanges?: boolean;  // 1–3 (default true)
+  notes?: 'footnote' | 'warichu'; // note styles
+  bibliography?: { title?, scope?: 'book' | 'chapter', auto?, fontSize?, lineHeight?, hangingIndent?, entrySpacing?, labelWidth?, doi?: 'link' | 'text' | 'hide', includeUncited?, groupByLanguage? };
+}
+```
+
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
 
 What `:::index` prints from the `:index` marks (document-format.md §10.5). An entry = term +

@@ -236,7 +236,7 @@ embeds them with `::resource{id="…"}` (placement `here`).
 bundle's own fonts, prints warnings and writes a PDF (+ page PNGs):
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf react @pdf-lib/fontkit
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
 node render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/my-book-pages --dpi 60
 ```
 

@@ -5,7 +5,7 @@ import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
-import { anchorsOf, type RefCompletionContext } from './refCompletion';
+import { anchorsOf, referencesOf, type RefCompletionContext } from './refCompletion';
 import { indexTermsOf } from './indexSyntax';
 
 interface MarkdownEditorProps {
@@ -44,6 +44,12 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
       return anchorsOf(chapters.map((c) => (c.id === activeId ? markdown : c.markdown)));
     },
     anchorKinds: { heading: state.labels.refPickerHeading, anchor: state.labels.refPickerAnchor },
+    // The book's references (#268): `@` cites one as `[@key]`.
+    references: () => {
+      const { chapters, activeId, markdown } = bookTextRef.current;
+      return referencesOf(chapters.map((c) => (c.id === activeId ? markdown : c.markdown)));
+    },
+    referenceKind: state.labels.refPickerReference,
   };
 
   const hintId = useId();

@@ -20,6 +20,7 @@ export interface SandboxLabels {
   markdownEditor: string;
   refPickerHeading: string;
   refPickerAnchor: string;
+  refPickerReference: string;
   warnings: string;
   fonts: string;
   presets: string;

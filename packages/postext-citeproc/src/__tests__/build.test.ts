@@ -158,3 +158,24 @@ describe('books', () => {
     expect(entries(docs[1]!)).toEqual(['garcia2020']);
   });
 });
+
+describe('Chinese in vertical text (#277)', () => {
+  const zh = `---\nreferences:\n  - {id: zhang, type: book, language: zh-CN, author: [张三, 李四, 王五, 赵六], title: 排版学, issued: 2018, publisher: 商务印书馆, publisher-place: 北京}\n  - {id: knuth, type: book, language: en, author: ["Knuth, Donald E."], title: The TeXbook, issued: 1984, publisher: Addison-Wesley}\n---\n# 第一章\n\n竖排的书也引用文献[@zhang, 页 12]，西文文献亦然[@knuth]。\n`;
+  const vertical: PostextConfig = { ...config, locale: 'zh-Hans', layout: { layoutType: 'single', writingMode: 'vertical-rl' } };
+
+  it('a numbered style in corner brackets, upright in the column', () => {
+    const doc = buildDocument({ markdown: zh }, { ...vertical, citations: { style: 'china-national-standard-gb-t-7714-2015-numeric', marker: 'corner', bibliography: { groupByLanguage: true } } });
+    const text = lines(doc).join('\n');
+    expect(text).toContain('〔1〕12');
+    expect(text).toContain('〔2〕');
+    expect(entries(doc)).toEqual(['zhang', 'knuth']);
+    expect(doc.pages[0]!.flow).toBeDefined();
+  });
+
+  it('a note style set as 夹注 inside the line', () => {
+    const doc = buildDocument({ markdown: zh }, { ...vertical, citations: { style: 'china-national-standard-gb-t-7714-2015-note', notes: 'warichu' } });
+    const warichu = doc.blocks.flatMap((b) => b.lines.flatMap((l) => (l.segments ?? []).filter((s) => s.warichu)));
+    expect(warichu.length).toBeGreaterThan(0);
+    expect(doc.blocks.some((b) => b.footnoteNote !== undefined)).toBe(false);
+  });
+});

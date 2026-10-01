@@ -7,7 +7,7 @@
 //
 // One-time setup (Node >= 22.15; any folder, default ~/.cache/postext-tools):
 //   mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && \
-//   npm init -y >/dev/null && npm i postext postext-pdf react @pdf-lib/fontkit
+//   npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
 // --repo uses a Postext monorepo checkout's built dists instead (and then also
 // runs the sandbox's own warning panel logic).
 //
@@ -66,11 +66,13 @@ if (REPO) {
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
   try { ({ computeWarnings } = await imp('packages/postext-sandbox/dist/warnings/compute.js')); } catch { /* not built */ }
   try { bundleApi = await imp('packages/postext/dist/bundle/index.js'); } catch { /* older checkout */ }
+  // Citations (postext >= 1.12): the CSL engine, when built.
+  try { await imp('packages/postext-citeproc/dist/register.js'); } catch { /* not built */ }
 } else {
   const candidates = [opt('tools', null), process.env.POSTEXT_TOOLS, join(homedir(), '.cache/postext-tools'), process.cwd()].filter(Boolean);
   const dir = candidates.find((d) => existsSync(join(d, 'node_modules/postext/package.json')));
   if (!dir) {
-    console.error('postext is not installed. Run:\n  mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf react @pdf-lib/fontkit');
+    console.error('postext is not installed. Run:\n  mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit');
     process.exit(2);
   }
   const req = createRequire(join(dir, 'package.json'));
@@ -79,6 +81,8 @@ if (REPO) {
   pdf = await import(entry('postext-pdf', 'dist/index.js'));
   fontkit = (await import(pathToFileURL(req.resolve('@pdf-lib/fontkit')).href)).default;
   try { bundleApi = await import(entry('postext', 'dist/bundle/index.js')); } catch { /* older release */ }
+  // Citations (postext >= 1.12): `npm i postext-citeproc` to format them.
+  try { await import(entry('postext-citeproc', 'dist/register.js')); } catch { /* not installed */ }
 }
 
 // A packed `.postext` file: unzip it with the engine's own bundle reader

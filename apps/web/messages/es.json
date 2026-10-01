@@ -1094,6 +1094,7 @@
     "markdownEditor": "Texto del capítulo",
     "refPickerHeading": "Título",
     "refPickerAnchor": "Ancla",
+    "refPickerReference": "Referencia",
     "warnings": "Avisos",
     "fonts": "Fuentes",
     "presets": "Presets",

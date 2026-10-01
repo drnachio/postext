@@ -135,7 +135,7 @@ brew install pandoc poppler
 ```
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf react @pdf-lib/fontkit
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
 ```
 
 Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。

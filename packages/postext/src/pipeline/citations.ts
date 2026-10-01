@@ -101,11 +101,17 @@ function markerSpans(
   resolved: ResolvedConfig,
   narrative: string | undefined,
   base: { bold: boolean; italic: boolean },
+  locale: string,
 ): InlineSpan[] {
   const cfg = resolved.citations;
   const known = cluster.items.filter((it) => numbers.has(it.id) && items.has(it.id));
   const single = known.length === 1 ? known[0]! : undefined;
-  const loc = single?.locator ? `${LOCATOR_WORDS[single.label ?? 'page'] ?? ''} ${single.locator}`.trim() : '';
+  // A Chinese citation writes the page after the number alone, as GB/T 7714
+  // does (〔1〕12); other locators keep their word.
+  const chinese = locale.toLowerCase().startsWith('zh');
+  const label = single?.label ?? 'page';
+  const word = chinese && label === 'page' ? '' : LOCATOR_WORDS[label] ?? '';
+  const loc = single?.locator ? (word ? `${word}\u00a0${single.locator}` : single.locator) : '';
   const list = numberList(known.map((it) => numbers.get(it.id)!), cfg.collapseRanges);
   const span = (text: string, extra: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold: base.bold, italic: base.italic, ...extra });
   const out: InlineSpan[] = [];
@@ -180,7 +186,7 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
         if (known.length === 0) return undefined;
         if (override) {
           const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id))).filter(Boolean).join('; ') : undefined;
-          return markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false });
+          return markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
         }
         return htmlToSpans(html[i] ?? '');
       }),

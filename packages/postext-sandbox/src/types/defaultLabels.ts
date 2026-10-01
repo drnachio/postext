@@ -20,6 +20,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   markdownEditor: 'Chapter text',
   refPickerHeading: 'Heading',
   refPickerAnchor: 'Anchor',
+  refPickerReference: 'Reference',
   warnings: 'Warnings',
   fonts: 'Fonts',
   presets: 'Presets',
