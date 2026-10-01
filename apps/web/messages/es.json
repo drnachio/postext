@@ -1091,6 +1091,8 @@
     "settingsModifiedCount": "__count__ modificados",
     "resources": "Recursos",
     "markdownEditor": "Texto del capítulo",
+    "refPickerHeading": "Título",
+    "refPickerAnchor": "Ancla",
     "warnings": "Avisos",
     "fonts": "Fuentes",
     "presets": "Presets",

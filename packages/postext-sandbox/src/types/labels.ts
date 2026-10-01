@@ -16,6 +16,8 @@ export interface SandboxLabels {
   settingsModifiedCount: string;
   resources: string;
   markdownEditor: string;
+  refPickerHeading: string;
+  refPickerAnchor: string;
   warnings: string;
   fonts: string;
   presets: string;

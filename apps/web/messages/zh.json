@@ -628,6 +628,8 @@
     "settingsModifiedCount": "已修改__count__项",
     "resources": "资源",
     "markdownEditor": "章节正文",
+    "refPickerHeading": "标题",
+    "refPickerAnchor": "锚点",
     "warnings": "警告",
     "fonts": "字体",
     "presets": "预设",

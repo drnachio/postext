@@ -17,6 +17,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   settingsModifiedCount: '__count__ modified',
   resources: 'Resources',
   markdownEditor: 'Chapter text',
+  refPickerHeading: 'Heading',
+  refPickerAnchor: 'Anchor',
   warnings: 'Warnings',
   fonts: 'Fonts',
   presets: 'Presets',

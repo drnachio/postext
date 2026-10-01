@@ -21,6 +21,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     settingsModifiedCount: t("settingsModifiedCount"),
     resources: t("resources"),
     markdownEditor: t("markdownEditor"),
+    refPickerHeading: t("refPickerHeading"),
+    refPickerAnchor: t("refPickerAnchor"),
     warnings: t("warnings"),
     fonts: t("fonts"),
     presets: t("presets"),
