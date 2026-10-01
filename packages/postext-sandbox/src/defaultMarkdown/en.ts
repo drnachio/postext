@@ -516,6 +516,12 @@ References deserve a closer look, because they are how most of a book's apparatu
 
 \`::resource{id="…"}\` on a line of its own embeds a resource at that exact point, when its placement says _here_; otherwise it simply counts as a mention. This book uses it nowhere, and lets every figure float — which is usually the better choice.
 
+## Cross-references and citations
+
+The same \`:ref\` names any place of the book that carries an identifier: a heading written \`## Method {#method}\`, a box opened with \`{#id}\`, or a phrase marked \`[these words]{#key}\`. It prints _section 3.2_ or _chapter 4_, the title with \`style=title\`, or the page with \`style=page\`, and the page is right because the engine lays the book out again until it settles. Every such reference is a link in the PDF, the HTML and these previews.
+
+Works are cited as Pandoc writes them, \`[@garcia2020, p. 33]\` or \`@garcia2020\` in the sentence, with the references in the front matter or in a \`:::references\` block of BibTeX. The citation style is a setting, not a property of the text: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 or a style of your own, chosen under Design › Citations, where a preview shows the result. The bibliography follows the last chapter, or stands wherever \`:::bibliography\` is written.
+
 ## Callouts
 
 \`:::callout\` sets a box with an optional title, in one of the styles the configuration defines. This book defines four: the _Try it_ boxes that send you to the Sandbox, the technical notes, the pull quotes set in display italics, and a dark page-wide panel of key figures. A style decides the box's background, border, stripe and corner radius, an optional icon or marker, the typography of its title, body and lists, and where it goes: in the flow, at the head or foot of a column, across the page, into the side column of a column-and-a-half layout, or fixed to a position on the page.
