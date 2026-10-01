@@ -1,6 +1,7 @@
 ---
 title: "Type specimen with every font loaded before layout"
 summary: "A four-page type specimen whose first build names every face its pages use; the pen loads them, clears the width cache and builds again."
+plain: "A four-page booklet that shows off three typefaces. It shows why all the fonts must finish loading before the pages are laid out, or lines break in the wrong places."
 description: "Declare one FontFace per font file, read the faces a first Postext build asks for, load them and clear the measurement cache before you build again."
 question: "Why do my line breaks change or PDF words overlap, and how do I load my own font files before layout?"
 aliases: ["web fonts", "self-hosted fonts", "FontFace", "document.fonts", "fallback font", "unicode-range", "latin-ext", "clearMeasurementCache", "type specimen", "font audit"]
