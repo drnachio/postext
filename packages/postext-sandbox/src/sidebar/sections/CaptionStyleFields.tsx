@@ -97,7 +97,7 @@ export function CaptionStyleFields({
         onReset={() => resetField('fontSize')}
       />
       <SelectInput
-        label={labels.alignmentLabel}
+        label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
         value={cs.align}
         options={alignOptions}
         onChange={(v) => update({ align: v as TextAlign })}
@@ -159,14 +159,14 @@ export function CaptionStyleFields({
 
       <CollapsibleSection title={labels.captionLabelGroup} sectionId={`${sectionIdPrefix}.label`} variant="subsection">
         <ToggleSwitch
-          label={labels.bold}
+          label={labels.bold} tooltip={labels.boldHelp}
           checked={cs.labelBold}
           onChange={(v) => update({ labelBold: v })}
           isDefault={unset('labelBold')}
           onReset={() => resetField('labelBold')}
         />
         <ToggleSwitch
-          label={labels.italic}
+          label={labels.italic} tooltip={labels.italicHelp}
           checked={cs.labelItalic}
           onChange={(v) => update({ labelItalic: v })}
           isDefault={unset('labelItalic')}
@@ -208,7 +208,7 @@ export function CaptionStyleFields({
 
       <CollapsibleSection title={labels.captionDescriptionGroup} sectionId={`${sectionIdPrefix}.description`} variant="subsection">
         <ToggleSwitch
-          label={labels.italic}
+          label={labels.italic} tooltip={labels.italicHelp}
           checked={cs.descriptionItalic}
           onChange={(v) => update({ descriptionItalic: v })}
           isDefault={unset('descriptionItalic')}
@@ -243,14 +243,14 @@ export function CaptionStyleFields({
           fieldId={`${fieldIdPrefix}-noteColor`}
         />
         <ToggleSwitch
-          label={labels.italic}
+          label={labels.italic} tooltip={labels.italicHelp}
           checked={cs.note.italic}
           onChange={(v) => updateNote({ italic: v })}
           isDefault={noteUnset('italic')}
           onReset={() => resetNoteField('italic')}
         />
         <SelectInput
-          label={labels.alignmentLabel}
+          label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
           value={cs.note.align}
           options={alignOptions}
           onChange={(v) => updateNote({ align: v as TextAlign })}

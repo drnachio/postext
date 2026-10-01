@@ -40,6 +40,13 @@ export const TOOLBAR_STYLE_BASE = {
   transition: 'transform 200ms ease',
 } as const;
 
+// 44px buttons make a tall column: in a short window it scrolls.
+const TOOLBAR_SCROLL = {
+  maxHeight: `calc(100% - ${TOOLBAR_TOP + 12}px)`,
+  overflowY: 'auto' as const,
+  scrollbarWidth: 'thin' as const,
+};
+
 export function toolbarHiddenStyle(hidden: boolean): React.CSSProperties {
   return hidden
     ? { transform: 'translateX(calc(100% + 24px))' }
@@ -68,11 +75,11 @@ const TOOLBAR_STYLE_COMPACT = {
 
 /** Class and style of a floating toolbar's root: a column at the right
  *  edge, or a row along the bottom in the phone layout. */
-export function useToolbarRootProps(hidden: boolean): { className: string; style: React.CSSProperties } {
+export function useToolbarRootProps(hidden: boolean, scroll = false): { className: string; style: React.CSSProperties } {
   const compact = useCompactLayout();
   return compact
     ? { className: 'flex flex-row items-center', style: TOOLBAR_STYLE_COMPACT }
-    : { className: 'flex flex-col items-center', style: { ...TOOLBAR_STYLE_BASE, ...toolbarHiddenStyle(hidden) } };
+    : { className: 'flex flex-col items-center', style: { ...TOOLBAR_STYLE_BASE, ...(scroll ? TOOLBAR_SCROLL : {}), ...toolbarHiddenStyle(hidden) } };
 }
 
 interface CanvasToolbarProps {
@@ -143,8 +150,8 @@ export function ToolbarButton({
   // dimmed-clickable look. User asked for them to blend in instead of
   // shouting "this button doesn't work".
   const compact = useCompactLayout();
-  // Larger touch targets in the phone layout.
-  const size = compact ? 32 : 28;
+  // 44×44 targets everywhere (WCAG 2.5.5, Target Size Enhanced).
+  const size = 44;
   return (
     <Tooltip content={label} side={compact ? 'top' : 'left'}>
       <button
@@ -153,14 +160,14 @@ export function ToolbarButton({
         aria-label={label}
         aria-pressed={active}
         disabled={disabled}
-        className="flex shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-1 focus-visible:outline-offset-1 disabled:cursor-default"
+        className="flex shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 disabled:cursor-default"
         style={{
           width: size,
           height: size,
           color: accent ? 'var(--brand)' : active ? 'var(--brand)' : 'var(--slate)',
           backgroundColor: active ? 'var(--surface)' : 'transparent',
-          outlineColor: 'var(--brand-hover)',
-          opacity: disabled ? 0.18 : 1,
+          outlineColor: 'var(--brand)',
+          opacity: disabled ? 0.3 : 1,
         }}
         onMouseEnter={(e) => {
           if (disabled || active || accent) return;
@@ -284,16 +291,16 @@ function PageNumberInput({
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
-        className="rounded-md text-center focus-visible:outline-1 focus-visible:outline-offset-1"
+        className="shrink-0 rounded-md text-center focus-visible:outline-2 focus-visible:-outline-offset-2"
         style={{
-          width: compact ? 34 : 28,
-          height: compact ? 28 : 22,
-          fontSize: compact ? 13 : 11,
+          width: 44,
+          height: 44,
+          fontSize: compact ? 16 : 12,
           color: 'var(--foreground)',
           backgroundColor: 'var(--surface)',
-          border: '1px solid var(--rule)',
-          outlineColor: 'var(--brand-hover)',
-          opacity: pageCount === 0 ? 0.18 : 1,
+          border: '1px solid var(--pt-control-border)',
+          outlineColor: 'var(--brand)',
+          opacity: pageCount === 0 ? 0.3 : 1,
         }}
       />
     </Tooltip>
@@ -328,7 +335,7 @@ export function CanvasToolbar({
 }: CanvasToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
-  const rootProps = useToolbarRootProps(hidden);
+  const rootProps = useToolbarRootProps(hidden, true);
   const { prev: prevTarget, next: nextTarget } = rowTargets(currentPage, viewMode, pageCount, firstPageRecto);
   const prevDisabled = pageCount === 0 || currentPage <= 0;
   const nextDisabled = pageCount === 0 || nextTarget > pageCount - 1;

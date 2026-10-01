@@ -12,7 +12,7 @@ import { SearchScope } from '../search/SearchScope';
 import { TableStyleFields } from './TableStyleSection';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 
 /** Turn free text into a style id (lowercase, dashes). */
 function slugifyStyleId(raw: string): string {
@@ -74,7 +74,7 @@ function TableStyleCard({ style, resolved, otherIds, onChange, onResetField, onR
       </div>
 
       <div className="mb-2 flex flex-col gap-2">
-        <FieldRow stacked label={labels.idLabel} hint={idTaken ? labels.tableStyleIdHintDuplicate : labels.tableStyleUsageHint} className="mb-0">
+        <FieldRow stacked label={labels.idLabel} tooltip={labels.styleIdHelp} hint={idTaken ? labels.tableStyleIdHintDuplicate : labels.tableStyleUsageHint} className="mb-0">
           <input
             type="text"
             value={idDraft}
@@ -91,7 +91,7 @@ function TableStyleCard({ style, resolved, otherIds, onChange, onResetField, onR
             style={{ ...inputStyle, borderColor: idEmpty || idTaken ? 'var(--destructive)' : 'var(--rule)' }}
           />
         </FieldRow>
-        <FieldRow stacked label={labels.tableStyleNameLabel} className="mb-0">
+        <FieldRow stacked label={labels.tableStyleNameLabel} tooltip={labels.styleNameHelp} className="mb-0">
           <input
             type="text"
             value={style.name ?? ''}

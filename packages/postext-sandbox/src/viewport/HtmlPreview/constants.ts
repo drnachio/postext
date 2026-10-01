@@ -46,6 +46,7 @@ export const SHADOW_CSS = `
     user-select: none;
     -webkit-user-select: none;
   }
+  .pt-scroll:focus-visible { outline: 2px solid var(--brand, #223cbc); outline-offset: -2px; }
   .pt-scroll[data-mode='single'] { overflow-y: auto; overflow-x: hidden; }
   .pt-scroll[data-mode='multi']  {
     overflow-x: auto;

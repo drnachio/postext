@@ -5,6 +5,7 @@ import { CropMarks } from "@/components/brand/CropMarks";
 import { penDefineData } from "@/lib/codepen";
 import { CodeBlock } from "./CodeBlock";
 import { InstallChip } from "./InstallChip";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** The back cover: night again, the install line set large between crop
  *  marks, and the quick start. */
@@ -24,7 +25,7 @@ export async function InstallSection() {
             <h2 id="install-heading" className="display mt-5 text-[2.2rem] text-foreground md:text-[3.2rem] dark:text-white" style={{ textWrap: "balance" }}>
               {t("title")}
             </h2>
-            <p className="mt-5 font-body text-base leading-relaxed md:text-lg text-foreground/70 italic">{t("lead")}</p>
+            <p className="mt-5 font-body text-base leading-relaxed md:text-lg text-foreground/80 italic">{t("lead")}</p>
             <div className="mt-6 flex flex-col items-start gap-3">
               <InstallChip />
               <InstallChip command="pnpm add postext-pdf" />
@@ -43,6 +44,7 @@ export async function InstallSection() {
                 className="rounded-md border border-rule-strong px-5 py-2.5 font-sans text-sm font-semibold text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground/5"
               >
                 {hero("viewOnGitHub")}
+                <NewTabNote />
               </a>
             </div>
           </div>

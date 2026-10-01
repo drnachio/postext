@@ -5,6 +5,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { PlainSummary } from "@/components/brand/PlainSummary";
 import { htmlLang } from "@/i18n/locales";
 
 export async function generateMetadata({
@@ -30,11 +31,12 @@ export default async function CookiePolicyPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("CookiePolicy");
+  const tPlain = await getTranslations("PlainLanguage");
 
   return (
     <>
       <Navbar />
-      <main id="main-content" role="main" className="flex-1">
+      <main id="main-content" tabIndex={-1} role="main" className="flex-1">
         <div className="mx-auto max-w-6xl px-6 py-12 md:py-16 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
           <div aria-hidden="true" className="tri-stripe mb-10 h-1.5 w-full" />
           <h1 className="display text-[2.4rem] text-foreground md:text-[3.2rem]">
@@ -44,6 +46,10 @@ export default async function CookiePolicyPage({
           <p className="kicker mt-5 text-slate">
             {t("lastUpdated")}
           </p>
+
+          <PlainSummary id="in-short" heading={tPlain("heading")} className="mt-10">
+            {tPlain("cookies")}
+          </PlainSummary>
 
           <div lang={htmlLang(locale)} className="mt-10 space-y-8 font-body text-[0.95rem] leading-[1.75] text-foreground/80 lg:columns-2 lg:gap-12 2xl:gap-16 text-justify [hyphens:auto]">
             <section className="break-inside-avoid">

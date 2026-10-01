@@ -199,7 +199,8 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
 
   return (
     <div
-      className="flex flex-nowrap items-center gap-0.5 overflow-x-auto border-b px-2 py-0.5"
+      // Wraps rather than scrolls: every 44px button stays in view.
+      className="flex flex-wrap items-center border-b px-1"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
       role="toolbar"
       aria-label={labels.editorFormatting}
@@ -208,7 +209,7 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
         <span key={i} className="contents">
           <ToolbarButton icon={a.icon} label={a.label} onClick={a.action} />
           {a.separator && (
-            <div className="mx-1.5 h-5 w-px shrink-0" style={{ backgroundColor: 'var(--rule)' }} aria-hidden="true" />
+            <div className="mx-1 h-5 w-px shrink-0" style={{ backgroundColor: 'var(--rule)' }} aria-hidden="true" />
           )}
         </span>
       ))}

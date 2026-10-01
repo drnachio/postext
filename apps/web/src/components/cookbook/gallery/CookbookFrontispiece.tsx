@@ -38,7 +38,7 @@ export async function CookbookFrontispiece({ data, locale }: { data: GalleryData
           </h1>
           <div className="cb-book">
             <span aria-hidden="true" className="mt-6 block h-[3px] w-14 bg-gold" />
-            <p className="mt-5 max-w-xl font-body text-base leading-relaxed text-cream/80 italic lg:text-[1.05rem]">
+            <p className="mt-5 max-w-xl font-body text-base leading-relaxed text-cream italic lg:text-[1.05rem]">
               {t("lead")}
             </p>
           </div>
@@ -77,7 +77,7 @@ export async function CookbookFrontispiece({ data, locale }: { data: GalleryData
               <Link
                 href={featured.href}
                 prefetch={false}
-                className="group inline-flex flex-wrap items-baseline justify-center gap-x-2 rounded-sm font-sans text-[0.68rem] font-semibold tracking-[0.16em] text-mist uppercase transition-colors hover:text-gold"
+                className="group inline-flex min-h-10 flex-wrap content-center items-baseline justify-center gap-x-2 rounded-sm font-sans text-[0.68rem] font-semibold tracking-[0.16em] text-mist uppercase transition-colors hover:text-gold"
               >
                 <span className="whitespace-nowrap text-gold">{plateNumber(t("number"), featured.number)}</span>
                 <span aria-hidden="true" className="max-sm:hidden">·</span>
@@ -100,7 +100,7 @@ export async function CookbookFrontispiece({ data, locale }: { data: GalleryData
               placeholder={t("searchPlaceholder", { count })}
               unavailable={t("unavailable")}
             />
-            <p className="mt-3.5 font-sans text-[0.78rem] text-mist/85">
+            <p className="mt-3.5 font-sans text-[0.78rem] text-mist">
               {t("stats", { recipes: count, chapters: chapters.length })}
               {catalog.testedWith && (
                 <>

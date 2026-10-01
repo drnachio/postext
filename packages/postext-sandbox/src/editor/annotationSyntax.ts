@@ -90,7 +90,6 @@ export const annotationTheme = Prec.highest(
   EditorView.baseTheme({
     '.cm-annotation-delim': {
       color: 'var(--brand)',
-      opacity: '0.8',
     },
     '.cm-annotation-dots': {
       textEmphasis: 'filled dot',

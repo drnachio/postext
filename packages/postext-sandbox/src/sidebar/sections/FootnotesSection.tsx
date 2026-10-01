@@ -140,7 +140,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
         fieldId="footnotes-color"
       />
       <SelectInput
-        label={labels.alignmentLabel}
+        label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
         value={fn.textAlign ?? bodyAlign ?? 'justify'}
         options={[
           { value: 'left', label: labels.bodyTextAlignLeft },

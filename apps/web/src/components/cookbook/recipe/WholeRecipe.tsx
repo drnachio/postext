@@ -6,6 +6,7 @@ import type { RecipeT, RecipeView } from "./model";
 import type { RecipeActionsData } from "./RecipeActions";
 import { SOURCE_ATTR, SOURCE_EOL_ATTR } from "./sources";
 import { WholeRecipeTabs, type WholeRecipePanel } from "./WholeRecipeTabs";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 interface Fold {
   from: number;
@@ -100,6 +101,7 @@ export async function WholeRecipe({ view, t, data }: { view: RecipeView; t: Reci
         {t("howToRun")}{" "}
         <a href={view.githubUrl} target="_blank" rel="noopener noreferrer">
           {t("recipeFolder")} ↗
+          <NewTabNote />
         </a>
       </p>
     </>

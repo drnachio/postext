@@ -26,6 +26,16 @@ describe("docs table of contents", () => {
     }
   });
 
+  it("gives every page an In short summary in plain words (WCAG 3.1.5)", () => {
+    for (const doc of docs) {
+      for (const [locale, meta] of Object.entries(doc.locales)) {
+        const sentences = meta.plainSummary.split(/(?<=[.!?。！？])\s*/).filter(Boolean);
+        expect(sentences.length, `${doc.slug}-${locale}`).toBeGreaterThanOrEqual(3);
+        expect(sentences.length, `${doc.slug}-${locale}`).toBeLessThanOrEqual(6);
+      }
+    }
+  });
+
   it("puts Chinese layout in Part II at order 6 and the practice pages after it", () => {
     expect(order("chinese-layout")).toBe(6);
     expect(docPart(6).key).toBe("craft");

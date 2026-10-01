@@ -8,6 +8,7 @@ export const metadata = {
   lastUpdated: '2026-09-29',
   readingTime: '38分钟',
   order: 2,
+  plainSummary: "本页讲解Postext的内部工作原理，面向程序员。首先，Postext在不往屏幕上画任何东西的情况下测量每个词，所以速度很快。然后它算出每一行、每张图和每一栏的位置，并把这份排版方案保存在内存里。它反复计算，直到没有任何东西再移动。最后，它把排好的页面输出为网页、Canvas图像或PDF文件。你改动一个词时，只有改动的部分会重新计算。",
 };
 
 # Postext架构

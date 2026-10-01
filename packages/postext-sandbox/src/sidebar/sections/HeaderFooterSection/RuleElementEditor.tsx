@@ -140,14 +140,14 @@ export function RuleElementEditor({ raw, resolved, slotKind, siblings = [], onCh
       ) : (
         <>
           <SelectInput
-            label={labels.headerFooterElementWidth}
+            label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip}
             value={mode}
             options={WIDTH_MODE_OPTIONS}
             onChange={(v) => updateSize(applyWidthMode(resolved.placement.size, v as 'full' | 'custom'))}
           />
           {mode === 'custom' && (
             <DimensionInput
-              label={labels.headerFooterElementWidth}
+              label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip}
               value={customWidth}
               onChange={(dim: Dimension) => updateSize({ ...(resolved.placement.size ?? {}), width: dim })}
               min={0}

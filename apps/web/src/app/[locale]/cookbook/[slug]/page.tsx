@@ -24,6 +24,7 @@ import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes
 import type { Locale } from "@/lib/cookbook/types";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { htmlLang } from "@/i18n/locales";
+import { PlainSummary } from "@/components/brand/PlainSummary";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -149,6 +150,8 @@ export default async function RecipePage({ params }: { params: Params }) {
   const view = await recipeView(recipe, locale);
   if (!view) notFound();
   const t = await getTranslations("CookbookRecipe");
+  const tPlain = await getTranslations("PlainLanguage");
+  const plain = view.writeup.frontmatter.plain;
   const { pen, pages, spreads, heroSpread, binding } = view;
 
   // The first spread is the page's largest paint.
@@ -186,7 +189,7 @@ export default async function RecipePage({ params }: { params: Params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(sources).replace(/</g, "\\u003c") }}
       />
       <style dangerouslySetInnerHTML={{ __html: syntaxCss }} />
-      <main id="main-content" className={`cb-recipe part-${view.color}`}>
+      <main id="main-content" tabIndex={-1} className={`cb-recipe part-${view.color}`}>
         <RecipeBreadcrumb view={view} t={t} />
         <RecipeBand view={view} t={t} actions={<RecipeActions data={data} />} />
         <div className="cb-container">
@@ -210,6 +213,17 @@ export default async function RecipePage({ params }: { params: Params }) {
             className="cb-article"
             lang={view.writeup.locale !== locale ? htmlLang(view.writeup.locale) : undefined}
           >
+            {plain && (
+              <PlainSummary
+                id="in-short"
+                heading={tPlain("heading")}
+                ink="text-(--part-ink)"
+                rule="border-l-(--part)"
+                className="mb-8"
+              >
+                {plain}
+              </PlainSummary>
+            )}
             <WriteUp view={view} t={t} data={data} />
           </article>
           <RecipeAside view={view} t={t} />

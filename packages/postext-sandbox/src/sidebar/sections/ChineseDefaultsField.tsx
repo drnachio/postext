@@ -241,7 +241,7 @@ export function ChineseDefaultsField() {
             </Choice>
           </div>
           <fieldset className="m-0 mt-3 min-w-0 border-0 p-0">
-            <legend className="mb-1.5 p-0 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+            <legend className="mb-1.5 p-0 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
               {labels.chineseDefaultsChanges}
             </legend>
             {preview && preview.changes.length === 0 ? (
@@ -278,7 +278,7 @@ function Choice({ label, children }: { label: string; children: (labelId: string
   const labelId = useId();
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <span id={labelId} className="text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">{label}</span>
+      <span id={labelId} className="text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">{label}</span>
       {children(labelId)}
     </div>
   );
@@ -297,7 +297,7 @@ function ChangeRow({ change, labels, uiLocale, fromLang, toLang, onToggle }: {
     ? labels.chineseDefaultsFollowsLanguage
     : change.customised ? labels.chineseDefaultsOwn : null;
   return (
-    <li className="flex items-start gap-2">
+    <li className="flex items-center gap-2">
       <input
         id={id}
         type="checkbox"
@@ -305,9 +305,9 @@ function ChangeRow({ change, labels, uiLocale, fromLang, toLang, onToggle }: {
         disabled={change.required}
         onChange={(e) => onToggle(e.target.checked)}
         aria-describedby={`${id}-values`}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer accent-(--brand) disabled:cursor-default disabled:opacity-60"
+        className="h-6 w-6 shrink-0 cursor-pointer accent-(--brand) disabled:cursor-default disabled:opacity-60"
       />
-      <label htmlFor={id} className="flex min-w-0 flex-1 cursor-pointer flex-col">
+      <label htmlFor={id} className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center">
         <span className="text-xs leading-[1.3] text-(--foreground)">
           {String(labels[ITEM_LABELS[change.id]])}
           {note && <span className="ml-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}

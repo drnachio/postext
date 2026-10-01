@@ -159,13 +159,13 @@ export function RecipeCard({
       </p>
 
       {recipe.summary && (
-        <p className="cb-plate-summary order-5 mt-1.5 font-body text-[0.86rem] leading-snug text-slate italic">
+        <p className="cb-plate-summary order-5 mt-1.5 font-body text-[0.86rem] leading-normal text-slate italic">
           {recipe.summary}
         </p>
       )}
 
       {/* One line: a long genre is cut short, never wrapped. */}
-      <p className="order-6 mt-2.5 flex items-center gap-x-2 font-sans text-[0.6rem] font-semibold tracking-[0.12em] whitespace-nowrap text-foreground/70 uppercase">
+      <p className="order-6 mt-2.5 flex items-center gap-x-2 font-sans text-[0.6rem] font-semibold tracking-[0.12em] whitespace-nowrap text-foreground/80 uppercase">
         <LevelSquares level={recipe.level} />
         <span className="shrink-0">
           <span className="sr-only">{labels.levelOf(recipe.level)}: </span>

@@ -9,12 +9,12 @@ export async function QuoteSection() {
       <figure className="reveal relative pl-12 md:pl-20">
         <span
           aria-hidden="true"
-          className="display absolute -top-6 left-0 text-[6rem] leading-none text-gold-deep md:-top-8 md:text-[8.5rem] dark:text-gold"
+          className="display absolute -top-6 left-0 text-[6rem] leading-none text-gold-display md:-top-8 md:text-[8.5rem] dark:text-gold"
         >
           “
         </span>
         <blockquote
-          className="font-display text-2xl leading-[1.2] font-medium tracking-[-0.015em] text-gold-deep italic md:text-[2.1rem] dark:text-gold"
+          className="font-display text-2xl leading-[1.2] font-medium tracking-[-0.015em] text-gold-display italic md:text-[2.1rem] dark:text-gold"
           style={{ textWrap: "balance", fontVariationSettings: '"SOFT" 100, "WONK" 1' }}
         >
           {t("text")}

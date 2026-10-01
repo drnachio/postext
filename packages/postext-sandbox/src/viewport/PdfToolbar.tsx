@@ -62,6 +62,7 @@ export const PdfToolbar = memo(function PdfToolbar({
     >
       {showDirtyArrow && (
         <span
+          role="img"
           aria-label={labels.pdfDirty}
           title={labels.pdfDirty}
           style={{

@@ -29,9 +29,11 @@ interface UseCodeMirrorOptions {
   getRefContext?: () => RefCompletionContext;
   /** Accessible name of the text area (screen readers announce it). */
   ariaLabel?: string;
+  /** id of a hint read after the name (keyboard use). */
+  ariaDescribedBy?: string;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
@@ -62,7 +64,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
     });
 
     const extensions = [
-      ...(ariaLabel ? [EditorView.contentAttributes.of({ 'aria-label': ariaLabel, 'aria-multiline': 'true' })] : []),
+      ...(ariaLabel ? [EditorView.contentAttributes.of({ 'aria-label': ariaLabel, 'aria-multiline': 'true', tabindex: '0', ...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}) })] : []),
       lineNumbers(),
       highlightActiveLine(),
       history(),

@@ -118,14 +118,17 @@ function sourceWords(
   config: PostextConfig,
   resources: readonly Resource[],
   fonts: () => string[],
+  labels: SandboxLabels,
 ): string[] {
   switch (source) {
+    // The pickers' own help text (shown when a row passes none) is part
+    // of what their rows show.
     case 'color':
-      return [...COLOR_WORDS, ...(config.colorPalette ?? []).flatMap((e) => [e.name, e.id])];
+      return [...COLOR_WORDS, labels.colorFieldHelp, labels.paletteColorFieldHelp, ...(config.colorPalette ?? []).flatMap((e) => [e.name, e.id])];
     case 'dimension':
       return DIMENSION_UNITS;
     case 'font':
-      return fonts();
+      return [...fonts(), labels.fontFieldHelp];
     case 'resources':
       // Pickers name a resource by its caption and id.
       return resources.flatMap((r) => (r.caption ? [r.id, r.caption] : [r.id]));
@@ -157,7 +160,7 @@ export function buildSectionSearchIndex(
       collectStrings(record[key], dynamic);
       collectStrings(DEFAULT_SLICES[key], dynamic);
     }
-    for (const source of sources) dynamic.push(...sourceWords(source, config, resources, fonts));
+    for (const source of sources) dynamic.push(...sourceWords(source, config, resources, fonts, labels));
     const all = [text.title, ...text.labels, normalizeText(dynamic.join(' | '))].join(' | ');
     return { id: entry.id, colors: sources.includes('color'), title: text.title, labels: text.labels, all };
   });

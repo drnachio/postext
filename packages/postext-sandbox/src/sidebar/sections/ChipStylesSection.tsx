@@ -15,7 +15,7 @@ const BOX_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const BORDER_UNITS: DimensionUnit[] = ['pt', 'px'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 
 /** Turn free text into a `:chip[…]{style="…"}`-friendly id. */
 function slugifyStyleId(raw: string): string {
@@ -88,7 +88,7 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
       <div className="mb-2 flex flex-col gap-2">
         <FieldRow
           stacked
-          label={labels.idLabel}
+          label={labels.idLabel} tooltip={labels.styleIdHelp}
           hint={idTaken ? labels.chipStyleIdHintDuplicate : labels.chipStyleUsageHint.replace('__id__', style.id)}
           className="mb-0"
         >
@@ -108,7 +108,7 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
             style={{ ...inputStyle, borderColor: idEmpty || idTaken ? 'var(--destructive)' : 'var(--rule)' }}
           />
         </FieldRow>
-        <FieldRow stacked label={labels.chipStyleNameLabel} className="mb-0">
+        <FieldRow stacked label={labels.chipStyleNameLabel} tooltip={labels.styleNameHelp} className="mb-0">
           <input
             type="text"
             value={style.name ?? ''}
@@ -152,14 +152,14 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
           fieldId={`chipStyle-${style.id}-color`}
         />
         <ToggleSwitch
-          label={labels.bold}
+          label={labels.bold} tooltip={labels.boldHelp}
           checked={resolved.bold}
           onChange={(v) => onChange({ bold: v })}
           isDefault={unset('bold')}
           onReset={() => onResetField('bold')}
         />
         <ToggleSwitch
-          label={labels.italic}
+          label={labels.italic} tooltip={labels.italicHelp}
           checked={resolved.italic}
           onChange={(v) => onChange({ italic: v })}
           isDefault={unset('italic')}
@@ -169,7 +169,7 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
 
       <CollapsibleSection title={labels.chipStyleBoxGroup} sectionId={`${sectionId}.box`} variant="subsection">
         <ToggleSwitch
-          label={labels.chipStyleBackground}
+          label={labels.chipStyleBackground} tooltip={labels.chipStyleBackgroundTooltip}
           checked={resolved.backgroundEnabled}
           onChange={(v) => onChange({ backgroundEnabled: v })}
           isDefault={unset('backgroundEnabled')}

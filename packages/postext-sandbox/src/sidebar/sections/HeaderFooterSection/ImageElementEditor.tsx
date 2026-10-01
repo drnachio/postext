@@ -88,7 +88,7 @@ function ImageResourceField({ value, onChange }: { value: string; onChange: (id:
       tooltip={labels.headerFooterImageResourceTooltip}
       stacked
       extraTerms={images.map((r) => r.id)}
-      hint={error ? <span style={{ color: 'var(--destructive)' }}>{error}</span> : undefined}
+      hint={error ? <span role="alert" style={{ color: 'var(--destructive)' }}>{error}</span> : undefined}
     >
       <span
         className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded border"
@@ -210,7 +210,7 @@ export function ImageElementEditor({ raw, resolved, slotKind, siblings = [], onC
         tooltip={labels.headerFooterImageDecorativeTooltip}
       />}
       <DimensionInput
-        label={labels.headerFooterElementWidth}
+        label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip}
         value={width}
         onChange={(dim: Dimension) => updateSize({ width: dim })}
         min={0}

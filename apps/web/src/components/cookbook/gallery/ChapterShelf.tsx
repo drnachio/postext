@@ -43,7 +43,7 @@ function ChapterShelf({
           >
             {chapter.number}
           </span>
-          <p aria-hidden="true" className="kicker relative max-w-[70%] text-[0.6rem] opacity-95">
+          <p aria-hidden="true" className="kicker relative max-w-[70%] text-[0.6rem]">
             {partHeading}
           </p>
           <h3
@@ -54,7 +54,7 @@ function ChapterShelf({
             {chapter.title}
           </h3>
           {intro && (
-            <p className="relative mt-2 max-w-2xl font-body text-[0.9rem] leading-snug italic opacity-95 max-sm:line-clamp-3">
+            <p className="relative mt-2 max-w-2xl font-body text-[0.9rem] leading-normal italic max-sm:line-clamp-3">
               {intro}
             </p>
           )}
@@ -81,7 +81,7 @@ function ChapterShelf({
           <a
             href={chapterHref(locale, chapter.id)}
             data-cb-cat={chapter.id}
-            className="group inline-flex items-center gap-1.5 rounded-sm font-sans text-sm font-semibold text-(--part-ink)"
+            className="group inline-flex min-h-10 items-center gap-1.5 rounded-sm font-sans text-sm font-semibold text-(--part-ink)"
           >
             {allLabel}
             <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">

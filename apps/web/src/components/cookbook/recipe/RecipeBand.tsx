@@ -9,16 +9,16 @@ import { galleryHref, type RecipeT, type RecipeView } from "./model";
 export function RecipeBreadcrumb({ view, t }: { view: RecipeView; t: RecipeT }) {
   const { locale, chapter } = view;
   return (
-    <nav aria-label={t("breadcrumbLabel")} className="cb-container pt-4 pb-3">
+    <nav aria-label={t("breadcrumbLabel")} className="cb-container pt-2 pb-1">
       <ol className="kicker flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.62rem] text-slate">
         <li>
-          <Link href={galleryHref(locale)} className="transition-colors hover:text-foreground">
+          <Link href={galleryHref(locale)} className="inline-flex min-h-10 min-w-10 items-center justify-center transition-colors hover:text-foreground">
             {t("cookbook")}
           </Link>
         </li>
         <li aria-hidden="true">›</li>
         <li>
-          <Link href={galleryHref(locale, "cat", chapter.id)} className="transition-colors hover:text-foreground">
+          <Link href={galleryHref(locale, "cat", chapter.id)} className="inline-flex min-h-10 min-w-10 items-center justify-center transition-colors hover:text-foreground">
             {chapter.title[locale]}
           </Link>
         </li>
@@ -45,14 +45,14 @@ export function RecipeBand({ view, t, actions }: { view: RecipeView; t: RecipeT;
           <span aria-hidden="true">{view.numberLabel}</span>
           <span className="sr-only">{t("numberAria", { number: recipe.meta.number })}</span>
         </span>
-        <Kicker className="relative max-w-[70%] text-[0.62rem] opacity-95">
+        <Kicker className="relative max-w-[70%] text-[0.62rem]">
           {t("kicker", { number: chapter.number, chapter: chapter.title[locale] })}
         </Kicker>
         <span aria-hidden="true" className="relative mt-3 block h-[3px] w-10 bg-current" />
         <h1 className="display relative mt-4 max-w-[22ch] text-[2rem] md:text-[2.6rem]" style={{ textWrap: "balance" }}>
           {view.title}
         </h1>
-        <p className="relative mt-3 max-w-2xl font-body text-base leading-relaxed opacity-95 md:text-lg">{view.summary}</p>
+        <p className="relative mt-3 max-w-2xl font-body text-base leading-relaxed md:text-lg">{view.summary}</p>
         {view.question && (
           <p className="cb-band-question relative mt-3 hidden max-w-2xl sm:block">
             <span className="kicker mr-2 text-[0.6rem]">{t("answers")}</span>

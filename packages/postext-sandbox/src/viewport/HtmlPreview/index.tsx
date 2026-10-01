@@ -15,7 +15,7 @@ import type {
   VDTDocument,
   HtmlRenderIndex,
 } from 'postext';
-import { useSandbox, useSandboxDocSourceRef, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
+import { useSandbox, useSandboxSelector, useSandboxDocSourceRef, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
 import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
@@ -77,6 +77,10 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   const layoutSource = useLayoutSource();
   const { chapterId: activeChapterId } = layoutSource;
   const { hostRef, shadowRef } = useShadowDom();
+  const a11yRegion = useSandboxSelector((s) => s.labels.htmlPreviewRegion);
+  const a11yNewTab = useSandboxSelector((s) => s.labels.opensInNewTab);
+  const a11yRef = useRef({ region: a11yRegion, newTab: a11yNewTab });
+  a11yRef.current = { region: a11yRegion, newTab: a11yNewTab };
   // A book meant to be read whole (`view.canvasScope: 'book'`, as the canvas
   // reads it) is laid out whole here too: every chapter as one document,
   // continued from nothing. Otherwise the viewer shows the active chapter,
@@ -164,7 +168,26 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     shadow.appendChild(style);
     const scroll = document.createElement('div');
     scroll.className = 'pt-scroll';
+    // A named region that takes the keyboard (WCAG 2.1.1): arrow keys and
+    // Page Up/Down scroll the pages.
+    scroll.setAttribute('role', 'region');
+    scroll.setAttribute('aria-label', a11yRef.current.region);
+    scroll.tabIndex = 0;
     shadow.appendChild(scroll);
+    // Links in the text open in a new tab (below): each says so (WCAG
+    // 3.2.5) through a hidden description in the same shadow root.
+    const newTab = document.createElement('span');
+    newTab.id = 'pt-new-tab';
+    newTab.hidden = true;
+    newTab.textContent = a11yRef.current.newTab;
+    shadow.appendChild(newTab);
+    const describeLinks = () => {
+      for (const a of scroll.querySelectorAll<HTMLAnchorElement>('a[href]:not([href^="#"]):not([aria-describedby])')) {
+        a.setAttribute('aria-describedby', 'pt-new-tab');
+      }
+    };
+    const linkObserver = new MutationObserver(describeLinks);
+    linkObserver.observe(scroll, { childList: true, subtree: true });
     scrollHostRef.current = scroll;
     contentHostRef.current = scroll;
     // A Markdown link in the preview opens in a tab of its own instead of
@@ -183,6 +206,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     lastRenderSigRef.current = null;
     overlayMapRef.current.clear();
     return () => {
+      linkObserver.disconnect();
       scroll.removeEventListener('click', onLinkClick);
       scrollHostRef.current = null;
       contentHostRef.current = null;

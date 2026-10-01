@@ -117,6 +117,7 @@ function SectionFrame({
   };
 
   const isSubsection = variant === 'subsection';
+  const HeadingTag = (['h4', 'h5', 'h6'] as const)[Math.min(depth, 2)]!;
   const modified = hasOverrides || overrideCount > 0;
 
   return (
@@ -128,15 +129,18 @@ function SectionFrame({
       className={cn(topLevel && 'border-t border-(--rule)', !topLevel && !isSubsection && 'my-1.5 rounded-md border border-(--rule)')}
     >
       <div className="flex w-full items-center">
+        {/* Each section is titled by a heading (WCAG 2.4.10): the panel is
+            h2, a settings page h3, its sections h4 and deeper levels below. */}
+        <HeadingTag className="m-0 flex min-w-0 flex-1 font-[inherit]">
         <Collapsible.Trigger
           className={cn(
             'flex flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent text-left transition-colors',
             'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             topLevel
-              ? 'min-h-10 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
+              ? 'min-h-11 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
               : isSubsection
-                ? 'min-h-8 px-3 py-1.5 text-[0.72rem] font-medium text-(--slate) hover:text-(--foreground)'
-                : 'min-h-8 rounded-md px-2.5 py-1.5 text-xs font-medium text-(--foreground) hover:bg-(--surface)',
+                ? 'min-h-11 px-3 py-1.5 text-[0.72rem] font-medium text-(--slate) hover:text-(--foreground)'
+                : 'min-h-11 rounded-md px-2.5 py-1.5 text-xs font-medium text-(--foreground) hover:bg-(--surface)',
           )}
         >
           <ChevronRight
@@ -159,6 +163,7 @@ function SectionFrame({
             </span>
           )}
         </Collapsible.Trigger>
+        </HeadingTag>
         {hasOverrides && onReset && (
           <ConfirmPopover message={resetConfirmMessage ?? labels.resetSectionConfirm} onConfirm={onReset}>
             {({ open: openConfirm }) => (
@@ -169,7 +174,7 @@ function SectionFrame({
                   e.stopPropagation();
                   openConfirm(e);
                 }}
-                className="mr-2"
+                className="mr-1"
               />
             )}
           </ConfirmPopover>

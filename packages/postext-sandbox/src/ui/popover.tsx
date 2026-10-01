@@ -2,6 +2,7 @@
 
 import type { CSSProperties, ReactNode, Ref, RefObject } from 'react';
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
+import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './surface';
 
 export type PopoverSide = 'top' | 'right' | 'bottom' | 'left';
@@ -46,13 +47,14 @@ export function Popover({
   style,
   children,
 }: PopoverProps) {
+  const portalContainer = usePortalContainer();
   return (
     <PopoverPrimitive.Root
       open={open}
       onOpenChange={(next, details) => onOpenChange(next, details.reason, details.event)}
       modal={false}
     >
-      <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Portal container={portalContainer}>
         <PopoverPrimitive.Positioner
           anchor={anchor}
           side={side}

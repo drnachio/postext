@@ -122,7 +122,7 @@ export function PdfMasterUploader({ fileId, onAttached, onRemoved }: PdfMasterUp
         }}
       />
       {error && (
-        <span className="text-xs" style={{ color: 'var(--destructive)' }}>
+        <span role="alert" className="text-xs" style={{ color: 'var(--destructive)' }}>
           {error}
         </span>
       )}

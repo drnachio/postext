@@ -70,8 +70,7 @@ export function ChapterList() {
   }, [chapters, plan]);
 
   return (
-    <section
-      aria-label={labels.chapters}
+    <div
       className="flex min-h-0 flex-1 flex-col px-2 pt-1.5"
       style={{ backgroundColor: 'var(--background)' }}
     >
@@ -103,7 +102,7 @@ export function ChapterList() {
           )}
         </ul>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -188,7 +187,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
     <li className="mb-0.5">
       {part && (
         <div
-          className={cn('truncate px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide', index === 0 ? 'pt-0.5' : 'pt-2')}
+          className={cn('truncate px-1 pb-1 text-[12px] font-semibold pt-caps tracking-wide', index === 0 ? 'pt-0.5' : 'pt-2')}
           style={{ color: 'var(--slate)' }}
           title={part}
         >
@@ -208,7 +207,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
             title={labels.chapterDragHandle}
             className={cn(
               'flex h-full w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded border-0 bg-transparent p-0',
-              'hover:text-(--foreground) focus-visible:outline-1 focus-visible:outline-offset-1 outline-(--brand-hover)',
+              'hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand-hover)',
               dragging && 'cursor-grabbing',
             )}
             style={{ color: 'var(--slate)' }}

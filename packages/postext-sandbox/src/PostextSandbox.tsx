@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
-import { SandboxProvider, useSandboxSelector, useSandboxDispatch } from './context/SandboxContext';
+import { SandboxProvider, useSandboxSelector, useSandboxDispatch, useSandboxProjects } from './context/SandboxContext';
 import { LayoutServiceProvider } from './worker/LayoutServiceContext';
 import { preloadConfigFonts, getConfigFontFamilies } from './controls/fontLoader';
 import { ActivityBar, MobileNavBar } from './sidebar/ActivityBar';
@@ -21,8 +21,31 @@ import { HtmlViewport } from './viewport/HtmlViewport';
 import { PdfViewport } from './viewport/PdfViewport';
 import { ChapterPaginator } from './viewport/ChapterPaginator';
 import { useChapterHashSync } from './viewport/useChapterHashSync';
-import { SandboxGlobalStyles, TooltipProvider } from './ui';
+import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost } from './ui';
 import { useCompactLayout } from './hooks/useCompactLayout';
+import { SandboxAnnouncer } from './ui/announcer';
+import type { PanelId } from './types';
+
+const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
+  projects: 'navBooks',
+  chapters: 'navChapters',
+  markdown: 'navManuscript',
+  resources: 'navResources',
+  fonts: 'navFonts',
+  config: 'navDesign',
+  warnings: 'navWarnings',
+};
+
+/** The page's one level-1 heading, read by assistive tech only: the
+ *  sandbox's name and the open book. */
+function SandboxHeading() {
+  const labels = useSandboxSelector((s) => s.labels);
+  const { projects, activeProjectId } = useSandboxProjects();
+  const presetName = useSandboxSelector((s) => s.presetSummaries.find((p) => p.id === s.activePresetId)?.name);
+  const book = activeProjectId ? projects.find((p) => p.id === activeProjectId)?.name : presetName;
+  return <h1 className="sr-only">{book ? labels.sandboxHeadingBook.replace('__book__', book) : labels.sandboxHeading}</h1>;
+}
+
 
 function SandboxLayout({
   themeToggle,
@@ -45,6 +68,8 @@ function SandboxLayout({
   const booting = useSandboxSelector((s) => s.booting);
   const bookLoading = useSandboxSelector((s) => s.bookLoading);
   const loadingLabel = useSandboxSelector((s) => s.labels.bookLoading);
+  const labels = useSandboxSelector((s) => s.labels);
+  const panelLabel = activePanel ? labels[PANEL_LABEL_KEYS[activePanel]] : undefined;
   useChapterHashSync();
   const compact = useCompactLayout();
   // A phone opens on the pages: a panel there covers the whole preview, so
@@ -89,7 +114,7 @@ function SandboxLayout({
         const container = containerRef.current;
         if (!container) return;
         const rect = container.getBoundingClientRect();
-        const sidebar = target.previousElementSibling as HTMLElement | null;
+        const sidebar = target.closest<HTMLElement>('[data-postext-sidebar]');
         if (!sidebar) return;
         const sidebarLeft = sidebar.getBoundingClientRect().left;
         const minViewportWidth = 200;
@@ -152,14 +177,18 @@ function SandboxLayout({
   // book than the stored one (the stored book is never shown then).
   if (!fontsReady || booting) {
     return (
-      <div
-        className="flex h-full w-full items-center justify-center"
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex h-full w-full flex-col items-center justify-center gap-3 text-xs outline-none"
         style={{ backgroundColor: 'var(--background)', color: 'var(--slate)' }}
-        role="status"
-        aria-label={loadingLabel}
       >
-        <Spinner />
-      </div>
+        <h1 className="sr-only">{labels.sandboxHeading}</h1>
+        <div role="status" className="flex flex-col items-center gap-3">
+          <Spinner />
+          <span className="sr-only">{loadingLabel}</span>
+        </div>
+      </main>
     );
   }
 
@@ -168,7 +197,6 @@ function SandboxLayout({
     // rather than shown as if it were the new one.
     <div
       role="status"
-      aria-live="polite"
       className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 text-xs"
       style={{ backgroundColor: 'var(--background)', color: 'var(--slate)' }}
     >
@@ -186,15 +214,23 @@ function SandboxLayout({
         className="flex h-full w-full flex-col overflow-hidden"
         style={{ backgroundColor: 'var(--background)', fontFamily: 'var(--font-sans, ui-sans-serif, system-ui, sans-serif)', overscrollBehavior: 'none' }}
       >
+        {/* The open panel covers the preview but is a region of its own,
+            beside the main landmark, as the side bar is on a wide screen. */}
         <div className="relative flex min-h-0 flex-1 flex-col">
+        <main id="main-content" tabIndex={-1} className="relative flex min-h-0 flex-1 flex-col outline-none">
+          <SandboxHeading />
           <ChapterPaginator />
+          {/* Covered by an open panel: out of the tab order and of the
+              accessibility tree, so focus never lands under the panel
+              (WCAG 2.4.11/2.4.12). */}
+          <div className="flex min-h-0 flex-1 flex-col" inert={activePanel !== null}>
           <ViewportTabs
             compact
             leading={homeLink}
             trailing={(
               <>
-                {themeToggle && <div className="flex h-8 w-8 items-center justify-center">{themeToggle}</div>}
-                {languageSwitcher && <div className="flex h-8 w-8 items-center justify-center">{languageSwitcher}</div>}
+                {themeToggle && <div className="flex h-11 w-11 items-center justify-center">{themeToggle}</div>}
+                {languageSwitcher && <div className="flex h-11 w-11 items-center justify-center">{languageSwitcher}</div>}
               </>
             )}
           />
@@ -202,11 +238,15 @@ function SandboxLayout({
             {renderViewport()}
             {loadingCover}
           </div>
-          {activePanel !== null && (
-            <div className="absolute inset-0 z-30 flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
-              {renderPanel()}
-            </div>
-          )}
+          </div>
+          <SandboxAnnouncer />
+          <PortalHost />
+        </main>
+        {activePanel !== null && (
+          <section aria-label={panelLabel} className="absolute inset-0 z-30 flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
+            {renderPanel()}
+          </section>
+        )}
         </div>
         <MobileNavBar />
       </div>
@@ -221,26 +261,30 @@ function SandboxLayout({
     >
       <ActivityBar themeToggle={themeToggle} languageSwitcher={languageSwitcher} homeUrl={homeUrl} homeLink={homeLink} />
 
-      <SidebarPanel>
+      <SidebarPanel
+        label={panelLabel}
+        handle={activePanel !== null && (
+          <ResizableHandle
+            onPointerDown={handlePointerDown}
+            value={sidebarPercent}
+            onValueChange={(v) => dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: v })}
+          />
+        )}
+      >
         {renderPanel()}
       </SidebarPanel>
 
-      {activePanel !== null && (
-        <ResizableHandle
-          onPointerDown={handlePointerDown}
-          value={sidebarPercent}
-          onValueChange={(v) => dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: v })}
-        />
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col">
+      <main id="main-content" tabIndex={-1} className="flex min-w-0 flex-1 flex-col outline-none">
+        <SandboxHeading />
         <ChapterPaginator />
         <ViewportTabs />
         <div className="relative min-h-0 flex-1 overflow-hidden">
           {renderViewport()}
           {loadingCover}
         </div>
-      </div>
+        <SandboxAnnouncer />
+        <PortalHost />
+      </main>
     </div>
   );
 }
@@ -281,7 +325,7 @@ export function PostextSandbox({
     : true;
 
   return (
-    <div className={className ?? 'h-full w-full'}>
+    <div className={className ?? 'h-full w-full'} data-postext-sandbox="">
       <SandboxGlobalStyles />
       <LayoutServiceProvider>
       <SandboxProvider
@@ -294,6 +338,7 @@ export function PostextSandbox({
         onConfigChange={onConfigChange}
         onMarkdownChange={onMarkdownChange}
       >
+        <PortalProvider>
         <TooltipProvider>
           <SandboxLayout
             themeToggle={themeToggle}
@@ -303,6 +348,7 @@ export function PostextSandbox({
             homeLink={homeLink}
           />
         </TooltipProvider>
+        </PortalProvider>
       </SandboxProvider>
       </LayoutServiceProvider>
     </div>

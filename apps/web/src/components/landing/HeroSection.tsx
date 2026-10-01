@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { abbreviate } from "@/components/brand/abbreviate";
 import { version } from "postext/package.json";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
@@ -9,6 +10,7 @@ import { InstallChip } from "./InstallChip";
  *  in the light one. */
 export async function HeroSection() {
   const t = await getTranslations("Hero");
+  const locale = await getLocale();
 
   return (
     <section
@@ -40,7 +42,7 @@ export async function HeroSection() {
           </h1>
           <span aria-hidden="true" className="mt-6 block h-[3px] w-14 bg-brand" />
           <p className="mt-5 max-w-xl font-body text-base leading-relaxed text-foreground/75 italic lg:text-[1.05rem]">
-            {t("subtitle")}
+            {abbreviate(t("subtitle"), locale, ["html", "pdf"])}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link

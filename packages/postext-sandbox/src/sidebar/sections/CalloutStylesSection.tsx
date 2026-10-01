@@ -69,7 +69,7 @@ const OFFSET_UNITS: DimensionUnit[] = ['mm', 'pt', 'px', 'em'];
 const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 
 /** Turn free text into a `:::callout{type="…"}`-friendly id. */
 function slugifyStyleId(raw: string): string {
@@ -105,13 +105,14 @@ function iconLabel(r: Resource): string {
 
 interface FieldProps {
   label: string;
+  tooltip?: string;
   hint?: string;
   children: React.ReactNode;
 }
 
-function Field({ label, hint, children }: FieldProps) {
+function Field({ label, tooltip, hint, children }: FieldProps) {
   return (
-    <FieldRow stacked label={label} hint={hint} className="mb-0">
+    <FieldRow stacked label={label} tooltip={tooltip} hint={hint} className="mb-0">
       {children}
     </FieldRow>
   );
@@ -291,7 +292,7 @@ function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset,
             />
           ) : (
             <SelectInput
-              label={labels.calloutStyleIconAlign}
+              label={labels.calloutStyleIconAlign} tooltip={labels.calloutStyleIconAlignTooltip}
               value={value.align}
               options={alignOptions}
               onChange={(v) => update({ align: v as CalloutIconAlign })}
@@ -530,7 +531,7 @@ function CalloutStyleCard({
 
       <div className="mb-2 flex flex-col gap-2">
         <Field
-          label={labels.idLabel}
+          label={labels.idLabel} tooltip={labels.styleIdHelp}
           hint={
             idTaken
               ? labels.calloutStyleIdHintDuplicate
@@ -556,7 +557,7 @@ function CalloutStyleCard({
             }}
           />
         </Field>
-        <Field label={labels.calloutStyleNameLabel}>
+        <Field label={labels.calloutStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
             type="text"
             value={style.name ?? ''}
@@ -788,7 +789,7 @@ function CalloutStyleCard({
         {resolved.continuesMarkerEnabled && (
           <>
             <TextInput
-              label={labels.tableContinuesMarker}
+              label={labels.tableContinuesMarker} tooltip={labels.tableContinuesMarkerTooltip}
               value={resolved.continuesMarker}
               onChange={(v) => onChange({ continuesMarker: v })}
               isDefault={unset('continuesMarker')}
@@ -819,7 +820,7 @@ function CalloutStyleCard({
         variant="subsection"
       >
         <ToggleSwitch
-          label={labels.calloutStyleBorder}
+          label={labels.calloutStyleBorder} tooltip={labels.calloutStyleBorderTooltip}
           checked={resolved.border.enabled}
           onChange={(v) => border({ enabled: v })}
           isDefault={groupUnset('border', 'enabled')}
@@ -893,7 +894,7 @@ function CalloutStyleCard({
         {resolved.stripe.enabled && (
           <>
             <SelectInput
-              label={labels.calloutStyleStripeSide}
+              label={labels.calloutStyleStripeSide} tooltip={labels.calloutStyleStripeSideTooltip}
               value={resolved.stripe.side}
               options={stripeSideOptions}
               onChange={(v) => stripe({ side: v as CalloutStripeSide })}
@@ -1224,7 +1225,7 @@ function CalloutStyleCard({
           onReset={() => resetGroupField('titleStyle', 'fontWeight')}
         />
         <ToggleSwitch
-          label={labels.calloutStyleTitleItalic}
+          label={labels.calloutStyleTitleItalic} tooltip={labels.italicHelp}
           checked={resolved.titleStyle.italic}
           onChange={(v) => title({ italic: v })}
           isDefault={groupUnset('titleStyle', 'italic')}
@@ -1239,7 +1240,7 @@ function CalloutStyleCard({
           fieldId={`${fieldId}-title`}
         />
         <SelectInput
-          label={labels.calloutStyleTitleTransform}
+          label={labels.calloutStyleTitleTransform} tooltip={labels.calloutStyleTitleTransformTooltip}
           value={resolved.titleStyle.textTransform}
           options={transformOptions}
           onChange={(v) => title({ textTransform: v as CalloutTextTransform })}
@@ -1395,7 +1396,7 @@ function CalloutStyleCard({
           onReset={() => resetGroupField('body', 'smallCaps')}
         />
         <SelectInput
-          label={labels.alignmentLabel}
+          label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
           value={resolved.body.textAlign}
           options={bodyAlignOptions}
           onChange={(v) => body({ textAlign: v as CalloutBodyStyleConfig['textAlign'] })}

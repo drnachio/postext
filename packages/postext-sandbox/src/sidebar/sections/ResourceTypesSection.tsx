@@ -61,17 +61,18 @@ function resetOnOptions(labels: SandboxLabels): { value: ResourceCounterReset; l
 }
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
-const inputStyle = { borderColor: 'var(--rule)', color: 'var(--foreground)' } as const;
+const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
 
 interface FieldProps {
   label: string;
+  tooltip?: string;
   children: React.ReactNode;
 }
 
-function Field({ label, children }: FieldProps) {
+function Field({ label, tooltip, children }: FieldProps) {
   return (
-    <FieldRow stacked label={label} className="mb-0">
+    <FieldRow stacked label={label} tooltip={tooltip} className="mb-0">
       {children}
     </FieldRow>
   );
@@ -199,7 +200,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Field label={labels.idLabel}>
+              <Field label={labels.idLabel} tooltip={labels.styleIdHelp}>
                 <input
                   type="text"
                   value={type.id}
@@ -210,7 +211,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={{ ...inputStyle, color: 'var(--slate)', cursor: 'not-allowed' }}
                 />
               </Field>
-              <Field label={labels.resourceTypeNameLabel}>
+              <Field label={labels.resourceTypeNameLabel} tooltip={labels.resourceTypeNameTooltip}>
                 <input
                   type="text"
                   value={type.name}
@@ -220,7 +221,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label={labels.resourceTypeNamePluralLabel}>
+              <Field label={labels.resourceTypeNamePluralLabel} tooltip={labels.resourceTypeNamePluralTooltip}>
                 <input
                   type="text"
                   value={type.namePlural ?? ''}
@@ -230,7 +231,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label={labels.resourceTypeShortLabelLabel}>
+              <Field label={labels.resourceTypeShortLabelLabel} tooltip={labels.resourceTypeShortLabelTooltip}>
                 <input
                   type="text"
                   value={type.shortLabel}
@@ -240,7 +241,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label={labels.resourceTypeNumberingLabel}>
+              <Field label={labels.resourceTypeNumberingLabel} tooltip={labels.resourceTypeNumberingTooltip}>
                 <input
                   type="text"
                   value={type.numberingTemplate}
@@ -251,7 +252,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label={labels.resourceTypeResetCounterLabel}>
+              <Field label={labels.resourceTypeResetCounterLabel} tooltip={labels.resourceTypeResetCounterTooltip}>
                 <select
                   value={type.resetOn}
                   onChange={(e) =>
@@ -268,7 +269,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   ))}
                 </select>
               </Field>
-              <Field label={labels.resourceTypeCounterFormatLabel}>
+              <Field label={labels.resourceTypeCounterFormatLabel} tooltip={labels.resourceTypeCounterFormatTooltip}>
                 <select
                   value={resourceCounterFormat(type.counterFormat)}
                   onChange={(e) =>
@@ -285,7 +286,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   ))}
                 </select>
               </Field>
-              <Field label={labels.resourceTypeCaptionPrefixLabel}>
+              <Field label={labels.resourceTypeCaptionPrefixLabel} tooltip={labels.resourceTypeCaptionPrefixTooltip}>
                 <input
                   type="text"
                   value={type.captionPrefix}
@@ -311,7 +312,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   {labels.resourceTypePlacementHint}
                 </p>
                 <div className="flex flex-col gap-2">
-                  <Field label={labels.resourceTypePlacementPosition}>
+                  <Field label={labels.resourceTypePlacementPosition} tooltip={labels.resourceTypePlacementPositionTooltip}>
                     <select
                       value={type.defaultPlacement?.position ?? ''}
                       onChange={(e) => updateTypePlacement(type, { position: (e.target.value || undefined) as ResourcePlacement['position'] })}
@@ -326,7 +327,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       <option value="here">{labels.resourceTypePlacementPositionHere}</option>
                     </select>
                   </Field>
-                  <Field label={labels.resourceTypePlacementSpan}>
+                  <Field label={labels.resourceTypePlacementSpan} tooltip={labels.resourceTypePlacementSpanTooltip}>
                     <select
                       value={type.defaultPlacement?.span ?? ''}
                       onChange={(e) => updateTypePlacement(type, { span: (e.target.value || undefined) as ResourcePlacement['span'] })}
@@ -373,7 +374,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                     isDefault={type.defaultPlacement?.captionSide === undefined}
                     onReset={() => updateTypePlacement(type, { captionSide: undefined })}
                   />
-                  <Field label={labels.resourceTypePlacementRotate}>
+                  <Field label={labels.resourceTypePlacementRotate} tooltip={labels.resourceTypePlacementRotateTooltip}>
                     <select
                       value={type.defaultPlacement?.rotate ?? ''}
                       onChange={(e) => updateTypePlacement(type, { rotate: (e.target.value || undefined) as ResourcePlacement['rotate'] })}

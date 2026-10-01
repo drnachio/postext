@@ -112,7 +112,7 @@ export function PageMock({
         className="bg-[#f7f1e3] font-sans"
         style={{ margin: `${pt(6)} 0 ${pt(9)}`, padding: `${mm(3)} ${mm(3.5)} ${mm(2.6)} ${mm(4.5)}`, borderLeft: `${pt(3)} solid #2b4acb`, borderRadius: mm(1.2), fontSize: pt(8.3), lineHeight: pt(12), textAlign: "left" }}
       >
-        <div className="font-bold uppercase text-[#2b4acb]" style={{ fontSize: pt(7.5), letterSpacing: pt(1.6), marginBottom: mm(1.6) }}>
+        <div className="font-bold uppercase text-[#1f38a8]" style={{ fontSize: pt(7.5), letterSpacing: pt(1.6), marginBottom: mm(1.6) }}>
           {tryTitle}
         </div>
         {tryText}
@@ -179,7 +179,7 @@ export function PageMock({
                 <rect x={14} y={80} width={132} height={0.8} fill="#15171c" />
               </svg>
               <div className="font-sans" style={{ marginTop: mm(1.8), marginBottom: pt(12), fontSize: pt(7.4), lineHeight: 1.3, textAlign: "left" }}>
-                <b className="text-[#2b4acb]">{figureLabel}</b> {figureCaption}
+                <b className="text-[#1f38a8]">{figureLabel}</b> {figureCaption}
               </div>
             </div>
             <div data-col="right-clip" className="overflow-hidden">
@@ -189,7 +189,7 @@ export function PageMock({
         </div>
 
         {/* Folio */}
-        <div className="absolute inset-x-0 text-center font-sans font-bold text-[#2b4acb]" style={{ bottom: mm(10), fontSize: pt(8.5) }}>
+        <div className="absolute inset-x-0 text-center font-sans font-bold text-[#1f38a8]" style={{ bottom: mm(10), fontSize: pt(8.5) }}>
           5
         </div>
       </div>

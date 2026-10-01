@@ -65,7 +65,7 @@ export function HtmlToolbar({
 }: HtmlToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
-  const rootProps = useToolbarRootProps(hidden);
+  const rootProps = useToolbarRootProps(hidden, true);
   const prevDisabled = columnMode !== 'multi' || !canScrollPrev;
   const nextDisabled = columnMode !== 'multi' || !canScrollNext;
 

@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useRef, useState, type ReactNode, type SyntheticEvent } from 'react';
+import { useCallback, useId, useRef, useState, type ReactNode, type SyntheticEvent } from 'react';
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './surface';
 import { Button } from './button';
+import { usePortalContainer } from './portal';
 
 /** Argument accepted by `open`: the click event of the trigger (its
  *  `currentTarget` becomes the anchor) or an explicit element. */
@@ -27,6 +28,8 @@ export function ConfirmPopover({ message, onConfirm, confirmLabel, cancelLabel, 
   const wrapperRef = useRef<HTMLSpanElement>(null);
   const anchorRef = useRef<Element | null>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const messageId = useId();
+  const container = usePortalContainer();
 
   const open = useCallback((e?: ConfirmOpenArg) => {
     let el: Element | null = null;
@@ -47,7 +50,7 @@ export function ConfirmPopover({ message, onConfirm, confirmLabel, cancelLabel, 
         {children({ open })}
       </span>
       <PopoverPrimitive.Root open={visible} onOpenChange={(next) => { if (!next) close(); }} modal={false}>
-        <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Portal container={container}>
           <PopoverPrimitive.Positioner
             anchor={anchorRef}
             side="bottom"
@@ -59,10 +62,11 @@ export function ConfirmPopover({ message, onConfirm, confirmLabel, cancelLabel, 
           >
             <PopoverPrimitive.Popup
               data-postext-popup=""
+              aria-labelledby={messageId}
               initialFocus={confirmRef}
               style={{ ...POPUP_SURFACE, padding: '8px 10px', minWidth: 180, maxWidth: 260 }}
             >
-              <div style={{ marginBottom: 8 }}>{message}</div>
+              <div id={messageId} style={{ marginBottom: 8 }}>{message}</div>
               <div className="flex items-center justify-end gap-1.5">
                 <Button variant="ghost" size="xs" onClick={close}>
                   {cancelLabel ?? labels.cancel}

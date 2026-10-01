@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { abbreviate } from "@/components/brand/abbreviate";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { penDefineData } from "@/lib/codepen";
@@ -31,6 +32,7 @@ export async function HowItWorksSection() {
   const t = await getTranslations("HowItWorks");
   const tl = await getTranslations("Landing");
   const api = await getTranslations("ApiPreview");
+  const locale = await getLocale();
 
   const steps = [1, 2, 3].map((n) => ({
     number: `3.${n}`,
@@ -66,7 +68,7 @@ export async function HowItWorksSection() {
 
         <div className="reveal mt-16 grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-4">
-            <Kicker className="text-vermilion">{api("eyebrow")}</Kicker>
+            <Kicker className="text-vermilion">{abbreviate(api("eyebrow"), locale, ["api"])}</Kicker>
             <h3 className="display mt-4 text-3xl md:text-4xl" style={{ textWrap: "balance" }}>
               {api("title")}
             </h3>

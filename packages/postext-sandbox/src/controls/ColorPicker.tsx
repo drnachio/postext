@@ -115,7 +115,7 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   if (hideLabel) return controls;
 
   return (
-    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[displayText]}>
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip ?? (disablePalette ? state.labels.paletteColorFieldHelp : state.labels.colorFieldHelp)} isDefault={muted} onReset={onReset} extraTerms={[displayText]}>
       {controls}
     </FieldRow>
   );
@@ -152,7 +152,7 @@ function ColorTrigger({ open, onToggle, label, standalone, displayText, modeLabe
       aria-expanded={open}
       aria-haspopup="dialog"
       className={cn(
-        'inline-flex h-7 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) pr-2 pl-1 transition-colors',
+        'inline-flex h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-2 pl-1 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

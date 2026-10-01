@@ -18,7 +18,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       role="switch"
       aria-checked={isLight}
       aria-label={isLight ? t("toggleDark") : t("toggleLight")}
-      className={`flex items-center justify-center rounded-md ${compact ? "p-1.5" : "p-2"} text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`}
+      className={`flex items-center justify-center rounded-md ${compact ? "p-1.5" : "min-h-10 min-w-10 p-2"} text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`}
       style={{ touchAction: "manipulation" }}
     >
       {isLight ? (

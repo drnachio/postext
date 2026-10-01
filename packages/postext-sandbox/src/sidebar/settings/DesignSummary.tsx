@@ -66,7 +66,7 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
         <PagePreview page={page} layout={layout} lineHeightPt={toPt(body.lineHeight)} inkHex={ink} height={86} />
       </button>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <h3 className="mb-0.5 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+        <h3 className="mb-0.5 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
           {labels.settingsSummaryTitle}
         </h3>
         <SummaryLine onClick={() => onOpenGroup('page')} group={labels.settingsGroupPage}>

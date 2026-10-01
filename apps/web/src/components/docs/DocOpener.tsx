@@ -30,7 +30,7 @@ export function DocOpener({
         >
           {number}
         </span>
-        <Kicker className="relative max-w-[75%] text-[0.62rem] opacity-95">{kicker}</Kicker>
+        <Kicker className="relative max-w-[75%] text-[0.62rem]">{kicker}</Kicker>
         <span aria-hidden="true" className="relative mt-3 block h-[3px] w-10 bg-current" />
         <h1
           id={id}
@@ -40,7 +40,7 @@ export function DocOpener({
           {title}
         </h1>
         {lead && (
-          <p className="relative mt-3 max-w-2xl font-body text-base leading-relaxed italic opacity-95">{lead}</p>
+          <p className="relative mt-3 max-w-2xl font-body text-base leading-relaxed italic">{lead}</p>
         )}
       </div>
       <div aria-hidden="true" className="h-1.5 bg-night" />

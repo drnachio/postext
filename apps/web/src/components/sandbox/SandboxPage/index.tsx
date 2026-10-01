@@ -67,7 +67,7 @@ export function SandboxPage() {
         <Link
           href="/"
           aria-label="Postext"
-          className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-surface"
+          className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-surface"
         >
           <LogoMark className="size-6 text-[1.5rem]" />
         </Link>

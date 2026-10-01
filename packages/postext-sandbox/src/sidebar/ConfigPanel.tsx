@@ -19,7 +19,7 @@ import {
   saveSettingsGroup,
   saveSettingsHelpMode,
 } from '../storage/persistence';
-import { ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, cn } from '../ui';
+import { ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, announce, cn } from '../ui';
 import { HelpModeContext } from '../controls/fieldContext';
 import { SettingsSearchContext, useSettingsSearch, type SettingsSearchState } from './search/SearchContext';
 import { MatchScopeProvider, useScopeCounts } from './search/MatchScope';
@@ -117,8 +117,10 @@ export function ConfigPanel() {
     try {
       const data = await importConfigFromJson(file);
       dispatch({ type: 'SET_CONFIG', payload: data.config });
+      announce(labels.importConfigDone.replace('__file__', file.name));
     } catch {
-      // Silently ignore invalid files
+      // Said in words, with what to try instead (WCAG 3.3.1, 3.3.3).
+      announce(labels.importConfigFailed.replace('__file__', file.name));
     }
     e.target.value = '';
   };
@@ -171,7 +173,12 @@ export function ConfigPanel() {
               </ConfirmPopover>
             )}
             <IconButton label={labels.exportFile} icon={<Download size={14} />} onClick={() => exportConfigToJson(config)} />
-            <IconButton label={labels.importFile} icon={<Upload size={14} />} onClick={() => importRef.current?.click()} />
+            {/* Importing replaces the whole design: it asks first (WCAG 3.3.6). */}
+            <ConfirmPopover message={labels.importConfigConfirm} confirmLabel={labels.importFileConfirmAction} onConfirm={() => importRef.current?.click()}>
+              {({ open }) => (
+                <IconButton label={labels.importFile} icon={<Upload size={14} />} onClick={open} />
+              )}
+            </ConfirmPopover>
             <input
               ref={importRef}
               type="file"
@@ -193,11 +200,11 @@ export function ConfigPanel() {
           onClick={() => setOverriddenOnly((v) => !v)}
           title={labels.settingsOverriddenOnlyHint}
           className={cn(
-            'inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-md border px-2 text-[0.68rem] whitespace-nowrap transition-colors',
+            'inline-flex h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md border px-2.5 text-[0.68rem] whitespace-nowrap transition-colors',
             'focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
             overriddenOnly
               ? 'border-(--brand) bg-(--brand-soft,var(--surface)) text-(--foreground)'
-              : 'border-(--rule) text-(--slate) hover:text-(--foreground)',
+              : 'border-(--pt-control-border) text-(--slate) hover:text-(--foreground)',
           )}
         >
           <SlidersHorizontal size={12} aria-hidden="true" />
@@ -206,13 +213,13 @@ export function ConfigPanel() {
       </div>
 
       {view === 'group' && group && (
-        <nav aria-label={labels.settingsBreadcrumb} className="flex h-9 shrink-0 items-center gap-1 border-b border-(--rule) px-1.5">
+        <nav aria-label={labels.settingsBreadcrumb} className="flex min-h-12 shrink-0 items-center gap-1 border-b border-(--rule) px-1.5">
           <button
             type="button"
             onClick={() => openGroup(null)}
             className={cn(
-              'inline-flex h-7 cursor-pointer items-center gap-1 rounded-md px-1.5 text-xs text-(--slate) transition-colors',
-              'hover:bg-(--surface) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
+              'inline-flex h-11 cursor-pointer items-center gap-1 rounded-md px-2 text-xs text-(--slate) transition-colors',
+              'hover:bg-(--surface) hover:text-(--foreground) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >
             <ArrowLeft size={13} aria-hidden="true" />
@@ -255,7 +262,7 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
   return (
     <>
       <DesignSummary onOpenGroup={onOpen} />
-      <h3 className="px-3 pt-4 pb-1.5 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+      <h3 className="px-3 pt-4 pb-1.5 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
         {labels.settingsGroupsHeading}
       </h3>
       <ul className="flex flex-col px-1.5 pb-3">
@@ -269,7 +276,7 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
                 ref={(el) => { if (el) buttonRefs.set(g.id, el); else buttonRefs.delete(g.id); }}
                 onClick={() => onOpen(g.id)}
                 className={cn(
-                  'group/row flex w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-left transition-colors',
+                  'group/row flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-left transition-colors',
                   'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 )}
               >
@@ -345,8 +352,8 @@ function GroupPage({ id, headingRef, onOpen }: {
                 type="button"
                 onClick={() => jumpTo(s.id)}
                 className={cn(
-                  'inline-flex h-6 cursor-pointer items-center rounded-full border border-(--rule) px-2 text-[0.66rem] text-(--slate) transition-colors',
-                  'hover:border-(--rule-strong,var(--slate)) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
+                  'inline-flex h-11 cursor-pointer items-center rounded-full border border-(--pt-control-border) px-3 text-[0.66rem] text-(--slate) transition-colors',
+                  'hover:border-(--slate) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
                 )}
               >
                 {String(labels[s.labelKey])}
@@ -366,12 +373,12 @@ function GroupPage({ id, headingRef, onOpen }: {
             type="button"
             onClick={() => onOpen(next.id)}
             className={cn(
-              'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--rule) px-3 py-2 text-left transition-colors',
+              'flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--pt-control-border) px-3 py-2 text-left transition-colors',
               'hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
             )}
           >
             <span className="flex min-w-0 flex-col">
-              <span className="text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">{labels.settingsNextGroup}</span>
+              <span className="text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">{labels.settingsNextGroup}</span>
               <span className="truncate text-[0.8rem] font-medium text-(--foreground)">{String(labels[next.labelKey])}</span>
             </span>
             <ArrowRight size={14} aria-hidden="true" className="shrink-0 text-(--slate)" />
@@ -387,7 +394,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
   const labels = useSandboxLabels();
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex h-7 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) px-2 transition-colors focus-within:border-(--brand)">
+    <div className="flex min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pl-2 transition-colors focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
       <Search size={13} aria-hidden="true" className="shrink-0 text-(--slate)" />
       <input
         ref={inputRef}
@@ -405,7 +412,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         aria-label={labels.settingsSearchPlaceholder}
         autoComplete="off"
         spellCheck={false}
-        className="min-w-0 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
+        className="min-h-11 min-w-0 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <IconButton
@@ -490,7 +497,7 @@ function SearchGroupBody({ title, children }: { title: string; children: ReactNo
   const { matchCount } = useScopeCounts();
   return (
     <div style={matchCount > 0 ? undefined : { display: 'none' }}>
-      <h3 className="px-3 pt-3 pb-1 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">{title}</h3>
+      <h3 className="px-3 pt-3 pb-1 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">{title}</h3>
       {children}
     </div>
   );

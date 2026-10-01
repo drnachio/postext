@@ -12,9 +12,10 @@ import { useEffect, useRef, useState } from "react";
 export const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE?.replace(/\/+$/, "");
 const VERSION = "v1";
 
-/** The corner buttons over the player (subtitles, full screen). */
+/** The corner buttons over the player (subtitles, full screen): 44 px
+ *  targets at least (WCAG 2.5.5), the html size scaling them up. */
 const TOOL =
-  "flex h-8 items-center rounded-md border font-sans text-sm font-bold tracking-wider shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand md:h-9";
+  "flex h-11 min-w-11 items-center rounded-md border font-sans text-sm font-bold tracking-wider shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[opacity,background-color,color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 const TOOL_ON = "border-brand bg-brand text-brand-contrast opacity-100";
 const TOOL_OFF = "border-white/85 bg-night/80 text-white hover:border-brand hover:text-brand";
 
@@ -219,7 +220,7 @@ export function ShowreelVideo({
               aria-pressed={subsOn}
               aria-label={subtitlesLabel}
               title={subtitlesLabel}
-              className={`${TOOL} px-2.5 ${subsOn ? TOOL_ON : TOOL_OFF}`}
+              className={`${TOOL} justify-center px-2.5 ${subsOn ? TOOL_ON : TOOL_OFF}`}
             >
               CC
             </button>
@@ -230,7 +231,7 @@ export function ShowreelVideo({
               onClick={toggleFullscreen}
               aria-label={fullscreen ? exitFullscreenLabel : fullscreenLabel}
               title={fullscreen ? exitFullscreenLabel : fullscreenLabel}
-              className={`${TOOL} w-8 justify-center md:w-9 ${TOOL_OFF}`}
+              className={`${TOOL} w-11 justify-center ${TOOL_OFF}`}
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4 md:size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d={fullscreen ? "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" : "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"} />

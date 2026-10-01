@@ -1,4 +1,5 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PlainSummary } from "@/components/brand/PlainSummary";
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { ShowreelSection } from "@/components/landing/ShowreelSection";
@@ -22,12 +23,19 @@ export default async function Home({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const tPlain = await getTranslations("PlainLanguage");
 
   return (
     <>
       <Navbar />
-      <main id="main-content" role="main">
+      <main id="main-content" tabIndex={-1} role="main">
         <HeroSection />
+        {/* The page in plain words (WCAG 3.1.5), under the cover. */}
+        <div className="mx-auto max-w-6xl px-6 pt-10 md:pt-14 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
+          <PlainSummary id="in-short" heading={tPlain("heading")}>
+            {tPlain("home")}
+          </PlainSummary>
+        </div>
         <ShowreelSection />
         <AboutSection />
         <FiguresSection />

@@ -72,7 +72,6 @@
 .cb-band-question {
   font-size: 0.95rem;
   line-height: 1.5;
-  opacity: 0.95;
 }
 .cb-draft-tab {
   position: absolute;
@@ -592,7 +591,6 @@
 .cb-lb-hint {
   padding: 0.6rem 1rem 0.9rem;
   text-align: center;
-  opacity: 0.8;
 }
 @media (max-width: 639.98px) {
   .cb-lb-stage {
@@ -809,7 +807,8 @@
   padding-right: 1.25rem;
 }
 .cb-code .cb-line[data-highlighted] {
-  background: color-mix(in srgb, var(--part) 14%, transparent);
+  /* 5%: syntax colours keep 7:1 on the tint; the inset bar marks the line. */
+  background: color-mix(in srgb, var(--part) 5%, transparent);
   box-shadow: inset 3px 0 0 var(--part);
 }
 .cb-code .cb-line[data-flash] {
@@ -861,7 +860,7 @@
   color: var(--part-ink);
 }
 .cb-code .cb-line[data-highlighted] .cb-ln {
-  background: color-mix(in srgb, var(--part) 14%, var(--surface));
+  background: color-mix(in srgb, var(--part) 5%, var(--surface));
 }
 /* Tokens are coloured by palette classes whose rules the page writes
    (lib/cookbook/highlight `highlightCss`); a token with more than colours
@@ -1107,7 +1106,9 @@
   color: var(--part-ink);
 }
 .docs-content .cb-chip.is-primary {
-  background: color-mix(in srgb, var(--part) 18%, transparent);
+  /* A light tint and a rule: the part ink keeps 7:1 on the fill. */
+  background: color-mix(in srgb, var(--part) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--part-ink) 45%, transparent);
   color: var(--part-ink);
   font-weight: 650;
 }
@@ -1182,7 +1183,7 @@
   font-family: var(--font-head);
   font-size: 0.98rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.5;
 }
 .cb-pitfall-body {
   font-size: 0.9rem;
@@ -1213,7 +1214,8 @@
   margin-left: 0.3em;
   padding: 0.05rem 0.3rem;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--part) 16%, transparent);
+  /* A light tint: the part ink keeps 7:1 on it in both themes. */
+  background: color-mix(in srgb, var(--part) 6%, transparent);
   font-family: var(--font-sans);
   font-size: 0.62rem;
   font-weight: 600;
@@ -1492,4 +1494,50 @@
     opacity: 0;
     transform: translateY(0.4rem);
   }
+}
+
+/* ── Target size (WCAG 2.5.5 AAA): every control and stand-alone link is
+   at least 44 × 44 CSS px (2.5rem at the site's 18 px root and up). Links
+   inside sentences keep their line box. ── */
+.cb-action,
+.docs-content .cb-code-button,
+.cb-code-button,
+.cb-lt-link,
+.cb-whole-tab,
+.docs-content .cb-chip,
+.cb-facts .cb-config a {
+  min-height: 2.5rem;
+}
+.docs-content .cb-code-button,
+.cb-code-button {
+  min-width: 2.5rem;
+  justify-content: center;
+}
+.cb-toc a {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding-block: 0.15rem;
+}
+.cb-facts .cb-config a {
+  display: inline-flex;
+  align-items: center;
+}
+:is(.cb-facts, .cb-ingredients, .cb-credits) dd a,
+.docs-content .cb-credits-links a,
+.cb-collection-links a,
+.cb-collection-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+}
+:is(.cb-facts, .cb-ingredients, .cb-credits) dd a {
+  justify-content: center;
+  min-width: 2.5rem;
+}
+.cb-fold > summary {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding-block: 0.15rem;
 }

@@ -65,19 +65,19 @@ export function CookieBanner() {
             <div className="flex shrink-0 flex-wrap gap-3">
               <button
                 onClick={rejectAll}
-                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="min-h-10 flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={() => setShowCustomize(true)}
-                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="min-h-10 flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("customize")}
               </button>
               <button
                 onClick={acceptAll}
-                className="flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
+                className="min-h-10 flex-1 cursor-pointer whitespace-nowrap sm:flex-none rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("acceptAll")}
               </button>
@@ -92,27 +92,28 @@ export function CookieBanner() {
             {/* Necessary — always on */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground 2xl:text-base">
+                <p id="cookie-necessary" className="text-sm text-foreground 2xl:text-base">
                   {t("necessary")}
                 </p>
-                <p className="text-xs text-slate 2xl:text-sm">
+                <p id="cookie-necessary-desc" className="text-xs text-slate 2xl:text-sm">
                   {t("necessaryDescription")}
                 </p>
               </div>
-              <Toggle checked disabled />
+              <Toggle checked disabled id="cookie-necessary" />
             </div>
 
             {/* Analytics */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground 2xl:text-base">
+                <p id="cookie-analytics" className="text-sm text-foreground 2xl:text-base">
                   {t("analytics")}
                 </p>
-                <p className="text-xs text-slate 2xl:text-sm">
+                <p id="cookie-analytics-desc" className="text-xs text-slate 2xl:text-sm">
                   {t("analyticsDescription")}
                 </p>
               </div>
               <Toggle
+                id="cookie-analytics"
                 checked={analytics}
                 onChange={() => setAnalytics(!analytics)}
               />
@@ -121,14 +122,15 @@ export function CookieBanner() {
             {/* Marketing */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground 2xl:text-base">
+                <p id="cookie-marketing" className="text-sm text-foreground 2xl:text-base">
                   {t("marketing")}
                 </p>
-                <p className="text-xs text-slate 2xl:text-sm">
+                <p id="cookie-marketing-desc" className="text-xs text-slate 2xl:text-sm">
                   {t("marketingDescription")}
                 </p>
               </div>
               <Toggle
+                id="cookie-marketing"
                 checked={marketing}
                 onChange={() => setMarketing(!marketing)}
               />
@@ -137,13 +139,13 @@ export function CookieBanner() {
             <div className="flex flex-wrap justify-end gap-3 pt-2">
               <button
                 onClick={rejectAll}
-                className="cursor-pointer whitespace-nowrap rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
+                className="min-h-10 cursor-pointer whitespace-nowrap rounded border border-rule px-4 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5 2xl:text-base"
               >
                 {t("rejectAll")}
               </button>
               <button
                 onClick={savePreferences}
-                className="cursor-pointer whitespace-nowrap rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
+                className="min-h-10 cursor-pointer whitespace-nowrap rounded-md bg-brand px-4 py-2 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover 2xl:text-base"
               >
                 {t("savePreferences")}
               </button>
@@ -155,30 +157,45 @@ export function CookieBanner() {
   );
 }
 
+/** A 44 px switch (WCAG 2.5.5) drawing a smaller track; named by the row's
+ *  title and described by its line of help. The off track is outlined in
+ *  slate so its edge holds 3:1 (1.4.11). */
 function Toggle({
+  id,
   checked,
   disabled,
   onChange,
 }: {
+  id: string;
   checked: boolean;
   disabled?: boolean;
   onChange?: () => void;
 }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={checked}
+      aria-labelledby={id}
+      aria-describedby={`${id}-desc`}
       disabled={disabled}
       onClick={onChange}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${
-        checked ? "bg-brand" : "bg-rule-strong"
-      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+      className={`inline-flex min-h-10 min-w-14 shrink-0 cursor-pointer items-center justify-center rounded-full ${
+        disabled ? "cursor-not-allowed opacity-60" : ""
+      }`}
     >
       <span
-        className={`pointer-events-none block h-4 w-4 rounded-full bg-background shadow-sm transition-transform ${
-          checked ? "translate-x-5" : "translate-x-0.5"
+        aria-hidden="true"
+        className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${
+          checked ? "border-brand bg-brand" : "border-slate bg-transparent"
         }`}
-      />
+      >
+        <span
+          className={`pointer-events-none block h-4 w-4 rounded-full shadow-sm transition-transform ${
+            checked ? "translate-x-5 bg-brand-contrast" : "translate-x-0.5 bg-slate"
+          }`}
+        />
+      </span>
     </button>
   );
 }

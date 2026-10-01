@@ -32,7 +32,7 @@ export async function ContentsStrip({ parts, locale }: { parts: GalleryPart[]; l
                   <a
                     href={chapterHref(locale, c.id)}
                     data-cb-cat={c.id}
-                    className="group flex items-baseline gap-3 rounded-sm py-1.5"
+                    className="group flex min-h-10 items-baseline gap-3 rounded-sm py-2"
                   >
                     <span className="w-5 shrink-0 text-right font-sans text-sm font-bold text-(--part-ink) tabular-nums">
                       {c.number}

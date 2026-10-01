@@ -357,11 +357,11 @@ export function DocsSearchPalette() {
                 setSelected(0);
               }}
               placeholder={t("inputPlaceholder")}
-              className="flex-1 border-0 bg-transparent font-body text-sm text-foreground placeholder:text-slate focus:outline-none focus:ring-0 focus-visible:outline-none"
+              className="min-h-10 flex-1 border-0 bg-transparent font-body text-sm text-foreground placeholder:text-slate focus:outline-none focus:ring-0 focus-visible:outline-none"
               style={{ outline: "none" }}
               aria-label={t("inputAriaLabel")}
             />
-            <Dialog.Close className="rounded border border-rule px-1.5 py-0.5 font-mono text-[10px] text-slate hover:text-foreground">
+            <Dialog.Close className="inline-flex min-h-10 min-w-10 items-center justify-center rounded border border-rule px-1.5 py-0.5 font-mono text-[10px] text-slate hover:text-foreground">
               Esc
             </Dialog.Close>
           </div>
@@ -406,7 +406,7 @@ export function DocsSearchPalette() {
                             >
                               {section.kind === "doc" ? (
                                 <div className="flex items-center gap-2 font-body text-xs text-slate">
-                                  <span className="font-medium text-foreground/70">{section.docTitle}</span>
+                                  <span className="font-medium text-foreground/80">{section.docTitle}</span>
                                   {section.breadcrumb && (
                                     <>
                                       <span aria-hidden>›</span>
@@ -488,7 +488,7 @@ export function DocsSearchTrigger({ variant = "full", className = "" }: TriggerP
         type="button"
         onClick={openPalette}
         aria-label={t("triggerAriaLabel")}
-        className={`flex items-center justify-center rounded-md border border-rule bg-background/50 p-1.5 text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
+        className={`flex min-h-10 min-w-10 items-center justify-center rounded-md border border-rule bg-background/50 p-1.5 text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -515,7 +515,7 @@ export function DocsSearchTrigger({ variant = "full", className = "" }: TriggerP
         type="button"
         onClick={openPalette}
         aria-label={t("triggerAriaLabel")}
-        className={`group flex items-center gap-2 rounded-md border border-rule bg-background/50 px-2.5 py-1.5 text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
+        className={`group flex min-h-10 items-center gap-2 rounded-md border border-rule bg-background/50 px-2.5 py-1.5 text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -543,7 +543,7 @@ export function DocsSearchTrigger({ variant = "full", className = "" }: TriggerP
     <button
       type="button"
       onClick={openPalette}
-      className={`group flex w-full items-center gap-2 rounded-md border border-rule bg-background/50 px-3 py-1.5 text-left font-body text-sm text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
+      className={`group flex min-h-10 w-full items-center gap-2 rounded-md border border-rule bg-background/50 px-3 py-1.5 text-left font-body text-sm text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
       aria-label={t("triggerAriaLabel")}
     >
       <svg

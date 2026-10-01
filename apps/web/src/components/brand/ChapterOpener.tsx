@@ -39,7 +39,7 @@ export function ChapterOpener({
           aria-hidden="true"
           className="float-right h-[calc(0.95em-2.75rem)] w-[0.58em] text-[6rem] sm:text-[8rem] md:h-[calc(0.95em-3.75rem)] md:w-[calc(0.58em+1rem)] md:text-[12rem] 2xl:w-[calc(0.58em+0.5rem)] 2xl:text-[13rem]"
         />
-        <Kicker className="relative max-w-[70%] opacity-95">{kicker}</Kicker>
+        <Kicker className="relative max-w-[70%]">{kicker}</Kicker>
         <span aria-hidden="true" className="relative mt-3 block h-[3px] w-12 bg-current" />
         <h2
           id={id}
@@ -49,7 +49,7 @@ export function ChapterOpener({
           {title}
         </h2>
         {lead && (
-          <p className="relative mt-5 max-w-2xl font-body text-base leading-relaxed italic opacity-95 md:text-lg">
+          <p className="relative mt-5 max-w-2xl font-body text-base leading-relaxed italic md:text-lg">
             {lead}
           </p>
         )}

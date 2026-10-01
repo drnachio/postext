@@ -710,7 +710,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     }
     fails.push(...writeup.issues);
     const fm = writeup.frontmatter;
-    const style = styleMessages(`${locale}.mdx`, [fm.title, fm.summary, fm.description ?? "", fm.question ?? "", writeup.body].join("\n\n"), locale);
+    const style = styleMessages(`${locale}.mdx`, [fm.title, fm.summary, fm.plain ?? "", fm.description ?? "", fm.question ?? "", writeup.body].join("\n\n"), locale);
     fails.push(...style.fails);
     warns.push(...style.warns);
     const refs = writeupRefs(writeup.body);
