@@ -52,6 +52,7 @@ interface RichToken {
   hyphenWidth?: number;
   mathRender?: import('../math/types').MathRender;
   refResourceId?: string;
+  refAnchor?: true;
   footnoteId?: string;
   /** An inline colour swatch (atomic square; see `measure/rich.ts`). */
   swatch?: { color?: string };
@@ -269,7 +270,7 @@ export function reconstructRichLines(
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
           ...(token.swatch ? { swatch: token.swatch } : {}),
           ...(token.chip ? { chip: token.chip } : {}),
-          ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
+          ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId, ...(token.refAnchor ? { refAnchor: true as const } : {}) } : {}),
           ...(token.footnoteId !== undefined ? { footnoteId: token.footnoteId } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),

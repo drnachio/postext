@@ -193,6 +193,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsUnknownCalloutTypeDetail: t("warningsUnknownCalloutTypeDetail"),
     warningsUnknownChipStyleTitle: t("warningsUnknownChipStyleTitle"),
     warningsUnknownChipStyleDetail: t("warningsUnknownChipStyleDetail"),
+    warningsDuplicateAnchorTitle: t("warningsDuplicateAnchorTitle"),
+    warningsDuplicateAnchorDetail: t("warningsDuplicateAnchorDetail"),
     warningsUndefinedFootnoteTitle: t("warningsUndefinedFootnoteTitle"),
     warningsUndefinedFootnoteDetail: t("warningsUndefinedFootnoteDetail"),
     warningsUnusedFootnoteTitle: t("warningsUnusedFootnoteTitle"),

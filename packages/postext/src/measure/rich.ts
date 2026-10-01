@@ -84,6 +84,8 @@ export interface RichToken {
    *  already carries the resolved label; the token is atomic (never wraps
    *  apart) and the id flows onto the segment so renderers can colour/link it. */
   refResourceId?: string;
+  /** The reference names an anchor (#262): `refResourceId` is its id. */
+  refAnchor?: true;
   /** A footnote marker (`[^id]`): atomic like a reference; the id flows
    *  onto the segment. */
   footnoteId?: string;
@@ -892,7 +894,7 @@ export function atomicSpanToken(
       ...(span.smallCaps ? { smallCaps: true } : {}),
       kind: 'text',
       width: textWidth(span.text, refFont, span.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(span.text)),
-      ...(span.ref ? { refResourceId: span.ref.resourceId } : {}),
+      ...(span.ref ? { refResourceId: span.ref.resourceId, ...(span.ref.anchor ? { refAnchor: true as const } : {}) } : {}),
       ...(span.footnote ? { footnoteId: span.footnote.id } : {}),
     };
   }
@@ -936,7 +938,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.mathRender ? { mathRender: t.mathRender } : {}),
     ...(t.swatch ? { swatch: t.swatch } : {}),
     ...(t.chip ? { chip: t.chip } : {}),
-    ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId } : {}),
+    ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId, ...(t.refAnchor ? { refAnchor: true as const } : {}) } : {}),
     ...(t.footnoteId !== undefined ? { footnoteId: t.footnoteId } : {}),
     ...(t.captionLabel ? { captionLabel: true } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),

@@ -26,6 +26,7 @@ export type WarningKind =
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
+  | 'duplicateAnchor'
   | 'undefinedFootnote'
   | 'unusedFootnote'
   | 'indexMarkInvalid'
@@ -143,6 +144,8 @@ export type WarningPayload =
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** An identifier (`{#id}`, `:anchor{#id}`) set twice (#261). */
+  | { kind: 'duplicateAnchor'; anchorId: string }
   /** A footnote marker `[^id]` no `[^id]: …` paragraph defines. */
   | { kind: 'undefinedFootnote'; id: string }
   /** A footnote definition `[^id]: …` no marker cites. */

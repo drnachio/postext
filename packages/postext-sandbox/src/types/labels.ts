@@ -209,6 +209,8 @@ export interface SandboxLabels {
   warningsUnknownCalloutTypeDetail: string;
   warningsUnknownChipStyleTitle: string;
   warningsUnknownChipStyleDetail: string;
+  warningsDuplicateAnchorTitle: string;
+  warningsDuplicateAnchorDetail: string;
   warningsUndefinedFootnoteTitle: string;
   warningsUndefinedFootnoteDetail: string;
   warningsUnusedFootnoteTitle: string;

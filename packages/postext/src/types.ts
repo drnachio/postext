@@ -335,8 +335,10 @@ export interface OutlineIndexMark {
  *  `:::toc` and `:::index`. */
 export interface OutlineEntry {
   /** `'indexMark'`: an index mark (`:index…`), listed by `:::index`, never
-   *  by `:::toc` (`listed` is false). */
-  kind: 'heading' | 'part' | 'indexMark';
+   *  by `:::toc` (`listed` is false). `'anchor'`: an anchor set in the text
+   *  (`:anchor{#id}`, `[text]{#id}`, `:::callout{#id}`), a target of
+   *  cross-references only (#261). */
+  kind: 'heading' | 'part' | 'indexMark' | 'anchor';
   /** Heading level (1–6); `0` for a part. */
   level: number;
   /** Title as plain text (forced title breaks flattened to spaces). */
@@ -372,6 +374,12 @@ export interface OutlineEntry {
   listed: boolean;
   /** The mark of an `'indexMark'` entry. */
   indexMark?: OutlineIndexMark;
+  /** The identifier a cross-reference names: a heading's `{#id}`, an
+   *  `'anchor'` entry's id (#261). */
+  anchorId?: string;
+  /** Source offset of an `'anchor'` entry's mark in its chapter's markdown
+   *  body (front matter excluded): identifies it within the chapter. */
+  anchorSource?: number;
   /** The page-number format of the entry's page, once laid out (an index
    *  merges consecutive pages of one format into a range). */
   pageFormat?: string;

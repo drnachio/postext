@@ -27,6 +27,8 @@ export type ContainerName = 'callout' | 'paragraphs' | 'part' | 'columns';
 /** Letter-case transform applied to the computed label of an inline `:ref`
  *  (never to the number, never to a `text=` override). */
 export type RefCase = 'lower' | 'upper' | 'capitalize';
+/** How an inline `:ref` prints its target (see `InlineSpan.ref.style`). */
+export type RefStyle = 'default' | 'number' | 'full' | 'title' | 'page' | 'pageNumber';
 
 /** Metadata attached to an `InlineSpan` when it represents a math formula.
  *  The span's `text` is a single `\uFFFC` (object replacement character)
@@ -122,12 +124,18 @@ export interface InlineSpan {
    *  `text` carries placeholder/fallback content; the pipeline resolves the
    *  reference to its computed number/label. */
   ref?: {
-    /** The referenced `Resource.id`. */
+    /** The referenced `Resource.id`, or the identifier of an anchor
+     *  (`{#id}`, #262) — see {@link anchor}. */
     resourceId: string;
     /** Rendering style: `'default'` uses the type short label + number,
      *  `'number'` is the bare number, `'full'` is the full caption prefix +
-     *  number. */
-    style?: 'default' | 'number' | 'full';
+     *  number. For an anchor: `'title'` prints the heading's title or the
+     *  anchor's text, `'page'` "p. 112", `'pageNumber'` "112" (#263). */
+    style?: RefStyle;
+    /** Set when the reference resolved to an anchor (a heading, an inline
+     *  anchor, a container) rather than a resource; `resourceId` then holds
+     *  the anchor's identifier. */
+    anchor?: true;
     /** Optional override text to display instead of the computed label. */
     text?: string;
     /** Optional letter-case transform for the label part (`Fig.` /
@@ -325,6 +333,24 @@ export interface IndexMark {
   attach: 'before' | 'after';
 }
 
+/** An anchor set inside a block's text (#261): `:anchor{#id}` (invisible)
+ *  or `[text]{#id}` (its text stays). Like an index mark it is taken out
+ *  before the block parser runs, so it never changes the layout; the build
+ *  finds the page and the line of the character it is attached to. */
+export interface AnchorMark {
+  /** The identifier a reference names (`:ref{id="…"}`). */
+  anchorId: string;
+  /** The text of a `[text]{#id}` span, without inline marks. */
+  text?: string;
+  /** Source range of the whole mark in the original markdown. */
+  sourceStart: number;
+  sourceEnd: number;
+  /** Source offset of the character the anchor is attached to (see
+   *  {@link IndexMark.anchor}); `-1` when there is none. */
+  anchor: number;
+  attach: 'before' | 'after';
+}
+
 /** What one block of an expanded `:::index` prints: an entry (a term with
  *  its page numbers), under the letter head of its group when it opens
  *  one. */
@@ -395,6 +421,9 @@ export interface ContentBlock {
   index?: IndexBlockInfo;
   /** The index marks set in this block's text, in source order. */
   indexMarks?: IndexMark[];
+  /** The anchors set in this block's text (`:anchor{#id}`, `[text]{#id}`),
+   *  in source order (#261). */
+  anchorMarks?: AnchorMark[];
   /** For `resourceBlock` blocks: the referenced `Resource.id`. */
   resourceId?: string;
   /** For `containerStart` / `containerEnd` marker blocks: the container

@@ -1,4 +1,5 @@
 export { buildDocument, buildDocumentAsync, buildDocumentGen, yieldToEventLoop, BuildCancelledError } from './build';
 export type { BuildDocumentOptions, BuildPassInfo, BuildProgress } from './build';
 export { continuationAfter, contentOutline } from './continuation';
-export { computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline } from './outline';
+export { computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline } from './outline';
+export { hasAnchors, locateAnchors, duplicateAnchors } from './anchors';

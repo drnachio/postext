@@ -47,7 +47,10 @@ import {
   headingStyleOf,
   planHeadingSections,
 } from './headingStyles';
-import { computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
+import { locateAnchors } from './anchors';
+import { anchorTargetsOf, defaultCrossRefStrings, hasAnchorRefs, printsAnchorPages } from './crossRefs';
+import type { AnchorRefContext } from './resourceLayout';
+import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
 import type { ResolvedHeadingStyleConfig } from '../types';
@@ -552,8 +555,15 @@ function placeDocumentPass(
   // first pass; `buildDocument` lays the document out again with them).
   // `:::index` expands into the entries of the book's index marks, from
   // the same outline.
+  // A reference naming an anchor (#262) reads its number, title and page
+  // from the same outline.
+  const resourceIds = new Set((content.resources ?? []).map((r) => r.id));
+  const anchorRefs = hasAnchorRefs(parsedBlocks, resourceIds);
   const outline = content.outline
-    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+    ?? (hasTocDirective(parsedBlocks) || hasIndexDirective(parsedBlocks) || anchorRefs ? computeOutline(parsedBlocks, resolved, headingStart) : undefined);
+  const anchorRefContext: AnchorRefContext | undefined = anchorRefs
+    ? { targets: anchorTargetsOf(outline), strings: defaultCrossRefStrings(resolvedLocale(resolved)) }
+    : undefined;
   const indexExpanded = expandIndexDirectives(expandTocDirectives(parsedBlocks, outline, resolved), outline, resolved);
   const contentBlocks = indexExpanded.blocks;
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
@@ -1865,6 +1875,7 @@ function placeDocumentPass(
     floatedIds,
     leftFlow: calloutsOutOfFlow,
     ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
+    ...(anchorRefContext ? { anchorRefs: anchorRefContext } : {}),
   };
 
   // --- Footnotes at the column foot (`footnotes.placement: 'column'`) ------
@@ -5646,7 +5657,8 @@ export function* buildDocumentGen(
   // References and markup the source names wrongly: read from the source
   // once, located on the pages of the finished layout. Kept apart from
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
-  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? []), ...(indexWarnings.get(doc) ?? [])];
+  const bookAnchors = content.outline ? new Set(anchorOutline(content.outline).map((e) => e.anchorId!)) : undefined;
+  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors), ...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
   // Justified CJK lines the composer could not fill within its tracking cap.
   const loose = cjkLooseLineWarnings(doc);
@@ -5668,10 +5680,15 @@ const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
-  if (!content.markdown.includes(':index')) return doc;
   const { content: body, contentOffset } = extractFrontmatter(content.markdown);
-  const marks = locateIndexMarks(doc, parseMarkdownMemo(body), contentOffset);
-  if (marks) doc.indexMarks = marks;
+  const blocks = parseMarkdownMemo(body);
+  if (content.markdown.includes(':index')) {
+    const marks = locateIndexMarks(doc, blocks, contentOffset);
+    if (marks) doc.indexMarks = marks;
+  }
+  // Where every anchor landed (#261), for links and page references.
+  const anchors = locateAnchors(doc, blocks, contentOffset);
+  if (anchors) doc.anchors = anchors;
   return doc;
 }
 
@@ -5690,7 +5707,12 @@ function* buildDocumentRounds(
   // it in one extra round.
   if (content.outline === undefined) {
     const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
-    if (hasTocDirective(parsed) || hasIndexDirective(parsed)) {
+    // A reference printing an anchor's page (#263) settles the same way.
+    const pageRefs = (): boolean => {
+      if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;
+      return printsAnchorPages(parsed, anchorTargetsOf(computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings)));
+    };
+    if (hasTocDirective(parsed) || hasIndexDirective(parsed) || pageRefs()) {
       let outline = computeOutline(parsed, resolveAllConfig(config), content.continuation?.headings);
       let doc = withIndexMarks(yield* buildDocumentNumbered({ ...content, outline }, config, cache, options, 0), content);
       for (let round = 0; round < MAX_TOC_ROUNDS; round++) {

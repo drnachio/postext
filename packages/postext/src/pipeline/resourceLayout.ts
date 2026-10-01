@@ -31,6 +31,7 @@
  * row metrics the full-table layout reports.
  */
 
+import { findAnchorTarget, resolveAnchorRefLabel, unprefixedId, type AnchorTargets, type CrossRefStrings } from './crossRefs';
 import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
@@ -252,22 +253,47 @@ function applyRefCase(label: string, refCase: RefCase | undefined): string {
   }
 }
 
+/** Anchor targets and the words a cross-reference prints, threaded into
+ *  {@link resolveRefSpans} (#262). */
+export interface AnchorRefContext {
+  targets: AnchorTargets;
+  strings: CrossRefStrings;
+}
+
 /** Resolve inline `:ref` spans to their computed label, keeping the `ref`
  *  metadata so the rich-text measurer treats each label as one atomic,
- *  non-breaking token and tags the produced segment with `refResourceId`. */
+ *  non-breaking token and tags the produced segment with `refResourceId`.
+ *  A reference whose id names no resource but an anchor (a heading's
+ *  `{#id}`, an inline anchor, a container) prints the anchor's label and is
+ *  flagged `ref.anchor` (#262); a pandoc-crossref prefix (`fig:map`) may be
+ *  left off the identifier it names. */
 export function resolveRefSpans(
   spans: InlineSpan[],
   resourceNumbering: ResourceNumberingMap,
   resourceTypes: ResourceType[],
   resources: Resource[],
-  refStyle?: { bold: boolean; italic: boolean; labelNumberGap?: string },
+  refStyle?: { bold: boolean; italic: boolean; labelNumberGap?: string; anchors?: AnchorRefContext },
 ): InlineSpan[] {
   if (!spans.some((s) => s.ref)) return spans;
+  const isResource = (id: string): boolean => resourceNumbering[id] !== undefined || resources.some((r) => r.id === id);
   return spans.map((span) => {
     if (!span.ref) return span;
+    let ref = span.ref;
+    let text: string | undefined;
+    if (!isResource(ref.resourceId)) {
+      const target = findAnchorTarget(refStyle?.anchors?.targets, ref.resourceId);
+      const bare = unprefixedId(ref.resourceId);
+      if (target && refStyle?.anchors) {
+        ref = { ...ref, resourceId: target.id, anchor: true };
+        text = resolveAnchorRefLabel(ref, target, refStyle.anchors.strings);
+      } else if (bare !== undefined && isResource(bare)) {
+        ref = { ...ref, resourceId: bare };
+      }
+    }
     return {
       ...span,
-      text: resolveRefLabel(span.ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
+      ref,
+      text: text ?? resolveRefLabel(ref, resourceNumbering, resourceTypes, resources, refStyle?.labelNumberGap),
       // Reference labels carry their own emphasis (bold/italic) so the measurer
       // selects the matching font; colour is applied by renderers via
       // `refResourceId`.
