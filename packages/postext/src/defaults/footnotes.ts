@@ -1,9 +1,13 @@
 import type { FootnotesConfig, ResolvedFootnotesConfig } from '../types';
+import { parseNumberFormat } from '../numbering';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_FOOTNOTES_CONFIG: ResolvedFootnotesConfig = {
   placement: 'column',
   numbering: 'chapter',
+  numberFormat: 'decimal',
+  markerPosition: 'superscript',
+  markerSize: { value: 1, unit: 'em' },
   chapterEndAlign: 'foot',
   fontSize: { value: 0.8, unit: 'em' },
   lineHeight: { value: 1.25, unit: 'em' },
@@ -18,14 +22,25 @@ export const DEFAULT_FOOTNOTES_CONFIG: ResolvedFootnotesConfig = {
   },
 };
 
-export function resolveFootnotesConfig(partial?: FootnotesConfig): ResolvedFootnotesConfig {
+const NUMBERINGS: ReadonlySet<string> = new Set(['chapter', 'document', 'page', 'column']);
+
+/** `locale`: the document language, which `一` / `壹` formats follow. */
+export function resolveFootnotesConfig(partial?: FootnotesConfig, locale?: string): ResolvedFootnotesConfig {
   const d = DEFAULT_FOOTNOTES_CONFIG;
   if (!partial) return { ...d, separator: { ...d.separator } };
   const sep = partial.separator;
   const width = sep?.width;
+  const numberFormat = parseNumberFormat(partial.numberFormat, locale) ?? d.numberFormat;
+  const position = partial.markerPosition;
+  const markerSize = partial.markerSize;
   return {
     placement: partial.placement === 'chapterEnd' ? 'chapterEnd' : 'column',
-    numbering: partial.numbering === 'document' ? 'document' : 'chapter',
+    numbering: typeof partial.numbering === 'string' && NUMBERINGS.has(partial.numbering) ? partial.numbering : d.numbering,
+    numberFormat,
+    markerPosition: position === 'superscript' || position === 'inline'
+      ? position
+      : numberFormat === 'circled-decimal' ? 'inline' : 'superscript',
+    markerSize: markerSize && Number.isFinite(markerSize.value) && markerSize.value > 0 ? markerSize : d.markerSize,
     chapterEndAlign: partial.chapterEndAlign === 'text' ? 'text' : 'foot',
     fontSize: partial.fontSize ?? d.fontSize,
     lineHeight: partial.lineHeight ?? d.lineHeight,
@@ -50,6 +65,9 @@ export function stripFootnotesDefaults(footnotes?: FootnotesConfig): FootnotesCo
   const result: FootnotesConfig = {};
   if (footnotes.placement !== undefined && footnotes.placement !== d.placement) result.placement = footnotes.placement;
   if (footnotes.numbering !== undefined && footnotes.numbering !== d.numbering) result.numbering = footnotes.numbering;
+  if (footnotes.numberFormat !== undefined && parseNumberFormat(footnotes.numberFormat) !== d.numberFormat) result.numberFormat = footnotes.numberFormat;
+  if (footnotes.markerPosition !== undefined && footnotes.markerPosition !== 'auto') result.markerPosition = footnotes.markerPosition;
+  if (footnotes.markerSize && !dimensionsEqual(footnotes.markerSize, d.markerSize)) result.markerSize = footnotes.markerSize;
   if (footnotes.chapterEndAlign !== undefined && footnotes.chapterEndAlign !== d.chapterEndAlign) result.chapterEndAlign = footnotes.chapterEndAlign;
   if (footnotes.fontSize && !dimensionsEqual(footnotes.fontSize, d.fontSize)) result.fontSize = footnotes.fontSize;
   if (footnotes.lineHeight && !dimensionsEqual(footnotes.lineHeight, d.lineHeight)) result.lineHeight = footnotes.lineHeight;

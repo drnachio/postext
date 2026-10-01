@@ -218,6 +218,7 @@ export type {
   ResolvedCjkWarichuConfig,
   FootnotePlacement,
   FootnoteNumbering,
+  FootnoteMarkerPosition,
   FootnoteSeparatorConfig,
   PdfColorSpace,
   PdfGenerationConfig,

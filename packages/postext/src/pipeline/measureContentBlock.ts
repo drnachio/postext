@@ -32,6 +32,7 @@ import type { ResourceNumberingMap } from './resourceNumbering';
 import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
+import { dimensionToPx } from '../units';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -210,13 +211,28 @@ export function measureContentBlock(
     };
   }
 
-  // Footnote markers print their note's number as a superscript: one
-  // atomic token tagged with the note id (`VDTLineSegment.footnoteId`).
+  // Footnote markers print their note's number as a superscript, or on
+  // the baseline at `footnotes.markerSize` (`markerPosition: 'inline'`):
+  // one atomic token tagged with the note id (`VDTLineSegment.footnoteId`).
   if (contentBlock.spans.some((s) => s.footnote)) {
+    const f = resolved.footnotes;
+    const inline = f.markerPosition === 'inline';
+    const size = f.markerSize;
+    const scale = !inline ? undefined
+      : size.unit === 'em' || size.unit === 'rem' ? size.value
+        : dimensionToPx(size, resolved.page.dpi, style.fontSizePx) / style.fontSizePx;
     contentBlock = {
       ...contentBlock,
       spans: contentBlock.spans.map((s) => (s.footnote
-        ? { ...s, text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?', script: 'sup' as const, bold: false, italic: false }
+        ? inline
+          ? {
+              ...s,
+              text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?',
+              bold: false,
+              italic: false,
+              footnote: { id: s.footnote.id, ...(scale !== undefined && Math.abs(scale - 1) > 1e-6 ? { scale } : {}) },
+            }
+          : { ...s, text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?', script: 'sup' as const, bold: false, italic: false }
         : s)),
     };
   }
@@ -248,7 +264,7 @@ export function measureContentBlock(
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.swatch || s.chip || s.script || s.smallCaps
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
     || (vertical && (s.combineUpright || s.orientation)));
 

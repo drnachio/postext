@@ -84,7 +84,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists, layout),
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText),
-    footnotes: resolveFootnotesConfig(config?.footnotes),
+    footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
