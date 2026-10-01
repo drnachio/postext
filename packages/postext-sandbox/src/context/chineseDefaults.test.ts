@@ -20,7 +20,7 @@ describe('chineseDefaults', () => {
     // are the engine's defaults already: no row for them.
     expect(ids(r)).toEqual([
       'locale', 'bodyFont', 'headingFont', 'firstLineIndent', 'hyphenation',
-      'resourceTypes', 'captionLabel', 'chapterNumbering', 'listNumbers',
+      'resourceTypes', 'captionLabel', 'chapterNumbering', 'listNumbers', 'footnotes',
     ]);
     expect(r.changes.every((c) => c.applied && !c.customised)).toBe(true);
     const c = r.config;
@@ -45,6 +45,7 @@ describe('chineseDefaults', () => {
       ['arabic', '（', '）'],
       ['circled-decimal', '', ''],
     ]);
+    expect(c.footnotes).toEqual({ numberFormat: 'circled-decimal', markerPosition: 'inline', numbering: 'page' });
     // The book keeps its palette and the rest of its settings.
     expect(c.colorPalette).toBe(before.colorPalette);
     expect(c.layout).toBeUndefined();
@@ -62,6 +63,22 @@ describe('chineseDefaults', () => {
     expect(change(r, 'captionLabel')).toMatchObject({ from: { kind: 'text', text: 'Figura 1.1. …' }, to: { kind: 'text', text: '图1-1　…' } });
     expect(change(r, 'chapterNumbering')).toMatchObject({ from: { kind: 'none' }, to: { kind: 'text', text: '第一章' } });
     expect(change(r, 'listNumbers')).toMatchObject({ from: { kind: 'text', text: '1. 1. 1. 1. 1.' }, to: { kind: 'text', text: '一、 （一） 1. （1） ①' } });
+    expect(change(r, 'footnotes')).toMatchObject({
+      from: { kind: 'footnotes', marker: '1', position: 'superscript', numbering: 'chapter' },
+      to: { kind: 'footnotes', marker: '①', position: 'inline', numbering: 'page' },
+      customised: false,
+    });
+  });
+
+  it('leaves the author\'s own footnote numbering unticked, keeping their other footnote settings', () => {
+    const base: PostextConfig = { ...createDefaultConfig('en'), footnotes: { numbering: 'document', fontSize: { value: 0.7, unit: 'em' } } };
+    const r = chineseDefaults(base, { locale: 'zh-Hans' });
+    expect(change(r, 'footnotes')).toMatchObject({ customised: true, applied: false });
+    expect(r.config.footnotes).toBe(base.footnotes);
+    const ticked = chineseDefaults(base, { locale: 'zh-Hans', include: ['footnotes'] });
+    expect(ticked.config.footnotes).toEqual({ numbering: 'page', fontSize: { value: 0.7, unit: 'em' }, numberFormat: 'circled-decimal', markerPosition: 'inline' });
+    // Circled numbers the author picked are no setting of their own.
+    expect(change(chineseDefaults({ ...base, footnotes: { numberFormat: '①' } }, { locale: 'zh-Hans' }), 'footnotes')?.customised).toBe(false);
   });
 
   it('uses Traditional names, numerals and fonts for zh-Hant, and sets it vertically when asked', () => {
