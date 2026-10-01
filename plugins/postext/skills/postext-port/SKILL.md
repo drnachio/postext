@@ -117,6 +117,10 @@ Chinese, Japanese and Korean traps (postext ≥ 1.9; playbooks F5–F6):
 - **One family per style, no fallback**: the bundled Chinese face must hold
   every character the book prints (`lint_project.py` checks it with fontTools).
   Headings default to Open Sans and the body to EB Garamond, which have no Han.
+- **Footnotes ① ② restarting on every page** (页下注) are page numbering, not
+  typed text: write `[^id]` markers and definitions and set
+  `footnotes: {numberFormat: 'circled-decimal', numbering: 'page'}`
+  (postext ≥ 1.11). Never type ① into the text or the note.
 - **Vertical books** (`layout.writingMode: 'vertical-rl'`) are bound on the
   right by default (`page.binding: 'auto'`); page 1 is the recto and sits on
   the left of its spread. `page.margins` keep their names on the sheet.
