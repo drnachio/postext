@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tang-poems-facing-english",
-  "sourceHash": "11719192ccd435eb050c63c4185802ec935938e4daac69f2b974cadfe98fa1e5",
+  "sourceHash": "d67516feb2cfaf82027a6b54b599924f5aaeb346b2911d1be3c44dfdcc829182",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.11.0",
+    "postextPdf": "1.11.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:22.010Z",
+  "capturedAt": "2026-10-01T09:06:25.411Z",
   "variants": {
     "en": {
-      "hash8": "c06be875",
-      "vdtHash": "b1896ec0ff3f9212321383186ad84577043c48c2",
+      "hash8": "8d3f409b",
+      "vdtHash": "dd9d33ac21f45294c82a1c76d75b26a102161cef",
       "timings": {
-        "importMs": 121,
-        "fontsMs": 35737,
-        "buildMs": 18,
-        "totalMs": 36576,
+        "importMs": 10629,
+        "fontsMs": 1615,
+        "buildMs": 36,
+        "totalMs": 14899,
         "builds": 2
       },
       "specimen": {
@@ -74,7 +74,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 50250,
+          "bytes": 50794,
           "alt": "Opening page 3: 靜夜思."
         },
         {
@@ -96,7 +96,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 65020,
+          "bytes": 66062,
           "alt": "Opening page 5: 月下獨酌."
         },
         {
@@ -118,7 +118,7 @@
           "h": 1419,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 34676,
+          "bytes": 35186,
           "alt": "Opening page 7: 絕句."
         },
         {
@@ -140,7 +140,7 @@
           "h": 1419,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 36558,
+          "bytes": 36918,
           "alt": "Opening page 9: 竹里館."
         },
         {
@@ -195,12 +195,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 152869,
+        "bytes": 153720,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 14729
+        "bytes": 14807
       },
       "detected": {
         "apis": [
@@ -240,6 +240,9 @@
           "footnotes.color",
           "footnotes.fontSize",
           "footnotes.lineHeight",
+          "footnotes.markerSize",
+          "footnotes.numberFormat",
+          "footnotes.numbering",
           "footnotes.placement",
           "footnotes.separator",
           "footnotes.separator.color",
@@ -326,7 +329,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 326,
+        "configLeaves": 329,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
@@ -421,13 +424,13 @@
       }
     },
     "es": {
-      "hash8": "b6395c45",
-      "vdtHash": "87f9ddefa2d8a72b7537f4624fce89143df90ecc",
+      "hash8": "e140e057",
+      "vdtHash": "3790ce61d78b2cc576613282dc9b71f2cad52d0f",
       "timings": {
-        "importMs": 127,
-        "fontsMs": 2494,
-        "buildMs": 29,
-        "totalMs": 5624,
+        "importMs": 6398,
+        "fontsMs": 1418,
+        "buildMs": 34,
+        "totalMs": 9542,
         "builds": 2
       },
       "specimen": {
@@ -484,7 +487,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 51082,
+          "bytes": 51524,
           "alt": "Página de apertura 3: 靜夜思."
         },
         {
@@ -506,7 +509,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 65578,
+          "bytes": 66486,
           "alt": "Página de apertura 5: 月下獨酌."
         },
         {
@@ -528,7 +531,7 @@
           "h": 1419,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 35078,
+          "bytes": 35604,
           "alt": "Página de apertura 7: 絕句."
         },
         {
@@ -550,7 +553,7 @@
           "h": 1419,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 38568,
+          "bytes": 38940,
           "alt": "Página de apertura 9: 竹里館."
         },
         {
@@ -605,12 +608,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 155236,
+        "bytes": 155997,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 15003
+        "bytes": 15078
       },
       "detected": {
         "apis": [
@@ -650,6 +653,9 @@
           "footnotes.color",
           "footnotes.fontSize",
           "footnotes.lineHeight",
+          "footnotes.markerSize",
+          "footnotes.numberFormat",
+          "footnotes.numbering",
           "footnotes.placement",
           "footnotes.separator",
           "footnotes.separator.color",
@@ -736,7 +742,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 326,
+        "configLeaves": 329,
         "designElements": 16,
         "directives": [
           ":::paragraphs",

@@ -42,7 +42,7 @@
     "fonts-first"
   ],
   "related": ["bilingual-facing-verse", "catalogue-facing-plates", "poetry-collection", "chinese-novel-horizontal"],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.11.0", "postextPdf": "1.11.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
@@ -97,5 +97,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-01"
 }

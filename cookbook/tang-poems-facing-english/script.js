@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 083 · Tang poems facing their English verse ═══════════════
 // https://postext.dev/en/cookbook/tang-poems-facing-english
 // Code: MIT · Text: Tang poems, zh.wikisource; H. A. Giles, 1901, Project Gutenberg (PD)
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.11.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -80,10 +80,10 @@ const indentVerse = (md) => md.replace(/^ {2}(?=\S)/gm, '\u2060\u2003\u2003');
 // #endregion
 
 // #region notes: glosses at the foot of the recto, in the edition's language
-const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
-  fontSize: pt(8), lineHeight: pt(11), color: col('ink'), textAlign: 'left',
-  spaceAbove: pt(LEAD), spaceBelowRule: pt(5), spaceBetween: pt(3),
-  separator: { width: 0.12, lineWidth: pt(0.6), color: col('seal') } };
+const footnotes = { placement: 'column', numbering: 'page', // the page foot; ① again on each page
+  numberFormat: 'circled-decimal', markerSize: em(0.6), fontSize: pt(8), lineHeight: pt(11),
+  color: col('ink'), textAlign: 'left', spaceAbove: pt(LEAD), spaceBelowRule: pt(5),
+  spaceBetween: pt(3), separator: { width: 0.12, lineWidth: pt(0.6), color: col('seal') } };
 // #endregion
 
 // #region title: 唐詩 on a pale moon, with a seal
@@ -176,10 +176,10 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region voices: each Chinese face loads the files of the characters it sets
 const grab = (re) => (markdown.match(re) ?? []).join('');
-const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::/g) + '0123456789'; // and note numbers
+const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::/g) + '①②③④⑤⑥⑦⑧⑨⑩'; // and note numbers
 await loadFonts(FONTS, markdown);
 await Promise.all([
-  loadCjkFonts({ [SERIF]: ['400'] }, markdown), // the notes, and the heading blocks
+  loadCjkFonts({ [SERIF]: ['400'] }, markdown + poems), // the notes and their ①, the heading blocks
   loadCjkFonts({ [SERIF]: ['700'] }, grab(/^# \S+(?= \{style="zh")|\*\*[^*]+\*\*/gm)),
   loadCjkFonts({ [SERIF]: ['900'] }, grab(/^# \S+(?= \{style="title")/gm)),
   loadCjkFonts({ [KAI]: ['400'] }, `${poems}明月`),
