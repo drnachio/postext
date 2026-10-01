@@ -383,5 +383,37 @@
       "es": "Exportar PDF desde el worker",
       "zh": "从工作线程驱动PDF导出"
     }
+  },
+  "registerCitationEngine": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Citations and bibliography",
+      "es": "Citas y bibliografía",
+      "zh": "引用与参考文献"
+    }
+  },
+  "createCiteprocEngine": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Citations and bibliography",
+      "es": "Citas y bibliografía",
+      "zh": "引用与参考文献"
+    }
+  },
+  "STYLES": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Citations and bibliography",
+      "es": "Citas y bibliografía",
+      "zh": "引用与参考文献"
+    }
+  },
+  "LOCALES": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Citations and bibliography",
+      "es": "Citas y bibliografía",
+      "zh": "引用与参考文献"
+    }
   }
 }

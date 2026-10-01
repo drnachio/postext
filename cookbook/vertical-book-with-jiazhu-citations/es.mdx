@@ -1,0 +1,69 @@
+---
+title: "Chino vertical con citas en notas dentro del renglón"
+summary: "Un capítulo vertical en caracteres tradicionales, encuadernado por la derecha, cuyas citas de nota GB/T 7714 se componen como 夾注 dentro de la columna."
+plain: "Un capítulo de un libro chino compuesto en columnas de arriba abajo. Cada fuente se cita en una nota pequeña de dos líneas dentro de la columna, y al final se listan las obras citadas."
+description: "Un capítulo chino vertical en Postext: citas de nota GB/T 7714 compuestas como 夾注 (warichu) dentro de la columna, con la lista de obras citadas del capítulo."
+question: "¿Cómo compongo las citas como notas de dos líneas dentro del renglón (夾注) en un libro chino vertical?"
+aliases: ["夾注", "夹注", "割注", "warichu", "雙行夾注", "双行夹注", "notas dentro del renglón", "citas en chino vertical", "豎排", "直排", "notas GB/T 7714", "注釋體", "obras citadas", "引用書目", "chino tradicional", "libro encuadernado por la derecha", "tategaki"]
+pageNotes: { "1": "La página de apertura, a la izquierda del lomo: desde la derecha, 第三章 en Hei negrita y el título 宋刻本的版式 en Kai, cada uno en su columna entre tres filetes bermellón, y después el texto en columnas de 36 caracteres. Dos citas van dentro de las columnas como notas en dos filas de medio cuerpo: el libro de 宿白 al pie de la tercera columna, que sigue en la cabeza de la cuarta, y el de 張秀民 más adelante. El folio 四十五 está abajo en el margen izquierdo; al pie, una línea de letra latina pequeña dice que el libro es inventado y que las obras citadas son reales.", "2": "Una página derecha: 版刻叢談 baja por el margen derecho con el folio 四十六. Seis columnas sobre el 版心, el 魚尾 y el 牌記, una nota que cita a 黃永年 en dos filas de medio cuerpo y, en las dos últimas columnas, dos notas en inglés, giradas: el libro de Carter, que acaba en la cabeza de la última columna, y el de Twitchett, que empieza al pie de esa misma columna.", "3": "Una página izquierda: el resto de la nota de Twitchett en la cabeza de la primera columna, la última frase, el título en negrita 本章引用書目 y cinco entradas numeradas, las dos inglesas giradas y con las columnas siguientes sangradas. 第三章　宋刻本的版式 baja por el margen izquierdo sobre el folio 四十七." }
+---
+
+## Lo que vas a componer
+
+El final de un capítulo de un libro inventado sobre la imprenta china, 版刻叢談 («Charlas sobre la impresión xilográfica»), compuesto en caracteres tradicionales, de arriba abajo en columnas que se leen desde la derecha, en una página 大32開 de 140 × 203 mm encuadernada por la derecha. El capítulo trata de la disposición de las ediciones Song y cita cinco obras reales. Cada cita se compone como los libros chinos han compuesto el comentario durante siglos: como un 夾注, una nota en dos filas a medio cuerpo, dentro de la columna donde está la cita. Una nota que no cabe en lo que queda de columna sigue en la cabeza de la siguiente, y una de ellas sigue tras el paso de página. Las notas siguen la forma de nota de la GB/T 7714—2015, la norma de referencias de la China continental, y el capítulo acaba con una lista numerada de las obras que cita, las inglesas giradas. El mismo capítulo con las notas al pie de página se compondría como <RecipeLink slug="novel-footnotes-column-foot">Notas al pie de la columna que las cita</RecipeLink>.
+
+## Elaboración
+
+### 1 · Un estilo de notas, compuesto dentro del renglón
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El estilo de notas de la GB/T 7714 (`china-national-standard-gb-t-7714-2015-note`) convierte cada cita en una nota que nombra la obra entera ([Citas](/es/docs/configuration#citas)). Por defecto, un estilo de notas manda las notas al pie de la página. `notes: 'warichu'` deja cada nota en la columna, compuesta como warichu: dos filas a `cjk.warichu.fontSize`, medio cuerpo del texto, centradas en la columna, y se lee primero la fila derecha ([Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu)). El Markdown es el de cualquier estilo, `[@su1999]` tras las palabras que respalda, y la nota ocupa el lugar de la cita, antes del 。 que cierra la frase.
+
+<PageShot page={1} crop="0.48,0.17,0.16,0.7" caption="Página 1: la nota del libro de 宿白 empieza al pie de la tercera columna y sigue en la cabeza de la cuarta, cada vez con la fila derecha primero." />
+
+Las filas se llenan por tramos. Al pie de la tercera columna solo caben 宿白. 唐宋時期, que se reparten en dos filas de tres y cuatro casillas; el resto de la nota llena la cabeza de la columna siguiente, otra vez en dos filas. En la página 2 la nota de Twitchett empieza al pie de la última columna, y el lector pasa la página para acabarla.
+
+### 2 · Las obras citadas, al final del capítulo
+
+`:::bibliography{title="本章引用書目" scope=chapter}` coloca la lista donde está y solo incluye las obras que cita este capítulo ([La bibliografía](/es/docs/document-format#la-bibliografía)). Las referencias salen de un bloque BibTeX. Cada entrada lleva un `langid`, `chinese` o `english`, que el estilo lee como lengua de la obra, y los nombres escritos en caracteres quedan enteros. La lista se numera por orden de primera cita, y las columnas siguientes de cada entrada empiezan debajo de su etiqueta.
+
+### 3 · Caracteres tradicionales con las reglas del continente
+
+`locale: 'zh-Hant-CN'` pide caracteres tradicionales con las reglas de la China continental, como componen los editores de Pekín y Shanghái los estudios clásicos: la coma y el punto van en la esquina superior derecha de su casilla, y un libro vertical se encuaderna por la derecha. Las citas siguen la etiqueta: la escritura tradicional elige el locale CSL zh-TW, así que las palabras que añade el estilo también van en caracteres tradicionales. Noto Serif SC dibuja los caracteres tradicionales con las formas del continente, que es lo que pide esta edición; LXGW WenKai TC, una fuente de Taiwán, solo compone el título del capítulo, que no lleva puntuación ([Números en texto vertical](/es/docs/configuration#números-en-texto-vertical) explica qué pasa con las cifras).
+
+En las notas y en la lista, un título latino y un año de cuatro cifras se giran y bajan por la columna. Un número corto junto a texto chino, como el 1 de una etiqueta, queda derecho en su casilla.
+
+### 4 · La apertura entre filetes
+
+<Excerpt region="opener" />
+
+En una página vertical, un diseño de título se coloca en el marco del flujo: `x` baja por la columna e `y` cruza la página desde su borde derecho, así que un filete `'horizontal'` es una línea vertical en el pliego. Tres filetes enmarcan dos columnas a 30,4 pt. 第三章 va en la primera en Hei negrita, y el título en la segunda en Kai ([Span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El número del capítulo sale de `startAt=3` en el título y de la plantilla `第{1:一}章`, y los folios de `pageNumbering`: `trad-chinese-informal` desde 45. Las cabeceras y los folios bajan por el margen exterior como en <RecipeLink slug="vertical-novel-right-bound">Una novela china vertical, encuadernada por la derecha</RecipeLink> ([Elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)).
+
+<Excerpt region="palette" />
+
+## Variantes
+
+### Corchetes alrededor de cada nota
+
+Algunas ediciones cierran el 夾注 entre corchetes al cuerpo del texto. `cjk.warichu` los pone en todas las notas, también en las de las citas.
+
+```diff
+-  warichu: { fontSize: em(0.5), color: col('ink') }, // no brackets: the half size sets it off
++  warichu: { fontSize: em(0.5), color: col('ink'), open: '〔', close: '〕' },
+```
+
+### Números en la columna en vez de notas
+
+El estilo numérico de la GB/T 7714 con corchetes de esquina imprime 〔1〕 derecho en la columna, y la lista no cambia.
+
+```diff
+-  style: 'china-national-standard-gb-t-7714-2015-note',
+-  notes: 'warichu', // 夾注; 'footnote' sets the same notes at the foot of the page
++  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  marker: 'corner', // 〔1〕, upright in vertical text
+```
+
+## Errores frecuentes
+
+- Un estilo de notas abrevia la segunda cita de una obra, y el de la GB/T 7714 la reduce a 同1, «como en la nota 1». Un warichu no tiene número, así que el lector no encuentra la nota 1. Este capítulo cita cada obra una vez; un texto que vuelva a citar una obra debe escribir la segunda cita a mano o usar el estilo numérico de la segunda variante.
+- El estilo escribe puntuación occidental en las entradas chinas, `宿白. 唐宋時期的雕版印刷[M]. 北京: 文物出版社, 1999.`, como las imprime la norma. En una columna vertical esos signos conservan su forma occidental: se giran y ocupan menos de una casilla, a diferencia del 。 y la ， del texto.
+- Una fila de warichu va a medio cuerpo: con un texto de 10,5 pt, cada fila mide 5,25 pt, la letra más pequeña de la página. Compón el texto a 五號 o mayor, o sube `cjk.warichu.fontSize`; las dos filas comparten siempre el ancho de una columna.

@@ -1,0 +1,64 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 90,
+  "status": "published",
+  "chapter": "structure",
+  "order": 120,
+  "level": 2,
+  "genres": ["paper"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["citation-styles", "generated-bibliography"],
+    "also": [
+      "character-grid",
+      "cjk-fonts",
+      "cjk-punctuation",
+      "column-layouts",
+      "opener-design",
+      "design-anchoring",
+      "heading-numbering",
+      "heading-styles",
+      "unnumbered-headings",
+      "callout-styles",
+      "chips",
+      "running-heads",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q109", "Q106"],
+  "gotchas": [
+    "cjk-locale-tag",
+    "cjk-fonts-slices",
+    "cjk-grid-balancing",
+    "headings-drop-h1-break",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "postext-citeproc 1.12.0 bundles the GB/T 7714 styles with their language-specific CSL-M layout commented out, so every entry gets 等 after three authors, Western ones included (the docs say et al. by language); the recipe passes the style as customStyle with that layout uncommented"
+    }
+  ],
+  "related": ["apa-thesis-with-bibtex", "chinese-official-document", "journal-article-with-maths"],
+  "engine": { "postext": "1.12.0", "postextPdf": "1.12.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "pages": "all" },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif SC", "license": "OFL-1.1" },
+      { "family": "Noto Sans SC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-01",
+  "updated": "2026-10-01"
+}

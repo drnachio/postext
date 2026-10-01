@@ -1474,5 +1474,75 @@
       "zh": "公文，中文（GB/T 9704）"
     },
     "theme": "page"
+  },
+  "Q106": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cite works and build the bibliography in APA, IEEE or another citation style?",
+      "es": "¿Cómo cito obras y compongo la bibliografía en APA, IEEE u otro estilo de cita?",
+      "zh": "怎样按APA、IEEE或其他引用样式引用文献并生成参考文献表？"
+    },
+    "index": {
+      "en": "Citations and bibliographies",
+      "es": "Citas y bibliografías",
+      "zh": "引用与参考文献"
+    },
+    "theme": "structure"
+  },
+  "Q107": {
+    "kind": "how",
+    "text": {
+      "en": "How do I change a book from one citation style to another without touching the text?",
+      "es": "¿Cómo paso un libro de un estilo de cita a otro sin tocar el texto?",
+      "zh": "怎样在不改正文的情况下把全书换成另一种引用样式？"
+    },
+    "index": {
+      "en": "Citation styles, switching",
+      "es": "Estilos de cita, cambiar de",
+      "zh": "引用样式，切换"
+    },
+    "theme": "structure"
+  },
+  "Q108": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set citations as footnotes, Chicago style, with short forms for later citations?",
+      "es": "¿Cómo pongo las citas en notas al pie, al estilo de Chicago, con forma breve en las siguientes?",
+      "zh": "怎样按芝加哥注释体把引用排成脚注，并让后续引用用简略形式？"
+    },
+    "index": {
+      "en": "Citations in footnotes",
+      "es": "Citas en notas al pie",
+      "zh": "脚注中的引用"
+    },
+    "theme": "structure"
+  },
+  "Q109": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cite to the Chinese standard GB/T 7714, also in vertical text?",
+      "es": "¿Cómo cito según la norma china GB/T 7714, también en texto vertical?",
+      "zh": "怎样按GB/T 7714著录引用，竖排也一样？"
+    },
+    "index": {
+      "en": "GB/T 7714 citations",
+      "es": "Citas GB/T 7714",
+      "zh": "GB/T 7714引用"
+    },
+    "theme": "structure"
+  },
+  "Q110": {
+    "kind": "how",
+    "text": {
+      "en": "How do I refer to a section and the page it is on, and keep both right when the book changes?",
+      "es": "¿Cómo remito a una sección y a la página en que está, y mantengo ambas correctas cuando el libro cambia?",
+      "zh": "怎样引用某一节及其所在页码，并在书变动时保持正确？"
+    },
+    "index": {
+      "en": "Cross-references to sections and pages",
+      "es": "Referencias cruzadas a secciones y páginas",
+      "zh": "对章节和页码的交叉引用"
+    },
+    "theme": "structure"
   }
 }

@@ -1,0 +1,66 @@
+---
+title: "引用指向页码的产品手册"
+summary: "一本自行车用户手册，交叉引用写成“see section 3.2 on page 3”，前后互指，节号和页码都取自排版结果。"
+plain: "一本旅行自行车的简短用户手册。正文让你去看另一节时，会给出那一节的编号和所在页码，两者都可以点击。"
+description: "用Postext排产品手册：编号章节、段落和步骤上的锚点，以及按编号、标题和页码给出的交叉引用，会自动更新并可点击跳转。"
+question: "怎样引用某一节及其所在页码，并在书变动时保持正确？"
+aliases: ["交叉引用", "参见第几页", "页码引用", "锚点", "标签", "参见某节", "手册", "用户手册", "内部链接", "pandoc-crossref"]
+pageNotes: { "1": "第1页：上半页一条藏青色色带，上有OWNER'S MANUAL、白色大号窄体的型号Ardena T3、副标题和版次，下缘一条橙色细带；下方是简介和一份目录，其中的节号、标题和页码都是橙色的交叉引用。", "2": "第2页：第1节，有section 3.2 on page 3这样的引用，以及链接到2.2节某一步骤的close the lever so that it points backwards；调整座高的编号步骤；关于胎压的2.1节。", "3": "第3页：拆装前轮、关于刹车的第3节、一个带橙色侧条的Wet weather框，以及3.2节的开头。", "4": "第4页：调整刹车线、关于链条的第4节（回指第3页的Wet weather），以及保养计划：每个周期都指向一节和一页。" }
+---
+
+## 成品一览
+
+一辆虚构的旅行自行车Ardena T3的用户手册：四页A5，正文用Archivo，首页上半部是印着型号的藏青色色带。手册不会按顺序读，所以每条依赖其他内容的说明都写明位置：*see section 3.2 on page 3*。作者给标题、段落或步骤里的短语起一个标识符，在需要指过去的地方写`:ref`；Postext印出编号、标题或页码，并做成链接。封面上的目录也是这样写的，所以移动一节，或者翻译后重新排版，都不会留下过时的数字。
+
+## 做法
+
+### 1 · 给要指向的地方起名
+
+代码就是上面的[简短回答](#简短回答)。标题用Pandoc的标识符写法，`### Checking pad wear {#sec-pad-wear}`；胎压警告以`:anchor{#warn-pressure}`开头，这是一个不可见的标记；装前轮的最后一步是`[close the lever so that it points backwards]{#step-close-lever}`，文字保留并获得名字；提示框以`:::callout{#box-wet type="note" title="Wet weather"}`开头。引用这一步会印出它的文字，引用提示框会印出框的标题。
+
+### 2 · 同一个目标，四种叫法
+
+`:ref{id="sec-pad-wear"}`用`crossRefs.section`的词印出*section 3.2*；`style=page`用`crossRefs.page`的词印出*page 3*；`style=title`印出*Checking pad wear*；`style=pageNumber`只印数字*3*。封面目录把单独的编号、标题和单独的页码组合起来，读起来就是一份目录。西班牙文版里同样的引用印成*apartado 3.2*和*página 3*，因为模板跟随该版的语言。
+
+### 3 · 页码自行稳定
+
+页码要等手册排完才知道。引擎先排一遍，读出每个目标落在哪一页，再重排，直到没有引用再变化，和填写目录用的是同一个循环。译文变长，或者把某节移到前面，页码就会变，引用随之更新，无论向前还是向后指。
+
+### 4 · 编号来自第2级计数器
+
+<Excerpt region="numbers" />
+
+手册只有一个1级标题，即封面上的型号，所以各节从第2级开始编号：`{2}`得到1到5，`{2}.{3}`得到1.1、1.2。
+
+### 5 · 封面就是这个标题的章首
+
+<Excerpt region="cover" />
+
+色带高104 mm，占半页，下缘一条橙色细带。眉题、副标题和版次都是标题属性，所以西班牙文版在自己的正文里改写它们。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 引用里写成“p.”
+
+页码引用很多的参考书用缩写可以省地方。
+
+```diff
+-  page: t({ en: 'page {n}', es: 'página {n}' }), // spelt out: a manual is read by anyone
++  page: t({ en: 'p. {n}', es: 'pág. {n}' }),
+```
+
+### 引用保持黑色
+
+当页面上满是引用时，让它们用正文颜色加粗；在PDF和屏幕上它们仍是链接。
+
+```diff
+-const references = { referenceColor: col('orange'), referenceBold: true };
++const references = { referenceColor: col('ink'), referenceBold: true };
+```
+
+## 常见问题
+
+- 不带样式地引用`:anchor`会印出页码，因为不可见的锚点没有自己的文字。需要引用原文时，用`[文字]{#id}`。
+- 标识符在全书中必须唯一。引用指向第一个`{#sec-brakes}`，沙盒的检查面板会把第二个列为`duplicateAnchor`。

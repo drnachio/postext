@@ -1,0 +1,61 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 91,
+  "status": "published",
+  "chapter": "structure",
+  "order": 130,
+  "level": 3,
+  "genres": ["any"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["note-citations", "citation-styles"],
+    "also": [
+      "warichu",
+      "generated-bibliography",
+      "vertical-writing",
+      "right-binding",
+      "character-grid",
+      "chinese-numerals",
+      "cjk-punctuation",
+      "cjk-fonts",
+      "opener-design",
+      "heading-numbering",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q109", "Q108"],
+  "gotchas": [
+    "cjk-locale-tag",
+    "cjk-fonts-slices",
+    "cjk-face-region",
+    "cjk-spread-order",
+    "cjk-grid-balancing",
+    "headings-drop-h1-break",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "related": ["vertical-novel-right-bound", "gbt7714-chinese-paper", "novel-footnotes-column-foot"],
+  "engine": { "postext": "1.12.0", "postextPdf": "1.12.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif SC", "license": "OFL-1.1" },
+      { "family": "Noto Sans SC", "license": "OFL-1.1" },
+      { "family": "LXGW WenKai TC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-01",
+  "updated": "2026-10-01"
+}

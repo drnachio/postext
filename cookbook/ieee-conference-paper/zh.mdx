@@ -1,0 +1,64 @@
+---
+title: "IEEE格式的双栏会议论文"
+summary: "一篇US Letter开本的研讨会论文：通栏标题区，IEEE顺序编码引文并合并为[2]–[4]，Section II式的节号引用，以及紧凑的[n]参考文献表。"
+plain: "一篇双栏排的会议短论文。作者给每条文献起一个代号，Postext按方括号数字编号引文，按编号和页码引用各节，并在文末印出编号的参考文献表。"
+description: "用Postext排IEEE格式会议论文：US Letter双栏，citeproc-js顺序编码引文，连续编号合并，节号与页码引用，8 pt参考文献表。"
+question: "怎样排一篇用IEEE顺序编码引文和参考文献表的会议论文？"
+aliases: ["IEEE", "IEEEtran", "会议论文", "论文集", "顺序编码制", "双栏", "关键词", "摘要", "BibTeX", "citeproc"]
+pageNotes: { "1": "第1页：页面顶部一条浅蓝色色带，里面是蓝色小号大写的研讨会名称、居中的两行标题Optimal Line Breaking in the Browser: What It Costs and When It Pays，以及并排的三个作者信息块。色带下方是通栏的粗体摘要和关键词，再往下是两栏两端对齐的正文，居中的节标题I. INTRODUCTION和II. RELATED WORK，有[1]和[2]–[4]这样的引文，以及Section II、Section III、Section IV, on p. 2这样的引用。", "2": "第2页：第III至VI节、致谢，以及REFERENCES标题下七条8 pt的编号条目，每个[n]单独占一栏；两栏底部齐平。" }
+---
+
+## 成品一览
+
+一篇为文献工程小型研讨会写的两页论文，按IEEE会议论文集的做法排版：US Letter开本，两栏各宽三英寸半，10 pt的Times类字体，各节用居中大写的I、II、III编号。标题、三个作者信息块、摘要和关键词横跨两栏，压在一条研讨会蓝色的浅色色带下，这是页面上唯一的颜色。作者用BibTeX代号引用；Postext按文献首次被引的顺序印出[1]，把三条连续文献合并成[2]–[4]，作者名作为句子成分时写成"Knuth and Plass [1]"，并在文末生成8 pt的编号文献表。节号引用印作"Section IV, on p. 2"，正文变动后仍然正确。
+
+## 做法
+
+### 1 · IEEE样式和编号合并
+
+代码就是上面的[简短回答](#简短回答)。注册一次后，`postext-citeproc`用citeproc-js和IEEE的CSL样式排出每个`[@key]`，按首次引用的顺序编号。引擎自带的样式文件把三条连续文献写成[2], [3], [4]；IEEE编辑指南则合并为[2]–[4]。在样式的`<citation>`元素上加`collapse="citation-number"`，再把结果作为`customStyle`传入，citeproc-js就会合并。`labelWidth`让文献表的编号单独占一栏，条目的第二行从第一个词下方开始，而不是从方括号下方开始。
+
+### 2 · 横跨两栏的标题区
+
+<Excerpt region="title" />
+
+标题是文档中唯一的一级标题，使用`paper`样式。该样式通栏，用自己的设计绘制标题：研讨会名称、论文标题和三个各占三分之一版心宽的作者信息块，每块读取一个标题属性，属性里的`\n`用来换行。色带是锚定在裁切边上的方框，所以一直延伸到纸张上边缘。
+
+### 3 · 粗体的摘要和关键词
+
+<Excerpt region="abstract" />
+
+一个通栏的提示框装着摘要和关键词。框内正文是9 pt粗体，和IEEE的做法一样；正文里的`***Abstract*—**`得到带破折号的斜体标签。上方的细线是框的色条，内边距把行长收窄到约一百个字符。
+
+### 4 · 编号的节和对节的引用
+
+<Excerpt region="sections" />
+
+`{2:I}.`把各节编为I.、II.、III.。引用印出不带句点的编号，所以`:ref{id="sec:results"}`按`crossRefs`的模板得到"Section IV"，`:ref{id="sec:results" style=page}`得到"p. 2"。两者都根据排好的页面计算，增加段落或移动某节后仍会随正文更新。致谢和参考文献标题使用`back`样式，不编号。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 保留样式原样
+
+不做修改时，三条连续文献逐条印出，有些期刊就要求这样。
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee',
+```
+
+### 把区间写在一对方括号里
+
+另一些顺序编码样式印作[2–4]。`brackets`标记自己写编号，并把连续的编号合并。
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee', marker: 'brackets', collapseRanges: true,
+```
+
+## 常见问题
+
+- 末页两栏底部不齐时，看看本该切齐的位置上是什么：引擎不会把节标题留在栏底而让正文去下一栏，宁可放弃切齐。在最后几节里增删一句，就能把切齐的位置移过标题。
+- BibTeX命令如`{\TeX}`不会展开。写成`The {TeX}book`，花括号会保持字母大小写不变。

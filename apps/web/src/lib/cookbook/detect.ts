@@ -32,6 +32,8 @@ export const RESOURCE_EMBED = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 export const POSTEXT_URL = "https://esm.sh/postext";
 export const POSTEXT_BUNDLE_URL = "https://esm.sh/postext?bundle";
 export const POSTEXT_PDF_URL = "https://esm.sh/postext-pdf";
+/** The citation engine (CSL styles; postext >= 1.12). */
+export const POSTEXT_CITEPROC_URL = "https://esm.sh/postext-citeproc";
 /** The layout worker's client (worker recipes, `engine.worker`). */
 export const POSTEXT_WORKER_URL = "https://esm.sh/postext/worker";
 
@@ -299,7 +301,7 @@ export function parseImports(js: string, scan: JsScan = scanJs(js)): PenImport[]
 /** True for the engine's module URLs (any version or query: the lint
  *  decides which forms are allowed). */
 export function isEngineUrl(url: string): boolean {
-  return /^https:\/\/esm\.sh\/postext(-pdf)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
+  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
 }
 
 /** True when `name` appears in `code` as an identifier of its own: not part

@@ -1,0 +1,64 @@
+---
+title: "A two-column conference paper in IEEE style"
+summary: "A workshop paper in two columns: a title block across the page, IEEE citations with [2]–[4] ranges, Section II references and a compact numbered list."
+plain: "A short research paper for a conference, in two columns. The author writes a code for each source; Postext numbers the citations in brackets, refers to sections by number and page, and prints the numbered list of references at the end."
+description: "An IEEE-style conference paper in Postext: two columns on US letter, numbered citations by citeproc-js, collapsed ranges, section and page references."
+question: "How do I set a conference paper with numbered IEEE citations and a references list?"
+aliases: ["IEEE", "IEEEtran", "conference paper", "proceedings", "numbered citations", "two columns", "index terms", "abstract", "BibTeX", "citeproc"]
+pageNotes: { "1": "Page 1: a pale blue band across the top holds the workshop line in small blue capitals, the two-line title Optimal Line Breaking in the Browser: What It Costs and When It Pays, centred, and three author blocks side by side. Below the band, the abstract and the index terms in bold across the page, then two justified columns under the centred heads I. INTRODUCTION and II. RELATED WORK, with citations [1] and [2]–[4] and the references Section II, Section III, Section IV, on p. 2.", "2": "Page 2: sections III to VI, the acknowledgment and the REFERENCES head over seven numbered entries in 8 pt, each [n] in a column of its own; the two columns end level." }
+---
+
+## What you'll build
+
+A two-page paper for a small workshop on document engineering, set the way IEEE conference proceedings set theirs: US letter, two columns of three and a half inches, Times-like type at 10 pt, sections numbered I, II, III in centred capitals. The title, the three author blocks, the abstract and the index terms run across both columns under a pale band in the workshop's blue, the only colour on the pages. The authors cite with BibTeX keys; Postext prints [1] in the order the works are first cited, joins three consecutive works as [2]–[4], writes "Knuth and Plass [1]" when the names are part of the sentence, and builds the numbered list at the end in 8 pt. References to sections print "Section IV, on p. 2" and stay right when the text moves.
+
+## Method
+
+### 1 · The IEEE style, with its ranges
+
+The code is [the short answer](#the-short-answer) above. Registered once, `postext-citeproc` formats every `[@key]` with citeproc-js and the IEEE CSL style, numbering the works in the order they are first cited. The style file bundled with the engine lists three consecutive works as [2], [3], [4]; the IEEE editorial guide joins them as [2]–[4]. Adding `collapse="citation-number"` to the style's `<citation>` element and passing the result as `customStyle` makes citeproc-js do it. `labelWidth` gives the numbers of the list a column of their own, so the second line of an entry starts under the first word, not under the bracket.
+
+### 2 · A title block across both columns
+
+<Excerpt region="title" />
+
+The title is the document's only level-1 heading, with the style `paper`. The style spans the page and draws the heading from its design: the venue line, the title and three author blocks a third of the measure wide, each read from a heading attribute whose `\n` breaks the lines. The band is a box anchored to the trim, so it reaches the top edge of the paper.
+
+### 3 · Abstract and index terms in bold
+
+<Excerpt region="abstract" />
+
+A callout that spans the page carries the abstract and the index terms. Its body is 9 pt bold, as IEEE sets it, and `***Abstract*—**` in the text gives the italic label with its em dash. The hairline above is the box's stripe, and the padding narrows the measure to about a hundred characters.
+
+### 4 · Numbered sections and references to them
+
+<Excerpt region="sections" />
+
+`{2:I}.` numbers the sections I., II., III. A reference prints the number without its stop, so `:ref{id="sec:results"}` gives "Section IV" from the `crossRefs` template, and `:ref{id="sec:results" style=page}` gives "p. 2". Both are worked out from the laid-out pages, so they follow the text if a paragraph is added or a section moves. The Acknowledgment and References heads take the `back` style and go unnumbered.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Keep the style as it ships
+
+Without the edit, three consecutive works print one by one, which some journals prefer.
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee',
+```
+
+### Write the ranges inside one pair of brackets
+
+Some numbered styles print [2–4] instead. The `brackets` marker writes the numbers itself and joins consecutive ones.
+
+```diff
+-  style: 'custom', customStyle: ieee, // or style: 'ieee' for the file as it ships
++  style: 'ieee', marker: 'brackets', collapseRanges: true,
+```
+
+## Pitfalls
+
+- When the two columns of the last page do not end level, look at what stands where they would be cut: the engine will not leave a section head at the foot of a column away from its text, and gives up the cut instead. A sentence more or less in the last sections moves the cut past the heading.
+- BibTeX commands such as `{\TeX}` are not expanded. Write `The {TeX}book`; the braces keep the capitals as they are.

@@ -223,5 +223,21 @@
       "es": "Índice analítico",
       "zh": "索引"
     }
+  },
+  "crossRefs": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Cross-references",
+      "es": "Referencias cruzadas",
+      "zh": "交叉引用"
+    }
+  },
+  "citations": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Citations",
+      "es": "Citas",
+      "zh": "引用"
+    }
   }
 }

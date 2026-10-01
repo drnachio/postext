@@ -1,0 +1,69 @@
+---
+title: "Vertical Chinese with citations in inline notes"
+summary: "A vertical chapter in Traditional characters, bound on the right, whose GB/T 7714 note citations are set as 夾注 inside the column."
+plain: "A chapter of a Chinese book set in columns from top to bottom. Each source is cited in a small two-line note inside the column, and the works cited are listed at the end."
+description: "A vertical Chinese chapter in Postext: GB/T 7714 note citations set as 夾注 (warichu) inside the column, with a chapter list of works cited."
+question: "How do I set citations as two-row inline notes (夾注) in a vertical Chinese book?"
+aliases: ["夾注", "夹注", "割注", "warichu", "雙行夾注", "双行夹注", "inline notes", "vertical Chinese citations", "豎排", "直排", "GB/T 7714 notes", "注釋體", "works cited", "引用書目", "Traditional Chinese", "right-bound book", "tategaki"]
+pageNotes: { "1": "The opening page, on the left of the spine: from the right, 第三章 in bold Hei and the title 宋刻本的版式 in Kai, each in a column of its own between three vermilion rules, then the text in columns of 36 characters. Two citations are set inside the columns as notes in two half-size rows: 宿白’s book at the foot of the third column, running on at the head of the fourth, and 張秀民’s further on. The folio 四十五 stands low in the left margin; across the foot, a line of small Latin type says the book is invented and the works cited are real.", "2": "A right-hand page: 版刻叢談 down the right margin with the folio 四十六. Six columns about the 版心, the 魚尾 and the 牌記, a note citing 黃永年 in two half-size rows, and in the last two columns two notes in English, turned sideways: Carter’s book, which ends at the head of the last column, and Twitchett’s, which begins at the foot of it.", "3": "A left-hand page: the rest of Twitchett’s note at the head of the first column, the last sentence, then the bold title 本章引用書目 and five numbered entries, the two English ones turned sideways with their turnover columns indented. 第三章　宋刻本的版式 runs down the left margin over the folio 四十七." }
+---
+
+## What you'll build
+
+The end of a chapter from an invented book on Chinese printing, 版刻叢談 (“Talks on block printing”), set in Traditional characters, top to bottom in columns read from the right, on a 大32開 page of 140 × 203 mm bound on the right. The chapter is about the layout of Song editions, and cites five real works. Each citation is set the way Chinese books have set commentary for centuries: as a 夾注, a note in two rows at half the text size, inside the column where the citation stands. A note that does not fit in what is left of a column goes on at the head of the next, and one goes on across the page turn. The notes follow the note form of GB/T 7714—2015, the mainland standard for references, and the chapter ends with a numbered list of the works it cites, the English ones turned sideways. The same chapter with its notes at the foot of the page would be set like <RecipeLink slug="novel-footnotes-column-foot">Nº 071</RecipeLink>.
+
+## Method
+
+### 1 · A note style, set inside the line
+
+The code is [the short answer](#the-short-answer) above. The GB/T 7714 note style (`china-national-standard-gb-t-7714-2015-note`) is a note style: each citation becomes a note that names the work in full ([Citations](/en/docs/configuration#citations)). By default a note style sends its notes to the foot of the page. `notes: 'warichu'` keeps each note in the column instead, set as a warichu: two rows at `cjk.warichu.fontSize`, half the text size, centred on the column, the right row read first ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)). The Markdown is the same as for any style, `[@su1999]` after the words it supports, and the note takes the place of the citation, before the 。 that ends the sentence.
+
+<PageShot page={1} crop="0.48,0.17,0.16,0.7" caption="Page 1: the note on 宿白’s book starts at the foot of the third column and goes on at the head of the fourth, the right row first each time." />
+
+The rows are filled part by part. At the foot of the third column there is room for 宿白. 唐宋時期 and no more, so it is split into two rows of three and four cells; the rest of the note fills the head of the next column, again in two rows. On page 2 Twitchett’s note begins at the foot of the last column, and the reader turns the page to finish it.
+
+### 2 · The works cited, at the end of the chapter
+
+`:::bibliography{title="本章引用書目" scope=chapter}` sets the list where it stands and lists only the works this chapter cites ([The bibliography](/en/docs/document-format#the-bibliography)). The references come from a BibTeX block. Each entry carries a `langid`, `chinese` or `english`, which the style reads as the work’s language, and names written in characters stay whole. The list is numbered in the order of first citation, and an entry’s turnover columns start below its label.
+
+### 3 · Traditional characters to mainland rules
+
+`locale: 'zh-Hant-CN'` asks for Traditional characters set to the mainland’s rules, as publishers in Beijing and Shanghai set classical scholarship: the comma and the full stop sit in the top right corner of their cell, and a vertical book is bound on the right. The citations follow the tag: Traditional script picks the zh-TW CSL locale, so the words the style adds are in Traditional characters too. Noto Serif SC draws Traditional characters in the mainland’s forms, which suits this edition; LXGW WenKai TC, a Taiwan face, sets only the chapter title, which has no punctuation ([Numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text) explains what happens to the digits).
+
+In the notes and the list, a Latin title and a four-digit year turn sideways and run down the column. A short number next to Chinese text, such as the 1 of a label, stands upright in its cell.
+
+### 4 · The opener between rules
+
+<Excerpt region="opener" />
+
+On a vertical page a heading design is laid out in the flow frame: `x` runs down the column and `y` across the page from its right edge, so a `'horizontal'` rule is a vertical line on the sheet. Three rules frame two columns 30.4 pt apart. 第三章 stands in the first in bold Hei, and the title in the second in Kai ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)). The chapter number comes from `startAt=3` on the heading and the template `第{1:一}章`, and the folios from `pageNumbering`: `trad-chinese-informal` from 45. The running heads and folios go down the fore-edge as in <RecipeLink slug="vertical-novel-right-bound">Nº 075</RecipeLink> ([Vertical text elements](/en/docs/configuration#vertical-text-elements)).
+
+<Excerpt region="palette" />
+
+## Variations
+
+### Brackets round each note
+
+Some editions close a 夾注 in brackets at the text size. `cjk.warichu` sets them for every note, the citations included.
+
+```diff
+-  warichu: { fontSize: em(0.5), color: col('ink') }, // no brackets: the half size sets it off
++  warichu: { fontSize: em(0.5), color: col('ink'), open: '〔', close: '〕' },
+```
+
+### Numbers in the column instead of notes
+
+The numeric GB/T 7714 style with corner brackets prints 〔1〕 upright in the column, and the list stays as it is.
+
+```diff
+-  style: 'china-national-standard-gb-t-7714-2015-note',
+-  notes: 'warichu', // 夾注; 'footnote' sets the same notes at the foot of the page
++  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  marker: 'corner', // 〔1〕, upright in vertical text
+```
+
+## Pitfalls
+
+- A note style writes a work cited a second time in short form, and the GB/T 7714 note style shortens it to 同1, “as in note 1”. A warichu has no number, so the reader cannot find note 1. This chapter cites each work once; a text that cites a work again should write the second citation by hand, or use the numeric style of the second variation.
+- The style writes Western punctuation into Chinese entries, `宿白. 唐宋時期的雕版印刷[M]. 北京: 文物出版社, 1999.`, as the standard prints them. In a vertical column those marks keep their Western form: they turn sideways and take less than a cell, unlike the 。 and ， of the text.
+- A warichu row is half the text size: at 10.5 pt each row is 5.25 pt, the smallest type on the page. Set the text at 五號 or larger, or raise `cjk.warichu.fontSize`; the two rows always share one column’s width.

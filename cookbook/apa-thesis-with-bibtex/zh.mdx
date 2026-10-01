@@ -1,0 +1,61 @@
+---
+title: "按APA 7引用的学位论文章节"
+summary: "一章博士论文：正文写[@key, p. 33]，citeproc-js按APA 7排出引文，参考文献表取自章末的BibTeX块。"
+plain: "博士论文的一章。作者给每条文献起一个短代号写进正文，Postext按APA格式印出文中引文和章末的参考文献表。"
+description: "用Postext排博士论文章节：Pandoc式引文经citeproc-js排成APA 7，BibTeX文献表悬挂缩进，节号引用可点击跳转。"
+question: "怎样按APA 7引用文献，并从BibTeX文件生成参考文献表？"
+aliases: ["APA", "APA 7", "学位论文", "博士论文", "BibTeX", "Zotero", "参考文献表", "著者-出版年制", "citeproc"]
+pageNotes: { "1": "第1页：页面顶部一条浅蓝色色带，上有CHAPTER字样、标题Reading on Paper and on Screens: The State of the Evidence，右侧是一个细笔画的大号2；下方是开头几段，带有(Tinker, 1963)这样的著者-出版年引文，以及指向Section 2.1、2.2、2.3的蓝色粗体链接。", "2": "第2页：2.2节和2.3节，有Delgado et al. (2018)这样的叙述式引文和带页码的(Ibáñez Roca, 2023, pp. 12–15)，以及不编号的References表的开头。", "3": "第3页：References表的其余部分，APA 7格式，每条悬挂缩进，DOI完整印出。" }
+---
+
+## 成品一览
+
+一篇教育学博士论文的第二章，文献综述：二十年来关于纸上阅读和屏幕阅读的研究说了什么。这一章用A4纸，左侧装订，正文是Literata，行距16 pt，章首压着一条大学蓝色的浅色色带。作者用Zotero管理文献，把导出的BibTeX贴进稿子；正文里每条文献只是一个代号。Postext把每条引文排成APA 7：作者、年份，给了页码就加页码；名字作为句子成分时写成"Delgado et al. (2018)"；参考文献表按APA要求的顺序和格式生成。导师要改成Chicago时，只改样式这一行。
+
+## 做法
+
+### 1 · 一个引擎，一种样式
+
+代码就是上面的[简短回答](#简短回答)。Postext识别引文，措辞交给引用引擎，在第一次排版前注册一次即可；`postext-citeproc`封装了Zotero和Mendeley所用的citeproc-js，自带十六种CSL样式及其语言文件。`[@mangen2013]`得到"(Mangen et al., 2013)"，不带方括号的`@delgado2018`把作者放进句子，`[@ibanez2023, pp. 12–15]`把页码范围带进括号。文档改成西班牙文时，同样的代号会改用西班牙文语言文件里的连接词和缩写，因为引擎跟随文档的语言。
+
+### 2 · 文献来自BibTeX块
+
+本章最后一块是`:::references{format=bibtex}`，里面贴着Zotero的导出，重音写作`{\'a}`。上面的`:::bibliography`把文献表放在References标题之下；不写它，Postext就把文献表加在文末。表里只列被引用的文献，按APA的规则排序，正文里每条引文都链接到对应条目。
+
+### 3 · 不编号的标题，用文字表达的节号引用
+
+<Excerpt region="refs" />
+
+参考文献标题使用`references`样式，留在目录里但不参与编号，所以文献表不会变成第2.4节。`:ref{id="sec-speed"}`按`crossRefs`的标签印出"Section 2.2"并链接到该标题；节号来自章标题上的`startAt=2`，与各级标题共用同一个计数器。
+
+### 4 · 章首放在色带里
+
+<Excerpt region="opener" />
+
+色带是一个锚定在页面裁切边上的方框，正文从它下方10 mm处开始。章号用96 pt的Literata Light放在右侧，读起来像一个图形，把整行宽度留给标题。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 换一种样式
+
+同一章改用Chicago著者-出版年制，作者名后不加逗号，年份紧跟在作者之后。
+
+```diff
+-  style: 'apa', // 'chicago-author-date', 'ieee', 'vancouver'… change nothing else
++  style: 'chicago-author-date',
+```
+
+### 让文献表比正文小一号
+
+不少大学允许参考文献表缩小一号、单倍行距。
+
+```diff
+-    fontSize: em(1), hangingIndent: mm(12.7), entrySpacing: pt(4),
++    fontSize: em(0.9), lineHeight: pt(13), hangingIndent: mm(12.7), entrySpacing: pt(3),
+```
+
+## 常见问题
+
+- APA要求文章和图书标题只大写首字母，而citeproc-js按数据原样印出标题。Zotero里的标题多半每个词首字母大写，所以要在Zotero或BibTeX里改好，再让它们上版。

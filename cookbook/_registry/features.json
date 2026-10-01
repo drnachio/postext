@@ -6472,5 +6472,245 @@
       }
     },
     "since": "1.9.0"
+  },
+  "citation-styles": {
+    "label": {
+      "en": "Citations in a citation style",
+      "es": "Citas en un estilo de cita",
+      "zh": "按引用样式排的引用"
+    },
+    "definition": {
+      "en": "Works cited as [@key, p. 33] and formatted in a CSL style (APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714…) chosen in the settings, linked to their entries.",
+      "es": "Obras citadas como [@clave, pág. 33] y formateadas en un estilo CSL (APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714…) elegido en los ajustes, enlazadas con sus entradas.",
+      "zh": "以[@key, 页 33]引用文献，按设置中选定的CSL样式（APA、芝加哥、MLA、IEEE、温哥华、ISO 690、GB/T 7714等）排版，并链接到对应条目。"
+    },
+    "aliases": {
+      "en": [
+        "citations",
+        "APA",
+        "IEEE",
+        "Chicago",
+        "MLA",
+        "CSL",
+        "author-date",
+        "numbered citations",
+        "[@key]",
+        "Zotero"
+      ],
+      "es": [
+        "citas",
+        "APA",
+        "IEEE",
+        "Chicago",
+        "MLA",
+        "CSL",
+        "autor-fecha",
+        "citas numéricas",
+        "[@clave]",
+        "Zotero"
+      ],
+      "zh": [
+        "引用",
+        "APA",
+        "IEEE",
+        "芝加哥",
+        "MLA",
+        "CSL",
+        "著者-出版年",
+        "顺序编码",
+        "[@key]",
+        "citations"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    },
+    "research": [],
+    "detect": {
+      "markdown": [
+        "\\[[^\\]\\n]*-?@[A-Za-z0-9_]"
+      ],
+      "config": [
+        "citations"
+      ]
+    }
+  },
+  "generated-bibliography": {
+    "label": {
+      "en": "Bibliography from the references",
+      "es": "Bibliografía a partir de las referencias",
+      "zh": "由参考文献数据生成的文献表"
+    },
+    "definition": {
+      "en": "The list of works cited, built from the document's references (front matter or a BibTeX block) where :::bibliography stands or after the last chapter.",
+      "es": "La lista de obras citadas, construida a partir de las referencias del documento (front matter o un bloque BibTeX) donde está :::bibliography o tras el último capítulo.",
+      "zh": "根据文档中的参考文献数据（front matter或BibTeX块）生成的所引文献列表，放在:::bibliography处或最后一章之后。"
+    },
+    "aliases": {
+      "en": [
+        "bibliography",
+        "references",
+        "works cited",
+        "BibTeX",
+        ":::bibliography",
+        ":::references",
+        "nocite"
+      ],
+      "es": [
+        "bibliografía",
+        "referencias",
+        "obras citadas",
+        "BibTeX",
+        ":::bibliography",
+        ":::references",
+        "nocite"
+      ],
+      "zh": [
+        "参考文献",
+        "参考文献表",
+        "引用文献",
+        "BibTeX",
+        ":::bibliography",
+        ":::references",
+        "nocite"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    },
+    "research": [],
+    "detect": {
+      "markdown": [
+        "^:::bibliography",
+        "^:::references",
+        "^references:"
+      ]
+    }
+  },
+  "note-citations": {
+    "label": {
+      "en": "Citations in notes",
+      "es": "Citas en notas",
+      "zh": "注释体引用"
+    },
+    "definition": {
+      "en": "A note style (Chicago notes, OSCOLA, GB/T 7714 notes) sets each citation as a footnote, with short forms for later citations, or as a two-row note inside a Chinese line.",
+      "es": "Un estilo de notas (Chicago notas, OSCOLA, GB/T 7714 notas) pone cada cita en una nota al pie, con forma breve en las citas siguientes, o en una nota de dos líneas dentro del renglón chino.",
+      "zh": "注释体样式（芝加哥注释体、OSCOLA、GB/T 7714注释）把每条引用排成脚注，后续引用用简略形式，中文也可排成行内双行夹注。"
+    },
+    "aliases": {
+      "en": [
+        "footnote citations",
+        "Chicago notes",
+        "ibid.",
+        "short form",
+        "OSCOLA",
+        "warichu"
+      ],
+      "es": [
+        "citas en nota",
+        "notas de Chicago",
+        "ibid.",
+        "forma breve",
+        "OSCOLA",
+        "nota de dos líneas"
+      ],
+      "zh": [
+        "脚注引用",
+        "芝加哥注释体",
+        "同上",
+        "简略形式",
+        "OSCOLA",
+        "夹注"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Citations and bibliography",
+        "es": "Citas y bibliografía",
+        "zh": "引用与参考文献"
+      }
+    },
+    "research": [],
+    "detect": {
+      "config": [
+        "citations.notes"
+      ]
+    }
+  },
+  "cross-references": {
+    "label": {
+      "en": "Cross-references",
+      "es": "Referencias cruzadas",
+      "zh": "交叉引用"
+    },
+    "definition": {
+      "en": "References to a heading, a box or a marked phrase by its id, printing its number, title or page and linking to it; the pages settle as the book changes.",
+      "es": "Referencias a un título, un recuadro o una frase marcada por su id, que imprimen su número, su título o su página y enlazan con ella; las páginas se ajustan cuando el libro cambia.",
+      "zh": "按id引用标题、框或标记的短语，印出其编号、标题或页码并链接到它；全书变动时页码随之更新。"
+    },
+    "aliases": {
+      "en": [
+        "see section",
+        "see page",
+        "page reference",
+        "{#id}",
+        "anchor",
+        "@sec:",
+        "pandoc-crossref"
+      ],
+      "es": [
+        "véase la sección",
+        "véase la página",
+        "referencia de página",
+        "{#id}",
+        "ancla",
+        "@sec:",
+        "pandoc-crossref"
+      ],
+      "zh": [
+        "见第几节",
+        "见第几页",
+        "页码引用",
+        "{#id}",
+        "锚点",
+        "@sec:",
+        "pandoc-crossref"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Cross-references and anchors",
+        "es": "Referencias cruzadas y anclas",
+        "zh": "交叉引用与锚点"
+      }
+    },
+    "research": [],
+    "detect": {
+      "markdown": [
+        "\\{#[A-Za-z][^}\\n]*\\}\\s*$",
+        ":anchor\\{",
+        "@(?:sec|fig|tbl|eq):"
+      ],
+      "config": [
+        "crossRefs"
+      ]
+    }
   }
 }

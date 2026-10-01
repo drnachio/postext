@@ -1,0 +1,60 @@
+---
+title: "Un ensayo de historia con notas de Chicago"
+summary: "Un ensayo de historia de cuatro páginas cuyas citas [@clave, 87] salen como notas de Chicago al pie: completas la primera vez, breves después."
+plain: "Un ensayo sobre cómo las ciudades británicas adoptaron la hora de Londres. Cada fuente que cita la autora se convierte en una nota numerada al pie de la página, y la lista de obras va al final."
+description: "Un ensayo de historia con Postext: citas de Pandoc en notas al pie de Chicago, forma breve en las obras repetidas, prefijos, localizadores y bibliografía."
+question: "¿Cómo pongo las citas en notas al pie de Chicago, con forma breve en las siguientes?"
+aliases: ["Chicago", "Manual de Chicago", "CMOS", "notas y bibliografía", "citas en nota", "ibid.", "ibídem", "notas breves", "humanidades", "ensayo de historia"]
+pageNotes: { "1": "Página 1: una banda verde oscuro sobre la mitad superior con la línea de la serie, las fechas 1840–1880 en cifras grandes y finas, el título La hora del ferrocarril: cómo las ciudades británicas adoptaron la hora de Londres y el nombre de la autora; debajo, los primeros párrafos y una primera nota que cita a Schivelbusch completo.", "2": "Página 2: las secciones Las compañías deciden y El hilo lleva la hora; al pie, las notas 2 a 6, donde Howse aparece completo en la nota 3 y como Howse, Greenwich Time and the Discovery of the Longitude en la nota 4.", "3": "Página 3: Las ciudades dudan y Los tribunales se resisten, con las notas 7 a 11 en forma breve y una nota de la autora que cita dos obras con el prefijo véase.", "4": "Página 4: la última sección, la Bibliografía en orden alfabético con sangría francesa, un colofón pequeño y las notas 12 a 15." }
+---
+
+## Lo que vas a componer
+
+Una separata de la serie de historia de la técnica de una revista: un ensayo de unas 1.100 palabras sobre cómo las ciudades británicas dejaron su propio mediodía por el de Londres entre 1840 y 1880. La página mide 156 × 234 mm, con márgenes en espejo, en Crimson Pro de 11/14 pt, y una banda verde ferrocarril cubre la mitad superior de la primera. La autora escribe cada fuente como una clave, `[@howse1980, 87]`, y Postext compone cada una como una nota numerada al pie en el estilo de notas y bibliografía de Chicago. La primera nota de una obra da autor, título y editorial; las siguientes, la forma breve. Las notas propias de la autora toman su número de la misma serie, y la bibliografía cierra el ensayo.
+
+## Elaboración
+
+### 1 · Una nota para cada cita
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `chicago-notes-bibliography` es un estilo de notas: una cita deja en el texto un número volado y sus palabras pasan a una nota al pie, numerada junto con las `[^notas]` de la autora; `notes: 'footnote'` lo dice de forma explícita. citeproc-js lleva la cuenta de las obras ya citadas, así que la nota 3 dice *Derek Howse, Greenwich Time and the Discovery of the Longitude (Oxford University Press, 1980), 87* y la nota 4, que vuelve al mismo libro, *Howse, Greenwich Time and the Discovery of the Longitude, 90–91*. El estilo incluido es la 18.ª edición del Manual de Chicago, que abandona *ibid.* y repite la forma breve, de modo que las notas 11 y 12 la imprimen dos veces.
+
+### 2 · Las notas de la autora también citan
+
+Una cita dentro de una `[^nota]` se queda en esa nota y se compone dentro de la línea, completa si es la primera vez que aparece la obra: la nota 1 es la frase de la autora seguida de la referencia completa de Schivelbusch. Toda cita termina con el punto del estilo, así que una nota que acaba en una cita no lleva punto propio en el Markdown.
+
+### 3 · Prefijos, sufijos y localizadores
+
+`[véase @simmons1991, 346–47; y @bartky2000, cap. 9]` pone *véase* delante de la primera obra, separa las dos con punto y coma y conserva el localizador de cada una. Un número solo es una página; `cap.` y `chap.` nombran un capítulo en cualquiera de los dos idiomas. El texto que sigue al localizador es un sufijo: `[@howse1980, 82–84, sobre los relojes de las diligencias]` imprime la frase detrás de las páginas.
+
+### 4 · La apertura va en una banda
+
+<Excerpt region="opener" />
+
+La banda baja 122 mm desde el corte y el texto empieza 9 mm por debajo. Las fechas salen de un atributo del título, `years="1840–1880"`, en Crimson Pro Light de 54 pt, para que la tarjeta muestre una cifra tan grande como un título; el atributo de la firma alimenta además la cabecera de las páginas pares.
+
+<Excerpt region="palette" />
+
+## Variantes
+
+### Lleva las notas al final
+
+Algunas revistas reúnen las notas tras el ensayo; las citas conservan sus formas completa y breve.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+### Vuelve a escribir ibid.
+
+La 17.ª edición del estilo de Chicago imprime *ibid.* en la nota que repite la obra anterior. Pega el archivo `.csl` de ese estilo, del repositorio de estilos de Zotero, en una cadena y úsalo como estilo propio.
+
+```diff
+-  style: 'chicago-notes-bibliography', // CMOS 18th edition, notes and bibliography
++  style: 'custom', customStyle: CHICAGO_17TH_CSL, // the XML of the .csl file
+```
+
+## Errores frecuentes
+
+- No cierres con punto una nota que acaba en una cita: el estilo ya pone el suyo, y Postext no funde los dos, así que la nota terminaría con dos puntos.
+- En un estilo de notas, `@howse1980` sin corchetes deja en la frase solo el número de la nota, *Como ¹ dice*, sin el nombre del autor. Escribe tú el nombre y cita entre corchetes: `Como dice Howse,[@howse1980]`.

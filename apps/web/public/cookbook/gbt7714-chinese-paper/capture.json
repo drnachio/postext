@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "slug": "gbt7714-chinese-paper",
+  "sourceHash": "81c87f2eac1073786df9a62cae1d1435711388e27e81c07f9e5a8bcf2ab203f7",
+  "engine": {
+    "postext": "1.12.0",
+    "postextPdf": "1.12.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T15:27:54.910Z",
+  "variants": {
+    "en": {
+      "hash8": "011f2a62",
+      "vdtHash": "65f55cd9ecd163e15350308fca1524b8739e33d8",
+      "timings": {
+        "importMs": 6141,
+        "fontsMs": 6772,
+        "buildMs": 25,
+        "totalMs": 13725,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif SC",
+          "sizePt": 9,
+          "leadingPt": 15
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans SC",
+          "Noto Serif SC"
+        ],
+        "pages": 2,
+        "ownLines": 146
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 147842,
+          "alt": "Opening page 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 122448,
+          "alt": "Page 42: 2 结果."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gbt7714-chinese-paper.pdf",
+        "bytes": 164031,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "gbt7714-chinese-paper.postext",
+        "bytes": 24962
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "chipStyles",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.customStyle",
+          "citations.locale",
+          "citations.style",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "citations",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 255,
+        "designElements": 11,
+        "directives": [
+          ":::callout",
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "chips",
+          "citation-styles",
+          "cjk-line-breaking",
+          "column-balancing",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "roman-front-matter",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.13
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "e8a7c6ce",
+      "vdtHash": "eab749c90fd7f76e4f4bef2f54272e1daa5c95a0",
+      "timings": {
+        "importMs": 6426,
+        "fontsMs": 4502,
+        "buildMs": 17,
+        "totalMs": 11754,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          184,
+          260
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif SC",
+          "sizePt": 9,
+          "leadingPt": 15
+        },
+        "families": [
+          "LXGW WenKai TC",
+          "Noto Sans SC",
+          "Noto Serif SC"
+        ],
+        "pages": 2,
+        "ownLines": 146
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1413,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 147842,
+          "alt": "Página de apertura 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1413,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 122266,
+          "alt": "Página 42: 2 结果."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gbt7714-chinese-paper.pdf",
+        "bytes": 164093,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "gbt7714-chinese-paper.postext",
+        "bytes": 25019
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "chipStyles",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].paddingX",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.customStyle",
+          "citations.locale",
+          "citations.style",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "chipStyles",
+          "citations",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 255,
+        "designElements": 11,
+        "directives": [
+          ":::callout",
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":chip"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "LXGW WenKai TC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif SC",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "character-grid",
+          "chips",
+          "citation-styles",
+          "cjk-line-breaking",
+          "column-balancing",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "roman-front-matter",
+          "title-line-breaks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.13
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    }
+  }
+}

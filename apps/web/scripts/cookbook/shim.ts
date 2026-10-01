@@ -21,6 +21,8 @@ export interface EngineSpec {
   postext: string;
   /** Pinned postext-pdf version. */
   postextPdf: string;
+  /** Pinned postext-citeproc version (released with postext since 1.12). */
+  postextCiteproc: string;
   /** `local`: the workspace packages' `dist`, served by the pen server
    *  (previews of unreleased features; never written as a capture). */
   source: "npm" | "local";
@@ -29,7 +31,7 @@ export interface EngineSpec {
 const VERSION = /^\d+\.\d+\.\d+$/;
 
 /** The released version of a workspace package (its package.json). */
-export function releasedVersion(name: "postext" | "postext-pdf"): string {
+export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citeproc"): string {
   const file = path.join(REPO_DIR, "packages", name, "package.json");
   const version = (JSON.parse(fs.readFileSync(file, "utf-8")) as { version?: string }).version ?? "";
   if (!VERSION.test(version)) throw new Error(`packages/${name}/package.json has no x.y.z version`);
@@ -40,12 +42,12 @@ export function releasedVersion(name: "postext" | "postext-pdf"): string {
  *  which the release script publishes with one version). */
 export function resolveEngine(spec: string = "npm"): EngineSpec {
   if (spec === "npm") {
-    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), source: "npm" };
+    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), source: "npm" };
   }
   const match = /^npm@(\d+\.\d+\.\d+)$/.exec(spec);
-  if (match) return { postext: match[1], postextPdf: match[1], source: "npm" };
+  if (match) return { postext: match[1], postextPdf: match[1], postextCiteproc: match[1], source: "npm" };
   if (spec === "local") {
-    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), source: "local" };
+    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), source: "local" };
   }
   throw new Error(`--engine expects npm, npm@x.y.z or local, not "${spec}"`);
 }
@@ -56,6 +58,7 @@ export const SHIM_PATHS = {
   "https://esm.sh/postext?bundle": "/__shim/postext-bundle.js",
   "https://esm.sh/postext/worker": "/__shim/postext-worker.js",
   "https://esm.sh/postext-pdf": "/__shim/postext-pdf.js",
+  "https://esm.sh/postext-citeproc": "/__shim/postext-citeproc.js",
 } as const;
 
 /** Where the local engine's modules are served (`packages/<name>/dist`). */
@@ -80,6 +83,7 @@ function localImports(): Record<string, string> {
   for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
   for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
   for (const dep of ["@pdf-lib/fontkit", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
+  imports.citeproc = esm("postext-citeproc", "citeproc");
   return imports;
 }
 
@@ -284,6 +288,7 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
       "/__shim/postext-bundle.js": engineShim("postext-bundle", local("postext/index.js")),
       "/__shim/postext-worker.js": workerShim(local("postext/worker/client.js")),
       "/__shim/postext-pdf.js": pdfShim(local("postext-pdf/index.js")),
+      "/__shim/postext-citeproc.js": `export * from '${local("postext-citeproc/index.js")}';\n`,
     };
   }
   return {
@@ -292,5 +297,6 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
     "/__shim/postext-bundle.js": engineShim("postext-bundle", `https://esm.sh/postext@${V}?bundle`),
     "/__shim/postext-worker.js": workerShim(`https://esm.sh/postext@${V}/worker`),
     "/__shim/postext-pdf.js": pdfShim(`https://esm.sh/postext-pdf@${P}?deps=postext@${V}`),
+    "/__shim/postext-citeproc.js": `export * from 'https://esm.sh/postext-citeproc@${engine.postextCiteproc}?deps=postext@${V}';\n`,
   };
 }
