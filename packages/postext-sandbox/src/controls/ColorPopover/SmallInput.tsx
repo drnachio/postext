@@ -19,6 +19,7 @@ export function SmallInput({
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
       <input
         type="number"
+        aria-label={label}
         value={value}
         onChange={(e) => onChange(clamp(Number(e.target.value), min, max))}
         min={min}
@@ -29,13 +30,12 @@ export function SmallInput({
           fontSize: 10,
           textAlign: 'center',
           borderRadius: 3,
-          border: '1px solid var(--rule)',
+          border: '1px solid var(--pt-control-border)',
           backgroundColor: 'var(--background)',
           color: 'var(--foreground)',
-          outline: 'none',
         }}
       />
-      <span style={{ fontSize: 9, color: 'var(--slate)' }}>{label}</span>
+      <span aria-hidden="true" style={{ fontSize: 10, color: 'var(--slate)' }}>{label}</span>
     </div>
   );
 }

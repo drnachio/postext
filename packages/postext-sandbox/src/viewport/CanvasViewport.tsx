@@ -5,6 +5,8 @@ import { CanvasPreview, type CanvasPreviewHandle } from './CanvasPreview';
 import { CanvasToolbar } from './CanvasToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
 import { usePageHashSync, pageIndexOf, pageNumberAt, EMPTY_VIEWER_LAYOUT, type BookPageMap, type ViewerLayout } from './usePageHashSync';
+import { announce } from '../ui/announcer';
+import { useSandboxSelector } from '../context/SandboxContext';
 import { loadCanvasViewMode, saveCanvasViewMode, loadCanvasFitMode, saveCanvasFitMode, loadCanvasZoom, saveCanvasZoom } from '../storage/persistence';
 
 type ViewMode = 'single' | 'spread';
@@ -112,6 +114,20 @@ export function CanvasViewport() {
   }, [syncPageHash]);
 
   const shell = useFloatingToolbarShell('canvas', generating);
+
+  // A finished layout is said through the live region (WCAG 4.1.3) when
+  // its page count changes (a chapter opened, a page gained or lost), not
+  // on every keystroke that relays the same pages.
+  const layoutDoneLabel = useSandboxSelector((s) => s.labels.layoutDone);
+  const announcedCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (generating || pageCount === 0 || announcedCountRef.current === pageCount) return;
+    const timer = window.setTimeout(() => {
+      announcedCountRef.current = pageCount;
+      announce(layoutDoneLabel.replace('__n__', String(pageCount)));
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [generating, pageCount, layoutDoneLabel]);
 
   return (
     <div className="relative h-full w-full" {...shell.containerProps}>

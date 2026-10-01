@@ -117,7 +117,7 @@ function EntryStyleFields({ raw, resolved, onUpdate, onReset, fieldIdPrefix, lab
         onReset={() => onReset('fontWeight')}
       />
       <ToggleSwitch
-        label={labels.headingItalic}
+        label={labels.headingItalic} tooltip={labels.italicHelp}
         checked={resolved.italic}
         onChange={(v) => onUpdate({ italic: v })}
         isDefault={unset('italic')}
@@ -422,7 +422,7 @@ export const TocSection = memo(function TocSection() {
           onReset={() => resetPageNumberField('fontWeight')}
         />
         <ToggleSwitch
-          label={labels.headingItalic}
+          label={labels.headingItalic} tooltip={labels.italicHelp}
           checked={resolved.pageNumber.italic}
           onChange={(v) => updatePageNumber({ italic: v })}
           isDefault={raw?.pageNumber?.italic === undefined}
@@ -503,7 +503,7 @@ export const TocSection = memo(function TocSection() {
           {labels.tocSubtitleInfo}
         </p>
         <ToggleSwitch
-          label={labels.tocSubtitleEnabled}
+          label={labels.tocSubtitleEnabled} tooltip={labels.tocSubtitleInfo}
           checked={resolved.subtitle.enabled}
           onChange={(v) => updateSubtitle({ enabled: v })}
           isDefault={raw?.subtitle?.enabled === undefined}
@@ -550,7 +550,7 @@ export const TocSection = memo(function TocSection() {
               onReset={() => resetSubtitleField('fontWeight')}
             />
             <ToggleSwitch
-              label={labels.headingItalic}
+              label={labels.headingItalic} tooltip={labels.italicHelp}
               checked={resolved.subtitle.italic}
               onChange={(v) => updateSubtitle({ italic: v })}
               isDefault={raw?.subtitle?.italic === undefined}

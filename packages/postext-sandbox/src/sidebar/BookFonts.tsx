@@ -26,7 +26,7 @@ export function BookFonts() {
 
   return (
     <section aria-labelledby="book-fonts-title" className="mb-4">
-      <h3 id="book-fonts-title" className="mb-1 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+      <h3 id="book-fonts-title" className="mb-1 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
         {labels.bookFontsTitle}
       </h3>
       <p className="mb-2 text-[0.68rem] leading-[1.4] text-(--slate)">{labels.bookFontsDescription}</p>

@@ -1,0 +1,539 @@
+/**
+ * The glossary's terms (WCAG 3.1.3 Unusual Words): the typesetting, Chinese
+ * layout and software jargon the docs, the Cookbook and the landing use,
+ * each with a short definition in every locale. `id` is the anchor on
+ * /<locale>/glossary and never changes once published.
+ *
+ * Isomorphic: no Node or React imports.
+ */
+import type { SiteLocale } from "@/i18n/locales";
+
+export type GlossaryCategory = "type" | "cjk" | "web";
+
+export interface GlossaryTerm {
+  id: string;
+  category: GlossaryCategory;
+  /** [term, definition] per locale. */
+  text: Record<SiteLocale, readonly [string, string]>;
+  /** The Chinese name of a Chinese-layout term, shown beside the English
+   *  and Spanish ones. */
+  native?: string;
+}
+
+type Text = GlossaryTerm["text"];
+const term = (id: string, category: GlossaryCategory, text: Text, native?: string): GlossaryTerm => ({ id, category, text, ...(native ? { native } : {}) });
+
+export const GLOSSARY_CATEGORIES: readonly GlossaryCategory[] = ["type", "cjk", "web"];
+
+export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
+  // ── Typesetting and the page ────────────────────────────────────────────
+  term("leading", "type", {
+    en: ["Leading", "The distance from one baseline to the next. The word comes from the strips of lead that compositors laid between lines of metal type."],
+    es: ["Interlineado", "Distancia entre la línea base de una línea y la de la siguiente. En inglés se llama leading por las tiras de plomo que el cajista metía entre las líneas de tipos."],
+    zh: ["行距", "相邻两行基线之间的距离。英文 leading 一词来自金属活字排版时插在行间的铅条。"],
+  }),
+  term("kerning", "type", {
+    en: ["Kerning", "A space adjustment between two particular letters, such as A and V, so the pair looks evenly spaced. The font carries the values."],
+    es: ["Kerning", "Ajuste del espacio entre dos letras concretas, como A y V, para que la pareja se vea igual de espaciada que el resto. Los valores vienen en la fuente."],
+    zh: ["字偶距（kerning）", "对特定两个字母（如 A 和 V）之间间距的调整，使这一对字母看起来间距均匀。调整值由字体提供。"],
+  }),
+  term("tracking", "type", {
+    en: ["Tracking", "Extra space added or removed between every letter of a line or a word. Postext measures it in thousandths of an em and uses it sparingly, after word spacing."],
+    es: ["Tracking", "Espacio que se añade o se quita entre todas las letras de una línea o de una palabra. Postext lo mide en milésimas de cuadratín y lo usa con mesura, después del espacio entre palabras."],
+    zh: ["字距（tracking）", "在一行或一个词的所有字母之间统一增减的间距。Postext 以千分之一 em 为单位计量，只在调整词间距之后少量使用。"],
+  }),
+  term("word-spacing", "type", {
+    en: ["Word spacing", "The width of the spaces between words. A justified line stretches or shrinks them within limits set in the configuration."],
+    es: ["Espacio entre palabras", "Anchura de los espacios que separan las palabras. Una línea justificada los estira o los encoge dentro de los límites que fija la configuración."],
+    zh: ["词间距", "词与词之间空格的宽度。两端对齐的行在配置规定的范围内拉伸或压缩它们。"],
+  }),
+  term("justification", "type", {
+    en: ["Justification", "Setting text so every full line reaches both the left and the right edge of the column, by adjusting the space inside the line."],
+    es: ["Justificación", "Composición en la que cada línea completa llega al borde izquierdo y al derecho de la columna, ajustando el espacio dentro de la línea."],
+    zh: ["两端对齐", "调整行内间距，使每一整行都同时抵达栏的左右两边。"],
+  }),
+  term("ragged", "type", {
+    en: ["Ragged right", "Text aligned on the left only, with lines of uneven length on the right. Word spacing stays constant."],
+    es: ["Texto en bandera", "Texto alineado solo a la izquierda, con líneas de longitud desigual a la derecha. El espacio entre palabras no cambia."],
+    zh: ["齐左（参差右边）", "只在左边对齐、右边行长参差的排法。词间距保持不变。"],
+  }),
+  term("knuth-plass", "type", {
+    en: ["Knuth–Plass algorithm", "The line-breaking method of the TeX typesetting system. It weighs every possible set of breaks in a paragraph and picks the one with the most even spacing, where a browser fills one line at a time."],
+    es: ["Algoritmo de Knuth-Plass", "Método de corte de líneas del sistema de composición TeX. Evalúa todos los conjuntos de cortes posibles de un párrafo y elige el de espaciado más regular, mientras que un navegador llena las líneas de una en una."],
+    zh: ["Knuth-Plass 算法", "TeX 排版系统的断行方法。它权衡一个段落所有可能的断点组合，选出间距最均匀的一组；浏览器则是一行一行地填。"],
+  }),
+  term("greedy-breaking", "type", {
+    en: ["Greedy line breaking", "Filling each line with as many words as fit before moving to the next, without looking ahead. It is what CSS does, and it leaves some lines much looser than others."],
+    es: ["Corte de líneas voraz", "Llenar cada línea con todas las palabras que quepan antes de pasar a la siguiente, sin mirar adelante. Es lo que hace CSS, y deja unas líneas mucho más flojas que otras."],
+    zh: ["贪心断行", "每行尽量多放词，放满再换下一行，不考虑后面的行。CSS 就是这样做的，结果有些行会比别的行松得多。"],
+  }),
+  term("box-glue-penalty", "type", {
+    en: ["Boxes, glue and penalties", "The model Knuth–Plass works on. Boxes are words or letters of fixed width, glue is space that can stretch or shrink, and penalties mark places where a break is allowed at a cost, such as a hyphen."],
+    es: ["Cajas, pegamento y penalizaciones", "El modelo sobre el que trabaja Knuth-Plass. Las cajas son palabras o letras de anchura fija, el pegamento es espacio que se estira o se encoge y las penalizaciones marcan dónde se puede cortar a cambio de un coste, como en un guion."],
+    zh: ["盒子、粘连与惩罚", "Knuth-Plass 算法的模型。盒子是宽度固定的词或字母，粘连是可以拉伸或压缩的空白，惩罚标出允许断行但要付出代价的位置，例如连字符处。"],
+  }),
+  term("badness", "type", {
+    en: ["Badness and demerits", "The scores Knuth–Plass gives a line: badness grows with how far its spaces are stretched or squeezed, and demerits add the cost of hyphens and of uneven neighbouring lines. The paragraph with the lowest total wins."],
+    es: ["Fealdad y deméritos", "Las puntuaciones que Knuth-Plass da a una línea: la fealdad (badness) crece cuanto más se estiran o se aprietan sus espacios, y los deméritos suman el coste de los guiones y de las líneas vecinas desiguales. Gana el párrafo con el total más bajo."],
+    zh: ["劣度与缺陷值", "Knuth-Plass 给每行打的分：劣度随空格拉伸或压缩的程度增大，缺陷值再加上连字符和相邻行松紧不一的代价。总分最低的排法胜出。"],
+  }),
+  term("hyphenation", "type", {
+    en: ["Hyphenation", "Dividing a word at the end of a line, with a hyphen, at a point the language allows. Postext finds those points with TeX's patterns for each language."],
+    es: ["División silábica", "Partir una palabra a final de línea, con un guion, por un punto que la lengua permite. Postext encuentra esos puntos con los patrones de TeX de cada idioma."],
+    zh: ["断词（连字符）", "在行末按语言允许的位置把一个词断开并加上连字符。Postext 用 TeX 的各语言断词模式找出这些位置。"],
+  }),
+  term("soft-hyphen", "type", {
+    en: ["Soft hyphen", "An invisible mark inside a word that shows where it may be divided. It prints as a hyphen only when the line actually breaks there."],
+    es: ["Guion discrecional", "Marca invisible dentro de una palabra que indica por dónde se puede partir. Solo se imprime como guion si la línea se corta justo ahí."],
+    zh: ["软连字符", "词内不可见的标记，表示可以在此断开。只有真的在这里断行时才印出连字符。"],
+  }),
+  term("orphan", "type", {
+    en: ["Orphan", "In Postext, the last line or lines of a paragraph carried alone to the top of the next column or page. Typographers disagree on the name; the rule is about lines stranded by a column break."],
+    es: ["Huérfana", "En Postext, la última o las últimas líneas de un párrafo que pasan solas a lo alto de la columna o la página siguiente. Los tipógrafos no coinciden en el nombre; la regla trata de líneas aisladas por un salto de columna."],
+    zh: ["段末孤行", "在 Postext 中，指一个段落的最后一行或几行被单独挤到下一栏或下一页顶部。各家对这个名称的用法不一，这条规则针对的是被分栏隔开的零散行。"],
+  }),
+  term("widow", "type", {
+    en: ["Widow", "In Postext, the first line or lines of a paragraph left alone at the bottom of a column or page, with the rest of the paragraph overleaf."],
+    es: ["Viuda", "En Postext, la primera o las primeras líneas de un párrafo que se quedan solas al pie de una columna o página, con el resto del párrafo en la siguiente."],
+    zh: ["段首孤行", "在 Postext 中，指一个段落的第一行或几行单独留在一栏或一页的底部，段落其余部分在下一栏或下一页。"],
+  }),
+  term("runt", "type", {
+    en: ["Runt", "A paragraph's last line when it holds only a word or part of one. Postext penalises it and, when it can, sets the paragraph one line shorter."],
+    es: ["Línea corta final", "Última línea de un párrafo que solo contiene una palabra o un trozo de ella (runt en inglés). Postext la penaliza y, cuando puede, compone el párrafo con una línea menos."],
+    zh: ["孤字（末行过短）", "段落末行只剩一个词或半个词的情况。Postext 对此计入惩罚，能做到时会把段落排短一行。"],
+  }),
+  term("baseline", "type", {
+    en: ["Baseline", "The invisible line letters sit on. Descenders such as the tail of p go below it."],
+    es: ["Línea base", "La línea invisible sobre la que se apoyan las letras. Los trazos descendentes, como el rabo de la p, quedan por debajo."],
+    zh: ["基线", "字母所坐落的那条看不见的线。p 的尾巴这类下伸部分位于基线以下。"],
+  }),
+  term("baseline-grid", "type", {
+    en: ["Baseline grid", "A set of equally spaced horizontal lines that every line of body text sits on, so lines in neighbouring columns and on facing pages line up."],
+    es: ["Retícula de líneas base", "Serie de líneas horizontales equidistantes sobre las que se apoya cada línea del texto, para que las líneas de columnas vecinas y de páginas enfrentadas queden alineadas."],
+    zh: ["基线网格", "一组等距的水平线，正文每一行都落在上面，使相邻栏和对页的行彼此对齐。"],
+  }),
+  term("type-area", "type", {
+    en: ["Type area", "The part of the page that holds the text, inside the margins. Running heads and folios usually sit outside it."],
+    es: ["Caja de texto", "La parte de la página que ocupa el texto, dentro de los márgenes. Las cabeceras y los folios suelen quedar fuera."],
+    zh: ["版心", "页面上页边距以内容纳正文的区域。书眉和页码通常在版心之外。"],
+  }),
+  term("measure", "type", {
+    en: ["Measure", "The length of a line of text, the width of the column. Comfortable reading needs roughly 45 to 75 characters."],
+    es: ["Medida", "La longitud de una línea de texto, es decir, la anchura de la columna. Para leer con comodidad conviene una medida de unos 45 a 75 caracteres."],
+    zh: ["行长", "一行文字的长度，也就是栏宽。西文阅读舒适的行长大约为 45 到 75 个字符。"],
+  }),
+  term("gutter", "type", {
+    en: ["Gutter", "The space between two columns of text. Some printers also call the inner margin by the spine the gutter."],
+    es: ["Calle", "Espacio entre dos columnas de texto. En inglés, gutter también puede referirse al margen interior, junto al lomo."],
+    zh: ["栏间距", "两栏文字之间的空白。英文 gutter 有时也指靠近书脊的内侧页边。"],
+  }),
+  term("column-balancing", "type", {
+    en: ["Column balancing", "Making the columns of a page end at the same height, typically on the last page of a chapter, by moving lines between them or adjusting spacing."],
+    es: ["Equilibrado de columnas", "Hacer que las columnas de una página terminen a la misma altura, sobre todo en la última página de un capítulo, moviendo líneas entre ellas o ajustando el espaciado."],
+    zh: ["各栏齐底", "让一页上的各栏在同一高度结束（通常在章末页），办法是在栏间挪动行或调整间距。"],
+  }),
+  term("keep-together", "type", {
+    en: ["Keep together", "A rule that a block, such as a heading with its first lines or a short box, must not be split across columns or pages."],
+    es: ["Mantener unido", "Regla por la que un bloque, como un título con sus primeras líneas o un recuadro corto, no se puede partir entre columnas ni páginas."],
+    zh: ["保持完整", "规定某个块（例如标题连同其后几行，或一个短框）不得跨栏或跨页拆开。"],
+  }),
+  term("folio", "type", {
+    en: ["Folio", "The printed page number. A drop folio sits at the foot of the page."],
+    es: ["Folio", "El número de página impreso. El folio bajo va al pie de la página."],
+    zh: ["页码", "印在页面上的页数编号，可以放在页面顶部或底部。"],
+  }),
+  term("running-head", "type", {
+    en: ["Running head", "A line repeated at the top of each page, usually the book or chapter title, to tell the reader where they are."],
+    es: ["Cabecera (titulillo)", "Línea que se repite en lo alto de cada página, normalmente con el título del libro o del capítulo, para que el lector sepa dónde está."],
+    zh: ["书眉", "每页顶部重复出现的一行文字，通常是书名或章名，提示读者所在位置。"],
+  }),
+  term("recto", "type", {
+    en: ["Recto", "The right-hand page of an open book in left-to-right binding, always odd-numbered. Chapters traditionally open on a recto."],
+    es: ["Recto (página impar)", "La página derecha de un libro abierto que se encuaderna por la izquierda; siempre lleva número impar. Los capítulos suelen empezar en página impar."],
+    zh: ["奇数页（右页）", "左装书打开后右边的一页，页码总是奇数。传统上各章从奇数页开始。"],
+  }),
+  term("verso", "type", {
+    en: ["Verso", "The left-hand page of an open book in left-to-right binding, always even-numbered. In a book bound on the right, as many vertical Chinese books are, the sides swap."],
+    es: ["Verso (página par)", "La página izquierda de un libro abierto que se encuaderna por la izquierda; siempre lleva número par. En un libro encuadernado por la derecha, como muchos libros chinos en vertical, los lados se invierten."],
+    zh: ["偶数页（左页）", "左装书打开后左边的一页，页码总是偶数。右装书（许多竖排中文书都是）左右正好相反。"],
+  }),
+  term("spread", "type", {
+    en: ["Spread", "Two facing pages seen together, a verso and a recto. Designers plan a book spread by spread."],
+    es: ["Doble página", "Dos páginas enfrentadas que se ven juntas, una par y una impar. Un libro se diseña doble página a doble página."],
+    zh: ["跨页（对页）", "并排展示的左右两页。设计书籍时通常以对页为单位来安排。"],
+  }),
+  term("mirrored-margins", "type", {
+    en: ["Mirrored margins", "Margins that swap sides between left and right pages, so the inner margin is always by the spine."],
+    es: ["Márgenes simétricos", "Márgenes que se intercambian entre páginas pares e impares, de modo que el margen interior siempre queda junto al lomo."],
+    zh: ["对称页边距", "左右页之间互换的页边距，使内侧页边始终靠近书脊。"],
+  }),
+  term("float", "type", {
+    en: ["Float", "A figure, table or box that the layout may move away from its place in the text, to the top or bottom of a column or page, where it fits."],
+    es: ["Flotante", "Figura, tabla o recuadro que la maquetación puede apartar de su sitio en el texto y llevar a lo alto o al pie de una columna o página donde quepa."],
+    zh: ["浮动体", "排版时可以离开其在正文中的位置、移到栏或页的顶部或底部放得下之处的图、表或框。"],
+  }),
+  term("callout", "type", {
+    en: ["Callout", "A boxed passage set apart from the running text, such as a note, a warning or a sidebar. Postext writes them with the :::callout directive."],
+    es: ["Recuadro", "Pasaje enmarcado que se separa del texto corrido, como una nota, un aviso o un despiece. Postext los escribe con la directiva :::callout."],
+    zh: ["标注框", "与正文分开、加框显示的段落，例如注释、警告或侧栏。Postext 用 :::callout 指令书写。"],
+  }),
+  term("caption", "type", {
+    en: ["Caption", "The text that labels a figure or table, usually with its number: Figure 3, Table 2."],
+    es: ["Pie de figura", "Texto que identifica una figura o una tabla, normalmente con su número: Figura 3, Tabla 2."],
+    zh: ["图注 / 表题", "标明图或表的文字，通常带编号，如图 3、表 2。"],
+  }),
+  term("footnote", "type", {
+    en: ["Footnote", "A note printed at the foot of the column or page where it is cited, linked to the text by a superscript number or mark."],
+    es: ["Nota al pie", "Nota impresa al pie de la columna o la página donde se cita, unida al texto con un número volado o una llamada."],
+    zh: ["脚注", "印在引用处所在栏或页底部的注释，用上标数字或符号与正文相连。"],
+  }),
+  term("cross-reference", "type", {
+    en: ["Cross-reference", "A mention of another place in the same book, such as “see Figure 4” or “page 12”, that stays correct when the layout changes."],
+    es: ["Referencia cruzada", "Mención de otro lugar del mismo libro, como «véase la figura 4» o «página 12», que sigue siendo correcta aunque cambie la maquetación."],
+    zh: ["交叉引用", "指向同一本书中其他位置的提示，例如“见图 4”或“第 12 页”，版面变化后仍保持正确。"],
+  }),
+  term("index", "type", {
+    en: ["Back-of-book index", "The alphabetical list of subjects at the end of a book, each with the pages where it appears."],
+    es: ["Índice analítico", "Lista alfabética de materias al final de un libro, cada una con las páginas donde aparece."],
+    zh: ["索引", "书末按字母（或拼音、笔画）排列的主题列表，每项附有出现的页码。"],
+  }),
+  term("front-matter", "type", {
+    en: ["Front matter", "The pages before the main text: title page, copyright page, dedication, contents, preface. They are often numbered in roman numerals."],
+    es: ["Preliminares", "Las páginas que preceden al texto principal: portada, página de créditos, dedicatoria, índice y prólogo. Se suelen numerar con números romanos."],
+    zh: ["前辅文", "正文之前的页面：书名页、版权页、献词、目录、前言等，常用罗马数字编页码。"],
+  }),
+  term("back-matter", "type", {
+    en: ["Back matter", "The pages after the main text: appendices, notes, glossary, bibliography, index."],
+    es: ["Páginas finales", "Las páginas que siguen al texto principal: apéndices, notas, glosario, bibliografía e índice analítico."],
+    zh: ["后辅文", "正文之后的页面：附录、注释、术语表、参考文献、索引等。"],
+  }),
+  term("colophon", "type", {
+    en: ["Colophon", "A short note, usually at the end of a book, on how it was made: the typefaces, the paper, the printer."],
+    es: ["Colofón", "Nota breve, normalmente al final del libro, sobre cómo se hizo: las tipografías, el papel, la imprenta."],
+    zh: ["版本记录（colophon）", "通常位于书末的简短说明，记录书的制作情况：所用字体、纸张、印刷厂等。"],
+  }),
+  term("opener", "type", {
+    en: ["Opener", "The designed first page of a chapter or part, with its number, title and often a band of colour or an image."],
+    es: ["Apertura", "La primera página diseñada de un capítulo o de una parte, con su número, su título y a menudo una banda de color o una imagen."],
+    zh: ["章首页", "一章或一部分经过设计的首页，含编号、标题，常带色带或图片。"],
+  }),
+  term("kicker", "type", {
+    en: ["Kicker", "A short line set above a heading, such as “Chapter 3” or a section name, in smaller or spaced capitals."],
+    es: ["Antetítulo", "Línea breve sobre un título, como «Capítulo 3» o el nombre de una sección, en letra más pequeña o en versales espaciadas."],
+    zh: ["眉题", "标题上方的一行短文字，例如“第 3 章”或栏目名，常用较小字号或加宽字距的大写字母。"],
+  }),
+  term("pull-quote", "type", {
+    en: ["Pull quote", "A sentence from the text repeated in large type inside the page to catch the eye, common in magazines."],
+    es: ["Destacado", "Frase del texto repetida en un cuerpo grande dentro de la página para llamar la atención, muy habitual en las revistas."],
+    zh: ["引文框（拉引）", "从正文中摘出一句话，用大字号在版面中重复排出以吸引注意，杂志中很常见。"],
+  }),
+  term("epigraph", "type", {
+    en: ["Epigraph", "A short quotation placed at the start of a book or chapter, with its source."],
+    es: ["Epígrafe", "Cita breve al comienzo de un libro o de un capítulo, con su procedencia."],
+    zh: ["题记", "置于全书或一章开头的简短引文，并注明出处。"],
+  }),
+  term("byline", "type", {
+    en: ["Byline", "The line that names the author of an article or a chapter in a collection."],
+    es: ["Firma", "La línea que da el nombre del autor de un artículo o de un capítulo en una obra colectiva."],
+    zh: ["署名行", "标明文章或文集中某一章作者的那一行。"],
+  }),
+  term("drop-cap", "type", {
+    en: ["Drop cap", "A large initial letter at the start of a paragraph that sinks several lines into the text beside it."],
+    es: ["Capitular", "Letra inicial grande al comienzo de un párrafo que ocupa la altura de varias líneas del texto contiguo."],
+    zh: ["首字下沉", "段首放大的首字母，向下占据旁边正文的几行高度。"],
+  }),
+  term("small-caps", "type", {
+    en: ["Small caps", "Capital letters drawn at about the height of lowercase letters, used for abbreviations and running heads so they do not shout."],
+    es: ["Versalitas", "Mayúsculas dibujadas a la altura aproximada de las minúsculas, que se usan en siglas y cabeceras para que no destaquen demasiado."],
+    zh: ["小型大写字母", "高度约与小写字母相当的大写字母，用于缩写和书眉，使其不显得突兀。"],
+  }),
+  term("ligature", "type", {
+    en: ["Ligature", "Two or more letters drawn as one glyph, such as fi or ff, to avoid awkward collisions."],
+    es: ["Ligadura", "Dos o más letras dibujadas como un solo glifo, como fi o ff, para evitar choques poco elegantes."],
+    zh: ["连字", "把两个或更多字母画成一个字形（如 fi、ff），避免笔画相撞。"],
+  }),
+  term("glyph", "type", {
+    en: ["Glyph", "One drawn shape in a font. A letter may have several glyphs (a ligature, a small cap, a vertical form)."],
+    es: ["Glifo", "Cada forma dibujada de una fuente. Una letra puede tener varios glifos: una ligadura, una versalita, una forma vertical."],
+    zh: ["字形", "字体中的一个具体图形。同一个字符可以有多个字形，例如连字、小型大写或竖排形式。"],
+  }),
+  term("typeface", "type", {
+    en: ["Typeface and font", "A typeface is the design (Garamond); a font is one file or style of it (Garamond Italic)."],
+    es: ["Tipografía y fuente", "La tipografía es el diseño (Garamond); la fuente es un archivo o un estilo concreto de ese diseño (Garamond cursiva)."],
+    zh: ["字体家族与字体", "字体家族指一套设计（如 Garamond）；字体指其中的一个文件或样式（如 Garamond Italic）。"],
+  }),
+  term("em", "type", {
+    en: ["Em", "A unit equal to the type size: in 10 pt type, an em is 10 pt. Spacing in typesetting is often given in ems or fractions of an em."],
+    es: ["Cuadratín (eme)", "Unidad igual al cuerpo de la letra: en un cuerpo de 10 pt, el cuadratín mide 10 pt. Los espacios tipográficos se suelen dar en cuadratines o fracciones de cuadratín."],
+    zh: ["em（全身）", "等于字号的长度单位：10 pt 的字，1 em 就是 10 pt。排版中的间距常以 em 或其分数表示。中文的一个全角字就是 1 em 宽。"],
+  }),
+  term("en", "type", {
+    en: ["En", "Half an em. The en dash (–) is about this wide."],
+    es: ["Medio cuadratín", "La mitad de un cuadratín. La raya corta o semirraya (–) mide más o menos eso."],
+    zh: ["en（半身）", "em 的一半。西文的 en dash（–）大约这么宽。"],
+  }),
+  term("dashes", "type", {
+    en: ["En dash and em dash", "The en dash (–) joins ranges, as in 1914–1918; the em dash (—) sets off a phrase in English. Neither is a hyphen."],
+    es: ["Semirraya y raya", "La semirraya (–) une intervalos, como en 1914–1918; la raya (—) abre incisos y diálogos en español. Ninguna de las dos es un guion."],
+    zh: ["连接号与破折号", "西文 en dash（–）用于表示范围，如 1914–1918；em dash（—）用于插入语。两者都不是连字符。中文破折号（——）占两个字宽。"],
+  }),
+  term("point", "type", {
+    en: ["Point and pica", "Typographic units. A point is 1/72 of an inch (about 0.35 mm); a pica is 12 points."],
+    es: ["Punto y pica", "Unidades tipográficas. Un punto es 1/72 de pulgada (unos 0,35 mm); una pica son 12 puntos."],
+    zh: ["点与派卡", "排版单位。1 点为 1/72 英寸（约 0.35 毫米），1 派卡等于 12 点。"],
+  }),
+  term("trim-size", "type", {
+    en: ["Trim size", "The final size of a printed page after it is cut, such as 140 × 210 mm."],
+    es: ["Formato (tamaño de corte)", "Tamaño final de la página impresa una vez cortada, por ejemplo 140 × 210 mm."],
+    zh: ["成品尺寸", "印刷页裁切后的最终尺寸，例如 140 × 210 毫米。"],
+  }),
+  term("bleed", "type", {
+    en: ["Bleed", "Artwork that runs past the trim edge, a few millimetres beyond the page, so no white line shows if the cut is slightly off."],
+    es: ["Sangrado", "Parte de la ilustración o del color que rebasa el borde de corte unos milímetros, para que no quede un filete blanco si el corte se desvía un poco."],
+    zh: ["出血", "图片或底色超出裁切线几毫米的部分，裁切稍有偏差时也不会露出白边。"],
+  }),
+  term("crop-marks", "type", {
+    en: ["Crop marks", "Thin lines printed outside the page corners that show the printer where to cut."],
+    es: ["Marcas de corte", "Líneas finas impresas fuera de las esquinas de la página que indican a la imprenta por dónde cortar."],
+    zh: ["裁切标记", "印在页角外侧的细线，告诉印刷厂在哪里裁切。"],
+  }),
+  term("signature", "type", {
+    en: ["Signature", "A large sheet printed with several pages and folded into a gathering, such as 16 pages. Books are sewn signature by signature."],
+    es: ["Pliego", "Hoja grande impresa con varias páginas y plegada en un cuadernillo, por ejemplo de 16 páginas. Los libros se cosen pliego a pliego."],
+    zh: ["贴（折手）", "印有多个页面并折叠成一叠的大张纸，例如 16 页一贴。书籍按贴装订。"],
+  }),
+  term("spot-colour", "type", {
+    en: ["Spot colour and single ink", "A spot colour is one premixed ink printed on its own. A single-ink book prints everything in one such ink, with lighter tints for greys."],
+    es: ["Tinta directa y tinta única", "Una tinta directa es una tinta premezclada que se imprime por separado. Un libro a una sola tinta lo imprime todo con una de ellas, con tramas más claras en lugar de grises."],
+    zh: ["专色与单色印刷", "专色是单独印刷的预调油墨。单色书全部用一种这样的油墨印刷，以浅网代替灰色。"],
+  }),
+  term("swatch", "type", {
+    en: ["Swatch", "A named colour in a design's palette, reused by headings, rules and boxes so a change in one place reaches them all."],
+    es: ["Muestra de color", "Color con nombre en la paleta de un diseño, que comparten títulos, filetes y recuadros, de modo que un cambio en un sitio llega a todos."],
+    zh: ["色板", "设计调色板中带名称的颜色，标题、线条和框都引用它，改一处即全部更新。"],
+  }),
+  term("rule", "type", {
+    en: ["Rule", "A printed line, such as the thin line between columns or under a running head."],
+    es: ["Filete", "Línea impresa, como la línea fina entre columnas o bajo una cabecera."],
+    zh: ["线（栏线、眉线）", "印出的直线，例如两栏之间的细线或书眉下的线。"],
+  }),
+  term("gloss", "type", {
+    en: ["Gloss", "A short explanation of a word or line, printed in the margin, between the lines or in notes, as in annotated classics."],
+    es: ["Glosa", "Explicación breve de una palabra o de un verso, impresa en el margen, entre líneas o en notas, como en las ediciones anotadas de los clásicos."],
+    zh: ["旁注（gloss）", "对某个词或某行的简短解释，印在页边、行间或注释中，常见于注释本古籍。"],
+  }),
+
+  // ── Chinese layout ─────────────────────────────────────────────────────
+  term("han", "cjk", {
+    en: ["Han characters", "The Chinese characters (hanzi), also used in Japanese and, historically, Korean. Each takes a square cell one em wide."],
+    es: ["Caracteres han", "Los caracteres chinos (hanzi), que también se usan en japonés y, históricamente, en coreano. Cada uno ocupa una celda cuadrada de un cuadratín."],
+    zh: ["汉字", "中文使用的文字，也用于日文，历史上也用于朝鲜文。每个汉字占一个一 em 见方的格子。"],
+  }, "汉字"),
+  term("clreq", "cjk", {
+    en: ["clreq", "Requirements for Chinese Text Layout, the W3C document that describes how Chinese text is set. The Postext docs cite it by section."],
+    es: ["clreq", "Requirements for Chinese Text Layout, el documento del W3C que describe cómo se compone el texto chino. La documentación de Postext lo cita por apartados."],
+    zh: ["clreq", "W3C 的《中文排版需求》，描述中文文本的排版规则。Postext 文档按章节引用它。"],
+  }, "中文排版需求"),
+  term("full-width", "cjk", {
+    en: ["Full-width", "Occupying a whole em cell, like a Han character. Chinese punctuation and full-width digits (１２) are full-width; Latin letters are not."],
+    es: ["Ancho completo", "Que ocupa una celda entera de un cuadratín, como un carácter han. La puntuación china y las cifras de ancho completo (１２) lo son; las letras latinas no."],
+    zh: ["全角", "占满一个 em 格子，与汉字同宽。中文标点和全角数字（１２）是全角的，拉丁字母不是。"],
+  }, "全角"),
+  term("ideographic-space", "cjk", {
+    en: ["Ideographic space", "A blank one em wide (U+3000), the width of a Han character, used for indents and after chapter numbers."],
+    es: ["Espacio ideográfico", "Blanco de un cuadratín (U+3000), la anchura de un carácter han, que se usa en sangrías y tras los números de capítulo."],
+    zh: ["全角空格", "宽一个 em 的空白（U+3000），与一个汉字同宽，用于缩进和章节编号之后。"],
+  }, "全角空格"),
+  term("line-start-end-rules", "cjk", {
+    en: ["Line-start and line-end rules", "The rules that keep certain marks off the start of a line (a comma, a closing bracket) and others off the end (an opening bracket). Japanese calls them kinsoku."],
+    es: ["Reglas de principio y fin de línea", "Normas que impiden que ciertos signos abran una línea (una coma, un paréntesis de cierre) y que otros la cierren (un paréntesis de apertura). En japonés se llaman kinsoku."],
+    zh: ["避头尾", "规定某些标点不能出现在行首（如逗号、后括号），另一些不能出现在行末（如前括号）的规则。日文称为禁则。"],
+  }, "避头尾"),
+  term("punctuation-compression", "cjk", {
+    en: ["Punctuation width and compression", "A Chinese mark is half an em of glyph and half an em of blank. Compression removes some of that blank, for example where two marks meet, so 。」 takes one and a half ems instead of two."],
+    es: ["Anchura y compresión de la puntuación", "Un signo chino ocupa medio cuadratín de glifo y medio de blanco. La compresión quita parte de ese blanco, por ejemplo donde se juntan dos signos, de modo que 。」 ocupa un cuadratín y medio en lugar de dos."],
+    zh: ["标点挤压", "中文标点由半个 em 的字形和半个 em 的空白组成。挤压去掉部分空白，例如两个标点相邻时，“。」”只占一个半 em 而不是两个。"],
+  }, "标点挤压"),
+  term("hanging-punctuation", "cjk", {
+    en: ["Hanging punctuation", "Letting a comma or full stop that does not fit sit just past the end of the line instead of pushing a character down."],
+    es: ["Puntuación colgante", "Dejar que una coma o un punto que no cabe quede justo fuera del final de la línea en lugar de bajar un carácter a la siguiente."],
+    zh: ["标点悬挂", "让放不下的逗号或句号悬在行末之外，而不是把一个字挤到下一行。"],
+  }, "标点悬挂"),
+  term("han-latin-spacing", "cjk", {
+    en: ["Han–Latin spacing", "A quarter-em gap set between a Han character and a Latin letter or digit next to it, as in 1999 年."],
+    es: ["Espacio entre han y latín", "Separación de un cuarto de cuadratín entre un carácter han y la letra latina o la cifra contigua, como en 1999 年."],
+    zh: ["中西文间距", "汉字与相邻拉丁字母或数字之间加的四分之一 em 间隙，例如“1999 年”。"],
+  }, "中西文间距"),
+  term("character-grid", "cjk", {
+    en: ["Character grid", "The Chinese way to specify a type area: so many characters per line and so many lines per page, every character on a square cell."],
+    es: ["Retícula de caracteres", "La forma china de definir la caja de texto: tantos caracteres por línea y tantas líneas por página, con cada carácter en una celda cuadrada."],
+    zh: ["字格（版心网格）", "中文定义版心的方式：每行多少字、每页多少行，每个字占一个方格。"],
+  }, "字格"),
+  term("chinese-point-sizes", "cjk", {
+    en: ["Chinese point sizes", "Named type sizes used in China: 五号 is 10.5 pt, the usual book size; 小五 is 9 pt; 四号 is 14 pt."],
+    es: ["Cuerpos chinos", "Tamaños de letra con nombre que se usan en China: 五号 son 10,5 pt, el cuerpo habitual de los libros; 小五, 9 pt; 四号, 14 pt."],
+    zh: ["字号", "中国使用的有名称的字号：五号为 10.5 pt，是书籍正文常用字号；小五为 9 pt；四号为 14 pt。"],
+  }, "字号"),
+  term("vertical-writing", "cjk", {
+    en: ["Vertical writing", "Text set in columns that run from top to bottom, read from right to left, as in many Taiwanese and classical Chinese books."],
+    es: ["Escritura vertical", "Texto compuesto en columnas que van de arriba abajo y se leen de derecha a izquierda, como en muchos libros de Taiwán y en los clásicos chinos."],
+    zh: ["竖排", "文字自上而下排成列、从右往左阅读的排法，常见于台湾书籍和古籍。"],
+  }, "竖排"),
+  term("right-binding", "cjk", {
+    en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese books are bound this way."],
+    es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos en vertical se encuadernan así."],
+    zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排中文书采用这种装订。"],
+  }, "右装"),
+  term("tier", "cjk", {
+    en: ["Tier", "In vertical writing, one of the horizontal bands a page is divided into, the vertical counterpart of a column."],
+    es: ["Banda", "En la escritura vertical, cada una de las franjas horizontales en que se divide la página; equivale a una columna en la escritura horizontal."],
+    zh: ["栏（竖排）", "竖排时页面上下划分出的横向区域，相当于横排中的栏。"],
+  }, "栏"),
+  term("tate-chu-yoko", "cjk", {
+    en: ["Tate-chu-yoko", "Setting a short number or acronym across the column, upright in a single cell, inside vertical text. The name is Japanese for “horizontal in vertical”."],
+    es: ["Tate-chu-yoko", "Componer un número corto o una sigla en horizontal, de pie en una sola celda, dentro de un texto vertical. El nombre significa en japonés «horizontal dentro de vertical»."],
+    zh: ["纵中横", "在竖排文字中把短数字或缩写横着排在一个字格里。日文称 tate-chu-yoko。"],
+  }, "纵中横"),
+  term("emphasis-dots", "cjk", {
+    en: ["Emphasis dots", "Dots set under each character (beside it in vertical text) to stress a phrase. Chinese uses them where Latin text uses italics."],
+    es: ["Puntos de énfasis", "Puntos bajo cada carácter (al lado, en texto vertical) para resaltar una expresión. El chino los usa donde el texto latino usaría cursiva."],
+    zh: ["着重号", "加在每个字下方（竖排时在右侧）用于强调的圆点。中文用它代替西文的斜体。"],
+  }, "着重号"),
+  term("proper-name-mark", "cjk", {
+    en: ["Proper-name mark", "A straight line under a personal or place name (beside it in vertical text), found in classical and Taiwanese editions."],
+    es: ["Marca de nombre propio", "Línea recta bajo un nombre de persona o de lugar (al lado, en texto vertical), propia de las ediciones clásicas y de Taiwán."],
+    zh: ["专名号", "标在人名、地名下方（竖排时在左侧）的直线，见于古籍和台湾版书籍。"],
+  }, "专名号"),
+  term("book-title-mark", "cjk", {
+    en: ["Book-title mark", "The marks that set off the title of a book or article: 《》 in modern mainland text, or a wavy line under it in classical and Taiwanese editions."],
+    es: ["Marca de título", "Los signos que delimitan el título de un libro o artículo: 《》 en el texto actual de China continental, o una línea ondulada debajo en las ediciones clásicas y de Taiwán."],
+    zh: ["书名号", "标示书名、篇名的符号：现代大陆用《》，古籍和台湾版则在下方加波浪线。"],
+  }, "书名号"),
+  term("ruby", "cjk", {
+    en: ["Ruby", "Small text set above or beside characters to give their reading, such as pinyin or zhuyin."],
+    es: ["Ruby", "Texto pequeño que se pone encima o al lado de los caracteres para indicar su lectura, como el pinyin o el zhuyin."],
+    zh: ["注音（ruby）", "排在字的上方或旁边、标明读音的小字，例如拼音或注音符号。"],
+  }, "注音"),
+  term("pinyin", "cjk", {
+    en: ["Pinyin", "The official romanisation of Mandarin, with tone marks: hóng lóu."],
+    es: ["Pinyin", "La romanización oficial del chino mandarín, con marcas de tono: hóng lóu."],
+    zh: ["拼音", "汉语普通话的官方拉丁字母拼写，带声调符号，如 hóng lóu。"],
+  }, "拼音"),
+  term("zhuyin", "cjk", {
+    en: ["Zhuyin (bopomofo)", "A phonetic alphabet for Mandarin used in Taiwan (ㄅㄆㄇㄈ), set in a column beside each character."],
+    es: ["Zhuyin (bopomofo)", "Alfabeto fonético del mandarín que se usa en Taiwán (ㄅㄆㄇㄈ) y se coloca en una columna junto a cada carácter."],
+    zh: ["注音符号", "台湾使用的汉语注音字母（ㄅㄆㄇㄈ），排在每个字旁边的一列中。"],
+  }, "注音符号"),
+  term("warichu", "cjk", {
+    en: ["Warichu", "A note set in two half-size rows inside the line, the form of commentary in classical Chinese editions. The name is Japanese."],
+    es: ["Warichu", "Nota compuesta en dos filas de medio cuerpo dentro de la propia línea, la forma de los comentarios en las ediciones clásicas chinas. El nombre es japonés."],
+    zh: ["双行夹注", "在行内用两行半号小字排出的注文，是古籍中评注的形式。日文称割注（warichu）。"],
+  }, "双行夹注"),
+  term("kaiming", "cjk", {
+    en: ["Kaiming style", "A punctuation style that sets pause marks (、，) half-width and stops (。) full-width, a compromise between full-width and half-width setting."],
+    es: ["Estilo kaiming", "Estilo de puntuación que compone las pausas (、，) a media anchura y los puntos (。) a ancho completo, a medio camino entre ambas opciones."],
+    zh: ["开明式", "一种标点排法：顿号、逗号等点号排半角，句号等排全角，介于全角式与半角式之间。"],
+  }, "开明式"),
+  term("fore-edge-heads", "cjk", {
+    en: ["Fore-edge heads", "In vertical books, the chapter title and folio set down the outer margin of the page rather than across its top."],
+    es: ["Cabeceras en el corte", "En los libros verticales, el título del capítulo y el folio compuestos a lo largo del margen exterior de la página en lugar de en lo alto."],
+    zh: ["书口书眉", "竖排书中沿页面外侧页边竖排的章名和页码，而不是横排在页面顶部。"],
+  }, "书口"),
+
+  // ── Software and the web ───────────────────────────────────────────────
+  term("markdown", "web", {
+    en: ["Markdown", "A plain-text way to write formatted text: # for headings, * for emphasis, - for lists. Postext reads book chapters written in it."],
+    es: ["Markdown", "Forma de escribir texto con formato en texto plano: # para títulos, * para el énfasis, - para las listas. Postext lee capítulos de libro escritos así."],
+    zh: ["Markdown", "用纯文本书写带格式文本的方法：# 表示标题，* 表示强调，- 表示列表。Postext 读取用它写的书稿章节。"],
+  }),
+  term("directive", "web", {
+    en: ["Directive", "Postext's extension to Markdown for things Markdown lacks, written with colons: :::callout for a box, :ref[…] for a cross-reference."],
+    es: ["Directiva", "Extensión de Postext a Markdown para lo que Markdown no tiene, escrita con dos puntos: :::callout para un recuadro, :ref[…] para una referencia cruzada."],
+    zh: ["指令", "Postext 为 Markdown 补充的语法，用冒号书写，例如 :::callout 表示标注框，:ref[…] 表示交叉引用。"],
+  }),
+  term("frontmatter", "web", {
+    en: ["Frontmatter", "A block of settings at the top of a file, between two lines of ---, such as the title and author of a chapter. Not the same as a book's front matter."],
+    es: ["Frontmatter", "Bloque de ajustes al principio de un archivo, entre dos líneas de ---, como el título y el autor de un capítulo. No hay que confundirlo con los preliminares de un libro."],
+    zh: ["前置元数据", "文件开头两行 --- 之间的一组设置，例如章的标题和作者。不同于书籍的前辅文。"],
+  }),
+  term("vdt", "web", {
+    en: ["Virtual Document Tree", "Postext's laid-out book: every page, line and glyph with its position, ready for a renderer to draw."],
+    es: ["Virtual Document Tree", "El libro maquetado de Postext: cada página, línea y glifo con su posición, listo para que un renderizador lo dibuje."],
+    zh: ["虚拟文档树", "Postext 排好版的书：每一页、每一行、每个字形及其位置，可交给渲染器绘制。"],
+  }),
+  term("renderer", "web", {
+    en: ["Renderer", "The part that draws the laid-out pages in one output: canvas, HTML or PDF. The layout is the same for all three."],
+    es: ["Renderizador", "La parte que dibuja las páginas maquetadas en una salida concreta: canvas, HTML o PDF. La maquetación es la misma para las tres."],
+    zh: ["渲染器", "把排好版的页面绘制成某种输出（canvas、HTML 或 PDF）的部分。三种输出的版面完全相同。"],
+  }),
+  term("canvas", "web", {
+    en: ["Canvas", "The HTML element a web page draws pixels on with JavaScript. The Sandbox previews pages on it."],
+    es: ["Canvas", "El elemento HTML sobre el que una página web dibuja píxeles con JavaScript. El Sandbox muestra en él la vista previa de las páginas."],
+    zh: ["canvas（画布）", "网页用 JavaScript 绘制像素的 HTML 元素。Sandbox 在上面预览页面。"],
+  }),
+  term("web-worker", "web", {
+    en: ["Web Worker", "A script the browser runs in the background, apart from the page, so long work such as laying out a book does not freeze the interface."],
+    es: ["Web Worker", "Script que el navegador ejecuta en segundo plano, aparte de la página, para que un trabajo largo, como maquetar un libro, no bloquee la interfaz."],
+    zh: ["Web Worker", "浏览器在后台、独立于页面运行的脚本，使排版整本书这类耗时工作不会卡住界面。"],
+  }),
+  term("wasm", "web", {
+    en: ["WebAssembly (WASM)", "A compact binary format browsers run at near-native speed, used by libraries that need heavy computation, such as font decompression."],
+    es: ["WebAssembly (WASM)", "Formato binario compacto que los navegadores ejecutan casi a velocidad nativa; lo usan bibliotecas de cálculo intensivo, como la descompresión de fuentes."],
+    zh: ["WebAssembly（WASM）", "浏览器能以接近原生速度运行的紧凑二进制格式，供字体解压等计算密集的库使用。"],
+  }),
+  term("indexeddb", "web", {
+    en: ["IndexedDB", "A database built into the browser. The Sandbox keeps your books and drafts in it, on your own device."],
+    es: ["IndexedDB", "Base de datos integrada en el navegador. El Sandbox guarda en ella tus libros y borradores, en tu propio dispositivo."],
+    zh: ["IndexedDB", "浏览器内置的数据库。Sandbox 把你的书稿和草稿保存在其中，数据留在你自己的设备上。"],
+  }),
+  term("headless", "web", {
+    en: ["Headless", "Running without a visible window, for example generating PDFs on a server or in a script."],
+    es: ["Sin interfaz (headless)", "Que se ejecuta sin ventana visible, por ejemplo para generar PDF en un servidor o desde un script."],
+    zh: ["无界面（headless）", "在没有可见窗口的情况下运行，例如在服务器上或脚本中生成 PDF。"],
+  }),
+  term("opentype", "web", {
+    en: ["OpenType", "The standard font format, which can hold features such as ligatures, small caps and vertical punctuation forms."],
+    es: ["OpenType", "El formato estándar de fuentes, que puede incluir funciones como ligaduras, versalitas y formas verticales de la puntuación."],
+    zh: ["OpenType", "标准字体格式，可包含连字、小型大写、竖排标点形式等特性。"],
+  }),
+  term("variable-font", "web", {
+    en: ["Variable font", "One font file that holds a range of weights or widths, picked by a number instead of a separate file for each."],
+    es: ["Fuente variable", "Un solo archivo de fuente que contiene una gama de pesos o anchuras, que se eligen con un número en lugar de usar un archivo para cada uno."],
+    zh: ["可变字体", "一个字体文件包含一系列字重或字宽，用数值选择，而不必每种各用一个文件。"],
+  }),
+  term("font-subset", "web", {
+    en: ["Font subset", "A copy of a font that keeps only the characters a document uses, so the file is smaller. PDFs embed subsets."],
+    es: ["Subconjunto de fuente", "Copia de una fuente que conserva solo los caracteres que usa el documento, para que el archivo pese menos. Los PDF incrustan subconjuntos."],
+    zh: ["字体子集", "只保留文档实际用到的字符的字体副本，文件更小。PDF 中嵌入的就是子集。"],
+  }),
+  term("vector-raster", "web", {
+    en: ["Vector and raster", "A vector image is drawn from shapes and stays sharp at any size (SVG); a raster image is a grid of pixels (PNG, JPEG)."],
+    es: ["Vectorial y mapa de bits", "Una imagen vectorial se dibuja con formas y se ve nítida a cualquier tamaño (SVG); una imagen de mapa de bits es una cuadrícula de píxeles (PNG, JPEG)."],
+    zh: ["矢量图与位图", "矢量图由图形构成，任意缩放都清晰（如 SVG）；位图是像素网格（如 PNG、JPEG）。"],
+  }),
+  term("tagged-pdf", "web", {
+    en: ["Tagged PDF", "A PDF that carries a structure tree of headings, paragraphs, lists and figures with alternative text, so screen readers can read it in order."],
+    es: ["PDF etiquetado", "PDF que lleva un árbol de estructura con títulos, párrafos, listas y figuras con texto alternativo, para que los lectores de pantalla lo lean en orden."],
+    zh: ["标签 PDF", "带有结构树（标题、段落、列表、带替代文本的图）的 PDF，屏幕阅读器可以按顺序朗读。"],
+  }),
+  term("alt-text", "web", {
+    en: ["Alternative text", "A short description of an image for people who cannot see it, read aloud by screen readers."],
+    es: ["Texto alternativo", "Descripción breve de una imagen para quien no puede verla, que leen en voz alta los lectores de pantalla."],
+    zh: ["替代文本", "为看不到图片的人提供的简短描述，由屏幕阅读器朗读。"],
+  }),
+  term("bundle", "web", {
+    en: ["Bundle (.postext)", "A single file that packs a book's chapters, configuration, fonts and images, so it opens the same anywhere."],
+    es: ["Paquete (.postext)", "Un solo archivo que reúne los capítulos, la configuración, las fuentes y las imágenes de un libro, para que se abra igual en cualquier sitio."],
+    zh: ["书稿包（.postext）", "把一本书的章节、配置、字体和图片打包成的单个文件，在哪里打开都一样。"],
+  }),
+  term("preset", "web", {
+    en: ["Preset", "A ready-made book in the Sandbox, with its design and sample text, to start from or study."],
+    es: ["Plantilla (preset)", "Libro ya preparado en el Sandbox, con su diseño y un texto de muestra, para partir de él o estudiarlo."],
+    zh: ["预设", "Sandbox 中现成的书，附带设计和示例文本，可直接以此为起点或用来学习。"],
+  }),
+  term("sandbox", "web", {
+    en: ["Sandbox", "Postext's editor in the browser: write a book, change its design and see the pages update."],
+    es: ["Sandbox", "El editor de Postext en el navegador: escribes un libro, cambias su diseño y ves cómo se actualizan las páginas."],
+    zh: ["Sandbox", "Postext 的浏览器内编辑器：写书、修改设计，并即时看到页面更新。"],
+  }),
+];

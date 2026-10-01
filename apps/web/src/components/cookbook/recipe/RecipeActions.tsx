@@ -8,6 +8,7 @@ import { openInCodePen } from "@/lib/codepenClient";
 import { cn } from "@/lib/utils";
 import { SOURCE_ATTR, SOURCE_EOL_ATTR, SOURCES_ID, type RecipeSourcesPayload } from "./sources";
 import { copyText, showToast } from "./toast";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** A composed file rebuilt from its highlighted lines (one `.cb-lc` span
  *  per line, in order, folds included), or "" when the page has none. */
@@ -138,6 +139,7 @@ export function RecipeActions({ data, className }: { data: RecipeActionsData; cl
       >
         {t("github")}
         <ArrowUpRight aria-hidden="true" className="size-3.5" />
+        <NewTabNote />
       </a>
     </div>
   );

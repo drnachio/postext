@@ -8,6 +8,7 @@ export const metadata = {
   lastUpdated: '2026-09-29',
   readingTime: '30 min',
   order: 3,
+  plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages and PDF files from code.",
 };
 
 # Configuration
@@ -1385,7 +1386,7 @@ The `bodyText` property controls the typography of all paragraph text.
   </tbody>
 </table>
 
-#### Blockquotes
+### Blockquotes
 
 A blockquote (lines that start with `>`) takes the body's family, size, leading, weights, alignment and hyphenation. `bodyText.blockquote` sets the rest; left unset, a blockquote looks as it did up to postext 1.4: grey, italic, with the body's first-line indent and no side indent.
 
@@ -1436,7 +1437,7 @@ bodyText: {
 
 In the Sandbox these are the **Blockquotes** group of the Body text section.
 
-#### One family per `fontFamily`
+### One family per `fontFamily`
 
 `fontFamily` — here and in every other font-family field (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, a chip style's or a design element's `fontFamily`…) — names **one** family. The canvas, the HTML output and the PDF must set the same face, and the PDF embeds one font per family with no fallback chain, so there is nothing for a CSS font stack to fall back to. A stack is set in its first family and reported as a [configuration warning](#configuration-warnings):
 

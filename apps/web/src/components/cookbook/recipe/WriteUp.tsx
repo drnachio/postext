@@ -31,12 +31,24 @@ function SectionHeading({ section }: { section: RecipeSection }) {
  *  sections, compiled with the docs' pipeline and the Cookbook components,
  *  interleaved with the generated ones, so no recipe can drift from the
  *  order. Server component. */
-export function WriteUp({ view, t, data }: { view: RecipeView; t: RecipeT; data: RecipeActionsData }) {
+export async function WriteUp({ view, t, data }: { view: RecipeView; t: RecipeT; data: RecipeActionsData }) {
   const components = recipeMdxComponents(view, t);
-  const authored = (id: SectionId) => {
+  // The authored sections compile one after another, in page order, so an
+  // abbreviation is expanded where it first appears on the page.
+  const abbrSeen = new Set<string>();
+  const compiled: Partial<Record<SectionId, React.ReactNode>> = {};
+  for (const { id } of view.sections) {
     const source = view.writeup.sections[id];
-    return source ? <MdxContent source={literalPages(source)} components={components} /> : null;
-  };
+    if (source) {
+      compiled[id] = await MdxContent({
+        source: literalPages(source),
+        components,
+        locale: view.writeup.locale,
+        abbrSeen,
+      });
+    }
+  }
+  const authored = (id: SectionId) => compiled[id] ?? null;
   const body: Record<SectionId, () => React.ReactNode> = {
     build: () => (
       <>

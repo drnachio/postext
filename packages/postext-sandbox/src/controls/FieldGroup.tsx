@@ -34,7 +34,7 @@ function FieldGroupBody({ title, description, children, titleMatch }: FieldGroup
   const visible = useScopeVisible(titleMatch);
   return (
     <fieldset className="@container m-0 mb-3 min-w-0 border-0 p-0 last:mb-0" style={visible ? undefined : { display: 'none' }}>
-      <legend className="mb-1.5 p-0 text-[0.6rem] font-semibold tracking-[0.12em] text-(--slate) uppercase">
+      <legend className="mb-1.5 p-0 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
         <HighlightedText text={title} tokens={search.matcher.tokens} />
       </legend>
       {description && (

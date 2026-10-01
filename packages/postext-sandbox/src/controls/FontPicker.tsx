@@ -176,7 +176,7 @@ const LIST_HEIGHT = 320;
 function GroupHeader({ children }: { children: string }) {
   return (
     <div
-      className="px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide"
+      className="px-3 py-1 text-[0.72rem] font-semibold pt-caps tracking-wide"
       style={{ color: 'var(--slate)', backgroundColor: 'var(--background)', borderBottom: '1px solid var(--rule)' }}
     >
       {children}
@@ -264,7 +264,7 @@ export function FontPicker({
   };
 
   return (
-    <FieldRow ref={rowRef} label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={[value]}>
+    <FieldRow ref={rowRef} label={label} tooltip={tooltip ?? labels.fontFieldHelp} isDefault={muted} onReset={onReset} extraTerms={[value]}>
       <FontTrigger
         buttonRef={buttonRef}
         value={value}
@@ -299,12 +299,11 @@ export function FontPicker({
             }}
             placeholder={searchPlaceholder ?? labels.fontPickerSearch}
             aria-label={searchPlaceholder ?? labels.fontPickerSearch}
-            className="w-full rounded border px-2 py-1 text-xs focus:border-(--brand)"
+            className="min-h-11 w-full rounded border px-2 py-1 text-xs focus:border-(--brand) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--brand)"
             style={{
-              borderColor: 'var(--rule)',
+              borderColor: 'var(--pt-control-border)',
               backgroundColor: 'var(--surface)',
               color: 'var(--foreground)',
-              outline: 'none',
             }}
           />
         </div>
@@ -366,7 +365,7 @@ function FontTrigger({ buttonRef, value, open, muted, onClick }: {
       aria-labelledby={ids ? `${ids.labelId} ${valueId}` : undefined}
       aria-describedby={ids?.descriptionId}
       className={cn(
-        'inline-flex h-7 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--rule) bg-(--surface) pr-1.5 pl-2 transition-colors',
+        'inline-flex h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-1.5 pl-2 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

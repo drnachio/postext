@@ -72,7 +72,7 @@ function Book({ href, name, description, binding = "left", children }: { href: s
     <li className="reveal w-[13rem] shrink-0 snap-start md:w-[14rem] 2xl:w-[15rem]">
       {/* A full page load: the Sandbox reads its permalink hash when it mounts,
           before a client-side navigation has put the new URL in place. */}
-      <a href={href} className="group block rounded-sm focus-visible:outline-offset-4">
+      <a href={href} className="group block rounded-sm focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-brand">
         <div className="relative [perspective:1200px]">
           <div
             className={`relative overflow-hidden rounded-[2px] shadow-[0_2px_3px_rgba(14,16,20,0.25),0_24px_40px_-18px_rgba(14,16,20,0.55)] dark:shadow-[0_2px_3px_rgba(0,0,0,0.4),0_28px_50px_-18px_rgba(0,0,0,0.8)] transition-transform duration-500 ease-out ${
@@ -113,11 +113,11 @@ export async function ShowcaseSection() {
               {t("title")}
             </h2>
           </div>
-          <p className="font-body text-base leading-relaxed text-foreground/70 italic md:col-span-5 md:text-lg">{t("lead")}</p>
+          <p className="font-body text-base leading-relaxed text-foreground/80 italic md:col-span-5 md:text-lg">{t("lead")}</p>
         </div>
       </div>
 
-      <ul className="mx-auto mt-12 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pb-6 [scrollbar-width:thin] md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
+      <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 [scrollbar-width:thin] md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
         <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>

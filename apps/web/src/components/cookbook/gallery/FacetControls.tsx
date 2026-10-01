@@ -44,7 +44,7 @@ export function FacetOptionList({
           aria-pressed={o.active}
           disabled={!o.active && o.count === 0}
           onClick={() => onToggle(o.id)}
-          className="group/opt flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-left font-sans text-[0.82rem] transition-colors hover:bg-surface-2 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent sm:min-h-9"
+          className="group/opt flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-left font-sans text-[0.82rem] transition-colors hover:bg-surface-2 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent sm:min-h-10"
         >
           <span
             aria-hidden="true"
@@ -95,7 +95,7 @@ export function FeatureFinder({
         aria-label={t("featuresFind")}
         autoComplete="off"
         spellCheck={false}
-        className="cb-search-input h-10 w-full rounded-md bg-surface px-3 font-sans text-[0.85rem] placeholder:text-slate sm:h-9"
+        className="cb-search-input h-10 w-full rounded-md bg-surface px-3 font-sans text-[0.85rem] placeholder:text-slate sm:h-10"
       />
       <div className={cn("overflow-y-auto overscroll-contain", listClassName)}>
         {shown.length > 0 ? (
@@ -141,7 +141,7 @@ export function FacetPopover({
           <button
             type="button"
             className={cn(
-              "inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 font-sans text-[0.8rem] font-medium whitespace-nowrap text-foreground/85 transition-colors hover:bg-surface-2 hover:text-foreground aria-expanded:bg-surface-2",
+              "inline-flex h-10 items-center gap-1.5 rounded-md px-2.5 font-sans text-[0.8rem] font-medium whitespace-nowrap text-foreground/85 transition-colors hover:bg-surface-2 hover:text-foreground aria-expanded:bg-surface-2",
               selected > 0 && "text-foreground",
             )}
           />
@@ -176,7 +176,7 @@ export function ChapterChips({
   anchors?: boolean;
 }) {
   const chip =
-    "inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-3.5 font-sans text-[0.78rem] font-medium whitespace-nowrap transition-colors sm:h-8 sm:px-3";
+    "inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-3.5 font-sans text-[0.78rem] font-medium whitespace-nowrap transition-colors sm:h-10 sm:px-3";
   if (anchors) {
     return chapters.map((c) => (
       <a key={c.id} href={`#cb-ch-${c.id}`} className={cn(chip, `part-${c.color}`, "bg-surface hover:bg-surface-2")}>

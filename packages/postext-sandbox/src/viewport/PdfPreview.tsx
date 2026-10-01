@@ -57,7 +57,8 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
         <FileText
           size={48}
           className="mb-4"
-          style={{ color: 'var(--rule)' }}
+          aria-hidden="true"
+          style={{ color: 'var(--slate)' }}
         />
         <h2
           className="mb-2 text-sm font-semibold"
@@ -67,6 +68,9 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
         </h2>
         <p className="max-w-md text-xs" style={{ color: 'var(--slate)' }}>
           {error}
+        </p>
+        <p className="mt-2 max-w-md text-xs" style={{ color: 'var(--slate)' }}>
+          {labels.pdfErrorHint}
         </p>
       </div>
     );
@@ -79,7 +83,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
     >
       {src && !inline && !generating && (
         <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-6 pb-20 text-center">
-          <FileText size={48} aria-hidden="true" style={{ color: 'var(--rule)' }} />
+          <FileText size={48} aria-hidden="true" style={{ color: 'var(--slate)' }} />
           <p className="max-w-xs text-sm" style={{ color: 'var(--slate)' }}>
             {labels.pdfInlineUnavailable}
           </p>
@@ -87,11 +91,12 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
             href={bytesUrl!}
             target="_blank"
             rel="noopener"
-            className="inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)"
+            className="inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--brand)"
             style={{ backgroundColor: 'var(--brand)', color: 'var(--brand-contrast, var(--background))' }}
           >
             <ExternalLink size={16} aria-hidden="true" />
             {labels.pdfOpen}
+            <span className="sr-only"> ({labels.opensInNewTab})</span>
           </a>
         </div>
       )}
@@ -116,6 +121,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
           style={{ backgroundColor: bytesUrl ? 'rgba(0,0,0,0.35)' : 'transparent' }}
         >
           <div
+            aria-hidden="true"
             style={{
               width: 24,
               height: 24,
@@ -132,7 +138,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
                 ? labels.pdfProgressLayout.replace('__pass__', String(progress.pass)).replace('__page__', String(progress.pages + 1))
                 : labels.pdfGenerating}
           </p>
-          <GenerationBar progress={progress} renderProgress={renderProgress} phase={phase} />
+          <GenerationBar progress={progress} renderProgress={renderProgress} phase={phase} label={labels.pdfGenerating} />
         </div>
       )}
     </div>
@@ -142,7 +148,7 @@ export const PdfPreview = memo(function PdfPreview({ bytesUrl, openPage, generat
 /** A bar for the generation: the share of the document's blocks placed in
  *  the running pass (the engine re-places the document a few times, so the
  *  bar refills per pass), then full and pulsing while the PDF is written. */
-function GenerationBar({ progress, renderProgress, phase }: { progress: BuildProgress | null; renderProgress: RenderProgress | null; phase: 'layout' | 'render' | null }) {
+function GenerationBar({ progress, renderProgress, phase, label }: { progress: BuildProgress | null; renderProgress: RenderProgress | null; phase: 'layout' | 'render' | null; label: string }) {
   // While the PDF is written the bar follows the pages rendered; it fills
   // and pulses for the parts that report nothing (fonts, the file itself).
   const fraction = phase === 'render'
@@ -156,6 +162,7 @@ function GenerationBar({ progress, renderProgress, phase }: { progress: BuildPro
   return (
     <div
       role="progressbar"
+      aria-label={label}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(fraction * 100)}

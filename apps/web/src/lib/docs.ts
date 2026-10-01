@@ -11,6 +11,8 @@ export interface DocMeta {
   lastUpdated: string;
   readingTime: string;
   order: number;
+  /** "In short": the page in plain words (WCAG 3.1.5), or "". */
+  plainSummary: string;
 }
 
 export interface DocEntry {
@@ -26,6 +28,13 @@ export interface TocItem {
 
 const DOCS_DIR = path.join(process.cwd(), "../../docs");
 
+/** A double-quoted metadata string that may hold apostrophes and escaped
+ *  quotes (the plain summaries are prose). */
+function getQuoted(block: string, key: string): string {
+  const m = block.match(new RegExp(`${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+  return m ? m[1].replace(/\\(.)/g, "$1") : "";
+}
+
 function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
   const metaMatch = source.match(
     /export\s+const\s+metadata\s*=\s*\{([\s\S]+?)\}/
@@ -39,6 +48,7 @@ function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
       lastUpdated: "",
       readingTime: "",
       order: 99,
+      plainSummary: "",
     };
   }
   const block = metaMatch[1];
@@ -59,6 +69,7 @@ function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
     lastUpdated: get("lastUpdated"),
     readingTime: get("readingTime"),
     order: getNum("order"),
+    plainSummary: getQuoted(block, "plainSummary"),
   };
 }
 

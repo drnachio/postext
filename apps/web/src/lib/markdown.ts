@@ -10,10 +10,12 @@ import es from "../../messages/es.json";
 import zh from "../../messages/zh.json";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
+import { glossarySections } from "@/lib/glossary/glossary";
 import { getAllDocs, getDocSource, type DocMeta } from "@/lib/docs";
 import { SITE_NAME, SITE_URL, localizedUrl } from "@/lib/seo";
 import { FEATURE_KEYS, featureDocPath } from "@/lib/featureDocs";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from "@/lib/guideBundle";
+import { TRANSCRIPTS, type TranscriptVideo } from "@/components/landing/transcripts";
 import { catalogRecipe } from "@/lib/cookbook/catalog";
 import { docAnchorPath } from "@/lib/cookbook/docLinks";
 import { captureVariantFor, pageImages, pdfDownload, sandboxLink } from "@/lib/cookbook/images";
@@ -425,8 +427,15 @@ export function mdxToMarkdown(
   type BufferKind = "table" | "meta" | "comment" | "tag" | "note";
   let bufferKind: BufferKind | null = null;
 
+  // An authored `<abbr title="…">PDF</abbr>` keeps its text only.
   const prose = (line: string) =>
-    decodeEntities(unwrapJsxStrings(inlineComponents(line, renderers).replace(/\\([{}])/g, "$1")));
+    decodeEntities(
+      unwrapJsxStrings(
+        inlineComponents(line, renderers)
+          .replace(/<abbr\b[^>]*>(.*?)<\/abbr>/g, "$1")
+          .replace(/\\([{}])/g, "$1")
+      )
+    );
 
   const flushBuffer = () => {
     const text = buffer!.join("\n");
@@ -437,7 +446,9 @@ export function mdxToMarkdown(
       if (name === "Illustration") out.push(illustrationToMarkdown(text, labels.figure));
       else if (name === "CodePenExample") out.push(codePenToMarkdown(text, labels));
       // the player has no Markdown form: name the video (the page links it)
-      else if (name === "TutorialVideo") out.push(`> *${messagesFor(locale).Tutorial.title}* · ${messagesFor(locale).Tutorial.watch}`);
+      else if (name === "TutorialVideo") {
+        out.push(`> *${messagesFor(locale).Tutorial.title}* · ${messagesFor(locale).Tutorial.watch}`, "", transcriptMarkdown("tutorial", locale));
+      }
       else if (name === "Excerpt" || name === "PageShot" || name === "Gotcha") {
         const attrs = jsxAttrs(trimmed);
         const render = renderers?.block?.[name];
@@ -567,6 +578,30 @@ function header(opts: {
   return lines.join("\n");
 }
 
+/** A narrated video's transcript (what is shown and what is said), as the
+ *  page's disclosure under the player lists it. */
+function transcriptMarkdown(video: TranscriptVideo, locale: string): string {
+  const t = messagesFor(locale).Transcript;
+  const lang = siteLocale(locale);
+  const blocks = TRANSCRIPTS[video][lang] ?? TRANSCRIPTS[video].en;
+  return [
+    `**${t.summary}.** ${t.note}`,
+    "",
+    ...blocks.map((b) =>
+      [`- ${b.time}`, b.scene && `*${t.onScreen}:* ${b.scene}`, b.narration && `*${t.narration}:* ${b.narration}`]
+        .filter(Boolean)
+        .join(" · ")
+    ),
+    "",
+  ].join("\n");
+}
+
+/** The "In short" block of a rendition: the page in plain words (WCAG 3.1.5). */
+function plainSummary(locale: string, text: string | undefined): string {
+  if (!text) return "";
+  return `## ${messagesFor(locale).PlainLanguage.heading}\n\n${text}\n`;
+}
+
 /** Removes the MDX doc's own leading `# Title` so the rendition's header owns it. */
 function dropLeadingH1(markdown: string): string {
   return markdown.replace(/^# .+\n+/, "");
@@ -586,7 +621,7 @@ export function docMarkdown(slug: string, locale: string): string | null {
     path,
     availableLocales,
     meta: doc.meta,
-  })}\n${body}\n`;
+  })}\n${doc.meta.plainSummary ? `${plainSummary(locale, doc.meta.plainSummary)}\n` : ""}${body}\n`;
 }
 
 function docsList(locale: string, withMarkdownLinks = true): string[] {
@@ -637,10 +672,14 @@ export function homeMarkdown(locale: string): string {
   const b = m.Bundle as Record<string, string>;
   return [
     header({ title: m.Metadata.title, description: m.Metadata.description, locale, path: "" }),
+    plainSummary(locale, m.PlainLanguage.home),
     `## ${m.Hero.title}`,
     "",
     m.Hero.subtitle,
     "",
+    `## ${m.Showreel.title}`,
+    "",
+    transcriptMarkdown("showreel", locale),
     `## ${m.About.titleLine1} ${m.About.titleLine2}`,
     "",
     m.About.paragraph1,
@@ -727,6 +766,7 @@ export function legalMarkdown(page: LegalPage, locale: string): string {
     const t = m.License;
     return [
       header({ title: t.title, description: t.metaDescription, locale, path }),
+      plainSummary(locale, m.PlainLanguage.license),
       t.copyright,
       "",
       t.grant,
@@ -743,6 +783,7 @@ export function legalMarkdown(page: LegalPage, locale: string): string {
     const t = m.PrivacyPolicy;
     return [
       header({ title: t.title, description: t.metaDescription, locale, path }),
+      plainSummary(locale, m.PlainLanguage.privacy),
       `*${t.lastUpdated}*`,
       "",
       `## ${t.controllerTitle}`, "", t.controllerText, "",
@@ -759,6 +800,7 @@ export function legalMarkdown(page: LegalPage, locale: string): string {
   const t = m.CookiePolicy;
   return [
     header({ title: t.title, description: t.metaDescription, locale, path }),
+    plainSummary(locale, m.PlainLanguage.cookies),
     `*${t.lastUpdated}*`,
     "",
     `## ${t.whatAreCookiesTitle}`, "", t.whatAreCookiesText, "",
@@ -775,6 +817,49 @@ export function legalMarkdown(page: LegalPage, locale: string): string {
     `## ${t.manageCookiesTitle}`, "", t.manageCookiesText, "",
     `## ${t.moreInfoTitle}`, "", linkify(t.moreInfoText, "privacyLink", markdownUrl(locale, "/privacy-policy")), "",
   ].join("\n");
+}
+
+/** The accessibility statement (app/[locale]/accessibility/page.tsx). */
+export function accessibilityMarkdown(locale: string): string {
+  const t = messagesFor(locale).AccessibilityStatement;
+  const list = (items: string[]) => items.map((i) => `- ${i}`);
+  return [
+    header({ title: t.title, description: t.metaDescription, locale, path: "/accessibility" }),
+    `*${t.lastUpdated}*`,
+    "",
+    `## ${t.targetTitle}`, "", t.targetText, "",
+    `## ${t.prefsTitle}`, "", t.prefsText, "",
+    ...list([t.prefsAlign, t.prefsSpacing, t.prefsWidth, t.prefsColors, t.prefsZoom]),
+    "",
+    `## ${t.keyboardTitle}`, "",
+    ...list([t.keyboardTab, t.keyboardSkip, t.keyboardActivate, t.keyboardEscape, t.keyboardSearch]),
+    "",
+    `## ${t.limitationsTitle}`, "", t.limitationsIntro, "",
+    ...list(t.limitations),
+    "",
+    `## ${t.reportTitle}`, "", linkify(t.reportText, "issuesLink", `${REPO_URL}/issues`), "",
+  ].join("\n");
+}
+
+export const GLOSSARY_PATH = "/glossary";
+
+/** The glossary: every term under its category, then the abbreviations. */
+export function glossaryMarkdown(locale: string): string {
+  const t = messagesFor(locale).Glossary;
+  const { categories, abbreviations } = glossarySections(siteLocale(locale));
+  const title = { type: t.categoryType, cjk: t.categoryCjk, web: t.categoryWeb } as const;
+  const out = [header({ title: t.title, description: t.metaDescription, locale, path: GLOSSARY_PATH }), t.lead, ""];
+  for (const c of categories) {
+    out.push(`## ${title[c.category]}`, "");
+    for (const term of c.terms) {
+      out.push(`- **${term.term}**${term.native ? ` (${term.native})` : ""}: ${term.definition}`);
+    }
+    out.push("");
+  }
+  out.push(`## ${t.abbreviations}`, "", t.abbreviationsLead, "");
+  for (const a of abbreviations) out.push(`- **${a.abbr}**: ${a.title}`);
+  out.push("");
+  return out.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -1061,6 +1146,7 @@ export function recipeMarkdown(slug: string, locale: string): string | null {
   const out: string[] = [
     header({ title: writeup.frontmatter.title, description: writeup.frontmatter.summary, locale, path, facts }),
   ];
+  if (writeup.frontmatter.plain) out.push(plainSummary(locale, writeup.frontmatter.plain));
 
   // What you'll build, then the questions it answers.
   const questions = meta.answers
@@ -1164,6 +1250,8 @@ export function pageMarkdown(locale: string, path: string): string | null {
   const recipe = clean.match(/^cookbook\/([a-z0-9-]+)$/);
   if (recipe) return recipeMarkdown(recipe[1]!, locale);
   if ((LEGAL_PAGES as readonly string[]).includes(clean)) return legalMarkdown(clean as LegalPage, locale);
+  if (clean === "accessibility") return accessibilityMarkdown(locale);
+  if (`/${clean}` === GLOSSARY_PATH) return glossaryMarkdown(locale);
   return null;
 }
 
@@ -1173,7 +1261,7 @@ export function markdownPaths(locale: string): string[] {
     .filter((d) => d.locales[locale])
     .map((d) => `/docs/${d.slug}`);
   const recipes = getVisibleRecipes().map((r) => recipeHref(r.slug));
-  return ["", "/docs", ...docs, COOKBOOK_PATH, ...recipes, ...LEGAL_PAGES.map((p) => `/${p}`)];
+  return ["", "/docs", ...docs, COOKBOOK_PATH, ...recipes, ...LEGAL_PAGES.map((p) => `/${p}`), "/accessibility", GLOSSARY_PATH];
 }
 
 // ---------------------------------------------------------------------------
@@ -1229,9 +1317,11 @@ export function llmsTxt(locale: string): string {
     "",
     `## ${labels.optional}`,
     "",
+    `- [${m.Glossary.title}](${markdownUrl(locale, GLOSSARY_PATH)}): ${m.Glossary.metaDescription}`,
     `- [${m.Footer.mitLicense}](${markdownUrl(locale, "/license")})`,
     `- [${m.Footer.privacyPolicy}](${markdownUrl(locale, "/privacy-policy")})`,
     `- [${m.Footer.cookiePolicy}](${markdownUrl(locale, "/cookie-policy")})`,
+    `- [${m.Footer.accessibility}](${markdownUrl(locale, "/accessibility")})`,
   ];
   for (const other of routing.locales.filter((l) => l !== locale)) {
     lines.push(`- [${labelsFor(other).localeDocs}](${SITE_URL}/${other}/llms.txt)`);

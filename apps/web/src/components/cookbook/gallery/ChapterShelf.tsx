@@ -35,7 +35,7 @@ function ChapterShelf({
           >
             {chapter.number}
           </span>
-          <p aria-hidden="true" className="kicker relative max-w-[70%] text-[0.6rem] opacity-95">
+          <p aria-hidden="true" className="kicker relative max-w-[70%] text-[0.6rem]">
             {partHeading}
           </p>
           <h3
@@ -46,7 +46,7 @@ function ChapterShelf({
             {chapter.title}
           </h3>
           {intro && (
-            <p className="relative mt-2 max-w-2xl font-body text-[0.9rem] leading-snug italic opacity-95 max-sm:line-clamp-3">
+            <p className="relative mt-2 max-w-2xl font-body text-[0.9rem] leading-normal italic max-sm:line-clamp-3">
               {intro}
             </p>
           )}

@@ -235,7 +235,7 @@ export const IndexSection = memo(function IndexSection() {
           onReset={() => resetMain('bold')}
         />
         <ToggleSwitch
-          label={labels.indexMainItalic}
+          label={labels.indexMainItalic} tooltip={labels.indexMainTooltip}
           checked={resolved.main.italic}
           onChange={(v) => updateMain({ italic: v })}
           isDefault={raw?.main?.italic === undefined}
@@ -261,7 +261,7 @@ export const IndexSection = memo(function IndexSection() {
           onReset={() => resetSee('label')}
         />
         <TextInput
-          label={labels.indexSeeAlsoLabel}
+          label={labels.indexSeeAlsoLabel} tooltip={labels.indexSeeAlsoLabelTooltip}
           value={raw?.see?.alsoLabel ?? ''}
           placeholder={labels.indexSeeAlsoLabelPlaceholder}
           onChange={(v) => (v === '' ? resetSee('alsoLabel') : updateSee({ alsoLabel: v }))}
@@ -269,7 +269,7 @@ export const IndexSection = memo(function IndexSection() {
           onReset={() => resetSee('alsoLabel')}
         />
         <ToggleSwitch
-          label={labels.indexSeeItalic}
+          label={labels.indexSeeItalic} tooltip={labels.indexSeeItalicTooltip}
           checked={resolved.see.italic}
           onChange={(v) => updateSee({ italic: v })}
           isDefault={raw?.see?.italic === undefined}
@@ -361,7 +361,7 @@ export const IndexSection = memo(function IndexSection() {
               onReset={() => resetGroups('fontWeight')}
             />
             <ToggleSwitch
-              label={labels.headingItalic}
+              label={labels.headingItalic} tooltip={labels.italicHelp}
               checked={g.italic}
               onChange={(v) => updateGroups({ italic: v })}
               isDefault={groupUnset('italic')}
@@ -376,7 +376,7 @@ export const IndexSection = memo(function IndexSection() {
               fieldId="index-groups-color"
             />
             <TextInput
-              label={labels.indexSymbolsLabel}
+              label={labels.indexSymbolsLabel} tooltip={labels.indexSymbolsLabelTooltip}
               value={raw?.groups?.symbolsLabel ?? ''}
               placeholder={labels.indexSymbolsLabelPlaceholder}
               onChange={(v) => (v === '' ? resetGroups('symbolsLabel') : updateGroups({ symbolsLabel: v }))}
@@ -384,7 +384,7 @@ export const IndexSection = memo(function IndexSection() {
               onReset={() => resetGroups('symbolsLabel')}
             />
             <TextInput
-              label={labels.indexNumbersLabel}
+              label={labels.indexNumbersLabel} tooltip={labels.indexNumbersLabelTooltip}
               value={raw?.groups?.numbersLabel ?? ''}
               placeholder="0–9"
               onChange={(v) => (v === '' ? resetGroups('numbersLabel') : updateGroups({ numbersLabel: v }))}

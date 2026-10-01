@@ -1,5 +1,6 @@
 import { localizedText, type Credit } from "@/lib/cookbook/types";
 import { LICENSES, licenceName, type RecipeT, type RecipeView } from "./model";
+import { NewTabNote } from "@/components/ui/NewTabNote";
 
 function CreditLine({ credit, view, t }: { credit: Credit; view: RecipeView; t: RecipeT }) {
   const licence = LICENSES[credit.license];
@@ -83,9 +84,11 @@ export function Credits({ view, t }: { view: RecipeView; t: RecipeT }) {
       <p className="cb-credits-links">
         <a href={view.editUrl} target="_blank" rel="noopener noreferrer">
           {t("editWriteup")} ↗
+          <NewTabNote />
         </a>
         <a href={view.githubUrl} target="_blank" rel="noopener noreferrer">
           {t("recipeFolder")} ↗
+          <NewTabNote />
         </a>
       </p>
     </>

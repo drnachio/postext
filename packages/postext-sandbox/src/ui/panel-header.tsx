@@ -13,13 +13,13 @@ interface PanelHeaderProps {
 }
 
 /** Fixed-height header shared by every sidebar panel so titles and action
- *  clusters line up when switching panels. `h-9` is the Sandbox's one top
- *  band: the viewport bar and the activity bar's logo cell use it too, so
+ *  clusters line up when switching panels. `min-h-12` (48px: room for the 44px
+ *  targets every control keeps) is the Sandbox's one top band: the viewport bar and the activity bar's logo cell use it too, so
  *  the three line up across the window. */
 export function PanelHeader({ title, actions, count, className }: PanelHeaderProps) {
   return (
     <div
-      className={cn('flex h-9 shrink-0 items-center justify-between gap-2 border-b px-3', className)}
+      className={cn('flex min-h-12 shrink-0 items-center justify-between gap-2 border-b pr-1 pl-3', className)}
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
     >
       <h2 className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -33,7 +33,7 @@ export function PanelHeader({ title, actions, count, className }: PanelHeaderPro
           </span>
         )}
       </h2>
-      {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
+      {actions && <div className="flex shrink-0 items-center">{actions}</div>}
     </div>
   );
 }

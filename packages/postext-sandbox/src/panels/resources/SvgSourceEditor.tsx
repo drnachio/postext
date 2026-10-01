@@ -146,6 +146,7 @@ export function SvgSourceEditor({
           EditorView.lineWrapping,
           svgEditableRanges(),
           updateListener,
+          EditorView.contentAttributes.of({ 'aria-label': labelsRef.current.svgSourceAria, 'aria-multiline': 'true', tabindex: '0' }),
         ],
       }),
       parent: host,
@@ -281,9 +282,9 @@ export function SvgSourceEditor({
         <span className="text-xs" style={{ color: 'var(--slate)' }}>{labels.svgSourceNoText}</span>
       )}
       {error && (
-        <span className="text-xs" style={{ color: 'var(--destructive)' }}>{error}</span>
+        <span role="alert" className="text-xs" style={{ color: 'var(--destructive)' }}>{error}</span>
       )}
-      <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }} className="opacity-80">
+      <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }}>
         {locked ? labels.svgSourceHint : labels.svgSourceHintUnlocked}
       </span>
     </div>

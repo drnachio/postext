@@ -83,7 +83,7 @@ export function ColumnWidthsEditor({ model, columnCount, onModelChange }: Column
           );
         })}
       </div>
-      <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }} className="opacity-80">
+      <span style={{ color: 'var(--slate)', fontSize: 11, lineHeight: '14px' }}>
         {labels.tableEditorColumnWidthsHint}
       </span>
     </div>

@@ -53,7 +53,7 @@ export default async function DocsIndexPage({
   });
 
   return (
-    <main id="main-content" className="min-w-0 flex-1 px-4 py-8 lg:px-10 lg:py-12 2xl:px-14">
+    <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 px-4 py-8 lg:px-10 lg:py-12 2xl:px-14">
       <div aria-hidden="true" className="tri-stripe h-1.5 w-full" />
       <Kicker className="mt-8 text-slate">{t("contentsKicker")}</Kicker>
       <h1 className="display mt-3 text-[2.6rem] md:text-[3.4rem]">{t("contentsTitle")}</h1>

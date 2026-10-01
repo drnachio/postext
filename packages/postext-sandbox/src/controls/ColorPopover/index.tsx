@@ -35,11 +35,12 @@ interface ColorPopoverProps extends ColorPopoverBodyProps {
   ariaLabel: string;
 }
 
-const TABS: { id: ColorMode; label: string }[] = [
-  { id: 'hex', label: 'HEX' },
-  { id: 'rgb', label: 'RGB' },
-  { id: 'cmyk', label: 'CMYK' },
-  { id: 'hsl', label: 'HSL' },
+// Each notation is an abbreviation, expanded in its title (WCAG 3.1.4).
+const TABS: { id: ColorMode; label: string; titleKey: 'colorModeHex' | 'colorModeRgb' | 'colorModeCmyk' | 'colorModeHsl' }[] = [
+  { id: 'hex', label: 'HEX', titleKey: 'colorModeHex' },
+  { id: 'rgb', label: 'RGB', titleKey: 'colorModeRgb' },
+  { id: 'cmyk', label: 'CMYK', titleKey: 'colorModeCmyk' },
+  { id: 'hsl', label: 'HSL', titleKey: 'colorModeHsl' },
 ];
 
 const POPOVER_WIDTH = 260;
@@ -69,6 +70,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
   const [alpha, setAlpha] = useState(() => hexAlpha(hex));
   const [activeTab, setActiveTab] = useState<ColorMode>(initialMode);
   const [hexText, setHexText] = useState(() => hexWithoutAlpha(hex));
+  const [hexError, setHexError] = useState(false);
   const [previousHex] = useState(hex);
 
   // Sync from external hex changes (e.g., reset)
@@ -130,11 +132,15 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
   };
 
   const handleHexSubmit = () => {
+    // A colour written another way is put back, and the error says how to
+    // write one (WCAG 3.3.1, 3.3.3).
     if (/^#[0-9a-fA-F]{6}$/.test(hexText)) {
       const next = hexToHsv(hexText);
       updateHsv(next);
+      setHexError(false);
     } else {
       setHexText(currentHex);
+      setHexError(true);
     }
   };
 
@@ -188,16 +194,15 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
             fontSize: 10,
             textAlign: 'center',
             borderRadius: 3,
-            border: '1px solid var(--rule)',
+            border: '1px solid var(--pt-control-border)',
             backgroundColor: 'var(--background)',
             color: 'var(--foreground)',
-            outline: 'none',
           }}
         />
         <span style={{ fontSize: 9, color: 'var(--slate)' }}>%</span>
       </div>
 
-      <div role="tablist" style={{ display: 'flex', marginTop: 8, borderBottom: '1px solid var(--rule)' }}>
+      <div role="tablist" aria-label={labels.colorModes} style={{ display: 'flex', marginTop: 8, borderBottom: '1px solid var(--rule)' }}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -208,7 +213,8 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
             style={{
               flex: 1,
               padding: '4px 0',
-              fontSize: 9,
+              minHeight: 44,
+              fontSize: 10,
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
@@ -220,7 +226,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
               transition: 'color 150ms, border-color 150ms',
             }}
           >
-            {tab.label}
+            <abbr title={labels[tab.titleKey]} style={{ textDecoration: 'none' }}>{tab.label}</abbr>
           </button>
         ))}
       </div>
@@ -236,6 +242,8 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
         handleRgbChange={handleRgbChange}
         handleHslChange={handleHslChange}
         handleCmykChange={handleCmykChange}
+        hexLabel={labels.colorHexField}
+        hexError={hexError ? labels.colorHexInvalid : null}
       />
     </>
   );

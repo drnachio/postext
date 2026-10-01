@@ -33,6 +33,9 @@ export function buildPagesDom(
   navigateRef?: MutableRefObject<PageNavigator | null>,
   resourcesRef?: MutableRefObject<Resource[] | null>,
   pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>,
+  /** Accessible name of a page's canvas (WCAG 1.1.1): a bitmap holds no
+   *  text, so the name says which page it is and where its text is. */
+  pageLabel?: (pageIndex: number, pageCount: number) => string,
 ): BuildPagesDomResult {
   const isSpread = viewMode === 'spread';
   const pagesPerRow = isSpread ? 2 : 1;
@@ -56,9 +59,12 @@ export function buildPagesDom(
     slot.dataset.pageIndex = String(pageIndex);
 
     const canvas = createPageCanvas(displayWidth, displayHeight);
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', pageLabel ? pageLabel(pageIndex, doc.pages.length) : `${pageIndex + 1} / ${doc.pages.length}`);
     slot.appendChild(canvas);
     canvasMap.set(pageIndex, canvas);
     const overlay = createOverlaySvg(displayWidth, displayHeight, pageWidthPx, pageHeightPx);
+    overlay.setAttribute('aria-hidden', 'true');
     slot.appendChild(overlay);
     overlayMap.set(pageIndex, overlay);
     attachSlotClickHandler(slot, pageIndex, pageWidthPx, pageHeightPx, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef);

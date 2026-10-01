@@ -12,10 +12,11 @@
  * Server-only. Memoised per process.
  */
 import { createHighlighter, type Highlighter } from "shiki";
+import { CODE_THEME_DARK, CODE_THEME_LIGHT } from "@/lib/codeThemes";
 
 export type HighlightLang = "js" | "html" | "css" | "markdown" | "json" | "diff";
 const LANGS: HighlightLang[] = ["js", "html", "css", "markdown", "json", "diff"];
-export const HIGHLIGHT_THEMES = { light: "github-light", dark: "github-dark" } as const;
+export const HIGHLIGHT_THEMES = { light: CODE_THEME_LIGHT.name!, dark: CODE_THEME_DARK.name! } as const;
 
 export interface HighlightToken {
   content: string;
@@ -31,7 +32,7 @@ export type HighlightedLine = HighlightToken[];
 let highlighter: Promise<Highlighter> | null = null;
 
 function getHighlighter(): Promise<Highlighter> {
-  highlighter ??= createHighlighter({ themes: Object.values(HIGHLIGHT_THEMES), langs: LANGS });
+  highlighter ??= createHighlighter({ themes: [CODE_THEME_LIGHT, CODE_THEME_DARK], langs: LANGS });
   return highlighter;
 }
 

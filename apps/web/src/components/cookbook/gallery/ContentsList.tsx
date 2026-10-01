@@ -28,13 +28,13 @@ export function ContentsRow({ item, labels }: { item: ContentsItem; labels: Plat
             <span className="font-display text-[1.08rem] leading-snug font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) sm:text-[1.15rem]">
               {recipe.title}
               {recipe.draft && (
-                <span className="ml-2 inline-block rounded-[3px] bg-red px-1.5 py-0.5 align-middle font-sans text-[0.52rem] font-bold tracking-[0.14em] text-white uppercase">
+                <span className="ml-2 inline-block rounded-[3px] bg-red-band px-1.5 py-0.5 align-middle font-sans text-[0.52rem] font-bold tracking-[0.14em] text-white uppercase">
                   {labels.draft}
                 </span>
               )}
             </span>
             <span aria-hidden="true" className="cb-leader max-sm:hidden" />
-            <span className="flex shrink-0 items-center gap-2 font-sans text-[0.6rem] font-semibold tracking-[0.12em] text-foreground/70 uppercase max-sm:hidden">
+            <span className="flex shrink-0 items-center gap-2 font-sans text-[0.6rem] font-semibold tracking-[0.12em] text-foreground/80 uppercase max-sm:hidden">
               <LevelSquares level={recipe.level} />
               <span className="sr-only">
                 {labels.levelOf(recipe.level)}: {labels.levels[recipe.level]}
@@ -43,7 +43,7 @@ export function ContentsRow({ item, labels }: { item: ContentsItem; labels: Plat
             </span>
           </span>
           {recipe.summary && (
-            <span className="mt-0.5 block max-w-[80ch] font-body text-[0.86rem] leading-snug text-slate italic">{recipe.summary}</span>
+            <span className="mt-0.5 block max-w-[80ch] font-body text-[0.86rem] leading-normal text-slate italic">{recipe.summary}</span>
           )}
           {reason && (
             <span className="mt-1 block truncate font-mono text-[0.68rem] text-slate">

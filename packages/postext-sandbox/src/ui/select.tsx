@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Select as SelectPrimitive } from '@base-ui/react/select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from './cn';
+import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './surface';
 
 export interface SelectOption<T extends string = string> {
@@ -48,6 +49,7 @@ export function Select<T extends string>({
   className,
   size = 'md',
 }: SelectProps<T>) {
+  const portalContainer = usePortalContainer();
   const items = options.map((o) => ({ value: o.value, label: o.label }));
   const selected = options.find((o) => o.value === value);
   const hasDescriptions = options.some((o) => o.description);
@@ -57,7 +59,6 @@ export function Select<T extends string>({
       value={value}
       onValueChange={(v) => { if (v !== null) onValueChange(v as T); }}
       disabled={disabled}
-      modal={false}
     >
       <SelectPrimitive.Trigger
         id={id}
@@ -66,10 +67,10 @@ export function Select<T extends string>({
         aria-label={ariaLabelledBy ? undefined : ariaLabel}
         className={cn(
           'inline-flex min-w-0 cursor-pointer items-center justify-between gap-1.5 rounded-md border bg-(--surface) text-left transition-colors select-none',
-          'border-(--rule) hover:border-(--rule-strong,var(--slate))',
+          'border-(--pt-control-border) hover:border-(--slate)',
           'focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
           'data-popup-open:border-(--brand) disabled:cursor-default disabled:opacity-50',
-          size === 'sm' ? 'h-6 pr-1 pl-1.5 text-[0.66rem]' : 'h-7 pr-1.5 pl-2 text-xs',
+          size === 'sm' ? 'h-11 pr-1.5 pl-2 text-[0.66rem]' : 'h-11 pr-2 pl-2.5 text-xs',
           muted ? 'text-(--slate)' : 'text-(--foreground)',
           className,
         )}
@@ -82,7 +83,7 @@ export function Select<T extends string>({
           <ChevronsUpDown size={12} aria-hidden="true" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
+      <SelectPrimitive.Portal container={portalContainer}>
         <SelectPrimitive.Positioner
           sideOffset={4}
           alignItemWithTrigger={!hasDescriptions}
@@ -100,8 +101,9 @@ export function Select<T extends string>({
                   key={o.value}
                   value={o.value}
                   className={cn(
-                    'grid cursor-default grid-cols-[14px_1fr] items-start gap-x-1.5 rounded px-1.5 py-1 outline-none select-none',
+                    'grid min-h-11 cursor-default grid-cols-[14px_1fr] content-center items-start gap-x-1.5 rounded px-1.5 py-1.5 outline-none select-none',
                     'data-highlighted:bg-(--surface-2,var(--background))',
+                    'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
                   )}
                 >
                   <SelectPrimitive.ItemIndicator className="col-start-1 mt-[2px] text-(--brand)">

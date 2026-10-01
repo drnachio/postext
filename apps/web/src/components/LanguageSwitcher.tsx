@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
         aria-label={t("label")}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex min-h-10 items-center gap-1 rounded-md px-2 py-1 font-sans md:min-h-0 text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand 2xl:text-sm 4xl:text-base"
+        className="flex min-h-10 items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand 2xl:text-sm 4xl:text-base"
         style={{ touchAction: "manipulation" }}
       >
         {isSiteLocale(locale) ? LOCALE_INFO[locale].name : locale.toUpperCase()}
@@ -68,7 +68,7 @@ export function LanguageSwitcher() {
               <button
                 type="button"
                 onClick={() => handleSelect(l)}
-                className={`flex w-full items-center gap-2 px-3 py-2.5 text-left md:py-1.5 font-mono text-xs transition-colors 2xl:text-sm ${
+                className={`flex min-h-10 w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-xs transition-colors 2xl:text-sm ${
                   l === locale
                     ? "font-semibold text-brand"
                     : "text-slate hover:bg-surface hover:text-foreground"

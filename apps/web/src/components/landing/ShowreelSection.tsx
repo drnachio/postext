@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { MEDIA_BASE, ShowreelVideo } from "./ShowreelVideo";
+import { VideoTranscript } from "./VideoTranscript";
 
 /** The showreel between the cover and chapter 1: two narrated minutes on
  *  the engine, one cut per language. Hidden until `NEXT_PUBLIC_MEDIA_BASE`
@@ -7,7 +8,8 @@ import { MEDIA_BASE, ShowreelVideo } from "./ShowreelVideo";
 export async function ShowreelSection() {
   if (!MEDIA_BASE) return null;
   const t = await getTranslations("Showreel");
-  const lang = (await getLocale()).startsWith("es") ? "es" : "en";
+  const locale = await getLocale();
+  const lang = locale.startsWith("es") ? "es" : "en";
 
   return (
     <section
@@ -24,6 +26,7 @@ export async function ShowreelSection() {
           fullscreenLabel={t("fullscreen")}
           exitFullscreenLabel={t("exitFullscreen")}
         />
+        <VideoTranscript video="showreel" locale={locale} />
       </div>
     </section>
   );

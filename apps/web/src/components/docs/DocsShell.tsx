@@ -11,7 +11,7 @@ export function DocsShell({ children }: DocsShellProps) {
 
   useEffect(() => {
     function update() {
-      const nav = document.querySelector("nav[aria-label='Main navigation']");
+      const nav = document.querySelector("nav[data-site-nav]");
       if (nav && ref.current) {
         const h = nav.getBoundingClientRect().height;
         ref.current.style.setProperty("--docs-nav-h", `${h}px`);

@@ -26,8 +26,10 @@ export function writeupPath(slug: string, locale: Locale): string {
 function toFrontmatter(data: Record<string, unknown>): RecipeFrontmatter {
   const text = (value: unknown) => (typeof value === "string" ? value.trim() : undefined);
   const fm: RecipeFrontmatter = { title: text(data.title) ?? "", summary: text(data.summary) ?? "" };
+  const plain = text(data.plain);
   const description = text(data.description);
   const question = text(data.question);
+  if (plain) fm.plain = plain;
   if (description) fm.description = description;
   if (question) fm.question = question;
   if (Array.isArray(data.aliases)) {

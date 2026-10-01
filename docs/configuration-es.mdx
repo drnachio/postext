@@ -8,6 +8,7 @@ export const metadata = {
   lastUpdated: '2026-09-29',
   readingTime: '30 min',
   order: 3,
+  plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
 };
 
 # Configuración
@@ -1385,7 +1386,7 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
   </tbody>
 </table>
 
-#### Citas
+### Citas
 
 Una cita (las líneas que empiezan por `>`) toma la familia, el cuerpo, el interlineado, los pesos, la alineación y la separación silábica del texto de cuerpo. `bodyText.blockquote` fija lo demás; sin fijar, una cita se ve como hasta postext 1.4: gris, en cursiva, con la sangría de primera línea del cuerpo y sin sangría lateral.
 
@@ -1436,7 +1437,7 @@ bodyText: {
 
 En el Sandbox son el grupo **Citas** de la sección **Texto base**.
 
-#### Una sola familia por `fontFamily`
+### Una sola familia por `fontFamily`
 
 `fontFamily` —aquí y en cualquier otro campo de familia tipográfica (`headings.fontFamily`, `tableStyle.bodyFontFamily`, `separatorFontFamily`, el `fontFamily` de un estilo de chip o de un elemento de diseño…)— nombra **una** familia. El canvas, la salida HTML y el PDF tienen que componer con la misma fuente, y el PDF incrusta una fuente por familia, sin cadena de respaldo, así que una lista de fuentes CSS no tiene a qué recurrir. Una lista se compone en su primera familia y se notifica como [aviso de configuración](#avisos-de-configuración):
 

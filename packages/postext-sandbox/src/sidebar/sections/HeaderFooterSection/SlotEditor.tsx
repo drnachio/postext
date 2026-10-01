@@ -13,7 +13,7 @@ import type {
   ResolvedDesignElement,
   ResolvedDesignSlot,
 } from 'postext';
-import { Button, IconButton as UiIconButton } from '../../../ui';
+import { Button, ConfirmPopover, IconButton as UiIconButton } from '../../../ui';
 import { SearchScope } from '../../search/SearchScope';
 import { ShowingDefaultsContext } from '../../../controls/fieldContext';
 import { ToggleSwitch } from '../../../controls';
@@ -168,7 +168,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
               className="flex items-center justify-between border-b px-2 py-1"
               style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--surface)' }}
             >
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand)' }}>
+              <span className="text-xs font-semibold pt-caps tracking-wider" style={{ color: 'var(--brand)' }}>
                 {elementTitle}
                 {' '}#{idx + 1}
               </span>
@@ -179,9 +179,13 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate }: SlotEditorProps
                 <IconButton label={labels.headerFooterMoveDown} disabled={isLast} onClick={() => moveDown(idx)}>
                   <ArrowDown size={12} aria-hidden="true" />
                 </IconButton>
-                <IconButton label={labels.headerFooterDelete} onClick={() => removeAt(idx)}>
-                  <Trash2 size={12} aria-hidden="true" />
-                </IconButton>
+                {/* Deleting an element asks first (WCAG 3.3.6): its settings
+                    cannot be brought back. */}
+                <ConfirmPopover message={labels.headerFooterDeleteConfirm} onConfirm={() => removeAt(idx)}>
+                  {({ open }) => (
+                    <UiIconButton label={labels.headerFooterDelete} icon={<Trash2 size={12} aria-hidden="true" />} onClick={open} tooltipSide="top" />
+                  )}
+                </ConfirmPopover>
               </div>
             </div>
             <div className="px-2 py-2">

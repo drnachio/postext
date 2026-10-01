@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { LOCALE_INFO, isSiteLocale } from "@/i18n/locales";
+import { LOCALE_INFO, htmlLang, isSiteLocale } from "@/i18n/locales";
 
 
 export function CompactLanguageSwitcher() {
@@ -13,7 +13,11 @@ export function CompactLanguageSwitcher() {
   const router = useRouter();
   const t = useTranslations("Language");
   const [open, setOpen] = useState(false);
+  // Opens downward from the phone layout's top bar, upward from the
+  // activity bar's foot.
+  const [below, setBelow] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listId = useId();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,58 +45,50 @@ export function CompactLanguageSwitcher() {
     }
   }
 
+  // A disclosure: the button opens a short list of language buttons (the
+  // current one marked), each a 44×44 target (WCAG 2.5.5).
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          const top = ref.current?.getBoundingClientRect().top ?? 0;
+          setBelow(top < window.innerHeight / 2);
+          setOpen(!open);
+        }}
         aria-label={t("label")}
         aria-expanded={open}
-        aria-haspopup="listbox"
-        className="flex items-center justify-center rounded-md p-2 font-sans text-xs font-semibold transition-colors"
-        style={{
-          color: "var(--slate)",
-          touchAction: "manipulation",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--foreground)")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--slate)")}
+        aria-controls={open ? listId : undefined}
+        className="flex h-11 w-11 items-center justify-center rounded-md font-sans text-xs font-semibold text-slate transition-colors hover:bg-surface hover:text-foreground"
+        style={{ touchAction: "manipulation" }}
       >
-        {isSiteLocale(locale) ? LOCALE_INFO[locale].code : locale.toUpperCase()}
+        {isSiteLocale(locale) ? (
+          <abbr title={LOCALE_INFO[locale].name} className="no-underline">{LOCALE_INFO[locale].code}</abbr>
+        ) : locale.toUpperCase()}
       </button>
 
       {open && (
         <ul
-          role="listbox"
+          id={listId}
           aria-label={t("label")}
-          className="absolute left-1/2 z-50 mb-1 min-w-[3rem] -translate-x-1/2 rounded-md border py-1 shadow-lg"
+          className="absolute left-1/2 z-50 my-1 min-w-[3rem] -translate-x-1/2 rounded-md border py-1 shadow-lg"
           style={{
-            bottom: "100%",
+            ...(below ? { top: "100%" } : { bottom: "100%" }),
             borderColor: "var(--rule)",
             backgroundColor: "var(--background)",
           }}
         >
           {routing.locales.map((l) => (
-            <li key={l} role="option" aria-selected={l === locale}>
+            <li key={l}>
               <button
                 type="button"
+                lang={htmlLang(l)}
                 onClick={() => handleSelect(l)}
-                className="flex w-full items-center justify-center px-3 py-1.5 font-mono text-xs transition-colors"
-                style={{
-                  color: l === locale ? "var(--brand)" : "var(--slate)",
-                  fontWeight: l === locale ? 600 : 400,
-                }}
-                onMouseEnter={(e) => {
-                  if (l !== locale) {
-                    e.currentTarget.style.backgroundColor = "var(--surface)";
-                    e.currentTarget.style.color = "var(--foreground)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  if (l !== locale) e.currentTarget.style.color = "var(--slate)";
-                }}
+                aria-current={l === locale ? "true" : undefined}
+                aria-label={LOCALE_INFO[l].name}
+                className={`flex min-h-11 w-full min-w-11 items-center justify-center px-3 font-mono text-xs transition-colors hover:bg-surface hover:text-foreground ${l === locale ? "font-semibold text-brand" : "text-slate"}`}
               >
-                {LOCALE_INFO[l].code}
+                <abbr title={LOCALE_INFO[l].name} className="no-underline">{LOCALE_INFO[l].code}</abbr>
               </button>
             </li>
           ))}

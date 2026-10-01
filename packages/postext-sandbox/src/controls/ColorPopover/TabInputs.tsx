@@ -14,6 +14,9 @@ interface Props {
   handleRgbChange: (channel: keyof RGB, v: number) => void;
   handleHslChange: (channel: keyof HSL, v: number) => void;
   handleCmykChange: (channel: keyof CMYK, v: number) => void;
+  hexLabel: string;
+  /** Why the last hex typed was not taken, with how to write one. */
+  hexError: string | null;
 }
 
 export function TabInputs({
@@ -27,12 +30,18 @@ export function TabInputs({
   handleRgbChange,
   handleHslChange,
   handleCmykChange,
+  hexLabel,
+  hexError,
 }: Props) {
   return (
     <div style={{ marginTop: 8 }}>
       {activeTab === 'hex' && (
+        <>
         <input
           type="text"
+          aria-label={hexLabel}
+          aria-invalid={hexError ? true : undefined}
+          aria-describedby={hexError ? 'postext-color-hex-error' : undefined}
           value={hexText}
           onChange={(e) => setHexText(e.target.value)}
           onBlur={handleHexSubmit}
@@ -43,13 +52,18 @@ export function TabInputs({
             fontSize: 11,
             fontFamily: 'monospace',
             borderRadius: 3,
-            border: '1px solid var(--rule)',
+            border: '1px solid var(--pt-control-border)',
             backgroundColor: 'var(--background)',
             color: 'var(--foreground)',
-            outline: 'none',
             boxSizing: 'border-box',
           }}
         />
+        {hexError && (
+          <p id="postext-color-hex-error" role="alert" style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--destructive)' }}>
+            {hexError}
+          </p>
+        )}
+        </>
       )}
 
       {activeTab === 'rgb' && (

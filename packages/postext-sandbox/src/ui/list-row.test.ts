@@ -12,7 +12,8 @@ describe('RowTag', () => {
     const html = renderToString(h(RowTag, { label: 'Simplified Chinese', children: h('span', { lang: 'zh-Hans' }, '简') }));
     expect(html).not.toContain('aria-label');
     expect(html).toContain('title="Simplified Chinese"');
-    expect(html).toMatch(/<span aria-hidden="true"><span lang="zh-Hans">简<\/span><\/span>/);
+    // The short form is an abbreviation expanded by its title (WCAG 3.1.4).
+    expect(html).toMatch(/<span aria-hidden="true"><abbr title="Simplified Chinese"[^>]*><span lang="zh-Hans">简<\/span><\/abbr><\/span>/);
     expect(html).toMatch(/<span class="[^"]*sr-only[^"]*">Simplified Chinese<\/span>/);
   });
 
@@ -23,9 +24,10 @@ describe('RowTag', () => {
     expect(html).toContain('>CC BY 4.0</span>');
   });
 
-  it('names a toggle tag with aria-label, as a button may be', () => {
+  it('names a toggle tag by its visible text, then the label (WCAG 2.5.3)', () => {
     const html = renderToString(h(RowTag, { label: 'Load the Simplified Chinese version', onClick: () => {}, children: '简' }));
     expect(html).toContain('<button');
-    expect(html).toContain('aria-label="Load the Simplified Chinese version"');
+    expect(html).not.toContain('aria-label');
+    expect(html).toMatch(/>简<\/abbr><\/span><span class="sr-only">: Load the Simplified Chinese version<\/span>/);
   });
 });

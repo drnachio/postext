@@ -38,9 +38,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "", changeFrequency: "weekly", priority: 1 },
     { path: "/docs", changeFrequency: "weekly", priority: 0.9 },
     { path: "/cookbook", changeFrequency: "weekly", priority: 0.8 },
+    { path: "/glossary", changeFrequency: "monthly", priority: 0.5 },
     { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/cookie-policy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/license", changeFrequency: "yearly", priority: 0.3 },
+    { path: "/accessibility", changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const staticEntries = routing.locales.flatMap((locale) =>

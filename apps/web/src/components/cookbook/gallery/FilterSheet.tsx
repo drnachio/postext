@@ -104,7 +104,7 @@ export function FilterSheet({
             <button
               type="button"
               onClick={() => clearFilters(locale)}
-              className="ml-auto min-h-9 rounded-md px-2 font-sans text-[0.8rem] font-semibold text-(--brand)"
+              className="ml-auto min-h-10 rounded-md px-2 font-sans text-[0.8rem] font-semibold text-(--brand)"
             >
               {t("clearAll")}
             </button>

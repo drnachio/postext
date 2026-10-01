@@ -25,9 +25,9 @@ export const PART_CLASSES: Record<
     onBand: "text-night",
   },
   vermilion: {
-    band: "bg-red",
+    band: "bg-red-band",
     text: "text-vermilion",
-    fill: "bg-red",
+    fill: "bg-red-band",
     soft: "bg-red/10",
     onBand: "text-white",
   },

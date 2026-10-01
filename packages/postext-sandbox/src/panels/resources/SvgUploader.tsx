@@ -110,7 +110,7 @@ export function SvgUploader({ onUploaded, compact = false }: SvgUploaderProps) {
         }}
       />
       {error && (
-        <span className="text-xs" style={{ color: 'var(--destructive)' }}>
+        <span role="alert" className="text-xs" style={{ color: 'var(--destructive)' }}>
           {error}
         </span>
       )}

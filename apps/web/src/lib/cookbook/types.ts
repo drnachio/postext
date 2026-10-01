@@ -250,6 +250,10 @@ export interface RecipeFrontmatter {
   title: string;
   /** 60–160 characters: the answer in one sentence, naming the mechanism. */
   summary: string;
+  /** 40–240 characters (Chinese 15–120): the summary again in plain words
+   *  for a reader who does not know the jargon (WCAG 3.1.5), shown above
+   *  the write-up as "In short". */
+  plain?: string;
   /** 120–160 characters: meta description (defaults to summary). */
   description?: string;
   /** ≤ 110 characters: rephrases answers[0] for this page. */
