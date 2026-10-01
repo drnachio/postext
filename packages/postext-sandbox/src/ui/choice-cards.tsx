@@ -62,7 +62,7 @@ export function ChoiceCards<T extends string>({ value, onValueChange, options, a
             tabIndex={selected ? 0 : -1}
             onClick={() => { if (!selected) onValueChange(o.value); }}
             className={cn(
-              'flex min-h-11 min-w-11 cursor-pointer flex-col items-center gap-1 rounded-md border px-1 pt-2 pb-1.5 transition-colors',
+              'flex min-w-0 pt-large:min-h-11 pt-large:min-w-11 cursor-pointer flex-col items-center gap-1 rounded-md border px-1 pt-2 pb-1.5 transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
               selected
                 ? 'border-(--brand) bg-(--brand-soft,var(--surface)) text-(--foreground)'

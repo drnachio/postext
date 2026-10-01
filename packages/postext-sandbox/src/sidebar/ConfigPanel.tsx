@@ -200,7 +200,7 @@ export function ConfigPanel() {
           onClick={() => setOverriddenOnly((v) => !v)}
           title={labels.settingsOverriddenOnlyHint}
           className={cn(
-            'inline-flex h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md border px-2.5 text-[0.68rem] whitespace-nowrap transition-colors',
+            'inline-flex h-7 pt-large:h-11 shrink-0 cursor-pointer items-center gap-1 rounded-md border px-2 pt-large:px-2.5 text-[0.68rem] whitespace-nowrap transition-colors',
             'focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
             overriddenOnly
               ? 'border-(--brand) bg-(--brand-soft,var(--surface)) text-(--foreground)'
@@ -213,12 +213,12 @@ export function ConfigPanel() {
       </div>
 
       {view === 'group' && group && (
-        <nav aria-label={labels.settingsBreadcrumb} className="flex min-h-12 shrink-0 items-center gap-1 border-b border-(--rule) px-1.5">
+        <nav aria-label={labels.settingsBreadcrumb} className="flex h-9 pt-large:min-h-12 shrink-0 items-center gap-1 border-b border-(--rule) px-1.5">
           <button
             type="button"
             onClick={() => openGroup(null)}
             className={cn(
-              'inline-flex h-11 cursor-pointer items-center gap-1 rounded-md px-2 text-xs text-(--slate) transition-colors',
+              'inline-flex h-7 pt-large:h-11 cursor-pointer items-center gap-1 rounded-md px-1.5 pt-large:px-2 text-xs text-(--slate) transition-colors',
               'hover:bg-(--surface) hover:text-(--foreground) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >
@@ -276,7 +276,7 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
                 ref={(el) => { if (el) buttonRefs.set(g.id, el); else buttonRefs.delete(g.id); }}
                 onClick={() => onOpen(g.id)}
                 className={cn(
-                  'group/row flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-left transition-colors',
+                  'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-left transition-colors',
                   'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 )}
               >
@@ -352,7 +352,7 @@ function GroupPage({ id, headingRef, onOpen }: {
                 type="button"
                 onClick={() => jumpTo(s.id)}
                 className={cn(
-                  'inline-flex h-11 cursor-pointer items-center rounded-full border border-(--pt-control-border) px-3 text-[0.66rem] text-(--slate) transition-colors',
+                  'inline-flex h-6 pt-large:h-11 cursor-pointer items-center rounded-full border border-(--pt-control-border) px-2 pt-large:px-3 text-[0.66rem] text-(--slate) transition-colors',
                   'hover:border-(--slate) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand)',
                 )}
               >
@@ -373,7 +373,7 @@ function GroupPage({ id, headingRef, onOpen }: {
             type="button"
             onClick={() => onOpen(next.id)}
             className={cn(
-              'flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--pt-control-border) px-3 py-2 text-left transition-colors',
+              'flex pt-large:min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--pt-control-border) px-3 py-2 text-left transition-colors',
               'hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
             )}
           >
@@ -394,7 +394,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
   const labels = useSandboxLabels();
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pl-2 transition-colors focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
+    <div className="flex h-7 pt-large:min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 pt-large:pl-2 transition-colors focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
       <Search size={13} aria-hidden="true" className="shrink-0 text-(--slate)" />
       <input
         ref={inputRef}
@@ -412,7 +412,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
         aria-label={labels.settingsSearchPlaceholder}
         autoComplete="off"
         spellCheck={false}
-        className="min-h-11 min-w-0 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 pt-large:min-h-11 flex-1 bg-transparent text-xs text-(--foreground) outline-none placeholder:text-(--slate) [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <IconButton

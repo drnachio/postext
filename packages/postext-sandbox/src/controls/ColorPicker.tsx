@@ -152,7 +152,7 @@ function ColorTrigger({ open, onToggle, label, standalone, displayText, modeLabe
       aria-expanded={open}
       aria-haspopup="dialog"
       className={cn(
-        'inline-flex h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-2 pl-1 transition-colors',
+        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-2 pl-1 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

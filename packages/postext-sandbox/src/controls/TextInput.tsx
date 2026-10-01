@@ -72,7 +72,7 @@ export function TextControl({ value, onChange, placeholder, widthCh, muted, aria
       onBlur={onBlur}
       placeholder={placeholder}
       className={cn(
-        'h-11 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 text-xs transition-colors outline-none',
+        'h-7 pt-large:h-11 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 text-xs transition-colors outline-none',
         'placeholder:text-(--slate) hover:border-(--slate) focus:border-(--brand) focus:outline-2 focus:outline-offset-1 focus:outline-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',
         className,

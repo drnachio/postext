@@ -1,5 +1,6 @@
 'use client';
 
+import { LargeTargetsToggle } from '../ui/LargeTargetsToggle';
 import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye } from 'lucide-react';
 import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext';
@@ -125,7 +126,7 @@ function PanelNav() {
               aria-pressed={isActive}
               tabIndex={id === focusable ? 0 : -1}
               className={cn(
-                'relative flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md py-1.5 transition-colors',
+                'relative flex pt-large:min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md py-1.5 transition-colors',
                 'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'bg-(--surface) text-(--brand)' : 'text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
               )}
@@ -168,14 +169,14 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
       {/* Home logo */}
       {homeLink ? (
         // The logo sits in the top band, level with the panel's title.
-        <div className="-mx-1 mb-2 flex min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b" style={{ borderColor: 'var(--rule)' }}>
+        <div className="-mx-1 mb-2 flex h-9 pt-large:min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b" style={{ borderColor: 'var(--rule)' }}>
           {homeLink}
         </div>
       ) : homeUrl ? (
         <Tooltip content="Postext" side="right">
           <a
             href={homeUrl}
-            className="-mx-1 mb-2 flex min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
+            className="-mx-1 mb-2 flex h-9 pt-large:min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
             style={{ outlineColor: 'var(--brand)', borderColor: 'var(--rule)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--surface)';
@@ -202,17 +203,22 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
       <div className="flex-1" />
 
       {/* Bottom controls */}
-      <div className="flex flex-col items-center gap-1 pt-2">
+      <div className="flex flex-col items-center gap-2 pt-large:gap-1 pt-large:pt-2">
+        {/* Large buttons and fields (44×44, WCAG 2.5.5) */}
+        <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">
+          <LargeTargetsToggle />
+        </div>
+
         {/* Theme toggle slot */}
         {themeToggle && (
-          <div className="flex h-11 w-11 items-center justify-center">
+          <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">
             {themeToggle}
           </div>
         )}
 
         {/* Language switcher slot */}
         {languageSwitcher && (
-          <div className="flex h-11 w-11 items-center justify-center">
+          <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">
             {languageSwitcher}
           </div>
         )}
@@ -266,7 +272,7 @@ export function MobileNavBar() {
             aria-description={hint}
             aria-pressed={isActive}
             className={cn(
-              'relative flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-0.5 pt-1.5 pb-1 transition-colors',
+              'relative flex min-w-[40px] pt-large:min-h-11 pt-large:min-w-11 cursor-pointer flex-col items-center justify-center gap-0.5 pt-1.5 pb-1 transition-colors',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               isActive ? 'text-(--brand)' : 'text-(--slate)',
             )}

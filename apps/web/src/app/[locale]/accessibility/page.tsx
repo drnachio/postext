@@ -47,7 +47,7 @@ export default async function AccessibilityPage({
       return part;
     });
 
-  const prefs = ["prefsAlign", "prefsSpacing", "prefsWidth", "prefsColors", "prefsZoom"] as const;
+  const prefs = ["prefsTheme", "prefsAlign", "prefsSpacing", "prefsWidth", "prefsColors", "prefsZoom"] as const;
   const keys = ["keyboardTab", "keyboardSkip", "keyboardActivate", "keyboardEscape", "keyboardSearch"] as const;
   const limitations = t.raw("limitations") as string[];
 
@@ -55,15 +55,16 @@ export default async function AccessibilityPage({
     <>
       <Navbar />
       <main id="main-content" tabIndex={-1} role="main" className="flex-1">
-        <div className="mx-auto max-w-[38rem] px-6 py-12 md:py-16 2xl:px-8">
+        <div className="mx-auto max-w-6xl px-6 py-12 md:py-16 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
           <div aria-hidden="true" className="tri-stripe mb-10 h-1.5 w-full" />
           <h1 className="display text-[2.4rem] text-foreground md:text-[3.2rem]">{t("title")}</h1>
           <span aria-hidden="true" className="mt-5 block h-[3px] w-12 bg-brand" />
           <p className="kicker mt-5 text-slate">{t("lastUpdated")}</p>
 
+          <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12 2xl:grid-cols-[minmax(0,1fr)_24rem] 2xl:gap-16">
           <div
             lang={htmlLang(locale)}
-            className="rp-prose mt-10 space-y-10 font-body text-[0.95rem] leading-[1.75] text-foreground text-justify [hyphens:auto]"
+            className="rp-prose min-w-0 space-y-10 font-body text-[0.95rem] leading-[1.75] text-foreground text-justify [hyphens:auto]"
           >
             <section aria-labelledby="a11y-target">
               <h2 id="a11y-target" className={H2}>{t("targetTitle")}</h2>
@@ -79,9 +80,7 @@ export default async function AccessibilityPage({
                 ))}
               </ul>
               <p className="mt-4">{t("prefsHere")}</p>
-              <div className="mt-3 max-w-md text-left">
-                <ReadingPreferences variant="panel" />
-              </div>
+              <p className="mt-4">{t("sandboxTargets")}</p>
             </section>
 
             <section aria-labelledby="a11y-keyboard">
@@ -122,6 +121,11 @@ export default async function AccessibilityPage({
                 })}
               </p>
             </section>
+          </div>
+          {/* The panel itself, beside the text on wide screens. */}
+          <aside aria-label={t("prefsTitle")} className="text-left lg:sticky lg:top-24 lg:self-start">
+            <ReadingPreferences variant="panel" />
+          </aside>
           </div>
         </div>
       </main>

@@ -97,9 +97,9 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         aria-controls={ids.descriptionId}
         onClick={() => setHelpToggle(!helpOpen)}
         className={cn(
-          // A 44×44 target (WCAG 2.5.5) around the 12px icon; the
+          // With large targets on, a 44×44 target (WCAG 2.5.5) around the 12px icon; the
           // negative margins keep the label line from growing with it.
-          '-my-2.5 -ml-2.5 inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors',
+          'relative inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors after:absolute after:-inset-2 pt-large:-my-2.5 pt-large:-ml-2.5 pt-large:h-11 pt-large:w-11 pt-large:rounded-md pt-large:after:hidden',
           'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
           helpOpen ? 'text-(--brand)' : 'text-(--slate) hover:text-(--foreground)',
         )}
@@ -123,17 +123,17 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
             'flex gap-1',
             stacked
               ? 'flex-col items-stretch'
-              : 'min-h-11 flex-col items-start @[340px]:flex-row @[340px]:items-center @[340px]:justify-between @[340px]:gap-2',
+              : 'min-h-7 pt-large:min-h-11 flex-col items-start @[260px]:flex-row @[260px]:items-center @[260px]:justify-between @[260px]:gap-2',
           )}
         >
-          <div className={cn('flex min-w-0 items-center gap-1', stacked ? 'justify-between' : 'w-full @[340px]:w-auto @[340px]:flex-1')}>
+          <div className={cn('flex min-w-0 items-center gap-1', stacked ? 'justify-between' : 'w-full @[260px]:w-auto @[260px]:flex-1')}>
             <span className="flex min-w-0 items-center gap-1">
               {labelEl}
               {helpButton}
             </span>
             {stacked && showReset && <ResetButton onClick={onReset} />}
           </div>
-          <div className={cn('flex items-center gap-1', stacked ? 'w-full min-w-0' : 'shrink-0 self-end @[340px]:self-auto')}>
+          <div className={cn('flex items-center gap-1', stacked ? 'w-full min-w-0' : 'shrink-0 self-end @[260px]:self-auto')}>
             {!stacked && showReset && <ResetButton onClick={onReset} />}
             {children}
           </div>

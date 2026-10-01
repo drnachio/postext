@@ -15,13 +15,13 @@ export const metadata = {
 
 **An interactive playground for the Postext layout engine.**
 
-The Sandbox gives you an editor-style interface where you write the text, manage figures and fonts, adjust the design, and see the result in real time in three synchronized output modes: **canvas**, **HTML** and **PDF**. It is built for experimenting. You can change the typography or the number of columns, try different figure placements, and watch how the engine responds. The panels use editorial words (books, figures, boxes, running heads) rather than engine terms, so people from publishing can find their way without knowing the configuration schema. Every control is keyboard- and screen-reader-accessible.
+The Sandbox gives you an editor-style interface where you write the text, manage resources and fonts, adjust the design, and see the result in real time in three synchronized output modes: **canvas**, **HTML** and **PDF**. It is built for experimenting. You can change the typography or the number of columns, try different figure placements, and watch how the engine responds. The panels use editorial words (books, figures, boxes, running heads) rather than engine terms, so people from publishing can find their way without knowing the configuration schema. Every control is keyboard- and screen-reader-accessible.
 
 ## Interface layout
 
 The Sandbox has three main areas: a narrow **activity bar** for switching panels, a resizable **sidebar** that holds the active panel, and a **viewport** on the right with the three output tabs. The panel headers, the viewport's tab bar and the logo cell at the top of the activity bar share one height, so the top band reads as a single rule across the window.
 
-<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "Activity bar on the left with six labelled panels, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Books", "Text", "Figures", "Fonts", "Design", "Checks"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "active panel", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
+<Illustration name="SandboxLayout" data='{"title": "Sandbox interface", "desc": "Activity bar on the left with six labelled panels, resizable sidebar in the middle, and viewport on the right with Canvas, HTML, and PDF tabs.", "caption": "Three areas: activity bar, resizable sidebar, and viewport with output tabs.", "activityBar": "Activity", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Books", "Text", "Resources", "Fonts", "Design", "Checks"], "sidebarTitle": "Sidebar", "sidebarSubtitle": "active panel", "viewportTitle": "Viewport", "tabs": ["Canvas", "HTML", "PDF"], "resizeHint": "drag to resize"}' />
 
 ### Activity bar
 
@@ -30,7 +30,7 @@ A narrow strip on the left edge has one button per panel. Each button shows an i
 - **Books** (`Files` icon): your books and the sample books
 - **Chapters** (`BookOpen` icon): the open book and its chapters
 - **Text** (`FileCode` icon): write and edit the text of the current chapter
-- **Figures** (`FolderOpen` icon): images, diagrams and tables used in the book
+- **Resources** (`FolderOpen` icon): images, SVG drawings and tables used in the book
 - **Fonts** (`Type` icon): the typefaces the book uses, and your own font files
 - **Design** (`Settings2` icon): page, typography, headings, figures, boxes and export settings
 - **Checks** (`AlertTriangle` icon): typesetting problems found in the layout. The icon carries a live count badge of current warnings, capped at `99+`.
@@ -154,11 +154,11 @@ The open sample book also defines what the other panels' **Reset** buttons resto
 
 A preset that was open in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*. The Sandbox keeps the loaded content instead of silently swapping it for the built-in sample. The open preset's id is persisted under the `postext-sandbox-preset` key (see [Persistence](#persistence)). The bundle format is described in the [Preset bundle format](#preset-bundle-format) appendix.
 
-#### Figures panel
+#### Resources panel
 
 Manages the book's resources: bitmap images, SVG figures and tables. The text refers to them with `::resource{id="…"}` blocks and `:ref{id="…"}` inline references. For the reference syntax and the float model, see [Document format → Resources](/en/docs/document-format#resources).
 
-**List view.** The header shows the number of resources. Resources are grouped by their resource-type name, and each group is a counted list. Resources whose `typeId` no longer matches a configured type fall into an *Untyped* group so you can still reach them. Each item shows a 36 px thumbnail next to its caption and id: a real preview for bitmaps and SVGs, and a glyph for tables. When the book has more than six resources, a **search** field (*Search figures and tables…*) filters the list by caption and id, ignoring accents. When the book has no resources yet, an empty state explains how to add them and place them in the text with `:ref{#id}`. A **New** dropdown offers three ways to add one:
+**List view.** The header shows the number of resources. Resources are grouped by their resource-type name, and each group is a counted list. Resources whose `typeId` no longer matches a configured type fall into an *Untyped* group so you can still reach them. Each item shows a 36 px thumbnail next to its caption and id: a real preview for bitmaps and SVGs, and a glyph for tables. When the book has more than six resources, a **search** field (*Search resources…*) filters the list by caption and id, ignoring accents. When the book has no resources yet, an empty state explains how to add them and place them in the text with `:ref{#id}`. A **New** dropdown offers three ways to add one:
 
 - **Upload image**: PNG, JPEG, WebP or GIF
 - **Upload SVG**
@@ -196,7 +196,7 @@ You can also drag and drop files from disk onto the panel. They upload in bulk, 
 - **Paste as table**: pasting TSV (or simple quoted CSV) fills the grid
 - **Undo/redo**: Cmd/Ctrl+Z and Shift+Cmd/Ctrl+Z
 - **Keyboard navigation**: Tab / Shift-Tab (with row wrap) and the arrow keys move between cells
-- **Click to edit from the preview**: click a table cell, a caption, a note, or a text fragment of an SVG figure on either preview tab. The Figures panel opens on that resource and focuses the matching field, with the caret on the clicked glyph. Dragging selects a range inside the same cell or field, and a double-click selects the word. While the field has focus, its selection is mirrored back onto the page as a highlight (a thin caret when collapsed) on both the Canvas and HTML tabs.
+- **Click to edit from the preview**: click a table cell, a caption, a note, or a text fragment of an SVG figure on either preview tab. The Resources panel opens on that resource and focuses the matching field, with the caret on the clicked glyph. Dragging selects a range inside the same cell or field, and a double-click selects the word. While the field has focus, its selection is mirrored back onto the page as a highlight (a thin caret when collapsed) on both the Canvas and HTML tabs.
 
 All edits go through pure model functions exported by the postext core (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` and `parseTSV`), so the same table model behaves identically inside and outside the Sandbox.
 
@@ -300,7 +300,7 @@ The groups, in browsing order:
   - *Box styles* (`calloutStyles`): named styles for `:::callout{type="…"}`. You can add, duplicate, remove and rename ids, then set:
     - the default title, span, placement and width;
     - the background, border, corner radius and padding, and an edge **stripe**;
-    - an **icon**: either a text glyph or an SVG/bitmap picked from the Figures panel. It can be set inline or as a corner badge, with its corner side and a width for non-square artwork.
+    - an **icon**: either a text glyph or an SVG/bitmap picked from the Resources panel. It can be set inline or as a corner badge, with its corner side and a width for non-square artwork.
     - a **Label tab** group (`calloutStyles[].label`): font, size, weight, colour, fill, corner, height, padding, offset and inset, an icon resource beside the tab, and a rule along the top edge;
     - title typography, with letter spacing, indent and **Title line height** (`titleStyle.lineHeight`);
     - body and list overrides that inherit the document text. These include the body's bold and **italic colours**, its regular and bold weights, **italic** and **small caps** switches, and the bullet's size and weight.

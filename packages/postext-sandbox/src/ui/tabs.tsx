@@ -41,7 +41,7 @@ export function ChipTab({ value, children, dot, disabled }: ChipTabProps) {
       disabled={disabled}
       className={(state) =>
         cn(
-          'inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-1 rounded-full border px-3 text-[11px] whitespace-nowrap transition-colors',
+          'inline-flex h-6 pt-large:h-11 pt-large:min-w-11 cursor-pointer items-center justify-center gap-1 rounded-full border px-2 pt-large:px-3 text-[11px] whitespace-nowrap transition-colors',
           'focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand-hover)',
           state.active
             ? 'border-(--pt-control-border) bg-(--surface) text-(--foreground)'

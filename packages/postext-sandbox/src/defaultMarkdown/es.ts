@@ -377,7 +377,7 @@ En el panel **Diseño**, abre **Títulos e índice** y desactiva **Equilibrar co
 
 # Figuras, tablas y flotantes {lead="Una referencia es una promesa, no una posición. Menciona una figura y Postext le busca casa: el primer hueco libre tras la mención, numerada por orden de lectura, con su pie, y nunca antes de las palabras que la llaman." summary="Dónde caen los recursos, cómo se numeran, tablas que se parten"}
 
-Todo lo que no es texto que fluye —imágenes, diagramas SVG, tablas— es un **recurso**. Los recursos se declaran fuera del texto, cada uno con su identificador, su tipo, su pie y sus preferencias de colocación, y el Markdown se limita a mencionarlos. En el Sandbox viven en el panel Figuras.
+Todo lo que no es texto que fluye —imágenes, diagramas SVG, tablas— es un **recurso**. Los recursos se declaran fuera del texto, cada uno con su identificador, su tipo, su pie y sus preferencias de colocación, y el Markdown se limita a mencionarlos. En el Sandbox viven en el panel Recursos.
 
 ## Basta con una mención
 
@@ -411,7 +411,7 @@ Un tipo con el prefijo vacío y sin pie también es útil: convierte una imagen 
 
 Las tablas llevan su modelo consigo: filas de celdas con fusiones de columnas y filas, filas de cabecera, alineación y anchos de columna relativos. Las celdas admiten Markdown en línea, párrafos y listas sencillas, un relleno propio —los tres colores de parte de este libro son :swatch{color="#2b4acb"} azul, :swatch{color="#b7820f"} oro y :swatch{color="#c0452f"} bermellón— e incluso una imagen. El estilo de las tablas se define una vez para todo el documento: tipografía del cuerpo y de la cabecera, relleno de la cabecera y filetes en retícula, solo horizontales, solo exteriores o ninguno.
 
-Las tablas se editan en el panel Figuras, en un editor que funciona como una pequeña hoja de cálculo: añade o quita filas y columnas, fusiona y divide celdas, marca filas y columnas de cabecera, alinea celdas, fija rellenos y anchos de columna, suelta una imagen en una celda y pega un bloque de celdas copiado de una hoja de cálculo. Todo cambio se puede deshacer, y la tabla de la página sigue lo que escribes.
+Las tablas se editan en el panel Recursos, en un editor que funciona como una pequeña hoja de cálculo: añade o quita filas y columnas, fusiona y divide celdas, marca filas y columnas de cabecera, alinea celdas, fija rellenos y anchos de columna, suelta una imagen en una celda y pega un bloque de celdas copiado de una hoja de cálculo. Todo cambio se puede deshacer, y la tabla de la página sigue lo que escribes.
 
 Una tabla más alta que la página se parte entre páginas. Sus filas de cabecera se repiten en cada tramo, el pie de cada continuación gana el sufijo _(cont.)_, un aviso de _Continúa_ cierra cada tramo salvo el último, y ningún corte atraviesa una fusión de filas. Una tabla girada se parte igual, página tras página.
 
@@ -431,12 +431,12 @@ Algunos recursos son más anchos de lo que la página es alta: una cronología, 
 
 Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el subconjunto habitual de SVG —formas, trazados, grupos, trazados de recorte, rellenos y trazos sólidos, opacidad y texto— en operaciones de dibujo nativas, y rasteriza a 600 ppp lo que queda fuera; una figura también puede traer un máster PDF propio, que se incrusta tal cual. Para imprimir a una tinta, un interruptor recolorea todos los diagramas como tintas de un solo color, según su luminancia, en los tres renderizadores.
 
-El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Figuras abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en inglés en la inglesa y en chino en la china.
+El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en inglés en la inglesa y en chino en la china.
 
 Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto.
 
 :::callout{type="try"}
-Haz clic en el pie de cualquier figura del canvas: el panel Figuras se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
+Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
 :::
 
 # Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
@@ -550,7 +550,7 @@ Todo lo que cuenta este libro puede probarse ahora mismo, sin escribir código. 
 
 ## Un recorrido por la interfaz
 
-La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre siete paneles —Libros, Capítulos, Texto, Figuras, Fuentes, Diseño y Revisión, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en tres pestañas: Canvas, HTML y PDF.
+La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre siete paneles —Libros, Capítulos, Texto, Recursos, Fuentes, Diseño y Revisión, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en tres pestañas: Canvas, HTML y PDF.
 
 La barra lateral y el visor comparten la ventana, y la frontera entre ambos se puede arrastrar. Cada panel y el visor recuerdan su estado entre visitas: la ampliación y el modo de vista del canvas, el modo de columnas de la vista HTML, los grupos abiertos en el panel Diseño. El tema y el idioma de la interfaz se cambian desde el pie de la barra de actividad, y el idioma de la interfaz es independiente del idioma del libro.
 
@@ -572,7 +572,7 @@ Las vistas canvas y HTML pueden maquetar el capítulo actual o el libro completo
 
 ## Recursos y fuentes
 
-El panel **Figuras** lista los recursos del libro por tipo. Las imágenes y los archivos SVG se pueden arrastrar, las tablas se editan en un editor tipo hoja de cálculo con celdas fusionadas, rellenos, imágenes, anchos de columna y pegado desde una hoja de cálculo, y el texto de un diagrama SVG se puede editar en su sitio. Al hacer clic en un pie, una nota, una celda o el texto de un diagrama de la vista previa, se abre en el panel. El panel de Fuentes añade familias propias, peso a peso, en los formatos web y de escritorio habituales; una familia propia tiene prioridad sobre una fuente de Google con el mismo nombre.
+El panel **Recursos** lista los recursos del libro por tipo. Las imágenes y los archivos SVG se pueden arrastrar, las tablas se editan en un editor tipo hoja de cálculo con celdas fusionadas, rellenos, imágenes, anchos de columna y pegado desde una hoja de cálculo, y el texto de un diagrama SVG se puede editar en su sitio. Al hacer clic en un pie, una nota, una celda o el texto de un diagrama de la vista previa, se abre en el panel. El panel de Fuentes añade familias propias, peso a peso, en los formatos web y de escritorio habituales; una familia propia tiene prioridad sobre una fuente de Google con el mismo nombre.
 
 Cada recurso tiene una vista de detalle con su identificador, su tipo, su pie, su nota y su texto alternativo, su colocación —posición, ancho de columna, giro, ancho, alineación y un pie al lado— y una vista previa en vivo. Borrar un recurso avisa cuando el texto aún lo menciona. El panel Fuentes, por su parte, comprueba que cada familia que nombra la configuración tenga los pesos y estilos que necesita, y avisa de las variantes que faltan o están duplicadas.
 
