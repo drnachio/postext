@@ -137,10 +137,10 @@ function SectionFrame({
             'flex flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent text-left transition-colors',
             'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             topLevel
-              ? 'min-h-11 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
+              ? 'min-h-10 pt-large:min-h-11 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
               : isSubsection
-                ? 'min-h-11 px-3 py-1.5 text-[0.72rem] font-medium text-(--slate) hover:text-(--foreground)'
-                : 'min-h-11 rounded-md px-2.5 py-1.5 text-xs font-medium text-(--foreground) hover:bg-(--surface)',
+                ? 'min-h-8 pt-large:min-h-11 px-3 py-1.5 text-[0.72rem] font-medium text-(--slate) hover:text-(--foreground)'
+                : 'min-h-8 pt-large:min-h-11 rounded-md px-2.5 py-1.5 text-xs font-medium text-(--foreground) hover:bg-(--surface)',
           )}
         >
           <ChevronRight

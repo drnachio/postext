@@ -113,7 +113,7 @@ export function MenuItem({ icon, onClick, disabled, destructive, selected, headi
       title={title}
       className={(state) =>
         cn(
-          'flex min-h-11 cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
+          'flex min-h-7 pt-large:min-h-11 cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
           heading ? 'pt-2 pb-1 text-[11px] tracking-wide' : 'py-1.5',
           'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
           state.highlighted && 'bg-(--background)',

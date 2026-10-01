@@ -19,7 +19,7 @@ function render(headingStyles: HeadingStyleConfig[]): string {
 function switchRow(html: string, label: string): string {
   const at = html.indexOf(label);
   expect(at).toBeGreaterThan(-1);
-  const row = html.slice(at, at + 2000);
+  const row = html.slice(at, at + 6000);
   return row.slice(0, row.indexOf('role="switch"') + 200);
 }
 

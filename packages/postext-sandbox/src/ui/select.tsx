@@ -70,7 +70,7 @@ export function Select<T extends string>({
           'border-(--pt-control-border) hover:border-(--slate)',
           'focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
           'data-popup-open:border-(--brand) disabled:cursor-default disabled:opacity-50',
-          size === 'sm' ? 'h-11 pr-1.5 pl-2 text-[0.66rem]' : 'h-11 pr-2 pl-2.5 text-xs',
+          size === 'sm' ? 'h-6 pr-1 pl-1.5 pt-large:h-11 pt-large:pr-1.5 pt-large:pl-2 text-[0.66rem]' : 'h-7 pr-1.5 pl-2 pt-large:h-11 pt-large:pr-2 pt-large:pl-2.5 text-xs',
           muted ? 'text-(--slate)' : 'text-(--foreground)',
           className,
         )}
@@ -101,7 +101,7 @@ export function Select<T extends string>({
                   key={o.value}
                   value={o.value}
                   className={cn(
-                    'grid min-h-11 cursor-default grid-cols-[14px_1fr] content-center items-start gap-x-1.5 rounded px-1.5 py-1.5 outline-none select-none',
+                    'grid pt-large:min-h-11 cursor-default grid-cols-[14px_1fr] content-center items-start gap-x-1.5 rounded px-1.5 py-1 pt-large:py-1.5 outline-none select-none',
                     'data-highlighted:bg-(--surface-2,var(--background))',
                     'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
                   )}

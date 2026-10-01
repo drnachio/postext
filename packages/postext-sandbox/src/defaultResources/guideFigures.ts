@@ -476,15 +476,15 @@ export function cjkCompositionSvg(lang: GuideLang): string {
 const SANDBOX_UI = byLang(
   {
     aria: 'Sandbox interface layout', chapter: '3 · Setting the line', scope: 'Whole book',
-    panels: ['Books', 'Chapters', 'Text', 'Figures', 'Fonts', 'Design', 'Checks'],
+    panels: ['Books', 'Chapters', 'Text', 'Resources', 'Fonts', 'Design', 'Checks'],
   },
   {
     aria: 'disposición de la interfaz del Sandbox', chapter: '3 · Componer la línea', scope: 'Libro completo',
-    panels: ['Libros', 'Capítulos', 'Texto', 'Figuras', 'Fuentes', 'Diseño', 'Revisión'],
+    panels: ['Libros', 'Capítulos', 'Texto', 'Recursos', 'Fuentes', 'Diseño', 'Revisión'],
   },
   {
     aria: 'Sandbox的界面布局', chapter: '3 · 排好每一行', scope: 'Whole book',
-    panels: ['Books', 'Chapters', 'Text', 'Figures', 'Fonts', 'Design', 'Checks'],
+    panels: ['Books', 'Chapters', 'Text', 'Resources', 'Fonts', 'Design', 'Checks'],
   },
 );
 

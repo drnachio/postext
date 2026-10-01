@@ -111,7 +111,7 @@ function SummaryLine({ onClick, group, wrap, children }: { onClick: () => void; 
       type="button"
       onClick={onClick}
       className={cn(
-        'group/line -mx-1 flex min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-left text-xs text-(--foreground) transition-colors',
+        'group/line -mx-1 flex min-h-6 min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-left text-xs text-(--foreground) transition-colors',
         'hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
       )}
     >

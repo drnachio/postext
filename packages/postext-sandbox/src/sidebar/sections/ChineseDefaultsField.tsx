@@ -314,9 +314,9 @@ function ChangeRow({ change, labels, uiLocale, fromLang, toLang, onToggle }: {
         disabled={change.required}
         onChange={(e) => onToggle(e.target.checked)}
         aria-describedby={`${id}-values`}
-        className="h-6 w-6 shrink-0 cursor-pointer accent-(--brand) disabled:cursor-default disabled:opacity-60"
+        className="mt-0.5 h-3.5 w-3.5 pt-large:mt-0 pt-large:h-6 pt-large:w-6 shrink-0 cursor-pointer accent-(--brand) disabled:cursor-default disabled:opacity-60"
       />
-      <label htmlFor={id} className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center">
+      <label htmlFor={id} className="flex pt-large:min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center">
         <span className="text-xs leading-[1.3] text-(--foreground)">
           {String(labels[ITEM_LABELS[change.id]])}
           {note && <span className="ml-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}

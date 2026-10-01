@@ -31,8 +31,8 @@ const VARIANT: Record<ButtonVariant, string> = {
 // Both sizes are 44px tall (WCAG 2.5.5, Target Size Enhanced); `xs`
 // keeps the smaller type.
 const SIZE: Record<ButtonSize, string> = {
-  xs: 'min-h-[44px] min-w-[44px] px-[12px] text-[11px] leading-[16px] gap-[6px]',
-  sm: 'min-h-[44px] min-w-[44px] px-[14px] text-[12px] leading-[16px] gap-[6px]',
+  xs: 'h-[24px] px-[8px] pt-large:min-h-[44px] pt-large:min-w-[44px] pt-large:px-[12px] text-[11px] leading-[16px] gap-[4px] pt-large:gap-[6px]',
+  sm: 'h-[28px] px-[10px] pt-large:min-h-[44px] pt-large:min-w-[44px] pt-large:px-[14px] text-[12px] leading-[16px] gap-[6px]',
 };
 
 /** Text button with the sandbox's three looks. Hover and disabled states

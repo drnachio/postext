@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, type RefObject } from 'react';
 import type { ColorPaletteEntry } from 'postext';
 import { Popover, type PopoverCloseReason } from '../../ui';
 import { useSandboxLabels } from '../../context/SandboxContext';
+import { useLargeTargets } from '../../ui/largeTargets';
 import { SaturationValueArea } from '../SaturationValueArea';
 import { HueSlider } from '../HueSlider';
 import { AlphaSlider } from '../AlphaSlider';
@@ -65,6 +66,7 @@ export function ColorPopover({ open, onOpenChange, anchor, ariaLabel, ...body }:
 }
 
 function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel }: ColorPopoverBodyProps) {
+  const { large } = useLargeTargets();
   const labels = useSandboxLabels();
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
   const [alpha, setAlpha] = useState(() => hexAlpha(hex));
@@ -213,7 +215,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
             style={{
               flex: 1,
               padding: '4px 0',
-              minHeight: 44,
+              minHeight: large ? 44 : undefined,
               fontSize: 10,
               fontWeight: 600,
               textTransform: 'uppercase',

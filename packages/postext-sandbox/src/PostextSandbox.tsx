@@ -24,6 +24,8 @@ import { useChapterHashSync } from './viewport/useChapterHashSync';
 import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost } from './ui';
 import { useCompactLayout } from './hooks/useCompactLayout';
 import { SandboxAnnouncer } from './ui/announcer';
+import { LargeTargetsProvider, useLargeTargets } from './ui/largeTargets';
+import { LargeTargetsToggle } from './ui/LargeTargetsToggle';
 import type { PanelId } from './types';
 
 const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
@@ -229,8 +231,9 @@ function SandboxLayout({
             leading={homeLink}
             trailing={(
               <>
-                {themeToggle && <div className="flex h-11 w-11 items-center justify-center">{themeToggle}</div>}
-                {languageSwitcher && <div className="flex h-11 w-11 items-center justify-center">{languageSwitcher}</div>}
+                <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center"><LargeTargetsToggle tooltipSide="bottom" /></div>
+                {themeToggle && <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">{themeToggle}</div>}
+                {languageSwitcher && <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">{languageSwitcher}</div>}
               </>
             )}
           />
@@ -325,7 +328,8 @@ export function PostextSandbox({
     : true;
 
   return (
-    <div className={className ?? 'h-full w-full'} data-postext-sandbox="">
+    <LargeTargetsProvider>
+    <SandboxRoot className={className}>
       <SandboxGlobalStyles />
       <LayoutServiceProvider>
       <SandboxProvider
@@ -351,6 +355,19 @@ export function PostextSandbox({
         </PortalProvider>
       </SandboxProvider>
       </LayoutServiceProvider>
+    </SandboxRoot>
+    </LargeTargetsProvider>
+  );
+}
+
+/** The root element. `data-pt-targets="large"` turns on the 44×44 sizes
+ *  (`pt-large:` variant and the floor in `ui/styles.ts`); popups portal
+ *  into a layer inside it, so they follow too. */
+function SandboxRoot({ className, children }: { className?: string; children: React.ReactNode }) {
+  const { large } = useLargeTargets();
+  return (
+    <div className={className ?? 'h-full w-full'} data-postext-sandbox="" data-pt-targets={large ? 'large' : 'compact'}>
+      {children}
     </div>
   );
 }

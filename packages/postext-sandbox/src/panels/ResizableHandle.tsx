@@ -70,13 +70,13 @@ export function ResizableHandle({ onPointerDown, value, min = 15, max = 60, onVa
         aria-valuemin={min}
         aria-valuemax={max}
         tabIndex={0}
-        className="peer absolute flex h-11 w-11 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
+        className="peer absolute flex h-8 w-2 pt-large:h-11 pt-large:w-11 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
         style={{ top: 'calc(50% - 22px)', left: 0, cursor: 'col-resize' }}
       >
         <span
           aria-hidden="true"
           className={cn(
-            'ml-px block h-8 w-[7px] rounded-full border transition-colors',
+            'ml-px hidden h-8 w-[7px] rounded-full border transition-colors pt-large:block',
             active ? 'border-(--brand) bg-(--brand)' : 'border-(--slate) bg-(--surface)',
           )}
         />

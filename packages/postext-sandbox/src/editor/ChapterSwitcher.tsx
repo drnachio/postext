@@ -114,7 +114,7 @@ export function ChapterSwitcher() {
         }}
         placeholder={labels.chapterFilter}
         aria-label={labels.chapterFilter}
-        className="min-h-11 w-full min-w-0 rounded border bg-transparent px-2 py-1 text-xs focus-visible:border-(--brand) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--brand)"
+        className="w-full pt-large:min-h-11 min-w-0 rounded border bg-transparent px-2 py-1 text-xs focus-visible:border-(--brand) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--brand)"
         style={{ borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' }}
       />
       {/* Beside the list, which is the menu and holds menu items only. */}
@@ -149,7 +149,7 @@ export function ChapterSwitcher() {
             type="button"
             title={active?.title}
             className={cn(
-              'flex min-h-11 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
+              'flex h-7 pt-large:min-h-11 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
               'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >

@@ -5,6 +5,8 @@ export interface SandboxLabels {
   previewMode: string;
   activityBar: string;
   panelsNav: string;
+  /** Switch for 44×44 buttons and fields (WCAG 2.5.5). */
+  largeTargets: string;
   editorFormatting: string;
   colorAlpha: string;
   settingsSearchPlaceholder: string;

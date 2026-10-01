@@ -1,6 +1,8 @@
 /** Scope of the accessibility floor: the sandbox root and the popups it
  *  portals to the body. */
 const SCOPE = ':where([data-postext-sandbox], [data-postext-popup])';
+/** The same scope with "Large targets" on (`ui/largeTargets.tsx`). */
+const LARGE = ':where([data-pt-targets=large])';
 
 /** Every control that takes a pointer, as WCAG 2.5.5 (Target Size,
  *  Enhanced) counts them. */
@@ -23,8 +25,10 @@ const TARGETS = [
 ].join(', ');
 
 /** WCAG 2.2 AAA floor shared by every part of the sandbox:
- *  - 2.5.5: no pointer target below 44×44 CSS px. The primitives in this
- *    folder size themselves; the floor catches any control built by hand.
+ *  - 2.5.5, with "Large targets" on: no pointer target below 44×44 CSS px.
+ *    The primitives size themselves through the `pt-large:` variant; the
+ *    floor catches any control built by hand. Off, the editor keeps its
+ *    compact sizes.
  *    min-width/height do nothing to inline elements, so a link inside a
  *    sentence keeps its line.
  *  - 1.4.11: field and button outlines in --pt-control-border, at least
@@ -41,7 +45,7 @@ const TARGETS = [
  *    focus, and a double tap does not zoom (touch-action: manipulation). */
 const A11Y_CSS = `
 ${SCOPE} { --pt-control-border: color-mix(in srgb, var(--slate) 78%, var(--background)); }
-${SCOPE} :where(${TARGETS}) { min-width: 44px; min-height: 44px; }
+${LARGE} :where(${TARGETS}) { min-width: 44px; min-height: 44px; }
 ${SCOPE} :where(:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 ${SCOPE} :is(p, li, dd, blockquote) { line-height: 1.5 !important; }
 ${SCOPE} :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea, select):not([aria-invalid=true]) { border-color: var(--pt-control-border) !important; }
