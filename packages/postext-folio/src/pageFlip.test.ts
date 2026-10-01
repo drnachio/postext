@@ -1,4 +1,4 @@
-// The light table's page flipper, run without WebGL: the renderer is a
+// The folio's page flipper, run without WebGL: the renderer is a
 // stub, the scene graph and the leaves' geometry are three.js's own. A
 // right-bound book lies mirrored on the desk (verso on the right, recto on
 // the left) and its leaves turn from left to right.
@@ -141,5 +141,18 @@ describe("the page flipper", () => {
     const leaf = inside(f).leaves.get(1)!;
     expect(screenX(f, leaf, (120 / 2) * 97 + 96)).toBeGreaterThan(0);
     expect(leaf.material.uniforms.uMirror.value).toBe(0);
+  });
+
+  it("takes a book of another length afresh, open where it is told", () => {
+    const { f, targets } = flipper("left");
+    f.setBook([[null, ""], ["", ""]], 1);
+    // One leaf now: the open spread's left page turns back to the first.
+    expect(f.grab(onPage("left"))).toBe(true);
+    f.release(true);
+    expect(targets).toEqual([0]);
+    // Nothing lies beyond the last spread.
+    const again = flipper("left");
+    again.f.setBook([[null, ""], ["", ""]], 1);
+    expect(again.f.grab(onPage("right"))).toBe(false);
   });
 });

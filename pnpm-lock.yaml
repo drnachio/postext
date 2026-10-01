@@ -224,6 +224,9 @@ importers:
       postext:
         specifier: workspace:*
         version: link:../../packages/postext
+      postext-folio:
+        specifier: workspace:*
+        version: link:../../packages/postext-folio
       postext-sandbox:
         specifier: workspace:*
         version: link:../../packages/postext-sandbox
@@ -371,6 +374,36 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.5.0)(msw@2.13.0(@types/node@26.5.0)(typescript@6.0.3))(vite@8.0.6(@types/node@26.5.0)(jiti@2.7.0)(yaml@2.9.0))
 
+  packages/postext-folio:
+    devDependencies:
+      '@postext/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.5.0
+        version: 26.5.0
+      '@types/three':
+        specifier: ^0.186.0
+        version: 0.186.0
+      eslint:
+        specifier: ^9.39.4
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      postext:
+        specifier: workspace:*
+        version: link:../postext
+      three:
+        specifier: ^0.186.1
+        version: 0.186.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.70.0
+        version: 8.70.0(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@26.5.0)(msw@2.13.0(@types/node@26.5.0)(typescript@6.0.3))(vite@8.0.6(@types/node@26.5.0)(jiti@2.7.0)(yaml@2.9.0))
+
   packages/postext-pdf:
     dependencies:
       '@pdf-lib/fontkit':
@@ -449,12 +482,18 @@ importers:
       lucide-react:
         specifier: ^1.42.0
         version: 1.42.0(react@19.2.8)
+      postext-folio:
+        specifier: workspace:*
+        version: link:../postext-folio
       postext-pdf:
         specifier: workspace:*
         version: link:../postext-pdf
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
+      three:
+        specifier: ^0.186.1
+        version: 0.186.1
     devDependencies:
       '@postext/typescript-config':
         specifier: workspace:*
@@ -465,6 +504,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.7
         version: 19.2.7(@types/react@19.2.18)
+      '@types/three':
+        specifier: ^0.186.0
+        version: 0.186.0
       eslint:
         specifier: ^9.39.4
         version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)

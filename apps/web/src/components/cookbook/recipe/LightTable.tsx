@@ -7,7 +7,7 @@ import type { PageImage } from "@/lib/cookbook/images";
 import { cn } from "@/lib/utils";
 import { Lightbox, rangeLabel, spreadPages, type Spread } from "./Lightbox";
 import { folio, noteId, pageImgProps } from "./pages";
-import type { PageFlipper, SpreadSrc } from "./pageFlip";
+import type { PageFlipper, SpreadSrc } from "postext-folio";
 
 const PAGE_HASH = /^#page-(\d+)$/;
 /** A press on a page that moves less than this (px) is a click: it turns
@@ -17,7 +17,7 @@ const CLICK_SLOP = 6;
 /** The captured pages on a night desk, as the book shows them: spreads by
  *  the recto rule (page 1 alone on the right), turned with ‹ ›, ←/→ or a
  *  swipe, or taken by hand and dragged over (the leaves turning in
- *  three.js, `pageFlip.ts`), a filmstrip of every spread, and a lightbox
+ *  three.js, `postext-folio`), a filmstrip of every spread, and a lightbox
  *  that `#page-N` links (and `<PageRef>`) open. A one-page document lies
  *  centred. Below `sm` the spreads give way to a scroll-snap strip of single
  *  pages. A right-bound book lies mirrored (`dir="rtl"` on the desk): page 1
@@ -113,7 +113,7 @@ export function LightTable({
   const loadFlipper = useCallback(() => {
     if (!flipper.current) {
       const book = spreads.map((pair) => pair.map((i, slot) => (i !== null ? pages[i].src : isBlank(pair, slot) ? "" : null)) as SpreadSrc);
-      flipper.current = import("./pageFlip").then(({ PageFlipper, canFlip }) =>
+      flipper.current = import("postext-folio").then(({ PageFlipper, canFlip }) =>
         canvas.current && spreadEl.current && canFlip()
           ? new PageFlipper(canvas.current, spreadEl.current, book, shownRef.current, setShown, setCurrent, binding)
           : null,
