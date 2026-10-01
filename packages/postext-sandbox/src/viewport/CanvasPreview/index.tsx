@@ -4,17 +4,18 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource, type EditorSelection } from '../../context/SandboxContext';
 import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/pagination';
-import { stitchDocuments, type StitchedBook, type StitchedChapter } from '../../book/stitch';
-import type { ChapterLayout, ComposedBook } from '../../book/types';
+import { stitchDocuments, type StitchedBook } from '../../book/stitch';
+import type { ComposedBook } from '../../book/types';
+import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
 import { renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
-import type { LayoutContinuation, NumeralStyle, VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
+import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { clearOverlay, drawOverlay } from './overlay';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
 import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
-import { layoutCacheKey, stableStringify } from '../../book/layoutKeys';
+import { layoutCacheKey } from '../../book/layoutKeys';
 import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
   defaultDocumentLocale,
@@ -58,14 +59,6 @@ interface CanvasPreviewProps {
 export interface CanvasPreviewHandle {
   regenerate: () => void;
   jumpToPage: (pageIndex: number) => void;
-}
-
-/** One chapter's document as last built for the whole-book canvas, with
- *  the key of everything it was built from (a hit spares the worker). */
-interface HeldChapterDoc {
-  key: string;
-  doc: VDTDocument;
-  source: ComposedBook;
 }
 
 /**
@@ -431,58 +424,18 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
       const composition = composeBookMemo(snapshotChapters);
       paintSpanRef.current = perfSpan('canvas.book→paint', { chapters: snapshotChapters.length, md: composition.markdown.length });
       (async () => {
-        const held = heldDocsRef.current;
-        const next = new Map<string, HeldChapterDoc>();
-        const built: StitchedChapter[] = [];
-        const records: ChapterLayout[] = [];
-        let offset = 0;
-        let nextNumbering: { format: NumeralStyle; startAt: number } | null = null;
-        for (const chapter of snapshotChapters) {
-          const chapterPlan = currentPlan.byId[chapter.id];
-          // The plan lags behind a chapter just added: the next one starts
-          // this build over.
-          if (!chapterPlan) return;
-          const source = composeBookMemo(snapshotChapters, chapter.id);
-          // The first chapter inherits nothing but the book's page count;
-          // the page fields of a plan not yet paginated are provisional.
-          const { pageNumbering: planNumbering, ...inherited } = chapterPlan.continuation ?? {};
-          const numbering = nextNumbering ?? (chapterPlan.paginated ? planNumbering : undefined);
-          const continuation: LayoutContinuation | undefined = chapterPlan.index === 0
-            ? chapterPlan.continuation
-            : { ...inherited, pageIndexOffset: offset, ...(numbering ? { pageNumbering: numbering } : {}) };
-          const keyInput = { markdown: source.markdown, metadata: source.metadata, config: deferredConfig, resources: deferredResources, continuation, outlineKey: chapterPlan.outlineKey };
-          // What the chapter was built from, whatever the records say: the
-          // counters and pages it actually continues.
-          const key = layoutCacheKey({ ...keyInput, continuationKey: `stitched:${stableStringify(continuation ?? null)}` });
-          const hit = held.get(chapter.id);
-          let doc: VDTDocument;
-          if (hit && hit.key === key) {
-            doc = hit.doc;
-          } else {
-            doc = await layoutWorker.build(
-              { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation, outline: chapterPlan.outline },
-              deferredConfig,
-              // Under the key the paginator and the PDF tab use, when the
-              // plan's page chain agrees with the actual one, so the
-              // worker's cache is shared.
-              { cacheKey: layoutCacheKey({ ...keyInput, continuationKey: chapterPlan.paginated ? chapterPlan.continuationKey : `stitched:${stableStringify(continuation ?? null)}` }) },
-            );
-            if (cancelled) return;
-          }
-          next.set(chapter.id, { key, doc, source });
-          built.push({ chapterId: chapter.id, doc });
-          // Its layout record — when the plan already starts it where the
-          // chapters before it actually end (the records before it are
-          // current); the others are recorded as the plan catches up.
-          if (chapterPlan.paginated && (chapterPlan.continuation?.pageIndexOffset ?? 0) === offset) {
-            const layout = chapterLayoutFromDoc(doc, chapterPlan, { markdown: chapter.markdown, config: rawDeferredConfig, resources: deferredResources });
-            if (layout) records.push(layout);
-          }
-          offset += doc.pages.length;
-          const last = doc.pages[doc.pages.length - 1];
-          if (last) nextNumbering = { format: last.pageNumberFormat, startAt: last.pageNumberValue + 1 };
-        }
-        if (cancelled) return;
+        const result = await buildBookChapters({
+          chapters: snapshotChapters,
+          plan: currentPlan,
+          config: deferredConfig,
+          rawConfig: rawDeferredConfig,
+          resources: deferredResources,
+          held: heldDocsRef.current,
+          build: layoutWorker.build,
+          cancelled: () => cancelled,
+        });
+        if (!result) return;
+        const { held: next, built, records } = result;
         heldDocsRef.current = next;
         const firstChapter = snapshotChapters[0];
         const firstDoc = firstChapter ? next.get(firstChapter.id)?.doc : undefined;

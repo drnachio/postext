@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types';
 import { SandboxProvider, useSandboxSelector, useSandboxDispatch, useSandboxProjects } from './context/SandboxContext';
 import { LayoutServiceProvider } from './worker/LayoutServiceContext';
@@ -27,6 +27,9 @@ import { SandboxAnnouncer } from './ui/announcer';
 import { LargeTargetsProvider, useLargeTargets } from './ui/largeTargets';
 import { LargeTargetsToggle } from './ui/LargeTargetsToggle';
 import type { PanelId } from './types';
+
+// three.js loads with the Folio tab, not with the sandbox.
+const FolioViewport = lazy(() => import('./viewport/FolioViewport').then((m) => ({ default: m.FolioViewport })));
 
 const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
@@ -168,6 +171,12 @@ function SandboxLayout({
         return <CanvasViewport />;
       case 'html':
         return <HtmlViewport />;
+      case 'folio':
+        return (
+          <Suspense fallback={null}>
+            <FolioViewport />
+          </Suspense>
+        );
       case 'pdf':
         return <PdfViewport />;
       default:

@@ -8,7 +8,7 @@ import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
 import type { ViewportTab } from '../types';
 import { SegmentedControl, cn } from '../ui';
 
-const TABS: ViewportTab[] = ['canvas', 'html', 'pdf'];
+const TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
 
 /** The bar above the preview: the scope selector of the tab shown at the
  *  left (each tab lays out the active chapter or the whole book — the
@@ -122,7 +122,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
               )}
               style={{ borderLeft: '1px solid var(--rule)' }}
             >
-              {tab === 'canvas' ? label : <abbr title={tab === 'html' ? labels.abbrHtml : labels.abbrPdf} className="no-underline">{label}</abbr>}
+              {tab === 'canvas' || tab === 'folio' ? label : <abbr title={tab === 'html' ? labels.abbrHtml : labels.abbrPdf} className="no-underline">{label}</abbr>}
             </button>
           );
         })}

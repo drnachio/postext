@@ -28,6 +28,13 @@ export interface SandboxLabels {
   canvas: string;
   html: string;
   pdf: string;
+  folio: string;
+  folioRegion: string;
+  folioPrev: string;
+  folioNext: string;
+  folioPages: string;
+  folioPage: string;
+  folioPageAlt: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;

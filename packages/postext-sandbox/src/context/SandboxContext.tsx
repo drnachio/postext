@@ -22,6 +22,7 @@ import {
   EMPTY_VIEW_HASH,
   hashNamesOtherBook,
   parseHashBundle,
+  isViewportTab,
   readViewHash,
   writeViewHash,
   type HashBundleRef,
@@ -1201,7 +1202,7 @@ export function SandboxProvider({
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
-      activeViewport: initialHash.view ?? (savedViewport as ViewportTab) ?? ('canvas' as ViewportTab),
+      activeViewport: initialHash.view ?? (isViewportTab(savedViewport) ? savedViewport : 'canvas'),
       labels: mergedLabels,
       locale: locale ?? 'en',
       selection: { from: 0, to: 0, head: 0 },
@@ -2009,13 +2010,14 @@ export function SandboxProvider({
     const cached = warningsCacheRef.current;
     if (cached && cached.key.every((k, i) => k === key[i])) return cached.value;
     const chapterBook = composeBookMemo(s.chapters, s.activeChapterId);
-    // Warnings are the active chapter's. With the canvas showing the whole
-    // book, the stitched document in `docRef` spans every chapter; the
-    // chapter's own document (chapter offsets, like `book`) is read
-    // instead — or none, while it has not been laid out. The HTML preview
-    // lays the whole book out as one document with book offsets: its own
-    // composition is read then, and the other chapters' warnings dropped.
-    const stitched = s.canvasScope === 'book' && s.activeViewport === 'canvas';
+    // Warnings are the active chapter's. With the canvas (or the folio)
+    // showing the whole book, the stitched document in `docRef` spans
+    // every chapter; the chapter's own document (chapter offsets, like
+    // `book`) is read instead — or none, while it has not been laid out.
+    // The HTML preview lays the whole book out as one document with book
+    // offsets: its own composition is read then, and the other chapters'
+    // warnings dropped.
+    const stitched = s.canvasScope === 'book' && (s.activeViewport === 'canvas' || s.activeViewport === 'folio');
     const wholeSource = s.canvasScope === 'book' && s.activeViewport === 'html' ? docSourceRef.current : null;
     const whole = wholeSource !== null && wholeSource.scope === 'book' ? wholeSource : null;
     const book = whole ?? chapterBook;
