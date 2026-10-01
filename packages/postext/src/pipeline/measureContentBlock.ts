@@ -25,7 +25,7 @@ import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
-import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX } from './resourceLayout';
+import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -60,6 +60,9 @@ export interface BlockMeasureContext
   leftFlow?: ReadonlySet<number>;
   /** Footnote id → printed number (`[^id]` markers print it). */
   footnoteNumbers?: ReadonlyMap<string, string>;
+  /** The anchors a `:ref` may name and the words it prints (#262); absent
+   *  when no reference names anything but resources. */
+  anchorRefs?: AnchorRefContext;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -201,6 +204,7 @@ export function measureContentBlock(
       bold: bodyStyle.referenceBold ?? true,
       italic: bodyStyle.referenceItalic ?? false,
       labelNumberGap: resolved.captionStyle.labelNumberGap,
+      ...(ctx.anchorRefs ? { anchors: ctx.anchorRefs } : {}),
     });
     contentBlock = {
       ...contentBlock,

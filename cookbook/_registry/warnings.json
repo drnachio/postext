@@ -546,6 +546,32 @@
       }
     }
   },
+  "duplicateAnchor": {
+    "source": "engine",
+    "label": {
+      "en": "Identifier set twice",
+      "es": "Identificador repetido",
+      "zh": "标识符重复"
+    },
+    "cause": {
+      "en": "Two headings or anchors use the same id ({#id}, :anchor{#id}), so references reach the first one only.",
+      "es": "Dos títulos o anclas usan el mismo id ({#id}, :anchor{#id}), así que las referencias solo llevan al primero.",
+      "zh": "两个标题或锚点使用了同一个id（{#id}、:anchor{#id}），引用只会指向第一个。"
+    },
+    "fix": {
+      "en": "Give each heading or anchor its own id.",
+      "es": "Da a cada título o ancla un id propio.",
+      "zh": "为每个标题或锚点使用各自的id。"
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Cross-references and anchors",
+        "es": "Referencias cruzadas y anclas",
+        "zh": "交叉引用与锚点"
+      }
+    }
+  },
   "undefinedFootnote": {
     "source": "engine",
     "label": {

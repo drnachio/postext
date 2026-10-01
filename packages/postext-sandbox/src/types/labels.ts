@@ -18,6 +18,8 @@ export interface SandboxLabels {
   settingsModifiedCount: string;
   resources: string;
   markdownEditor: string;
+  refPickerHeading: string;
+  refPickerAnchor: string;
   warnings: string;
   fonts: string;
   presets: string;
@@ -211,6 +213,8 @@ export interface SandboxLabels {
   warningsUnknownCalloutTypeDetail: string;
   warningsUnknownChipStyleTitle: string;
   warningsUnknownChipStyleDetail: string;
+  warningsDuplicateAnchorTitle: string;
+  warningsDuplicateAnchorDetail: string;
   warningsUndefinedFootnoteTitle: string;
   warningsUndefinedFootnoteDetail: string;
   warningsUnusedFootnoteTitle: string;
@@ -1867,6 +1871,19 @@ export interface SandboxLabels {
   headingStylePaletteInfo: string;
   tocSection: string;
   indexSection: string;
+  crossRefsSection: string;
+  crossRefsDefaultStyle: string;
+  crossRefsDefaultStyleTooltip: string;
+  crossRefsStyleDefault: string;
+  crossRefsStyleNumber: string;
+  crossRefsStyleTitle: string;
+  crossRefsStylePage: string;
+  crossRefsChapter: string;
+  crossRefsChapterTooltip: string;
+  crossRefsSectionLabel: string;
+  crossRefsSectionTooltip: string;
+  crossRefsPage: string;
+  crossRefsPageTooltip: string;
   indexInfo: string;
   indexEntries: string;
   indexIndent: string;

@@ -526,7 +526,9 @@ def check_index(index: dict, rep: Report, lang: str) -> None:
 
 
 def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res_ids: set[str], rep: Report,
-                   embedded: set[str], referenced: set[str], index: dict | None = None) -> None:
+                   embedded: set[str], referenced: set[str], index: dict | None = None,
+                   anchors: set[str] | None = None) -> None:
+    anchors = anchors or set()
     if index is None:
         index = {"marks": [], "printed": set()}
     lines = text.split("\n")
@@ -709,9 +711,9 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 rep.error(where, ":ref without id prints literally")
             else:
                 referenced.add(rid)
-                if rid not in res_ids:
-                    rep.error(where, f":ref to unknown resource {rid!r}")
-            if a.get("style") and a["style"] not in ("default", "number", "full"):
+                if not ref_target_known(rid, res_ids, anchors):
+                    rep.error(where, f":ref to unknown resource, heading id or anchor {rid!r}")
+            if a.get("style") and a["style"] not in ("default", "number", "full", "title", "page", "pageNumber"):
                 rep.warn(where, f":ref style {a['style']!r} is ignored")
         for m in re.finditer(r":chip\[(?:\\.|[^\]\\\n])+\](\{[^}\n]*\})?", line):
             st = parse_attrs((m.group(1) or "{}")[1:-1]).get("style")
@@ -731,6 +733,33 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     for fid, w in fn_defined.items():
         if fid not in fn_cited:
             rep.warn(w, f"footnote [^{fid}]: is never cited (not set)")
+
+
+# Anchors a :ref may name besides resources (postext 1.12, #261): heading
+# identifiers ({#id} / id="…" in a heading's attribute block), containers
+# opened with one (:::callout{#id}), :anchor{#id} and [text]{#id}.
+ANCHOR_RES = [
+    re.compile(r"^#{1,6}\s.*\{[^{}]*(?:#|\bid=[\"']?)([\w.:-]+)[^{}]*\}\s*$", re.M),
+    re.compile(r"^:::\s*[a-z][a-z0-9-]*\s*\{[^}]*(?:(?<=[{\s])#|\bid=[\"']?)([\w.:-]+)", re.M),
+    re.compile(r":anchor\{[^}]*?(?:#|\bid=[\"']?)([\w.:-]+)"),
+    re.compile(r"(?<![\]\\!])\[[^\]\n]+\]\{#([\w.:-]+)\}"),
+]
+CROSSREF_PREFIXES = ("sec", "fig", "tbl", "eq", "lst")
+
+
+def anchor_ids(texts: list[str]) -> set[str]:
+    out: set[str] = set()
+    for t in texts:
+        for rx in ANCHOR_RES:
+            out.update(m.group(1) for m in rx.finditer(t))
+    return out
+
+
+def ref_target_known(rid: str, res_ids: set[str], anchors: set[str]) -> bool:
+    if rid in res_ids or rid in anchors:
+        return True
+    prefix, _, bare = rid.partition(":")
+    return prefix in CROSSREF_PREFIXES and (bare in res_ids or bare in anchors)
 
 
 def check_snippet(where: str, text: str, res_ids: set[str], rep: Report) -> None:
@@ -868,6 +897,10 @@ def main() -> None:
         if not specs:
             rep.error("preset.json", f"no chapters for {lang}")
         texts: list[tuple[str, str]] = []
+        # Headings with an id and anchors of the whole book: a :ref may name
+        # one set in another chapter.
+        book_anchors = anchor_ids([(root / c.get("file", "")).read_text(encoding="utf-8")
+                                   for c in specs if (root / c.get("file", "")).exists()])
         for i, c in enumerate(specs):
             p = root / c.get("file", "")
             if not p.exists():
@@ -875,7 +908,7 @@ def main() -> None:
                 continue
             chapter = p.read_text(encoding="utf-8")
             texts.append((c["file"], chapter))
-            check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index)
+            check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index, book_anchors)
             if CJK_RE.search(chapter):
                 check_cjk_lines(c["file"], chapter, rep)
         check_index(index, rep, lang)

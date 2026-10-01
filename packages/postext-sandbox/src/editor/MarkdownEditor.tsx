@@ -5,7 +5,7 @@ import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
-import type { RefCompletionContext } from './refCompletion';
+import { anchorsOf, type RefCompletionContext } from './refCompletion';
 import { indexTermsOf } from './indexSyntax';
 
 interface MarkdownEditorProps {
@@ -38,6 +38,12 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
       const { chapters, activeId, markdown } = bookTextRef.current;
       return indexTermsOf(chapters.map((c) => (c.id === activeId ? markdown : c.markdown)));
     },
+    // Headings with an id and anchors of every chapter (#262).
+    anchors: () => {
+      const { chapters, activeId, markdown } = bookTextRef.current;
+      return anchorsOf(chapters.map((c) => (c.id === activeId ? markdown : c.markdown)));
+    },
+    anchorKinds: { heading: state.labels.refPickerHeading, anchor: state.labels.refPickerAnchor },
   };
 
   const hintId = useId();

@@ -3087,6 +3087,58 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 ```
 
 
+## 交叉引用
+
+`crossRefs`属性设定[交叉引用](/zh/docs/document-format#交叉引用与锚点)在编号或页码前后印出的文字，以及未设`style`的`:ref`采用的样式。每个模板用`{n}`表示编号的位置；没有`{n}`的模板，编号放在文字之后，中间用不换行空格（`"§"`印为*§ 3.2*）。未设定的模板随文档语言：中文为`第{n}章` / `第{n}节` / `第{n}页`，英文为*chapter / section / p.*，西班牙文为*capítulo / sección / pág.*，法文、德文、意大利文、葡萄牙文、加泰罗尼亚文和荷兰文亦各有默认文字。
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>指向一级标题的引用：<code>"第&#123;n&#125;章"</code>。编号模板已含文字的标题（<code>第&#123;1:一&#125;章</code>、<code>Chapter &#123;1&#125;</code>）照原样印出。</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>指向二至六级标题的引用：<code>"第&#123;n&#125;节"</code>、<code>"§ &#123;n&#125;"</code>。</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>页码引用（<code>style=page</code>）：<code>"第&#123;n&#125;页"</code>、<code>"p. &#123;n&#125;"</code>。</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>指向标题或锚点、未设<code>style=</code>的<code>:ref</code>印出的内容。<code>'default'</code>：有编号的标题印名称和编号，无编号的印标题，锚点印其文字。已设<code>style</code>的引用保持不变，指向图表的引用不受影响。</td>
+    </tr>
+  </tbody>
+</table>
+
+引用的颜色、粗细和斜体与所有引用相同（`bodyText.referenceColor`、`referenceBold`、`referenceItalic`）。
+
 ## 东亚排版
 
 `cjk`属性决定中文、日文和韩文的排版方式：遵循哪个地区的规范，行在哪里可以断开，标点排多宽、是否悬挂，汉字与拉丁字母之间的间距，版心的字格，以及文中的着重号、专名线、注音和夹注怎样印出。每个字段都是可选的；`'auto'`跟随文档语言（`locale`）所属的地区，因此`locale: 'zh-Hant'`的书无须任何其他设置，就会按台湾的做法断行和排标点。[中文排版](/zh/docs/chinese-layout)按地区逐一说明这些设置背后的规则，并给出两套完整的配置。

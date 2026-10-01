@@ -1,5 +1,5 @@
 import { applyOrientationMarks, markOrientation, stripOrientationMarks } from './orientationMarks';
-import type { InlineLink, InlineSpan, RefCase } from './types';
+import type { InlineLink, InlineSpan, RefCase, RefStyle } from './types';
 import { injectPlaceholderSpans } from './injectSpans';
 import { sliceSpan } from './links';
 import { parseDirectiveAttrs } from './attrs';
@@ -212,7 +212,7 @@ export function applyTitleBreaks(title: string, breaks: readonly number[] | unde
  *  reference to its computed number/label. */
 export interface RefMeta {
   resourceId: string;
-  style?: 'default' | 'number' | 'full';
+  style?: RefStyle;
   text?: string;
   case?: RefCase;
   /** Absolute source offset of the leading `:` of `:ref{…}`. */
@@ -225,8 +225,19 @@ export interface RefMeta {
  *  attribute grammar, so attributes may come in any order and use either
  *  quote style. A ref without an `id` is not a reference (left as text). */
 const INLINE_REF_RE = /:ref\{([^}]*)\}/g;
+/** A pandoc-crossref reference (#262): `@sec:intro`, `[@fig:map]`, and
+ *  `[-@tbl:x]` for the bare number; a capital (`@Sec:intro`) capitalises
+ *  the label. The `@` follows no letter, digit or backslash (an e-mail
+ *  address stays text). The identifier ends on a letter or a digit, so the
+ *  stop after it stays text. */
+const CROSSREF_ID = '[\\p{L}\\p{N}_](?:[\\p{L}\\p{N}_.:-]*[\\p{L}\\p{N}_])?';
+const CROSSREF_PREFIX = '[Ss]ec|[Ff]ig|[Tt]bl|[Ee]q|[Ll]st';
+const CROSSREF_RE = new RegExp(
+  `\\[(-)?@(${CROSSREF_PREFIX}):(${CROSSREF_ID})\\]|(?<![\\p{L}\\p{N}_\\\\])@(${CROSSREF_PREFIX}):(${CROSSREF_ID})`,
+  'gu',
+);
 
-const REF_STYLES: ReadonlySet<string> = new Set(['default', 'number', 'full']);
+const REF_STYLES: ReadonlySet<string> = new Set(['default', 'number', 'full', 'title', 'page', 'pageNumber']);
 const REF_CASES: ReadonlySet<string> = new Set(['lower', 'upper', 'capitalize']);
 
 /**
@@ -244,9 +255,8 @@ export function extractInlineRefs(
   text: string,
   fallbackStart: number,
 ): { cleaned: string; refs: RefMeta[] } {
-  const refs: RefMeta[] = [];
-  let out = '';
-  let last = 0;
+  if (!text.includes(':ref{') && !text.includes('@')) return { cleaned: text, refs: [] };
+  const found: { index: number; length: number; meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'> }[] = [];
   INLINE_REF_RE.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = INLINE_REF_RE.exec(text)) !== null) {
@@ -254,12 +264,7 @@ export function extractInlineRefs(
     const id = attrs.id;
     // Malformed (no id): keep the literal text so the author sees it.
     if (id === undefined || id.length === 0) continue;
-    out += text.slice(last, m.index);
-    const meta: RefMeta = {
-      resourceId: id,
-      sourceStart: fallbackStart + m.index,
-      sourceEnd: fallbackStart + m.index + m[0].length,
-    };
+    const meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'> = { resourceId: id };
     // Unknown `style` / `case` values are ignored rather than rejected so a
     // typo degrades to the default rendering instead of a literal `:ref{`.
     if (attrs.style !== undefined && REF_STYLES.has(attrs.style)) {
@@ -272,9 +277,30 @@ export function extractInlineRefs(
     if (attrs.case !== undefined && REF_CASES.has(attrs.case)) {
       meta.case = attrs.case as RefCase;
     }
-    refs.push(meta);
+    found.push({ index: m.index, length: m[0].length, meta });
+  }
+  if (text.includes('@')) {
+    CROSSREF_RE.lastIndex = 0;
+    while ((m = CROSSREF_RE.exec(text)) !== null) {
+      const bracketed = m[2] !== undefined;
+      const prefix = (bracketed ? m[2] : m[4])!;
+      const id = (bracketed ? m[3] : m[5])!;
+      const meta: Omit<RefMeta, 'sourceStart' | 'sourceEnd'> = { resourceId: `${prefix.toLowerCase()}:${id}` };
+      if (bracketed && m[1] === '-') meta.style = 'number';
+      if (prefix[0] !== prefix[0]!.toLowerCase()) meta.case = 'capitalize';
+      found.push({ index: m.index, length: m[0].length, meta });
+    }
+    found.sort((a, b) => a.index - b.index);
+  }
+  const refs: RefMeta[] = [];
+  let out = '';
+  let last = 0;
+  for (const f of found) {
+    if (f.index < last) continue; // inside a `:ref{…}` already taken
+    out += text.slice(last, f.index);
+    refs.push({ ...f.meta, sourceStart: fallbackStart + f.index, sourceEnd: fallbackStart + f.index + f.length });
     out += REF_PLACEHOLDER;
-    last = m.index + m[0].length;
+    last = f.index + f.length;
   }
   out += text.slice(last);
   return { cleaned: out, refs };

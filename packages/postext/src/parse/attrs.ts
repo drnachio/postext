@@ -8,6 +8,9 @@ const EQUALS = '[=\\uFF1D]';
  *  Chinese input method types (#181), or bare up to the next space. */
 const VALUE = `"([^"]*)"|'([^']*)'|\\u201C([^\\u201D]*)\\u201D|\\u300C([^\\u300D]*)\\u300D|([^\\s]+)`;
 const TOKEN = `(${KEY})(?:\\s*${EQUALS}\\s*(?:${VALUE}))?`;
+/** Pandoc's identifier shorthand: `{#sec-intro}` is `id="sec-intro"`. An
+ *  identifier may hold letters of any script, digits and `_ - . :`. */
+const ID_TOKEN = '#([\\p{L}\\p{N}_][\\p{L}\\p{N}_.:-]*)';
 /** A key in any script (`作者`), which the grammar recognises only to
  *  report it and drop it (see {@link parseAttrBlobStrict}). */
 const ANY_KEY = '[\\p{L}_][\\p{L}\\p{N}_-]*';
@@ -50,14 +53,33 @@ function tokenAt(m: RegExpExecArray): AttrToken {
   return { key, value, start, end, valueStart: valueEnd - value.length, valueEnd, quoted, flag: false };
 }
 
+function idTokenAt(m: RegExpExecArray): AttrToken {
+  const value = m[1]!;
+  const start = m.index;
+  const end = m.index + m[0].length;
+  return { key: 'id', value, start, end, valueStart: start + 1, valueEnd: end, quoted: false, flag: false };
+}
+
 /** Every token of an attribute blob, read leniently: anything that is not
  *  a token is skipped (see {@link parseDirectiveAttrs}). */
 export function scanDirectiveAttrs(raw: string): AttrToken[] {
-  const re = new RegExp(TOKEN, 'g');
+  const re = new RegExp(`(?:^|(?<=\\s))${ID_TOKEN}|${TOKEN}`, 'gu');
   const out: AttrToken[] = [];
   let m: RegExpExecArray | null;
-  while ((m = re.exec(raw)) !== null) out.push(tokenAt(m));
+  while ((m = re.exec(raw)) !== null) {
+    if (m[1] !== undefined) out.push(idTokenAt(m));
+    else out.push(tokenAt(shiftGroups(m)));
+  }
   return out;
+}
+
+/** A match of the combined `#id | key=value` grammar as a `key=value`
+ *  match (its groups moved down past the id group). */
+function shiftGroups(m: RegExpExecArray): RegExpExecArray {
+  const shifted = [m[0], ...m.slice(2)] as unknown as RegExpExecArray;
+  shifted.index = m.index;
+  shifted.input = m.input;
+  return shifted;
 }
 
 /** Parse the attribute blob inside a `:::name{ ... }` directive, a
@@ -85,6 +107,7 @@ export function parseDirectiveAttrs(raw: string): DirectiveAttrs {
  */
 export function parseAttrBlobStrict(raw: string): AttrToken[] | undefined {
   const re = new RegExp(TOKEN, 'y');
+  const idRe = new RegExp(ID_TOKEN, 'uy');
   const foreign = new RegExp(FOREIGN_TOKEN, 'uy');
   const out: AttrToken[] = [];
   let at = 0;
@@ -98,7 +121,11 @@ export function parseAttrBlobStrict(raw: string): AttrToken[] | undefined {
     foreign.lastIndex = at;
     const f = foreign.exec(raw);
     let token: AttrToken;
-    if (f && NON_ASCII.test(f[1]!)) {
+    idRe.lastIndex = at;
+    const id = idRe.exec(raw);
+    if (id) {
+      token = idTokenAt(id);
+    } else if (f && NON_ASCII.test(f[1]!)) {
       token = { ...tokenAt(f), invalidKey: true };
     } else {
       re.lastIndex = at;

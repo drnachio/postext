@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Resource, ResourceType } from 'postext';
-import { buildRefOptions, refMicroformat } from './refCompletion';
+import { anchorsOf, buildRefOptions, refMicroformat } from './refCompletion';
 
 const types: ResourceType[] = [
   { id: 'figure', name: 'Figura', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Figura' },
@@ -51,5 +51,22 @@ describe('buildRefOptions', () => {
 describe('refMicroformat', () => {
   it('emits the inline :ref directive', () => {
     expect(refMicroformat('layout-pipeline')).toBe(':ref{id="layout-pipeline" style="full"}');
+  });
+});
+
+describe('headings and anchors in the @ picker (#262)', () => {
+  it('lists every heading id and anchor of the book, first setting kept', () => {
+    const anchors = anchorsOf(['# One {#one}\n\nThe [claim]{#claim} and :anchor{#spot}.', ':::callout{#box title="Box"}\nIn.\n:::\n\n## Two {#one}']);
+    expect(anchors).toEqual([
+      { id: 'one', kind: 'heading', title: 'One' },
+      { id: 'claim', kind: 'anchor', title: 'claim' },
+      { id: 'spot', kind: 'anchor', title: '' },
+      { id: 'box', kind: 'anchor', title: 'Box' },
+    ]);
+  });
+
+  it('offers them after the resources and inserts a :ref', () => {
+    const options = buildRefOptions({ resources: [], types: [], anchors: () => [{ id: 'sec-intro', kind: 'heading', title: 'Introduction' }] }, 'intro');
+    expect(options.map((o) => o.label)).toEqual(['sec-intro']);
   });
 });

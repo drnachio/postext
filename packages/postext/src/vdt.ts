@@ -29,6 +29,7 @@ import type {
   ResolvedTocConfig,
   ResolvedIndexConfig,
   ResolvedFootnotesConfig,
+  ResolvedCrossRefsConfig,
   ResolvedCjkConfig,
   CjkRegion,
   PageRole,
@@ -83,6 +84,8 @@ export interface ResolvedConfig {
   index: ResolvedIndexConfig;
   /** Footnotes (`[^id]`): placement, numbering, style. */
   footnotes: ResolvedFootnotesConfig;
+  /** Cross-references to headings and anchors (#266). */
+  crossRefs: ResolvedCrossRefsConfig;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;
@@ -188,6 +191,14 @@ export interface VDTLineSegment {
    *  Renderers recolour it (link colour) and the PDF backend emits a link
    *  annotation to the resource's named destination. */
   refResourceId?: string;
+  /** Set when the reference names an anchor (a heading's `{#id}`, an inline
+   *  anchor, a container, #262): `refResourceId` holds the anchor's id and
+   *  a link jumps to {@link VDTDocument.anchors}' entry for it. */
+  refAnchor?: true;
+  /** For a reference to an anchor: the book page index (the documents'
+   *  `pageIndexOffset` counted in) the anchor landed on, when known — a host
+   *  showing one chapter goes there when the anchor is in another. */
+  refPageIndex?: number;
   /** Physical book page index this segment links to: a page number of an
    *  expanded `:::index`. The PDF backend makes it a link to that page (when
    *  the page is in the document), as it does a contents row. */
@@ -402,6 +413,24 @@ export interface VDTLineMark {
   wavelength?: number;
   /** Colour (hex); unset: the colour of the block's text. */
   color?: string;
+}
+
+/** A located anchor (see {@link VDTDocument.anchors}). */
+export interface VDTAnchor {
+  /** The identifier (`{#id}`). */
+  id: string;
+  /** `'heading'`: a heading's `{#id}`; `'anchor'`: an anchor set in the
+   *  text or on a container. */
+  kind: 'heading' | 'anchor';
+  /** Index of its page in `pages`. */
+  pageIndex: number;
+  /** Top-left of the heading block, or of the line holding the anchor, in
+   *  page px. */
+  x: number;
+  y: number;
+  /** Source offset of an inline anchor's mark in the markdown body (front
+   *  matter excluded). */
+  sourceStart?: number;
 }
 
 export interface VDTLine {
@@ -1582,6 +1611,9 @@ export type ContentWarning = ContentWarningBase & (
    *  cell stays text-only. `inResource` names the
    *  resource whose caption, note or cell holds the reference. */
   | { kind: 'unknownResourceId'; resourceId: string; usage: 'embed' | 'ref' | 'cellImage'; inResource?: string }
+  /** An identifier (`{#id}`, `:anchor{#id}`) set more than once in the
+   *  document: references reach its first setting only (#261). */
+  | { kind: 'duplicateAnchor'; anchorId: string }
   /** A `:::name` line whose name is neither a directive nor a container:
    *  it is set as text. */
   | { kind: 'unknownDirective'; name: string }
@@ -1718,6 +1750,10 @@ export interface VDTDocument {
    *  index of its page in `pages`. Marks whose text reached no page are
    *  left out. Absent when the document has no marks. */
   indexMarks?: { sourceStart: number; pageIndex: number }[];
+  /** Where each anchor of the document landed (#261): headings with an
+   *  identifier (`{#id}`), inline anchors and containers opened with one.
+   *  What a cross-reference links to. Absent when the document sets none. */
+  anchors?: VDTAnchor[];
   /** Configuration values the engine replaced (see {@link ConfigWarning});
    *  absent when the config is clean. */
   configWarnings?: ConfigWarning[];

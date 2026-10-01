@@ -335,8 +335,10 @@ export interface OutlineIndexMark {
  *  `:::toc` and `:::index`. */
 export interface OutlineEntry {
   /** `'indexMark'`: an index mark (`:index…`), listed by `:::index`, never
-   *  by `:::toc` (`listed` is false). */
-  kind: 'heading' | 'part' | 'indexMark';
+   *  by `:::toc` (`listed` is false). `'anchor'`: an anchor set in the text
+   *  (`:anchor{#id}`, `[text]{#id}`, `:::callout{#id}`), a target of
+   *  cross-references only (#261). */
+  kind: 'heading' | 'part' | 'indexMark' | 'anchor';
   /** Heading level (1–6); `0` for a part. */
   level: number;
   /** Title as plain text (forced title breaks flattened to spaces). */
@@ -372,6 +374,12 @@ export interface OutlineEntry {
   listed: boolean;
   /** The mark of an `'indexMark'` entry. */
   indexMark?: OutlineIndexMark;
+  /** The identifier a cross-reference names: a heading's `{#id}`, an
+   *  `'anchor'` entry's id (#261). */
+  anchorId?: string;
+  /** Source offset of an `'anchor'` entry's mark in its chapter's markdown
+   *  body (front matter excluded): identifies it within the chapter. */
+  anchorSource?: number;
   /** The page-number format of the entry's page, once laid out (an index
    *  merges consecutive pages of one format into a range). */
   pageFormat?: string;
@@ -2788,6 +2796,32 @@ export interface ResolvedFootnoteSeparatorConfig {
  *  paragraph of its own anywhere in the chapter. The marker prints as a
  *  superscript number (or inline, see `markerPosition`); the note prints at the foot of the column (see
  *  {@link FootnotePlacement}), in citation order. */
+/** How a cross-reference to an anchor prints (#266): the words around a
+ *  number or a page label, and the style a `:ref` without `style=` takes.
+ *  Each template holds `{n}` where the number goes; one without it gets
+ *  the number after a no-break space. Unset templates follow the document
+ *  language ("section {n}", "sección {n}", "第{n}节"). */
+export interface CrossRefsConfig {
+  /** A level-1 heading: "chapter {n}". */
+  chapter?: string;
+  /** Any other heading: "section {n}". */
+  section?: string;
+  /** A page: "p. {n}". */
+  page?: string;
+  /** The style of a `:ref` to an anchor that sets none. Default
+   *  `'default'`: a numbered heading by its label and number, an
+   *  unnumbered one by its title, an anchor by its text. */
+  defaultStyle?: 'default' | 'number' | 'title' | 'page';
+}
+
+/** {@link CrossRefsConfig} with every value resolved. */
+export interface ResolvedCrossRefsConfig {
+  chapter: string;
+  section: string;
+  page: string;
+  defaultStyle: 'default' | 'number' | 'title' | 'page';
+}
+
 export interface FootnotesConfig {
   /** Default `'column'`. */
   placement?: FootnotePlacement;
@@ -4071,6 +4105,9 @@ export interface PostextConfig {
   math?: MathConfig;
   /** Footnotes (`[^id]` markers and `[^id]: …` definitions). */
   footnotes?: FootnotesConfig;
+  /** Cross-references to headings and anchors (`:ref{id="sec-intro"}`,
+   *  `@sec:intro`): their words and default style (#266). */
+  crossRefs?: CrossRefsConfig;
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;

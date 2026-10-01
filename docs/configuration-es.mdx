@@ -3090,6 +3090,58 @@ import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 ```
 
 
+## Referencias cruzadas
+
+La propiedad `crossRefs` fija las palabras que una [referencia cruzada](/es/docs/document-format#referencias-cruzadas-y-anclas) imprime alrededor de un número o de una página, y el estilo que toma un `:ref` que no indica ninguno. Cada plantilla lleva `{n}` donde va el número; una que no lo lleva recibe el número detrás de un espacio de no separación (`"§"` imprime *§ 3.2*). Una plantilla sin definir sigue al idioma del documento: *capítulo / sección / pág.* en español, *chapter / section / p.* en inglés, `第{n}章` / `第{n}节` / `第{n}页` en chino, y lo mismo para francés, alemán, italiano, portugués, catalán y neerlandés.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia a un título de nivel 1: <code>"capítulo &#123;n&#125;"</code>. Un número cuya plantilla ya escribe la palabra (<code>Capítulo &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) se imprime tal cual.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia a un título de nivel 2 a 6: <code>"sección &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>Una referencia de página (<code>style=page</code>): <code>"pág. &#123;n&#125;"</code>, <code>"página &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>Lo que imprime un <code>:ref</code> a un título o a un ancla sin <code>style=</code>. <code>'default'</code>: un título numerado con su palabra y su número, uno sin número con su título, un ancla con su texto. Una referencia que indica <code>style</code> lo conserva, y las referencias a figuras y tablas no cambian.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las referencias toman el color, el peso y la inclinación de todas las referencias (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
+
 ## Tipografía de Asia oriental
 
 La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas chinas, las lecturas ruby y las notas warichu del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más. [Composición china](/es/docs/chinese-layout) explica las reglas que hay detrás de estos ajustes, región por región, con dos configuraciones completas.

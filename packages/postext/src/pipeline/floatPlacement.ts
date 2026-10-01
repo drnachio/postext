@@ -16,6 +16,7 @@
  * which owns the VDT and measurement context.
  */
 
+import { resourceRefId } from './crossRefs';
 import type { ContentBlock } from '../parse';
 import type {
   Resource,
@@ -156,7 +157,7 @@ export function computeFloatPlan(
     const b = blocks[i]!;
     if (b.type === 'resourceBlock' && b.resourceId) record(b.resourceId, i);
     for (const span of b.spans) {
-      if (span.ref?.resourceId) record(span.ref.resourceId, i);
+      if (span.ref?.resourceId) record(resourceRefId(span.ref.resourceId, (id) => resourceById.has(id)), i);
     }
   }
 

@@ -129,10 +129,39 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  */
 export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const marks = extractIndexMarks(markdown);
-  if (!marks) return parseBlocks(markdown);
+  if (!marks) return attachContainerAnchors(parseBlocks(markdown));
   const result = parseBlocks(marks.text);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
+  return attachContainerAnchors(result);
+}
+
+/** Text blocks an anchor can sit in. */
+const ANCHOR_HOSTS = new Set<ContentBlock['type']>(['heading', 'paragraph', 'blockquote', 'listItem']);
+
+/**
+ * A container opened with an identifier (`:::callout{#box}`, #261) is an
+ * anchor on the first character of its first text block — where a
+ * reference to it jumps and whose page it prints.
+ */
+function attachContainerAnchors<T extends { blocks: ContentBlock[] }>(result: T): T {
+  const { blocks } = result;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    const id = b.type === 'containerStart' ? b.containerAttrs?.id?.trim() : undefined;
+    if (!id) continue;
+    const host = blocks.slice(i + 1).find((x) => ANCHOR_HOSTS.has(x.type));
+    if (!host) continue;
+    const mark = {
+      anchorId: id,
+      ...(b.containerAttrs?.title ? { text: b.containerAttrs.title } : {}),
+      sourceStart: b.sourceStart,
+      sourceEnd: b.sourceEnd,
+      anchor: host.sourceMap[0] ?? host.sourceStart,
+      attach: 'after' as const,
+    };
+    host.anchorMarks = [mark, ...(host.anchorMarks ?? [])];
+  }
   return result;
 }
 

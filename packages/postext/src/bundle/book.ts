@@ -90,10 +90,11 @@ export function buildBundle(
   const metadata: DocumentMetadata = { ...(givenMetadata ?? {}), ...(first ? extractFrontmatter(first.markdown).metadata : {}) };
   const sources = chapters.map((c, index) => (index === 0 ? c.markdown : blankFrontmatter(c.markdown)));
   // A chapter printing the contents (`:::toc`) or the index (`:::index`)
-  // reads the whole book's outline.
+  // reads the whole book's outline; so does one whose references name
+  // anchors, which may lie in another chapter (#262).
   const hasToc = sources.map((markdown) => {
-    const { hasToc: toc, hasIndex } = contentOutline({ markdown }, config);
-    return toc || hasIndex;
+    const { hasToc: toc, hasIndex, hasRefs } = contentOutline({ markdown, resources }, config);
+    return toc || hasIndex || hasRefs;
   });
   const anyToc = hasToc.some(Boolean);
   // `{bookTotalPages}` needs the page count of the whole book, known once
