@@ -6,6 +6,8 @@
 
 import type {
   Dimension,
+  FootnoteNumbering,
+  FootnotesConfig,
   TextAlign,
   HeadingLevelConfig,
   HeadingStyleConfig,
@@ -27,6 +29,7 @@ import {
   isCjkLanguage,
   parseNumberFormat,
   resolveBodyTextConfig,
+  resolveFootnotesConfig,
   resolveLayoutConfig,
   resolveOrderedListsConfig,
   resolvePageConfig,
@@ -47,7 +50,8 @@ export type ChineseDefaultId =
   | 'resourceTypes'
   | 'captionLabel'
   | 'chapterNumbering'
-  | 'listNumbers';
+  | 'listNumbers'
+  | 'footnotes';
 
 /** A value as the review list shows it. Words the interface translates
  *  (on/off, alignments, directions, language names) stay typed; the rest
@@ -60,6 +64,7 @@ export type ChineseDefaultValue =
   | { kind: 'align'; value: TextAlign }
   | { kind: 'writingMode'; value: WritingMode; binding: 'left' | 'right' }
   | { kind: 'binding'; value: 'left' | 'right'; auto?: boolean }
+  | { kind: 'footnotes'; marker: string; position: 'superscript' | 'inline'; numbering: FootnoteNumbering }
   | { kind: 'none' };
 
 export interface ChineseDefaultChange {
@@ -108,6 +113,13 @@ const CAPTION_SEPARATOR = IDEOGRAPHIC_SPACE;
 const DEFAULT_CAPTION_GAP = ' ';
 const DEFAULT_CAPTION_SEPARATOR = '. ';
 const DEFAULT_NUMBER_SEPARATOR = ' ';
+/** Notes as a mainland book sets them: ① on the baseline, from ① on
+ *  every page. */
+const CHINESE_FOOTNOTES: Pick<FootnotesConfig, 'numberFormat' | 'markerPosition' | 'numbering'> = {
+  numberFormat: 'circled-decimal',
+  markerPosition: 'inline',
+  numbering: 'page',
+};
 
 const FONTS = {
   hans: { body: 'Noto Serif SC', headings: 'Noto Sans SC' },
@@ -510,6 +522,29 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
         const others = levels.filter((l) => !targetLists.some((t) => t.level === l.level));
         return { ...c, orderedLists: { ...c.orderedLists, levels: [...merged, ...others] } };
       },
+    });
+  }
+
+  // Footnotes: ① set inline, counted from ① on every page (页下注).
+  const fromNotes = resolveFootnotesConfig(config.footnotes, fromLocale);
+  const toNotes = resolveFootnotesConfig({ ...config.footnotes, ...CHINESE_FOOTNOTES }, locale);
+  const notesValue = (f: typeof fromNotes): ChineseDefaultValue => ({
+    kind: 'footnotes',
+    marker: formatNumeral(1, f.numberFormat),
+    position: f.markerPosition,
+    numbering: f.numbering,
+  });
+  if (fromNotes.numberFormat !== toNotes.numberFormat || fromNotes.markerPosition !== toNotes.markerPosition || fromNotes.numbering !== toNotes.numbering) {
+    const raw = config.footnotes;
+    const rawFormat = raw?.numberFormat === undefined ? undefined : parseNumberFormat(raw.numberFormat, fromLocale);
+    rows.push({
+      id: 'footnotes',
+      from: notesValue(fromNotes),
+      to: notesValue(toNotes),
+      customised: (rawFormat !== undefined && rawFormat !== 'decimal' && rawFormat !== 'circled-decimal')
+        || (raw?.markerPosition !== undefined && raw.markerPosition !== 'auto' && raw.markerPosition !== 'inline')
+        || (raw?.numbering !== undefined && raw.numbering !== 'chapter' && raw.numbering !== 'page'),
+      apply: (c) => ({ ...c, footnotes: { ...c.footnotes, ...CHINESE_FOOTNOTES } }),
     });
   }
 

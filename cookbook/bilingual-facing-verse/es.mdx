@@ -5,12 +5,12 @@ plain: "Un poemario con el original en español a un lado y la traducción ingle
 description: "Un cuaderno bilingüe compuesto con Postext: poemas en español y su versión inglesa enfrentados en recuadros de dos columnas, con un corte fijo entre ellas."
 question: "¿Cómo pongo un poema y su traducción uno al lado del otro, empezando en la misma línea y estrofa a estrofa?"
 aliases: ["traducción enfrentada", "texto paralelo", "edición bilingüe", "poesía bilingüe", "traducción junto al original", "columnas dentro de un recuadro", "atributo breaks", "salto de columna en un recuadro", "alinear estrofas", "espacio entre estrofas", "verso que no cabe", "sangría francesa", "verso", "plaquette", "facing translation", "parallel text"]
-pageNotes: { "3": "El dibujo de las salinas baja hasta 84 mm del borde superior. Debajo empieza el poema I con su número; LA SALINA AL ALBA encabeza la columna española y THE SALT PANS AT DAWN la cursiva inglesa. El cuarto verso inglés no cabe y sigue en la línea de abajo, y la primera estrofa española termina con dos líneas en blanco, así que las dos segundas estrofas empiezan en la misma línea.", "4": "Los poemas II y III, cada uno con su número sobre dos columnas cuyas estrofas se enfrentan verso a verso." }
+pageNotes: { "3": "La acuarela de las salinas baja hasta 84 mm del borde superior. Debajo empieza el poema I con su número; LA SALINA AL ALBA encabeza la columna española y THE SALT PANS AT DAWN la cursiva inglesa. El cuarto verso inglés no cabe y sigue en la línea de abajo, y la primera estrofa española termina con dos líneas en blanco, así que las dos segundas estrofas empiezan en la misma línea.", "4": "Los poemas II y III, cada uno con su número sobre dos columnas cuyas estrofas se enfrentan verso a verso." }
 ---
 
 ## Lo que vas a componer
 
-Un cuaderno bilingüe de cinco poemas sobre una salina del sur de España, de 156 × 234 mm, con el español a la izquierda y la versión inglesa de la propia autora a la derecha, verso a verso. Abren el libro una portada con un flamenco y una nota de la autora; los poemas empiezan bajo un dibujo de balsas rosas, montones de sal y flamencos al amanecer. Cada poema va en un recuadro sin marco, bajo un número romano granate en Castoro Titling, con el español en una columna y el inglés en la otra. El inglés arranca siempre en la misma línea que el español, y cada estrofa, a la altura de su original. Cuando un verso inglés no cabe en su columna, sigue en la línea de abajo sangrado 2 em, y la estrofa española de enfrente termina con una línea en blanco más.
+Un cuaderno bilingüe de cinco poemas sobre una salina del sur de España, de 156 × 234 mm, con el español a la izquierda y la versión inglesa de la propia autora a la derecha, verso a verso. Abren el libro una portada con un flamenco y una nota de la autora; los poemas empiezan bajo una acuarela de balsas rosas, montones de sal y flamencos al amanecer. Cada poema va en un recuadro sin marco, bajo un número romano granate en Castoro Titling, con el español en una columna y el inglés en la otra. El inglés arranca siempre en la misma línea que el español, y cada estrofa, a la altura de su original. Cuando un verso inglés no cabe en su columna, sigue en la línea de abajo sangrado 2 em, y la estrofa española de enfrente termina con una línea en blanco más.
 
 ## Elaboración
 
@@ -32,17 +32,17 @@ Markdown une las líneas de un párrafo, así que cada verso es un párrafo apar
 
 `locale` elige los patrones de separación silábica por su código exacto. Con `'es'`, la nota española corta *ori-ginal* y *Duna-liella*; con los patrones ingleses las dos palabras pasan enteras a la línea siguiente, y solo *arras-traba* se corta con ambos ([idiomas soportados](/es/docs/justification#idiomas-soportados)). Los espacios entre palabras pueden encogerse hasta 0,8 y estirarse hasta 1,35 de su ancho normal, y ninguna línea justificada de las dos notas pasa de ahí. El título de la nota es un diseño de un solo elemento, situado 36 mm por debajo del inicio de la caja de texto, así que la nota empieza a 73 mm del borde superior de su página.
 
-### 4 · La portada y el dibujo son títulos
+### 4 · La portada y la acuarela son títulos
 
 <Excerpt region="front" />
 
-Cada uno es un título de nivel 1 con un estilo propio ([estilos de título](/es/docs/configuration#estilos-de-encabezado)): el diseño de la portada toma `{author}` del frontmatter, y los dos diseños toman `{attr.other}` de los atributos del título. El dibujo empieza en el borde superior de la página, por encima de la caja de texto, y un diseño que se queda en la columna se recorta por arriba, así que su estilo lleva `span: 'page'`. Una imagen no reserva altura: sin `minHeight`, el título mide 25,6 mm y el poema I empieza a 58 mm del borde, encima de un dibujo que llega a 84 mm. Con un `minHeight` de once líneas y el margen inferior del nivel, de una línea, el título termina a 83,4 mm.
+Cada uno es un título de nivel 1 con un estilo propio ([estilos de título](/es/docs/configuration#estilos-de-encabezado)): el diseño de la portada toma `{author}` del frontmatter, y los dos diseños toman `{attr.other}` de los atributos del título. La acuarela empieza en el borde superior de la página, por encima de la caja de texto, y un diseño que se queda en la columna se recorta por arriba, así que su estilo lleva `span: 'page'`. Una imagen no reserva altura: sin `minHeight`, el título mide 25,6 mm y el poema I empieza a 58 mm del borde, encima de una acuarela que llega a 84 mm. Con un `minHeight` de once líneas y el margen inferior del nivel, de una línea, el título termina a 83,4 mm.
 
 ### 5 · Las cabeceras nombran los dos idiomas
 
 <Excerpt region="heads" />
 
-La página par lleva el título español y la impar el inglés, en el orden de las columnas. `pages: 'body'` las quita de las tres páginas que empiezan con un título. La nota y el dibujo llevan en su lugar un folio al pie, y el estilo de la portada deja vacíos su cabecera y su pie ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
+La página par lleva el título español y la impar el inglés, en el orden de las columnas. `pages: 'body'` las quita de las tres páginas que empiezan con un título. La nota y la acuarela llevan en su lugar un folio al pie, y el estilo de la portada deja vacíos su cabecera y su pie ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
 
 ## Variantes
 

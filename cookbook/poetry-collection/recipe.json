@@ -180,8 +180,17 @@
     "images": [
       {
         "what": {
-          "en": "The frontispiece photogram of fern and rowan and the rowan ornament, drawn in code in the page’s palette",
-          "es": "El fotograma del frontispicio, con helecho y serbal, y el adorno de serbal, dibujados en código con la paleta de la página"
+          "en": "The frontispiece photogram of fern and rowan",
+          "es": "El fotograma del frontispicio, con helecho y serbal"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plate-1120.jpg"
+      },
+      {
+        "what": {
+          "en": "The rowan ornament, drawn in code in the page’s palette",
+          "es": "El adorno de serbal, dibujado en código con la paleta de la página"
         },
         "who": "Ignacio Ferro",
         "license": "CC-BY-4.0"

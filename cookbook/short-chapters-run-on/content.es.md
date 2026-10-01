@@ -60,5 +60,5 @@ Emfim, chegou a hora da encommendação e da partida. Sancha quiz despedir-se do
 As minhas cessaram logo. Fiquei a ver as della; Capitú enxugou-as depressa, olhando a furto para a gente que estava na sala. Redobrou de caricias para a amiga, e quiz leval-a; mas o cadaver parece que a retinha tambem. Momento houve em que os olhos de Capitú fitaram o defuncto, quaes os da viuva, sem o pranto nem palavras desta, mas grandes e abertos, como a vaga do mar lá fóra, como se quizesse tragar tambem o nadador da manhã.
 
 :::callout{type="colophon"}
-Do fim do capítulo CXVIII ao fim do CXXIII de *Dom Casmurro* (1899), com a ortografia da edição Garnier transcrita pelo Project Gutenberg (n.º 55752); corrigiu-se um erro de transcrição no capítulo CXXIII. Ilustração e marca da coleção desenhadas para esta edição. Composto em Tinos (Apache 2.0), Abril Fatface e League Spartan (SIL OFL).
+Do fim do capítulo CXVIII ao fim do CXXIII de *Dom Casmurro* (1899), com a ortografia da edição Garnier transcrita pelo Project Gutenberg (n.º 55752); corrigiu-se um erro de transcrição no capítulo CXXIII. Ilustração pintada e marca da coleção feitas para esta edição. Composto em Tinos (Apache 2.0), Abril Fatface e League Spartan (SIL OFL).
 :::

@@ -114,7 +114,7 @@ Colorea un círculo por cada cosa que sabes hacer.
 :::
 
 :::paragraphs{style="colophon"}
-Semillero Ciencias es una colección inventada para el Recetario de Postext. Textos y dibujos: CC BY 4.0.
+Semillero Ciencias es una colección inventada para el Recetario de Postext. Textos: CC BY 4.0. Planta: modelos de difusión.
 
 Compuesto en Andika, Baloo 2 y Fredoka (SIL Open Font License).
 :::

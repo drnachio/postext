@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-facing-verse",
-  "sourceHash": "b9b274f046bd4d7618ffe08e66cde6335de1a8c625025b6b5b5d93e902f97fd4",
+  "sourceHash": "d9d2d16869086ea12cbd633fdbaced0c70f7554d658fc7e282db7ed106b76d2f",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:45:23.413Z",
+  "capturedAt": "2026-10-01T06:47:23.834Z",
   "variants": {
     "en": {
-      "hash8": "85ff938e",
-      "vdtHash": "e172f66078e3acb48585c821354f9d7017fa64b1",
+      "hash8": "4e604be7",
+      "vdtHash": "096708040825f52864cb9dff291f8c73cf27af74",
       "timings": {
-        "importMs": 462,
-        "fontsMs": 75,
-        "buildMs": 46,
-        "totalMs": 1309,
+        "importMs": 184,
+        "fontsMs": 54,
+        "buildMs": 66,
+        "totalMs": 919,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 173
+        "ownLines": 166
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 17008,
+          "bytes": 18244,
           "alt": "Opening page 1: August Salt."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 68764,
+          "bytes": 108982,
           "alt": "Opening page 3: August Salt."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 75940,
+          "bytes": 76806,
           "alt": "Page 5."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 23079
+        "bytes": 210989
       },
       "detected": {
         "apis": [
@@ -251,7 +251,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 286,
+        "configLeaves": 277,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
@@ -263,8 +263,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [
@@ -317,13 +317,13 @@
       }
     },
     "es": {
-      "hash8": "a3cbd008",
-      "vdtHash": "00e80c33a73e19e503042ee5a703271afb1259ce",
+      "hash8": "a0604932",
+      "vdtHash": "2e78ade8e30d078966fbfe46fc2ccbe04be7ae54",
       "timings": {
-        "importMs": 418,
-        "fontsMs": 98,
-        "buildMs": 52,
-        "totalMs": 2960,
+        "importMs": 598,
+        "fontsMs": 908,
+        "buildMs": 55,
+        "totalMs": 2143,
         "builds": 1
       },
       "specimen": {
@@ -345,7 +345,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 173
+        "ownLines": 166
       },
       "pages": [
         {
@@ -356,7 +356,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 17754,
+          "bytes": 18904,
           "alt": "Página de apertura 1: Sal de agosto."
         },
         {
@@ -378,7 +378,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 69310,
+          "bytes": 110224,
           "alt": "Página de apertura 3: Sal de agosto."
         },
         {
@@ -400,7 +400,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 76488,
+          "bytes": 77224,
           "alt": "Página 5."
         }
       ],
@@ -432,7 +432,7 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 23556
+        "bytes": 211448
       },
       "detected": {
         "apis": [
@@ -558,7 +558,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 286,
+        "configLeaves": 277,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
@@ -570,8 +570,8 @@
           "{attrs}"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [

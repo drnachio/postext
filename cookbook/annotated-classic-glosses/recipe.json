@@ -64,9 +64,10 @@
     ],
     "images": [
       {
-        "what": { "en": "The tea-table seen from above, drawn in code in the page’s palette", "es": "La mesa del té vista desde arriba, dibujada en código con la paleta de la página" },
-        "who": "Ignacio Ferro",
-        "license": "CC-BY-4.0"
+        "what": { "en": "The tea-table seen from above, a watercolour", "es": "La mesa del té vista desde arriba, una acuarela" },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "tea-table-1560.jpg"
       }
     ],
     "fonts": [

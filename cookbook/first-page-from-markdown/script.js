@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 012 · From a Markdown string to a designed page ══════════
 // https://postext.dev/en/cookbook/first-page-from-markdown
-// Code: MIT · Text: original (CC BY 4.0) · Drawing: generated in code (CC BY 4.0)
+// Code: MIT · Text: original (CC BY 4.0) · Photo: diffusion models
 // Fonts: Newsreader, Young Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 //
 // This pen sets a Markdown string with a frontmatter block on two magazine pages and paints
@@ -22,16 +22,16 @@ const LEAD = 13.5; // pt: the body leading, the grid every vertical space steps 
 // #region palette: six named colours; every colour in the config links to one of them
 const palette = {
   ink: '#1b1e23', // text: a cool near-black, never #000
-  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
-  sand: '#e9dcc0', // the title, the byline and the dunes
-  salt: '#f7f4ee', // the standfirst, the salt pans and the cairn
+  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
+  sand: '#e9dcc0', // the kicker, the title and the byline
+  salt: '#f7f4ee', // the standfirst
   rule: '#d6d3cc', // the hairline over the colophon
   muted: '#66686e', // running heads and the colophon
 };
 // Each colour carries its palette id and its hex: 1.4.1 paints the elements of headers,
 // footers and openers from the hex (gotcha: palette-skips-designs). The design objects
 // below are factories that config() calls, so col() copies the hex out of `palette` on
-// every build, and a retint reaches the band and the folios too.
+// every build, and a retint reaches the folios and the drop folio too.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = () => [
   ...Object.entries(palette)
@@ -43,79 +43,21 @@ const colorPalette = () => [
 ];
 // #endregion
 
-// #region art: salt pans and the dunes at Sorra, drawn in code for a page × band frame
-function landscape(w, h) { // in mm: the page width by the depth of the band
-  let seed = 11; // Mulberry32, a tiny seeded PRNG: never Math.random() in a recipe
-  const rand = () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-  const f = (n) => n.toFixed(1);
-  const fill = (id, opacity) => `fill="${palette[id]}" fill-opacity="${opacity}"`;
-  const gy = h - 36; // the horizon: the flats take the bottom 36 mm of the band
-  const k = w / 170; // the flats are laid out across a 170 mm width, then scaled to the page
-  // A low dune: a smooth, jittered ridge from (x0, y0) up to (w, y1), filled down to the foot.
-  const dune = (x0, y0, y1, jitter, opacity) => {
-    const p = Array.from({ length: 9 }, (_, i) => [x0 + ((w - x0) * i) / 8,
-      y0 + ((y1 - y0) * i) / 8 - (i && i < 8 ? rand() * jitter : 0)]);
-    const ridge = p.slice(1, -1).map(([x, y], i) =>
-      `Q${f(x)} ${f(y)} ${f((x + p[i + 2][0]) / 2)} ${f((y + p[i + 2][1]) / 2)}`).join('');
-    return `<path d="M${f(x0)} ${f(y0)}${ridge}L${f(w)} ${f(y1)}V${h + 8}H${f(x0)}Z" `
-      + `${fill('sand', opacity)}/>`;
-  };
-  // The article's forty pans in perspective, whiter towards the front, each a little askew.
-  const at = (u, v) => `${f(k * (36 - 32 * v + (56 + 50 * v) * u))},${f(gy + 2 + 34 * v ** 1.4)}`;
-  let pans = '';
-  for (let row = 0; row < 5; row++) {
-    for (let c = 0; c < 8; c++) {
-      const j = () => 0.05 * rand();
-      const [u0, u1] = [(c + 0.06 + j()) / 8, (c + 0.94 - j()) / 8];
-      const [v0, v1] = [(row + 0.1 + j()) / 5, (row + 0.9 - j()) / 5];
-      const s = 0.012 * (rand() - 0.5); // a slight twist
-      const white = Math.min(1, 0.6 + (0.36 * (row * 8 + c)) / 39 + 0.04 * rand());
-      pans += `<polygon points="${at(u0 + s, v0)} ${at(u1 + s, v0)} ${at(u1 - s, v1)} `
-        + `${at(u0 - s, v1)}" ${fill('salt', white.toFixed(2))}/>`;
-    }
-  }
-  // The dunes at Sorra: a long windward slope, a sharp crest, a shaded slip face falling away
-  // to the right, and a cairn of white stones on the crest.
-  const [cx, cy] = [0.8 * w, 0.6 * h];
-  const up = `M${f(0.44 * w)} ${gy + 2}C${f(0.58 * w)} ${gy - 3} ${f(cx - 18)} ${f(cy + 3)} `
-    + `${f(cx)} ${f(cy)}`;
-  const foot = `L${f(0.56 * w)} ${h}Q${f(0.48 * w)} ${gy + 12} ${f(0.44 * w)} ${gy + 2}Z`;
-  const brink = `C${f(cx + 2)} ${f(cy + 10)} ${f(cx + 7)} ${h - 10} ${f(cx + 14)} ${h}`;
-  const whole = `${up}C${f(cx + 6)} ${f(cy + 3)} ${f(cx + 20)} ${f(cy + 14)} ${w} ${f(cy + 22)}`
-    + `V${h}${foot}`;
-  const sorra = `<path d="${whole}" fill="${palette.band}"/>` // opaque: hides the pans behind
-    + `<path d="${whole}" ${fill('sand', 0.74)}/><path d="${up}${brink}${foot}" `
-    + `${fill('sand', 0.88)}/>`;
-  let cairn = '';
-  let y = cy + 0.6;
-  for (const [sw, sh] of [[6.4, 2.2], [5, 2], [3.8, 1.8], [2.6, 1.5]]) {
-    cairn += `<ellipse cx="${f(cx + 0.8 * (rand() - 0.5))}" cy="${f(y - sh / 2)}" `
-      + `rx="${sw / 2}" ry="${sh / 2}" ${fill('salt', 1)}/>`;
-    y -= sh * 0.82;
-  }
-  // The carriers' trail: across the pans, then up the windward slope to the cairn.
-  const trail = `M${f(0.13 * w)} ${h}C${f(0.22 * w)} ${h - 14} ${f(0.38 * w)} ${gy + 14} `
-    + `${f(0.48 * w)} ${gy + 5}C${f(0.6 * w)} ${gy} ${f(cx - 18)} ${f(cy + 6)} `
-    + `${f(cx - 1)} ${f(cy + 0.5)}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" height="${h * 10}" `
-    + `viewBox="0 0 ${w} ${h}">${dune(0, gy, gy - 3, 5, 0.22)}`
-    + `<rect y="${gy + 1}" width="${w}" height="35" ${fill('sand', 0.1)}/>${pans}${sorra}`
-    + `${dune(0.66 * w, h + 4, gy + 18, 3, 1)}<path d="${trail}" fill="none" `
-    + `stroke="${palette.ink}" stroke-opacity="0.55" stroke-width="0.7" `
-    + `stroke-dasharray="1.4 1.2"/>${cairn}</svg>`;
-}
+// #region art: a photograph of the salt pans and the dunes at Sorra, cut for a page × band frame
+// A JPEG in assets/, cut to PAGE.width × BAND (180 × 140 mm) and declared at its pixels, so at
+// full width it fills the band exactly. A deeper band needs a picture cut to the new frame.
+const landscape = { id: 'landscape', typeId: 'figure', kind: 'bitmap', createdAt: 0,
+  updatedAt: 0, bitmap: { fileId: 'salt-road-1440.jpg', format: 'jpeg', width: 1440,
+    height: 1120 },
+  altText: 'Salt pans at dusk, a dune with a cairn of white stones on its crest, and a line of '
+    + 'footprints crossing the pans towards it.' };
 // #endregion
 
 // #region opener: the H1 as a bleed band; kicker, title, standfirst and byline sit on it
 const BAND = 140; // mm from the top edge: the band holds the top 58% of the page
 const TITLE_W = 130; // mm: room for two lines of the title; a third would push the byline
-// under the horizon (BAND − 36 mm), onto the pale pans: keep titles short or deepen BAND
-const DECK_W = 104; // mm: the standfirst stops short of the dune's crest (0.8 × PAGE.width)
+// down onto the pale salt pans: keep titles short
+const DECK_W = 104; // mm: the standfirst stops short of the dune and its cairn
 const MAGAZINE = t({ en: 'Field notes', es: 'Cuaderno de campo' });
 const label = { fontFamily: 'Inter Tight', fontSize: pt(7.5), fontWeight: 600,
   letterSpacing: pt(1.4), textTransform: 'uppercase' };
@@ -126,10 +68,7 @@ const opener = () => ({
   minHeight: mm(BAND - MARGIN.top + 5), // from the top margin to the band's foot, plus 5 mm
   slot: {
     elements: [
-      { kind: 'box', id: 'band', style: { backgroundColor: col('band') },
-        placement: { anchor: { to: 'bleed', edge: 'top-left' },
-          size: { width: 'fill', height: mm(BAND) } } },
-      // The drawing is PAGE.width × BAND (see resources): at full width it fills the band.
+      // The photograph is PAGE.width × BAND (see art): at full width it fills the band.
       { kind: 'image', id: 'art', resourceId: 'landscape',
         placement: { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill' } } },
       { kind: 'text', id: 'kicker', content: MAGAZINE, ...label, color: col('sand'),
@@ -229,12 +168,8 @@ const config = () => ({ // a new object per build (gotcha: config-cache-identity
 // date or a number would print empty (gotcha: quote-frontmatter). The end mark is an inline
 // swatch that names `band`, so it follows the palette too.
 const markdown = /* @content */ '';
-// The drawing is a resource, drawn for a PAGE.width × BAND mm frame at 10 px per mm: the
-// opener's image element points at it by id.
-const resources = [
-  { id: 'landscape', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-    svg: { fileId: 'landscape.svg', width: PAGE.width * 10, height: BAND * 10 } },
-];
+// The opener's image element points at the photograph by id.
+const resources = [landscape];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // #region fonts: every face the design uses, loaded first (gotcha: fonts-first)
@@ -246,9 +181,9 @@ const FONTS = {
 // #endregion
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-// #region build: fonts, the drawing, one buildDocument call with a fresh config, then paint
+// #region build: fonts, the photograph, one buildDocument call with a fresh config, then paint
 await loadFonts(FONTS, markdown);
-await loadSvg('landscape.svg', landscape(PAGE.width, BAND));
+await loadImage(landscape.bitmap.fileId, asset(landscape.bitmap.fileId));
 const doc = await buildWithFonts(
   () => buildDocument({ markdown, resources }, config()), markdown);
 // showPages paints each page with renderPageToCanvas(page, doc, canvas, { scale }).

@@ -1,16 +1,16 @@
 ---
 title: "Early reader with syllable chips"
-summary: "A Spanish primer unit for the letter M: syllables as chips in the colour of their vowel, and a grid of picture words with a drawing in each cell."
+summary: "A Spanish primer unit for the letter M: syllables as chips in the colour of their vowel, and a grid of picture words with a watercolour in each cell."
 plain: "Three pages of a Spanish reading book for young children, on the letter M. Each syllable sits in a small coloured label, and each word in a grid has its own picture."
 description: "A reading-primer unit set with Postext: one chip style per vowel, words written as touching syllable chips, a rounded picture grid and tracing rows."
 question: "How do I set syllables as coloured inline chips, one colour per vowel, in an early-reading primer?"
 aliases: ["early reader", "phonics", "syllables", "reading primer", "children's workbook", "cartilla"]
-pageNotes: { "1": "A cream band with a giant Mm, a butterfly and an apple; below it the syllables ma, me, mi, mo, mu and am, em, im, om, um as chips coloured by vowel, then eight words split into syllable chips.", "2": "Six picture words, mano, mapa, mesa, mimosa, mono and muñeca, in a rounded grid of cream tiles, each drawing above its syllables; below it, tracing rows for m, M and the five syllables.", "3": "Four sentences at 24 pt with the new words in syllable chips, a cream box of outlined syllables to colour in, a note for the family and the colophon." }
+pageNotes: { "1": "A cream band with a giant Mm, a butterfly and an apple; below it the syllables ma, me, mi, mo, mu and am, em, im, om, um as chips coloured by vowel, then eight words split into syllable chips.", "2": "Six picture words, mano, mapa, mesa, mimosa, mono and muñeca, in a rounded grid of cream tiles, each picture above its syllables; below it, tracing rows for m, M and the five syllables.", "3": "Four sentences at 24 pt with the new words in syllable chips, a cream box of outlined syllables to colour in, a note for the family and the colophon." }
 ---
 
 ## What you'll build
 
-Unit 7 of *Letra a letra*, an invented Spanish reading primer: three pages on the letter M. Spanish primers teach reading syllable by syllable, so the sample is in Spanish only. The opener sets a 190 pt DynaPuff Mm on a cream band beside two things whose Spanish names start with m, a butterfly (*mariposa*) and an apple (*manzana*). The unit's syllables are chips in the colour of their vowel: red a, orange e, teal i, blue o, purple u. Syllables with an m are filled and the rest are outlined, so a child sees which half of *mesa* belongs to this unit. Page 38 sets six picture words in a rounded grid, a drawing in each cell, then three rows of letters to trace. Page 39 has four sentences at 24 pt, a box of syllables to colour in and a note for the family.
+Unit 7 of *Letra a letra*, an invented Spanish reading primer: three pages on the letter M. Spanish primers teach reading syllable by syllable, so the sample is in Spanish only. The opener sets a 190 pt DynaPuff Mm on a cream band beside two things whose Spanish names start with m, a butterfly (*mariposa*) and an apple (*manzana*). The unit's syllables are chips in the colour of their vowel: red a, orange e, teal i, blue o, purple u. Syllables with an m are filled and the rest are outlined, so a child sees which half of *mesa* belongs to this unit. Page 38 sets six picture words in a rounded grid, a watercolour in each cell, then three rows of letters to trace. The watercolours were generated with diffusion models; the band, the icons and the tracing rows are drawn in code. Page 39 has four sentences at 24 pt, a box of syllables to colour in and a note for the family.
 
 ## Method
 
@@ -24,11 +24,11 @@ Unit 7 of *Letra a letra*, an invented Spanish reading primer: three pages on th
 
 A chip's vertical padding and border paint outside its line and add no leading, so a chip taller than the line pitch runs into the chips of the line below. A 24 pt syllable chip is 10.4 mm tall; at 30 pt leading (10.6 mm), the chips of two sentences would stand 0.1 mm apart. The lines a child reads get 45 pt and the rows of syllables 60 pt, three and four lines of the instructions' 15 pt grid.
 
-### 3 · A drawing in every cell
+### 3 · A picture in every cell
 
 <Excerpt region="pictures" />
 
-`setCellImage` sets a drawing above a cell's text at a fraction of the cell's inner width, 0.72 here (36.5 mm), and the row grows to hold it. Under each drawing is the word in syllable chips. A table cell takes chip markup like any paragraph. The `dibujos` table style rounds the frame and its fills at 5 mm and parts the cream tiles with 4 pt white rules.
+`setCellImage` sets a picture above a cell's text at a fraction of the cell's inner width, 0.72 here (36.5 mm), and the row grows to hold it. Each picture is a JPEG painted on white and multiplied by the tiles' cream, so it sits on the tile without a box. Under each picture is the word in syllable chips. A table cell takes chip markup like any paragraph. The `dibujos` table style rounds the frame and its fills at 5 mm and parts the cream tiles with 4 pt white rules.
 
 ### 4 · One line of space before the box
 

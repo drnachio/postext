@@ -47,5 +47,5 @@ Every valley has its own winds and its own names for them. Sailors and farmers n
 Weather stations measure the wind ten metres above open ground and average it over ten minutes, because wind is never steady. It comes in gusts and lulls, eddies round buildings and hedges, and blows harder over the sea than over a town; a gust can be half as strong again as the average around it. That is why a forecast gives two figures, a mean speed and a gust speed, and on an open hill you plan for the second.
 
 :::paragraphs{style="colophon"}
-*Notes on Weather*, part I. Set in Newsreader, Gloock and Reddit Sans (SIL Open Font License). Text and drawings: original, CC BY 4.0.
+*Notes on Weather*, part I. Set in Newsreader, Gloock and Reddit Sans (SIL Open Font License). Text and drawings: original, CC BY 4.0. The photograph is generated.
 :::

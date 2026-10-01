@@ -8,7 +8,7 @@ author: "Kate Chopin"
 :::paragraphs{style="colophon"}
 First published by Herbert S. Stone & Company, Chicago, in April 1899. Chapters I and II follow Project Gutenberg eBook #160, with Chopin’s spelling and punctuation.
 
-Set in Crimson Pro, Cormorant Garamond and Cormorant SC (SIL Open Font License). The cover, drawn in code, shows the gulf from the Lebrun cottages on Grand Isle.
+Set in Crimson Pro, Cormorant Garamond and Cormorant SC (SIL Open Font License). The cover, a painting, shows the gulf from the Lebrun cottages on Grand Isle.
 
 A Postext Cookbook edition. The text is in the public domain.
 :::

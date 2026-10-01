@@ -205,6 +205,16 @@ The built-in Chinese figure and table types number by chapter with a hyphen (图
 
 A back-of-book index of a Chinese book groups its entries by pinyin initial (Simplified) or by stroke count (Traditional), from the collator's own data (`index.groupBy`, `'auto'` by default). A character with several readings files under the collator's usual one; give such an entry a `sort` key in characters that read as intended: `:index[重阳]{sort="崇阳"}`. See [Back-of-book index](/en/docs/configuration#back-of-book-index).
 
+### Footnotes
+
+A mainland book numbers its notes (页下注) with circled numbers that start again on every page: ① is the first note of each page, set on the baseline in the text and at the head of the note. Most Taiwan and Hong Kong books do the same.
+
+```ts
+footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
+```
+
+With `circled-decimal` the marker is set inline by default (`markerPosition: 'auto'`); `markerSize: { value: 0.75, unit: 'em' }` sets it smaller than the text. Numbers past 50 have no circled form and are written in decimal. A note's number depends on the page it lands on, so a document numbered by page is laid out by chapter first, numbered where its notes landed and laid out again; a circled marker has the same width whatever its number, so the second build moves no line. `numbering: 'column'` starts again in every column, for books that set their notes column by column. Like a superscript, the marker stays with the character before it and never opens a line, and in vertical text it stands upright in a cell of its own. **Chinese defaults** in the Sandbox lists these settings among its changes. See [Footnotes](/en/docs/configuration#footnotes).
+
 ## Vertical writing
 
 `layout.writingMode: 'vertical-rl'` sets the book down the page. The whole composition above applies unchanged, down the line instead of across it; what changes is the page around it and the way each character stands.
@@ -312,7 +322,7 @@ The traditional voices of a Chinese book map onto families: Song (宋体, Noto S
 
 ### A mainland novel, set horizontally
 
-A 大32开 book, 28 × 28 characters of Noto Serif SC at 10.5 pt, chapters numbered 第一章, Kaiming punctuation and GB line breaking from the locale:
+A 大32开 book, 28 × 28 characters of Noto Serif SC at 10.5 pt, chapters numbered 第一章, notes numbered ① on each page, Kaiming punctuation and GB line breaking from the locale:
 
 ```ts
 import type { PostextConfig } from 'postext';
@@ -341,6 +351,7 @@ const config: PostextConfig = {
     ],
   },
   captionStyle: { labelNumberGap: '', labelSeparator: '　' },
+  footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
   cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28 } },
   header: { elements: [] },
   footer: { elements: [

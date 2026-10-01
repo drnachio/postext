@@ -10,7 +10,7 @@ pageNotes: { "2": "The headnote in italic, then Letter I: LETTRE I in red small 
 
 ## What you'll build
 
-Five pages of *Mon sort est changé*, a 14 × 21 cm edition of three letters in French: the two that Frederick II wrote to Voltaire six and twelve days after he became king of Prussia, in June 1740, and Voltaire’s letter of 1 April 1778, two months before his death. The cover, drawn in code, shows two folded letters and a red wax seal on green morocco inside a gilt double fillet. Inside, the letters run on with no page breaks. Each head gives the number in red small capitals and the two correspondents in Fell italic, with the place and date flush right beneath them. The salutation has a line of its own, and the signature, in small capitals, ends the letter at the right margin; Frederick’s postscript follows his signature a size smaller. The running head on each recto gives the date of the letter.
+Five pages of *Mon sort est changé*, a 14 × 21 cm edition of three letters in French: the two that Frederick II wrote to Voltaire six and twelve days after he became king of Prussia, in June 1740, and Voltaire’s letter of 1 April 1778, two months before his death. On the cover, a photograph of two folded letters and a red wax seal, generated with diffusion models, lies on green morocco drawn in code inside a gilt double fillet. Inside, the letters run on with no page breaks. Each head gives the number in red small capitals and the two correspondents in Fell italic, with the place and date flush right beneath them. The salutation has a line of its own, and the signature, in small capitals, ends the letter at the right margin; Frederick’s postscript follows his signature a size smaller. The running head on each recto gives the date of the letter.
 
 ## Method
 
@@ -34,7 +34,7 @@ In a page header, `{attr.date}` takes the attribute of the last level-1 heading 
 
 <Excerpt region="cover" />
 
-The cover is the first heading, in the `cover` [heading style](/en/docs/configuration#heading-styles): an image element anchored to the bleed carries the drawing, and the title, the names and the subtitle come from the heading and the frontmatter. `numbered: false` leaves it out of the count, so Frederick’s first letter is I. The design reserves room only down to its lowest text, the subtitle, and none for the drawing. Without the `:::pagebreak` after the heading, the headnote and Letter I would start on page 1, over the two drawn letters and the seal.
+The cover is the first heading, in the `cover` [heading style](/en/docs/configuration#heading-styles): an image element anchored to the bleed carries the drawn binding, a second one places the photograph 72 mm down, and the title, the names and the subtitle come from the heading and the frontmatter. `numbered: false` leaves it out of the count, so Frederick’s first letter is I. The design reserves room only down to its lowest text, the subtitle, and none for the images. Without the `:::pagebreak` after the heading, the headnote and Letter I would start on page 1, over the photographed letters and the seal.
 
 ### 5 · Hyphenate the French, and keep the spaces open
 

@@ -1,8 +1,8 @@
 ---
 title: "Trade paperback: sunk openers and recto chapters"
-summary: "The Awakening as a 140 × 216 mm trade paperback: a drawn cover and a colophon with no running heads, then chapters sunk on rectos under an italic numeral."
+summary: "The Awakening as a 140 × 216 mm trade paperback: a painted cover and a colophon with no running heads, then chapters sunk on rectos under an italic numeral."
 plain: "The first two chapters of an American novel as a paperback book. Each chapter starts on a right-hand page, lower down, under a large chapter number."
-description: "Kate Chopin’s The Awakening set with Postext: a drawn cover, a colophon verso, chapters sunk on rectos, a blank verso with no folio and camomile tailpieces."
+description: "Kate Chopin’s The Awakening set with Postext: a painted cover, a colophon verso, chapters sunk on rectos, a blank verso with no folio and camomile tailpieces."
 question: "How do I start every chapter on a right-hand page, sunk a third of the way down, as a trade paperback does?"
 aliases: ["trade paperback", "novel", "sunk opener", "chapter drop", "chapter opener", "recto", "right-hand page", "odd page", "blank verso", "blank page", "parity", "small caps lead", "first sentence in small capitals", "tailpiece", "fleuron", "printer’s flower", "ornament", "colophon", "copyright page", "cover", "section running heads", "Kate Chopin", "The Awakening"]
 pageNotes: { "1": "The cover: the gulf seen between the trunks of water-oaks, a lugger on the horizon and a white sunshade coming up the path through the camomile; below, the title in large italic and the author in small capitals.", "2": "The colophon, set small at the foot of the page, with no running head or folio.", "3": "Chapter I sunk on a recto: an italic I, a short rust-red hairline, the first sentence in two centred lines of small capitals, and the text from 81 mm down.", "6": "A blank verso with no running head or folio, left so that chapter II opens on a recto.", "7": "Chapter II opens like chapter I, with its first sentence broken after the semicolon." }
@@ -10,7 +10,7 @@ pageNotes: { "1": "The cover: the gulf seen between the trunks of water-oaks, a 
 
 ## What you'll build
 
-Eight pages of a 140 × 216 mm trade paperback hold the first two chapters of Kate Chopin’s *The Awakening* (1899). The cover, drawn in code, shows the gulf from the Lebrun cottages on Grand Isle: a lugger on the horizon between the water-oaks, and the white sunshade coming up through the camomile. The colophon sits at the foot of its verso. Each chapter opens on a recto with its text 81 mm down, under a 48 pt italic numeral, an 18 mm rust-red hairline and the chapter’s first sentence in small capitals, broken by sense into two centred lines. Chapter I ends on page 5 with a camomile tailpiece, so page 6 stays blank, with no running head or folio, and chapter II opens on page 7. The running heads carry the author on versos and the title in italic on rectos.
+Eight pages of a 140 × 216 mm trade paperback hold the first two chapters of Kate Chopin’s *The Awakening* (1899). The cover, a painting generated with diffusion models and loaded as a JPEG, shows the gulf from the Lebrun cottages on Grand Isle: a lugger on the horizon between the water-oaks, and the white sunshade coming up through the camomile. The colophon sits at the foot of its verso. Each chapter opens on a recto with its text 81 mm down, under a 48 pt italic numeral, an 18 mm rust-red hairline and the chapter’s first sentence in small capitals, broken by sense into two centred lines. Chapter I ends on page 5 with a camomile tailpiece, so page 6 stays blank, with no running head or folio, and chapter II opens on page 7. The running heads carry the author on versos and the title in italic on rectos.
 
 ## Method
 
@@ -36,7 +36,7 @@ The bottom margin is what the 216 mm trim leaves after the top margin and 35 lin
 
 <Excerpt region="cover" />
 
-The cover is a heading, `# The Awakening {style="cover"}`. Its style draws the art over the top 134 mm, the frontmatter’s title at 50 pt and the author in small capitals. The style also applies to the section the heading opens, pages 1 and 2, until chapter I. Its empty `header` and `footer` keep the drop folio off the cover and the running heads off the colophon. Its top margin puts the colophon on the last six grid lines of the text block, so the colophon’s last line is level with the last line of page 3 ([heading styles](/en/docs/configuration#heading-styles)). The style needs `span: 'page'` even in one column. A design kept in the column is clipped at the column’s top, here 165 mm down; without `span: 'page'` the art would not print and the title would lose its upper part.
+The cover is a heading, `# The Awakening {style="cover"}`. Its style places the painting over the top 134 mm, the frontmatter’s title at 50 pt and the author in small capitals. The style also applies to the section the heading opens, pages 1 and 2, until chapter I. Its empty `header` and `footer` keep the drop folio off the cover and the running heads off the colophon. Its top margin puts the colophon on the last six grid lines of the text block, so the colophon’s last line is level with the last line of page 3 ([heading styles](/en/docs/configuration#heading-styles)). The style needs `span: 'page'` even in one column. A design kept in the column is clipped at the column’s top, here 165 mm down; without `span: 'page'` the painting would not print and the title would lose its upper part.
 
 <PageShot page={2} crop="0,0.7,1,0.24" caption="Page 2: the colophon at the foot of the cover’s verso, with no running head or folio." />
 

@@ -1,4 +1,4 @@
-import type { EastAsianNumeralStyle, NumeralStyle } from './numbering';
+import type { EastAsianNumeralStyle, NumberFormatStyle, NumeralStyle } from './numbering';
 
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
@@ -2750,8 +2750,19 @@ export type FootnotePlacement = 'column' | 'chapterEnd';
 
 /** When the note numbers start again at 1: at each chapter (a heading
  *  that opens a page, `breakBefore`, and the start of each document of a
- *  book), or never within the document. */
-export type FootnoteNumbering = 'chapter' | 'document';
+ *  book), never within the document, on every page (`'page'`, the usual
+ *  页下注 of a Chinese book) or in every column (`'column'`, for books that
+ *  set their notes column by column). `'page'` and `'column'` count the
+ *  notes where the layout sets them, so they apply to notes at the column
+ *  foot only: with `placement: 'chapterEnd'` they number by chapter. */
+export type FootnoteNumbering = 'chapter' | 'document' | 'page' | 'column';
+
+/** How the marker in the text is set:
+ *  - `'superscript'`: raised and reduced, as a superscript (`text¹`);
+ *  - `'inline'`: on the baseline at `markerSize` (`text①`), centred in its
+ *    cell in vertical text — how Chinese books set circled markers;
+ *  - `'auto'`: inline for `circled-decimal` numbers, else superscript. */
+export type FootnoteMarkerPosition = 'auto' | 'superscript' | 'inline';
 
 /** The rule set between the text and the notes of a column. */
 export interface FootnoteSeparatorConfig {
@@ -2775,13 +2786,25 @@ export interface ResolvedFootnoteSeparatorConfig {
 
 /** Footnotes: `[^id]` in the text cites the note `[^id]: text` defined in a
  *  paragraph of its own anywhere in the chapter. The marker prints as a
- *  superscript number; the note prints at the foot of the column (see
+ *  superscript number (or inline, see `markerPosition`); the note prints at the foot of the column (see
  *  {@link FootnotePlacement}), in citation order. */
 export interface FootnotesConfig {
   /** Default `'column'`. */
   placement?: FootnotePlacement;
   /** Default `'chapter'`. */
   numbering?: FootnoteNumbering;
+  /** How the numbers are written, in any spelling of a number format
+   *  (`decimal`, `lower-roman`, `circled-decimal` / `①`, `cjk-decimal`…, see
+   *  `parseNumberFormat`). Default `'decimal'`. `circled-decimal` writes
+   *  numbers past 50 in decimal. */
+  numberFormat?: string;
+  /** Default `'auto'` (see {@link FootnoteMarkerPosition}). The number
+   *  that opens the note itself follows it too: raised, or set at the size
+   *  of the note text. */
+  markerPosition?: FootnoteMarkerPosition;
+  /** Size of an inline marker in the text, `em` of the text around it.
+   *  Default `1em`. No effect on a superscript marker. */
+  markerSize?: Dimension;
   /** `'chapterEnd'` placement: where the notes stand in the columns that
    *  close the chapter. `'foot'` sets them at the foot of the column, the
    *  room left over staying between the text and them (as notes at the
@@ -2815,6 +2838,10 @@ export interface FootnotesConfig {
 export interface ResolvedFootnotesConfig {
   placement: FootnotePlacement;
   numbering: FootnoteNumbering;
+  numberFormat: NumberFormatStyle;
+  /** `'auto'` resolved against the number format. */
+  markerPosition: 'superscript' | 'inline';
+  markerSize: Dimension;
   chapterEndAlign: 'foot' | 'text';
   fontSize: Dimension;
   lineHeight: Dimension;

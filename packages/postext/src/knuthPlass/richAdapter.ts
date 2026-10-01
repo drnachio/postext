@@ -37,6 +37,8 @@ interface RichToken {
   script?: 'sup' | 'sub';
   scriptFont?: string;
   baselineShift?: number;
+  /** An inline footnote marker's own font (see `measure/rich.ts`). */
+  markerFont?: string;
   /** One of a subscript and a superscript set over each other (see
    *  `stackedScriptPairs` in `measure/rich.ts`): the `first` has width 0,
    *  the `second` the pair's advance. */
@@ -270,6 +272,7 @@ export function reconstructRichLines(
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId } : {}),
           ...(token.footnoteId !== undefined ? { footnoteId: token.footnoteId } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
+          ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
           ...(token.tcy ? { tcy: true as const } : {}),

@@ -35,7 +35,7 @@ We called this magazine *Fallow* fourteen issues ago, half as a joke. A quarterl
 :::
 
 :::paragraphs{style="colophon"}
-FALLOW is an imaginary quarterly of food and land, made for the Postext Cookbook. Set in Spectral, Bodoni Moda and Jost (SIL Open Font License). Text: CC BY 4.0. Photographs: Rowan Heuvel, chuttersnap and meriç tuna, CC0, via Wikimedia Commons; the fields and the barcode are drawn in code.
+FALLOW is an imaginary quarterly of food and land, made for the Postext Cookbook. Set in Spectral, Bodoni Moda and Jost (SIL Open Font License). Text: CC BY 4.0. Photographs: Rowan Heuvel, chuttersnap and meriç tuna, CC0, via Wikimedia Commons; the fields are a generated image and the barcode is drawn in code.
 :::
 
 :::part{title="Field notes" palette="band=#a3472a"}
@@ -60,7 +60,7 @@ Nobody here claims that the old wheats are better. They grow tall, so a storm fl
 :::part{title="Features" palette="band=#5d6a2b"}
 :::
 
-# The Year of Rest {style="rest" standfirst="On a farm above Castellina in Chianti, seven fields take turns at wheat, beans, sulla and barley. Every year one of them is left unsown, and the wheat that follows needs little fertiliser." byline="Words by Lucia Fenn" credit="Drawing: made in code for FALLOW"}
+# The Year of Rest {style="rest" standfirst="On a farm above Castellina in Chianti, seven fields take turns at wheat, beans, sulla and barley. Every year one of them is left unsown, and the wheat that follows needs little fertiliser." byline="Words by Lucia Fenn" credit="Photograph: generated for FALLOW"}
 
 Marco Rinaldi keeps a map of his farm on the kitchen wall, drawn on the back of a feed merchant’s calendar. It shows seven fields, numbered in pencil, and beside each a column of crops running back to 1998, when he took over from his father. Read across, the columns make a staircase: wheat, field beans, wheat again, two years of sulla for the sheep, a year of barley, and then a year in which the square is left blank.
 

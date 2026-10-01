@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 076 · A pinyin primer: readings over every character ═══
 // https://postext.dev/en/cookbook/pinyin-primer
-// Code: MIT · Text: 三字經 (PD); pinyin, notes, drawings: original (CC BY 4.0)
+// Code: MIT · Text: 三字經 (PD); pinyin, notes: CC BY 4.0 · Vignettes: diffusion models
 // Fonts: LXGW WenKai TC, Noto Sans TC, Andika (SIL OFL 1.1) · Needs postext ≥ 1.9.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -15,7 +15,7 @@ const palette = {
   ink: '#29241f', // the characters: a warm near-black
   pinyin: '#355a4d', // the readings, a shade off the ink so the two layers part
   red: '#bf3a2b', // lesson badges and the writing squares
-  jade: '#2f7a5e', // folios and drawings
+  jade: '#2f7a5e', // the folio discs
   tint: '#edf4ea', // the band behind each lesson's title
   cream: '#faf3e4', // the note for families
   muted: '#6d665e', // series line, colophon
@@ -164,70 +164,22 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// #region art: the drawings, in the palette's colours
-// No words in them: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts).
+// #region art: the writing square in code, the lessons' vignettes as watercolours
+// The square: a red frame and a dashed cross, the guide for placing strokes.
 const P = palette;
 const mix = (a, b, t) => `#${[1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16)
   * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('')}`;
-const [LEAF, SOIL, WOOD, GOLD] = [mix(P.jade, P.paper, 0.25), '#9a6b47', '#b07a4f', '#e2a83c'];
-const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
-  + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
-const path = (d, fill, extra = '') => `<path d="${d}" fill="${fill}"${extra}/>`;
-const line = (d, color, w, extra = '') => `<path d="${d}" fill="none" stroke="${color}" `
-  + `stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${extra}/>`;
-const dot = (x, y, r, fill, extra = '') => `<circle cx="${x}" cy="${y}" r="${r}" `
-  + `fill="${fill}"${extra}/>`;
-const drawings = {
-  // The writing square: a red frame and a dashed cross, the guide for placing strokes.
-  tian: () => svg(15, 15, line('M7.5 .4V14.6M.4 7.5H14.6', mix(P.red, P.paper, 0.55), 0.18,
-    ' stroke-dasharray=".7 .55"') + `<rect x=".2" y=".2" width="14.6" height="14.6" fill="none" `
-    + `stroke="${P.red}" stroke-width=".35"/>`),
-  // 人之初: a seedling out of the earth.
-  sprout: () => svg(42, 42, dot(21, 21, 17, mix(P.tint, P.paper, 0.6))
-    + path('M5 35C12 29 30 29 37 35Z', SOIL) + line('M21 31C21 25 20.5 21 22 16', P.jade, 1.3)
-    + path('M21.4 22C15 23 9.5 19.5 9 13.5C15.5 13 20.5 16.5 21.4 22Z', LEAF)
-    + path('M21.8 18C24 11 30 8 35.5 9.5C34.5 16 28.5 19.5 21.8 18Z', P.jade)
-    + line('M21 21.6C17 19.5 13.5 17 11.5 15M22.4 17.4C26 14.5 29.5 12 33.5 10.4',
-      mix(P.jade, P.paper, 0.5), 0.35)),
-  // 昔孟母: the shuttle (杼) of a loom crossing the warp, over the cloth already woven.
-  shuttle: () => svg(42, 42, dot(21, 21, 17, mix(P.tint, P.paper, 0.6))
-    + path('M9 29H33V36H9Z', P.cream) + [30.2, 31.6, 33, 34.4].map((y) => line(`M9 ${y}H33`,
-      mix(P.red, P.paper, 0.45), 0.5)).join('')
-    + Array.from({ length: 11 }, (_, k) => line(`M${10 + k * 2.2} 7V36`,
-      mix(P.muted, P.paper, 0.5), 0.25)).join('')
-    + path('M3 23C10 17 32 17 39 23C32 29 10 29 3 23Z', WOOD)
-    + path('M3 23L7 21.4V24.6ZM39 23L35 21.4V24.6Z', mix(WOOD, P.ink, 0.45))
-    + path('M13 20.6H29Q30 20.6 30 21.6V24.4Q30 25.4 29 25.4H13Q12 25.4 12 24.4V21.6Q12 20.6 13'
-      + ' 20.6Z', mix(WOOD, P.ink, 0.6)) + path('M14 21.4H28V24.6H14Z', P.red)
-    + [16, 18.5, 21, 23.5, 26].map((x) => line(`M${x} 21.4V24.6`, mix(P.red, P.paper, 0.4), 0.3))
-      .join('') + line('M28 23C32 23 33 27.5 35 30S37.5 34 39.5 34.5', P.red, 0.45)),
-  // 養不教: a brush setting its first stroke in a writing square.
-  brush: () => svg(42, 42, dot(21, 21, 17, mix(P.tint, P.paper, 0.6))
-    + path('M8 12H30V36H8Z', P.paper, ` stroke="${mix(P.ink, P.paper, 0.75)}" stroke-width=".25"`)
-    + line('M19 17V33M11 25H27', mix(P.red, P.paper, 0.55), 0.18, ' stroke-dasharray=".7 .55"')
-    + path('M11 17H27V33H11Z', 'none', ` stroke="${P.red}" stroke-width=".3"`)
-    + path('M13.2 25.2C15.5 23.9 20.5 23.5 24 23.8C25.2 23.9 25.5 25 24.4 25.4C21 26.1 16.5 26.3'
-      + ' 13.6 26.1C12.9 26 12.8 25.4 13.2 25.2Z', P.ink)
-    + line('M28.4 20.4L37.5 7.5', GOLD, 1.7) + line('M31 16.7L31.4 16.1M34.3 12L34.7 11.4',
-      mix(GOLD, P.ink, 0.35), 1.8) + path('M27.3 19.4L29.7 21.2L28.9 22.2L26.6 20.5Z', P.ink)
-    + path('M24.6 24.6C24.8 23.1 25.6 21.6 26.7 20.4L28.9 22.1C28.1 23.4 26.6 24.4 24.6 24.6Z',
-      P.ink)),
-  // 玉不琢: a jade disc (璧), carved with rows of grain, on a red cord.
-  jade: () => svg(42, 42, dot(21, 21, 17, mix(P.tint, P.paper, 0.6))
-    + line('M21 3V11', P.red, 0.9) + path('M21 23m-12 0a12 12 0 1 0 24 0a12 12 0 1 0 -24 0Z'
-      + 'M21 23m-4.2 0a4.2 4.2 0 1 1 8.4 0a4.2 4.2 0 1 1 -8.4 0Z', P.jade, ' fill-rule="evenodd"')
-    + [7.2, 9.6].flatMap((r) => Array.from({ length: Math.round(r * 2.2) }, (_, k) => {
-      const a = (k / Math.round(r * 2.2)) * 2 * Math.PI;
-      return dot(+(21 + r * Math.cos(a)).toFixed(2), +(23 + r * Math.sin(a)).toFixed(2), 0.55,
-        mix(P.jade, P.paper, 0.45));
-    })).join('') + line('M21 18.8V14', P.red, 0.9) + dot(21, 35.6, 1.3, P.red)
-    + path('M19.6 36.4H22.4L23.6 41H18.4Z', P.red)),
-};
-const artwork = Object.entries(drawings).map(([id, draw]) => {
-  const [width, height] = draw().match(/width="(\d+)" height="(\d+)"/).slice(1).map(Number);
-  return { id, typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-    svg: { fileId: `${id}.svg`, width, height } };
-});
+const tian = '<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" '
+  + 'viewBox="0 0 15 15"><path d="M7.5 .4V14.6M.4 7.5H14.6" fill="none" stroke-width=".18" '
+  + `stroke="${mix(P.red, P.paper, 0.55)}" stroke-dasharray=".7 .55"/><rect x=".2" y=".2" `
+  + `width="14.6" height="14.6" fill="none" stroke="${P.red}" stroke-width=".35"/></svg>`;
+// The vignettes: 人之初 a seedling, 昔孟母 the loom's shuttle, 養不教 a brush's first stroke,
+// 玉不琢 a jade disc. Painted on white and multiplied by the band's tint, so they sit on it.
+const VIGNETTES = ['sprout-800.jpg', 'shuttle-800.jpg', 'brush-800.jpg', 'jade-800.jpg'];
+const artwork = [{ id: 'tian', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
+  svg: { fileId: 'tian.svg', width: 150, height: 150 } }, ...VIGNETTES.map((fileId) => ({
+  id: fileId.split('-')[0], typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId, format: 'jpeg', width: 800, height: 800 } }))]; // at their pixels
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
@@ -248,7 +200,7 @@ const labels = (markdown.match(/^#{1,3} [^{\n]*/gm) ?? []).join('') + '蒙學誦
 await loadFonts(FONTS, markdown); // the latin files, and Andika's latin-ext for ǎ ǐ ǒ ǔ
 await Promise.all([loadCjkFonts({ [KAI]: FONTS[KAI] }, markdown),
   loadCjkFonts({ [HEI]: FONTS[HEI] }, labels),
-  ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
+  loadSvg('tian.svg', tian), ...VIGNETTES.map((fileId) => loadImage(fileId, asset(fileId)))]);
 // #endregion
 // Page 1 is page 36 of the primer: a verso, so the four lessons lie as two spreads.
 const continuation = { pageIndexOffset: 35, pageNumbering: { startAt: 36 } };

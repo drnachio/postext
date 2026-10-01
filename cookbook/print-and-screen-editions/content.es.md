@@ -47,5 +47,5 @@ Cada valle tiene sus vientos, y sus nombres para ellos. Marineros y labradores l
 En las estaciones meteorológicas, el viento se mide a diez metros sobre terreno despejado y se promedia durante diez minutos, porque el viento nunca es constante. Llega en rachas y calmas, se arremolina junto a edificios y setos, y sopla más fuerte sobre el mar que sobre una ciudad; una racha puede ser un cincuenta por ciento más intensa que la media que la rodea. Por eso el pronóstico da dos cifras, la velocidad media y la de las rachas, y en el monte hay que contar con la segunda.
 
 :::paragraphs{style="colophon"}
-*Apuntes del tiempo*, parte I. Compuesto en Newsreader, Gloock y Reddit Sans (SIL Open Font License). Texto y dibujos: originales, CC BY 4.0.
+*Apuntes del tiempo*, parte I. Compuesto en Newsreader, Gloock y Reddit Sans (SIL Open Font License). Texto y dibujos: originales, CC BY 4.0. La fotografía es generada.
 :::

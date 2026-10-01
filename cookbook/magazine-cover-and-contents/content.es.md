@@ -35,7 +35,7 @@ Hace catorce números llamamos *Fallow* a esta revista (en inglés, *fallow* es 
 :::
 
 :::paragraphs{style="colophon"}
-FALLOW es una revista trimestral imaginaria de comida y tierra, hecha para el Recetario de Postext. Compuesta en Spectral, Bodoni Moda y Jost (SIL Open Font License). Texto: CC BY 4.0. Fotografías: Rowan Heuvel, chuttersnap y meriç tuna, CC0, vía Wikimedia Commons; los campos y el código de barras están dibujados con código.
+FALLOW es una revista trimestral imaginaria de comida y tierra, hecha para el Recetario de Postext. Compuesta en Spectral, Bodoni Moda y Jost (SIL Open Font License). Texto: CC BY 4.0. Fotografías: Rowan Heuvel, chuttersnap y meriç tuna, CC0, vía Wikimedia Commons; los campos, imagen generada, y el código de barras, dibujado con código.
 :::
 
 :::part{title="Cuaderno de campo" palette="band=#a3472a"}
@@ -60,7 +60,7 @@ Aquí nadie dice que los trigos antiguos sean mejores. Como son altos, se tumban
 :::part{title="Reportajes" palette="band=#5d6a2b"}
 :::
 
-# El año del descanso {style="rest" standfirst="En una finca por encima de Castellina in Chianti, siete campos se turnan entre el trigo, las habas, la zulla y la cebada. Cada año uno se queda sin sembrar, y el trigo siguiente apenas necesita abono." byline="Texto de Lucia Fenn" credit="Dibujo: hecho con código para FALLOW"}
+# El año del descanso {style="rest" standfirst="En una finca por encima de Castellina in Chianti, siete campos se turnan entre el trigo, las habas, la zulla y la cebada. Cada año uno se queda sin sembrar, y el trigo siguiente apenas necesita abono." byline="Texto de Lucia Fenn" credit="Fotografía: generada para FALLOW"}
 
 Marco Rinaldi tiene un mapa de su finca en la pared de la cocina, dibujado en el dorso del calendario de un almacén de piensos. Muestra siete campos, numerados a lápiz, y junto a cada uno una columna de cultivos que se remonta a 1998, cuando tomó el relevo de su padre. Leídas en horizontal, las columnas forman una escalera: trigo, habas, otra vez trigo, dos años de zulla para las ovejas, uno de cebada y, por último, un año en que la casilla se queda en blanco.
 

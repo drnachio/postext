@@ -2918,7 +2918,10 @@ document.body.append(renderPage(doc.pages[0], doc));
 ```ts
 interface FootnotesConfig {
   placement?: 'column' | 'chapterEnd'; // 引用所在栏的栏底，或章末。
-  numbering?: 'chapter' | 'document';  // 每章重新开始，或连续编号。
+  numbering?: 'chapter' | 'document' | 'page' | 'column'; // 每章重新开始、连续编号，或每页／每栏重新开始。
+  numberFormat?: string;      // decimal、lower-roman、circled-decimal（①）……
+  markerPosition?: 'auto' | 'superscript' | 'inline'; // 上标，或排在基线上。
+  markerSize?: Dimension;     // 行内注码字号；em指所在正文。
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd：注释排在栏底，或紧接正文之下。
   fontSize?: Dimension;       // 注释字号；em为正文字号。
   lineHeight?: Dimension;     // 注释行距；em为注释字号。
@@ -2955,9 +2958,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document'</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
       <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。</td>
+      <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code>把正文注码和注文开头的编号缩小并升高，排成上标。<code>'inline'</code>把它们排在基线上：注码用<code>markerSize</code>，注文编号与注文同大；竖排时，行内带圈注码在自己的格子里直立。<code>'auto'</code>在<code>circled-decimal</code>时为行内，其他格式为上标。无论哪种，注码都随前一个字符，不会出现在行首。</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>行内注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>

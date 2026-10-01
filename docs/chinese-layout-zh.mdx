@@ -205,6 +205,16 @@ orderedLists: {
 
 中文书的索引按拼音首字母（简体）或笔画数（繁体）分组，数据来自排序器本身（`index.groupBy`，默认`'auto'`）。多音字归入排序器的常用读音；这类条目请用读音符合预期的汉字写一个`sort`键：`:index[重阳]{sort="崇阳"}`。见[索引](/zh/docs/configuration#索引)。
 
+### 脚注
+
+大陆出版的书，页下注一般用带圈数字，每页重新起算：每页的第一条注是①，正文中的注码和注文开头的编号都排在基线上。台湾和香港的书大多也这样排。
+
+```ts
+footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
+```
+
+使用`circled-decimal`时，注码默认排在行内（`markerPosition: 'auto'`）；`markerSize: { value: 0.75, unit: 'em' }`让它比正文小。超过50的编号没有带圈形式，写成阿拉伯数字。注的编号取决于它落在哪一页，所以按页编号的文档先按章编号排版，再按注文实际所在的位置重新编号并再排一次；带圈注码不论编号多少宽度都一样，第二次排版不会移动任何一行。`numbering: 'column'`每栏重新编号，适合逐栏排注的书。注码和上标一样随前一个字符，不会出现在行首；竖排时在自己的格子里直立。Sandbox的**中文默认设置**会在改动列表中列出这几项。参见[脚注](/zh/docs/configuration#脚注)。
+
 ## 竖排
 
 `layout.writingMode: 'vertical-rl'`把书竖排。上面介绍的全部排版规则原样适用，只是沿行向下而不是横向；变化的是周围的页面和每个字符的方向。
@@ -312,7 +322,7 @@ Postext为每种样式只用一个字体族，缺字时不会退回到另一个�
 
 ### 横排的大陆小说
 
-一本大32开的书，Noto Serif SC 10.5 pt，每页28 × 28字，章按第一章编号，开明式标点和GB断行来自语言区域设置：
+一本大32开的书，Noto Serif SC 10.5 pt，每页28 × 28字，章按第一章编号，脚注用①并每页重新编号，开明式标点和GB断行来自语言区域设置：
 
 ```ts
 import type { PostextConfig } from 'postext';
@@ -341,6 +351,7 @@ const config: PostextConfig = {
     ],
   },
   captionStyle: { labelNumberGap: '', labelSeparator: '　' },
+  footnotes: { numberFormat: 'circled-decimal', numbering: 'page' },
   cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28 } },
   header: { elements: [] },
   footer: { elements: [

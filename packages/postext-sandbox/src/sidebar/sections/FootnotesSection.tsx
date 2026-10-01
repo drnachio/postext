@@ -13,8 +13,10 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
+import { listNumberFormatValue, numberFormatOptions } from './OrderedListsSection/numberFormat';
 
 const SIZE_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const MARKER_UNITS: DimensionUnit[] = ['em', 'pt'];
 const SPACE_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
 const RULE_UNITS: DimensionUnit[] = ['pt', 'px', 'mm'];
 
@@ -102,12 +104,58 @@ export const FootnotesSection = memo(function FootnotesSection() {
         options={[
           { value: 'chapter', label: labels.footnotesNumberingChapter },
           { value: 'document', label: labels.footnotesNumberingDocument },
+          // Counted where the notes land: notes at the column foot only.
+          ...(columnFoot
+            ? [
+                { value: 'page', label: labels.footnotesNumberingPage },
+                { value: 'column', label: labels.footnotesNumberingColumn },
+              ]
+            : []),
         ]}
         onChange={(v) => update({ numbering: v as FootnotesConfig['numbering'] })}
         tooltip={labels.footnotesNumberingTooltip}
         isDefault={fn.numbering === D.numbering}
         onReset={() => resetField('numbering')}
       />
+      <SelectInput
+        label={labels.footnotesNumberFormat}
+        value={listNumberFormatValue(fn.numberFormat)}
+        options={numberFormatOptions(labels)}
+        onChange={(v) => update({ numberFormat: v === 'arabic' ? 'decimal' : v })}
+        tooltip={labels.footnotesNumberFormatTooltip}
+        isDefault={raw?.numberFormat === undefined}
+        onReset={() => resetField('numberFormat')}
+      />
+      <SelectInput
+        label={labels.footnotesMarkerPosition}
+        value={raw?.markerPosition ?? 'auto'}
+        variant="segmented"
+        stacked
+        options={[
+          { value: 'auto', label: labels.footnotesMarkerPositionAuto },
+          { value: 'superscript', label: labels.footnotesMarkerPositionSuperscript },
+          { value: 'inline', label: labels.footnotesMarkerPositionInline },
+        ]}
+        onChange={(v) => update({ markerPosition: v as FootnotesConfig['markerPosition'] })}
+        tooltip={labels.footnotesMarkerPositionTooltip}
+        isDefault={(raw?.markerPosition ?? 'auto') === 'auto'}
+        onReset={() => resetField('markerPosition')}
+      />
+      {fn.markerPosition === 'inline' && (
+        <NestedGroup>
+          <DimensionInput
+            label={labels.footnotesMarkerSize}
+            value={fn.markerSize}
+            onChange={(dim) => update({ markerSize: dim })}
+            min={0.3}
+            step={0.05}
+            tooltip={labels.footnotesMarkerSizeTooltip}
+            isDefault={dimensionsEqual(fn.markerSize, D.markerSize)}
+            onReset={() => resetField('markerSize')}
+            units={MARKER_UNITS}
+          />
+        </NestedGroup>
+      )}
       <DimensionInput
         label={labels.footnotesFontSize}
         value={fn.fontSize}

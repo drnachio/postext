@@ -587,6 +587,9 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
 - Numbering: `numberingTemplate: '第{1:一}章'` with `numberSeparator: '　'`; resource types 图/表 numbered
   `{h1}-{n}` come with the locale; `captionStyle: {labelNumberGap: '', labelSeparator: '　'}` gives 图1-1　标题;
   lists 一、（一）1.（1）① (configuration.md §10).
+- Footnotes: a source whose notes read ① ② and start again on every page uses page numbering, not typed
+  numbers: `[^id]` markers + `footnotes: {numberFormat: 'circled-decimal', numbering: 'page'}`
+  (configuration.md §19a, postext ≥ 1.11).
 - Markup: keep the source's full-width punctuation, quotes and typed 《》; emphasis as `*…*` (dots) or
   `:dots[…]`; readings as `{字|zì}`.
 - Index: `:index[…]` marks work as in any book; `groupBy` auto gives pinyin initials; a polyphonic

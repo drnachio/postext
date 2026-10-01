@@ -69,5 +69,5 @@
 :::
 
 :::paragraphs{style="colophon"}
-Set in Linden Hill, Imbue and Libre Franklin (SIL Open Font License). Text of 1645, public domain. Notes and laurel drawing, CC BY 4.0.
+Set in Linden Hill, Imbue and Libre Franklin (SIL Open Font License). Text of 1645, public domain. Notes, CC BY 4.0; laurel painted with diffusion models.
 :::

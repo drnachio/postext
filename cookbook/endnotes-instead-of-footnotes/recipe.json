@@ -53,7 +53,11 @@
       { "what": { "en": "The Chemical History of a Candle, Lecture I (abridged), and William Crookes’s notes to it, from the Chatto & Windus impression of 1908", "es": "The Chemical History of a Candle, conferencia I (abreviada), y las notas de William Crookes, de la reimpresión de Chatto & Windus de 1908" }, "who": "Michael Faraday; William Crookes", "source": "https://www.gutenberg.org/ebooks/14474", "license": "PD" },
       { "what": { "en": "The notes signed Ed., the colophon and the drawings", "es": "Las notas firmadas Ed., el colofón y los dibujos" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
     ],
-    "images": [],
+    "images": [
+      { "what": { "en": "The lit candle on the lecture’s opener, a photograph", "es": "La vela encendida de la apertura de la conferencia, una fotografía" }, "who": "Generated With Diffusion Models", "license": "original", "file": "candle-640.jpg" },
+      { "what": { "en": "The snuffed candle on the notes’ band, a photograph", "es": "La vela apagada de la banda de las notas, una fotografía" }, "who": "Generated With Diffusion Models", "license": "original", "file": "snuffed-600.jpg" },
+      { "what": { "en": "Figure 1, the flame as seen and in section, drawn in code in the page’s palette", "es": "La figura 1, la llama vista y en sección, dibujada en código con la paleta de la página" }, "who": "Ignacio Ferro", "license": "CC-BY-4.0" }
+    ],
     "fonts": [
       { "family": "Libre Bodoni", "license": "OFL-1.1" },
       { "family": "Besley", "license": "OFL-1.1" },

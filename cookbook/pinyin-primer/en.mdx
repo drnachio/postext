@@ -10,7 +10,7 @@ pageNotes: { "1": "Lesson one, 人之初: a pale green band with a red badge 第
 
 ## What you'll build
 
-Two spreads of 《蒙學誦讀》, an invented first reader from Hong Kong, where children read the *Three Character Classic* aloud in Putonghua. Each page is a lesson of four couplets in 一号 Kai (26 pt), every character under its pinyin syllable. The syllables are set in Andika because it draws the one-storey a and g that Chinese schoolbooks print. A pale band carries a red lesson badge, a drawing, and the title at 初号 (42 pt) with its own readings. Under the text, six writing squares (田字格) hold the characters to copy, and a note tells the family what the lines mean. The Spanish counterpart is <RecipeLink slug="reading-primer-syllables">the primer with syllable chips</RecipeLink>, where each syllable is a coloured chip instead of a reading over a character.
+Two spreads of 《蒙學誦讀》, an invented first reader from Hong Kong, where children read the *Three Character Classic* aloud in Putonghua. Each page is a lesson of four couplets in 一号 Kai (26 pt), every character under its pinyin syllable. The syllables are set in Andika because it draws the one-storey a and g that Chinese schoolbooks print. A pale band carries a red lesson badge, a small watercolour, and the title at 初号 (42 pt) with its own readings. Under the text, six writing squares (田字格) hold the characters to copy, and a note tells the family what the lines mean. The Spanish counterpart is <RecipeLink slug="reading-primer-syllables">the primer with syllable chips</RecipeLink>, where each syllable is a coloured chip instead of a reading over a character.
 
 A primer leaves the rules of a Chinese book on purpose. A child reads a few large characters at a time, so a line holds twelve at 26 pt, where a book sets 25 to 40 at 10.5 pt, and the leading is a little over twice the size to hold the readings. Each couplet stands centred on a line of its own, neither justified nor indented. The text is in Kai, the face that follows the brush, because it shows the strokes a child learns to write; a book would set it in Song.
 
@@ -24,9 +24,9 @@ The code is [the short answer](#the-short-answer) above. `{人之初|rén zhī c
 
 <Excerpt region="opener" />
 
-Design text prints no readings, so the title cannot come from the opener's design. The level-1 heading, 第一課, draws the band, the drawing and the red badge; the title is the level-2 heading under it, a plain heading at 初号 that the text composer sets with its pinyin. `reserve: false` leaves the band and the drawing out of the heading's height, and `span: 'page'` paints them under the text.
+Design text prints no readings, so the title cannot come from the opener's design. The level-1 heading, 第一課, draws the band, the picture and the red badge; the title is the level-2 heading under it, a plain heading at 初号 that the text composer sets with its pinyin. `reserve: false` leaves the band and the picture out of the heading's height, and `span: 'page'` paints them under the text.
 
-A heading design ignores `parity`, so the drawing has an element on each side of the page: `{attr.left}` 14 mm from the left edge and `{attr.right}` 14 mm from the right. The lessons on versos write `# 第一課 {left="sprout"}` and the ones on rectos `{right="shuttle"}`, so every drawing sits on the outer side of the spread; the element whose attribute is missing draws nothing.
+A heading design ignores `parity`, so the picture has an element on each side of the page: `{attr.left}` 14 mm from the left edge and `{attr.right}` 14 mm from the right. The lessons on versos write `# 第一課 {left="sprout"}` and the ones on rectos `{right="shuttle"}`, so every picture sits on the outer side of the spread; the element whose attribute is missing draws nothing.
 
 ### 3 · Six squares from one attribute
 

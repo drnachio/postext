@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 020 · Endnotes on a page of their own, in two columns ═════
 // https://postext.dev/en/cookbook/endnotes-instead-of-footnotes
-// Code: MIT · Text: Faraday, ed. Crookes (PD, Gutenberg #14474) · Notes, drawings: CC BY 4.0
+// Code: MIT · Text: Faraday, ed. Crookes (PD) · Notes, figure: CC BY 4.0 · Photos: diffusion models
 // Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
@@ -97,7 +97,7 @@ const art = (id, width, height, foot, x) => ({ kind: 'image', id, resourceId: id
 const series = text('series', '{title}', LABEL, 7.6, 'rule', at('container', 'top-left', 0, 4),
   caps(7.6)); // the book's title, from the frontmatter, heads both bands
 
-// #region opener: the lecture opens on a field of soot with a lit candle
+// #region opener: the lecture opens on a field of soot with a photo of a lit candle
 const FIELD = 112; // mm from the trim's top
 // The field reaches below the heading, so it sets the reserve (gotcha: opener-reserves-anchored);
 // the H1's default bottom margin (0.5 em of 18 pt) rides on it: the text starts a grid line lower.
@@ -170,8 +170,13 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 
 const svgResource = (id, width, height, extra) => ({ id, typeId: 'figure', kind: 'svg',
   svg: { fileId: `${id}.svg`, width, height }, createdAt: 0, updatedAt: 0, ...extra });
+// The candles on the bands are photographs, JPEGs in assets/ cut to their 40 × 100 and 32 × 64
+// mm and declared at their pixels; their black was lifted to the soot's ink. Uncited: design only.
+const photo = (id, bitmap) => ({ id, typeId: 'figure', kind: 'bitmap', bitmap, createdAt: 0,
+  updatedAt: 0 });
 const resources = [
-  svgResource('candle', 1600, 4000), svgResource('snuffed', 1100, 2200), // uncited: design only
+  photo('candle', { fileId: 'candle-640.jpg', format: 'jpeg', width: 640, height: 1600 }),
+  photo('snuffed', { fileId: 'snuffed-600.jpg', format: 'jpeg', width: 600, height: 1200 }),
   // Cited on page 17, the 'top' figure heads page 18 (gotcha: top-float-next-page).
   svgResource('flame', 2320, 1200, { placement: { position: 'top' }, caption: 'A candle flame as '
     + 'it looks under a glass shade (left) and in section (right): the dark core of wax vapour '
@@ -180,17 +185,9 @@ const resources = [
     altText: 'A candle flame, whole and in section, with arrows of rising air' }),
 ];
 
-// #region art: a lit candle, a snuffed one and the flame in section, in the palette (seeded)
+// #region art: Figure 1, the flame as seen and in section, in the palette
 // No words in the drawings: an SVG drawn as an image cannot use web fonts
 // (gotcha: svg-no-webfonts). Arrowheads are paths (gotcha: svg-no-marker-filters).
-function rng(seed) { // Mulberry32: the same smoke on every run
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-}
 const n = (v) => +v.toFixed(2);
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
   + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
@@ -260,24 +257,6 @@ function draught(x0, y0, x1, y1, color, width, opacity) {
   return line(`M${n(x0)} ${n(y0)}C${n(x0)} ${n((y0 + y1) / 2)} ${n(x1)} ${n(y0 - (y0 - y1) * 0.6)} `
     + `${n(x1)} ${n(y1 + 2)}`, color, width, ` stroke-opacity="${opacity}"`) + head;
 }
-function candle() { // the opener's: 40 × 100 mm, lit, with a halo on the soot
-  return svg(160, 400, halo(80, 128, 80, 0.34) + flameAt(80, 206, 66, 19)
-    + pillar(80, 222, 30, 400, 46) + wick(79, 223, 22));
-}
-function snuffed() { // the notes band's: 32 × 64 mm, blown out, three strands of smoke
-  const r = rng(7);
-  const P = palette;
-  let out = pillar(55, 140, 24, 220, 26) + wick(54, 141, 14, 3);
-  for (let k = 0; k < 3; k++) { // three strands of vapour, thinning as they rise
-    let d = `M${n(57 + k)} 126`;
-    for (let y = 126, a = r() * 6; y > 8; y -= 14, a += 1.3) {
-      d += `S${n(57 + Math.sin(a) * (4 + (126 - y) * 0.12))} ${n(y - 7)} `
-        + `${n(57 + Math.sin(a + 0.8) * (3 + (126 - y) * 0.1))} ${n(y - 14)}`;
-    }
-    out += line(d, P.rule, 1.2 - k * 0.3, ` stroke-opacity="${0.55 - k * 0.15}"`);
-  }
-  return svg(110, 220, out + dot(57, 127, 1.6, P.ember));
-}
 function flame() { // Figure 1: 116 × 60 mm, as seen and in section, on soot
   const P = palette;
   let out = `<rect width="232" height="120" rx="2" fill="${P.ink}"/>`;
@@ -293,7 +272,7 @@ function flame() { // Figure 1: 116 × 60 mm, as seen and in section, on soot
   return svg(232, 120, out + flameAt(160, 92, 24, 11, { section: true })
     + pillar(160, 100, 17, 120) + wick(159.5, 101, 12));
 }
-const drawings = { candle, snuffed, flame };
+const drawings = { flame };
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
@@ -304,6 +283,7 @@ const FONTS = { 'Libre Bodoni': ['400', '400i', '700'], // text and notes (700: 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const source = endnotes(markdown); // the answer, run before the engine sees the text
 await Promise.all([loadFonts(FONTS, source),
+  ...resources.filter((r) => r.bitmap).map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
 // The lecture starts on folio 15, a recto, 14 pages into the book (gotcha: parity-page1-recto).
 const continuation = { pageIndexOffset: 14, pageNumbering: { startAt: 15 } };

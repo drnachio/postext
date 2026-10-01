@@ -5,12 +5,12 @@ plain: "The first two pages of a travel article in a small magazine, with a colo
 description: "The pen loads its fonts before the first build, makes a new config for every build, sets the opener from the frontmatter and paints the pages on canvases."
 question: "How do I set a Markdown string on designed pages with no default blue in headings, bold words and bullets?"
 aliases: ["first document", "getting started", "hello world", "quick start", "markdown to canvas", "default skin", "travel feature"]
-pageNotes: { "1": "An indigo band fills the top of the page: a grid of white salt pans crossed by a dotted trail that climbs a sand dune to a cairn on its crest, under the title The Salt Road, its standfirst and byline.", "2": "The verso that follows: a folio and the article title as the running head, two justified columns with indigo subheads, a dash list with bold lead words, an end mark and the colophon under a hairline." }
+pageNotes: { "1": "A photograph fills the top of the page: salt pans at dusk and a line of footprints that climbs a sand dune to a cairn on its crest; on the dark sky, the title The Salt Road, its standfirst and byline.", "2": "The verso that follows: a folio and the article title as the running head, two justified columns with indigo subheads, a dash list with bold lead words, an end mark and the colophon under a hairline." }
 ---
 
 ## What you'll build
 
-The opening pages of a travel feature in *Field Notes*, a small magazine. Page 1 is a recto opener: an indigo band over the top 58% of the page, a drawing of salt pans and dunes, the title in 54 pt Young Serif, and two justified columns below that start the text with a bold lead-in. Page 2, overleaf, continues under a running head in letter-spaced capitals and ends on an end mark and a colophon. The design is set by one config factory and a palette of six colours. The title comes from the first-level heading, and the standfirst, author and date come from the frontmatter of the Markdown string, so the same pen sets any article whose title fits in two lines; only the drawing belongs to this one.
+The opening pages of a travel feature in *Field Notes*, a small magazine. Page 1 is a recto opener: a photograph of salt pans and a dune at dusk over the top 58% of the page, the title in 54 pt Young Serif, and two justified columns below that start the text with a bold lead-in. Page 2, overleaf, continues under a running head in letter-spaced capitals and ends on an end mark and a colophon. The design is set by one config factory and a palette of six colours. The title comes from the first-level heading, and the standfirst, author and date come from the frontmatter of the Markdown string, so the same pen sets any article whose title fits in two lines; only the photograph belongs to this one.
 
 ## Method
 
@@ -26,17 +26,17 @@ Postext measures text with the fonts the browser has already loaded and caches t
 
 Every colour in the config is `col('id')`, a palette id with its hex beside it. `bodyText.boldColor`, `italicColor`, `referenceColor` and `unorderedLists.color` name `ink`, and `headings.color` names the accent. The engine's defaults for headings, bold, italic and bullets link to `main-color`, and this palette points that entry at the accent, so any of them you leave out comes out indigo instead of blue. Postext 1.4.1 paints header, footer and opener elements, and `referenceColor`, from the hex and ignores the id, so the design objects are factories: `config()` calls them on every build, and `col()` copies the current hex out of `palette` each time. The end mark is an inline swatch that names `band`, so a retint reaches it as well. The default running head does not read the palette and stays blue until you replace it (step 5).
 
-### 3 · A picture drawn in code
+### 3 · A photograph cut to its frame
 
 <Excerpt region="art" />
 
-The salt pans, the dunes and the cairn are an SVG string built from the same palette and a seeded random generator, so every run draws the same landscape and the capture changes only when the code does. It is drawn for a frame of `PAGE.width` × `BAND` millimetres and the resource declares the same frame at 10 px per mm, so the picture fills the band exactly and a deeper band gets a taller drawing. The opener shows it through an image element that names the resource by id.
+The salt pans, the dune and the cairn are a photograph generated with diffusion models, taken at dusk so that the pale title reads against a dark sky. The JPEG is cut to the band’s frame, `PAGE.width` × `BAND` millimetres, and the resource declares its pixels, 1440 × 1120, so at full width the picture fills the band exactly. A deeper band needs a picture cut to the new frame. The opener shows it through an image element that names the resource by id.
 
 ### 4 · The frontmatter writes the opener
 
 <Excerpt region="opener" />
 
-The first-level heading spans both columns, and its opener is a slot of elements: an indigo box to the bleed, the drawing, and four texts chained one below the other. A longer title pushes the standfirst and the byline down instead of overlapping them, but past two lines the byline lands on the pale salt pans. `{titleText}` is the text of the heading; `{subtitle}`, `{author}` and `{publishDate}` are frontmatter fields. The `\\` in the heading breaks the title where you put it ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). `minHeight` counts from the top margin, so the reserved height ends 5 mm below the band.
+The first-level heading spans both columns, and its opener is a slot of elements: the photograph to the bleed and four texts chained one below the other. A longer title pushes the standfirst and the byline down instead of overlapping them, but past two lines the byline lands on the pale salt pans. `{titleText}` is the text of the heading; `{subtitle}`, `{author}` and `{publishDate}` are frontmatter fields. The `\\` in the heading breaks the title where you put it ([line breaks in titles](/en/docs/document-format#line-breaks-in-titles)). `minHeight` counts from the top margin, so the reserved height ends 5 mm below the band.
 
 ### 5 · Running heads instead of the blue default
 
@@ -63,11 +63,11 @@ Build with an empty config and the same Markdown comes out on a 17 × 24 cm page
 
 ### Retint the whole page
 
-Change the accent and the next run paints the band, the folios, the subheads and the end mark in the new colour, because `col()` copies the new hex beside the id each time `config()` runs and the landscape function reads `palette` each time it draws.
+Change the accent and the next run paints the folios, the subheads and the end mark in the new colour, because `col()` copies the new hex beside the id each time `config()` runs. The photograph keeps its own colours.
 
 ```diff
--  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
-+  band: '#3f5b3a', // the one accent (a pine green): the band, the folios, the subheads
+-  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
++  band: '#3f5b3a', // the one accent (a pine green): the folios, the subheads, the end mark
 ```
 
 ### Paint one page on your own canvas

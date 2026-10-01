@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 056 · Live editor with layout in a Web Worker ═══════════
 // https://postext.dev/en/cookbook/web-worker-live-editor
-// Code: MIT · Text: H. G. Wells, The Time Machine, 1895 (PD, Gutenberg #35) · Art: drawn in code
+// Code: MIT · Text: H. G. Wells, The Time Machine, 1895 (PD, Gutenberg #35) · Dial: generated
 // Fonts: Baskervville, Baskervville SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import {
   buildDocument, createMeasurementCache, renderPageToCanvas, clearMeasurementCache,
@@ -15,9 +15,8 @@ const RECIPE = 'web-worker-live-editor';
 const palette = { // every colour in the config links to one of these
   ink: '#231f1a', // the text: a warm near-black
   oxblood: '#7a1f1f', // the accent: running heads, the numeral, the subtitle, the plate's cloth
-  brass: '#a88a4a', // rules and the dial's bezel (never text: 2.7:1 on the paper)
-  gilt: '#d8bd7c', // the plate's frame and rings, on the oxblood
-  rule: '#c9bca0', // the dial's inner ring
+  brass: '#a88a4a', // rules (never text: 2.7:1 on the paper)
+  gilt: '#d8bd7c', // the plate's frame, on the oxblood
   muted: '#6b5d4b', // the drop folio and the colophon (5.3:1 on the paper)
   paper: '#f2ead8', // a cream pocket-book paper
 };
@@ -56,6 +55,7 @@ const brassRule = (id, y, width) => ({ kind: 'rule', id, direction: 'horizontal'
 // #region title: page 1 is a heading style of its own: the plate, the title and no heads
 // # The Time Machine {style="title"}: numbered false, so the Introduction is still chapter I.
 const PLATE = TRIM.width * (840 / 1100); // mm: the plate's depth at full width (84 mm)
+const DIAL = { x: 20, y: 7, size: 70 }; // mm: the dial's photograph, centred on the plate
 const titlePage = {
   id: 'title', numbered: false,
   span: 'page', // kept in the column, the design is clipped to it: the plate's top, the author
@@ -63,6 +63,9 @@ const titlePage = {
   advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'plate', resourceId: 'plate',
       placement: { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill' } } },
+    { kind: 'image', id: 'dial', resourceId: 'dial', placement: { anchor: { to: 'bleed',
+      edge: 'top-left' }, offset: { x: mm(DIAL.x), y: mm(DIAL.y) },
+      size: { width: mm(DIAL.size), height: mm(DIAL.size) } } },
     text('title', '{titleText}', DISPLAY, 28, { fontWeight: 700, lineHeight: 1.04,
       overflow: 'wrap' }, // two lines, not one and '…' (gotcha: overflow-ellipsis-default)
     onPage(PLATE + 11)),
@@ -164,42 +167,19 @@ async function startLayoutWorker(faces) {
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.en.md, inlined by the Cookbook
+// The sizes are all the worker needs. The dial is a JPEG in assets/, cut square, declared at its
+// pixels; outside the bezel it fades into the oxblood, so it lies on the drawn cloth unseen.
 const resources = [{ id: 'plate', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'plate.svg', width: 1100, height: 840 }, // the size is all the worker needs
-  altText: 'A brass dial with four small dials on its face, framed in gilt on oxblood cloth.' }];
+  svg: { fileId: 'plate.svg', width: 1100, height: 840 },
+  altText: 'Oxblood cloth framed by a double gilt rule.' },
+{ id: 'dial', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'dial-1120.jpg', format: 'jpeg', width: 1120, height: 1120 },
+  altText: 'A brass dial with four small dials on its face, on the oxblood cloth.' }];
 
-// #region art: the title page's plate, a brass dial with four small dials on oxblood cloth
-// "One dial records days, and another thousands of days, another millions of days, and another
-// thousands of millions" (chapter IV). Drawn in tenths of a millimetre: 110 × 84 mm.
-const n1 = (v) => +v.toFixed(1);
-const at = (cx, cy, r, deg) => [n1(cx + r * Math.sin((deg * Math.PI) / 180)),
-  n1(cy - r * Math.cos((deg * Math.PI) / 180))];
-const mix = (hex, other, k) => `#${[1, 3, 5].map((i) => Math.round(
-  parseInt(hex.slice(i, i + 2), 16) * (1 - k) + parseInt(other.slice(i, i + 2), 16) * k)
-  .toString(16).padStart(2, '0')).join('')}`;
-const circle = (cx, cy, r, fill, extra = '') =>
-  `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"${extra}/>`;
-function ticks(cx, cy, r, n, lengths, widths, color) { // n ticks inward from radius r
-  return Array.from({ length: n }, (_, i) => {
-    const k = lengths.findIndex((_, j) => i % [n / 10, n / 20, 1][j] === 0);
-    const [a, b] = [at(cx, cy, r, (i * 360) / n), at(cx, cy, r - lengths[k], (i * 360) / n)];
-    return `<path d="M${a}L${b}" stroke="${color}" stroke-width="${widths[k]}"/>`;
-  }).join('');
-}
-function hand(cx, cy, length, deg, color) { // a tapered pointer with a short tail
-  const [tip, left, tail, right] = [at(cx, cy, length, deg), at(cx, cy, 6, deg - 90),
-    at(cx, cy, length * 0.28, deg + 180), at(cx, cy, 6, deg + 90)];
-  return `<path d="M${tip}L${left}L${tail}L${right}Z" fill="${color}"/>`;
-}
-function subDial(cx, cy, deg) {
-  const P = palette;
-  return circle(cx, cy, 78, P.brass) + circle(cx, cy, 70, P.paper)
-    + ticks(cx, cy, 64, 50, [13, 9, 5], [3.2, 1.6, 1.2], P.ink) + hand(cx, cy, 58, deg, P.oxblood)
-    + circle(cx, cy, 9, P.brass) + circle(cx, cy, 3.5, P.ink);
-}
+// #region art: the title page's plate: oxblood cloth and a gilt frame, drawn in code
+// In tenths of a millimetre: 110 × 84 mm. The dial on it is a photograph (DIAL, below).
 function plate() {
   const P = palette;
-  const [cx, cy, d] = [550, 420, 122]; // the dial's centre; the small dials sit d from it
   const corner = (x, y) => `<path d="M${x} ${y - 11}L${x + 11} ${y}L${x} ${y + 11}`
     + `L${x - 11} ${y}Z" fill="${P.gilt}"/>`;
   const frame = (inset, width) => `<rect x="${inset}" y="${inset}" width="${1100 - 2 * inset}" `
@@ -207,14 +187,6 @@ function plate() {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 840">'
     + `<rect width="1100" height="840" fill="${P.oxblood}"/>${frame(46, 5)}${frame(62, 2)}`
     + [[62, 62], [1038, 62], [62, 778], [1038, 778]].map(([x, y]) => corner(x, y)).join('')
-    + circle(cx, cy, 300, mix(P.brass, P.ink, 0.35)) + circle(cx, cy, 292, P.brass)
-    + ticks(cx, cy, 292, 180, [12, 12, 12], [4, 4, 4], mix(P.brass, P.ink, 0.35)) // knurling
-    + circle(cx, cy, 276, P.gilt) + circle(cx, cy, 262, P.paper)
-    + ticks(cx, cy, 254, 100, [26, 16, 10], [5, 3, 1.8], P.ink)
-    + circle(cx, cy, 216, 'none', ` stroke="${P.rule}" stroke-width="2.5"`)
-    + subDial(cx, cy - d, 216) + subDial(cx + d, cy, 72) // days, thousands of days
-    + subDial(cx, cy + d, 324) + subDial(cx - d, cy, 144) // millions, thousands of millions
-    + circle(cx, cy, 30, P.brass) + circle(cx, cy, 21, P.gilt) + circle(cx, cy, 8, P.ink)
     + '</svg>';
 }
 // #endregion
@@ -240,6 +212,7 @@ const faces = Object.entries(FONTS).flatMap(([family, specs]) => specs.map((spec
 // The worker and the page each load the faces: the worker to measure, the page to paint.
 const [typeset] = await Promise.all([startLayoutWorker(faces), loadFonts(FONTS, markdown)]);
 await loadSvg('plate.svg', plate()); // images stay on the main thread: the worker never paints
+await loadImage('dial-1120.jpg', asset('dial-1120.jpg'));
 
 document.getElementById('pages').insertAdjacentHTML('beforebegin', `<section id="editor">
   <header><span>time-machine.md · chapter I</span><label>Lay out in <select id="thread">
@@ -297,7 +270,8 @@ requestAnimationFrame(function turn() { // the clock, not the frame's timestamp:
   const now = performance.now(); // keeps the time it was due, which hides the stall
   frames.worst = Math.max(frames.worst, now - (frames.last || now));
   frames.last = now;
-  $('hand').setAttribute('transform', `rotate(${n1((now * 0.06) % 360)})`); // a turn in 6 s
+  const deg = ((now * 0.06) % 360).toFixed(1); // a turn in 6 s
+  $('hand').setAttribute('transform', `rotate(${deg})`);
   requestAnimationFrame(turn);
 });
 await refresh();

@@ -5,12 +5,12 @@ plain: "Las dos primeras páginas de un reportaje de viajes en una pequeña revi
 description: "El pen carga las fuentes antes de componer, crea una configuración nueva en cada composición, monta la apertura con el frontmatter y pinta en canvas."
 question: "¿Cómo paso una cadena Markdown a páginas diseñadas, sin el azul por defecto en títulos, negritas y viñetas?"
 aliases: ["primer documento", "primeros pasos", "hola mundo", "inicio rápido", "markdown a canvas", "aspecto por defecto", "reportaje de viajes"]
-pageNotes: { "1": "Una banda añil ocupa la parte alta de la página: una cuadrícula de salinas blancas cruzada por una senda punteada que sube por una duna de arena hasta un mojón en la cresta, bajo el título La ruta de la sal, la entradilla y la firma.", "2": "La página par siguiente: el folio y el título del reportaje como cabecera, dos columnas justificadas con ladillos en añil, una lista de guiones con las palabras iniciales en negrita, un signo de fin y el colofón bajo un filete." }
+pageNotes: { "1": "Una fotografía ocupa la parte alta de la página: unas salinas al anochecer y una hilera de huellas que sube por una duna de arena hasta un mojón en la cresta; sobre el cielo oscuro, el título La ruta de la sal, la entradilla y la firma.", "2": "La página par siguiente: el folio y el título del reportaje como cabecera, dos columnas justificadas con ladillos en añil, una lista de guiones con las palabras iniciales en negrita, un signo de fin y el colofón bajo un filete." }
 ---
 
 ## Lo que vas a componer
 
-Las primeras páginas de un reportaje de viajes en una pequeña revista, *Cuaderno de campo*. La página 1 es una apertura en página impar: una banda añil que ocupa el 58 % superior, un dibujo de salinas y dunas, el título en Young Serif de 54 puntos y, debajo, dos columnas justificadas que arrancan con una frase en negrita. La página 2, a la vuelta, sigue bajo una cabecera en mayúsculas espaciadas y termina con un signo de fin y un colofón. Todo el diseño cabe en una función de configuración y una paleta de seis colores. El titular sale del título de primer nivel, y la entradilla, la autora y la fecha, del frontmatter del Markdown, así que el mismo pen compone cualquier artículo cuyo título quepa en dos líneas; solo el dibujo es propio de este.
+Las primeras páginas de un reportaje de viajes en una pequeña revista, *Cuaderno de campo*. La página 1 es una apertura en página impar: una fotografía de salinas y una duna al anochecer que ocupa el 58 % superior, el título en Young Serif de 54 puntos y, debajo, dos columnas justificadas que arrancan con una frase en negrita. La página 2, a la vuelta, sigue bajo una cabecera en mayúsculas espaciadas y termina con un signo de fin y un colofón. Todo el diseño cabe en una función de configuración y una paleta de seis colores. El titular sale del título de primer nivel, y la entradilla, la autora y la fecha, del frontmatter del Markdown, así que el mismo pen compone cualquier artículo cuyo título quepa en dos líneas; solo la fotografía es propia de este.
 
 ## Elaboración
 
@@ -26,17 +26,17 @@ Postext mide el texto con las fuentes que el navegador ya ha cargado y guarda la
 
 Cada color de la configuración es `col('id')`, un identificador de la paleta con su valor hexadecimal al lado. `bodyText.boldColor`, `italicColor`, `referenceColor` y `unorderedLists.color` apuntan a `ink`, y `headings.color`, al acento. Los valores por defecto del motor para títulos, negritas, cursivas y viñetas están enlazados a `main-color`, y esta paleta da a esa entrada el color del acento, de modo que cualquiera de ellos que no fijes sale añil y no azul. En Postext 1.4.1, los elementos de cabeceras, pies y aperturas, y también `referenceColor`, se pintan con el valor hexadecimal, no con el identificador; por eso los objetos de diseño son funciones que `config()` llama en cada composición, y `col()` copia cada vez el valor vigente de `palette`. El signo de fin es una muestra de color en línea que nombra `band`, así que también cambia con la paleta. La cabecera por defecto no lee la paleta y se queda azul hasta que la sustituyas (paso 5).
 
-### 3 · Un dibujo hecho con código
+### 3 · Una fotografía recortada a su marco
 
 <Excerpt region="art" />
 
-Las salinas, las dunas y el mojón son una cadena SVG construida con la misma paleta y un generador aleatorio con semilla: cada ejecución dibuja el mismo paisaje y la captura solo cambia cuando cambia el código. Se dibuja para un marco de `PAGE.width` × `BAND` milímetros y el recurso declara ese mismo marco, a 10 px por milímetro, de modo que el dibujo llena exactamente la banda y, si la banda crece, el dibujo crece con ella. La apertura lo muestra con un elemento de imagen que nombra el recurso por su identificador.
+Las salinas, la duna y el mojón son una fotografía generada con modelos de difusión, tomada al anochecer para que el título claro se lea sobre un cielo oscuro. El JPEG está recortado al marco de la banda, `PAGE.width` × `BAND` milímetros, y el recurso declara sus píxeles, 1440 × 1120, de modo que a todo el ancho la foto llena exactamente la banda. Si la banda crece, hace falta una foto recortada al nuevo marco. La apertura la muestra con un elemento de imagen que nombra el recurso por su identificador.
 
 ### 4 · El frontmatter escribe la apertura
 
 <Excerpt region="opener" />
 
-El título de primer nivel abarca las dos columnas, y su apertura es una ranura de elementos: una caja añil a sangre, el dibujo y cuatro textos encadenados uno debajo de otro. Un título más largo empuja hacia abajo la entradilla y la firma en vez de montarse sobre ellas, pero a partir de la tercera línea la firma cae sobre las salinas claras. `{titleText}` es el texto del título; `{subtitle}`, `{author}` y `{publishDate}` salen del frontmatter. La `\\` del título corta la línea donde la pongas ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). `minHeight` se cuenta desde el margen superior, así que la altura reservada acaba 5 mm por debajo de la banda.
+El título de primer nivel abarca las dos columnas, y su apertura es una ranura de elementos: la fotografía a sangre y cuatro textos encadenados uno debajo de otro. Un título más largo empuja hacia abajo la entradilla y la firma en vez de montarse sobre ellas, pero a partir de la tercera línea la firma cae sobre las salinas claras. `{titleText}` es el texto del título; `{subtitle}`, `{author}` y `{publishDate}` salen del frontmatter. La `\\` del título corta la línea donde la pongas ([saltos de línea en los títulos](/es/docs/document-format#saltos-de-línea-en-los-títulos)). `minHeight` se cuenta desde el margen superior, así que la altura reservada acaba 5 mm por debajo de la banda.
 
 ### 5 · Cabeceras en lugar del azul por defecto
 
@@ -63,11 +63,11 @@ Compón con una configuración vacía y el mismo Markdown sale en una página de
 
 ### Cambia el color de toda la página
 
-Cambia el acento y la siguiente ejecución pinta con el nuevo color la banda, los folios, los ladillos y el signo de fin, porque `col()` copia el nuevo valor junto al identificador cada vez que se llama a `config()` y la función del paisaje lee `palette` cada vez que dibuja.
+Cambia el acento y la siguiente ejecución pinta con el nuevo color los folios, los ladillos y el signo de fin, porque `col()` copia el nuevo valor junto al identificador cada vez que se llama a `config()`. La fotografía conserva sus colores.
 
 ```diff
--  band: '#2b3a67', // the one accent (an indigo): the band, the folios, the subheads
-+  band: '#3f5b3a', // the one accent (a pine green): the band, the folios, the subheads
+-  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
++  band: '#3f5b3a', // the one accent (a pine green): the folios, the subheads, the end mark
 ```
 
 ### Pinta una página en tu propio canvas

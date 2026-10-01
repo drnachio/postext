@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 035 · Garden almanac: calendar grid and landscape chart ═════
 // https://postext.dev/en/cookbook/garden-almanac
-// Code: MIT · Text: original, in Italian (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
+// Code: MIT · Text: original, Italian (CC BY 4.0) · Field: diffusion models · Icons: CC BY 4.0
 // Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, parseTSV,
   mergeCells, setCellContent, setCellBackground, setCellImage, setAlignment,
@@ -144,8 +144,8 @@ const tableStyles = [
 ];
 // #endregion
 
-// #region opener: the month on a drawing, with its proverb from the heading's attributes
-const ART_H = 92, AIR = 5, BEARING = 1.5; // mm: drawing, air under it, side bearing of the 84 pt M
+// #region opener: the month on a painting, with its proverb from the heading's attributes
+const ART_H = 92, AIR = 5, BEARING = 1.5; // mm: painting, air under it, side bearing of the 84 pt M
 const pin = (to, edge, x, y, size) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(size && { size }) }); // to: 'page', or '#id' of an element listed before
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
@@ -153,7 +153,7 @@ const text = (id, content, family, size, color, placement, extra) => ({ kind: 't
   align: placement.anchor.edge.endsWith('right') ? 'right' : 'left',
   overflow: 'wrap', ...extra }); // not '…' at the edge (gotcha: overflow-ellipsis-default)
 const caps = (s) => ({ fontWeight: 600, textTransform: 'uppercase', letterSpacing: pt(s / 5) });
-// The drawing reserves nothing (gotcha: opener-image-no-reserve), so the text starts on the
+// The painting reserves nothing (gotcha: opener-image-no-reserve), so the text starts on the
 // first grid line at least AIR under it.
 const OPENER_H = pt(LEAD * Math.ceil((ART_H + AIR - PAGE.top) / (LEAD * 25.4 / 72)));
 const opener = { enabled: true, minHeight: OPENER_H, slot: { elements: [
@@ -226,48 +226,11 @@ const markdown = /* @content */ ''; // the month's text, in Italian
 const sowing = /* @content:semine */ ''; // one line per crop, grouped by family
 const companions = /* @content:consociazioni */ ''; // TSV: + good, − bad, blank neutral
 
-// #region art: the opener's field, four moon phases and ten crops, in the page's colours
-const n = (v) => +v.toFixed(2);
-function mulberry32(seed) { // a seeded PRNG: the same seedlings in every capture
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// #region art: four moon phases and ten crops, drawn in the page's colours
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
   + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
-const ART = { soil: '#4f3420', furrow: '#3e2818', pebble: '#8a6a4c', sun: '#f2d98f',
-  carrot: '#df7a2e', garlic: '#f4ecdc', cabbage: '#7fa38c', potato: '#c9a066', dark: '#3f6b22' };
-function field() { // sky, a low sun, soil in furrows and a row of seedlings, 210 × ART_H mm
-  const rand = mulberry32(2027);
-  const horizon = ART_H - 22;
-  let out = `<rect width="210" height="${ART_H}" fill="${palette.sky}"/>`
-    + `<circle cx="176" cy="30" r="12" fill="${ART.sun}"/>`
-    + `<path d="M0 ${horizon} Q52 ${horizon - 2.5} 105 ${horizon} T210 ${horizon} `
-    + `V${ART_H} H0Z" fill="${ART.soil}"/>`;
-  for (let y = horizon + 5; y < ART_H; y += 5) { // furrows
-    out += `<path d="M0 ${y} Q105 ${n(y - 1.6)} 210 ${y}" fill="none" stroke="${ART.furrow}" `
-      + 'stroke-width="0.7"/>';
-  }
-  for (let i = 0; i < 36; i++) { // pebbles
-    out += `<ellipse cx="${n(rand() * 210)}" cy="${n(horizon + 3 + rand() * 18)}" `
-      + `rx="${n(0.5 + rand())}" ry="${n(0.3 + rand() * 0.5)}" fill="${ART.pebble}"/>`;
-  }
-  for (let x = 5; x < 207; x += 5.5 + rand() * 3) { // short under the proverb, taller to the right
-    const h = 3 + Math.max(0, (x - 95) / 115) * 13 + rand() * 3, lean = (rand() - 0.5) * 3;
-    const [tx, ty] = [n(x + lean), n(horizon - h)];
-    const leaf = (dir, len, fill = palette.green) => `<ellipse cx="${n(tx + dir * len * 0.55)}" `
-      + `cy="${n(ty - 0.6)}" rx="${n(len * 0.6)}" ry="${n(len * 0.24)}" `
-      + `transform="rotate(${-dir * 24} ${tx} ${ty})" fill="${fill}"/>`;
-    out += `<path d="M${n(x)} ${horizon + 0.5} Q${n(x + lean * 0.2)} ${n(horizon - h / 2)} `
-      + `${tx} ${ty}" fill="none" stroke="${palette.green}" stroke-width="0.7" `
-      + 'stroke-linecap="round"/>' + leaf(-1, 2 + h * 0.12) + leaf(1, 2 + h * 0.12);
-    if (h > 10) out += leaf(1, 1.4 + h * 0.08, ART.dark); // a first true leaf on the tallest
-  }
-  return svg(210, ART_H, out);
-}
+const ART = { carrot: '#df7a2e', garlic: '#f4ecdc', cabbage: '#7fa38c', potato: '#c9a066',
+  dark: '#3f6b22' };
 // The moon cell is 4.2 mm wide inside its padding, so a viewBox unit is 0.42 mm: the disc drops
 // 5.2 units (2.2 mm) to sit level with the day's figures in the next cell.
 const MOON_DROP = 5.2;
@@ -318,14 +281,18 @@ const VEG = { // 20 × 20 drawings, in the order of the matrix's rows
       `<circle cx="${x}" cy="${y}" r=".6" fill="${P.brown}"/>`).join(''),
 };
 // Each drawing is an SVG resource, registered for the canvas under its fileId.
-const drawings = [['campo', field(), [210, ART_H], 'Piantine appena nate in file sulla terra'],
-  ...PHASES.map((p) => [p, moon(p), [10, 10 + MOON_DROP], p.replace('-', ' ')]),
+const drawings = [...PHASES.map((p) => [p, moon(p), [10, 10 + MOON_DROP], p.replace('-', ' ')]),
   ...Object.entries(VEG).map(([name, body], i) => [`veg-${i + 1}`, svg(20, 20, body), [20, 20],
     name])];
 const pictures = drawings.map(([id, , [w, h], altText]) => ({ id, typeId: 'figure', kind: 'svg',
   altText, createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`, width: w * 10,
     height: h * 10 } })); // the size sets the aspect ratio: the cell or the design sets the width
 for (const [id, markup] of drawings) await loadSvg(`${id}.svg`, markup);
+// The opener's field is a watercolour, a JPEG in assets/ cut to 210 × ART_H mm, at its pixels.
+pictures.push({ id: 'campo', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  altText: 'Piantine appena nate in file sulla terra', bitmap: { fileId: 'campo-1680.jpg',
+    format: 'jpeg', width: 1680, height: 736 } });
+await loadImage('campo-1680.jpg', asset('campo-1680.jpg'));
 // #endregion
 
 // #region resources: the three tables, keyed by colour swatches in captions and notes

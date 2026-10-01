@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 065 · Pocket classic: short chapters that run on ═══════════
 // https://postext.dev/en/cookbook/short-chapters-run-on
-// Code: MIT · Text: Machado de Assis, Dom Casmurro, 1899 (PD, Gutenberg #55752) · Art: in code
+// Code: MIT · Text: Machado de Assis, Dom Casmurro, 1899 (PD, Gutenberg #55752) · Plate: painted
 // Fonts: Tinos (Apache 2.0), Abril Fatface, League Spartan (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
@@ -12,7 +12,7 @@ const RECIPE = 'short-chapters-run-on';
 const palette = {
   ink: '#24202a', // the text: a violet near-black
   paper: '#f6f1e6', // the pocket book's paper
-  plum: '#4f2a49', // the series colour: cover bands, the plate, the chapter numerals
+  plum: '#4f2a49', // the series colour: cover bands, the chapter numerals
   saffron: '#d9a03c', // the second ink: rules and drawings, never text on paper (2.1:1)
   muted: '#6b616e', // the running heads and the colophon (5.2:1 on paper)
 };
@@ -131,9 +131,11 @@ const resources = [
   { id: 'roundel', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
     svg: { fileId: 'roundel.svg', width: 60, height: 60 },
     altText: 'The series mark: a casuarina tree in a ring.' },
-  { id: 'sea', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-    svg: { fileId: 'sea.svg', width: TRIM.width, height: TRIM.height },
-    altText: 'A heavy morning sea under the Sugarloaf, with two canoes rowing out.' },
+  // The plate is a painting, a JPEG in assets/ cut to the trim, declared at its pixels.
+  { id: 'sea', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'plate-1100.jpg', format: 'jpeg', width: 1100, height: 1780 },
+    altText: 'A heavy morning sea under the Sugarloaf, a low sun, and a lone swimmer among '
+      + 'the breakers.' },
 ];
 // #endregion
 
@@ -158,7 +160,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   footer,
 });
 
-// #region art: the series roundel and the plate, drawn in code in the book's two inks
+// #region art: the series roundel, drawn in code in the book's two inks
 let seed = 1871; // Mulberry32, seeded: never Math.random() in a recipe
 const rand = () => {
   let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
@@ -166,9 +168,6 @@ const rand = () => {
   return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
 };
 const n = (v) => v.toFixed(2);
-const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
-  + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}mm" `
   + `height="${h}mm" viewBox="0 0 ${w} ${h}">${body}</svg>`;
 const line = (d, stroke, width, extra = '') => `<path d="${d}" fill="none" stroke="${stroke}" `
@@ -201,61 +200,6 @@ function roundelSvg() {
   return svg(60, 60, out.join(''));
 }
 
-// The plate: the Sugarloaf and Urca in the haze, the sun low beside them, and the swell in
-// rows that deepen towards the reader; the nearest one is dark enough to carry the caption.
-function seaSvg() {
-  const { plum, saffron, paper } = palette;
-  const [W, H, SKY, FOOT] = [TRIM.width, TRIM.height, 76, 136]; // mm: horizon, nearest swell
-  const out = [];
-  for (let i = 0; i < 6; i++) { // the sky in flat bands, warmer towards the horizon
-    out.push(`<rect y="${n(i * 13)}" width="${W}" height="${n(SKY - i * 13)}" `
-      + `fill="${mix(paper, saffron, 0.12 + i * 0.1)}"/>`);
-  }
-  out.push(`<circle cx="36" cy="${SKY - 8}" r="10" fill="${saffron}"/>`); // behind the hills
-  const hills = `M-2 ${SKY} L6 ${SKY - 4} Q13 ${SKY - 9} 21 ${SKY - 5} L28 ${SKY - 3} `
-    + `Q40 ${SKY - 8} 50 ${SKY - 4} Q57 ${SKY - 15} 64 ${SKY - 12} Q68 ${SKY - 11} 70 ${SKY - 7} `
-    + `L73 ${SKY - 9} Q76 ${SKY - 41} 84 ${SKY - 40} Q92 ${SKY - 37} 94 ${SKY - 8} `
-    + `L104 ${SKY - 3} L112 ${SKY} Z`; // Urca, then the Sugarloaf
-  out.push(`<path d="${hills}" fill="${mix(plum, saffron, 0.3)}"/>`);
-  out.push(`<rect y="${SKY}" width="${W}" height="${H - SKY}" fill="${plum}"/>`);
-  for (let k = 0; k < 5; k++) { // the sun on the water, in broken strokes
-    const half = 7 - k * 1.2;
-    out.push(line(`M${n(36 - half + rand() * 2)} ${n(SKY + 1 + k * 1.6)}h${n(half * 1.6)}`,
-      saffron, 0.8 - k * 0.1));
-  }
-  // Swell: each row is a filled wave front; later rows overlap the earlier ones.
-  const rows = 14;
-  for (let row = 0; row < rows; row++) {
-    const t = row / (rows - 1);
-    const base = SKY + 3 + (FOOT - SKY - 3) * t ** 1.35;
-    const amp = 0.4 + t * 3.2;
-    const length = 9 + t * 34;
-    const phase = rand() * length;
-    const pts = [];
-    for (let x = -4; x <= W + 4; x += 1.5) {
-      const y = base - amp * Math.sin(((x + phase) / length) * Math.PI * 2)
-        - amp * 0.35 * Math.sin(((x + phase) / (length * 0.47)) * Math.PI * 2);
-      pts.push(`${n(x)} ${n(y)}`);
-    }
-    const last = row === rows - 1; // the nearest swell, dark enough to carry the caption
-    const tone = last ? mix(plum, '#000000', 0.25)
-      : mix(plum, row % 2 ? '#000000' : paper, row % 2 ? 0.04 + t * 0.12 : 0.1 - t * 0.07);
-    out.push(`<path d="M${pts.join(' L')} L${W + 4} ${H} L-4 ${H} Z" fill="${tone}"/>`);
-    if (row % 2 === 0) { // broken foam along every other crest
-      out.push(line(`M${pts.join(' L')}`, mix(plum, paper, 0.45 - t * 0.15), 0.25 + t * 0.3,
-        ` stroke-dasharray="${n(3 + t * 9)} ${n(5 + t * 12)}" opacity="0.8"`));
-    }
-  }
-  for (const [x, y, s] of [[22, SKY + 11, 0.8], [61, SKY + 19, 1.15]]) { // the canoes
-    const dark = mix(plum, '#000000', 0.55);
-    out.push(`<path d="M${n(x)} ${n(y)}q${n(5 * s)} ${n(2.2 * s)} ${n(10 * s)} 0`
-      + `q${n(-5 * s)} ${n(0.8 * s)} ${n(-10 * s)} 0Z" fill="${dark}"/>`,
-    `<circle cx="${n(x + 4.2 * s)}" cy="${n(y - 2.3 * s)}" r="${n(0.75 * s)}" fill="${dark}"/>`,
-    line(`M${n(x + 4.2 * s)} ${n(y - 1.6 * s)}l${n(0.5 * s)} ${n(1.7 * s)}`, dark, 0.9 * s),
-    line(`M${n(x + 1.5 * s)} ${n(y - 1.2 * s)}l${n(5.5 * s)} ${n(3.4 * s)}`, dark, 0.35 * s));
-  }
-  return svg(W, H, out.join(''));
-}
 // #endregion
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
@@ -273,7 +217,7 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
 await loadSvg('roundel.svg', roundelSvg());
-await loadSvg('sea.svg', seaSvg());
+await loadImage('plate-1100.jpg', asset('plate-1100.jpg'));
 // #region excerpt: these pages continue a book: chapter CXVIII is under way, the next is CXIX
 const continuation = { headings: { h1: 118, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } };
 // #endregion

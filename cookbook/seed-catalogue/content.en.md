@@ -7,7 +7,7 @@ subtitle: "Catalog No. 12 · Spring 2027"
 
 ## To Our Growers
 
-This is our twelfth spring catalog, and it lists only the vegetables we grew out ourselves last summer at Brindlewood Farm, nine of them, each tested for germination in the packing shed this January. You will find each of them, with a drawing of its packet, in :ref{id="vegetables" text="the price list"} on the next two pages.
+This is our twelfth spring catalog, and it lists only the vegetables we grew out ourselves last summer at Brindlewood Farm, nine of them, each tested for germination in the packing shed this January. You will find each of them, with a picture of its packet, in :ref{id="vegetables" text="the price list"} on the next two pages.
 
 Tomatoes open the list, as they have done since our first catalog in 2016. Two varieties are new to it this spring and carry a red :chip[NEW]{style="new"} tag, while four were grown on the certified organic field behind the barn and are marked :chip[ORGANIC]{style="organic"}. The rest came from farms we have bought seed from for years, and each one was grown out beside our own before we listed it.
 
@@ -32,5 +32,5 @@ Each lot was tested in January: a hundred seeds on damp paper in a warm room, co
 ::resource{id="order"}
 
 :::paragraphs{style="colophon"}
-Set in Gelasio, Alfa Slab One and Cabin Condensed (SIL OFL) · Text and drawings: CC BY 4.0 · A fictional seed house
+Set in Gelasio, Alfa Slab One and Cabin Condensed (SIL OFL) · Text: CC BY 4.0 · Pictures: generated · A fictional seed house
 :::

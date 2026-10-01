@@ -33,5 +33,5 @@ It is too bad that we have not got further; but we must not, under any circumsta
 [^copper]: The alcohol had chloride of copper dissolved in it: this produces a beautiful green flame.
 
 :::paragraphs{style="colophon"}
-Set in Libre Bodoni, Besley and Archivo Narrow, all three under the SIL Open Font License. The text is Michael Faraday’s, as edited by William Crookes in 1861, from the impression of 1908 (Project Gutenberg eBook 14474), abridged; the drawings and the editor’s notes are CC BY 4.0.
+Set in Libre Bodoni, Besley and Archivo Narrow, all three under the SIL Open Font License. The text is Michael Faraday’s, as edited by William Crookes in 1861, from the impression of 1908 (Project Gutenberg eBook 14474), abridged; the figure and the editor’s notes are CC BY 4.0.
 :::

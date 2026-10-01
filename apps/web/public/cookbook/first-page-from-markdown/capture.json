@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "first-page-from-markdown",
-  "sourceHash": "869fc69531cc6a2a6514ae6aeaa09d7f7c0d2a61bf3b7df7118e4b0c7284b5b2",
+  "sourceHash": "bcd5380e600ce9eb7125e20d856d16f33c5e4465f306cedb87c38e43767193ba",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T21:08:43.555Z",
+  "capturedAt": "2026-10-01T06:48:34.217Z",
   "variants": {
     "en": {
-      "hash8": "2e71fdcd",
-      "vdtHash": "ff1ec497416414a8cbbf7e8522eb5072020bd0a6",
+      "hash8": "c6d0ba74",
+      "vdtHash": "07c56b8d23023596323db7886c283256ac133054",
       "timings": {
-        "importMs": 218,
-        "fontsMs": 850,
-        "buildMs": 50,
-        "totalMs": 1800,
+        "importMs": 1822,
+        "fontsMs": 38,
+        "buildMs": 89,
+        "totalMs": 2736,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 173
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 89696,
+          "bytes": 149940,
           "alt": "Opening page 1: The Salt Road."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 136602,
+          "bytes": 136772,
           "alt": "Page 2: What came back."
         }
       ],
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 19595
+        "bytes": 193072
       },
       "detected": {
         "apis": [
@@ -210,8 +210,8 @@
           "page",
           "unorderedLists"
         ],
-        "configLeaves": 216,
-        "designElements": 11,
+        "configLeaves": 209,
+        "designElements": 10,
         "directives": [
           ":::callout"
         ],
@@ -220,8 +220,8 @@
           ":swatch"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -285,13 +285,13 @@
       }
     },
     "es": {
-      "hash8": "b86cfd94",
-      "vdtHash": "ab9ca4a2fed26cce2e6dd48159a364e0fbcc3d51",
+      "hash8": "8cf2c6ca",
+      "vdtHash": "1e26a3350d2d18641aafd17b9408bbe5a95fba4b",
       "timings": {
-        "importMs": 95,
-        "fontsMs": 21,
-        "buildMs": 12,
-        "totalMs": 825,
+        "importMs": 446,
+        "fontsMs": 58,
+        "buildMs": 29,
+        "totalMs": 1319,
         "builds": 2
       },
       "specimen": {
@@ -314,7 +314,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 173
       },
       "pages": [
         {
@@ -325,7 +325,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 93662,
+          "bytes": 156538,
           "alt": "Página de apertura 1: La ruta de la sal."
         },
         {
@@ -336,7 +336,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 139758,
+          "bytes": 140246,
           "alt": "Página 2: La carga de retorno."
         }
       ],
@@ -364,7 +364,7 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 20021
+        "bytes": 193425
       },
       "detected": {
         "apis": [
@@ -485,8 +485,8 @@
           "page",
           "unorderedLists"
         ],
-        "configLeaves": 216,
-        "designElements": 11,
+        "configLeaves": 209,
+        "designElements": 10,
         "directives": [
           ":::callout"
         ],
@@ -495,8 +495,8 @@
           ":swatch"
         ],
         "resources": {
-          "svg": 1,
-          "bitmap": 0,
+          "svg": 0,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -544,13 +544,19 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 2,
+        "iterationCount": 3,
         "looseLines": {
           "count": 1,
           "share": 0.0147,
           "worst": 1.98
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

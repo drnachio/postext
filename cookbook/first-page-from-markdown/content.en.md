@@ -43,5 +43,5 @@ On the fourth afternoon the trail comes out of the pines onto a bare ridge, and 
 Then he turns round and starts back towards the sea. The carriers never slept in Castrel, he says, because the inns there charged in coin and a carrier was paid in grain. :swatch{color="band"}
 
 :::callout{type="colophon"}
-A work of fiction: Arvela, Sorra, Orsa and Castrel are imaginary places. Set in Newsreader, Young Serif and Inter Tight (SIL Open Font License) · Text and drawing: original, CC BY 4.0.
+A work of fiction: Arvela, Sorra, Orsa and Castrel are imaginary places. Set in Newsreader, Young Serif and Inter Tight (SIL Open Font License) · Text: original, CC BY 4.0 · Photo: diffusion models.
 :::

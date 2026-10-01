@@ -24,13 +24,13 @@ The code is [the short answer](#the-short-answer) above. Every poem is two level
 
 <Excerpt region="verse" />
 
-The Chinese rows have twice the leading of the English lines, 32 pt against 16, so a row of two five-character lines faces the couplet Giles makes of it. In the moonlight poem on <PageRef page={4}>pages 4 and 5</PageRef> the same `:::space{lines=1}` goes into both texts, and its three stanzas stay level across the spread. The Chinese row starts 51 pt in, which centres its twelve ems in the 28 of the grid, and each note number stands after its row’s 。, outside the twelve: inside the row it would push every character after it a third of an em to the right, out of line with the row below. The English indents come from measuring each poem’s longest line. Giles indents every other line; the Markdown keeps his two spaces, and `indentVerse` turns them into em spaces behind a word joiner, because a paragraph drops the spaces it starts with.
+The Chinese rows have twice the leading of the English lines, 32 pt against 16, so a row of two five-character lines faces the couplet Giles makes of it. In the moonlight poem on <PageRef page={4}>pages 4 and 5</PageRef> the same `:::space{lines=1}` goes into both texts, and its three stanzas stay level across the spread. The Chinese row starts 51 pt in, which centres its twelve ems in the 28 of the grid, and each note marker stands after its row’s 。, outside the twelve: inside the row it would push every character after it six tenths of an em to the right, out of line with the row below. The English indents come from measuring each poem’s longest line. Giles indents every other line; the Markdown keeps his two spaces, and `indentVerse` turns them into em spaces behind a word joiner, because a paragraph drops the spaces it starts with.
 
 ### 3 · Glosses at the foot of the Chinese page
 
 <Excerpt region="notes" />
 
-The glosses are footnotes, one to a row: `疑是地上霜。[^bed]` closes the first row of the poem and `[^bed]: …` follows it, naming in bold each word it glosses, since the number no longer stands next to them. Numbering starts again at every heading that opens a page, so each poem counts its notes from 1 ([Footnotes](/en/docs/document-format#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
+The glosses are footnotes, one to a row: `疑是地上霜。[^bed]` closes the first row of the poem and `[^bed]: …` follows it, naming in bold each word it glosses, since the number no longer stands next to them. They are numbered as a Chinese book numbers its notes (页下注): circled numbers set on the baseline, counted from ① again on every page (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). In the verse the marker is set at six tenths of the poem’s size, `markerSize: em(0.6)`, close to the size of the notes; at the foot of the page each note opens with its ① at the size of the note text ([Footnotes](/en/docs/configuration#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
 
 ### 4 · Running heads in the language of each page
 
@@ -72,6 +72,6 @@ Loeb editions and many Chinese–English readers set the original on the left: s
 Chinese annotated anthologies (注釋本) print the notes after each poem. Chapter-end notes do it here, since each poem is a chapter of its own.
 
 ```diff
--const footnotes = { placement: 'column', // the foot of the column, here the foot of the page
+-const footnotes = { placement: 'column', numbering: 'page', // the page foot; ① again on each page
 +const footnotes = { placement: 'chapterEnd', chapterEndAlign: 'text',
 ```

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "short-chapters-run-on",
-  "sourceHash": "a0226d1e44f9037b9d89dfab59e4e95ee1c76c98d8de255a2ebd6587aeaff523",
+  "sourceHash": "adbcf55a4480f052ef53d6185b0c29bddde8ba4f9e61ca388770b11afb213fe2",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-26T22:16:39.686Z",
+  "capturedAt": "2026-10-01T06:51:11.465Z",
   "variants": {
     "en": {
-      "hash8": "63f11a4e",
-      "vdtHash": "9a424bd179d7d886823253dd5ee5893ef7bd85b5",
+      "hash8": "8e5bc37f",
+      "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
       "timings": {
-        "importMs": 241,
-        "fontsMs": 1184,
-        "buildMs": 17,
-        "totalMs": 2109,
+        "importMs": 901,
+        "fontsMs": 807,
+        "buildMs": 25,
+        "totalMs": 2449,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Tinos"
         ],
         "pages": 7,
-        "ownLines": 171
+        "ownLines": 173
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1618,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 20682,
+          "bytes": 20760,
           "alt": "Opening page 1: Dom Casmurro."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1618,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 28422,
+          "bytes": 161666,
           "alt": "Opening page 212: Capítulo CXXIII."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1618,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 155898,
+          "bytes": 155942,
           "alt": "Page 213: CXIX Não faça isso, querida."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1618,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 126746,
+          "bytes": 126636,
           "alt": "Page 214: CXX Os autos."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1618,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 139980,
+          "bytes": 140106,
           "alt": "Page 215: CXXII O enterro."
         },
         {
@@ -104,7 +104,7 @@
           "h": 1618,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 147320,
+          "bytes": 147188,
           "alt": "Page 216: CXXIII Olhos de ressaca."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1618,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 52220,
+          "bytes": 52396,
           "alt": "Page 217."
         }
       ],
@@ -151,7 +151,7 @@
       },
       "sandbox": {
         "file": "short-chapters-run-on.postext",
-        "bytes": 32716
+        "bytes": 322155
       },
       "detected": {
         "apis": [
@@ -284,8 +284,8 @@
           "\\\\"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -335,17 +335,28 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":118,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "63f11a4e",
-      "vdtHash": "9a424bd179d7d886823253dd5ee5893ef7bd85b5",
+      "hash8": "c4316612",
+      "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
       "timings": {
-        "importMs": 95,
-        "fontsMs": 18,
-        "buildMs": 18,
-        "totalMs": 833,
+        "importMs": 214,
+        "fontsMs": 41,
+        "buildMs": 21,
+        "totalMs": 1033,
         "builds": 2
       },
       "specimen": {
@@ -367,7 +378,7 @@
           "Tinos"
         ],
         "pages": 7,
-        "ownLines": 171
+        "ownLines": 173
       },
       "pages": [
         {
@@ -378,7 +389,7 @@
           "h": 1618,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 20682,
+          "bytes": 20760,
           "alt": "Página de apertura 1: Dom Casmurro."
         },
         {
@@ -389,7 +400,7 @@
           "h": 1618,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 28422,
+          "bytes": 161666,
           "alt": "Página de apertura 212: Capítulo CXXIII."
         },
         {
@@ -400,7 +411,7 @@
           "h": 1618,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 155898,
+          "bytes": 155942,
           "alt": "Página 213: CXIX Não faça isso, querida."
         },
         {
@@ -411,7 +422,7 @@
           "h": 1618,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 126746,
+          "bytes": 126636,
           "alt": "Página 214: CXX Os autos."
         },
         {
@@ -422,7 +433,7 @@
           "h": 1618,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 139980,
+          "bytes": 140106,
           "alt": "Página 215: CXXII O enterro."
         },
         {
@@ -433,7 +444,7 @@
           "h": 1618,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 147320,
+          "bytes": 147188,
           "alt": "Página 216: CXXIII Olhos de ressaca."
         },
         {
@@ -444,7 +455,7 @@
           "h": 1618,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 52220,
+          "bytes": 52396,
           "alt": "Página 217."
         }
       ],
@@ -480,7 +491,7 @@
       },
       "sandbox": {
         "file": "short-chapters-run-on.postext",
-        "bytes": 32729
+        "bytes": 322167
       },
       "detected": {
         "apis": [
@@ -613,8 +624,8 @@
           "\\\\"
         ],
         "resources": {
-          "svg": 2,
-          "bitmap": 0,
+          "svg": 1,
+          "bitmap": 1,
           "table": 0
         },
         "fonts": [
@@ -664,7 +675,18 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.headings {\"h1\":118,\"h2\":0,\"h3\":0,\"h4\":0,\"h5\":0,\"h6\":0} dropped (chapter numbers restart)"
+          }
+        ]
       }
     }
   }

@@ -10,7 +10,7 @@ pageNotes: { "1": "Lección primera, 人之初: una banda verde pálido con la e
 
 ## Lo que vas a componer
 
-Dos pliegos de 《蒙學誦讀》, una cartilla inventada de Hong Kong, donde los niños leen en voz alta el *Clásico de los tres caracteres* en mandarín (putonghua). Cada página es una lección de cuatro pareados en kai de 一号 (26 pt), y cada carácter va bajo su sílaba de pinyin. Las sílabas van en Andika porque dibuja la a y la g de un solo piso que imprimen los libros escolares chinos. Una banda verde pálido lleva la etiqueta roja de la lección, un dibujo y el título en 初号 (42 pt) con su propia lectura. Debajo del texto, seis cuadrículas de escritura (田字格) guardan los caracteres para copiar, y una nota cuenta a la familia qué dicen los versos. Su pareja en español es <RecipeLink slug="reading-primer-syllables">la cartilla de sílabas en chips</RecipeLink>, donde cada sílaba es un chip de color en lugar de una lectura sobre un carácter.
+Dos pliegos de 《蒙學誦讀》, una cartilla inventada de Hong Kong, donde los niños leen en voz alta el *Clásico de los tres caracteres* en mandarín (putonghua). Cada página es una lección de cuatro pareados en kai de 一号 (26 pt), y cada carácter va bajo su sílaba de pinyin. Las sílabas van en Andika porque dibuja la a y la g de un solo piso que imprimen los libros escolares chinos. Una banda verde pálido lleva la etiqueta roja de la lección, una pequeña acuarela y el título en 初号 (42 pt) con su propia lectura. Debajo del texto, seis cuadrículas de escritura (田字格) guardan los caracteres para copiar, y una nota cuenta a la familia qué dicen los versos. Su pareja en español es <RecipeLink slug="reading-primer-syllables">la cartilla de sílabas en chips</RecipeLink>, donde cada sílaba es un chip de color en lugar de una lectura sobre un carácter.
 
 Una cartilla se aparta a propósito de las normas del libro chino. Un niño lee pocos caracteres y grandes, así que la línea lleva doce de 26 pt donde un libro pone entre 25 y 40 de 10,5 pt, y la interlínea pasa un poco del doble del cuerpo para que quepan las lecturas. Cada pareado va centrado en su propia línea, sin justificar ni sangrar. El texto va en kai, la letra que sigue al pincel, porque enseña los trazos que el niño aprende a escribir; un libro lo compondría en song.
 
@@ -24,9 +24,9 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. `{人之初|r
 
 <Excerpt region="opener" />
 
-El texto de un diseño no imprime lecturas, así que el título no puede salir del diseño de la apertura. El título de primer nivel, 第一課, dibuja la banda, el dibujo y la etiqueta roja; el de la lección es el título de segundo nivel que va debajo, sin diseño propio, en 初号, y el compositor de texto lo compone con su pinyin. `reserve: false` deja la banda y el dibujo fuera de la altura del título, y `span: 'page'` los pinta debajo del texto.
+El texto de un diseño no imprime lecturas, así que el título no puede salir del diseño de la apertura. El título de primer nivel, 第一課, dibuja la banda, la viñeta y la etiqueta roja; el de la lección es el título de segundo nivel que va debajo, sin diseño propio, en 初号, y el compositor de texto lo compone con su pinyin. `reserve: false` deja la banda y la viñeta fuera de la altura del título, y `span: 'page'` los pinta debajo del texto.
 
-Un diseño de título no atiende a `parity`, así que el dibujo tiene un elemento a cada lado de la página: `{attr.left}` a 14 mm del borde izquierdo y `{attr.right}` a 14 mm del derecho. Las lecciones de página par escriben `# 第一課 {left="sprout"}`, y las de impar, `{right="shuttle"}`, de modo que cada dibujo queda en el lado exterior del pliego; el elemento cuyo atributo falta no dibuja nada.
+Un diseño de título no atiende a `parity`, así que la viñeta tiene un elemento a cada lado de la página: `{attr.left}` a 14 mm del borde izquierdo y `{attr.right}` a 14 mm del derecho. Las lecciones de página par escriben `# 第一課 {left="sprout"}`, y las de impar, `{right="shuttle"}`, de modo que cada viñeta queda en el lado exterior del pliego; el elemento cuyo atributo falta no dibuja nada.
 
 ### 3 · Seis cuadrículas con un solo atributo
 

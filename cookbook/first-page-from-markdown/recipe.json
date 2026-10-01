@@ -39,7 +39,17 @@
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The salt pans and the dune at dusk on the opener, a photograph",
+          "es": "Las salinas y la duna al anochecer de la apertura, una fotografía"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "salt-road-1440.jpg"
+      }
+    ],
     "fonts": [
       { "family": "Newsreader", "license": "OFL-1.1" },
       { "family": "Young Serif", "license": "OFL-1.1" },

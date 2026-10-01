@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "recipe-card",
-  "sourceHash": "00e6fc4ef125c373c84ed50d5a046048872e35dd56add845b1f24116b88916ed",
+  "sourceHash": "058bfea9b1315b5beac6538beb15c1d39b6e131b8f8ecd55163b55079d36bb8f",
   "engine": {
-    "postext": "1.8.0",
+    "postext": "1.9.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-28T13:54:04.047Z",
+  "capturedAt": "2026-10-01T06:49:36.051Z",
   "variants": {
     "en": {
-      "hash8": "002c1e62",
-      "vdtHash": "9e14674772b4ca1aef134eb498d2066b80b20bf7",
+      "hash8": "bf8201cd",
+      "vdtHash": "ffcb9dcd33fccccf5ff020fc94282fe7cb4c1622",
       "timings": {
-        "importMs": 439,
-        "fontsMs": 24,
-        "buildMs": 13,
-        "totalMs": 1117,
+        "importMs": 202,
+        "fontsMs": 36,
+        "buildMs": 9,
+        "totalMs": 1146,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 179
+        "ownLines": 188
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1316,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 92704,
+          "bytes": 140296,
           "alt": "Opening page 58: Tortilla de patatas."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1316,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 90506,
+          "bytes": 132046,
           "alt": "Opening page 59: Gazpacho andaluz."
         }
       ],
@@ -84,7 +84,7 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 32120
+        "bytes": 416737
       },
       "detected": {
         "apis": [
@@ -233,8 +233,8 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 308,
-        "designElements": 12,
+        "configLeaves": 315,
+        "designElements": 13,
         "directives": [
           ":::callout",
           ":::columns",
@@ -246,8 +246,8 @@
           ":chip"
         ],
         "resources": {
-          "svg": 4,
-          "bitmap": 0,
+          "svg": 3,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [
@@ -323,13 +323,13 @@
       }
     },
     "es": {
-      "hash8": "2393e643",
-      "vdtHash": "efe5daa9bde252600bfd3cb7193febab6cd68865",
+      "hash8": "f85cbd27",
+      "vdtHash": "f2ade94d5f4b68473c10144c5100a54c672008fa",
       "timings": {
-        "importMs": 8101,
-        "fontsMs": 93,
-        "buildMs": 14,
-        "totalMs": 9135,
+        "importMs": 514,
+        "fontsMs": 845,
+        "buildMs": 13,
+        "totalMs": 2323,
         "builds": 2
       },
       "specimen": {
@@ -351,7 +351,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 179
+        "ownLines": 188
       },
       "pages": [
         {
@@ -362,7 +362,7 @@
           "h": 1316,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 97672,
+          "bytes": 145618,
           "alt": "Página de apertura 58: Tortilla de patatas."
         },
         {
@@ -373,7 +373,7 @@
           "h": 1316,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 92018,
+          "bytes": 133892,
           "alt": "Página de apertura 59: Gazpacho andaluz."
         }
       ],
@@ -397,7 +397,7 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 32383
+        "bytes": 417042
       },
       "detected": {
         "apis": [
@@ -546,8 +546,8 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 308,
-        "designElements": 12,
+        "configLeaves": 315,
+        "designElements": 13,
         "directives": [
           ":::callout",
           ":::columns",
@@ -559,8 +559,8 @@
           ":chip"
         ],
         "resources": {
-          "svg": 4,
-          "bitmap": 0,
+          "svg": 3,
+          "bitmap": 2,
           "table": 0
         },
         "fonts": [

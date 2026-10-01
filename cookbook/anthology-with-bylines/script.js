@@ -1,6 +1,6 @@
 // ═══ Postext Cookbook · Nº 030 · Anthology with bylines ═══════════════════════════════
 // https://postext.dev/en/cookbook/anthology-with-bylines
-// Code: MIT · Text: Hazlitt, Thoreau, Stevenson (public domain) · Cover: generated (CC BY 4.0)
+// Code: MIT · Text: Hazlitt, Thoreau, Stevenson (public domain) · Cover: diffusion models
 // Fonts: Spectral, Gloock, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.4.1
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
@@ -14,7 +14,7 @@ const palette = {
   ink: '#241f26', // text: a plum-tinted near-black
   paper: '#f7f2e8', // the page
   heather: '#6b4468', // the bylines and the authors in the contents
-  rust: '#a4502a', // the essay numbers, and the cover's sun
+  rust: '#a4502a', // the essay numbers
   rule: '#d5cabd', // hairlines
   muted: '#6d6570', // running heads, datelines, page numbers in the contents
 };
@@ -178,104 +178,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   header, footer,
 });
 
-// #region art: the cover, drawn in code and seeded: the same dusk on every run
-let seed = 1822; // Mulberry32, a tiny seeded PRNG: never Math.random() in a recipe
-const rand = () => {
-  let r = Math.imul((seed = (seed + 0x6d2b79f5) | 0) ^ (seed >>> 15), 1 | seed);
-  r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-  return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-};
-const n = (v) => v.toFixed(2);
-const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
-const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
-  + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
-const SKY = '#f2d6ae'; // apricot dusk
-const RISE = 10; // mm the whole landscape is lifted, so the card's crop takes in more of it
-const W = TRIM.width;
-const H = TRIM.height;
-
-// A ridge line: a few slow waves with seeded phases, sampled every millimetre.
-function ridge(base, waves) {
-  const phases = waves.map(() => rand() * Math.PI * 2);
-  return (x) => base - RISE
-    + waves.reduce((y, [amp, len], i) => y + amp * Math.sin(x / len + phases[i]), 0);
-}
-const fillUnder = (f, colour) => {
-  let d = `M-1 ${n(f(-1))}`;
-  for (let x = 0; x <= W + 1; x += 1) d += ` L${x} ${n(f(x))}`;
-  return `<path d="${d} L${W + 1} ${H + 1} L-1 ${H + 1} Z" fill="${colour}"/>`;
-};
-
-// The footpath: a ribbon from the foot of the page to a fold of the near hill, narrowing
-// with distance. s runs from 0 at the far end to 1 at the foot of the page.
-const [NEAR, FAR] = [[98, H + 2], [60, 128 - RISE]];
-const pathAt = (s) => [ // x, y and width in mm: the bends and the width shrink with distance
-  FAR[0] + (NEAR[0] - FAR[0]) * s + 13 * s * Math.sin(Math.PI * (1 - s) * 2.1),
-  FAR[1] + (NEAR[1] - FAR[1]) * s ** 1.5, 0.5 + 15 * s ** 1.7];
-function footpath(from = 0) { // the part nearer than `from`
-  const left = [];
-  const right = [];
-  for (let i = 0; i <= 80; i++) {
-    const s = from + (1 - from) * (i / 80);
-    const [x, y, w] = pathAt(s);
-    left.push(`${n(x - w / 2)} ${n(y)}`);
-    right.unshift(`${n(x + w / 2)} ${n(y)}`);
-  }
-  const fill = mix(SKY, palette.paper, 0.35);
-  return `<path d="M${left.join(' L')} L${right.join(' L')} Z" fill="${fill}"/>`;
-}
-
-function coverSvg() {
-  const layers = [ // far to near: base line, [amplitude, wavelength] waves, colour
-    [98, [[3, 14], [2, 6]], mix(palette.heather, SKY, 0.72)],
-    [108, [[4, 18], [1.5, 7]], mix(palette.heather, SKY, 0.55)],
-    [119, [[5, 22], [2, 9]], mix(palette.heather, SKY, 0.36)],
-    [133, [[6, 26], [2, 11]], mix(palette.heather, palette.ink, 0.12)],
-    [152, [[7, 30], [2.5, 12]], mix(palette.heather, palette.ink, 0.62)],
-  ].map(([base, waves, colour]) => ({ f: ridge(base, waves), colour }));
-  const sky = '<linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">' // paler at the ridge
-    + `<stop offset="0" stop-color="${mix(SKY, palette.rust, 0.1)}"/>`
-    + `<stop offset="0.55" stop-color="${mix(SKY, palette.paper, 0.5)}"/></linearGradient>`
-    + `<rect width="${W}" height="${H}" fill="url(#dusk)"/>`;
-  const sun = `<circle cx="101" cy="${96 - RISE}" r="13" fill="${mix(palette.rust, SKY, 0.12)}"/>`;
-  const birds = [[113, 66, 1.6], [119, 62, 1.2], [108, 71, 1]].map(([x, y, w]) => '<path '
-    + `d="M${n(x - w)} ${n(y - 0.4)} Q${n(x - w / 2)} ${n(y - 1)} ${x} ${y} `
-    + `Q${n(x + w / 2)} ${n(y - 1)} ${n(x + w)} ${n(y - 0.4)}" fill="none" `
-    + `stroke="${palette.ink}" stroke-width="0.35" stroke-linecap="round"/>`).join('');
-  const [far1, far2, mid, near, fore] = layers;
-  // Three trees on the middle ridge, and hedgerows across the near hill as rows of shrubs.
-  const dark = mix(palette.heather, palette.ink, 0.45);
-  const copse = [[106, 2.4, 3.2], [111.5, 1.8, 2.6], [116, 2.9, 3.6]].map(([x, r, trunk]) => {
-    const foot = mid.f(x) + 0.6;
-    return `<path d="M${x} ${n(foot)} V${n(foot - trunk)}" stroke="${dark}" stroke-width="0.7"/>`
-      + `<ellipse cx="${x}" cy="${n(foot - trunk - r * 0.8)}" rx="${n(r * 0.85)}" ry="${n(r)}" `
-      + `fill="${dark}"/>`;
-  }).join('');
-  let hedges = '';
-  for (const [dy, x0, x1, s] of [[5, -1, 52, 0.8], [11, 70, W + 1, 1], [17, -1, 40, 1.25]]) {
-    for (let x = x0; x < x1; x += (2 + rand() * 0.8) * s) { // s: nearer rows, bigger shrubs
-      if (rand() < 0.1) continue; // a gap in the hedge
-      const y = near.f(x) + dy + Math.sin(x / 9) * 1.5 + rand() * 0.4 * s;
-      hedges += `<circle cx="${n(x)}" cy="${n(y)}" r="${n((0.7 + rand() * 0.4) * s)}" `
-        + `fill="${mix(palette.heather, palette.ink, 0.6)}"/>`;
-    }
-  }
-  // The near stretch of the path starts just behind the crest it comes over.
-  let crest = 0;
-  while (crest < 1 && pathAt(crest)[1] < fore.f(pathAt(crest)[0]) - 1) crest += 0.005;
-  const body = sky + sun + birds + fillUnder(far1.f, far1.colour) + fillUnder(far2.f, far2.colour)
-    + fillUnder(mid.f, mid.colour) + copse + fillUnder(near.f, near.colour) + hedges + footpath()
-    + fillUnder(fore.f, fore.colour) + footpath(crest);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${body}</svg>`;
-}
-// The cover's resource: the design's image element names it by id, and loadSvg() below
-// registers the drawing under its fileId.
-const resources = [{ id: 'cover', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
-  svg: { fileId: 'cover.svg', width: TRIM.width * 10, height: TRIM.height * 10 },
-  altText: 'Hills at dusk in five layers, from dusty rose to deep heather, a low rust sun, '
-    + 'three trees on a ridge, hedgerows across the near hill and a pale footpath winding up '
-    + 'from the foot of the page.' }];
+// #region art: the cover, a painting: a JPEG in assets/ cut to the trim's 3 : 4
+// The design's image element names the resource by id; loadImage() below registers the file
+// under its fileId. A bitmap is declared at its pixels.
+const resources = [{ id: 'cover', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'cover-1200.jpg', format: 'jpeg', width: 1200, height: 1600 },
+  altText: 'Heath and hills at dusk under a pale apricot sky, a low sun on the horizon, three '
+    + 'trees on a ridge and a footpath winding up from the foot of the page through the '
+    + 'heather.' }];
 // #endregion
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
@@ -286,7 +196,7 @@ const FONTS = { // text, display and label faces (gotcha: fonts-first)
   Spectral: ['400', '400i'], Gloock: ['400'], 'Hanken Grotesk': ['600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadSvg('cover.svg', coverSvg());
+await loadImage('cover-1200.jpg', asset('cover-1200.jpg'));
 await loadFonts(FONTS, markdown);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: t({ en: 'Anthology with bylines', es: 'Antología con firmas de autor' }) });
