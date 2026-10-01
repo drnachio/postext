@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { youtubeUrl } from "@/i18n/locales";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ReadingPreferences } from "@/components/reading/ReadingPreferences";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -14,6 +15,7 @@ const NAV_LINK =
 
 export async function Navbar() {
   const t = await getTranslations("Navbar");
+  const locale = await getLocale();
 
   return (
     <nav
@@ -49,7 +51,7 @@ export async function Navbar() {
             {t("github")}
           </a>
           <a
-            href="https://www.youtube.com/@Postext"
+            href={youtubeUrl(locale)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t("youtubeAriaLabel")}

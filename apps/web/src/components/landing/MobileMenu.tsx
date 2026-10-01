@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { youtubeUrl } from "@/i18n/locales";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ReadingPreferences } from "@/components/reading/ReadingPreferences";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -11,6 +12,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const t = useTranslations("Navbar");
+  const locale = useLocale();
 
   useEffect(() => {
     if (open) {
@@ -101,7 +103,7 @@ export function MobileMenu() {
               </li>
               <li>
                 <a
-                  href="https://www.youtube.com/@Postext"
+                  href={youtubeUrl(locale)}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={t("youtubeAriaLabel")}

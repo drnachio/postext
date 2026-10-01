@@ -9,7 +9,7 @@ export async function ShowreelSection() {
   if (!MEDIA_BASE) return null;
   const t = await getTranslations("Showreel");
   const locale = await getLocale();
-  const lang = locale.startsWith("es") ? "es" : "en";
+  const lang = locale.startsWith("es") ? "es" : locale.startsWith("zh") ? "zh" : "en";
 
   return (
     <section

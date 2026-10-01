@@ -9,6 +9,20 @@ export const LOCALE_INFO = {
 
 export type SiteLocale = keyof typeof LOCALE_INFO;
 
+/** Each locale's YouTube playlist, opened on its first video (the showreel)
+ *  so the rest of the list plays on in the same language. */
+const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
+  en: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
+  es: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
+  zh: { video: "lFy_VLFuWqA", list: "PLIfpGQLFoR8k" },
+};
+
+/** The header's YouTube link for a route locale. */
+export function youtubeUrl(locale: string): string {
+  const { video, list } = YOUTUBE_PLAYLIST[siteLocale(locale)];
+  return `https://www.youtube.com/watch?v=${video}&list=${list}`;
+}
+
 export function isSiteLocale(value: string): value is SiteLocale {
   return Object.prototype.hasOwnProperty.call(LOCALE_INFO, value);
 }
