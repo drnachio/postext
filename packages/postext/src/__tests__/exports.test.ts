@@ -246,6 +246,8 @@ describe("package exports", () => {
       "DEFAULT_FOOTNOTES_CONFIG",
       "resolveFootnotesConfig",
       "stripFootnotesDefaults",
+      "resolveCrossRefsConfig",
+      "stripCrossRefsDefaults",
       "DEFAULT_INDEX_CONFIG",
       "resolveIndexConfig",
       "stripIndexDefaults",
