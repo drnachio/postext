@@ -116,6 +116,12 @@ describe("composePen", () => {
     expect(variantFor({ sample: { locales: ["es"] } }, "en")).toBe("es");
   });
 
+  it("shows a Chinese page the sample's first edition", () => {
+    expect(variantFor({ sample: { locales: ["en", "es"] } }, "zh")).toBe("en");
+    expect(variantFor({ sample: { locales: ["es", "en"] } }, "zh")).toBe("es");
+    expect(variantFor({ sample: { locales: ["en", "es"] } }, "es")).toBe("es");
+  });
+
   it("ignores marker lines inside the sample text", () => {
     const listing = "A listing:\n\n// #region demo: Demo\nconst x = 1;\n// #endregion\n// @kit core\n";
     const pen = composePen(sources({ content: { en: listing, es: "# Uno\n", "intro.en": "Intro" } }), META, "en", { kit: KIT });

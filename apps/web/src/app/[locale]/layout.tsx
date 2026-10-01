@@ -5,6 +5,8 @@ import {
   JetBrains_Mono,
   Bricolage_Grotesque,
   Geist,
+  Noto_Sans_SC,
+  Noto_Serif_SC,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -20,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import "../globals.css";
+import { htmlLang } from "@/i18n/locales";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
@@ -43,6 +46,19 @@ const lora = Lora({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
+});
+
+// Han fallbacks behind the Latin faces, switched on for zh pages only
+// (globals.css `--cjk-*`). Google serves them in unicode-range slices, so a
+// page downloads only the slices its characters need.
+const notoSansSc = Noto_Sans_SC({
+  variable: "--font-noto-sans-sc",
+  preload: false,
+});
+
+const notoSerifSc = Noto_Serif_SC({
+  variable: "--font-noto-serif-sc",
+  preload: false,
 });
 
 export function generateStaticParams() {
@@ -113,7 +129,7 @@ export default async function LocaleLayout({
       "@type": "WebSite",
       name: SITE_NAME,
       url: SITE_URL,
-      inLanguage: locale,
+      inLanguage: htmlLang(locale),
       description: t("description"),
       potentialAction: {
         "@type": "SearchAction",
@@ -129,7 +145,7 @@ export default async function LocaleLayout({
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Web",
       url: SITE_URL,
-      inLanguage: locale,
+      inLanguage: htmlLang(locale),
       description: t("description"),
       offers: {
         "@type": "Offer",
@@ -150,7 +166,7 @@ export default async function LocaleLayout({
 
   return (
     <html
-      lang={locale}
+      lang={htmlLang(locale)}
       suppressHydrationWarning
       className={cn(
         "dark h-full antialiased",
@@ -158,7 +174,9 @@ export default async function LocaleLayout({
         fraunces.variable,
         bricolage.variable,
         lora.variable,
-        jetbrainsMono.variable
+        jetbrainsMono.variable,
+        notoSansSc.variable,
+        notoSerifSc.variable
       )}
     >
       <body className="min-h-full flex flex-col font-body">

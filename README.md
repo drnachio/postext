@@ -1,7 +1,7 @@
 # Postext
 
 [![npm version](https://img.shields.io/npm/v/postext)](https://www.npmjs.com/package/postext)
-[![CI](https://img.shields.io/github/actions/workflow/status/drnachio/postext/ci.yml?branch=develop&label=tests)](https://github.com/drnachio/postext/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/drnachio/postext/ci.yml?branch=main&event=push&label=tests)](https://github.com/drnachio/postext/actions/workflows/ci.yml?query=branch%3Amain)
 
 **A programmable typesetter for the web.**
 

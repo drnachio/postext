@@ -228,6 +228,14 @@ describe("search", () => {
     expect(matchedGaps("running heads", catalog.gaps!, "en")).toEqual([]);
   });
 
+  it("finds a Chinese gap term inside a query without spaces", () => {
+    const gaps = [{ ...catalog.gaps![0], label: "脚注", aliases: ["页脚注释", "PDF 脚注"] }];
+    expect(matchedGaps("怎么添加脚注？", gaps, "zh").map((g) => g.id)).toEqual(["footnotes"]);
+    expect(matchedGaps("pdf 脚注", gaps, "zh").map((g) => g.id)).toEqual(["footnotes"]);
+    expect(matchedGaps("页脚", gaps, "zh")).toEqual([]);
+    expect(matchedGaps("注", gaps, "zh")).toEqual([]);
+  });
+
   it("finds nothing for gibberish, and offers no removals", () => {
     const m = model("q=zzqxw");
     expect(m.results).toEqual([]);

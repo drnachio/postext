@@ -1,0 +1,77 @@
+---
+title: "口袋本小说里两端对齐的西班牙语"
+summary: "把《Marianela》第一章开头排成口袋本：西班牙语断词，词间距小于1.7倍，没有孤字，抬高的首字，地图作为Figura 1。"
+description: "Galdós《Marianela》的11.5 × 18 cm口袋本：西班牙语断词、词间距小于1.7倍、raya破折号、comillas latinas和作为Figura 1的地图。"
+question: "怎样让西班牙语两端对齐并断词，用对白破折号和法式引号，并把“Figure”换成“Figura”？"
+aliases: ["西班牙语排版", "Spanish typography", "西班牙语断词", "Spanish hyphenation", "raya", "对白破折号", "dialogue dash", "法式引号", "guillemets", "comillas latinas", "抬高首字", "raised initial", "首字下沉", "drop cap", "Figura instead of Figure", "词间距上限", "word spacing limit", "断词孤字", "hyphenated runt", "口袋本小说", "pocket novel", "卷首地图", "frontispiece map"]
+pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚线标出旅人的路线：从镇上出发，经过人行小桥和林木覆盖的山丘，直到矿坑边缘。", "2": "第一章：小型大写字母的CAPÍTULO PRIMERO，下面一道短线，再下是斜体标题Perdido；在页面四分之一高度处，正文以一个抬高的牛血红色S开始。" }
+---
+
+## 成品一览
+
+把Galdós的《Marianela》（1878）开头排成11.5 × 18 cm的口袋本，第一章对面是一幅推想的Socartes矿区地图。在章的Libre Bodoni斜体标题上方，用小型大写字母拼写出*capítulo primero*；正文用Gentium Book Plus，从页面四分之一高度处开始，首字是一个抬高的牛血红色字母。单词按西班牙语音节断开（*hie-rro*、*esta-blecimiento*），词间距保持在正常宽度的1.7倍以内；没有哪一段以断词后的词尾结束。对白用*raya*排，这种长破折号也用来开合叙述者的*incisos*（插入语）。旅人的口令放在«comillas latinas»中，而在版本说明于引文内部再次引用它时，用英文双引号。地图是*Figura 1*，在正文中引作[fig. 1]。书眉用Marcellus SC，左页印作者，右页印书名。
+
+## 做法
+
+### 1 · 西班牙语音节，收紧词间距
+
+代码见上面的[简短回答](#简短回答)。`locale: 'es'`选用西班牙语的断词规则，而且只有这个代码才行：用`'es-ES'`时，这几页会按美式规则断成*cabal-los*、*hi-erro*和*establec-imiento*，还有一行的词间距会拉大到2.13倍（[支持的语言](/zh/docs/justification#支持的语言区域)）。两端对齐、Knuth–Plass以及段首孤行、段末孤行规则默认都已开启。86 mm的行长还需要收紧词间距：用默认的`maxWordSpacing: 2`时，有八行超过1.6倍，最宽的达到1.89倍；设为1.7时最宽为1.65倍，因为断行程序改为断开*hie-rro*和*ca-lles*（[词间距上下限](/zh/docs/justification#词间距上下限)）。超过上限的行代价高得多，但仍然允许，所以在更窄、没有更好断点的行长上，仍可能超出。`runtMinCharacters: 26`能抓住默认的20个空格宽度放过的断词残片：*siem- / pre adelante.*变成*Adelante, / siempre adelante.*，*So- / cartes [fig. 1].*变成*de / Socartes [fig. 1].*（[孤字](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)）。
+
+### 2 · 由整行构成的口袋本页面
+
+<Excerpt region="page" />
+
+下页边距由成品尺寸、上页边距和`LINES`算出，所以版心恰好容纳30行13.8 pt，每个满页都止于同一条基线，<PageRef page={3}>第10页和第11页</PageRef>就是如此。设`mirror: true`后，在跨页的两页上，15 mm的内侧页边距都在书脊一侧，14 mm的外侧页边距都在切口一侧（[镜像页边距](/zh/docs/configuration#镜像页边距)），86 mm的行长可容纳约57个10 pt的Gentium Book Plus字符。
+
+### 3 · 用文字写出的章序与抬高的首字
+
+<Excerpt region="opener" />
+
+编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。Postext只在设计文字中绘制首字，而设计文字是齐左排的，并且只有在该文字设了`overflow: 'wrap'`时才会绘制。为了藏起不齐的右边，首字旁只放一行：`lines: 1`让首字抬高，与`lead`属性中的那一行并排，并反复调整`INITIAL_GAP`，直到这一行恰好排满，离行长只差0.1 mm。段落在Markdown中接着排，不缩进（[文字元素](/zh/docs/configuration#文本元素)）。章这一级的`marginBottom`取代默认的外边距（默认值会多出一个空行）；它的值`-LEAD`还收回了首字1.2 em的字框给首页标题增加的那一行高度。
+
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside a first line that ends flush with the justified text under it." />
+
+### 4 · 地图作为Figura 1与章首相对
+
+<Excerpt region="figure" />
+
+`position: 'here'`把地图放在`::resource{id="plano"}`所在的位置，位于一个单独的标题之下。这个标题让书中第8页成为首页，而书眉会跳过首页。它的样式清空页脚并自带分页，因此即使各章都从右页开始，这幅插图仍与第一章相对，不带书眉和页码（[标题样式](/zh/docs/configuration#标题样式)）。简短回答中的西班牙语资源类型在地图下印*Figura 1.*（不设`resourceTypes`时，无论语言是什么都印*Figure 1.1*），在正文中印*Fig. 1*，Markdown中`:ref`的`case="lower"`把它变成*fig. 1*。引用放在方括号里，西班牙语版本用方括号标出编者在作者原文之外添加的内容。
+
+### 5 · 左页印作者，右页印书名
+
+<Excerpt region="heads" />
+
+`parity: 'even'`把作者放在左页，`'odd'`把书名放在右页，`pages: 'body'`让两者都不出现在首页上，首页唯一的页面元素是用`pages: 'opener'`设置的页脚页码。每条书眉都锚定在页面上，并用`SHIFT`移到版心的中线上；由于内外页边距不同，版心中线与页面中线相差半毫米。出于同样的原因，页脚页码分奇偶两种。页码用Gentium排，因为Marcellus SC把1和0画得像I和O。
+
+### 6 · Markdown中的西班牙语标点
+
+<Excerpt region="styles" />
+
+最后一页<PageRef page={5}>第12页</PageRef>以三个段落样式收尾。牛血红色Bodoni的星号居中排在一个[`:::space{lines=2}`](/zh/docs/document-format#space)之后，因为空行不会增加空白。版本说明是8.3 pt、11 pt行距，版权页信息是7.5 pt，用书眉的灰色。版本说明保持墨色：段落样式没有斜体颜色，灰色说明中的斜体*Marianela*会比周围的字印得更深。在Markdown中，对白以raya（—）开头，绝不能用连字符，因为行首的连字符加空格会开启一个列表。说明开头的*1878.*会开启一个编号列表，所以在年份前加一个词连接符（U+2060）。星号要转义（`\*`）；不转义的话，第一个会开启项目符号列表，另两个会开启一段斜体，这一行就消失了。
+
+## 变化
+
+### 每章从右页开始
+
+设为`'odd'`时，本该从左页开始的章前面会多出一个空白页，就像版面更宽裕的版本那样。第一章本来就从右页开始，插图也保持在原页，因为它的样式自带分页。
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### 按章给图编号
+
+直接使用内置的西班牙语资源类型时，图在每个一级标题内编号：地图变成*Figura 1.1*，引用变成*fig. 1.1*。
+
+```diff
+-const resourceTypes = defaultResourceTypes(LOCALE)
+-  .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
++const resourceTypes = defaultResourceTypes(LOCALE);
+```
+
+## 常见问题
+
+- 章首页正文起点下移九行而不是八行时，第11页短了一行，因为`avoidWidows`不允许在页面最后一行开始一个段落。修改设置或文字之后，要检查每页的页脚。
+- `lead`属性在句中（*…vino tranquila*）停下，Markdown段落从那里接着排（*y oscura la noche*），因为它恰好容纳首字旁放得下的那些词。换字体、字号、行长或`INITIAL_GAP`都会破坏这种恰好排满的效果：在两者之间挪动词语，直到这一行再次排满。
+- 这几款字体的Fontsource latin文件中都没有星号三角⁂（U+2042），浏览器会从系统字体中取用。无论如何，西班牙语图书用三个隔开的星号标出段落分隔。

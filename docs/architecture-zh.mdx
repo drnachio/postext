@@ -1,0 +1,824 @@
+{/* docs/architecture-zh.mdx */}
+
+export const metadata = {
+  title: 'Postext架构',
+  sidebarTitle: '架构',
+  description: 'Postext排版引擎的技术架构',
+  lang: 'zh',
+  lastUpdated: '2026-09-29',
+  readingTime: '38分钟',
+  order: 2,
+};
+
+# Postext架构
+
+如果你用过React，就已经懂得这里的核心技巧。React先在内存里构建虚拟DOM，做差异比较，然后才去改动浏览器里真实的DOM。Postext做的是同一件事，只不过它构建的不是UI组件，而是一棵由**页面、栏、文本块和边界框**组成的树。一份多页、多栏文档的全部几何信息，在渲染出第一个像素之前就已算好。每个段落、标题、图片、脚注和引文框都放在精确的坐标上，并且遵守延续了几百年、CSS根本无法表达的排版规则。
+
+这一切得益于[`@chenglou/pretext`](https://github.com/chenglou/pretext)。它是一个不依赖DOM的文本测量库，比浏览器的布局重排快300–600倍。项目背后的故事（十年间的屡次失败、卡住所有尝试的那个瓶颈，以及最终消除它的那个库）见[简介](/zh/docs/introduction)。
+
+## 核心思路
+
+设想一份74页的双栏文档，比如一份公司年报，或者一本插图密集的教材。你把它交给Postext，引擎就在内存里构建出完整的版面：每一页、每一栏、每个段落的确切位置和像素尺寸。想知道第72页第2栏里有什么？答案已经在那里，不需要渲染。引擎已经决定好每个段落在哪里断行、每张图片放在哪里、怎样避免段末孤行和段首孤行，以及相邻各栏的基线如何对齐。
+
+下面说说这一点为什么如此重要。
+
+排版规则彼此牵连，而且牵连得让人头疼。第5页有一个段末孤行，也就是被孤零零留在栏底的最后一行，你把它拉回前一栏，问题解决了。可这一改动让第5页那一栏变短，内容随之后移，第6页就可能冒出一个段首孤行：段落的第一行被单独推到新的一栏，和段落其余部分分离。仅仅为了*发现*自己制造了新问题，你就需要整份文档的版面都可供检查。而要*修正*它又不在别处引出新问题，你就得能够调整、重新测量、重新检查整份文档。
+
+这就是“先全部算好，再渲染”的理念。它不是性能技巧。专业排字工几百年来一直遵循几十条相互关联的排版规则，要运用这些规则，这是唯一的途径。
+
+
+## 核心概念
+
+一份简短的术语表。本文后面默认你熟悉这些术语，哪个记不清了就回到这里查看。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>术语</th>
+      <th>定义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>VDT</strong></td>
+      <td>虚拟文档树（Virtual Document Tree）。一种可原地修改的数据结构，表示整份文档：页面、栏、块、行内片段和边界框。类似虚拟DOM，但描述的是文档版面的几何信息。</td>
+    </tr>
+    <tr>
+      <td><strong>页面</strong></td>
+      <td>一个固定尺寸的矩形区域。引擎从一开始就以页面为单位工作。文档是页面的有序序列。</td>
+    </tr>
+    <tr>
+      <td><strong>栏</strong></td>
+      <td>页面在水平方向上划分出的竖直区域。栏有固定的宽度和最大高度。文本从一栏流入下一栏，再流入下一页。</td>
+    </tr>
+    <tr>
+      <td><strong>块</strong></td>
+      <td>在栏中占据竖直空间的内容单元：段落、标题、图片、表格、块引用、引文框或脚注区。</td>
+    </tr>
+    <tr>
+      <td><strong>行</strong></td>
+      <td>块内一行经过测量的文本，由Pretext生成。每行都有边界框和基线位置。</td>
+    </tr>
+    <tr>
+      <td><strong>边界框</strong></td>
+      <td>{'{'}  <code>x, y, width, height</code>  {'}'}，单位为像素，相对于页面原点。VDT中的每个节点都带有一个边界框。</td>
+    </tr>
+    <tr>
+      <td><strong>资源</strong></td>
+      <td>通过id与正文关联的非文本元素：位图、SVG或表格（<code>Resource</code>，<code>kind: 'bitmap' | 'svg' | 'table'</code>）。资源在首次引用时按类型编号（图1、表2.1……），并浮动到该引用附近某页顶部或底部的一个区带中。</td>
+    </tr>
+    <tr>
+      <td><strong>注释</strong></td>
+      <td>脚注或章末注，在Markdown中写成<code>[^id]</code>标记加<code>[^id]:</code>定义（见<a href="/en/docs/document-format#footnotes">脚注</a>）。旁注，以及内容模型所接受的<code>PostextNote</code>列表，都没有实现：引擎不读取<code>notes</code>。</td>
+    </tr>
+    <tr>
+      <td><strong>基线网格</strong></td>
+      <td>由正文行距导出的竖直格子（例如16px/1.5对应24px）。每条正文基线都应落在它的整数倍上，使各栏以及左右对页之间的行保持对齐。</td>
+    </tr>
+    <tr>
+      <td><strong>劣度（Badness）</strong></td>
+      <td>两端对齐的行中词间距偏离自然宽度的程度，即调整比的平方，上限为10000。它是Knuth-Plass断行中的基础代价。</td>
+    </tr>
+    <tr>
+      <td><strong>缺陷值（Demerits）</strong></td>
+      <td>Knuth-Plass中一个候选断点的总代价：劣度加上各项罚分（断词、段末孤行/段首孤行/孤字、适配等级不匹配）。算法选出总缺陷值最低的一组断点。</td>
+    </tr>
+    <tr>
+      <td><strong>适配等级（Fitness Class）</strong></td>
+      <td>对一行松紧程度的粗略分档。相邻两行分属差别很大的等级时（一行很紧，下一行很松），会额外计入一份缺陷值，使段落的灰度更均匀。</td>
+    </tr>
+    <tr>
+      <td><strong>余量（Slack）</strong></td>
+      <td>栏底剩下的未用竖直空间。余量的平方代价（以<code>slackWeight</code>加权）引导断行器选择能把各栏填满的断点组合。</td>
+    </tr>
+    <tr>
+      <td><strong>后端</strong></td>
+      <td>消费已收敛VDT的渲染目标。目前已有三种：<strong>canvas</strong>（位图预览）、<strong>HTML</strong>（基于DOM的屏幕阅读）和<strong>PDF</strong>（通过<code>postext-pdf</code>输出可付印的文件）。三者共用同一套测量（基于Pretext的measure模块）。</td>
+    </tr>
+    <tr>
+      <td><strong>遍（Pass）</strong></td>
+      <td>排版流水线中的一个阶段。每一遍只承担一项职责，读取并修改VDT。</td>
+    </tr>
+    <tr>
+      <td><strong>收敛循环</strong></td>
+      <td>当后面的遍推翻前面的决定时，重新运行排版各遍的外层循环。最多迭代5次。</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## 系统架构
+
+<Illustration name="SystemArchitecture" data='{"title": "Postext系统架构", "desc": "增强Markdown和PostextConfig进入解析器，由它构建虚拟文档树。Pretext测量文本。七遍排版处理在收敛循环中修改VDT。后端把最终的VDT渲染为HTML或PDF。", "caption": "解析器 → VDT ↔ Pretext → 七遍排版处理 → 后端 → 输出。", "markdown": "增强Markdown", "configTitle": "PostextConfig", "configSubtitle": "（栏、规则、间距）", "engine": "排版引擎", "parser": "解析器", "pass1": "第1遍", "vdtLine1": "虚拟文档树", "vdtLine2": "（VDT）", "vdtAttr1": "可变，原地修改", "vdtAttr2": "页面 > 栏 > 块", "vdtAttr3": "每个节点都有bbox", "vdtAttr4": "dirty标记跟踪", "pretext": "Pretext", "pretextSubtitle": "文本测量", "passesTitle": "排版各遍（读取并修改VDT）", "passes": [{"num": "第2遍", "name": "文本测量（借助Pretext）"}, {"num": "第3遍", "name": "页面与栏的安放"}, {"num": "第4遍", "name": "资源安放"}, {"num": "第5遍", "name": "排版精修"}, {"num": "第6遍", "name": "各栏齐底"}, {"num": "第7遍", "name": "垂直韵律对齐"}], "convergence": "收敛（最多5次）", "backend": "后端", "backendSubtitle": "（统一接口）", "backendItems": ["Canvas / 浏览器", "PDF", "服务器端（规划中）"], "output": "HTML / PDF", "outputSubtitle": "渲染输出"}' />
+
+**内容在引擎中经历的过程如下：**
+
+1. **解析器**读取你的增强Markdown和配置，构建初始VDT：一棵由带类型的块组成的树，此时还没有位置，只有内容和结构
+2. **排版各遍**接手，依次修改VDT：借助Pretext测量文本，把块排入页面和栏，对排版细节反复精修，直到达到专业水准
+3. **收敛循环**负责发现问题：当后面的某一遍（比如修正一个段末孤行）推翻了前面的决定（比如各栏高度），引擎就回到受影响的那一步重新运行。最多迭代5次，直到一切稳定
+4. **最终的VDT**就是完整的版面几何：每个元素都知道自己的页码、所在栏、位置和边界框。在任何渲染发生之前，文档就已完全“排好”
+5. **后端**遍历完成的VDT，把它渲染成目标格式：栅格化的canvas位图、由定位HTML元素组成的DOM树，或嵌入字体的PDF文档。同一份VDT供三者使用，选哪个后端纯粹是输出方面的决定
+
+
+## 输入层
+
+### 内容模型
+
+内容模型既是一种数据结构，也是一种理念。你描述要说*什么*，而不是*如何*排版。版面上的决定由引擎来做。
+
+<Illustration name="ContentModel" data='{"title": "内容模型：markdown、资源、注释", "desc": "Postext的输入把markdown（阅读顺序和语义结构）与资源（位图、SVG、表格）和注释分开。引擎按ID解析行内的:ref引用和::resource嵌入，并生成VDT。", "caption": "Markdown决定阅读顺序，资源提供视觉数据。", "contentTitle": "PostextContent", "markdown": "markdown", "markdownSub": "阅读顺序 + 按id的:ref / ::resource", "resources": "resources[]", "resourcesSub": "位图、SVG、表格", "notes": "metadata", "notesSub": "标题、作者、日期", "resolveMarker": "按id解析：:ref{id=…}、::resource{id=…}", "engineLabel": "引擎", "vdtLabel": "VDT"}' />
+
+```typescript
+// packages/postext/src/types.ts
+
+interface PostextContent {
+  markdown: string;            // 带:ref / ::resource标记的增强markdown
+  metadata?: DocumentMetadata; // 标题、副标题、作者、发布日期……
+  resources?: Resource[];      // 位图、SVG、表格，按id引用
+  notes?: PostextNote[];       // 不读取：脚注在markdown中写成[^id]
+}
+
+interface Resource {
+  id: string;                  // 稳定的id，供行内:ref引用
+  typeId: string;              // 该资源所属的ResourceType（'figure'、'table'……）
+  kind: 'bitmap' | 'svg' | 'table';
+  caption?: string;            // 类型前缀和编号由计算得出，不写在这里
+  altText?: string;
+  createdAt: number;
+  updatedAt: number;
+  // 恰好一种与kind对应的数据：
+  bitmap?: { fileId: string; format: string; width: number; height: number };
+  svg?: { fileId: string; width?: number; height?: number };
+  table?: { model: TableModel };
+  placement?: ResourcePlacement; // 可选：单个资源覆盖浮动设置
+}
+```
+
+**资源**承载视觉数据：题注、替代文本，以及与其类型对应的数据。二进制数据（位图、SVG）存放在*带外*：资源只保存一个`fileId`，渲染器在绘制时再去解析它（沙盒把这些字节保存在IndexedDB里）。表格资源是例外：它的`TableModel`（一个带合并和对齐信息的单元格网格）随资源一起内联传递，因为它是结构化数据，而不是字节。
+**注释**本来要承载内容和标记样式，并从markdown中的行内位置引用。它们尚未实现：引擎忽略`notes`，markdown也没有引用注释的语法。
+
+这种分离是一个有明确取向的设计选择，其意义比看上去要大。markdown掌管*阅读顺序*和*语义结构*：什么在前，什么是标题，脚注在哪里被引用。资源数组和注释数组掌管*视觉数据*：图片尺寸、题注文字、注释内容。两者分开后，同一份markdown只需改变配置，就能排成完全不同的样子。双栏的学术版式和单栏的博客文章可以共用同一份源内容。引擎也可以做出安放上的决定，比如因为这一栏放不下而把图片推迟到下一栏，却完全不必改动你的源内容。
+
+```typescript
+// 示例：一篇引用了一幅图的简单文章
+const content: PostextContent = {
+  markdown: `
+# The Art of Typography
+
+The history of typography begins with Gutenberg's
+movable type, shown in :ref{id="printing-press"}.
+His invention transformed the production of books.
+
+The technique spread rapidly across Europe, reaching
+Italy by 1465 and France by 1470.
+  `,
+  resources: [
+    {
+      id: 'printing-press',
+      typeId: 'figure',
+      kind: 'bitmap',
+      caption: 'A reconstruction of the original press.',
+      altText: "Reconstruction of Gutenberg's printing press",
+      createdAt: 1765379100000,
+      updatedAt: 1765379100000,
+      bitmap: { fileId: 'press-photo', format: 'jpeg', width: 600, height: 400 },
+    },
+  ],
+};
+```
+
+资源通过id与正文关联，**只要引用它，就能把它纳入文档**。行内的`:ref{id="printing-press"}`同时做两件事：它在正文中渲染出资源经计算得到的编号（“Fig. 1”）；并且在阅读顺序中的第一次引用处，把资源*浮动*到页面上，在该引用附近页面的顶部或底部预留一个区带，和印刷排字工的做法完全一样。你不需要再安放一次这幅图。少数资源必须位于文本流中的某个确切位置，这时可以把`::resource{id="…"}`单独写成一行，作为可选的块级嵌入：只有当资源解析后的`placement.position`为`'here'`（即不参与浮动）时，它才在原处渲染；对于浮动的资源，它只被当作又一次引用。作者从不需要考虑安放问题，由引擎来考虑。
+
+<Illustration name="ReferenceResolution" data='{"title": "引用解析", "desc": "markdown源文件用:ref{id=printing-press}在行内引用一幅图。resources数组按ID提供实际内容。引擎解析该引用，在正文中渲染计算出的编号，并把图浮动到页面顶部的一个区带中。", "caption": "markdown中的引用只是名称。引擎根据资源解析它们、为它们编号，并把图浮动到引用附近。", "markdownTitle": "markdown", "markdownLine1": "# The Art of Typography", "markdownLine2": "movable type, shown in", "markdownLine3": ":ref{id=printing-press} …", "resourcesTitle": "resources[]", "resourceLine": "{ id: &#39;printing-press&#39;, kind: &#39;bitmap&#39;, … }", "notesTitle": "::resource{id=…}", "noteLine": "placement为&#39;here&#39;时的可选嵌入", "resolveLabel": "解析", "outputTitle": "排好的页面", "outputFigure": "[ 图1：浮动到一个区带 ]", "outputFootnote": "…shown in Fig. 1…"}' />
+
+### 配置
+
+排版流水线的每个方面都由`PostextConfig`控制。各部分的完整概览（页面、布局、正文、标题、列表、数学公式、页眉页脚……）见<a href="/en/docs/configuration">配置</a>页；与本文关系最密切的是：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>配置</th>
+      <th>控制内容</th>
+      <th style={{ width: '120px' }}>用于</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyText</code> / <code>headings</code></td>
+      <td>按字段设置的段末孤行/段首孤行/孤字罚分、保持不分离的规则、两端对齐的限度、断词，见<a href="/en/docs/configuration#body-text">配置 → 正文</a></td>
+      <td>第2遍、第5遍</td>
+    </tr>
+    <tr>
+      <td><code>tableStyle</code></td>
+      <td><code>kind: 'table'</code>资源的单元格排版、边框、圆角、表头和表体的填充，以及表格用<code>table.styleId</code>选用的<code>tableStyles</code>命名变体，见<a href="/en/docs/configuration#table-style">配置 → 表格样式</a></td>
+      <td>第4遍</td>
+    </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td>资源题注的排版：带编号的标签和说明文字，见<a href="/en/docs/configuration#caption-style">配置 → 题注样式</a></td>
+      <td>第4遍</td>
+    </tr>
+    <tr>
+      <td><code>diagramStyle</code></td>
+      <td><code>singleInk</code> + <code>inkColor</code>：按亮度把SVG图表重新着色为同一种油墨的不同深浅，使图在单一专色印刷时也能忠实再现，见<a href="/en/docs/configuration#diagram-style">配置 → 图表样式</a></td>
+      <td>后端</td>
+    </tr>
+    <tr>
+      <td><code>resourceTypes</code></td>
+      <td>按类型的资源编号：模板、计数格式、重置范围、默认浮动位置，见<a href="/en/docs/configuration#resource-types">配置 → 资源类型</a></td>
+      <td>第1遍、第4遍</td>
+    </tr>
+    <tr>
+      <td><code>TypographyConfig</code>、<code>ColumnConfig</code>、<code>ResourcePlacementConfig</code>、<code>ReferenceConfig</code>、<code>PostextSectionOverride</code></td>
+      <td><strong>遗留类型。</strong>在<code>types.ts</code>中声明，但从未接入流水线；它们的职责已由上面各部分接管。保留仅供参考。</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+### 解析策略
+
+解析有意设计成流水线中最简单的一步。Markdown输入后被解析成AST，每个节点变成一个`VDTBlock`。资源引用按ID在`resources[]`数组中解析（`notes[]`数组目前不读取：注释在计划中，尚未实现）。输出是一个扁平的块列表，每个块有类型、有内容，但没有分配页面，没有所在栏，也没有位置。
+
+可以把它看成一份清单：“先是一个标题，然后是一个200词的段落，然后是一处图的引用，然后又是一个段落。”没有测量，没有定位，也完全没有版面上的决定。繁重的工作从第2遍开始。
+
+
+## 虚拟文档树（VDT）
+
+设想你请一位专业排字工排一整本书，他交给你的不是印好的页面，而是一张电子表格。每一行是一个元素，每个单元格是一个精确的测量值：“标题位于(40, 30)，第一段从(40, 78)开始，高144px，图片放在第3页第2栏的顶部……”这张电子表格就是VDT。
+
+虚拟文档树是Postext的核心数据结构：一棵可原地修改的树，表示每个页面、栏、块和行，每个节点都带有精确的边界框。排版流水线收敛之后，VDT*就是*答案。你可以查询“第72页第2栏里有什么？”，而不必渲染一个像素。
+
+### 为什么是可变的
+
+游戏引擎的渲染流水线也采用同样的做法：共享的可变世界状态在一个紧凑的循环里被各个系统依次更新。原因也相同。
+
+不可变的树（比如React的虚拟DOM）每次改动都要分配新对象。对于只有几百个组件的UI，这没有问题。但在一个最多迭代5次、每次执行7遍、可能涉及上千个块的收敛循环中，内存分配的压力和垃圾回收造成的停顿就成了实实在在的问题。因此VDT采用原地修改加`dirty`标记的模式：各遍把节点标记为dirty，后续各遍就确切知道需要重新检查哪些节点。引擎记得哪些东西变了，所以不会重做仍然有效的工作。
+
+### 结构
+
+<Illustration name="VdtStructure" data='{"title": "虚拟文档树的结构", "desc": "层级化的VDT：文档包含页面，每个页面包含栏，每一栏包含块（标题、段落、资源），每个文本块包含经过测量的行。每个节点都带有边界框、dirty标记以及页面和栏的索引。", "caption": "每个节点都带有bbox、dirty标记以及页面和栏的索引。", "document": "VDTDocument", "pageLabels": ["VDTPage [0]", "VDTPage [1]", "VDTPage [n]"], "columnLabels": ["VDTColumn [0]", "VDTColumn [1]"], "blockLabels": ["标题", "段落", "资源"], "lineLabels": ["第0行", "第1行"], "legendHeader": "每个节点都带有：", "legendAttrs": ["bbox: { x, y, w, h }", "dirty: boolean", "pageIndex: number", "columnIndex: number"], "linesHeader": "行还带有：", "linesAttrs": ["baseline: number", "hyphenated: boolean"]}' />
+
+### 类型定义
+
+下面的结构是**为便于说明而简化的**：`packages/postext/src/vdt.ts`中的实际定义还有许多面向渲染的字段（字体字符串、颜色、列表符号、公式渲染结果、设计槽位）。这里重要的是结构本身：
+
+```typescript
+// 已简化，完整定义见packages/postext/src/vdt.ts
+
+// 虚拟文档树的根
+interface VDTDocument {
+  pages: VDTPage[];
+  blocks: VDTBlock[];         // 同一批块对象的扁平视图
+  config: ResolvedConfig;     // 每个子配置都已解析为非可选值
+  baselineGrid: number;       // 基线增量，单位px（例如16px/1.5对应24）
+  converged: boolean;
+  iterationCount: number;
+  metadata: DocumentMetadata;
+}
+
+// 一个物理页面
+interface VDTPage {
+  index: number;
+  width: number;
+  height: number;
+  columns: VDTColumn[];
+  header?: VDTDesignSlot;     // 页眉（设计槽位）
+  footer?: VDTDesignSlot;     // 页脚 / 页码
+  floats?: VDTBlock[];        // 浮动到本页顶部/底部的资源区带
+  pageNumberValue: number;
+  pageLabel: string;          // 渲染出的标签（'iv'、'7'、'A'……）
+}
+
+// 页面中的一栏
+interface VDTColumn {
+  index: number;
+  bbox: BoundingBox;          // 在页面中的位置
+  blocks: VDTBlock[];
+  availableHeight: number;    // 剩余的竖直空间
+  baselineOffset: number;     // 当前基线的y位置
+  band?: number;              // 栏所在区带（除非有通栏块把页面分割开，否则为0）
+  kind?: 'text' | 'span';     // 'span' = 容纳通栏块的全宽栏
+}
+
+// 一个内容块（段落、标题、资源等）
+type VDTBlockType =
+  | 'paragraph' | 'heading' | 'resource' | 'blockquote'
+  | 'listItem' | 'footnoteRef' | 'mathDisplay';
+
+interface VDTBlock {
+  id: string;
+  type: VDTBlockType;
+  bbox: BoundingBox;
+  lines: VDTLine[];           // 用于文本块（由第2遍填充）
+  resourceBlock?: ResolvedResourceBlock; // 用于资源块
+  pageIndex: number;
+  columnIndex: number;
+  dirty: boolean;             // 需要重新排版
+  snappedToGrid: boolean;     // 基线已对齐到网格
+}
+
+// 一行经过测量的文本
+interface VDTLine {
+  text: string;
+  bbox: BoundingBox;            // 自然宽度：两端对齐的行会一直画到所在块的右边缘
+  baseline: number;             // 文本基线的y位置
+  hyphenated: boolean;          // 行在词中结束，或在不带空格的破折号之后结束（"say—" | "that’s"）
+  hardHyphen?: boolean;         // ……在文本自带的连字符之后结束（"well-" | "known"）：不添加任何字符
+  repeatedHyphen?: boolean;     // 以重复的那个连字符开头（"vencer-" | "-se"），源文本中没有它
+  segments?: VDTLineSegment[];  // 供两端对齐渲染使用的词/空格/公式片段
+  isLastLine?: boolean;         // 所在段落的最后一行
+  justifiedSpaceRatio?: number; // 实际空格宽度 ÷ 正常空格宽度
+  sourceStart?: number;         // 到markdown源文件的映射（字符偏移；以`\$`开头的行从反斜杠算起）
+  sourceEnd?: number;
+  plainStart?: number;          // 到纯文本的映射
+  plainEnd?: number;
+}
+
+// 经过测量、可以安放的资源嵌入（位图 / svg / 表格）
+interface ResolvedResourceBlock {
+  resource: Resource;
+  kind: 'bitmap' | 'svg' | 'table';
+  number: string;             // 计算出的编号，例如"1.7"
+  captionPrefix: string;      // 例如"Figure"
+  bodyRect: BoundingBox;      // 图片 / 表格区域
+  fileId?: string;            // 带外的二进制数据（位图 / svg）
+  captionLines: VDTLine[];    // 经过测量的题注，含前缀和编号
+  table?: VDTResourceTableLayout; // 表格资源的单元格几何信息
+}
+
+// 边界框：所有值的单位为px，相对于页面原点
+interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+```
+
+其中几个字段值得说明：
+
+- **`isLastLine`**控制两端对齐的渲染：即使段落两端对齐，最后一行也按齐左渲染。*过满*的最后一行除外，它的词间距会压缩以适应行长（TeX的粘连设置语义）。
+- **`sourceStart`/`sourceEnd`和`plainStart`/`plainEnd`**是源映射，把每一行分别映射回原始markdown和块的纯文本，编辑器集成靠它们实现光标和选区的同步。
+- **`VDTResourceTableLayout`**（及其`VDTResourceTableCell`条目）承载表格资源排好后的全部几何信息：各列的x边界、各行的y边界，以及每个单元格的矩形和其中经过测量的内容行，这样每个后端画出的表格都相同。
+- **`computePageTextExtent(page)`**是一个小的公共辅助函数，返回页面上文本实际覆盖的竖直范围（包括浮动体的题注）。调试叠加层用它让基线网格线只覆盖真正有文本的部分，而不延伸到空白的页面底部。
+
+### Dirty跟踪
+
+Dirty跟踪让引擎不必重做已经正确完成的工作。当某一遍移动了一个块或改变了它的大小，就在这个块以及同一栏中它下方的每个块上设置`dirty = true`，因为这些块的位置都依赖于被改动的块。之后收敛循环就可以完全跳过没有变化的子树。
+
+举个具体例子。第5遍在第12页的一个段落里插入了一个连字符，使段落少了一行高度。这个段落被标记为dirty，同一栏中它下方的所有块也被标记，因为它们都需要上移一行。那么第11页及之前的块呢？没有受到影响，下一次迭代时各遍会完全跳过它们。
+
+`dirty`标记同时也是收敛信号：如果第5–7遍之后没有任何块是dirty，版面就已收敛，引擎停止迭代。到此结束。
+## 排版流水线
+
+七遍处理，每一遍只做一件事。这就是排版流水线的全部。
+
+这种设计借鉴了游戏引擎的渲染流水线（阴影遍、光照遍、后处理遍）：每个系统读取并修改一份共享的世界状态，并相信前面的系统已经完成了各自的工作。这样，每一遍都可以单独理解、测试和优化。对第5遍做基准测试时，不必考虑第3遍。
+
+与游戏引擎的关键区别在于：游戏每一帧只渲染一次，然后继续下一帧，Postext做不到这一点。排版决策彼此紧密依赖：修正一个段首孤行可能改变栏高，栏高影响各栏齐底，齐底又可能造成新的段末孤行。因此流水线可能需要循环。第3至7遍在收敛循环中运行，最多迭代5次，直到版面稳定下来。
+
+### 第1遍：内容结构化
+
+- **输入：**原始的`PostextContent`
+- **处理：**把Markdown解析成AST，按ID在`resources[]`中解析资源引用，创建初始的`VDTBlock`节点（注释以及`notes[]`尚在计划中，未实现）
+- **输出：**扁平的`VDTBlock[]`（已确定类型并填入内容，但尚未分配页和栏）
+- **只运行一次**（不属于收敛循环）
+
+### 第2遍：文本测量
+
+- **输入：**含文本内容的`VDTBlock[]`
+- **处理：**对每个文本块，通过专门的**测量模块**（`packages/postext/src/measure/`）按目标栏宽测量各行。该模块在Pretext之上叠加了断词、两端对齐、富文本行内片段和Knuth-Plass断行。把测得的`VDTLine[]`和总高度存入每个块
+- **关键细节：**测量结果有缓存。`cachedMeasureBlock` / `cachedMeasureRichBlock`（位于`measure/cache.ts`）以文本、字体、宽度和所有影响版面的选项为键，重新测量一个未改动的段落只是一次映射查找
+- **输出：**每个文本块都有精确的像素尺寸
+- **重新运行的条件：**栏宽变化或文本内容变化（例如插入了断词连字符）
+
+该模块按职责清晰拆分：`plain.ts`测量纯文本片段，`rich.ts`测量粗体、斜体、数学公式混排的片段，`font.ts`构造字体字符串并管理缓存的生命周期，`canvas.ts`封装底层的Canvas文本宽度原语。有一个生命周期细节在实践中很重要：`clearMeasurementCache()`会同时清空Pretext的内部缓存*和*引擎自己的文本宽度缓存，因此真实字体加载完成后，按后备字体测得的字形宽度会被丢弃。
+
+中文、日文和韩文段落在同一模块中走另一条路径。CJK字符数多于词间空格数的段落交给**CJK排版器**（`cjkCompose.ts`）处理。它把文本切分成单元（一个字符、一串拉丁文、一个两字宽的破折号或省略号、行内标签或注释标记这样不可分割的盒子），每个单元只测量一次，然后按`cjkClasses.ts`的避头尾规则以首次适配的方式填充各行：遇到不能出现在下一行行首的标点时，本行先通过标点挤压（`cjkPunctuation.ts`）让出标点的空白把它容纳进来，然后才考虑把一个字符移到下一行。两端对齐的行再把余量分配到字符之间。输出是普通的`VDTLine`，其片段携带渲染器按测量结果精确绘制所需的一切：`tracking`（每个字符后的像素数，已计入片段宽度）、让出空白的标点的`inkOffset`、`hangs`、作为`autospace`片段的汉字与拉丁文之间的间距，以及中文注释的着重号、注音和割注行。开销与段落长度成线性关系：排《紅樓夢》第1回（6,949个字符）时测量了1,298个字符，每个不同的字符只测一次；而如果测量段落的各个前缀，则需要测量636,948个字符。详见[中文排版](/zh/docs/chinese-layout)。
+
+在底层，这正是Pretext发挥作用的地方。`prepare()`调用开销大：它用Canvas字体引擎分析文本并缓存结果。而`layout()`调用只是纯算术，几乎没有开销。这种拆分是关键所在。文本一旦准备好，引擎就能以不同宽度重新排版，尝试不同的栏配置，测试某个段落多一个断词连字符会怎样，这些开销都可以忽略不计。准备一次，需要排多少次就排多少次。
+
+```typescript
+// 简化示例：测量模块在内部如何使用pretext
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24); // 行距24px
+// => “在320px栏宽下，这个段落高168px，即7行。”
+```
+
+### 第3遍：页面与栏的放置
+
+- **输入：**已测量的块
+- **处理：**把块依次排入各页各栏。创建`VDTPage`和`VDTColumn`节点。记录每栏的`availableHeight`。某个块放不下时，转到下一栏或下一页
+- **策略：**贪心的首次适配放置。分栏和分页采用最简单的有效分配
+- **输出：**每个块都分配了`pageIndex`、`columnIndex`和`bbox`
+
+到这一步，VDT才成为一份真正的文档。在此之前，块只是一个有尺寸而无位置的扁平列表。第3遍逐个遍历它们，把每个块分配到某一页的某一栏，就像往一排格子容器里倒水：先注满第1栏，溢出后流入第2栏，一页满了就开新页。
+
+在放入任何内容块之前，这一遍先为结构性元素预留空间：书眉和页脚（按`config.header` / `config.footer`作为设计槽排出），以及已经等待放到新开页面上的浮动带。这些预留会减少每栏的`availableHeight`，因此内容块开始排入时，引擎已经确切知道还有多少空间。
+
+**栏带与通栏栏。**`page.columns`是一个按阅读顺序排列的扁平数组，但一页并不总是只有一排栏。通栏的行内块（目前是多栏版面中带`span: 'page'`的`:::callout`）会把页面切成上下堆叠的*栏带*：当前栏带的文本栏在切割线处封闭（高度被截断，`availableHeight`为零），该块获得自己的一个全宽栏，`kind: 'span'`，并在它下方追加一个新的文本栏带（`band + 1`，x和宽度相同，底边与被替代的栏带相同）。栏只会被追加，因此`columnIndex`始终对应`page.columns[i]`，渲染器也无需特殊绘制：每栏按自己的bbox裁剪（由`columnClipRect`放宽：字形墨迹留2pt，再加上该栏的设计覆盖层（如标题标签或标注框徽标）超出其两侧的距离，以及标题设计超出其顶部的距离；底边仍是栏的边缘；Canvas和PDF后端使用同一个矩形）。栏间分隔线按栏带在相邻文本栏之间绘制，从页首通栏标题所占栏带的下方开始（`columnRuleSegments`）；带样式的章节设置了分隔线时，使用该页自己的分隔线（`VDTPage.columnRule`，通过`pageColumnRule`读取）。各栏齐底会忽略通栏栏和高度为零的栏带。通栏块在栏带齐平的位置（页首、紧接章首标题之后、另一个通栏块之后或顶部浮动带之后）直接切割；如果到达时栏带各栏不齐，它就提出一个*栏带上限*（`packages/postext/src/pipeline/bandCaps.ts`）：以某个内容块开头的栏带，其各栏被缩短到`ceil(Σ used / N / grid)`行。`buildDocument`带着这个上限重新运行放置遍（受限栏带溢出时每次增加一行，最多多跑几遍，之后退回到下一页），于是文本在遵守所有放置规则的前提下填满缩短后的各栏，在切割处齐平结束，封闭的栏把剩余的空白保留为`availableHeight`，交给各栏齐底去吸收。同一机制也用于让章节末尾和文档末尾的*收尾*栏带齐平（`headings.balancing.trailing`）：遇到章首页、`:::part`、结束一章的`placement: 'fixed'`标注框或文档末尾时，如果当前栏带各栏不齐，就提出一个`kind: 'trailing'`上限，以该边界块为键。由于上限以开启其栏带的块为键，而只要前面某页吸收了额外的齐底行，这个块就会移动，因此收尾上限要在各栏齐底稳定*之后*、在冻结齐底提示的情况下求解，然后再进行一轮简短的润色，让各种调节手段补足切割留下的空缺。`placement: 'fixed'`的标注框脱离文本流：框锚定在页面内容区、成品框或出血框上，它覆盖的文本栏让出该区域（像浮动带一样从底部或顶部切掉，冲突时移到下一页），框体及其子元素进入`page.floats`。
+
+**竖排页面。**设置`layout.writingMode: 'vertical-rl'`时，这一遍排出的是一个顺时针旋转了90度的横排页面。在这样的页面上，内容区、栏、块、行、浮动体和脚注区都使用**流坐标**，`VDTPage.flow`携带把它们变换到纸面上的旋转：流坐标中的点(x, y)落在(页宽 − y, x)。下游无需知道这一点：断行、浮动体、保持同页规则和各栏齐底都在流坐标系中照常工作，流中的一栏就是纸面上的一层，各后端在绘制时应用旋转（`flowToPage`和`pageToFlow`在两个方向上映射点）。书眉、页码、裁切标记和背景保持纸面坐标。图和表作为直立的块排版，在框内转回原方向；需要直立的字符在绘制时逐个转回。
+
+### 第4遍：资源放置
+
+- **输入：**块已放入各栏的VDT
+- **处理：**把每个被引用的资源浮动到其首次引用之后的第一个空闲位置：引用所在栏的底部、下一个空栏的顶部或底部，或下一页的某个浮动带（`packages/postext/src/pipeline/floatPlacement.ts`规划浮动体，`pipeline/floatSlots.ts`枚举并测量各位置；构建流水线负责预留浮动带）
+- **放置规则解析：**对每个资源，引擎依次解析`resource.placement` → 该类型的`resourceType.defaultPlacement` → 内置默认值`{ position: 'auto', span: 'column' }`
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>放置字段</th>
+      <th>行为</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position: 'auto'</code></td>
+      <td>资源占据引用之后的第一个空闲位置，顶部或底部均可，这是默认值</td>
+    </tr>
+    <tr>
+      <td><code>position: 'top'</code></td>
+      <td>只用顶部位置：下一个空栏或下一页顶部的浮动带，把栏内容推到它下方</td>
+    </tr>
+    <tr>
+      <td><code>position: 'bottom'</code></td>
+      <td>只用底部位置：栏底或页底的浮动带，缩短其上方的栏</td>
+    </tr>
+    <tr>
+      <td><code>position: 'here'</code></td>
+      <td>不浮动：资源在其<code>::resource</code>指令处以行内方式嵌入，就在它出现在文本流中的位置</td>
+    </tr>
+    <tr>
+      <td><code>span: 'column'</code></td>
+      <td>浮动带只占一栏（在新开的页面上，引擎选择剩余空间最多的那一栏）</td>
+    </tr>
+    <tr>
+      <td><code>span: 'page'</code></td>
+      <td>浮动带横跨所有栏，占满整个内容宽度，打断栏的文本流；全宽浮动带最先预留，因此单栏浮动体嵌套在剩余空间中</td>
+    </tr>
+  </tbody>
+</table>
+
+- **延后放置：**在当前页找不到任何合适位置的浮动体会等到文本流打开的下一页；它从不被缩小或拆分。在章节边界处，它会被排到边界之前新开的页面上
+- **输出：**资源定位在页面浮动带中（`page.floats`），受影响的栏高度相应减少，使文本绕开浮动带排布
+
+资源放置是有意思的地方，因为浮动体不只是占据空间，还会重塑周围的空间。包含引用的块落定后，等待中的浮动体会依次尝试当前页该块之后的空闲位置：先是该栏底部，再是下一个空栏的顶部和底部（通栏浮动体则是页底，前提是每栏都还有空间）；哪里都放不下的，就等到下一页，在那里等待中的浮动体先占据各自的浮动带，然后才排入文本。各栏缩短以容纳在浮动带之间，文本不间断地流过变窄的栏，读者在提到图的位置附近（但不一定恰好在那里）看到它。这是专业排版的标准做法，图书中随处可见。
+
+**放置规则。**除了放置分派之外，浮动体还遵循严格的编辑约束：
+
+- **引用在先规则。**浮动体落在正文中首次引用它之后的第一个空闲位置，绝不会在引用之前。读者先读到引用，再看到资源。浮动体放不下时，向后延到更晚的位置或页面，绝不往前挪。
+- **同一序列内保持引用顺序。**等待中的浮动体按首次引用的顺序依次尝试每个位置；某个浮动体哪里都放不下时，同一编号序列中排在它后面的浮动体也要等待：表3绝不会排在表4之后，图12绝不会排在图11之前。不同序列之间互不阻挡，一个等待中的表不会挡住后面的图。为了让长表不必等到新开一页，一个被分配到空栏顶部的长表会在该栏处截断，在下一个位置（旁边的栏或下一页的浮动带）接续，并重复表头行。
+- **章节屏障。**浮动体绝不会越出自己所在的章。在章首页（设置了`breakBefore`或`span: 'page'`的标题级别）、`:::part`、带`floatBarrier: true`的标注框样式以及文档末尾，所有等待中的浮动体都会先被放下：先放在本页的空闲位置，再放到边界之前新开的页面上（每页至少强制放置一个浮动体），然后才执行边界本身的分页。在打开这样的页面之前，仍在等待的图或表会再尝试一次当前页的空闲位置，不论其`position`如何：在一章最后一页被引用的页首浮动体会占据该页底部、位于已齐底的各栏下方，而不是单独占一页（浮动的标注框保持自己的放置方式）。`:::pagebreak`会把等待中的浮动体送到它之后的那一页，排在为奇偶页补齐而插入的页面之后。
+- **最少文本空间。**在新开的页面上，只有受影响的栏中仍能容纳至少3行正文时，才会预留浮动带。有一个例外：超大的浮动体可以被强制放进一个仍然全是文本的浮动带，以免一个占主导地位的图永远卡住队列。当前页上的位置必须能放进该栏的剩余高度；3行规则在那里只适用于紧邻另一个浮动带的情况。
+- **留白。**浮动带与旁边的文本之间隔开一个正文行高。
+- **基线网格对齐。**顶部浮动带*向上*取整到基线网格的整数倍（增大浮动体下方的间隙），使每一行被推开的文本仍然落在网格上。底部浮动体的锚定方式是让题注的最后一条基线落在网格上：题注与相邻各栏最后一行文本共用基线，各栏和对页的页面在同一高度结束。
+
+**按类型、按首次引用编号。**资源*不*在Markdown中编号。`pipeline/resourceNumbering.ts`按阅读顺序，在每个资源首次被引用时为它分配编号，依据是资源的`ResourceType`：`numberingTemplate`把按类型计数的`{n}`与引用处生效的标题计数器`{h1}`..`{h6}`组合起来（例如`'{h1}.{n}'` → “1.7”），`resetOn`控制计数器何时重置（`'never'`或任意标题级别），`counterFormat`选择十进制、罗马数字或字母编号。内置的*图*和*表*类型来自`defaultResourceTypes(locale)`，按文档语言本地化。由于编号遵循首次引用的顺序，在文档中间插入一张新图时，其后的所有编号会自动更新，无需修改源文件。
+
+### 第5遍：排版精修
+
+排版引擎与只会堆砌文字的工具，区别就在这一遍。它执行专业排版师几百年来手工遵循的编辑质量规则，而简单的文本渲染对这些规则完全不管。
+
+第5遍在两个层面上工作：段落内部的**基于惩罚值的断行**，以及块之间的**结构性保持同页规则**。两者协同工作，但属于不同的机制。
+
+#### 基于惩罚值避免段末孤行、段首孤行和孤字
+
+**段末孤行和段首孤行**是业余排版最明显的标志：
+
+- **段首孤行**（widow）是段落在栏底单独留下的一行。段落在下一栏继续，但这孤零零的一行
+  看起来被搁浅了（好像这一栏提前结束了）。
+- **段末孤行**（orphan）是段落搁浅在栏顶的单独一行。段落的主体在上一栏，只有一行溢了过来
+  （看起来与上下文脱节）。
+- **孤字**是指段落最后一行只有一两个短词，从视觉上看太短，不像一行正常的文字。它在结构上不如段首孤行严重，但对细心的读者同样刺眼。
+
+这三种情况都通过向Knuth-Plass断行算法注入**缺陷值**来处理。引擎不是先排出段落、事后再修补糟糕的断点，而是让断行器知道某些断点组合比其他组合代价更高。然后算法选出全局最优的断点组合，在可能的情况下自然避开段末孤行、段首孤行和孤字。
+
+具体来说，对段落中的每个候选断点节点：
+
+- 如果选择这个断点会使下一栏顶部剩下少于`orphanMinLines`行，就在该节点的缺陷值上加`orphanPenalty`（默认1000）。
+- 如果选择这个断点会使当前栏底部剩下少于`widowMinLines`行，就加`widowPenalty`（默认1000）。
+- 如果由这个断点产生的最后一行内容宽度小于`runtMinCharacters × normalSpaceWidth`（`runtMinCharacters`默认20，大约相当于二十个字符的空格宽度），就把`runtPenalty`（默认1000）作为等效的劣度注入平方缺陷值公式。这样它与行劣度（在10000处饱和）在同一尺度上竞争，而不会被后者淹没。
+
+这些惩罚值与通常的缺陷值（劣度，即伸缩比的平方；断词代价；适配等级不匹配）一起参与同一个全局优化。还有一个渲染细节补全了这一机制：在两端对齐的段落中，最后一行按齐左渲染；但*过满*的最后一行除外，其词间空格按TeX的粘连设置语义压缩到行长以内，Canvas、HTML和PDF后端的处理完全一致。如果其他选择更糟（段落中没有任何合法断点能满足所有规则），算法可以接受其中一种情况，但它几乎总能找到避开它们的断点组合。列表项通过`avoidOrphansInLists`、`avoidWidowsInLists`、`avoidRuntsInLists`（默认都为`true`）获得同样的保护。
+
+第四种软约束`slackWeight`为“栏内未用空间”的平方代价加权，使算法倾向于把各栏填得紧凑的断点组合。这些缺陷值合在一起，使第5遍成为一种*断行*层面的精修：大多数段末孤行、段首孤行和孤字问题都在Knuth-Plass求解器内部解决，而不是事后调整字距。
+
+所有这些都可以在`BodyTextConfig`中调整，参见[配置 → 段首孤行、段末孤行、孤字与保持同页规则](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)。把任何`*Penalty`设为`0`，实际上就关闭了对应的规则。
+
+#### 结构性保持同页规则
+
+有些组合比单个段落更大：它们跨越相邻的块，仅靠断行无法处理。第5遍在块放置层面执行这些规则，当这些组合会被分栏或分页拆开时，把整组向后移：
+
+- **标题与其第一段。**如果标题所引出的段落会从下一栏开始，标题就绝不能出现在栏底。由`headings.keepWithNext`（默认`true`）执行：如果放不下标题*加上*下一个块的正文段首孤行最小行数（`bodyText.widowMinLines`，默认`2`；`avoidWidows`关闭时只算一行），标题就被推到后面，与其正文一起移动。
+- **连续的标题。**多个标题相继出现时（例如h2之后是h3，再之后是段落），整组必须保持在一起。任何一个标题都不能被留在栏底而脱离它所引出的内容。
+- **以冒号引出的列表。**段落以直接引出列表的冒号结尾时，带冒号的那一行必须与列表的开头保持在一起。由`bodyText.keepColonWithList`（默认`true`）执行：如果放下这个段落后没有空间让第一个列表项开始（当列表的段首孤行和段末孤行规则使它不可拆分时，需要容纳整个列表项；设置`bodyText.colonListRoom: 'line'`时只需一行，与postext 1.4及以前的行为相同），带冒号的最后一行（如果段落只有一行，则是整个段落）就与列表一起后移。每当这条规则需要推动整个段落，而该栏中紧挨在它前面有一串标题时，这些标题也会被一起拉走，以免悄悄违反`keepWithNext`；唯一的例外是，该栏中只有上一轮迭代已经后移的标题，此时引擎让段落与标题待在一起，接受冒号与列表分离这一较轻的问题，以避免循环。
+- **图与其题注。**图和题注是不可分割的整体，总是一起移动。
+
+检测到违反保持同页规则时，引擎把整组推到下一栏或下一页。腾出的空间由正常的填栏机制处理（断行器已经选出了能放下的断点组合；如果得到的栏略短，第7遍会在破坏网格的元素周围重新分配垂直空间，让基线网格保持准确）。
+
+#### 输出
+
+测量或放置结果发生变化的块会被标记为`dirty`，留给收敛循环的下一轮迭代。实践中，由于主要工作是在Knuth-Plass内部完成的，而不是靠事后调整，大多数文档很快就会稳定：断行器第一次就选出了一组好的断点，后续迭代只需处理块移动和各栏齐底带来的下游影响。
+
+这些修正做得好时是看不见的，读者不应察觉到它们。但只要细心阅读，一旦*缺少*这些修正就会立刻发现：栏顶那一行别扭的孤行，引擎放弃让文本排得下时留下的那些不均匀的空隙。专业出版社有整本的体例手册专门防止这些问题。Postext把它们自动化了。
+
+### 第6遍：各栏齐底
+
+- **输入：**已完成排版精修的VDT
+- **处理：**在栏之间移动块，使每页各栏高度相等，尽量减小高度差（本应控制这一功能的`ColumnConfig.balancing`标志，是那些已声明但未接入的旧选项之一）
+- **约束：**不得违反第5遍建立的段末孤行和段首孤行规则
+- **输出：**块可能在栏之间移动过，并被标记为`dirty`
+
+各栏不齐是一眼就能看出来的，尤其是在一章的最后一页。左栏满满当当而右栏几乎空着，看上去像没做完，仿佛排版进行到一半就放弃了。齐底会重新分配内容，让两栏大致在同一高度结束，使跨页显得精致、有意为之。
+
+算法计算一页中所有块的内容总高度，除以栏数得到目标高度，然后寻找让每栏最接近目标高度的最佳分栏点。但这并不是简单的切分，而是一个约束满足问题：算法必须遵守`keepTogether`规则（标题必须与其第一段在一起），满足最少行数要求，而且关键在于不能撤销第5遍刚刚费力完成的段末孤行和段首孤行修正。
+
+### 第7遍：垂直韵律对齐
+
+- **输入：**各栏已齐底的VDT
+- **处理：**在标题、图像和其他破坏网格的元素周围分配间距调整，使基线吸附到基线网格上
+- **输出：**调整后的间距值；各栏基线对齐
+- **参见：**完整算法见[垂直韵律系统](#垂直韵律系统)
+
+### 收敛循环
+
+<Illustration name="ConvergenceLoop" data='{"title": "收敛循环", "desc": "第1遍解析，第2遍测量，然后第3至7遍在收敛循环中运行。如果仍有块为dirty且迭代次数少于5次，循环从第3遍重新运行。", "caption": "引擎回到第3遍，直到不再有dirty块（最多迭代5次）。", "passBadges": [{"num": "第1遍", "name": "解析"}, {"num": "第2遍", "name": "测量"}, {"num": "第3遍", "name": "放置"}, {"num": "第4遍", "name": "资源"}, {"num": "第5遍", "name": "精修"}, {"num": "第6遍", "name": "齐底"}, {"num": "第7遍", "name": "韵律"}], "loopBadge": "收敛循环（最多迭代5次）", "loopCondition": "若存在dirty块 &amp;&amp; 迭代次数 < 5"}' />
+
+可以把收敛循环看作引擎在和自己争论。第5遍为段落A选了一组避开段首孤行的断点，但这使段落A少了一行，在第2栏底部留下空隙。第6遍重新让各栏齐底来弥补，结果把一个标题推到了新的一栏，这又触发了`keepWithNext`，迫使标题整个退到下一栏。第7遍调整垂直韵律，又可能恰好在标题原来的位置造成一个新的孤字。于是引擎回到第3遍，用更新后的测量结果重新放置各块，再把整个序列跑一遍。每一轮迭代解决的问题都比制造的多，直到最后不再有dirty块。
+
+由于大多数段末孤行、段首孤行和孤字问题都在Knuth-Plass求解器*内部*通过一次断行解决，典型文档现在只需1至2次迭代就能收敛。当块级事件（被`keepWithNext`推后的标题、因放置而延后的图，或各栏齐底带来的高度均衡）移动了第5遍据以测量的栏边界时，仍然需要循环。这时第3遍重新放置，第5遍按新的约束重新断行，循环随之稳定。
+
+第5至7遍完成后，引擎检查是否有块被标记为`dirty`。如果有dirty块且迭代次数少于5次，流水线从**第3遍**重新运行。
+
+**收敛条件：**
+- 第5至7遍之后没有dirty块，**或者**
+- 达到最多5次迭代（接受目前为止的最佳结果）
+
+引擎在每轮迭代中记录一个**排版违规分数**，即剩余问题的加权和：段末孤行、段首孤行、各栏不齐、基线网格错位。每类违规的权重反映其视觉上的严重程度（段首孤行远比2px的网格偏移显眼）。如果达到5次迭代上限仍未完全收敛，引擎选择违规分数最低的那一轮迭代。那不一定是最后一轮：后面的迭代有时会矫枉过正，修好一个问题的同时又制造出另一个。
+
+**各栏齐底按分段收敛。**显式断点（章首页、`:::pagebreak`）之间的页面彼此独立排版：没有内容会跨越这样的断点流动，因此一段页面中的齐底调节不可能移动另一段中的任何一行。所以各栏齐底循环对每个这样的*分段*单独评判。每一遍仍然放置整份文档，但每个分段按自己的空隙分数决定保留或拒绝自己那部分调节，把自己的连锁反应列入黑名单，自己判断进入平台期，并消耗自己的尝试预算；某个分段重试后变差时，会从它自己最好的那一遍取回页面，其他分段则继续前进。这样，一本三十章的书排出来的结果与逐章单独排版完全相同（全书PDF与同一章的单章PDF完全一致），而不会因为任何地方的一次连锁反应就让全书每一页多跑一遍。
+
+5次迭代上限是一个务实的安全阀：追求完美是完成的敌人。有些病态情况，比如一页中每个段落的长度都恰好不对，无论怎么齐底都会产生段首孤行，永远不会完全收敛。引擎接受“尽力而为”的结果，然后继续。
+
+
+## 垂直韵律系统
+
+把一本排得好的书对着光举起来。左页的行与右页的行对齐。第1栏第5行的基线与第2栏第5行的基线处在完全相同的垂直位置。这就是垂直韵律，也是训练有素的眼睛评判排版质量时最先检查的事项之一。它也是Postext的关键特色之一。
+
+当两栏都只有同一字号的正文时，对齐轻而易举：每行高度相同，基线自然对齐。难题出现在某一栏包含更大字号的标题、任意像素高度的图像，或块引用周围的额外间距时。这些元素“破坏”了网格：它们下方的内容偏移了一个不是基线增量整数倍的距离，这一栏的基线突然就与相邻栏错开了。视觉上的和谐消失了。
+
+目标是把它找回来：即使标题、图像或其他非标准高度的元素只出现在一栏中，相邻栏的正文基线也必须水平对齐。
+
+### 基线网格
+
+一切都以一个数值为基准。文档定义一个`baselineGrid`值，由正文的行距推导而来：例如，正文字号为`16px`、`line-height`为`1.5`时，基线网格为`24px`。每条正文基线都应落在这个值的整数倍上。这就是约定。
+
+### 破坏网格的元素
+
+有些元素的高度不是`baselineGrid`的整数倍，因而不可避免地会破坏网格：
+
+- **标题**（字号更大，行距不同）
+- **图像**（任意像素高度）
+- **表格**（高度可变）
+- **块引用**（可能使用不同的字号或内边距）
+- **脚注区**（栏底的脚注及其分隔线：该栏的文本区在它们上方结束）
+
+### 间距调整算法
+
+<Illustration name="VerticalRhythm" data='{"title": "垂直韵律对齐", "desc": "第1栏有一个标题，使基线网格偏移了12像素。引擎在标题后增加12像素的间距，让下一行正文重新落在网格上。第2栏始终保持对齐。", "caption": "在破坏网格的元素之后调整间距，使各栏基线保持同步。", "column1": "第1栏", "column2": "第2栏", "bodyLine": "正文行", "bodyBaseline": "正文行（基线：24px）", "heading": "标题（高36px）", "adjustment": "+12px间距调整", "backOnGrid": "正文（回到网格上）", "aligned": "已对齐", "legendTitle": "间距调整算法", "legendSteps": ["1. 从上到下遍历每一栏", "2. 记录gridDrift = actualY - nearestGridLine(actualY)", "3. 在每个可调整的间隙（标题间距、图间距）处：", "   计算把偏移归零所需的修正量", "4. 分配修正量，优先扩大而非压缩", "5. 限制在TypographyConfig.spacing的最小值与最大值之间"]}' />
+
+在各栏独立调整间距之后，引擎检查**跨栏对齐**：各栏中处于相同垂直位置的基线应当一致。如果它们出现分歧（因为不同栏含有不同的破坏网格的元素），第二遍对齐会同时调整两栏的间隙，找到共同的韵律。
+
+举一个具体的例子。第1栏有一个36px的标题（24px网格的1.5倍），第2栏没有标题。标题之后，第1栏偏离网格12px。算法在标题后增加12px的额外空间，把“标题后间距”从16px增加到28px。现在第1栏的下一行正文重新落在网格线上，其基线与第2栏的对应行一致。和谐恢复了。
+
+**边界情况：**
+- 破坏网格的元素多于可调整间隙的栏只能接受部分对齐（算法会尽力而为，但如果干扰太多、
+  能吸收误差的地方太少，就无法保证与网格完全对齐）
+- 比栏还高的图像会跨栏或跨页（在第4遍中单独处理）
+- 当所需的调整会造成明显别扭的间距时（例如标题后间距通常为16px，却要留出40px），
+  算法把误差分摊到多个间隙，而不是集中在一处
+
+
+## 后端接口
+
+文本测量只有一个事实来源：基于Pretext Canvas字体度量的测量模块。每个后端都从它生成的同一个已收敛的VDT进行渲染。
+
+这是一个有意的选择，原因很关键：**测量文本的方式必须与渲染文本的方式完全一致。**设想测量使用Canvas字体度量，而某个渲染后端使用的PDF库字距调整表略有不同，那么版面就会与输出对不上。引擎测得能放进320px的行，渲染时可能溢出或留空。每一像素的偏差都是一个谎言。只测量一次，所有输出都按由此得到的几何数据渲染，各后端就不可能出现分歧：断行、栏高和资源位置在任何后端运行之前就已固定在VDT中。
+
+例如，PDF后端正是因此不重新测量文本：它接收已经收敛的VDT，把其中的像素坐标换算成PDF点。Canvas度量是事实来源，PDF只是传输载体。使用`renderToPdf`（来自`postext-pdf`包）时，传入的VDT与交给`renderToCanvas`或`renderToHtml`的完全相同，三种输出保证一致。
+
+### API接口
+
+后端是作用于`VDTDocument`的普通函数，而不是类层次结构。没有`PostextBackend`接口，只有三个渲染入口，以及各输出目标所需的辅助函数：
+
+```typescript
+// Canvas（来自'postext'）
+renderToCanvas(doc): HTMLCanvasElement[];               // 每页一个canvas
+renderPage(page, doc): HTMLCanvasElement;               // 单页
+renderPageToCanvas(page, doc, canvas, options?): void;  // 绘制到已有的canvas中
+
+// Canvas资源图像注册表：以Resource的fileId为键的已解码图像
+registerResourceImage(fileId, image): void;
+unregisterResourceImage(fileId): void;
+clearResourceImages(): void;
+
+// HTML（来自'postext'）
+renderToHtml(doc, options?): string;
+renderToHtmlIndexed(doc, options?): HtmlRenderIndex;    // 按页、按块的分解结果
+
+// PDF（来自'postext-pdf'）
+renderToPdf(doc, options): Promise<Uint8Array>;
+```
+
+由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
+
+`renderToHtmlIndexed`值得单独说明：除了完整的HTML字符串，它还返回按页、按块的分解结果（`HtmlRenderIndex`），调用方可以与上一次渲染做差异比较，只修补HTML确实发生变化的DOM子树。沙盒的实时预览走的就是这条路径。
+
+### 后端
+
+<table>
+  <thead>
+    <tr>
+      <th>后端</th>
+      <th>测量</th>
+      <th>渲染</th>
+      <th>状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Canvas</strong></td>
+      <td>Pretext（Canvas字体度量）</td>
+      <td>在<code>HTMLCanvasElement</code>上绘制位图（<code>renderToCanvas</code>、<code>renderPage</code>、<code>renderPageToCanvas</code>）</td>
+      <td><strong>已发布</strong></td>
+    </tr>
+    <tr>
+      <td><strong>HTML</strong></td>
+      <td>Pretext（与Canvas相同的度量）</td>
+      <td>使用绝对定位的DOM节点和编辑排版CSS（<code>renderToHtml</code>、<code>renderToHtmlIndexed</code>）</td>
+      <td><strong>已发布</strong></td>
+    </tr>
+    <tr>
+      <td><strong>PDF</strong></td>
+      <td>接收已由Pretext测量过的VDT</td>
+      <td>通过pdf-lib构建PDF页面，按字重嵌入字体（<code>postext-pdf</code>中的<code>renderToPdf</code>）</td>
+      <td><strong>已发布</strong></td>
+    </tr>
+    <tr>
+      <td><strong>服务器端</strong></td>
+      <td>Pretext + node-canvas</td>
+      <td>用于SSR和批量生成的无头渲染</td>
+      <td>未来</td>
+    </tr>
+  </tbody>
+</table>
+
+三个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。
+
+**仅限浏览器的约束：**在第一阶段，所有排版计算都在浏览器的客户端进行。流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)。服务器端渲染是一个有意推迟的范围决策：先把浏览器体验做好，再扩展到其他目标。
+
+
+## 性能策略
+
+迟钝的工具和神奇的工具之间大约差10倍。500ms的排版意味着用户每次调整窗口大小都会看到明显的卡顿。50ms的排版则感觉是即时的，仿佛文档一直就在那里。这个差距没法事后补上，必须从第一天起就设计进去。
+
+想想引擎要面对的是什么：几百页中的几千个文本块，每次调整视口大小都可能要重新计算整个版面。这与游戏引擎面对的是同一类问题：每秒60次处理几千个对象（几何、物理、光照、AI）。游戏引擎的解决办法是流水线架构（在共享的可变状态上进行多遍处理，每一遍快速完成一件事），以及积极避免不必要的工作（剔除、脏标记、空间划分）。Postext借鉴了其中的每一个思路。
+
+### 原则
+
+1. **内存中计算。**整个VDT都能放进内存。排版期间不读取DOM。DOM
+   只在最后渲染时才会被触及。
+
+2. **脏标记追踪。**块带有`dirty`标志。各遍跳过干净的子树。收敛
+   循环只从最早的脏点重新运行。
+
+3. **有界收敛。**最多5次迭代是硬性保证。最坏情况下的性能
+   可以预测、可以测量。
+
+4. **Pretext的速度。**文本测量速度是DOM的300至600倍，因此引擎可以
+   投机性地重新测量文本（尝试不同的栏宽、断词点、字距调整），
+   而不会阻塞主线程。
+
+5. **分层的测量缓存。**测量模块（`packages/postext/src/measure/`）在Pretext自己的
+   `prepare()`缓存和底层文本宽度缓存之上，维护一个显式的测量缓存，以文本、字体、宽度
+   和所有影响版面的选项为键。重新测量一个未改动的段落只需一次映射查找。
+   `clearMeasurementCache()`会清空Pretext的缓存和文本宽度缓存，使字体加载完成后
+   字形宽度正确；它不接受参数，也不涉及测量缓存，测量缓存是被替换成一个新的。
+
+6. **热路径上的断行。**Knuth-Plass的活动节点处理为速度而重写：
+   节点退出时就地压缩活动集合，候选节点按（行，适配等级）去重，
+   每个键只保留缺陷值最低的节点。算法结果完全相同：
+   断点组合不变，只是计算得更快。
+
+7. **在主线程之外构建。**`postext/worker`入口在专用的Web Worker中
+   运行整个流水线。主线程发送`{ content, config }`和一个
+   `AbortSignal`；工作线程注册字体（以`ArrayBuffer`转移），运行
+   收敛循环，再发回完成的`VDTDocument`。新的`build()`调用会以协作方式
+   取消上一次调用：工作线程在`buildDocument`内部检查逐块的取消钩子，
+   并抛出`BuildCancelledError`，因此在编辑器中打字的用户
+   从不需要等待一个已被取代的排版。工作线程还维护自己的持久
+   测量缓存和一个以内容为键的数学公式光栅缓存，使经过结构化克隆的
+   `MathRender`对象在多次重新构建之间保留下来，无需重新光栅化。
+
+8. **扁平的数值字段。**包围盒以扁平的`x, y, width, height`字段存储在
+   每个节点上，而不是嵌套对象。这样避免了指针追逐，对缓存也更友好。
+
+9. **双重访问的VDT。**树结构（`pages > columns > blocks`）为需要按页或按栏
+   工作的遍（如第6遍各栏齐底）提供层级访问。
+   一个并行的扁平`blocks[]`数组为需要遍历所有块而不论其位置的遍
+   （如第5遍段末孤行和段首孤行检测）提供O(1)的索引访问。两种视图
+   引用相同的块对象（没有重复，只是遍历同一份数据的
+   两种方式）。
+
+### 调整大小的处理
+
+用户调整视口大小时，引擎不会从头重建。它更新VDT中的栏宽，把所有文本块标记为dirty，然后从第2遍重新运行流水线。页和栏的结构得到复用。
+
+这正是可变VDT带来的回报。引擎不是丢弃整个版面从零开始，而是尽可能复用已完成的工作。Pretext的`prepare()`结果仍然有效（它们取决于字体和文本内容，与宽度无关），因此只需重新运行低开销的`layout()`调用。一份50页的文档可以通过重新测量所有文本块（很快，因为`prepare()`有缓存）并重新运行第3至7遍来完全重新排版，无需重新解析Markdown，也无需重新解析资源引用。用户拖动窗口边缘，版面实时跟随。
+
+### 从第一天起做基准测试
+
+每一遍都可以使用vitest的`bench` API单独做基准测试：
+
+```typescript
+// 基准测试示例
+bench('layout 50-page document', () => {
+  const vdt = createVDT(fiftyPageContent, config);
+  runPipeline(vdt);
+}, { time: 100 }); // 采样100ms并报告每秒操作数
+```
+
+需要如实说明一点：`{ time: 100 }`是vitest对基准测试*采样*的时长，而不是通过或失败的阈值。基准测试只报告数字，不会让构建失败。性能退化是在热路径改动时通过对比多次运行的数字发现的（Knuth-Plass活动节点重写时就是这样做的），而不是靠自动化的CI关卡。性能是一项功能，而不是一种期望；不过目前的保障手段是测量和审查，而不是一条会失败的流水线。
+
+
+## 数据流
+
+<Illustration name="DataFlow" data='{"title": "引擎中的数据流", "desc": "内容和配置进入第1遍（解析）和第2遍（测量）。第3至7遍在收敛循环中运行。收敛之后，VDT交给后端，由后端渲染出HTML或PDF。", "caption": "端到端的数据流：解析、测量、收敛、渲染。", "input": ["内容 +", "配置"], "parse": "1 解析", "measure": "2 测量", "loopBadge": "收敛循环（最多5次）", "passesInLoop": [{"num": "3", "name": "放置"}, {"num": "4", "name": "资源"}, {"num": "5", "name": "精修"}, {"num": "6", "name": "齐底"}, {"num": "7", "name": "韵律"}], "loopCondition": "若dirty &amp;&amp; 迭代次数 < 5", "convergedLabel": "VDT（已收敛）", "backend": "后端：渲染", "output": "HTML / PDF"}' />
+
+
+## 不做的事
+
+下面每一条限制都是有意的取舍。引擎本身已经足够复杂，再去承担本该由别处负责的工作，最容易让它永远做不完。
+
+- **服务端渲染。**所有排版都在浏览器中进行。引擎依赖Canvas字体度量（通过Pretext），而这需要浏览器环境。以后也许会有基于`node-canvas`的服务端后端，但它不在最初的设计之内。浏览器优先。
+- **所见即所得编辑。**Postext是排版引擎，不是编辑器：输入内容，输出几何信息。构建交互式编辑界面（光标管理、选区、撤销/重做、输入处理）是另一个完全不同的问题。Postext可以作为编辑器的渲染后端，但它本身不提供编辑功能。
+- **CSS column-count的封装。**Postext取代CSS多栏布局，而不是在它外面包一层。它从零开始计算精确定位的几何信息，因为浏览器的分栏算法无法控制资源的摆放、段首孤行和段末孤行的避免，以及跨栏的排版规则。而这些恰恰是Postext存在的意义。
+- **响应式断点管理。**Postext按给定的页面尺寸计算版面。何时重新排版（视口尺寸变化、屏幕方向变化时）由调用方决定。Postext不管理断点、媒体查询，也不替你做响应式设计的决定。那是你的工作。
+- **实时协同编辑。**Postext是无状态的排版计算（输入内容，输出几何信息），不是带冲突解决、操作变换或多用户感知的协同文档系统。
+- **字体加载与管理。**Postext假定字体已经加载好、可以用来度量。字体加载、字体回退链和字体子集化都由调用方负责。如果Postext度量文本时某个字体还没有加载，度量会使用浏览器的回退字体，等真正的字体加载完成后，版面就错了。请先加载字体。
+
+
+## 附录：与现有类型的对应关系
+
+`packages/postext/src/types.ts`中定义的主要类型与上文所述架构的对应关系如下：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>类型</th>
+      <th>在架构中的作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>PostextContent</code></td>
+      <td>入口：引擎的输入（第1遍）</td>
+    </tr>
+    <tr>
+      <td><code>PostextConfig</code></td>
+      <td>控制每一遍中整条流水线的行为</td>
+    </tr>
+    <tr>
+      <td><code>Resource</code></td>
+      <td>带类型的位图/SVG/表格资源。在度量阶段变成<code>ResolvedResourceBlock</code>，随后要么成为类型为<code>'resource'</code>的行内<code>VDTBlock</code>（摆放位置为<code>'here'</code>），要么成为页面横带中的浮动体（第4遍）</td>
+    </tr>
+    <tr>
+      <td><code>ResourceType</code></td>
+      <td>决定按类型编号、题注前缀、引用标签和默认浮动位置（第1遍、第4遍）</td>
+    </tr>
+    <tr>
+      <td><code>ResourcePlacement</code></td>
+      <td>单个资源的浮动覆盖设置：<code>position</code>（<code>'top'</code> / <code>'bottom'</code> / <code>'here'</code>）和<code>span</code>（<code>'column'</code> / <code>'page'</code>），在第4遍中解析</td>
+    </tr>
+    <tr>
+      <td><code>PostextNote</code></td>
+      <td>引擎不读取它。脚注写在Markdown中（<code>[^id]</code>），排在引用它的那一栏的栏脚或章末；旁注尚未实现</td>
+    </tr>
+    <tr>
+      <td><code>PostextResource</code></td>
+      <td><strong>已弃用。</strong>旧版内容模型中的资源，只保留到最后一处渲染器引用（<code>VDTBlock.resource</code>）迁移到<code>Resource</code>模型为止</td>
+    </tr>
+    <tr>
+      <td><code>PlacementStrategy</code>、<code>ColumnConfig</code>、<code>TypographyConfig</code>、<code>ResourcePlacementConfig</code>、<code>ReferenceConfig</code>、<code>PostextSectionOverride</code></td>
+      <td><strong>旧版。</strong>已声明，但从未接入流水线；已被<code>bodyText</code>/<code>headings</code>（排版）、<code>layout</code>（栏）和<code>Resource</code>浮动模型（摆放）取代</td>
+    </tr>
+  </tbody>
+</table>
+
+### VDT类型在哪里
+
+VDT类型（`VDTDocument`、`VDTPage`、`VDTColumn`、`VDTBlock`、`VDTLine`、`VDTLineSegment`、`ResolvedResourceBlock`、`VDTResourceTableLayout`、`BoundingBox`等）位于`packages/postext/src/vdt.ts`，与工厂辅助函数（`createVDTDocument`、`createVDTPage`、`createVDTBlock`……）和`computePageTextExtent`放在一起。没有单独的后端接口模块：[后端接口](#后端接口)一节所述的渲染入口直接从`postext`（Canvas、HTML）和`postext-pdf`（PDF）导出。

@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
     branches: [main, develop]
+  # main's own status, which the README badge shows
+  push:
+    branches: [main]
 
 jobs:
   ci:

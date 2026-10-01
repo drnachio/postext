@@ -17,7 +17,7 @@ import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { layoutCacheKey, stableStringify } from '../../book/layoutKeys';
 import { perfSpan, type PerfSpan } from '../../perf/marks';
 import {
-  LOCALE_TO_HYPHENATION,
+  defaultDocumentLocale,
   PAGE_GAP,
   PAGE_PADDING,
   type FitMode,
@@ -184,7 +184,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // language (neither a hyphenation locale nor its `locale`)
   const deferredConfig = useMemo((): PostextConfig => {
     if (rawDeferredConfig.bodyText?.hyphenation?.locale || rawDeferredConfig.locale) return rawDeferredConfig;
-    const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
+    const hypLocale = defaultDocumentLocale(locale);
     return {
       ...rawDeferredConfig,
       bodyText: {

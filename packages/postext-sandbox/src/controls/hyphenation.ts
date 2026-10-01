@@ -1,4 +1,4 @@
-import type { HyphenationLocale, PostextConfig } from 'postext';
+import { chineseScriptOf, type HyphenationLocale, type PostextConfig } from 'postext';
 
 /** Hyphenation dictionary for each app locale, used when the document's
  *  configuration does not name one. */
@@ -6,13 +6,25 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
   en: 'en-us', es: 'es', fr: 'fr', de: 'de', it: 'it', pt: 'pt', ca: 'ca', nl: 'nl',
 };
 
+/** The language a document that names none is read in: the interface's.
+ *  Its hyphenation dictionary (`en` → `en-us`), or for a Chinese interface
+ *  the Chinese of its script (`zh`, `zh-Hans` → `zh-Hans`; `zh-TW` →
+ *  `zh-Hant`), which the engine sets without hyphenation; English for any
+ *  other interface. */
+export function defaultDocumentLocale(uiLocale: string): string {
+  const script = chineseScriptOf(uiLocale);
+  if (script) return script === 'Hant' ? 'zh-Hant' : 'zh-Hans';
+  return LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
+}
+
 /** `config` with the app locale's hyphenation dictionary filled in when the
  *  document names no language: neither a hyphenation locale nor its
- *  `locale`, which the engine falls back to. Returns `config` itself when
- *  nothing changes. */
+ *  `locale`, which the engine falls back to. A Chinese interface fills in
+ *  its Chinese tag, which switches hyphenation off. Returns `config` itself
+ *  when nothing changes. */
 export function withHyphenationLocale(config: PostextConfig, locale: string): PostextConfig {
   if (config.bodyText?.hyphenation?.locale || config.locale) return config;
-  const hypLocale = LOCALE_TO_HYPHENATION[locale] ?? 'en-us';
+  const hypLocale = defaultDocumentLocale(locale);
   // One derived object per (config, locale): the fingerprints keyed on
   // the config object (layout records, the worker's document cache) then
   // hit instead of hashing the configuration on every build.

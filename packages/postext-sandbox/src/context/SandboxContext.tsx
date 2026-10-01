@@ -28,7 +28,7 @@ import {
   type ViewHash,
   type ViewHashBook,
 } from '../storage/viewHash';
-import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds } from '../storage/persistence';
+import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
@@ -49,7 +49,7 @@ import {
 import { createSaveScheduler, type SaveScheduler } from '../storage/saveScheduler';
 import { getBlob, putBlobAt } from '../storage/blobStore';
 import { effectiveCanvasScope, wholeBookAllowed } from '../book/scope';
-import { choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen } from '../presets/locale';
+import { choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen, presetReaderLocale } from '../presets/locale';
 import { fetchBundleBytes, openHashBundle } from './hashBundle';
 import { getChapterLayouts, pruneChapterLayoutStore, putChapterLayouts } from '../storage/layouts';
 import type { ProjectSummary } from '../storage/projects';
@@ -90,8 +90,8 @@ import {
   decidePresetUpdate,
   findDefaultPrivatePreset,
   isDocumentUntouched,
-  isPristineChineseGuide,
   listPresets,
+  pristineGuideFollowsViewer,
   rekeyMigratedConfig,
 } from '../presets';
 import type {
@@ -1338,10 +1338,11 @@ export function SandboxProvider({
       if (seq !== presetLoadSeqRef.current) return false;
       // The content locale: the one asked for, else the one this preset is
       // already loaded in (a reload keeps the language the user picked),
-      // else the viewer's.
+      // else the viewer's (or, for a Chinese viewer of a book without
+      // Chinese, its English edition).
       const applied = stateRef.current.presetApplied;
       const keep = applied?.presetId === provider.summary.id ? applied.locale : undefined;
-      const loaded = await provider.load(locale ?? keep ?? stateRef.current.locale);
+      const loaded = await provider.load(locale ?? keep ?? presetReaderLocale(provider.summary, stateRef.current.locale));
       if (seq !== presetLoadSeqRef.current) return false;
       // Drafts of this preset (another locale, an older version) keep the
       // payloads they were edited with when this apply brings other bytes.
@@ -1518,11 +1519,10 @@ export function SandboxProvider({
         // persisted in *another* language gets swapped to this locale's
         // default and its examples reseeded, so entering the Spanish sandbox
         // shows Spanish resources instead of whichever language seeded first.
-        // The Chinese guide is no interface's default: it was opened on
-        // purpose, and an untouched copy stays Chinese.
-        const pristineOtherLocale =
-          isPristineBook(currentBook, SAMPLE_DOCUMENTS) && !isPristineChineseGuide(currentBook)
-          && currentBook.chapters[0]!.markdown !== defaultMd;
+        // A Chinese guide opened on purpose from an English or Spanish
+        // interface stays Chinese (see `pristineGuideFollowsViewer`).
+        const pristineOtherLocale = pristineGuideFollowsViewer(currentBook, defaultMd, loadViewerLocale());
+        saveViewerLocale(loc);
         const onBuiltin = savedId === null || savedId === BUILTIN_PRESET_ID;
 
         // Summaries: every provider, plus a placeholder for a previously

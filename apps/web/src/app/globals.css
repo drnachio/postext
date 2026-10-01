@@ -31,6 +31,35 @@
   --brand-tint: #f7f1e3;
   --brand-panel: #f1f3f8;
   --tri-stripe: linear-gradient(90deg, var(--brand-blue) 0 33.34%, var(--brand-gilt) 33.34% 66.67%, var(--brand-vermilion) 66.67% 100%);
+  /* Han fallbacks the font stacks end with: the generic families outside
+     Chinese pages, Noto SC (then the system's Chinese faces) on them. */
+  --cjk-serif: serif;
+  --cjk-sans: sans-serif;
+}
+
+:root:lang(zh) {
+  --cjk-serif: var(--font-noto-serif-sc), "Songti SC", "STSong", "SimSun", serif;
+  --cjk-sans: var(--font-noto-sans-sc), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+/* Chinese prose: the gap between Han and Latin letters or digits comes from
+   the browser, not from typed spaces; Han has no italic, so emphasis is set
+   upright with emphasis dots; justified lines break by strict rules. */
+:lang(zh) {
+  text-autospace: normal;
+  line-break: strict;
+}
+
+:lang(zh) em,
+:lang(zh) i {
+  font-style: normal;
+  text-emphasis: filled dot;
+  text-emphasis-position: under right;
+}
+
+:lang(zh) :is(code, pre, kbd) em,
+:lang(zh) :is(.hero-title em, .hero-em) {
+  text-emphasis: none;
 }
 
 :root,
@@ -119,11 +148,11 @@
   --color-red: var(--brand-vermilion);
   --color-red-deep: var(--brand-vermilion-deep);
   --color-tint: var(--brand-tint);
-  --font-display: var(--font-fraunces);
-  --font-head: var(--font-bricolage);
-  --font-body: var(--font-lora);
-  --font-mono: var(--font-jetbrains);
-  --font-sans: var(--font-geist);
+  --font-display: var(--font-fraunces), var(--cjk-serif);
+  --font-head: var(--font-bricolage), var(--cjk-sans);
+  --font-body: var(--font-lora), var(--cjk-serif);
+  --font-mono: var(--font-jetbrains), var(--cjk-sans);
+  --font-sans: var(--font-geist), var(--cjk-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

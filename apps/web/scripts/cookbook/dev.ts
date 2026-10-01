@@ -10,8 +10,8 @@ import { variantFor } from "../../src/lib/cookbook/compose.ts";
 import { KIT_DIR, REPO_DIR, recipeDir } from "../../src/lib/cookbook/paths.ts";
 import { resetKitCache } from "../../src/lib/cookbook/sources.ts";
 import { compareSemVer } from "../../src/lib/cookbook/validate.ts";
-import type { Locale } from "../../src/lib/cookbook/types.ts";
-import { LOCALES } from "../../src/lib/cookbook/types.ts";
+import type { SampleLocale } from "../../src/lib/cookbook/types.ts";
+import { SAMPLE_LOCALES } from "../../src/lib/cookbook/types.ts";
 import { UsageError, c, int, loadRecipes, mark, parseArgs, shown, str } from "./args.ts";
 import type { PenServer } from "./serve.ts";
 
@@ -41,7 +41,7 @@ export async function runDev(argv: readonly string[]): Promise<number> {
   const args = parseArgs(
     argv,
     {
-      lang: { type: "string", value: "en|es", choices: LOCALES },
+      lang: { type: "string", value: "en|es", choices: SAMPLE_LOCALES },
       port: { type: "int", value: "n", min: 1, max: 65535 },
       engine: { type: "string", value: "spec" },
     },
@@ -70,7 +70,7 @@ export async function runDev(argv: readonly string[]): Promise<number> {
     }
   }
 
-  const lang = (str(args, "lang") as Locale | undefined) ?? meta.sample?.locales?.[0] ?? "en";
+  const lang = (str(args, "lang") as SampleLocale | undefined) ?? meta.sample?.locales?.[0] ?? "en";
   const variant = meta.sample?.locales?.length ? variantFor(meta, lang) : lang;
   if (variant !== lang) console.log(`${mark.warn()} ${slug} has no ${lang} sample: serving the ${variant} edition`);
 

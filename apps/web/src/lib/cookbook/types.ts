@@ -9,9 +9,26 @@
  * erasable TypeScript: no enums, namespaces or parameter properties.
  */
 
-export type Locale = "en" | "es";
-export const LOCALES: readonly Locale[] = ["en", "es"];
+/** Site locales: the write-ups, the registries and the gallery. */
+export type Locale = "en" | "es" | "zh";
+export const LOCALES: readonly Locale[] = ["en", "es", "zh"];
 export type Localized<T = string> = Record<Locale, T>;
+
+/** Languages a recipe's sample document (the pen, its content.<locale>.md,
+ *  captures and bundles) can be written in: narrower than the site's. A
+ *  page in a locale the sample lacks shows its first edition, as a Spanish
+ *  page does for an English-only sample. */
+export type SampleLocale = "en" | "es";
+export const SAMPLE_LOCALES: readonly SampleLocale[] = ["en", "es"];
+
+/** Text authored in recipe.json next to the sample: English and Spanish
+ *  always, other site locales when someone adds them. */
+export type RecipeLocalized<T = string> = Record<SampleLocale, T> & Partial<Record<Locale, T>>;
+
+/** A `RecipeLocalized` value in `locale`, else in English. */
+export function localizedText<T>(value: RecipeLocalized<T>, locale: Locale): T {
+  return value[locale] ?? value.en;
+}
 
 /** `^[a-z0-9]+(-[a-z0-9]+)*$`, 3–48 characters, not in RESERVED_SLUGS. */
 export type Slug = string;
@@ -85,7 +102,7 @@ export type LicenseId =
 // NC and ND licences are deliberately not in the union: the validator rejects them.
 
 export interface Credit {
-  what: Localized;
+  what: RecipeLocalized;
   who: string;
   source?: string;
   /** CC-BY-SA-4.0 is allowed in `credits.text` only. */
@@ -169,7 +186,7 @@ export interface RecipeMeta {
 
   /** Languages of the sample document: content.<locale>.md exists for each.
    *  [0] is the fallback edition for a site locale without its own sample. */
-  sample: { locales: Locale[] };
+  sample: { locales: SampleLocale[] };
 
   capture: {
     /** 1-based physical page(s) shown on the card and first in the light table. */
@@ -224,9 +241,10 @@ export interface RecipeMeta {
   updated: IsoDate;
 }
 
-// ─── Write-up (en.mdx / es.mdx) ─────────────────────────────────────────────
+// ─── Write-up (en.mdx / es.mdx / zh.mdx) ────────────────────────────────────
 
-/** YAML frontmatter; every value is quoted. */
+/** YAML frontmatter; every value is quoted. The lengths are for English and
+ *  Spanish; Chinese has about half of each (validate.ts FRONTMATTER_LENGTHS). */
 export interface RecipeFrontmatter {
   /** ≤ 60 characters: an outcome noun phrase. */
   title: string;
@@ -363,7 +381,7 @@ export interface RecipeSources {
  *  and the Markdown rendition all use. */
 export interface ComposedPen {
   slug: Slug;
-  variant: Locale;
+  variant: SampleLocale;
   js: string;
   html: string;
   css: string;
@@ -476,7 +494,7 @@ export interface CaptureManifest {
   engine: { postext: SemVer; postextPdf?: SemVer; source: "npm" | "local" };
   chrome: string;
   capturedAt: string;
-  variants: Partial<Record<Locale, CaptureVariant>>;
+  variants: Partial<Record<SampleLocale, CaptureVariant>>;
 }
 
 // ─── Loaded recipe (server) ─────────────────────────────────────────────────

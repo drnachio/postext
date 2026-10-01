@@ -26,13 +26,25 @@ export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
 /** Every edition of the guide's text, for the pristine-book checks. */
 export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS];
 
-/** Whether `book` is the untouched Chinese guide. The Chinese edition is
- *  no interface's default: it is opened on purpose (the 简 button, a
- *  `lang=zh-Hans` link), so an untouched copy stays Chinese when the
- *  Sandbox is opened in English or Spanish, where an untouched English or
- *  Spanish guide follows the interface. */
+/** Whether `book` is the untouched Chinese guide. In an English or Spanish
+ *  interface the Chinese edition is opened on purpose (the 简 button, a
+ *  `lang=zh-Hans` link), so an untouched copy stays Chinese there, where an
+ *  untouched English or Spanish guide follows the interface. */
 export function isPristineChineseGuide(book: BookContent): boolean {
   return isPristineBook(book, [DEFAULT_MARKDOWN_ZH_HANS]);
+}
+
+/** Whether the untouched guide on screen gives way to the interface's
+ *  edition when the Sandbox opens: `viewerMarkdown` is the host's sample
+ *  for its language, `previousViewer` the interface language of the last
+ *  visit (null when unknown). Storage is shared across interface languages,
+ *  so an untouched guide in another language follows the interface — save
+ *  the Chinese guide opened on purpose from an English or Spanish
+ *  interface, which stays. The Chinese interface's own guide (the last
+ *  visit was in Chinese) follows the next interface like the others. */
+export function pristineGuideFollowsViewer(book: BookContent, viewerMarkdown: string, previousViewer: string | null): boolean {
+  if (!isPristineBook(book, GUIDE_SAMPLE_DOCUMENTS) || book.chapters[0]!.markdown === viewerMarkdown) return false;
+  return !isPristineChineseGuide(book) || (previousViewer !== null && guideLang(previousViewer) === 'zh-Hans');
 }
 
 export interface BuiltinPresetOptions {
@@ -57,7 +69,7 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     source: 'builtin' as const,
     available: true,
     // Like the showcase presets, the row offers every edition: Spanish,
-    // English and Simplified Chinese (the interface stays in the first two).
+    // English and Simplified Chinese.
     locales: [...BUILTIN_PRESET_LOCALES],
     license: 'MIT',
     thumbnailUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(coverThumbnailSvg())}`,

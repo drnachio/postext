@@ -9,6 +9,8 @@ import { chapterPageLabels } from '../../book/pagination';
 import { chapterMenuEntries, partLabel } from '../../book/chapterMenu';
 import type { Chapter, ChapterPages } from '../../book/types';
 import { generateChapterId } from '../../storage/projects';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
+import { formatNumber } from '../../controls/units';
 import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn } from '../../ui';
 import { useRowDrag, type RowDragHandleProps } from './useRowDrag';
 
@@ -145,13 +147,17 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
   const headings = useMemo(() => h1Count(chapter.markdown), [chapter.markdown]);
   const words = useMemo(() => wordCount(chapter.markdown), [chapter.markdown]);
   // A Chinese, Japanese or Korean book counts characters (字数).
-  const cjk = useSandboxSelector((s) => isCjkLanguage(s.config.locale));
+  // A book that names no language reads as the interface's.
+  const cjk = useSandboxSelector((s) => isCjkLanguage(
+    s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale),
+  ));
+  const uiLocale = useSandboxSelector((s) => s.locale);
   const range = pages ? chapterPageLabels(pages) : null;
   const pagesText = range
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', words.toLocaleString())}`;
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', formatNumber(words, uiLocale))}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });

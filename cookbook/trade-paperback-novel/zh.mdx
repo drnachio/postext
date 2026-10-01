@@ -1,0 +1,84 @@
+---
+title: "平装小说：下沉的章首页与右页起章"
+summary: "把《The Awakening》排成140 × 216 mm的平装本：一幅用代码画的封面、一页不带书眉的版权页，然后每章都从右页开始，正文下沉，上面是一个斜体章序号。"
+description: "用Postext排Kate Chopin的《The Awakening》：代码绘制的封面、左页上的版权页、在右页下沉起排的各章、一页不带页码的空白左页，以及春黄菊花饰的章尾花。"
+question: "怎样像平装书那样，让每一章都从右页开始，并下沉到页面约三分之一处？"
+aliases: ["平装本", "小说", "下沉章首页", "章首下沉", "章首页", "右页", "奇数页", "右页起章", "空白左页", "空白页", "奇偶页", "首句小型大写字母", "小型大写字母", "章尾花", "花饰", "装饰图案", "版权页", "封面", "分节书眉", "trade paperback", "novel", "sunk opener", "chapter drop", "chapter opener", "recto", "blank verso", "parity", "small caps lead", "tailpiece", "fleuron", "colophon", "Kate Chopin", "The Awakening"]
+pageNotes: { "1": "封面：从水橡树的树干之间望见海湾，地平线上一艘小帆船，一把白色阳伞正沿着穿过春黄菊的小路走来；下方是大号斜体书名和小型大写字母的作者名。", "2": "版权页，以小字号排在页面底部，没有书眉和页码。", "3": "第I章在右页下沉起排：斜体的I、一条铁锈红短细线、分成两行居中的小型大写字母首句，正文从81 mm处开始。", "6": "一页没有书眉和页码的空白左页，留出来让第II章从右页开始。", "7": "第II章的章首页与第I章相同，首句在分号后断开。" }
+---
+
+## 成品一览
+
+一本140 × 216 mm平装书的八页，排的是Kate Chopin的*The Awakening*（1899）的前两章。封面用代码画成，是从Grand Isle上Lebrun家的小屋望出去的海湾：水橡树之间，地平线上有一艘小帆船，白色阳伞穿过春黄菊走上来。版权页排在它背面那一页的底部。每章都从右页开始，正文下沉到81 mm处，上面依次是48 pt的斜体章序号、一条18 mm长的铁锈红细线，以及用小型大写字母排的本章首句，按意思断成两行居中。第I章在第5页结束，末尾是一朵春黄菊章尾花，所以第6页留空，不带书眉和页码，第II章从第7页开始。书眉在左页印作者名，在右页用斜体印书名。
+
+## 做法
+
+### 1 · 章首页由标题及其属性生成
+
+代码见上文的[简短回答](#简短回答)。Chopin的各章没有章名，所以每个标题只写章序号（`# I`），由`{titleText}`印出。`{attr.lead}`印出标题的`lead`属性，其中存放本章的第一句；标题下的Markdown段落从第二句开始（[标题属性](/zh/docs/document-format#标题属性)）。设计元素里的文本不能两端对齐，所以首句居中，每个属性里的`\n`按意思断行，分别断在*cage*之后和*bright;*之后。只有`paragraphIndent`大于零时，`\n`才会断行；设为0时，首句会把这两个字符原样印出。首句的框从版心顶端往下第九条网格线开始，`minHeight`设为12行，在它下面留出一个空行；不设`minHeight`，正文会紧贴在首句下面（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。`marginBottom: pt(0)`替换了这一级标题默认的半个em的外边距，否则正文会再往下挪一行。
+
+`breakBefore`的parity设为`'odd'`，把每一章都送到右页。配置里要重新写一遍，因为只要写了`headings`对象，这一级标题默认的分页就会丢掉（[前置分页](/zh/docs/configuration#前置分页)）。没有标题却需要强制换到右页时，在Markdown里写`:::pagebreak{parity="odd"}`；在两栏及以上的版面里，`:::columnbreak`则把正文移到下一栏（[`:::pagebreak`](/zh/docs/document-format#pagebreak)）。
+
+### 2 · 由整行构成的平装书页面
+
+<Excerpt region="page" />
+
+下页边距等于216 mm的成品高度减去上页边距和35行14 pt之后剩下的部分，所以每个排满的页面都结束在同一行上，第3页和第4页就是这样。设了`mirror: true`之后，20 mm的内页边距在右页和左页上都落在书脊一侧（[镜像页边距](/zh/docs/configuration#镜像页边距)）。104.5 mm的行长可以容纳约69个10.5 pt的Crimson Pro字符。正文把词间距限定在正常值的0.7到1.9倍之间；如果用默认的最小值0.6，这几页上有一行会收紧到0.62。正文还设了`maxRuntTracking: 0`。用默认值时，以*nodding good-by to him.*结尾的那一段会用负字距排短一行，而Canvas不绘制负字距，结果印出来的词间距是挤在一起的。
+
+### 3 · 跳过章首页和空白页的书眉
+
+<Excerpt region="heads" />
+
+`parity: 'even'`在左页用Cormorant SC小型大写字母印作者名，`'odd'`在右页用斜体印书名；页码位于版心的外侧边缘。`pages: 'body'`让这四个元素都不出现在章首页上，也不出现在第6页，也就是奇偶分页补出的那页空白左页。如果用`pages: 'all'`，那一页会印出*6*和*Kate Chopin*。章首页改用页脚页码，这是一个页脚元素，由`pages: 'opener'`限定只出现在章首页（[文本元素](/zh/docs/configuration#文本元素)）。
+
+### 4 · 封面是一个不带书眉的分节
+
+<Excerpt region="cover" />
+
+封面是一个标题：`# The Awakening {style="cover"}`。它的样式在上部134 mm里绘制插图，用50 pt排frontmatter里的书名，用小型大写字母排作者名。这个样式同样作用于该标题开启的分节，即第1页和第2页，直到第I章为止。样式里的`header`和`footer`都是空的，这样封面上不出现页脚页码，版权页上也不出现书眉。它的上页边距把版权页放在版心最后六条网格线上，使版权页的最后一行与第3页的最后一行平齐（[标题样式](/zh/docs/configuration#标题样式)）。即使只有一栏，这个样式也需要`span: 'page'`。留在栏内的设计会在栏的顶端被裁掉，这里栏顶在165 mm处；不设`span: 'page'`，插图就印不出来，书名的上半部分也会被裁掉。
+
+<PageShot page={2} crop="0,0.7,1,0.24" caption="第2页：封面背面底部的版权页，没有书眉和页码。" />
+
+### 5 · 每章以一朵章尾花收尾
+
+<Excerpt region="tailpiece" />
+
+ornament这种资源类型没有题注前缀，所以春黄菊花饰不带标签，在`::resource{id="tailpiece-1"}`所在的位置印出，宽度为行长的17%（[资源类型](/zh/docs/configuration#资源类型)）。行内嵌入的资源上方保留一条网格线，前面的`:::space`又在本章最后一行和花饰之间加了一条（[`:::space`](/zh/docs/document-format#space)）。两朵章尾花用两个id绘制同一个文件`fleuron.svg`，因为一个资源只能放置一次。
+
+## 变化
+
+### 让第II章紧接在下一页开始
+
+parity设为`'any'`时，第II章从第6页开始，这是一页左页，全书在第7页结束；页脚页码以版心而不是页面为中心，所以在这页左页上它仍然位于正文中间的下方。
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
+```
+
+### 在章内标出场景转换
+
+把同一朵花饰放在两行`:::space`之间，就可以标出场景转换，因为`indentAfterHeading`是关闭的，花饰后面的段落顶格起排。放在*seemed long to him.*之后，花饰落在第4页底部；第二个空行在那里放不下，被丢掉了。这个分隔加了四行，把第I章的章尾花单独挤到第6页上，头上还带着书眉，所以加上分隔后要重新调整这一章的篇幅。
+
+```diff
+ const resources = [
++  svg('break-1', 'fleuron.svg', 40, 12, 'A scene break.'),
+```
+
+```md
+That was why the morning seemed long to him.
+
+:::space
+
+::resource{id="break-1"}
+
+:::space
+
+“You are burnt beyond recognition,” he added, …
+```
+
+## 常见问题
+
+- 用`'always-odd'`时，每个分节后面都会先跟一页空白分隔页，再做奇偶补页，于是第I章会移到第5页，排在两页空白页之后，全书变成十页。
+- 这几页的篇幅是逐页调过的。外页边距从15.5 mm改成16 mm后，第7页会在第二个连字符处把*after-din-ner*断开，少排一行；第8页会以残片*spondent.*结束一段；第二朵章尾花则落到第九页。改动行长、字号或下沉深度后，要检查每一页的底部。
+- *Mr.*和*Mrs.*用不换行空格（U+00A0）与人名连在一起。在1.4.1里，这在普通段落中有效，但在含斜体的段落里它会像普通空格一样断开。以*seemed long to him.*结尾的那一段保留了普通空格，因为在那里把人名连起来，会使它的第一行词间距张开到正常值的2.2倍。

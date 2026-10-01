@@ -4,11 +4,13 @@
     "kind": "how",
     "text": {
       "en": "How do I turn a Markdown string into typeset pages and draw one on a canvas?",
-      "es": "¿Cómo convierto una cadena Markdown en páginas compuestas y dibujo una en un canvas?"
+      "es": "¿Cómo convierto una cadena Markdown en páginas compuestas y dibujo una en un canvas?",
+      "zh": "怎样把Markdown字符串排成页面，并在Canvas上绘制其中一页？"
     },
     "index": {
       "en": "Canvas, drawing typeset pages on a",
-      "es": "Canvas, dibujar páginas compuestas en un"
+      "es": "Canvas, dibujar páginas compuestas en un",
+      "zh": "Canvas，绘制排好的页面"
     },
     "theme": "output"
   },
@@ -16,11 +18,13 @@
     "kind": "how",
     "text": {
       "en": "How do I export a real PDF in the browser with the fonts embedded?",
-      "es": "¿Cómo exporto un PDF de verdad en el navegador, con las fuentes incrustadas?"
+      "es": "¿Cómo exporto un PDF de verdad en el navegador, con las fuentes incrustadas?",
+      "zh": "怎样在浏览器中导出嵌入字体的真正PDF？"
     },
     "index": {
       "en": "PDF, exporting with embedded fonts",
-      "es": "PDF, exportar con fuentes incrustadas"
+      "es": "PDF, exportar con fuentes incrustadas",
+      "zh": "PDF，导出并嵌入字体"
     },
     "theme": "output"
   },
@@ -28,11 +32,13 @@
     "kind": "why",
     "text": {
       "en": "Why do my line breaks change, or PDF words overlap, and how do I load fonts correctly?",
-      "es": "¿Por qué cambian mis cortes de línea o se solapan las palabras en el PDF, y cómo cargo bien las fuentes?"
+      "es": "¿Por qué cambian mis cortes de línea o se solapan las palabras en el PDF, y cómo cargo bien las fuentes?",
+      "zh": "为什么断行会变，或者PDF中的字互相重叠？怎样正确加载字体？"
     },
     "index": {
       "en": "Fonts, loading before layout",
-      "es": "Fuentes, cargarlas antes de componer"
+      "es": "Fuentes, cargarlas antes de componer",
+      "zh": "字体，在排版前加载"
     },
     "theme": "output"
   },
@@ -40,11 +46,13 @@
     "kind": "how",
     "text": {
       "en": "How do I show a responsive, scrollable HTML reading view of the same document?",
-      "es": "¿Cómo muestro el mismo documento en HTML, en una vista de lectura con desplazamiento que se adapte a la pantalla?"
+      "es": "¿Cómo muestro el mismo documento en HTML, en una vista de lectura con desplazamiento que se adapte a la pantalla?",
+      "zh": "怎样为同一文档显示响应式、可滚动的HTML阅读视图？"
     },
     "index": {
       "en": "HTML reading view",
-      "es": "HTML, vista de lectura en"
+      "es": "HTML, vista de lectura en",
+      "zh": "HTML阅读视图"
     },
     "theme": "output"
   },
@@ -52,11 +60,13 @@
     "kind": "how",
     "text": {
       "en": "How do I keep the page responsive while a long book lays out (Web Worker, cancellation)?",
-      "es": "¿Cómo evito que la página se bloquee mientras se compone un libro largo (Web Worker, cancelación)?"
+      "es": "¿Cómo evito que la página se bloquee mientras se compone un libro largo (Web Worker, cancelación)?",
+      "zh": "长书排版时，怎样让页面保持响应（Web Worker、取消）？"
     },
     "index": {
       "en": "Web Worker, laying out off the main thread",
-      "es": "Web Worker, componer fuera del hilo principal"
+      "es": "Web Worker, componer fuera del hilo principal",
+      "zh": "Web Worker，在主线程之外排版"
     },
     "theme": "output"
   },
@@ -64,11 +74,13 @@
     "kind": "how",
     "text": {
       "en": "How do I lay out a multi-chapter book so page, figure and chapter numbers continue across chapters?",
-      "es": "¿Cómo compongo un libro de varios capítulos para que la numeración de páginas, figuras y capítulos continúe de uno a otro?"
+      "es": "¿Cómo compongo un libro de varios capítulos para que la numeración de páginas, figuras y capítulos continúe de uno a otro?",
+      "zh": "怎样排多章的书，让页码、图号和章号跨章连续？"
     },
     "index": {
       "en": "Chapters, continuous numbering across",
-      "es": "Capítulos, numeración continua entre"
+      "es": "Capítulos, numeración continua entre",
+      "zh": "章，跨章连续编号"
     },
     "theme": "structure"
   },
@@ -76,11 +88,13 @@
     "kind": "how",
     "text": {
       "en": "How do I open a .postext file and render it with its own fonts, images and config?",
-      "es": "¿Cómo abro un archivo .postext y lo pinto con sus propias fuentes, imágenes y configuración?"
+      "es": "¿Cómo abro un archivo .postext y lo pinto con sus propias fuentes, imágenes y configuración?",
+      "zh": "怎样打开.postext文件，并用它自带的字体、图片和配置渲染？"
     },
     "index": {
       "en": "Bundles, opening .postext files",
-      "es": "Paquetes, abrir archivos .postext"
+      "es": "Paquetes, abrir archivos .postext",
+      "zh": "文件包，打开.postext文件"
     },
     "theme": "output"
   },
@@ -88,11 +102,13 @@
     "kind": "how",
     "text": {
       "en": "How do I create a .postext bundle from code, to hand a document to the Sandbox or another program?",
-      "es": "¿Cómo creo un paquete .postext desde el código para pasar un documento al Sandbox o a otro programa?"
+      "es": "¿Cómo creo un paquete .postext desde el código para pasar un documento al Sandbox o a otro programa?",
+      "zh": "怎样用代码创建.postext文件包，把文档交给沙盒或其他程序？"
     },
     "index": {
       "en": "Bundles, creating from code",
-      "es": "Paquetes, crearlos desde el código"
+      "es": "Paquetes, crearlos desde el código",
+      "zh": "文件包，用代码创建"
     },
     "theme": "output"
   },
@@ -100,11 +116,13 @@
     "kind": "how",
     "text": {
       "en": "How do I use my own brand or licensed fonts in the layout and embed them in the PDF?",
-      "es": "¿Cómo uso mis fuentes corporativas o con licencia en la composición y las incrusto en el PDF?"
+      "es": "¿Cómo uso mis fuentes corporativas o con licencia en la composición y las incrusto en el PDF?",
+      "zh": "怎样在排版中使用自己的品牌字体或授权字体，并嵌入PDF？"
     },
     "index": {
       "en": "Fonts, brand and licensed",
-      "es": "Fuentes corporativas y con licencia"
+      "es": "Fuentes corporativas y con licencia",
+      "zh": "字体，品牌字体与授权字体"
     },
     "theme": "output"
   },
@@ -112,11 +130,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add images and tables from code (resources) instead of Markdown ![]()?",
-      "es": "¿Cómo añado imágenes y tablas desde el código (recursos) en lugar de ![]() de Markdown?"
+      "es": "¿Cómo añado imágenes y tablas desde el código (recursos) en lugar de ![]() de Markdown?",
+      "zh": "怎样用代码（资源）而不是Markdown的![]()添加图片和表格？"
     },
     "index": {
       "en": "Resources, images and tables from code",
-      "es": "Recursos, imágenes y tablas desde el código"
+      "es": "Recursos, imágenes y tablas desde el código",
+      "zh": "资源，用代码添加图片和表格"
     },
     "theme": "figures"
   },
@@ -124,11 +144,13 @@
     "kind": "how",
     "text": {
       "en": "How do I map a click on the rendered page back to the Markdown source, to build an editor?",
-      "es": "¿Cómo relaciono un clic en la página pintada con el Markdown de origen, para construir un editor?"
+      "es": "¿Cómo relaciono un clic en la página pintada con el Markdown de origen, para construir un editor?",
+      "zh": "怎样把渲染页面上的点击映射回Markdown源文，用来做编辑器？"
     },
     "index": {
       "en": "Source mapping, from page to Markdown",
-      "es": "Correspondencia con el origen, de la página al Markdown"
+      "es": "Correspondencia con el origen, de la página al Markdown",
+      "zh": "源映射，从页面到Markdown"
     },
     "theme": "output"
   },
@@ -136,11 +158,13 @@
     "kind": "how",
     "text": {
       "en": "Can I generate pages or PDFs on a server or in a CLI (Node)?",
-      "es": "¿Puedo generar páginas o PDF en un servidor o desde la línea de comandos (Node)?"
+      "es": "¿Puedo generar páginas o PDF en un servidor o desde la línea de comandos (Node)?",
+      "zh": "能在服务器上或命令行（Node）中生成页面或PDF吗？"
     },
     "index": {
       "en": "Server-side layout, workarounds for",
-      "es": "Composición en servidor, alternativas a la"
+      "es": "Composición en servidor, alternativas a la",
+      "zh": "服务器端排版，变通办法"
     },
     "theme": "output",
     "gap": "server-side"
@@ -149,11 +173,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make a print-ready PDF with bleed, crop marks, bookmarks, page labels and a colour space?",
-      "es": "¿Cómo hago un PDF listo para imprenta con sangrado, marcas de corte, marcadores, etiquetas de página y espacio de color?"
+      "es": "¿Cómo hago un PDF listo para imprenta con sangrado, marcas de corte, marcadores, etiquetas de página y espacio de color?",
+      "zh": "怎样制作带出血、裁切标记、书签、页码标签和色彩空间的可付印PDF？"
     },
     "index": {
       "en": "PDF, print-ready",
-      "es": "PDF listo para imprenta"
+      "es": "PDF listo para imprenta",
+      "zh": "PDF，可付印"
     },
     "theme": "output"
   },
@@ -161,11 +187,13 @@
     "kind": "how",
     "text": {
       "en": "How do I produce an accessible (tagged, PDF/UA) PDF with alt text and a document language?",
-      "es": "¿Cómo genero un PDF accesible (etiquetado, PDF/UA) con texto alternativo e idioma del documento?"
+      "es": "¿Cómo genero un PDF accesible (etiquetado, PDF/UA) con texto alternativo e idioma del documento?",
+      "zh": "怎样生成带替代文本和文档语言的无障碍PDF（带标签，PDF/UA）？"
     },
     "index": {
       "en": "PDF, accessible and tagged",
-      "es": "PDF accesible y etiquetado"
+      "es": "PDF accesible y etiquetado",
+      "zh": "PDF，无障碍与带标签"
     },
     "theme": "output"
   },
@@ -173,11 +201,13 @@
     "kind": "how",
     "text": {
       "en": "How do I give the screen edition a simpler design than the print edition, from one config?",
-      "es": "¿Cómo doy a la edición de pantalla un diseño más sencillo que a la impresa, con una sola configuración?"
+      "es": "¿Cómo doy a la edición de pantalla un diseño más sencillo que a la impresa, con una sola configuración?",
+      "zh": "怎样用同一份配置，让屏幕版的设计比印刷版更简洁？"
     },
     "index": {
       "en": "Screen edition, simpler design for the",
-      "es": "Edición de pantalla, diseño más sencillo para la"
+      "es": "Edición de pantalla, diseño más sencillo para la",
+      "zh": "屏幕版，更简洁的设计"
     },
     "theme": "output"
   },
@@ -185,11 +215,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set up a book page: trim size, mirrored inner and outer margins, two columns and a gutter?",
-      "es": "¿Cómo preparo una página de libro: formato, márgenes interior y exterior simétricos, dos columnas y medianil?"
+      "es": "¿Cómo preparo una página de libro: formato, márgenes interior y exterior simétricos, dos columnas y medianil?",
+      "zh": "怎样设置书页：成品尺寸、内外对称的页边距、两栏和栏间距？"
     },
     "index": {
       "en": "Page setup, trim, margins and columns",
-      "es": "Página, formato, márgenes y columnas"
+      "es": "Página, formato, márgenes y columnas",
+      "zh": "页面设置，成品尺寸、页边距与分栏"
     },
     "theme": "page"
   },
@@ -197,11 +229,13 @@
     "kind": "how",
     "text": {
       "en": "How do I lock text to a baseline grid so lines align across columns and facing pages?",
-      "es": "¿Cómo ajusto el texto a una rejilla base para que las líneas se alineen entre columnas y páginas enfrentadas?"
+      "es": "¿Cómo ajusto el texto a una rejilla base para que las líneas se alineen entre columnas y páginas enfrentadas?",
+      "zh": "怎样把文字锁定在基线网格上，让各栏和对页的行对齐？"
     },
     "index": {
       "en": "Baseline grid, aligning lines to a",
-      "es": "Rejilla base, alinear las líneas a una"
+      "es": "Rejilla base, alinear las líneas a una",
+      "zh": "基线网格，对齐文字行"
     },
     "theme": "page"
   },
@@ -209,11 +243,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make a column-and-a-half layout, with a wide text column and a narrow side column?",
-      "es": "¿Cómo compongo en columna y media, con una columna de texto ancha y una lateral estrecha?"
+      "es": "¿Cómo compongo en columna y media, con una columna de texto ancha y una lateral estrecha?",
+      "zh": "怎样做一栏半版式，一个宽的正文栏加一个窄的侧栏？"
     },
     "index": {
       "en": "Column and a half, layout in",
-      "es": "Columna y media, componer en"
+      "es": "Columna y media, componer en",
+      "zh": "一栏半，版式"
     },
     "theme": "page"
   },
@@ -221,11 +257,13 @@
     "kind": "how",
     "text": {
       "en": "How do I get flush column bottoms and a balanced last page (vertical justification)?",
-      "es": "¿Cómo consigo columnas a ras del pie y una última página equilibrada (justificación vertical)?"
+      "es": "¿Cómo consigo columnas a ras del pie y una última página equilibrada (justificación vertical)?",
+      "zh": "怎样让各栏底部齐平，最后一页也排得平衡（垂直两端对齐）？"
     },
     "index": {
       "en": "Columns, balancing flush to the foot",
-      "es": "Columnas, equilibrarlas a ras del pie"
+      "es": "Columnas, equilibrarlas a ras del pie",
+      "zh": "栏，齐底"
     },
     "theme": "page"
   },
@@ -233,11 +271,13 @@
     "kind": "how",
     "text": {
       "en": "How do I get good justification and hyphenation for Spanish, French or German text?",
-      "es": "¿Cómo consigo una buena justificación y separación silábica en textos en español, francés o alemán?"
+      "es": "¿Cómo consigo una buena justificación y separación silábica en textos en español, francés o alemán?",
+      "zh": "怎样让西班牙文、法文或德文获得良好的两端对齐和断词？"
     },
     "index": {
       "en": "Hyphenation, per language",
-      "es": "Separación silábica por idioma"
+      "es": "Separación silábica por idioma",
+      "zh": "断词，按语言"
     },
     "theme": "type"
   },
@@ -245,11 +285,13 @@
     "kind": "how",
     "text": {
       "en": "How do I avoid widows, orphans and one-word last lines (runts), and keep a heading with its text?",
-      "es": "¿Cómo evito viudas, huérfanas y últimas líneas de una sola palabra, y mantengo cada título con su texto?"
+      "es": "¿Cómo evito viudas, huérfanas y últimas líneas de una sola palabra, y mantengo cada título con su texto?",
+      "zh": "怎样避免段末孤行、段首孤行和只有一个词的末行（孤字），并让标题与正文不分开？"
     },
     "index": {
       "en": "Widows, orphans and runts, avoiding",
-      "es": "Viudas, huérfanas y líneas cortas, evitar"
+      "es": "Viudas, huérfanas y líneas cortas, evitar",
+      "zh": "段末孤行、段首孤行与孤字，避免"
     },
     "theme": "type"
   },
@@ -257,11 +299,13 @@
     "kind": "why",
     "text": {
       "en": "Why is one line set ragged or over-stretched (URLs, long compounds, long words in cells)?",
-      "es": "¿Por qué una línea sale en bandera o demasiado estirada (URL, compuestos largos, palabras largas en celdas)?"
+      "es": "¿Por qué una línea sale en bandera o demasiado estirada (URL, compuestos largos, palabras largas en celdas)?",
+      "zh": "为什么有一行排得不齐或被拉得过宽（URL、长复合词、单元格里的长词）？"
     },
     "index": {
       "en": "Loose lines, causes of",
-      "es": "Líneas flojas, causas de las"
+      "es": "Líneas flojas, causas de las",
+      "zh": "松行，成因"
     },
     "theme": "type"
   },
@@ -269,11 +313,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add extra vertical space between two blocks, when blank lines do nothing?",
-      "es": "¿Cómo añado espacio vertical entre dos bloques, si las líneas en blanco no hacen nada?"
+      "es": "¿Cómo añado espacio vertical entre dos bloques, si las líneas en blanco no hacen nada?",
+      "zh": "空行不起作用时，怎样在两个块之间加额外的垂直间距？"
     },
     "index": {
       "en": "Vertical space, adding between blocks",
-      "es": "Espacio vertical, añadirlo entre bloques"
+      "es": "Espacio vertical, añadirlo entre bloques",
+      "zh": "垂直间距，在块之间添加"
     },
     "theme": "type"
   },
@@ -281,11 +327,13 @@
     "kind": "how",
     "text": {
       "en": "How do I force a page or column break, and start every chapter on a right-hand page?",
-      "es": "¿Cómo fuerzo un salto de página o de columna, y hago que cada capítulo empiece en página impar?"
+      "es": "¿Cómo fuerzo un salto de página o de columna, y hago que cada capítulo empiece en página impar?",
+      "zh": "怎样强制分页或分栏，并让每章都从右页开始？"
     },
     "index": {
       "en": "Page breaks, and chapters on a recto",
-      "es": "Saltos de página, y capítulos en página impar"
+      "es": "Saltos de página, y capítulos en página impar",
+      "zh": "分页，以及章从右页开始"
     },
     "theme": "structure"
   },
@@ -293,11 +341,13 @@
     "kind": "how",
     "text": {
       "en": "How do I stop headings, bold words and bullets from coming out blue?",
-      "es": "¿Cómo evito que los títulos, las negritas y las viñetas salgan en azul?"
+      "es": "¿Cómo evito que los títulos, las negritas y las viñetas salgan en azul?",
+      "zh": "怎样让标题、粗体字和项目符号不再显示成蓝色？"
     },
     "index": {
       "en": "Blue defaults, removing the",
-      "es": "Azul por defecto, quitar el"
+      "es": "Azul por defecto, quitar el",
+      "zh": "蓝色默认值，去除"
     },
     "theme": "type"
   },
@@ -305,11 +355,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make a chapter opener with a full-bleed colour band, a big chapter number and the title?",
-      "es": "¿Cómo hago una apertura de capítulo con una banda de color a sangre, un número de capítulo grande y el título?"
+      "es": "¿Cómo hago una apertura de capítulo con una banda de color a sangre, un número de capítulo grande y el título?",
+      "zh": "怎样做一个带出血色带、大号章号和标题的章首页？"
     },
     "index": {
       "en": "Chapter openers, with a bleed band",
-      "es": "Aperturas de capítulo con banda a sangre"
+      "es": "Aperturas de capítulo con banda a sangre",
+      "zh": "章首页，带出血色带"
     },
     "theme": "headings"
   },
@@ -317,11 +369,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a chapter title across the page while the body runs in two columns below?",
-      "es": "¿Cómo pongo el título de capítulo a todo el ancho mientras el texto sigue a dos columnas debajo?"
+      "es": "¿Cómo pongo el título de capítulo a todo el ancho mientras el texto sigue a dos columnas debajo?",
+      "zh": "怎样让章标题横跨页面，下面的正文分两栏排？"
     },
     "index": {
       "en": "Chapter titles across the columns",
-      "es": "Títulos de capítulo sobre las columnas"
+      "es": "Títulos de capítulo sobre las columnas",
+      "zh": "章标题，横跨各栏"
     },
     "theme": "headings"
   },
@@ -329,11 +383,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add an author line, a standfirst or a lead with a drop cap to an opener?",
-      "es": "¿Cómo añado a una apertura una línea de autor, una entradilla o un primer párrafo con capitular?"
+      "es": "¿Cómo añado a una apertura una línea de autor, una entradilla o un primer párrafo con capitular?",
+      "zh": "怎样给章首页加作者行、提要或带首字下沉的导语？"
     },
     "index": {
       "en": "Openers, author line, standfirst and drop cap",
-      "es": "Aperturas, autor, entradilla y capitular"
+      "es": "Aperturas, autor, entradilla y capitular",
+      "zh": "章首页，作者行、提要与首字下沉"
     },
     "theme": "headings"
   },
@@ -341,11 +397,13 @@
     "kind": "how",
     "text": {
       "en": "How do I give every chapter its own photo, colour or opener variant?",
-      "es": "¿Cómo doy a cada capítulo su propia foto, su color o una variante de apertura?"
+      "es": "¿Cómo doy a cada capítulo su propia foto, su color o una variante de apertura?",
+      "zh": "怎样给每章不同的照片、颜色或章首页样式？"
     },
     "index": {
       "en": "Openers, a different one per chapter",
-      "es": "Aperturas, una distinta por capítulo"
+      "es": "Aperturas, una distinta por capítulo",
+      "zh": "章首页，每章不同"
     },
     "theme": "headings"
   },
@@ -353,11 +411,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set running heads: book title on the left page, chapter title on the right, page number outside?",
-      "es": "¿Cómo pongo cabeceras: el título del libro en la página izquierda, el del capítulo en la derecha y el folio por fuera?"
+      "es": "¿Cómo pongo cabeceras: el título del libro en la página izquierda, el del capítulo en la derecha y el folio por fuera?",
+      "zh": "怎样设置书眉：左页放书名，右页放章名，页码在外侧？"
     },
     "index": {
       "en": "Running heads, verso and recto",
-      "es": "Cabeceras de página par e impar"
+      "es": "Cabeceras de página par e impar",
+      "zh": "书眉，左页与右页"
     },
     "theme": "running-heads"
   },
@@ -365,11 +425,13 @@
     "kind": "how",
     "text": {
       "en": "How do I hide running heads on openers and blank pages, or paint a blank verso in the part colour?",
-      "es": "¿Cómo oculto las cabeceras en las aperturas y las páginas en blanco, o pinto una página par en blanco con el color de la parte?"
+      "es": "¿Cómo oculto las cabeceras en las aperturas y las páginas en blanco, o pinto una página par en blanco con el color de la parte?",
+      "zh": "怎样在章首页和空白页上隐藏书眉，或者把空白左页涂成篇的颜色？"
     },
     "index": {
       "en": "Running heads, hiding on openers and blanks",
-      "es": "Cabeceras, ocultarlas en aperturas y páginas en blanco"
+      "es": "Cabeceras, ocultarlas en aperturas y páginas en blanco",
+      "zh": "书眉，在章首页和空白页上隐藏"
     },
     "theme": "running-heads"
   },
@@ -377,11 +439,13 @@
     "kind": "how",
     "text": {
       "en": "How do I number headings (1, 1.1, 1.1.1) and style each level differently?",
-      "es": "¿Cómo numero los títulos (1, 1.1, 1.1.1) y doy a cada nivel un estilo distinto?"
+      "es": "¿Cómo numero los títulos (1, 1.1, 1.1.1) y doy a cada nivel un estilo distinto?",
+      "zh": "怎样给标题编号（1、1.1、1.1.1），并给每一级设置不同样式？"
     },
     "index": {
       "en": "Headings, numbering and styling levels",
-      "es": "Títulos, numerar y dar estilo a los niveles"
+      "es": "Títulos, numerar y dar estilo a los niveles",
+      "zh": "标题，编号与各级样式"
     },
     "theme": "headings"
   },
@@ -389,11 +453,13 @@
     "kind": "how",
     "text": {
       "en": "How do I build a number badge beside the title that widens when the number grows (9 → 10)?",
-      "es": "¿Cómo hago una insignia con el número junto al título que se ensanche cuando el número crece (9 → 10)?"
+      "es": "¿Cómo hago una insignia con el número junto al título que se ensanche cuando el número crece (9 → 10)?",
+      "zh": "怎样在标题旁做一个编号徽标，让它在编号变长时（9 → 10）自动变宽？"
     },
     "index": {
       "en": "Number badges beside titles",
-      "es": "Insignias con número junto al título"
+      "es": "Insignias con número junto al título",
+      "zh": "编号徽标，标题旁"
     },
     "theme": "headings"
   },
@@ -401,11 +467,13 @@
     "kind": "how",
     "text": {
       "en": "How do I handle more than six heading levels?",
-      "es": "¿Qué hago si necesito más de seis niveles de título?"
+      "es": "¿Qué hago si necesito más de seis niveles de título?",
+      "zh": "标题超过六级怎么办？"
     },
     "index": {
       "en": "Headings, more than six levels",
-      "es": "Títulos, más de seis niveles"
+      "es": "Títulos, más de seis niveles",
+      "zh": "标题，超过六级"
     },
     "theme": "headings",
     "gap": "heading-level-7"
@@ -414,11 +482,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make a cover, a half title, a title page and a colophon?",
-      "es": "¿Cómo hago una cubierta, una portadilla, una portada y un colofón?"
+      "es": "¿Cómo hago una cubierta, una portadilla, una portada y un colofón?",
+      "zh": "怎样制作封面、简扉页、扉页和版权页？"
     },
     "index": {
       "en": "Cover, title page and colophon",
-      "es": "Cubierta, portada y colofón"
+      "es": "Cubierta, portada y colofón",
+      "zh": "封面、扉页与版权页"
     },
     "theme": "structure"
   },
@@ -426,11 +496,13 @@
     "kind": "how",
     "text": {
       "en": "How do I number the front matter in roman numerals and restart at 1 with chapter 1?",
-      "es": "¿Cómo numero los preliminares en romanos y vuelvo a empezar en 1 con el capítulo 1?"
+      "es": "¿Cómo numero los preliminares en romanos y vuelvo a empezar en 1 con el capítulo 1?",
+      "zh": "怎样用罗马数字给前置部分编页码，并从第1章起重新从1开始？"
     },
     "index": {
       "en": "Front matter, roman page numbers",
-      "es": "Preliminares, números de página en romanos"
+      "es": "Preliminares, números de página en romanos",
+      "zh": "前置部分，罗马数字页码"
     },
     "theme": "structure"
   },
@@ -438,11 +510,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add a table of contents that updates itself (leaders, page numbers, authors, part rows)?",
-      "es": "¿Cómo añado un índice que se actualice solo (líneas de puntos, números de página, autores, filas de parte)?"
+      "es": "¿Cómo añado un índice que se actualice solo (líneas de puntos, números de página, autores, filas de parte)?",
+      "zh": "怎样添加自动更新的目录（前导符、页码、作者、篇名行）？"
     },
     "index": {
       "en": "Table of contents, automatic",
-      "es": "Índice de contenidos automático"
+      "es": "Índice de contenidos automático",
+      "zh": "目录，自动生成"
     },
     "theme": "structure"
   },
@@ -450,11 +524,13 @@
     "kind": "how",
     "text": {
       "en": "How do I divide a book into parts or sections, each with its own colour and divider page?",
-      "es": "¿Cómo divido un libro en partes o secciones, cada una con su color y su portadilla?"
+      "es": "¿Cómo divido un libro en partes o secciones, cada una con su color y su portadilla?",
+      "zh": "怎样把书分成若干篇或部分，每篇有自己的颜色和隔页？"
     },
     "index": {
       "en": "Parts, colours and divider pages",
-      "es": "Partes, colores y portadillas"
+      "es": "Partes, colores y portadillas",
+      "zh": "篇，颜色与隔页"
     },
     "theme": "structure"
   },
@@ -462,11 +538,13 @@
     "kind": "how",
     "text": {
       "en": "How do I insert deliberate blank pages, or start a section on a fresh spread?",
-      "es": "¿Cómo inserto páginas en blanco a propósito, o empiezo una sección en una doble página nueva?"
+      "es": "¿Cómo inserto páginas en blanco a propósito, o empiezo una sección en una doble página nueva?",
+      "zh": "怎样插入有意留白的页面，或让某一部分从新的跨页开始？"
     },
     "index": {
       "en": "Blank pages, deliberate",
-      "es": "Páginas en blanco a propósito"
+      "es": "Páginas en blanco a propósito",
+      "zh": "空白页，有意留白"
     },
     "theme": "structure"
   },
@@ -474,11 +552,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a bibliography or glossary (hanging indent, smaller type)?",
-      "es": "¿Cómo compongo una bibliografía o un glosario (sangría francesa, cuerpo menor)?"
+      "es": "¿Cómo compongo una bibliografía o un glosario (sangría francesa, cuerpo menor)?",
+      "zh": "怎样排参考文献或术语表（悬挂缩进、较小字号）？"
     },
     "index": {
       "en": "Bibliography and glossary",
-      "es": "Bibliografía y glosario"
+      "es": "Bibliografía y glosario",
+      "zh": "参考文献与术语表"
     },
     "theme": "type"
   },
@@ -486,11 +566,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make an art catalogue: entry on the left page, plate on the facing right page?",
-      "es": "¿Cómo hago un catálogo de arte: la ficha en la página izquierda y la lámina enfrente, en la derecha?"
+      "es": "¿Cómo hago un catálogo de arte: la ficha en la página izquierda y la lámina enfrente, en la derecha?",
+      "zh": "怎样做艺术图录：左页放条目，对面右页放图版？"
     },
     "index": {
       "en": "Art catalogue, entry facing its plate",
-      "es": "Catálogo de arte, ficha frente a su lámina"
+      "es": "Catálogo de arte, ficha frente a su lámina",
+      "zh": "艺术图录，条目与图版对页"
     },
     "theme": "publications"
   },
@@ -498,11 +580,13 @@
     "kind": "how",
     "text": {
       "en": "How do I lay out a magazine in sections, each article opening on a spread with its lead photo on the facing page?",
-      "es": "¿Cómo maqueto una revista por secciones en la que cada artículo abre en doble página, frente a su foto principal?"
+      "es": "¿Cómo maqueto una revista por secciones en la que cada artículo abre en doble página, frente a su foto principal?",
+      "zh": "怎样按栏目排杂志，每篇文章从跨页开始，主图放在对页？"
     },
     "index": {
       "en": "Magazine, sections and article openers",
-      "es": "Revista, secciones y aperturas de artículo"
+      "es": "Revista, secciones y aperturas de artículo",
+      "zh": "杂志，栏目与文章开篇"
     },
     "theme": "publications"
   },
@@ -510,11 +594,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set poetry: one line per verse, stanza gaps, hanging indents for wrapped lines, no hyphenation?",
-      "es": "¿Cómo compongo poesía: un verso por línea, espacio entre estrofas, sangría francesa en los versos que no caben y sin separación silábica?"
+      "es": "¿Cómo compongo poesía: un verso por línea, espacio entre estrofas, sangría francesa en los versos que no caben y sin separación silábica?",
+      "zh": "怎样排诗歌：每句一行，诗节间留空，折行悬挂缩进，不断词？"
     },
     "index": {
       "en": "Poetry, setting verse",
-      "es": "Poesía, componer verso"
+      "es": "Poesía, componer verso",
+      "zh": "诗歌，排诗行"
     },
     "theme": "type"
   },
@@ -522,11 +608,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set an epigraph, a dedication, a signature, or a pull quote with a big quote mark?",
-      "es": "¿Cómo compongo un epígrafe, una dedicatoria, una firma o una cita destacada con una comilla grande?"
+      "es": "¿Cómo compongo un epígrafe, una dedicatoria, una firma o una cita destacada con una comilla grande?",
+      "zh": "怎样排题词、献词、署名，或带大号引号的引文框？"
     },
     "index": {
       "en": "Epigraphs, dedications and pull quotes",
-      "es": "Epígrafes, dedicatorias y citas destacadas"
+      "es": "Epígrafes, dedicatorias y citas destacadas",
+      "zh": "题词、献词与引文框"
     },
     "theme": "type"
   },
@@ -534,11 +622,13 @@
     "kind": "how",
     "text": {
       "en": "How do I do footnotes?",
-      "es": "¿Cómo hago notas al pie?"
+      "es": "¿Cómo hago notas al pie?",
+      "zh": "脚注怎么做？"
     },
     "index": {
       "en": "Footnotes",
-      "es": "Notas al pie"
+      "es": "Notas al pie",
+      "zh": "脚注"
     },
     "theme": "boxes"
   },
@@ -546,11 +636,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set margin notes or glosses beside the paragraph they explain?",
-      "es": "¿Cómo pongo notas al margen o glosas junto al párrafo que explican?"
+      "es": "¿Cómo pongo notas al margen o glosas junto al párrafo que explican?",
+      "zh": "怎样把边注或旁注排在它所解释的段落旁边？"
     },
     "index": {
       "en": "Margin notes and glosses",
-      "es": "Notas al margen y glosas"
+      "es": "Notas al margen y glosas",
+      "zh": "边注与旁注"
     },
     "theme": "boxes"
   },
@@ -558,11 +650,13 @@
     "kind": "how",
     "text": {
       "en": "How do I show code listings?",
-      "es": "¿Cómo muestro listados de código?"
+      "es": "¿Cómo muestro listados de código?",
+      "zh": "怎样展示代码清单？"
     },
     "index": {
       "en": "Code listings, workarounds for",
-      "es": "Listados de código, alternativas a los"
+      "es": "Listados de código, alternativas a los",
+      "zh": "代码清单，变通办法"
     },
     "theme": "boxes",
     "gap": "code-blocks"
@@ -571,11 +665,13 @@
     "kind": "how",
     "text": {
       "en": "How do I typeset maths (inline, display, equations) and keep it vector in the PDF?",
-      "es": "¿Cómo compongo matemáticas (en línea, destacadas, ecuaciones) y las mantengo vectoriales en el PDF?"
+      "es": "¿Cómo compongo matemáticas (en línea, destacadas, ecuaciones) y las mantengo vectoriales en el PDF?",
+      "zh": "怎样排数学公式（行内、行间、编号公式），并在PDF中保持矢量？"
     },
     "index": {
       "en": "Mathematics, typesetting",
-      "es": "Matemáticas, componer"
+      "es": "Matemáticas, componer",
+      "zh": "数学公式，排版"
     },
     "theme": "type"
   },
@@ -583,11 +679,13 @@
     "kind": "how",
     "text": {
       "en": "How do I write superscripts, subscripts and chemical formulas without full maths?",
-      "es": "¿Cómo escribo superíndices, subíndices y fórmulas químicas sin escribir LaTeX?"
+      "es": "¿Cómo escribo superíndices, subíndices y fórmulas químicas sin escribir LaTeX?",
+      "zh": "不用完整的数学公式，怎样写上标、下标和化学式？"
     },
     "index": {
       "en": "Superscripts and subscripts",
-      "es": "Superíndices y subíndices"
+      "es": "Superíndices y subíndices",
+      "zh": "上标和下标"
     },
     "theme": "type"
   },
@@ -595,11 +693,13 @@
     "kind": "how",
     "text": {
       "en": "How do I colour key terms (bold or italic) in the body or inside boxes?",
-      "es": "¿Cómo doy color a los términos clave (en negrita o cursiva) en el texto o dentro de los recuadros?"
+      "es": "¿Cómo doy color a los términos clave (en negrita o cursiva) en el texto o dentro de los recuadros?",
+      "zh": "怎样给正文或框里的关键词（粗体或斜体）着色？"
     },
     "index": {
       "en": "Key terms, colouring",
-      "es": "Términos clave, darles color"
+      "es": "Términos clave, darles color",
+      "zh": "关键词，着色"
     },
     "theme": "type"
   },
@@ -607,11 +707,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make inline chips: keyboard keys, tags, word banks for exercises?",
-      "es": "¿Cómo hago chips en línea: teclas, etiquetas, bancos de palabras para ejercicios?"
+      "es": "¿Cómo hago chips en línea: teclas, etiquetas, bancos de palabras para ejercicios?",
+      "zh": "怎样做行内标签：键盘按键、标签、练习用的词库？"
     },
     "index": {
       "en": "Chips, inline",
-      "es": "Chips en línea"
+      "es": "Chips en línea",
+      "zh": "行内标签"
     },
     "theme": "type"
   },
@@ -619,11 +721,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add colour-key swatches to text, captions or table notes?",
-      "es": "¿Cómo añado muestras de color como leyenda en el texto, los pies o las notas de tabla?"
+      "es": "¿Cómo añado muestras de color como leyenda en el texto, los pies o las notas de tabla?",
+      "zh": "怎样在正文、题注或表注里加入色块图例？"
     },
     "index": {
       "en": "Swatches, colour keys",
-      "es": "Muestras de color, leyendas"
+      "es": "Muestras de color, leyendas",
+      "zh": "色块，图例"
     },
     "theme": "type"
   },
@@ -631,11 +735,13 @@
     "kind": "how",
     "text": {
       "en": "How do I customise lists: bullets per level, (a)/(i) numbering, task checkboxes, spacing that stays on the grid?",
-      "es": "¿Cómo personalizo las listas: viñetas por nivel, numeración (a)/(i), casillas de tareas y un espaciado que respete la rejilla?"
+      "es": "¿Cómo personalizo las listas: viñetas por nivel, numeración (a)/(i), casillas de tareas y un espaciado que respete la rejilla?",
+      "zh": "怎样定制列表：每级的项目符号、(a)/(i)编号、任务复选框、保持在网格上的间距？"
     },
     "index": {
       "en": "Lists, customising",
-      "es": "Listas, personalizar"
+      "es": "Listas, personalizar",
+      "zh": "列表，定制"
     },
     "theme": "type"
   },
@@ -643,11 +749,13 @@
     "kind": "how",
     "text": {
       "en": "How do I write dialogue dashes, years at a paragraph start, prices and literal symbols without Markdown misreading them?",
-      "es": "¿Cómo escribo rayas de diálogo, años al principio de párrafo, precios y símbolos literales sin que el Markdown los malinterprete?"
+      "es": "¿Cómo escribo rayas de diálogo, años al principio de párrafo, precios y símbolos literales sin que el Markdown los malinterprete?",
+      "zh": "怎样写对话破折号、段首的年份、价格和字面符号，而不被Markdown误读？"
     },
     "index": {
       "en": "Escapes, literal characters",
-      "es": "Escapes, caracteres literales"
+      "es": "Escapes, caracteres literales",
+      "zh": "转义，字面字符"
     },
     "theme": "type"
   },
@@ -655,11 +763,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make note, tip or warning boxes with an icon, a coloured stripe and rounded corners?",
-      "es": "¿Cómo hago recuadros de nota, consejo o advertencia con icono, franja de color y esquinas redondeadas?"
+      "es": "¿Cómo hago recuadros de nota, consejo o advertencia con icono, franja de color y esquinas redondeadas?",
+      "zh": "怎样做带图标、色条和圆角的注释、提示或警告框？"
     },
     "index": {
       "en": "Callouts, note, tip and warning boxes",
-      "es": "Recuadros de nota, consejo y advertencia"
+      "es": "Recuadros de nota, consejo y advertencia",
+      "zh": "标注框，注释框、提示框和警告框"
     },
     "theme": "boxes"
   },
@@ -667,11 +777,13 @@
     "kind": "how",
     "text": {
       "en": "How do I let a long box split across columns and pages, or keep a short one together?",
-      "es": "¿Cómo dejo que un recuadro largo se parta entre columnas y páginas, o mantengo uno corto entero?"
+      "es": "¿Cómo dejo que un recuadro largo se parta entre columnas y páginas, o mantengo uno corto entero?",
+      "zh": "怎样让长框跨栏跨页拆分，或让短框保持完整？"
     },
     "index": {
       "en": "Callouts, splitting or keeping together",
-      "es": "Recuadros, partirlos o mantenerlos enteros"
+      "es": "Recuadros, partirlos o mantenerlos enteros",
+      "zh": "标注框，拆分或保持完整"
     },
     "theme": "boxes"
   },
@@ -679,11 +791,13 @@
     "kind": "how",
     "text": {
       "en": "How do I float a box to the top or bottom of the page while the text keeps flowing?",
-      "es": "¿Cómo llevo un recuadro a la cabeza o al pie de la página sin que el texto deje de llenarla?"
+      "es": "¿Cómo llevo un recuadro a la cabeza o al pie de la página sin que el texto deje de llenarla?",
+      "zh": "怎样把框浮动到页面顶部或底部，同时让正文继续排下去？"
     },
     "index": {
       "en": "Callouts, floating",
-      "es": "Recuadros flotantes"
+      "es": "Recuadros flotantes",
+      "zh": "标注框，浮动"
     },
     "theme": "boxes"
   },
@@ -691,11 +805,13 @@
     "kind": "how",
     "text": {
       "en": "How do I pin a badge or sticker to a fixed position on the page?",
-      "es": "¿Cómo fijo una insignia o una pegatina en una posición concreta de la página?"
+      "es": "¿Cómo fijo una insignia o una pegatina en una posición concreta de la página?",
+      "zh": "怎样把徽标或贴纸固定在页面上的某个位置？"
     },
     "index": {
       "en": "Badges, pinned to the page",
-      "es": "Insignias fijas en la página"
+      "es": "Insignias fijas en la página",
+      "zh": "徽标，固定在页面上"
     },
     "theme": "boxes"
   },
@@ -703,11 +819,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a box across both columns mid-page, such as a 3-up \"in numbers\" panel?",
-      "es": "¿Cómo pongo un recuadro que cruce las dos columnas a media página, como un panel de cifras en tres bloques?"
+      "es": "¿Cómo pongo un recuadro que cruce las dos columnas a media página, como un panel de cifras en tres bloques?",
+      "zh": "怎样在页面中间排一个横跨两栏的框，比如三格并列的“数字一览”面板？"
     },
     "index": {
       "en": "Callouts across both columns",
-      "es": "Recuadros que cruzan las dos columnas"
+      "es": "Recuadros que cruzan las dos columnas",
+      "zh": "标注框，横跨两栏"
     },
     "theme": "boxes"
   },
@@ -715,11 +833,13 @@
     "kind": "how",
     "text": {
       "en": "How do I put two columns inside a box (a text column beside a figure column)?",
-      "es": "¿Cómo pongo dos columnas dentro de un recuadro (una de texto junto a otra con una figura)?"
+      "es": "¿Cómo pongo dos columnas dentro de un recuadro (una de texto junto a otra con una figura)?",
+      "zh": "怎样在框里分两栏（文字栏旁边是图栏）？"
     },
     "index": {
       "en": "Callouts, columns inside",
-      "es": "Recuadros, columnas dentro de los"
+      "es": "Recuadros, columnas dentro de los",
+      "zh": "标注框，框内分栏"
     },
     "theme": "boxes"
   },
@@ -727,11 +847,13 @@
     "kind": "how",
     "text": {
       "en": "How do I nest boxes, such as a worksheet card holding answer boxes, with exact spacing?",
-      "es": "¿Cómo anido recuadros, como una ficha de ejercicios con cajas de respuesta, con un espaciado exacto?"
+      "es": "¿Cómo anido recuadros, como una ficha de ejercicios con cajas de respuesta, con un espaciado exacto?",
+      "zh": "怎样嵌套框，比如装着答题框的练习卡片，并精确控制间距？"
     },
     "index": {
       "en": "Callouts, nested",
-      "es": "Recuadros anidados"
+      "es": "Recuadros anidados",
+      "zh": "标注框，嵌套"
     },
     "theme": "boxes"
   },
@@ -739,11 +861,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add a numbered tab (\"BOX 1-1\"), a corner icon, or a margin icon with a rule?",
-      "es": "¿Cómo añado una pestaña numerada («RECUADRO 1-1»), un icono de esquina o un icono al margen con un filete?"
+      "es": "¿Cómo añado una pestaña numerada («RECUADRO 1-1»), un icono de esquina o un icono al margen con un filete?",
+      "zh": "怎样加编号标签（“BOX 1-1”）、角标图标，或带线的边栏图标？"
     },
     "index": {
       "en": "Callouts, tabs, corner icons and markers",
-      "es": "Recuadros, pestañas, iconos de esquina y marcas"
+      "es": "Recuadros, pestañas, iconos de esquina y marcas",
+      "zh": "标注框，标签、角标图标和标记"
     },
     "theme": "boxes"
   },
@@ -751,11 +875,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add a figure with a numbered caption and cite it in the text (\"see Fig. 3.2\")?",
-      "es": "¿Cómo añado una figura con pie numerado y la cito en el texto («véase la fig. 3.2»)?"
+      "es": "¿Cómo añado una figura con pie numerado y la cito en el texto («véase la fig. 3.2»)?",
+      "zh": "怎样加一幅带编号题注的图，并在正文里引用它（“见图3.2”）？"
     },
     "index": {
       "en": "Figures, numbered and cited",
-      "es": "Figuras numeradas y citadas"
+      "es": "Figuras numeradas y citadas",
+      "zh": "图，编号与引用"
     },
     "theme": "figures"
   },
@@ -763,11 +889,13 @@
     "kind": "how",
     "text": {
       "en": "How do I control where a figure goes: top of page, across both columns, exactly here, or in the margin?",
-      "es": "¿Cómo decido dónde va una figura: en la cabeza de la página, a lo ancho de las dos columnas, justo aquí o al margen?"
+      "es": "¿Cómo decido dónde va una figura: en la cabeza de la página, a lo ancho de las dos columnas, justo aquí o al margen?",
+      "zh": "怎样控制图的位置：页面顶部、横跨两栏、就放在这里，还是放在边栏里？"
     },
     "index": {
       "en": "Figures, controlling placement",
-      "es": "Figuras, controlar su colocación"
+      "es": "Figuras, controlar su colocación",
+      "zh": "图，控制位置"
     },
     "theme": "figures"
   },
@@ -775,11 +903,13 @@
     "kind": "how",
     "text": {
       "en": "How do I make a table with header rows, merged cells, column widths and per-cell alignment?",
-      "es": "¿Cómo hago una tabla con filas de cabecera, celdas combinadas, anchos de columna y alineación por celda?"
+      "es": "¿Cómo hago una tabla con filas de cabecera, celdas combinadas, anchos de columna y alineación por celda?",
+      "zh": "怎样做一个有表头行、合并单元格、栏宽和逐格对齐的表？"
     },
     "index": {
       "en": "Tables, merged cells and header rows",
-      "es": "Tablas, celdas combinadas y filas de cabecera"
+      "es": "Tablas, celdas combinadas y filas de cabecera",
+      "zh": "表，合并单元格和表头行"
     },
     "theme": "tables"
   },
@@ -787,11 +917,13 @@
     "kind": "how",
     "text": {
       "en": "How do I split a long table across pages with a repeated header and a \"continued\" marker?",
-      "es": "¿Cómo parto una tabla larga entre páginas con la cabecera repetida y un aviso de «continúa»?"
+      "es": "¿Cómo parto una tabla larga entre páginas con la cabecera repetida y un aviso de «continúa»?",
+      "zh": "怎样把长表跨页拆分，并重复表头、加上“续表”标记？"
     },
     "index": {
       "en": "Tables, splitting across pages",
-      "es": "Tablas, partirlas entre páginas"
+      "es": "Tablas, partirlas entre páginas",
+      "zh": "表，跨页拆分"
     },
     "theme": "tables"
   },
@@ -799,11 +931,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a wide table in landscape on its own page?",
-      "es": "¿Cómo compongo una tabla ancha apaisada en su propia página?"
+      "es": "¿Cómo compongo una tabla ancha apaisada en su propia página?",
+      "zh": "怎样把一张宽表横排在单独的一页上？"
     },
     "index": {
       "en": "Tables, landscape",
-      "es": "Tablas apaisadas"
+      "es": "Tablas apaisadas",
+      "zh": "表，横排"
     },
     "theme": "tables"
   },
@@ -811,11 +945,13 @@
     "kind": "how",
     "text": {
       "en": "How do I style several tables differently (fills, zebra cells, rounded frames) in one document?",
-      "es": "¿Cómo doy estilos distintos a varias tablas (rellenos, filas alternas, marcos redondeados) en un mismo documento?"
+      "es": "¿Cómo doy estilos distintos a varias tablas (rellenos, filas alternas, marcos redondeados) en un mismo documento?",
+      "zh": "怎样在一份文档里给几张表设不同的样式（填色、斑马纹单元格、圆角边框）？"
     },
     "index": {
       "en": "Tables, several styles in one document",
-      "es": "Tablas, varios estilos en un documento"
+      "es": "Tablas, varios estilos en un documento",
+      "zh": "表，同一文档中的多种样式"
     },
     "theme": "tables"
   },
@@ -823,11 +959,13 @@
     "kind": "how",
     "text": {
       "en": "How do I put pictures or icons inside table cells?",
-      "es": "¿Cómo pongo imágenes o iconos dentro de las celdas de una tabla?"
+      "es": "¿Cómo pongo imágenes o iconos dentro de las celdas de una tabla?",
+      "zh": "怎样在表格单元格里放图片或图标？"
     },
     "index": {
       "en": "Tables, pictures in cells",
-      "es": "Tablas, imágenes en las celdas"
+      "es": "Tablas, imágenes en las celdas",
+      "zh": "表，单元格中的图片"
     },
     "theme": "tables"
   },
@@ -835,11 +973,13 @@
     "kind": "how",
     "text": {
       "en": "How do I keep diagrams sharp, with selectable text, in the PDF (SVG, print masters)?",
-      "es": "¿Cómo mantengo los diagramas nítidos y con texto seleccionable en el PDF (SVG, másteres de impresión)?"
+      "es": "¿Cómo mantengo los diagramas nítidos y con texto seleccionable en el PDF (SVG, másteres de impresión)?",
+      "zh": "怎样让示意图在PDF里保持清晰、文字可选中（SVG、印刷母版）？"
     },
     "index": {
       "en": "Diagrams, sharp and vector in the PDF",
-      "es": "Diagramas nítidos y vectoriales en el PDF"
+      "es": "Diagramas nítidos y vectoriales en el PDF",
+      "zh": "示意图，PDF中清晰的矢量图"
     },
     "theme": "figures"
   },
@@ -847,11 +987,13 @@
     "kind": "how",
     "text": {
       "en": "How do I recolour every diagram to a single spot ink?",
-      "es": "¿Cómo paso todos los diagramas a una sola tinta plana?"
+      "es": "¿Cómo paso todos los diagramas a una sola tinta plana?",
+      "zh": "怎样把所有示意图重新着色为同一种专色油墨？"
     },
     "index": {
       "en": "Single ink, recolouring diagrams",
-      "es": "Una sola tinta, recolorear diagramas"
+      "es": "Una sola tinta, recolorear diagramas",
+      "zh": "单色油墨，示意图重新着色"
     },
     "theme": "figures"
   },
@@ -859,11 +1001,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a caption beside a figure, or above a table on a caption bar?",
-      "es": "¿Cómo pongo el pie al lado de una figura, o encima de una tabla sobre una barra de color?"
+      "es": "¿Cómo pongo el pie al lado de una figura, o encima de una tabla sobre una barra de color?",
+      "zh": "怎样把题注放在图的旁边，或放在表上方的题注条上？"
     },
     "index": {
       "en": "Captions, beside or above",
-      "es": "Pies, al lado o encima"
+      "es": "Pies, al lado o encima",
+      "zh": "题注，旁置或上置"
     },
     "theme": "figures"
   },
@@ -871,11 +1015,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set unnumbered artwork: ornaments, vignettes, logos?",
-      "es": "¿Cómo compongo ilustraciones sin numerar: adornos, viñetas, logotipos?"
+      "es": "¿Cómo compongo ilustraciones sin numerar: adornos, viñetas, logotipos?",
+      "zh": "怎样排不编号的插图：饰图、小花饰、标志？"
     },
     "index": {
       "en": "Ornaments and unnumbered artwork",
-      "es": "Adornos e ilustraciones sin numerar"
+      "es": "Adornos e ilustraciones sin numerar",
+      "zh": "饰图与不编号的插图"
     },
     "theme": "figures"
   },
@@ -883,11 +1029,13 @@
     "kind": "how",
     "text": {
       "en": "How do I get \"Figure\" and \"Table\" labels in my document's language?",
-      "es": "¿Cómo consigo las etiquetas «Figura» y «Tabla» en el idioma de mi documento?"
+      "es": "¿Cómo consigo las etiquetas «Figura» y «Tabla» en el idioma de mi documento?",
+      "zh": "怎样让“图”和“表”的标签使用文档的语言？"
     },
     "index": {
       "en": "Figure and Table labels, translating",
-      "es": "Etiquetas Figura y Tabla, traducir las"
+      "es": "Etiquetas Figura y Tabla, traducir las",
+      "zh": "“图”和“表”标签，翻译"
     },
     "theme": "figures"
   },
@@ -895,11 +1043,13 @@
     "kind": "how",
     "text": {
       "en": "How do I publish the same book in two languages from one project?",
-      "es": "¿Cómo publico el mismo libro en dos idiomas desde un solo proyecto?"
+      "es": "¿Cómo publico el mismo libro en dos idiomas desde un solo proyecto?",
+      "zh": "怎样用一个项目出版同一本书的两种语言版本？"
     },
     "index": {
       "en": "Bilingual editions",
-      "es": "Ediciones bilingües"
+      "es": "Ediciones bilingües",
+      "zh": "双语版本"
     },
     "theme": "output"
   },
@@ -907,11 +1057,13 @@
     "kind": "how",
     "text": {
       "en": "How do I port an existing PDF, Word or InDesign publication to Postext?",
-      "es": "¿Cómo paso a Postext una publicación que ya existe en PDF, Word o InDesign?"
+      "es": "¿Cómo paso a Postext una publicación que ya existe en PDF, Word o InDesign?",
+      "zh": "怎样把现有的PDF、Word或InDesign出版物移植到Postext？"
     },
     "index": {
       "en": "Porting existing publications",
-      "es": "Publicaciones existentes, pasarlas a Postext"
+      "es": "Publicaciones existentes, pasarlas a Postext",
+      "zh": "移植现有出版物"
     },
     "theme": "output"
   },
@@ -919,11 +1071,13 @@
     "kind": "how",
     "text": {
       "en": "How do I find out what is wrong with my document (warnings, overflow, non-converging layout)?",
-      "es": "¿Cómo averiguo qué falla en mi documento (avisos, desbordamientos, composición que no converge)?"
+      "es": "¿Cómo averiguo qué falla en mi documento (avisos, desbordamientos, composición que no converge)?",
+      "zh": "怎样找出文档哪里出了问题（警告、溢出、版面不收敛）？"
     },
     "index": {
       "en": "Warnings and diagnostics",
-      "es": "Avisos y diagnóstico"
+      "es": "Avisos y diagnóstico",
+      "zh": "警告与诊断"
     },
     "theme": "output"
   },
@@ -931,11 +1085,13 @@
     "kind": "how",
     "text": {
       "en": "Can Postext set three or more text columns, or wrap text around an image?",
-      "es": "¿Puede Postext componer tres o más columnas de texto, o hacer que el texto rodee una imagen?"
+      "es": "¿Puede Postext componer tres o más columnas de texto, o hacer que el texto rodee una imagen?",
+      "zh": "Postext能排三栏或更多栏，或者让文字绕图排吗？"
     },
     "index": {
       "en": "Three columns and text wrap, workarounds for",
-      "es": "Tres columnas y contorneo, alternativas a"
+      "es": "Tres columnas y contorneo, alternativas a",
+      "zh": "三栏与文字绕排，变通办法"
     },
     "theme": "page",
     "gap": "three-columns"
@@ -944,11 +1100,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add a watermark, a background tint or a decorative image on every page?",
-      "es": "¿Cómo añado una marca de agua, un fondo de color o una imagen decorativa en todas las páginas?"
+      "es": "¿Cómo añado una marca de agua, un fondo de color o una imagen decorativa en todas las páginas?",
+      "zh": "怎样给每一页加水印、背景底色或装饰图片？"
     },
     "index": {
       "en": "Watermarks and page backgrounds",
-      "es": "Marcas de agua y fondos de página"
+      "es": "Marcas de agua y fondos de página",
+      "zh": "水印与页面背景"
     },
     "theme": "running-heads"
   },
@@ -956,11 +1114,13 @@
     "kind": "how",
     "text": {
       "en": "How do I build a worksheet page: fill-in lines, answer boxes, word banks, checklists?",
-      "es": "¿Cómo hago una ficha de ejercicios: líneas para rellenar, cajas de respuesta, bancos de palabras, listas de comprobación?"
+      "es": "¿Cómo hago una ficha de ejercicios: líneas para rellenar, cajas de respuesta, bancos de palabras, listas de comprobación?",
+      "zh": "怎样做练习页：填空横线、答题框、词库、清单？"
     },
     "index": {
       "en": "Worksheets",
-      "es": "Fichas de ejercicios"
+      "es": "Fichas de ejercicios",
+      "zh": "练习页"
     },
     "theme": "boxes"
   },
@@ -968,11 +1128,13 @@
     "kind": "how",
     "text": {
       "en": "How do I place design elements against the page, the bleed or one another instead of by coordinates?",
-      "es": "¿Cómo coloco los elementos de diseño respecto a la página, la sangre o entre sí, en lugar de por coordenadas?"
+      "es": "¿Cómo coloco los elementos de diseño respecto a la página, la sangre o entre sí, en lugar de por coordenadas?",
+      "zh": "怎样把设计元素相对页面、出血边或彼此定位，而不是用坐标？"
     },
     "index": {
       "en": "Anchoring design elements to each other",
-      "es": "Anclaje de elementos de diseño entre sí"
+      "es": "Anclaje de elementos de diseño entre sí",
+      "zh": "设计元素相互锚定"
     },
     "theme": "headings"
   },
@@ -980,11 +1142,13 @@
     "kind": "how",
     "text": {
       "en": "How do I number every fifth line of a poem in the margin and key my notes to those line numbers?",
-      "es": "¿Cómo numero en el margen cada quinto verso de un poema y remito mis notas a esos números de verso?"
+      "es": "¿Cómo numero en el margen cada quinto verso de un poema y remito mis notas a esos números de verso?",
+      "zh": "怎样在诗的页边每隔五行标一个行号，并让注释对应这些行号？"
     },
     "index": {
       "en": "Line numbers in verse, and notes keyed to them",
-      "es": "Numeración de versos y notas referidas a ella"
+      "es": "Numeración de versos y notas referidas a ella",
+      "zh": "诗行行号及对应的注释"
     },
     "theme": "type",
     "gap": "line-numbers"
@@ -993,11 +1157,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add a thumb index: a tab on the fore-edge that steps down the page from one letter or chapter to the next?",
-      "es": "¿Cómo añado un índice de pestañas: una pestaña en el corte delantero que baja por la página de una letra o un capítulo al siguiente?"
+      "es": "¿Cómo añado un índice de pestañas: una pestaña en el corte delantero que baja por la página de una letra o un capítulo al siguiente?",
+      "zh": "怎样做书边索引：切口上的标签随着字母或章逐页下移？"
     },
     "index": {
       "en": "Thumb index, tabs on the fore-edge",
-      "es": "Índice de pestañas en el corte"
+      "es": "Índice de pestañas en el corte",
+      "zh": "书边索引，切口上的标签"
     },
     "theme": "running-heads"
   },
@@ -1005,11 +1171,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a screenplay or a play: scene headings, character names, and dialogue indented from both sides?",
-      "es": "¿Cómo compongo un guion de cine o una obra de teatro: encabezados de escena, nombres de personaje y diálogo sangrado por los dos lados?"
+      "es": "¿Cómo compongo un guion de cine o una obra de teatro: encabezados de escena, nombres de personaje y diálogo sangrado por los dos lados?",
+      "zh": "怎样排电影剧本或戏剧剧本：场景标题、角色名、两侧缩进的对白？"
     },
     "index": {
       "en": "Screenplays and plays, script format",
-      "es": "Guiones de cine y de teatro, formato"
+      "es": "Guiones de cine y de teatro, formato",
+      "zh": "电影剧本与戏剧剧本，剧本格式"
     },
     "theme": "type"
   },
@@ -1017,11 +1185,13 @@
     "kind": "how",
     "text": {
       "en": "How do I build a back-of-book index whose page numbers change by themselves when the text moves?",
-      "es": "¿Cómo hago un índice analítico cuyos números de página cambien solos cuando el texto se mueve?"
+      "es": "¿Cómo hago un índice analítico cuyos números de página cambien solos cuando el texto se mueve?",
+      "zh": "怎样做一份页码随正文移动自动更新的书末索引？"
     },
     "index": {
       "en": "Index, back-of-book, page numbers that follow the text",
-      "es": "Índice analítico, números de página que siguen al texto"
+      "es": "Índice analítico, números de página que siguen al texto",
+      "zh": "索引，书末，随正文更新的页码"
     },
     "theme": "structure"
   },
@@ -1029,11 +1199,13 @@
     "kind": "how",
     "text": {
       "en": "How do I print two indexes, one of names and one of subjects, from the same marked text?",
-      "es": "¿Cómo imprimo dos índices, uno onomástico y otro de materias, a partir del mismo texto marcado?"
+      "es": "¿Cómo imprimo dos índices, uno onomástico y otro de materias, a partir del mismo texto marcado?",
+      "zh": "怎样用同一份标记好的正文印出两份索引，一份人名索引，一份主题索引？"
     },
     "index": {
       "en": "Indexes of names and of subjects",
-      "es": "Índices onomástico y de materias"
+      "es": "Índices onomástico y de materias",
+      "zh": "人名索引与主题索引"
     },
     "theme": "structure"
   },
@@ -1041,11 +1213,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a Chinese book vertically, bound on the right?",
-      "es": "¿Cómo compongo un libro chino en vertical, encuadernado por la derecha?"
+      "es": "¿Cómo compongo un libro chino en vertical, encuadernado por la derecha?",
+      "zh": "怎样把中文书排成竖排、右侧装订？"
     },
     "index": {
       "en": "Chinese, vertical and right-bound",
-      "es": "Chino vertical, encuadernado por la derecha"
+      "es": "Chino vertical, encuadernado por la derecha",
+      "zh": "中文，竖排与右侧装订"
     },
     "theme": "page"
   },
@@ -1053,11 +1227,13 @@
     "kind": "how",
     "text": {
       "en": "How do I keep 。 and ， off the start of a line?",
-      "es": "¿Cómo evito que 。 y ， empiecen una línea?"
+      "es": "¿Cómo evito que 。 y ， empiecen una línea?",
+      "zh": "怎样避免“。”和“，”出现在行首？"
     },
     "index": {
       "en": "Chinese punctuation at line starts",
-      "es": "Puntuación china a principio de línea"
+      "es": "Puntuación china a principio de línea",
+      "zh": "中文标点，行首"
     },
     "theme": "type"
   },
@@ -1065,11 +1241,13 @@
     "kind": "how",
     "text": {
       "en": "How do I add pinyin above Chinese characters?",
-      "es": "¿Cómo pongo pinyin sobre los caracteres chinos?"
+      "es": "¿Cómo pongo pinyin sobre los caracteres chinos?",
+      "zh": "怎样在汉字上方加拼音？"
     },
     "index": {
       "en": "Pinyin over Chinese characters",
-      "es": "Pinyin sobre caracteres chinos"
+      "es": "Pinyin sobre caracteres chinos",
+      "zh": "拼音，标在汉字上方"
     },
     "theme": "type"
   },
@@ -1077,11 +1255,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set the type area in characters, so many to the line and so many lines to the page?",
-      "es": "¿Cómo defino la mancha en caracteres, tantos por línea y tantas líneas por página?"
+      "es": "¿Cómo defino la mancha en caracteres, tantos por línea y tantas líneas por página?",
+      "zh": "怎样按字数设定版心，每行多少字、每页多少行？"
     },
     "index": {
       "en": "Character grid (版心)",
-      "es": "Retícula de caracteres (版心)"
+      "es": "Retícula de caracteres (版心)",
+      "zh": "字符网格（版心）"
     },
     "theme": "page"
   },
@@ -1089,11 +1269,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set Chinese punctuation Kaiming, as mainland books do, or half width?",
-      "es": "¿Cómo compongo la puntuación china en Kaiming, como los libros de la China continental, o a medio ancho?"
+      "es": "¿Cómo compongo la puntuación china en Kaiming, como los libros de la China continental, o a medio ancho?",
+      "zh": "怎样像大陆图书那样用开明式排中文标点，或者排成半宽？"
     },
     "index": {
       "en": "Chinese punctuation: Kaiming, full and half width",
-      "es": "Puntuación china: Kaiming, ancho completo y medio ancho"
+      "es": "Puntuación china: Kaiming, ancho completo y medio ancho",
+      "zh": "中文标点：开明式、全宽与半宽"
     },
     "theme": "type"
   },
@@ -1101,11 +1283,13 @@
     "kind": "how",
     "text": {
       "en": "How do I number chapters 第一回, 第二回 in Chinese numerals?",
-      "es": "¿Cómo numero los capítulos 第一回, 第二回 con numerales chinos?"
+      "es": "¿Cómo numero los capítulos 第一回, 第二回 con numerales chinos?",
+      "zh": "怎样用中文数字给章编号，排出第一回、第二回？"
     },
     "index": {
       "en": "Chinese numerals in headings and folios",
-      "es": "Numerales chinos en títulos y folios"
+      "es": "Numerales chinos en títulos y folios",
+      "zh": "标题和页码中的中文数字"
     },
     "theme": "headings"
   },
@@ -1113,11 +1297,13 @@
     "kind": "how",
     "text": {
       "en": "How do I put a space between Chinese and Latin words without typing it?",
-      "es": "¿Cómo dejo espacio entre palabras chinas y latinas sin teclearlo?"
+      "es": "¿Cómo dejo espacio entre palabras chinas y latinas sin teclearlo?",
+      "zh": "怎样不手动输入空格，就在中文和西文之间留出间隔？"
     },
     "index": {
       "en": "Chinese and Latin, space between",
-      "es": "Chino y latín, espacio entre"
+      "es": "Chino y latín, espacio entre",
+      "zh": "中文与西文，之间的间隔"
     },
     "theme": "type"
   },
@@ -1125,11 +1311,13 @@
     "kind": "how",
     "text": {
       "en": "How do I get Chinese characters into the PDF without empty boxes?",
-      "es": "¿Cómo llevo los caracteres chinos al PDF sin cajas vacías?"
+      "es": "¿Cómo llevo los caracteres chinos al PDF sin cajas vacías?",
+      "zh": "怎样让汉字在PDF里不显示成空框？"
     },
     "index": {
       "en": "Chinese fonts in the PDF",
-      "es": "Fuentes chinas en el PDF"
+      "es": "Fuentes chinas en el PDF",
+      "zh": "PDF中的中文字体"
     },
     "theme": "output"
   },
@@ -1137,11 +1325,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set dates and numbers upright inside vertical text?",
-      "es": "¿Cómo pongo en pie fechas y números dentro de un texto vertical?"
+      "es": "¿Cómo pongo en pie fechas y números dentro de un texto vertical?",
+      "zh": "怎样在竖排文字里让日期和数字直立？"
     },
     "index": {
       "en": "Vertical text, upright numbers in",
-      "es": "Texto vertical, números en pie en"
+      "es": "Texto vertical, números en pie en",
+      "zh": "竖排文字，其中直立的数字"
     },
     "theme": "type"
   },
@@ -1149,11 +1339,13 @@
     "kind": "why",
     "text": {
       "en": "Why does my Chinese emphasis print in a slanted face, and what should I use instead?",
-      "es": "¿Por qué el énfasis de mi texto chino sale inclinado y qué debo usar en su lugar?"
+      "es": "¿Por qué el énfasis de mi texto chino sale inclinado y qué debo usar en su lugar?",
+      "zh": "为什么我的中文强调印出来是倾斜的字体，应该改用什么？"
     },
     "index": {
       "en": "Chinese emphasis without italics",
-      "es": "Énfasis chino sin cursiva"
+      "es": "Énfasis chino sin cursiva",
+      "zh": "中文强调，不用斜体"
     },
     "theme": "type"
   },
@@ -1161,11 +1353,13 @@
     "kind": "how",
     "text": {
       "en": "How do I group an index of Chinese names by pinyin or by stroke count?",
-      "es": "¿Cómo agrupo un índice de nombres chinos por pinyin o por número de trazos?"
+      "es": "¿Cómo agrupo un índice de nombres chinos por pinyin o por número de trazos?",
+      "zh": "怎样把中文人名索引按拼音或笔画数分组？"
     },
     "index": {
       "en": "Chinese index, grouped by pinyin or strokes",
-      "es": "Índice chino agrupado por pinyin o por trazos"
+      "es": "Índice chino agrupado por pinyin o por trazos",
+      "zh": "中文索引，按拼音或笔画分组"
     },
     "theme": "structure"
   },
@@ -1173,11 +1367,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a commentary edition: small two-line notes inside the line and comments in the head margin?",
-      "es": "¿Cómo compongo una edición comentada, con notas pequeñas a dos líneas dentro de la línea y comentarios en el margen superior?"
+      "es": "¿Cómo compongo una edición comentada, con notas pequeñas a dos líneas dentro de la línea y comentarios en el margen superior?",
+      "zh": "怎样排评注本：行内的双行小注和天头的批语？"
     },
     "index": {
       "en": "Commentary editions, notes in the line and in the head margin",
-      "es": "Ediciones comentadas, notas en la línea y en el margen superior"
+      "es": "Ediciones comentadas, notas en la línea y en el margen superior",
+      "zh": "评注本，行内夹注与天头批语"
     },
     "theme": "boxes"
   },
@@ -1185,11 +1381,13 @@
     "kind": "how",
     "text": {
       "en": "How do I mark proper names and book titles in Chinese text with a straight and a wavy line?",
-      "es": "¿Cómo marco los nombres propios y los títulos de un texto chino con una línea recta y una ondulada?"
+      "es": "¿Cómo marco los nombres propios y los títulos de un texto chino con una línea recta y una ondulada?",
+      "zh": "怎样在中文正文里用直线和波浪线标出专名和书名？"
     },
     "index": {
       "en": "Chinese name and title lines",
-      "es": "Líneas de nombre y de título en chino"
+      "es": "Líneas de nombre y de título en chino",
+      "zh": "中文专名号与书名号"
     },
     "theme": "type"
   },
@@ -1197,11 +1395,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set zhuyin beside every character of a vertical Chinese text?",
-      "es": "¿Cómo pongo el zhuyin junto a cada carácter de un texto chino vertical?"
+      "es": "¿Cómo pongo el zhuyin junto a cada carácter de un texto chino vertical?",
+      "zh": "怎样在竖排中文的每个字旁边加注音符号？"
     },
     "index": {
       "en": "Zhuyin beside the characters, in vertical text",
-      "es": "Zhuyin junto a los caracteres, en texto vertical"
+      "es": "Zhuyin junto a los caracteres, en texto vertical",
+      "zh": "注音符号，标在竖排文字旁"
     },
     "theme": "type"
   },
@@ -1209,11 +1409,13 @@
     "kind": "how",
     "text": {
       "en": "How do I print the first and last headword of each page in a dictionary's running head?",
-      "es": "¿Cómo imprimo en la cabecera de un diccionario el primer y el último lema de cada página?"
+      "es": "¿Cómo imprimo en la cabecera de un diccionario el primer y el último lema de cada página?",
+      "zh": "怎样在词典的书眉里印出每页的首尾词目？"
     },
     "index": {
       "en": "Guide words, first and last headword",
-      "es": "Palabras guía: primer y último lema"
+      "es": "Palabras guía: primer y último lema",
+      "zh": "导词，首尾词目"
     },
     "theme": "running-heads"
   },
@@ -1221,11 +1423,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a Chinese newspaper page vertically, in tiers with rules between them?",
-      "es": "¿Cómo compongo una página de periódico chino en vertical, en pisos separados por filetes?"
+      "es": "¿Cómo compongo una página de periódico chino en vertical, en pisos separados por filetes?",
+      "zh": "怎样把中文报纸版面排成竖排、分成几栏并用线隔开？"
     },
     "index": {
       "en": "Newspapers, vertical, in tiers (欄)",
-      "es": "Periódicos verticales, en pisos (欄)"
+      "es": "Periódicos verticales, en pisos (欄)",
+      "zh": "报纸，竖排，分栏（欄）"
     },
     "theme": "page"
   },
@@ -1233,11 +1437,13 @@
     "kind": "how",
     "text": {
       "en": "How do I set a poem and its translation on facing pages, with the original always on the recto?",
-      "es": "¿Cómo compongo un poema y su traducción en páginas enfrentadas, con el original siempre en la impar?"
+      "es": "¿Cómo compongo un poema y su traducción en páginas enfrentadas, con el original siempre en la impar?",
+      "zh": "怎样把诗和译文排在对页上，原文总在右页？"
     },
     "index": {
       "en": "Facing translations, the original on the recto",
-      "es": "Traducciones enfrentadas, el original en la página impar"
+      "es": "Traducciones enfrentadas, el original en la página impar",
+      "zh": "对页译文，原文在右页"
     },
     "theme": "page"
   },
@@ -1245,11 +1451,13 @@
     "kind": "how",
     "text": {
       "en": "How do I lay out a woodblock leaf, with a double frame, a rule between the columns and the centre strip?",
-      "es": "¿Cómo compongo una hoja xilográfica, con marco doble, un filete entre columnas y la franja central?"
+      "es": "¿Cómo compongo una hoja xilográfica, con marco doble, un filete entre columnas y la franja central?",
+      "zh": "怎样排雕版书叶：双线边框、行间界线和中间的版心？"
     },
     "index": {
       "en": "Woodblock leaves: frame, column rules, centre strip (版心)",
-      "es": "Hojas xilográficas: marco, filetes, franja central (版心)"
+      "es": "Hojas xilográficas: marco, filetes, franja central (版心)",
+      "zh": "雕版书叶：边框、界行与版心"
     },
     "theme": "page"
   },
@@ -1257,11 +1465,13 @@
     "kind": "how",
     "text": {
       "en": "How do I lay out a Chinese official document to GB/T 9704, with its red letterhead, grid and folios?",
-      "es": "¿Cómo compongo un documento oficial chino según la GB/T 9704, con su membrete rojo, su retícula y sus folios?"
+      "es": "¿Cómo compongo un documento oficial chino según la GB/T 9704, con su membrete rojo, su retícula y sus folios?",
+      "zh": "怎样按GB/T 9704排中文公文，包括红色版头、网格和页码？"
     },
     "index": {
       "en": "Official documents, Chinese (GB/T 9704)",
-      "es": "Documentos oficiales chinos (GB/T 9704)"
+      "es": "Documentos oficiales chinos (GB/T 9704)",
+      "zh": "公文，中文（GB/T 9704）"
     },
     "theme": "page"
   }

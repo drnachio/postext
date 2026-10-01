@@ -15,6 +15,7 @@ import { DocsMobileNav } from "@/components/docs/DocsMobileNav";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { docPart, partClass } from "@/lib/docParts";
 import { DocOpener } from "@/components/docs/DocOpener";
+import { htmlLang } from "@/i18n/locales";
 
 const PART_LABEL_KEY = {
   foundations: "partFoundations",
@@ -90,7 +91,7 @@ export default async function DocPage({
       description: doc.meta.description,
       url,
       mainEntityOfPage: url,
-      inLanguage: locale,
+      inLanguage: htmlLang(locale),
       ...(doc.meta.lastUpdated ? { dateModified: doc.meta.lastUpdated } : {}),
       ...(doc.meta.readingTime
         ? { timeRequired: `PT${parseInt(doc.meta.readingTime, 10) || 1}M` }

@@ -52,7 +52,7 @@ export function docAnchor(anchor: DocAnchor, locale: Locale): string | null {
 /** Whether an internal docs link (`/es/docs/configuration#estilo-de-tablas`,
  *  with or without a fragment) points at an existing doc and heading. */
 export function docLinkExists(href: string): boolean {
-  const m = /^\/(en|es)\/docs\/([a-z0-9-]+)\/?(?:#(.+))?$/.exec(href);
+  const m = /^\/(en|es|zh)\/docs\/([a-z0-9-]+)\/?(?:#(.+))?$/.exec(href);
   if (!m || !(LOCALES as readonly string[]).includes(m[1])) return false;
   const toc = tocFor(m[2], m[1] as Locale);
   if (!toc) return false;

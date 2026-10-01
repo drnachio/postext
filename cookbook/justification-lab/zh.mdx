@@ -1,0 +1,67 @@
+---
+title: "窄栏两端对齐中的均匀词间距"
+summary: "用Knuth–Plass断行，把词间距限制在正常值的0.8至1.6倍之间，旁边是一份贪心断行的对照版，其中过松的行、孤行和孤字都根据VDT标出。"
+description: "一份A5的字体期刊排了两遍：词间距限定在0.8–1.6的Knuth–Plass断行对照首次适配断行，过松的行、孤行和孤字都根据VDT标出。"
+question: "怎样在窄栏中得到均匀的两端对齐，并为每种语言使用正确的断词？"
+aliases: ["两端对齐", "词间距", "白色河流", "过松的行", "Knuth-Plass", "贪心断行", "首次适配", "段末孤行", "段首孤行", "孤字", "断词", "断词语言", "窄栏", "调整篇幅", "justification", "word spacing", "rivers", "hyphenation", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
+pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12 · Justification、白色标题The river problem和一段斜体导语，接着是一幅示意图：一排白色单词框由短短的黄色弹簧相连，最后一个单词越过了表示行长的虚线；下面是同一排单词经过断词后，弹簧被拉伸到正好填满行长。色带下方，文章以两栏两端对齐开始。", "2": "排满的两栏：Greedy and total fit、Fences for the glue、Hyphens和Widows, orphans and runts几节，生效的设置（minWordSpacing 0.8、maxWordSpacing 1.6；widowPenalty、orphanPenalty、slackWeight）用等宽字体排在一条石墨色竖线旁。", "3": "文章结尾，两栏平齐，含孤字设置和版权页信息；页面底部是一个石墨色的对照测试：同一段文字分别排成齐左、不断词的两端对齐（空隙很宽）和断词的两端对齐，另有一段白字说明。" }
+---
+
+## 成品一览
+
+*Galley*第12期，一家字体实验室的期刊，在A5上排成两栏，每行约40个字符，一行两端对齐的文字只有五六个词间空格来吸收多余的宽度。章首页在一条石墨色色带上画出Knuth–Plass模型：一行单词框，黄色的“胶”弹簧拉伸着填满行长。文章解释窄栏为何容易排松，并在段落之间用等宽字体印出每条规则背后的设置。第3页底部有一个对照测试，把同一段文字排成齐左、不断词的两端对齐和断词的两端对齐。pen还用首次适配断行、关闭段末孤行和段首孤行保护排了一遍这期刊物，并把两个版本的第2页并排显示在页面上方（本食谱的卡片也是这样），过松的行用荧光黄涂出，孤行和孤字在页边标注。
+
+## 做法
+
+### 1 · 收紧界限，保留保护
+
+这一步的代码就是上面的[简短回答](#简短回答)。[Knuth–Plass](/zh/docs/justification#knuth-plass通观整个段落)、断词、段末孤行、段首孤行和孤字罚分以及标题与下文不分离，默认都已开启，所以正式版只把[词间距界限](/zh/docs/justification#词间距上下限)收窄到正常空格的0.8和1.6倍（默认是0.6和2）。超出上限的行比任何连字符或孤字代价都高，所以断行器会先尝试别的断点；删掉这两个界限，这篇文章会有两行超过1.6。断词按`locale`的精确代码选择：`'es'`、`'fr'`和`'de'`有各自的TeX模式，而`'es-ES'`会被当作美式英语断词，没有任何警告。
+
+### 2 · 从版面树标出过松的行
+
+<Excerpt region="marks" />
+
+只有沙盒支持`debug.looseLineHighlight`，而`doc.warnings`从不列出过松的行，所以`marks()`自己读取[VDT](/zh/docs/justification#松散行调试)。每个两端对齐的行都带有`justifiedSpaceRatio`；被两栏拆开的段落，每个片段各返回一个块；超过3倍的行没有这个比值，因为引擎会[把它排成齐左](/zh/docs/justification#断行算法填不满的行)，并标记为`line.ragged`。在40个字符的行长下，光靠界限并不能让每一行都低于1.6；调整文章篇幅时，这些标记指出了需要改写哪些句子。
+
+### 3 · 把对照版放在正式版旁边
+
+<Excerpt region="compare" />
+
+两个版本共用同一个设计，所以两个第2页之间的每一处差别都来自断行器及其保护。英文版中，贪心对照版的110个两端对齐行里有47行超过1.6，30行超过2，其中三行超过3倍，被引擎排成齐左；而Knuth–Plass版把全部105行都控制在0.80到1.60之间。在第2页上，对照版还把一个段落的最后一行单独带到一栏的栏首（`avoidOrphans: false`允许这样做），另有一个段落以孤字结尾。
+
+### 4 · 每种设置各用一个框
+
+<Excerpt region="bench" />
+
+一个框用同一种正文样式排[`:::columns`](/zh/docs/document-format#columns)组里的所有栏，所以每张样条都是一个带自己`body`的嵌套框，`breaks="3"`把齐左样条和不断词样条叠放在第一栏。齐左样条不需要`hyphenation: false`，因为齐左文字从不断词。对照测试用`placement: 'bottom'`浮动到第3页底部，它的下内边距重复了4 mm的边框，因为最后一张样条的`marginBottom`在框的末尾会被舍去。
+
+### 5 · 把模型画进章首页
+
+<Excerpt region="opener" />
+
+示意图是H1设计中的一个[图像元素](/zh/docs/configuration#图像元素)。如果作为图，它会是一个通栏的`top`浮动体，而在第1页引用的`top`浮动体会排到第2页的顶部。色带是一个框，框会计入章首页预留的高度，图像则不会，所以不需要`minHeight`，正文就从色带下方开始；由于H1默认的`marginBottom`，还要再往下一行。标签是按图本身坐标摆放的设计文字，因为作为图像绘制的SVG用不了页面的网络字体。
+
+## 变化
+
+### 给德语文本断词
+
+断词模式按精确代码查找，所以德语文本需要`'de'`。
+
+```diff
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale；'es-ES'会按英语断词
++const locale = 'de'; // 德语断词模式；'de-DE'会按英语断词
+```
+
+### 只标出最差的行
+
+把阈值从1.6提高到2，荧光笔就只标出空格已超过原来两倍的行。
+
+```diff
+-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
++        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+```
+
+## 常见问题
+
+- 留在栏尾的框，在各栏齐底时会掉到栏底，离开它所属的段落。调整文字篇幅让这一栏排满，“Fences for the glue”下面的设置框就需要这样处理。
+- 在postext 1.4.1中，框内的行无论拉得多宽都不会排成齐左：不断词样条保留了超过正常空格三倍的行（有一行达到六倍），换作正文就会排成齐左。

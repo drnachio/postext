@@ -19,7 +19,8 @@ import { CollapsibleSection, ColorPicker, DimensionInput, FieldGroup, FontPicker
 import { Button } from '../../ui';
 import { useSettingsSearch } from '../search/SearchContext';
 import { gridMarginsText, mmText, useCjkGrid } from './cjkGridReadout';
-import { LOCALE_TO_HYPHENATION, documentLocaleLabel } from './BodyTextSection/constants';
+import { documentLocaleLabel } from './BodyTextSection/constants';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
 
 /**
  * East Asian typography (`cjk`): the regional conventions Chinese text
@@ -37,7 +38,9 @@ export const CjkSection = memo(function CjkSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.cjk);
-  const locale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale);
+  // The document language as the previews read it: a book that names none
+  // is in the interface's (Chinese in the Chinese interface).
+  const locale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale));
   const grid = useCjkGrid();
   const uiLocale = useSandboxSelector((s) => s.locale);
   const rawBody = useSandboxSelector((s) => s.config.bodyText);
@@ -140,7 +143,7 @@ export const CjkSection = memo(function CjkSection() {
       {!showFields ? (
         <div className="flex flex-col items-start gap-1.5">
           <p className="text-[0.68rem] leading-[1.4] text-(--slate) [text-wrap:pretty]">
-            {labels.cjkNotCjkHint.replace('__language__', documentLocaleLabel(locale ?? LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us'))}
+            {labels.cjkNotCjkHint.replace('__language__', documentLocaleLabel(locale))}
           </p>
           <Button variant="outline" size="xs" onClick={() => setShowAnyway(true)}>{labels.cjkShowSettings}</Button>
         </div>

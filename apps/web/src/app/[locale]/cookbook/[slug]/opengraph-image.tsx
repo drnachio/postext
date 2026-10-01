@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import { ogImageFile } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
+import type { Locale } from "@/lib/cookbook/types";
 import { generateOgImage, ogContentType, ogSize } from "@/lib/og-image";
 
 export const alt = "Postext Cookbook";
@@ -27,7 +28,7 @@ export function generateStaticParams() {
 export default async function OgImage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
   const recipe = hasLocale(routing.locales, locale) ? getRecipe(slug) : null;
-  const writeup = recipe ? writeupFor(recipe, locale as "en" | "es") : null;
+  const writeup = recipe ? writeupFor(recipe, locale as Locale) : null;
   if (!recipe || !writeup) notFound();
 
   const t = await getTranslations({ locale, namespace: "CookbookRecipe" });
@@ -36,7 +37,7 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
   const part = taxonomy.parts.find((p) => p.id === chapter?.part);
 
   // The capture's OG art: the hero page(s) on a flat night ground, 580 × 622.
-  const file = ogImageFile(recipe, locale as "en" | "es");
+  const file = ogImageFile(recipe, locale as Locale);
   const art =
     file && fs.existsSync(file)
       ? { src: `data:image/jpeg;base64,${fs.readFileSync(file).toString("base64")}`, width: 580, height: 622 }
@@ -45,7 +46,7 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
   return generateOgImage({
     title: writeup.frontmatter.title,
     description: writeup.frontmatter.summary,
-    kicker: t("ogKicker", { number: String(recipe.meta.number).padStart(3, "0"), chapter: chapter?.title[locale as "en" | "es"] ?? "" }),
+    kicker: t("ogKicker", { number: String(recipe.meta.number).padStart(3, "0"), chapter: chapter?.title[locale as Locale] ?? "" }),
     accent: PART_INK[part?.color ?? "blue"],
     art,
   });

@@ -1,0 +1,77 @@
+---
+title: "袖珍经典：接排的短章"
+summary: "把《Dom Casmurro》排成袖珍本：短章在栏内的章标题下接排，每处分页都不会孤零零留下一行正文或一个标题。"
+description: "用Postext把《Dom Casmurro》的五页排成袖珍本，按葡萄牙语断词：各章在居中的章标题下接排，没有哪一页以单独一行开头。"
+question: "怎样让短章接排，每个章标题都和正文留在一起，并且没有段末孤行或只剩一个词的末行？"
+aliases: ["章节接排", "接排", "run-on chapters", "短章", "short chapters", "与下段同页", "keep with next", "标题与正文不分离", "keep heading with text", "段首孤行", "段末孤行", "widows and orphans", "孤字", "runts", "袖珍本", "口袋书", "pocket book", "mass-market paperback", "葡萄牙语断词", "Portuguese hyphenation", "Machado de Assis", "罗马数字章号", "书籍节选", "续排计数器", "continuation counters"]
+pageNotes: { "1": "封面：梅紫色色带上印着奶油色大写的MACHADO DE ASSIS；奶油色底板上是梅紫色Abril Fatface字体的Dom Casmurro，下面一道短短的藏红色细线；梅紫色的页脚色带上，藏红色木麻黄圆徽立在COLEÇÃO CASUARINA上方。", "2": "插页，不印页码的第212页：条纹状的清晨天空下是面包山（Sugarloaf）和乌尔卡山（Urca），一轮低垂的藏红色太阳，一排排梅紫色的涌浪上漂着两只独木舟，奶油色斜体的CAPÍTULO CXXIII下印着该章的一行文字。", "3": "第213页接续第CXVIII章。靠近页脚处，第CXIX章NÃO FAÇA ISSO, QUERIDA在梅紫色章号下开始，下面有两行正文；书眉印的是这一章的标题。", "4": "第214页，书眉为DOM CASMURRO：先是CXIX的最后两行，然后是第CXX章OS AUTOS，页脚处是第CXXI章A CATASTROPHE，章标题下有两行正文。", "5": "第215页：CXXI的结尾和第CXXII章O ENTERRO，书眉印着这一章的标题。", "6": "第216页，书眉为DOM CASMURRO：CXXII的结尾和第CXXIII章OLHOS DE RESSACA。", "7": "第217页：CXXIII的最后五行，止于o nadador da manhã；页脚处，灰色小字的版权页信息排在木麻黄圆徽旁。" }
+---
+
+## 成品一览
+
+从Machado de Assis 1899年的小说《Dom Casmurro》接近结尾处选取五页正文，按葡萄牙语原文排成110 × 178 mm的袖珍本，归入一套虚构的丛书Coleção Casuarina。封面由梅紫、奶油、梅紫三道色带构成，标题用Abril Fatface，另有丛书的藏红色圆徽；第213页对面是一幅插页，画的是Flamengo外海的大浪。正文从第CXVIII章末尾排到第CXXIII章末尾，没有一章另起一页。每一章都在上一章结尾下空两行开始（CXIX处空三行，以填满第213页），章标题由一个梅紫色的罗马数字章号、加大字距的大写标题和一道藏红色短线组成。第214页有两个章标题，第215页和第216页各有一个。除最后一页外，每页正文都止于第33行，也没有哪一页以单独一行开头。
+
+## 做法
+
+### 1 · 各章接排，章标题与正文不分离
+
+<Excerpt region="answer" highlight="17-24" />
+
+章这一级关闭了分页，`marginTop`让每个章标题落在上一章最后一行下方两行处。它的版面设计没有`span`，所以章标题在栏内绘制，占一个三行高的块，下面的正文仍在基线网格上（[分页前置](/zh/docs/configuration#前置分页)、[span与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。保持规则都用默认值。CXIX和CXXI下的四行段落各在页脚留两行、转两行到下一页；若设`avoidOrphans: false`，它们会拆成三行和一行，第214页和第215页就会以单独一行开头（[段首孤行、段末孤行、孤字](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)）。各栏齐底在CXIX上方加了第三行空白，使第213页止于第33行（[各栏齐底](/zh/docs/configuration#各栏齐底)）。
+
+<PageShot page={3} crop="0,.683,1,.317" caption="Page 213: chapter CXIX starts three lines under the end of CXVIII and keeps two lines of its text at the foot." />
+
+### 2 · 每页33行，按葡萄牙语断词
+
+<Excerpt region="text" />
+
+下页边距是16.3 mm，即178 mm的页高减去15 mm的上页边距和33行12.6 pt之后剩下的部分，所以每个满页都止于同一行。Tinos的字宽与Times New Roman相同，9.5 pt时在84 mm的行长上每行约排59个字符。`locale: 'pt'`用葡萄牙语的断词规则：*at-tracção*、*af-fluencia*、*genealogica-mente*（[支持的语言](/zh/docs/justification#支持的语言区域)）。每段都首行缩进，标题后的第一段也不例外，葡萄牙和巴西的版本通常如此，所以`indentAfterHeading`保留默认值。
+
+### 3 · 左页书眉印书名，右页印章名
+
+<Excerpt region="heads" />
+
+`{title}`印出frontmatter中的标题，`{chapterTitle}`印出在本页或本页之前开始的最后一章，所以第217页印的是从第216页开始的CXXIII（[文字元素](/zh/docs/configuration#文本元素)）。第213页印的是在其页脚才开始的CXIX，尽管这一页的前25行还属于CXVIII：1.4.1没有表示“页面开头所在章”的占位符。`SHIFT`把书眉移到版心的中线上，与页面中线相差1 mm，因为内侧页边距比外侧宽2 mm。
+
+### 4 · 用标题画出封面和插页
+
+<Excerpt region="cover" />
+
+两者都是`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以第一个编号的章仍是CXIX。`span: 'page'`让每个都成为独占一页的首页。没有它，封面的色带只画到版心的顶部和底部，书眉和页码1会印在封面上，标题也会排成一行。插页的题注来自它的标题：CAPÍTULO CXXIII是标题文字，斜体引文是它的`quote`属性（[标题属性](/zh/docs/document-format#标题属性)）。每个后面的`:::pagebreak`让正文避开图画，因为1.4.1不会为封面的页脚色带或插页的图画预留空间。
+
+### 5 · 告诉节选它在书中的位置
+
+<Excerpt region="excerpt" />
+
+`continuation.headings`给出节选起始时的标题计数器。设为`h1: 118`时，第一个编号标题是第CXIX章；不设时，五章编号为I到V。章这一级的`numberingTemplate: '{1:I}'`用罗马数字排这些编号，版面设计用`{number}`印出。封面分页之后的`:::numbering{startAt=212}`把插页编为第212页，正文页编为第213到217页（[编号](/zh/docs/document-format#numbering)）。
+
+## 变化
+
+### 每章另起一页
+
+每章之前分页时，五页正文变成七页：第214页只有CXIX的标题和四行正文，而没有任何一章开始的第213页，会把插页的标题CAPÍTULO CXXIII当作书眉。
+
+```diff
+-  breakBefore: { enabled: false }, marginTop: pt(2 * LEAD), advancedDesign: chapterHead };
++  breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(2 * LEAD),
++  advancedDesign: chapterHead };
+```
+
+### 右页书眉加上章号
+
+`{chapterNumber}`印出与章名同一章的章号：*CXIX · NÃO FAÇA ISSO, QUERIDA*。
+
+```diff
+-  head('recto-chapter', '{chapterTitle}', 'odd', SHIFT),
++  head('recto-chapter', '{chapterNumber} · {chapterTitle}', 'odd', SHIFT),
+```
+
+## 常见问题
+
+- 在1.4.1中把`widowMinLines`提高到3，CXIX和CXXI就能在页脚的标题下保留三行，而它们的四行段落会拆成三行和一行：无论`orphanPenalty`是多少，第214页和第215页都会以单独一行开头。
+- 如果CXVIII多出几行，CXIX的标题下就只剩一行的空间。这时`keepWithNext`会把标题带到第214页，第213页会短四五行；设`keepWithNext: false`时，标题会在第213页末尾孤零零地收尾，下面没有正文。
+- 插页是H1，所以`{chapterTitle}`会退回到它：插页之后还没有任何一章开始的正文页，比如CXIX移走之后的第213页，会把CAPÍTULO CXXIII印作书眉。
+- 关闭`avoidRunts`，全书最后一行就只剩*manhã.*，而不是*nadador da manhã.*。
+- 去掉封面后的`:::pagebreak`并且没有插页时，第CXVIII章会从封面顶部往下19.5 mm处、3 mm的标题行下方开始。去掉插页后的那个分页，题注上移到94 mm后，会有十一行正文印在海面上。
+- 这几页没有一行在附着代词的连字符处断开（*Vesti-me*、*metteu-se*）。若把CXXIII的第一个词*Emfim*设为斜体，1.4.1会让这一段走带行内标记文本的断行流程：一行止于*vencer-*，下一行以*se a si mesma*开头，没有按葡萄牙语拼写规则在行首重复连字符。
+- 这些分页只对这段文字、9.5/12.6 pt、84 mm行长成立。修改文字、字号或行长后，要重新检查每页页脚和每个标题上方的空白。

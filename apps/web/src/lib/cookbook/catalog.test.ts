@@ -76,15 +76,15 @@ describe("packKeys", () => {
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`) => ({ en, es });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`) => ({ en, es, zh });
 
 const REGISTRY = {
   features: {
-    "heading-styles": { label: L("Heading styles", "Estilos de título"), aliases: { en: ["openers"], es: ["aperturas"] }, group: "headings" },
+    "heading-styles": { label: L("Heading styles", "Estilos de título"), aliases: { en: ["openers"], es: ["aperturas"], zh: ["开篇"] }, group: "headings" },
     "palette-links": { label: L("Palette links"), group: "colour" },
   },
   questions: { Q29: { text: L("How do I give every article its own opener?"), index: L("Openers, per article") } },
-  gaps: { footnotes: { label: L("Footnotes", "Notas al pie"), aliases: { en: ["footnote"], es: ["nota al pie"] } } },
+  gaps: { footnotes: { label: L("Footnotes", "Notas al pie"), aliases: { en: ["footnote"], es: ["nota al pie"], zh: ["脚注"] } } },
   gotchas: { "headings-drop-h1-break": { title: L("Any headings object drops the H1 break") } },
   warnings: {},
 } as unknown as Registry;
@@ -172,6 +172,17 @@ describe("catalogRecipe (fixture)", () => {
     });
   });
 
+  it("falls back to the English write-up on a Chinese page without its own", () => {
+    const entry = catalogRecipe(fixtureRecipe(), "zh", REGISTRY, []);
+    expect(entry).toMatchObject({
+      title: "Magazine opener",
+      question: "How do I give every article its own opener? (zh)",
+      card: { src: "/cookbook/fixture-opener/en/card.webp?v=abcd1234" },
+    });
+    expect(entry.search.otherTitle).toBe("Magazine opener");
+    expect(entry.search.gotchas).toEqual(["Any headings object drops the H1 break (zh)"]);
+  });
+
   it("works before the first capture", () => {
     const entry = catalogRecipe(fixtureRecipe(false), "en", REGISTRY, []);
     expect(entry.card).toEqual({ src: "", src480: "" });
@@ -201,6 +212,23 @@ describe("images (fixture)", () => {
     expect(heroSpread(recipe, "en")?.map((p) => p?.n)).toEqual([2, 3]);
     expect(ogImageFile(recipe, "en")).toMatch(/public\/cookbook\/fixture-opener\/en\/og\.jpg$/);
     expect(pdfDownload(recipe, "en")).toEqual({ href: "/cookbook/fixture-opener/en/fixture.pdf?v=abcd1234", bytes: 2048, pages: 3 });
+  });
+
+  it("shows a Chinese page the sample's first edition", () => {
+    const recipe = fixtureRecipe();
+    recipe.meta.sample.locales = ["en", "es"];
+    recipe.capture!.variants.es = variant();
+    expect(captureVariantFor(recipe, "zh")?.variant).toBe("en");
+    expect(captureVariantFor(recipe, "es")?.variant).toBe("es");
+    expect(cardImage(recipe, "zh")?.src).toBe("/cookbook/fixture-opener/en/card.webp?v=abcd1234");
+    expect(ogImageFile(recipe, "zh")).toMatch(/public\/cookbook\/fixture-opener\/en\/og\.jpg$/);
+    // No zh.mdx: the English write-up's note joins the English alt text.
+    const pages = pageImages(recipe, "zh");
+    expect(pages[1]).toMatchObject({ lang: "en", alt: "Page 2. The photo bleeds." });
+    expect(pages[1].note).toBeUndefined();
+    // With a zh.mdx, its note stays apart from the English alt text.
+    recipe.writeups.zh = { ...recipe.writeups.en!, locale: "zh", frontmatter: { title: "杂志开篇", summary: "摘要", pageNotes: { "2": "照片出血。" } } };
+    expect(pageImages(recipe, "zh")[1]).toMatchObject({ lang: "en", alt: "Page 2.", note: "照片出血。" });
   });
 
   it("says which edge the book is bound on", () => {

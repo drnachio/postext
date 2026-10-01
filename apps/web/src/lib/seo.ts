@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
+import { LOCALE_INFO, htmlLang, isSiteLocale } from "@/i18n/locales";
 
 export const SITE_URL = "https://postext.dev";
 export const SITE_NAME = "Postext";
 export const TWITTER_HANDLE = "@postextdev";
 
-const OG_LOCALE: Record<string, string> = {
-  en: "en_US",
-  es: "es_ES",
-};
-
 export function ogLocale(locale: string): string {
-  return OG_LOCALE[locale] ?? "en_US";
+  return isSiteLocale(locale) ? LOCALE_INFO[locale].ogLocale : "en_US";
 }
 
 export function alternateOgLocales(locale: string): string[] {
@@ -71,7 +67,7 @@ export function buildMetadata(input: SeoInput): Metadata {
 
   const languages: Record<string, string> = {};
   for (const l of locales) {
-    languages[l] = localizedUrl(l, path);
+    languages[htmlLang(l)] = localizedUrl(l, path);
   }
   // x-default points at the default locale
   if (locales.includes(routing.defaultLocale)) {

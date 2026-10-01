@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeLocaleTag, bundleContentLocales, choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen, presetLocaleFor, presetOpenLocale, resolvePresetLocale, sameContentLocale } from './locale';
+import { activeLocaleTag, bundleContentLocales, choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen, presetLocaleFor, presetOpenLocale, presetReaderLocale, resolvePresetLocale, sameContentLocale } from './locale';
 
 const bilingual = { id: 'guide', locales: ['es', 'en'] };
 const spanish = { id: 'emp', locale: 'es' };
@@ -119,6 +119,39 @@ describe('Chinese editions', () => {
     expect(activeLocaleTag(hlm.locales, 'zh-Hans')).toBe('zh-Hans');
     expect(activeLocaleTag(hlm.locales, 'en-GB')).toBe('en');
     expect(activeLocaleTag(hlm.locales, null)).toBeNull();
+  });
+});
+
+describe('a Chinese interface', () => {
+  const guide = { id: 'postext-guide', locales: ['es', 'en', 'zh-Hans'] };
+  const showcase = { id: 'deep-sky', locale: 'es', locales: ['es', 'en'] };
+  const traditional = { id: 'hlm', locale: 'zh-Hant', locales: ['zh-Hant', 'en'] };
+
+  it('opens a book in Chinese when it has a Chinese edition', () => {
+    expect(choosePresetOpen({ summary: guide, viewer: 'zh-Hans', drafts: [] }).locale).toBe('zh-Hans');
+    expect(choosePresetOpen({ summary: guide, viewer: 'zh', drafts: [] }).locale).toBe('zh-Hans');
+    // Traditional only: the Chinese of the other script before English.
+    expect(presetReaderLocale(traditional, 'zh-Hans')).toBe('zh-Hans');
+    expect(choosePresetOpen({ summary: traditional, viewer: 'zh-Hans', drafts: [] }).locale).toBe('zh-Hant');
+  });
+
+  it('reads a book without Chinese in English, then in its own language', () => {
+    expect(presetReaderLocale(showcase, 'zh-Hans')).toBe('en');
+    expect(choosePresetOpen({ summary: showcase, viewer: 'zh-Hans', drafts: [] })).toEqual({ locale: 'en', draft: null });
+    // Its English draft opens; a Spanish one only when it is the only draft.
+    expect(choosePresetOpen({ summary: showcase, viewer: 'zh-Hans', drafts: [d('deep-sky', 'en')] }).draft?.key).toBe('deep-sky::en');
+    expect(choosePresetOpen({ summary: showcase, viewer: 'zh-Hans', drafts: [d('deep-sky', 'es')] }).locale).toBe('es');
+    // No English edition: the bundle decides (its own locale).
+    expect(presetReaderLocale({ locale: 'fr', locales: ['fr', 'de'] }, 'zh-Hans')).toBe('zh-Hans');
+    expect(choosePresetOpen({ summary: { id: 'x', locale: 'es' }, viewer: 'zh-Hans', drafts: [] }).locale).toBe('es');
+    expect(presetReaderLocale({}, 'zh-Hans')).toBe('zh-Hans');
+  });
+
+  it('changes nothing for English and Spanish viewers', () => {
+    const french = { locale: 'fr', locales: ['fr', 'en'] };
+    expect(presetReaderLocale(french, 'es')).toBe('es');
+    expect(presetReaderLocale(french, 'en')).toBe('en');
+    expect(presetReaderLocale(showcase, 'es')).toBe('es');
   });
 });
 

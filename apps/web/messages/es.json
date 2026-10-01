@@ -410,6 +410,15 @@
       "openstax-fisica": "Física universitaria (OpenStax)",
       "pintura-espanola": "Pintura española",
       "senales": "Señales 2020"
+    },
+    "descriptions": {
+      "bioquimica-feduchi": "Manual de bioquímica a columna y media: columna principal junto al lomo y columna exterior con figuras, conceptos clave y actividades",
+      "deep-sky": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas",
+      "don-quijote": "Edición literaria a columna y media con glosas al margen y láminas de Doré",
+      "hongloumeng": "Novela clásica china en 120 capítulos, con las láminas de 1884: el texto de 1792 en chino tradicional, compuesto en vertical y con el lomo a la derecha, el mismo texto en chino simplificado y la traducción inglesa de Joly de los 56 primeros capítulos",
+      "openstax-fisica": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas",
+      "pintura-espanola": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página",
+      "senales": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos"
     }
   },
   "ApiPreview": {

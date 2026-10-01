@@ -23,6 +23,7 @@ import { cardImage, sandboxLink } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import type { Locale } from "@/lib/cookbook/types";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
+import { htmlLang } from "@/i18n/locales";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -50,9 +51,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     ogDescription: fm.summary,
     type: "article",
     modifiedTime: recipe.meta.updated,
-    // Both write-ups always exist.
-    availableLocales: routing.locales,
-    noindex: recipe.meta.status !== "published",
+    // English and Spanish always exist; a Chinese page shows the English
+    // write-up until its translation lands, and is neither an alternate
+    // nor indexed meanwhile.
+    availableLocales: routing.locales.filter((l) => recipe.writeups[l as Locale]),
+    noindex: recipe.meta.status !== "published" || writeup.locale !== locale,
   });
 }
 
@@ -93,7 +96,7 @@ function jsonLd(view: RecipeView, t: Awaited<ReturnType<typeof getTranslations>>
         description: view.description,
         url: view.url,
         mainEntityOfPage: view.url,
-        inLanguage: locale,
+        inLanguage: htmlLang(locale),
         image: [...(card ? [abs(card.src)] : []), ...hero.map(abs)],
         datePublished: meta.created,
         dateModified: meta.updated,
@@ -202,7 +205,11 @@ export default async function RecipePage({ params }: { params: Params }) {
         </LightTable>
 
         <div className="cb-container cb-body">
-          <article className="cb-article">
+          {/* A fallback write-up (English on a Chinese page) says its language. */}
+          <article
+            className="cb-article"
+            lang={view.writeup.locale !== locale ? htmlLang(view.writeup.locale) : undefined}
+          >
             <WriteUp view={view} t={t} data={data} />
           </article>
           <RecipeAside view={view} t={t} />

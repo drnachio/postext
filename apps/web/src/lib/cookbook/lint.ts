@@ -9,7 +9,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { ComposeError, composePen, defineData } from "./compose.ts";
+import { ComposeError, composePen, defineData, variantFor } from "./compose.ts";
 import {
   CONFIG_KEYS,
   POSTEXT_BUNDLE_URL,
@@ -36,7 +36,7 @@ import { docLinkExists } from "./docLinks.ts";
 import { REPO_DIR, recipeDir } from "./paths.ts";
 import { loadRegistry } from "./registry.ts";
 import { listRecipeSlugs, readKit, readRecipeMeta, readRecipeSources } from "./sources.ts";
-import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry } from "./types.ts";
+import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 import { KIT_ORDER, LOCALES } from "./types.ts";
 import { unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
@@ -205,7 +205,7 @@ export function lintPen(
   const title = /^\/\/ ═+ Postext Cookbook · Nº (\d{3,}) · (.+?) ═*\s*$/.exec(lines[0] ?? "");
   if (!title) fails.push(`script.js line 1: the banner starts "// ═══ Postext Cookbook · Nº ${number} · <title> ═══"`);
   else if (title[1] !== number) fails.push(`script.js line 1: the banner says Nº ${title[1]}; recipe.json says ${number}`);
-  const url = /^\/\/ https:\/\/postext\.dev\/(en|es)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
+  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|zh)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
   if (!url || url[2] !== slug) fails.push(`script.js line 2: the banner links https://postext.dev/en/cookbook/${slug}`);
   if (!/^\/\/ Code: MIT\b/.test(lines[2] ?? "")) fails.push(`script.js line 3: the banner credits "// Code: MIT · Text: … · Photo: …"`);
   const needs = /^\/\/ Fonts: .+ · Needs postext ≥ (\d+\.\d+\.\d+)\s*$/.exec(lines[3] ?? "");
@@ -667,13 +667,13 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     if (sources.content[locale] === undefined) fails.push(`content.${locale}.md: missing (sample.locales lists "${locale}")`);
   }
   for (const key of Object.keys(sources.content)) {
-    const locale = key.split(".").pop() as Locale;
+    const locale = key.split(".").pop() as SampleLocale;
     if (!meta.sample.locales.includes(locale)) warns.push(`content.${key}.md: "${locale}" is not in sample.locales, so no edition uses it`);
   }
 
   // Every edition composes and lints.
   const kit = readKit();
-  const composed: Partial<Record<Locale, ComposedPen>> = {};
+  const composed: Partial<Record<SampleLocale, ComposedPen>> = {};
   for (const variant of meta.sample.locales) {
     try {
       composed[variant] = composePen(sources, meta, variant, { kit });
@@ -705,7 +705,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
   for (const locale of LOCALES) {
     const writeup = readWriteup(slug, locale, headings);
     if (!writeup) {
-      fails.push(`${locale}.mdx is missing (the ${locale} page would 404)`);
+      fails.push(`${locale}.mdx is missing (${locale === "zh" ? "the zh page shows the English write-up meanwhile" : `the ${locale} page would 404`})`);
       continue;
     }
     fails.push(...writeup.issues);
@@ -715,7 +715,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     warns.push(...style.warns);
     const refs = writeupRefs(writeup.body);
     excerpts[locale] = refs.excerpts;
-    const pen = composed[meta.sample.locales.includes(locale) ? locale : meta.sample.locales[0]];
+    const pen = composed[variantFor(meta, locale)];
     for (const region of refs.excerpts) {
       if (pen && !pen.ranges.regions[region]) fails.push(`${locale}.mdx: <Excerpt region="${region}"> names no #region in script.js`);
     }
@@ -727,8 +727,8 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     for (const link of refs.links) {
       if (!link.startsWith(`/${locale}/`)) fails.push(`${locale}.mdx: ${link} must use the /${locale}/ prefix`);
       else if (link.startsWith(`/${locale}/docs/`) && !docLinkExists(link)) fails.push(`${locale}.mdx: ${link} does not resolve`);
-      else if (/^\/(en|es)\/cookbook\/([a-z0-9-]+)/.test(link)) {
-        const target = /^\/(en|es)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
+      else if (/^\/(en|es|zh)\/cookbook\/([a-z0-9-]+)/.test(link)) {
+        const target = /^\/(en|es|zh)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
         if (!knownSlugs.includes(target)) fails.push(`${locale}.mdx: ${link} names no recipe`);
       }
     }
@@ -740,8 +740,10 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
       }
     }
   }
-  if (excerpts.en && excerpts.es && excerpts.en.join() !== excerpts.es.join()) {
-    fails.push(`en.mdx and es.mdx must show the same <Excerpt> regions in the same order (${excerpts.en.join(", ")} / ${excerpts.es.join(", ")})`);
+  for (const locale of LOCALES) {
+    const own = excerpts[locale];
+    if (locale === "en" || !excerpts.en || !own || excerpts.en.join() === own.join()) continue;
+    fails.push(`en.mdx and ${locale}.mdx must show the same <Excerpt> regions in the same order (${excerpts.en.join(", ")} / ${own.join(", ")})`);
   }
   return report();
 }

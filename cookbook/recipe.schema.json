@@ -629,6 +629,10 @@
         "es": {
           "type": "string",
           "minLength": 1
+        },
+        "zh": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

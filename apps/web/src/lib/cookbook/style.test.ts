@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { proseOf, styleFindings, styleMessages, textLength } from "./style";
 
-const phrases = (text: string, locale: "en" | "es", options?: { emDashLimit?: number }) =>
+const phrases = (text: string, locale: "en" | "es" | "zh", options?: { emDashLimit?: number }) =>
   styleFindings(text, locale, options).map((f) => `${f.severity}:${f.phrase}`);
 
 describe("style: machine-written phrasing", () => {
@@ -88,6 +88,22 @@ describe("style: machine-written phrasing", () => {
       expect.arrayContaining(["fail:赋能", "fail:无缝衔接", "warn:助力"]),
     );
     expect(phrases("無縫對接，賦能。", "es")).toEqual(expect.arrayContaining(["fail:無縫對接", "fail:賦能"]));
+  });
+
+  it("checks a Chinese write-up (zh.mdx) with the Chinese lists", () => {
+    expect(phrases("值得注意的是，这是一站式方案，让我们深入探讨如何完美地实现它。", "zh")).toEqual(
+      expect.arrayContaining(["fail:值得注意的是", "fail:一站式", "fail:让我们深入", "fail:深入探讨", "fail:完美地实现"]),
+    );
+    expect(phrases("它不仅能排版，更能导出 PDF。开启排版之旅。", "zh")).toEqual(
+      expect.arrayContaining(["warn:不仅能排版，更", "fail:开启排版之旅"]),
+    );
+    // Plain technical Chinese, with its full-width punctuation and code, passes.
+    const plain = [
+      "每个元素锚定在物理页面上，并按奇偶页筛选，所以页码总在外侧边缘。",
+      "`pages: 'body'` 让它们避开章首页——章首页改由页脚放一个页码。",
+      "把 `main-color` 指向强调色，配置没有重新声明的默认值就都跟着它走。",
+    ].join("");
+    expect(styleFindings(plain, "zh")).toEqual([]);
   });
 
   it("formats one message per phrase and file", () => {

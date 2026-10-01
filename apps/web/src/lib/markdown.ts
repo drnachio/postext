@@ -7,7 +7,9 @@
  */
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
+import zh from "../../messages/zh.json";
 import { routing } from "@/i18n/routing";
+import { siteLocale } from "@/i18n/locales";
 import { getAllDocs, getDocSource, type DocMeta } from "@/lib/docs";
 import { SITE_NAME, SITE_URL, localizedUrl } from "@/lib/seo";
 import { FEATURE_KEYS, featureDocPath } from "@/lib/featureDocs";
@@ -19,9 +21,10 @@ import { getAllRecipes, getComposed, getRecipe, getVisibleRecipes, recipeHref, w
 import { loadRegistry } from "@/lib/cookbook/registry";
 import { relatedRecipes } from "@/lib/cookbook/related";
 import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registry } from "@/lib/cookbook/types";
+import { localizedText } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
-const MESSAGES: Record<string, Messages> = { en, es: es as Messages };
+const MESSAGES: Record<string, Messages> = { en, es: es as Messages, zh: zh as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
@@ -50,7 +53,7 @@ const LABELS = {
     install: "Install",
     fullDocs: "Full documentation",
     links: "Links",
-    otherLocaleDocs: "Documentación en español",
+    localeDocs: "English documentation",
     cookbook: "Cookbook",
     cookbookTitle: "Postext Cookbook",
     cookbookDesc: "Postext examples to copy, from a chapter opener to a whole book, each with the pages it sets and its full code.",
@@ -119,7 +122,7 @@ const LABELS = {
     install: "Instalación",
     fullDocs: "Documentación completa",
     links: "Enlaces",
-    otherLocaleDocs: "English documentation",
+    localeDocs: "Documentación en español",
     cookbook: "Recetario",
     cookbookTitle: "Recetario de Postext",
     cookbookDesc: "Ejemplos de Postext para copiar, desde una apertura de capítulo hasta un libro entero, cada uno con las páginas que compone y su código completo.",
@@ -171,10 +174,79 @@ const LABELS = {
     licensePD: "dominio público",
     licenseAuthorised: "reproducido con permiso",
   },
+  zh: {
+    docs: "文档",
+    optional: "Optional",
+    lastUpdated: "最后更新",
+    readingTime: "阅读时间",
+    canonical: "HTML版本",
+    otherLanguages: "其他语言",
+    figure: "图",
+    example: "可运行的示例",
+    exampleSource: "源代码",
+    home: "首页",
+    sandbox: "沙盒",
+    sandboxDesc: "在浏览器中运行的交互式编辑器：编写Markdown，调整配置，导出可直接付印的PDF。",
+    fullText: "全部文档页面合为一个文件的完整文本",
+    install: "安装",
+    fullDocs: "完整文档",
+    links: "链接",
+    localeDocs: "简体中文文档",
+    cookbook: "排版食谱",
+    cookbookTitle: "Postext排版食谱",
+    cookbookDesc: "可直接复制的Postext示例，从一张章首页到一整本书，每个都附有排出的页面和完整代码。",
+    cookbookIntro:
+      "每份食谱都是一个pen：一个JavaScript模块（需要时再加一个HTML页面和CSS），从esm.sh导入postext，自己排出页面。下面每个链接都是一份食谱的Markdown版本，包含讲解和全部代码。",
+    allRecipes: "全部食谱，按章排列",
+    noRecipes: "还没有食谱。",
+    part: "篇",
+    chapter: "章",
+    recipe: "食谱",
+    numberSign: "No.",
+    level: "难度",
+    outputs: "输出",
+    genres: "体裁",
+    draft: "草稿",
+    requires: "需要",
+    testedWith: "已用",
+    testedOn: "测试，日期",
+    pages: "页面",
+    pdf: "PDF",
+    openInSandbox: "在沙盒中打开",
+    answers: "这份食谱回答的问题",
+    teaches: "讲解",
+    alsoUses: "还用到",
+    configAtAGlance: "配置一览",
+    apis: "API",
+    typefaces: "字体",
+    lines: "行",
+    wholeRecipe:
+      "下面的文件由食谱文件夹合成，示例文本和排版食谱的公共工具包都已内联。要把它们作为一个页面运行，把HTML放进`<body>`，CSS放进`<style>`元素，脚本放进`<script type=\"module\">`；也可以把它们分别粘贴到新建CodePen的对应面板里（JS设为模块）。脚本从esm.sh导入postext，不需要安装或构建。",
+    wholeRecipeScript:
+      "一个文件，由食谱文件夹合成，示例文本和排版食谱的公共工具包都已内联；它自己排出页面。要运行它，把它放进空白页面的`<script type=\"module\">`，或粘贴到新建CodePen的JS面板里（设为模块）。它从esm.sh导入postext，不需要安装或构建。",
+    externals: "页面加载的资源",
+    sourceFolder: "食谱文件夹",
+    notComposed: "无法合成这份食谱的代码",
+    pitfall: "常见问题",
+    warning: "排版警告",
+    fix: "解决办法",
+    fixedIn: "已修复于",
+    recipeBy: "食谱",
+    creditText: "文字",
+    creditImages: "图片",
+    creditType: "字体",
+    creditCode: "代码",
+    creditContent: "示例内容",
+    source: "来源",
+    related: "相关食谱",
+    licenseOriginal: "原创",
+    licensePD: "公有领域",
+    licenseAuthorised: "经许可转载",
+  },
 } as const;
 
 function labelsFor(locale: string) {
-  return locale === "es" ? LABELS.es : LABELS.en;
+  return LABELS[siteLocale(locale)];
 }
 
 /** URL of a page's Markdown rendition: the HTML URL with `.md` appended. */
@@ -713,7 +785,7 @@ const COOKBOOK_PATH = "/cookbook";
 const COOKBOOK_SOURCE_URL = `${REPO_URL}/tree/main/cookbook`;
 
 function cookbookLocale(locale: string): Locale {
-  return locale === "es" ? "es" : "en";
+  return siteLocale(locale);
 }
 
 /** "Nº 012" / "N.º 012" */
@@ -916,7 +988,7 @@ function creditLine(credit: Credit, locale: Locale): string {
       ? ` ([${labels.source}](${credit.source}))`
       : ` (${credit.source})`
     : "";
-  return `${credit.what[locale]}: ${credit.who}${source}, ${licenseName(credit.license, locale)}`;
+  return `${localizedText(credit.what, locale)}: ${credit.who}${source}, ${licenseName(credit.license, locale)}`;
 }
 
 /** A recipe's rendition (`/{locale}/cookbook/<slug>.md`): the write-up with
@@ -1132,7 +1204,6 @@ function cookbookList(locale: string): string[] {
 export function llmsTxt(locale: string): string {
   const m = messagesFor(locale);
   const labels = labelsFor(locale);
-  const other = routing.locales.find((l) => l !== locale);
   const lines = [
     `# ${SITE_NAME}`,
     "",
@@ -1162,8 +1233,8 @@ export function llmsTxt(locale: string): string {
     `- [${m.Footer.privacyPolicy}](${markdownUrl(locale, "/privacy-policy")})`,
     `- [${m.Footer.cookiePolicy}](${markdownUrl(locale, "/cookie-policy")})`,
   ];
-  if (other) {
-    lines.push(`- [${labels.otherLocaleDocs}](${SITE_URL}/${other}/llms.txt)`);
+  for (const other of routing.locales.filter((l) => l !== locale)) {
+    lines.push(`- [${labelsFor(other).localeDocs}](${SITE_URL}/${other}/llms.txt)`);
   }
   return lines.join("\n") + "\n";
 }

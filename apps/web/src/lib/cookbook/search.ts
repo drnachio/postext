@@ -44,6 +44,50 @@ export const EXACT_IDENTIFIER_BONUS = 10;
 /** Anything but ASCII letters, digits and Latin letters with diacritics. */
 const SEPARATOR = /[^0-9A-Za-zÀ-ÖØ-öø-ɏḀ-ỿ]+/;
 
+/** A run of Chinese characters (Han script: the CJK blocks and their
+ *  extensions, 〇 and 々). */
+const HAN_RUN = /\p{Script=Han}+/gu;
+const HAN = /\p{Script=Han}/u;
+
+/** Function and question words that break a Chinese run before it is cut
+ *  into pairs, longest first. Chinese has no spaces, so without them
+ *  "页眉的高度" would yield 眉的 and 的高, which an AND query would then
+ *  require of every result. A word that merely contains one (目的, 以及) is
+ *  cut the same way in the index and in the query, so the two still agree. */
+const HAN_BREAKS = new RegExp(
+  [
+    "为什么", "怎么样", "如何", "怎么", "怎样", "什么", "为何", "哪些", "哪个", "是否", "能否", "可以",
+    "一个", "我们", "我", "你", "的", "了", "吗", "呢", "吧", "啊", "和", "与", "及", "或", "把", "被",
+  ].join("|"),
+  "g",
+);
+
+/** True when `text` holds a Chinese character. */
+export function hasHan(text: string): boolean {
+  return HAN.test(text);
+}
+
+/** A Chinese run as search terms: every character and every overlapping
+ *  pair, in order (页眉设置 → 页, 页眉, 眉, 眉设, 设, 设置, 置). Pairs find
+ *  words; single characters keep one-character queries working and let a
+ *  prefix query reach the pairs that start with them. */
+function hanGrams(run: string): string[] {
+  const out: string[] = [];
+  for (const piece of run.split(HAN_BREAKS)) {
+    const chars = [...piece];
+    chars.forEach((char, i) => {
+      out.push(char);
+      if (i + 1 < chars.length) out.push(char + chars[i + 1]);
+    });
+  }
+  return out;
+}
+
+/** The Chinese runs of a text, cut at `HAN_BREAKS` (怎么添加脚注 → 添加脚注). */
+export function hanWords(text: string): string[] {
+  return [...text.matchAll(HAN_RUN)].flatMap((m) => m[0].split(HAN_BREAKS)).filter(Boolean);
+}
+
 /** `advancedDesign` → advanced, Design · `renderToPDF` → render, To, PDF ·
  *  `PDFExport` → PDF, Export. */
 function camelParts(word: string): string[] {
@@ -53,30 +97,53 @@ function camelParts(word: string): string[] {
     .split(" ");
 }
 
-/** Splits on whitespace and punctuation (so dotted paths such as
- *  `headings.levels[].advancedDesign` yield each segment) and also emits the
- *  camelCase parts of every word, next to the word itself. */
-export function tokenize(text: string): string[] {
-  const out: string[] = [];
+function latinTokens(text: string, out: string[]): void {
   for (const word of text.split(SEPARATOR)) {
     if (!word) continue;
     out.push(word);
     const parts = camelParts(word);
     if (parts.length > 1) out.push(...parts);
   }
+}
+
+/** Splits on whitespace and punctuation (so dotted paths such as
+ *  `headings.levels[].advancedDesign` yield each segment) and also emits the
+ *  camelCase parts of every word, next to the word itself. Chinese runs,
+ *  which have no spaces to split on, become characters and pairs
+ *  (`hanGrams`). The index and the query share it in every locale: an
+ *  English page may quote Chinese too. */
+export function tokenize(text: string): string[] {
+  const out: string[] = [];
+  let last = 0;
+  for (const match of text.matchAll(HAN_RUN)) {
+    const index = match.index ?? 0;
+    latinTokens(text.slice(last, index), out);
+    out.push(...hanGrams(match[0]));
+    last = index + match[0].length;
+  }
+  latinTokens(text.slice(last), out);
   return out;
 }
 
 // ─── Term processing ────────────────────────────────────────────────────────
 
+const EN_STOP_WORDS = [
+  "a", "an", "and", "are", "as", "at", "be", "but", "by", "can", "do", "does", "for", "from",
+  "how", "i", "if", "in", "into", "is", "it", "its", "me", "my", "of", "on", "or", "so", "than",
+  "that", "the", "their", "then", "there", "these", "this", "to", "via", "what", "when",
+  "where", "which", "why", "will", "with", "you", "your",
+];
+
 /** About forty words per locale that carry no meaning in a recipe query
- *  (compared after lowercasing and stripping diacritics). */
+ *  (compared after lowercasing and stripping diacritics). Chinese drops
+ *  the characters and pairs `HAN_BREAKS` leaves behind that say nothing
+ *  alone, and the English list for the Latin words a Chinese text quotes. */
 export const STOP_WORDS: Record<Locale, ReadonlySet<string>> = {
-  en: new Set([
-    "a", "an", "and", "are", "as", "at", "be", "but", "by", "can", "do", "does", "for", "from",
-    "how", "i", "if", "in", "into", "is", "it", "its", "me", "my", "of", "on", "or", "so", "than",
-    "that", "the", "their", "then", "there", "these", "this", "to", "via", "what", "when",
-    "where", "which", "why", "will", "with", "you", "your",
+  en: new Set(EN_STOP_WORDS),
+  zh: new Set([
+    ...EN_STOP_WORDS,
+    "是", "在", "有", "这", "那", "这个", "那个", "个", "也", "都", "就", "还", "又", "要", "想", "能",
+    "会", "请", "让", "用", "中", "上", "下", "时", "里", "并", "而", "但", "则", "即", "之", "其",
   ]),
   es: new Set([
     "a", "al", "como", "con", "cual", "cuando", "de", "del", "donde", "e", "el", "en", "entre",
@@ -110,16 +177,22 @@ function singular(term: string, locale: Locale): string {
 }
 
 /** MiniSearch `processTerm` for a locale: lowercases, strips diacritics
- *  (NFD), drops stop words and one-letter terms, folds naive plurals. */
+ *  (NFD), drops stop words and one-letter terms (not one Chinese character,
+ *  which is a word), folds naive plurals. */
 export function processTerm(term: string, locale: Locale): string | null {
   const folded = foldText(term);
-  if (folded.length < 2 && !/\d/.test(folded)) return null;
+  if (folded.length < 2 && !/\d/.test(folded) && !HAN.test(folded)) return null;
   if (STOP_WORDS[locale].has(folded)) return null;
   return singular(folded, locale);
 }
 
 export function makeProcessTerm(locale: Locale): (term: string) => string | null {
   return (term) => processTerm(term, locale);
+}
+
+/** The search locale of a site locale segment, English for anything else. */
+export function searchLocale(locale: string): Locale {
+  return locale === "es" || locale === "zh" ? locale : "en";
 }
 
 // ─── MiniSearch ─────────────────────────────────────────────────────────────
@@ -153,6 +226,7 @@ export function miniSearchOptions(locale: Locale): Options<SearchDocument> {
 export const MINISEARCH_OPTIONS: Record<Locale, Options<SearchDocument>> = {
   en: miniSearchOptions("en"),
   es: miniSearchOptions("es"),
+  zh: miniSearchOptions("zh"),
 };
 
 type Facets = Catalog["facets"];
@@ -196,10 +270,11 @@ function isIdentifier(name: string): boolean {
 }
 
 /** The words of a query as typed, trimmed of wrapping punctuation
- *  (`renderToPdf()` → `renderToPdf`). */
+ *  (`renderToPdf()` → `renderToPdf`); Chinese text around an identifier
+ *  separates it too (`renderToPdf怎么用`). */
 function queryWords(query: string): string[] {
   return query
-    .split(/[\s,;]+/)
+    .split(/[\s,;，；、。？！：\p{Script=Han}]+/u)
     .map((word) => word.replace(/^[^\w:.]+|[^\w]+$/g, ""))
     .filter(Boolean);
 }

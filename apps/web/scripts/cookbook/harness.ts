@@ -18,7 +18,7 @@ import os from "node:os";
 import path from "node:path";
 import puppeteer from "puppeteer-core";
 import type { Browser, Page } from "puppeteer-core";
-import type { CaptureBuild, Locale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
+import type { CaptureBuild, SampleLocale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
 import { cardProblems, heroPages, publishedPages } from "./cards.ts";
 import type { ProbeFacts } from "./checks.ts";
 import type { NetIssue } from "./net.ts";
@@ -113,7 +113,7 @@ export interface CardImages {
 
 export interface VariantRun {
   slug: string;
-  variant: Locale;
+  variant: SampleLocale;
   engine: PenServer["engine"];
   pen: ReturnType<PenServer["current"]>["pen"];
   done: "ok" | "error" | "timeout";
@@ -167,7 +167,7 @@ export interface SandboxMeta {
 export interface RunOptions {
   hb: HarnessBrowser;
   slug: string;
-  variant: Locale;
+  variant: SampleLocale;
   meta: RecipeMeta;
   engine?: string;
   refreshNet?: boolean;
@@ -389,7 +389,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
 async function sandboxBundle(
   page: Page,
   select: CaptureBuild | CaptureBuild[],
-  locale: Locale,
+  locale: SampleLocale,
   meta: SandboxMeta,
   thumbnail: Buffer | null,
 ): Promise<SandboxBundle> {

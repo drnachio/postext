@@ -9,6 +9,7 @@ import { useFieldIds } from './fieldContext';
 import { cn } from '../ui/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { listCustomFontFamilies, loadFont, onCustomFontsChanged } from './fontLoader';
+import { defaultDocumentLocale } from './hyphenation';
 
 interface FontPickerProps {
   label: string;
@@ -200,8 +201,9 @@ export function FontPicker({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [fonts, setFonts] = useState<FontEntry[]>(cachedFonts ?? FALLBACK_FONTS);
-  // A Chinese document lists the families with its characters first.
-  const documentLocale = useSandboxSelector((s) => s.config.locale);
+  // A Chinese document lists the families with its characters first; one
+  // that names no language is in the interface's.
+  const documentLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale));
   const scriptSubsets = chineseSubsetsFor(documentLocale);
   const customFonts = useSyncExternalStore(
     subscribeCustomFonts,

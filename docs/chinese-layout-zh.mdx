@@ -1,0 +1,419 @@
+{/* docs/chinese-layout-zh.mdx */}
+
+export const metadata = {
+  title: '中文排版',
+  sidebarTitle: '中文排版',
+  description: 'Postext如何排中文横排与竖排：地区、断行、标点宽度、字间两端对齐、字符网格、右翻书、直排数字、标记、注音、双行夹注、中文数字与字体',
+  lang: 'zh',
+  lastUpdated: '2026-09-29',
+  readingTime: '26分钟',
+  order: 6,
+};
+
+# 中文排版
+
+**中文页面是由方形字格组成的网格，填满它的规则取决于书在哪里印刷。**
+
+Postext用同一份Markdown源文件和同一套配置，既能横排中文，也能竖排中文。同一个引擎可以把大陆小说的标点放在GB/T 15834规定的位置，把台湾版的标点放在台湾教育部手册规定的位置；按各地区的规则断行，调整每个标点内部的空白，把两端对齐的行在字与字之间撑开，在竖排中让短数字直立，并让书从右边翻开、跨页从右往左排。本页说明引擎做了什么、由哪些设置控制。[配置参考](/zh/docs/configuration#东亚排版)列出了每个键及其默认值，[文档格式](/zh/docs/document-format#中文标记注音和双行夹注)介绍了相关标记。
+
+这些规则依据W3C的《中文排版需求》（*Requirements for Chinese Text Layout*，[clreq](https://www.w3.org/TR/clreq/)）及其所引用的国家标准，下文按章节号引用clreq。参考资料列在本页末尾。
+
+## 字格、网格与地区
+
+一个汉字占一个1 em宽、1 em高的方格，每个全角标点也是如此：半个字宽是字形，半个字宽是空白。密排时，字符不仅沿行对齐，也沿页面上下对齐。因此中文版心以字数和行数来规定，而不是毫米：正文字号、每行字数、每页行数、行间距，以及双栏时的栏间距（clreq §7.1.1）。字号10.5 pt、每行28字时，行宽294 pt，全书每一行两端对齐的文字都结束在同一个字格上。
+
+横排页面的行从左到右、自上而下排列，像西文书一样在左侧装订。竖排页面的字自上而下、行从右边缘向左推进；书在右侧装订，所以第一页是左页，跨页从右往左读（clreq §7.1.1.1）。
+
+<Illustration name="ChinesePageModels" data='{"title": "横排与竖排的中文页面", "desc": "两组跨页。横排书在左侧装订：第2页在左，第3页在右，文字从左到右成行，行自上而下堆叠。竖排书在右侧装订：第2页在右，第3页在左，文字自上而下成列，列从右边缘向左推进。", "caption": "同一段文字，横排时在左侧装订，竖排时在右侧装订。", "horizontalTitle": "横排，左侧装订", "verticalTitle": "竖排，右侧装订", "spine": "书脊", "lineDirection": "行从左到右", "columnDirection": "列从右开始", "pageOrder": "下一页", "sample": "此開卷第一回也作者自云因曾歷過一番夢幻之後故將真事隱去"}' />
+
+### 先看地区，再看字形
+
+简体字和繁体字只是写法不同。排版规则取决于印刷地：在北京印刷的繁体古籍遵循大陆标准，台湾小说遵循台湾的标准。clreq建议软件“以‘地区’而非‘繁简’区分排版规则”（[§1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)），Postext从文档语言`config.locale`中同时读出这两项：
+
+- **字形**（script）决定内置用词：图题用图或圖，续表题注后用（续）或（續），索引中用见或見，以及标题模板写出的数字。`zh`、`zh-Hans`、`zh-CN`和`zh-SG`是简体；`zh-Hant`、`zh-TW`、`zh-HK`和`zh-MO`是繁体。
+- **地区**（region）决定`cjk`键的排版默认值。CN、SG和MY按大陆处理，TW是台湾，HK和MO是香港；没有地区的标签跟随其字形：`zh-Hant`按台湾处理，`zh`和`zh-Hans`按大陆处理。`cjk.region`可以覆盖它。
+
+请写出完整的标签：`zh-Hans`或`zh-Hant`，知道地区时再加上地区（`zh-Hans-CN`、`zh-Hant-TW`、`zh-Hant-HK`）。同一个标签会声明在HTML（文档的`lang`）和PDF（`/Lang`）中，浏览器和PDF阅读器据此选用该地区的字形：Unicode只给“骨”一个码位，大陆字体和台湾字体的写法却不同。中文文档默认关闭断词，除非你为其中的拉丁单词打开它。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>默认值</th>
+      <th>大陆（<code>zh-Hans</code>、<code>zh-CN</code>）</th>
+      <th>台湾（<code>zh-Hant</code>、<code>zh-TW</code>）</th>
+      <th>香港（<code>zh-HK</code>、<code>zh-MO</code>）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>断行（<code>lineBreak</code>）</td><td><code>gb</code></td><td><code>basic</code></td><td><code>basic</code></td></tr>
+    <tr><td>标点宽度（<code>punctuationWidth</code>）</td><td><code>kaiming</code></td><td><code>fullwidth</code></td><td><code>fullwidth</code></td></tr>
+    <tr><td>相邻两个标点共占1.5 em（<code>compressAdjacent</code>）</td><td>是</td><td>否</td><td>是</td></tr>
+    <tr><td>行首行尾的括号去掉空白（<code>trimLineStart</code>）</td><td>是</td><td>否</td><td>是</td></tr>
+    <tr><td>横排时的、，。</td><td>字格左下</td><td>居中</td><td>居中</td></tr>
+    <tr><td>竖排时的、，。</td><td>字格右上</td><td>居中</td><td>居中</td></tr>
+    <tr><td>间隔号·</td><td>半个字宽</td><td>一个字宽</td><td>一个字宽</td></tr>
+    <tr><td>打开<code>hangingPunctuation</code>后可悬挂的标点</td><td>、，。．；：？！</td><td>、，。．，横排时仅在<code>'force'</code>下</td><td>、，。．，横排时仅在<code>'force'</code>下</td></tr>
+    <tr><td><code>:book[…]</code>（<code>bookTitleMark</code>）</td><td>书名两侧加《》</td><td>波浪线</td><td>波浪线</td></tr>
+    <tr><td>中文字符上的<code>&#42;…&#42;</code>（<code>emphasis</code>）</td><td>着重号</td><td>着重号</td><td>着重号</td></tr>
+    <tr><td>图、续表、见</td><td>图、（续）、见</td><td>圖、（續）、見</td><td>圖、（續）、見</td></tr>
+    <tr><td>索引分组（<code>index.groupBy</code>）</td><td>拼音首字母</td><td>笔画数</td><td>笔画数</td></tr>
+  </tbody>
+</table>
+
+最后两行跟随字形而不是地区。在北京印刷的繁体古籍（`zh-Hant-CN`）采用大陆的断行和标点，同时使用圖、（續）、見和笔画分组；标为香港的简体书（`zh-Hans-HK`）则使用图和拼音分组。
+
+日文和韩文文档也会关闭断词并使用CJK排版器，但还没有各自的规则：它们按大陆中文的默认值排版，假名或谚文段落保留字体自带的引号和破折号。
+
+### 中文章节的Markdown写法
+
+中文和其他文字一样用Markdown书写。以下几条规则能让书写更顺手：
+
+- **可以在任意位置换行。** 两个汉字之间的换行会被去掉，和CSS的处理一样，所以按80列自动换行的编辑器不会在正文里加进空格。两个标点之间的换行（`”⏎“`）由标点两侧之外的字符决定。在行内输入的空格会保留。
+- **用配置来缩进。** 首行缩进两字写作`bodyText.firstLineIndent: { value: 2, unit: 'em' }`；解析器会去掉段首的全角空格（U+3000）。
+- **标记用半角输入。** 中文输入法会打出`：：：`、`＃`、`［＾1］`、`｛…｝`和`＊＊`；它们会作为正文印出来，构建时每一行都会报`fullwidthMarkup`，并给出应输入的半角形式。属性值可以用“…”或「…」加引号，也可以用`＝`；标题属性可以紧跟标题、不加空格：`# 第一回{style="hui"}`。键名必须是ASCII；中文键名（`作者=曹雪芹`）会被丢弃，并给出`attributeKeyInvalid`警告。
+- **强调和范围。** `_`和`__`可以用在两个汉字之间（`中文_斜体_中文`）。两个数字或两个中文词之间的`~`表示范围，按原样保留（`3~5天`、`周一~周五`）。
+- **ID和文件名**保留汉字：标题为第一回的章存为`chapters/001-第一回.md`。
+
+中文标记、注音、双行夹注和字符方向的指令见[下文](#标记与注释)和[文档格式](/zh/docs/document-format#中文标记注音和双行夹注)。
+
+## 横排
+
+中文、日文或韩文字符多于词间空格的段落由CJK排版器排版。只有两个拉丁单词、数字或符号之间的空格才算词间空格：网页文字在拉丁单词和数字两侧加的空格（`2026 年 9 月 28 日`、`安装 Node.js 和 Git`）不算，这样的句子按去掉这些空格后的写法排。排版器把文字切成单元（每个字符一个，每个拉丁单词或数字一个，每个两字长的破折号或省略号一个），每个单元只测量一次，再逐行填满。这里没有什么需要Knuth–Plass这类最优搜索去权衡：两个字符之间几乎都可以断行，下面的规则去掉少数不能断的地方。引用中文书名的拉丁段落仍用Knuth–Plass，并可按同样的规则在其中的汉字旁断行。题注、表格单元格、脚注和标注框也按文档的级别断行。
+
+### 断行
+
+避头尾规则规定哪些标点不能出现在行首、哪些不能出现在行尾。`cjk.lineBreak`从[clreq §6.1.1](https://www.w3.org/TR/clreq/#x6-1-1-prohibition-rules-for-line-start-and-line-end)的四个级别中选一个：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>级别</th>
+      <th>不能出现在行首</th>
+      <th>不能出现在行尾</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>无：台湾和香港的报纸可在任意位置断行。</td><td>无。</td></tr>
+    <tr><td><code>basic</code></td><td>点号、，；：。！？，后引号和后括号”’」』）〕］》〉，连接号～和单个—，间隔号·‧・，叠字符々，单位% ‰ ° ℃。</td><td>前引号和前括号“‘「『（〔［《〈，货币符号¥ $ €。</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>加上分隔号／（GB/T 15834—2011 §5.1.9）。</td><td><code>basic</code>加上分隔号。</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>加上占两字的标点—— ⸺ …… ⋯⋯。</td><td><code>gb</code>。</td></tr>
+  </tbody>
+</table>
+
+无论哪个级别，以下内容都不会被拆开：两字长的破折号——和省略号……，数字与其符号或单位（¥5,999、50%、120㎡、−3 ℃），拉丁单词，以及用全角数字写的数（１２：３０）；脚注标记、`:ref`和上标总是跟前一个字符在一起；全角空格之前也不会断行。唯一的例外是比整行还宽的拉丁单词或网址：单词在音节处拆开，网址在其分隔处拆开。
+
+当下一个字符放不下时，排版器会先看它。如果它可以出现在行首，就移到下一行，并把本行两端对齐撑开。如果它不可以（逗号、后括号、前括号后面的字），这一行先尝试放弃标点空白把它挤进来，即[clreq §6.2.2.3](https://www.w3.org/TR/clreq/#x6-2-2-3-procedures-for-inter-character-spacing-reduction)的“挤进”；只有这些空白不足以抵消溢出时，这一行才提前结束，把标点前面的字符和标点一起带到下一行。先挤进，是因为这样可以保持本行的字符不变；挤出是后备办法。
+
+### 标点宽度
+
+全角标点是半个字宽的字形加半个字宽的空白，设置调整的是空白，从不改变字形（[clreq §6.3.2](https://www.w3.org/TR/clreq/#x6-3-2-punctuation-width-adjustment)）。空白在哪一侧取决于地区。大陆把点号放在字格的一角，空白跟在字形后面；台湾和香港把点号居中，两侧各留四分之一个字宽。在所有地区，前括号和前引号的空白都在字形之前，后括号和后引号的空白在字形之后。
+
+<Illustration name="PunctuationPositions" data='{"title": "点号在字格中的位置", "desc": "四排字格，甲 乙 丙 丁 四个字后面依次跟着句号、逗号、顿号和冒号。大陆横排把标点放在字格左下，大陆竖排放在字格右上。台湾和香港在两个方向上都把标点居中。", "caption": "字形占半个字格，放在哪一半由地区决定。", "mainland": "大陆", "taiwan": "台湾和香港", "horizontal": "横排", "vertical": "竖排", "sample": "甲乙丙丁"}' />
+
+`cjk.punctuationWidth`决定标点保留多少空白：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>样式</th>
+      <th>行内</th>
+      <th>行尾</th>
+      <th style={{ width: '180px' }}>使用场合</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> 全角式</td><td>所有标点占一个字宽。</td><td>一个字宽。</td><td>台湾和香港的书；大多数网页文字。</td></tr>
+    <tr><td><code>kaiming</code> 开明式</td><td>。．？！占一个字宽；，、；：、括号、引号和间隔号占半个字宽。</td><td>所有标点占半个字宽。</td><td>大多数大陆图书；方正书版的默认设置。</td></tr>
+    <tr><td><code>lineEndHalf</code> 行末半角</td><td>所有标点占一个字宽。</td><td>所有标点占半个字宽。</td><td>按字面理解的GB/T 15834—2011 §5.1.10。</td></tr>
+    <tr><td><code>halfwidth</code> 半角式</td><td>所有标点占半个字宽。</td><td>半个字宽。</td><td>词典。</td></tr>
+  </tbody>
+</table>
+
+另有两项设置对任何样式的标点都起作用。打开`compressAdjacent`后，相邻的两个标点放弃它们之间的空白，因此`。」`、`》（`或`，「`占一个半字宽，而不是两个字宽。台湾和香港那样居中的`。`或`，`在后括号前保留整个字宽，所以`。」`在那里仍然占两个字宽；`》（`、`」，`和`，「`照样挤紧。打开`trimLineStart`后，位于行首的前括号放弃前半个字宽的空白，使括号的笔画与文字边缘对齐；位于行尾的后括号放弃后半个字宽的空白。这两项在大陆和香港默认打开，在台湾默认关闭，台湾的书让每个标点都保留在自己的字格里。
+
+<Illustration name="PunctuationWidths" data='{"title": "全角式与开明式标点", "desc": "曹雪芹著《红楼梦》（又名《石头记》）。这一行排了两次。全角式中每个标点占一个字宽，整行长19个字宽，每个标点的空白一半用浅色标出。开明式中括号各占半个字宽，行末句号也占半个字宽，同一行长15.5个字宽。", "caption": "同一行用全角式（19个字宽）和开明式（15.5个字宽）排出。", "fullwidth": "全角式", "kaiming": "开明式", "blank": "放弃的空白", "sample": "曹雪芹著《红楼梦》（又名《石头记》）。", "ems": "字"}' />
+
+引号、省略号、破折号和间隔号与拉丁文字共用，拉丁字体把它们画得很窄。在中文语境中（两侧最近的字符都是中文），无论字体的步进宽度是多少，它们都占中文标点的字框：“和”各占一个字宽（开明式下为半个），……占两个字宽并居中，·在大陆占半个字宽、其他地区占一个字宽。破折号（——）印成一条贯通两个字宽的线，升到字符的中线高度。在拉丁单词旁边，这些标点保留字体的宽度，因此`他说：He said “yes” and left.`中的英文引号按英文排。
+
+书要用本地区的字体来排：大陆用Noto Serif SC或Source Han Serif SC，台湾用TC，香港用HK。版面根据地区而不是字体来决定标点哪一侧是空白，用大陆标签配繁体字体时，会把居中标点挤错一侧。
+
+### 标点悬挂
+
+设为`hangingPunctuation: 'allow'`时，原本会落到下一行行首、又无法挤进本行的逗号或句号，可以悬挂在行尾之外（[clreq §6.1.3](https://www.w3.org/TR/clreq/#x6-1-3-hanging-punctuation-at-line-end)）。`'force'`则只要这类标点位于行尾就悬挂。每行最多悬挂一个标点，且从不悬挂紧挨另一个标点的标点（`。」`）。在`'allow'`下，横排的台湾和香港文字不悬挂任何标点，因为居中的标点悬挂后看起来像被截断；`'force'`在那里也会悬挂。大多数中文书不悬挂标点；clreq建议在使用字符网格时悬挂。默认值是`'none'`。
+
+### 字间两端对齐
+
+中文正文两端对齐，两端对齐的行在字与字之间撑开。不是段落最后一行的行，按[clreq §6.2.2.4](https://www.w3.org/TR/clreq/#x6-2-2-4-procedures-for-inter-character-space-expansion)的顺序填满：
+
+1. 拉丁单词之间的空格，每处最多半个字宽。
+2. 汉字与拉丁文字之间的间距（见下一节），每处最多半个字宽。
+3. 所有字符间隙平均分配：两个汉字之间、字符与标点之间、汉字与拉丁单词之间。拉丁单词、数字或两字长标点的内部从不加宽，连接号（～、单个—）或分隔号的两侧也不加宽。
+
+如果一行的字间需要超过半个字宽（设置了`bodyText.maxJustifyTracking`时，则是超过该值），就只加这么多，行尾不足行长；构建时报为`cjkLooseLine`内容警告，沙盒中称为**CJK行未排满**。通常是因为一个长拉丁单词或网址无法提上来。段落最后一行密排。[断词与两端对齐](/zh/docs/justification#中文日文和韩文)有详细说明，包括CJK行在松散行高亮中怎样计算，以及各栏齐底时怎样把中文段落多排一行。
+
+段落不会以只有一个字的行结束，无论这个字是单独一个还是带着收尾的标点（孤字，如`後。`）。上一行会让出最后一个字，连同必须跟它在一起的标点，并撑满行长；如果这样需要超过字距上限，这个字就单独留在最后一行。这项行为由`bodyText.avoidRunts`控制，默认打开，横排和竖排都适用；各栏齐底也从不产生这样的行。
+
+### 汉字与拉丁文字之间的间距
+
+`cjk.latinSpacing`在汉字与相邻的拉丁字母或数字之间加四分之一个字宽（[clreq §6.3.3](https://www.w3.org/TR/clreq/#x6-3-3-mixed-text-composition-in-horizontal-writing-mode)）：`1999年的iPhone 15售价为¥5,999。`印出来时，1999之后、iPhone 15前后都有间距，而¥前面没有，因为它是符号。行首和行尾没有间距，拉丁单词与中文标点之间没有（`用iPhone，`），中文括号内侧也没有（`（iPhone）`）。作者在这类交界处输入的空格（很多网页文字都有）会被替换为汉字与拉丁文字之间的间距，所以`用 iPhone 拍照`和`用iPhone拍照`排出来一样。在两端对齐的行中，这一间距先增大到半个字宽，然后才在字符之间撑开；需要多挤进一个字的行会把它缩到八分之一个字宽。这一间距不是文字：复制、搜索和PDF提取的文本都按原样读出`用iPhone拍照`。设为`0`即关闭。
+
+### 字符网格
+
+`cjk.grid`按中文的方式规定版心，即每行字数和每页行数：
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+每栏宽为`charsPerLine`个正文字号的字宽，版心高为`linesPerPage`个正文行高。配置的`page.margins`作为最小值：版心在其留出的空间中居中，每边页边距各增加差值的一半。双栏时，栏间距取整为整数个字宽。超出可容纳数量的值会被减小并报告（`cjkGridClamped`）；未设置的值取能容纳的最大数量。`show`在屏幕上画出网格（稿纸），每个字位一个方格；PDF不画网格，除非给`renderToPdf`传入`characterGrid: true`。
+
+常见的书，五号（10.5 pt）字，行间距6 pt，行高16.5 pt：
+
+- 大32开，140 × 203 mm，28 × 28字：行长103.7 mm，版心高163 mm。
+- 16开，184 × 260 mm，双栏，每栏23字，小五（9 pt，行高13.5 pt），栏间距两个字。
+
+clreq建议每行17到40字，横排最多48字，竖排最多55字，行间距为半个到一个字（[clreq §7.1.1.5](https://www.w3.org/TR/clreq/#x7-1-1-5-considerations-when-designing-the-type-area)）。中文字号有名称：五号10.5 pt用于书籍正文，小五9 pt用于报纸和注释，小四12 pt，四号14 pt，三号16 pt，二号22 pt。Postext的字号以点为单位；号数字号请写成对应的点值。
+
+## 编号
+
+所有编号设置都支持CSS Counter Styles中的中文数字样式：页码、有序列表、图表计数器、标题模板、篇以及PDF页面标签。`simp-chinese-informal`写作一、十二、一百零一；`trad-chinese-informal`相同，但用萬和億；`cjk-decimal`写作二〇二六；`simp-chinese-formal`和`trad-chinese-formal`是大写数字壹贰叁；`circled-decimal`是①；此外还有天干甲乙丙和地支子丑寅。在模板中，`一`表示文档所用字形的小写数字，所以一个模板可以同时用于两个版本：
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　' }],
+},
+```
+
+这样得到第一回到第一百二十回，编号与标题之间是一个全角空格。回目对联在标题中用换行写出：`# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`。标题的版面设计会把`{titleText}`分两行印出，每行一半：章首页的色带，或者在级别或标题样式上设置的栏内`advancedDesign`（见[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。在其他地方，上下两半用全角空格连起来：目录、书眉和PDF书签中是这样，没有版面设计、直接排在栏内的标题也是这样，连起来的标题在行长用尽处换行，往往断在后半句中间。汉字与数字或拉丁单词之间的换行（`# 示例市出版协会关于举办 \\ 2026年中文排版实务培训班的通知`）在栏内、目录和书眉中排成汉字与拉丁文字之间的间距，在PDF书签和文档标题中则直接相连。下面两个示例都没有版面设计，如果希望对联分两行排，请给标题加上设计。在中文文档中，`{1:words}`把数字写成中文（十二），`{1:ordinal}`加上第（第十二）。编号为`:::part{number="卷三"}`的篇，在需要数字的占位符中按3处理。
+
+有序列表遵循GB/T 15834—2011的层级（一、 （一） 1. （1） ①），在数字前加`prefix`：
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+},
+```
+
+内置的中文图、表类型按章编号，中间用连字符（图1-1、表3-2）。中文题注的标签与编号之间不加空格，编号与文字之间用全角空格：`captionStyle: { labelNumberGap: '', labelSeparator: '　' }`得到图1-1　大观园图，`:ref`读作图1-1。PDF写入中文页面标签，因此阅读器的页码框在页面印着一、二、三的地方也显示一、二、三。
+
+中文书的索引按拼音首字母（简体）或笔画数（繁体）分组，数据来自排序器本身（`index.groupBy`，默认`'auto'`）。多音字归入排序器的常用读音；这类条目请用读音符合预期的汉字写一个`sort`键：`:index[重阳]{sort="崇阳"}`。见[索引](/zh/docs/configuration#索引)。
+
+## 竖排
+
+`layout.writingMode: 'vertical-rl'`把书竖排。上面介绍的全部排版规则原样适用，只是沿行向下而不是横向；变化的是周围的页面和每个字符的方向。
+
+### 转了四分之一圈的页面
+
+竖排页面的版面相当于把横排页面顺时针转四分之一圈。它的行就是竖排文字的列，从右往左读；引擎对行做的一切（断行、两端对齐、浮动体、脚注、不拆分规则、齐底）都在这个转过的坐标系中进行。在纸面上：
+
+- 版面中的一栏是一**栏**（tier）。`layoutType: 'double'`得到上下叠放的两栏，从右上开始填，栏线是两栏之间的一条横线。章末不对各栏齐底（[clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)）。
+- 文字流的顶端是纸面的**右**边缘：章首页是页面右侧的一条竖带，顶部浮动体位于右侧，底部浮动体位于左侧，脚注落在每栏的左端。
+- `page.margins`在纸面上沿用原来的名称。书眉、页码、裁切标记和背景也仍然以纸面为准。
+- 标题样式可以设置自己的书写方向，因此竖排书后面可以接横排的附录或索引。
+
+读取版面的宿主程序在竖排页面上能找到`VDTPage.flow`，以及在文字流和纸面之间换算的辅助函数（`flowToPage`、`pageToFlow`、`flowRectToPage`）。见配置参考中的[竖排](/zh/docs/configuration#竖排)。
+
+### 右侧装订
+
+`page.binding`默认为`'auto'`，竖排书的auto就是右边缘。第1页仍是奇数页，仍是右页（recto），所以奇偶设置、`:::pagebreak{parity="odd"}`和页数的含义不变；变的是recto所在的一侧，即跨页的左页（clreq §7.1.3.3）。使用对称页边距时，奇数页的内侧页边距在右边。沙盒把跨页显示为3 | 2，第1页单独位于书脊左侧，HTML查看器从右往左排列页面。PDF也请求阅读器这样显示（`/Direction /R2L`和`/PageLayout /TwoPageRight`）；Acrobat和Foxit会照办，Chrome内置的阅读器不会。横排书也可以在右侧装订。见[装订](/zh/docs/configuration#装订)。
+
+### 每个字符的方向
+
+哪些字符直立、哪些旋转，遵循Unicode的竖排方向属性（[UAX #50](https://www.unicode.org/reports/tr50/)），再加上clreq附录A中的中文惯例：
+
+- 汉字、假名、注音符号和全角字母直立，各占一个字宽。
+- 超过直立上限（见下一节）的拉丁单词和数字顺时针旋转四分之一圈，保留横排时的宽度。
+- 括号和引号使用竖排形式（﹁﹂﹃﹄︵︶）。在大陆文字中，“ ” ‘ ’显示为『』「」，符合GB/T 15834—2011 §5.2.3的规定。
+- 点号从不旋转，尽管UAX #50为日文旋转：；。大陆字体把、，。．放在字格右上，把！？：；放在字格右半（GB/T 15834—2011 §5.2.1）；台湾和香港字体把它们居中。
+- 破折号、省略号和波浪号沿列向下；破折号是沿字符中轴的一条竖线。
+- Unicode设为直立的符号（× © ± § ℃ ①）独占一个字格，在数字中间也是如此：`30×40`是30、×和40，全部直立。
+
+标点宽度、挤压、悬挂以及汉字与拉丁文字之间的间距，在竖排中的作用与横排相同：开明式的、占半个字格，`」「`占一个半，`：；？！`在所有地区都保留整个字格。
+
+### 直立的数字
+
+短数字立在一个字格里比躺倒更好读：这就是纵中横（縱中橫，[clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode)）。`cjk.uprightDigits`规定这样的数字最多有几位：默认`2`，也可设为`3`或`4`，设为`0`则不直立。整个数字要么立在字格里，要么都不立，所以在默认设置下，`2026年9月28日`中的2026横躺，9直立，28并排立在一个字格里；`A4`、`3.14`和`10,000`连同字母和分隔符一起横躺。英文句子中的数字跟随句子横躺：在`chapters 49 and 32`中，两个数字都和周围的单词一起排；而紧挨汉字的数字直立（`第 3 回`、`用iPhone 15拍攝`），中文里的时间、比分和日期中的数字也直立，因为它们的冒号和连字符通向汉字（`上午12:30开会`、`比分3:2`）。有三个标记可以手动覆盖这项设置：
+
+```markdown
+第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
+```
+
+`:tcy[…]`把文字排在一个直立字格中，太宽时压缩到一个字宽；`:upright[…]`让每个字符各占一个直立字格，用于逐个字母读的缩写；`:sideways[…]`把这段文字旋转。在横排中它们不起作用。文学作品通常用中文数字写数，用不着这些。
+
+### 图、表与题注
+
+竖排书中的图和表直立。图在题注允许的范围内占满所在栏的高度，它在纸面上所占的宽度就是它在文字流中占用的空间；题注横排在图下方，表格的单元格也横排（clreq指出，题注、表格和页码通常保持横排，§2.1.1）。比所在栏高的表按行在各栏之间拆开。图在竖排文字中首次被引用的地方，`placement.rotate`会被忽略，并给出`rotateIgnoredVertical`警告。
+
+### 书眉与页码
+
+书眉和页码以纸面为准，横排，这和大多数竖排书一样（clreq §7.2）。另有两种常见做法，可以把文字元素设为竖排（`writingMode: 'vertical-rl'`），并锚定在页面外侧页边距（`anchor.to: 'outer'`）来实现：
+
+- **切口书眉**：章名沿外侧页边距竖排，从版心顶端往下约四个字处开始；页码在距版心底端约五个字处结束，用中文数字，字号约为正文的80 %。沙盒可以一步加上（**页眉 › 切口书眉（竖排）**）。
+- **页码在外侧下角**，按台湾竖排书的规定：右翻书的页脚中放一个横排元素，奇数页在左下，偶数页在右下。
+
+模板见配置参考中的[竖排文字元素](/zh/docs/configuration#竖排文本元素)。
+
+### 各输出中的竖排文字
+
+Canvas自行绘制竖排页面，每个直立字符绕其字格中心转回来。要使用字体自带的竖排标点字形，浏览器宿主程序会为每个字体族加载一个打开OpenType `vert`特性的副本（`loadVerticalAlternates`）；沙盒为竖排书的每个字体族都这样做，没有副本时，引擎自己旋转或移动标点。PDF通过第二个竖排模式（`Identity-V`）字体字典显示直立字符，它引用同一个嵌入文件并用`vert`整形，所以阅读器把一列作为一行来选择和复制，也不会重复嵌入；带标签的PDF声明`WritingMode /TbRl`。HTML把每一行设为带`writing-mode: vertical-rl`的盒子，数字用`text-combine-upright`排在一个字格中。三种输出中每个字符的位置与HarfBuzz竖排版面的差距都在百分之几个字宽之内。
+
+## 标记与注释
+
+中文版本在行间加标记，而不是用斜体或下划线；用读音为汉字注音；在行内排评注。五个指令涵盖这些用法。每个指令都把文字留在段落中，所以搜索、目录、索引锚点和复制的文本都按原样读出这些字，只有字周围画出的东西取决于配置。
+
+```markdown
+此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
+
+{滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！
+
+寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：
+```
+
+### 着重号
+
+`:dots[…]`在横排时在每个字下方、竖排时在每个字右侧加一个着重号，标点上不加（clreq §5.3.1；GB/T 15834—2011 §4.12，竖排见§5.2.5）。`style`可选圆点、空心圆或芝麻点。在中文文档中，Markdown强调也有同样效果：那里的`cjk.emphasis`默认是`'dots'`，所以`*不可*`印出着重号，因为中文字体没有斜体可用。同一段强调中的拉丁字母仍保留斜体。
+
+### 专名号与书名号
+
+`:name[…]`在文字下方画专名号，竖排时在左侧。`:book[…]`按`cjk.bookTitleMark`的设置印书名号：书名两侧加《》，如现代大陆图书的写法（书名中的书名用〈〉）；或者像古籍和台湾版那样在书名下加波浪线；或者什么都不加。因此同一份源文件可以同时用于现代大陆版和古籍版。两个专名或两个书名相接时，每条线在接合处各让出八分之一个字宽，所以`:name[賈寶玉]:name[林黛玉]`读起来是两个名字。
+
+### 注音：拼音与注音符号
+
+`:ruby[紅樓]{rt="hóng lóu"}`在每个字上方注音；读音数与字数相同时，可以在字与字之间断行，`group`则在整个词上方注一个读音。当基字是汉字时，简写形式`{紅樓|hóng|lóu}`效果相同，所以拉丁正文中的`{x|x>0}`仍是文字。注音符号（注音）排成每个字右侧的一列，声调符号在该列旁边，其字迹有一半高于最后一个符号（clreq §5.5.3.3）；拼音横排时在文字上方，竖排时在文字右侧。比基字宽的读音会加宽基字的字框；其中最多四分之一个注音字号的宽度可以伸到没有读音的相邻字上，不计入加宽。`cjk.ruby`设置注音的字体、字号（默认为正文的一半）、颜色和默认位置。
+
+### 双行夹注
+
+`:warichu[…]`把注释在行内排成两行、字号减半的小字（双行夹注），这是古籍中评注的形式。上行至少占每段的一半，所以下行从不比上行长，不能出现在行首的标点也从不出现在下行开头。长注释填满本行剩余部分后，接着排到下一行、下一栏或下一页，括号只加在第一行之前和最后一行之后。竖排时先读右边的小列。`cjk.warichu`设置字号、颜色和默认括号。
+
+### 行距中的空间
+
+行距从不改变：着重号、线和注音都在行与行之间的空隙中。段落的行间空隙容不下所加内容时，构建会发出警告：单侧有标记时小于半个字宽，两侧都有标记时小于八分之五个字宽（clreq §5.6.1），报为`cjkMarksExceedLeading`；注音比空隙高时报为`rubyExceedsLeading`。请给加了注释的段落设一个行距更大的段落样式。标记和注音在正文段落、标题、列表项、引文和标注框中绘制；题注、表格单元格、注释和书眉只印文字，不画这些标记。
+
+## 字体
+
+Postext为每种样式只用一个字体族，缺字时不会退回到另一个字体族：Noto Serif TC不会向Noto Serif SC借字。字体必须覆盖书中印出的每个字符，包括标点。
+
+- **在浏览器和沙盒中**，中文字体族来自Fontsource，每个字重约一百个文件，每个文件包含一部分字符，并用`unicode-range`声明；浏览器只加载文字用到的文件。沙盒的PDF标签页也是这样：它的字体提供器读取字体族的样式表，把页面用到的切片交给`renderToPdf`，每个切片作为子集嵌入。Fontsource的命名子集并不完整（Noto Serif TC的`chinese-traditional`缺少全角的，！？），所以请使用编号切片。
+- **在文件包中**，请提供按本书实际用字（包括标点和竖排字形）取子集的字体。从可变字体中为每个字重导出一个静态文件：pdf-lib嵌入的是可变字体的默认实例，所以粗体标题会以默认字重印出（`variableFontDefaultInstance`）。优先使用TrueType版本（Google Fonts、Fontsource），而不是CFF的`.otf`文件，postext-pdf会整个嵌入后者，每个字重最多25 MB（`cffEmbeddedWhole`）。取子集时保留排版特性（`vert`、`vrt2`）和竖排度量（`vhea`、`vmtx`）：竖排标点来自它们。
+- **缺字**印成字体的空框。`renderToPdf`按字体报告缺字（`missingGlyph`），沙盒在每次生成PDF后在检查面板中列出。
+- **地区字体。** Noto Serif SC、TC和HK用各自地区的字形画同一批码位，并把点号放在各自地区规定的位置。书的字体应与其语言区域一致。
+- **没有斜体。** 中文字体没有斜体；浏览器和PDF会把字形倾斜。强调请用着重号、楷体（如LXGW WenKai）或粗体。
+
+中文书的传统字体分工对应到字体族：宋体（Noto Serif）用于正文，黑体（Noto Sans）用于标题和标签，楷体用于引文、诗歌和序言，仿宋用于公文。配置参考中的[中日韩字体](/zh/docs/configuration#中文日文和韩文字体)给出了字体提供器的代码。
+
+## 两套完整配置
+
+### 横排的大陆小说
+
+一本大32开的书，Noto Serif SC 10.5 pt，每页28 × 28字，章按第一章编号，开明式标点和GB断行来自语言区域设置：
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const pt = (value: number) => ({ value, unit: 'pt' as const });
+const mm = (value: number) => ({ value, unit: 'mm' as const });
+const ink = { hex: '#1a1a1a', model: 'hex' as const };
+
+const config: PostextConfig = {
+  locale: 'zh-Hans-CN',
+  page: {
+    sizePreset: 'custom', width: mm(140), height: mm(203),
+    margins: { top: mm(18), bottom: mm(20), left: mm(16), right: mm(20), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Noto Serif SC', fontSize: pt(10.5), lineHeight: pt(16.5),
+    textAlign: 'justify', firstLineIndent: { value: 2, unit: 'em' },
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Sans SC', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(16), numberingTemplate: '第{1:一}章', numberSeparator: '　',
+        breakBefore: { enabled: true, parity: 'any' } },
+    ],
+  },
+  captionStyle: { labelNumberGap: '', labelSeparator: '　' },
+  cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28 } },
+  header: { elements: [] },
+  footer: { elements: [
+    { kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: 'Noto Serif SC', fontSize: pt(9),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+};
+```
+
+`cjk`键只设置网格：地区、断行、标点宽度、挤压以及汉字与拉丁文字之间的间距都跟随`zh-Hans-CN`。各章可以从任一页开始，大多数大陆小说都是这样（另页起）。
+
+### 竖排、右侧装订的台湾小说
+
+一本25開的书（148 × 210 mm），用Noto Serif TC，每列38字，章按第一回编号，带切口书眉和中文页码；台湾的居中全角标点和基本断行来自`zh-Hant-TW`，右侧装订来自书写方向：
+
+```ts
+const config: PostextConfig = {
+  locale: 'zh-Hant-TW',
+  page: {
+    sizePreset: 'custom', width: mm(148), height: mm(210),
+    margins: { top: mm(24), bottom: mm(18), left: mm(16), right: mm(22), mirror: true },
+    pageNumbering: { format: 'trad-chinese-informal' },
+  },
+  layout: { layoutType: 'single', writingMode: 'vertical-rl' },
+  bodyText: {
+    fontFamily: 'Noto Serif TC', fontSize: pt(10.5), lineHeight: pt(18),
+    textAlign: 'justify', firstLineIndent: { value: 2, unit: 'em' },
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Serif TC', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(14), numberingTemplate: '第{1:一}回', numberSeparator: '　',
+        breakBefore: { enabled: true, parity: 'odd' } },
+    ],
+  },
+  cjk: { grid: { enabled: true, charsPerLine: 38 } },
+  header: { elements: [
+    { kind: 'text', id: 'head', content: '{chapterTitle}', writingMode: 'vertical-rl', pages: 'body',
+      fontFamily: 'Noto Serif TC', fontSize: pt(8.4), overflow: 'clip', align: 'left', color: ink,
+      placement: { anchor: { to: 'outer', edge: 'top' }, offset: { y: { value: 4, unit: 'em' } } } },
+    { kind: 'text', id: 'folio', content: '{pageNumber}', writingMode: 'vertical-rl',
+      fontFamily: 'Noto Serif TC', fontSize: pt(8.4), overflow: 'clip', align: 'left', color: ink,
+      placement: { anchor: { to: 'outer', edge: 'bottom' }, offset: { y: { value: -5, unit: 'em' } } } },
+  ] },
+  footer: { elements: [] },
+};
+```
+
+`parity: 'odd'`让每章从右页（recto）开始，在这本书里就是左手边的页面。没有设置`linesPerPage`，所以页面按宽度能容纳多少列就排多少列。切口书眉在奇数页沿左侧页边距、在偶数页沿右侧页边距竖排，第103页的`{pageNumber}`印作一百零三。
+
+## 在沙盒和排版食谱中
+
+在沙盒中，**设计 › 书写系统**包含文档语言、书写方向、装订方式和所有`cjk`设置；**中文默认值 › 检查…**可以一步把书设为中文排版，并先列出每一项改动（见[沙盒](/zh/docs/sandbox#版面设计面板)）。展示书架上有《紅樓夢》（1792年程乙本）的三个版本：[繁体竖排、右侧装订](/zh/sandbox#preset=hongloumeng&lang=zh-Hant)、[简体横排](/zh/sandbox#preset=hongloumeng&lang=zh-Hans)，以及H. Bencraft Joly英译本的前56回。[排版食谱](/zh/cookbook?col=chinese-layout)在“中文排版”合集中收录了中文食谱，每个食谱是一页或一组跨页，附有排出它的脚本。
+
+## 已知限制
+
+- **日文和韩文**按大陆中文的默认值排版。它们各自的规则（[JLREQ](https://www.w3.org/TR/jlreq/)、KLREQ）尚未实现。
+- **设计文字**（书眉、章首页、标注框标题）在任意两个汉字之间都可断行，不遵循避头尾规则，也不调整标点宽度。这类标题请手动调整。
+- **每页只有一种书写方向。** 竖排页面中的横排标注框、表头行在右侧的原生竖排表格，以及直立图旁边的题注都不支持。行内公式、行内标签和色块随竖排行一起横躺。
+- **字号以点为单位。** 没有号数或Q数单位。
+- **竖排度量。** 每个直立字符都前进一个字宽；不使用比例竖排度量（`vpal`）和竖排字偶间距。
+- **注音和双行夹注**：不支持双侧注音、自动注音和单行注释；题注、单元格和设计文字中的注释和注音印成普通文字。
+- **字体**：不在字体族之间回退，中文字体没有斜体，CFF字体整个嵌入。
+- **索引**：多音字取排序器的常用读音，除非条目带`sort`键；不支持部首排序。
+- **从右到左的文字**（阿拉伯文、希伯来文）没有双向排版；见[语言与文字](/zh/docs/configuration#语言与文字)。
+
+## 参考资料
+
+- W3C，[Requirements for Chinese Text Layout（clreq）](https://www.w3.org/TR/clreq/)，Group Note Draft，2026。
+- W3C，[Requirements for Japanese Text Layout（JLREQ）](https://www.w3.org/TR/jlreq/)，用于竖排图书的书眉。
+- Unicode标准附件第50号，[Unicode Vertical Text Layout](https://www.unicode.org/reports/tr50/)。
+- W3C，[CSS Writing Modes Level 4](https://www.w3.org/TR/css-writing-modes-4/)和[CSS Text Level 4](https://www.w3.org/TR/css-text-4/)。
+- W3C，[CSS Counter Styles Level 3](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese)，用于中文数字编号样式。
+- GB/T 15834—2011《标点符号用法》（[全文](https://people.ubuntu.com/~happyaron/l10n/GB%28T%2915834-2011.html)）。
+- GB/T 15835—2011《出版物上数字用法》。
+- 台湾地区教育主管部门，《重訂標點符號手冊》，2008年修订版。

@@ -1,26 +1,29 @@
 {
   "$comment": "Curated paths through the Cookbook, edited here rather than in recipe.json so rotating them is a one-file change. 'featured' is ordered: [0] is the gallery's frontispiece, [1..3] the editor's picks (1–4 entries once a recipe is published); its title is not shown. Every other collection is a reading path, in order, and gets a strip on each of its recipes' pages. List only slugs whose folders exist: the curator adds recipes as they land (the planned line-up is in the design catalogue).",
   "featured": {
-    "title": { "en": "Featured recipes", "es": "Recetas destacadas" },
+    "title": { "en": "Featured recipes", "es": "Recetas destacadas", "zh": "精选食谱" },
     "summary": {
       "en": "The gallery's frontispiece and three editor's picks; the selection changes from time to time.",
-      "es": "El frontispicio de la galería y tres recetas elegidas por la redacción; la selección cambia de vez en cuando."
+      "es": "El frontispicio de la galería y tres recetas elegidas por la redacción; la selección cambia de vez en cuando.",
+      "zh": "图库的卷首图和三道编辑推荐，入选的食谱会不时更换。"
     },
     "recipes": ["magazine-cover-and-contents", "letters-edition", "bilingual-facing-verse", "photo-essay-full-bleed"]
   },
   "start-here": {
-    "title": { "en": "Start here", "es": "Empieza aquí" },
+    "title": { "en": "Start here", "es": "Empieza aquí", "zh": "从这里开始" },
     "summary": {
       "en": "The recipes to read first, in order, starting with a designed page set from a Markdown string.",
-      "es": "Las recetas que conviene leer primero, en orden, empezando por una página diseñada a partir de una cadena Markdown."
+      "es": "Las recetas que conviene leer primero, en orden, empezando por una página diseñada a partir de una cadena Markdown.",
+      "zh": "最先要读的几道食谱，按顺序排列，第一道是用一段Markdown字符串排出一页有设计的页面。"
     },
     "recipes": ["first-page-from-markdown", "shaped-verse", "baseline-grid-book-page"]
   },
   "opener-specimens": {
-    "title": { "en": "Opener specimens", "es": "Muestrario de aperturas" },
+    "title": { "en": "Opener specimens", "es": "Muestrario de aperturas", "zh": "章首页样张" },
     "summary": {
       "en": "Ways to open a chapter or an article: bands and photos, sunk and framed titles, a vignette over each chapter, short chapters that start in mid-page, side heads and numbers hung in the gutter, badges, bylines and datelines, the head of each letter and a poster built from anchored elements.",
-      "es": "Maneras de abrir un capítulo o un artículo: bandas y fotos, títulos hundidos y enmarcados, una viñeta sobre cada capítulo, capítulos breves que empiezan a media página, títulos al margen y números colgados en el medianil, insignias, firmas y fechas, el encabezamiento de cada carta y un cartel hecho de elementos anclados."
+      "es": "Maneras de abrir un capítulo o un artículo: bandas y fotos, títulos hundidos y enmarcados, una viñeta sobre cada capítulo, capítulos breves que empiezan a media página, títulos al margen y números colgados en el medianil, insignias, firmas y fechas, el encabezamiento de cada carta y un cartel hecho de elementos anclados.",
+      "zh": "一章或一篇文章的各种开头：色带和照片，下沉标题和带框标题，每章上方的小饰图，从页面中间开始的短章，挂在栏间距里的侧标题和编号，徽标，署名和电头，每封信的信头，以及用锚定元素拼成的海报。"
     },
     "recipes": [
       "chapter-opener-bleed-band", "magazine-feature-opener", "five-chapter-openers", "storybook-chapter-vignettes",
@@ -30,10 +33,11 @@
     ]
   },
   "first-book": {
-    "title": { "en": "Your first book", "es": "Tu primer libro" },
+    "title": { "en": "Your first book", "es": "Tu primer libro", "zh": "你的第一本书" },
     "summary": {
       "en": "From a single page to a finished book, in order: the page and its grid, justified text, running heads, roman front matter, parts in colour, chapters built one by one, short chapters that run on without a page break, an appendix, glossary and index, a whole novel and the PDF.",
-      "es": "De una página suelta a un libro terminado, por orden: la página y su rejilla, el texto justificado, las cabeceras, los preliminares en romanos, las partes en color, los capítulos compuestos uno a uno, capítulos breves que siguen sin salto de página, el apéndice, el glosario y el índice, una novela entera y el PDF."
+      "es": "De una página suelta a un libro terminado, por orden: la página y su rejilla, el texto justificado, las cabeceras, los preliminares en romanos, las partes en color, los capítulos compuestos uno a uno, capítulos breves que siguen sin salto de página, el apéndice, el glosario y el índice, una novela entera y el PDF.",
+      "zh": "从单页到一本完整的书，按顺序来：页面和网格，两端对齐的正文，书眉，罗马数字页码的前置部分，分色的篇，逐章排出的各章，不换页接排的短章，附录、术语表和索引，一整部小说，最后是PDF。"
     },
     "recipes": [
       "baseline-grid-book-page", "spanish-pocket-novel", "running-heads-by-parity", "front-matter-roman-to-arabic",
@@ -42,10 +46,11 @@
     ]
   },
   "magazine-issue": {
-    "title": { "en": "A magazine issue", "es": "Un número de revista" },
+    "title": { "en": "A magazine issue", "es": "Un número de revista", "zh": "一期杂志" },
     "summary": {
       "en": "The pages of a periodical: a cover and its contents, a first page from Markdown, feature openers on a photo, a news page with headlines across its columns, a newsletter that sends its briefs to a narrow column, figures that float to their citation, a zine for a two-drum risograph and a screen edition.",
-      "es": "Las páginas de una publicación periódica: una portada con su sumario, una primera página desde Markdown, aperturas de reportaje sobre una foto, una página de noticias con titulares que cruzan las columnas, un boletín que lleva los breves a una columna estrecha, figuras que flotan hasta su cita, un fanzine para risógrafo de dos tambores y una edición para pantalla."
+      "es": "Las páginas de una publicación periódica: una portada con su sumario, una primera página desde Markdown, aperturas de reportaje sobre una foto, una página de noticias con titulares que cruzan las columnas, un boletín que lleva los breves a una columna estrecha, figuras que flotan hasta su cita, un fanzine para risógrafo de dos tambores y una edición para pantalla.",
+      "zh": "期刊的各类页面：封面和目录，用Markdown排的首页，压在照片上的专题开篇，标题横跨各栏的新闻版，把简讯放进窄栏的通讯，浮动到引用处的图，用双鼓孔版速印机印的小志，以及屏幕版。"
     },
     "recipes": [
       "magazine-cover-and-contents", "first-page-from-markdown", "magazine-feature-opener", "newspaper-front-page",
@@ -53,10 +58,11 @@
     ]
   },
   "workbook-kit": {
-    "title": { "en": "Workbook kit", "es": "Cuadernos y fichas" },
+    "title": { "en": "Workbook kit", "es": "Cuadernos y fichas", "zh": "练习册套件" },
     "summary": {
       "en": "Pages people write on or work from: answer boxes nested in cards, a word bank of chips, a reading primer with syllable chips and letters to trace, a puzzle book whose crossword and word search are tables, an exam paper with a bubble grid and ruled answer lines, a workshop booklet with a readings table to fill in and a recipe card with its checklist.",
-      "es": "Páginas para escribir en ellas o para trabajar con ellas delante: cajas de respuesta dentro de fichas, un banco de palabras con chips, una cartilla de lectura con sílabas en chips y letras para repasar, un cuaderno de pasatiempos con el crucigrama y la sopa de letras hechos con tablas, un examen con su cuadrícula de burbujas y renglones para responder, un cuaderno de taller con una tabla de lecturas por rellenar y una ficha de receta con su lista de comprobación."
+      "es": "Páginas para escribir en ellas o para trabajar con ellas delante: cajas de respuesta dentro de fichas, un banco de palabras con chips, una cartilla de lectura con sílabas en chips y letras para repasar, un cuaderno de pasatiempos con el crucigrama y la sopa de letras hechos con tablas, un examen con su cuadrícula de burbujas y renglones para responder, un cuaderno de taller con una tabla de lecturas por rellenar y una ficha de receta con su lista de comprobación.",
+      "zh": "供人书写或照着操作的页面：嵌在卡片里的答题框，由行内标签组成的词库，带音节标签和描红字母的识字课本，用表格做纵横字谜和找词游戏的谜题书，带填涂格和答题横线的试卷，附待填读数表的工作坊手册，以及带清单的菜谱卡。"
     },
     "recipes": [
       "worksheet-answer-boxes", "reading-primer-syllables", "puzzle-book", "exam-paper", "boxes-split-float-pin",
@@ -64,10 +70,11 @@
     ]
   },
   "print-production": {
-    "title": { "en": "Print production", "es": "Producción para imprenta" },
+    "title": { "en": "Print production", "es": "Producción para imprenta", "zh": "印刷制作" },
     "summary": {
       "en": "Getting the file to the printer and the reader: faces loaded before layout, embedded and brand fonts, a galley with each fault marked in red where it was set, bleed and crop marks, CMYK and a greyscale proof, drawings recoloured as tints of one ink, and a tagged, accessible PDF.",
-      "es": "Cómo llevar el archivo a la imprenta y al lector: fuentes cargadas antes de componer, fuentes incrustadas y corporativas, una galerada con cada fallo marcado en rojo donde se compuso, sangrado y marcas de corte, CMYK y una prueba en escala de grises, dibujos recoloreados en tonos de una sola tinta, y un PDF etiquetado y accesible."
+      "es": "Cómo llevar el archivo a la imprenta y al lector: fuentes cargadas antes de componer, fuentes incrustadas y corporativas, una galerada con cada fallo marcado en rojo donde se compuso, sangrado y marcas de corte, CMYK y una prueba en escala de grises, dibujos recoloreados en tonos de una sola tinta, y un PDF etiquetado y accesible.",
+      "zh": "把文件交给印厂和读者：排版前加载字体，嵌入字体和品牌字体，在出错位置用红色标出每处问题的校样，出血和裁切标记，CMYK和灰度校样，重新着色为单一油墨深浅的线图，以及带标签的无障碍PDF。"
     },
     "recipes": [
       "fonts-before-layout", "pdf-with-embedded-fonts", "brand-fonts-identity-manual", "proof-sheet-diagnostics",
@@ -75,10 +82,11 @@
     ]
   },
   "workarounds": {
-    "title": { "en": "Not supported yet, and what to do", "es": "Lo que aún no hay y cómo resolverlo" },
+    "title": { "en": "Not supported yet, and what to do", "es": "Lo que aún no hay y cómo resolverlo", "zh": "尚不支持的功能及对策" },
     "summary": {
       "en": "What Postext does not do yet (line numbers, pipe tables, tab stops, three columns, text wrap, body drop caps, code blocks) and the layouts that stand in for them.",
-      "es": "Lo que Postext aún no hace (números de línea, tablas con barras, tabuladores, tres columnas, contorneo, capitulares en el texto, bloques de código) y las maquetas que lo sustituyen."
+      "es": "Lo que Postext aún no hace (números de línea, tablas con barras, tabuladores, tres columnas, contorneo, capitulares en el texto, bloques de código) y las maquetas que lo sustituyen.",
+      "zh": "Postext目前还做不到的事（行号、管道表格、制表位、三栏、文字绕排、正文首字下沉、代码块），以及可以代替它们的版面。"
     },
     "recipes": [
       "critical-edition-line-numbers",
@@ -87,10 +95,11 @@
     ]
   },
   "chinese-layout": {
-    "title": { "en": "Chinese layout", "es": "Composición china" },
+    "title": { "en": "Chinese layout", "es": "Composición china", "zh": "中文排版" },
     "summary": {
       "en": "Chinese set as Chinese books set it: line breaking and punctuation, the character grid, vertical text bound on the right, readings and marks beside the characters, and fonts, from a novel page to an official document, a newspaper, a dictionary and a woodblock leaf.",
-      "es": "El chino compuesto como lo componen los libros chinos: corte de líneas y puntuación, la retícula de caracteres, el texto vertical encuadernado por la derecha, las lecturas y marcas junto a los caracteres y las fuentes, de una página de novela a un documento oficial, un periódico, un diccionario y una hoja xilográfica."
+      "es": "El chino compuesto como lo componen los libros chinos: corte de líneas y puntuación, la retícula de caracteres, el texto vertical encuadernado por la derecha, las lecturas y marcas junto a los caracteres y las fuentes, de una página de novela a un documento oficial, un periódico, un diccionario y una hoja xilográfica.",
+      "zh": "按中文书的规矩排中文：断行和标点，字符网格，右侧装订的竖排，字旁的注音和标记，以及字体；从小说页面到公文、报纸、词典和雕版书页。"
     },
     "recipes": [
       "chinese-novel-horizontal", "vertical-novel-right-bound", "pinyin-primer", "proper-name-marks",

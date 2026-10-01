@@ -4,12 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { LOCALE_INFO, isSiteLocale } from "@/i18n/locales";
 import { ChevronDown } from "lucide-react";
 
-const LOCALE_NAMES: Record<string, string> = {
-  en: "English",
-  es: "Español",
-};
 
 export function LanguageSwitcher() {
   const locale = useLocale();
@@ -56,7 +53,7 @@ export function LanguageSwitcher() {
         className="flex min-h-10 items-center gap-1 rounded-md px-2 py-1 font-sans md:min-h-0 text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand 2xl:text-sm 4xl:text-base"
         style={{ touchAction: "manipulation" }}
       >
-        {LOCALE_NAMES[locale] ?? locale.toUpperCase()}
+        {isSiteLocale(locale) ? LOCALE_INFO[locale].name : locale.toUpperCase()}
         <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -77,7 +74,7 @@ export function LanguageSwitcher() {
                     : "text-slate hover:bg-surface hover:text-foreground"
                 }`}
               >
-                {LOCALE_NAMES[l] ?? l.toUpperCase()}
+                {LOCALE_INFO[l].name}
               </button>
             </li>
           ))}

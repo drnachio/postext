@@ -6,7 +6,7 @@ describe("docs table of contents", () => {
   const docs = getAllDocs();
   const order = (slug: string, locale = "en") => docs.find((d) => d.slug === slug)?.locales[locale]?.order;
 
-  it("lists the docs in order, both languages alike", () => {
+  it("lists the docs in order, every language alike", () => {
     expect(docs.map((d) => d.slug)).toEqual([
       "introduction",
       "architecture",
@@ -19,8 +19,10 @@ describe("docs table of contents", () => {
       "skill",
     ]);
     for (const doc of docs) {
-      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["en", "es"]);
+      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["en", "es", "zh"]);
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.es!.order);
+      expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.zh!.order);
+      expect(doc.locales.zh!.lang, doc.slug).toBe("zh");
     }
   });
 
@@ -44,7 +46,7 @@ describe("docs table of contents", () => {
   });
 
   it("gives every heading of the Chinese layout page its own title", () => {
-    for (const locale of ["en", "es"] as const) {
+    for (const locale of ["en", "es", "zh"] as const) {
       const texts = extractToc(getDocSource("chinese-layout", locale)!.source).map((t) => t.text);
       expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
     }
@@ -55,7 +57,7 @@ describe("docs table of contents", () => {
     // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
     // <code>{'*…*'}</code> prints nothing. A character reference stays
     // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
-    for (const locale of ["en", "es"] as const) {
+    for (const locale of ["en", "es", "zh"] as const) {
       const { source } = getDocSource("chinese-layout", locale)!;
       for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
         expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
@@ -63,11 +65,12 @@ describe("docs table of contents", () => {
     }
   });
 
-  it("links from the Chinese layout page only to headings that exist", () => {
-    for (const locale of ["en", "es"] as const) {
-      const { source } = getDocSource("chinese-layout", locale)!;
+  it.each(docs.flatMap((d) => Object.keys(d.locales).map((locale) => [d.slug, locale] as const)))(
+    "links from %s (%s) only to headings that exist",
+    (page, locale) => {
+      const { source } = getDocSource(page, locale)!;
       const own = new Set(extractToc(source).map((t) => t.id));
-      for (const m of source.matchAll(/\]\(\/(en|es)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
+      for (const m of source.matchAll(/\]\(\/(en|es|zh)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
         const [, lang, slug, anchor] = m;
         expect(lang, m[0]).toBe(locale);
         const doc = getDocSource(slug!, locale);
@@ -78,10 +81,10 @@ describe("docs table of contents", () => {
         expect(ids.has(decodeURIComponent(anchor)), m[0]).toBe(true);
       }
       for (const m of source.matchAll(/\]\(#([^)]+)\)/g)) {
-        expect(own.has(decodeURIComponent(m[1]!)), m[0]).toBe(true);
+        expect(own.has(decodeURIComponent(m[1]!)) || extractTocAllLevels(source).has(decodeURIComponent(m[1]!)), m[0]).toBe(true);
       }
-    }
-  });
+    },
+  );
 });
 
 /** Heading ids at every level, as rehype-slug gives them on the page. */

@@ -4,336 +4,384 @@
     "slug": "configuration",
     "heading": {
       "en": "Building a document",
-      "es": "Construir un documento"
+      "es": "Construir un documento",
+      "zh": "构建文档"
     }
   },
   "renderPage": {
     "slug": "configuration",
     "heading": {
       "en": "Rendering a page to a bitmap",
-      "es": "Renderizar una página a un bitmap"
+      "es": "Renderizar una página a un bitmap",
+      "zh": "把页面渲染为位图"
     }
   },
   "renderPageToCanvas": {
     "slug": "configuration",
     "heading": {
       "en": "Rendering a page to a bitmap",
-      "es": "Renderizar una página a un bitmap"
+      "es": "Renderizar una página a un bitmap",
+      "zh": "把页面渲染为位图"
     }
   },
   "renderToCanvas": {
     "slug": "configuration",
     "heading": {
       "en": "Rendering a page to a bitmap",
-      "es": "Renderizar una página a un bitmap"
+      "es": "Renderizar una página a un bitmap",
+      "zh": "把页面渲染为位图"
     }
   },
   "registerResourceImage": {
     "slug": "architecture",
     "heading": {
       "en": "API Surface",
-      "es": "Superficie de API"
+      "es": "Superficie de API",
+      "zh": "API接口"
     }
   },
   "unregisterResourceImage": {
     "slug": "architecture",
     "heading": {
       "en": "API Surface",
-      "es": "Superficie de API"
+      "es": "Superficie de API",
+      "zh": "API接口"
     }
   },
   "clearResourceImages": {
     "slug": "architecture",
     "heading": {
       "en": "API Surface",
-      "es": "Superficie de API"
+      "es": "Superficie de API",
+      "zh": "API接口"
     }
   },
   "clearMeasurementCache": {
     "slug": "configuration",
     "heading": {
       "en": "Measurement cache",
-      "es": "Caché de medidas"
+      "es": "Caché de medidas",
+      "zh": "测量缓存"
     }
   },
   "createMeasurementCache": {
     "slug": "configuration",
     "heading": {
       "en": "Measurement cache",
-      "es": "Caché de medidas"
+      "es": "Caché de medidas",
+      "zh": "测量缓存"
     }
   },
   "measureGlyphWidth": {
     "slug": "configuration",
     "heading": {
       "en": "Integrating the HTML viewer",
-      "es": "Integrar el visor HTML"
+      "es": "Integrar el visor HTML",
+      "zh": "集成HTML查看器"
     }
   },
   "BuildCancelledError": {
     "slug": "configuration",
     "heading": {
       "en": "Cooperative cancellation inside the engine",
-      "es": "Cancelación cooperativa dentro del motor"
+      "es": "Cancelación cooperativa dentro del motor",
+      "zh": "引擎内部的协作式取消"
     }
   },
   "defaultResourceTypes": {
     "slug": "configuration",
     "heading": {
       "en": "Resource types",
-      "es": "Tipos de recurso"
+      "es": "Tipos de recurso",
+      "zh": "资源类型"
     }
   },
   "applyHtmlViewerOverrides": {
     "slug": "configuration",
     "heading": {
       "en": "HTML Viewer",
-      "es": "Visor HTML"
+      "es": "Visor HTML",
+      "zh": "HTML查看器"
     }
   },
   "applySingleInkToSvg": {
     "slug": "configuration",
     "heading": {
       "en": "How single ink works",
-      "es": "Cómo funciona la tinta única"
+      "es": "Cómo funciona la tinta única",
+      "zh": "单色模式的工作原理"
     }
   },
   "resolvePageConfig": {
     "slug": "configuration",
     "heading": {
       "en": "Resolving defaults",
-      "es": "Resolver valores por defecto"
+      "es": "Resolver valores por defecto",
+      "zh": "解析默认值"
     }
   },
   "stripConfigDefaults": {
     "slug": "configuration",
     "heading": {
       "en": "Stripping defaults",
-      "es": "Eliminar valores por defecto"
+      "es": "Eliminar valores por defecto",
+      "zh": "剥离默认值"
     }
   },
   "PAGE_SIZE_PRESETS": {
     "slug": "configuration",
     "heading": {
       "en": "Page size presets",
-      "es": "Tamaños de página predefinidos"
+      "es": "Tamaños de página predefinidos",
+      "zh": "页面尺寸预设"
     }
   },
   "parseMarkdown": {
     "slug": "configuration",
     "heading": {
       "en": "Parsing",
-      "es": "Parseo"
+      "es": "Parseo",
+      "zh": "解析markdown"
     }
   },
   "parseMarkdownWithIssues": {
     "slug": "configuration",
     "heading": {
       "en": "Parsing",
-      "es": "Parseo"
+      "es": "Parseo",
+      "zh": "解析markdown"
     }
   },
   "extractFrontmatter": {
     "slug": "configuration",
     "heading": {
       "en": "Parsing",
-      "es": "Parseo"
+      "es": "Parseo",
+      "zh": "解析markdown"
     }
   },
   "KNOWN_DIRECTIVES": {
     "slug": "document-format",
     "heading": {
       "en": "Directives",
-      "es": "Directivas"
+      "es": "Directivas",
+      "zh": "指令"
     }
   },
   "KNOWN_CONTAINERS": {
     "slug": "document-format",
     "heading": {
       "en": "Containers",
-      "es": "Contenedores"
+      "es": "Contenedores",
+      "zh": "容器"
     }
   },
   "initMathEngine": {
     "slug": "document-format",
     "heading": {
       "en": "Mathematical formulas",
-      "es": "Fórmulas matemáticas"
+      "es": "Fórmulas matemáticas",
+      "zh": "数学公式"
     }
   },
   "parseTSV": {
     "slug": "document-format",
     "heading": {
       "en": "Block embed (optional, explicit inline placement)",
-      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)",
+      "zh": "块级嵌入（可选，显式的行内放置）"
     }
   },
   "mergeCells": {
     "slug": "document-format",
     "heading": {
       "en": "Block embed (optional, explicit inline placement)",
-      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)",
+      "zh": "块级嵌入（可选，显式的行内放置）"
     }
   },
   "setCellBackground": {
     "slug": "document-format",
     "heading": {
       "en": "Block embed (optional, explicit inline placement)",
-      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)",
+      "zh": "块级嵌入（可选，显式的行内放置）"
     }
   },
   "setCellImage": {
     "slug": "document-format",
     "heading": {
       "en": "Block embed (optional, explicit inline placement)",
-      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)",
+      "zh": "块级嵌入（可选，显式的行内放置）"
     }
   },
   "setAlignment": {
     "slug": "document-format",
     "heading": {
       "en": "Block embed (optional, explicit inline placement)",
-      "es": "Inserción en bloque (opcional, colocación en línea explícita)"
+      "es": "Inserción en bloque (opcional, colocación en línea explícita)",
+      "zh": "块级嵌入（可选，显式的行内放置）"
     }
   },
   "continuationAfter": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "contentOutline": {
     "slug": "configuration",
     "heading": {
       "en": "Table of contents",
-      "es": "Índice de contenidos"
+      "es": "Índice de contenidos",
+      "zh": "目录"
     }
   },
   "outlineFromDoc": {
     "slug": "configuration",
     "heading": {
       "en": "Table of contents",
-      "es": "Índice de contenidos"
+      "es": "Índice de contenidos",
+      "zh": "目录"
     }
   },
   "computeOutline": {
     "slug": "configuration",
     "heading": {
       "en": "Table of contents",
-      "es": "Índice de contenidos"
+      "es": "Índice de contenidos",
+      "zh": "目录"
     }
   },
   "openBundle": {
     "slug": "configuration",
     "heading": {
       "en": "Opening a bundle",
-      "es": "Abrir un paquete"
+      "es": "Abrir un paquete",
+      "zh": "打开文件包"
     }
   },
   "createBundle": {
     "slug": "configuration",
     "heading": {
       "en": "Creating a bundle",
-      "es": "Crear un paquete"
+      "es": "Crear un paquete",
+      "zh": "创建文件包"
     }
   },
   "buildBundle": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "loadBundleFonts": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "registerBundleImages": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "bundleImageUrl": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "bundleResourceBytes": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "bundleFontProvider": {
     "slug": "configuration",
     "heading": {
       "en": "Laying out and rendering a bundle",
-      "es": "Componer y renderizar un paquete"
+      "es": "Componer y renderizar un paquete",
+      "zh": "排版和渲染文件包"
     }
   },
   "readBundle": {
     "slug": "configuration",
     "heading": {
       "en": "Low-level API",
-      "es": "API de bajo nivel"
+      "es": "API de bajo nivel",
+      "zh": "底层API"
     }
   },
   "zipBundle": {
     "slug": "configuration",
     "heading": {
       "en": "Low-level API",
-      "es": "API de bajo nivel"
+      "es": "API de bajo nivel",
+      "zh": "底层API"
     }
   },
   "renderToHtml": {
     "slug": "configuration",
     "heading": {
       "en": "Integrating the HTML viewer",
-      "es": "Integrar el visor HTML"
+      "es": "Integrar el visor HTML",
+      "zh": "集成HTML查看器"
     }
   },
   "renderToHtmlIndexed": {
     "slug": "configuration",
     "heading": {
       "en": "Going further",
-      "es": "Siguiente paso"
+      "es": "Siguiente paso",
+      "zh": "进一步"
     }
   },
   "createLayoutWorker": {
     "slug": "configuration",
     "heading": {
       "en": "Running layout in a Web Worker",
-      "es": "Ejecutar la composición en un Web Worker"
+      "es": "Ejecutar la composición en un Web Worker",
+      "zh": "在Web Worker中运行排版"
     }
   },
   "renderToPdf": {
     "slug": "configuration",
     "heading": {
       "en": "Generating PDFs",
-      "es": "Generación de PDF"
+      "es": "Generación de PDF",
+      "zh": "生成PDF"
     }
   },
   "decompressWoff2": {
     "slug": "configuration",
     "heading": {
       "en": "Browser font provider (Fontsource + WOFF2)",
-      "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)"
+      "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)",
+      "zh": "浏览器字体提供函数（Fontsource + WOFF2）"
     }
   },
   "createPdfWorker": {
     "slug": "configuration",
     "heading": {
       "en": "Driving PDF export from the worker",
-      "es": "Exportar PDF desde el worker"
+      "es": "Exportar PDF desde el worker",
+      "zh": "从工作线程驱动PDF导出"
     }
   }
 }

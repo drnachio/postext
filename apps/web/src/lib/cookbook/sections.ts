@@ -41,7 +41,7 @@ export function markdownHeadings(body: string, level: number): string[] {
 
 /** H3 step titles without their "1 · " / "2." numbering. */
 export function stepTitles(body: string): string[] {
-  return markdownHeadings(body, 3).map((title) => title.replace(/^\d+\s*(?:[·.:)–-]\s*)?/, "").trim());
+  return markdownHeadings(body, 3).map((title) => title.replace(/^\d+\s*(?:[·.:)–、．：）-]\s*)?/, "").trim());
 }
 
 function normalizeHeading(text: string): string {

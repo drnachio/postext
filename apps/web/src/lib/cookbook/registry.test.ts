@@ -11,18 +11,18 @@ import { validateRegistry } from "./validate.ts";
 
 // ─── In-memory fixture ──────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`) => ({ en, es });
-const HEADINGS: Record<SectionId, [string, string]> = {
-  build: ["What you'll build", "Lo que vas a componer"],
-  short: ["The short answer", "La respuesta corta"],
-  ingredients: ["Ingredients", "Ingredientes"],
-  method: ["Method", "Elaboración"],
-  whole: ["The whole recipe", "La receta completa"],
-  variations: ["Variations", "Variantes"],
-  pitfalls: ["Pitfalls", "Errores frecuentes"],
-  credits: ["Credits", "Créditos"],
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`) => ({ en, es, zh });
+const HEADINGS: Record<SectionId, [string, string, string]> = {
+  build: ["What you'll build", "Lo que vas a componer", "成品一览"],
+  short: ["The short answer", "La respuesta corta", "简短回答"],
+  ingredients: ["Ingredients", "Ingredientes", "用料"],
+  method: ["Method", "Elaboración", "做法"],
+  whole: ["The whole recipe", "La receta completa", "完整食谱"],
+  variations: ["Variations", "Variantes", "变化"],
+  pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题"],
+  credits: ["Credits", "Créditos", "致谢"],
 };
-const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas" } };
+const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", zh: "表格样式" } };
 
 function fixtureRegistry(): Registry {
   return {
@@ -56,8 +56,8 @@ function fixtureRegistry(): Registry {
     },
     gaps: {
       footnotes: {
-        label: L("Footnotes", "Notas al pie"),
-        aliases: { en: ["footnote"], es: ["nota al pie"] },
+        label: L("Footnotes", "Notas al pie", "脚注"),
+        aliases: { en: ["footnote"], es: ["nota al pie"], zh: ["注脚"] },
         explanation: L("Not parsed."),
       },
     },
@@ -76,12 +76,14 @@ describe("validateRegistry (fixture)", () => {
     expect(validateRegistry(fixtureRegistry(), { knownSlugs: [] })).toEqual([]);
   });
 
-  it("requires both languages everywhere", () => {
+  it("requires every language everywhere", () => {
     const registry = fixtureRegistry();
     registry.features["heading-styles"].label.es = " ";
     registry.gaps.footnotes.aliases.es = [""];
+    delete (registry.questions.Q01.text as Partial<typeof registry.questions.Q01.text>).zh;
     expect(validateRegistry(registry)).toEqual([
       "features.heading-styles.label.es: must be non-empty text",
+      "questions.Q01.text.zh: must be non-empty text",
       "gaps.footnotes.aliases.es: must be non-empty text",
     ]);
   });
@@ -127,6 +129,8 @@ describe("docLinks", () => {
   it("checks internal docs links", () => {
     expect(docLinkExists("/en/docs/configuration#table-style")).toBe(true);
     expect(docLinkExists("/es/docs/configuration")).toBe(true);
+    expect(docLinkExists("/zh/docs/configuration")).toBe(true);
+    expect(docLinkExists("/fr/docs/configuration")).toBe(false);
     expect(docLinkExists("/en/docs/configuration#nope")).toBe(false);
     expect(docLinkExists("/en/docs/nope")).toBe(false);
   });

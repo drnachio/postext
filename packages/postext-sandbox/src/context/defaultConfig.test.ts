@@ -1,6 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { defaultResourceTypes } from 'postext';
-import { relocalizedResourceTypes, withDefaultResourceTypes } from './defaultConfig';
+import { createBlankBookConfig, createDefaultConfig, relocalizedResourceTypes, withDefaultResourceTypes } from './defaultConfig';
+
+describe('createBlankBookConfig', () => {
+  it('is the pristine config in English and Spanish', () => {
+    expect(createBlankBookConfig('es')).toEqual(createDefaultConfig('es'));
+    expect(createBlankBookConfig('en').locale).toBeUndefined();
+  });
+
+  it('sets a new book up for Chinese in the Chinese interface', () => {
+    const config = createBlankBookConfig('zh-Hans');
+    expect(config.locale).toBe('zh-Hans');
+    expect(config.bodyText?.fontFamily).toBe('Noto Serif SC');
+    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['图', '表']);
+    expect(withDefaultResourceTypes(config, 'zh-Hans')).toBe(config);
+  });
+});
 
 describe('withDefaultResourceTypes', () => {
   it('keeps the types a config already has', () => {
