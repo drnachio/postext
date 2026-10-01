@@ -11,7 +11,7 @@
   "features": {
     "primary": ["multi-chapter-books", "toc", "chapter-breaks"],
     "also": [
-      "figure-numbering", "citations", "heading-numbering", "heading-styles", "unnumbered-headings",
+      "figure-numbering", "figure-citations", "heading-numbering", "heading-styles", "unnumbered-headings",
       "section-running-heads", "running-heads", "page-role-filters", "opener-design",
       "heading-attributes", "design-images", "mirrored-margins", "floated-callouts", "pdf-export",
       "pdf-outlines", "localised-labels", "covers"

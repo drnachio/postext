@@ -1544,5 +1544,75 @@
       "zh": "对章节和页码的交叉引用"
     },
     "theme": "structure"
+  },
+  "Q111": {
+    "kind": "how",
+    "text": {
+      "en": "How do I refer to a figure, a table or a section in another chapter, pandoc-crossref style, and keep the numbers right?",
+      "es": "¿Cómo remito a una figura, una tabla o una sección de otro capítulo, al estilo de pandoc-crossref, con los números siempre correctos?",
+      "zh": "怎样按pandoc-crossref的写法引用另一章的图、表或节，并让编号始终正确？"
+    },
+    "index": {
+      "en": "Cross-references between chapters",
+      "es": "Referencias cruzadas entre capítulos",
+      "zh": "跨章交叉引用"
+    },
+    "theme": "structure"
+  },
+  "Q112": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set citation numbers as superscripts and make DOIs live links, as medical journals do?",
+      "es": "¿Cómo pongo los números de cita en superíndice y hago que los DOI sean enlaces, como en las revistas médicas?",
+      "zh": "怎样像医学期刊那样把引用序号排成上标，并让DOI成为可点击的链接？"
+    },
+    "index": {
+      "en": "Superscript citation numbers and DOI links",
+      "es": "Números de cita volados y enlaces DOI",
+      "zh": "上标引用序号与DOI链接"
+    },
+    "theme": "structure"
+  },
+  "Q113": {
+    "kind": "how",
+    "text": {
+      "en": "How do I use a BibTeX export from Zotero and list works the text never cites?",
+      "es": "¿Cómo uso una exportación BibTeX de Zotero y listo obras que el texto no cita?",
+      "zh": "怎样使用从Zotero导出的BibTeX，并列出正文未引用的文献？"
+    },
+    "index": {
+      "en": "BibTeX from Zotero, uncited works (nocite)",
+      "es": "BibTeX de Zotero, obras no citadas (nocite)",
+      "zh": "Zotero导出的BibTeX，未引用文献（nocite）"
+    },
+    "theme": "structure"
+  },
+  "Q114": {
+    "kind": "how",
+    "text": {
+      "en": "How do I give each chapter of an edited volume its own author and its own bibliography?",
+      "es": "¿Cómo doy a cada capítulo de una obra colectiva su propio autor y su propia bibliografía?",
+      "zh": "怎样让论文集的每一章有自己的作者和自己的参考文献表？"
+    },
+    "index": {
+      "en": "Bibliography per chapter",
+      "es": "Bibliografía por capítulo",
+      "zh": "每章参考文献"
+    },
+    "theme": "structure"
+  },
+  "Q115": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cite cases and legislation in footnotes, in the OSCOLA style of British legal writing?",
+      "es": "¿Cómo cito sentencias y leyes en notas al pie con el estilo OSCOLA de la escritura jurídica británica?",
+      "zh": "怎样按英国法律写作的OSCOLA样式在脚注中引用判例和法规？"
+    },
+    "index": {
+      "en": "Legal citations (OSCOLA)",
+      "es": "Citas jurídicas (OSCOLA)",
+      "zh": "法律引用（OSCOLA）"
+    },
+    "theme": "structure"
   }
 }

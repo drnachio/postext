@@ -13,7 +13,7 @@
     "also": [
       "callout-marker", "callout-columns", "span-boxes", "floated-callouts", "emphasis-colours",
       "color-palette", "opener-design", "opener-band", "design-images", "heading-attributes",
-      "title-line-breaks", "running-heads", "mirrored-margins", "resources", "citations",
+      "title-line-breaks", "running-heads", "mirrored-margins", "resources", "figure-citations",
       "float-placement", "canvas-rendering"
     ]
   },

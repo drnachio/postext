@@ -537,48 +537,6 @@
       }
     }
   },
-  "markdown-links": {
-    "label": {
-      "en": "Clickable Markdown links",
-      "es": "Enlaces de Markdown activos",
-      "zh": "可点击的Markdown链接"
-    },
-    "aliases": {
-      "en": [
-        "hyperlinks",
-        "clickable links",
-        "URL links",
-        "[text](url)"
-      ],
-      "es": [
-        "hipervínculos",
-        "enlaces pulsables",
-        "enlaces a URL",
-        "[texto](url)"
-      ],
-      "zh": [
-        "超链接",
-        "可点击链接",
-        "网址链接",
-        "链接",
-        "[text](url)",
-        "hyperlinks"
-      ]
-    },
-    "explanation": {
-      "en": "[text](url) prints its text and drops the URL in every output. Only :ref citations and contents rows are links; print the URL itself when the reader needs it.",
-      "es": "[texto](url) imprime el texto y descarta la URL en todas las salidas. Solo son enlaces las citas :ref y las filas del índice; imprime la propia URL cuando el lector la necesite.",
-      "zh": "[text](url)在所有输出中都只打印文字，丢掉URL。只有:ref引用和目录条目是链接；读者需要网址时，直接把URL印出来。"
-    },
-    "docs": {
-      "slug": "document-format",
-      "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "zh": "不支持的内容"
-      }
-    }
-  },
   "rtl-cjk": {
     "label": {
       "en": "Right-to-left scripts",

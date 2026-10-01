@@ -13,7 +13,7 @@
     "also": [
       "heading-attributes", "title-line-breaks", "heading-styles", "part-palettes",
       "heading-numbering", "chapter-breaks", "design-anchoring", "design-elements", "bleed-bands",
-      "color-palette", "running-heads", "page-role-filters", "citations", "float-placement",
+      "color-palette", "running-heads", "page-role-filters", "figure-citations", "float-placement",
       "resources", "multi-chapter-books", "canvas-rendering"
     ]
   },

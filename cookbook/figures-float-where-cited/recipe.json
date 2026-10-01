@@ -14,7 +14,7 @@
   ],
   "features": {
     "primary": [
-      "citations",
+      "figure-citations",
       "float-placement",
       "figure-numbering"
     ],

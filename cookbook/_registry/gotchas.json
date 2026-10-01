@@ -92,7 +92,7 @@
       "es": "Una figura entra en la cola cuando empieza el párrafo que la cita, no en la línea de su :ref. Si ese párrafo empieza al pie de una página y la cita cae en la siguiente, una figura 'top' puede abrir esa página por encima de la frase que la cita. Pon el :ref al principio de su párrafo, o abre con él un párrafo nuevo.",
       "zh": "图在引用它的段落开始时就进入队列，而不是在:ref所在的那一行。如果这个段落从一页的底部开始，而引用落在下一页，'top'图可能出现在下一页顶部、引用它的句子之前。把:ref放在段落靠前的位置，或者从它开始另起一段。"
     },
-    "feature": "citations",
+    "feature": "figure-citations",
     "followup": "EF-69"
   },
   "cover-pagebreak": {
@@ -594,7 +594,7 @@
       "es": "Un :ref a un id que no tiene ningún recurso imprime «?» y no coloca nada, y solo el Sandbox avisa. Comprueba que existe cada id que citas.",
       "zh": "引用了不存在的资源id的:ref会打印\"?\"，什么也不放置，只有沙盒会就此给出警告。检查每个被引用的id是否存在。"
     },
-    "feature": "citations",
+    "feature": "figure-citations",
     "followup": "EF-19"
   },
   "parity-page1-recto": {

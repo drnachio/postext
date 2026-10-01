@@ -11,7 +11,7 @@
   "features": {
     "primary": ["math", "heading-numbering"],
     "also": [
-      "opener-design", "span-boxes", "chips", "citations", "unnumbered-headings", "heading-styles",
+      "opener-design", "span-boxes", "chips", "figure-citations", "unnumbered-headings", "heading-styles",
       "opener-band", "heading-attributes", "figure-numbering", "float-placement",
       "super-subscripts", "captions", "table-style", "paragraph-styles", "resources",
       "bibliography", "pdf-export"

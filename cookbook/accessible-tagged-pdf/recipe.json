@@ -25,7 +25,7 @@
       "table-model",
       "inline-embeds",
       "swatches",
-      "citations",
+      "figure-citations",
       "frontmatter",
       "heading-styles",
       "unnumbered-headings",
@@ -43,9 +43,6 @@
     "Q74",
     "Q37",
     "Q02"
-  ],
-  "gaps": [
-    "markdown-links"
   ],
   "gotchas": [
     "float-read-last",
@@ -185,5 +182,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-01"
 }
