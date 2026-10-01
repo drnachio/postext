@@ -40,6 +40,33 @@ describe('formatting', () => {
     expect(bib.entries[1]!.html).toContain('<a href="https://doi.org/10.1000/xyz">');
   });
 
+  it('MLA: a narrative citation with no page ends with the name', () => {
+    const p = engine.createProcessor({ style: 'modern-language-association', locale: 'en-US', items });
+    const out = p.cite([{ mode: 'narrative', items: [{ id: 'garcia2020' }] }, { mode: 'narrative', items: [{ id: 'garcia2020', locator: '4', label: 'page' }] }]);
+    expect(out).toEqual(['García', 'García (4)']);
+  });
+
+  it('OSCOLA: a case paragraph stays in brackets in later notes and ibid', () => {
+    const law: CslItem[] = [
+      { id: 'rob', type: 'legal_case', title: 'Robinson v Chief Constable of West Yorkshire Police', 'title-short': 'Robinson', authority: 'UKSC', number: '4', 'container-title': 'AC', volume: '[2018]', page: '736', issued: { 'date-parts': [[2018]] } },
+      { id: 'act', type: 'legislation', title: 'Compensation Act 2006' },
+      { id: 'other', type: 'book', author: [{ family: 'Stapleton', given: 'Jane' }], title: 'Product Liability', issued: { 'date-parts': [[1994]] }, publisher: 'Butterworths' },
+    ];
+    const p = engine.createProcessor({ style: 'oscola', locale: 'en-GB', items: law });
+    const out = p.cite([
+      { mode: 'parenthetical', noteIndex: 1, items: [{ id: 'rob', locator: '21', label: 'paragraph' }] },
+      { mode: 'parenthetical', noteIndex: 2, items: [{ id: 'rob', locator: '27', label: 'paragraph' }] },
+      { mode: 'parenthetical', noteIndex: 3, items: [{ id: 'other' }] },
+      { mode: 'parenthetical', noteIndex: 4, items: [{ id: 'rob', locator: '55', label: 'paragraph' }] },
+      { mode: 'parenthetical', noteIndex: 5, items: [{ id: 'act', locator: '6', label: 'section' }] },
+      { mode: 'parenthetical', noteIndex: 6, items: [{ id: 'act', locator: '7', label: 'section' }] },
+    ]);
+    expect(out[0]).toContain('[21]');
+    expect(out[1]).toMatch(/^ibid \[27\]/i);
+    expect(out[3]).toMatch(/Robinson<\/i> \(n 1\) \[55\]/);
+    expect(out[5]).toMatch(/^ibid s\u00a0?\s?7/i);
+  });
+
   it('IEEE: numbers in citation order, a label column, narrative authors', () => {
     const p = engine.createProcessor({ style: 'ieee', locale: 'en-US', items });
     expect(p.numeric).toBe(true);

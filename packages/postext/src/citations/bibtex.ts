@@ -303,10 +303,14 @@ export function parseBibtex(source: string, issues: BibtexIssue[] = []): CslItem
       if (value !== undefined && value.length > 0) item[field] = value;
     };
     set('title', f.title);
+    // Zotero writes the short title it shows in its own lists; MLA and
+    // Chicago print it in a work's later citations (`title-short`).
+    set('title-short', f.shorttitle);
     if (raw.author) item.author = parseNames(raw.author);
     if (raw.editor) item.editor = parseNames(raw.editor);
     if (raw.translator) item.translator = parseNames(raw.translator);
     set('container-title', f.journaltitle ?? f.journal ?? f.booktitle);
+    set('container-title-short', f.shortjournal);
     set('collection-title', f.series);
     set('publisher', f.publisher ?? f.school ?? f.institution ?? f.organization);
     set('publisher-place', f.location ?? f.address);

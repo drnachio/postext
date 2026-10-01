@@ -59,15 +59,22 @@
     </group>
   </macro>
   <macro name="label-locator">
-    <group delimiter=" ">
-      <choose>
-        <if locator="page"/>
-        <else>
+    <!-- postext: a paragraph of a case is pinpointed in brackets in every
+         note, not only the first ("(n 1) [55]", "ibid [27]"). -->
+    <choose>
+      <if type="legal_case" locator="paragraph">
+        <text variable="locator" prefix="[" suffix="]"/>
+      </if>
+      <else-if locator="page">
+        <text variable="locator"/>
+      </else-if>
+      <else>
+        <group delimiter=" ">
           <label form="short" strip-periods="true" variable="locator"/>
-        </else>
-      </choose>
-      <text variable="locator"/>
-    </group>
+          <text variable="locator"/>
+        </group>
+      </else>
+    </choose>
   </macro>
   <macro name="label-locator-all">
     <group delimiter=" ">
@@ -567,7 +574,7 @@
         <if position="ibid-with-locator">
           <group delimiter=" ">
             <text strip-periods="true" term="ibid" text-case="lowercase"/>
-            <text variable="locator"/>
+            <text macro="label-locator"/>
           </group>
         </if>
         <else-if position="ibid">
