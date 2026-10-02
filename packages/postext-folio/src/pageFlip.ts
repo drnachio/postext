@@ -511,17 +511,29 @@ interface Surfaces {
 function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0, hingeZ?: number) {
   const pos = geometry.attributes.position;
   const sx = forward ? 1 : -1;
-  // A rigid leaf rests on its stack's fore-edge and swings over the hinge.
-  const r = rigidity * smooth(0, 0.06, q) * smooth(0, 0.06, 1 - q);
-  // A board turns on the edge of the block it leaves (a cover hinged at
-  // the top of the pages); a stiff leaf on the gutter.
-  const hinge = hingeZ ?? along(book.right, 0)[1];
   const [xr, zr] = along(book.right, W);
   const [xl, zl] = along(book.left, W);
-  const a0 = hingeZ === undefined ? Math.atan2(zr - hinge, xr) : Math.max(0, Math.atan2(zr - hinge, xr));
-  const a1 = Math.PI - Math.atan2(zl - hinge, xl);
   const qa = forward ? q : 1 - q;
-  const phi = a0 + (a1 - a0) * qa;
+  let hinge: number;
+  let phi: number;
+  let r: number;
+  if (hingeZ !== undefined) {
+    // A board (a case's cover): it turns on the joint at the top of the
+    // block, and as it comes down to the lower side the joint comes down
+    // the spine with it (the cloth flexes), so it lands flat on that side
+    // instead of dropping. Flat on either side, it is exactly its rest.
+    const descend = zl < zr ? smooth(0.4, 1, qa) : 1 - smooth(0.4, 1, 1 - qa);
+    hinge = zr + (zl - zr) * descend;
+    phi = Math.PI * ease(qa);
+    r = rigidity;
+  } else {
+    // A stiff leaf rests on its stack's fore-edge and swings over the gutter.
+    r = rigidity * smooth(0, 0.06, q) * smooth(0, 0.06, 1 - q);
+    hinge = along(book.right, 0)[1];
+    const a0 = Math.atan2(zr - hinge, xr);
+    const a1 = Math.PI - Math.atan2(zl - hinge, xl);
+    phi = a0 + (a1 - a0) * qa;
+  }
   // How far a turning leaf stands off the pages: none at rest or for a
   // corner barely lifted, a few degrees through the middle of the turn.
   const inAir = smooth(0.02, 0.22, q) * smooth(0.02, 0.22, 1 - q);
@@ -754,6 +766,10 @@ export class PageFlipper {
     this.desk = new Mesh(new PlaneGeometry(1, 1), new MeshStandardMaterial());
     this.desk.receiveShadow = true;
     this.desk.renderOrder = -1;
+    // The desk lies a hair under the book (whose pages rest on it when the
+    // book carries its own covers) and gives way in depth: seen at a grazing
+    // angle the two never fight.
+    this.desk.position.z = -1;
     this.key.castShadow = true;
     this.key.shadow.mapSize.set(2048, 2048);
     this.key.shadow.bias = -0.0004;
@@ -845,6 +861,7 @@ export class PageFlipper {
       }
     }
     old.dispose();
+    Object.assign(this.desk.material, { polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 16 });
     // The cover.
     const c = this.coverMaterial;
     c.color.set(r.binding.coverColor.hex);
@@ -1157,7 +1174,9 @@ export class PageFlipper {
     // Beside an empty side (the book closed, or opened at its first or
     // last page) the back stands as the spine, the block's full height.
     const lowSide = Math.min(tL, tR);
-    const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.min(along(pl, 0)[1], along(pr, 0)[1]);
+    // It reaches the higher of the two sides at the spine (a board lying
+    // flat on one side meets it low; the block on the other stands tall).
+    const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.max(along(pl, 0)[1], along(pr, 0)[1]);
     const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
     this.clearSpine();
     if (meet > 0.4) {

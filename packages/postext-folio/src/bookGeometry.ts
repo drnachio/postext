@@ -13,13 +13,13 @@ export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat" | "sadd
  *  `dipMm`: how far below that a thin book's pages still sink; the case's
  *  boards and their squares (the margin they stand out round the pages). */
 export const BINDINGS: Record<BindingKind, { gutter: number; perThickness: number; spine: number; power: number; dipMm: number; boardMm: number; squareMm: number; jointMm: number }> = {
-  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 0.85, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
-  sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.8, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.7, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  layflat: { gutter: 0.025, perThickness: 0.4, spine: 0.95, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
+  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 1, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
+  sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.95, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.85, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  layflat: { gutter: 0.025, perThickness: 0.4, spine: 1, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
   // Folded sheets stapled through the fold: the centre spread opens flat,
   // the cover is a sheet like the others.
-  saddleStitch: { gutter: 0.05, perThickness: 1.4, spine: 0.85, power: 2.2, dipMm: 1.5, boardMm: 0.25, squareMm: 0, jointMm: 0 },
+  saddleStitch: { gutter: 0.05, perThickness: 1.4, spine: 0.9, power: 2.2, dipMm: 1.5, boardMm: 0.25, squareMm: 0, jointMm: 0 },
 };
 
 /** A side's top surface: `x(s)`, `z(s)` for arc length `s` from the spine
