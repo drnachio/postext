@@ -19,6 +19,13 @@ export interface FolioAppearance {
    *  (the other chapters of a book shown a chapter at a time): they are
    *  never drawn, only counted for the thickness of the page block. */
   extraPages?: { before: number; after: number };
+  /** Where the scanned desk textures are served (see
+   *  `FlipAppearance.textureBaseUrl`). */
+  textureBaseUrl?: string;
+  /** The first page given is the book's front cover, the last its back
+   *  cover (when it falls on a verso): they turn as boards and no case
+   *  is drawn round the pages. */
+  covers?: { front: boolean; back: boolean };
 }
 
 export interface FolioLabels {
@@ -182,7 +189,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   let appearanceKey = "";
   const animate = options.animate ?? true;
   const controls = options.controls ?? true;
-  const showCount = controls && (options.showCount ?? true);
+  const showCount = options.showCount ?? true;
 
   const root = document.createElement("div");
   root.className = "postext-folio";
@@ -202,10 +209,12 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   count.setAttribute("aria-live", "polite");
   prevBtn.classList.add("is-prev");
   nextBtn.classList.add("is-next");
-  root.append(spreadEl, prevBtn, nextBtn);
-  if (controls) root.append(count);
+  // The count is always there for screen readers (a live region), shown
+  // only with `showCount`; `controls: false` leaves the turning to the
+  // host's own buttons.
+  root.append(spreadEl, prevBtn, nextBtn, count);
   if (!showCount) count.classList.add("is-unseen");
-  else prevBtn.hidden = nextBtn.hidden = true;
+  if (!controls) prevBtn.hidden = nextBtn.hidden = true;
   container.append(root);
 
   let single = false;
@@ -243,6 +252,20 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       extraLeaves: single ? { before: extra.before, after: extra.after } : { before: Math.ceil(extra.before / 2), after: Math.ceil(extra.after / 2) },
       leafPapers,
       singlePage: single,
+      textureBaseUrl: appearance.textureBaseUrl,
+      coverLeaves: coverLeavesOf(),
+    };
+  }
+
+  /** The leaves that are the covers: the first, when the book opens on its
+   *  first page alone; the last, when the last page is a verso alone. */
+  function coverLeavesOf(): FlipAppearance["coverLeaves"] {
+    const c = appearance.covers;
+    if (!c || spreads.length < 2) return undefined;
+    const last = spreads[spreads.length - 1];
+    return {
+      ...(c.front && (single || spreads[0][0] === null) ? { front: 0 } : {}),
+      ...(c.back && !single && last[1] === null ? { back: spreads.length - 2 } : {}),
     };
   }
 

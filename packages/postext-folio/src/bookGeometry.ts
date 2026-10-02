@@ -53,17 +53,27 @@ function heightAt(p: Pick<Profile, "t" | "meet" | "g" | "power">, x: number, lam
  * stack. A stack's lower leaves follow the same curve scaled down to the
  * cover, so the block's head and tail show the fan of leaves.
  */
-export function profiles(binding: BindingKind, W: number, pxPerMm: number, tLeft: number, tRight: number): { left: Profile; right: Profile; board: number } {
+export function profiles(
+  binding: BindingKind,
+  W: number,
+  pxPerMm: number,
+  tLeft: number,
+  tRight: number,
+  /** `flat`: a side whose top leaf is rigid (a board) lies flat, with no
+   *  gutter; `noCase`: the boards are leaves of the stacks (the document's
+   *  own cover pages), so the block rests on the desk. */
+  { flatLeft = false, flatRight = false, noCase = false }: { flatLeft?: boolean; flatRight?: boolean; noCase?: boolean } = {},
+): { left: Profile; right: Profile; board: number } {
   const b = BINDINGS[binding];
   const T = tLeft + tRight;
   const g = Math.min(0.3 * W, b.gutter * W + b.perThickness * T);
-  const zb = b.boardMm * pxPerMm;
+  const zb = noCase ? 0 : b.boardMm * pxPerMm;
   // The leaves sink into the gutter by the binding's own dip and by a
   // share of the block's thickness: a thick book opens in a deeper valley.
   const dip = (b.dipMm * pxPerMm + 0.3 * T) * (binding === "layflat" ? 0.1 : 1);
   const meet = Math.max(0, ((tLeft + tRight) / 2) * b.spine - dip);
-  const make = (t: number): Profile => {
-    const p = { t, meet, g, power: b.power };
+  const make = (t: number, flat: boolean): Profile => {
+    const p = { t, meet: flat ? t : meet, g, power: b.power };
     // Arc length along x, then x and z at even steps of arc length.
     const fine = SAMPLES * 4;
     const dx = (1.2 * W) / fine;
@@ -90,7 +100,7 @@ export function profiles(binding: BindingKind, W: number, pxPerMm: number, tLeft
     }
     return { ...p, zb, xs, zs, step };
   };
-  return { left: make(tLeft), right: make(tRight), board: zb };
+  return { left: make(tLeft, flatLeft), right: make(tRight, flatRight), board: zb };
 }
 
 /** Where arc length `s` of a profile lies: [x, z, dz/dx]. */

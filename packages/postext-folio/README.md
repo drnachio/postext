@@ -114,6 +114,23 @@ book.goToPage(2);
 
 The viewer takes the keyboard when focused: ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End. Its labels default to English; pass `labels` (`region`, `prev`, `next`, `count`) to translate them.
 
+## Desk textures
+
+The photographed desk surfaces served from postext.dev (`/folio/textures/`, with a `manifest.json` and a `CREDITS` file) are CC0 texture sets, resized and re-encoded for the web. No attribution is required; thanks to their authors:
+
+<table>
+<thead><tr><th>Desk</th><th>Set</th><th>Author</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>oak</td><td>Oak Veneer 01</td><td>Jenelle van Heerden</td><td><a href="https://polyhaven.com/a/oak_veneer_01">Poly Haven</a></td></tr>
+<tr><td>walnut</td><td>Wood 051</td><td>Lennart Demes</td><td><a href="https://ambientcg.com/view?id=Wood051">ambientCG</a></td></tr>
+<tr><td>linen</td><td>Fabric 036</td><td>Lennart Demes</td><td><a href="https://ambientcg.com/view?id=Fabric036">ambientCG</a></td></tr>
+<tr><td>felt</td><td>Fabric 034</td><td>Lennart Demes</td><td><a href="https://ambientcg.com/view?id=Fabric034">ambientCG</a></td></tr>
+<tr><td>leather</td><td>Brown Leather</td><td>Rob Tuytel</td><td><a href="https://polyhaven.com/a/brown_leather">Poly Haven</a></td></tr>
+<tr><td>marble</td><td>Marble 021</td><td>Lennart Demes</td><td><a href="https://ambientcg.com/view?id=Marble021">ambientCG</a></td></tr>
+<tr><td>plain</td><td>Plastic 013 A</td><td>Lennart Demes</td><td><a href="https://ambientcg.com/view?id=Plastic013A">ambientCG</a></td></tr>
+</tbody>
+</table>
+
 ## License
 
-MIT
+MIT (code). The desk textures above are CC0.

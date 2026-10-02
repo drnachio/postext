@@ -233,7 +233,7 @@ export function PinToolbarButton({
 /** The page field shows the book page number printed on the current page
  *  (not its index in the chapter) and jumps to the page carrying the
  *  number typed, clamped to the chapter's range. */
-function PageNumberInput({
+export function PageNumberInput({
   pageNumber,
   firstPageNumber,
   lastPageNumber,

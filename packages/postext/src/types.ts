@@ -2766,9 +2766,18 @@ export interface FolioPaperConfig {
   showThrough?: boolean;
 }
 
+/** Where the book's covers come from: `'case'` draws a case round the
+ *  pages; `'pages'` takes the document's first page as the front board and
+ *  its last page, when it is a verso, as the back board. The book then
+ *  lies closed until the cover is turned and closes again on the last
+ *  leaf. */
+export type FolioCoverSource = 'case' | 'pages';
+
 export interface FolioBindingConfig {
   /** Default `'hardcover'`. */
   type?: FolioBindingType;
+  /** Default `'case'`. */
+  cover?: FolioCoverSource;
   /** Default `'auto'`. */
   coverMaterial?: FolioCoverMaterial;
   /** Default a dark blue cloth. */
@@ -2818,6 +2827,7 @@ export interface ResolvedFolioConfig {
   };
   binding: {
     type: FolioBindingType;
+    cover: FolioCoverSource;
     coverMaterial: Exclude<FolioCoverMaterial, 'auto'>;
     coverColor: ColorValue;
   };

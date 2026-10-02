@@ -239,6 +239,7 @@ export type {
   FolioPaperTexture,
   FolioBindingType,
   FolioCoverMaterial,
+  FolioCoverSource,
   FolioSurfaceType,
   FolioEnvironment,
   CustomFontFormat,

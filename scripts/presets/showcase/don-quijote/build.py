@@ -526,6 +526,9 @@ def shared_config() -> dict:
         "colorPalette": color_palette(),
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # The first page is the cover and the last the back cover: Folio
+        # turns them as the boards of the case.
+        "folio": {"binding": {"cover": "pages"}},
     }
 
 

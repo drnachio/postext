@@ -158,3 +158,12 @@ describe('folio in the document config', () => {
     expect(resolved.paper.shade.hex).toBe('#880000');
   });
 });
+
+describe('folio binding cover', () => {
+  it('draws a case unless the document carries its covers', () => {
+    expect(resolveFolioConfig(undefined).binding.cover).toBe('case');
+    expect(resolveFolioConfig({ binding: { cover: 'pages' } }).binding.cover).toBe('pages');
+    expect(stripFolioDefaults({ binding: { cover: 'case' } })).toBeUndefined();
+    expect(stripFolioDefaults({ binding: { cover: 'pages' } })).toEqual({ binding: { cover: 'pages' } });
+  });
+});

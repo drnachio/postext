@@ -48,7 +48,7 @@ export const DEFAULT_FOLIO_CONFIG: ResolvedFolioConfig = {
     shade: hex(FOLIO_PAPER_STOCKS.uncoated.shade),
     showThrough: true,
   },
-  binding: { type: 'hardcover', coverMaterial: 'cloth', coverColor: hex('#2c3e57') },
+  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth', coverColor: hex('#2c3e57') },
   surface: { type: 'oak' },
   lighting: { environment: 'studio', intensity: 1, shadows: true },
 };
@@ -80,6 +80,7 @@ export function resolveFolioConfig(partial?: FolioConfig): ResolvedFolioConfig {
     },
     binding: {
       type: binding,
+      cover: partial?.binding?.cover === 'pages' ? 'pages' : 'case',
       coverMaterial: material && material !== 'auto' ? material : binding === 'hardcover' ? 'cloth' : 'paper',
       coverColor: partial?.binding?.coverColor ?? d.binding.coverColor,
     },
@@ -126,6 +127,7 @@ export function stripFolioDefaults(folio?: FolioConfig): FolioConfig | undefined
     const b = folio.binding;
     const binding: NonNullable<FolioConfig['binding']> = {};
     if (b.type !== undefined && b.type !== d.binding.type) binding.type = b.type;
+    if (b.cover !== undefined && b.cover !== d.binding.cover) binding.cover = b.cover;
     if (b.coverMaterial !== undefined && b.coverMaterial !== 'auto') binding.coverMaterial = b.coverMaterial;
     if (b.coverColor !== undefined && !sameColor(b.coverColor, d.binding.coverColor)) binding.coverColor = b.coverColor;
     if (Object.keys(binding).length) result.binding = binding;

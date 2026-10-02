@@ -37,6 +37,7 @@ export interface SandboxLabels {
   folioPage: string;
   folioPageAlt: string;
   folioLoading: string;
+  folioToolbar: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;
@@ -961,6 +962,10 @@ export interface SandboxLabels {
   folioBindingSewn: string;
   folioBindingLayflat: string;
   folioCoverMaterial: string;
+  folioCoverSource: string;
+  folioCoverSourceTooltip: string;
+  folioCoverSourceCase: string;
+  folioCoverSourcePages: string;
   folioCoverMaterialTooltip: string;
   folioCoverCloth: string;
   folioCoverPaper: string;

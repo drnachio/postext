@@ -5959,6 +5959,7 @@ interface FolioConfig {
   };
   binding?: {
     type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
   };
@@ -6043,6 +6044,12 @@ interface FolioConfig {
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
       <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>封面来源。<code>'case'</code> 在书页外画出书壳；<code>'pages'</code> 把全书第一页当作前封面板、最后一页（左页时）当作后封面板：翻开封面之前书是合着的，封面板硬挺地翻动，不再另画书壳。</td>
     </tr>
     <tr>
       <td><code>binding.coverMaterial</code></td>
