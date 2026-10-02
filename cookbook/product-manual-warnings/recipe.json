@@ -142,6 +142,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#10727b"},
+    "surface": {"type": "plain", "color": "#e9ecee"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

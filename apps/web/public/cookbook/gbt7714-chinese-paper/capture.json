@@ -95,7 +95,8 @@
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 24962
+        "bytes": 25077,
+        "folio": "1668ad62"
       },
       "detected": {
         "apis": [
@@ -416,7 +417,8 @@
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 25019
+        "bytes": 25135,
+        "folio": "1668ad62"
       },
       "detected": {
         "apis": [

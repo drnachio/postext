@@ -136,6 +136,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "newsprint", "grammage": 45, "shade": "#fcfbf8"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

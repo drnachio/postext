@@ -106,7 +106,8 @@
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19751
+        "bytes": 19902,
+        "folio": "3a3c9a0c"
       },
       "detected": {
         "apis": [
@@ -386,7 +387,8 @@
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19803
+        "bytes": 19955,
+        "folio": "3a3c9a0c"
       },
       "detected": {
         "apis": [

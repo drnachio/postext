@@ -93,6 +93,12 @@
     "expect": { "pages": [4, 4], "nearEmptyPages": [1] }
   },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "coatedSilk", "grammage": 150, "showThrough": false},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "marble"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

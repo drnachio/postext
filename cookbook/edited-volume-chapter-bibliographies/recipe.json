@@ -76,6 +76,12 @@
     "card": "page",
     "pages": "all"
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "shade": "#fefdfb"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#8e2b1f"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

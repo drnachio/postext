@@ -151,7 +151,8 @@
       },
       "sandbox": {
         "file": "walking-guide-thumb-tabs.postext",
-        "bytes": 52216
+        "bytes": 52348,
+        "folio": "98b88fc8"
       },
       "detected": {
         "apis": [
@@ -568,7 +569,8 @@
       },
       "sandbox": {
         "file": "walking-guide-thumb-tabs.postext",
-        "bytes": 52454
+        "bytes": 52584,
+        "folio": "98b88fc8"
       },
       "detected": {
         "apis": [

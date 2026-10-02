@@ -139,6 +139,12 @@
       "h": 0.5015
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 70, "texture": "felt", "textureStrength": 0.6, "shade": "#f9f3e7"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

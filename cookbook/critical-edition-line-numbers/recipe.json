@@ -164,6 +164,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "texture": "laid", "textureStrength": 0.6},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#3c5a3e"},
+    "surface": {"type": "leather"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {

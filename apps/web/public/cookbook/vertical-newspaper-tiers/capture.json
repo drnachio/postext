@@ -96,7 +96,8 @@
       },
       "sandbox": {
         "file": "vertical-newspaper-tiers.postext",
-        "bytes": 22298
+        "bytes": 22416,
+        "folio": "e5cb273f"
       },
       "detected": {
         "apis": [
@@ -425,7 +426,8 @@
       },
       "sandbox": {
         "file": "vertical-newspaper-tiers.postext",
-        "bytes": 22325
+        "bytes": 22445,
+        "folio": "e5cb273f"
       },
       "detected": {
         "apis": [

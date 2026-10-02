@@ -159,7 +159,8 @@
       },
       "sandbox": {
         "file": "vertical-novel-right-bound.postext",
-        "bytes": 279142
+        "bytes": 279303,
+        "folio": "02ddac55"
       },
       "detected": {
         "apis": [
@@ -503,7 +504,8 @@
       },
       "sandbox": {
         "file": "vertical-novel-right-bound.postext",
-        "bytes": 279164
+        "bytes": 279324,
+        "folio": "02ddac55"
       },
       "detected": {
         "apis": [

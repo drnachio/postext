@@ -206,6 +206,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#e6e8eb"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

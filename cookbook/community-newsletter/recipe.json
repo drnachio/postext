@@ -146,6 +146,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 90, "shade": "#fdfdfb"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "linen"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

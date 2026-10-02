@@ -73,7 +73,8 @@
       },
       "sandbox": {
         "file": "cv-with-sidebar.postext",
-        "bytes": 29075
+        "bytes": 29185,
+        "folio": "4fd007fe"
       },
       "detected": {
         "apis": [
@@ -324,7 +325,8 @@
       },
       "sandbox": {
         "file": "cv-with-sidebar.postext",
-        "bytes": 31400
+        "bytes": 31509,
+        "folio": "4fd007fe"
       },
       "detected": {
         "apis": [

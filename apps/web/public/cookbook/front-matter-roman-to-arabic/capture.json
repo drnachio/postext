@@ -228,7 +228,8 @@
       },
       "sandbox": {
         "file": "front-matter-roman-to-arabic.postext",
-        "bytes": 713610
+        "bytes": 713743,
+        "folio": "ba949066"
       },
       "detected": {
         "apis": [

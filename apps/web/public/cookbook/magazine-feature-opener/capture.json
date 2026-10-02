@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "magazine-feature-opener.postext",
-        "bytes": 768059
+        "bytes": 768184,
+        "folio": "da2eb3c6"
       },
       "detected": {
         "apis": [
@@ -501,7 +502,8 @@
       },
       "sandbox": {
         "file": "magazine-feature-opener.postext",
-        "bytes": 768047
+        "bytes": 768173,
+        "folio": "da2eb3c6"
       },
       "detected": {
         "apis": [

@@ -198,7 +198,8 @@
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 29605
+        "bytes": 29715,
+        "folio": "8dec2b23"
       },
       "detected": {
         "apis": [
@@ -704,7 +705,8 @@
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 30190
+        "bytes": 30295,
+        "folio": "8dec2b23"
       },
       "detected": {
         "apis": [

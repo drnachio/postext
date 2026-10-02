@@ -67,6 +67,12 @@
     "card": "page",
     "pages": "all"
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 80},
+    "binding": {"type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#0d5c63"},
+    "surface": {"type": "plain", "color": "#dfe9ea"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

@@ -164,6 +164,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 170, "showThrough": false, "shade": "#fcfdfc"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "felt", "color": "#3d4a4c"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

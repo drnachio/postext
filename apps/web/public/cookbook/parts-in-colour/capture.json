@@ -192,7 +192,8 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843769
+        "bytes": 843904,
+        "folio": "a033cff5"
       },
       "detected": {
         "apis": [
@@ -672,7 +673,8 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843698
+        "bytes": 843834,
+        "folio": "a033cff5"
       },
       "detected": {
         "apis": [

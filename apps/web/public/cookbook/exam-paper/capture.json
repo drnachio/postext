@@ -113,7 +113,8 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23221
+        "bytes": 23314,
+        "folio": "059452bc"
       },
       "detected": {
         "apis": [
@@ -520,7 +521,8 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23670
+        "bytes": 23762,
+        "folio": "059452bc"
       },
       "detected": {
         "apis": [

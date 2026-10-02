@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 82147
+        "bytes": 82305,
+        "folio": "444e4865"
       },
       "detected": {
         "apis": [
@@ -395,7 +396,8 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 83282
+        "bytes": 83437,
+        "folio": "444e4865"
       },
       "detected": {
         "apis": [

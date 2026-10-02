@@ -46,6 +46,12 @@
     "pages": "all",
     "expect": { "pages": [4, 4] }
   },
+  "folio": {
+    "paper": {"type": "bible", "grammage": 50, "shade": "#fdfdfb"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#1f3a5f"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

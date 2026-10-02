@@ -1242,7 +1242,7 @@ function headingTitle(markdown) {
  * into `page.pageNumbering`, the rest is reported in `notes`. Returns the
  * bundle as base64, or `error` when a resource's file cannot be found.
  */
-export async function sandboxBundle({ select = 'last', id, name, description, locale, thumbnail = null } = {}) {
+export async function sandboxBundle({ select = 'last', id, name, description, locale, thumbnail = null, folio = null } = {}) {
   const cb = record();
   const build = pick(select);
   if (!build) return { error: 'no recorded build' };
@@ -1255,6 +1255,14 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
   const notes = [];
   const content = build.content ?? {};
   const config = plain(source.config ?? {}) ?? {};
+  // recipe.json `folio`: how the Sandbox's Folio view shows the publication.
+  if (folio) {
+    const own = config.folio ?? {};
+    config.folio = { ...own };
+    for (const [key, value] of Object.entries(folio)) {
+      config.folio[key] = value && typeof value === 'object' ? { ...own[key], ...value } : value;
+    }
+  }
 
   const cont = build.kind === 'bundle' ? null : content.continuation;
   if (cont && typeof cont === 'object') {

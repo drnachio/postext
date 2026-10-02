@@ -88,7 +88,8 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 25849
+        "bytes": 25981,
+        "folio": "bda6e41d"
       },
       "detected": {
         "apis": [
@@ -343,7 +344,8 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 26182
+        "bytes": 26312,
+        "folio": "bda6e41d"
       },
       "detected": {
         "apis": [

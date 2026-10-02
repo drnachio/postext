@@ -88,7 +88,8 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31091
+        "bytes": 31221,
+        "folio": "de4718c0"
       },
       "detected": {
         "apis": [
@@ -403,7 +404,8 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31681
+        "bytes": 31809,
+        "folio": "de4718c0"
       },
       "detected": {
         "apis": [

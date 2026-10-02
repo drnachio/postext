@@ -166,7 +166,8 @@
       },
       "sandbox": {
         "file": "trade-paperback-novel.postext",
-        "bytes": 374097
+        "bytes": 374217,
+        "folio": "846eba29"
       },
       "detected": {
         "apis": [

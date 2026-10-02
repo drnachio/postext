@@ -152,6 +152,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedSilk", "grammage": 170, "showThrough": false, "shade": "#faf9f7"},
+    "binding": {"type": "layflat", "cover": "case", "coverMaterial": "cloth", "coverColor": "#1c1f27"},
+    "surface": {"type": "marble"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

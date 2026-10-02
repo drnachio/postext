@@ -117,7 +117,8 @@
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 25943
+        "bytes": 26069,
+        "folio": "662b056b"
       },
       "detected": {
         "apis": [
@@ -405,7 +406,8 @@
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 26011
+        "bytes": 26139,
+        "folio": "662b056b"
       },
       "detected": {
         "apis": [

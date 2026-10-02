@@ -148,7 +148,8 @@
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38034
+        "bytes": 38191,
+        "folio": "941f3254"
       },
       "detected": {
         "apis": [
@@ -494,7 +495,8 @@
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38063
+        "bytes": 38220,
+        "folio": "941f3254"
       },
       "detected": {
         "apis": [

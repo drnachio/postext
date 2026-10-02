@@ -135,6 +135,29 @@ export type GotchaId = string;
 export type WarningKind = string;
 export type CollectionId = string;
 
+/** `config.folio` (postext `FolioConfig`) as recipe.json writes it. */
+export interface RecipeFolio {
+  tilt?: number;
+  paper?: {
+    type?: "uncoated" | "bookWove" | "coatedMatte" | "coatedSilk" | "coatedGloss" | "bible" | "newsprint" | "cardStock" | "board";
+    grammage?: number;
+    bulk?: number;
+    finish?: "uncoated" | "matte" | "silk" | "gloss";
+    texture?: "smooth" | "vellum" | "wove" | "laid" | "linen" | "felt";
+    textureStrength?: number;
+    shade?: string;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch";
+    cover?: "case" | "pages";
+    coverMaterial?: "cloth" | "paper" | "leather";
+    coverColor?: string;
+  };
+  surface?: { type?: "oak" | "walnut" | "linen" | "felt" | "leather" | "marble" | "plain" | "none"; color?: string };
+  lighting?: { environment?: "studio" | "daylight" | "lamp" | "overcast" | "night"; intensity?: number; shadows?: boolean };
+}
+
 export interface RecipeMeta {
   $schema?: string;
   schemaVersion: 1;
@@ -225,6 +248,11 @@ export interface RecipeMeta {
   };
   /** Keep and serve the PDF the pen produced. */
   downloads?: { pdf?: boolean };
+  /** How the Sandbox's Folio view presents the publication in 3D: written
+   *  into the `.postext` bundle as `config.folio` (over the pen's own), with
+   *  colours as `#rrggbb`. It never changes the pages, so it stays out of
+   *  the source hash. */
+  folio?: RecipeFolio;
 
   credits: {
     authors: { name: string; github?: string; url?: string }[];
@@ -464,7 +492,7 @@ export interface CaptureVariant {
   pdf?: { file: string; bytes: number; pages: number };
   /** The document as a `.postext` bundle, which the Sandbox opens
    *  (`/<locale>/sandbox#recipe=<slug>&lang=<variant>`). */
-  sandbox?: { file: string; bytes: number };
+  sandbox?: { file: string; bytes: number; /** folioHash of recipe.json `folio` the bundle carries. */ folio?: string };
   detected: {
     apis: string[];
     configKeys: string[];

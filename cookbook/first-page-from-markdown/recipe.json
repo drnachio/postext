@@ -36,6 +36,12 @@
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
+  "folio": {
+    "paper": {"type": "coatedSilk", "grammage": 90},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

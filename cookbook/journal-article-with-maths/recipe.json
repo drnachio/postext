@@ -55,6 +55,12 @@
     "expect": { "pages": [4, 4], "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }
   },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 90},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#dfe7e3"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

@@ -120,7 +120,8 @@
       },
       "sandbox": {
         "file": "riso-zine-single-ink.postext",
-        "bytes": 68596
+        "bytes": 68746,
+        "folio": "ead0b06f"
       },
       "detected": {
         "apis": [

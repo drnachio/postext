@@ -159,6 +159,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 100, "texture": "smooth"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#1a1a1a"},
+    "surface": {"type": "plain", "color": "#d8d8d6"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

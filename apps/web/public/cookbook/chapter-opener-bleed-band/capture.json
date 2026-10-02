@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34389
+        "bytes": 34509,
+        "folio": "43da5799"
       },
       "detected": {
         "apis": [
@@ -440,7 +441,8 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34611
+        "bytes": 34731,
+        "folio": "43da5799"
       },
       "detected": {
         "apis": [

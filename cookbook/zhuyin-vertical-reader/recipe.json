@@ -96,6 +96,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#b83f28"},
+    "surface": {"type": "plain", "color": "#efe7d6"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

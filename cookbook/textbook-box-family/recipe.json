@@ -50,6 +50,12 @@
     "focus": { "page": 2, "x": 0.017, "y": 0.35, "w": 0.48, "h": 0.27 },
     "expect": { "pages": [3, 3] }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 90},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#ab2e78"},
+    "surface": {"type": "plain", "color": "#ececf0"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

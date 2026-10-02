@@ -120,7 +120,8 @@
       },
       "sandbox": {
         "file": "print-ready-pdf.postext",
-        "bytes": 101864
+        "bytes": 101976,
+        "folio": "2465c19b"
       },
       "detected": {
         "apis": [

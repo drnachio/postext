@@ -94,7 +94,8 @@
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 147497
+        "bytes": 147607,
+        "folio": "c651b1f6"
       },
       "detected": {
         "apis": [
@@ -405,7 +406,8 @@
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 149360
+        "bytes": 149473,
+        "folio": "c651b1f6"
       },
       "detected": {
         "apis": [

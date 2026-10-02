@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "web-worker-live-editor.postext",
-        "bytes": 218617
+        "bytes": 218017,
+        "folio": "ddaa1eeb"
       },
       "detected": {
         "apis": [

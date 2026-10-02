@@ -162,6 +162,8 @@ export interface SandboxMeta {
   description?: string;
   /** The card (480 px WebP), used as the bundle's thumbnail. */
   thumbnail?: Buffer | null;
+  /** recipe.json `folio` as `config.folio`, over the pen's own. */
+  folio?: Record<string, unknown>;
 }
 
 export interface RunOptions {
@@ -401,6 +403,7 @@ async function sandboxBundle(
       description: meta.description,
       locale,
       thumbnail: thumbnail ? thumbnail.toString("base64") : null,
+      folio: meta.folio ?? null,
     });
     return {
       bytes: out.base64 ? Buffer.from(out.base64, "base64") : null,

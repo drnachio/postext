@@ -45,6 +45,12 @@
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "texture": "laid", "textureStrength": 0.5, "shade": "#fdfcf9"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#a8352a"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

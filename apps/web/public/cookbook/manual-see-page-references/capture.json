@@ -119,7 +119,8 @@
       },
       "sandbox": {
         "file": "manual-see-page-references.postext",
-        "bytes": 12392
+        "bytes": 12486,
+        "folio": "4335096f"
       },
       "detected": {
         "apis": [
@@ -430,7 +431,8 @@
       },
       "sandbox": {
         "file": "manual-see-page-references.postext",
-        "bytes": 12951
+        "bytes": 13045,
+        "folio": "4335096f"
       },
       "detected": {
         "apis": [

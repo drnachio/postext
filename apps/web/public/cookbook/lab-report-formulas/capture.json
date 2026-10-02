@@ -120,7 +120,8 @@
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 36355
+        "bytes": 36466,
+        "folio": "977c8d61"
       },
       "detected": {
         "apis": [
@@ -543,7 +544,8 @@
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 37731
+        "bytes": 37840,
+        "folio": "977c8d61"
       },
       "detected": {
         "apis": [

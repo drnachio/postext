@@ -137,6 +137,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 60, "shade": "#faf7ef"},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#7a1f1f"},
+    "surface": {"type": "leather"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {

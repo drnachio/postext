@@ -130,6 +130,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 115, "shade": "#fbfaf7"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#3c4b4f"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

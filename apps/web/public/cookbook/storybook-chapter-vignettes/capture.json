@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 820835
+        "bytes": 820974,
+        "folio": "ebfafef3"
       },
       "detected": {
         "apis": [
@@ -450,7 +451,8 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 820883
+        "bytes": 821021,
+        "folio": "ebfafef3"
       },
       "detected": {
         "apis": [

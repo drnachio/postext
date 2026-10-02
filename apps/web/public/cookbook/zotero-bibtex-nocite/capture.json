@@ -88,7 +88,8 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 19016
+        "bytes": 19114,
+        "folio": "059452bc"
       },
       "detected": {
         "apis": [
@@ -343,7 +344,8 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 19672
+        "bytes": 19771,
+        "folio": "059452bc"
       },
       "detected": {
         "apis": [

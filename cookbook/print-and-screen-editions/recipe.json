@@ -58,6 +58,12 @@
       "pages": [4, 4]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 100},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "linen"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       { "name": "Ignacio Ferro", "github": "drnachio" }

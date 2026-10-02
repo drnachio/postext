@@ -121,7 +121,8 @@
       },
       "sandbox": {
         "file": "brand-fonts-identity-manual.postext",
-        "bytes": 106175
+        "bytes": 106286,
+        "folio": "17625bac"
       },
       "detected": {
         "apis": [

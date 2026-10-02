@@ -49,6 +49,12 @@
     "focus": { "page": 2, "x": 0.487, "y": 0.722, "w": 0.395, "h": 0.172 },
     "expect": { "pages": [3, 3] }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 70},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#0e1116"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

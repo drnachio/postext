@@ -145,6 +145,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 100},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#34729a"},
+    "surface": {"type": "plain", "color": "#dfe6ea"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

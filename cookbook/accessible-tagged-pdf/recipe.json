@@ -153,6 +153,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 100, "texture": "felt", "textureStrength": 0.5, "shade": "#f3f0e6"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

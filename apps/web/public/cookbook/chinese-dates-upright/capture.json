@@ -158,7 +158,8 @@
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 12959
+        "bytes": 13114,
+        "folio": "90be425d"
       },
       "detected": {
         "apis": [
@@ -500,7 +501,8 @@
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 13041
+        "bytes": 13191,
+        "folio": "90be425d"
       },
       "detected": {
         "apis": [

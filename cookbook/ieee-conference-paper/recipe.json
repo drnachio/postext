@@ -60,6 +60,12 @@
     "card": "page",
     "pages": "all"
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80, "texture": "smooth"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#d9dee6"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

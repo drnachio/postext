@@ -109,7 +109,8 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 16982
+        "bytes": 17092,
+        "folio": "973c2e27"
       },
       "detected": {
         "apis": [
@@ -363,7 +364,8 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 17709
+        "bytes": 17816,
+        "folio": "973c2e27"
       },
       "detected": {
         "apis": [

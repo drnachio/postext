@@ -151,7 +151,8 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 35756
+        "bytes": 35885,
+        "folio": "6d89ead9"
       },
       "detected": {
         "apis": [
@@ -627,7 +628,8 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 35779
+        "bytes": 35908,
+        "folio": "6d89ead9"
       },
       "detected": {
         "apis": [

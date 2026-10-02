@@ -100,7 +100,8 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 318952
+        "bytes": 319081,
+        "folio": "923d57f4"
       },
       "detected": {
         "apis": [

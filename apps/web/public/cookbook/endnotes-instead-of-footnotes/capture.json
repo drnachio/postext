@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 78027
+        "bytes": 78145,
+        "folio": "3d3a1e90"
       },
       "detected": {
         "apis": [
