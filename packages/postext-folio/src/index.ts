@@ -1,4 +1,5 @@
 export { PageFlipper, canFlip } from "./pageFlip";
+export { FlatPageFlipper } from "./pageFlipFlat";
 export type { PageSource, SpreadSrc } from "./pageFlip";
 export { spreadsOf, spreadOfPage } from "./spreads";
 export type { Spread } from "./spreads";

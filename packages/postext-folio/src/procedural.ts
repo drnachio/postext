@@ -292,12 +292,13 @@ export function deskSurface(kind: DeskKind): DeskSurface {
           const late = Math.pow(ring, 6);
           const fig = figure(u, v);
           // Pores: noise stretched 64:1 along the grain.
-          const pore = streak((u * 4) % 64, v * 64 * 4) > 0.86 ? 1 : 0;
+          // Pores: short flecks, noise stretched 8:1 along the grain.
+          const pore = Math.max(0, streak((u * 32) % 64, (v * 256) % 64) - 0.8) * 5;
           const seam = Math.min(inPlank, 1 - inPlank) * planks < 0.004 ? 1 : 0;
           const t = 0.5 + 0.35 * (fig - 0.5) * 2 - 0.45 * late;
-          const c = mix3(dark, light, Math.min(1, Math.max(0, t))).map((ch) => ch * shade * (1 - 0.45 * seam - 0.12 * pore));
+          const c = mix3(dark, light, Math.min(1, Math.max(0, t))).map((ch) => ch * shade * (1 - 0.45 * seam - 0.1 * pore));
           put(y * size + x, c, 0.42 + 0.2 * pore + 0.08 * late);
-          fd.h[y * size + x] = -0.3 * late - 0.5 * pore - 3 * seam + 0.1 * fig;
+          fd.h[y * size + x] = -0.3 * late - 0.25 * pore - 3 * seam + 0.1 * fig;
         }
       }
       strength = 1.2;

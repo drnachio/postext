@@ -68,7 +68,7 @@ export function paperSpec(paper: ResolvedPaper): PaperSpec {
     roll: Math.min(6, Math.max(0.45, ratio)),
     rigidity: smooth(1.3, 4, ratio),
     opacity,
-    showThrough: paper.showThrough ? Math.min(0.5, (1 - opacity) * 1.9) : 0,
+    showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25) : 0,
     follow: 0.35 / (1 + 0.35 * Math.max(0, Math.log(ratio))),
     spring: 0.0085 * Math.min(1.6, Math.max(0.75, Math.sqrt(ratio))),
     roughness: finish === "gloss" ? 0.32 : finish === "silk" ? 0.5 : finish === "matte" ? 0.7 : 0.88,

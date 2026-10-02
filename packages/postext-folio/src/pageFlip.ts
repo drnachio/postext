@@ -396,7 +396,7 @@ interface Surfaces {
  * the spine the left one's. A stiff leaf (`rigidity`) turns more as a
  * plate on its hinge: a board does not bend at all.
  */
-function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number) {
+function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0) {
   const pos = geometry.attributes.position;
   const sx = forward ? 1 : -1;
   // A rigid leaf rests on its stack's fore-edge and swings over the hinge.
@@ -437,6 +437,8 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       const [bx, bz] = along(s >= 0 ? book.right : book.left, Math.abs(s));
       let px = (s >= 0 ? 1 : -1) * bx;
       let pz = bz + z + lift;
+      // Thin paper ripples in the air, more towards its free edge.
+      if (flutter > 0) pz += flutter * W * (u / W) * (u / W) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
       if (r > 0) {
         px += (u * Math.cos(phi) - px) * r;
         y += (v - y) * r;
@@ -685,7 +687,7 @@ export class PageFlipper {
     this.key.color.copy(env.keyColor);
     this.key.intensity = env.keyIntensity;
     this.key.castShadow = r.lighting.shadows;
-    this.key.shadow.radius = 2 + env.softness * 14;
+    this.key.shadow.radius = 4 + env.softness * 16;
     this.renderer.toneMappingExposure = env.exposure * r.lighting.intensity;
     this.edges.color.set(r.paper.shade.hex);
     this.surfaceKey = "";
@@ -1295,7 +1297,9 @@ export class PageFlipper {
       // Leaf k lies over leaf k + 1 on the right and under it on the left.
       const side = forward ? q : 1 - q;
       const lift = (0.3 + 0.5 * ((1 - side) * (air.length - 1 - i) + side * i)) * Math.max(0.6, spec.caliperMm * k);
-      layLeaf(mesh.geometry, fold, forward, W, H, lift, book, spec.rigidity, q);
+      // A floppy leaf flutters in flight (none at rest, none for card).
+      const flutter = 0.012 * Math.max(0, 1 / spec.roll - 0.75) * Math.sin(Math.PI * q) * (1 - spec.rigidity);
+      layLeaf(mesh.geometry, fold, forward, W, H, lift, book, spec.rigidity, q, flutter, performance.now());
       mesh.visible = (mesh.userData.caster as Mesh).visible = true;
       if (!mesh.parent) this.stage.add(mesh);
     });

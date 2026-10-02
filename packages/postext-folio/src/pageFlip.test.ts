@@ -221,4 +221,25 @@ describe("the page flipper", () => {
     const t2 = inside(thick.f).surfaces!.right.t;
     expect(t2).toBeGreaterThan(t1 + 50 * 0.1);
   });
+
+  it("turns a board leaf as a rigid plate", () => {
+    const board = flipper("left", 1, { folio: { tilt: 0 }, leafPapers: [undefined, { type: "board" }, undefined] });
+    board.f.grab(onPage("right"));
+    board.f.release(true);
+    // Halfway through its turn.
+    for (let i = 0; i < 31; i++) tick(16);
+    const mesh = inside(board.f).leaves.get(1)!;
+    const pos = mesh.geometry.attributes.position;
+    // Along the middle row the leaf is a straight line from the hinge.
+    const row = 60 * 97;
+    const p = (i: number) => new Vector3(pos.getX(row + i), pos.getY(row + i), pos.getZ(row + i));
+    const a = p(10);
+    const b = p(50);
+    const c = p(96);
+    const ab = b.clone().sub(a).normalize();
+    const ac = c.clone().sub(a).normalize();
+    expect(ab.dot(ac)).toBeGreaterThan(0.999);
+    // Lifted well off the page: it swings up, not along it.
+    expect(c.z - a.z).toBeGreaterThan(50);
+  });
 });

@@ -45,6 +45,43 @@ Pages are painted with `renderPageToCanvas` at exactly the device pixels of a pa
 
 The container sets the size: the book fills it, with the ‹ › buttons and the page count in the margins. Give it a height. A resize paints the pages again at the new size.
 
+## The book on the desk
+
+The book lies open on a desk, seen from in front and a little above (the foot of the pages comes closer), lit by an environment that glossy paper reflects as a leaf curls, and by a key light that casts the shadows. The pages already read and those still to come form two blocks of real thickness: leaf count × the paper's caliper, with the book's other chapters counted in (`extraPages`). They are never painted, only counted. The open pages curve down into the gutter, and the darker gutter comes from the occlusion of that shape, not from a painted gradient. Each leaf bends according to its paper's stiffness: bible paper rolls tight, card turns in a wide arc, and board turns as a rigid plate on its hinge.
+
+All of this is set with postext's `folio` config, read from `doc.config.folio` or passed as `appearance`:
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  appearance: {
+    folio: {
+      tilt: 22, // degrees from straight above, 0 … 40
+      paper: { type: 'bookWove', grammage: 80, texture: 'laid' },
+      binding: { type: 'hardcover', coverColor: { hex: '#5a1f1f', model: 'hex' } },
+      surface: { type: 'walnut' },
+      lighting: { environment: 'lamp', intensity: 1 },
+    },
+  },
+});
+book.setAppearance({ folio: { lighting: { environment: 'daylight' } } });
+```
+
+<table>
+<thead><tr><th>Setting</th><th>Values</th></tr></thead>
+<tbody>
+<tr><td><code>paper.type</code></td><td><code>uncoated</code> (woodfree offset, 90 g/m²), <code>bookWove</code> (bulky cream, 80 g/m²), <code>coatedMatte</code>, <code>coatedSilk</code>, <code>coatedGloss</code> (115 g/m²), <code>bible</code> (40 g/m²), <code>newsprint</code>, <code>cardStock</code> (250 g/m²), <code>board</code> (rigid, about 2 mm). Each sets the defaults below.</td></tr>
+<tr><td><code>paper.grammage</code>, <code>paper.bulk</code></td><td>g/m² and cm³/g; caliper µm = grammage × bulk. Thickness, stiffness (∝ caliper^⅔ for the roll) and opacity follow.</td></tr>
+<tr><td><code>paper.finish</code></td><td><code>uncoated</code> | <code>matte</code> | <code>silk</code> | <code>gloss</code>: roughness and clear coat.</td></tr>
+<tr><td><code>paper.texture</code>, <code>paper.textureStrength</code></td><td><code>smooth</code> | <code>vellum</code> | <code>wove</code> | <code>laid</code> | <code>linen</code> | <code>felt</code>, as a normal map at physical scale; strength 0 … 2.</td></tr>
+<tr><td><code>paper.shade</code>, <code>paper.showThrough</code></td><td>The stock's colour (pages are printed on it); the reverse page showing faintly through thin paper.</td></tr>
+<tr><td><code>binding.type</code></td><td><code>hardcover</code> (boards with squares) | <code>paperback</code> (opens less flat) | <code>sewn</code> | <code>layflat</code>; plus <code>coverMaterial</code> (cloth, paper, leather) and <code>coverColor</code>.</td></tr>
+<tr><td><code>surface.type</code></td><td><code>oak</code> | <code>walnut</code> | <code>linen</code> | <code>felt</code> | <code>leather</code> | <code>marble</code> | <code>plain</code> | <code>none</code> (the host's background, with the book's shadow); <code>color</code> tints it.</td></tr>
+<tr><td><code>lighting</code></td><td><code>environment</code>: <code>studio</code> | <code>daylight</code> | <code>lamp</code> | <code>overcast</code> | <code>night</code>; <code>intensity</code> 0.25 … 2; <code>shadows</code>.</td></tr>
+</tbody>
+</table>
+
+A `:::paper{type=coatedGloss}` run in the markdown (a plate section, say) stamps its pages with their own stock; the viewer gives those leaves that paper's look, thickness and stiffness. With `createFolio`, a page may carry its own `paper` the same way: `{ src, paper: { type: 'coatedGloss' } }`.
+
 ## Page images
 
 `createFolio` takes any pages: image URLs, `<canvas>` or `<img>` elements, `""` for a blank page.
@@ -65,10 +102,11 @@ book.goToPage(2);
 <table>
 <thead><tr><th>Export</th><th>What it does</th></tr></thead>
 <tbody>
-<tr><td><code>createFolio(container, options)</code></td><td>The viewer over any pages. Options: <code>pages</code>, <code>firstPageRecto</code> (default true), <code>binding</code> (<code>'left'</code> | <code>'right'</code>), <code>at</code> (page to open on), <code>mode</code> (<code>'auto'</code> | <code>'single'</code> | <code>'double'</code>; auto shows one page at a time below 560 px), <code>paper</code> (blank-page colour), <code>animate</code>, <code>controls</code>, <code>showCount</code> (false keeps the count for screen readers only), <code>labels</code>, <code>onChange</code>, <code>onTarget</code>, <code>onLayout</code>. One page at a time the book is WebGL too: the spine runs along the page's inner edge and the leaf turns over it; a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.</td></tr>
+<tr><td><code>createFolio(container, options)</code></td><td>The viewer over any pages. Options: <code>pages</code>, <code>firstPageRecto</code> (default true), <code>binding</code> (<code>'left'</code> | <code>'right'</code>), <code>at</code> (page to open on), <code>mode</code> (<code>'auto'</code> | <code>'single'</code> | <code>'double'</code>; auto shows one page at a time below 560 px), <code>paper</code> (blank-page colour), <code>animate</code>, <code>controls</code>, <code>showCount</code> (false keeps the count for screen readers only), <code>labels</code>, <code>appearance</code> (<code>folio</code>, <code>pageWidthMm</code>, <code>extraPages</code>), <code>onChange</code>, <code>onTarget</code>, <code>onLayout</code>. One page at a time the book is WebGL too: the spine runs along the page's inner edge and the leaf turns over it; a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.</td></tr>
 <tr><td><code>createFolioFromDocument(container, doc, options)</code></td><td>The same over a postext <code>VDTDocument</code>, painted lazily. Spreads, binding and paper come from the document. Adds <code>scale</code>, <code>window</code>, <code>singleInk</code>, <code>pageNegative</code>, <code>alt</code>, and <code>setDocument(doc)</code> on the viewer.</td></tr>
-<tr><td>viewer</td><td><code>goToPage(i, { instant })</code>, <code>goToSpread(i, { instant })</code> (instant opens there without turning), <code>next()</code>, <code>prev()</code>, <code>setPages(pages, opts)</code>, <code>setLabels(labels)</code>, <code>state</code> (<code>{ spread, pages }</code>), <code>element</code>, <code>dispose()</code>.</td></tr>
-<tr><td><code>PageFlipper</code>, <code>canFlip()</code></td><td>The three.js engine alone, for a host that lays out its own spread DOM (as the postext Cookbook does): a canvas over the spread, <code>go(i)</code>, <code>grab</code>/<code>drag</code>/<code>release</code> for the hand, <code>setBook</code>, <code>clear</code>, <code>dispose</code>; <code>{ persistent: true }</code> draws the book at rest too, <code>turnAt</code> sets how far a leaf let go must be to turn over.</td></tr>
+<tr><td>viewer</td><td><code>goToPage(i, { instant })</code>, <code>goToSpread(i, { instant })</code> (instant opens there without turning), <code>next()</code>, <code>prev()</code>, <code>setPages(pages, opts)</code>, <code>setLabels(labels)</code>, <code>setAppearance(appearance)</code>, <code>state</code> (<code>{ spread, pages }</code>), <code>element</code>, <code>dispose()</code>.</td></tr>
+<tr><td><code>PageFlipper</code>, <code>canFlip()</code></td><td>The three.js engine alone: a canvas over a host's spread, <code>go(i)</code>, <code>grab</code>/<code>drag</code>/<code>release</code> for the hand (ray-cast onto the tilted pages), <code>hit</code>, <code>setBook</code>, <code>setAppearance</code>, <code>clear</code>, <code>dispose</code>; <code>{ persistent: true }</code> draws the book at rest too, <code>turnAt</code> sets how far a leaf let go must be to turn over.</td></tr>
+<tr><td><code>FlatPageFlipper</code></td><td>The flat page-turn that predates the 3D book, for a host whose DOM spread shows the pages at rest and must match the turning leaf pixel for pixel (the postext Cookbook's light table).</td></tr>
 <tr><td><code>spreadsOf(count, firstPageRecto)</code></td><td>The <code>[verso, recto]</code> pairs of a book.</td></tr>
 <tr><td><code>FOLIO_CSS</code></td><td>The viewer's styles (injected once on first use). Restyle with <code>--postext-folio-accent</code> and <code>--postext-folio-nav-border</code> on the container.</td></tr>
 </tbody>
