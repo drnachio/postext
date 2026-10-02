@@ -315,15 +315,16 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
 
 /** The page block's edges: paper with a fine line between leaves (fading
  *  to their average where the lines are finer than a pixel). */
-function edgeMaterial(sign: number): MeshStandardMaterial {
+function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Color }): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ side: DoubleSide, roughness: 0.92 });
+  const band = { uBoardLo: { value: bands?.lo ?? -1 }, uBoardHi: { value: bands?.hi ?? 2 }, uBoardColor: { value: bands?.color ?? new Color(0, 0, 0) } };
   m.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, occlusionUniforms, { uSign: { value: sign } });
+    Object.assign(shader.uniforms, occlusionUniforms, band, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float layer;\nvarying float vLayer;\n${BOOK_POS_PARS}`)
-      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\n${BOOK_POS}`);
+      .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nvarying float vLayer;\nvarying float vLambda;\n${BOOK_POS_PARS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\n${BOOK_POS}`);
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", `#include <common>\nvarying float vLayer;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
+      .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
       .replace(
         "#include <map_fragment>",
         `{
@@ -332,6 +333,9 @@ function edgeMaterial(sign: number): MeshStandardMaterial {
           float line = smoothstep(0.55 - w, 0.95 + w, d);
           float fine = clamp(w * 1.5, 0.0, 1.0);
           diffuseColor.rgb *= 1.0 - mix(0.22 * line, 0.08, fine);
+          // A board lying in the block (the book's own cover) shows its
+          // own edge, not paper.
+          if (vLambda < uBoardLo || vLambda > uBoardHi) diffuseColor.rgb = uBoardColor;
         }`,
       )
       .replace(
@@ -349,11 +353,66 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/**
+ * The stock a publisher would print a book of `pages` pages on, when its
+ * settings name none: a long book goes on lighter paper, a very long one
+ * on bible paper (2,000 pages make a volume about 4.5 cm thick, not 11).
+ * Settings that name a stock, a grammage or a bulk are kept as they are.
+ */
+export function withStockForExtent(folio: FolioConfig | undefined, pages: number): FolioConfig | undefined {
+  const paper = folio?.paper;
+  if (paper?.type !== undefined || paper?.grammage !== undefined || paper?.bulk !== undefined) return folio;
+  if (pages > 1000) return { ...folio, paper: { ...paper, type: "bible" } };
+  if (pages > 600) return { ...folio, paper: { ...paper, grammage: 70 } };
+  return folio;
+}
+
+/** The colour round the edge of a printed cover (its ground), averaged: the
+ *  colour its boards and spine show when the book carries its own covers.
+ *  Null when the image cannot be read. */
+function edgeColorOf(image: CanvasImageSource & { width: number; height: number }): Color | null {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const g = c.getContext("2d");
+    if (!g) return null;
+    g.drawImage(image, 0, 0, 32, 32);
+    const d = g.getImageData(0, 0, 32, 32).data;
+    let r = 0;
+    let gr = 0;
+    let b = 0;
+    let n = 0;
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 32; x++) {
+        if (x > 1 && x < 30 && y > 1 && y < 30) continue;
+        const i = (y * 32 + x) * 4;
+        r += d[i];
+        gr += d[i + 1];
+        b += d[i + 2];
+        n++;
+      }
+    return new Color().setRGB(r / n / 255, gr / n / 255, b / n / 255, SRGBColorSpace);
+  } catch {
+    return null;
+  }
+}
+
 /** The lowest the reader may orbit the view: 70° from straight above. */
 const MAX_PITCH = (70 * Math.PI) / 180;
 
 /** How far (radians) a leaf in mid-turn stands off the pages at the spine. */
-const LEAN = 0.2;
+const LEAN = 0.12;
+
+/** Where column `t` (0 … 1) of a page's mesh lies across it: closer
+ *  together near the spine, where the gutter bends tightest. */
+const column = (t: number) => Math.pow(t, 1.45);
+
+/** Sets a page mesh's u coordinates to its columns. */
+function spreadColumns(geometry: BufferGeometry, nx: number) {
+  const uv = geometry.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setX(i, column((i % (nx + 1)) / nx));
+  uv.needsUpdate = true;
+}
 
 /** max(a, b), rounded over a band `k` wide (no crease where they meet). */
 function smoothMax(a: number, b: number, k: number) {
@@ -391,11 +450,19 @@ function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
   const n = { u: du / D, v: dv / D };
   const q = progressFrom(G, P);
   const R = Math.min(0.5, ROLL * roll) * W * (0.3 + 0.7 * smooth(0, 0.2, q)) * (1 - smooth(0.62, 1, q)) * Math.min(1, D / (0.1 * W));
-  const rollLen = Math.PI * R;
-  let c = (D + rollLen * Math.min(1, rollLen > 0 ? D / rollLen : 0)) / 2;
+  // How far the paper past the fold has turned: a leaf held up by the hand
+  // stands in the air (about 110° early in the turn), and only lies back
+  // flat (180°) as it lands. Folding it flat over itself all the way (the
+  // table-paper curl) made a tent of a leaf dragged across the spine.
+  const theta = Math.PI * (0.62 + 0.38 * smooth(0.05, 1, q));
+  // The fold sits where the point taken, carried round the roll and on
+  // straight, lands over the hand: R sinθ + (c − Rθ) cosθ = c − D.
+  const arc = R * theta;
+  const k = arc > 0 ? Math.min(1, D / arc) : 0;
+  let c = (D + k * (R * Math.sin(theta) - arc * Math.cos(theta))) / (1 - Math.cos(theta));
   for (const S of [-H / 2, H / 2]) c = Math.min(c, G.u * n.u + (G.v - S) * n.v);
   if (c <= 0) return null;
-  return { F: { u: G.u - n.u * c, v: G.v - n.v * c }, n, R };
+  return { F: { u: G.u - n.u * c, v: G.v - n.v * c }, n, R, theta };
 }
 
 type Fold = NonNullable<ReturnType<typeof foldOf>>;
@@ -460,7 +527,7 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
-      const u = (ix / NX) * W;
+      const u = column(ix / NX) * W;
       let x = u;
       let y = v;
       let z = 0;
@@ -468,14 +535,16 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
         const { F, n, R } = fold;
         const d = (u - F.u) * n.u + (v - F.v) * n.v;
         if (d > 0) {
+          // Round the roll, then straight on at the fold's angle.
+          const theta = fold.theta;
           let dd: number;
-          if (R < 1e-3) dd = -d;
-          else if (d < Math.PI * R) {
+          if (R > 1e-3 && d < R * theta) {
             dd = R * Math.sin(d / R);
             z = R * (1 - Math.cos(d / R));
           } else {
-            dd = -(d - Math.PI * R);
-            z = 2 * R;
+            const rest = d - R * theta;
+            dd = R * Math.sin(theta) + rest * Math.cos(theta);
+            z = R * (1 - Math.cos(theta)) + rest * Math.sin(theta);
           }
           x = u - n.u * (d - dd);
           y = v - n.v * (d - dd);
@@ -493,7 +562,7 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       if (inAir > 0) {
         const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
         const plane = floor + Math.abs(s) * sinA + z + lift;
-        const under = surfaceAt(book, fx)[1] + lift;
+        const under = surfaceAt(book, fx)[1] + lift + 0.6;
         const flying = smoothMax(plane, under, 0.02 * W);
         px += (fx - px) * inAir;
         pz += (flying - pz) * inAir;
@@ -706,6 +775,7 @@ export class PageFlipper {
 
   private openGeometry(): PlaneGeometry {
     const g = new PlaneGeometry(1, 1, NX_OPEN, 1);
+    spreadColumns(g, NX_OPEN);
     g.setAttribute("ao", new BufferAttribute(new Float32Array(g.attributes.position.count).fill(1), 1));
     return g;
   }
@@ -716,7 +786,7 @@ export class PageFlipper {
    *  tilt, the leaves round the pages shown). */
   setAppearance(appearance: FlipAppearance) {
     this.appearance = appearance;
-    this.resolved = resolveFolioConfig(appearance.folio);
+    this.resolved = resolveFolioConfig(withStockForExtent(appearance.folio, this.pageCount(appearance)));
     this.bookSpec = paperSpec(this.resolved.paper);
     const specs = new Map<string, PaperSpec>();
     this.leafSpecs = (appearance.leafPapers ?? []).map((own) => {
@@ -827,6 +897,30 @@ export class PageFlipper {
     this.redraw();
   }
 
+  /** Pages in the whole book (the ones shown and those round them). */
+  private pageCount(appearance: FlipAppearance): number {
+    const extra = appearance.extraLeaves ?? { before: 0, after: 0 };
+    const leaves = Math.max(0, this.book.length - 1) + extra.before + extra.after;
+    return appearance.singlePage ? leaves : 2 * leaves;
+  }
+
+  /** The colour the book's own boards show at their edges and spine: the
+   *  setting's cover colour when it names one, else the printed cover's
+   *  ground. */
+  private boardColor(): Color {
+    const set = new Color(this.resolved.binding.coverColor.hex);
+    if (this.appearance.folio?.binding?.coverColor) return set;
+    const front = this.appearance.coverLeaves?.front;
+    const src = front !== undefined ? this.book[front]?.[1] : null;
+    if (!src) return set;
+    const tex = this.ready.get(src);
+    const image = (tex?.image ?? (typeof src === "string" ? null : src)) as (CanvasImageSource & { width: number; height: number }) | null;
+    if (!image || !image.width) return set;
+    if (this.sampled?.image !== image) this.sampled = { image, color: edgeColorOf(image) };
+    return this.sampled.color ?? set;
+  }
+  private sampled: { image: object; color: Color | null } | null = null;
+
   /** The paper of leaf k (outside the pages shown: the book's). */
   private specOf(k: number): PaperSpec {
     const covers = this.appearance.coverLeaves;
@@ -910,9 +1004,10 @@ export class PageFlipper {
       for (let i = 0; i < pos.count; i++) {
         const ix = i % (NX_OPEN + 1);
         const row = Math.floor(i / (NX_OPEN + 1));
-        const [x, z] = along(own, (ix / NX_OPEN) * W);
+        const t = column(ix / NX_OPEN);
+        const [x, z] = along(own, t * W);
         pos.setXYZ(i, side * x, row === 0 ? H / 2 : -H / 2, z + 0.02);
-        aoAttr.setX(i, ao[Math.round((ix / NX_OPEN) * (ao.length - 1))]);
+        aoAttr.setX(i, ao[Math.round(t * (ao.length - 1))]);
       }
       pos.needsUpdate = true;
       aoAttr.needsUpdate = true;
@@ -923,6 +1018,7 @@ export class PageFlipper {
     for (const s of this.stacks) {
       s.removeFromParent();
       s.geometry.dispose();
+      if (s.material !== this.edges && s.material !== this.coverMaterial) s.material.dispose();
     }
     this.stacks = [];
     for (const [p, side, n] of [
@@ -930,17 +1026,40 @@ export class PageFlipper {
       [pl, -1, left.length + extra.before],
     ] as const) {
       if (p.t < 0.05) continue;
-      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), this.edges);
+      // The book's own boards in this block: at its base (the cover turned
+      // under the pages) and on top (the book closed).
+      const leaves = side > 0 ? right : left;
+      const before = side > 0 ? 0 : extra.before;
+      const after = side > 0 ? extra.after : 0;
+      const baseLeaf = side > 0 ? (after ? undefined : leaves[leaves.length - 1]) : before ? undefined : leaves[0];
+      const topLeaf = side > 0 ? leaves[0] : leaves[leaves.length - 1];
+      const isBoard = (leaf: number | undefined) => leaf !== undefined && this.coverSpec !== null && this.specOf(leaf) === this.coverSpec;
+      const boardPx = (this.coverSpec?.caliperMm ?? 0) * k;
+      const bands = this.coverSpec
+        ? {
+            lo: isBoard(baseLeaf) ? boardPx / p.t : -1,
+            hi: isBoard(topLeaf) && topLeaf !== baseLeaf ? 1 - boardPx / p.t : 2,
+            color: this.boardColor(),
+          }
+        : undefined;
+      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands) : this.edges);
       mesh.castShadow = mesh.receiveShadow = true;
       this.stacks.push(mesh);
       this.stage.add(mesh);
     }
+    if (noCase) this.coverMaterial.color.copy(this.boardColor());
     // The back of the block: the folds sewn at the spine, under the line
     // where the two open pages meet (nothing shows through the gutter).
-    const meet = Math.min(along(pl, 0)[1], along(pr, 0)[1]);
+    // Beside an empty side (the book closed, or opened at its first or
+    // last page) the back stands as the spine, the block's full height.
+    const lowSide = Math.min(tL, tR);
+    const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.min(along(pl, 0)[1], along(pr, 0)[1]);
     const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
     if (meet > 0.4) {
-      const fold = new Mesh(new BoxGeometry(back, H, meet - 0.3), this.edges);
+      // In a case the back is wrapped in the case's spine (the wall beside
+      // an empty side, the headcap at head and tail); without one, the
+      // folds of the sections show.
+      const fold = new Mesh(new BoxGeometry(back, H + (noCase ? 0 : 2 * BINDINGS[binding].squareMm * k), meet - 0.3), this.coverMaterial);
       fold.position.set(0, 0, (meet - 0.3) / 2);
       fold.castShadow = fold.receiveShadow = true;
       this.stacks.push(fold);
@@ -1217,6 +1336,8 @@ export class PageFlipper {
       this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < open);
       this.target = open;
       this.reported = open;
+      // Another extent may call for another stock.
+      if (resized) this.setAppearance(this.appearance);
       if (!this.raf) this.clear();
     }
     for (const [k, mesh] of this.leaves) {
@@ -1257,6 +1378,7 @@ export class PageFlipper {
     let mesh = this.leaves.get(k);
     if (!mesh) {
       const geometry = new PlaneGeometry(1, 1, NX, NY);
+      spreadColumns(geometry, NX);
       geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
       mesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
       mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);

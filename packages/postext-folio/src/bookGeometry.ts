@@ -8,15 +8,15 @@ export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat";
 
 /** How each binding opens. `gutter`: the width over which the pages bend
  *  into the spine (a fraction of the page width, plus `perThickness` × the
- *  block's thickness); `spine`: the height the top leaves meet at, against
- *  the mean of the two stacks; `power`: how steeply they drop at the end;
+ *  block's thickness); `spine`: how near the top of the thicker stack the
+ *  top leaves meet (1: at its top); `power`: how steeply they drop at the end;
  *  `dipMm`: how far below that a thin book's pages still sink; the case's
  *  boards and their squares (the margin they stand out round the pages). */
 export const BINDINGS: Record<BindingKind, { gutter: number; perThickness: number; spine: number; power: number; dipMm: number; boardMm: number; squareMm: number; jointMm: number }> = {
-  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 0.5, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
-  sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.45, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.3, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  layflat: { gutter: 0.025, perThickness: 0.4, spine: 0.96, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
+  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 0.85, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
+  sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.8, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.7, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  layflat: { gutter: 0.025, perThickness: 0.4, spine: 0.95, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
 };
 
 /** A side's top surface: `x(s)`, `z(s)` for arc length `s` from the spine
@@ -68,12 +68,17 @@ export function profiles(
   { flatLeft = false, flatRight = false, noCase = false }: { flatLeft?: boolean; flatRight?: boolean; noCase?: boolean } = {},
 ): { left: Profile; right: Profile; board: number } {
   const b = BINDINGS[binding];
-  const T = tLeft + tRight;
   const zb = noCase ? 0 : b.boardMm * pxPerMm;
-  // The leaves sink into the gutter by the binding's own dip and by a
-  // share of the block's thickness: a thick book opens in a deeper valley.
-  const dip = (b.dipMm * pxPerMm + 0.3 * T) * (binding === "layflat" ? 0.1 : 1);
-  const meet = Math.max(0, ((tLeft + tRight) / 2) * b.spine - dip);
+  // Where the two top leaves meet at the spine. They are sewn next to each
+  // other on the block's back, near the top of the thicker stack: a book
+  // opened at its first page keeps its block flat and only rolls the top
+  // leaf a little into the gutter. The valley deepens as pages pile up on
+  // the other side and pull the spine down (by the binding's own dip and
+  // a share of the thinner stack).
+  const low = Math.min(tLeft, tRight);
+  const high = Math.max(tLeft, tRight);
+  const dip = (b.dipMm * pxPerMm + 0.35 * low) * (binding === "layflat" ? 0.1 : 1);
+  const meet = Math.max(0, low + (high - low) * b.spine - dip);
   const make = (t: number, flat: boolean): Profile => {
     // The shoulder is as wide as the leaves have to drop (or rise) to the
     // binding, plus the binding's own bend.
@@ -177,6 +182,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
   const pos: number[] = [];
   const nrm: number[] = [];
   const layer: number[] = [];
+  const lam: number[] = [];
   const idx: number[] = [];
   const quadGrid = (cols: number, rows: number, at: (c: number, r: number) => [number, number, number, number], normal: [number, number, number], flip: boolean) => {
     const base = pos.length / 3;
@@ -186,6 +192,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
         pos.push(x, y, z);
         nrm.push(...normal);
         layer.push(l);
+        lam.push(leaves > 0 ? l / leaves : r / Math.max(1, rows));
       }
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++) {
@@ -227,6 +234,9 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
   g.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
   g.setAttribute("normal", new BufferAttribute(new Float32Array(nrm), 3));
   g.setAttribute("layer", new BufferAttribute(new Float32Array(layer), 1));
+  // How far up the block (0 at its base, 1 at its top), for the bands a
+  // board takes in it.
+  g.setAttribute("lambda", new BufferAttribute(new Float32Array(lam), 1));
   g.setIndex(idx);
   return g;
 }
