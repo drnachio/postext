@@ -7,7 +7,7 @@ describe('settings registry', () => {
     const ids = SETTINGS_SECTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toHaveLength(31);
-    expect(SETTINGS_GROUPS).toHaveLength(12);
+    expect(SETTINGS_GROUPS).toHaveLength(13);
   });
   it('puts the writing system right after the page, with its two sections', () => {
     expect(SETTINGS_GROUPS.map((g) => g.id).slice(0, 3)).toEqual(['page', 'writing', 'colors']);
@@ -31,8 +31,11 @@ describe('settings registry', () => {
     expect(total).toBe(SETTINGS_SECTIONS.length);
     expect(groupOfSection('toc')).toBe('headings');
   });
-  it('lists the Folio viewer in Export, after the web reader', () => {
-    expect(sectionsInGroup('output').map((s) => s.id)).toEqual(['pdfGeneration', 'htmlViewer', 'folio']);
+  it('gives the Folio viewer a group of its own, right after Export', () => {
+    expect(sectionsInGroup('output').map((s) => s.id)).toEqual(['pdfGeneration', 'htmlViewer']);
+    expect(sectionsInGroup('folio').map((s) => s.id)).toEqual(['folio']);
+    const ids = SETTINGS_GROUPS.map((g) => g.id);
+    expect(ids.indexOf('folio')).toBe(ids.indexOf('output') + 1);
     expect(SETTINGS_SECTIONS.find((s) => s.id === 'folio')?.configKeys).toEqual(['folio']);
   });
   it('validates group ids', () => {

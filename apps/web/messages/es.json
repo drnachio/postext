@@ -2718,6 +2718,8 @@
     "settingsGroupPartsDescription": "Portadillas de parte y lo que cambia cada parte: colores, títulos, cabeceras.",
     "settingsGroupOutput": "Exportación",
     "settingsGroupOutputDescription": "El PDF de imprenta y el lector web (HTML).",
+    "settingsGroupFolio": "Folio",
+    "settingsGroupFolioDescription": "El libro en 3D: el papel, la encuadernación, la superficie sobre la que descansa y la luz.",
     "settingsGroupAdvanced": "Avanzado",
     "settingsGroupAdvancedDescription": "Retícula base, ayudas en pantalla para revisar la maquetación y qué avisos se notifican.",
     "layoutSingleDescription": "Un solo bloque de texto a lo ancho: novela, ensayo.",

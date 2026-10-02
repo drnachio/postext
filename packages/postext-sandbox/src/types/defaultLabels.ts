@@ -2122,6 +2122,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   settingsGroupPartsDescription: 'Part title pages and what each part changes: colours, headings, running heads.',
   settingsGroupOutput: 'Export',
   settingsGroupOutputDescription: 'The print PDF and the web reader (HTML).',
+  settingsGroupFolio: 'Folio',
+  settingsGroupFolioDescription: 'The book in 3D: paper, binding, the surface it lies on and the light.',
   settingsGroupAdvanced: 'Advanced',
   settingsGroupAdvancedDescription: 'Baseline grid, on-screen aids for checking the layout, and which warnings to report.',
   layoutSingleDescription: 'One text block across the page: novels, essays.',

@@ -2189,6 +2189,8 @@ export interface SandboxLabels {
   settingsGroupPartsDescription: string;
   settingsGroupOutput: string;
   settingsGroupOutputDescription: string;
+  settingsGroupFolio: string;
+  settingsGroupFolioDescription: string;
   settingsGroupAdvanced: string;
   settingsGroupAdvancedDescription: string;
   layoutSingleDescription: string;

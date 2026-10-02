@@ -2112,6 +2112,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     settingsGroupPartsDescription: t("settingsGroupPartsDescription"),
     settingsGroupOutput: t("settingsGroupOutput"),
     settingsGroupOutputDescription: t("settingsGroupOutputDescription"),
+    settingsGroupFolio: t("settingsGroupFolio"),
+    settingsGroupFolioDescription: t("settingsGroupFolioDescription"),
     settingsGroupAdvanced: t("settingsGroupAdvanced"),
     settingsGroupAdvancedDescription: t("settingsGroupAdvancedDescription"),
     layoutSingleDescription: t("layoutSingleDescription"),

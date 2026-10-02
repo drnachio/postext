@@ -2718,6 +2718,8 @@
     "settingsGroupPartsDescription": "篇名页，以及每一篇改变的内容：颜色、标题、书眉。",
     "settingsGroupOutput": "导出",
     "settingsGroupOutputDescription": "印刷用PDF和网页阅读器（HTML）。",
+    "settingsGroupFolio": "Folio",
+    "settingsGroupFolioDescription": "三维书本：纸张、装订、书下的台面与光照。",
     "settingsGroupAdvanced": "高级",
     "settingsGroupAdvancedDescription": "基线网格、检查版面用的屏幕辅助标记，以及要报告哪些警告。",
     "layoutSingleDescription": "整页一个文字块：小说、随笔。",

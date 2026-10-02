@@ -38,12 +38,12 @@ describe('sectionHasOverrides', () => {
     expect(sectionHasOverrides({ ...base, cjk: { lineBreak: 'strict' } }, 'cjk')).toBe(true);
     expect(groupOverrideCounts({ ...right, locale: 'zh-Hant', cjk: { lineBreak: 'strict' } })).toMatchObject({ writing: 2, page: 0, text: 0 });
   });
-  it('counts the Folio viewer settings under Export', () => {
+  it('counts the Folio viewer settings in their own group', () => {
     expect(sectionHasOverrides(base, 'folio')).toBe(false);
     expect(sectionHasOverrides({ ...base, folio: {} }, 'folio')).toBe(false);
     const folio: PostextConfig = { ...base, folio: { paper: { type: 'bookWove' } } };
     expect(sectionHasOverrides(folio, 'folio')).toBe(true);
-    expect(groupOverrideCounts(folio)).toMatchObject({ output: 1 });
+    expect(groupOverrideCounts(folio)).toMatchObject({ folio: 1, output: 0 });
   });
   it('separates debug from warnings inside config.debug', () => {
     const warningsOnly: PostextConfig = { ...base, debug: { warnings: { looseLines: false } } };

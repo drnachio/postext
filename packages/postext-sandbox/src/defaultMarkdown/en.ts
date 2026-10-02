@@ -568,7 +568,7 @@ The editor also keeps an eye on the book. Its chapter menu lists every chapter w
 
 ## Configuration
 
-The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
+The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export, Folio (the book in 3D) and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
 
 ## The three views
 
