@@ -80,8 +80,10 @@ export function getGalleryData(locale: Locale): GalleryData {
   const featuredList = (registry.collections.featured?.recipes ?? [])
     .map((slug) => bySlug.get(slug))
     .filter((r): r is CatalogRecipe => Boolean(r));
-  // Without a curated frontispiece, the first plate in contents order.
-  const featured = featuredList[0] ?? catalog.recipes[0] ?? null;
+  // The language's own frontispiece (a book in that language), else the
+  // collection's first entry, else the first plate in contents order.
+  const ownSlug = registry.collections.featured?.frontispiece?.[locale];
+  const featured = (ownSlug ? bySlug.get(ownSlug) : undefined) ?? featuredList[0] ?? catalog.recipes[0] ?? null;
 
   const collections = Object.entries(registry.collections)
     .filter(([id]) => id !== "featured")
@@ -103,7 +105,7 @@ export function getGalleryData(locale: Locale): GalleryData {
     chapters,
     intros,
     featured,
-    picks: featuredList.slice(1, 4),
+    picks: featuredList.slice(1, 4).filter((r) => r !== featured),
     collections,
     chrome: chromes.sort((a, b) => Number(a) - Number(b))[0] ?? null,
   };

@@ -940,6 +940,12 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     const count = asArray(featured.recipes).length;
     if (count > 4) errors.push(`collections.featured: at most 4 recipes (the frontispiece and 3 editor's picks)`);
     if (requireFeatured && count < 1) errors.push(`collections.featured: needs the frontispiece recipe`);
+    for (const [loc, slug] of Object.entries(featured.frontispiece ?? {})) {
+      const at = `collections.featured.frontispiece.${loc}`;
+      if (!(LOCALES as readonly string[]).includes(loc)) errors.push(`${at}: unknown locale`);
+      if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) errors.push(`${at}: "${String(slug)}" is not a slug`);
+      else if (known && !known.has(slug)) errors.push(`${at}: no recipe folder "${slug}"`);
+    }
   } else if (requireFeatured) {
     errors.push(`collections.featured: missing`);
   }

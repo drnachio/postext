@@ -349,6 +349,10 @@ export interface Collection {
   title: Localized;
   summary: Localized;
   recipes: Slug[];
+  /** "featured" only: the frontispiece per site language, a book
+   *  representative of that language; `recipes[0]` stands in for a
+   *  language it leaves out. */
+  frontispiece?: Partial<Record<Locale, Slug>>;
 }
 
 export interface Registry {
