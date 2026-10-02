@@ -1,5 +1,6 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
-import { createFolio, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
+import type { FolioPaperConfig } from "postext";
+import { createFolio, type FolioAppearance, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
@@ -34,6 +35,25 @@ function paperOf(doc: VDTDocument): string {
   const hex = doc.config.page.backgroundColor.hex;
   return hex && hex !== "transparent" ? hex : "#fff";
 }
+
+/** How the document's book is presented: its `folio` settings, its page
+ *  width, the book's pages before and after it (a chapter of a longer
+ *  book), with the host's own appearance laid over them. */
+function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
+  const page = doc.pages[0];
+  const before = doc.pageIndexOffset ?? 0;
+  const after = Math.max(0, (doc.bookPageCount ?? 0) - before - doc.pages.length);
+  return {
+    folio: doc.config.folio,
+    // Page sizes are in device pixels at the page's dpi.
+    ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / (doc.config.page.dpi || 300) } : {}),
+    extraPages: { before, after },
+    ...own,
+  };
+}
+
+/** The paper a page is printed on, when a `:::paper` run sets one. */
+const pagePaperOf = (page: VDTPage | undefined) => (page as { paper?: FolioPaperConfig } | undefined)?.paper;
 
 /** What a page is painted from, as text: two pages with the same
  *  signature under the same config paint the same. */
@@ -106,13 +126,16 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   let idle = 0;
   let resizeTimer = 0;
   let ready = false;
+  let hostAppearance: FolioAppearance | undefined = options.appearance;
 
   const slotWidth = () => viewer.pageSize.deviceWidth;
 
   const sources = () =>
     current.pages.map((_, i) => {
       const canvas = canvases[i];
-      return painted.has(i) && canvas ? { src: canvas, alt: options.alt?.(i) ?? `Page ${i + 1}` } : "";
+      const paper = pagePaperOf(current.pages[i]);
+      if (painted.has(i) && canvas) return { src: canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
+      return paper ? { src: "" as const, paper } : "";
     });
 
   /** Pages within `reach` spreads of the ones on show. */
@@ -186,7 +209,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const first = doc.pages[0];
   const viewer = createFolio(container, {
     ...options,
-    pages: doc.pages.map(() => ""),
+    pages: doc.pages.map((p) => {
+      const paper = pagePaperOf(p);
+      return paper ? { src: "", paper } : "";
+    }),
+    appearance: appearanceOf(doc, options.appearance),
     aspect: first ? first.width / first.height : undefined,
     firstPageRecto: firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
@@ -221,6 +248,10 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     prev: viewer.prev,
     setPages: viewer.setPages,
     setLabels: viewer.setLabels,
+    setAppearance(next: FolioAppearance) {
+      hostAppearance = { ...hostAppearance, ...next };
+      viewer.setAppearance(appearanceOf(current, hostAppearance));
+    },
     get pageSize() {
       return viewer.pageSize;
     },
@@ -254,6 +285,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       const width = slotWidth();
       for (let i = at - 2; i <= at + 3; i++) if (i >= 0 && i < next.pages.length && painted.get(i) !== width) paint(i, width);
       for (const canvas of oldCanvases) if (canvas) canvas.width = canvas.height = 0;
+      viewer.setAppearance(appearanceOf(next, hostAppearance));
       viewer.setPages(sources(), {
         firstPageRecto: firstPageIsRecto(next),
         binding: next.binding === "right" ? "right" : "left",

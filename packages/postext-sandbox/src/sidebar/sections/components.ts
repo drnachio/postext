@@ -28,6 +28,7 @@ import { DiagramStyleSection } from './DiagramStyleSection';
 import { ResourceTypesSection } from './ResourceTypesSection';
 import { HtmlViewerSection } from './HtmlViewerSection';
 import { PdfGenerationSection } from './PdfGenerationSection';
+import { FolioSection } from './FolioSection';
 import { DebugSection } from './DebugSection';
 import { WarningsConfigSection } from './WarningsConfigSection';
 
@@ -61,6 +62,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'calloutStyles': CalloutStylesSection,
   'chipStyles': ChipStylesSection,
   'htmlViewer': HtmlViewerSection,
+  'folio': FolioSection,
   'pdfGeneration': PdfGenerationSection,
   'debug': DebugSection,
   'warnings': WarningsConfigSection,

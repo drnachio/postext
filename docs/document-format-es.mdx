@@ -231,7 +231,7 @@ Mantén la linterna encendida **todas** las noches.
 :::
 ```
 
-Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en su propia sección de la configuración:
+Se reconocen cuatro nombres de contenedor en el flujo del texto (un quinto, `:::columns`, solo funciona dentro de un recuadro y se describe más abajo). Lo que renderiza cada uno se define en su propia sección de la configuración:
 
 <table>
   <thead>
@@ -252,6 +252,10 @@ Se reconocen tres nombres de contenedor. Lo que renderiza cada uno se define en 
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
       <td>Un abridor de parte o sección: el encabezado y el texto que encierra forman la página de apertura de una división mayor.</td>
+    </tr>
+    <tr>
+      <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Una tanda de páginas impresas en otro papel, como un pliego de láminas en estucado brillo dentro de un libro en papel mate. Solo lo muestra el visor Folio.</td>
     </tr>
   </tbody>
 </table>
@@ -341,6 +345,67 @@ Un segundo recuadro de respuesta.
 ```
 
 Cuando la caja exterior se parte entre columnas o páginas (`keepTogether: false`, o más alta que una columna), una caja anidada pasa entera al fragmento siguiente salvo que su propio estilo permita partirla también; cada fragmento vuelve a dibujar los marcos que contiene, y una caja anidada que continúa pierde su icono, y su título salvo que su estilo lo repita (`repeatTitle`).
+
+### `:::paper`
+
+Un libro puede cambiar de papel en una tanda de páginas: un pliego de láminas en estucado brillo dentro de un libro impreso en offset ahuesado, un encarte en cartulina, unas hojas de papel de color. Ese contenido se envuelve en un contenedor `:::paper`:
+
+```md
+:::paper{type=coatedGloss grammage=130}
+## Láminas
+::resource{id="plate-1"}
+::resource{id="plate-2"}
+:::
+```
+
+Un papel ocupa hojas enteras, así que el contenido entre las vallas empieza en una página nueva, y lo que sigue al `:::` de cierre también. Si la tanda cierra el documento, no deja detrás ninguna página en blanco. Las figuras y tablas citadas dentro de la tanda se colocan antes de que se cierre. Cada página compuesta con contenido del contenedor lleva el papel en la maquetación (`VDTPage.paper`, con los atributos tal como los escribe la valla); las páginas de fuera no llevan nada. El visor Folio lo lee y dibuja esas hojas con el color, la superficie, el grosor y la rigidez del papel. Las salidas de canvas, PDF y HTML lo ignoran: las páginas se componen e imprimen como cualquier otra.
+
+Los atributos son los de los ajustes `folio.paper`, y todos son opcionales. El que la valla no escribe sigue el papel del documento y, a falta de este, los valores por defecto del tipo de papel:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Atributo</th>
+      <th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>type</code></td>
+      <td>El papel: <code>uncoated</code>, <code>bookWove</code>, <code>coatedMatte</code>, <code>coatedSilk</code>, <code>coatedGloss</code>, <code>bible</code>, <code>newsprint</code>, <code>cardStock</code>, <code>board</code>. Fija los valores por defecto de los atributos siguientes.</td>
+    </tr>
+    <tr>
+      <td><code>grammage</code></td>
+      <td>Gramaje en g/m², un número mayor que 0. Un papel más pesado es más grueso, más rígido y más opaco.</td>
+    </tr>
+    <tr>
+      <td><code>bulk</code></td>
+      <td>Mano en cm³/g, un número mayor que 0 (grosor en µm = gramaje × mano).</td>
+    </tr>
+    <tr>
+      <td><code>finish</code></td>
+      <td>El acabado de la superficie: <code>auto</code>, <code>uncoated</code>, <code>matte</code>, <code>silk</code>, <code>gloss</code>.</td>
+    </tr>
+    <tr>
+      <td><code>texture</code></td>
+      <td>El relieve de la superficie: <code>auto</code>, <code>smooth</code>, <code>vellum</code>, <code>wove</code>, <code>laid</code>, <code>linen</code>, <code>felt</code>.</td>
+    </tr>
+    <tr>
+      <td><code>textureStrength</code></td>
+      <td>Cuánto se nota la textura, de 0 a 2.</td>
+    </tr>
+    <tr>
+      <td><code>shade</code></td>
+      <td>El color del papel: <code>#rgb</code>, <code>#rrggbb</code> o el id de una entrada de <code>colorPalette</code>.</td>
+    </tr>
+    <tr>
+      <td><code>showThrough</code></td>
+      <td><code>true</code> o <code>false</code>: si la página del reverso se transparenta un poco. Un <code>showThrough</code> sin valor equivale a <code>true</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Un `:::paper` dentro de otro solo cambia los atributos que escribe, y también empieza y termina con un salto de página. Dentro de un `:::callout` las vallas se ignoran. Un valor que el motor no sabe leer se descarta, y el sandbox lo muestra como aviso **Atributo de papel no válido** (`paperAttributeInvalid` en los `contentWarnings` del documento).
 
 ### `:::pagebreak`
 

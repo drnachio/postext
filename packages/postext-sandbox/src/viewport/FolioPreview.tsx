@@ -71,6 +71,11 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const chapterDocsRef = useSandboxChapterDocsRef();
   const layoutSource = useLayoutSource();
   const config = useSandboxSelector((s) => s.config);
+  // How the book is presented (paper, binding, desk, light): handed to the
+  // viewer as it changes, never laid out.
+  const folioConfig = config.folio;
+  const folioConfigRef = useRef(folioConfig);
+  folioConfigRef.current = folioConfig;
   const resources = useSandboxSelector((s) => s.resources);
   const locale = useSandboxSelector((s) => s.locale);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
@@ -284,6 +289,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         // The page is in the URL; the count is only announced.
         showCount: false,
         labels: folioLabelsRef.current,
+        appearance: { folio: folioConfigRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         onChange: (state) => {
           const page = state.pages[state.pages.length - 1];
@@ -337,6 +343,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   useEffect(() => {
     viewerRef.current?.setLabels(folioLabels);
   }, [folioLabels]);
+
+  useEffect(() => {
+    viewerRef.current?.setAppearance({ folio: folioConfig });
+  }, [folioConfig]);
 
   useEffect(() => () => {
     viewerRef.current?.dispose();

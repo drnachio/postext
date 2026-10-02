@@ -7,7 +7,7 @@ import type { PageImage } from "@/lib/cookbook/images";
 import { cn } from "@/lib/utils";
 import { Lightbox, rangeLabel, spreadPages, type Spread } from "./Lightbox";
 import { folio, noteId, pageImgProps } from "./pages";
-import type { PageFlipper, SpreadSrc } from "postext-folio";
+import type { FlatPageFlipper as PageFlipper, SpreadSrc } from "postext-folio";
 
 const PAGE_HASH = /^#page-(\d+)$/;
 /** A press on a page that moves less than this (px) is a click: it turns
@@ -113,7 +113,7 @@ export function LightTable({
   const loadFlipper = useCallback(() => {
     if (!flipper.current) {
       const book = spreads.map((pair) => pair.map((i, slot) => (i !== null ? pages[i].src : isBlank(pair, slot) ? "" : null)) as SpreadSrc);
-      flipper.current = import("postext-folio").then(({ PageFlipper, canFlip }) =>
+      flipper.current = import("postext-folio").then(({ FlatPageFlipper: PageFlipper, canFlip }) =>
         canvas.current && spreadEl.current && canFlip()
           ? new PageFlipper(canvas.current, spreadEl.current, book, shownRef.current, setShown, setCurrent, binding)
           : null,

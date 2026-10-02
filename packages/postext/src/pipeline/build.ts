@@ -175,6 +175,7 @@ import { raggedLooseLines } from './raggedLines';
 import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
 import { annotateDocument } from '../cjkMarks';
 import { withBookTitleBrackets } from './annotations';
+import { paperByBlock, stampPagePaper } from './paper';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -2636,6 +2637,18 @@ function placeDocumentPass(
     advanceToNextPageBoundary(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx);
   };
 
+  /** A closed `:::paper` still owes a page break before the next placed
+   *  block. */
+  let pendingPaperBreak = false;
+  /** The page break around a `:::paper` run (block `boundaryIndex`): the
+   *  flow closes like a chapter's and the next block opens a page. */
+  const breakForPaper = (boundaryIndex: number): void => {
+    pendingSpacing = 0;
+    closeFlowSegment(boundaryIndex);
+    leaveCurrentPage();
+    flushPendingNumberingAtBoundary();
+  };
+
   // Page-numbering segments. The implicit first segment comes from
   // `cfg.page.pageNumbering`; `:::numbering` directives append more,
   // each applied at the next page boundary.
@@ -4230,6 +4243,24 @@ function placeDocumentPass(
       enforcePageParity(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, parity);
       flushPendingNumberingAtBoundary();
     }
+    // `:::paper`: a paper stock belongs to whole sheets, so its content
+    // starts on a fresh page, and so does what follows it. The closing
+    // break waits for the next placed block (a run that ends the document
+    // leaves no empty page behind). The pages get their `paper` once laid
+    // out (`stampPagePaper`).
+    if ((rawBlock.type === 'containerStart' || rawBlock.type === 'containerEnd') && rawBlock.containerName === 'paper') {
+      if (rawBlock.type === 'containerStart') {
+        pendingPaperBreak = false;
+        breakForPaper(blockIdx);
+      } else {
+        pendingPaperBreak = true;
+      }
+      continue;
+    }
+    if (pendingPaperBreak) {
+      pendingPaperBreak = false;
+      breakForPaper(blockIdx);
+    }
     if (rawBlock.type === 'containerStart' && rawBlock.containerName === 'callout') {
       const plan = calloutPlan.get(blockIdx);
       if (plan && pickCalloutStyle(resolved.calloutStyles, plan.attrs.type)) {
@@ -5570,6 +5601,10 @@ function placeDocumentPass(
       && (!rule.enabled || (rule.color.hex === docRule.color.hex && lineWidthPx === docRuleWidthPx));
     if (!same) page.columnRule = { enabled: rule.enabled, color: rule.color.hex, lineWidthPx };
   }
+
+  // The paper stock of the pages set from inside a `:::paper` run.
+  const paperOfBlock = paperByBlock(contentBlocks, resolved.colorPalette);
+  if (paperOfBlock.some((p) => p !== undefined)) stampPagePaper(doc.pages, paperOfBlock);
 
   // Stamp page-number info onto every page (including blank parity pages).
   const labels = buildPageLabels(doc.pages.length, pageNumberSegments);

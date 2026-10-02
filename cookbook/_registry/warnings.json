@@ -429,9 +429,9 @@
       "zh": "某个:::name行不是Postext的指令或容器，因此被当作文字印出。"
     },
     "fix": {
-      "en": "Check the spelling against the supported names (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns).",
-      "es": "Compara el nombre con los admitidos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns).",
-      "zh": "对照支持的名称检查拼写（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns）。"
+      "en": "Check the spelling against the supported names (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns, paper).",
+      "es": "Compara el nombre con los admitidos (pagebreak, columnbreak, numbering, space, toc, callout, paragraphs, part, columns, paper).",
+      "zh": "对照支持的名称检查拼写（pagebreak、columnbreak、numbering、space、toc、callout、paragraphs、part、columns、paper）。"
     },
     "docs": {
       "slug": "document-format",
@@ -1765,6 +1765,32 @@
         "en": "Vertical writing",
         "es": "Escritura vertical",
         "zh": "竖排"
+      }
+    }
+  },
+  "paperAttributeInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Invalid paper attribute",
+      "es": "Atributo de papel no válido",
+      "zh": "纸张属性无效"
+    },
+    "cause": {
+      "en": "A :::paper attribute has an unknown name or a value outside its range (a stock, finish or texture not in the list, a grammage or bulk of 0 or less, a texture strength outside 0–2, a shade that is neither a hex colour nor a palette id). The attribute is ignored.",
+      "es": "Un atributo de :::paper tiene un nombre desconocido o un valor fuera de su rango (un papel, acabado o textura que no está en la lista, un gramaje o una mano de 0 o menos, una intensidad de textura fuera de 0–2, un tono que no es un color hexadecimal ni un id de la paleta). El atributo se ignora.",
+      "zh": ":::paper 的某个属性名称未知，或取值超出范围（纸种、表面处理或纹理不在列表中，克重或松厚度不大于 0，纹理强度不在 0–2 之间，色调既不是十六进制颜色也不是色板 id）。该属性被忽略。"
+    },
+    "fix": {
+      "en": "Use the attribute names and values of the Folio viewer's paper settings: type, grammage, bulk, finish, texture, textureStrength, shade, showThrough.",
+      "es": "Usa los nombres y valores de los ajustes de papel del visor Folio: type, grammage, bulk, finish, texture, textureStrength, shade, showThrough.",
+      "zh": "使用 Folio 查看器纸张设置的属性名称与取值：type、grammage、bulk、finish、texture、textureStrength、shade、showThrough。"
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::paper`",
+        "es": "`:::paper`",
+        "zh": "`:::paper`"
       }
     }
   }

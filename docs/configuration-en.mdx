@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-10-01',
+  lastUpdated: '2026-10-02',
   readingTime: '30 min',
   order: 3,
   plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages and PDF files from code.",
@@ -57,6 +57,7 @@ This reference is long. These are the main blocks:
 - [Custom fonts](#custom-fonts) — declare user-uploaded font families alongside Google Fonts.
 - [HTML viewer](#html-viewer) — target column width and line-breaking for the HTML backend.
 - [PDF generation (config)](#pdf-generation-config) — outlines, accessible (tagged) output, forced colour space for the PDF backend.
+- [Folio viewer (config)](#folio-viewer-config) — paper stock, binding, surface and light of the 3D book viewer.
 - [Debug](#debug) — visual overlays and authoring warnings for the editor.
 - [Programmatic use](#programmatic-usage) — `buildDocument`, the warnings it reports, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
@@ -5941,6 +5942,209 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 See [Generating PDFs](#generating-pdfs) below for the end-to-end export recipe.
+
+
+## Folio viewer (config)
+
+The `folio` property sets how the Folio viewer (`postext-folio`) presents the printed book in 3D: the angle of the view, the paper, the binding, the surface the book lies on and the light. Layout ignores it, and so do the canvas, HTML and PDF output. `buildDocument` carries the resolved settings in the VDT as `doc.config.folio` when the config sets any, so a document without them keeps its layout hash.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–40.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>Angle of the view away from straight above, in degrees, clamped to 0–40. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code></td>
+      <td>The paper stock. It supplies the defaults of the five fields below (see the table of stocks). <code>cardStock</code> is cover card; <code>board</code> is rigid board, as in a board book, and its leaves turn without bending.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>the stock's</td>
+      <td>Weight in grams per square meter, 20–2500. Heavier paper is thicker, stiffer and more opaque: a leaf bends in a wider curve and shows less of the reverse.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>the stock's</td>
+      <td>Thickness per unit of weight, in cm³/g, 0.5–3. The caliper of a sheet in micrometers is grammage × bulk, and the thickness of the book block follows from it and the page count.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>Uncoated (fibre, no sheen), or coated and calendered to matte, silk (a soft sheen) or gloss. <code>'auto'</code> takes the stock's.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>The relief of the surface: <code>smooth</code> (calendered), <code>vellum</code> (a fine tooth), <code>wove</code> (the even texture of most book papers, formed on a woven wire), <code>laid</code> (close laid lines crossed by wider chain lines, left by a dandy roll), <code>linen</code> (an embossed cross-weave), <code>felt</code> (irregular felt marks). <code>'auto'</code> takes the stock's.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>How strongly the texture shows in the light, 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the stock's</td>
+      <td>The colour of the paper before printing (white, natural, cream). The pages are printed on it.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>The reverse of a page shows faintly through thin paper.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code></td>
+      <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> is cloth on a hardcover and card (<code>'paper'</code>) on the other bindings.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>dark blue (<code>#2c3e57</code>)</td>
+      <td>The colour of the cover material.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>What the book lies on. <code>'none'</code> leaves the host's background.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>none</td>
+      <td>Tints the surface; on <code>'plain'</code> it is the surface's colour.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>The surroundings reflected by coated and gloss paper, paired with the key light that casts the shadows.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Exposure, 0.25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Shadows cast by the key light.</td>
+    </tr>
+  </tbody>
+</table>
+
+The stocks and the values they supply (`FOLIO_PAPER_STOCKS`), typical of mill data sheets:
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock</th>
+      <th>Grammage</th>
+      <th>Bulk</th>
+      <th>Caliper</th>
+      <th>Finish</th>
+      <th>Texture</th>
+      <th>Shade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (woodfree offset)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>uncoated</td><td>wove</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (cream, high bulk)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>uncoated</td><td>wove</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code></td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>matte</td><td>smooth</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code></td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>silk</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code></td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>gloss</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code></td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>uncoated</td><td>vellum</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code></td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>uncoated</td><td>wove</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code></td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>uncoated</td><td>vellum</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code></td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>silk</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+A novel on cream book paper, bound as a paperback, on a walnut desk under a reading lamp:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+The colours follow palette links like any other colour of the config (`paletteId`). Resolver and stripper match the other sections; the stripper drops paper values equal to the chosen stock's:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+In the sandbox these settings are under **Export → Folio viewer (3D)**. See [A 3D book](#a-3d-book-postext-folio) for the viewer itself.
 
 
 ## Debug
