@@ -517,6 +517,37 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     else return;
     event.preventDefault();
   });
+  // Right-drag orbits the view round the book; letting go eases it back
+  // to the view the settings give.
+  root.addEventListener("contextmenu", (event) => {
+    if (flipper) event.preventDefault();
+  });
+  root.addEventListener("pointerdown", (event) => {
+    if (event.button !== 2 || !flipper) return;
+    event.preventDefault();
+    const id = event.pointerId;
+    let x = event.clientX;
+    let y = event.clientY;
+    const move = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      if ((e.buttons & 2) === 0) return end();
+      flipper?.orbitBy(e.clientX - x, e.clientY - y);
+      x = e.clientX;
+      y = e.clientY;
+    };
+    const up = (e: PointerEvent) => {
+      if (e.pointerId === id) end();
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("blur", end);
+      flipper?.resetOrbit();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("blur", end);
+  });
   root.addEventListener("pointerdown", (event) => {
     if (onPage(event)) return;
     if (event.pointerType !== "mouse") swipe = { x: event.clientX, y: event.clientY };

@@ -105,6 +105,7 @@ const OCCLUSION = /* glsl */ `
   uniform vec4 uShadowBox;
   uniform float uShadowOn;
   uniform float uOccRadius;
+  uniform float uOccBias;
   float casterAt(vec2 s, float channel) {
     vec2 uv = (s - uShadowBox.xy) / uShadowBox.zw;
     if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -1e4;
@@ -125,7 +126,7 @@ const OCCLUSION = /* glsl */ `
       for (int i = 0; i < 4; i++) {
         float t = (float(i) + 0.25 + 0.5 * spin) / 4.0;
         float r = t * t * uOccRadius + 1.0;
-        float h = casterAt(p.xy + r * dir, channel) - p.z - 1.0;
+        float h = casterAt(p.xy + r * dir, channel) - p.z - uOccBias;
         horizon = max(horizon, h / sqrt(h * h + r * r));
       }
       occ += horizon;
@@ -162,6 +163,7 @@ const occlusionUniforms = {
   uShadowBox: { value: new Vector4(0, 0, 1, 1) },
   uShadowOn: { value: 0 },
   uOccRadius: { value: 60 },
+  uOccBias: { value: 1 },
 };
 
 function casterMaterial(leaf: boolean, sign: number) {
@@ -210,6 +212,9 @@ type PageUniforms = {
    *  does not read that map (it holds the leaf itself, and its own roll
    *  would flicker it). */
   uLeafOcc: { value: number };
+  /** Paper closer above a point than this (px) does not occlude it: a
+   *  leaf's own surface round a point is not a blocker. */
+  uOccBias: { value: number };
 };
 
 type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUniforms; spec?: PaperSpec | null } };
@@ -233,11 +238,12 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uMirror: { value: mirror ? 1 : 0 },
     uShowThrough: { value: 0 },
     uPaper: { value: new Color(1, 1, 1) },
-    uLeafOcc: { value: 0 },
+    uLeafOcc: { value: 0.45 },
+    uOccBias: { value: 6 },
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
-    Object.assign(shader.uniforms, uniforms, occlusionUniforms, { uSign: { value: sign } });
+    Object.assign(shader.uniforms, occlusionUniforms, uniforms, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
@@ -343,6 +349,24 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** The lowest the reader may orbit the view: 70° from straight above. */
+const MAX_PITCH = (70 * Math.PI) / 180;
+
+/** How far (radians) a leaf in mid-turn stands off the pages at the spine. */
+const LEAN = 0.2;
+
+/** max(a, b), rounded over a band `k` wide (no crease where they meet). */
+function smoothMax(a: number, b: number, k: number) {
+  return (a + b + Math.sqrt((a - b) * (a - b) + k * k)) / 2;
+}
+
+/** Where arc length `signed` from the spine lies on the open book's
+ *  surface (right page positive): [x, z]. */
+function surfaceAt(book: Surfaces, signed: number): [number, number] {
+  const [bx, bz] = along(signed >= 0 ? book.right : book.left, Math.abs(signed));
+  return [(signed >= 0 ? 1 : -1) * bx, bz];
+}
+
 /** A point in a leaf's own coordinates: `u` from the spine (0 … W), `v`
  *  from the middle of the page (−H/2 … H/2). Backward turns mirror x. */
 interface Pt {
@@ -426,6 +450,13 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   const a1 = Math.PI - Math.atan2(zl - hinge, xl);
   const qa = forward ? q : 1 - q;
   const phi = a0 + (a1 - a0) * qa;
+  // How far a turning leaf stands off the pages: none at rest or for a
+  // corner barely lifted, a few degrees through the middle of the turn.
+  const inAir = smooth(0.02, 0.22, q) * smooth(0.02, 0.22, 1 - q);
+  const lean = LEAN * inAir;
+  const cosA = Math.cos(lean);
+  const sinA = Math.sin(lean);
+  const floor = along(book.right, 0)[1];
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -433,9 +464,6 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       let x = u;
       let y = v;
       let z = 0;
-      // Where the curl starts for this point (on the fold line), when the
-      // point is past it.
-      let foot: number | null = null;
       if (fold) {
         const { F, n, R } = fold;
         const d = (u - F.u) * n.u + (v - F.v) * n.v;
@@ -449,32 +477,26 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
             dd = -(d - Math.PI * R);
             z = 2 * R;
           }
-          foot = u - n.u * d;
           x = u - n.u * (d - dd);
           y = v - n.v * (d - dd);
         }
       }
-      // Onto the book. The part still lying on the block follows its top
-      // (into the gutter and out); the part lifted off it is paper in the
-      // air, carried rigidly from where it leaves the block, and settles
-      // onto the other side's surface only as it lands.
+      // Onto the book. At rest (and as it lands) the leaf lies on the open
+      // book's surface, into the gutter and out. In the air it is lifted
+      // off at the spine: its own plane rises from the gutter's floor at a
+      // small angle, and it touches the pages only where they stand higher
+      // (the gutter's walls), joined smoothly.
       const s = sx * x;
-      const surfaceAt = (signed: number): [number, number] => {
-        const [bx, bz] = along(signed >= 0 ? book.right : book.left, Math.abs(signed));
-        return [(signed >= 0 ? 1 : -1) * bx, bz];
-      };
-      let [px, pz] = surfaceAt(s);
-      pz += z + lift;
-      if (foot !== null) {
-        const [fx, fz] = surfaceAt(sx * foot);
-        const rx = fx + sx * (x - foot);
-        const rz = fz + z + lift;
-        const settle = smooth(0.82, 1, q);
-        px = rx + (px - rx) * settle;
-        pz = rz + (pz - rz) * settle;
-        // Never through the pages lying open under it.
-        const [, under] = surfaceAt(px);
-        pz = Math.max(pz, under + lift);
+      const [rx, rz] = surfaceAt(book, s);
+      let px = rx;
+      let pz = rz + z + lift;
+      if (inAir > 0) {
+        const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
+        const plane = floor + Math.abs(s) * sinA + z + lift;
+        const under = surfaceAt(book, fx)[1] + lift;
+        const flying = smoothMax(plane, under, 0.02 * W);
+        px += (fx - px) * inAir;
+        pz += (flying - pz) * inAir;
       }
       if (r > 0) {
         px += (u * Math.cos(phi) - px) * r;
@@ -597,6 +619,10 @@ export class PageFlipper {
   /** What the surfaces were built for. */
   private surfaceKey = "";
   private raycaster = new Raycaster();
+  /** The reader's own view (right-drag): turned round the book by `yaw`,
+   *  tilted by `pitch` (radians from straight above; null: the setting's
+   *  tilt). */
+  private orbit: { yaw: number; pitch: number | null } = { yaw: 0, pitch: null };
   private paper: [number, number, number] = [1, 1, 1];
 
   constructor(
@@ -619,7 +645,7 @@ export class PageFlipper {
     this.turnAt = turnAt;
     this.sign = binding === "right" ? -1 : 1;
     const mirror = this.sign < 0;
-    this.coverMaterial = occluded(new MeshPhysicalMaterial({ roughness: 0.9 }), this.sign);
+    this.coverMaterial = occluded(new MeshPhysicalMaterial({ roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }), this.sign);
     this.edges = edgeMaterial(this.sign);
     this.leafCaster = casterMaterial(true, this.sign);
     this.staticCaster = casterMaterial(false, this.sign);
@@ -642,7 +668,10 @@ export class PageFlipper {
       m.material.polygonOffset = true;
       m.material.polygonOffsetFactor = 1;
       m.material.polygonOffsetUnits = 4;
-      m.material.userData.uniforms.uLeafOcc.value = 1;
+      // Shaded under a lifted leaf, never blacked out: light still comes
+      // in under its edges.
+      m.material.userData.uniforms.uLeafOcc.value = 0.7;
+      m.material.userData.uniforms.uOccBias.value = 1;
     }
     this.desk = new Mesh(new PlaneGeometry(1, 1), new MeshStandardMaterial());
     this.desk.receiveShadow = true;
@@ -763,7 +792,9 @@ export class PageFlipper {
     this.key.color.copy(env.keyColor);
     this.key.intensity = env.keyIntensity;
     this.key.castShadow = r.lighting.shadows;
-    this.key.shadow.radius = 4 + env.softness * 16;
+    this.key.shadow.radius = 6 + env.softness * 18;
+    // Soft light round the key fills its shadows: never black.
+    this.key.shadow.intensity = 0.55 + 0.25 * (1 - env.softness);
     this.renderer.toneMappingExposure = env.exposure * r.lighting.intensity;
     this.edges.color.set(r.paper.shade.hex);
     this.surfaceKey = "";
@@ -783,7 +814,11 @@ export class PageFlipper {
     m.roughness = 1;
     m.normalScale.set(1, 1);
     m.color.set(this.resolved.surface.color?.hex ?? maps.tint ?? "#ffffff");
-    m.userData.tileMm = maps.tileMm;
+    // A scan's tile is shown no larger than about 0.3 mm a texel: a big
+    // tile at its true size would read soft and blocky this close; the
+    // scans tile seamlessly, so they simply repeat more often.
+    const texels = (maps.color.image as { width?: number } | undefined)?.width ?? 1024;
+    m.userData.tileMm = Math.min(maps.tileMm, texels * 0.3);
     const aniso = this.renderer.capabilities.getMaxAnisotropy();
     for (const t of [maps.color, maps.normal, maps.roughness, maps.ao]) if (t) t.anisotropy = aniso;
     m.needsUpdate = true;
@@ -910,9 +945,12 @@ export class PageFlipper {
     const joint = b.jointMm * k;
     const reachR = along(pr, W)[0];
     const reachL = along(pl, W)[0];
+    // The boards stop a hair under the block they carry (and give way in
+    // depth): a page lying on an empty side never sinks into them.
     const cover = (x0: number, x1: number, z1: number, h: number) => {
-      const m = new Mesh(new BoxGeometry(x1 - x0, h, Math.max(0.1, z1)), this.coverMaterial);
-      m.position.set((x0 + x1) / 2, 0, Math.max(0.1, z1) / 2);
+      const top = Math.max(0.1, z1 - 0.6);
+      const m = new Mesh(new BoxGeometry(x1 - x0, h, top), this.coverMaterial);
+      m.position.set((x0 + x1) / 2, 0, top / 2);
       m.castShadow = m.receiveShadow = true;
       this.covers.add(m);
     };
@@ -990,8 +1028,10 @@ export class PageFlipper {
       const tile = ((dm.userData.tileMm as number | undefined) ?? cachedDesk(this.resolved.surface.type as DeskKind).tileMm) * k;
       for (const t of [dm.map, dm.normalMap, dm.roughnessMap, dm.aoMap]) t?.repeat.set(size / tile, size / tile);
     }
-    // The camera, tilted about the book's horizontal axis.
-    const tilt = (this.resolved.tilt * Math.PI) / 180;
+    // The camera, tilted about the book's horizontal axis and turned round
+    // it as the reader has orbited it.
+    const tilt = this.orbit.pitch ?? (this.resolved.tilt * Math.PI) / 180;
+    const yaw = this.orbit.yaw;
     const sq = BINDINGS[this.resolved.binding.type].squareMm * k;
     const zTop = Math.max(this.topZ("left"), this.topZ("right"));
     const corners: Vector3[] = [];
@@ -1002,8 +1042,8 @@ export class PageFlipper {
     const fx = spread.width / cw;
     const fy = spread.height / ch;
     const place = (dist: number) => {
-      cam.position.set(0, -Math.sin(tilt) * dist, zTop / 2 + Math.cos(tilt) * dist);
-      cam.up.set(0, 1, 0);
+      cam.position.set(Math.sin(yaw) * Math.sin(tilt) * dist, -Math.cos(yaw) * Math.sin(tilt) * dist, zTop / 2 + Math.cos(tilt) * dist);
+      cam.up.set(-Math.sin(yaw), Math.cos(yaw), 0);
       cam.lookAt(0, 0, zTop / 2);
       // A tight near plane: the book is the nearest thing to the eye, and
       // depth precision is what keeps a leaf lying on the page under it
@@ -1056,6 +1096,48 @@ export class PageFlipper {
     const p = this.surfaces?.[side];
     return p ? p.zs[p.zs.length - 1] : 0;
   }
+
+  /** Turns the view round the book (`dx`, px of a drag) and tilts it
+   *  (`dy`), never below a low angle over the table. */
+  orbitBy(dx: number, dy: number) {
+    cancelAnimationFrame(this.orbitFrame);
+    this.orbitFrame = 0;
+    const pitch = this.orbit.pitch ?? (this.resolved.tilt * Math.PI) / 180;
+    this.orbit = {
+      yaw: this.orbit.yaw - dx * 0.006,
+      pitch: Math.min(MAX_PITCH, Math.max(0, pitch - dy * 0.006)),
+    };
+    this.redraw();
+  }
+
+  /** Back to the view the settings give, easing there (the reader let go
+   *  of the view). */
+  resetOrbit() {
+    cancelAnimationFrame(this.orbitFrame);
+    const home = (this.resolved.tilt * Math.PI) / 180;
+    // The shorter way round.
+    const yaw0 = Math.atan2(Math.sin(this.orbit.yaw), Math.cos(this.orbit.yaw));
+    const pitch0 = this.orbit.pitch ?? home;
+    if (Math.abs(yaw0) < 1e-3 && Math.abs(pitch0 - home) < 1e-3) {
+      this.orbit = { yaw: 0, pitch: null };
+      return this.redraw();
+    }
+    const start = performance.now();
+    const duration = 450 + 250 * Math.min(1, Math.hypot(yaw0, pitch0 - home));
+    const step = (now: number) => {
+      this.orbitFrame = 0;
+      if (this.disposed) return;
+      const t = Math.min(1, (now - start) / duration);
+      const e = ease(t);
+      this.orbit = t < 1 ? { yaw: yaw0 * (1 - e), pitch: pitch0 + (home - pitch0) * e } : { yaw: 0, pitch: null };
+      this.layout();
+      // Leaves in the air draw in their own frames.
+      if (!this.raf && !this.starting) this.draw();
+      if (t < 1) this.orbitFrame = requestAnimationFrame(step);
+    };
+    this.orbitFrame = requestAnimationFrame(step);
+  }
+  private orbitFrame = 0;
 
   /** The colour of the book's blank pages (0 … 1, as CSS gives it). */
   setPaper(r: number, g: number, b: number) {
@@ -1370,7 +1452,10 @@ export class PageFlipper {
     const { samples } = turn.held!;
     turn.held = undefined;
     if (click) {
-      turn.anim = { start: performance.now(), duration: DURATION, from: { ...turn.P }, to: { u: -turn.G.u, v: turn.G.v }, arc: 0.2 * this.H, lands: true };
+      // The hand lifts the point clicked and carries it over, arching
+      // towards the middle of the page: a click near the head turns the
+      // leaf from its top corner, near the foot from its bottom one.
+      turn.anim = { start: performance.now(), duration: DURATION, from: { ...turn.P }, to: { u: -turn.G.u, v: turn.G.v }, arc: (turn.G.v > 0 ? -1 : 1) * 0.2 * this.H, lands: true };
       this.target = turn.forward ? k + 1 : k;
       this.onTarget(this.target);
       return;
@@ -1488,6 +1573,7 @@ export class PageFlipper {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.still);
+    cancelAnimationFrame(this.orbitFrame);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
     this.leafCaster.dispose();
