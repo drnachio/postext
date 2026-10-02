@@ -24,7 +24,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns"}
+KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
 KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
@@ -636,6 +636,32 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 elif fname == "columns":
                     if not any(s[0] == "callout" for s in stack):
                         rep.warn(where, ":::columns only works inside a :::callout (ignored here)")
+                elif fname == "paper":
+                    if any(s[0] == "callout" for s in stack):
+                        rep.warn(where, ":::paper inside a callout is ignored (a stock covers whole pages)")
+                    paper_enums = {
+                        "type": {"uncoated", "bookWove", "coatedMatte", "coatedSilk", "coatedGloss", "bible", "newsprint", "cardStock", "board"},
+                        "finish": {"auto", "uncoated", "matte", "silk", "gloss"},
+                        "texture": {"auto", "smooth", "vellum", "wove", "laid", "linen", "felt"},
+                        "showThrough": {"true", "false", ""},
+                    }
+                    for k, v in attrs.items():
+                        if k in paper_enums:
+                            if v not in paper_enums[k]:
+                                rep.warn(where, f"paper {k}={v!r} is dropped (allowed: {sorted(paper_enums[k] - {''})})")
+                        elif k in ("grammage", "bulk", "textureStrength"):
+                            try:
+                                n = float(v)
+                                ok = 0 <= n <= 2 if k == "textureStrength" else n > 0
+                            except ValueError:
+                                ok = False
+                            if not ok:
+                                rep.warn(where, f"paper {k}={v!r} is dropped (a positive number{', 0 to 2' if k == 'textureStrength' else ''})")
+                        elif k == "shade":
+                            if not re.fullmatch(r"#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})", v) and v not in ids["palette"]:
+                                rep.warn(where, f"paper shade {v!r} is neither a #rrggbb colour nor a colorPalette id (dropped)")
+                        elif k != "id":
+                            rep.warn(where, f"paper attribute {k!r} is unknown (dropped)")
                 stack.append((fname, i + 1))
             elif fname in KNOWN_DIRECTIVES:
                 if fname != "space" and any(s[0] == "callout" for s in stack):

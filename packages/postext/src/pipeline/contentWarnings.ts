@@ -16,6 +16,7 @@ import { duplicateAnchors } from './anchors';
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
 import { invalidAttributeKeys } from '../parse/attrs';
+import { parsePaperAttrs } from './paper';
 import { extractFrontmatter } from '../frontmatter';
 import { tableGridIssues } from '../table/model';
 import type { PostextConfig, Resource } from '../types';
@@ -245,6 +246,10 @@ export function collectContentWarnings(
           out.push({ kind: 'unknownParagraphStyle', style: attrs.style, ...abs(range) });
         } else if (b.containerName === 'callout' && calloutStyles.size > 0 && attrs.type !== undefined && !calloutStyles.has(attrs.type)) {
           out.push({ kind: 'unknownCalloutType', type: attrs.type, ...abs(range) });
+        } else if (b.containerName === 'paper') {
+          for (const issue of parsePaperAttrs(attrs, config?.colorPalette).issues) {
+            out.push({ kind: 'paperAttributeInvalid', key: issue.key, value: issue.value, ...abs(range) });
+          }
         }
         break;
       }
@@ -536,6 +541,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;
+      break;
+    case 'paperAttributeInvalid':
+      text = `:::paper ${w.key}="${w.value}" is not a value it reads — dropped, the pages keep the document's paper for it`;
       break;
     case 'unknownChipStyle':
       text = `Unknown chip style "${w.style}"${inRes} — the chip takes the first chip style`;

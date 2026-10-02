@@ -1,5 +1,6 @@
-import { renderPageToCanvas, type VDTDocument } from "postext";
-import { createFolio, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
+import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
+import type { FolioPaperConfig } from "postext";
+import { createFolio, type FolioAppearance, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
@@ -17,8 +18,10 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
 
 export interface FolioDocumentViewer extends FolioViewer {
   /** Shows another layout of the book (after an edit), on the same page
-   *  unless `at` says otherwise. */
-  setDocument(doc: VDTDocument, options?: { at?: number }): void;
+   *  unless `at` says otherwise. A page that reads the same as before
+   *  keeps its painting; `repaint` paints every page again (an image that
+   *  came in after the pages were painted). */
+  setDocument(doc: VDTDocument, options?: { at?: number; repaint?: boolean }): void;
 }
 
 /** Whether the document's first page is a recto: page 1, or a chapter
@@ -31,6 +34,69 @@ export function firstPageIsRecto(doc: VDTDocument): boolean {
 function paperOf(doc: VDTDocument): string {
   const hex = doc.config.page.backgroundColor.hex;
   return hex && hex !== "transparent" ? hex : "#fff";
+}
+
+/** How the document's book is presented: its `folio` settings, its page
+ *  width, the book's pages before and after it (a chapter of a longer
+ *  book), with the host's own appearance laid over them. */
+function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
+  const page = doc.pages[0];
+  const before = doc.pageIndexOffset ?? 0;
+  const after = Math.max(0, (doc.bookPageCount ?? 0) - before - doc.pages.length);
+  return {
+    folio: doc.config.folio,
+    ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / 96 } : {}),
+    extraPages: { before, after },
+    ...own,
+  };
+}
+
+/** The paper a page is printed on, when a `:::paper` run sets one. */
+const pagePaperOf = (page: VDTPage | undefined) => (page as { paper?: FolioPaperConfig } | undefined)?.paper;
+
+/** What a page is painted from, as text: two pages with the same
+ *  signature under the same config paint the same. */
+const signatures = new WeakMap<object, string>();
+function signature(of: VDTPage | VDTDocument["config"]): string {
+  let sig = signatures.get(of);
+  if (sig === undefined) {
+    sig = JSON.stringify(of);
+    signatures.set(of, sig);
+  }
+  return sig;
+}
+
+/**
+ * Which paintings a new layout can keep: new page index → old page index,
+ * for every page of `wanted` that is the same page as a painted one (the
+ * same object, or one that reads the same). Each old painting goes to one
+ * page at most.
+ */
+export function carriedPaintings(
+  before: readonly VDTPage[],
+  painted: Iterable<number>,
+  next: readonly VDTPage[],
+  wanted: Iterable<number>,
+): Map<number, number> {
+  const carried = new Map<number, number>();
+  const byPage = new Map<VDTPage, number>();
+  for (const k of painted) if (before[k]) byPage.set(before[k], k);
+  if (byPage.size === 0) return carried;
+  let bySignature: Map<string, number> | null = null;
+  for (const i of wanted) {
+    const page = next[i];
+    if (!page) continue;
+    let k = byPage.get(page);
+    if (k === undefined) {
+      bySignature ??= new Map([...byPage].map(([p, j]) => [signature(p), j]));
+      k = bySignature.get(signature(page));
+    }
+    if (k === undefined) continue;
+    carried.set(i, k);
+    byPage.delete(before[k]!);
+    bySignature = null;
+  }
+  return carried;
 }
 
 /** How long a resize settles before the pages are painted at the new size. */
@@ -59,13 +125,16 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   let idle = 0;
   let resizeTimer = 0;
   let ready = false;
+  let hostAppearance: FolioAppearance | undefined = options.appearance;
 
   const slotWidth = () => viewer.pageSize.deviceWidth;
 
   const sources = () =>
     current.pages.map((_, i) => {
       const canvas = canvases[i];
-      return painted.has(i) && canvas ? { src: canvas, alt: options.alt?.(i) ?? `Page ${i + 1}` } : "";
+      const paper = pagePaperOf(current.pages[i]);
+      if (painted.has(i) && canvas) return { src: canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
+      return paper ? { src: "" as const, paper } : "";
     });
 
   /** Pages within `reach` spreads of the ones on show. */
@@ -139,7 +208,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const first = doc.pages[0];
   const viewer = createFolio(container, {
     ...options,
-    pages: doc.pages.map(() => ""),
+    pages: doc.pages.map((p) => {
+      const paper = pagePaperOf(p);
+      return paper ? { src: "", paper } : "";
+    }),
+    appearance: appearanceOf(doc, options.appearance),
     aspect: first ? first.width / first.height : undefined,
     firstPageRecto: firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
@@ -174,28 +247,50 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     prev: viewer.prev,
     setPages: viewer.setPages,
     setLabels: viewer.setLabels,
+    setAppearance(next: FolioAppearance) {
+      hostAppearance = { ...hostAppearance, ...next };
+      viewer.setAppearance(appearanceOf(current, hostAppearance));
+    },
     get pageSize() {
       return viewer.pageSize;
     },
     get state() {
       return viewer.state;
     },
-    setDocument(next: VDTDocument, opts: { at?: number } = {}) {
+    setDocument(next: VDTDocument, opts: { at?: number; repaint?: boolean } = {}) {
       const at = Math.max(0, Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0));
-      for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;
+      const before = current;
+      const oldCanvases = canvases;
+      const oldPainted = painted;
       current = next;
       canvases = [];
       painted = new Map();
       focus = [at];
-      viewer.setPages(
-        next.pages.map(() => ""),
-        {
-          firstPageRecto: firstPageIsRecto(next),
-          binding: next.binding === "right" ? "right" : "left",
-          paper: options.paper ?? paperOf(next),
-          at,
-        },
-      );
+      // A page that reads the same keeps its painting (and its texture):
+      // a relayout elsewhere in the book (the plan settling, an edit in
+      // another chapter) leaves the open spread as it is.
+      const keep = !opts.repaint && (next.config === before.config || signature(next.config) === signature(before.config));
+      if (keep) {
+        for (const [i, k] of carriedPaintings(before.pages, [...oldPainted.keys()], next.pages, wanted())) {
+          const canvas = oldCanvases[k];
+          if (!canvas) continue;
+          canvases[i] = canvas;
+          painted.set(i, oldPainted.get(k)!);
+          oldCanvases[k] = null;
+        }
+      }
+      // The open pages painted before the swap, so no frame shows them
+      // blank; the old paintings no page took are let go.
+      const width = slotWidth();
+      for (let i = at - 2; i <= at + 3; i++) if (i >= 0 && i < next.pages.length && painted.get(i) !== width) paint(i, width);
+      for (const canvas of oldCanvases) if (canvas) canvas.width = canvas.height = 0;
+      viewer.setAppearance(appearanceOf(next, hostAppearance));
+      viewer.setPages(sources(), {
+        firstPageRecto: firstPageIsRecto(next),
+        binding: next.binding === "right" ? "right" : "left",
+        paper: options.paper ?? paperOf(next),
+        at,
+      });
       focus = viewer.state.pages;
       refresh(around(viewer.state));
     },

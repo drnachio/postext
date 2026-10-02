@@ -231,7 +231,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-Three container names are recognized. What each one renders is set in its own section of the configuration:
+Four container names are recognized in the text flow (a fifth, `:::columns`, works only inside a callout and is described below). What each one renders is set in its own section of the configuration:
 
 <table>
   <thead>
@@ -252,6 +252,10 @@ Three container names are recognized. What each one renders is set in its own se
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
       <td>A part or section opener: the enclosed heading and prose form the opener page of a major division.</td>
+    </tr>
+    <tr>
+      <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
+      <td>A run of pages printed on another paper stock, such as a section of gloss plates in a matte book. Only the Folio viewer shows it.</td>
     </tr>
   </tbody>
 </table>
@@ -341,6 +345,67 @@ A second answer box.
 ```
 
 When the outer box splits across columns or pages (`keepTogether: false`, or taller than a column), a nested box moves whole to the next fragment unless its own style lets it split too; every fragment redraws the frames it holds, and a continued nested box drops its icon, and its title unless its style repeats it (`repeatTitle`).
+
+### `:::paper`
+
+A book can change paper stock for a run of pages: a section of plates on coated gloss paper in a book printed on uncoated wove, a card insert, a few leaves of tinted paper. Wrap that content in a `:::paper` container:
+
+```md
+:::paper{type=coatedGloss grammage=130}
+## Plates
+::resource{id="plate-1"}
+::resource{id="plate-2"}
+:::
+```
+
+A stock covers whole sheets, so the content inside the fences starts on a new page, and whatever follows the closing `:::` starts on a new page too. A run that ends the document leaves no blank page after it. Figures and tables cited inside the run are placed before it closes. Every page set with content from inside the container carries the stock in the layout (`VDTPage.paper`, the attributes as the fence writes them); pages outside it carry nothing. The Folio viewer reads it and draws those leaves with the paper's colour, surface, thickness and stiffness. The canvas, PDF and HTML outputs ignore it: the pages are set and printed like any other.
+
+The attributes are those of the `folio.paper` settings, and all of them are optional. One the fence leaves out follows the document's paper, and past that the stock's defaults:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Attribute</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>type</code></td>
+      <td>The stock: <code>uncoated</code>, <code>bookWove</code>, <code>coatedMatte</code>, <code>coatedSilk</code>, <code>coatedGloss</code>, <code>bible</code>, <code>newsprint</code>, <code>cardStock</code>, <code>board</code>. It sets the defaults of the attributes below.</td>
+    </tr>
+    <tr>
+      <td><code>grammage</code></td>
+      <td>Weight in g/m², a number above 0. Heavier paper is thicker, stiffer and more opaque.</td>
+    </tr>
+    <tr>
+      <td><code>bulk</code></td>
+      <td>Thickness per weight in cm³/g, a number above 0 (caliper in µm = grammage × bulk).</td>
+    </tr>
+    <tr>
+      <td><code>finish</code></td>
+      <td>The surface: <code>auto</code>, <code>uncoated</code>, <code>matte</code>, <code>silk</code>, <code>gloss</code>.</td>
+    </tr>
+    <tr>
+      <td><code>texture</code></td>
+      <td>The relief of the surface: <code>auto</code>, <code>smooth</code>, <code>vellum</code>, <code>wove</code>, <code>laid</code>, <code>linen</code>, <code>felt</code>.</td>
+    </tr>
+    <tr>
+      <td><code>textureStrength</code></td>
+      <td>How strongly the texture shows, from 0 to 2.</td>
+    </tr>
+    <tr>
+      <td><code>shade</code></td>
+      <td>The colour of the paper: <code>#rgb</code>, <code>#rrggbb</code> or the id of a <code>colorPalette</code> entry.</td>
+    </tr>
+    <tr>
+      <td><code>showThrough</code></td>
+      <td><code>true</code> or <code>false</code>: whether the reverse page shows faintly through. A bare <code>showThrough</code> means <code>true</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+A `:::paper` inside another one overrides only the attributes it sets, and it also starts and ends on a page break. Inside a `:::callout` the fences are ignored. A value the engine cannot read is dropped, and the sandbox lists it as an **Invalid paper attribute** warning (`paperAttributeInvalid` in the document's `contentWarnings`).
 
 ### `:::pagebreak`
 

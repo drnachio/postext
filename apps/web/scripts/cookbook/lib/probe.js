@@ -19,7 +19,7 @@ const LATIN = [
 ];
 const MAIN_COLOR = '#295AA3';
 const FALLBACK_DIRECTIVES = ['pagebreak', 'numbering', 'columnbreak', 'space', 'toc'];
-const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns'];
+const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns', 'paper'];
 /** The parser's own fence patterns (packages/postext/src/parse/blockParser.ts). */
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CLOSE_RE = /^:::\s*$/;

@@ -41,6 +41,7 @@ export type WarningKind =
   | 'numberingInvalidStartAt'
   | 'pagebreakInvalidParity'
   | 'spaceInvalidLines'
+  | 'paperAttributeInvalid'
   | 'headingBreakInvalidParity'
   | 'parityCascade'
   | 'alphaPdfOverflow'
@@ -176,6 +177,7 @@ export type WarningPayload =
   | { kind: 'numberingInvalidStartAt'; value: string }
   | { kind: 'pagebreakInvalidParity'; value: string }
   | { kind: 'spaceInvalidLines'; value: string }
+  | { kind: 'paperAttributeInvalid'; key: string; value: string }
   | { kind: 'headingBreakInvalidParity'; level: number; value: string }
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }

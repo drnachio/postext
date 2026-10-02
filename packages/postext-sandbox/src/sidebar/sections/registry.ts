@@ -48,6 +48,7 @@ export type SettingsSectionId =
   | 'diagramStyle'
   | 'calloutStyles'
   | 'htmlViewer'
+  | 'folio'
   | 'pdfGeneration'
   | 'debug'
   | 'warnings';
@@ -117,6 +118,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'parts', group: 'parts', labelKey: 'parts', configKeys: ['parts'] },
   { id: 'pdfGeneration', group: 'output', labelKey: 'pdfGenerationSection', configKeys: ['pdfGeneration'] },
   { id: 'htmlViewer', group: 'output', labelKey: 'htmlViewer', configKeys: ['htmlViewer'] },
+  { id: 'folio', group: 'output', labelKey: 'folioSection', configKeys: ['folio'] },
   { id: 'debug', group: 'advanced', labelKey: 'debug', configKeys: ['debug', 'page'] },
   { id: 'warnings', group: 'advanced', labelKey: 'warnings', configKeys: ['debug'] },
 ];
