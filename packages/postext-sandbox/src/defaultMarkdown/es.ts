@@ -568,7 +568,7 @@ El editor vigila además el libro entero. Su menú de capítulos lista cada cap�
 
 ## Configuración
 
-El panel **Diseño** edita la configuración completa —más de quinientos campos— por grupos: página y columnas, escritura, colores, tipografía, títulos e índice, listas, figuras y tablas, recuadros, cabeceras y pies, partes, exportación y ajustes avanzados. Un buscador encuentra cualquier opción por su nombre, y el filtro **Cambiados** muestra lo que difiere de los valores por defecto. Cada campo y cada sección se pueden restablecer por separado, y la configuración se puede exportar e importar como archivo.
+El panel **Diseño** edita la configuración completa —más de quinientos campos— por grupos: página y columnas, escritura, colores, tipografía, títulos e índice, listas, figuras y tablas, recuadros, cabeceras y pies, partes, exportación, Folio (el libro en 3D) y ajustes avanzados. Un buscador encuentra cualquier opción por su nombre, y el filtro **Cambiados** muestra lo que difiere de los valores por defecto. Cada campo y cada sección se pueden restablecer por separado, y la configuración se puede exportar e importar como archivo.
 
 ## Las tres vistas
 
@@ -725,4 +725,6 @@ Si algo de esto te resuena, el repositorio es el siguiente paso. Abre una issue,
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext
 :::
+
+# Contraportada {style="back" toc="false" book="Postext" blurb="Postext compone Markdown como libros, revistas y manuales, en el navegador: cada párrafo cortado entero, columnas que terminan a la par, figuras que llegan después de las palabras que las llaman y un PDF listo para imprenta. Cada página de esta guía la ha compuesto el propio Postext." licence="Código abierto · Licencia MIT"}
 `;

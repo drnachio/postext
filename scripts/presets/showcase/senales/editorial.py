@@ -12,6 +12,7 @@ BOOK = {
         "publisher": "Edición de muestra compuesta con Postext · Texto © AEMA, Copenhague, 2020",
         "contents": "Índice",
         "credits": "Créditos y fuentes",
+        "back_cover": "Contraportada",
         "references": "Referencias",
         "editorial": "Editorial",
         "interview": "Entrevista",
@@ -29,6 +30,7 @@ BOOK = {
         "publisher": "Sample edition set with Postext · Text © EEA, Copenhagen, 2020",
         "contents": "Contents",
         "credits": "Credits and sources",
+        "back_cover": "Back cover",
         "references": "References",
         "editorial": "Editorial",
         "interview": "Interview",
@@ -117,6 +119,19 @@ PANELS = {
             "en": [("22 000 000", "people highly annoyed"), ("6 500 000", "people with high sleep disturbance"), ("48 000", "cases of heart disease"), ("12 000", "premature deaths"), ("12 500", "children with cognitive impairment")],
         },
         "sources": {"es": "Informe de la AEMA «El ruido en Europa 2020».", "en": "EEA report ‘Environmental noise in Europe — 2020’."},
+    },
+}
+
+# The back cover: a clear mountain lake against the traffic of the front,
+# a line on the issue and the photograph's credit.
+BACK_COVER = {
+    "es": {
+        "blurb": "Aire, agua, suelo, ruido y sustancias químicas: cómo afecta la contaminación a la salud de los europeos y qué hace falta para acercarse a la contaminación cero.",
+        "credit": "Fotografía de contraportada: Ales Krivec · Unsplash, CC0.",
+    },
+    "en": {
+        "blurb": "Air, water, soil, noise and chemicals: how pollution affects the health of Europeans, and what it will take to move towards zero pollution.",
+        "credit": "Back cover photograph: Ales Krivec · Unsplash, CC0.",
     },
 }
 

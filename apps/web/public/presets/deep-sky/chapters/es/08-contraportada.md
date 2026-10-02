@@ -1,0 +1,1 @@
+# Contraportada {style="contraportada" toc="false" masthead="Cielo profundo" blurb="Del sistema solar al campo profundo: ocho notas de prensa de los observatorios de Chile, con sus imágenes." issue="Número 1 · Otoño de 2026" credit="En la contraportada, Sagitario A* en luz polarizada. Crédito: EHT Collaboration, CC BY 4.0."}

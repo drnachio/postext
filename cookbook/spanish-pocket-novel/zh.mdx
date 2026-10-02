@@ -28,7 +28,7 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 <Excerpt region="opener" />
 
-编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。Postext只在设计文字中绘制首字，而设计文字是齐左排的，并且只有在该文字设了`overflow: 'wrap'`时才会绘制。为了藏起不齐的右边，首字旁只放一行：`lines: 1`让首字抬高，与`lead`属性中的那一行并排，并反复调整`INITIAL_GAP`，直到这一行恰好排满，离行长只差0.1 mm。段落在Markdown中接着排，不缩进（[文字元素](/zh/docs/configuration#文本元素)）。章这一级的`marginBottom`取代默认的外边距（默认值会多出一个空行）；它的值`-LEAD`还收回了首字1.2 em的字框给首页标题增加的那一行高度。
+编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。Postext只在设计文字中绘制首字，而设计文字是齐左排的，并且只有在该文字设了`overflow: 'wrap'`时才会绘制。为了藏起不齐的右边，首字旁只放一行：`lines: 1`让首字抬高，与`lead`属性中的那一行并排，并反复调整`INITIAL_GAP`，直到这一行恰好排满，离行长只差0.1 mm。段落在Markdown中接着排，不缩进（[文字元素](/zh/docs/configuration#文本元素)）。章这一级的`marginBottom: 0`取代默认的外边距（默认值会多出一个空行），正文便紧接在导语下一行排起。
 
 <PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside a first line that ends flush with the justified text under it." />
 

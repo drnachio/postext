@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "normalConvention": "OpenGL (+Y up)",
+  "colorSpace": {
+    "color": "sRGB",
+    "normal": "linear",
+    "roughness": "linear",
+    "ao": "linear"
+  },
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "kinds": {
+    "oak": {
+      "files": {
+        "color": "oak/color.jpg",
+        "normal": "oak/normal.jpg",
+        "roughness": "oak/roughness.jpg",
+        "ao": "oak/ao.jpg"
+      },
+      "tileMm": 1830,
+      "tileMmSource": "asset",
+      "tint": null,
+      "source": "Poly Haven",
+      "sourceUrl": "https://polyhaven.com/a/oak_veneer_01",
+      "assetId": "oak_veneer_01",
+      "name": "Oak Veneer 01",
+      "author": "Jenelle van Heerden",
+      "license": "CC0-1.0",
+      "notes": "Light oak veneer, quarter-cut grain, satin; reads as a solid oak tabletop."
+    },
+    "walnut": {
+      "files": {
+        "color": "walnut/color.jpg",
+        "normal": "walnut/normal.jpg",
+        "roughness": "walnut/roughness.jpg"
+      },
+      "tileMm": 800,
+      "tileMmSource": "asset",
+      "tint": null,
+      "source": "ambientCG",
+      "sourceUrl": "https://ambientcg.com/view?id=Wood051",
+      "assetId": "Wood051",
+      "name": "Wood 051",
+      "author": "ambientCG (Lennart Demes)",
+      "license": "CC0-1.0",
+      "notes": "Dark espresso walnut furniture grain."
+    },
+    "linen": {
+      "files": {
+        "color": "linen/color.jpg",
+        "normal": "linen/normal.jpg",
+        "roughness": "linen/roughness.jpg",
+        "ao": "linen/ao.jpg"
+      },
+      "tileMm": 120,
+      "tileMmSource": "estimate",
+      "tint": "#f4ece0",
+      "source": "ambientCG",
+      "sourceUrl": "https://ambientcg.com/view?id=Fabric036",
+      "assetId": "Fabric036",
+      "name": "Fabric 036",
+      "author": "ambientCG (Lennart Demes)",
+      "license": "CC0-1.0",
+      "notes": "Slubbed plain-weave linen, neutral grey; the tint warms it to an oatmeal tablecloth. Tile size estimated from the thread count (~13 threads per cm)."
+    },
+    "felt": {
+      "files": {
+        "color": "felt/color.jpg",
+        "normal": "felt/normal.jpg",
+        "roughness": "felt/roughness.jpg"
+      },
+      "tileMm": 300,
+      "tileMmSource": "estimate",
+      "tint": "#4d8a5c",
+      "source": "ambientCG",
+      "sourceUrl": "https://ambientcg.com/view?id=Fabric034",
+      "assetId": "Fabric034",
+      "name": "Fabric 034",
+      "author": "ambientCG (Lennart Demes)",
+      "license": "CC0-1.0",
+      "notes": "Mottled grey wool felt; the tint makes it green baize. Tile size estimated from the fibre mottling (1-3 mm)."
+    },
+    "leather": {
+      "files": {
+        "color": "leather/color.jpg",
+        "normal": "leather/normal.jpg",
+        "roughness": "leather/roughness.jpg",
+        "ao": "leather/ao.jpg"
+      },
+      "tileMm": 400,
+      "tileMmSource": "asset",
+      "tint": null,
+      "source": "Poly Haven",
+      "sourceUrl": "https://polyhaven.com/a/brown_leather",
+      "assetId": "brown_leather",
+      "name": "Brown Leather",
+      "author": "Rob Tuytel",
+      "license": "CC0-1.0",
+      "notes": "Even brown grain leather."
+    },
+    "marble": {
+      "files": {
+        "color": "marble/color.jpg",
+        "normal": "marble/normal.jpg",
+        "roughness": "marble/roughness.jpg"
+      },
+      "tileMm": 600,
+      "tileMmSource": "estimate",
+      "tint": null,
+      "source": "ambientCG",
+      "sourceUrl": "https://ambientcg.com/view?id=Marble021",
+      "assetId": "Marble021",
+      "name": "Marble 021",
+      "author": "ambientCG (Lennart Demes)",
+      "license": "CC0-1.0",
+      "notes": "Polished white marble with fine grey-beige veins. Tile size estimated from the vein scale."
+    },
+    "plain": {
+      "files": {
+        "color": "plain/color.jpg",
+        "normal": "plain/normal.jpg",
+        "roughness": "plain/roughness.jpg"
+      },
+      "tileMm": 250,
+      "tileMmSource": "estimate",
+      "tint": null,
+      "source": "ambientCG",
+      "sourceUrl": "https://ambientcg.com/view?id=Plastic013A",
+      "assetId": "Plastic013A",
+      "name": "Plastic 013 A",
+      "author": "ambientCG (Lennart Demes)",
+      "license": "CC0-1.0",
+      "notes": "Matte white laminate with a fine orange-peel stipple; tint it for a painted desk. Tile size estimated from the stipple (~0.5 mm)."
+    }
+  }
+}

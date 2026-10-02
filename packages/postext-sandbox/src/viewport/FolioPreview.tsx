@@ -11,10 +11,12 @@ import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination'
 import { stitchDocuments, type StitchedBook } from '../book/stitch';
 import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
 import { ensureResourceImages } from '../controls/resourceImages';
+import { getBlob } from '../storage/blobStore';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
 import type { BookPageMap } from './usePageHashSync';
+import { FolioLoading } from './FolioLoading';
 
 interface FolioPreviewProps {
   onGeneratingChange?: (generating: boolean) => void;
@@ -23,12 +25,28 @@ interface FolioPreviewProps {
    *  of every page. */
   onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[], book?: BookPageMap) => void;
   onCurrentPageChange?: (index: number) => void;
+  /** The pages of the spread the book is sent to (as soon as it is sent,
+   *  and again once its leaves have landed). */
+  onSpreadChange?: (pages: readonly number[]) => void;
+  /** Whether the book is bound on the right (its leaves turn leftward). */
+  onBindingChange?: (rightToLeft: boolean) => void;
 }
 
 export interface FolioPreviewHandle {
   jumpToPage: (pageIndex: number) => void;
+  /** Opens the spread holding page `pageIndex`: the leaves turn to a near
+   *  one, a far one (more than `FAR_SPREADS` away) opens at once. */
+  turnToPage: (pageIndex: number) => void;
+  prev: () => void;
+  next: () => void;
+  /** Eases the view back to the one the settings give. */
+  resetView: () => void;
   regenerate: () => void;
 }
+
+/** Spreads beyond which a page typed in opens at once rather than turning
+ *  every leaf in between. */
+const FAR_SPREADS = 10;
 
 /** A laid-out document with what tells its pages apart across layouts:
  *  the chapter (position in the book) of every page of a whole-book
@@ -52,6 +70,9 @@ function samePage(from: ShownDoc, index: number, to: ShownDoc): number {
     && p.pageNumberFormat === page.pageNumberFormat);
 }
 
+/** The scanned desk textures the site serves (apps/web/public). */
+const FOLIO_TEXTURES = '/folio/textures';
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/__(\w+)__/g, (m, key: string) => (key in values ? String(values[key]) : m));
 
@@ -62,7 +83,7 @@ const fill = (template: string, values: Record<string, string | number>) =>
  * spreads, its leaves turned by hand. Pages are painted at the size they
  * are shown, only around the open spread.
  */
-export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
+export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxSelector((s) => s.labels);
   const sharedDocRef = useSandboxDocRef();
@@ -70,7 +91,39 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const chapterDocsRef = useSandboxChapterDocsRef();
   const layoutSource = useLayoutSource();
   const config = useSandboxSelector((s) => s.config);
+  // How the book is presented (paper, binding, desk, light): handed to the
+  // viewer as it changes, never laid out.
+  const folioConfig = config.folio;
+  const folioConfigRef = useRef(folioConfig);
+  folioConfigRef.current = folioConfig;
   const resources = useSandboxSelector((s) => s.resources);
+  // The picture on the spine (none on a saddle stitch): its stored image,
+  // handed to the viewer as an object URL.
+  const spineId = folioConfig?.binding?.type === 'saddleStitch' ? undefined : folioConfig?.binding?.spineImage;
+  const spineFileId = useMemo(() => {
+    const r = spineId ? resources.find((x) => x.id === spineId) : undefined;
+    return r?.bitmap?.fileId ?? r?.svg?.fileId;
+  }, [resources, spineId]);
+  const [spineUrl, setSpineUrl] = useState<string | undefined>(undefined);
+  const spineUrlRef = useRef(spineUrl);
+  spineUrlRef.current = spineUrl;
+  useEffect(() => {
+    if (!spineFileId) {
+      setSpineUrl(undefined);
+      return;
+    }
+    let live = true;
+    let url: string | undefined;
+    void getBlob(spineFileId).then((rec) => {
+      if (!live || !rec) return;
+      url = URL.createObjectURL(new Blob([rec.bytes], { type: rec.contentType }));
+      setSpineUrl(url);
+    });
+    return () => {
+      live = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [spineFileId]);
   const locale = useSandboxSelector((s) => s.locale);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const chapters = useSandboxSelector((s) => s.chapters);
@@ -110,8 +163,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const hostRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<FolioDocumentViewer | null>(null);
   const pendingJumpRef = useRef<number | null>(null);
-  const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange });
-  callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange };
+  const paintedKeyRef = useRef(paintKey);
+  const [opened, setOpened] = useState(false);
+  const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange });
+  callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange };
 
   useImperativeHandle(ref, () => ({
     jumpToPage: (pageIndex) => {
@@ -119,6 +174,20 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       if (viewerRef.current) viewerRef.current.goToPage(pageIndex, { instant: true });
       else pendingJumpRef.current = pageIndex;
     },
+    turnToPage: (pageIndex) => {
+      const viewer = viewerRef.current;
+      if (!viewer) {
+        pendingJumpRef.current = pageIndex;
+        return;
+      }
+      const open = viewer.state.pages[0] ?? 0;
+      const perSpread = viewer.element.classList.contains('is-single') ? 1 : 2;
+      const far = Math.abs(pageIndex - open) / perSpread > FAR_SPREADS;
+      viewer.goToPage(pageIndex, far ? { instant: true } : undefined);
+    },
+    prev: () => viewerRef.current?.prev(),
+    next: () => viewerRef.current?.next(),
+    resetView: () => viewerRef.current?.resetView(),
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 
@@ -270,6 +339,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     const doc = shownDoc.doc;
     const before = viewerDocRef.current;
     viewerDocRef.current = shownDoc;
+    callbacksRef.current.onBindingChange?.(doc.binding === 'right');
     let viewer = viewerRef.current;
     if (!viewer) {
       const at = pendingJumpRef.current ?? leadingBlankPageCount(doc);
@@ -280,16 +350,28 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         pageNegative,
         // The page is in the URL; the count is only announced.
         showCount: false,
+        // The tab's own bar turns the pages (and takes a page number).
+        controls: false,
         labels: folioLabelsRef.current,
+        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
+        onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
         onChange: (state) => {
+          callbacksRef.current.onSpreadChange?.(state.pages);
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
         },
       });
       viewerRef.current = viewer;
+      callbacksRef.current.onSpreadChange?.(viewer.state.pages);
+      paintedKeyRef.current = paintKey;
+      setOpened(true);
       return;
     }
+    // Images decoded since the pages were painted: paint them all again.
+    // Otherwise a page that reads as before keeps its painting.
+    const repaint = paintedKeyRef.current !== paintKey;
+    paintedKeyRef.current = paintKey;
     // The same page in the new layout (another scope, or an edit that
     // moved the pages), else the same position.
     // Either page of the open spread will do (the whole book's spread may
@@ -301,12 +383,13 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         if (same >= 0) break;
       }
     }
-    viewer.setDocument(doc, same >= 0 ? { at: same } : {});
+    viewer.setDocument(doc, { ...(same >= 0 ? { at: same } : {}), repaint });
     if (pendingJumpRef.current !== null) {
       viewer.goToPage(pendingJumpRef.current, { instant: true });
       pendingJumpRef.current = null;
     }
     // The page on show, in the new document's numbering, to the URL.
+    callbacksRef.current.onSpreadChange?.(viewer.state.pages);
     const shown = viewer.state.pages[viewer.state.pages.length - 1];
     if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
   }, [shownDoc, paintKey, mode, pageNegative]);
@@ -329,16 +412,23 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     viewerRef.current?.setLabels(folioLabels);
   }, [folioLabels]);
 
+  useEffect(() => {
+    viewerRef.current?.setAppearance({ folio: folioConfig, spineImage: spineUrl });
+  }, [folioConfig, spineUrl]);
+
   useEffect(() => () => {
     viewerRef.current?.dispose();
     viewerRef.current = null;
   }, []);
 
   return (
-    <div
-      ref={hostRef}
-      className="h-full w-full overflow-hidden text-(--foreground)"
-      style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
-    />
+    <>
+      <div
+        ref={hostRef}
+        className="h-full w-full overflow-hidden text-(--foreground)"
+        style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
+      />
+      {!opened && <FolioLoading />}
+    </>
   );
 });

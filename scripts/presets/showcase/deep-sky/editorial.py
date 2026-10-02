@@ -14,6 +14,7 @@ BOOK = {
         "editorial": "Editorial",
         "contents": "Sumario",
         "credits": "Créditos",
+        "back_cover": "Contraportada",
         "chapter_label": "{partTitle}",
         "part_label": "Sección {numberRoman}",
         "figure": ("Imagen", "Imágenes", "imagen"),
@@ -37,6 +38,7 @@ BOOK = {
         "editorial": "Editorial",
         "contents": "Contents",
         "credits": "Credits",
+        "back_cover": "Back cover",
         "chapter_label": "{partTitle}",
         "part_label": "Section {numberRoman}",
         "figure": ("Image", "Images", "image"),
@@ -147,6 +149,19 @@ DROP_PARAGRAPH_PREFIXES = ("De acuerdo con la política", "In accordance with th
 COVER_BLURB = {
     "es": "Revista de muestra compuesta con Postext. Los textos son las notas de prensa originales de ESO y NSF NOIRLab, sin más cambios que la supresión de las secciones de contacto; las imágenes se reproducen con su línea de crédito completa, como exige la licencia CC BY 4.0.",
     "en": "A sample magazine set with Postext. The texts are the original ESO and NSF NOIRLab press releases, unchanged but for the removal of the contact sections; the images are reproduced with their full credit line, as the CC BY 4.0 licence requires.",
+}
+
+# The back cover: Sagittarius A* in polarised light (eso2406a) over a line
+# on the issue, with the image's credit.
+BACK_COVER = {
+    "es": {
+        "blurb": "Del sistema solar al campo profundo: ocho notas de prensa de los observatorios de Chile, con sus imágenes.",
+        "credit": "En la contraportada, Sagitario A* en luz polarizada. Crédito: EHT Collaboration, CC BY 4.0.",
+    },
+    "en": {
+        "blurb": "From the Solar System to the deep field: eight press releases from the observatories of Chile, with their images.",
+        "credit": "On the back cover, Sagittarius A* in polarised light. Credit: EHT Collaboration, CC BY 4.0.",
+    },
 }
 
 CREDITS = {

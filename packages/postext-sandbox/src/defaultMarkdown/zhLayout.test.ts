@@ -58,7 +58,7 @@ describe('the Chinese guide laid out as a book', () => {
   }, 120_000);
 
   it('sets every chapter, each with pages', () => {
-    expect(docs.length).toBe(12);
+    expect(docs.length).toBe(13);
     for (const doc of docs) expect(doc.pages.length).toBeGreaterThan(0);
   });
 

@@ -70,8 +70,9 @@ Postext Markdown is **not CommonMark**. These habits break a port:
 - **Inline marks do not nest** the CommonMark way: write `**a** ***b***`.
   Marks in headings print as in a paragraph (`headings.inlineMarks`, on by default
   since configVersion 6); an italic run in an italic heading comes out upright.
-- Only four containers exist (`:::callout`, `:::paragraphs`, `:::part`,
-  `:::columns`, the last only inside a callout) and six directives
+- Only five containers exist (`:::callout`, `:::paragraphs`, `:::part`,
+  `:::columns`, only inside a callout, and `:::paper`, a run of pages on
+  another paper stock for the Folio viewer) and six directives
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
   `:::index`), plus inline index marks (`:index[…]`, `:index{term="…"}`).
   Anything else prints literally.

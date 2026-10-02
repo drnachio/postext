@@ -568,7 +568,7 @@ The editor also keeps an eye on the book. Its chapter menu lists every chapter w
 
 ## Configuration
 
-The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
+The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export, Folio (the book in 3D) and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
 
 ## The three views
 
@@ -725,4 +725,6 @@ If any of this resonates with you, the repository is the next step. Open an issu
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext
 :::
+
+# Back cover {style="back" toc="false" book="Postext" blurb="Postext sets Markdown as books, magazines and textbooks, in the browser: every paragraph broken as a whole, columns that end level, figures placed after the words that call them, and a PDF ready for print. Every page of this guide was set by Postext itself." licence="Open source · MIT licence"}
 `;

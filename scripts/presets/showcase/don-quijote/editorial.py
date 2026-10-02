@@ -22,6 +22,7 @@ BOOK = {
         "prologue": "Prólogo",
         "contents": "Índice",
         "credits": "Créditos",
+        "back_cover": "Contraportada",
         "chapter_label": "Capítulo {number}",
         "part_label": "Parte {numberRoman}",
         "plate": ("Lámina", "Láminas", "lámina"),
@@ -37,6 +38,7 @@ BOOK = {
         "prologue": "The Author’s Preface",
         "contents": "Contents",
         "credits": "Credits",
+        "back_cover": "Back cover",
         "chapter_label": "Chapter {number}",
         "part_label": "Part {numberRoman}",
         "plate": ("Plate", "Plates", "plate"),
@@ -559,6 +561,18 @@ GLOSSES = {
 COVER_BLURB = {
     "es": "Edición de muestra compuesta con Postext: las láminas de Gustave Doré (1863) acompañan el prólogo y los catorce capítulos de las dos primeras partes del libro de 1605, según el texto de Project Gutenberg, con glosas al margen escritas para esta edición.",
     "en": "A sample edition set with Postext: Gustave Doré’s plates (1863) accompany the preface and the fourteen chapters of the first two parts of the 1605 book, in John Ormsby’s translation (1885) as published by Project Gutenberg, with margin glosses written for this edition.",
+}
+
+# The back cover: the opening line of the novel over a short blurb.
+BACK_COVER = {
+    "es": {
+        "quote": "En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor.",
+        "blurb": "Un hidalgo manchego pierde el juicio leyendo libros de caballerías y sale a los caminos a deshacer agravios, primero solo y después con Sancho Panza. Esta edición reúne el prólogo y los catorce primeros capítulos del libro de 1605 con las láminas que Gustave Doré dibujó en 1863.",
+    },
+    "en": {
+        "quote": "In a village of La Mancha, the name of which I have no desire to call to mind, there lived not long since one of those gentlemen that keep a lance in the lance-rack, an old buckler, a lean hack, and a greyhound for coursing.",
+        "blurb": "A gentleman of La Mancha reads himself out of his wits on books of chivalry and takes to the roads to right wrongs, alone at first and then with Sancho Panza. This edition gathers the preface and the first fourteen chapters of the 1605 book, with the plates Gustave Doré drew in 1863.",
+    },
 }
 
 CREDITS = {

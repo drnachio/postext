@@ -111,6 +111,16 @@ describe("validateRegistry (fixture)", () => {
     expect(errors).toContain("collections.featured: at most 4 recipes (the frontispiece and 3 editor's picks)");
   });
 
+  it("checks the per-language frontispieces", () => {
+    const registry = fixtureRegistry();
+    registry.collections.featured.frontispiece = { es: "a-recipe", zh: "b-recipe" };
+    (registry.collections.featured.frontispiece as Record<string, string>).fr = "a-recipe";
+    const errors = validateRegistry(registry, { knownSlugs: ["a-recipe"] });
+    expect(errors).toContain('collections.featured.frontispiece.zh: no recipe folder "b-recipe"');
+    expect(errors).toContain("collections.featured.frontispiece.fr: unknown locale");
+    expect(errors.filter((e) => e.includes("frontispiece.es"))).toEqual([]);
+  });
+
   it("requires a frontispiece once a recipe is published", () => {
     expect(validateRegistry(fixtureRegistry(), { requireFeatured: true })).toEqual([
       "collections.featured: needs the frontispiece recipe",

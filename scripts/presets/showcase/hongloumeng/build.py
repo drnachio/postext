@@ -412,6 +412,63 @@ def zh_resource_types(lang: str, f: ZhFaces) -> list[dict]:
     ]
 
 
+# --- Folio -------------------------------------------------------------------
+
+# The spine (Folio's `binding.spineImage`), one picture per edition, sized for
+# about each edition's page count on its paper.
+SPINE = "spine"
+SPINE_PAGES = {"zh-Hant": 2010, "zh-Hans": 2010, "en": 1100}
+
+
+def folio_config(lang: str) -> dict:
+    """How Folio shows the book; its first page is the cover, turned as a
+    board. The Chinese editions: two thousand pages of thin, warm paper with
+    the laid lines of a bamboo mould, sewn; the English: a cloth-bound
+    Victorian octavo on offset wove. Both on a walnut desk by day."""
+    if lang == "en":
+        paper = {"type": "uncoated", "grammage": 60, "bulk": 1.3, "shade": {"hex": "#f6f1e4", "model": "hex"}}
+        binding = {"type": "hardcover", "cover": "pages", "spineImage": SPINE}
+    else:
+        paper = {"type": "bible", "grammage": 40, "bulk": 1.3, "texture": "laid", "textureStrength": 0.7, "shade": {"hex": "#f2e9d4", "model": "hex"}}
+        binding = {"type": "sewn", "cover": "pages", "spineImage": SPINE}
+    return {"paper": paper, "binding": binding, "surface": {"type": "walnut"}, "lighting": {"environment": "daylight"}}
+
+
+def add_spines(out: str, shared: list[dict], wording: dict[str, list[dict]]) -> None:
+    """The spines: the title and the author in thread-coloured ink on the
+    indigo of the covers, between vermilion bands; upright characters on
+    the Chinese editions, Latin letters running down the English one."""
+    fonts = os.path.join(out, "fonts")
+    serif = {"zh-Hant": "NotoSerifTC-Bold.woff2", "zh-Hans": "NotoSerifSC-Bold.woff2"}
+    names = {"zh-Hant": ("紅樓夢", "曹雪芹"), "zh-Hans": ("红楼梦", "曹雪芹")}
+    heights = {"zh-Hant": 210, "zh-Hans": 203, "en": 216}  # each edition's page height
+    per_lang = {}
+    for lang in LANGS:
+        params = folio_config(lang)
+        common = {
+            "height_mm": heights[lang],
+            "thickness_mm": _common.spine_thickness_mm(SPINE_PAGES[lang], params["paper"]["grammage"], params["paper"]["bulk"], params["binding"]["type"]),
+            "ground": PALETTE["indigo"], "ink": PALETTE["thread"], "rules": PALETTE["vermilion"],
+        }
+        if lang == "en":
+            garamond = os.path.join(fonts, "EBGaramond-SemiBold.woff2")
+            per_lang[lang] = {**common, "pieces": [
+                {"text": "The Dream of the Red Chamber", "font": garamond, "size": 0.2, "at": 0.37},
+                {"text": "Cao Xueqin", "font": os.path.join(fonts, "EBGaramond-Regular.woff2"), "size": 0.15, "at": 0.84},
+            ]}
+        else:
+            title, author = names[lang]
+            font = os.path.join(fonts, serif[lang])
+            per_lang[lang] = {**common, "vertical": True, "pieces": [
+                {"text": title, "font": font, "size": 0.34, "at": 0.3},
+                {"text": author, "font": font, "size": 0.2, "at": 0.72},
+            ]}
+    spec, words = _common.build_spines(out, SPINE, "ornament", "zh-Hant", per_lang)
+    shared.append(spec)
+    for lang in LANGS:
+        wording[lang].append(words[lang])
+
+
 def zh_config(lang: str) -> dict:
     """The horizontal Chinese book: 28 characters by 28 lines of 10.5 pt on a
     16 pt pitch, justified, two-em indents and no space between paragraphs;
@@ -508,6 +565,8 @@ def zh_config(lang: str) -> dict:
         "colorPalette": palette(lang),
         "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": folio_config(lang),
     }
 
 
@@ -934,6 +993,8 @@ def zh_hant_config() -> dict:
         "colorPalette": palette(lang),
         "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": folio_config("zh-Hant"),
     }
 
 
@@ -1175,6 +1236,8 @@ def en_config() -> dict:
             ORNAMENT_TYPE["en"],
         ],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": folio_config("en"),
     }
 
 
@@ -1712,6 +1775,7 @@ def main() -> None:
     }
     shared, wording = resources(out, pictures)
     fonts = old_fonts if keep_fonts else build_fonts(out, configs)
+    add_spines(out, shared, wording)
     meta = write_manifest(out, chapters, shared, wording, fonts, configs)
     write_credits_md(out, pictures)
     _common.copy_thumbnail(HERE, out)

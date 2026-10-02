@@ -36,7 +36,6 @@
     "hyphenation-locales",
     "resource-types-locale",
     "design-text-ragged",
-    "drop-cap-extra-line",
     "digit-period-list",
     "attr-values",
     "headings-drop-h1-break",
@@ -103,17 +102,12 @@
       "note": "design text has no justification, so the lead beside the initial is a single line whose gap (INITIAL_GAP 0.55 mm) is copy-fitted to end flush with the measure; a three-line drop cap would set three ragged lines"
     },
     {
-      "followup": "EF-108",
-      "package": "postext",
-      "note": "the initial's 1.2 em font box counts toward the opener's reserved height, which rounds up to one line too many; the chapter level takes it back with marginBottom: pt(-LEAD), and the plate's heading style resets marginBottom to 0"
-    },
-    {
       "followup": "EF-106",
       "package": "postext",
       "note": "a design text's dropCap is drawn only when overflow is 'wrap' (the default 'ellipsis-end' drops the initial with no warning), so the lead sets overflow: 'wrap' though it is one line"
     }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.12.2" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": {"pages": [5, 5]} },
@@ -156,5 +150,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-10-02"
 }

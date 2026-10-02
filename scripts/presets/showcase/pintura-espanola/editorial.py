@@ -13,6 +13,7 @@ BOOK = {
         "intro": "Sobre este catálogo",
         "contents": "Índice",
         "credits": "Créditos y fuentes",
+        "back_cover": "Contraportada",
         "cat": ("Cat.", "Cat.", "cat."),
         "part_label": "Sección",
         "plate_note": "Imagen de dominio público (CC0) publicada por el museo en acceso abierto.",
@@ -34,6 +35,7 @@ BOOK = {
         "intro": "About this catalogue",
         "contents": "Contents",
         "credits": "Credits and sources",
+        "back_cover": "Back cover",
         "cat": ("Cat.", "Cat.", "cat."),
         "part_label": "Section",
         "plate_note": "Public-domain image (CC0) released by the museum under its open-access programme.",
@@ -156,6 +158,19 @@ INTRO = {
         "The selection spans three centuries of painting, from El Greco to Sorolla, arranged by artist. Each work takes a double-page spread: on the left, the catalogue entry and a commentary; on the right, the full-page plate. The commentaries are adapted from Wikipedia where an article on the work exists and were written for this edition otherwise; the source is stated at the foot of each text.",
         "The catalogue is a demonstration of Postext: a single Markdown document produces the whole book, with its coloured section openers, floating plates, contents page and credits, and sets it in Spanish or English from the same design.",
     ],
+}
+
+# The back cover: Sorolla, the catalogue's last work, against El Greco on
+# the front, with its record and a line on the catalogue.
+BACK_COVER = {
+    "es": {
+        "work": "Joaquín Sorolla, Paseo a orillas del mar, 1909. Museo Sorolla, Madrid.",
+        "blurb": "Del Greco a Sorolla, catorce cuadros de museos que publican sus imágenes en acceso abierto, cada uno con su ficha y un comentario.",
+    },
+    "en": {
+        "work": "Joaquín Sorolla, Strolling along the Seashore, 1909. Museo Sorolla, Madrid.",
+        "blurb": "From El Greco to Sorolla, fourteen paintings from museums that publish their images in open access, each with its record and a commentary.",
+    },
 }
 
 COVER_BLURB = {

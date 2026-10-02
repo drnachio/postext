@@ -7,7 +7,7 @@ import type {
 import { defaultResourceTypes } from 'postext';
 import { guideLang, type GuideLang } from '../defaultResources/lang';
 import {
-  DISPLAY, GUIDE_COVER_RESOURCE_ID, HEAD, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, SANS, TEXT, TEXT_W,
+  DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, HEAD, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, SANS, TEXT, TEXT_W,
   at, box, col, colorPalette, image, mm, pt, rule, slot, text, type TextOpts,
 } from './guideKit';
 import { createChineseGuideConfig } from './guideConfigZh';
@@ -73,6 +73,42 @@ function coverDesign() {
         size: 17, family: TEXT, italic: true, color: 'white', lineHeight: 1.25,
       }),
       text('coverPublisher', '{attr.publisher}', {
+        anchor: at('page', 'bottom-left'), offset: [M_OUTER, -14], width: TEXT_W,
+        size: 7.5, color: 'mist', ...label(1.6),
+      }),
+    ),
+  };
+}
+
+/** The back cover, the last verso: the night of the front, the three part
+ *  colours as bands, the name, a few lines on the engine and, at the foot,
+ *  where to find it and its licence. */
+function backCoverDesign() {
+  const y = 62;
+  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+    box(id, color, { anchor: at('page', 'top-left'), offset: [M_OUTER + k * 14, y], width: 12, height: 2.5 });
+  return {
+    enabled: true,
+    minHeight: mm(PAGE_H),
+    slot: slot(
+      box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
+      band('backBandFoundations', 'main-color', 0),
+      band('backBandCraft', 'gilt', 1),
+      band('backBandPractice', 'vermilion', 2),
+      text('backTitle', '{attr.book}', {
+        anchor: at('page', 'top-left'), offset: [M_OUTER, y + 12], width: TEXT_W,
+        size: 44, family: DISPLAY, weight: 700, color: 'white', lineHeight: 1,
+      }),
+      text('backBlurb', '{attr.blurb}', {
+        anchor: at('#backTitle', 'below'), offset: [0, 9], width: 128,
+        size: 14, family: TEXT, italic: true, color: 'white', lineHeight: 1.4,
+      }),
+      rule('backRule', 'gilt', { anchor: at('#backBlurb', 'below'), offset: [0, 9], width: 34, thickness: 2 }),
+      text('backSite', 'postext.dev · github.com/drnachio/postext', {
+        anchor: at('page', 'bottom-left'), offset: [M_OUTER, -22], width: TEXT_W,
+        size: 9, weight: 600, color: 'gilt', ...label(1.6),
+      }),
+      text('backLicence', '{attr.licence}', {
         anchor: at('page', 'bottom-left'), offset: [M_OUTER, -14], width: TEXT_W,
         size: 7.5, color: 'mist', ...label(1.6),
       }),
@@ -197,6 +233,14 @@ function headingStyles(): HeadingStyleConfig[] {
       id: 'contents', name: 'Contents', numbered: false, toc: false, span: 'page',
       breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: frontOpener(),
+      layout: { layoutType: 'single' },
+    },
+    {
+      // The last page, always a verso: Folio turns it as the back cover.
+      id: 'back', name: 'Back cover', numbered: false, toc: false, span: 'page',
+      breakBefore: { enabled: true, parity: 'even' },
+      advancedDesign: backCoverDesign(),
+      header: empty, footer: empty,
       layout: { layoutType: 'single' },
     },
   ];
@@ -374,6 +418,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     // On screen the book reads as one scroll: no section dividers (the parts
     // still colour their chapters).
     htmlViewer: { overrides: { parts: { page: false } } },
+    folio: GUIDE_FOLIO,
     header: runningHeads(lang),
     footer: openerFooter(),
     captionStyle: {

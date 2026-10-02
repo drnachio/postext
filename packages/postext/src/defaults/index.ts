@@ -15,6 +15,7 @@ import { stripMathDefaults } from './math';
 import { stripDebugDefaults } from './debug';
 import { stripHtmlViewerDefaults } from './htmlViewer';
 import { stripPdfGenerationDefaults } from './pdfGeneration';
+import { stripFolioDefaults } from './folio';
 import { stripHeaderFooterDefaults } from './headerFooter';
 import { stripPartsDefaults } from './parts';
 import { stripHeadingStylesDefaults } from './headingStyles';
@@ -42,6 +43,8 @@ export { DEFAULT_MATH_CONFIG, resolveMathConfig, stripMathDefaults } from './mat
 export { DEFAULT_DEBUG_CONFIG, resolveDebugConfig, stripDebugDefaults } from './debug';
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, mergeConfigOverrides, applyHtmlViewerOverrides } from './htmlViewer';
 export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './pdfGeneration';
+export { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from './folio';
+export type { FolioPaperStock } from './folio';
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
 export type { HeaderFooterSlotKind } from './headerFooter';
 export { defaultResourceTypes } from './resourceTypes';
@@ -157,6 +160,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.pdfGeneration = strippedPdfGeneration;
   } else {
     delete result.pdfGeneration;
+  }
+  const strippedFolio = stripFolioDefaults(config.folio);
+  if (strippedFolio) {
+    result.folio = strippedFolio;
+  } else {
+    delete result.folio;
   }
   const strippedHeader = stripHeaderFooterDefaults(config.header, 'header');
   if (strippedHeader) {

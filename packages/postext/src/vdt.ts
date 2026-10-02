@@ -23,6 +23,7 @@ import type {
   ResolvedOrderedListsConfig,
   ResolvedMathConfig,
   ResolvedPdfGenerationConfig,
+  ResolvedFolioConfig,
   ResolvedDesignSlot,
   ResolvedPartsConfig,
   ResolvedHeadingStyleConfig,
@@ -36,6 +37,7 @@ import type {
   PageRole,
   PartState,
   PostextConfig,
+  FolioPaperConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -104,6 +106,9 @@ export interface ResolvedConfig {
    *  config sets any. Layout ignores them; `renderToPdf` in postext-pdf
    *  reads them for each setting its own options leave out. */
   pdfGeneration?: ResolvedPdfGenerationConfig;
+  /** The Folio 3D viewer settings (`PostextConfig.folio`), resolved, when
+   *  the config sets any. Layout ignores them; `postext-folio` reads them. */
+  folio?: ResolvedFolioConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -1535,6 +1540,13 @@ export interface VDTPage {
    *  `blankForForce` page belongs to the *previous* chapter — it serves
    *  as a separator, not as parity padding for the upcoming one. */
   blankForForce?: boolean;
+  /** Present on the pages laid out with content from inside a
+   *  `:::paper{…}` container: the stock they are printed on, as the fence
+   *  wrote it (nested fences merged, the inner one's fields winning), not
+   *  resolved — unset fields follow `config.folio.paper`. Only the Folio
+   *  viewer reads it; canvas, PDF and HTML ignore it. Absent on every other
+   *  page. */
+  paper?: FolioPaperConfig;
 }
 
 /** Something the layout could not set as asked and placed anyway — a box
@@ -1642,6 +1654,12 @@ export type ContentWarning = ContentWarningBase & (
    *  takes the first one. Not raised while `calloutStyles` is unset or
    *  empty (every type is then the built-in plain box). */
   | { kind: 'unknownCalloutType'; type: string }
+  /** A `:::paper{…}` attribute the engine cannot read: an unknown key, a
+   *  stock, finish or texture it does not know, a number out of range, a
+   *  shade that is neither a hex colour nor a palette id, a `showThrough`
+   *  other than true / false. The attribute is dropped; the pages follow
+   *  the document's paper for it. */
+  | { kind: 'paperAttributeInvalid'; key: string; value: string }
   /** `:chip[…]{style}` names no chip style: the chip takes the first one.
    *  `inResource` names the resource whose caption, note or cell holds it. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }

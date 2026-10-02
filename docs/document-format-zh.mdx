@@ -231,7 +231,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-可识别的容器名有三个。各自渲染成什么，由配置中对应的部分设置：
+正文流中可识别的容器名有四个（第五个`:::columns`只在标注框内起作用，见下文）。各自渲染成什么，由配置中对应的部分设置：
 
 <table>
   <thead>
@@ -252,6 +252,10 @@ Keep the lantern lit **every** night.
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
       <td>篇或部分的开篇页：其中的标题和正文构成一个大分部的开篇页。</td>
+    </tr>
+    <tr>
+      <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
+      <td>换用另一种纸张印刷的一组页面，例如哑粉纸书中的一组光面铜版插图。只有Folio视图显示它。</td>
     </tr>
   </tbody>
 </table>
@@ -341,6 +345,67 @@ A second answer box.
 ```
 
 外框跨栏或跨页拆分时（`keepTogether: false`，或比一栏还高），嵌套框整体移到下一个片段，除非它自己的样式也允许拆分；每个片段重新绘制其中的边框；续排的嵌套框不带图标，也不带标题，除非它的样式要求重复标题（`repeatTitle`）。
+
+### `:::paper`
+
+一本书可以在一组页面上换用别的纸张：用胶版纸印刷的书中夹一组光面铜版纸插图、一张卡纸插页、几页色纸。把这部分内容放进`:::paper`容器：
+
+```md
+:::paper{type=coatedGloss grammage=130}
+## 插图
+::resource{id="plate-1"}
+::resource{id="plate-2"}
+:::
+```
+
+一种纸张占用整张纸页，所以围栏内的内容从新的一页开始，结束的`:::`之后的内容也从新的一页开始。如果这组页面位于文档末尾，它后面不会留下空白页。在其中引用的图和表在它结束之前排完。凡是排入该容器内容的页面，都在版面数据中带有这种纸张（`VDTPage.paper`，即围栏所写的属性）；容器之外的页面不带。Folio视图读取它，按纸张的颜色、表面、厚度和挺度绘制这些纸页。canvas、PDF和HTML输出忽略它：这些页面的排版和印刷与其他页面相同。
+
+这些属性与`folio.paper`设置相同，全部可选。围栏没有写的属性沿用文档的纸张，再往后沿用该纸张种类的默认值：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th>取值</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>type</code></td>
+      <td>纸张种类：<code>uncoated</code>, <code>bookWove</code>, <code>coatedMatte</code>, <code>coatedSilk</code>, <code>coatedGloss</code>, <code>bible</code>, <code>newsprint</code>, <code>cardStock</code>, <code>board</code>。它决定下列属性的默认值。</td>
+    </tr>
+    <tr>
+      <td><code>grammage</code></td>
+      <td>克重，单位g/m²，大于0的数。纸越重，越厚、越硬、越不透明。</td>
+    </tr>
+    <tr>
+      <td><code>bulk</code></td>
+      <td>松厚度，单位cm³/g，大于0的数（厚度µm = 克重 × 松厚度）。</td>
+    </tr>
+    <tr>
+      <td><code>finish</code></td>
+      <td>表面处理：<code>auto</code>, <code>uncoated</code>, <code>matte</code>, <code>silk</code>, <code>gloss</code>。</td>
+    </tr>
+    <tr>
+      <td><code>texture</code></td>
+      <td>表面纹理：<code>auto</code>, <code>smooth</code>, <code>vellum</code>, <code>wove</code>, <code>laid</code>, <code>linen</code>, <code>felt</code>。</td>
+    </tr>
+    <tr>
+      <td><code>textureStrength</code></td>
+      <td>纹理的明显程度，0到2。</td>
+    </tr>
+    <tr>
+      <td><code>shade</code></td>
+      <td>纸张颜色：<code>#rgb</code>、<code>#rrggbb</code>或<code>colorPalette</code>中某一项的id。</td>
+    </tr>
+    <tr>
+      <td><code>showThrough</code></td>
+      <td><code>true</code>或<code>false</code>：背面的页面是否隐约透出。只写<code>showThrough</code>不带值等于<code>true</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+嵌套在另一个`:::paper`里的`:::paper`只覆盖它写出的属性，同样在前后分页。在`:::callout`内，这对围栏被忽略。引擎无法读取的值会被丢弃，沙盒将其列为**纸张属性无效**警告（文档`contentWarnings`中的`paperAttributeInvalid`）。
 
 ### `:::pagebreak`
 

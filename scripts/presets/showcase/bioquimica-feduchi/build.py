@@ -340,6 +340,17 @@ def _default_credits() -> str:
     )
 
 
+# Folio: a single chapter, 23 pages, as an offprint: silk coated textbook
+# paper, saddle-stitched (no spine) in a card cover in the blue of the
+# titles, on an oak desk in studio light.
+FOLIO = {
+    "paper": {"type": "coatedSilk", "grammage": 90},
+    "binding": {"type": "saddleStitch", "coverColor": {"hex": "#263471", "model": "hex", "paletteId": "title-blue"}},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"},
+}
+
+
 def build() -> None:
     missing = check()
     if missing:
@@ -378,7 +389,7 @@ def build() -> None:
         "id": PRESET_ID,
         **meta,
         "chapters": chapters,
-        "config": manifest["config"],
+        "config": {**manifest["config"], "folio": FOLIO},
         "localized": {"en": {
             "config": localized_config(manifest["config"], strings),
             "resources": localized_resources(manifest, strings, translated, keep),

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-10-01',
+  lastUpdated: '2026-10-02',
   readingTime: '30 min',
   order: 3,
   plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
@@ -57,6 +57,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Fuentes personalizadas](#fuentes-personalizadas) — declarar familias tipográficas subidas por el usuario junto con Google Fonts.
 - [Visor HTML](#visor-html) — ancho objetivo de columna y cortes para el backend HTML.
 - [Generación de PDF (configuración)](#generación-de-pdf-configuración) — outlines, salida accesible (etiquetada) y espacio de color forzado para el backend PDF.
+- [Visor Folio (configuración)](#visor-folio-configuración) — papel, encuadernación, superficie y luz del visor del libro en 3D.
 - [Depuración](#depuración) — superposiciones visuales y avisos de autoría para el editor.
 - [Uso programático](#uso-programático) — `buildDocument`, los avisos que registra, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
@@ -5941,6 +5942,223 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 Consulta [Generación de PDF](#generación-de-pdf) más abajo para la receta completa de exportación.
+
+
+## Visor Folio (configuración)
+
+La propiedad `folio` decide cómo presenta el visor Folio (`postext-folio`) el libro impreso en 3D: el ángulo de la vista, el papel, la encuadernación, la superficie sobre la que descansa el libro y la luz. La composición la ignora, igual que la salida canvas, HTML y PDF. `buildDocument` lleva los ajustes resueltos en el VDT, como `doc.config.folio`, cuando la configuración fija alguno, así que un documento sin ellos conserva el hash de su composición.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–40.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–40. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code></td>
+      <td>El tipo de papel. Da los valores por defecto de los cinco campos siguientes (ver la tabla de papeles). <code>cardStock</code> es cartulina de cubierta; <code>board</code> es cartón rígido, como el de un libro de cartón, y sus hojas pasan sin doblarse.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>el del papel</td>
+      <td>Gramaje en gramos por metro cuadrado, 20–2500. Un papel de más gramaje es más grueso, más rígido y más opaco: la hoja se curva más abierta y transparenta menos el reverso.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>el del papel</td>
+      <td>Mano: grosor por unidad de peso, en cm³/g, 0,5–3. El grosor de una hoja en micras es gramaje × mano, y de él y del número de páginas sale el lomo del bloque.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>Sin estucar (fibra, sin brillo) o estucado y calandrado hasta mate, semimate (<code>silk</code>, un brillo suave) o brillo. <code>'auto'</code> toma el del papel.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>El relieve de la superficie: <code>smooth</code> (lisa, calandrada), <code>vellum</code> (vitela, un grano fino), <code>wove</code> (la textura uniforme de casi todos los papeles de libro, formada sobre una tela metálica tejida), <code>laid</code> (verjurado: puntizones juntos cruzados por corondeles más separados), <code>linen</code> (tela, un gofrado de hilos cruzados), <code>felt</code> (las marcas irregulares de un fieltro). <code>'auto'</code> toma la del papel.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Cuánto se marca la textura con la luz, 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del papel</td>
+      <td>El color del papel antes de imprimir (blanco, natural, ahuesado). Las páginas se imprimen sobre él.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El reverso de la página se ve tenuemente a través del papel fino.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code></td>
+      <td><code>hardcover</code>: cartoné, tapas algo mayores que las páginas. <code>paperback</code>: rústica fresada (lomo fresado y encolado), abre menos. <code>sewn</code>: rústica cosida. <code>layflat</code>: encuadernación plana, abre sin hundirse en el lomo. <code>saddleStitch</code>: grapado a caballete, pliegos doblados y grapados por el pliegue, como una revista o un folleto; sin lomo plano.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>Las cubiertas. <code>'case'</code> dibuja una tapa alrededor de las páginas. <code>'pages'</code> toma la primera página del libro como cartón delantero y la última, si es par, como cartón trasero: el libro está cerrado hasta que se pasa la cubierta, los cartones giran rígidos y no se dibuja tapa.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> es tela en el cartoné y cartulina (<code>'paper'</code>) en las demás encuadernaciones.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>azul oscuro (<code>#2c3e57</code>)</td>
+      <td>El color del material de la cubierta.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>ninguna</td>
+      <td>El id de un recurso de mapa de bits o SVG impreso en el lomo: el lomo tal como se ve con el libro de pie, la cabeza arriba y la cubierta a la derecha. Se ajusta hasta cubrir el lomo, centrado. El grapado a caballete no lo usa.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>Sobre qué descansa el libro. <code>'none'</code> deja el fondo del anfitrión.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>ninguno</td>
+      <td>Tiñe la superficie; con <code>'plain'</code> es su color.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>El entorno que reflejan los papeles estucados y de brillo, junto con la luz principal que proyecta las sombras.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Exposición, 0,25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Sombras de la luz principal.</td>
+    </tr>
+  </tbody>
+</table>
+
+Los papeles y los valores que aportan (`FOLIO_PAPER_STOCKS`), habituales en las fichas técnicas de los fabricantes:
+
+<table>
+  <thead>
+    <tr>
+      <th>Papel</th>
+      <th>Gramaje</th>
+      <th>Mano</th>
+      <th>Grosor</th>
+      <th>Acabado</th>
+      <th>Textura</th>
+      <th>Tono</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (offset sin estucar)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (papel de libro ahuesado, alta mano)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code> (estucado mate)</td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>mate</td><td>lisa</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code> (estucado semimate)</td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>semimate</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code> (estucado brillo)</td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>brillo</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code> (papel biblia)</td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>sin estucar</td><td>vitela</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code> (papel prensa)</td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code> (cartulina)</td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>sin estucar</td><td>vitela</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code> (cartón)</td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>semimate</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+Una novela en papel ahuesado, en rústica fresada, sobre una mesa de nogal bajo una lámpara de lectura:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+Los colores siguen los enlaces a la paleta como cualquier otro color de la configuración (`paletteId`). El resolvedor y el limpiador funcionan como en las demás secciones; el limpiador quita los valores del papel que coinciden con los del tipo elegido:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+En el Sandbox estos ajustes están en **Exportación → Visor Folio (3D)**. El visor en sí se describe en [Un libro en 3D](#un-libro-en-3d-postext-folio).
 
 
 ## Depuración

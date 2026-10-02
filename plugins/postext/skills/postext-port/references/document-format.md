@@ -263,7 +263,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 
 **Close:** a bare `:::` line closes the **innermost** open container (`:21, 216-236`). A stray `:::` with nothing open is a literal paragraph.
 
-**Known containers:** `callout`, `paragraphs`, `part`, `columns`.
+**Known containers:** `callout`, `paragraphs`, `part`, `columns`, `paper`.
 
 **Unknown names** such as `:::verse`, `:::note`, `:::figure` or `:::aside` are **not** containers. The fence line becomes paragraph text, the content parses normally, and the closing `:::` becomes a literal paragraph too. The sandbox raises `unknownDirective`.
 
@@ -371,6 +371,21 @@ Source: ; .
 - Electrons live in orbitals.
 - A bond shares or transfers electrons.
 :::
+:::
+```
+
+### 7.5 `:::paper{type=… grammage=…}` (a run of pages on another paper stock)
+
+- The content starts on a new page, and whatever follows the closing `:::` starts on a new page too (a stock covers whole sheets). A run that ends the document leaves no blank page.
+- Every page set from inside the run carries `page.paper` (the attributes as written) in the VDT. Only the Folio 3D viewer reads it (the look, thickness and stiffness of those leaves); canvas, PDF and HTML output ignore it.
+- Attributes (all optional; unset ones follow `config.folio.paper`): `type` (`uncoated`, `bookWove`, `coatedMatte`, `coatedSilk`, `coatedGloss`, `bible`, `newsprint`, `cardStock`, `board`), `grammage` (g/m², > 0), `bulk` (cm³/g, > 0), `finish` (`auto`, `uncoated`, `matte`, `silk`, `gloss`), `texture` (`auto`, `smooth`, `vellum`, `wove`, `laid`, `linen`, `felt`), `textureStrength` (0 to 2), `shade` (`#rgb`, `#rrggbb` or a `colorPalette` id), `showThrough` (`true` / `false`). An invalid value is dropped with a `paperAttributeInvalid` warning.
+- Nested `:::paper`: the inner fence's attributes override the outer one's, and it breaks pages on both sides as well.
+- Inside a `:::callout` the fences are ignored.
+
+```md
+:::paper{type=coatedGloss grammage=130}
+## Plates
+::resource{id="plate-1"}
 :::
 ```
 

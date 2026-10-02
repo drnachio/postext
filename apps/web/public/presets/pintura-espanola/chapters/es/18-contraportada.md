@@ -1,0 +1,1 @@
+# Contraportada {style="contraportada" toc="false" work="Joaquín Sorolla, Paseo a orillas del mar, 1909. Museo Sorolla, Madrid." blurb="Del Greco a Sorolla, catorce cuadros de museos que publican sus imágenes en acceso abierto, cada uno con su ficha y un comentario." publisher="Postext · Catálogo de muestra · 2026"}

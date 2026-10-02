@@ -6483,6 +6483,30 @@
   ],
   "pdfGeneration": {
    "outlines": true
+  },
+  "folio": {
+   "paper": {
+    "type": "bible",
+    "grammage": 40,
+    "bulk": 1.3,
+    "texture": "laid",
+    "textureStrength": 0.7,
+    "shade": {
+     "hex": "#f2e9d4",
+     "model": "hex"
+    }
+   },
+   "binding": {
+    "type": "sewn",
+    "cover": "pages",
+    "spineImage": "spine"
+   },
+   "surface": {
+    "type": "walnut"
+   },
+   "lighting": {
+    "environment": "daylight"
+   }
   }
  },
  "localized": {
@@ -7211,6 +7235,12 @@
     {
      "id": "ornament-yuwei",
      "caption": "魚尾"
+    },
+    {
+     "id": "spine",
+     "file": "resources/spine-zh-Hant.jpg",
+     "width": 741,
+     "height": 2940
     }
    ]
   },
@@ -11620,6 +11650,12 @@
     {
      "id": "ornament-yuwei",
      "caption": "鱼尾"
+    },
+    {
+     "id": "spine",
+     "file": "resources/spine-zh-Hans.jpg",
+     "width": 741,
+     "height": 2842
     }
    ]
   },
@@ -14229,7 +14265,29 @@
       "resetOn": "never",
       "counterFormat": "decimal"
      }
-    ]
+    ],
+    "folio": {
+     "paper": {
+      "type": "uncoated",
+      "grammage": 60,
+      "bulk": 1.3,
+      "shade": {
+       "hex": "#f6f1e4",
+       "model": "hex"
+      }
+     },
+     "binding": {
+      "type": "hardcover",
+      "cover": "pages",
+      "spineImage": "spine"
+     },
+     "surface": {
+      "type": "walnut"
+     },
+     "lighting": {
+      "environment": "daylight"
+     }
+    }
    },
    "resources": [
     {
@@ -14635,6 +14693,12 @@
     {
      "id": "ornament-yuwei",
      "caption": "Fish-tail ornament"
+    },
+    {
+     "id": "spine",
+     "file": "resources/spine-en.jpg",
+     "width": 673,
+     "height": 3024
     }
    ],
    "view": {
@@ -16091,6 +16155,22 @@
    "width": 100,
    "height": 64,
    "caption": "魚尾"
+  },
+  {
+   "id": "spine",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/spine-zh-Hant.jpg",
+   "width": 741,
+   "height": 2940,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.2,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": ""
   }
  ],
  "fonts": [

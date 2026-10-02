@@ -1,0 +1,1 @@
+# Contraportada {style="contraportada" toc="false" masthead="Señales 2020" blurb="Aire, agua, suelo, ruido y sustancias químicas: cómo afecta la contaminación a la salud de los europeos y qué hace falta para acercarse a la contaminación cero." series="Agencia Europea de Medio Ambiente" credit="Fotografía de contraportada: Ales Krivec · Unsplash, CC0."}

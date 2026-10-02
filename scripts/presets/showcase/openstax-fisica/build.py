@@ -29,7 +29,7 @@ import cnxml  # noqa: E402
 import editorial as ed  # noqa: E402
 from _common import (  # noqa: E402
     PRESETS_ROOT, at, attr_value, box_el, bundle_size, copy_licences, copy_thumbnail, image_el, instance_font,
-    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint,
+    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint, build_spines, spine_thickness_mm,
 )
 from fetch import BOOKS, chapters_of  # noqa: E402
 
@@ -158,6 +158,28 @@ def cover_design(photo: str, aspect: float) -> dict:
     }
 
 
+def back_cover_design() -> dict:
+    """The back cover, the last verso: the book's blue, the title and its
+    chapters, what they cover and where the whole book is free."""
+    measure = TEXT_W - 24
+    return {
+        "enabled": True,
+        "minHeight": mm(PAGE_H),
+        "slot": {
+            "elements": [
+                B("backBg", anchor=at("bleed", "top-left"), fill="band"),
+                T("backSeries", "{attr.series}", anchor=at("page", "top-left"), offset=(M_OUTER, 40), width=measure, size_pt=9, weight=700, color="white", textTransform="uppercase", letterSpacing=pt(2.4)),
+                T("backTitle", "{attr.masthead}", anchor=at("#backSeries", "below"), offset=(0, 3), width=measure, size_pt=34, weight=700, line_height=1.0, color="white"),
+                T("backSubtitle", "{attr.subtitle}", anchor=at("#backTitle", "below"), offset=(0, 4), width=measure, size_pt=12, family=TEXT, italic=True, line_height=1.3, color="tint"),
+                R("backRule", anchor=at("#backSubtitle", "below"), offset=(0, 9), width=24, color="accent", thickness=2.5),
+                T("backBlurb", "{attr.blurb}", anchor=at("#backRule", "below"), offset=(0, 9), width=measure, size_pt=12, family=TEXT, line_height=1.45, color="white"),
+                T("backSite", "{attr.site}", anchor=at("page", "bottom-left"), offset=(M_OUTER, -24), width=measure, size_pt=11, weight=700, color="white"),
+                T("backPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_OUTER, -14), width=measure, size_pt=7.5, color="tint", textTransform="uppercase", letterSpacing=pt(1.4)),
+            ]
+        },
+    }
+
+
 def callout_styles() -> list[dict]:
     body = {"fontFamily": TEXT, "fontSize": pt(9.6), "lineHeight": pt(13.4), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": True, "paragraphSpacing": True, "firstLineIndent": mm(0)}
     return [
@@ -270,6 +292,8 @@ def heading_styles(chapters: dict[str, list[dict]], images: dict[str, dict]) -> 
     styles = [
         {"id": "portada", "name": "Portada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": cover_design(cover_rid, images[cover_rid]["aspect"]), "header": empty, "footer": empty, "layout": {"layoutType": "single"},
          "margins": {"top": mm(PAGE_H - 80), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 85), "right": mm(M_OUTER)}},
+        # The last page, always a verso: Folio turns it as the back cover.
+        {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design(), "header": empty, "footer": empty, "layout": {"layoutType": "single"}},
         {"id": "indice", "name": "Índice", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener(), "layout": {"layoutType": "single"}},
         {"id": "preliminar", "name": "Página de texto", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener(), "layout": {"layoutType": "single"}},
     ]
@@ -314,6 +338,15 @@ def shared_config(chapters: dict[str, list[dict]], images: dict[str, dict]) -> d
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Folio: a perfect-bound textbook on thin white offset (the reverse
+        # shows through a little), its own first and last pages the covers,
+        # on a pale school-desk laminate by daylight.
+        "folio": {
+            "paper": {"type": "uncoated", "grammage": 70, "texture": "vellum", "textureStrength": 0.6},
+            "binding": {"type": "paperback", "cover": "pages", "spineImage": SPINE},
+            "surface": {"type": "plain", "color": {"hex": "#dfe4e8", "model": "hex"}},
+            "lighting": {"environment": "daylight"},
+        },
     }
 
 
@@ -439,6 +472,11 @@ def build_language(lang: str, images: dict[str, dict]) -> tuple[list[dict], list
 
     paras = "\n\n".join(ed.CREDITS[lang])
     emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n:::\n')
+    back = ed.BACK_COVER[lang]
+    emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (
+        f'# {book["back_cover"]} {{style="contraportada" toc="false" masthead="{attr_value(book["title"])}" series="{attr_value(book["series"])}" subtitle="{attr_value(book["subtitle"])}"'
+        f' blurb="{attr_value(back["blurb"])}" site="{attr_value(back["site"])}" publisher="{attr_value(book["publisher"])}"}}\n'
+    ))
     return specs, resources, chapters_meta
 
 
@@ -512,6 +550,33 @@ def write_manifest(chapter_specs, resources, wording, fonts, chapters, images) -
     return meta
 
 
+# The spine (Folio's `binding.spineImage`): the title in white on the
+# book's blue, OpenStax in the orange of the examples; each edition sized
+# for about its own page count.
+SPINE = "spine"
+SPINE_PAGES = {"es": 126, "en": 84}
+SPINE_TITLES = {"es": "Física universitaria · Volumen 1", "en": "Physics"}
+
+
+def add_spines(resources: list[dict], wording: dict[str, list[dict]]) -> None:
+    fonts = os.path.join(OUT, "fonts")
+    bold, semi = os.path.join(fonts, "SourceSans3-Bold.ttf"), os.path.join(fonts, "SourceSans3-SemiBold.ttf")
+    spec, words = build_spines(OUT, SPINE, "figure", "es", {
+        lang: {
+            "height_mm": PAGE_H, "thickness_mm": spine_thickness_mm(SPINE_PAGES[lang], 70, 1.25, "paperback"),
+            "ground": COLOURS["band"], "ink": COLOURS["white"],
+            "pieces": [
+                {"text": SPINE_TITLES[lang], "font": bold, "size": 0.46, "at": 0.42},
+                {"text": "OpenStax", "font": semi, "size": 0.36, "at": 0.9, "color": COLOURS["accent"]},
+            ],
+        }
+        for lang in LANGS
+    })
+    resources.append(spec)
+    for lang in LANGS:
+        wording[lang].append(words[lang])
+
+
 def main() -> None:
     if not os.path.exists(os.path.join(SOURCE, "es", "collection.xml")):
         raise SystemExit("run fetch.py first")
@@ -533,6 +598,7 @@ def main() -> None:
     global USES_PLAIN_TABLES
     USES_PLAIN_TABLES = any(r["typeId"] == PLAIN_TABLE for r in resources)
     fonts = build_fonts()
+    add_spines(resources, wording)
     write_credits_md(chapters)
     meta = write_manifest(chapter_specs, resources, wording, fonts, chapters, images)
     copy_thumbnail(HERE, OUT)

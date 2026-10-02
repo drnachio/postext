@@ -1,0 +1,29 @@
+Folio desk textures
+===================
+
+All texture sets in this folder are dedicated to the public domain under
+Creative Commons CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).
+No attribution is required; it is given here with thanks.
+The maps were resized and re-encoded (JPEG quality 85) for the web; roughness
+and AO are stored as greyscale. Normal maps use the OpenGL convention.
+
+oak: Oak Veneer 01 (oak_veneer_01) by Jenelle van Heerden, Poly Haven
+  https://polyhaven.com/a/oak_veneer_01
+
+walnut: Wood 051 (Wood051) by ambientCG (Lennart Demes), ambientCG
+  https://ambientcg.com/view?id=Wood051
+
+linen: Fabric 036 (Fabric036) by ambientCG (Lennart Demes), ambientCG
+  https://ambientcg.com/view?id=Fabric036
+
+felt: Fabric 034 (Fabric034) by ambientCG (Lennart Demes), ambientCG
+  https://ambientcg.com/view?id=Fabric034
+
+leather: Brown Leather (brown_leather) by Rob Tuytel, Poly Haven
+  https://polyhaven.com/a/brown_leather
+
+marble: Marble 021 (Marble021) by ambientCG (Lennart Demes), ambientCG
+  https://ambientcg.com/view?id=Marble021
+
+plain: Plastic 013 A (Plastic013A) by ambientCG (Lennart Demes), ambientCG
+  https://ambientcg.com/view?id=Plastic013A

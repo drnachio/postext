@@ -1,9 +1,36 @@
-import { canFlip, PageFlipper, type PageSource, type SpreadSrc } from "./pageFlip";
+import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig } from "postext";
+import { canFlip, PageFlipper, type FlipAppearance, type PageSource, type SpreadSrc } from "./pageFlip";
 import { spreadOfPage, spreadsOf, type Spread } from "./spreads";
 import { injectStyles } from "./styles";
 
-/** A page of the book: its source, or its source with a text alternative. */
-export type FolioPage = PageSource | { src: PageSource; alt?: string };
+/** A page of the book: its source, or its source with a text alternative
+ *  and the paper it is printed on when that is not the book's (a plate
+ *  section on gloss in a matte book). */
+export type FolioPage = PageSource | { src: PageSource; alt?: string; paper?: FolioPaperConfig };
+
+/** How the 3D book is presented. */
+export interface FolioAppearance {
+  /** View, paper, binding, desk and light (postext's `folio` config). */
+  folio?: FolioConfig;
+  /** The trim width of a page in mm (the paper's caliper and the cover's
+   *  board are scaled against it). Default 150. */
+  pageWidthMm?: number;
+  /** Pages of the book before the first page given and after the last
+   *  (the other chapters of a book shown a chapter at a time): they are
+   *  never drawn, only counted for the thickness of the page block. */
+  extraPages?: { before: number; after: number };
+  /** Where the scanned desk textures are served (see
+   *  `FlipAppearance.textureBaseUrl`). */
+  textureBaseUrl?: string;
+  /** The first page given is the book's front cover, the last its back
+   *  cover (when it falls on a verso): they turn as boards and no case
+   *  is drawn round the pages. */
+  covers?: { front: boolean; back: boolean };
+  /** The picture printed on the spine: the image the `folio.binding.
+   *  spineImage` resource names, as a URL (or a drawn canvas or image).
+   *  See `FlipAppearance.spineImage`. */
+  spineImage?: PageSource;
+}
 
 export interface FolioLabels {
   /** The viewer's accessible name. */
@@ -42,6 +69,8 @@ export interface FolioOptions {
    *  still announced to screen readers (a visually hidden live region). */
   showCount?: boolean;
   labels?: Partial<FolioLabels>;
+  /** How the 3D book is presented (see {@link FolioAppearance}). */
+  appearance?: FolioAppearance;
   /** Told of every spread that settles: its index and the pages on show. */
   onChange?: (state: FolioState) => void;
   /** Told as soon as the book is sent to another spread (a button, a key,
@@ -85,6 +114,11 @@ export interface FolioViewer {
   readonly pageSize: FolioPageSize;
   /** Swaps the labels (a host that changes language). */
   setLabels(labels: Partial<FolioLabels>): void;
+  /** Changes how the 3D book is presented. */
+  setAppearance(appearance: FolioAppearance): void;
+  /** Eases the view back to the one the settings give (after the reader
+   *  orbited it with a right-drag). */
+  resetView(): void;
   readonly state: FolioState;
   dispose(): void;
 }
@@ -114,6 +148,8 @@ const CHEVRON = (dir: "left" | "right") =>
 
 const sourceOf = (page: FolioPage | undefined): PageSource => (page && typeof page === "object" && "src" in page ? page.src : (page ?? null));
 const altOf = (page: FolioPage | undefined) => (page && typeof page === "object" && "src" in page ? page.alt : undefined);
+const paperOf = (page: FolioPage | undefined) =>
+  page && typeof page === "object" && "src" in page ? (page as { paper?: FolioPaperConfig }).paper : undefined;
 
 /** The natural width / height of a page source, when it is known. */
 function aspectOf(src: PageSource): number | null {
@@ -154,9 +190,13 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   let binding = options.binding ?? "left";
   let mode = options.mode ?? "auto";
   let paper = options.paper ?? "#fff";
+  let appearance: FolioAppearance = options.appearance ?? {};
+  let papersKey = JSON.stringify(pages.map(paperOf));
+  /** The appearance the flipper was last given, as text. */
+  let appearanceKey = "";
   const animate = options.animate ?? true;
   const controls = options.controls ?? true;
-  const showCount = controls && (options.showCount ?? true);
+  const showCount = options.showCount ?? true;
 
   const root = document.createElement("div");
   root.className = "postext-folio";
@@ -176,10 +216,12 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   count.setAttribute("aria-live", "polite");
   prevBtn.classList.add("is-prev");
   nextBtn.classList.add("is-next");
-  root.append(spreadEl, prevBtn, nextBtn);
-  if (controls) root.append(count);
+  // The count is always there for screen readers (a live region), shown
+  // only with `showCount`; `controls: false` leaves the turning to the
+  // host's own buttons.
+  root.append(spreadEl, prevBtn, nextBtn, count);
   if (!showCount) count.classList.add("is-unseen");
-  else prevBtn.hidden = nextBtn.hidden = true;
+  if (!controls) prevBtn.hidden = nextBtn.hidden = true;
   container.append(root);
 
   let single = false;
@@ -203,6 +245,37 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   // (the page after it lies under it, not on its back).
   const bookOf = (): SpreadSrc[] =>
     spreads.map((s, k) => (single ? [k === 0 ? null : "", sourceOf(pages[s[1]!])] : s.map((i) => (i === null ? null : sourceOf(pages[i])))) as SpreadSrc);
+
+  /** The flipper's appearance: the leaves' own papers (a leaf takes its
+   *  recto's, else its verso's) and the leaves outside the pages given. */
+  function flipAppearance(): FlipAppearance {
+    const extra = appearance.extraPages ?? { before: 0, after: 0 };
+    const leafPapers = spreads.slice(0, -1).map((s, k) =>
+      single ? paperOf(pages[s[1]!]) : (paperOf(pages[s[1] ?? -1]) ?? paperOf(pages[spreads[k + 1]?.[0] ?? -1])),
+    );
+    return {
+      folio: appearance.folio,
+      pageWidthMm: appearance.pageWidthMm,
+      extraLeaves: single ? { before: extra.before, after: extra.after } : { before: Math.ceil(extra.before / 2), after: Math.ceil(extra.after / 2) },
+      leafPapers,
+      singlePage: single,
+      textureBaseUrl: appearance.textureBaseUrl,
+      coverLeaves: coverLeavesOf(),
+      ...(appearance.spineImage ? { spineImage: appearance.spineImage } : {}),
+    };
+  }
+
+  /** The leaves that are the covers: the first, when the book opens on its
+   *  first page alone; the last, when the last page is a verso alone. */
+  function coverLeavesOf(): FlipAppearance["coverLeaves"] {
+    const c = appearance.covers;
+    if (!c || spreads.length < 2) return undefined;
+    const last = spreads[spreads.length - 1];
+    return {
+      ...(c.front && (single || spreads[0][0] === null) ? { front: 0 } : {}),
+      ...(c.back && !single && last[1] === null ? { back: spreads.length - 2 } : {}),
+    };
+  }
 
   function aspect() {
     if (options.aspect) return options.aspect;
@@ -265,7 +338,10 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       const marginY = Math.round(Math.max(MIN_MARGIN_Y, showCount ? count.offsetHeight + 2 * GAP : GAP) * dpr);
       const availW = Math.max(0, boxW - 2 * marginX);
       const availH = Math.max(0, boxH - 2 * marginY);
-      deviceWidth = fitWidth(Math.min(availW / 2, availH > 0 ? availH * ar : Infinity));
+      // A tilted book is foreshortened: its pages may be taller than the
+      // box before their image is.
+      const tall = flipper ? 1 / Math.max(0.7, Math.cos((resolveFolioConfig(appearance.folio).tilt * Math.PI) / 180)) : 1;
+      deviceWidth = fitWidth(Math.min(availW / 2, availH > 0 ? availH * tall * ar : Infinity));
       left = Math.floor((boxW - 2 * deviceWidth) / 2);
       top = Math.max(0, Math.floor((boxH - Math.round(deviceWidth / ar)) / 2));
     }
@@ -392,6 +468,8 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     flipCanvas.className = "postext-folio-flip";
     flipCanvas.setAttribute("aria-hidden", "true");
     root.append(flipCanvas);
+    const initial = flipAppearance();
+    appearanceKey = JSON.stringify(initial);
     flipper = new PageFlipper(
       flipCanvas,
       spreadEl,
@@ -406,7 +484,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       binding,
       // One page at a time the spine is the box's edge: the leaf cannot be
       // carried past halfway, so a shorter pull turns it.
-      { persistent: true, turnAt: single ? 0.2 : 0.5 },
+      { persistent: true, turnAt: single ? 0.2 : 0.5, appearance: initial },
     );
     const rgb = rgbOf(paper);
     if (rgb) flipper.setPaper(...rgb);
@@ -447,7 +525,38 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     else return;
     event.preventDefault();
   });
+  // Right-drag orbits the view round the book; the view stays where it is
+  // left until `resetView()` (the host's button) eases it back.
+  root.addEventListener("contextmenu", (event) => {
+    if (flipper) event.preventDefault();
+  });
   root.addEventListener("pointerdown", (event) => {
+    if (event.button !== 2 || !flipper) return;
+    event.preventDefault();
+    const id = event.pointerId;
+    let x = event.clientX;
+    let y = event.clientY;
+    const move = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      if ((e.buttons & 2) === 0) return end();
+      flipper?.orbitBy(e.clientX - x, e.clientY - y);
+      x = e.clientX;
+      y = e.clientY;
+    };
+    const up = (e: PointerEvent) => {
+      if (e.pointerId === id) end();
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("blur", end);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("blur", end);
+  });
+  root.addEventListener("pointerdown", (event) => {
+    if (onPage(event)) return;
     if (event.pointerType !== "mouse") swipe = { x: event.clientX, y: event.clientY };
   });
   root.addEventListener("pointerup", (event) => {
@@ -457,15 +566,24 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     const dx = event.clientX - start.x;
     if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(event.clientY - start.y)) go(current + ((dx < 0) !== rtl() ? 1 : -1));
   });
-  spreadEl.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 || holding) return;
+  /** A press on a page: taken by hand (the WebGL book, hit in 3D, since
+   *  the tilted book does not lie over the DOM spread), or remembered as a
+   *  possible click. True when the stage's swipe should not hear it. */
+  function onPage(event: PointerEvent): boolean {
+    if (event.button !== 0 || holding) return false;
+    const target = event.target as Element;
+    if (target.closest(".postext-folio-nav")) return false;
+    if (flipper ? !flipper.hit(event) : !target.closest(".postext-folio-spread")) return false;
     press = { x: event.clientX, y: event.clientY };
-    if (singleGl()) return void decide(event);
-    if (!flipper?.grab(event)) return;
+    if (singleGl()) {
+      decide(event);
+      return true;
+    }
+    if (!flipper?.grab(event)) return false;
     event.preventDefault();
-    event.stopPropagation();
     hold(event, press);
-  });
+    return true;
+  }
 
   /**
    * One page at a time, the page is taken only once the pointer shows
@@ -555,14 +673,21 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       // The window listeners carry the hold without it.
     }
   }
-  spreadEl.addEventListener("pointerup", (event) => {
+  root.addEventListener("pointerup", (event) => {
     if (holding || singleGl()) return;
     const start = press;
     press = null;
     const click = !!start && Math.hypot(event.clientX - start.x, event.clientY - start.y) < CLICK_SLOP;
-    if (!click || !(event.target as Element).closest(".postext-folio-page:not(.is-empty)")) return;
+    if (!click) return;
     // A click on the recto turns forward, on the verso back (pages already
     // in the air: it joins them).
+    if (flipper) {
+      const side = flipper.hit(event);
+      if (!side) return;
+      swipe = null;
+      return go(current + (single ? 1 : side));
+    }
+    if (!(event.target as Element).closest(".postext-folio-page:not(.is-empty)")) return;
     const rect = spreadEl.getBoundingClientRect();
     swipe = null;
     if (single) go(current + 1);
@@ -598,6 +723,18 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     get pageSize() {
       return slot;
     },
+    resetView() {
+      flipper?.resetOrbit();
+    },
+    setAppearance(next) {
+      appearance = { ...appearance, ...next };
+      const flip = flipAppearance();
+      const key = JSON.stringify(flip);
+      if (key === appearanceKey) return;
+      appearanceKey = key;
+      flipper?.setAppearance(flip);
+      fit();
+    },
     get state() {
       return { spread: current, pages: pagesOf(spreads[current]) };
     },
@@ -617,6 +754,14 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       if (relayout) return rebuild(atPage);
       // Same spreads: the leaves take their new pages where they lie.
       flipper?.setBook(bookOf(), opts.at !== undefined ? spreadOfPage(spreads, opts.at) : undefined);
+      // Pages that came with another paper (a relayout moved a plate run).
+      const papers = JSON.stringify(pages.map(paperOf));
+      if (flipper && papers !== papersKey) {
+        const flip = flipAppearance();
+        appearanceKey = JSON.stringify(flip);
+        flipper.setAppearance(flip);
+      }
+      papersKey = papers;
       if (opts.at !== undefined) current = shown = spreadOfPage(spreads, opts.at);
       fit();
       render();

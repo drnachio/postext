@@ -1,0 +1,1 @@
+# Back cover {style="contraportada" toc="false" work="Joaquín Sorolla, Strolling along the Seashore, 1909. Museo Sorolla, Madrid." blurb="From El Greco to Sorolla, fourteen paintings from museums that publish their images in open access, each with its record and a commentary." publisher="Postext · Sample catalogue · 2026"}

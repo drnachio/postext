@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useState, useEffect, useRef } from 'react';
+import { applyHtmlViewerOverrides, resolveLayoutConfig } from 'postext';
+import { useSandboxSelector } from '../context/SandboxContext';
 import { HtmlPreview, type HtmlPreviewHandle } from './HtmlPreview';
 import { HtmlToolbar } from './HtmlToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
@@ -29,6 +31,14 @@ export function HtmlViewport() {
   const [layout, setLayout] = useState<ViewerLayout>(EMPTY_VIEWER_LAYOUT);
   const previewRef = useRef<HtmlPreviewHandle | null>(null);
   const hydratedRef = useRef(false);
+  // A vertical book (`layout.writingMode: 'vertical-rl'`) has no vertical
+  // scroll: its lines run down the page and its pages right to left, so it
+  // is only read paged. The reader's saved choice is kept for the next
+  // horizontal book.
+  const verticalBook = useSandboxSelector(
+    (s) => resolveLayoutConfig(applyHtmlViewerOverrides(s.config).layout).writingMode === 'vertical-rl',
+  );
+  const effectiveColumnMode: ColumnMode = verticalBook ? 'multi' : columnMode;
 
   useEffect(() => {
     const savedScale = loadHtmlFontScale();
@@ -93,7 +103,7 @@ export function HtmlViewport() {
       <HtmlPreview
         ref={previewRef}
         fontScale={fontScale}
-        columnMode={columnMode}
+        columnMode={effectiveColumnMode}
         onGeneratingChange={setGenerating}
         onScrollBoundsChange={setScrollBounds}
         onPageCountChange={handlePageCountChange}
@@ -102,7 +112,8 @@ export function HtmlViewport() {
       <div {...shell.hoverStripProps} />
       <HtmlToolbar
         fontScale={fontScale}
-        columnMode={columnMode}
+        columnMode={effectiveColumnMode}
+        singleColumnUnavailable={verticalBook}
         generating={generating}
         pinned={shell.pinned}
         hidden={shell.hidden}

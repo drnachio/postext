@@ -107,6 +107,7 @@ Conversion at `page.dpi` (default 300):
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
+| `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, paper stock, binding, surface, lighting |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
@@ -1082,6 +1083,11 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 (design `elements`, `calloutStyles`, `colorPalette`, …) replaced wholesale. Typical:
 `{ parts: { page: false }, headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: {…screen opener…} } }] } }`.
 The HTML viewer also turns on `layout.fitFiguresToPage` itself.
+
+`folio` (the Folio 3D viewer, `postext-folio`; canvas, PDF and HTML ignore it):
+`{ tilt = 22 (degrees, 0–40), paper: { type = 'uncoated'|'bookWove'|'coatedMatte'|'coatedSilk'|'coatedGloss'|'bible'|'newsprint'|'cardStock'|'board', grammage (g/m²), bulk (cm³/g), finish = 'auto'|'uncoated'|'matte'|'silk'|'gloss', texture = 'auto'|'smooth'|'vellum'|'wove'|'laid'|'linen'|'felt', textureStrength = 1 (0–2), shade: ColorValue, showThrough = true }, binding: { type = 'hardcover'|'paperback'|'sewn'|'layflat', coverMaterial = 'auto'|'cloth'|'paper'|'leather', coverColor }, surface: { type = 'oak'|'walnut'|'linen'|'felt'|'leather'|'marble'|'plain'|'none', color? }, lighting: { environment = 'studio'|'daylight'|'lamp'|'overcast'|'night', intensity = 1 (0.25–2), shadows = true } }`.
+Unset paper fields follow the stock (`FOLIO_PAPER_STOCKS`; caliper µm = grammage × bulk); `coverMaterial: 'auto'` is cloth on a hardcover, card otherwise.
+Match the printed book: a novel on cream book wove → `{ paper: { type: 'bookWove' }, binding: { type: 'paperback' } }`.
 
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,

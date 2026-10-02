@@ -24,6 +24,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import editorial as ed  # noqa: E402
 import gutenberg as g  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from _common import build_spines as build_spines_of, spine_thickness_mm  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "source")
 REPO = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
@@ -270,6 +273,28 @@ def cover_design() -> dict:
     }
 
 
+def back_cover_design() -> dict:
+    """The back board: Doré's vignette of the knight with Rocinante, the
+    opening line of the novel and a short blurb, centred on the page."""
+    img_w = 92.0
+    img_h = round(img_w / (1291 / 972), 1)  # the vignette's aspect
+    measure = 100.0
+    return {
+        "enabled": True,
+        "minHeight": mm(PAGE_H),
+        "slot": {
+            "elements": [
+                box("backBg", anchor=at("bleed", "top-left"), fill="cream"),
+                image("backPlate", BACK_VIGNETTE, anchor=at("page", "top"), offset=(0, 40), width=img_w, height=img_h),
+                text("backQuote", "{attr.quote}", anchor=at("page", "top"), offset=(0, 40 + img_h + 12), width=measure, size=12, family="Playfair Display", italic=True, align="center", line_height=1.35),
+                rule("backRule", anchor=at("#backQuote", "below"), offset=((measure - 18) / 2, 7), width=18, color="accent", thickness=0.6),
+                text("backBlurb", "{attr.blurb}", anchor=at("#backRule", "below"), offset=(-(measure - 18) / 2, 7), width=measure, size=9.5, align="center", line_height=1.4, color="muted"),
+                text("backImprint", "Postext · postext.dev", anchor=at("page", "bottom"), offset=(0, -(M_BOTTOM + 4)), width=measure, size=9, family="Alegreya SC", align="center", color="accent", letterSpacing=pt(1)),
+            ]
+        },
+    }
+
+
 def part_design(label: str) -> dict:
     return {
         "elements": [
@@ -452,6 +477,19 @@ def heading_styles(lang: str) -> list[dict]:
             "margins": {"top": mm(PAGE_H - 70), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 72), "right": mm(M_OUTER)},
         },
         {
+            # The last page, always a verso: Folio turns it as the back board.
+            "id": "contraportada",
+            "name": "Contraportada",
+            "numbered": False,
+            "toc": False,
+            "span": "page",
+            "breakBefore": {"enabled": True, "parity": "even"},
+            "advancedDesign": back_cover_design(),
+            "header": empty,
+            "footer": empty,
+            "layout": {"layoutType": "single"},
+        },
+        {
             "id": "preliminar",
             "name": "Preliminar",
             "numbered": False,
@@ -526,6 +564,15 @@ def shared_config() -> dict:
         "colorPalette": color_palette(),
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Folio: a cream book wove with the faint laid lines of an old
+        # edition, bound in boards (the first page is the cover and the last
+        # the back cover, turned as the boards), on a leather desk by day.
+        "folio": {
+            "paper": {"type": "bookWove", "grammage": 90, "texture": "laid", "textureStrength": 0.6},
+            "binding": {"type": "hardcover", "cover": "pages", "spineImage": SPINE},
+            "surface": {"type": "leather"},
+            "lighting": {"environment": "daylight"},
+        },
     }
 
 
@@ -544,6 +591,10 @@ def localized_config(lang: str) -> dict:
 
 FULL_PLATE_PX = 2400
 SMALL_PLATE_PX = 1600
+# The back cover's vignette: Don Quijote with Rocinante (chapter I's tail),
+# toned to the cream of the boards.
+BACK_VIGNETTE_SOURCE = "c01-tail"
+BACK_VIGNETTE = "x-back-vignette"
 MANUAL_CROPS = {"c01-plate-library": (0.02, 0.0, 0.98, 0.955)}  # printed caption under the plate
 
 
@@ -573,7 +624,30 @@ def process_plates(meta: list[dict]) -> dict[str, dict]:
         rel = f"resources/{slug}.jpg"
         im.save(os.path.join(OUT, rel), quality=84, optimize=True, progressive=True)
         out[slug] = {**m, "rel": rel, "pw": im.width, "ph": im.height}
+        if slug == BACK_VIGNETTE_SOURCE:
+            # The back cover's vignette, printed on the cream of the boards:
+            # the engraving multiplied onto the cream, so no white ground shows.
+            cream = tuple(int(PALETTE["cream"][i : i + 2], 16) for i in (1, 3, 5))
+            toned = Image.merge("RGB", [im.point(lambda v, c=c: v * c // 255) for c in cream])
+            back_rel = f"resources/{BACK_VIGNETTE}.jpg"
+            toned.save(os.path.join(OUT, back_rel), quality=84, optimize=True, progressive=True)
+            out[BACK_VIGNETTE] = {**m, "rel": back_rel, "pw": im.width, "ph": im.height}
     return out
+
+
+def back_vignette_spec(plates: dict[str, dict]) -> dict:
+    p = plates[BACK_VIGNETTE]
+    return {
+        "id": BACK_VIGNETTE,
+        "typeId": "ornament",
+        "kind": "bitmap",
+        "file": p["rel"],
+        "width": p["pw"],
+        "height": p["ph"],
+        "placement": PLACEMENTS["tail"],
+        "caption": "",
+        "altText": "Gustave Doré",
+    }
 
 
 SIDE_TAIL_LEAD = 1
@@ -592,6 +666,32 @@ PLACEMENTS = {
     "sidetail": {"position": "auto", "span": "side", "width": 1},
     "cover": {"position": "here", "span": "column", "width": 1},
 }
+
+
+# The spine (Folio's `binding.spineImage`): author, title and imprint on the
+# cream of the boards, between red bands; sized for a book of about this
+# many pages on the paper of `folio.paper`.
+SPINE = "x-spine"
+SPINE_PAGES = 142
+
+
+def build_spines() -> tuple[dict, dict[str, dict]]:
+    fonts = os.path.join(OUT, "fonts")
+    sc, display = os.path.join(fonts, "AlegreyaSC-Regular.ttf"), os.path.join(fonts, "PlayfairDisplay-Regular.ttf")
+    common = {
+        "height_mm": PAGE_H,
+        "thickness_mm": spine_thickness_mm(SPINE_PAGES, 90, 1.6, "hardcover"),
+        "ground": PALETTE["cream"], "ink": PALETTE["ink"], "rules": PALETTE["accent"],
+    }
+    titles = {"es": "Don Quijote de la Mancha", "en": "Don Quixote of La Mancha"}
+    return build_spines_of(OUT, SPINE, "ornament", "es", {
+        lang: {**common, "pieces": [
+            {"text": "Cervantes", "font": sc, "size": 0.34, "at": 0.16, "color": PALETTE["accent"]},
+            {"text": titles[lang], "font": display, "size": 0.42, "at": 0.52},
+            {"text": "Postext", "font": sc, "size": 0.26, "at": 0.9, "color": PALETTE["muted"]},
+        ]}
+        for lang in LANGS
+    })
 
 
 def resource_specs(plates: dict[str, dict]) -> tuple[list[dict], dict[str, list[dict]]]:
@@ -620,6 +720,7 @@ def resource_specs(plates: dict[str, dict]) -> tuple[list[dict], dict[str, list[
             entry["caption"] = ""
             entry["altText"] = "Gustave Doré" if role != "cover" else "Don Quijote y Sancho Panza, por Gustave Doré"
         shared.append(entry)
+    shared.append(back_vignette_spec(plates))
     return shared, wording
 
 
@@ -882,6 +983,15 @@ def write_chapters(plates: dict[str, dict]) -> dict[str, list[dict]]:
             f':::paragraphs{{style="creditos"}}\n{paras}\n\n{ed.PLATE_LIST_INTRO[lang]}\n\n{plate_lines}\n:::\n'
         )
         emit(CHAPTERS + 3, "creditos" if lang == "es" else "credits", book["credits"], credits)
+
+        # Back cover, on the last verso.
+        back = ed.BACK_COVER[lang]
+        emit(
+            CHAPTERS + 4,
+            "contraportada" if lang == "es" else "back-cover",
+            book["back_cover"],
+            f'# {book["back_cover"]} {{style="contraportada" toc="false" quote="{attr_value(back["quote"])}" blurb="{attr_value(back["blurb"])}"}}\n',
+        )
         lists[lang] = specs
     return lists
 
@@ -1007,6 +1117,10 @@ def main() -> None:
     plates = process_plates(meta)
     resources, wording = resource_specs(plates)
     fonts = build_fonts()
+    spine, spine_wording = build_spines()
+    resources.append(spine)
+    for lang in LANGS:
+        wording[lang].append(spine_wording[lang])
     chapters = write_chapters(plates)
     if MISSING_ANCHORS:
         raise SystemExit("anchors not found:\n  " + "\n  ".join(MISSING_ANCHORS))

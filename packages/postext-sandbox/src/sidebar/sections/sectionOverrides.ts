@@ -64,6 +64,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'tableStyle':
     case 'diagramStyle':
     case 'htmlViewer':
+    case 'folio':
     case 'pdfGeneration': {
       const entry = SETTINGS_SECTIONS.find((s) => s.id === section) as SettingsSectionEntry;
       return entry.configKeys.some((k) => hasKeys(config[k]));

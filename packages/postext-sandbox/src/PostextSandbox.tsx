@@ -26,6 +26,7 @@ import { useCompactLayout } from './hooks/useCompactLayout';
 import { SandboxAnnouncer } from './ui/announcer';
 import { LargeTargetsProvider, useLargeTargets } from './ui/largeTargets';
 import { LargeTargetsToggle } from './ui/LargeTargetsToggle';
+import { FolioLoading } from './viewport/FolioLoading';
 import type { PanelId } from './types';
 
 // three.js loads with the Folio tab, not with the sandbox.
@@ -173,7 +174,7 @@ function SandboxLayout({
         return <HtmlViewport />;
       case 'folio':
         return (
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="relative h-full w-full"><FolioLoading /></div>}>
             <FolioViewport />
           </Suspense>
         );

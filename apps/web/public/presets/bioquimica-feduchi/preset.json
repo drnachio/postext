@@ -22429,6 +22429,26 @@
      }
     ]
    }
+  },
+  "folio": {
+   "paper": {
+    "type": "coatedSilk",
+    "grammage": 90
+   },
+   "binding": {
+    "type": "saddleStitch",
+    "coverColor": {
+     "hex": "#263471",
+     "model": "hex",
+     "paletteId": "title-blue"
+    }
+   },
+   "surface": {
+    "type": "oak"
+   },
+   "lighting": {
+    "environment": "studio"
+   }
   }
  },
  "localized": {

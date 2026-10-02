@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 016 · Justified Spanish in a pocket novel ═════════════════
 // https://postext.dev/en/cookbook/spanish-pocket-novel
 // Code: MIT · Text: B. Pérez Galdós, Marianela, 1878 (PD, Gutenberg #17340) · Map: drawn in code
-// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.12.2
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
   registerResourceImage } from 'https://esm.sh/postext';
 
@@ -91,10 +91,10 @@ const opener = {
   ] },
 };
 // The break restated (gotcha: headings-drop-h1-break): the next page, as pocket books do.
-// marginBottom replaces the level's default, a blank line of its own; -LEAD also takes back
-// the line the initial's font box adds below the lead (gotcha: drop-cap-extra-line).
+// marginBottom replaces the level's default, a blank line of its own: the text goes on
+// on the line under the lead.
 const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
-  marginBottom: pt(-LEAD), advancedDesign: opener };
+  marginBottom: pt(0), advancedDesign: opener };
 // #endregion
 
 // #region heads: the author on the verso, the title on the recto; a drop folio on the opener
@@ -133,7 +133,7 @@ const resources = [{
 // The plate's heading, # Las minas de Socartes {style="lamina"}, opens a page the heads skip.
 const frontispiece = {
   id: 'lamina', // its own break, or it takes the chapter's (gotcha: style-inherits-break)
-  breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0), // no -LEAD
+  breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0),
   footer: { elements: [] }, // no drop folio
   advancedDesign: { enabled: true, slot: { elements: [{ kind: 'text', id: 'name',
     content: '{titleText}', ...smallCaps, // a line down: the plate centres on the page

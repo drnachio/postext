@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '配置',
   description: 'Postext所有版面配置选项的完整参考',
   lang: 'zh',
-  lastUpdated: '2026-10-01',
+  lastUpdated: '2026-10-02',
   readingTime: '30分钟',
   order: 3,
   plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页和PDF文件。",
@@ -57,6 +57,7 @@ const document = buildDocument(content, {
 - [自定义字体](#自定义字体)：在Google Fonts之外声明用户上传的字体族。
 - [HTML查看器](#html查看器)：HTML后端的目标栏宽与断行。
 - [PDF生成（配置）](#pdf生成配置)：PDF后端的书签大纲、无障碍（带标签的）输出、强制色彩空间。
+- [书页视图（配置）](#书页视图配置)：3D书本视图的纸种、装订、台面和光照。
 - [调试](#调试)：编辑器中的可视化叠加层与编写警告。
 - [以编程方式使用](#以编程方式使用)：`buildDocument`、它报告的警告、解析器、缓存。
 - [在Web Worker中运行排版](#在web-worker中运行排版)：在主线程之外构建，并可取消。
@@ -5936,6 +5937,223 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 ```
 
 完整的导出流程见下文的[生成PDF](#生成pdf)。
+
+
+## 书页视图（配置）
+
+`folio`属性决定书页视图（`postext-folio`）怎样以3D呈现印好的书：视角、纸张、装订、书下面的台面和光照。排版不读取它，Canvas、HTML和PDF输出也不读取。配置设置了其中任何一项时，`buildDocument`把解析后的设置放进VDT，即`doc.config.folio`；不设置的文档，其排版哈希保持不变。
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–40.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '180px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>视线偏离正上方的角度（度），限制在0–40。0度时从正上方俯视打开的书；角度越大，页面下端越靠近，书芯的厚度越明显。</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code></td>
+      <td>纸种。下面五个字段的默认值由它决定（见纸种表）。<code>cardStock</code>是封面卡纸；<code>board</code>是硬纸板，如纸板书，翻页时不弯曲。</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>随纸种</td>
+      <td>克重，单位为克每平方米，20–2500。克重越大，纸越厚、越挺、越不透明：翻页的弧度更大，背面透得更少。</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>随纸种</td>
+      <td>松厚度：单位重量的厚度，cm³/g，0.5–3。单张纸厚（微米）= 克重 × 松厚度，书芯厚度由它和页数决定。</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>非涂布（可见纤维，无光泽），或涂布后压光为哑光、丝光（柔和光泽）或光面。<code>'auto'</code>取纸种的设置。</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>纸面的凹凸：<code>smooth</code>（平滑，经压光）、<code>vellum</code>（细颗粒）、<code>wove</code>（大多数书纸的均匀纹理，在编织铜网上成形）、<code>laid</code>（罗纹：细密的帘纹与较疏的链线交叉，由水印辊压出）、<code>linen</code>（压出的麻布纹）、<code>felt</code>（毛毯留下的不规则痕迹）。<code>'auto'</code>取纸种的设置。</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>纹理在光线下的明显程度，0–2。</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>随纸种</td>
+      <td>印刷前的纸色（白、本白、米黄）。页面印在这一底色上。</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>薄纸上淡淡透出背面的内容。</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code></td>
+      <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。<code>saddleStitch</code>：骑马钉，折好的纸张在折缝处装订，如杂志或小册子，没有平书脊。</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>封面来源。<code>'case'</code> 在书页外画出书壳；<code>'pages'</code> 把全书第一页当作前封面板、最后一页（左页时）当作后封面板：翻开封面之前书是合着的，封面板硬挺地翻动，不再另画书壳。</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>：精装用布面，其他装订用卡纸（<code>'paper'</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>深蓝（<code>#2c3e57</code>）</td>
+      <td>封面材料的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>无</td>
+      <td>印在书脊上的位图或SVG资源的id：书立起来时看到的书脊，书头朝上、封面在右。图片缩放到铺满书脊并居中。骑马钉不使用。</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>书放在什么上面。<code>'none'</code>保留宿主页面的背景。</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>无</td>
+      <td>为台面着色；<code>'plain'</code>时即台面颜色。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>涂布纸和光面纸反射的周围环境，以及投下阴影的主光。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>曝光，0.25–2。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>主光投下的阴影。</td>
+    </tr>
+  </tbody>
+</table>
+
+各纸种及其提供的值（`FOLIO_PAPER_STOCKS`），取自造纸厂技术参数表的常见数值：
+
+<table>
+  <thead>
+    <tr>
+      <th>纸种</th>
+      <th>克重</th>
+      <th>松厚度</th>
+      <th>纸厚</th>
+      <th>表面处理</th>
+      <th>纹理</th>
+      <th>纸色</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (胶版纸)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>非涂布</td><td>均匀</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (米黄书纸，高松厚)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>非涂布</td><td>均匀</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code> (哑粉纸)</td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>哑光</td><td>平滑</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code> (丝光铜版纸)</td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>丝光</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code> (光面铜版纸)</td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>光面</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code> (字典纸)</td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>非涂布</td><td>细颗粒</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code> (新闻纸)</td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>非涂布</td><td>均匀</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code> (卡纸)</td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>非涂布</td><td>细颗粒</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code> (纸板)</td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>丝光</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+一本印在米黄书纸上、无线胶装的小说，放在胡桃木桌上，台灯照明：
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+这些颜色和配置中的其他颜色一样跟随调色板链接（`paletteId`）。解析函数和精简函数与其他部分相同；精简函数会去掉与所选纸种相同的纸张值：
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+在沙盒中，这些设置位于 **导出 → 书页视图（3D）**。视图本身见[3D书本](#3d书本postext-folio)。
 
 
 ## 调试
