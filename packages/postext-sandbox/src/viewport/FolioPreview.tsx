@@ -24,12 +24,26 @@ interface FolioPreviewProps {
    *  of every page. */
   onPageCountChange?: (count: number, firstContentPage: number, pageNumbers: readonly number[], book?: BookPageMap) => void;
   onCurrentPageChange?: (index: number) => void;
+  /** The pages of the spread the book is sent to (as soon as it is sent,
+   *  and again once its leaves have landed). */
+  onSpreadChange?: (pages: readonly number[]) => void;
+  /** Whether the book is bound on the right (its leaves turn leftward). */
+  onBindingChange?: (rightToLeft: boolean) => void;
 }
 
 export interface FolioPreviewHandle {
   jumpToPage: (pageIndex: number) => void;
+  /** Opens the spread holding page `pageIndex`: the leaves turn to a near
+   *  one, a far one (more than `FAR_SPREADS` away) opens at once. */
+  turnToPage: (pageIndex: number) => void;
+  prev: () => void;
+  next: () => void;
   regenerate: () => void;
 }
+
+/** Spreads beyond which a page typed in opens at once rather than turning
+ *  every leaf in between. */
+const FAR_SPREADS = 10;
 
 /** A laid-out document with what tells its pages apart across layouts:
  *  the chapter (position in the book) of every page of a whole-book
@@ -53,6 +67,9 @@ function samePage(from: ShownDoc, index: number, to: ShownDoc): number {
     && p.pageNumberFormat === page.pageNumberFormat);
 }
 
+/** The scanned desk textures the site serves (apps/web/public). */
+const FOLIO_TEXTURES = '/folio/textures';
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/__(\w+)__/g, (m, key: string) => (key in values ? String(values[key]) : m));
 
@@ -63,7 +80,7 @@ const fill = (template: string, values: Record<string, string | number>) =>
  * spreads, its leaves turned by hand. Pages are painted at the size they
  * are shown, only around the open spread.
  */
-export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange }, ref) {
+export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxSelector((s) => s.labels);
   const sharedDocRef = useSandboxDocRef();
@@ -118,8 +135,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const pendingJumpRef = useRef<number | null>(null);
   const paintedKeyRef = useRef(paintKey);
   const [opened, setOpened] = useState(false);
-  const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange });
-  callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange };
+  const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange });
+  callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange };
 
   useImperativeHandle(ref, () => ({
     jumpToPage: (pageIndex) => {
@@ -127,6 +144,19 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       if (viewerRef.current) viewerRef.current.goToPage(pageIndex, { instant: true });
       else pendingJumpRef.current = pageIndex;
     },
+    turnToPage: (pageIndex) => {
+      const viewer = viewerRef.current;
+      if (!viewer) {
+        pendingJumpRef.current = pageIndex;
+        return;
+      }
+      const open = viewer.state.pages[0] ?? 0;
+      const perSpread = viewer.element.classList.contains('is-single') ? 1 : 2;
+      const far = Math.abs(pageIndex - open) / perSpread > FAR_SPREADS;
+      viewer.goToPage(pageIndex, far ? { instant: true } : undefined);
+    },
+    prev: () => viewerRef.current?.prev(),
+    next: () => viewerRef.current?.next(),
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 
@@ -278,6 +308,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     const doc = shownDoc.doc;
     const before = viewerDocRef.current;
     viewerDocRef.current = shownDoc;
+    callbacksRef.current.onBindingChange?.(doc.binding === 'right');
     let viewer = viewerRef.current;
     if (!viewer) {
       const at = pendingJumpRef.current ?? leadingBlankPageCount(doc);
@@ -288,15 +319,20 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         pageNegative,
         // The page is in the URL; the count is only announced.
         showCount: false,
+        // The tab's own bar turns the pages (and takes a page number).
+        controls: false,
         labels: folioLabelsRef.current,
-        appearance: { folio: folioConfigRef.current },
+        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
+        onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
         onChange: (state) => {
+          callbacksRef.current.onSpreadChange?.(state.pages);
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
         },
       });
       viewerRef.current = viewer;
+      callbacksRef.current.onSpreadChange?.(viewer.state.pages);
       paintedKeyRef.current = paintKey;
       setOpened(true);
       return;
@@ -322,6 +358,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       pendingJumpRef.current = null;
     }
     // The page on show, in the new document's numbering, to the URL.
+    callbacksRef.current.onSpreadChange?.(viewer.state.pages);
     const shown = viewer.state.pages[viewer.state.pages.length - 1];
     if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
   }, [shownDoc, paintKey, mode, pageNegative]);

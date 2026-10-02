@@ -18,6 +18,7 @@ export type SettingsGroupId =
   | 'running'
   | 'parts'
   | 'output'
+  | 'folio'
   | 'advanced';
 
 export type SettingsSectionId =
@@ -84,6 +85,7 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'running', labelKey: 'settingsGroupRunning', descriptionKey: 'settingsGroupRunningDescription' },
   { id: 'parts', labelKey: 'settingsGroupParts', descriptionKey: 'settingsGroupPartsDescription' },
   { id: 'output', labelKey: 'settingsGroupOutput', descriptionKey: 'settingsGroupOutputDescription' },
+  { id: 'folio', labelKey: 'settingsGroupFolio', descriptionKey: 'settingsGroupFolioDescription' },
   { id: 'advanced', labelKey: 'settingsGroupAdvanced', descriptionKey: 'settingsGroupAdvancedDescription' },
 ];
 
@@ -118,7 +120,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'parts', group: 'parts', labelKey: 'parts', configKeys: ['parts'] },
   { id: 'pdfGeneration', group: 'output', labelKey: 'pdfGenerationSection', configKeys: ['pdfGeneration'] },
   { id: 'htmlViewer', group: 'output', labelKey: 'htmlViewer', configKeys: ['htmlViewer'] },
-  { id: 'folio', group: 'output', labelKey: 'folioSection', configKeys: ['folio'] },
+  { id: 'folio', group: 'folio', labelKey: 'folioSection', configKeys: ['folio'] },
   { id: 'debug', group: 'advanced', labelKey: 'debug', configKeys: ['debug', 'page'] },
   { id: 'warnings', group: 'advanced', labelKey: 'warnings', configKeys: ['debug'] },
 ];

@@ -5964,6 +5964,7 @@ interface FolioConfig {
   };
   binding?: {
     type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
   };
@@ -6048,6 +6049,12 @@ interface FolioConfig {
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
       <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>The covers. <code>'case'</code> draws a case round the pages. <code>'pages'</code> takes the book's first page as the front board and its last page, when it is a verso, as the back board: the book lies closed until the cover is turned, the boards turn stiff, and no case is drawn.</td>
     </tr>
     <tr>
       <td><code>binding.coverMaterial</code></td>

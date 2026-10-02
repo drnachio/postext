@@ -1,4 +1,4 @@
-import { BookMarked, Columns2, FileDown, Heading, Image, Languages, List, Palette, PanelTop, Pilcrow, SquareMenu, Wrench, type LucideIcon } from 'lucide-react';
+import { BookMarked, BookOpen, Columns2, FileDown, Heading, Image, Languages, List, Palette, PanelTop, Pilcrow, SquareMenu, Wrench, type LucideIcon } from 'lucide-react';
 import type { SettingsGroupId } from '../sections/registry';
 
 export const GROUP_ICONS: Record<SettingsGroupId, LucideIcon> = {
@@ -13,5 +13,6 @@ export const GROUP_ICONS: Record<SettingsGroupId, LucideIcon> = {
   running: PanelTop,
   parts: BookMarked,
   output: FileDown,
+  folio: BookOpen,
   advanced: Wrench,
 };

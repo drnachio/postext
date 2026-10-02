@@ -1,5 +1,5 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
-import type { FolioPaperConfig } from "postext";
+import { resolveFolioConfig, type FolioPaperConfig } from "postext";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
@@ -43,8 +43,14 @@ function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): Folio
   const page = doc.pages[0];
   const before = doc.pageIndexOffset ?? 0;
   const after = Math.max(0, (doc.bookPageCount ?? 0) - before - doc.pages.length);
+  const folio = own && "folio" in own ? own.folio : doc.config.folio;
+  // The document's own covers: the book's first page (a recto) and its
+  // last, when that is a verso (an even page number).
+  const ownCovers = resolveFolioConfig(folio).binding.cover === "pages";
+  const total = before + doc.pages.length;
   return {
     folio: doc.config.folio,
+    covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
     // Page sizes are in device pixels at the page's dpi.
     ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / (doc.config.page.dpi || 300) } : {}),
     extraPages: { before, after },
@@ -100,6 +106,12 @@ export function carriedPaintings(
   return carried;
 }
 
+/** Pages a long turn paints for its leaves, at most (a farther jump opens
+ *  there at once from the host's page field). */
+const MAX_SWEEP = 160;
+/** Painting time per frame while leaves are in the air. */
+const SWEEP_BUDGET_MS = 8;
+
 /** How long a resize settles before the pages are painted at the new size. */
 const RESIZE_SETTLE_MS = 120;
 
@@ -124,6 +136,12 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   let painted = new Map<number, number>();
   let focus: number[] = [options.at ?? 0];
   let idle = 0;
+  /** The pages on show when the book last came to rest. */
+  let settled: number[] = [];
+  /** The pages a turn in progress sweeps past, in the order their leaves
+   *  lift (from the spread at rest towards the target). */
+  let sweep: number[] = [];
+  let sweepFrame = 0;
   let resizeTimer = 0;
   let ready = false;
   let hostAppearance: FolioAppearance | undefined = options.appearance;
@@ -143,6 +161,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     const keep = new Set<number>();
     const span = 2 * reach + 1;
     for (const p of focus) for (let i = p - span; i <= p + span; i++) if (i >= 0 && i < current.pages.length) keep.add(i);
+    for (const i of sweep) keep.add(i);
     return keep;
   }
 
@@ -187,6 +206,37 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     schedule();
   }
 
+  /** A turn across several spreads: every page its leaves carry is
+   *  painted, a frame at a time, in the order the leaves lift, so no page
+   *  goes over blank. */
+  function startSweep(target: number[]) {
+    const from = settled.length ? settled : [0];
+    const lo = Math.max(0, Math.min(...from, ...target) - 1);
+    const hi = Math.min(current.pages.length - 1, Math.max(...from, ...target) + 1);
+    const pages: number[] = [];
+    for (let i = lo; i <= hi; i++) pages.push(i);
+    if ((target[0] ?? 0) < (from[0] ?? 0)) pages.reverse();
+    sweep = pages.slice(0, MAX_SWEEP);
+    cancelAnimationFrame(sweepFrame);
+    sweepFrame = requestAnimationFrame(paintSweep);
+  }
+
+  function paintSweep() {
+    sweepFrame = 0;
+    const width = slotWidth();
+    const start = performance.now();
+    let changed = false;
+    for (const i of sweep) {
+      if (painted.get(i) === width) continue;
+      paint(i, width);
+      changed = true;
+      if (performance.now() - start > SWEEP_BUDGET_MS) break;
+    }
+    if (!changed) return;
+    viewer.setPages(sources());
+    sweepFrame = requestAnimationFrame(paintSweep);
+  }
+
   function schedule() {
     cancelIdle(idle);
     idle = onIdle(() => {
@@ -221,10 +271,16 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     onTarget: (state) => {
       focus = state.pages;
       refresh(around(state));
+      startSweep(state.pages);
       options.onTarget?.(state);
     },
     onChange: (state) => {
       focus = state.pages;
+      settled = state.pages;
+      // At rest: the pages the turn carried past are let go.
+      sweep = [];
+      cancelAnimationFrame(sweepFrame);
+      refresh([]);
       options.onChange?.(state);
     },
     onLayout: (size: FolioPageSize) => {
@@ -238,6 +294,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   // The open spread, painted at the slot's size before the first frame.
   ready = true;
   focus = viewer.state.pages;
+  settled = viewer.state.pages;
   refresh(around(viewer.state));
 
   return {
@@ -293,10 +350,13 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
         at,
       });
       focus = viewer.state.pages;
+      settled = viewer.state.pages;
+      sweep = [];
       refresh(around(viewer.state));
     },
     dispose() {
       cancelIdle(idle);
+      cancelAnimationFrame(sweepFrame);
       clearTimeout(resizeTimer);
       viewer.dispose();
       for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;

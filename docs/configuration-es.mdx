@@ -5964,6 +5964,7 @@ interface FolioConfig {
   };
   binding?: {
     type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
   };
@@ -6048,6 +6049,12 @@ interface FolioConfig {
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
       <td><code>hardcover</code>: cartoné, tapas algo mayores que las páginas. <code>paperback</code>: rústica fresada (lomo fresado y encolado), abre menos. <code>sewn</code>: rústica cosida. <code>layflat</code>: encuadernación plana, abre sin hundirse en el lomo.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>Las cubiertas. <code>'case'</code> dibuja una tapa alrededor de las páginas. <code>'pages'</code> toma la primera página del libro como cartón delantero y la última, si es par, como cartón trasero: el libro está cerrado hasta que se pasa la cubierta, los cartones giran rígidos y no se dibuja tapa.</td>
     </tr>
     <tr>
       <td><code>binding.coverMaterial</code></td>

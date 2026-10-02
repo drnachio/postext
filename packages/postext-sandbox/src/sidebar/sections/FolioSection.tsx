@@ -245,6 +245,18 @@ export const FolioSection = memo(function FolioSection() {
           onReset={() => writeBinding({ type: undefined })}
         />
         <SelectInput
+          label={labels.folioCoverSource}
+          value={cfg.binding.cover}
+          options={[
+            { value: 'case', label: labels.folioCoverSourceCase },
+            { value: 'pages', label: labels.folioCoverSourcePages },
+          ]}
+          onChange={(v) => writeBinding({ cover: v === 'pages' ? 'pages' : undefined })}
+          tooltip={labels.folioCoverSourceTooltip}
+          isDefault={b?.cover === undefined}
+          onReset={() => writeBinding({ cover: undefined })}
+        />
+        <SelectInput
           label={labels.folioCoverMaterial}
           value={b?.coverMaterial ?? 'auto'}
           options={[
