@@ -83,43 +83,66 @@ const DURATION = 1000;
 /** A leaf follows the one before it once that one is this far through its turn. */
 const GAP = 0.14;
 
-// Lifted leaves hide part of the sky from what lies under them: each frame
-// they are drawn, seen from above, into a height map (the highest paper
-// over each point); a point is occluded by the paper rising round it.
+// Ambient occlusion from the book's own shape: each frame the book is
+// drawn, seen from straight above, into a height map: channel r the
+// highest of everything (blocks, covers, open pages, leaves), channel g the
+// leaves in the air alone. A point is occluded by paper rising round it,
+// more the nearer and higher it is: the book's contact shadow on the desk
+// and the dark under a lifted leaf. The open pages read only the leaves'
+// channel (their gutter is worked out from the cross-section).
 const OCCLUSION = /* glsl */ `
   uniform sampler2D uShadowMap;
   uniform vec4 uShadowBox;
   uniform float uShadowOn;
-  float casterAt(vec2 s) {
+  uniform float uOccRadius;
+  float casterAt(vec2 s, float channel) {
     vec2 uv = (s - uShadowBox.xy) / uShadowBox.zw;
     if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -1e4;
-    return texture2D(uShadowMap, uv).r - 10.0;
+    vec4 t = texture2D(uShadowMap, uv);
+    return (channel > 0.5 ? t.g : t.r) - 10.0;
   }
-  float liftedOcclusion(vec3 p) {
+  // Horizon-based: in each of 8 directions, the highest paper seen from p
+  // (as an elevation angle) hides that much of the sky: sin(horizon) of a
+  // cosine-weighted slice.
+  float bookOcclusion(vec3 p, float channel) {
     if (uShadowOn < 0.5) return 0.0;
-    float spin = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831;
+    float spin = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
     float occ = 0.0;
-    for (int i = 0; i < 16; i++) {
-      float a = float(i) * 2.39996 + spin;
-      float r = sqrt((float(i) + 0.5) / 16.0) * 80.0;
-      float h = casterAt(p.xy + r * vec2(cos(a), sin(a)));
-      occ += clamp((h - p.z - 2.0) / (r + 14.0), 0.0, 1.0);
+    for (int d = 0; d < 8; d++) {
+      float a = (float(d) + spin) * 0.785398;
+      vec2 dir = vec2(cos(a), sin(a));
+      float horizon = 0.0;
+      for (int i = 0; i < 4; i++) {
+        float t = (float(i) + 0.25 + 0.5 * spin) / 4.0;
+        float r = t * t * uOccRadius + 1.0;
+        float h = casterAt(p.xy + r * dir, channel) - p.z - 1.0;
+        horizon = max(horizon, h / sqrt(h * h + r * r));
+      }
+      occ += horizon;
     }
-    return occ / 16.0;
+    return occ / 8.0;
   }
 `;
 
+/** Declares the book position varying in a vertex shader and sets it:
+ *  the world position with the mirror of a right-bound book undone. */
+const BOOK_POS_PARS = "uniform float uSign;\nvarying vec3 vBookPos;";
+const BOOK_POS = "vBookPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvBookPos.x *= uSign;";
+
 const CASTER_VERTEX = /* glsl */ `
+  uniform float uSign;
   varying float vZ;
   void main() {
-    vZ = position.z;
-    gl_Position = projectionMatrix * viewMatrix * vec4(position.xy, 0.0, 1.0);
+    vec4 w = modelMatrix * vec4(position, 1.0);
+    vZ = w.z;
+    gl_Position = projectionMatrix * viewMatrix * vec4(w.x * uSign, w.y, 0.0, 1.0);
   }
 `;
 const CASTER_FRAGMENT = /* glsl */ `
+  uniform float uLeaf;
   varying float vZ;
   void main() {
-    gl_FragColor = vec4(vZ + 10.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(vZ + 10.0, uLeaf * (vZ + 10.0), 0.0, 1.0);
   }
 `;
 
@@ -128,7 +151,42 @@ const occlusionUniforms = {
   uShadowMap: { value: null as Texture | null },
   uShadowBox: { value: new Vector4(0, 0, 1, 1) },
   uShadowOn: { value: 0 },
+  uOccRadius: { value: 60 },
 };
+
+function casterMaterial(leaf: boolean, sign: number) {
+  return new ShaderMaterial({
+    vertexShader: CASTER_VERTEX,
+    fragmentShader: CASTER_FRAGMENT,
+    side: DoubleSide,
+    blending: CustomBlending,
+    blendEquation: MaxEquation,
+    blendEquationAlpha: MaxEquation,
+    blendSrc: OneFactor,
+    blendDst: OneFactor,
+    depthTest: false,
+    depthWrite: false,
+    uniforms: { uLeaf: { value: leaf ? 1 : 0 }, uSign: { value: sign } },
+  });
+}
+
+/** A standard material (the desk, the covers) with the book's occlusion
+ *  on its ambient light. */
+function occluded<T extends MeshStandardMaterial>(m: T, sign: number): T {
+  m.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, occlusionUniforms, { uSign: { value: sign } });
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", `#include <common>\n${BOOK_POS_PARS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\n${BOOK_POS}`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", `#include <common>\nvarying vec3 vBookPos;\n${OCCLUSION}`)
+      .replace(
+        "#include <aomap_fragment>",
+        "#include <aomap_fragment>\n{ float occ = 1.0 - bookOcclusion(vBookPos, 0.0); reflectedLight.indirectDiffuse *= occ; reflectedLight.indirectSpecular *= occ; }",
+      );
+  };
+  return m;
+}
 
 type PageUniforms = {
   uFront: { value: Texture | null };
@@ -151,7 +209,7 @@ type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUniforms;
  * gutter's occlusion (a vertex attribute, from the book's cross-section)
  * and by lifted leaves nearby.
  */
-function pageMaterial(mirror: boolean): PageMaterial {
+function pageMaterial(mirror: boolean, sign: number): PageMaterial {
   const m = new MeshPhysicalMaterial({ side: DoubleSide, roughness: 0.85 }) as PageMaterial;
   const uniforms: PageUniforms = {
     uFront: { value: null },
@@ -164,7 +222,7 @@ function pageMaterial(mirror: boolean): PageMaterial {
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
-    Object.assign(shader.uniforms, uniforms, occlusionUniforms);
+    Object.assign(shader.uniforms, uniforms, occlusionUniforms, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
@@ -172,14 +230,14 @@ function pageMaterial(mirror: boolean): PageMaterial {
         attribute float ao;
         varying float vAo;
         varying vec2 vPageUv;
-        varying vec3 vBookPos;`,
+        ${BOOK_POS_PARS}`,
       )
       .replace(
         "#include <begin_vertex>",
         `#include <begin_vertex>
         vAo = ao;
         vPageUv = uv;
-        vBookPos = position;`,
+        ${BOOK_POS}`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
@@ -222,7 +280,9 @@ function pageMaterial(mirror: boolean): PageMaterial {
         "#include <aomap_fragment>",
         `#include <aomap_fragment>
         {
-          float occ = vAo * (1.0 - 0.75 * liftedOcclusion(vBookPos));
+          // A leaf's own roll counts among the leaves it is occluded by:
+          // held to what its open side would let in.
+          float occ = vAo * (1.0 - 0.6 * bookOcclusion(vBookPos, 1.0));
           reflectedLight.indirectDiffuse *= occ;
           reflectedLight.indirectSpecular *= mix(1.0, occ, 0.85);
         }`,
@@ -233,13 +293,13 @@ function pageMaterial(mirror: boolean): PageMaterial {
 
 /** The page block's edges: paper with a fine line between leaves (fading
  *  to their average where the lines are finer than a pixel). */
-function edgeMaterial(): MeshStandardMaterial {
+function edgeMaterial(sign: number): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ side: DoubleSide, roughness: 0.92 });
   m.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, occlusionUniforms);
+    Object.assign(shader.uniforms, occlusionUniforms, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nattribute float layer;\nvarying float vLayer;\nvarying vec3 vBookPos;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvLayer = layer;\nvBookPos = position;");
+      .replace("#include <common>", `#include <common>\nattribute float layer;\nvarying float vLayer;\n${BOOK_POS_PARS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\n${BOOK_POS}`);
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", `#include <common>\nvarying float vLayer;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
       .replace(
@@ -254,7 +314,7 @@ function edgeMaterial(): MeshStandardMaterial {
       )
       .replace(
         "#include <aomap_fragment>",
-        "#include <aomap_fragment>\nreflectedLight.indirectDiffuse *= 1.0 - 0.75 * liftedOcclusion(vBookPos);",
+        "#include <aomap_fragment>\nreflectedLight.indirectDiffuse *= 1.0 - bookOcclusion(vBookPos, 0.0);",
       );
   };
   return m;
@@ -444,8 +504,8 @@ export class PageFlipper {
   private desk: Mesh<PlaneGeometry, Material>;
   private stacks: Mesh<BufferGeometry, MeshStandardMaterial>[] = [];
   private covers = new Group();
-  private coverMaterial = new MeshPhysicalMaterial({ roughness: 0.9 });
-  private edges = edgeMaterial();
+  private coverMaterial: MeshPhysicalMaterial;
+  private edges: MeshStandardMaterial;
   private key = new DirectionalLight(0xffffff, 1);
   private pmrem: PMREMGenerator | null = null;
   private envKind: EnvironmentKind | null = null;
@@ -458,18 +518,11 @@ export class PageFlipper {
   private shadowScene = new Scene();
   private shadowCamera = new OrthographicCamera(-1, 1, 1, -1, 1, 4000);
   private shadowTarget: WebGLRenderTarget | null = null;
-  private casterMaterial = new ShaderMaterial({
-    vertexShader: CASTER_VERTEX,
-    fragmentShader: CASTER_FRAGMENT,
-    side: DoubleSide,
-    blending: CustomBlending,
-    blendEquation: MaxEquation,
-    blendEquationAlpha: MaxEquation,
-    blendSrc: OneFactor,
-    blendDst: OneFactor,
-    depthTest: false,
-    depthWrite: false,
-  });
+  /** Draw the leaves in the air, and the rest of the book, into the
+   *  height map. */
+  private leafCaster: ShaderMaterial;
+  private staticCaster: ShaderMaterial;
+  private staticCasters: Mesh[] = [];
   private leaves = new Map<number, PageMesh>();
   private loader = new TextureLoader();
   private textures = new Map<Drawn, Promise<Texture | null>>();
@@ -520,6 +573,10 @@ export class PageFlipper {
     this.turnAt = turnAt;
     this.sign = binding === "right" ? -1 : 1;
     const mirror = this.sign < 0;
+    this.coverMaterial = occluded(new MeshPhysicalMaterial({ roughness: 0.9 }), this.sign);
+    this.edges = edgeMaterial(this.sign);
+    this.leafCaster = casterMaterial(true, this.sign);
+    this.staticCaster = casterMaterial(false, this.sign);
     // `__postextFolioPreserve`: keep the drawing buffer (to read the canvas back while debugging).
     const preserveDrawingBuffer = !!(globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve;
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, preserveDrawingBuffer });
@@ -530,8 +587,8 @@ export class PageFlipper {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = PCFShadowMap;
     }
-    this.left = new Mesh(this.openGeometry(), pageMaterial(mirror));
-    this.right = new Mesh(this.openGeometry(), pageMaterial(mirror));
+    this.left = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign));
+    this.right = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign));
     for (const m of [this.left, this.right]) m.receiveShadow = m.castShadow = true;
     this.desk = new Mesh(new PlaneGeometry(1, 1), new MeshStandardMaterial());
     this.desk.receiveShadow = true;
@@ -561,6 +618,7 @@ export class PageFlipper {
     this.reported = at;
     this.turned = Array.from({ length: Math.max(0, book.length - 1) }, (_, k) => k < at);
     this.setAppearance(appearance);
+    if (preserveDrawingBuffer) (globalThis as { __postextFolioFlipper?: PageFlipper }).__postextFolioFlipper = this;
   }
 
   private openGeometry(): PlaneGeometry {
@@ -592,7 +650,7 @@ export class PageFlipper {
       this.desk.material = new ShadowMaterial({ opacity: 0.32, transparent: true, depthWrite: false });
     } else {
       const d = cachedDesk(r.surface.type);
-      const m = new MeshStandardMaterial({ map: d.color, normalMap: d.normal, roughnessMap: d.roughness, roughness: d.roughnessScale });
+      const m = occluded(new MeshStandardMaterial({ map: d.color, normalMap: d.normal, roughnessMap: d.roughness, roughness: d.roughnessScale }), this.sign);
       if (r.surface.color) m.color.set(r.surface.color.hex);
       this.desk.material = m;
     }
@@ -759,6 +817,16 @@ export class PageFlipper {
       const tile = this.resolved.binding.coverMaterial === "cloth" ? 6 : 60;
       tex.repeat.set(W / k / tile, H / k / tile);
     }
+    // The book at rest in the height map.
+    for (const c of this.staticCasters) c.removeFromParent();
+    this.staticCasters = [this.left, this.right, ...this.stacks, ...(this.covers.children as Mesh[])].map((m) => {
+      const c = new Mesh(m.geometry, this.staticCaster);
+      c.position.copy(m.position);
+      c.frustumCulled = false;
+      this.shadowScene.add(c);
+      return c;
+    });
+    occlusionUniforms.uOccRadius.value = 0.14 * W;
     this.layoutLight();
   }
 
@@ -983,11 +1051,11 @@ export class PageFlipper {
     if (!mesh) {
       const geometry = new PlaneGeometry(1, 1, NX, NY);
       geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
-      mesh = new Mesh(geometry, pageMaterial(this.sign < 0));
+      mesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
       mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.frustumCulled = false;
-      const caster = new Mesh(mesh.geometry, this.casterMaterial);
+      const caster = new Mesh(mesh.geometry, this.leafCaster);
       caster.frustumCulled = false;
       this.shadowScene.add(caster);
       mesh.userData.caster = caster;
@@ -1251,8 +1319,11 @@ export class PageFlipper {
     this.dressPage(this.right, r < n ? this.specOf(r) : this.bookSpec);
 
     // The height map lifted leaves occlude the sky from.
-    occlusionUniforms.uShadowOn.value = this.shadowTarget && air.length ? 1 : 0;
-    if (this.shadowTarget && air.length) {
+    for (const c of this.staticCasters) c.visible = true;
+    this.staticCasters[0].visible = this.left.visible;
+    this.staticCasters[1].visible = this.right.visible;
+    occlusionUniforms.uShadowOn.value = this.shadowTarget ? 1 : 0;
+    if (this.shadowTarget) {
       this.renderer.setRenderTarget(this.shadowTarget);
       this.renderer.render(this.shadowScene, this.shadowCamera);
       this.renderer.setRenderTarget(null);
@@ -1288,7 +1359,8 @@ export class PageFlipper {
     cancelAnimationFrame(this.still);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
-    this.casterMaterial.dispose();
+    this.leafCaster.dispose();
+    this.staticCaster.dispose();
     this.scene.environment?.dispose();
     this.pmrem?.dispose();
     for (const mesh of [this.left, this.right, this.desk, ...this.stacks, ...this.leaves.values()]) {

@@ -267,32 +267,40 @@ export function deskSurface(kind: DeskKind): DeskSurface {
   switch (kind) {
     case "oak":
     case "walnut": {
-      // Two planks per tile, the grain running along x.
-      tileMm = 360;
-      const dark = rgb(kind === "oak" ? "#8a5f3a" : "#3b2416");
-      const light = rgb(kind === "oak" ? "#c99a68" : "#6e4a32");
-      const warp = fbm(2, 4, kind === "oak" ? 3 : 5, 0.55);
-      const fine = fbm(4, 6, 7, 0.6);
-      const pores = tileNoise(256, 9);
+      // Planks 120 mm wide running along x, each cut from its own log: the
+      // grain lines (the growth rings sliced through) wander slowly, the
+      // pores are fine streaks along them, the joints thin dark lines,
+      // under a satin varnish.
+      tileMm = 480;
+      const planks = 4;
+      const dark = rgb(kind === "oak" ? "#9a6b42" : "#3e2617");
+      const light = rgb(kind === "oak" ? "#cfa476" : "#6f4b33");
+      const wander = fbm(2, 4, kind === "oak" ? 3 : 5, 0.5);
+      const figure = fbm(4, 5, 7, 0.55);
+      const streak = tileNoise(64, 9);
       fd = field(size, () => 0);
       for (let y = 0; y < size; y++) {
+        const v = y / size;
+        const plank = Math.floor(v * planks);
+        const inPlank = v * planks - plank;
+        const shade = 0.92 + 0.16 * random(plank * 7 + 1)();
         for (let x = 0; x < size; x++) {
           const u = x / size;
-          const v = y / size;
-          const plank = v < 0.5 ? 0 : 1;
-          const w = warp(u, v + plank * 0.37);
-          const rings = 0.5 + 0.5 * Math.sin(2 * Math.PI * (14 * (v + 0.08 * plank) + 3.2 * w));
-          const grain = Math.pow(rings, 2.5);
-          const f = fine(u * 1, v * 1);
-          const pore = pores(u * 256 * 4 % 256, v * 256) > 0.82 ? 1 : 0;
-          const seam = Math.min(Math.abs(v - 0.5), Math.abs(v), Math.abs(1 - v)) < 0.0025 ? 1 : 0;
-          const t = 0.25 + 0.55 * grain + 0.25 * (f - 0.5);
-          const c = mix3(dark, light, Math.min(1, Math.max(0, t))).map((ch) => ch * (1 - 0.35 * seam - 0.15 * pore));
-          put(y * size + x, c, 0.38 + 0.25 * pore + 0.1 * (1 - grain));
-          fd.h[y * size + x] = 0.35 * grain + 0.2 * f - 0.6 * pore - 1.5 * seam;
+          // Rings: lines across the plank, bent by a slow wander.
+          const w = wander((u + plank * 0.31) % 1, (inPlank * 0.25 + plank * 0.25) % 1);
+          const ring = 0.5 + 0.5 * Math.sin(2 * Math.PI * (9 * inPlank + 2.2 * w + plank * 0.37));
+          const late = Math.pow(ring, 6);
+          const fig = figure(u, v);
+          // Pores: noise stretched 64:1 along the grain.
+          const pore = streak((u * 4) % 64, v * 64 * 4) > 0.86 ? 1 : 0;
+          const seam = Math.min(inPlank, 1 - inPlank) * planks < 0.004 ? 1 : 0;
+          const t = 0.5 + 0.35 * (fig - 0.5) * 2 - 0.45 * late;
+          const c = mix3(dark, light, Math.min(1, Math.max(0, t))).map((ch) => ch * shade * (1 - 0.45 * seam - 0.12 * pore));
+          put(y * size + x, c, 0.42 + 0.2 * pore + 0.08 * late);
+          fd.h[y * size + x] = -0.3 * late - 0.5 * pore - 3 * seam + 0.1 * fig;
         }
       }
-      strength = 3;
+      strength = 1.2;
       break;
     }
     case "linen": {

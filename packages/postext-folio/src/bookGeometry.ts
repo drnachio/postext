@@ -13,9 +13,9 @@ export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat";
  *  `dipMm`: how far below that a thin book's pages still sink; the case's
  *  boards and their squares (the margin they stand out round the pages). */
 export const BINDINGS: Record<BindingKind, { gutter: number; perThickness: number; spine: number; power: number; dipMm: number; boardMm: number; squareMm: number; jointMm: number }> = {
-  hardcover: { gutter: 0.075, perThickness: 1.1, spine: 0.55, power: 2.2, dipMm: 2.2, boardMm: 2.6, squareMm: 3, jointMm: 7 },
-  sewn: { gutter: 0.09, perThickness: 1.2, spine: 0.5, power: 2.3, dipMm: 2.6, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  paperback: { gutter: 0.12, perThickness: 1.4, spine: 0.36, power: 2.8, dipMm: 3.6, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 0.5, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
+  sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.45, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
+  paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.3, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
   layflat: { gutter: 0.025, perThickness: 0.4, spine: 0.96, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
 };
 
@@ -56,9 +56,12 @@ function heightAt(p: Pick<Profile, "t" | "meet" | "g" | "power">, x: number, lam
 export function profiles(binding: BindingKind, W: number, pxPerMm: number, tLeft: number, tRight: number): { left: Profile; right: Profile; board: number } {
   const b = BINDINGS[binding];
   const T = tLeft + tRight;
-  const g = Math.min(0.35 * W, b.gutter * W + b.perThickness * T);
+  const g = Math.min(0.3 * W, b.gutter * W + b.perThickness * T);
   const zb = b.boardMm * pxPerMm;
-  const meet = Math.max(0, ((tLeft + tRight) / 2) * b.spine - b.dipMm * pxPerMm * (binding === "layflat" ? 0 : 1));
+  // The leaves sink into the gutter by the binding's own dip and by a
+  // share of the block's thickness: a thick book opens in a deeper valley.
+  const dip = (b.dipMm * pxPerMm + 0.3 * T) * (binding === "layflat" ? 0.1 : 1);
+  const meet = Math.max(0, ((tLeft + tRight) / 2) * b.spine - dip);
   const make = (t: number): Profile => {
     const p = { t, meet, g, power: b.power };
     // Arc length along x, then x and z at even steps of arc length.

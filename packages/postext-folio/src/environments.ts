@@ -78,35 +78,37 @@ export function environment(kind: EnvironmentKind): Environment {
         ),
         key: new Vector3(-0.4, 0.3, 0.86).normalize(),
         keyColor: new Color("#ffffff"),
-        keyIntensity: 1.6,
+        keyIntensity: 0.5,
         softness: 0.55,
-        exposure: 0.95,
+        exposure: 1.15,
       };
     case "daylight":
       return {
         scene: sceneOf(
-          room("#7a746c"),
+          room("#9a948c"),
           // The window: bright, a little cool; the sky through it brighter
           // above.
           panel(1, 9, "#dfe9ff", 14, [-9.5, 1, 4.5], [0, 1, 4.5]),
           panel(1, 4, "#f2f6ff", 22, [-9.4, 1, 8], [0, 1, 8]),
           // Sunlit floor bounce.
-          panel(8, 4, "#ffe6c4", 1.4, [-3, 0, -1.9], [-3, 0, 5]),
+          panel(8, 4, "#ffe6c4", 1.8, [-3, 0, -1.9], [-3, 0, 5]),
+          // Light bounced off the room's far wall.
+          panel(10, 8, "#fff8f0", 1.6, [9.5, 0, 4], [0, 0, 4]),
         ),
         key: new Vector3(-0.75, 0.15, 0.64).normalize(),
         keyColor: new Color("#fff4e6"),
-        keyIntensity: 2.2,
+        keyIntensity: 1.0,
         softness: 0.35,
-        exposure: 0.9,
+        exposure: 1.2,
       };
     case "lamp":
       return {
-        scene: sceneOf(room("#2a2420", 0.6), sphere("#ffc98f", 60, [-2.2, 1.8, 3.4], 0.45), panel(3, 3, "#ffb36b", 0.8, [-2.2, 1.8, 4.2], [-2.2, 1.8, 0])),
+        scene: sceneOf(room("#2a2420", 0.6), sphere("#ffdcb4", 60, [-2.2, 1.8, 3.4], 0.45), panel(3, 3, "#ffd2a4", 0.8, [-2.2, 1.8, 4.2], [-2.2, 1.8, 0])),
         key: new Vector3(-0.5, 0.42, 0.76).normalize(),
-        keyColor: new Color("#ffcf96"),
-        keyIntensity: 2.6,
+        keyColor: new Color("#ffe2c0"),
+        keyIntensity: 1.8,
         softness: 0.18,
-        exposure: 1.05,
+        exposure: 1.15,
       };
     case "overcast":
       return {
@@ -118,22 +120,22 @@ export function environment(kind: EnvironmentKind): Environment {
         ),
         key: new Vector3(-0.1, 0.25, 0.96).normalize(),
         keyColor: new Color("#f3f6ff"),
-        keyIntensity: 0.9,
+        keyIntensity: 0.35,
         softness: 1,
-        exposure: 1.0,
+        exposure: 1.08,
       };
     case "night":
       return {
         scene: sceneOf(
           room("#14161c", 0.6),
-          sphere("#ffc27a", 45, [1.8, 2.4, 3.0], 0.4),
+          sphere("#ffd8ac", 45, [1.8, 2.4, 3.0], 0.4),
           panel(1, 6, "#4b5f8c", 1.6, [-9.5, 0, 4], [0, 0, 4]),
         ),
         key: new Vector3(0.45, 0.55, 0.7).normalize(),
-        keyColor: new Color("#ffc887"),
-        keyIntensity: 2.4,
+        keyColor: new Color("#ffdcb2"),
+        keyIntensity: 1.6,
         softness: 0.15,
-        exposure: 1.15,
+        exposure: 1.25,
       };
   }
 }

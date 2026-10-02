@@ -45,7 +45,8 @@ function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): Folio
   const after = Math.max(0, (doc.bookPageCount ?? 0) - before - doc.pages.length);
   return {
     folio: doc.config.folio,
-    ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / 96 } : {}),
+    // Page sizes are in device pixels at the page's dpi.
+    ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / (doc.config.page.dpi || 300) } : {}),
     extraPages: { before, after },
     ...own,
   };
