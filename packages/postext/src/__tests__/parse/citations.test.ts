@@ -4,6 +4,7 @@ import { parseLocator } from '../../parse/citations';
 import { htmlToSpans } from '../../citations/html';
 import { documentReferences, nociteKeys, normalizeCslItem } from '../../citations/data';
 import { bookCitationContexts } from '../../citations/context';
+import { parseBibtex } from '../../citations/bibtex';
 
 const cites = (md: string) => parseMarkdown(md).flatMap((b) => b.spans.filter((s) => s.citation).map((s) => s.citation!));
 
@@ -78,6 +79,11 @@ describe('reference data (#268)', () => {
     const data = documentReferences({ references: [{ id: 'bib1', title: 'Front' }] }, blocks);
     expect(data.items.map((i) => [i.id, i.title])).toEqual([['bib1', 'Front'], ['json1', 'Dos'], ['yaml1', 'Tres']]);
     expect(data.issues).toHaveLength(1);
+  });
+
+  it('keeps the short titles Zotero and BibLaTeX write', () => {
+    const [item] = parseBibtex('@article{k, title={Letters of {John} Keats}, shorttitle={Letters}, journal={The Journal of Hellenic Studies}, shortjournal={J. Hell. Stud.}}');
+    expect(item).toMatchObject({ title: 'Letters of John Keats', 'title-short': 'Letters', 'container-title-short': 'J. Hell. Stud.' });
   });
 });
 

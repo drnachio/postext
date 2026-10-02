@@ -11,7 +11,7 @@
   "features": {
     "primary": ["float-placement", "chapter-breaks"],
     "also": [
-      "citations", "resource-types", "figure-numbering", "captions", "credit-notes",
+      "figure-citations", "resource-types", "figure-numbering", "captions", "credit-notes",
       "resources", "cell-images", "opener-design", "opener-band", "drop-caps",
       "design-elements", "design-images", "heading-attributes", "heading-styles",
       "mirrored-margins", "canvas-rendering"

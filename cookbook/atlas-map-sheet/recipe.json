@@ -11,7 +11,7 @@
   "features": {
     "primary": ["rotated-tables", "swatches", "captions"],
     "also": [
-      "resource-types", "figure-numbering", "citations", "float-placement", "credit-notes",
+      "resource-types", "figure-numbering", "figure-citations", "float-placement", "credit-notes",
       "color-palette", "opener-design", "opener-band", "heading-attributes", "mirrored-margins",
       "table-model", "table-style", "cell-fills", "chips", "running-heads", "resources",
       "canvas-rendering"

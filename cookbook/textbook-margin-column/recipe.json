@@ -11,7 +11,7 @@
   "features": {
     "primary": ["side-column-floats", "side-captions", "side-boxes"],
     "also": [
-      "column-and-a-half", "mirrored-margins", "citations", "float-placement", "figure-numbering",
+      "column-and-a-half", "mirrored-margins", "figure-citations", "float-placement", "figure-numbering",
       "resources", "localised-labels", "opener-design", "design-anchoring",
       "heading-attributes", "heading-numbering", "heading-styles", "chapter-breaks",
       "callout-styles", "running-heads", "page-role-filters", "color-palette"

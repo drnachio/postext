@@ -1,0 +1,73 @@
+---
+title: "Una obra colectiva con bibliografía en cada capítulo"
+summary: "Tres ensayos de tres autores, cada uno un documento propio en buildBundle, y cada uno cerrado por una lista Chicago autor-fecha con solo las obras que cita."
+plain: "Un libro de ensayos de autores distintos. Cada ensayo lleva el nombre de su autor bajo el título y termina con su propia lista de referencias, como en las obras colectivas."
+description: "Una obra colectiva en Postext: capítulos de buildBundle con firma tomada de los atributos del título y bibliografía por capítulo en estilo Chicago autor-fecha."
+question: "¿Cómo doy a cada capítulo de una obra colectiva su firma y su propia lista de referencias?"
+aliases: ["obra colectiva", "volumen colectivo", "actas", "capítulos de autor", "referencias por capítulo", "bibliografía por capítulo", "Chicago autor-fecha", "firma de autor"]
+pageNotes: { "1": "Página 1: la portada, un campo rojo de imprenta en los dos tercios superiores con La página en obra en Caslon blanca de gran cuerpo y el subtítulo en cursiva; debajo, los editores en versales rojas y los tres autores en cursiva.", "2": "Página 2: el índice, tres ensayos numerados con puntos guía y número de página, cada uno con el nombre de su autor en cursiva gris bajo el título.", "5": "Página 5: el final del capítulo 1 y su lista de Referencias con cuatro obras, entre ellas Eisenstein 1979 y Gaskell 1972.", "8": "Página 8: el final del capítulo 2 y su propia lista de Referencias, que repite Eisenstein 1979 porque este capítulo también lo cita." }
+---
+
+## Lo que vas a componer
+
+*La página en obra*, una pequeña colección de ensayos sobre historia de la imprenta, con dos editores y tres autores. Cada autor entrega su ensayo en un archivo Markdown con su propio bloque BibTeX, y así lo conserva el libro: un volumen de 155 × 235 mm en Libre Caslon, una portada roja y capítulos que se abren con el número, el título y el nombre del autor. Cada capítulo se cierra con su lista de Referencias en Chicago autor-fecha, que recoge solo las obras citadas en ese ensayo. Dos autores citan *The Printing Press as an Agent of Change*, de Eisenstein, y la obra aparece en las dos listas; con la *New Introduction to Bibliography* de Gaskell pasa lo mismo en los capítulos 1 y 3.
+
+## Elaboración
+
+### 1 · Un documento por autor
+
+<Excerpt region="chapters" />
+
+El alcance de [la respuesta corta](#la-respuesta-corta) es el de un documento. `buildBundle` compone los cuatro documentos como un solo libro, de modo que los folios, los números de capítulo y el índice siguen la secuencia, mientras cada `:::bibliography` reúne las citas de su propio archivo. Las referencias se quedan donde las escribió cada autor. Una clave definida en cualquier capítulo vale para todo el libro, así que habría bastado con una sola entrada compartida, pero con capítulos autónomos puedes cambiar el orden o sustituir un ensayo sin romper la lista de otro.
+
+### 2 · La firma es un atributo del título
+
+<Excerpt region="byline" />
+
+El título de cada ensayo lleva `author="…"` y un título corto, `short="…"`, para la cabecera. La apertura imprime el autor bajo el título, la cabecera de la página par nombra al autor del ensayo al que pertenece la página y el índice pone el nombre en una línea bajo cada entrada. Los preliminares no tienen que repetir la lista de autores.
+
+### 3 · La apertura
+
+<Excerpt region="opener" />
+
+Antetítulo, título y firma se apilan desde la cabeza de la caja, cada uno anclado debajo del anterior, así que un título de dos líneas como el del capítulo 3 baja con él la firma y el filete. La reserva de 48 mm admite dos líneas de título, y el texto empieza en la misma línea de la rejilla en todos los capítulos.
+
+### 4 · Cabeceras para un libro de varios autores
+
+<Excerpt region="running-heads" />
+
+Una obra colectiva nombra al autor en la página par y el capítulo en la impar, donde una monografía pondría el título del libro y el del capítulo. Las cabeceras se limitan a `pages: 'body'`, de modo que las aperturas solo llevan un folio al pie.
+
+### 5 · Los preliminares
+
+<Excerpt region="front" />
+
+La portada y el índice son dos títulos sin número en el primer documento, sin cabeceras y sin entrada en el índice. Sus diseños leen `{title}` y `{subtitle}` del frontmatter, y los editores y autores, de los atributos del propio título.
+
+## Variantes
+
+### Una sola lista para todo el volumen
+
+Algunas editoriales reúnen todas las obras en una bibliografía final. Cambia el alcance y quita los tres títulos `## Referencias`; la lista pasa a ir detrás del último capítulo.
+
+```diff
+-    scope: 'chapter',
+-    title: '', // no bold title paragraph: each chapter has its own ## References heading
++    scope: 'book',
++    title: 'Bibliografía',
+```
+
+### Cita en APA
+
+Un volumen de ciencias sociales cambia el estilo y nada más.
+
+```diff
+-  style: 'chicago-author-date', // the humanities' author-date: (Eisenstein 1979)
++  style: 'apa',
+```
+
+## Errores frecuentes
+
+- `scope: 'chapter'` lista lo que el documento cita antes del `:::bibliography`, no lo que cita su sección H1. Con todos los ensayos en un mismo archivo Markdown, la segunda lista repite las obras del primer ensayo y la tercera, las de los dos anteriores.
+- En todo el libro manda la primera definición de cada clave. Si dos autores usan `smith2001` para obras distintas, el ensayo posterior cita sin aviso el libro del primero: pon un prefijo a las claves de cada autor o coteja las listas con los originales.
+- La desambiguación se calcula para el libro entero. Dos obras distintas de Smith de 2001 en capítulos diferentes pueden salir como 2001a y 2001b, aunque la lista de un capítulo solo contenga una de ellas.

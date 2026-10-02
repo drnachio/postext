@@ -1,0 +1,89 @@
+---
+title: "A reading list from a Zotero BibTeX export"
+summary: "A seminar reading list whose references are a Zotero BibTeX export pasted as is, cited in Chicago author-date, with nocite for works the text never cites."
+plain: "A university seminar's reading list. The teacher pastes the file Zotero exports; Postext prints the citations and a list that also holds books the text does not mention."
+description: "A course reading list in Postext: Zotero's BibTeX export pasted unedited, Chicago author-date citations, and nocite for background works the text never cites."
+question: "How do I use a Zotero BibTeX export and list works the text never cites?"
+aliases: ["Zotero", "BibTeX", "nocite", "uncited works", "reading list", "syllabus", "further reading", "Chicago author-date", "bibliography"]
+pageNotes: { "1": "Page 1: a deep green band over the top half with the kicker HPS 214 · Seminar reading list · Autumn term 2026, the title Science as a Social Practice in large light serif, and an italic standfirst; below, two columns with the introduction and weeks 1 to 3, with citations such as Kuhn (1970) and (Shapin 1984).", "2": "Page 2: weeks 4 to 6 and the Further reading section, then the bibliography in Chicago author-date over both columns: thirteen works, five of them never cited in the text, among them Fleck, Merton and López Piñero." }
+---
+
+## What you'll build
+
+The reading list of a six-week seminar on the history and sociology of science, set on a 210 × 280 mm page in two columns. A deep green field takes the top half of the first page, with the course title in Spectral Light at 50 pt; the text below is the convenor's guide to each week. The references are the seminar's Zotero collection, exported as BibTeX and pasted into the document without touching a line: Zotero's citation keys, its braces around capitals, its `{\"o}` accents, `month = dec`, the `file`, `keywords` and `urldate` fields. The text cites eight of the works. The other five, background reading the seminar does not discuss, reach the list through `nocite`.
+
+## Method
+
+### 1 · Name the style once
+
+The code is [the short answer](#the-short-answer) above. The citation engine is registered before the first build and the style is one setting: Chicago author-date writes "(Shapin 1984)" for `[@shapin_pump_1984]` and "Shapin and Schaffer (1985)" for `@shapin_leviathan_1985` in a sentence. The keys are the ones Zotero built from the first author, the first significant word of the title and the year, so `gieryn_boundary-work_1983` keeps its hyphen; Postext reads a hyphen or an underscore inside a key as part of it.
+
+### 2 · Paste the export as Zotero writes it
+
+The last block of the document holds the export, one entry per work, tab-indented as Zotero writes it:
+
+```bibtex
+@article{gieryn_boundary-work_1983,
+	title = {Boundary-{Work} and the {Demarcation} of {Science} from {Non}-{Science}: …},
+	url = {https://www.jstor.org/stable/2095325},
+	doi = {10.2307/2095325},
+	urldate = {2026-08-21},
+	journal = {American Sociological Review},
+	author = {Gieryn, Thomas F.},
+	month = dec,
+	year = {1983},
+	keywords = {demarcation, week 4},
+	pages = {781--795},
+	file = {JSTOR Full Text PDF:/Users/hps214/Zotero/storage/2HJ8M6PA/Gieryn - 1983 - ….pdf:application/pdf},
+}
+```
+
+The reader drops the braces that protect capitals, composes `{\"o}` and `{\'e}` into ö and é, turns `--` into an en dash and reads `month = dec` as a bare month name. `urldate` becomes the access date and `language` the item's language; `file`, `keywords`, `abstract` and `shorttitle` are read past, so nothing from your hard disk reaches the page.
+
+### 3 · Bring in the works the text does not cite
+
+The front matter lists them by key:
+
+```yaml
+---
+title: "Science as a Social Practice"
+nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, @rheinberger_toward_1997, @lopez_pinero_ciencia_1979"
+---
+```
+
+The list holds every cited work plus these five, sorted together by author as Chicago asks; nothing marks an entry as uncited. `nocite: "@*"` lists the whole export, and `bibliography.includeUncited: true` does the same from the configuration, for a design that always prints the whole library.
+
+### 4 · A green field for the card
+
+<Excerpt region="opener" />
+
+The band is a box anchored to the trim, 132 mm deep, and the two columns start 9 mm under it. The title, the rule and the standfirst are chained with `below` anchors, so a longer course title pushes the standfirst down instead of colliding with it.
+
+<Excerpt region="palette" />
+
+## Variations
+
+### List the whole Zotero collection
+
+When the export is the list, skip the keys: every entry in the block prints, cited or not.
+
+```diff
+-nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, …"
++nocite: "@*"
+```
+
+### Change the style
+
+The same keys give a Harvard list (Cite Them Right) with no other change.
+
+```diff
+-  style: 'chicago-author-date', // '(Gieryn 1983)', 'Shapin and Schaffer (1985)'
++  style: 'harvard-cite-them-right',
+```
+
+## Pitfalls
+
+- A key in `nocite` that matches no entry is dropped without a warning. Copy the keys from the export rather than typing them, and count the entries on the page.
+- Zotero builds the keys from the data: correct an author's name or a title in Zotero and the next export may change the key, which breaks every citation of it. Pin the keys before the text is written: Zotero reads a line `Citation Key: …` in an item's Extra field.
+- Zotero exports UTF-8 by default, with the accents as they are. The block here was exported with the Western encoding option, which writes `{\"o}`; Postext reads both.
+- Chicago's 18th edition leaves out the place of publication, so the `address` field does not print, and an article with a DOI prints the DOI and not the JSTOR `url`.

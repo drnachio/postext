@@ -13,7 +13,7 @@
     "also": [
       "fit-figures", "opener-design", "part-dividers", "opener-band", "heading-attributes",
       "float-placement", "color-palette", "page-role-filters", "column-layouts", "page-background",
-      "canvas-rendering", "resources", "localised-labels", "resource-types", "citations",
+      "canvas-rendering", "resources", "localised-labels", "resource-types", "figure-citations",
       "paragraph-styles"
     ]
   },

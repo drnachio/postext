@@ -1,0 +1,660 @@
+{
+  "schemaVersion": 1,
+  "slug": "mla-humanities-essay",
+  "sourceHash": "4662c7027fa600604e05f427632a5417828e601d3bfefd52964276743800e82f",
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-01T21:30:13.300Z",
+  "variants": {
+    "en": {
+      "hash8": "4f82a975",
+      "vdtHash": "6d83ee292ed673365a01cae16dd2ce46f5e62a07",
+      "timings": {
+        "importMs": 375,
+        "fontsMs": 1227,
+        "buildMs": 13,
+        "totalMs": 2294,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          230
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 10.600000000000001,
+          "leadingPt": 14.4
+        },
+        "families": [
+          "Spectral",
+          "Spectral SC"
+        ],
+        "pages": 4,
+        "ownLines": 142
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1533,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 93306,
+          "alt": "Opening page 1: Cold Pastoral."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1533,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 142128,
+          "alt": "Page 2: The questions."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1533,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 120630,
+          "alt": "Page 3: The letters."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1533,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 54652,
+          "alt": "Opening page 4: Works Cited."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "mla-humanities-essay.pdf",
+        "bytes": 86134,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "mla-humanities-essay.postext",
+        "bytes": 16798
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.blockquote",
+          "bodyText.blockquote.color",
+          "bodyText.blockquote.firstLineIndent",
+          "bodyText.blockquote.indent",
+          "bodyText.blockquote.italic",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 241,
+        "designElements": 11,
+        "directives": [
+          ":::space",
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Spectral SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 300,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.77
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "129c8802",
+      "vdtHash": "c24eb081dc75adb55f56daadcf3c4d2eda705a64",
+      "timings": {
+        "importMs": 161,
+        "fontsMs": 61,
+        "buildMs": 16,
+        "totalMs": 977,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          230
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 10.600000000000001,
+          "leadingPt": 14.4
+        },
+        "families": [
+          "Spectral",
+          "Spectral SC"
+        ],
+        "pages": 4,
+        "ownLines": 142
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1533,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 93594,
+          "alt": "Página de apertura 1: Fría pastoral."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1533,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 150550,
+          "alt": "Página 2: Las preguntas."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1533,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 123964,
+          "alt": "Página 3: Las cartas."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1533,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 55196,
+          "alt": "Página de apertura 4: Obras citadas."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "mla-humanities-essay.pdf",
+        "bytes": 91256,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "mla-humanities-essay.postext",
+        "bytes": 16935
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocument",
+          "clearMeasurementCache",
+          "createCiteprocEngine",
+          "decompressWoff2",
+          "registerCitationEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.blockquote",
+          "bodyText.blockquote.color",
+          "bodyText.blockquote.firstLineIndent",
+          "bodyText.blockquote.indent",
+          "bodyText.blockquote.italic",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.hangingIndent",
+          "citations.bibliography.lineHeight",
+          "citations.link",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 241,
+        "designElements": 11,
+        "directives": [
+          ":::space",
+          ":::bibliography",
+          ":::paragraphs",
+          ":::references"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Spectral SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 300,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "citation-styles",
+          "cross-references",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "vertical-space"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.78
+        },
+        "findings": []
+      }
+    }
+  }
+}

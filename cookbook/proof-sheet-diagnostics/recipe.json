@@ -22,7 +22,7 @@
     "also": [
       "knuth-plass",
       "fixed-callouts",
-      "citations",
+      "figure-citations",
       "side-column-floats",
       "side-boxes",
       "callout-columns",

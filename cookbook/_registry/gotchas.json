@@ -92,7 +92,7 @@
       "es": "Una figura entra en la cola cuando empieza el párrafo que la cita, no en la línea de su :ref. Si ese párrafo empieza al pie de una página y la cita cae en la siguiente, una figura 'top' puede abrir esa página por encima de la frase que la cita. Pon el :ref al principio de su párrafo, o abre con él un párrafo nuevo.",
       "zh": "图在引用它的段落开始时就进入队列，而不是在:ref所在的那一行。如果这个段落从一页的底部开始，而引用落在下一页，'top'图可能出现在下一页顶部、引用它的句子之前。把:ref放在段落靠前的位置，或者从它开始另起一段。"
     },
-    "feature": "citations",
+    "feature": "figure-citations",
     "followup": "EF-69"
   },
   "cover-pagebreak": {
@@ -594,7 +594,7 @@
       "es": "Un :ref a un id que no tiene ningún recurso imprime «?» y no coloca nada, y solo el Sandbox avisa. Comprueba que existe cada id que citas.",
       "zh": "引用了不存在的资源id的:ref会打印\"?\"，什么也不放置，只有沙盒会就此给出警告。检查每个被引用的id是否存在。"
     },
-    "feature": "citations",
+    "feature": "figure-citations",
     "followup": "EF-19"
   },
   "parity-page1-recto": {
@@ -1496,5 +1496,57 @@
       "zh": "在中文段落中，排版器把①到⑳当作拉丁字母处理：一行可能以一个编号结尾，而它所属的内容却从下一行开始，cjk.latinSpacing还会在编号和其后的汉字之间加四分之一em的间距。在每个编号后输入一个词连接符（U+2060），编号就会和它的内容留在同一行，间距也随之消失。"
     },
     "feature": "han-latin-spacing"
+  },
+  "nocite-unknown-silent": {
+    "title": {
+      "en": "A nocite key that matches nothing is dropped silently",
+      "es": "Una clave de nocite que no coincide con nada se descarta sin aviso",
+      "zh": "nocite中找不到的键会被悄悄丢弃"
+    },
+    "body": {
+      "en": "A cited key with no reference raises unknownCitationKey, but a key in nocite that matches no entry is skipped without a warning. Copy the keys from the export and count the entries in the list.",
+      "es": "Una clave citada sin referencia da el aviso unknownCitationKey, pero una clave de nocite que no corresponde a ninguna entrada se omite sin avisar. Copia las claves de la exportación y cuenta las entradas de la lista.",
+      "zh": "被引用却没有文献数据的键会触发unknownCitationKey警告，但nocite中对不上任何条目的键会被直接跳过，没有警告。从导出文件里复制键，并数一数列表中的条目。"
+    },
+    "feature": "generated-bibliography"
+  },
+  "citation-key-first-wins": {
+    "title": {
+      "en": "A key defined twice keeps its first entry, silently",
+      "es": "Una clave definida dos veces conserva su primera entrada, sin aviso",
+      "zh": "重复定义的键只保留第一条，且没有警告"
+    },
+    "body": {
+      "en": "References count for the whole book: a key written in two chapters keeps the first definition and the second is ignored with no warning. In a book by several authors, prefix each contributor's keys.",
+      "es": "Las referencias valen para todo el libro: una clave escrita en dos capítulos conserva la primera definición y la segunda se ignora sin aviso. En un libro de varios autores, pon un prefijo a las claves de cada uno.",
+      "zh": "文献数据对全书有效：同一个键在两章中各写一次时，保留第一处定义，第二处被忽略且没有警告。多位作者合写的书，给每位作者的键加上前缀。"
+    },
+    "feature": "generated-bibliography"
+  },
+  "style-header-whole-section": {
+    "title": {
+      "en": "A heading style's header holds for its whole section",
+      "es": "La cabecera de un estilo de título rige toda su sección",
+      "zh": "标题样式的页眉对整个节有效"
+    },
+    "body": {
+      "en": "header: { elements: [] } on a title's style removes the running heads up to the next styled heading, not only on the opener. To keep them off the first page alone, give the header elements pages: 'body'.",
+      "es": "header: { elements: [] } en el estilo del título quita las cabeceras hasta el siguiente título con estilo, no solo en la apertura. Para dejar libre solo la primera página, da a los elementos de la cabecera pages: 'body'.",
+      "zh": "在标题样式上写header: { elements: [] }，会让直到下一个带样式标题之前的页眉都消失，而不只是首页。只想让首页不出页眉，就给页眉元素加上pages: 'body'。"
+    },
+    "feature": "running-heads"
+  },
+  "resource-numbered-at-first-ref": {
+    "title": {
+      "en": "A figure is numbered and placed where it is first cited",
+      "es": "Una figura se numera y se coloca donde se cita por primera vez",
+      "zh": "图在首次被引用处编号和定位"
+    },
+    "body": {
+      "en": "The first :ref or @fig: reference to a figure or table gives it its number and its place, so a reference in an earlier chapter pulls it there. Refer forward to the section that holds it, and to the figure itself only once it is placed.",
+      "es": "La primera referencia :ref o @fig: a una figura o una tabla le da su número y su sitio, así que una referencia en un capítulo anterior la lleva allí. Remite hacia delante a la sección que la contiene, y a la figura solo cuando ya esté colocada.",
+      "zh": "对图或表的第一次:ref或@fig:引用决定它的编号和位置，所以前面章节里的引用会把它拉到那里。向后引用时指向包含它的节，等图已经排出之后再直接引用图本身。"
+    },
+    "feature": "cross-references"
   }
 }

@@ -21,6 +21,7 @@ The files under `csl/` (embedded in `dist/generated/`) are from the Citation Sty
 Each style file names its authors and contributors in its `<info>` block. They are distributed unmodified, except:
 
 - `china-national-standard-gb-t-7714-2015-*.csl`: the CSL-M `locale="en"` layouts the files ship commented out are enabled, so a work in a Western language takes "et al." and the English terms.
+- `oscola.csl`: a paragraph of a case keeps its brackets in every note, not only the first ("Robinson (n 1) [55]", "ibid [27]"), and ibid labels a locator other than a page ("ibid s 7").
 - `iso690-author-date-es.csl`: a citation labels its locator ("cap. 2", "p. 33") instead of always writing "p.", and a chapter without pages ends its publisher with a full stop.
 
 At run time `postext-citeproc` also adds `collapse="citation-number"` to a numbered style's citation when ranges are to be joined, and, for notes without numbers, turns off the branches that point back to an earlier note.

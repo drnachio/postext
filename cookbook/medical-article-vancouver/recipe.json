@@ -1,0 +1,118 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 95,
+  "status": "published",
+  "chapter": "structure",
+  "order": 170,
+  "level": 2,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "citation-styles",
+      "generated-bibliography"
+    ],
+    "also": [
+      "super-subscripts",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "callout-styles",
+      "running-heads",
+      "table-style",
+      "captions",
+      "float-placement",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q112",
+    "Q106"
+  ],
+  "gotchas": [
+    "style-header-whole-section",
+    "headings-drop-h1-break",
+    "svg-no-webfonts",
+    "resource-types-locale",
+    "fonts-first",
+    "quote-frontmatter",
+    "config-cache-identity"
+  ],
+  "engine": {
+    "postext": "1.12.1",
+    "postextPdf": "1.12.1"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "PT Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fira Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fira Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-01",
+  "updated": "2026-10-01",
+  "downloads": {
+    "pdf": true
+  },
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "with marker 'superscript', two non-consecutive numbers print as '4, 6' and the space after the comma stretches with a justified line; the article cites such works in separate places (one number per citation, or consecutive runs such as 6–8)"
+    },
+    {
+      "package": "postext",
+      "note": "bibliography.labelWidth only sets the hanging indent: the first line follows the label and a space, so labels of different widths (9. and 10.) cannot share one column; 2.85 mm lines up entries 1 to 9"
+    }
+  ],
+  "related": [
+    "ieee-conference-paper",
+    "apa-thesis-with-bibtex",
+    "one-text-four-citation-styles"
+  ]
+}

@@ -1,0 +1,67 @@
+---
+title: "A technical book whose references cross chapters"
+summary: "A three-chapter solar handbook whose text writes @fig:sun, @tbl:loads and @sec:array-size, and buildBundle prints each number and page across chapters."
+plain: "A short handbook on sizing solar panels and batteries for a cabin. When chapter 3 points back to a table in chapter 1, or chapter 1 points ahead to a section in chapter 2, the right number and page are printed, and they are links."
+description: "A technical book in Postext: pandoc-crossref references to figures, tables and sections in other chapters, with numbers and pages resolved by buildBundle."
+question: "How do I refer to a figure, a table or a section in another chapter and keep the numbers right?"
+aliases: ["pandoc-crossref", "cross-reference", "crossref", "@fig", "@tbl", "@sec", "see chapter", "references between chapters", "technical book", "handbook", "figure numbers", "table numbers", "page reference"]
+pageNotes: { "1": "Page 1, the cover: a night-blue band over two thirds of the page with the sun's June and December paths drawn as amber arcs over a tilted solar panel, the series line LARCH HILL TECHNICAL NOTES · NO. 4, the title Power for a Cabin in large white condensed type and an italic subtitle; the author and edition below the band.", "2": "Page 2: the contents under the same band, three numbered chapters with their sections and page numbers, and a colophon.", "3": "Page 3: chapter 1 opens under the band with a large amber 1; the text refers ahead to chapter 2 and chapter 3 and to section 1.3, references set in bold orange.", "4": "Page 4: table 1.1 of daily loads with a night-blue header, then sections 1.2 and 1.3 with references to section 2.1 on p. 6, fig. 1.1 and section 3.1.", "5": "Page 5: figure 1.1, a bar chart of the hourly draw with the daylight hours shaded, and the end of chapter 1.", "6": "Page 6: chapter 2 begins; its first line refers back to chapter 1 and table 1.1; figure 2.1, peak sun hours by month with December in orange.", "7": "Page 7: sections 2.2 and 2.3, a reference ahead to section 3.2 on p. 8, a centred formula, and table 2.1 of losses.", "8": "Page 8: chapter 3 opens; its text cites section 2.3, fig. 2.1, table 1.1, section 1.3 with its page, table 2.1 and tables 2.1 and 3.1 by number alone.", "9": "Page 9: table 3.1 comparing battery chemistries, section 3.3 and figure 3.1, a line chart of the battery's charge over five December days." }
+---
+
+## What you'll build
+
+A short technical handbook, *Power for a Cabin*, set in IBM Plex on a 178 × 233 mm page: a cover with the sun's paths drawn in code, a contents page and three chapters under a night-blue band. The book sizes a small solar system, so each chapter leans on the others. Chapter 3 cites the load table of chapter 1 and the sun-hours chart of chapter 2; chapter 1 sends the reader ahead to section 2.3 and gives its page. The author writes `@tbl:loads` and `@sec:array-size`, as pandoc-crossref reads them, in four separate Markdown files. `buildBundle` lays them out as one book, so every reference prints the number the target got in its own chapter, the page it landed on, and a link to it.
+
+## Method
+
+### 1 · Name every target once, for the whole book
+
+The code is [the short answer](#the-short-answer) above. Headings take a Pandoc identifier with its prefix, `## Sizing the array {#sec:array-size}`. Figures and tables are resources declared in the script, and their ids are written the same way, `fig:sun` and `tbl:loads`, so the text reads `@fig:sun` whether the figure is two paragraphs away or two chapters back. An id must be unique across the book, not only in its chapter.
+
+### 2 · Lay the chapters out as one book
+
+<Excerpt region="answer" highlight="6" />
+
+`buildBundle` carries the figure and table counters from chapter to chapter, so the first table of chapter 3 is 3.1 and `@tbl:loads` in chapter 3 still prints *table 1.1*. A chapter whose text names a heading it does not hold is laid out with the outline of the whole book, and laid out again (three rounds at most) until the pages of that outline stop moving. That is how chapter 1 can print *section 2.1 … p. 6* before chapter 2 exists on paper.
+
+### 3 · Choose the words a reference prints
+
+`crossRefs` sets *chapter*, *section* and *p.* (in Spanish *capítulo*, *apartado* and *pág.*). A figure or table reference prints its type's `shortLabel`, here lowercase as pandoc-crossref sets them, *fig. 2.1* and *table 1.1*. A capital in the prefix, `@Tbl:loads` or `@Sec:array`, capitalises the label at the start of a sentence, and `[-@tbl:losses]` prints the bare number for *tables 2.1 and 3.1*.
+
+### 4 · Refer forward to sections, back to figures
+
+A figure or a table is numbered, and floated, where it is first cited. `@fig:soc` in chapter 1 would make it figure 1.2 and place it in chapter 1. So chapter 1 points ahead to `@sec:autonomy`, and the figures and tables are cited first in their own chapter; every later chapter refers back to them freely. A page goes with the section, `:ref{id="sec:sun-hours" style=page}`: a resource reference prints its label and number, never its page.
+
+### 5 · The openers and the cover come from the same band
+
+<Excerpt region="opener" />
+
+The band runs 55 mm from the trim's top on every chapter and on the contents page, which reuse the same elements; the chapter number is `{chapterNumber}`, the lead a heading attribute.
+
+<Excerpt region="cover" />
+
+## Variations
+
+### Print "Figure 2.1" in the text
+
+A book that spells out its references uses the type's full name instead of the short label.
+
+```diff
+-  shortLabel: type.id === 'table' ? t({ en: 'table', es: 'tabla' })
+-    : t({ en: 'fig.', es: 'figura' }),
++  shortLabel: type.id === 'table' ? t({ en: 'Table', es: 'Tabla' })
++    : t({ en: 'Figure', es: 'Figura' }),
+```
+
+### Number sections with a paragraph sign
+
+```diff
+-  section: t({ en: 'section {n}', es: 'apartado {n}' }), // @sec:losses → "section 2.2"
++  section: '§ {n}',
+```
+
+## Pitfalls
+
+- A reference to an id that no chapter sets prints *?*. Check the ids after renaming a heading in one chapter: the references to it live in the others.
+- Laying the chapters out one by one with `buildDocument` loses both the counters and the book outline: every chapter numbers its figures from 1 again and a reference to another chapter prints *?*. Use `buildBundle`, or chain `continuation` and pass `outline` yourself.
+- Equations have no numbering of their own in Postext, so `@eq:` finds only an anchor you set and prints its text; this book writes its two formulas without numbers.

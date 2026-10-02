@@ -59,4 +59,4 @@ Quita la colocación y la figura 1.1 flota al pie de la primera columna de la p�
 
 El código no puede validar su propio PDF, porque veraPDF funciona fuera del navegador. Descarga el archivo y ejecuta `verapdf -f ua1 accessible-tagged-pdf.pdf`; el PDF capturado para esta página pasa la validación. El validador no sabe si un texto alternativo describe su imagen, así que escucha también la guía con un lector de pantalla.
 
-En postext 1.4.1 un enlace de Markdown imprime sus palabras y no añade ningún enlace al PDF; solo enlazan las citas `:ref` y las filas del índice. Por eso el colofón imprime la dirección web completa.
+Esta guía se capturó con postext 1.4.1, en el que un enlace de Markdown imprimía sus palabras sin añadir ningún enlace al PDF; por eso el colofón imprime la dirección web completa. Desde postext 1.10 un enlace `[texto](url)` funciona en el PDF y se etiqueta como un elemento `Link` cuyo texto son las palabras enlazadas.

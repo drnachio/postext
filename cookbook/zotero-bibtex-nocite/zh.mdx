@@ -1,0 +1,89 @@
+---
+title: "用Zotero导出的BibTeX排阅读书目"
+summary: "一份研讨课阅读书目：参考文献是原样粘贴的Zotero BibTeX导出，按Chicago著者-出版年制引用，nocite收入正文未引用的文献。"
+plain: "大学研讨课的阅读书目。老师把Zotero导出的文件贴进稿子，Postext排出文中引文，书目里还收了正文没提到的书。"
+description: "用Postext排课程阅读书目：Zotero导出的BibTeX不加改动，Chicago著者-出版年制引文，nocite列出正文未引用的背景文献。"
+question: "怎样使用Zotero导出的BibTeX，并列出正文未引用的文献？"
+aliases: ["Zotero", "BibTeX", "nocite", "未引用文献", "阅读书目", "课程大纲", "延伸阅读", "Chicago著者-出版年制", "参考文献"]
+pageNotes: { "1": "第1页：上半页是一块深绿色色带，上有眉题HPS 214 · Seminar reading list · Autumn term 2026、细笔画大号衬线体标题Science as a Social Practice和一段斜体导语；下方两栏是引言和第1至3周，有Kuhn (1970)、(Shapin 1984)这样的引文。", "2": "第2页：第4至6周和Further reading一节，随后是两栏的Chicago著者-出版年制书目：十三种文献，其中五种正文从未引用，包括Fleck、Merton和López Piñero。" }
+---
+
+## 成品一览
+
+一门为期六周的科学史与科学社会学研讨课的阅读书目，开本210 × 280 mm，分两栏排。第一页上半部是一块深绿色色带，课程名用50 pt的Spectral Light；下面是任课教师逐周的阅读说明。参考文献是这门课的Zotero文献集，导出为BibTeX后一行不改贴进文档：Zotero生成的引用键、保护大写字母的花括号、`{\"o}`式的重音、`month = dec`，以及`file`、`keywords`、`urldate`字段。正文引用了其中八种，另外五种是研讨课不讨论的背景读物，通过`nocite`进入书目。
+
+## 做法
+
+### 1 · 样式只写一次
+
+代码就是上面的[简短回答](#简短回答)。引用引擎在第一次排版前注册，样式只是一项设置：Chicago著者-出版年制把`[@shapin_pump_1984]`排成"(Shapin 1984)"，把句中的`@shapin_leviathan_1985`排成"Shapin and Schaffer (1985)"。引用键是Zotero用第一作者、标题第一个实词和年份生成的，所以`gieryn_boundary-work_1983`里带连字符；Postext把键内部的连字符和下划线都当作键的一部分。
+
+### 2 · 导出内容按Zotero写的原样粘贴
+
+文档最后一块是导出内容，每种文献一条，像Zotero那样用制表符缩进：
+
+```bibtex
+@article{gieryn_boundary-work_1983,
+	title = {Boundary-{Work} and the {Demarcation} of {Science} from {Non}-{Science}: …},
+	url = {https://www.jstor.org/stable/2095325},
+	doi = {10.2307/2095325},
+	urldate = {2026-08-21},
+	journal = {American Sociological Review},
+	author = {Gieryn, Thomas F.},
+	month = dec,
+	year = {1983},
+	keywords = {demarcation, week 4},
+	pages = {781--795},
+	file = {JSTOR Full Text PDF:/Users/hps214/Zotero/storage/2HJ8M6PA/Gieryn - 1983 - ….pdf:application/pdf},
+}
+```
+
+读取器去掉保护大写的花括号，把`{\"o}`和`{\'e}`合成ö和é，把`--`变成短破折号，并把不带括号的`month = dec`读作月份名。`urldate`成为访问日期，`language`成为文献的语种；`file`、`keywords`、`abstract`和`shorttitle`被跳过，硬盘上的路径不会印到页面上。
+
+### 3 · 收入正文没有引用的文献
+
+在前置元数据里按键列出：
+
+```yaml
+---
+title: "Science as a Social Practice"
+nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, @rheinberger_toward_1997, @lopez_pinero_ciencia_1979"
+---
+```
+
+书目收入全部被引文献和这五种，按Chicago的要求一起按作者排序，未引用的条目没有任何标记。`nocite: "@*"`列出整个导出内容；配置里的`bibliography.includeUncited: true`效果相同，适合总要印出整个文献库的设计。
+
+### 4 · 卡片上的一块绿色
+
+<Excerpt region="opener" />
+
+色带是锚定在裁切边上的方框，深132 mm，两栏正文从它下方9 mm处开始。标题、短线和导语用`below`锚点串在一起，课程名更长时会把导语往下推，而不会叠在一起。
+
+<Excerpt region="palette" />
+
+## 变化
+
+### 列出整个Zotero文献集
+
+导出内容本身就是书目时，不必写键：块里的每一条都会印出，无论是否被引用。
+
+```diff
+-nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, …"
++nocite: "@*"
+```
+
+### 换一种样式
+
+同样的键不做其他改动，就能得到Harvard（Cite Them Right）书目。
+
+```diff
+-  style: 'chicago-author-date', // '(Gieryn 1983)', 'Shapin and Schaffer (1985)'
++  style: 'harvard-cite-them-right',
+```
+
+## 常见问题
+
+- `nocite`里的键如果对不上任何条目，会被直接丢掉，没有警告。键要从导出内容里复制，不要手打，并核对页面上的条目数。
+- Zotero按数据生成键：在Zotero里改了作者名或标题，下次导出时键可能变化，所有引用它的地方都会失效。动笔之前先把键固定下来：Zotero会读取条目“其他”(Extra)字段里的`Citation Key: …`一行。
+- Zotero默认以UTF-8导出，重音字符原样保留。本例的块是用Western编码选项导出的，所以写成`{\"o}`；Postext两种都能读。
+- Chicago第18版不印出版地，所以`address`字段不出现；有DOI的文章印DOI，而不印JSTOR的`url`。

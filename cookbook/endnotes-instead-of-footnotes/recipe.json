@@ -12,7 +12,7 @@
     "primary": ["super-subscripts", "bibliography", "section-geometry"],
     "also": [
       "heading-styles", "column-balancing", "column-rule",
-      "paragraph-styles", "escapes", "emphasis-colours", "citations", "figure-numbering",
+      "paragraph-styles", "escapes", "emphasis-colours", "figure-citations", "figure-numbering",
       "resource-types", "captions", "opener-design", "design-images", "heading-attributes",
       "running-heads", "mirrored-margins", "color-palette"
     ]

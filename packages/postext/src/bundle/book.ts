@@ -77,12 +77,12 @@ function firstContentPage(doc: VDTDocument): { pageLabel: string; pageIndex: num
  *  per chapter. Hand the array to `renderToPdf` for the whole book, or
  *  paint `docs[i]` for one chapter. */
 export function buildBundle(
-  bundle: { chapters: readonly Pick<BundleChapter, 'markdown'>[]; config: PostextConfig; resources: readonly Resource[] },
+  bundle: { chapters: readonly Pick<BundleChapter, 'markdown'>[]; config: PostextConfig; resources?: readonly Resource[] },
   options: BuildBundleOptions = {},
 ): VDTDocument[] {
   const { config: configOverride, cache: sharedCache, onChapter, metadata: givenMetadata, ...buildOptions } = options;
   const config = configOverride ?? bundle.config;
-  const resources = [...bundle.resources];
+  const resources = [...(bundle.resources ?? [])];
   const cache = sharedCache ?? createMeasurementCache();
   const chapters = bundle.chapters;
   // The book's metadata: the first chapter's front matter over the given

@@ -80,17 +80,17 @@ const LOCATOR_WORDS: Readonly<Record<string, string>> = {
 
 /** Numbers as a marker lists them: sorted, consecutive ones joined into a
  *  range when `collapse`. */
-function numberList(numbers: number[], collapse: boolean): string {
+function numberList(numbers: number[], collapse: boolean, sep = ', '): string {
   const sorted = [...new Set(numbers)].sort((a, b) => a - b);
-  if (!collapse) return sorted.join(', ');
+  if (!collapse) return sorted.join(sep);
   const parts: string[] = [];
   for (let i = 0; i < sorted.length; i++) {
     let j = i;
     while (j + 1 < sorted.length && sorted[j + 1] === sorted[j]! + 1) j++;
-    parts.push(j - i >= 2 ? `${sorted[i]}–${sorted[j]}` : j === i + 1 ? `${sorted[i]}, ${sorted[j]}` : String(sorted[i]));
+    parts.push(j - i >= 2 ? `${sorted[i]}–${sorted[j]}` : j === i + 1 ? `${sorted[i]}${sep}${sorted[j]}` : String(sorted[i]));
     i = j;
   }
-  return parts.join(', ');
+  return parts.join(sep);
 }
 
 /** A numbered style's citation in the marker the configuration asks for. */
@@ -112,7 +112,9 @@ function markerSpans(
   const label = single?.label ?? 'page';
   const word = chinese && label === 'page' ? '' : LOCATOR_WORDS[label] ?? '';
   const loc = single?.locator ? (word ? `${word}\u00a0${single.locator}` : single.locator) : '';
-  const list = numberList(known.map((it) => numbers.get(it.id)!), cfg.collapseRanges);
+  // Raised numbers are set close, "⁴,⁶": a space there would stretch on a
+  // justified line.
+  const list = numberList(known.map((it) => numbers.get(it.id)!), cfg.collapseRanges, cfg.marker === 'superscript' ? ',' : ', ');
   const span = (text: string, extra: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold: base.bold, italic: base.italic, ...extra });
   const out: InlineSpan[] = [];
   if (narrative) out.push(span(cfg.marker === 'superscript' || cfg.marker === 'corner' ? narrative : `${narrative} `));
@@ -388,13 +390,26 @@ export function applyCitations(
     return blocksOut;
   };
 
+  const chapterScope = cfg.bibliography.scope === 'chapter';
+  const autoChapter = chapterScope && cfg.bibliography.auto && processed !== null;
+  /** Whether the chapter being read has set its list itself. */
+  let chapterListed = false;
   for (const block of blocks) {
     if (block.type === 'directive' && block.directiveName === 'references') continue;
     if (block.type === 'directive' && block.directiveName === 'bibliography') {
       const scopeAttr = block.directiveAttrs?.scope;
       const scope = scopeAttr === 'chapter' || scopeAttr === 'book' ? scopeAttr : cfg.bibliography.scope;
       out.push(...bibliographyBlocks(block.sourceStart, scope, block.directiveAttrs?.title ?? cfg.bibliography.title));
+      chapterListed = true;
       continue;
+    }
+    // A chapter list holds the works its chapter cites: a document of
+    // several chapters starts each one afresh, the list of the one before
+    // set ahead of its heading when nothing placed it.
+    if (chapterScope && block.type === 'heading' && block.level === 1) {
+      if (autoChapter && !chapterListed && citedHere.size > 0) out.push(...bibliographyBlocks(block.sourceStart, 'chapter', cfg.bibliography.title));
+      citedHere.clear();
+      chapterListed = false;
     }
     if (!block.spans.some((s) => s.citation)) {
       out.push(block);
@@ -449,7 +464,7 @@ export function applyCitations(
   // Nothing places the list: it goes after the text (the book's last
   // document for a book-wide list).
   const auto = cfg.bibliography.auto && processed !== null
-    && (cfg.bibliography.scope === 'chapter' ? !out.some((b) => b.bibEntry !== undefined) && citedHere.size > 0 : !ctx.placed && ctx.last);
+    && (chapterScope ? !chapterListed && citedHere.size > 0 : !ctx.placed && ctx.last);
   if (auto) {
     const at = blocks[blocks.length - 1]?.sourceEnd ?? 0;
     out.push(...bibliographyBlocks(at, cfg.bibliography.scope, cfg.bibliography.title));

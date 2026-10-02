@@ -1,0 +1,75 @@
+---
+title: "Un artículo médico en estilo Vancouver"
+summary: "Un ensayo clínico en A4 a dos columnas: números de cita volados, una bibliografía numerada al modo Vancouver y DOI que se abren como enlaces en el PDF."
+plain: "Un artículo breve de investigación médica, compuesto como en una revista. Los autores citan con códigos; Postext imprime números pequeños volados y monta al final la lista numerada de referencias, con cada DOI como enlace."
+description: "Un artículo de revista médica con Postext: referencias Vancouver (NLM) con citeproc-js, números de cita volados, DOI enlazados en el PDF y resumen estructurado."
+question: "¿Cómo pongo los números de cita volados y los DOI como enlaces, igual que las revistas médicas?"
+aliases: ["Vancouver", "NLM", "ICMJE", "Citing Medicine", "revista médica", "ensayo clínico", "citas en superíndice", "llamadas voladas", "DOI", "resumen estructurado", "puntos clave", "BibTeX", "citeproc"]
+pageNotes: { "1": "Página 181: una banda verde azulado con el nombre de la revista y la línea del número en versales blancas, debajo ORIGINAL en verde azulado, un título de cuatro líneas sobre un ensayo piloto de telemonitorización de la presión arterial dirigida por farmacéuticos, cuatro autores con números de filiación volados, las filiaciones y una nota que advierte de que el artículo es ilustrativo. La primera columna lleva el resumen estructurado sobre un tinte verde pálido y el comienzo de la Introducción, con las llamadas 1 a 5 voladas antes del punto; la segunda, un recuadro de Puntos clave bajo un filete grueso y el comienzo de Métodos.", "2": "Página 182: el final de Métodos, Resultados y Discusión en la columna izquierda; a la cabeza de la derecha, la Tabla 1 con las características basales y la cabecera en verde azulado, y la Figura 1, una línea de la presión sistólica domiciliaria semanal que baja de 158 a 135 mm Hg.", "3": "Página 183: la información del artículo y once referencias numeradas a dos columnas, cada una con su DOI escrito como https://doi.org/…" }
+---
+
+## Lo que vas a componer
+
+Tres páginas de una revista clínica: un artículo original que presenta un ensayo piloto, compuesto en A4 a dos columnas como lo imprimen las revistas que siguen las normas del ICMJE. Una banda verde azulado cruza la cabeza de la primera página sobre el tipo de artículo, un título de cuatro líneas, los autores con sus números de filiación volados y un resumen estructurado sobre un tinte pálido. Los autores citan con claves de BibTeX, y las páginas muestran lo que espera un editor médico: números pequeños volados, obras consecutivas agrupadas como 6–8 y una bibliografía numerada en la forma de la NLM, *Lancet 2016;387(10022):957-67*, que cierra cada entrada con su DOI. En el PDF cada número salta a su referencia y cada DOI abre el artículo. El ensayo es inventado; las once obras que cita son reales.
+
+## Elaboración
+
+### 1 · Vancouver, volado y enlazado
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. De los estilos que trae el motor, `elsevier-vancouver` es el que sigue el *Citing Medicine* de la NLM (orden de cita, autores como *Ettehad D, Emdin CA*, seis nombres y luego *et al.*, títulos de revista abreviados), así que es el archivo del que conviene partir. Dos sustituciones de texto acercan su lista a los ejemplos de la NLM: el número se lee *1.* y no *[1]*, y el fascículo va tras el volumen. `marker: 'superscript'` compone las citas como números volados escriba lo que escriba el estilo, y `doi: 'link'` mantiene cada dirección `https://doi.org/` como enlace. En inglés la llamada va tras el punto; en español va delante, como pide la ortografía académica, y basta con escribir `[@clave]` antes del punto. El estilo AMA también viene incluido y vuela sus números por sí mismo, pero su lista difiere de la de Vancouver en la puntuación y en los intervalos de páginas.
+
+### 2 · Un bloque de título a dos columnas
+
+<Excerpt region="title" />
+
+El título del artículo es el único título de nivel 1, con el estilo `article`, que ocupa toda la página y lo dibuja con su diseño. El tipo de artículo, los autores, las filiaciones y la nota salen de atributos del título. `inlineMarks` convierte el `^1^` del atributo en un número de filiación volado, y el `\n` de las filiaciones abre una línea para cada centro. La banda está anclada al corte, así que llega hasta el borde superior del papel.
+
+### 3 · Un resumen estructurado y un recuadro de puntos clave
+
+<Excerpt region="abstract" />
+
+Los dos recuadros comparten un estilo de texto: Fira Sans a 8,3 pt con etiquetas en negrita al comienzo del párrafo, la voz que el lector espera en el material de resumen. El resumen lleva un tinte y las etiquetas en verde azulado; los puntos clave van bajo un filete de 2,5 pt con las etiquetas en tinta. `snapToGrid: false` respeta el relleno exacto, de modo que el recuadro del resumen se ciñe al texto.
+
+### 4 · La Tabla 1 y la Figura 1 a la cabeza de una columna
+
+<Excerpt region="resources" />
+
+La tabla se lee de un texto separado por tabuladores, como lo exporta una hoja de cálculo, y su fila de cabecera va rellena en verde azulado con las etiquetas en blanco y negrita. Los dos recursos flotan a la cabeza de una columna después del párrafo que los cita. Con `shortLabel` igual al nombre completo del tipo, `:ref` imprime *(Tabla 1)*, como escriben las revistas, y el `numbered: false` del título deja la cuenta en 1 y no en 1.1.
+
+<Excerpt region="palette" />
+
+## Variantes
+
+### Usa el estilo AMA
+
+El estilo AMA vuela sus números por sí mismo y escribe *doi:10.1056/…* en la lista; quita las sustituciones y el marcador.
+
+```diff
+-  style: 'custom', customStyle: vancouver,
+-  marker: 'superscript', collapseRanges: true, // raised 1 and 6–8, not [1] and [6–8]
++  style: 'american-medical-association',
+```
+
+### Imprime los DOI sin enlace
+
+Para un PDF que solo se va a imprimir, deja las direcciones como texto negro.
+
+```diff
+-    doi: 'link' }, // https://doi.org/… printed whole and clickable
++    doi: 'text' },
+```
+
+### Números entre corchetes
+
+Algunas revistas Vancouver escriben los números en la línea, entre corchetes.
+
+```diff
+-  marker: 'superscript', collapseRanges: true, // raised 1 and 6–8, not [1] and [6–8]
++  marker: 'brackets', collapseRanges: true,
+```
+
+## Errores frecuentes
+
+- Cuando el texto cita a la vez dos obras cuyos números no son consecutivos, como 4 y 6, postext 1.12.1 escribe los números volados como *4, 6*, y el espacio tras la coma se estira con la línea justificada. Este artículo cita esas obras en lugares distintos.
+- `labelWidth` fija la sangría de las líneas siguientes de cada entrada, no una columna para los números: la primera línea empieza tras el número y un espacio. Con 2,85 mm el texto de las entradas 1 a 9 queda alineado; las entradas 10 y 11 empiezan un poco más a la derecha.
+- La `header` de un estilo de título rige toda la sección que ese título abre, así que `header: { elements: [] }` en el título del artículo quitaría las cabeceras de todas las páginas hasta el siguiente título con estilo. Para dejar libre la primera página basta con `pages: 'body'` en las cabeceras.

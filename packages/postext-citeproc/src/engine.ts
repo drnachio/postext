@@ -168,7 +168,10 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
               const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';
               return who ? `${escapeHtml(who)}${glue}${html}` : html;
             }
-            return html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, '');
+            html = html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, '');
+            // An author-page style with nothing for the parentheses (MLA,
+            // "as Stillinger records") leaves the space before them.
+            return c.mode === 'narrative' && kind === 'in-text' && !numeric ? html.trim() : html;
           });
         },
         bibliography(ids?: readonly string[]): BibliographyOutput {

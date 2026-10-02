@@ -59,4 +59,4 @@ Drop the placement and figure 1.1 floats to the foot of page 3's first column, a
 
 The pen cannot validate its own PDF, because veraPDF runs outside the browser. Download the file and run `verapdf -f ua1 accessible-tagged-pdf.pdf`; the copy captured for this page passes. The checker cannot tell whether an alt text describes its picture, so listen to the guide with a screen reader as well.
 
-In postext 1.4.1 a Markdown link prints its words and adds no link to the PDF; only `:ref` citations and contents rows link. The colophon prints the web address in full.
+This guide was captured with postext 1.4.1, where a Markdown link printed its words and added no link to the PDF, so the colophon prints the web address in full. From postext 1.10 a `[text](url)` link is live in the PDF, tagged as a `Link` element whose text is the linked words.
