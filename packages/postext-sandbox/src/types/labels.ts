@@ -38,6 +38,7 @@ export interface SandboxLabels {
   folioPageAlt: string;
   folioLoading: string;
   folioToolbar: string;
+  folioResetView: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;

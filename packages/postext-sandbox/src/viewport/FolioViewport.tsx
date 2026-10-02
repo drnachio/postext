@@ -39,6 +39,7 @@ export function FolioViewport() {
   const handleRegenerate = useCallback(() => previewRef.current?.regenerate(), []);
   const handlePrev = useCallback(() => previewRef.current?.prev(), []);
   const handleNext = useCallback(() => previewRef.current?.next(), []);
+  const handleResetView = useCallback(() => previewRef.current?.resetView(), []);
 
   const shell = useFloatingToolbarShell('folio', generating);
 
@@ -77,6 +78,7 @@ export function FolioViewport() {
         onTogglePin={shell.togglePin}
         onPrev={handlePrev}
         onNext={handleNext}
+        onResetView={handleResetView}
         onJumpToPageNumber={handleJumpToPageNumber}
         {...shell.toolbarHoverProps}
       />

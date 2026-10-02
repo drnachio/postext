@@ -935,6 +935,17 @@ export class PageFlipper {
       this.stacks.push(mesh);
       this.stage.add(mesh);
     }
+    // The back of the block: the folds sewn at the spine, under the line
+    // where the two open pages meet (nothing shows through the gutter).
+    const meet = Math.min(along(pl, 0)[1], along(pr, 0)[1]);
+    const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
+    if (meet > 0.4) {
+      const fold = new Mesh(new BoxGeometry(back, H, meet - 0.3), this.edges);
+      fold.position.set(0, 0, (meet - 0.3) / 2);
+      fold.castShadow = fold.receiveShadow = true;
+      this.stacks.push(fold);
+      this.stage.add(fold);
+    }
     // The covers.
     for (const c of [...this.covers.children]) {
       c.removeFromParent();

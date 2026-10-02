@@ -1,7 +1,7 @@
 'use client';
 
 import type { FocusEventHandler } from 'react';
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw, Rotate3d } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
   PageNumberInput,
@@ -26,6 +26,8 @@ interface FolioToolbarProps {
   /** A right-bound book turns its leaves leftward: the left arrow goes on. */
   rightToLeft?: boolean;
   onRegenerate: () => void;
+  /** Back to the view the settings give, after the reader orbited it. */
+  onResetView: () => void;
   onTogglePin: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -50,6 +52,7 @@ export function FolioToolbar({
   canNext,
   rightToLeft = false,
   onRegenerate,
+  onResetView,
   onTogglePin,
   onPrev,
   onNext,
@@ -80,6 +83,11 @@ export function FolioToolbar({
         onClick={onRegenerate}
         spinning={generating}
         accent={generating}
+      />
+      <ToolbarButton
+        icon={<Rotate3d size={16} aria-hidden="true" />}
+        label={labels.folioResetView}
+        onClick={onResetView}
       />
       <ToolbarSeparator />
       <PinToolbarButton

@@ -508,6 +508,8 @@ def zh_config(lang: str) -> dict:
         "colorPalette": palette(lang),
         "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": {"binding": {"cover": "pages"}},
     }
 
 
@@ -934,6 +936,8 @@ def zh_hant_config() -> dict:
         "colorPalette": palette(lang),
         "resourceTypes": zh_resource_types(lang, f) + [ORNAMENT_TYPE[lang]],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": {"binding": {"cover": "pages"}},
     }
 
 
@@ -1175,6 +1179,8 @@ def en_config() -> dict:
             ORNAMENT_TYPE["en"],
         ],
         "pdfGeneration": {"outlines": True},
+        # Its first page is the cover: Folio turns it as the case's board.
+        "folio": {"binding": {"cover": "pages"}},
     }
 
 

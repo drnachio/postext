@@ -40,6 +40,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     folioPageAlt: t("folioPageAlt"),
     folioLoading: t("folioLoading"),
     folioToolbar: t("folioToolbar"),
+    folioResetView: t("folioResetView"),
     toolbarPin: t("toolbarPin"),
     toolbarUnpin: t("toolbarUnpin"),
     pdfDirty: t("pdfDirty"),

@@ -6483,6 +6483,11 @@
   ],
   "pdfGeneration": {
    "outlines": true
+  },
+  "folio": {
+   "binding": {
+    "cover": "pages"
+   }
   }
  },
  "localized": {
@@ -10894,7 +10899,12 @@
       "resetOn": "never",
       "counterFormat": "decimal"
      }
-    ]
+    ],
+    "folio": {
+     "binding": {
+      "cover": "pages"
+     }
+    }
    },
    "resources": [
     {
@@ -14229,7 +14239,12 @@
       "resetOn": "never",
       "counterFormat": "decimal"
      }
-    ]
+    ],
+    "folio": {
+     "binding": {
+      "cover": "pages"
+     }
+    }
    },
    "resources": [
     {
