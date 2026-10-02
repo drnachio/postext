@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "spanish-pocket-novel",
-  "sourceHash": "194deb3d1d4b55a0e65c1ce9a98f83b80bbb00ffcee60e7b67bbd63db77e4424",
+  "sourceHash": "9ac065aa9d49163470ed6b7bae39f11f10801d3f9508d7e4a49d1630601d8491",
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.12.2",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-25T18:53:13.794Z",
+  "capturedAt": "2026-10-02T20:05:29.382Z",
   "variants": {
     "es": {
-      "hash8": "61508822",
-      "vdtHash": "6d559dfffc1300c64e8e881e964044a550b50cc0",
+      "hash8": "69df0069",
+      "vdtHash": "6e5b9cab7670dce9f2eaaca91437208943bc0ac8",
       "timings": {
-        "importMs": 455,
-        "fontsMs": 128,
-        "buildMs": 15,
-        "totalMs": 1630,
+        "importMs": 10832,
+        "fontsMs": 54,
+        "buildMs": 18,
+        "totalMs": 11562,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1565,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 38992,
+          "bytes": 38942,
           "alt": "Página de apertura 8: Las minas de Socartes. Figura 1. El camino de Golfín: de Villafangosa, por la pasadera y el cerro, al talud de las minas de Socartes."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1565,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 129450,
+          "bytes": 129456,
           "alt": "Página de apertura 9: Perdido."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1565,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 166098,
+          "bytes": 166100,
           "alt": "Página 10."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1565,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 163104,
+          "bytes": 163164,
           "alt": "Página 11."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1565,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 115904,
+          "bytes": 115884,
           "alt": "Página 12."
         }
       ],
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "spanish-pocket-novel.postext",
-        "bytes": 43009
+        "bytes": 42982
       },
       "detected": {
         "apis": [
@@ -304,8 +304,8 @@
           }
         ],
         "features": [
-          "citations",
           "drop-caps",
+          "figure-citations",
           "heading-attributes",
           "heading-styles",
           "inline-embeds",
@@ -329,7 +329,18 @@
           "share": 0,
           "worst": 1.6500000000000001
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 7: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
       }
     }
   }
