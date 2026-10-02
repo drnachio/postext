@@ -112,6 +112,9 @@ export interface FolioViewer {
   setLabels(labels: Partial<FolioLabels>): void;
   /** Changes how the 3D book is presented. */
   setAppearance(appearance: FolioAppearance): void;
+  /** Eases the view back to the one the settings give (after the reader
+   *  orbited it with a right-drag). */
+  resetView(): void;
   readonly state: FolioState;
   dispose(): void;
 }
@@ -517,8 +520,8 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     else return;
     event.preventDefault();
   });
-  // Right-drag orbits the view round the book; letting go eases it back
-  // to the view the settings give.
+  // Right-drag orbits the view round the book; the view stays where it is
+  // left until `resetView()` (the host's button) eases it back.
   root.addEventListener("contextmenu", (event) => {
     if (flipper) event.preventDefault();
   });
@@ -542,7 +545,6 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("blur", end);
-      flipper?.resetOrbit();
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
@@ -715,6 +717,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     },
     get pageSize() {
       return slot;
+    },
+    resetView() {
+      flipper?.resetOrbit();
     },
     setAppearance(next) {
       appearance = { ...appearance, ...next };

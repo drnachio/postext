@@ -41,8 +41,11 @@ const SAMPLES = 256;
 
 /** The top leaf of a stack `t` thick at height above the base, at x. */
 function heightAt(p: Pick<Profile, "t" | "meet" | "g" | "power">, x: number, lambda = 1) {
-  const w = x < p.g ? Math.pow(1 - x / p.g, p.power) : 0;
-  return lambda * (p.t + (p.meet - p.t) * w);
+  // A block's top is flat and its leaves roll over a rounded shoulder into
+  // the binding (a quarter superellipse: level where it leaves the top,
+  // steep at the spine), not a long slope across the page.
+  const shape = x < p.g ? Math.pow(1 - Math.pow(1 - x / p.g, p.power), 1 / p.power) : 1;
+  return lambda * (p.meet + (p.t - p.meet) * shape);
 }
 
 /**
@@ -66,14 +69,16 @@ export function profiles(
 ): { left: Profile; right: Profile; board: number } {
   const b = BINDINGS[binding];
   const T = tLeft + tRight;
-  const g = Math.min(0.3 * W, b.gutter * W + b.perThickness * T);
   const zb = noCase ? 0 : b.boardMm * pxPerMm;
   // The leaves sink into the gutter by the binding's own dip and by a
   // share of the block's thickness: a thick book opens in a deeper valley.
   const dip = (b.dipMm * pxPerMm + 0.3 * T) * (binding === "layflat" ? 0.1 : 1);
   const meet = Math.max(0, ((tLeft + tRight) / 2) * b.spine - dip);
   const make = (t: number, flat: boolean): Profile => {
-    const p = { t, meet: flat ? t : meet, g, power: b.power };
+    // The shoulder is as wide as the leaves have to drop (or rise) to the
+    // binding, plus the binding's own bend.
+    const side = Math.min(0.3 * W, b.gutter * W * 0.6 + 1.2 * Math.abs(t - meet));
+    const p = { t, meet: flat ? t : meet, g: Math.max(side, 0.02 * W), power: b.power };
     // Arc length along x, then x and z at even steps of arc length.
     const fine = SAMPLES * 4;
     const dx = (1.2 * W) / fine;

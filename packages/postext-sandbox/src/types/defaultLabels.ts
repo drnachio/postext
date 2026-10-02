@@ -36,6 +36,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   folioPageAlt: 'Page __page__. The page is drawn as an image: its text is in the HTML tab and in the Text panel.',
   folioLoading: 'Opening the book in 3D…',
   folioToolbar: 'Book toolbar',
+  folioResetView: 'Reset view',
   toolbarPin: 'Pin toolbar',
   toolbarUnpin: 'Unpin toolbar',
   pdfDirty: 'Changes pending — click to recalculate',

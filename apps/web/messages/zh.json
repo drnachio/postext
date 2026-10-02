@@ -647,6 +647,7 @@
     "folioPageAlt": "第__page__页。此页以图像绘制，文字见HTML标签页和“正文”面板。",
     "folioLoading": "正在打开三维书本…",
     "folioToolbar": "图书工具栏",
+    "folioResetView": "重置视角",
     "toolbarPin": "固定工具栏",
     "toolbarUnpin": "取消固定工具栏",
     "pdfDirty": "有待应用的更改——点击重新计算",

@@ -1110,6 +1110,7 @@
     "folioPageAlt": "Página __page__. La página se dibuja como imagen: su texto está en la pestaña HTML y en el panel Texto.",
     "folioLoading": "Abriendo el libro en 3D…",
     "folioToolbar": "Barra de herramientas del libro",
+    "folioResetView": "Restablecer la vista",
     "toolbarPin": "Fijar barra de herramientas",
     "toolbarUnpin": "Desfijar barra de herramientas",
     "pdfDirty": "Cambios pendientes — haz clic para recalcular",

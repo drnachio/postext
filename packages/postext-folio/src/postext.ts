@@ -305,6 +305,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     prev: viewer.prev,
     setPages: viewer.setPages,
     setLabels: viewer.setLabels,
+    resetView: viewer.resetView,
     setAppearance(next: FolioAppearance) {
       hostAppearance = { ...hostAppearance, ...next };
       viewer.setAppearance(appearanceOf(current, hostAppearance));

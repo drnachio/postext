@@ -38,6 +38,8 @@ export interface FolioPreviewHandle {
   turnToPage: (pageIndex: number) => void;
   prev: () => void;
   next: () => void;
+  /** Eases the view back to the one the settings give. */
+  resetView: () => void;
   regenerate: () => void;
 }
 
@@ -157,6 +159,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     },
     prev: () => viewerRef.current?.prev(),
     next: () => viewerRef.current?.next(),
+    resetView: () => viewerRef.current?.resetView(),
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 
