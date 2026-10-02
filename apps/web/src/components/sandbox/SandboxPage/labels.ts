@@ -38,6 +38,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     folioPages: t("folioPages"),
     folioPage: t("folioPage"),
     folioPageAlt: t("folioPageAlt"),
+    folioLoading: t("folioLoading"),
     toolbarPin: t("toolbarPin"),
     toolbarUnpin: t("toolbarUnpin"),
     pdfDirty: t("pdfDirty"),

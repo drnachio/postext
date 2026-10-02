@@ -645,6 +645,7 @@
     "folioPages": "Pages __from__–__to__",
     "folioPage": "Page __page__",
     "folioPageAlt": "Page __page__. The page is drawn as an image: its text is in the HTML tab and in the Text panel.",
+    "folioLoading": "Opening the book in 3D…",
     "toolbarPin": "Pin toolbar",
     "toolbarUnpin": "Unpin toolbar",
     "pdfDirty": "Changes pending — click to recalculate",

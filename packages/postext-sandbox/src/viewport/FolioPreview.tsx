@@ -15,6 +15,7 @@ import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
 import type { BookPageMap } from './usePageHashSync';
+import { FolioLoading } from './FolioLoading';
 
 interface FolioPreviewProps {
   onGeneratingChange?: (generating: boolean) => void;
@@ -110,6 +111,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const hostRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<FolioDocumentViewer | null>(null);
   const pendingJumpRef = useRef<number | null>(null);
+  const paintedKeyRef = useRef(paintKey);
+  const [opened, setOpened] = useState(false);
   const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange });
   callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange };
 
@@ -288,8 +291,14 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         },
       });
       viewerRef.current = viewer;
+      paintedKeyRef.current = paintKey;
+      setOpened(true);
       return;
     }
+    // Images decoded since the pages were painted: paint them all again.
+    // Otherwise a page that reads as before keeps its painting.
+    const repaint = paintedKeyRef.current !== paintKey;
+    paintedKeyRef.current = paintKey;
     // The same page in the new layout (another scope, or an edit that
     // moved the pages), else the same position.
     // Either page of the open spread will do (the whole book's spread may
@@ -301,7 +310,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         if (same >= 0) break;
       }
     }
-    viewer.setDocument(doc, same >= 0 ? { at: same } : {});
+    viewer.setDocument(doc, { ...(same >= 0 ? { at: same } : {}), repaint });
     if (pendingJumpRef.current !== null) {
       viewer.goToPage(pendingJumpRef.current, { instant: true });
       pendingJumpRef.current = null;
@@ -335,10 +344,13 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, []);
 
   return (
-    <div
-      ref={hostRef}
-      className="h-full w-full overflow-hidden text-(--foreground)"
-      style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
-    />
+    <>
+      <div
+        ref={hostRef}
+        className="h-full w-full overflow-hidden text-(--foreground)"
+        style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
+      />
+      {!opened && <FolioLoading />}
+    </>
   );
 });
