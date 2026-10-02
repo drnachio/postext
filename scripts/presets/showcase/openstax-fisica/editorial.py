@@ -11,6 +11,7 @@ BOOK = {
         "publisher": "Texto e imágenes: OpenStax, Rice University · CC BY 4.0",
         "contents": "Índice",
         "credits": "Créditos y licencia",
+        "back_cover": "Contraportada",
         "chapter_label": "Capítulo",
         "outline": "Esquema del capítulo",
         "objectives": "Objetivos de aprendizaje",
@@ -30,6 +31,7 @@ BOOK = {
         "publisher": "Text and figures: OpenStax, Rice University · CC BY 4.0",
         "contents": "Contents",
         "credits": "Credits and licence",
+        "back_cover": "Back cover",
         "chapter_label": "Chapter",
         "outline": "Chapter Outline",
         "objectives": "Learning Objectives",
@@ -45,6 +47,18 @@ BOOK = {
 }
 
 SKIP_NOTES = {"os-teacher"}
+
+# The back cover: what the two chapters cover, and where the book lives.
+BACK_COVER = {
+    "es": {
+        "blurb": "Los dos primeros capítulos de Física universitaria: las unidades, las magnitudes y la precisión de una medida, y después los vectores, sus componentes y sus productos. Cada sección abre con sus objetivos y cierra con sus términos clave, con ejemplos resueltos y comprobaciones por el camino.",
+        "site": "Libro completo, gratuito, en openstax.org",
+    },
+    "en": {
+        "blurb": "The first two chapters of OpenStax Physics: what physics is and how it measures the world, then motion in one dimension. Each section opens with its learning objectives and closes with its key terms, with worked examples and checks along the way.",
+        "site": "The whole book, free, at openstax.org",
+    },
+}
 
 COVER_BLURB = {
     "es": "Edición de muestra compuesta con Postext a partir de los capítulos 1 y 2 de *Física universitaria, volumen 1* (OpenStax, Rice University, 2021), publicados bajo licencia Creative Commons Atribución 4.0 Internacional. La versión inglesa de este preset reproduce los capítulos 1 y 2 de *Physics* (OpenStax, 2020), con la misma licencia. Se han omitido las notas para el profesorado, los recursos interactivos y los conjuntos de problemas; las fórmulas se convirtieron de MathML a LaTeX.",

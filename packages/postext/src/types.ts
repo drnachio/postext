@@ -2727,8 +2727,10 @@ export type FolioPaperTexture = 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' |
 
 /** How the book is bound: a hardcover (case bound, boards larger than the
  *  pages), a paperback (perfect bound: glued, opens less flat), a sewn
- *  softcover, or a lay-flat binding that opens without a gutter dip. */
-export type FolioBindingType = 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+ *  softcover, a lay-flat binding that opens without a gutter dip, or a
+ *  saddle stitch (folded sheets stapled through the fold, as a magazine or
+ *  a booklet: no flat spine). */
+export type FolioBindingType = 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
 
 /** What the cover is made of. `auto`: cloth on a hardcover, card on a
  *  softcover. */
@@ -2770,7 +2772,8 @@ export interface FolioPaperConfig {
  *  pages; `'pages'` takes the document's first page as the front board and
  *  its last page, when it is a verso, as the back board. The book then
  *  lies closed until the cover is turned and closes again on the last
- *  leaf. */
+ *  leaf. The boards are rigid, except on a saddle stitch, where the cover
+ *  is a sheet a little heavier than the pages and turns as they do. */
 export type FolioCoverSource = 'case' | 'pages';
 
 export interface FolioBindingConfig {
@@ -2782,6 +2785,12 @@ export interface FolioBindingConfig {
   coverMaterial?: FolioCoverMaterial;
   /** Default a dark blue cloth. */
   coverColor?: ColorValue;
+  /** `Resource.id` of a bitmap or SVG printed on the spine: the spine as
+   *  seen with the book standing, head up and the front cover to the right
+   *  (the picture's height runs from head to tail, its width across the
+   *  block). It is fitted to cover the spine, centred. A saddle-stitched
+   *  book has no spine and ignores it. Default none. */
+  spineImage?: string;
 }
 
 export interface FolioSurfaceConfig {
@@ -2830,6 +2839,8 @@ export interface ResolvedFolioConfig {
     cover: FolioCoverSource;
     coverMaterial: Exclude<FolioCoverMaterial, 'auto'>;
     coverColor: ColorValue;
+    /** Absent without one, and on a saddle stitch. */
+    spineImage?: string;
   };
   surface: { type: FolioSurfaceType; color?: ColorValue };
   lighting: { environment: FolioEnvironment; intensity: number; shadows: boolean };

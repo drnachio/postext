@@ -7,7 +7,7 @@ import type {
 } from 'postext';
 import { defaultResourceTypes } from 'postext';
 import {
-  DISPLAY, GUIDE_COVER_RESOURCE_ID, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W,
+  DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W,
   at, box, col, colorPalette, em, image, mm, pt, rule, slot, text, type PaletteId,
 } from './guideKit';
 
@@ -86,6 +86,38 @@ function coverDesign() {
       }),
       text('coverPublisher', '{attr.publisher}', {
         anchor: at('page', 'top-left'), offset: [160, 12], width: PAGE_H - 160 - M_BOTTOM,
+        size: 7.5, family: ZH_SANS, color: 'mist', lineHeight: 1.6,
+      }),
+    ),
+  };
+}
+
+/** The back cover, the last page: the night of the front, a strip down the
+ *  right as on the cover — the three part colours as bands, "Postext"
+ *  turned down the column, a gilt rule and a few lines on the engine — and
+ *  where to find it at the foot of the strip. */
+function backCoverDesign() {
+  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+    box(id, color, { anchor: at('page', 'top-left'), offset: [40 + k * 14, 12], width: 12, height: 2.5 });
+  return {
+    enabled: true,
+    minHeight: mm(PAGE_W),
+    slot: slot(
+      box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
+      band('backBandFoundations', 'main-color', 0),
+      band('backBandCraft', 'gilt', 1),
+      band('backBandPractice', 'vermilion', 2),
+      text('backTitle', '{attr.book}', {
+        anchor: at('page', 'top-left'), offset: [40, 20], width: 200,
+        size: 60, family: DISPLAY, weight: 700, color: 'white', lineHeight: 1,
+      }),
+      rule('backRule', 'gilt', { anchor: at('#backTitle', 'below'), offset: [0, 3], width: 34, thickness: 2 }),
+      text('backBlurb', '{attr.blurb}', {
+        anchor: at('#backRule', 'below'), offset: [0, 4], width: 150,
+        size: 13, family: ZH_TEXT, color: 'white', lineHeight: 1.7, tracking: 1,
+      }),
+      text('backSite', '{attr.licence}', {
+        anchor: at('page', 'top-left'), offset: [200, 12], width: PAGE_H - 200 - M_BOTTOM,
         size: 7.5, family: ZH_SANS, color: 'mist', lineHeight: 1.6,
       }),
     ),
@@ -221,6 +253,14 @@ function headingStyles(): HeadingStyleConfig[] {
       id: 'contents', name: '目录', numbered: false, toc: false, span: 'page',
       breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: frontOpener(),
+      layout: { layoutType: 'single' },
+    },
+    {
+      // The last page: Folio turns it as the back cover.
+      id: 'back', name: '封底', numbered: false, toc: false, span: 'page',
+      breakBefore: { enabled: true, parity: 'even' },
+      advancedDesign: backCoverDesign(),
+      header: empty, footer: empty,
       layout: { layoutType: 'single' },
     },
   ];
@@ -411,6 +451,7 @@ export function createChineseGuideConfig(): PostextConfig {
     // On screen the book reads as one scroll: no section dividers (the parts
     // still colour their chapters).
     htmlViewer: { overrides: { parts: { page: false } } },
+    folio: GUIDE_FOLIO,
     header: runningHeads(),
     footer: slot(),
     captionStyle: {

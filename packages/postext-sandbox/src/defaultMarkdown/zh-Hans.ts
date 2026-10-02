@@ -731,4 +731,6 @@ Postext以**MIT许可证**发布：引擎、PDF渲染器和Sandbox都可以在�
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext
 :::
+
+# 封底 {style="back" toc="false" book="Postext" blurb="Postext在浏览器中把Markdown排成书籍、杂志和教材：整段权衡断行，各栏齐平收尾，图表排在提到它们的文字之后，并输出可以付印的PDF。本指南的每一页都由Postext排出。" licence="postext.dev · 开源 · MIT许可证"}
 `;

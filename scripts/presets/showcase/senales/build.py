@@ -30,7 +30,7 @@ import editorial as ed  # noqa: E402
 import extract  # noqa: E402
 from _common import (  # noqa: E402
     PRESETS_ROOT, at, attr_value, box_el, bundle_size, copy_licences, copy_thumbnail, image_el, instance_font,
-    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint,
+    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint, build_spines, spine_thickness_mm,
 )
 from fetch import PDFS, PHOTOS  # noqa: E402
 
@@ -164,6 +164,28 @@ def cover_design(photo: str, aspect: float) -> dict:
     }
 
 
+def back_cover_design(photo: str, aspect: float) -> dict:
+    """The back cover, the last verso: a clear lake across the top (the
+    front shows traffic), then the title, a line on the issue and, at the
+    foot, the agency and the photograph's credit, on the magazine's colour."""
+    img_h = 128.0
+    img_w = round(img_h * aspect, 1)
+    return {
+        "enabled": True,
+        "minHeight": mm(PAGE_H),
+        "slot": {
+            "elements": [
+                B("backBg", anchor=at("bleed", "top-left"), fill="band"),
+                image_el("backPhoto", photo, anchor=at("bleed", "top"), width=max(img_w, PAGE_W + 6), height=img_h),
+                T("backTitle", "{attr.masthead}", anchor=at("page", "top-left"), offset=(M_OUTER, img_h + 10), width=TEXT_W, size_pt=26, family=DISPLAY, weight=800, line_height=1.0, color="white"),
+                T("backBlurb", "{attr.blurb}", anchor=at("#backTitle", "below"), offset=(0, 5), width=TEXT_W - 16, size_pt=11.5, family=DISPLAY, weight=500, line_height=1.3, color="white"),
+                T("backSeries", "{attr.series}", anchor=at("page", "bottom-left"), offset=(M_OUTER, -19), width=TEXT_W, size_pt=8, family=DISPLAY, weight=700, color="white", textTransform="uppercase", letterSpacing=pt(2.4)),
+                T("backCredit", "{attr.credit}", anchor=at("page", "bottom-left"), offset=(M_OUTER, -13), width=TEXT_W, size_pt=6.5, family=DISPLAY, color="tint"),
+            ]
+        },
+    }
+
+
 def callout_styles() -> list[dict]:
     return [
         {
@@ -263,6 +285,8 @@ def heading_styles(photos: dict[str, dict]) -> list[dict]:
     styles = [
         {"id": "portada", "name": "Portada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": cover_design("photo-cover", photos["cover"]["aspect"]), "header": empty, "footer": empty, "layout": {"layoutType": "single"},
          "margins": {"top": mm(PAGE_H - 78), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 80), "right": mm(M_OUTER)}},
+        # The last page, always a verso: Folio turns it as the back cover.
+        {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design("photo-water-1", photos["water-1"]["aspect"]), "header": empty, "footer": empty, "layout": {"layoutType": "single"}},
         {"id": "sumario", "name": "Sumario", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener(), "layout": {"layoutType": "single"}},
         {"id": "preliminar", "name": "Página de texto", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener()},
     ]
@@ -310,6 +334,15 @@ def shared_config(photos: dict[str, dict]) -> dict:
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Folio: a perfect-bound report on recycled uncoated paper (off-white,
+        # a soft felt mark), its own first and last pages the covers, on a
+        # linen cloth in daylight.
+        "folio": {
+            "paper": {"type": "uncoated", "grammage": 100, "texture": "felt", "textureStrength": 0.7, "shade": {"hex": "#f5f3ec", "model": "hex"}},
+            "binding": {"type": "paperback", "cover": "pages", "spineImage": SPINE},
+            "surface": {"type": "linen"},
+            "lighting": {"environment": "daylight"},
+        },
     }
 
 
@@ -525,6 +558,11 @@ def write_chapters(lang: str, ex: extract.Extraction, photos: dict[str, dict]) -
         photo_lines.append(f"**{pid}** — {p['title'].replace('File:', '')}: {author_name(p)}, {p['licence']} — [commons.wikimedia.org]({p['page']})")
     paras = "\n\n".join(ed.CREDITS[lang])
     emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n:::\n\n:::paragraphs{{style="fuentes"}}\n' + "\n\n".join(photo_lines) + "\n:::\n")
+    back = ed.BACK_COVER[lang]
+    emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (
+        f'# {book["back_cover"]} {{style="contraportada" toc="false" masthead="{attr_value(book["title"])}" blurb="{attr_value(back["blurb"])}"'
+        f' series="{attr_value(book["series"])}" credit="{attr_value(back["credit"])}"}}\n'
+    ))
     return specs
 
 
@@ -602,6 +640,28 @@ def write_manifest(chapters, resources, wording, fonts, photos) -> dict:
     return meta
 
 
+# The spine (Folio's `binding.spineImage`): the title and the agency in
+# white on the magazine's colour, sized for about this many pages.
+SPINE = "spine"
+SPINE_PAGES = 64
+
+
+def add_spines(resources: list[dict], wording: dict[str, list[dict]]) -> None:
+    fonts = os.path.join(OUT, "fonts")
+    bold, medium = os.path.join(fonts, "Outfit-ExtraBold.ttf"), os.path.join(fonts, "Outfit-Medium.ttf")
+    common = {"height_mm": PAGE_H, "thickness_mm": spine_thickness_mm(SPINE_PAGES, 100, 1.25, "paperback"), "ground": COLOURS["band"], "ink": COLOURS["white"]}
+    spec, words = build_spines(OUT, SPINE, "photo", "es", {
+        lang: {**common, "pieces": [
+            {"text": ed.BOOK[lang]["title"], "font": bold, "size": 0.5, "at": 0.4},
+            {"text": "AEMA" if lang == "es" else "EEA", "font": medium, "size": 0.36, "at": 0.9, "color": COLOURS["tint"]},
+        ]}
+        for lang in LANGS
+    })
+    resources.append(spec)
+    for lang in LANGS:
+        wording[lang].append(words[lang])
+
+
 def main() -> None:
     if not os.path.exists(os.path.join(SOURCE, "photos.json")):
         raise SystemExit("run fetch.py first")
@@ -615,6 +675,7 @@ def main() -> None:
         ex = extract.extract(os.path.join(SOURCE, PDFS[lang][0]), ARTICLE_PAGES[0], ARTICLE_PAGES[1], REFERENCES_FROM)
         chapters[lang] = write_chapters(lang, ex, photos)
     fonts = build_fonts()
+    add_spines(resources, wording)
     write_credits_md(photos)
     meta = write_manifest(chapters, resources, wording, fonts, photos)
     copy_thumbnail(HERE, OUT)

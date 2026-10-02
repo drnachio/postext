@@ -1,0 +1,1 @@
+# Back cover {style="contraportada" toc="false" masthead="Deep Sky" blurb="From the Solar System to the deep field: eight press releases from the observatories of Chile, with their images." issue="Issue 1 · Autumn 2026" credit="On the back cover, Sagittarius A* in polarised light. Credit: EHT Collaboration, CC BY 4.0."}

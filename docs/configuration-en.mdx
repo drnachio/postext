@@ -5963,10 +5963,11 @@ interface FolioConfig {
     showThrough?: boolean;
   };
   binding?: {
-    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
     cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
+    spineImage?: string;          // resource id
   };
   surface?: {
     type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
@@ -6048,13 +6049,13 @@ interface FolioConfig {
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
-      <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter.</td>
+      <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter. <code>saddleStitch</code>: folded sheets stapled through the fold, as a magazine or a booklet; no flat spine.</td>
     </tr>
     <tr>
       <td><code>binding.cover</code></td>
       <td><code>FolioCoverSource</code></td>
       <td><code>'case'</code></td>
-      <td>The covers. <code>'case'</code> draws a case round the pages. <code>'pages'</code> takes the book's first page as the front board and its last page, when it is a verso, as the back board: the book lies closed until the cover is turned, the boards turn stiff, and no case is drawn.</td>
+      <td>The covers. <code>'case'</code> draws a case round the pages. <code>'pages'</code> takes the book's first page as the front board and its last page, when it is a verso, as the back board: the book lies closed until the cover is turned, the boards turn stiff (on a saddle stitch the cover is a sheet a little heavier than the pages and turns as they do), and no case is drawn.</td>
     </tr>
     <tr>
       <td><code>binding.coverMaterial</code></td>
@@ -6067,6 +6068,12 @@ interface FolioConfig {
       <td><code>ColorValue</code></td>
       <td>dark blue (<code>#2c3e57</code>)</td>
       <td>The colour of the cover material.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>none</td>
+      <td>The id of a bitmap or SVG resource printed on the spine: the spine as seen with the book standing, head up and the front cover to the right. It is fitted to cover the spine, centred. Ignored on a saddle stitch.</td>
     </tr>
     <tr>
       <td><code>surface.type</code></td>

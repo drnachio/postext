@@ -962,6 +962,7 @@ export interface SandboxLabels {
   folioBindingPaperback: string;
   folioBindingSewn: string;
   folioBindingLayflat: string;
+  folioBindingSaddleStitch: string;
   folioCoverMaterial: string;
   folioCoverSource: string;
   folioCoverSourceTooltip: string;
@@ -973,6 +974,9 @@ export interface SandboxLabels {
   folioCoverLeather: string;
   folioCoverColor: string;
   folioCoverColorTooltip: string;
+  folioSpineImage: string;
+  folioSpineImageTooltip: string;
+  folioSpineImageNone: string;
   folioSurfaceType: string;
   folioSurfaceTypeTooltip: string;
   folioSurfaceOak: string;

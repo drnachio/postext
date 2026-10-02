@@ -77,6 +77,11 @@ export interface FlipAppearance {
    *  'pages'`): the front board (leaf 0) and the back board (the last
    *  leaf), when the document has them. No case is drawn then. */
   coverLeaves?: { front?: number; back?: number };
+  /** The picture printed on the spine (`folio.binding.spineImage`): the
+   *  spine as seen with the book standing, head up and the front cover to
+   *  the right. Fitted to cover the back of the block, centred. A
+   *  saddle-stitched book has no spine and shows none. */
+  spineImage?: PageSource;
 }
 
 /** Columns and rows of a leaf's mesh: fine enough for a tight roll. */
@@ -640,6 +645,10 @@ export class PageFlipper {
   private stacks: Mesh<BufferGeometry, MeshStandardMaterial>[] = [];
   private covers = new Group();
   private coverMaterial: MeshPhysicalMaterial;
+  /** The spine picture, once loaded, and the faces it is printed on. */
+  private spineSrc: PageSource = null;
+  private spineTex: Texture | null = null;
+  private spineFaces: Mesh<PlaneGeometry, MeshPhysicalMaterial>[] = [];
   private edges: MeshStandardMaterial;
   private key = new DirectionalLight(0xffffff, 1);
   private pmrem: PMREMGenerator | null = null;
@@ -798,9 +807,14 @@ export class PageFlipper {
     });
     const r = this.resolved;
     const covers = appearance.coverLeaves;
-    this.coverSpec =
-      covers && (covers.front !== undefined || covers.back !== undefined)
-        ? {
+    const ownCovers = !!covers && (covers.front !== undefined || covers.back !== undefined);
+    this.coverSpec = !ownCovers
+      ? null
+      : r.binding.type === "saddleStitch"
+        ? // A stapled booklet's cover is a sheet like the others, of the same
+          // finish and a little heavier: it bends and turns as a page does.
+          paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
+        : {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
             caliperMm: BINDINGS[r.binding.type].boardMm || 2,
             // Board bends a little at the joint as it opens, no more.
@@ -809,8 +823,7 @@ export class PageFlipper {
             clearcoat: 0.35,
             clearcoatRoughness: 0.2,
             showThrough: 0,
-          }
-        : null;
+          };
     // The desk.
     const old = this.desk.material;
     if (r.surface.type === "none") {
@@ -844,6 +857,14 @@ export class PageFlipper {
     c.normalMap?.dispose();
     c.normalMap = mat === "cloth" ? cachedRelief("linen").normal.clone() : mat === "leather" ? cachedDesk("leather").normal.clone() : null;
     c.needsUpdate = true;
+    // The spine.
+    const spine = r.binding.type === "saddleStitch" ? null : (appearance.spineImage ?? null);
+    if (spine !== this.spineSrc) {
+      this.spineSrc = spine;
+      this.spineTex?.dispose();
+      this.spineTex = null;
+      if (spine) void this.loadSpine(spine);
+    }
     // The light.
     if (this.envKind !== r.lighting.environment) {
       this.envKind = r.lighting.environment;
@@ -968,6 +989,89 @@ export class PageFlipper {
     return { left, right };
   }
 
+  /** Loads the spine picture, then rebuilds the book to print it. */
+  private async loadSpine(src: Drawn) {
+    let tex: Texture | null = null;
+    if (typeof src === "string") {
+      tex = await this.loader.loadAsync(src).catch(() => null);
+    } else {
+      const decoded = src instanceof HTMLCanvasElement ? Promise.resolve() : src.decode();
+      tex = await decoded.then(
+        () => new Texture(src),
+        () => null,
+      );
+    }
+    if (!tex) return;
+    if (this.disposed || this.spineSrc !== src) {
+      tex.dispose();
+      return;
+    }
+    tex.colorSpace = SRGBColorSpace;
+    tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    tex.needsUpdate = true;
+    this.spineTex = tex;
+    this.surfaceKey = "";
+    this.buildBook();
+    this.redraw();
+  }
+
+  /**
+   * The spine picture on the two outer faces of the back of the block
+   * (the one beside an empty side shows: the front cover is up when the
+   * pages lie on the right, down when they lie on the left), fitted to
+   * cover a face `depth` thick and `height` long, centred.
+   */
+  private printSpine(back: number, depth: number, height: number) {
+    const src = this.spineTex;
+    if (!src) return;
+    const image = src.image as { width: number; height: number };
+    const a = image.width / image.height;
+    const f = depth / height;
+    const rx = a > f ? f / a : 1;
+    const ry = a > f ? 1 : a / f;
+    const c = this.coverMaterial;
+    for (const side of [-1, 1] as const) {
+      const tex = src.clone();
+      // u runs across the block from the back cover to the front one; a
+      // right-bound book is drawn mirrored, so its picture is turned back.
+      tex.repeat.set(this.sign * rx, ry);
+      tex.offset.set(this.sign > 0 ? (1 - rx) / 2 : (1 + rx) / 2, (1 - ry) / 2);
+      tex.needsUpdate = true;
+      const m = occluded(
+        new MeshPhysicalMaterial({
+          map: tex,
+          roughness: c.roughness,
+          sheen: c.sheen,
+          sheenRoughness: c.sheenRoughness,
+          clearcoat: c.clearcoat,
+          normalMap: c.normalMap,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 4,
+        }),
+        this.sign,
+      );
+      const face = new Mesh(new PlaneGeometry(depth, height), m);
+      // The plane's +x (the picture's width) runs up the block on the face
+      // that looks to −x, down it on the one that looks to +x.
+      face.rotation.y = side * (Math.PI / 2);
+      face.position.set(side * (back / 2 + 0.05), 0, depth / 2);
+      face.receiveShadow = true;
+      this.spineFaces.push(face);
+      this.stage.add(face);
+    }
+  }
+
+  private clearSpine() {
+    for (const face of this.spineFaces) {
+      face.removeFromParent();
+      face.geometry.dispose();
+      face.material.map?.dispose();
+      face.material.dispose();
+    }
+    this.spineFaces = [];
+  }
+
   /** Rebuilds the book's surfaces, blocks and covers when the stacks change. */
   private buildBook() {
     const { left, right } = this.stackLeaves();
@@ -1055,15 +1159,18 @@ export class PageFlipper {
     const lowSide = Math.min(tL, tR);
     const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.min(along(pl, 0)[1], along(pr, 0)[1]);
     const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
+    this.clearSpine();
     if (meet > 0.4) {
       // In a case the back is wrapped in the case's spine (the wall beside
       // an empty side, the headcap at head and tail); without one, the
       // folds of the sections show.
-      const fold = new Mesh(new BoxGeometry(back, H + (noCase ? 0 : 2 * BINDINGS[binding].squareMm * k), meet - 0.3), this.coverMaterial);
+      const height = H + (noCase ? 0 : 2 * BINDINGS[binding].squareMm * k);
+      const fold = new Mesh(new BoxGeometry(back, height, meet - 0.3), this.coverMaterial);
       fold.position.set(0, 0, (meet - 0.3) / 2);
       fold.castShadow = fold.receiveShadow = true;
       this.stacks.push(fold);
       this.stage.add(fold);
+      this.printSpine(back, meet - 0.3, height);
     }
     // The covers.
     for (const c of [...this.covers.children]) {
@@ -1718,6 +1825,8 @@ export class PageFlipper {
       (mesh.material as Material).dispose();
     }
     for (const c of this.covers.children) (c as Mesh).geometry.dispose();
+    this.clearSpine();
+    this.spineTex?.dispose();
     this.coverMaterial.normalMap?.dispose();
     this.coverMaterial.dispose();
     this.edges.dispose();

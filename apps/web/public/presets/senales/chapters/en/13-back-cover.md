@@ -1,0 +1,1 @@
+# Back cover {style="contraportada" toc="false" masthead="Signals 2020" blurb="Air, water, soil, noise and chemicals: how pollution affects the health of Europeans, and what it will take to move towards zero pollution." series="European Environment Agency" credit="Back cover photograph: Ales Krivec · Unsplash, CC0."}

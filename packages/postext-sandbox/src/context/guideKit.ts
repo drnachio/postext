@@ -10,6 +10,7 @@ import type {
   Dimension,
   ElementAnchor,
   ElementPlacement,
+  FolioConfig,
   PageParity,
   PageRoleFilter,
 } from 'postext';
@@ -75,6 +76,16 @@ export const GUIDE_PART_COLOURS = { foundations: '#2b4acb', craft: '#b7820f', pr
 
 /** Resource id of the cover artwork (see `defaultResources`). */
 export const GUIDE_COVER_RESOURCE_ID = 'guide-cover';
+
+/** How the Folio viewer shows the guide: a stapled booklet (its cover a
+ *  sheet a little heavier than the pages) on thick gloss coated paper, on a
+ *  blue felt mat in studio light. */
+export const GUIDE_FOLIO: FolioConfig = {
+  paper: { type: 'coatedGloss', grammage: 170 },
+  binding: { type: 'saddleStitch', cover: 'pages' },
+  surface: { type: 'felt', color: { hex: '#3a4a86', model: 'hex' } },
+  lighting: { environment: 'studio' },
+};
 
 export const mm = (value: number): Dimension => ({ value, unit: 'mm' });
 export const pt = (value: number): Dimension => ({ value, unit: 'pt' });

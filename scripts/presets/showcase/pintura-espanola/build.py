@@ -34,7 +34,7 @@ import editorial as ed  # noqa: E402
 import wiki  # noqa: E402
 from _common import (  # noqa: E402
     PRESETS_ROOT, at, attr_value, box_el, bundle_size, copy_licences, copy_thumbnail, image_el, instance_font,
-    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint,
+    make_palette, mm, pt, register, rule_el, text_el, write_fingerprint, build_spines, spine_thickness_mm,
 )
 
 SOURCE = os.path.join(HERE, "source")
@@ -160,6 +160,31 @@ def cover_design(cover_resource: str, aspect: float) -> dict:
     }
 
 
+BACK_WORK = "sorolla-paseo"
+
+
+def back_cover_design(aspect: float) -> dict:
+    """The back cover, the last verso: Sorolla's walk by the sea (the last
+    work, as El Greco on the front is the first), its record, a line on the
+    catalogue and the imprint, on the dark ground of the front."""
+    img_w = 128.0
+    img_h = round(img_w / aspect, 1)
+    measure = 150.0
+    return {
+        "enabled": True,
+        "minHeight": mm(PAGE_H),
+        "slot": {
+            "elements": [
+                B("backBg", anchor=at("bleed", "top-left"), fill="ink"),
+                image_el("backImage", BACK_WORK, anchor=at("page", "top"), offset=(0, 30), width=img_w, height=img_h),
+                T("backWork", "{attr.work}", anchor=at("page", "top"), offset=(0, 30 + img_h + 5), width=img_w, size_pt=8.5, italic=True, align="center", line_height=1.3, color="rule"),
+                T("backBlurb", "{attr.blurb}", anchor=at("page", "top"), offset=(0, 30 + img_h + 22), width=measure - 20, size_pt=15, family=DISPLAY, align="center", line_height=1.3, color="white"),
+                T("backPublisher", "{attr.publisher}", anchor=at("page", "bottom"), offset=(0, -14), width=measure, size_pt=7.5, family=SANS, align="center", color="muted", textTransform="uppercase", letterSpacing=pt(1.8)),
+            ]
+        },
+    }
+
+
 def part_design(label: str) -> dict:
     return {
         "elements": [
@@ -230,11 +255,13 @@ def toc_config() -> dict:
     }
 
 
-def heading_styles(cover_resource: str, aspect: float) -> list[dict]:
+def heading_styles(cover_resource: str, aspect: float, back_aspect: float) -> list[dict]:
     empty = {"elements": []}
     return [
         {"id": "portada", "name": "Portada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": cover_design(cover_resource, aspect), "header": empty, "footer": empty,
          "margins": {"top": mm(PAGE_H - 80), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 85), "right": mm(M_OUTER)}},
+        # The last page, always a verso: Folio turns it as the back board.
+        {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design(back_aspect), "header": empty, "footer": empty},
         {"id": "preliminar", "name": "Preliminar", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener(lead=True)},
         {"id": "indice", "name": "Índice", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener(lead=False)},
     ]
@@ -249,14 +276,14 @@ def paragraph_styles() -> list[dict]:
     ]
 
 
-def shared_config(cover_resource: str, aspect: float) -> dict:
+def shared_config(cover_resource: str, aspect: float, back_aspect: float) -> dict:
     return {
         "locale": "es",
         "page": {"sizePreset": "custom", "width": mm(PAGE_W), "height": mm(PAGE_H), "margins": {"top": mm(M_TOP), "bottom": mm(M_BOTTOM), "left": mm(M_INNER), "right": mm(M_OUTER), "mirror": True}, "baselineGrid": {"enabled": False}, "pageNumbering": {"format": "decimal", "startAt": 1}},
         "layout": {"layoutType": "single"},
         "bodyText": body_text("es"),
         "headings": headings("es"),
-        "headingStyles": heading_styles(cover_resource, aspect),
+        "headingStyles": heading_styles(cover_resource, aspect, back_aspect),
         "paragraphStyles": paragraph_styles(),
         "parts": parts("es"),
         "toc": toc_config(),
@@ -268,6 +295,15 @@ def shared_config(cover_resource: str, aspect: float) -> dict:
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Folio: a lay-flat catalogue (the plates open without a gutter dip)
+        # on heavy matte coated art paper, its own first and last pages the
+        # boards, on a marble table in studio light.
+        "folio": {
+            "paper": {"type": "coatedMatte", "grammage": 170, "showThrough": False},
+            "binding": {"type": "layflat", "cover": "pages", "spineImage": SPINE},
+            "surface": {"type": "marble"},
+            "lighting": {"environment": "studio"},
+        },
     }
 
 
@@ -513,6 +549,11 @@ def write_chapters(lang: str, works: list[dict], artists: dict, extracts: dict, 
         f':::paragraphs{{style="lista"}}\n' + "\n\n".join(art_lines) + "\n:::\n"
     )
     emit("creditos" if lang == "es" else "credits", book["credits"], credits)
+    back = ed.BACK_COVER[lang]
+    emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (
+        f'# {book["back_cover"]} {{style="contraportada" toc="false" work="{attr_value(back["work"])}" blurb="{attr_value(back["blurb"])}"'
+        f' publisher="{attr_value(book["publisher"])}"}}\n'
+    ))
     return specs
 
 
@@ -569,7 +610,7 @@ def write_credits_md(works: list[dict], artists: dict, used_articles: dict) -> N
         f.write("\n".join(lines))
 
 
-def write_manifest(chapters, resources, wording, fonts, cover_resource, aspect) -> dict:
+def write_manifest(chapters, resources, wording, fonts, cover_resource, aspect, back_aspect) -> dict:
     meta = {
         "id": PRESET_ID,
         "name": "Pintura española · Spanish Painting",
@@ -585,7 +626,7 @@ def write_manifest(chapters, resources, wording, fonts, cover_resource, aspect) 
         # A catalogue is read as one sequence of facing spreads: the sandbox
         # opens it with the canvas laying out the whole book.
         "version": 2, **meta, "view": {"canvasScope": "book"},
-        "chapters": chapters, "config": shared_config(cover_resource, aspect),
+        "chapters": chapters, "config": shared_config(cover_resource, aspect, back_aspect),
         "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
         "resources": resources, "fonts": fonts,
     }
@@ -593,6 +634,31 @@ def write_manifest(chapters, resources, wording, fonts, cover_resource, aspect) 
         json.dump(manifest, f, indent=1, ensure_ascii=False)
         f.write("\n")
     return meta
+
+
+# The spine (Folio's `binding.spineImage`): the title in Bodoni on the dark
+# ground of the covers, sized for about this many pages.
+SPINE = "spine"
+SPINE_PAGES = 50
+
+
+def add_spines(resources: list[dict], wording: dict[str, list[dict]]) -> None:
+    fonts = os.path.join(OUT, "fonts")
+    display, sans = os.path.join(fonts, "BodoniModa-Regular.ttf"), os.path.join(fonts, "IBMPlexSansCondensed-Medium.ttf")
+    spec, words = build_spines(OUT, SPINE, "plate", "es", {
+        lang: {
+            "height_mm": PAGE_H, "thickness_mm": spine_thickness_mm(SPINE_PAGES, 170, 1.0, "layflat"),
+            "ground": COLOURS["ink"], "ink": COLOURS["white"],
+            "pieces": [
+                {"text": ed.BOOK[lang]["title"], "font": display, "size": 0.44, "at": 0.42},
+                {"text": "POSTEXT", "font": sans, "size": 0.22, "at": 0.9, "color": COLOURS["rule"]},
+            ],
+        }
+        for lang in LANGS
+    })
+    resources.append(spec)
+    for lang in LANGS:
+        wording[lang].append(words[lang])
 
 
 def main() -> None:
@@ -612,9 +678,10 @@ def main() -> None:
     used_articles: dict[str, dict] = {}
     chapters = {lang: write_chapters(lang, works, artists, extracts, used_articles) for lang in LANGS}
     fonts = build_fonts()
+    add_spines(resources, wording)
     write_credits_md(works, artists, used_articles)
     cover = plates[COVER_WORK]
-    meta = write_manifest(chapters, resources, wording, fonts, COVER_WORK, cover["aspect"])
+    meta = write_manifest(chapters, resources, wording, fonts, COVER_WORK, cover["aspect"], plates[BACK_WORK]["aspect"])
     copy_thumbnail(HERE, OUT)
     write_fingerprint(OUT)
     register(PRESET_ID, meta)

@@ -5958,10 +5958,11 @@ interface FolioConfig {
     showThrough?: boolean;
   };
   binding?: {
-    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
     cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
+    spineImage?: string;          // resource id
   };
   surface?: {
     type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
@@ -6043,7 +6044,7 @@ interface FolioConfig {
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
-      <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。</td>
+      <td><code>hardcover</code>：精装，硬纸板封面略大于书页。<code>paperback</code>：无线胶装（铣背上胶），打开不够平。<code>sewn</code>：锁线平装。<code>layflat</code>：平摊装，书脊处不下陷。<code>saddleStitch</code>：骑马钉，折好的纸张在折缝处装订，如杂志或小册子，没有平书脊。</td>
     </tr>
     <tr>
       <td><code>binding.cover</code></td>
@@ -6062,6 +6063,12 @@ interface FolioConfig {
       <td><code>ColorValue</code></td>
       <td>深蓝（<code>#2c3e57</code>）</td>
       <td>封面材料的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>无</td>
+      <td>印在书脊上的位图或SVG资源的id：书立起来时看到的书脊，书头朝上、封面在右。图片缩放到铺满书脊并居中。骑马钉不使用。</td>
     </tr>
     <tr>
       <td><code>surface.type</code></td>

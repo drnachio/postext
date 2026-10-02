@@ -26,6 +26,10 @@ export interface FolioAppearance {
    *  cover (when it falls on a verso): they turn as boards and no case
    *  is drawn round the pages. */
   covers?: { front: boolean; back: boolean };
+  /** The picture printed on the spine: the image the `folio.binding.
+   *  spineImage` resource names, as a URL (or a drawn canvas or image).
+   *  See `FlipAppearance.spineImage`. */
+  spineImage?: PageSource;
 }
 
 export interface FolioLabels {
@@ -257,6 +261,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       singlePage: single,
       textureBaseUrl: appearance.textureBaseUrl,
       coverLeaves: coverLeavesOf(),
+      ...(appearance.spineImage ? { spineImage: appearance.spineImage } : {}),
     };
   }
 

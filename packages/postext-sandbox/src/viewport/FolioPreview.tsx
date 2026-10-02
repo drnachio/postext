@@ -11,6 +11,7 @@ import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination'
 import { stitchDocuments, type StitchedBook } from '../book/stitch';
 import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
 import { ensureResourceImages } from '../controls/resourceImages';
+import { getBlob } from '../storage/blobStore';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
@@ -96,6 +97,33 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const folioConfigRef = useRef(folioConfig);
   folioConfigRef.current = folioConfig;
   const resources = useSandboxSelector((s) => s.resources);
+  // The picture on the spine (none on a saddle stitch): its stored image,
+  // handed to the viewer as an object URL.
+  const spineId = folioConfig?.binding?.type === 'saddleStitch' ? undefined : folioConfig?.binding?.spineImage;
+  const spineFileId = useMemo(() => {
+    const r = spineId ? resources.find((x) => x.id === spineId) : undefined;
+    return r?.bitmap?.fileId ?? r?.svg?.fileId;
+  }, [resources, spineId]);
+  const [spineUrl, setSpineUrl] = useState<string | undefined>(undefined);
+  const spineUrlRef = useRef(spineUrl);
+  spineUrlRef.current = spineUrl;
+  useEffect(() => {
+    if (!spineFileId) {
+      setSpineUrl(undefined);
+      return;
+    }
+    let live = true;
+    let url: string | undefined;
+    void getBlob(spineFileId).then((rec) => {
+      if (!live || !rec) return;
+      url = URL.createObjectURL(new Blob([rec.bytes], { type: rec.contentType }));
+      setSpineUrl(url);
+    });
+    return () => {
+      live = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [spineFileId]);
   const locale = useSandboxSelector((s) => s.locale);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const chapters = useSandboxSelector((s) => s.chapters);
@@ -325,7 +353,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         // The tab's own bar turns the pages (and takes a page number).
         controls: false,
         labels: folioLabelsRef.current,
-        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES },
+        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
         onChange: (state) => {
@@ -385,8 +413,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [folioLabels]);
 
   useEffect(() => {
-    viewerRef.current?.setAppearance({ folio: folioConfig });
-  }, [folioConfig]);
+    viewerRef.current?.setAppearance({ folio: folioConfig, spineImage: spineUrl });
+  }, [folioConfig, spineUrl]);
 
   useEffect(() => () => {
     viewerRef.current?.dispose();

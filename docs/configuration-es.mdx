@@ -5963,10 +5963,11 @@ interface FolioConfig {
     showThrough?: boolean;
   };
   binding?: {
-    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat';
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch';
     cover?: 'case' | 'pages';
     coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
     coverColor?: ColorValue;
+    spineImage?: string;          // resource id
   };
   surface?: {
     type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
@@ -6048,7 +6049,7 @@ interface FolioConfig {
       <td><code>binding.type</code></td>
       <td><code>FolioBindingType</code></td>
       <td><code>'hardcover'</code></td>
-      <td><code>hardcover</code>: cartoné, tapas algo mayores que las páginas. <code>paperback</code>: rústica fresada (lomo fresado y encolado), abre menos. <code>sewn</code>: rústica cosida. <code>layflat</code>: encuadernación plana, abre sin hundirse en el lomo.</td>
+      <td><code>hardcover</code>: cartoné, tapas algo mayores que las páginas. <code>paperback</code>: rústica fresada (lomo fresado y encolado), abre menos. <code>sewn</code>: rústica cosida. <code>layflat</code>: encuadernación plana, abre sin hundirse en el lomo. <code>saddleStitch</code>: grapado a caballete, pliegos doblados y grapados por el pliegue, como una revista o un folleto; sin lomo plano.</td>
     </tr>
     <tr>
       <td><code>binding.cover</code></td>
@@ -6067,6 +6068,12 @@ interface FolioConfig {
       <td><code>ColorValue</code></td>
       <td>azul oscuro (<code>#2c3e57</code>)</td>
       <td>El color del material de la cubierta.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>ninguna</td>
+      <td>El id de un recurso de mapa de bits o SVG impreso en el lomo: el lomo tal como se ve con el libro de pie, la cabeza arriba y la cubierta a la derecha. Se ajusta hasta cubrir el lomo, centrado. El grapado a caballete no lo usa.</td>
     </tr>
     <tr>
       <td><code>surface.type</code></td>

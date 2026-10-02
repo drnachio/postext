@@ -20,7 +20,7 @@ describe('the three editions of the guide', () => {
       maths: (md.match(/\$\$/g) ?? []).length,
     });
     const en = shape(DEFAULT_MARKDOWN_EN);
-    expect(en.chapters).toBe(12);
+    expect(en.chapters).toBe(13);
     expect(shape(DEFAULT_MARKDOWN_ES)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
   });

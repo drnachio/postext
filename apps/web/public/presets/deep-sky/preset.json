@@ -53,6 +53,10 @@
    {
     "title": "Créditos",
     "file": "chapters/es/07-creditos.md"
+   },
+   {
+    "title": "Contraportada",
+    "file": "chapters/es/08-contraportada.md"
    }
   ],
   "en": [
@@ -87,6 +91,10 @@
    {
     "title": "Credits",
     "file": "chapters/en/07-credits.md"
+   },
+   {
+    "title": "Back cover",
+    "file": "chapters/en/08-back-cover.md"
    }
   ]
  },
@@ -821,6 +829,284 @@
       "value": 14.0,
       "unit": "mm"
      }
+    }
+   },
+   {
+    "id": "contraportada",
+    "name": "Contraportada",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 297.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "backBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#000000",
+          "model": "hex",
+          "paletteId": "night"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "backImage",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 38,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 150.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 150.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "eso2406a"
+       },
+       {
+        "kind": "text",
+        "id": "backTitle",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 204.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 160.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.masthead}",
+        "fontFamily": "Archivo",
+        "fontSize": {
+         "value": 39.0,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.0,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "backBlurb",
+        "placement": {
+         "anchor": {
+          "to": "#backTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 160.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.blurb}",
+        "fontFamily": "Newsreader",
+        "fontSize": {
+         "value": 14.95,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#ffffff",
+         "model": "hex",
+         "paletteId": "white"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "backIssue",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -24,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 160.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.issue}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 9.75,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#666b73",
+         "model": "hex",
+         "paletteId": "muted"
+        },
+        "textTransform": "uppercase",
+        "letterSpacing": {
+         "value": 2.08,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "backCredit",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -15,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 160.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.credit}",
+        "fontFamily": "Chivo",
+        "fontSize": {
+         "value": 7.8,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#666b73",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "layout": {
+     "layoutType": "single"
     }
    },
    {
@@ -2509,6 +2795,14 @@
      "hex": "#5b4a9c",
      "model": "hex"
     }
+   },
+   {
+    "id": "night",
+    "name": "Negro de contraportada",
+    "value": {
+     "hex": "#000000",
+     "model": "hex"
+    }
    }
   ],
   "resourceTypes": [
@@ -2547,6 +2841,22 @@
   ],
   "pdfGeneration": {
    "outlines": true
+  },
+  "folio": {
+   "paper": {
+    "type": "coatedGloss",
+    "grammage": 100
+   },
+   "binding": {
+    "type": "saddleStitch",
+    "cover": "pages"
+   },
+   "surface": {
+    "type": "walnut"
+   },
+   "lighting": {
+    "environment": "studio"
+   }
   }
  },
  "localized": {

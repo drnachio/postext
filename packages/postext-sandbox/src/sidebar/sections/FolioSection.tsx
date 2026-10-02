@@ -54,6 +54,7 @@ const BINDINGS: readonly [FolioBindingType, keyof SandboxLabels][] = [
   ['paperback', 'folioBindingPaperback'],
   ['sewn', 'folioBindingSewn'],
   ['layflat', 'folioBindingLayflat'],
+  ['saddleStitch', 'folioBindingSaddleStitch'],
 ];
 
 const COVER_MATERIALS: readonly [Exclude<FolioCoverMaterial, 'auto'>, keyof SandboxLabels][] = [
@@ -97,6 +98,7 @@ export const FolioSection = memo(function FolioSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.folio);
+  const resources = useSandboxSelector((s) => s.resources);
   const cfg = resolveFolioConfig(raw);
   const stock = FOLIO_PAPER_STOCKS[cfg.paper.type];
 
@@ -277,6 +279,23 @@ export const FolioSection = memo(function FolioSection() {
           onReset={() => writeBinding({ coverColor: undefined })}
           fieldId="folio-binding-coverColor"
         />
+        {/* A saddle stitch has no flat spine to print on. */}
+        {cfg.binding.type !== 'saddleStitch' && (
+          <SelectInput
+            label={labels.folioSpineImage}
+            value={b?.spineImage ?? ''}
+            options={[
+              { value: '', label: labels.folioSpineImageNone },
+              ...resources
+                .filter((r) => r.kind === 'bitmap' || r.kind === 'svg')
+                .map((r) => ({ value: r.id, label: r.id })),
+            ]}
+            onChange={(v) => writeBinding({ spineImage: v || undefined })}
+            tooltip={labels.folioSpineImageTooltip}
+            isDefault={!b?.spineImage}
+            onReset={() => writeBinding({ spineImage: undefined })}
+          />
+        )}
       </FieldGroup>
 
       <FieldGroup title={labels.folioGroupSurface}>

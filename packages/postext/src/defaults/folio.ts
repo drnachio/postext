@@ -83,6 +83,7 @@ export function resolveFolioConfig(partial?: FolioConfig): ResolvedFolioConfig {
       cover: partial?.binding?.cover === 'pages' ? 'pages' : 'case',
       coverMaterial: material && material !== 'auto' ? material : binding === 'hardcover' ? 'cloth' : 'paper',
       coverColor: partial?.binding?.coverColor ?? d.binding.coverColor,
+      ...(partial?.binding?.spineImage && binding !== 'saddleStitch' ? { spineImage: partial.binding.spineImage } : {}),
     },
     surface: {
       type: partial?.surface?.type ?? d.surface.type,
@@ -130,6 +131,7 @@ export function stripFolioDefaults(folio?: FolioConfig): FolioConfig | undefined
     if (b.cover !== undefined && b.cover !== d.binding.cover) binding.cover = b.cover;
     if (b.coverMaterial !== undefined && b.coverMaterial !== 'auto') binding.coverMaterial = b.coverMaterial;
     if (b.coverColor !== undefined && !sameColor(b.coverColor, d.binding.coverColor)) binding.coverColor = b.coverColor;
+    if (b.spineImage) binding.spineImage = b.spineImage;
     if (Object.keys(binding).length) result.binding = binding;
   }
 

@@ -229,3 +229,96 @@ def bundle_size(out: str) -> float:
 def attr_value(s: str) -> str:
     """A heading-attribute value: no ASCII double quotes or backslashes."""
     return s.replace('"', "”").replace("\\", "")
+
+
+# --- the spine (Folio) ---------------------------------------------------------
+
+# Board thickness (mm) Folio gives the covers of each binding (postext-folio
+# bookGeometry.ts BINDINGS.boardMm).
+FOLIO_BOARD_MM = {"hardcover": 2.6, "paperback": 0.35, "sewn": 0.35, "layflat": 2.2, "saddleStitch": 0.25}
+
+
+def spine_thickness_mm(pages: int, grammage: float, bulk: float, binding: str) -> float:
+    """The book block as Folio draws it closed: a sheet per two pages at the
+    paper's caliper, and the two boards."""
+    return pages / 2 * grammage * bulk / 1000 + 2 * FOLIO_BOARD_MM[binding]
+
+
+def _hex_rgb(value: str) -> tuple[int, int, int]:
+    return tuple(int(value[i : i + 2], 16) for i in (1, 3, 5))  # type: ignore[return-value]
+
+
+def render_spine(
+    path: str,
+    *,
+    height_mm: float,
+    thickness_mm: float,
+    ground: str,
+    ink: str,
+    pieces: list[dict],
+    rules: str | None = None,
+    vertical: bool = False,
+    px_per_mm: float = 14,
+) -> tuple[int, int]:
+    """Draws a book's spine for `folio.binding.spineImage`: the spine as seen
+    with the book standing, head up, `thickness_mm` wide and `height_mm`
+    tall. `pieces` are set along it from head to tail, each a dict with
+    `text`, `font` (a .ttf/.otf/.woff2 path), `size` (a fraction of the
+    spine's width), `at` (where its centre falls, 0 head … 1 tail) and an
+    optional `color`. Latin text runs top to bottom (the letters' tops face
+    the front cover, so it reads with the book lying face up); `vertical`
+    stacks upright CJK characters instead. `rules`: a colour for two thin
+    bands near head and tail. Returns the picture's size in px."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    w = max(8, round(thickness_mm * px_per_mm))
+    h = round(height_mm * px_per_mm)
+    if vertical:
+        im = Image.new("RGB", (w, h), _hex_rgb(ground))
+        draw = ImageDraw.Draw(im)
+        for p in pieces:
+            font = ImageFont.truetype(p["font"], max(6, round(w * p["size"])))
+            chars = list(p["text"])
+            step = font.size * 1.12
+            y = p["at"] * h - step * len(chars) / 2
+            for ch in chars:
+                draw.text((w / 2, y + step / 2), ch, font=font, fill=_hex_rgb(p.get("color", ink)), anchor="mm")
+                y += step
+        if rules:
+            for y in (0.035 * h, 0.965 * h):
+                draw.rectangle((0, y - w * 0.03, w, y + w * 0.03), fill=_hex_rgb(rules))
+    else:
+        # Laid out as a horizontal strip (head on the left), then turned a
+        # quarter clockwise: the head goes to the top, the letters face the
+        # front cover.
+        strip = Image.new("RGB", (h, w), _hex_rgb(ground))
+        draw = ImageDraw.Draw(strip)
+        for p in pieces:
+            font = ImageFont.truetype(p["font"], max(6, round(w * p["size"])))
+            draw.text((p["at"] * h, w / 2), p["text"], font=font, fill=_hex_rgb(p.get("color", ink)), anchor="mm")
+        if rules:
+            for x in (0.035 * h, 0.965 * h):
+                draw.rectangle((x - w * 0.03, 0, x + w * 0.03, w), fill=_hex_rgb(rules))
+        im = strip.rotate(-90, expand=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    im.save(path, quality=90, optimize=True)
+    return im.size
+
+
+def build_spines(out: str, rid: str, type_id: str, default_lang: str, per_lang: dict[str, dict]) -> tuple[dict, dict[str, dict]]:
+    """One spine picture per edition (`render_spine` keyword arguments by
+    language) under one resource id: the shared spec names the default
+    edition's file, each edition's wording swaps in its own. Returns the
+    spec and the wording by language."""
+    sizes: dict[str, tuple[str, int, int]] = {}
+    for lang, kwargs in per_lang.items():
+        rel = f"resources/{rid}-{lang}.jpg"
+        w, h = render_spine(os.path.join(out, rel), **kwargs)
+        sizes[lang] = (rel, w, h)
+    rel, w, h = sizes[default_lang]
+    spec = {
+        "id": rid, "typeId": type_id, "kind": "bitmap", "file": rel, "width": w, "height": h,
+        "placement": {"position": "here", "span": "column", "width": 0.2, "align": "center"}, "caption": "", "altText": "",
+    }
+    wording = {lang: {"id": rid, "file": r, "width": ww, "height": hh} for lang, (r, ww, hh) in sizes.items()}
+    return spec, wording

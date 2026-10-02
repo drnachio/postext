@@ -3329,7 +3329,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
     ],
   },
   'folio': {
-    sources: ['color'],
+    sources: ['color', 'resources'],
     literals: ["cm³/g", "g/m²"],
     keys: [
       'folio',
@@ -3337,6 +3337,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'folioBindingHardcover',
       'folioBindingLayflat',
       'folioBindingPaperback',
+      'folioBindingSaddleStitch',
       'folioBindingSewn',
       'folioBindingType',
       'folioBindingTypeTooltip',
@@ -3394,6 +3395,9 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'folioShadowsTooltip',
       'folioShowThrough',
       'folioShowThroughTooltip',
+      'folioSpineImage',
+      'folioSpineImageNone',
+      'folioSpineImageTooltip',
       'folioSurfaceColor',
       'folioSurfaceColorTooltip',
       'folioSurfaceFelt',

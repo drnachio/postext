@@ -167,3 +167,17 @@ describe('folio binding cover', () => {
     expect(stripFolioDefaults({ binding: { cover: 'pages' } })).toEqual({ binding: { cover: 'pages' } });
   });
 });
+
+describe('folio spine image', () => {
+  it('carries the spine picture on a bound book, none on a saddle stitch', () => {
+    expect(resolveFolioConfig(undefined).binding.spineImage).toBeUndefined();
+    expect(resolveFolioConfig({ binding: { spineImage: 'spine' } }).binding.spineImage).toBe('spine');
+    expect(resolveFolioConfig({ binding: { type: 'saddleStitch', spineImage: 'spine' } }).binding.spineImage).toBeUndefined();
+    expect(resolveFolioConfig({ binding: { type: 'saddleStitch' } }).binding.coverMaterial).toBe('paper');
+  });
+
+  it('keeps the spine picture when defaults are stripped', () => {
+    expect(stripFolioDefaults({ binding: { spineImage: 'spine' } })).toEqual({ binding: { spineImage: 'spine' } });
+    expect(stripFolioDefaults({ binding: { spineImage: '' } })).toBeUndefined();
+  });
+});

@@ -725,4 +725,6 @@ If any of this resonates with you, the repository is the next step. Open an issu
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext
 :::
+
+# Back cover {style="back" toc="false" book="Postext" blurb="Postext sets Markdown as books, magazines and textbooks, in the browser: every paragraph broken as a whole, columns that end level, figures placed after the words that call them, and a PDF ready for print. Every page of this guide was set by Postext itself." licence="Open source · MIT licence"}
 `;

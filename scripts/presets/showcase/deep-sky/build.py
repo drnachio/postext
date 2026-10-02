@@ -74,10 +74,12 @@ COLOURS = {
     "stars": "#b8413d",
     "galaxies": "#2a7f97",
     "cosmos": "#5b4a9c",
+    "night": "#000000",
 }
 NAMES = {
     "ink": "Tinta y fondos oscuros", "paper": "Papel", "white": "Blanco", "band": "Color de sección", "grey": "Gris de recuadros",
     "rule": "Filetes", "muted": "Gris de notas", "solar": "Sistema solar", "stars": "Estrellas", "galaxies": "Galaxias", "cosmos": "Cosmos",
+    "night": "Negro de contraportada",
 }
 col, COLOR_PALETTE = make_palette(COLOURS, NAMES)
 DISPLAY, TEXT, SANS = "Archivo", "Newsreader", "Chivo"
@@ -177,6 +179,28 @@ def cover_design() -> dict:
                 T("coverTitle", "{title}", anchor=at("#coverIssue", "below"), offset=(0, 4), width=TEXT_W, size_pt=ts(64), family=DISPLAY, weight=700, line_height=0.98, color="white"),
                 T("coverSubtitle", "{subtitle}", anchor=at("#coverTitle", "below"), offset=(0, 6), width=TEXT_W - 20, size_pt=ts(15), italic=True, line_height=1.25, color="white"),
                 T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -16), width=TEXT_W, size_pt=ts(8), family=SANS, color="muted", textTransform="uppercase", letterSpacing=tp(1.4)),
+            ]
+        },
+    }
+
+
+def back_cover_design() -> dict:
+    """The back cover, the last verso: the black hole at the heart of the
+    Milky Way centred on a black ground (the picture's own), the masthead and a line on the
+    issue, the image credit at the foot."""
+    img = 150.0  # eso2406a is square
+    measure = 160.0
+    return {
+        "enabled": True,
+        "minHeight": mm(PAGE_H),
+        "slot": {
+            "elements": [
+                B("backBg", anchor=at("bleed", "top-left"), fill="night"),
+                image_el("backImage", "eso2406a", anchor=at("page", "top"), offset=(0, 38), width=img, height=img),
+                T("backTitle", "{attr.masthead}", anchor=at("page", "top"), offset=(0, 38 + img + 16), width=measure, size_pt=ts(30), family=DISPLAY, weight=700, align="center", line_height=1.0, color="white"),
+                T("backBlurb", "{attr.blurb}", anchor=at("#backTitle", "below"), offset=(0, 5), width=measure, size_pt=ts(11.5), italic=True, align="center", line_height=1.3, color="white"),
+                T("backIssue", "{attr.issue}", anchor=at("page", "bottom"), offset=(0, -24), width=measure, size_pt=ts(7.5), family=SANS, weight=700, align="center", color="muted", textTransform="uppercase", letterSpacing=tp(1.6)),
+                T("backCredit", "{attr.credit}", anchor=at("page", "bottom"), offset=(0, -15), width=measure, size_pt=ts(6), family=SANS, align="center", color="muted"),
             ]
         },
     }
@@ -306,6 +330,8 @@ def heading_styles() -> list[dict]:
     empty = {"elements": []}
     return [
         {"id": "portada", "name": "Portada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": cover_design(), "header": empty, "footer": empty, "layout": {"layoutType": "single"}, "margins": {"top": mm(PAGE_H - 80), "bottom": mm(M_BOTTOM), "left": mm(PAGE_W - M_OUTER - 85), "right": mm(M_OUTER)}},
+        # The last page, always a verso: Folio turns it as the back cover.
+        {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design(), "header": empty, "footer": empty, "layout": {"layoutType": "single"}},
         {"id": "preliminar", "name": "Preliminar", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener()},
         {"id": "sumario", "name": "Sumario", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener(), "layout": {"layoutType": "single"}},
     ]
@@ -353,6 +379,16 @@ def shared_config() -> dict:
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Folio: a saddle-stitched magazine (stapled through the fold, no
+        # spine) on gloss coated paper, its own first and last pages the
+        # covers, on a walnut desk in studio light (the gloss mirrors the
+        # softboxes).
+        "folio": {
+            "paper": {"type": "coatedGloss", "grammage": 100},
+            "binding": {"type": "saddleStitch", "cover": "pages"},
+            "surface": {"type": "walnut"},
+            "lighting": {"environment": "studio"},
+        },
     }
 
 
@@ -560,6 +596,11 @@ def write_chapters(images: dict[str, dict]) -> dict[str, list[dict]]:
         paras = "\n\n".join(ed.CREDITS[lang])
         img_lines = "\n\n".join(f"[{img}]({images[img]['page']}) — {images[img]['credit']}" for spec in ed.RELEASES for img in spec["roles"])
         emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n\n{img_lines}\n:::\n')
+        back = ed.BACK_COVER[lang]
+        emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (
+            f'# {book["back_cover"]} {{style="contraportada" toc="false" masthead="{attr_value(book["title"])}" blurb="{attr_value(back["blurb"])}"'
+            f' issue="{attr_value(book["issue"])}" credit="{attr_value(back["credit"])}"}}\n'
+        ))
         lists[lang] = specs
     return lists
 
