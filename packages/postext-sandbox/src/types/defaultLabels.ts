@@ -830,6 +830,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   fontScaleUp: 'Increase font size',
   fontScaleDown: 'Decrease font size',
   singleColumn: 'Single column',
+  singleColumnUnavailable: 'Single column (not available for vertical text)',
   multiColumn: 'Multi column',
   htmlToolbar: 'HTML toolbar',
   htmlRegenerate: 'Recalculate',

@@ -1889,6 +1889,7 @@
     "fontScaleUp": "Aumentar tamaño de letra",
     "fontScaleDown": "Reducir tamaño de letra",
     "singleColumn": "Columna única",
+    "singleColumnUnavailable": "Columna única (no disponible con escritura vertical)",
     "multiColumn": "Múltiples columnas",
     "htmlToolbar": "Barra de herramientas HTML",
     "htmlRegenerate": "Recalcular",

@@ -819,6 +819,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     fontScaleUp: t("fontScaleUp"),
     fontScaleDown: t("fontScaleDown"),
     singleColumn: t("singleColumn"),
+    singleColumnUnavailable: t("singleColumnUnavailable"),
     multiColumn: t("multiColumn"),
     htmlToolbar: t("htmlToolbar"),
     htmlRegenerate: t("htmlRegenerate"),

@@ -1426,6 +1426,7 @@
     "fontScaleUp": "增大字号",
     "fontScaleDown": "减小字号",
     "singleColumn": "单栏",
+    "singleColumnUnavailable": "单栏（竖排不可用）",
     "multiColumn": "多栏",
     "htmlToolbar": "HTML工具栏",
     "htmlRegenerate": "重新计算",

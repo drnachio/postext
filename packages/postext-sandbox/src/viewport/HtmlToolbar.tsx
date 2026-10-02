@@ -23,6 +23,8 @@ type ColumnMode = 'single' | 'multi';
 interface HtmlToolbarProps {
   fontScale: number;
   columnMode: ColumnMode;
+  /** The book can't be read as a vertical scroll (vertical writing). */
+  singleColumnUnavailable?: boolean;
   generating: boolean;
   pinned: boolean;
   hidden: boolean;
@@ -46,6 +48,7 @@ interface HtmlToolbarProps {
 export function HtmlToolbar({
   fontScale,
   columnMode,
+  singleColumnUnavailable = false,
   generating,
   pinned,
   hidden,
@@ -109,9 +112,10 @@ export function HtmlToolbar({
       <ToolbarSeparator />
       <ToolbarButton
         icon={<AlignLeft size={16} aria-hidden="true" />}
-        label={labels.singleColumn}
+        label={singleColumnUnavailable ? labels.singleColumnUnavailable : labels.singleColumn}
         onClick={() => onSetColumnMode('single')}
         active={columnMode === 'single'}
+        disabled={singleColumnUnavailable}
       />
       <ToolbarButton
         icon={<Columns3 size={16} aria-hidden="true" />}

@@ -890,6 +890,7 @@ export interface SandboxLabels {
   fontScaleUp: string;
   fontScaleDown: string;
   singleColumn: string;
+  singleColumnUnavailable: string;
   multiColumn: string;
   htmlToolbar: string;
   htmlRegenerate: string;
