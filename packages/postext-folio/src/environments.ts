@@ -114,15 +114,23 @@ export function environment(kind: EnvironmentKind): Environment {
       return {
         scene: sceneOf(
           room("#8c8e92"),
-          panel(18, 18, "#f4f6fa", 3.2, [0, 0, 9.9], [0, 0, 0]),
-          panel(18, 6, "#e6eaf0", 1.5, [0, 9.9, 4], [0, 0, 4]),
-          panel(18, 6, "#e6eaf0", 1.2, [0, -9.9, 4], [0, 0, 4]),
+          // The sky round the room more than overhead: the camera looks
+          // nearly straight down, so the zenith is what every page mirrors
+          // back at it, a veil over the ink (#327). A dim ceiling and four
+          // bright walls give as much light with little to reflect.
+          panel(18, 18, "#f4f6fa", 0.8, [0, 0, 9.9], [0, 0, 0]),
+          panel(18, 8, "#e6eaf0", 1.7, [0, 9.9, 4.5], [0, 0, 4.5]),
+          panel(18, 8, "#e6eaf0", 1.4, [0, -9.9, 4.5], [0, 0, 4.5]),
+          panel(18, 8, "#e6eaf0", 1.6, [-9.9, 0, 4.5], [0, 0, 4.5]),
+          panel(18, 8, "#e6eaf0", 1.5, [9.9, 0, 4.5], [0, 0, 4.5]),
         ),
-        key: new Vector3(-0.1, 0.25, 0.96).normalize(),
+        // Faint, and far enough off the vertical that its glint on gloss
+        // falls off the spread.
+        key: new Vector3(-0.4, 0.45, 0.8).normalize(),
         keyColor: new Color("#f3f6ff"),
-        keyIntensity: 0.35,
+        keyIntensity: 0.25,
         softness: 1,
-        exposure: 1.08,
+        exposure: 1.14,
       };
     case "night":
       return {
