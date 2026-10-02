@@ -757,6 +757,10 @@ export class PageFlipper {
     this.desk = new Mesh(new PlaneGeometry(1, 1), new MeshStandardMaterial());
     this.desk.receiveShadow = true;
     this.desk.renderOrder = -1;
+    // The desk lies a hair under the book (whose pages rest on it when the
+    // book carries its own covers) and gives way in depth: seen at a grazing
+    // angle the two never fight.
+    this.desk.position.z = -1;
     this.key.castShadow = true;
     this.key.shadow.mapSize.set(2048, 2048);
     this.key.shadow.bias = -0.0004;
@@ -844,6 +848,7 @@ export class PageFlipper {
       }
     }
     old.dispose();
+    Object.assign(this.desk.material, { polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 16 });
     // The cover.
     const c = this.coverMaterial;
     c.color.set(r.binding.coverColor.hex);
