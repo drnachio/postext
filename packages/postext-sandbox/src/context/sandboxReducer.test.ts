@@ -50,6 +50,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     projects: [],
     projectStatus: 'idle',
     projectNotice: null,
+    bundleReplacePrompt: null,
     ...over,
   };
 }

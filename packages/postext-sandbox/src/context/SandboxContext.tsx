@@ -272,6 +272,10 @@ export interface SandboxState {
   projectError?: string;
   /** Transient message from the last project operation (export warnings). */
   projectNotice: string | null;
+  /** A host bundle link names a book the reader imported before: the
+   *  question whether to keep their copy or replace it (see
+   *  `answerBundleReplace`). */
+  bundleReplacePrompt: { projectId: string; name: string } | null;
 }
 
 export type SandboxAction =
@@ -329,7 +333,8 @@ export type SandboxAction =
   | { type: 'UPSERT_PROJECT_SUMMARY'; payload: ProjectSummary }
   | { type: 'REMOVE_PROJECT_SUMMARY'; payload: string }
   | { type: 'SET_PROJECT_STATUS'; payload: { status: SandboxState['projectStatus']; error?: string } }
-  | { type: 'SET_PROJECT_NOTICE'; payload: string | null };
+  | { type: 'SET_PROJECT_NOTICE'; payload: string | null }
+  | { type: 'SET_BUNDLE_REPLACE_PROMPT'; payload: SandboxState['bundleReplacePrompt'] };
 
 const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 
@@ -660,6 +665,9 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_PROJECT_NOTICE':
       if (state.projectNotice === action.payload) return state;
       return { ...state, projectNotice: action.payload };
+    case 'SET_BUNDLE_REPLACE_PROMPT':
+      if (state.bundleReplacePrompt === action.payload) return state;
+      return { ...state, bundleReplacePrompt: action.payload };
     default:
       return state;
   }
@@ -707,6 +715,9 @@ interface SandboxStore {
   openHashBundle: (ref: HashBundleRef) => Promise<boolean>;
   /** The fragment keys the host resolves to bundles. */
   hashBundleKeys: readonly string[];
+  /** Answer `bundleReplacePrompt`: true replaces the reader's copy with
+   *  the linked book, false opens the copy as it is. */
+  answerBundleReplace: (replace: boolean) => void;
   projectActions: ProjectActions;
   /** Give a book without a cover the picture taken from its first page
    *  (never replaces one). Resolves to whether it was stored. */
@@ -921,6 +932,17 @@ export function useSandboxProjects(): SandboxProjectsValue {
     hasResetBaseline,
     dismissNotice: () => store.dispatch({ type: 'SET_PROJECT_NOTICE', payload: null }),
   };
+}
+
+/** The pending keep-or-replace question for a linked book the reader
+ *  already has, and the way to answer it. */
+export function useSandboxBundleReplacePrompt(): {
+  prompt: SandboxState['bundleReplacePrompt'];
+  answer: SandboxStore['answerBundleReplace'];
+} {
+  const store = useStore();
+  const prompt = useSandboxSelector((s) => s.bundleReplacePrompt);
+  return { prompt, answer: store.answerBundleReplace };
 }
 
 export function useSandboxActiveProjectId(): string | null {
@@ -1225,6 +1247,7 @@ export function SandboxProvider({
       projects: [],
       projectStatus: 'idle' as const,
       projectNotice: null,
+      bundleReplacePrompt: null,
     };
   });
 
@@ -1436,13 +1459,16 @@ export function SandboxProvider({
   const restorePresetOriginalRef = useRef(restorePresetOriginal);
   restorePresetOriginalRef.current = restorePresetOriginal;
 
+  // Settles the pending `bundleReplacePrompt` (see `answerBundleReplace`).
+  const bundleReplaceAnswerRef = useRef<((replace: boolean) => void) | null>(null);
+
   /** Open the book a host bundle link names (`hashBundles`): the project
    *  imported from it before, else a fresh import; then the fragment names
    *  the project. `known` lists the projects when the state does not hold
    *  them yet (the mount); `keep` is a project already on screen. */
   const openLinkedBundle = async (
     ref: HashBundleRef,
-    known?: readonly { id: string; origin?: string }[],
+    known?: readonly { id: string; name?: string; origin?: string }[],
     keep?: string | null,
   ): Promise<string | null> => {
     const resolver = hashBundlesRef.current?.[ref.key];
@@ -1454,6 +1480,15 @@ export function SandboxProvider({
         resolve: resolver,
         findProject: (origin) => list.find((p) => p.origin === origin)?.id ?? null,
         activate: (id) => (id === keep ? Promise.resolve() : projectActions.activate(id)),
+        // The published book may have been corrected since the reader
+        // imported it: they choose between their copy and a fresh one.
+        confirmReplace: (id) => new Promise<boolean>((resolve) => {
+          bundleReplaceAnswerRef.current?.(false);
+          bundleReplaceAnswerRef.current = resolve;
+          const name = list.find((p) => p.id === id)?.name ?? stateRef.current.projects.find((p) => p.id === id)?.name ?? id;
+          dispatch({ type: 'SET_BUNDLE_REPLACE_PROMPT', payload: { projectId: id, name } });
+        }),
+        removeProject: (id) => projectActions.remove(id, { offScreen: true }),
         fetchBytes: fetchBundleBytes,
         importBytes: (bytes, name, origin) => projectActions.importBundleBytes(bytes, name, { origin }),
         pageOrigin: window.location.origin,
@@ -2166,6 +2201,12 @@ export function SandboxProvider({
     restorePresetOriginal: (presetId) => restorePresetOriginalRef.current(presetId),
     openHashBundle: (ref) => switchBookRef.current(async () => (await openLinkedBundleRef.current(ref)) !== null),
     hashBundleKeys,
+    answerBundleReplace: (replace) => {
+      const answer = bundleReplaceAnswerRef.current;
+      bundleReplaceAnswerRef.current = null;
+      dispatch({ type: 'SET_BUNDLE_REPLACE_PROMPT', payload: null });
+      answer?.(replace);
+    },
     projectActions,
     saveBookCover: async (target, bytes, mime) => {
       if (target.kind === 'project') return projectActions.adoptGeneratedThumbnail(target.id, bytes, mime);

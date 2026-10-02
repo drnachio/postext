@@ -99,7 +99,10 @@ export interface ProjectActions {
   /** Rename a project; `description` replaces its description when given
    *  (blank clears it). */
   rename: (id: string, name: string, description?: string) => Promise<void>;
-  remove: (id: string) => Promise<void>;
+  /** Delete a project. `offScreen`: the caller has just opened another
+   *  book, so the screen is left alone even if the state read here still
+   *  names `id` as the active project (it lags a render). */
+  remove: (id: string, opts?: { offScreen?: boolean }) => Promise<void>;
   importBundle: (file: File) => Promise<string>;
   /** Import a bundle's bytes as a new project and open it. `origin` marks
    *  a book opened from a host link (see `ProjectRecord.origin`); `locale`
@@ -416,9 +419,9 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
     if (updated) dispatch({ type: 'UPSERT_PROJECT_SUMMARY', payload: toSummary(updated) });
   };
 
-  const remove: ProjectActions['remove'] = (id) =>
+  const remove: ProjectActions['remove'] = (id, opts = {}) =>
     run(async () => {
-      const wasActive = deps.getState().activeProjectId === id;
+      const wasActive = !opts.offScreen && deps.getState().activeProjectId === id;
       if (wasActive) {
         deps.discardWorkingSave();
         deps.cancelPresetLoads();

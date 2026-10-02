@@ -22,6 +22,7 @@ import { PdfViewport } from './viewport/PdfViewport';
 import { ChapterPaginator } from './viewport/ChapterPaginator';
 import { useChapterHashSync } from './viewport/useChapterHashSync';
 import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost } from './ui';
+import { BundleReplaceDialog } from './BundleReplaceDialog';
 import { useCompactLayout } from './hooks/useCompactLayout';
 import { SandboxAnnouncer } from './ui/announcer';
 import { LargeTargetsProvider, useLargeTargets } from './ui/largeTargets';
@@ -254,6 +255,7 @@ function SandboxLayout({
           </div>
           <SandboxAnnouncer />
           <PortalHost />
+          <BundleReplaceDialog />
         </main>
         {activePanel !== null && (
           <section aria-label={panelLabel} className="absolute inset-0 z-30 flex flex-col" style={{ backgroundColor: 'var(--background)' }}>
@@ -297,6 +299,7 @@ function SandboxLayout({
         </div>
         <SandboxAnnouncer />
         <PortalHost />
+        <BundleReplaceDialog />
       </main>
     </div>
   );

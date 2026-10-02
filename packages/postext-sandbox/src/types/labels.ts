@@ -1075,6 +1075,13 @@ export interface SandboxLabels {
   hashBundleNotFound: string;
   /** A host bundle link that failed: `__error__` is the reason. */
   hashBundleError: string;
+  /** Dialog when a host bundle link names a book the reader imported
+   *  before: keep their copy or replace it with the published one.
+   *  `__name__` in the message is the copy's name. */
+  hashBundleReplaceTitle: string;
+  hashBundleReplaceMessage: string;
+  hashBundleReplaceKeep: string;
+  hashBundleReplaceConfirm: string;
 
   // Projects panel
   projects: string;
