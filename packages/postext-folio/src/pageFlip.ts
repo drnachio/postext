@@ -597,6 +597,8 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   const sx = forward ? 1 : -1;
   const [xr, zr] = along(book.right, W);
   const [xl, zl] = along(book.left, W);
+  const zr0 = along(book.right, 0)[1];
+  const zl0 = along(book.left, 0)[1];
   const qa = forward ? q : 1 - q;
   let hinge: number;
   let phi: number;
@@ -612,8 +614,6 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
     // of dropping. The pivot is its middle plane: it lies with its inner
     // face on the block under it and lands with its outer face on the
     // other, and `face` sets which of its faces this mesh draws.
-    const zr0 = along(book.right, 0)[1];
-    const zl0 = along(book.left, 0)[1];
     const descend = zl0 < zr0 ? smooth(0.4, 1, qa) : 1 - smooth(0.4, 1, 1 - qa);
     hinge = zr0 + (zl0 - zr0) * descend + board.thick / 2;
     const a0 = Math.atan2(zr - zr0, xr);
@@ -635,7 +635,11 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   const lean = LEAN * inAir;
   const cosA = Math.cos(lean);
   const sinA = Math.sin(lean);
-  const floor = along(book.right, 0)[1];
+  // Each side's chord, from the spine to its fore-edge: a side hanging
+  // from a standing spine slopes down to the desk, and a leaf leaning off
+  // it leans off that slope, not off a level plane over it.
+  const chordR = (zr - zr0) / (xr || 1);
+  const chordL = (zl - zl0) / (xl || 1);
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -673,7 +677,7 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       let pz = rz + z + lift;
       if (inAir > 0) {
         const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
-        const plane = floor + Math.abs(s) * sinA + z + lift;
+        const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
         const under = surfaceAt(book, fx)[1] + lift + 0.6;
         const flying = smoothMax(plane, under, 0.02 * W);
         px += (fx - px) * inAir;
@@ -945,7 +949,9 @@ export class PageFlipper {
           paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
         : {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
-            caliperMm: BINDINGS[r.binding.type].boardMm || 2,
+            // The book's own printed covers: a laminated card board, thinner
+            // than a case's.
+            caliperMm: Math.min(1.2, BINDINGS[r.binding.type].boardMm || 1.2),
             // Board does not bend: it turns on its joint as a plate.
             rigidity: 1,
             roughness: 0.45,
@@ -1294,7 +1300,9 @@ export class PageFlipper {
     // It reaches the higher of the two sides at the spine (a board lying
     // flat on one side meets it low; the block on the other stands tall).
     const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.max(along(pl, 0)[1], along(pr, 0)[1]);
-    const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
+    // As thick as the cover wrapped round it (the case's board, or the
+    // book's own cover), no more.
+    const back = Math.min(0.04 * W, Math.max(1.5, (this.coverSpec?.caliperMm ?? BINDINGS[binding].boardMm) * k));
     this.clearSpine();
     if (meet > 0.4) {
       // In a case the back is wrapped in the case's spine (the wall beside
