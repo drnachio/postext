@@ -242,9 +242,9 @@ function SandboxLayout({
             leading={homeLink}
             trailing={(
               <>
-                <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center"><LargeTargetsToggle tooltipSide="bottom" /></div>
-                {themeToggle && <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">{themeToggle}</div>}
-                {languageSwitcher && <div className="flex h-8 w-8 pt-large:h-11 pt-large:w-11 items-center justify-center">{languageSwitcher}</div>}
+                <div className="flex min-h-8 min-w-8 pt-large:min-h-11 pt-large:min-w-11 items-center justify-center"><LargeTargetsToggle tooltipSide="bottom" /></div>
+                {themeToggle && <div className="flex min-h-8 min-w-8 pt-large:min-h-11 pt-large:min-w-11 items-center justify-center">{themeToggle}</div>}
+                {languageSwitcher && <div className="flex min-h-8 min-w-8 pt-large:min-h-11 pt-large:min-w-11 items-center justify-center">{languageSwitcher}</div>}
               </>
             )}
           />

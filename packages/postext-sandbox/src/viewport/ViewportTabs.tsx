@@ -17,7 +17,10 @@ const TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
  *  Canvas / HTML / PDF tabs at the right. The phone layout has no activity
  *  bar at the side, so it passes the logo (`leading`) and the theme and
  *  language controls (`trailing`) to this bar, and the scope choice shows
- *  as icons. */
+ *  as icons. Four tabs, the logo, the scope and the trailing controls do
+ *  not fit one row on a phone held upright, so below 560px the bar has two
+ *  rows: logo, scope and controls above, the tabs below sharing the full
+ *  width. */
 export function ViewportTabs({ compact = false, leading, trailing }: { compact?: boolean; leading?: ReactNode; trailing?: ReactNode } = {}) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -62,11 +65,11 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
 
   return (
     <div
-      className={cn('flex shrink-0 items-stretch justify-between', compact ? 'h-11 pt-large:min-h-12 flex-wrap' : 'h-9 pt-large:min-h-12')}
+      className={cn('flex shrink-0 items-stretch justify-between', compact ? 'flex-wrap' : 'h-9 pt-large:min-h-12')}
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
     >
-      {leading && <div className="flex shrink-0 items-center border-r px-1 pt-large:px-0" style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
-      <div className={cn('flex min-w-0 flex-1 items-center', compact ? 'px-1.5 max-[399px]:order-last max-[399px]:min-h-12 max-[399px]:basis-full max-[399px]:border-t max-[399px]:border-(--rule)' : 'px-3')}>
+      {leading && <div className={cn('flex shrink-0 items-center border-r px-1 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
+      <div className={cn('flex min-w-0 flex-1 items-center', compact ? 'h-11 px-1.5 pt-large:min-h-12' : 'px-3')}>
         {multiChapter && (
           <SegmentedControl<LayoutScope>
             value={activeViewport === 'pdf' ? pdfScope : canvasScope}
@@ -87,7 +90,12 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
       </div>
       <div
         ref={containerRef}
-        className="relative flex shrink-0 items-stretch"
+        className={cn(
+          'relative flex items-stretch',
+          compact
+            ? 'order-last h-10 basis-full border-t border-(--rule) pt-large:min-h-12 min-[560px]:order-none min-[560px]:h-11 min-[560px]:basis-auto min-[560px]:border-t-0'
+            : 'shrink-0',
+        )}
         role="tablist"
         aria-label={labels.previewMode}
         onKeyDown={(e) => {
@@ -116,7 +124,9 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
               onClick={() => dispatch({ type: 'SET_VIEWPORT', payload: tab })}
               className={cn(
                 'flex pt-large:min-w-11 cursor-pointer items-center justify-center text-[0.68rem]',
-                compact ? 'px-2' : 'px-3',
+                // On the second row of a phone bar the tabs share its width
+                // (the first one without a rule at the window's edge).
+                compact ? 'flex-1 px-2 first:border-l-0! min-[560px]:flex-none min-[560px]:first:border-l!' : 'px-3',
                 ' font-medium tracking-[0.01em] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
@@ -140,7 +150,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
           }}
         />
       </div>
-      {trailing && <div className="flex shrink-0 items-center gap-0.5 border-l px-0.5 pt-large:gap-0 pt-large:px-0" style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
+      {trailing && <div className={cn('flex shrink-0 items-center gap-0.5 border-l px-0.5 pt-large:gap-0 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
     </div>
   );
 }

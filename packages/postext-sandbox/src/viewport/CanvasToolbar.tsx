@@ -54,24 +54,25 @@ export function toolbarHiddenStyle(hidden: boolean): React.CSSProperties {
     : { transform: 'translateX(0)' };
 }
 
-// The phone layout docks the toolbar along the bottom of the preview, one
-// row that scrolls sideways when it does not fit. There is no hover there,
-// so it never hides and has no pin.
+// The phone layout docks the toolbar along the bottom of the preview, a row
+// that wraps onto a second one (growing upwards) when it does not fit a
+// narrow window or 44px targets, so no button is ever out of sight. There
+// is no hover there, so it never hides and has no pin.
 const TOOLBAR_STYLE_COMPACT = {
   position: 'absolute' as const,
   left: 8,
   right: 8,
   bottom: 8,
   zIndex: 10,
-  gap: 1,
+  columnGap: 1,
+  rowGap: 4,
+  flexWrap: 'wrap' as const,
   backgroundColor: 'var(--background)',
   border: '1px solid var(--rule)',
   borderRadius: 8,
   padding: 4,
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-  overflowX: 'auto' as const,
-  justifyContent: 'safe center',
-  scrollbarWidth: 'none' as const,
+  justifyContent: 'center',
 };
 
 /** Class and style of a floating toolbar's root: a column at the right
@@ -196,7 +197,9 @@ export function ToolbarButton({
 export function ToolbarSeparator() {
   const compact = useCompactLayout();
   if (compact) {
-    return <div className="shrink-0" style={{ width: 1, height: 20, backgroundColor: 'var(--rule)' }} aria-hidden="true" />;
+    // The pin is left out on a phone, so the rules on either side of it
+    // would meet: the second one is hidden.
+    return <div data-toolbar-sep="" className="shrink-0 [[data-toolbar-sep]+&]:hidden" style={{ width: 1, height: 20, backgroundColor: 'var(--rule)' }} aria-hidden="true" />;
   }
   return (
     <div
