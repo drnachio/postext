@@ -59,6 +59,10 @@ export interface MeasureBlockOptions {
   hyphenate?: boolean;
   firstLineIndentPx?: number;
   hangingIndent?: boolean;
+  /** The label column of a numbered bibliography entry (#290), in px from
+   *  the line's start: the spans' `labelTab` spaces are widened so the
+   *  entry's text starts there. */
+  labelColumnPx?: number;
   /** Use Knuth-Plass optimal line breaking instead of greedy. */
   optimal?: boolean;
   /** Max space stretch ratio (for K-P glue model). Default 1.5. */

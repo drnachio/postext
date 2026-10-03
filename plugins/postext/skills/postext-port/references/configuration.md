@@ -942,7 +942,7 @@ citations: {
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'; // numbered styles; 'corner' = 〔1〕
   collapseRanges?: boolean;  // 1–3 (default true)
   notes?: 'footnote' | 'warichu'; // note styles
-  bibliography?: { title?, scope?: 'book' | 'chapter', auto?, fontSize?, lineHeight?, hangingIndent?, entrySpacing?, labelWidth?, doi?: 'link' | 'text' | 'hide', includeUncited?, groupByLanguage? };
+  bibliography?: { title?, scope?: 'book' | 'chapter', auto?, fontSize?, lineHeight?, hangingIndent?, entrySpacing?, labelWidth?, labelAlign?: 'left' | 'right', doi?: 'link' | 'text' | 'hide', includeUncited?, groupByLanguage? };
 }
 ```
 

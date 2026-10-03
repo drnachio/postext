@@ -2048,6 +2048,10 @@ export interface SandboxLabels {
   citationsBibliographyHangingIndentTooltip: string;
   citationsBibliographyLabelWidth: string;
   citationsBibliographyLabelWidthTooltip: string;
+  citationsBibliographyLabelAlign: string;
+  citationsBibliographyLabelAlignTooltip: string;
+  citationsBibliographyLabelAlignLeft: string;
+  citationsBibliographyLabelAlignRight: string;
   citationsBibliographyEntrySpacing: string;
   citationsBibliographyEntrySpacingTooltip: string;
   citationsBibliographyDoi: string;

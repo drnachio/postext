@@ -12,7 +12,7 @@ import { cjkCompositionKey, getCjkComposition } from './cjkPunctuation';
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
  *  overlong word is divided at) depend on it. */
 function optionsKey(options: MeasureBlockOptions | undefined): string {
-  return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
+  return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.labelColumnPx !== undefined ? `\x00lc${options.labelColumnPx}` : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
 }
 
 /** The CJK line-break level and composition (punctuation widths, hanging,
@@ -80,7 +80,7 @@ function buildRichCacheKey(
   // Script and small-caps marks change the measure of the same text, and a
   // formula or a swatch colour what a placeholder paints: they join the key
   // only when set, so the common keys are unchanged.
-  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.ref?.anchor ? `@a${s.ref.pageIndex ?? ''}` : ''}${s.footnote ? `|fn:${s.footnote.id}${s.footnote.scale !== undefined ? `@${s.footnote.scale}` : ''}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.fixedSpace ? '|fx' : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}${annotationCacheKey(s)}`).join('\x01');
+  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.ref?.anchor ? `@a${s.ref.pageIndex ?? ''}` : ''}${s.footnote ? `|fn:${s.footnote.id}${s.footnote.scale !== undefined ? `@${s.footnote.scale}` : ''}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.fixedSpace ? '|fx' : ''}${s.labelTab ? `|lt:${s.labelTab}` : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}${annotationCacheKey(s)}`).join('\x01');
   return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(spanKey, options)}${cjkLinkKey(spans, spanKey)}`;
 }
 

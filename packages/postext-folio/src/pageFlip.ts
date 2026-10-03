@@ -160,13 +160,14 @@ const OCCLUSION = /* glsl */ `
 const BOOK_POS_PARS = "uniform float uSign;\nvarying vec3 vBookPos;";
 const BOOK_POS = "vBookPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvBookPos.x *= uSign;";
 
+// The casters lie outside the stage, in the book's own coordinates (as
+// `vBookPos` reads the map): no mirror here (#334).
 const CASTER_VERTEX = /* glsl */ `
-  uniform float uSign;
   varying float vZ;
   void main() {
     vec4 w = modelMatrix * vec4(position, 1.0);
     vZ = w.z;
-    gl_Position = projectionMatrix * viewMatrix * vec4(w.x * uSign, w.y, 0.0, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * vec4(w.xy, 0.0, 1.0);
   }
 `;
 const CASTER_FRAGMENT = /* glsl */ `
@@ -249,7 +250,7 @@ function keyShadowed(fragmentShader: string): string {
   return fragmentShader.replace("#include <shadowmap_pars_fragment>", SHADOW_PARS);
 }
 
-function casterMaterial(leaf: boolean, sign: number) {
+function casterMaterial(leaf: boolean) {
   return new ShaderMaterial({
     vertexShader: CASTER_VERTEX,
     fragmentShader: CASTER_FRAGMENT,
@@ -261,7 +262,7 @@ function casterMaterial(leaf: boolean, sign: number) {
     blendDst: OneFactor,
     depthTest: false,
     depthWrite: false,
-    uniforms: { uLeaf: { value: leaf ? 1 : 0 }, uSign: { value: sign } },
+    uniforms: { uLeaf: { value: leaf ? 1 : 0 } },
   });
 }
 
@@ -488,8 +489,10 @@ function edgeColorOf(image: CanvasImageSource & { width: number; height: number 
 /** The lowest the reader may orbit the view: 70° from straight above. */
 const MAX_PITCH = (70 * Math.PI) / 180;
 
-/** How far (radians) a leaf in mid-turn stands off the pages at the spine. */
-const LEAN = 0.12;
+/** How far (radians) a leaf in mid-turn stands off the pages at the spine:
+ *  barely; it is sewn there, and more reads as the leaf lifting off the
+ *  book parallel to it and dropping back. */
+const LEAN = 0.02;
 
 /** Where column `t` (0 … 1) of a page's mesh lies across it: closer
  *  together near the spine, where the gutter bends tightest. */
@@ -591,24 +594,39 @@ interface Surfaces {
  * the spine the left one's. A stiff leaf (`rigidity`) turns more as a
  * plate on its hinge: a board does not bend at all.
  */
-function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0, hingeZ?: number) {
+function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0, board?: { thick: number; face: number }): { phi: number; pivot: number } {
   const pos = geometry.attributes.position;
   const sx = forward ? 1 : -1;
   const [xr, zr] = along(book.right, W);
   const [xl, zl] = along(book.left, W);
+  const zr0 = along(book.right, 0)[1];
+  const zl0 = along(book.left, 0)[1];
   const qa = forward ? q : 1 - q;
   let hinge: number;
   let phi: number;
   let r: number;
-  if (hingeZ !== undefined) {
-    // A board (a case's cover): it turns on the joint at the top of the
-    // block, and as it comes down to the lower side the joint comes down
-    // the spine with it (the cloth flexes), so it lands flat on that side
-    // instead of dropping. Flat on either side, it is exactly its rest.
-    const descend = zl < zr ? smooth(0.4, 1, qa) : 1 - smooth(0.4, 1, 1 - qa);
-    hinge = zr + (zl - zr) * descend;
-    phi = Math.PI * ease(qa);
-    r = rigidity;
+  let offset = 0;
+  if (board) {
+    // A board (a cover): a rigid slab `thick` deep, turning on the joint at
+    // the top of the spine. It leaves the block it lay on (its chord, from
+    // the spine to the fore-edge) and lands on the other side's, however
+    // that lies: flat on an open book, hanging down to the desk from a
+    // spine still standing. As it comes down to the lower side the joint
+    // comes down the spine with it (the cloth flexes), so it lands instead
+    // of dropping. The pivot is its middle plane: it lies with its inner
+    // face on the block under it and lands with its outer face on the
+    // other, and `face` sets which of its faces this mesh draws.
+    const descend = zl0 < zr0 ? smooth(0.4, 1, qa) : 1 - smooth(0.4, 1, 1 - qa);
+    hinge = zr0 + (zl0 - zr0) * descend + board.thick / 2;
+    const a0 = Math.atan2(zr - zr0, xr);
+    const a1 = Math.PI - Math.atan2(zl - zl0, xl);
+    // The hand holds the point it took over the desk: a rigid plate turned
+    // by φ brings it to u·cos φ, so the board stands where the hand has
+    // carried that point (q = (1 − cos)/2), not on an eased curve that laid
+    // it level in the air while the hand was still over the slope.
+    phi = a0 + ((a1 - a0) * Math.acos(Math.min(1, Math.max(-1, 1 - 2 * qa)))) / Math.PI;
+    r = 1;
+    offset = (board.face * board.thick) / 2;
   } else {
     // A stiff leaf rests on its stack's fore-edge and swings over the gutter.
     r = rigidity * smooth(0, 0.06, q) * smooth(0, 0.06, 1 - q);
@@ -623,7 +641,11 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   const lean = LEAN * inAir;
   const cosA = Math.cos(lean);
   const sinA = Math.sin(lean);
-  const floor = along(book.right, 0)[1];
+  // Each side's chord, from the spine to its fore-edge: a side hanging
+  // from a standing spine slopes down to the desk, and a leaf leaning off
+  // it leans off that slope, not off a level plane over it.
+  const chordR = (zr - zr0) / (xr || 1);
+  const chordL = (zl - zl0) / (xl || 1);
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -661,16 +683,16 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       let pz = rz + z + lift;
       if (inAir > 0) {
         const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
-        const plane = floor + Math.abs(s) * sinA + z + lift;
+        const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
         const under = surfaceAt(book, fx)[1] + lift + 0.6;
-        const flying = smoothMax(plane, under, 0.02 * W);
+        const flying = smoothMax(plane, under, 0.006 * W);
         px += (fx - px) * inAir;
         pz += (flying - pz) * inAir;
       }
       if (r > 0) {
-        px += (u * Math.cos(phi) - px) * r;
+        px += (u * Math.cos(phi) - offset * Math.sin(phi) - px) * r;
         y += (v - y) * r;
-        pz += (hinge + lift + u * Math.sin(phi) - pz) * r;
+        pz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - pz) * r;
       }
       // Thin paper ripples in the air, more towards its free edge.
       if (flutter > 0) pz += flutter * W * (u / W) * (u / W) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
@@ -679,14 +701,32 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   }
   pos.needsUpdate = true;
   geometry.computeVertexNormals();
+  return { phi, pivot: hinge + lift };
 }
 
 type PageMesh = Mesh<BufferGeometry, PageMaterial>;
 
+interface BoardParts {
+  back: PageMesh;
+  slab: Mesh<BoxGeometry, MeshStandardMaterial>;
+}
+
+/** Frees a leaf's mesh and a board's parts. */
+function disposeLeaf(mesh: PageMesh) {
+  const parts = mesh.userData.board as BoardParts | undefined;
+  if (parts) {
+    parts.back.geometry.dispose();
+    parts.slab.geometry.dispose();
+    parts.slab.material.dispose();
+  }
+  mesh.geometry.dispose();
+  mesh.material.dispose();
+}
+
 interface Turn {
   forward: boolean;
-  /** A board's hinge height: the top of the block it left. */
-  hinge?: number;
+  /** A board: it turns as a rigid slab on the joint. */
+  rigid?: boolean;
   /** The point taken, and where the hand holds it now. */
   G: Pt;
   P: Pt;
@@ -820,8 +860,8 @@ export class PageFlipper {
     const mirror = this.sign < 0;
     this.coverMaterial = occluded(new MeshPhysicalMaterial({ roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }), this.sign);
     this.edges = edgeMaterial(this.sign);
-    this.leafCaster = casterMaterial(true, this.sign);
-    this.staticCaster = casterMaterial(false, this.sign);
+    this.leafCaster = casterMaterial(true);
+    this.staticCaster = casterMaterial(false);
     // `__postextFolioPreserve`: keep the drawing buffer (to read the canvas back while debugging).
     const preserveDrawingBuffer = !!(globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve;
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, preserveDrawingBuffer });
@@ -915,9 +955,11 @@ export class PageFlipper {
           paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
         : {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
-            caliperMm: BINDINGS[r.binding.type].boardMm || 2,
-            // Board bends a little at the joint as it opens, no more.
-            rigidity: 0.88,
+            // The book's own printed covers: a laminated card board, thinner
+            // than a case's.
+            caliperMm: Math.min(0.45, BINDINGS[r.binding.type].boardMm || 0.45),
+            // Board does not bend: it turns on its joint as a plate.
+            rigidity: 1,
             roughness: 0.45,
             clearcoat: 0.35,
             clearcoatRoughness: 0.2,
@@ -1027,20 +1069,28 @@ export class PageFlipper {
 
   /** The colour the book's own boards show at their edges and spine: the
    *  setting's cover colour when it names one, else the printed cover's
-   *  ground. */
+   *  ground (the front's, else the back's). The pages far from the spread
+   *  open are not drawn, so the colour once sampled is kept: the boards
+   *  don't turn the default cloth colour near the end of the book. */
   private boardColor(): Color {
     const set = new Color(this.resolved.binding.coverColor.hex);
     if (this.appearance.folio?.binding?.coverColor) return set;
-    const front = this.appearance.coverLeaves?.front;
-    const src = front !== undefined ? this.book[front]?.[1] : null;
-    if (!src) return set;
-    const tex = this.ready.get(src);
-    const image = (tex?.image ?? (typeof src === "string" ? null : src)) as (CanvasImageSource & { width: number; height: number }) | null;
-    if (!image || !image.width) return set;
-    if (this.sampled?.image !== image) this.sampled = { image, color: edgeColorOf(image) };
-    return this.sampled.color ?? set;
+    const covers = this.appearance.coverLeaves;
+    for (const src of [covers?.front !== undefined ? this.book[covers.front]?.[1] : null, covers?.back !== undefined ? this.book[covers.back + 1]?.[0] : null]) {
+      if (!src) continue;
+      const tex = this.ready.get(src);
+      const image = (tex?.image ?? (typeof src === "string" ? null : src)) as (CanvasImageSource & { width: number; height: number }) | null;
+      if (!image || !image.width) continue;
+      if (this.sampled?.image !== image) {
+        const color = edgeColorOf(image);
+        if (!color) continue;
+        this.sampled = { image, color };
+      }
+      return this.sampled.color;
+    }
+    return this.sampled?.color ?? set;
   }
-  private sampled: { image: object; color: Color | null } | null = null;
+  private sampled: { image: object; color: Color } | null = null;
 
   /** The paper of leaf k (outside the pages shown: the book's). */
   private specOf(k: number): PaperSpec {
@@ -1260,7 +1310,9 @@ export class PageFlipper {
     // It reaches the higher of the two sides at the spine (a board lying
     // flat on one side meets it low; the block on the other stands tall).
     const meet = lowSide < 0.5 ? Math.max(tL, tR) + board : Math.max(along(pl, 0)[1], along(pr, 0)[1]);
-    const back = Math.min(0.04 * W, Math.max(2, 0.25 * (tL + tR)));
+    // As thick as the cover wrapped round it (the case's board, or the
+    // book's own cover), no more.
+    const back = Math.min(0.04 * W, Math.max(1.5, (this.coverSpec?.caliperMm ?? BINDINGS[binding].boardMm) * k));
     this.clearSpine();
     if (meet > 0.4) {
       // In a case the back is wrapped in the case's spine (the wall beside
@@ -1286,17 +1338,22 @@ export class PageFlipper {
     const reachL = along(pl, W)[0];
     // The boards stop a hair under the block they carry (and give way in
     // depth): a page lying on an empty side never sinks into them.
-    const cover = (x0: number, x1: number, z1: number, h: number) => {
+    // A side hanging from a standing spine takes its board with it, down
+    // the slope to the desk.
+    const cover = (x0: number, x1: number, z1: number, h: number, p?: Profile) => {
       const top = Math.max(0.1, z1 - 0.6);
       const m = new Mesh(new BoxGeometry(x1 - x0, h, top), this.coverMaterial);
-      m.position.set((x0 + x1) / 2, 0, top / 2);
+      const mid = (x0 + x1) / 2;
+      const slope = p && p.rise > 0 ? Math.atan2(p.rise, p.run) : 0;
+      m.position.set(mid, 0, top / 2 + (p && p.rise > 0 ? p.rise * Math.max(0, 1 - Math.abs(mid) / p.run) : 0));
+      m.rotation.y = mid > 0 ? slope : -slope;
       m.castShadow = m.receiveShadow = true;
       this.covers.add(m);
     };
     const hh = H + 2 * sq;
     if (!noCase) {
-      cover(joint, reachR + sq, board, hh);
-      cover(-(reachL + sq), -joint, board, hh);
+      cover(joint, reachR + sq, board, hh, pr);
+      cover(-(reachL + sq), -joint, board, hh, pl);
       // The spine under the gutter (a hollow back, a little lower).
       if (joint > 0) cover(-joint, joint, board * 0.7, hh);
     }
@@ -1325,7 +1382,10 @@ export class PageFlipper {
     const { W, H } = this;
     const d = 4 * Math.max(W, H);
     const dir = env.key;
-    this.key.position.set(dir.x * d, dir.y * d, dir.z * d);
+    // The key stands where the environment's brightest emitter is, and the
+    // environment is not mirrored: in a right-bound book's mirrored stage
+    // the key's x is turned back (#334).
+    this.key.position.set(this.sign * dir.x * d, dir.y * d, dir.z * d);
     this.key.target.position.set(0, 0, 0);
     const cam = this.key.shadow.camera;
     const span = 0.62 * Math.hypot(2 * W, H) + 0.1 * W;
@@ -1436,6 +1496,12 @@ export class PageFlipper {
     return p ? p.zs[p.zs.length - 1] : 0;
   }
 
+  /** The height of a side's open page halfway across it. */
+  private midZ(side: "left" | "right") {
+    const p = this.surfaces?.[side];
+    return p ? along(p, this.W / 2)[1] : 0;
+  }
+
   /** Turns the view round the book (`dx`, px of a drag) and tilts it
    *  (`dy`), never below a low angle over the table. */
   orbitBy(dx: number, dy: number) {
@@ -1446,7 +1512,10 @@ export class PageFlipper {
       yaw: this.orbit.yaw - dx * 0.006,
       pitch: Math.min(MAX_PITCH, Math.max(0, pitch - dy * 0.006)),
     };
-    this.redraw();
+    // Pages in the air (a run of them still turning): the camera moves at
+    // once and their own frames draw it; at rest, a frame of its own.
+    if (this.raf || this.starting) this.layout();
+    else this.redraw();
   }
 
   /** Back to the view the settings give, easing there (the reader let go
@@ -1537,8 +1606,7 @@ export class PageFlipper {
         for (const mesh of this.leaves.values()) {
           mesh.removeFromParent();
           (mesh.userData.caster as Mesh).removeFromParent();
-          mesh.geometry.dispose();
-          mesh.material.dispose();
+          disposeLeaf(mesh);
         }
         this.leaves.clear();
       }
@@ -1603,6 +1671,25 @@ export class PageFlipper {
     }
     this.dressPage(mesh, this.specOf(k));
     return mesh;
+  }
+
+  /** A board leaf's other face and edges, carried with its mesh. */
+  private boardParts(mesh: PageMesh): BoardParts {
+    let parts = mesh.userData.board as BoardParts | undefined;
+    if (!parts) {
+      const geometry = new PlaneGeometry(1, 1, NX, NY);
+      spreadColumns(geometry, NX);
+      geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
+      const back = new Mesh(geometry, mesh.material);
+      back.castShadow = back.receiveShadow = true;
+      back.frustumCulled = false;
+      const slab = new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ roughness: 0.8 }));
+      slab.castShadow = slab.receiveShadow = true;
+      mesh.add(back, slab);
+      parts = { back, slab };
+      mesh.userData.board = parts;
+    }
+    return parts;
   }
 
   /** Turns the pages until spread `index` lies open. */
@@ -1695,12 +1782,12 @@ export class PageFlipper {
     for (let k = 0; k < this.target && k < n; k++) {
       if (this.turned[k] || this.turns.has(k)) continue;
       if (k > 0 && !follows(k - 1, true)) break;
-      this.turns.set(k, { ...this.lift(true, now), hinge: this.hingeOf(k, true) });
+      this.turns.set(k, { ...this.lift(true, now), rigid: this.rigidOf(k) });
     }
     for (let k = n - 1; k >= this.target; k--) {
       if (!this.turned[k] || this.turns.has(k)) continue;
       if (k < n - 1 && !follows(k + 1, false)) break;
-      this.turns.set(k, { ...this.lift(false, now), hinge: this.hingeOf(k, false) });
+      this.turns.set(k, { ...this.lift(false, now), rigid: this.rigidOf(k) });
     }
 
     this.draw();
@@ -1731,19 +1818,18 @@ export class PageFlipper {
     this.raycaster.setFromCamera(ndc, this.camera);
     const hit = new Vector3();
     const at = (z: number) => (this.raycaster.ray.intersectPlane(new Plane(new Vector3(0, 0, 1), -z), hit) ? { x: hit.x, y: hit.y } : null);
-    const zl = this.topZ("left");
-    const zr = this.topZ("right");
+    const zl = this.midZ("left");
+    const zr = this.midZ("right");
     let p = at((zl + zr) / 2);
     if (p) p = at(p.x * this.sign > 0 ? zr : zl) ?? p;
     if (!p) return { x: 0, y: 1e9 };
     return { x: this.sign * p.x, y: p.y };
   }
 
-  /** A board turns on the top of the block it leaves (read before it
-   *  leaves it); other leaves on the gutter. */
-  private hingeOf(k: number, forward: boolean): number | undefined {
-    if (this.specOf(k).rigidity <= 0.5) return undefined;
-    return this.topZ(forward ? "right" : "left");
+  /** A board turns on the joint at the top of the spine; other leaves on
+   *  the gutter. */
+  private rigidOf(k: number): boolean {
+    return this.specOf(k).rigidity > 0.5;
   }
 
   /** The page under the pointer: +1 the one a forward turn takes (the
@@ -1766,7 +1852,7 @@ export class PageFlipper {
     const k = forward ? at : at - 1;
     if (k < 0 || k >= this.turned.length || Math.abs(x) > this.W * 1.05 || Math.abs(y) > this.H / 2) return false;
     const G = { u: Math.max(0.15 * this.W, Math.min(this.W, Math.abs(x))), v: y };
-    this.turns.set(k, { forward, G, P: { ...G }, held: { aim: { ...G }, samples: [] }, hinge: this.hingeOf(k, forward) });
+    this.turns.set(k, { forward, G, P: { ...G }, held: { aim: { ...G }, samples: [] }, rigid: this.rigidOf(k) });
     this.lastFrame = performance.now();
     this.raf = requestAnimationFrame(this.frame);
     return true;
@@ -1777,10 +1863,66 @@ export class PageFlipper {
     const turn = [...this.turns.values()].find((t) => t.held);
     if (!turn?.held) return;
     const { x, y } = this.toWorld(event);
-    turn.held.aim = reach(turn.G, { u: turn.forward ? x : -x, v: y }, this.H);
+    turn.held.aim = turn.rigid && this.surfaces ? this.boardAim(turn, { x }) : reach(turn.G, { u: turn.forward ? x : -x, v: y }, this.H);
     const t = performance.now();
     turn.held.samples.push({ t, p: { ...turn.held.aim } });
     while (turn.held.samples.length > 2 && t - turn.held.samples[0].t > 100) turn.held.samples.shift();
+  }
+
+  /** Where the hand holds a board: the angle that puts the point taken on
+   *  the pointer's ray (read by `toWorld`), as the hand would hold a plate
+   *  turning on its joint; the board then stands under the pointer, high
+   *  over the spine or low over the slope, wherever it is seen from. */
+  private boardAim(turn: Turn, hand: { x: number }): Pt {
+    const book = this.surfaces!;
+    const { W } = this;
+    const o = this.raycaster.ray.origin.clone();
+    const d = this.raycaster.ray.direction.clone();
+    o.x *= this.sign;
+    d.x *= this.sign;
+    // The board's two rests and its joint, as `layLeaf` lays them.
+    const [xr, zr] = along(book.right, W);
+    const [xl, zl] = along(book.left, W);
+    const zr0 = along(book.right, 0)[1];
+    const zl0 = along(book.left, 0)[1];
+    const a0 = Math.atan2(zr - zr0, xr);
+    const a1 = Math.PI - Math.atan2(zl - zl0, xl);
+    const hinge = (zr0 + zl0) / 2;
+    const { u, v } = turn.G;
+    // The ray meets the upright plane across the spine through the point
+    // taken (y = v): the board points there from its joint. Seen straight
+    // along that plane, the nearest of its positions to the ray.
+    // Near the joint the ray says little (every angle passes close by):
+    // there the board follows the hand across the desk, the point taken
+    // over the hand (u·cos φ = x).
+    const x = turn.forward ? hand.x : -hand.x;
+    const across = Math.acos(Math.min(1, Math.max(-1, x / u))) / Math.PI;
+    let best: number;
+    if (Math.abs(d.y) > 1e-4) {
+      const t = (v - o.y) / d.y;
+      const px = o.x + d.x * t;
+      const pz = o.z + d.z * t - hinge;
+      const phi = Math.atan2(pz, px);
+      const ray = (Math.min(Math.max(phi < -Math.PI / 2 ? phi + 2 * Math.PI : phi, a0), a1) - a0) / (a1 - a0 || 1);
+      const sure = smooth(0.15 * u, 0.45 * u, Math.hypot(px, pz));
+      best = across + (ray - across) * sure;
+    } else {
+      const p = new Vector3();
+      let bestD = Infinity;
+      best = 0;
+      for (let i = 0; i <= 180; i++) {
+        const phi = a0 + ((a1 - a0) * i) / 180;
+        const dist = p.set(u * Math.cos(phi), v, hinge + u * Math.sin(phi)).sub(o).cross(d).lengthSq();
+        if (dist < bestD) {
+          bestD = dist;
+          best = i / 180;
+        }
+      }
+    }
+    // Back to the turn's progress (`layLeaf` turns it by acos(1 − 2q)).
+    const qa = (1 - Math.cos(Math.PI * best)) / 2;
+    const q = turn.forward ? qa : 1 - qa;
+    return { u: u * (1 - 2 * q), v };
   }
 
   /** Lets go. A click turns the page over from where it was taken; a drag
@@ -1853,7 +1995,25 @@ export class PageFlipper {
       const lift = (0.5 + 0.6 * ((1 - side) * (air.length - 1 - i) + side * i)) * Math.max(1, spec.caliperMm * k);
       // A floppy leaf flutters in flight (none at rest, none for card).
       const flutter = 0.012 * Math.max(0, 1 / spec.roll - 0.75) * Math.sin(Math.PI * q) * (1 - spec.rigidity);
-      layLeaf(mesh.geometry, fold, forward, W, H, lift, book, spec.rigidity, q, flutter, performance.now(), this.turns.get(leafK)?.hinge);
+      const now = performance.now();
+      if (this.turns.get(leafK)?.rigid) {
+        // A board keeps its thickness in the air: its two printed faces
+        // and, between them, its edges.
+        const thick = Math.max(0.5, spec.caliperMm * k);
+        const parts = this.boardParts(mesh);
+        const lay = (geometry: BufferGeometry, face: number) => layLeaf(geometry, fold, forward, W, H, Math.min(lift, 0.6), book, 1, q, 0, now, { thick, face });
+        const { phi, pivot } = lay(mesh.geometry, 1);
+        lay(parts.back.geometry, -1);
+        parts.slab.position.set((W / 2) * Math.cos(phi), 0, pivot + (W / 2) * Math.sin(phi));
+        parts.slab.rotation.set(0, -phi, 0);
+        parts.slab.scale.set(W, H, thick * 0.97);
+        parts.slab.material.color.copy(spec === this.coverSpec ? this.boardColor() : new Color(spec.paper.shade.hex));
+        parts.back.visible = parts.slab.visible = true;
+      } else {
+        layLeaf(mesh.geometry, fold, forward, W, H, lift, book, spec.rigidity, q, flutter, now);
+        const parts = mesh.userData.board as BoardParts | undefined;
+        if (parts) parts.back.visible = parts.slab.visible = false;
+      }
       mesh.visible = (mesh.userData.caster as Mesh).visible = true;
       if (!mesh.parent) this.stage.add(mesh);
     });
@@ -1922,7 +2082,8 @@ export class PageFlipper {
     this.staticCaster.dispose();
     this.scene.environment?.dispose();
     this.pmrem?.dispose();
-    for (const mesh of [this.left, this.right, this.desk, ...this.stacks, ...this.leaves.values()]) {
+    for (const mesh of this.leaves.values()) disposeLeaf(mesh);
+    for (const mesh of [this.left, this.right, this.desk, ...this.stacks]) {
       mesh.geometry.dispose();
       (mesh.material as Material).dispose();
     }

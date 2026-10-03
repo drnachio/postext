@@ -176,7 +176,9 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
       : [...new Set([...clusters.flatMap((c) => c.items.map((it) => it.id)), ...ctx.nocite])].filter((id) => byId.has(id));
     const bib = processor.bibliography(listedIds);
     let entries = bib.entries;
-    if (cfg.bibliography.groupByLanguage) {
+    // A numbered list is in the order of its numbers: grouping by language
+    // would set [3] before [1].
+    if (cfg.bibliography.groupByLanguage && !processor.numeric) {
       entries = [...entries.filter((e) => isCjkItem(byId.get(e.id))), ...entries.filter((e) => !isCjkItem(byId.get(e.id)))];
     }
     if (cfg.bibliography.doi === 'text') entries = entries.map((e) => ({ ...e, html: e.html.replace(/<\/?a\b[^>]*>/g, '') }));
@@ -274,6 +276,19 @@ export interface AppliedCitations {
   bibliography: boolean;
 }
 
+/** A Chinese mark that ends a clause or a sentence, at the start of a text. */
+const CLOSING_CJK = /^[，。、；：！？）」』】》〕]/u;
+
+/** `spans` without the full stop that ends them. */
+function withoutFinalStop(spans: InlineSpan[]): InlineSpan[] {
+  const last = spans[spans.length - 1];
+  if (!last || !last.text.endsWith('.')) return spans;
+  const text = last.text.slice(0, -1);
+  const links = last.links?.map((l) => ({ ...l, end: Math.min(l.end, text.length) })).filter((l) => l.end > l.start);
+  const trimmed: InlineSpan = { ...last, text, ...(last.links ? { links } : {}) };
+  return [...spans.slice(0, -1), ...(text.length > 0 ? [trimmed] : [])];
+}
+
 /** The spans of a plain text with the emphasis of the text around it. */
 function plain(text: string, base: InlineSpan): InlineSpan {
   return { text, bold: base.bold, italic: base.italic, ...(base.smallCaps ? { smallCaps: true } : {}) };
@@ -368,6 +383,7 @@ export function applyCitations(
     const entries = scope === 'chapter' ? processed.entries.filter((e) => citedHere.has(e.id)) : processed.entries;
     if (entries.length === 0) return [];
     bibliographySet = true;
+    const alignRight = cfg.bibliography.labelAlign === 'right';
     const id = BIBLIOGRAPHY_CONTAINER_BASE + containerSeq++;
     const base = { sourceStart: at, sourceEnd: at, sourceMap: [] as number[] };
     const blocksOut: ContentBlock[] = [
@@ -382,7 +398,18 @@ export function applyCitations(
       const body = htmlToSpans(entry.html);
       const label = entry.label ? decodeEntities(entry.label.replace(/<[^>]*>/g, '')) : undefined;
       if (label) labelChars = Math.max(labelChars, [...label].length);
-      const spans: InlineSpan[] = label ? [{ text: `${label} `, bold: false, italic: false }, ...body] : body;
+      // The label in a column of its own (#290): the en space after it is
+      // widened when the entry is measured, so every entry's text starts
+      // where its turnover lines do; a right-aligned label is pushed
+      // against that space by one before it. The label stays in the text.
+      const spans: InlineSpan[] = label
+        ? [
+          ...(alignRight ? [{ text: ' ', bold: false, italic: false, labelTab: 'lead' as const }] : []),
+          { text: label, bold: false, italic: false },
+          { text: ' ', bold: false, italic: false, labelTab: 'gap' as const },
+          ...body,
+        ]
+        : body;
       const text = spans.map((s) => s.text).join('');
       blocksOut.push({ ...base, type: 'paragraph', text, spans, sourceMap: new Array<number>(text.length).fill(at), bibEntry: entry.id });
     }
@@ -431,7 +458,14 @@ export function applyCitations(
       const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
       // The citation takes the emphasis of the text around it.
       const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
-      const text = href ? linked(styled, href) : styled;
+      const linkedText = href ? linked(styled, href) : styled;
+      // A key no reference defines, in a citation of several works: set in
+      // bold after it, as written, so the missing work shows on the page
+      // and not only among the warnings.
+      const missing = processed!.unknown[g] ?? [];
+      const text = missing.length > 0
+        ? [...linkedText, plain(' ', span), { ...plain(missing.map((id) => `@${id}`).join('; '), span), bold: true }]
+        : linkedText;
       if (note && block.footnoteDef === undefined) {
         // "As @howse1980 says": the sentence keeps the author's name, the
         // reference goes to the note.
@@ -442,7 +476,11 @@ export function applyCitations(
         if (warichu) {
           // 夹注: the citation set as a two-row note inside the line.
           const w = { id: WARICHU_ID_BASE + g };
-          replace.set(i, [...name, ...text.map((s) => ({ ...s, warichu: w }))]);
+          // A Chinese mark after the note closes the sentence: the note's
+          // own full stop goes ("…dlxb201501001，", not ".，").
+          const after = block.spans[i + 1];
+          const inNote = after && !after.citation && CLOSING_CJK.test(after.text) ? withoutFinalStop(text) : text;
+          replace.set(i, [...name, ...inNote.map((s) => ({ ...s, warichu: w }))]);
           return;
         }
         // A note style: the citation goes into a note of its own.

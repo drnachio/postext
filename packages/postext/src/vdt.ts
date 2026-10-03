@@ -221,6 +221,9 @@ export interface VDTLineSegment {
    *  its own, and renderers extend that segment's link (one anchor, one
    *  annotation, one `Link` element) instead of opening another. */
   refContinues?: boolean;
+  /** A space of a bibliography entry's label column (#290): its width is
+   *  set, so renderers paint the line segment by segment. */
+  labelTab?: true;
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;

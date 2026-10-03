@@ -296,14 +296,21 @@ export function buildRefOptions(ctx: RefCompletionContext, query: string): RefOp
   return scored.map((s) => s.option);
 }
 
+/** Whether an `@` after `before` (the character ahead of it, '' at the
+ *  start) opens the picker: not when glued to a word (an e-mail address,
+ *  a handle), unless the word is Chinese, Japanese or Korean, which runs on
+ *  into a citation with no space (`…开始流动@`). */
+export function atOpensPicker(before: string): boolean {
+  return before === '' || !/(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}])[\p{L}\p{N}]/u.test(before);
+}
+
 function refSource(getContext: () => RefCompletionContext) {
   return (cx: CompletionContext): CompletionResult | null => {
     const match = cx.matchBefore(TRIGGER_RE);
     if (!match) return null;
-    // Only a fresh `@` opens the picker: an at-sign glued to a word (e-mails,
-    // handles in prose) is left alone.
+    // Only a fresh `@` opens the picker (see `atOpensPicker`).
     const before = match.from > 0 ? cx.state.sliceDoc(match.from - 1, match.from) : '';
-    if (before !== '' && /[\p{L}\p{N}]/u.test(before)) return null;
+    if (!atOpensPicker(before)) return null;
     if (cx.state.field(dismissedRefs).includes(match.from)) return null;
     if (isInsideCode(cx.state, match.from)) return null;
     const options = buildRefOptions(getContext(), match.text.slice(1));

@@ -13,10 +13,10 @@ export type BindingKind = "hardcover" | "paperback" | "sewn" | "layflat" | "sadd
  *  `dipMm`: how far below that a thin book's pages still sink; the case's
  *  boards and their squares (the margin they stand out round the pages). */
 export const BINDINGS: Record<BindingKind, { gutter: number; perThickness: number; spine: number; power: number; dipMm: number; boardMm: number; squareMm: number; jointMm: number }> = {
-  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 1, power: 2.4, dipMm: 3, boardMm: 2.6, squareMm: 3, jointMm: 7 },
+  hardcover: { gutter: 0.06, perThickness: 0.9, spine: 1, power: 2.4, dipMm: 3, boardMm: 2.2, squareMm: 3, jointMm: 7 },
   sewn: { gutter: 0.07, perThickness: 1.0, spine: 0.95, power: 2.5, dipMm: 3.5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
   paperback: { gutter: 0.1, perThickness: 1.2, spine: 0.85, power: 3, dipMm: 5, boardMm: 0.35, squareMm: 0, jointMm: 0 },
-  layflat: { gutter: 0.025, perThickness: 0.4, spine: 1, power: 2, dipMm: 0.2, boardMm: 2.2, squareMm: 3, jointMm: 4 },
+  layflat: { gutter: 0.025, perThickness: 0.4, spine: 1, power: 2, dipMm: 0.2, boardMm: 2, squareMm: 3, jointMm: 4 },
   // Folded sheets stapled through the fold: the centre spread opens flat,
   // the cover is a sheet like the others.
   saddleStitch: { gutter: 0.05, perThickness: 1.4, spine: 0.9, power: 2.2, dipMm: 1.5, boardMm: 0.25, squareMm: 0, jointMm: 0 },
@@ -29,8 +29,13 @@ export interface Profile {
   t: number;
   /** Height of the block's base (the top of the cover under it). */
   zb: number;
-  /** Height the top leaf meets the spine at, above zb. */
+  /** Height the top leaf meets the spine at, above zb (and the rise). */
   meet: number;
+  /** How high the block's base stands at the spine above the desk (or the
+   *  case): a thin side of a thick book hangs from the top of the spine
+   *  down to the desk, its base a slope that reaches the desk at `run`. */
+  rise: number;
+  run: number;
   /** Width of the bend. */
   g: number;
   power: number;
@@ -41,6 +46,11 @@ export interface Profile {
 }
 
 const SAMPLES = 256;
+
+/** Height of a side's base above zb at x (its slope down to the desk). */
+function baseAt(p: Pick<Profile, "rise" | "run">, x: number) {
+  return p.rise > 0 ? p.rise * Math.max(0, 1 - x / p.run) : 0;
+}
 
 /** The top leaf of a stack `t` thick at height above the base, at x. */
 function heightAt(p: Pick<Profile, "t" | "meet" | "g" | "power">, x: number, lambda = 1) {
@@ -81,21 +91,33 @@ export function profiles(
   const low = Math.min(tLeft, tRight);
   const high = Math.max(tLeft, tRight);
   const dip = (b.dipMm * pxPerMm + 0.35 * low) * (binding === "layflat" ? 0.1 : 1);
-  const meet = Math.max(0, low + (high - low) * b.spine - dip);
+  const lying = Math.max(0, low + (high - low) * b.spine - dip);
+  // A thick book does not open flat. The thicker block lies on the desk and
+  // the thinner side hangs from the top of the spine down to it (opened at
+  // its cover, the cover is the hypotenuse of a right triangle). Its top
+  // leaf always meets the other at the spine, so the spine never shows: as
+  // it grows its slope flattens, and at the middle of the book both blocks
+  // lie flat, their tops level. The gutter's valley deepens towards there.
+  const share = high > 0 ? low / high : 1;
+  const meet = high + (lying - high) * share;
+  const rise = Math.min(0.8 * W, Math.max(0, meet - low));
   const make = (t: number, flat: boolean): Profile => {
+    const thin = t === low && t !== high;
+    const up = thin ? rise : 0;
+    const own = meet - up;
     // The shoulder is as wide as the leaves have to drop (or rise) to the
     // binding, plus the binding's own bend.
-    const side = Math.min(0.3 * W, b.gutter * W * 0.6 + 1.2 * Math.abs(t - meet));
-    const p = { t, meet: flat ? t : meet, g: Math.max(side, 0.02 * W), power: b.power };
+    const side = Math.min(0.3 * W, b.gutter * W * 0.6 + 1.2 * Math.abs(t - own));
+    const p = { t, meet: flat ? t : own, g: Math.max(side, 0.02 * W), power: b.power, rise: up, run: Math.sqrt(Math.max(1, W * W - up * up)) };
     // Arc length along x, then x and z at even steps of arc length.
     const fine = SAMPLES * 4;
     const dx = (1.2 * W) / fine;
     const sx: number[] = [0];
-    const sz: number[] = [heightAt(p, 0)];
+    const sz: number[] = [baseAt(p, 0) + heightAt(p, 0)];
     const ss: number[] = [0];
     for (let i = 1; i <= fine; i++) {
       const x = i * dx;
-      const z = heightAt(p, x);
+      const z = baseAt(p, x) + heightAt(p, x);
       ss.push(ss[i - 1] + Math.hypot(dx, z - sz[i - 1]));
       sx.push(x);
       sz.push(z);
@@ -131,7 +153,7 @@ export function along(p: Profile, s: number): [number, number, number] {
  *  length s, approximately: the top curve scaled down to the base. */
 export function alongLayer(p: Profile, s: number, lambda: number): [number, number] {
   const [x] = along(p, s);
-  return [x, p.zb + heightAt(p, x, lambda)];
+  return [x, p.zb + baseAt(p, x) + heightAt(p, x, lambda)];
 }
 
 /**

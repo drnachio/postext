@@ -18,7 +18,7 @@ setCitationEngineLoader(() => import('postext-citeproc/register'));
 
 ## What is bundled
 
-- **Styles** (`citations.style`): `apa`, `chicago-author-date`, `harvard-cite-them-right`, `iso690-author-date-en`, `iso690-author-date-es`, `china-national-standard-gb-t-7714-2015-author-date`, `modern-language-association`, `ieee`, `elsevier-vancouver`, `american-medical-association`, `nature`, `iso690-numeric-en`, `china-national-standard-gb-t-7714-2015-numeric`, `chicago-notes-bibliography`, `oscola`, `china-national-standard-gb-t-7714-2015-note`. Any other CSL style can be passed whole (`citations.style: 'custom'`, `citations.customStyle: '<style …>'`).
+- **Styles** (`citations.style`): `apa`, `chicago-author-date`, `harvard-cite-them-right`, `iso690-author-date-en`, `iso690-author-date-es`, `china-national-standard-gb-t-7714-2025-author-date`, `china-national-standard-gb-t-7714-2015-author-date`, `modern-language-association`, `ieee`, `elsevier-vancouver`, `american-medical-association`, `nature`, `iso690-numeric-en`, `china-national-standard-gb-t-7714-2025-numeric`, `china-national-standard-gb-t-7714-2015-numeric`, `chicago-notes-bibliography`, `oscola`, `china-national-standard-gb-t-7714-2025-note`, `china-national-standard-gb-t-7714-2015-note`. Any other CSL style can be passed whole (`citations.style: 'custom'`, `citations.customStyle: '<style …>'`).
 - **Locales**: en-US, en-GB, es-ES, fr-FR, de-DE, it-IT, pt-PT, pt-BR, ca-AD, nl-NL, zh-CN, zh-TW.
 - `postext-citeproc/catalog`: the style list alone (names, citation system, fields), for a picker that should not load the engine.
 

@@ -342,6 +342,21 @@ export const CitationsSection = memo(function CitationsSection() {
             units={SPACE_UNITS}
           />
         )}
+        {numeric && (
+          <SelectInput
+            label={labels.citationsBibliographyLabelAlign}
+            value={b.labelAlign}
+            variant="segmented"
+            options={[
+              { value: 'left', label: labels.citationsBibliographyLabelAlignLeft },
+              { value: 'right', label: labels.citationsBibliographyLabelAlignRight },
+            ]}
+            onChange={(v) => updateBib({ labelAlign: v as Bibliography['labelAlign'] })}
+            tooltip={labels.citationsBibliographyLabelAlignTooltip}
+            isDefault={b.labelAlign === D.bibliography.labelAlign}
+            onReset={() => resetBib('labelAlign')}
+          />
+        )}
         <DimensionInput
           label={labels.citationsBibliographyEntrySpacing}
           value={b.entrySpacing}
@@ -376,14 +391,17 @@ export const CitationsSection = memo(function CitationsSection() {
           isDefault={b.includeUncited === D.bibliography.includeUncited}
           onReset={() => resetBib('includeUncited')}
         />
-        <ToggleSwitch
-          label={labels.citationsBibliographyGroupByLanguage}
-          checked={b.groupByLanguage}
-          onChange={(v) => updateBib({ groupByLanguage: v })}
-          tooltip={labels.citationsBibliographyGroupByLanguageTooltip}
-          isDefault={b.groupByLanguage === D.bibliography.groupByLanguage}
-          onReset={() => resetBib('groupByLanguage')}
-        />
+        {/* A numbered list keeps the order of its numbers. */}
+        {!numeric && (
+          <ToggleSwitch
+            label={labels.citationsBibliographyGroupByLanguage}
+            checked={b.groupByLanguage}
+            onChange={(v) => updateBib({ groupByLanguage: v })}
+            tooltip={labels.citationsBibliographyGroupByLanguageTooltip}
+            isDefault={b.groupByLanguage === D.bibliography.groupByLanguage}
+            onReset={() => resetBib('groupByLanguage')}
+          />
+        )}
       </FieldGroup>
       <p className="mt-2 text-[11px] leading-snug text-slate">{labels.citationsAttribution}</p>
     </CollapsibleSection>

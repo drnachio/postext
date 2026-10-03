@@ -183,7 +183,7 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
 }
 
 /**
@@ -280,7 +280,7 @@ function composedSegmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
     || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
-    || s.ruby !== undefined || s.warichu !== undefined;
+    || s.ruby !== undefined || s.warichu !== undefined || s.labelTab !== undefined;
 }
 
 /**

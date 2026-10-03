@@ -802,7 +802,8 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 - **Prefix and suffix:** text before the `@` (`see`) and after the locator (`, emphasis added`).
 - **`[-@key]`** leaves the author out, for a sentence that names the author already.
 - **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.
-- An `@` glued to a letter or a digit (an e-mail address), an `@` in inline code and `\@` are text. A citation the book has no reference for prints as written, so a document without references reads as before.
+- An `@` glued to a letter or a digit (an e-mail address), an `@` in inline code and `\@` are text. A citation the book has no reference for prints as written, so a document without references reads as before. In a citation of several works, a key no reference defines is printed in bold after the others (`(Glen, 1955) **@nye1953**`), so the missing work shows on the page as well as among the warnings. A colon after a citation is text: `[@french2018]: the land…`.
+- In Chinese, Japanese and Korean text a citation follows the last character with no space (`周明远@zhou2019认为`), and an author-date citation takes the full-width marks of the text around it: `（施雅风等，1988；刘时银等，2015）`.
 
 ### References
 
@@ -849,21 +850,24 @@ The style decides what a citation and an entry say. The bundled styles are liste
     <tr><td><code>chicago-author-date</code></td><td>Chicago (author-date)</td><td>author-date</td></tr>
     <tr><td><code>harvard-cite-them-right</code></td><td>Harvard</td><td>author-date</td></tr>
     <tr><td><code>iso690-author-date-en</code>, <code>iso690-author-date-es</code></td><td>ISO 690</td><td>author-date</td></tr>
-    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714 著者-出版年</td><td>author-date</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2025-author-date</code></td><td>GB/T 7714—2025 著者-出版年</td><td>author-date</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-author-date</code></td><td>GB/T 7714—2015 著者-出版年</td><td>author-date</td></tr>
     <tr><td><code>modern-language-association</code></td><td>MLA 9</td><td>author-page</td></tr>
     <tr><td><code>ieee</code></td><td>IEEE</td><td>numbered</td></tr>
     <tr><td><code>elsevier-vancouver</code></td><td>Vancouver</td><td>numbered</td></tr>
     <tr><td><code>american-medical-association</code></td><td>AMA</td><td>numbered</td></tr>
     <tr><td><code>nature</code></td><td>Nature</td><td>numbered</td></tr>
     <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numbered</td></tr>
-    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714 顺序编码</td><td>numbered</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2025-numeric</code></td><td>GB/T 7714—2025 顺序编码</td><td>numbered</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714—2015 顺序编码</td><td>numbered</td></tr>
     <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notes</td></tr>
     <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notes</td></tr>
-    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714 注释</td><td>notes</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2025-note</code></td><td>GB/T 7714—2025 注释</td><td>notes</td></tr>
+    <tr><td><code>china-national-standard-gb-t-7714-2015-note</code></td><td>GB/T 7714—2015 注释</td><td>notes</td></tr>
   </tbody>
 </table>
 
-With a **note style** each citation becomes a footnote, placed and numbered as the footnote settings say; later citations of the same work take a short form. In Chinese text, `citations.notes: 'warichu'` sets them as two-row notes inside the line (夹注).
+With a **note style** each citation becomes a footnote, placed and numbered as the footnote settings say; later citations of the same work take a short form. In Chinese text, `citations.notes: 'warichu'` sets them as two-row notes inside the line (夹注); a note followed by a Chinese mark (`，`, `。`) drops its own full stop.
 
 **Chinese.** The GB/T 7714-2015 styles write the document-type codes (`[M]`, `[J]`, `[D]`, `[EB/OL]`), keep Chinese names whole and write `等` after three authors of a Chinese work and `et al.` after those of a Western one, choosing by each work's `language`. In vertical text a superscript number stands to the right of its character; `citations.marker: 'corner'` writes `〔1〕`, which stays upright.
 

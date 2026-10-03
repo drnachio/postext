@@ -161,7 +161,10 @@ export function extractInlineCitations(text: string, fallbackStart: number): { c
     if (close < 0) break;
     const inner = text.slice(i + 1, close);
     const next = text[close + 1];
-    if (!inner.includes('@') || inner.startsWith('^') || next === '(' || next === '{' || next === '[' || next === ':') continue;
+    // A directive glued to the brackets (`[text]:index{…}`) keeps them; a
+    // colon in the sentence after a citation is prose (`[@k]: the land`).
+    const directive = next === ':' && /^:[A-Za-z]/.test(text.slice(close + 1, close + 3));
+    if (!inner.includes('@') || inner.startsWith('^') || next === '(' || next === '{' || next === '[' || directive) continue;
     const items = parseItems(inner);
     if (!items) continue;
     const raw = text.slice(i, close + 1);

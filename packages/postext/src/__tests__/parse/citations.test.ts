@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../../parse';
-import { parseLocator } from '../../parse/citations';
+import { extractInlineCitations, parseLocator } from '../../parse/citations';
 import { htmlToSpans } from '../../citations/html';
 import { documentReferences, nociteKeys, normalizeCslItem } from '../../citations/data';
 import { bookCitationContexts } from '../../citations/context';
@@ -120,5 +120,17 @@ describe('citation keys next to Chinese text', () => {
     expect(cites('见[@zhou2019]。').map((c) => c.cluster.items[0]!.id)).toEqual(['zhou2019']);
     expect(cites('[@张三2020]').map((c) => c.cluster.items[0]!.id)).toEqual(['张三2020']);
     expect(cites('Write to me@example.com.')).toEqual([]);
+  });
+});
+
+describe('a colon after a bracketed citation (#309)', () => {
+  it('reads the citation when the colon is prose', () => {
+    expect(cites('the belt called periglacial [@french2018]: the land around the ice').map((c) => [c.cluster.mode, c.raw])).toEqual([
+      ['parenthetical', '[@french2018]'],
+    ]);
+  });
+
+  it('leaves the brackets of a directive glued after them', () => {
+    expect(extractInlineCitations('[see @french2018]:index{term="ice"} and more', 0).citations.map((c) => c.cluster.mode)).not.toContain('parenthetical');
   });
 });

@@ -394,7 +394,7 @@ function renderLineText(
  *  `:upright`, `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return s.bold || s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
 }
 
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a

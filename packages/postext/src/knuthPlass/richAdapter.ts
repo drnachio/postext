@@ -55,6 +55,8 @@ interface RichToken {
   refAnchor?: true;
   refPageIndex?: number;
   footnoteId?: string;
+  /** A bibliography label's space (#290, see `measure/rich.ts`). */
+  labelTab?: 'lead' | 'gap';
   /** An inline colour swatch (atomic square; see `measure/rich.ts`). */
   swatch?: { color?: string };
   /** An inline chip (atomic box; see `measure/rich.ts`). */
@@ -273,6 +275,7 @@ export function reconstructRichLines(
           ...(token.chip ? { chip: token.chip } : {}),
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId, ...(token.refAnchor ? { refAnchor: true as const } : {}), ...(token.refPageIndex !== undefined ? { refPageIndex: token.refPageIndex } : {}) } : {}),
           ...(token.footnoteId !== undefined ? { footnoteId: token.footnoteId } : {}),
+          ...(token.labelTab ? { labelTab: true as const } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),

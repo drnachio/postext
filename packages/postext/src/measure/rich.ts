@@ -94,6 +94,9 @@ export interface RichToken {
   /** True when this token belongs to a caption's numbered label. Flows to the
    *  segment so renderers can apply the label colour. */
   captionLabel?: boolean;
+  /** {@link InlineSpan.labelTab}: a space whose width {@link setLabelTabs}
+   *  sets. */
+  labelTab?: 'lead' | 'gap';
   /** When present, this token is an inline colour swatch (`:swatch{…}`): an
    *  atomic square of `width` px, filled with `color` (hex) when resolved. */
   swatch?: { color?: string };
@@ -900,6 +903,17 @@ export function atomicSpanToken(
       ...(span.footnote ? { footnoteId: span.footnote.id } : {}),
     };
   }
+  if (span.labelTab) {
+    const font = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    return {
+      text: span.text,
+      bold: span.bold,
+      italic: span.italic,
+      kind: 'text',
+      width: textWidth(span.text, font, false) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(span.text)),
+      labelTab: span.labelTab,
+    };
+  }
   if (span.chip) return chipToken(span, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
   if (span.swatch) {
     const swatchFont = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
@@ -943,6 +957,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.refResourceId !== undefined ? { refResourceId: t.refResourceId, ...(t.refAnchor ? { refAnchor: true as const } : {}), ...(t.refPageIndex !== undefined ? { refPageIndex: t.refPageIndex } : {}) } : {}),
     ...(t.footnoteId !== undefined ? { footnoteId: t.footnoteId } : {}),
     ...(t.captionLabel ? { captionLabel: true } : {}),
+    ...(t.labelTab ? { labelTab: true as const } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
@@ -954,6 +969,30 @@ export function tokenSegment(t: RichToken): PendingSegment {
   if (t.cjkMarks) seg.cjkMarks = t.cjkMarks;
   if (t.inserted) seg.inserted = true;
   return seg;
+}
+
+/**
+ * Widen the spaces of a bibliography label (#290) so the entry's text
+ * starts `columnPx` from the line's start: the gap after the label takes
+ * what the label leaves of the column (its own width at least), or, with
+ * a space before the label, that space takes it and the label ends against
+ * the gap. `items` are a paragraph's tokens or units in order; `setWidth`
+ * writes a new width.
+ */
+export function setLabelTabs<T extends { width: number }>(
+  items: readonly T[],
+  tabOf: (item: T) => 'lead' | 'gap' | undefined,
+  columnPx: number,
+  setWidth: (item: T, width: number) => void,
+): void {
+  const gapAt = items.findIndex((t) => tabOf(t) === 'gap');
+  if (gapAt < 0) return;
+  const leadAt = items.findIndex((t, i) => i < gapAt && tabOf(t) === 'lead');
+  let label = 0;
+  for (let i = leadAt + 1; i < gapAt; i++) label += items[i]!.width;
+  const gap = items[gapAt]!;
+  if (leadAt >= 0) setWidth(items[leadAt]!, Math.max(0, columnPx - gap.width - label));
+  else setWidth(gap, Math.max(gap.width, columnPx - label));
 }
 
 function tokenizeSpans(
@@ -1353,6 +1392,7 @@ function measureRichText(
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
   const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText);
+  if (options?.labelColumnPx !== undefined) setLabelTabs(tokens, (t) => t.labelTab, options.labelColumnPx, (t, w) => { t.width = w; });
   const repeatHyphen = options?.repeatHyphen === true;
   const hasSmallCaps = tokens.some((t) => t.smallCaps);
   const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(normalFont) + letterSpacingPx : 0;
