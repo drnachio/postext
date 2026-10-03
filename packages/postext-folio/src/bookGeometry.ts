@@ -47,24 +47,6 @@ export interface Profile {
 
 const SAMPLES = 256;
 
-/** The share of the book's thickness one side must carry before its weight
- *  has rolled the spine flat. Short of it the spine still stands (part way)
- *  and the thinner side hangs from its top down to the desk. */
-export const SPINE_ROLL_AT = 0.2;
-
-const smoothstep = (a: number, b: number, x: number) => {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
-
-/** How far the spine has rolled down (0: standing, as when the book is
- *  closed or just opened at a cover; 1: lying under the gutter), from the
- *  thickness on each side. */
-export function spineRoll(tLeft: number, tRight: number): number {
-  const total = tLeft + tRight;
-  return total > 0 ? smoothstep(0, SPINE_ROLL_AT, Math.min(tLeft, tRight) / total) : 1;
-}
-
 /** Height of a side's base above zb at x (its slope down to the desk). */
 function baseAt(p: Pick<Profile, "rise" | "run">, x: number) {
   return p.rise > 0 ? p.rise * Math.max(0, 1 - x / p.run) : 0;
@@ -95,10 +77,8 @@ export function profiles(
   tRight: number,
   /** `flat`: a side whose top leaf is rigid (a board) lies flat, with no
    *  gutter; `noCase`: the boards are leaves of the stacks (the document's
-   *  own cover pages), so the block rests on the desk; `roll`: how far the
-   *  spine has rolled down (`spineRoll` of the paper on each side, the
-   *  boards left out: a cover alone weighs nothing against the block). */
-  { flatLeft = false, flatRight = false, noCase = false, roll = spineRoll(tLeft, tRight) }: { flatLeft?: boolean; flatRight?: boolean; noCase?: boolean; roll?: number } = {},
+   *  own cover pages), so the block rests on the desk. */
+  { flatLeft = false, flatRight = false, noCase = false }: { flatLeft?: boolean; flatRight?: boolean; noCase?: boolean } = {},
 ): { left: Profile; right: Profile; board: number } {
   const b = BINDINGS[binding];
   const zb = noCase ? 0 : b.boardMm * pxPerMm;
@@ -112,14 +92,15 @@ export function profiles(
   const high = Math.max(tLeft, tRight);
   const dip = (b.dipMm * pxPerMm + 0.35 * low) * (binding === "layflat" ? 0.1 : 1);
   const lying = Math.max(0, low + (high - low) * b.spine - dip);
-  // A thick book does not open flat at once. Opened at a cover (or a few
-  // leaves in) the spine still stands upright: the thicker block lies on
-  // the desk and the thinner side hangs from the top of the spine down to
-  // it, the cover the hypotenuse of a right triangle. As leaves pile up on
-  // the thin side their weight rolls the spine down, until the book lies
-  // open on its back (`spineRoll`).
-  const meet = high + (lying - high) * roll;
-  const rise = Math.min(0.8 * W, Math.max(0, (1 - roll) * (meet - low)));
+  // A thick book does not open flat. The thicker block lies on the desk and
+  // the thinner side hangs from the top of the spine down to it (opened at
+  // its cover, the cover is the hypotenuse of a right triangle). Its top
+  // leaf always meets the other at the spine, so the spine never shows: as
+  // it grows its slope flattens, and at the middle of the book both blocks
+  // lie flat, their tops level. The gutter's valley deepens towards there.
+  const share = high > 0 ? low / high : 1;
+  const meet = high + (lying - high) * share;
+  const rise = Math.min(0.8 * W, Math.max(0, meet - low));
   const make = (t: number, flat: boolean): Profile => {
     const thin = t === low && t !== high;
     const up = thin ? rise : 0;

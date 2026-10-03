@@ -39,7 +39,7 @@ import {
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
-import { along, BINDINGS, gutterOcclusion, profiles, spineRoll, stackGeometry, type Profile } from "./bookGeometry";
+import { along, BINDINGS, gutterOcclusion, profiles, stackGeometry, type Profile } from "./bookGeometry";
 import { environment, type Environment, type EnvironmentKind } from "./environments";
 import { pagePaper, paperSpec, type PaperSpec } from "./paper";
 import { loadDeskMaps, type DeskMaps } from "./deskTextures";
@@ -620,7 +620,11 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
     hinge = zr0 + (zl0 - zr0) * descend + board.thick / 2;
     const a0 = Math.atan2(zr - zr0, xr);
     const a1 = Math.PI - Math.atan2(zl - zl0, xl);
-    phi = a0 + (a1 - a0) * ease(qa);
+    // The hand holds the point it took over the desk: a rigid plate turned
+    // by φ brings it to u·cos φ, so the board stands where the hand has
+    // carried that point (q = (1 − cos)/2), not on an eased curve that laid
+    // it level in the air while the hand was still over the slope.
+    phi = a0 + ((a1 - a0) * Math.acos(Math.min(1, Math.max(-1, 1 - 2 * qa)))) / Math.PI;
     r = 1;
     offset = (board.face * board.thick) / 2;
   } else {
@@ -953,7 +957,7 @@ export class PageFlipper {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
             // The book's own printed covers: a laminated card board, thinner
             // than a case's.
-            caliperMm: Math.min(1.2, BINDINGS[r.binding.type].boardMm || 1.2),
+            caliperMm: Math.min(0.45, BINDINGS[r.binding.type].boardMm || 0.45),
             // Board does not bend: it turns on its joint as a plate.
             rigidity: 1,
             roughness: 0.45,
@@ -1231,9 +1235,6 @@ export class PageFlipper {
       (leaves.reduce((s, i) => s + this.specOf(i).caliperMm, 0) * half + more * this.bookSpec.caliperMm) * k;
     const tL = thick(left, extra.before);
     const tR = thick(right, extra.after);
-    // The spine rolls down under the weight of the paper, not the covers.
-    const paper = (leaves: number[]) => leaves.filter((i) => this.specOf(i) !== this.coverSpec);
-    const roll = spineRoll(thick(paper(left), extra.before), thick(paper(right), extra.after));
     const binding = this.resolved.binding.type;
     // A board on top of a stack lies flat; the document's own covers
     // replace the case.
@@ -1243,7 +1244,6 @@ export class PageFlipper {
       flatLeft: rigid(left[left.length - 1]),
       flatRight: rigid(right[0]),
       noCase,
-      roll,
     });
     this.surfaces = { left: pl, right: pr };
     const { W, H } = this;
@@ -1860,10 +1860,66 @@ export class PageFlipper {
     const turn = [...this.turns.values()].find((t) => t.held);
     if (!turn?.held) return;
     const { x, y } = this.toWorld(event);
-    turn.held.aim = reach(turn.G, { u: turn.forward ? x : -x, v: y }, this.H);
+    turn.held.aim = turn.rigid && this.surfaces ? this.boardAim(turn, { x }) : reach(turn.G, { u: turn.forward ? x : -x, v: y }, this.H);
     const t = performance.now();
     turn.held.samples.push({ t, p: { ...turn.held.aim } });
     while (turn.held.samples.length > 2 && t - turn.held.samples[0].t > 100) turn.held.samples.shift();
+  }
+
+  /** Where the hand holds a board: the angle that puts the point taken on
+   *  the pointer's ray (read by `toWorld`), as the hand would hold a plate
+   *  turning on its joint; the board then stands under the pointer, high
+   *  over the spine or low over the slope, wherever it is seen from. */
+  private boardAim(turn: Turn, hand: { x: number }): Pt {
+    const book = this.surfaces!;
+    const { W } = this;
+    const o = this.raycaster.ray.origin.clone();
+    const d = this.raycaster.ray.direction.clone();
+    o.x *= this.sign;
+    d.x *= this.sign;
+    // The board's two rests and its joint, as `layLeaf` lays them.
+    const [xr, zr] = along(book.right, W);
+    const [xl, zl] = along(book.left, W);
+    const zr0 = along(book.right, 0)[1];
+    const zl0 = along(book.left, 0)[1];
+    const a0 = Math.atan2(zr - zr0, xr);
+    const a1 = Math.PI - Math.atan2(zl - zl0, xl);
+    const hinge = (zr0 + zl0) / 2;
+    const { u, v } = turn.G;
+    // The ray meets the upright plane across the spine through the point
+    // taken (y = v): the board points there from its joint. Seen straight
+    // along that plane, the nearest of its positions to the ray.
+    // Near the joint the ray says little (every angle passes close by):
+    // there the board follows the hand across the desk, the point taken
+    // over the hand (u·cos φ = x).
+    const x = turn.forward ? hand.x : -hand.x;
+    const across = Math.acos(Math.min(1, Math.max(-1, x / u))) / Math.PI;
+    let best: number;
+    if (Math.abs(d.y) > 1e-4) {
+      const t = (v - o.y) / d.y;
+      const px = o.x + d.x * t;
+      const pz = o.z + d.z * t - hinge;
+      const phi = Math.atan2(pz, px);
+      const ray = (Math.min(Math.max(phi < -Math.PI / 2 ? phi + 2 * Math.PI : phi, a0), a1) - a0) / (a1 - a0 || 1);
+      const sure = smooth(0.15 * u, 0.45 * u, Math.hypot(px, pz));
+      best = across + (ray - across) * sure;
+    } else {
+      const p = new Vector3();
+      let bestD = Infinity;
+      best = 0;
+      for (let i = 0; i <= 180; i++) {
+        const phi = a0 + ((a1 - a0) * i) / 180;
+        const dist = p.set(u * Math.cos(phi), v, hinge + u * Math.sin(phi)).sub(o).cross(d).lengthSq();
+        if (dist < bestD) {
+          bestD = dist;
+          best = i / 180;
+        }
+      }
+    }
+    // Back to the turn's progress (`layLeaf` turns it by acos(1 − 2q)).
+    const qa = (1 - Math.cos(Math.PI * best)) / 2;
+    const q = turn.forward ? qa : 1 - qa;
+    return { u: u * (1 - 2 * q), v };
   }
 
   /** Lets go. A click turns the page over from where it was taken; a drag

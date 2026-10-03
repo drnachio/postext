@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { along, profiles, spineRoll, SPINE_ROLL_AT } from "./bookGeometry";
+import { along, profiles } from "./bookGeometry";
 
 const W = 500;
 const k = 3.3;
@@ -9,7 +9,7 @@ const T = 45 * k;
 describe("the open book's shape", () => {
   it("keeps the spine standing when a thick book is opened at its cover", () => {
     const board = 2.2 * k;
-    const { left, right } = profiles("hardcover", W, k, board, T - board, { flatLeft: true, noCase: true, roll: 0 });
+    const { left, right } = profiles("hardcover", W, k, board, T - board, { flatLeft: true, noCase: true });
     // The cover hangs from the top of the spine down to the desk.
     const [, spineZ] = along(left, 0);
     const [edgeX, edgeZ] = along(left, W);
@@ -21,14 +21,21 @@ describe("the open book's shape", () => {
     expect(Math.abs(along(right, 0)[1] - spineZ)).toBeLessThan(2);
   });
 
-  it("rolls the spine down as leaves pile up on the thin side", () => {
-    const rise = (share: number) => profiles("hardcover", W, k, share * T, (1 - share) * T, { noCase: true }).left.rise;
-    expect(rise(0.02)).toBeGreaterThan(rise(0.08));
-    expect(rise(0.08)).toBeGreaterThan(rise(0.15));
-    expect(rise(SPINE_ROLL_AT)).toBe(0);
-    expect(rise(0.5)).toBe(0);
-    expect(spineRoll(0, T)).toBe(0);
-    expect(spineRoll(T / 2, T / 2)).toBe(1);
+  it("lowers the thin side as it grows, its top always meeting the other at the spine", () => {
+    const at = (share: number) => profiles("hardcover", W, k, share * T, (1 - share) * T, { noCase: true });
+    let last = Infinity;
+    for (const share of [0.02, 0.1, 0.2, 0.35, 0.45]) {
+      const { left, right } = at(share);
+      // No spine showing between them.
+      expect(Math.abs(along(left, 0)[1] - along(right, 0)[1])).toBeLessThan(1);
+      expect(left.rise).toBeLessThan(last);
+      last = left.rise;
+    }
+    // Open at the middle both blocks lie flat, level.
+    const { left, right } = at(0.5);
+    expect(left.rise).toBe(0);
+    expect(right.rise).toBe(0);
+    expect(Math.abs(along(left, W)[1] - along(right, W)[1])).toBeLessThan(0.01);
   });
 
   it("does the same at the back of the book, mirrored", () => {
