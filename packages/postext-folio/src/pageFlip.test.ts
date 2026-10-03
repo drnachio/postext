@@ -3,7 +3,8 @@
 // right-bound book lies mirrored on the desk (verso on the right, recto on
 // the left) and its leaves turn from left to right.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Vector3, type Mesh, type PlaneGeometry, type ShaderMaterial } from "three";
+import { PlaneGeometry, Vector3, type Mesh, type ShaderMaterial } from "three";
+import { along, profiles } from "./bookGeometry";
 
 vi.mock("three", async (importOriginal) => {
   const three = await importOriginal<typeof import("three")>();
@@ -241,5 +242,39 @@ describe("the page flipper", () => {
     expect(ab.dot(ac)).toBeGreaterThan(0.999);
     // Lifted well off the page: it swings up, not along it.
     expect(c.z - a.z).toBeGreaterThan(50);
+  });
+
+  it("keeps the paper curled up over the gutter free of creases", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    // The middle of a thick book: a deep gutter between two level pages.
+    const W = 600;
+    const H = 850;
+    const book = profiles("hardcover", W, 4, 60, 60);
+    const floor = along(book.right, 0)[1];
+    let worst = 0;
+    for (let k = 1; k < 20; k++) {
+      const G = { u: W, v: -0.4 * H };
+      const P = { u: W - (2 * W * k) / 20, v: -0.36 * H };
+      const fold = foldOf(G, P, W, H);
+      const geometry = new PlaneGeometry(W, H, 96, 120);
+      layLeaf(geometry, fold, true, W, H, 1, book, 0, progressFrom(G, P));
+      const pos = geometry.attributes.position;
+      for (let iy = 0; iy <= 120; iy += 4) {
+        for (let ix = 1; ix < 96; ix++) {
+          const p = (i: number) => new Vector3(pos.getX(iy * 97 + i), pos.getY(iy * 97 + i), pos.getZ(iy * 97 + i));
+          const b = p(ix);
+          // Paper in the air over the gutter.
+          if (Math.abs(b.x) > 0.05 * W || b.z < floor + 40) continue;
+          const e1 = b.clone().sub(p(ix - 1));
+          const e2 = p(ix + 1).sub(b);
+          if (e1.length() < 1e-6 || e2.length() < 1e-6) continue;
+          worst = Math.max(worst, e1.angleTo(e2) / ((e1.length() + e2.length()) / 2));
+        }
+      }
+      geometry.dispose();
+    }
+    // It bends no tighter than its roll (radius over 10 px here): it used
+    // to dip into the gutter, creased where it passed over the spine.
+    expect(worst).toBeLessThan(0.1);
   });
 });
