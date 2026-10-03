@@ -160,13 +160,14 @@ const OCCLUSION = /* glsl */ `
 const BOOK_POS_PARS = "uniform float uSign;\nvarying vec3 vBookPos;";
 const BOOK_POS = "vBookPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvBookPos.x *= uSign;";
 
+// The casters lie outside the stage, in the book's own coordinates (as
+// `vBookPos` reads the map): no mirror here (#334).
 const CASTER_VERTEX = /* glsl */ `
-  uniform float uSign;
   varying float vZ;
   void main() {
     vec4 w = modelMatrix * vec4(position, 1.0);
     vZ = w.z;
-    gl_Position = projectionMatrix * viewMatrix * vec4(w.x * uSign, w.y, 0.0, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * vec4(w.xy, 0.0, 1.0);
   }
 `;
 const CASTER_FRAGMENT = /* glsl */ `
@@ -249,7 +250,7 @@ function keyShadowed(fragmentShader: string): string {
   return fragmentShader.replace("#include <shadowmap_pars_fragment>", SHADOW_PARS);
 }
 
-function casterMaterial(leaf: boolean, sign: number) {
+function casterMaterial(leaf: boolean) {
   return new ShaderMaterial({
     vertexShader: CASTER_VERTEX,
     fragmentShader: CASTER_FRAGMENT,
@@ -261,7 +262,7 @@ function casterMaterial(leaf: boolean, sign: number) {
     blendDst: OneFactor,
     depthTest: false,
     depthWrite: false,
-    uniforms: { uLeaf: { value: leaf ? 1 : 0 }, uSign: { value: sign } },
+    uniforms: { uLeaf: { value: leaf ? 1 : 0 } },
   });
 }
 
@@ -820,8 +821,8 @@ export class PageFlipper {
     const mirror = this.sign < 0;
     this.coverMaterial = occluded(new MeshPhysicalMaterial({ roughness: 0.9, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }), this.sign);
     this.edges = edgeMaterial(this.sign);
-    this.leafCaster = casterMaterial(true, this.sign);
-    this.staticCaster = casterMaterial(false, this.sign);
+    this.leafCaster = casterMaterial(true);
+    this.staticCaster = casterMaterial(false);
     // `__postextFolioPreserve`: keep the drawing buffer (to read the canvas back while debugging).
     const preserveDrawingBuffer = !!(globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve;
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, preserveDrawingBuffer });
@@ -1325,7 +1326,10 @@ export class PageFlipper {
     const { W, H } = this;
     const d = 4 * Math.max(W, H);
     const dir = env.key;
-    this.key.position.set(dir.x * d, dir.y * d, dir.z * d);
+    // The key stands where the environment's brightest emitter is, and the
+    // environment is not mirrored: in a right-bound book's mirrored stage
+    // the key's x is turned back (#334).
+    this.key.position.set(this.sign * dir.x * d, dir.y * d, dir.z * d);
     this.key.target.position.set(0, 0, 0);
     const cam = this.key.shadow.camera;
     const span = 0.62 * Math.hypot(2 * W, H) + 0.1 * W;
