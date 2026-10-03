@@ -86,6 +86,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 115},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#d9482b"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

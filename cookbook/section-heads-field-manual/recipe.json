@@ -162,6 +162,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 90},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#2f6b3f"},
+    "surface": {"type": "linen"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

@@ -114,7 +114,8 @@
       },
       "sandbox": {
         "file": "textbook-margin-column.postext",
-        "bytes": 29300
+        "bytes": 29409,
+        "folio": "ccdc6a5d"
       },
       "detected": {
         "apis": [
@@ -482,7 +483,8 @@
       },
       "sandbox": {
         "file": "textbook-margin-column.postext",
-        "bytes": 29701
+        "bytes": 29814,
+        "folio": "ccdc6a5d"
       },
       "detected": {
         "apis": [

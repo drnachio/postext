@@ -121,7 +121,8 @@
       },
       "sandbox": {
         "file": "journal-article-with-maths.postext",
-        "bytes": 44961
+        "bytes": 45074,
+        "folio": "ba291173"
       },
       "detected": {
         "apis": [

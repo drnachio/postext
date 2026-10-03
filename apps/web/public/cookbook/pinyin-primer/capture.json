@@ -110,7 +110,8 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 205780
+        "bytes": 205890,
+        "folio": "4f4bf2f0"
       },
       "detected": {
         "apis": [
@@ -414,7 +415,8 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 206245
+        "bytes": 206355,
+        "folio": "4f4bf2f0"
       },
       "detected": {
         "apis": [

@@ -100,7 +100,8 @@
       },
       "sandbox": {
         "file": "section-heads-field-manual.postext",
-        "bytes": 31219
+        "bytes": 31327,
+        "folio": "0260efa6"
       },
       "detected": {
         "apis": [
@@ -426,7 +427,8 @@
       },
       "sandbox": {
         "file": "section-heads-field-manual.postext",
-        "bytes": 31419
+        "bytes": 31528,
+        "folio": "0260efa6"
       },
       "detected": {
         "apis": [

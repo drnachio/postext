@@ -104,7 +104,8 @@
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18429
+        "bytes": 18566,
+        "folio": "2af3feac"
       },
       "detected": {
         "apis": [
@@ -380,7 +381,8 @@
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18383
+        "bytes": 18521,
+        "folio": "2af3feac"
       },
       "detected": {
         "apis": [

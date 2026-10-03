@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "seed-catalogue.postext",
-        "bytes": 713645
+        "bytes": 713772,
+        "folio": "d45f6f65"
       },
       "detected": {
         "apis": [

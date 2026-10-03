@@ -60,6 +60,12 @@
     "card": "page",
     "pages": "all"
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 100, "texture": "smooth"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#22406a"},
+    "surface": {"type": "plain", "color": "#d9dde3"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [
       {

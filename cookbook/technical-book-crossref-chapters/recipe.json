@@ -71,6 +71,12 @@
     "card": "page",
     "pages": "all"
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#1f3247"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

@@ -26,6 +26,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { styleText } from "node:util";
 import matter from "gray-matter";
+import { folioConfigOf, folioHash } from "../../src/lib/cookbook/folio.ts";
 import { hash8, sourceHash } from "../../src/lib/cookbook/hash.ts";
 import { captureDir, recipeDir, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
 import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
@@ -180,11 +181,21 @@ export const sandboxFile = (slug: string) => `${slug}.postext`;
 
 /** The bundle's id and name: `recipe-<slug>` and the write-up's title in the
  *  edition's language (its summary as the description). */
-function sandboxMeta(slug: string, variant: SampleLocale): SandboxMeta {
+function sandboxMeta(slug: string, variant: SampleLocale, meta: RecipeMeta): SandboxMeta {
   const file = path.join(recipeDir(slug), `${variant}.mdx`);
   const data = fs.existsSync(file) ? (matter(fs.readFileSync(file, "utf-8"), {}).data as Record<string, unknown>) : {};
   const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
-  return { id: `recipe-${slug}`, name: text(data.title) || slug, ...(text(data.summary) ? { description: text(data.summary) } : {}) };
+  const folio = folioConfigOf(meta.folio);
+  return {
+    id: `recipe-${slug}`, name: text(data.title) || slug,
+    ...(text(data.summary) ? { description: text(data.summary) } : {}),
+    ...(folio ? { folio } : {}),
+  };
+}
+/** capture.json's `sandbox` entry: the bundle, and the folio it carries. */
+function sandboxEntry(slug: string, bytes: number, meta: RecipeMeta) {
+  const folio = folioHash(meta.folio);
+  return { file: sandboxFile(slug), bytes, ...(folio ? { folio } : {}) };
 }
 const sha1 = (text: string) => crypto.createHash("sha1").update(text).digest("hex");
 
@@ -326,7 +337,7 @@ function evaluate(
     card: { file: "card.webp", file480: "card.480.webp", w: 960, h: 720, mode: meta.capture.card },
     og: { file: "og.jpg", w: 580, h: 622 },
     ...(pdfBytes ? { pdf: { file: `${slug}.pdf`, bytes: pdfBytes.length, pages: pdfPages ?? 0 } } : {}),
-    ...(bundle ? { sandbox: { file: sandboxFile(slug), bytes: bundle.length } } : {}),
+    ...(bundle ? { sandbox: sandboxEntry(slug, bundle.length, meta) } : {}),
     detected: {
       apis: detected.apis,
       configKeys: detected.configKeys,
@@ -549,7 +560,7 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
         try {
           const run = await runVariant({
             hb, slug: task.slug, variant, meta: task.meta, engine: opts.engine, refreshNet: opts.refreshNet, png: !!opts.previewDir,
-            sandbox: sandboxMeta(task.slug, variant),
+            sandbox: sandboxMeta(task.slug, variant, task.meta),
           });
           return { task, variant, ...evaluate(task, run, hb, engine, registry) };
         } catch (error) {
@@ -664,7 +675,7 @@ export async function runSandboxOnly(opts: CaptureOptions): Promise<CaptureResul
       try {
         const run = await runVariant({
           hb, slug: task.slug, variant, meta: task.meta, engine, refreshNet: opts.refreshNet, sandboxOnly: true,
-          sandbox: { ...sandboxMeta(task.slug, variant), thumbnail: fs.existsSync(card) ? fs.readFileSync(card) : null },
+          sandbox: { ...sandboxMeta(task.slug, variant, task.meta), thumbnail: fs.existsSync(card) ? fs.readFileSync(card) : null },
         });
         result.totalMs = run.timings.totalMs;
         if (run.done !== "ok") result.fails.push({ check: "run", detail: run.done === "error" ? `the pen failed: ${run.err ?? ""}` : "the pen timed out" });
@@ -706,7 +717,7 @@ export async function runSandboxOnly(opts: CaptureOptions): Promise<CaptureResul
         d.result.written = writeIfChanged(path.join(captureDir(task.slug), d.variant, file), d.bytes!);
         // Where a fresh capture puts it: after the PDF, before `detected`.
         const { detected, diagnostics, ...head } = manifest.variants[d.variant]!;
-        manifest.variants[d.variant] = { ...head, sandbox: { file, bytes: d.bytes!.length }, detected, diagnostics };
+        manifest.variants[d.variant] = { ...head, sandbox: sandboxEntry(task.slug, d.bytes!.length, task.meta), detected, diagnostics };
         if (!d.result.written) d.result.note = "unchanged";
       }
       const target = path.join(captureDir(task.slug), "capture.json");

@@ -89,7 +89,8 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 105908
+        "bytes": 106018,
+        "folio": "3db66766"
       },
       "detected": {
         "apis": [
@@ -420,7 +421,8 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 108217
+        "bytes": 108327,
+        "folio": "3db66766"
       },
       "detected": {
         "apis": [

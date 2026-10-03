@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1458110
+        "bytes": 1458232,
+        "folio": "3d25f7bf"
       },
       "detected": {
         "apis": [
@@ -441,7 +442,8 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1459869
+        "bytes": 1459987,
+        "folio": "3d25f7bf"
       },
       "detected": {
         "apis": [

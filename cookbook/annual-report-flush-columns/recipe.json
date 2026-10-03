@@ -123,6 +123,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedSilk", "grammage": 130, "showThrough": false},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#14202b"},
+    "surface": {"type": "marble"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

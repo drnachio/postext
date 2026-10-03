@@ -31,6 +31,12 @@
     "hero": [2, 3], "card": "spread", "pages": [1, 2, 3, 6, 7], "expect": { "pages": [7, 7] }
   },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bible", "grammage": 35, "bulk": 1.4, "texture": "felt", "textureStrength": 0.8, "shade": "#faf7ef"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "paper", "coverColor": "#2a3550"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

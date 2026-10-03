@@ -45,6 +45,39 @@ describe('openHashBundle', () => {
     expect(d.fetchBytes).not.toHaveBeenCalled();
   });
 
+  it('opens the copy as it is when the reader keeps it', async () => {
+    const confirmReplace = vi.fn(async () => false);
+    const removeProject = vi.fn(async () => undefined);
+    const d = deps({ findProject: () => 'project-old', confirmReplace, removeProject });
+    const out = await openHashBundle(ref, d);
+    expect(out).toEqual({ projectId: 'project-old', imported: false });
+    expect(confirmReplace).toHaveBeenCalledWith('project-old');
+    expect(d.activate).toHaveBeenCalledWith('project-old');
+    expect(d.fetchBytes).not.toHaveBeenCalled();
+    expect(removeProject).not.toHaveBeenCalled();
+  });
+
+  it('replaces the copy with a fresh import when the reader asks for it', async () => {
+    const order: string[] = [];
+    const d = deps({
+      findProject: () => 'project-old',
+      confirmReplace: async () => true,
+      importBytes: vi.fn(async () => { order.push('import'); return 'project-new'; }),
+      removeProject: vi.fn(async (id: string) => { order.push(`remove:${id}`); }),
+    });
+    const out = await openHashBundle(ref, d);
+    expect(out).toEqual({ projectId: 'project-new', imported: true, replaced: 'project-old' });
+    expect(order).toEqual(['import', 'remove:project-old']);
+    expect(d.activate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the copy when the fresh import fails', async () => {
+    const removeProject = vi.fn(async () => undefined);
+    const d = deps({ findProject: () => 'project-old', confirmReplace: async () => true, removeProject, fetchBytes: async () => null });
+    await expect(openHashBundle(ref, d)).rejects.toMatchObject({ reason: 'not-found' });
+    expect(removeProject).not.toHaveBeenCalled();
+  });
+
   it('falls back to the next candidate when one is missing', async () => {
     const fetchBytes = vi.fn(async (url: string) => (url.includes('/es/') ? null : new ArrayBuffer(2)));
     const d = deps({ fetchBytes });

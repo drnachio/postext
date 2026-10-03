@@ -40,6 +40,12 @@
       "pages": [2, 2]
     }
   },
+  "folio": {
+    "paper": {"type": "cardStock", "grammage": 300, "texture": "linen", "textureStrength": 0.8, "shade": "#fbf9f2"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {"name": "Ignacio Ferro", "github": "drnachio"}

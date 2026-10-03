@@ -143,6 +143,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "cardStock", "grammage": 300, "shade": "#fcf8f1"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "marble"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

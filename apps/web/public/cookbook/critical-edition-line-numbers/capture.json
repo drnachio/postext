@@ -152,7 +152,8 @@
       },
       "sandbox": {
         "file": "critical-edition-line-numbers.postext",
-        "bytes": 108618
+        "bytes": 108755,
+        "folio": "bc0e5eea"
       },
       "detected": {
         "apis": [

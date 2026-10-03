@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "screenplay-format.postext",
-        "bytes": 11508
+        "bytes": 11633,
+        "folio": "23a03f17"
       },
       "detected": {
         "apis": [
@@ -405,7 +406,8 @@
       },
       "sandbox": {
         "file": "screenplay-format.postext",
-        "bytes": 12077
+        "bytes": 12202,
+        "folio": "23a03f17"
       },
       "detected": {
         "apis": [

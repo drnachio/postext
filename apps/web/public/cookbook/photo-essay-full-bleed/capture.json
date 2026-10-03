@@ -177,7 +177,8 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718422
+        "bytes": 1718569,
+        "folio": "fb4fa41a"
       },
       "detected": {
         "apis": [
@@ -512,7 +513,8 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718568
+        "bytes": 1718718,
+        "folio": "fb4fa41a"
       },
       "detected": {
         "apis": [

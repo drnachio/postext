@@ -85,7 +85,8 @@
       },
       "sandbox": {
         "file": "anchoring-cheat-sheet.postext",
-        "bytes": 42689
+        "bytes": 42830,
+        "folio": "061973f6"
       },
       "detected": {
         "apis": [
@@ -328,7 +329,8 @@
       },
       "sandbox": {
         "file": "anchoring-cheat-sheet.postext",
-        "bytes": 42264
+        "bytes": 42404,
+        "folio": "061973f6"
       },
       "detected": {
         "apis": [

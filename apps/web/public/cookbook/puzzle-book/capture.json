@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 23081
+        "bytes": 23206,
+        "folio": "c8e0f46e"
       },
       "detected": {
         "apis": [
@@ -479,7 +480,8 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 23890
+        "bytes": 24012,
+        "folio": "c8e0f46e"
       },
       "detected": {
         "apis": [

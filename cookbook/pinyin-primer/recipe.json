@@ -39,6 +39,12 @@
   "kit": ["core", "fonts", "viewer", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": { "pages": [4, 4] } },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#2f7a5e"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

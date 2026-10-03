@@ -102,6 +102,12 @@
       "pages": [2, 2]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedGloss", "grammage": 150, "showThrough": false},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#2a2a2e"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

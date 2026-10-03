@@ -30,6 +30,12 @@
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "newsprint", "grammage": 45, "shade": "#fcfaf5"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "overcast"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

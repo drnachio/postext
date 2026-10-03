@@ -106,7 +106,8 @@
       },
       "sandbox": {
         "file": "novel-footnotes-column-foot.postext",
-        "bytes": 40172
+        "bytes": 40326,
+        "folio": "5dc5724f"
       },
       "detected": {
         "apis": [
@@ -398,7 +399,8 @@
       },
       "sandbox": {
         "file": "novel-footnotes-column-foot.postext",
-        "bytes": 38224
+        "bytes": 38378,
+        "folio": "5dc5724f"
       },
       "detected": {
         "apis": [

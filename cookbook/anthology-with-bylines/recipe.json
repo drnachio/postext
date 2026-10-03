@@ -47,6 +47,12 @@
     "pages": "all",
     "expect": {"pages": [9, 9], "nearEmptyPages": [1]}
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "texture": "vellum", "shade": "#fcfaf6"},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#6b4468"},
+    "surface": {"type": "linen"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

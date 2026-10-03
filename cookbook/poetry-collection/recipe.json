@@ -151,6 +151,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 100, "texture": "felt", "textureStrength": 0.6, "shade": "#fdfcfa"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "paper", "coverColor": "#56673f"},
+    "surface": {"type": "linen"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

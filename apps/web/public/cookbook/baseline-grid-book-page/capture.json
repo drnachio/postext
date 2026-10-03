@@ -100,7 +100,8 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 43138
+        "bytes": 43278,
+        "folio": "e8c31713"
       },
       "detected": {
         "apis": [
@@ -402,7 +403,8 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 43892
+        "bytes": 44030,
+        "folio": "e8c31713"
       },
       "detected": {
         "apis": [

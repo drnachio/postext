@@ -105,7 +105,8 @@
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 30096
+        "bytes": 30255,
+        "folio": "a05bb7c0"
       },
       "detected": {
         "apis": [
@@ -333,7 +334,8 @@
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 28596
+        "bytes": 28753,
+        "folio": "a05bb7c0"
       },
       "detected": {
         "apis": [

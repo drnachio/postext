@@ -141,7 +141,8 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 2084569
+        "bytes": 2084689,
+        "folio": "c6787b35"
       },
       "detected": {
         "apis": [
@@ -576,7 +577,8 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 2085284
+        "bytes": 2085403,
+        "folio": "c6787b35"
       },
       "detected": {
         "apis": [

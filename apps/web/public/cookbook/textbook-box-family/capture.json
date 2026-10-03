@@ -100,7 +100,8 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 45352
+        "bytes": 45478,
+        "folio": "4d63ba9f"
       },
       "detected": {
         "apis": [
@@ -482,7 +483,8 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 43969
+        "bytes": 44097,
+        "folio": "4d63ba9f"
       },
       "detected": {
         "apis": [

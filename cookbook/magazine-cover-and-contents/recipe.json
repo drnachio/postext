@@ -100,6 +100,12 @@
       "nearEmptyPages": [1]
     }
   },
+  "folio": {
+    "paper": {"type": "coatedGloss", "grammage": 90, "shade": "#fdfcf9"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       { "name": "Ignacio Ferro", "github": "drnachio" }

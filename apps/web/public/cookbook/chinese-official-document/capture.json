@@ -120,7 +120,8 @@
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20439
+        "bytes": 20558,
+        "folio": "f2e4b92d"
       },
       "detected": {
         "apis": [
@@ -470,7 +471,8 @@
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20459
+        "bytes": 20577,
+        "folio": "f2e4b92d"
       },
       "detected": {
         "apis": [

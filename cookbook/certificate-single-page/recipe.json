@@ -128,6 +128,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "cardStock", "grammage": 250, "texture": "linen", "textureStrength": 0.7, "shade": "#fdfcf9"},
+    "binding": {"type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#1f5f5b"},
+    "surface": {"type": "leather"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {

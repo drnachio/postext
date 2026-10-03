@@ -93,6 +93,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 90},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

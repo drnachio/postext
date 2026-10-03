@@ -120,7 +120,8 @@
       },
       "sandbox": {
         "file": "pdf-with-embedded-fonts.postext",
-        "bytes": 30236
+        "bytes": 30366,
+        "folio": "885e614d"
       },
       "detected": {
         "apis": [

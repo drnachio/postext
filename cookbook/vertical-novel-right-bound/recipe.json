@@ -100,6 +100,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 60, "texture": "laid", "textureStrength": 0.6, "shade": "#fdfcf9"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "paper", "coverColor": "#233452"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

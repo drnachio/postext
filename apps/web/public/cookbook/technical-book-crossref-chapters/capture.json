@@ -183,7 +183,8 @@
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 66606
+        "bytes": 66703,
+        "folio": "e5e8575d"
       },
       "detected": {
         "apis": [
@@ -644,7 +645,8 @@
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 67923
+        "bytes": 68021,
+        "folio": "e5e8575d"
       },
       "detected": {
         "apis": [

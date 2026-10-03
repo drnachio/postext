@@ -94,7 +94,8 @@
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23031
+        "bytes": 23168,
+        "folio": "2ea14ffd"
       },
       "detected": {
         "apis": [
@@ -358,7 +359,8 @@
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23054
+        "bytes": 23191,
+        "folio": "2ea14ffd"
       },
       "detected": {
         "apis": [

@@ -44,6 +44,12 @@
     "expect": { "pages": [4, 4], "nearEmptyPages": [1] }
   },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 120, "texture": "felt", "textureStrength": 1.2, "shade": "#faf9f5"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#e8e3d8"},
+    "lighting": {"environment": "night", "intensity": 1.2}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

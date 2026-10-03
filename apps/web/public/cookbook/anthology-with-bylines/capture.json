@@ -177,7 +177,8 @@
       },
       "sandbox": {
         "file": "anthology-with-bylines.postext",
-        "bytes": 243338
+        "bytes": 243474,
+        "folio": "6cdad6f3"
       },
       "detected": {
         "apis": [

@@ -103,6 +103,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "bible", "grammage": 45, "shade": "#fdfcfa"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#a52f28"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [
       {

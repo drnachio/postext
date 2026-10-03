@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { folioHash } from "./folio.ts";
 import { sourceHash } from "./hash.ts";
 import { previewDraftsAllowed, readReleasedEngine } from "./lint.ts";
 import { captureDir } from "./paths.ts";
@@ -49,6 +50,18 @@ describe("captures (public/cookbook/<slug>/capture.json)", () => {
     const problems = each(({ slug, meta }, out) => {
       if (getCapture(slug)!.sourceHash !== sourceHash(slug, meta)) {
         out.push(`${slug}: the recipe changed since its capture: ${capture(slug)}`);
+      }
+    });
+    expect(problems).toEqual([]);
+  });
+
+  it("carry the recipe's folio in the Sandbox bundle", () => {
+    const problems = each(({ slug, meta }, out) => {
+      const want = folioHash(meta.folio);
+      for (const [locale, variant] of Object.entries(getCapture(slug)!.variants)) {
+        if (variant?.sandbox && variant.sandbox.folio !== want) {
+          out.push(`${slug} ${locale}: the bundle's folio is stale: pnpm cookbook capture ${slug} --sandbox-only`);
+        }
       }
     });
     expect(problems).toEqual([]);

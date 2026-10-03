@@ -125,7 +125,8 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 211999
+        "bytes": 212146,
+        "folio": "a3ceaa8c"
       },
       "detected": {
         "apis": [
@@ -404,7 +405,8 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 212036
+        "bytes": 212181,
+        "folio": "a3ceaa8c"
       },
       "detected": {
         "apis": [

@@ -42,6 +42,12 @@
     "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 0.604 },
     "expect": { "pages": [4, 4] }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 120, "texture": "felt", "textureStrength": 0.5},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#e4e2dc"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [],

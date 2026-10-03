@@ -151,6 +151,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80, "shade": "#fbfaf7"},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {

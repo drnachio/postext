@@ -39,6 +39,12 @@
     "expect": { "pages": [3, 3] }
   },
   "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 90, "texture": "laid", "textureStrength": 0.5, "shade": "#fdfcfa"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#7d2b1f"},
+    "surface": {"type": "leather"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

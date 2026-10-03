@@ -118,7 +118,8 @@
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507581
+        "bytes": 507706,
+        "folio": "351449da"
       },
       "detected": {
         "apis": [
@@ -481,7 +482,8 @@
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507615
+        "bytes": 507742,
+        "folio": "351449da"
       },
       "detected": {
         "apis": [

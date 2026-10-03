@@ -157,7 +157,8 @@
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391238
+        "bytes": 391363,
+        "folio": "77b45883"
       },
       "detected": {
         "apis": [
@@ -512,7 +513,8 @@
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391304
+        "bytes": 391428,
+        "folio": "77b45883"
       },
       "detected": {
         "apis": [

@@ -167,7 +167,8 @@
       },
       "sandbox": {
         "file": "catalogue-facing-plates.postext",
-        "bytes": 1603778
+        "bytes": 1603930,
+        "folio": "2f38e47f"
       },
       "detected": {
         "apis": [

@@ -115,7 +115,8 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 186427
+        "bytes": 186526,
+        "folio": "d9a24b31"
       },
       "detected": {
         "apis": [
@@ -449,7 +450,8 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 187107
+        "bytes": 187207,
+        "folio": "d9a24b31"
       },
       "detected": {
         "apis": [

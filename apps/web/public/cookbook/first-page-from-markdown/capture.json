@@ -89,7 +89,8 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 193072
+        "bytes": 193176,
+        "folio": "579e6f1a"
       },
       "detected": {
         "apis": [
@@ -364,7 +365,8 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 193425
+        "bytes": 193531,
+        "folio": "579e6f1a"
       },
       "detected": {
         "apis": [

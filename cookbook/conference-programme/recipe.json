@@ -44,6 +44,12 @@
     "card": "spread",
     "expect": { "pages": [6, 6], "nearEmptyPages": [1] }
   },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 130, "showThrough": false},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "plain", "color": "#2a2833"},
+    "lighting": {"environment": "studio"}
+  },
   "credits": {
     "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
     "text": [

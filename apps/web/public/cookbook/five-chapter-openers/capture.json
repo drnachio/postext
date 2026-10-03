@@ -152,7 +152,8 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28486
+        "bytes": 28627,
+        "folio": "8cdc51df"
       },
       "detected": {
         "apis": [
@@ -546,7 +547,8 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28175
+        "bytes": 28316,
+        "folio": "8cdc51df"
       },
       "detected": {
         "apis": [

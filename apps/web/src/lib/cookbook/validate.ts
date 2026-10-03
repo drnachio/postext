@@ -335,6 +335,55 @@ export const RECIPE_SCHEMA: JsonSchema = {
       additionalProperties: false,
       properties: { pdf: { type: "boolean" } },
     },
+    folio: {
+      description: "How the Sandbox's Folio view presents the publication in 3D (config.folio in the .postext bundle).",
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        tilt: { type: "number", minimum: 0, maximum: 40 },
+        paper: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            type: { enum: ["uncoated", "bookWove", "coatedMatte", "coatedSilk", "coatedGloss", "bible", "newsprint", "cardStock", "board"] },
+            grammage: { type: "number", minimum: 20, maximum: 2500 },
+            bulk: { type: "number", minimum: 0.5, maximum: 3 },
+            finish: { enum: ["uncoated", "matte", "silk", "gloss"] },
+            texture: { enum: ["smooth", "vellum", "wove", "laid", "linen", "felt"] },
+            textureStrength: { type: "number", minimum: 0, maximum: 2 },
+            shade: ref("hex"),
+            showThrough: { type: "boolean" },
+          },
+        },
+        binding: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch"] },
+            cover: { enum: ["case", "pages"] },
+            coverMaterial: { enum: ["cloth", "paper", "leather"] },
+            coverColor: ref("hex"),
+          },
+        },
+        surface: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            type: { enum: ["oak", "walnut", "linen", "felt", "leather", "marble", "plain", "none"] },
+            color: ref("hex"),
+          },
+        },
+        lighting: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            environment: { enum: ["studio", "daylight", "lamp", "overcast", "night"] },
+            intensity: { type: "number", minimum: 0.25, maximum: 2 },
+            shadows: { type: "boolean" },
+          },
+        },
+      },
+    },
     credits: {
       type: "object",
       additionalProperties: false,
@@ -388,6 +437,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
     semver: { type: "string", pattern: "^\\d+\\.\\d+\\.\\d+$" },
     date: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
     url: { type: "string", pattern: "^https?://" },
+    hex: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
     page: { type: "integer", minimum: 1 },
     fraction: { type: "number", minimum: 0, maximum: 1 },
     // recipe.json text (credits): the sample languages are required, other

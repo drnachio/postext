@@ -89,7 +89,8 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81150
+        "bytes": 81257,
+        "folio": "0414c868"
       },
       "detected": {
         "apis": [
@@ -406,7 +407,8 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81833
+        "bytes": 81942,
+        "folio": "0414c868"
       },
       "detected": {
         "apis": [

@@ -209,7 +209,8 @@
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 46736
+        "bytes": 46855,
+        "folio": "0459f0ab"
       },
       "detected": {
         "apis": [
@@ -665,7 +666,8 @@
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 47189
+        "bytes": 47307,
+        "folio": "0459f0ab"
       },
       "detected": {
         "apis": [

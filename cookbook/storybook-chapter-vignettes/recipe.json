@@ -134,6 +134,12 @@
       ]
     }
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 115, "texture": "vellum", "shade": "#fffdf9"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#6b4224"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

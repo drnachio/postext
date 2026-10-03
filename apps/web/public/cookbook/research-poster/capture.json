@@ -74,7 +74,8 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94119
+        "bytes": 94252,
+        "folio": "7c6d9248"
       },
       "detected": {
         "apis": [
@@ -358,7 +359,8 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94800
+        "bytes": 94936,
+        "folio": "7c6d9248"
       },
       "detected": {
         "apis": [

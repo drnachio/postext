@@ -23,6 +23,7 @@ import {
   PMREMGenerator,
   Raycaster,
   Scene,
+  ShaderChunk,
   ShaderMaterial,
   ShadowMaterial,
   SRGBColorSpace,
@@ -138,6 +139,20 @@ const OCCLUSION = /* glsl */ `
     }
     return occ / 8.0;
   }
+  // How far the reflection seen at p runs under paper: its ray marched
+  // out through the height map (a lifted leaf hides what it would mirror,
+  // and so does the leaf's own roll over the inside of its curl). The
+  // march starts a few px out, past the paper round p itself.
+  float reflectionOcclusion(vec3 p, vec3 r, float channel) {
+    if (uShadowOn < 0.5) return 0.0;
+    float hidden = 0.0;
+    for (int i = 1; i <= 6; i++) {
+      float t = 6.0 + float(i * i) / 36.0 * uOccRadius * 2.0;
+      vec3 q = p + r * t;
+      hidden = max(hidden, smoothstep(0.0, 4.0, casterAt(q.xy, channel) - q.z - uOccBias));
+    }
+    return hidden;
+  }
 `;
 
 /** Declares the book position varying in a vertex shader and sets it:
@@ -171,6 +186,69 @@ const occlusionUniforms = {
   uOccBias: { value: 1 },
 };
 
+// The key light's soft shadow, each of its samples compared against the
+// receiver's own plane carried to that sample (receiver-plane depth bias):
+// three.js compares them all at the receiver's depth, so a sheet steep to
+// the light, a leaf in the air, found itself nearer the light a few texels
+// away and fell in its own shadow (#330). The shadow is kept (`keyShadow`)
+// so the reflections can be cut with it too.
+const SHADOW_PCF_HEAD = "float getShadow( sampler2DShadow shadowMap, vec2 shadowMapSize, float shadowIntensity, float shadowBias, float shadowRadius, vec4 shadowCoord ) {";
+const SHADOW_PCF = /* glsl */ `
+  ${SHADOW_PCF_HEAD}
+    shadowCoord.xyz /= shadowCoord.w;
+    shadowCoord.z += shadowBias;
+    // How the receiver's depth in the map runs with the map's uv.
+    vec3 sx = dFdx(shadowCoord.xyz);
+    vec3 sy = dFdy(shadowCoord.xyz);
+    float det = sx.x * sy.y - sx.y * sy.x;
+    vec2 slope = abs(det) > 1e-12 ? vec2(sy.y * sx.z - sx.y * sy.z, sx.x * sy.z - sy.x * sx.z) / det : vec2(0.0);
+    float shadow = 1.0;
+    if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 && shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 && shadowCoord.z <= 1.0) {
+      float radius = shadowRadius / shadowMapSize.x;
+      float phi = interleavedGradientNoise(gl_FragCoord.xy) * PI2;
+      shadow = 0.0;
+      for (int i = 0; i < 5; i++) {
+        vec2 o = vogelDiskSample(i, 5, phi) * radius;
+        // Held in where the plane runs nearly along the light.
+        float dz = clamp(dot(slope, o), -0.05, 0.05);
+        shadow += texture(shadowMap, vec3(shadowCoord.xy + o, shadowCoord.z + dz));
+      }
+      shadow *= 0.2;
+    }
+    keyShadow = shadow;
+    return mix(1.0, shadow, shadowIntensity);
+  }
+`;
+const SHADOW_PARS = (() => {
+  const chunk = ShaderChunk.shadowmap_pars_fragment;
+  const start = chunk.indexOf(SHADOW_PCF_HEAD);
+  const end = chunk.indexOf("#elif defined( SHADOWMAP_TYPE_VSM )", start);
+  // Another three.js: its own shadows (no receiver plane).
+  const pars = start < 0 || end < 0 ? chunk : chunk.slice(0, start) + SHADOW_PCF + chunk.slice(end);
+  return `float keyShadow = 1.0;\n${pars}`;
+})();
+
+/** How much of the environment's reflection the key's shadow takes away:
+ *  the key stands where the environment's brightest emitter is, so what
+ *  hides it from a point hides that emitter's reflection too. */
+function keySpecular(occlusion = "1.0") {
+  return /* glsl */ `{
+  float keySpec = mix(1.0, keyShadow, 0.85) * (${occlusion});
+  reflectedLight.indirectSpecular *= keySpec;
+  #ifdef USE_CLEARCOAT
+    clearcoatSpecularIndirect *= keySpec;
+  #endif
+  #ifdef USE_SHEEN
+    sheenSpecularIndirect *= keySpec;
+  #endif
+}`;
+}
+
+/** Gives a material the key's shadow on its own plane. */
+function keyShadowed(fragmentShader: string): string {
+  return fragmentShader.replace("#include <shadowmap_pars_fragment>", SHADOW_PARS);
+}
+
 function casterMaterial(leaf: boolean, sign: number) {
   return new ShaderMaterial({
     vertexShader: CASTER_VERTEX,
@@ -195,11 +273,11 @@ function occluded<T extends MeshStandardMaterial>(m: T, sign: number): T {
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${BOOK_POS_PARS}`)
       .replace("#include <begin_vertex>", `#include <begin_vertex>\n${BOOK_POS}`);
-    shader.fragmentShader = shader.fragmentShader
+    shader.fragmentShader = keyShadowed(shader.fragmentShader)
       .replace("#include <common>", `#include <common>\nvarying vec3 vBookPos;\n${OCCLUSION}`)
       .replace(
         "#include <aomap_fragment>",
-        "#include <aomap_fragment>\n{ float occ = 1.0 - bookOcclusion(vBookPos, 0.0); reflectedLight.indirectDiffuse *= occ; reflectedLight.indirectSpecular *= occ; }",
+        "#include <aomap_fragment>\n{ float occ = 1.0 - bookOcclusion(vBookPos, 0.0); reflectedLight.indirectDiffuse *= occ; reflectedLight.indirectSpecular *= occ; }\n" + keySpecular(),
       );
   };
   return m;
@@ -265,7 +343,7 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         vPageUv = uv;
         ${BOOK_POS}`,
       );
-    shader.fragmentShader = shader.fragmentShader
+    shader.fragmentShader = keyShadowed(shader.fragmentShader)
       .replace(
         "#include <common>",
         `#include <common>
@@ -277,6 +355,7 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform float uShowThrough;
         uniform vec3 uPaper;
         uniform float uLeafOcc;
+        uniform float uSign;
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
@@ -312,7 +391,11 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           float occ = vAo * (1.0 - uLeafOcc * bookOcclusion(vBookPos, 1.0));
           reflectedLight.indirectDiffuse *= occ;
           reflectedLight.indirectSpecular *= mix(1.0, occ, 0.85);
-        }`,
+        }
+        // The reflection's ray, in book coordinates.
+        vec3 reflected = (vec4(reflect(-geometryViewDir, normal), 0.0) * viewMatrix).xyz;
+        reflected.x *= uSign;
+        ${keySpecular("1.0 - 0.85 * reflectionOcclusion(vBookPos, reflected, 1.0)")}`,
       );
   };
   return m;
@@ -328,7 +411,7 @@ function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Col
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nvarying float vLayer;\nvarying float vLambda;\n${BOOK_POS_PARS}`)
       .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\n${BOOK_POS}`);
-    shader.fragmentShader = shader.fragmentShader
+    shader.fragmentShader = keyShadowed(shader.fragmentShader)
       .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
       .replace(
         "#include <map_fragment>",

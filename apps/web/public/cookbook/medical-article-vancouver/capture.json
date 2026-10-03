@@ -106,7 +106,8 @@
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 53065
+        "bytes": 53192,
+        "folio": "b245c39c"
       },
       "detected": {
         "apis": [
@@ -497,7 +498,8 @@
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 54291
+        "bytes": 54419,
+        "folio": "b245c39c"
       },
       "detected": {
         "apis": [

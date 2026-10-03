@@ -174,6 +174,12 @@
   "downloads": {
     "pdf": true
   },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "shade": "#fdfcfa"},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#131a24"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "lamp"}
+  },
   "credits": {
     "authors": [
       {

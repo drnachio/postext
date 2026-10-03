@@ -58,6 +58,12 @@
       3
     ]
   },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 80},
+    "binding": {"type": "paperback", "cover": "case", "coverMaterial": "paper", "coverColor": "#2f5d8a"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "daylight"}
+  },
   "credits": {
     "authors": [
       {

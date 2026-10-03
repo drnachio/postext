@@ -119,7 +119,8 @@
       },
       "sandbox": {
         "file": "history-essay-chicago-notes.postext",
-        "bytes": 17262
+        "bytes": 17390,
+        "folio": "d7c0312b"
       },
       "detected": {
         "apis": [
@@ -430,7 +431,8 @@
       },
       "sandbox": {
         "file": "history-essay-chicago-notes.postext",
-        "bytes": 18003
+        "bytes": 18132,
+        "folio": "d7c0312b"
       },
       "detected": {
         "apis": [
