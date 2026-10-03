@@ -1512,7 +1512,10 @@ export class PageFlipper {
       yaw: this.orbit.yaw - dx * 0.006,
       pitch: Math.min(MAX_PITCH, Math.max(0, pitch - dy * 0.006)),
     };
-    this.redraw();
+    // Pages in the air (a run of them still turning): the camera moves at
+    // once and their own frames draw it; at rest, a frame of its own.
+    if (this.raf || this.starting) this.layout();
+    else this.redraw();
   }
 
   /** Back to the view the settings give, easing there (the reader let go
