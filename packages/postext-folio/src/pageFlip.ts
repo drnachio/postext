@@ -489,8 +489,10 @@ function edgeColorOf(image: CanvasImageSource & { width: number; height: number 
 /** The lowest the reader may orbit the view: 70° from straight above. */
 const MAX_PITCH = (70 * Math.PI) / 180;
 
-/** How far (radians) a leaf in mid-turn stands off the pages at the spine. */
-const LEAN = 0.12;
+/** How far (radians) a leaf in mid-turn stands off the pages at the spine:
+ *  barely; it is sewn there, and more reads as the leaf lifting off the
+ *  book parallel to it and dropping back. */
+const LEAN = 0.02;
 
 /** Where column `t` (0 … 1) of a page's mesh lies across it: closer
  *  together near the spine, where the gutter bends tightest. */
@@ -679,7 +681,7 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
         const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
         const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
         const under = surfaceAt(book, fx)[1] + lift + 0.6;
-        const flying = smoothMax(plane, under, 0.02 * W);
+        const flying = smoothMax(plane, under, 0.006 * W);
         px += (fx - px) * inAir;
         pz += (flying - pz) * inAir;
       }
@@ -1063,20 +1065,28 @@ export class PageFlipper {
 
   /** The colour the book's own boards show at their edges and spine: the
    *  setting's cover colour when it names one, else the printed cover's
-   *  ground. */
+   *  ground (the front's, else the back's). The pages far from the spread
+   *  open are not drawn, so the colour once sampled is kept: the boards
+   *  don't turn the default cloth colour near the end of the book. */
   private boardColor(): Color {
     const set = new Color(this.resolved.binding.coverColor.hex);
     if (this.appearance.folio?.binding?.coverColor) return set;
-    const front = this.appearance.coverLeaves?.front;
-    const src = front !== undefined ? this.book[front]?.[1] : null;
-    if (!src) return set;
-    const tex = this.ready.get(src);
-    const image = (tex?.image ?? (typeof src === "string" ? null : src)) as (CanvasImageSource & { width: number; height: number }) | null;
-    if (!image || !image.width) return set;
-    if (this.sampled?.image !== image) this.sampled = { image, color: edgeColorOf(image) };
-    return this.sampled.color ?? set;
+    const covers = this.appearance.coverLeaves;
+    for (const src of [covers?.front !== undefined ? this.book[covers.front]?.[1] : null, covers?.back !== undefined ? this.book[covers.back + 1]?.[0] : null]) {
+      if (!src) continue;
+      const tex = this.ready.get(src);
+      const image = (tex?.image ?? (typeof src === "string" ? null : src)) as (CanvasImageSource & { width: number; height: number }) | null;
+      if (!image || !image.width) continue;
+      if (this.sampled?.image !== image) {
+        const color = edgeColorOf(image);
+        if (!color) continue;
+        this.sampled = { image, color };
+      }
+      return this.sampled.color;
+    }
+    return this.sampled?.color ?? set;
   }
-  private sampled: { image: object; color: Color | null } | null = null;
+  private sampled: { image: object; color: Color } | null = null;
 
   /** The paper of leaf k (outside the pages shown: the book's). */
   private specOf(k: number): PaperSpec {
