@@ -7,8 +7,9 @@ import type { LayoutScope } from '../book/types';
 import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
 import type { ViewportTab } from '../types';
 import { SegmentedControl, cn } from '../ui';
+import { folioSupported } from './folioSupport';
 
-const TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
+const ALL_TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
 
 /** The bar above the preview: the scope selector of the tab shown at the
  *  left (each tab lays out the active chapter or the whole book — the
@@ -24,6 +25,8 @@ const TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
 export function ViewportTabs({ compact = false, leading, trailing }: { compact?: boolean; leading?: ReactNode; trailing?: ReactNode } = {}) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
+  // No Folio without WebGL or on a phone's screen (see folioSupport).
+  const TABS = folioSupported() ? ALL_TABS : ALL_TABS.filter((tab) => tab !== 'folio');
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const pdfScope = useSandboxSelector((s) => s.pdfScope);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
