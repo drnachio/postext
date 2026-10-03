@@ -2996,9 +2996,15 @@ export interface CitationsConfig {
     hangingIndent?: Dimension;
     /** Space between two entries. Default 0.3 em. */
     entrySpacing?: Dimension;
-    /** Width of the label column of a numbered list (`[12]`). Unset: as
-     *  wide as the longest label. */
+    /** Width of the label column of a numbered list (`[12]`): every
+     *  entry's text starts this far in, on its first line as on its
+     *  turnover lines, whatever its label's width (#290). Unset: as wide as
+     *  the longest label. */
     labelWidth?: Dimension;
+    /** How a label sits in its column: against its left edge (`'left'`,
+     *  default) or against the text (`'right'`, so `9.` and `10.` end
+     *  together). */
+    labelAlign?: 'left' | 'right';
     /** DOIs and URLs: links (`'link'`, default), plain text, or left out. */
     doi?: 'link' | 'text' | 'hide';
     /** List the works of the references that no citation names (Pandoc's
@@ -3028,6 +3034,7 @@ export interface ResolvedCitationsConfig {
     hangingIndent: Dimension;
     entrySpacing: Dimension;
     labelWidth?: Dimension;
+    labelAlign: 'left' | 'right';
     doi: 'link' | 'text' | 'hide';
     includeUncited: boolean;
     groupByLanguage: boolean;

@@ -3165,6 +3165,7 @@ interface CitationsConfig {
     hangingIndent?: Dimension;
     entrySpacing?: Dimension;
     labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
     doi?: 'link' | 'text' | 'hide';
     includeUncited?: boolean;
     groupByLanguage?: boolean;
@@ -3270,7 +3271,13 @@ interface CitationsConfig {
       <td><code>bibliography.labelWidth</code></td>
       <td><code>Dimension</code></td>
       <td>rótulo más largo</td>
-      <td>Ancho de la columna de los números de una lista numerada.</td>
+      <td>Ancho de la columna de los números de una lista numerada: el texto de cada entrada empieza a esa distancia, en su primera línea como en las siguientes, de modo que <code>9.</code> y <code>10.</code> comparten la columna. El número sigue formando parte del texto de la entrada.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>Dónde se coloca el número en su columna: contra su borde izquierdo o contra el texto (<code>9.</code> y <code>10.</code> acaban a la vez).</td>
     </tr>
     <tr>
       <td><code>bibliography.doi</code></td>
@@ -3288,7 +3295,7 @@ interface CitationsConfig {
       <td><code>bibliography.groupByLanguage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Primero las obras en chino, japonés y coreano; luego las demás.</td>
+      <td>Primero las obras en chino, japonés y coreano; luego las demás. Solo en estilos autor-fecha y autor-página: una lista numerada conserva el orden de sus números.</td>
     </tr>
   </tbody>
 </table>

@@ -268,7 +268,7 @@ export function measureContentBlock(
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
     || (vertical && (s.combineUpright || s.orientation)));
 
@@ -348,6 +348,9 @@ export function measureContentBlock(
     hyphenate: style.hyphenate,
     firstLineIndentPx: effectiveFirstLineIndent,
     hangingIndent: measureHangingIndent,
+    // A numbered bibliography entry (#290): its label in a column as wide
+    // as the turnover lines' indent.
+    ...(measureHangingIndent && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
     optimal: resolved.bodyText.optimalLineBreaking,
     maxStretchRatio: resolved.bodyText.maxWordSpacing,
     minShrinkRatio: resolved.bodyText.minWordSpacing,

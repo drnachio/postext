@@ -75,6 +75,13 @@ export interface InlineSpan {
    *  stretches or shrinks when it is justified: the gap after a footnote's
    *  number, which keeps one width in every note. Set by the pipeline. */
   fixedSpace?: boolean;
+  /** A numbered bibliography entry's label column (#290): `'gap'` is the
+   *  space after the label, widened when the entry is measured so the text
+   *  starts at the column's edge (`MeasureBlockOptions.labelColumnPx`);
+   *  `'lead'` is a space before the label that pushes it against the gap
+   *  (a right-aligned label). Neither breaks nor stretches. Set by the
+   *  pipeline. */
+  labelTab?: 'lead' | 'gap';
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */

@@ -3165,6 +3165,7 @@ interface CitationsConfig {
     hangingIndent?: Dimension;
     entrySpacing?: Dimension;
     labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
     doi?: 'link' | 'text' | 'hide';
     includeUncited?: boolean;
     groupByLanguage?: boolean;
@@ -3270,7 +3271,13 @@ interface CitationsConfig {
       <td><code>bibliography.labelWidth</code></td>
       <td><code>Dimension</code></td>
       <td>longest label</td>
-      <td>Width of the column the numbers of a numbered list stand in.</td>
+      <td>Width of the column the numbers of a numbered list stand in: every entry’s text starts this far in, on its first line as on its turnover lines, so <code>9.</code> and <code>10.</code> share the column. The label stays part of the entry’s text.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>Where a label sits in its column: against its left edge, or against the text (<code>9.</code> and <code>10.</code> end together).</td>
     </tr>
     <tr>
       <td><code>bibliography.doi</code></td>
@@ -3288,7 +3295,7 @@ interface CitationsConfig {
       <td><code>bibliography.groupByLanguage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Works in Chinese, Japanese and Korean first, then the others.</td>
+      <td>Works in Chinese, Japanese and Korean first, then the others. Author-date and author-page styles only: a numbered list keeps the order of its numbers.</td>
     </tr>
   </tbody>
 </table>

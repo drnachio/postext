@@ -13,6 +13,7 @@ export const DEFAULT_CITATIONS_CONFIG: ResolvedCitationsConfig = {
     fontSize: { value: 0.9, unit: 'em' },
     hangingIndent: { value: 2, unit: 'em' },
     entrySpacing: { value: 0.3, unit: 'em' },
+    labelAlign: 'left',
     doi: 'link',
     includeUncited: false,
     groupByLanguage: false,
@@ -44,6 +45,7 @@ export function resolveCitationsConfig(partial?: CitationsConfig): ResolvedCitat
       hangingIndent: b?.hangingIndent ?? db.hangingIndent,
       entrySpacing: b?.entrySpacing ?? db.entrySpacing,
       ...(b?.labelWidth ? { labelWidth: b.labelWidth } : {}),
+      labelAlign: b?.labelAlign === 'right' ? 'right' : 'left',
       doi: typeof b?.doi === 'string' && DOI.has(b.doi) ? b.doi : db.doi,
       includeUncited: b?.includeUncited ?? db.includeUncited,
       groupByLanguage: b?.groupByLanguage ?? db.groupByLanguage,
@@ -74,6 +76,7 @@ export function stripCitationsDefaults(c?: CitationsConfig): CitationsConfig | u
     if (b.hangingIndent && !dimensionsEqual(b.hangingIndent, db.hangingIndent)) ob.hangingIndent = b.hangingIndent;
     if (b.entrySpacing && !dimensionsEqual(b.entrySpacing, db.entrySpacing)) ob.entrySpacing = b.entrySpacing;
     if (b.labelWidth) ob.labelWidth = b.labelWidth;
+    if (b.labelAlign !== undefined && b.labelAlign !== db.labelAlign) ob.labelAlign = b.labelAlign;
     if (b.doi !== undefined && b.doi !== db.doi) ob.doi = b.doi;
     if (b.includeUncited !== undefined && b.includeUncited !== db.includeUncited) ob.includeUncited = b.includeUncited;
     if (b.groupByLanguage !== undefined && b.groupByLanguage !== db.groupByLanguage) ob.groupByLanguage = b.groupByLanguage;

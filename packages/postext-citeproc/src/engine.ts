@@ -103,6 +103,24 @@ function withLocator(html: string, locator: string, label: string | undefined, c
   return `${html} ${loc}`;
 }
 
+const FULL_WIDTH: Readonly<Record<string, string>> = { '(': '（', ')': '）', ',': '，', ';': '；', ':': '：' };
+
+/**
+ * An author-date citation in Chinese text with the full-width marks the
+ * text around it uses: "（施雅风等，1988；刘时银等，2015）", not
+ * "(施雅风等, 1988; 刘时银等, 2015)" (GB/T 7714—2015 writes ASCII ones;
+ * the 2025 edition already writes these). Tags and character references
+ * are left alone; the spaces around a full-width mark go, its blank is
+ * its own.
+ */
+export function fullWidthCitation(html: string): string {
+  return html
+    .split(/(<[^>]*>|&#?\w+;)/)
+    .map((part, i) => (i % 2 === 1 ? part : part.replace(/[(),;:]/g, (c) => FULL_WIDTH[c]!)))
+    .join('')
+    .replace(/[ \u00a0]*([（），；：])[ \u00a0]*/g, '$1');
+}
+
 /** A citation engine over citeproc-js and the given CSL sources. */
 export function createCiteprocEngine(sources: CslSources): CitationEngine {
   return {
@@ -127,6 +145,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
       engine.setOutputFormat('html');
       const kind: CitationProcessor['kind'] = engine.opt.class === 'note' ? 'note' : 'in-text';
       const numeric = numericStyle(xml);
+      const chineseText = locale.startsWith('zh');
       const and = engine.getTerm('and') || 'and';
       const etAl = engine.getTerm('et-al') || 'et al.';
       let cited: string[] = [];
@@ -169,6 +188,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
               return who ? `${escapeHtml(who)}${glue}${html}` : html;
             }
             html = html.replace(/\[?NO_PRINTED_FORM\]?\s*/g, '');
+            if (chineseText && kind === 'in-text' && !numeric) html = fullWidthCitation(html);
             // An author-page style with nothing for the parentheses (MLA,
             // "as Stillinger records") leaves the space before them.
             return c.mode === 'narrative' && kind === 'in-text' && !numeric ? html.trim() : html;

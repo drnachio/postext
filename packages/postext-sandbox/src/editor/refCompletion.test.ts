@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Resource, ResourceType } from 'postext';
-import { anchorsOf, buildRefOptions, referencesOf, refMicroformat } from './refCompletion';
+import { anchorsOf, atOpensPicker, buildRefOptions, referencesOf, refMicroformat } from './refCompletion';
 
 const types: ResourceType[] = [
   { id: 'figure', name: 'Figura', shortLabel: 'Fig.', numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', captionPrefix: 'Figura' },
@@ -84,5 +84,17 @@ describe('references in the @ picker (#268)', () => {
   it('offers them before the resources and writes a citation', () => {
     const options = buildRefOptions({ resources, types, references: () => referencesOf([md]) }, 'kn');
     expect(options[0]!.label).toBe('knuth84');
+  });
+});
+
+describe('where an @ opens the picker (#309)', () => {
+  it('opens after a space, a bracket or a Chinese character, not inside an e-mail address', () => {
+    expect(atOpensPicker('')).toBe(true);
+    expect(atOpensPicker(' ')).toBe(true);
+    expect(atOpensPicker('[')).toBe(true);
+    expect(atOpensPicker('动')).toBe(true);
+    expect(atOpensPicker('の')).toBe(true);
+    expect(atOpensPicker('a')).toBe(false);
+    expect(atOpensPicker('7')).toBe(false);
   });
 });

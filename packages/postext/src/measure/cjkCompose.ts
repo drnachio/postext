@@ -36,6 +36,7 @@ import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './typ
 import { measureInkBox, measureInkExtent, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import {
   atomicSpanToken,
+  setLabelTabs,
   emergencySplit,
   expandSmallCaps,
   pickSpanFont,
@@ -2032,6 +2033,13 @@ export function composeCjkParagraph(
   // text only (`routesSharedMarks`).
   const route = routesSharedMarks(composition, spans.map((s) => s.text).join(''));
   const units = prepareUnits(buildAllUnits(spans, fonts, letterSpacingPx, vertical, route), composition, letterSpacingPx);
+  // A bibliography label's column (#290).
+  if (options?.labelColumnPx !== undefined) {
+    setLabelTabs(units, (u) => u.token?.labelTab, options.labelColumnPx, (u, w) => {
+      u.width = w;
+      u.token = { ...u.token!, width: w };
+    });
+  }
   // Ruby readings (#194), laid out once their neighbours are known.
   if (units.some((u) => u.ruby)) sizeRubies(units);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };

@@ -179,3 +179,104 @@ describe('Chinese in vertical text (#277)', () => {
     expect(doc.blocks.some((b) => b.footnoteNote !== undefined)).toBe(false);
   });
 });
+
+describe('the label column of a numbered list (#290)', () => {
+  // Ten works, so labels [1]…[9] and [10] differ in width.
+  const refs = Array.from({ length: 10 }, (_, i) => `  - {id: w${i + 1}, type: book, author: ["Author${i + 1}, Ann"], title: A rather long title that turns over onto a second line of the entry number ${i + 1}, issued: 2001, publisher: Press}`).join('\n');
+  const cites = Array.from({ length: 10 }, (_, i) => `[@w${i + 1}]`).join(' ');
+  const md = `---\nreferences:\n${refs}\n---\n# One\n\nText ${cites}.\n`;
+  const bib = (doc: VDTDocument) => doc.blocks.filter((b) => b.bibEntry);
+  const narrow: PostextConfig = { ...config, page: { ...config.page!, width: pt(140) } };
+  /** Where the entry's text starts on its first line, after the label. */
+  const textStart = (b: VDTDocument['blocks'][number]): number => {
+    const line = b.lines[0]!;
+    const segs = line.segments ?? [];
+    let gap = -1;
+    segs.forEach((s, i) => { if (s.labelTab) gap = i; });
+    return line.bbox.x - b.bbox.x + segs.slice(0, gap + 1).reduce((w, s) => w + s.width, 0);
+  };
+
+  it('starts every entry’s text, [9] as [10], where its turnover lines start', () => {
+    const doc = buildDocument({ markdown: md }, { ...narrow, citations: { style: 'ieee', bibliography: { labelWidth: { value: 3, unit: 'em' } } } });
+    const entries = bib(doc);
+    expect(entries).toHaveLength(10);
+    const turnover = entries[0]!.lines[1]!.bbox.x - entries[0]!.bbox.x;
+    for (const b of entries) {
+      expect(b.lines.length).toBeGreaterThan(1);
+      expect(textStart(b)).toBeCloseTo(turnover, 3);
+    }
+    // The label stays in the text.
+    expect(entries[9]!.lines[0]!.text.startsWith('[10]')).toBe(true);
+  });
+
+  it('right-aligns the labels against the text', () => {
+    const doc = buildDocument({ markdown: md }, { ...narrow, citations: { style: 'ieee', bibliography: { labelWidth: { value: 3, unit: 'em' }, labelAlign: 'right' } } });
+    const entries = bib(doc);
+    const end = (b: VDTDocument['blocks'][number]): number => {
+      const segs = b.lines[0]!.segments ?? [];
+      let gap = -1;
+      segs.forEach((s, i) => { if (s.labelTab) gap = i; });
+      return segs.slice(0, gap).reduce((w, s) => w + s.width, 0);
+    };
+    const turnover = entries[0]!.lines[1]!.bbox.x - entries[0]!.bbox.x;
+    expect(end(entries[8]!)).toBeCloseTo(end(entries[9]!), 3);
+    for (const b of entries) expect(textStart(b)).toBeCloseTo(turnover, 3);
+  });
+
+  it('holds in a Chinese list set by the CJK composer', () => {
+    const zhRefs = Array.from({ length: 10 }, (_, i) => `  - {id: z${i + 1}, type: book, language: zh-CN, author: [作者${i + 1}], title: 一部书名相当长足以转到第二行的中文著作第${i + 1}种以及更多的文字, issued: 2001, publisher: 出版社, publisher-place: 北京}`).join('\n');
+    const zhCites = Array.from({ length: 10 }, (_, i) => `[@z${i + 1}]`).join('');
+    const doc = buildDocument({ markdown: `---\nreferences:\n${zhRefs}\n---\n# 一\n\n正文${zhCites}。\n` }, { ...narrow, locale: 'zh-Hans', citations: { style: 'china-national-standard-gb-t-7714-2015-numeric', bibliography: { labelWidth: { value: 3, unit: 'em' } } } });
+    const entries = bib(doc);
+    expect(entries).toHaveLength(10);
+    const turnover = entries[0]!.lines[1]!.bbox.x - entries[0]!.bbox.x;
+    for (const b of entries) expect(textStart(b)).toBeCloseTo(turnover, 3);
+  });
+});
+
+describe('citations in prose and in Chinese (#309)', () => {
+  it('reads a bracketed citation followed by a colon', () => {
+    const doc = buildDocument({ markdown: `${FRONT}# One\n\nThe belt geographers call periglacial [@garcia2020]: the land around the ice.\n` }, config);
+    expect(lines(doc).join('\n')).toContain('periglacial (García, 2020): the land');
+  });
+
+  it('keeps a numbered list in the order of its numbers with groupByLanguage', () => {
+    const md = `---\nreferences:\n  - {id: en1, type: book, language: en, author: ["Glen, John"], title: Ice, issued: 1955, publisher: RS}\n  - {id: zh1, type: book, language: zh-CN, author: [施雅风], title: 冰川, issued: 1988, publisher: 科学出版社}\n---\n# 一\n\n见[@en1]与[@zh1]。\n`;
+    const numeric = buildDocument({ markdown: md }, { ...config, locale: 'zh-Hans', citations: { style: 'china-national-standard-gb-t-7714-2015-numeric', bibliography: { groupByLanguage: true } } });
+    expect(entries(numeric)).toEqual(['en1', 'zh1']);
+    const authorDate = buildDocument({ markdown: md }, { ...config, locale: 'zh-Hans', citations: { style: 'china-national-standard-gb-t-7714-2015-author-date', bibliography: { groupByLanguage: true } } });
+    expect(entries(authorDate)).toEqual(['zh1', 'en1']);
+  });
+
+  it('shows a missing key of a citation of several works on the page', () => {
+    const doc = buildDocument({ markdown: `${FRONT}# One\n\nAs [@nye1953; @garcia2020, p. 519] showed.\n` }, config);
+    const text = lines(doc).join('\n');
+    expect(text).toContain('(García, 2020, p. 519) @nye1953 showed.');
+    const bold = doc.blocks.flatMap((b) => b.lines.flatMap((l) => (l.segments ?? []).filter((s) => s.bold).map((s) => s.text))).join('');
+    expect(bold).toContain('@nye1953');
+  });
+
+  it('sets an author-date citation in Chinese text with full-width marks', () => {
+    const md = `---\nreferences:\n  - {id: shi, type: book, language: zh-CN, author: [施雅风, 黄茂桓], title: 中国冰川概论, issued: 1988, publisher: 科学出版社, publisher-place: 北京}\n  - {id: liu, type: book, language: zh-CN, author: [刘时银], title: 冰川编目, issued: 2015, publisher: 科学出版社, publisher-place: 北京}\n---\n# 一\n\n冰川最多的国家[@shi; @liu]，正如@liu所说。\n`;
+    const doc = buildDocument({ markdown: md }, { ...config, locale: 'zh-Hans', citations: { style: 'china-national-standard-gb-t-7714-2015-author-date' } });
+    const text = lines(doc).join('');
+    expect(text).toMatch(/国家（施雅风[^）]*，1988；刘时银，2015）/);
+    expect(text).toContain('刘时银（2015）');
+  });
+
+  it('drops a 夹注 note’s full stop before a Chinese mark', () => {
+    const md = `---\nreferences:\n  - {id: liu, type: article-journal, language: zh-CN, author: [刘时银], title: 冰川编目, container-title: 地理学报, volume: 70, page: 3-16, issued: 2015, DOI: 10.11821/dlxb201501001}\n---\n# 一\n\n冰川[@liu]，其余。\n`;
+    const doc = buildDocument({ markdown: md }, { ...config, locale: 'zh-Hans', citations: { style: 'china-national-standard-gb-t-7714-2015-note', notes: 'warichu' } });
+    const note = doc.blocks.flatMap((b) => b.lines.flatMap((l) => (l.segments ?? []).filter((s) => s.warichu))).map((s) => s.text).join('');
+    expect(note).toContain('dlxb201501001');
+    expect(note.endsWith('.')).toBe(false);
+  });
+
+  it('bundles GB/T 7714—2025', () => {
+    const md = `---\nreferences:\n  - {id: shi, type: book, language: zh-CN, author: [施雅风, 黄茂桓], title: 中国冰川概论, issued: 1988, publisher: 科学出版社, publisher-place: 北京}\n---\n# 一\n\n冰川[@shi]。\n`;
+    for (const style of ['numeric', 'author-date', 'note']) {
+      const doc = buildDocument({ markdown: md }, { ...config, locale: 'zh-Hans', citations: { style: `china-national-standard-gb-t-7714-2025-${style}` } });
+      expect(lines(doc).join('\n')).toContain('施雅风，黄茂桓');
+    }
+  });
+});
