@@ -18,9 +18,9 @@ const TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
  *  bar at the side, so it passes the logo (`leading`) and the theme and
  *  language controls (`trailing`) to this bar, and the scope choice shows
  *  as icons. Four tabs, the logo, the scope and the trailing controls do
- *  not fit one row on a phone held upright, so below 560px the bar has two
+ *  not fit one row on a phone held upright, so below 640px the bar has two
  *  rows: logo, scope and controls above, the tabs below sharing the full
- *  width. */
+ *  width — room for a fifth tab (an EPUB viewer is planned) at 320px. */
 export function ViewportTabs({ compact = false, leading, trailing }: { compact?: boolean; leading?: ReactNode; trailing?: ReactNode } = {}) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -93,7 +93,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
         className={cn(
           'relative flex items-stretch',
           compact
-            ? 'order-last h-10 basis-full border-t border-(--rule) pt-large:min-h-12 min-[560px]:order-none min-[560px]:h-11 min-[560px]:basis-auto min-[560px]:border-t-0'
+            ? 'order-last h-10 basis-full border-t border-(--rule) pt-large:min-h-12 min-[640px]:order-none min-[640px]:h-11 min-[640px]:basis-auto min-[640px]:border-t-0'
             : 'shrink-0',
         )}
         role="tablist"
@@ -126,7 +126,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
                 'flex pt-large:min-w-11 cursor-pointer items-center justify-center text-[0.68rem]',
                 // On the second row of a phone bar the tabs share its width
                 // (the first one without a rule at the window's edge).
-                compact ? 'flex-1 px-2 first:border-l-0! min-[560px]:flex-none min-[560px]:first:border-l!' : 'px-3',
+                compact ? 'flex-1 px-1 first:border-l-0! min-[640px]:px-2 min-[640px]:flex-none min-[640px]:first:border-l!' : 'px-3',
                 ' font-medium tracking-[0.01em] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
