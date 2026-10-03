@@ -367,6 +367,18 @@
   font-variation-settings: "SOFT" 30, "WONK" 0;
 }
 
+/* The landing's "In short" standfirst opens on a three-line drop cap (cap height ≈ two leads + an x-height). */
+.in-short-lead::first-letter {
+  float: left;
+  margin: 0.06em 0.1em 0 -0.02em;
+  font-family: var(--font-display);
+  font-size: 5.7em;
+  font-weight: 750;
+  line-height: 0.68;
+  color: var(--brand);
+  font-variation-settings: "SOFT" 30, "WONK" 0;
+}
+
 .hero-title em,
 .hero-em {
   font-style: italic;
