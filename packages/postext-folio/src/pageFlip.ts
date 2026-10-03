@@ -533,7 +533,7 @@ interface Pt {
  * page lifts and shrinks to nothing as it lands on the other side; a
  * stiffer paper (`roll`) bends in a wider roll.
  */
-function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
+export function foldOf(G: Pt, P: Pt, W: number, H: number, roll = 1) {
   const du = G.u - P.u;
   const dv = G.v - P.v;
   const D = Math.hypot(du, dv);
@@ -560,7 +560,7 @@ type Fold = NonNullable<ReturnType<typeof foldOf>>;
 
 /** How far through its turn a leaf is: the point taken, from where it
  *  was to its mirror image across the spine. */
-function progressFrom(G: Pt, P: Pt) {
+export function progressFrom(G: Pt, P: Pt) {
   return Math.min(1, Math.max(0, (G.u - P.u) / (2 * G.u)));
 }
 
@@ -594,7 +594,7 @@ interface Surfaces {
  * the spine the left one's. A stiff leaf (`rigidity`) turns more as a
  * plate on its hinge: a board does not bend at all.
  */
-function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0, board?: { thick: number; face: number }): { phi: number; pivot: number } {
+export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, W: number, H: number, lift: number, book: Surfaces, rigidity: number, q: number, flutter = 0, time = 0, board?: { thick: number; face: number }): { phi: number; pivot: number } {
   const pos = geometry.attributes.position;
   const sx = forward ? 1 : -1;
   const [xr, zr] = along(book.right, W);
@@ -646,6 +646,25 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
   // it leans off that slope, not off a level plane over it.
   const chordR = (zr - zr0) / (xr || 1);
   const chordL = (zl - zl0) / (xl || 1);
+  // Onto the book. At rest (and as it lands) the leaf lies on the open
+  // book's surface, into the gutter and out. In the air it is lifted off
+  // at the spine: its own plane rises from the gutter's floor at a small
+  // angle, and it touches the pages only where they stand higher (the
+  // gutter's walls), joined smoothly. `z`: how far over that it stands.
+  const onBook = (s: number, z: number): [number, number] => {
+    const [rx, rz] = surfaceAt(book, s);
+    let px = rx;
+    let pz = rz + z + lift;
+    if (inAir > 0) {
+      const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
+      const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
+      const under = surfaceAt(book, fx)[1] + lift + 0.6;
+      const flying = smoothMax(plane, under, 0.006 * W);
+      px += (fx - px) * inAir;
+      pz += (flying - pz) * inAir;
+    }
+    return [px, pz];
+  };
   for (let iy = 0; iy <= NY; iy++) {
     const v = (0.5 - iy / NY) * H;
     for (let ix = 0; ix <= NX; ix++) {
@@ -653,13 +672,14 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
       let x = u;
       let y = v;
       let z = 0;
+      let d = 0;
+      let dd = 0;
       if (fold) {
         const { F, n, R } = fold;
-        const d = (u - F.u) * n.u + (v - F.v) * n.v;
+        d = (u - F.u) * n.u + (v - F.v) * n.v;
         if (d > 0) {
           // Round the roll, then straight on at the fold's angle.
           const theta = fold.theta;
-          let dd: number;
           if (R > 1e-3 && d < R * theta) {
             dd = R * Math.sin(d / R);
             z = R * (1 - Math.cos(d / R));
@@ -672,22 +692,17 @@ function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: boolean, 
           y = v - n.v * (d - dd);
         }
       }
-      // Onto the book. At rest (and as it lands) the leaf lies on the open
-      // book's surface, into the gutter and out. In the air it is lifted
-      // off at the spine: its own plane rises from the gutter's floor at a
-      // small angle, and it touches the pages only where they stand higher
-      // (the gutter's walls), joined smoothly.
-      const s = sx * x;
-      const [rx, rz] = surfaceAt(book, s);
-      let px = rx;
-      let pz = rz + z + lift;
-      if (inAir > 0) {
-        const fx = (s >= 0 ? 1 : -1) * Math.abs(s) * cosA;
-        const plane = (s >= 0 ? zr0 + s * chordR : zl0 - s * chordL) + Math.abs(s) * sinA + z + lift;
-        const under = surfaceAt(book, fx)[1] + lift + 0.6;
-        const flying = smoothMax(plane, under, 0.006 * W);
-        px += (fx - px) * inAir;
-        pz += (flying - pz) * inAir;
+      let [px, pz] = onBook(sx * x, z);
+      if (fold && d > 0) {
+        // Paper up in the air is not pressed onto the pages under it: wrapped
+        // onto them it dipped into the gutter and was squeezed across it (a
+        // crease where the curl passed over the spine). It goes on from the
+        // foot of its fold, level, as the fold has it, and only comes down
+        // onto the pages as it does (lying back over itself, landing).
+        const [fx, fz] = onBook(sx * (u - fold.n.u * d), 0);
+        const w = smooth(0, 0.05 * W, z);
+        px += (fx + sx * fold.n.u * dd - px) * w;
+        pz += (fz + z - pz) * w;
       }
       if (r > 0) {
         px += (u * Math.cos(phi) - offset * Math.sin(phi) - px) * r;
