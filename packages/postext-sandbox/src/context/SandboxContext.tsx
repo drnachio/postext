@@ -74,6 +74,7 @@ import { hidePresetId, unhidePresetId } from '../presets/hidden';
 import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
+import { folioSupported } from '../viewport/folioSupport';
 import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
 import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
@@ -336,6 +337,11 @@ export type SandboxAction =
   | { type: 'SET_PROJECT_NOTICE'; payload: string | null }
   | { type: 'SET_BUNDLE_REPLACE_PROMPT'; payload: SandboxState['bundleReplacePrompt'] };
 
+/** The view to open on: the Canvas where the Folio is not offered. */
+function usableViewport(view: ViewportTab): ViewportTab {
+  return view === 'folio' && !folioSupported() ? 'canvas' : view;
+}
+
 const EMPTY_SELECTION: EditorSelection = { from: 0, to: 0, head: 0 };
 
 /** Adopt a book slice and re-derive the active-chapter mirror. Returns
@@ -473,7 +479,8 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_SIDEBAR_DRAGGING':
       return { ...state, sidebarDragging: action.payload };
     case 'SET_VIEWPORT':
-      return { ...state, activeViewport: action.payload };
+      // A link may still name the Folio on a device that does not offer it.
+      return { ...state, activeViewport: usableViewport(action.payload) };
     case 'SET_SELECTION':
       if (
         state.selection.from === action.payload.from &&
@@ -1224,7 +1231,7 @@ export function SandboxProvider({
       activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
-      activeViewport: initialHash.view ?? (isViewportTab(savedViewport) ? savedViewport : 'canvas'),
+      activeViewport: usableViewport(initialHash.view ?? (isViewportTab(savedViewport) ? savedViewport : 'canvas')),
       labels: mergedLabels,
       locale: locale ?? 'en',
       selection: { from: 0, to: 0, head: 0 },
