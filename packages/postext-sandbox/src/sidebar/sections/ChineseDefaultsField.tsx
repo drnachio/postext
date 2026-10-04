@@ -46,7 +46,7 @@ const ITEM_LABELS: Record<ChineseDefaultId, keyof SandboxLabels> = {
 
 /** The book on screen: the project, or the preset and its language, and
  *  the load (a book opened again is another book). Undo belongs to it. */
-function bookKeyOf(s: SandboxState): string {
+export function bookKeyOf(s: SandboxState): string {
   return [s.activeProjectId ?? '', s.activePresetId, s.presetApplied?.locale ?? '', s.bookVersion].join('\u0000');
 }
 
@@ -283,7 +283,7 @@ export function ChineseDefaultsField() {
   );
 }
 
-function Choice({ label, children }: { label: string; children: (labelId: string) => ReactNode }) {
+export function Choice({ label, children }: { label: string; children: (labelId: string) => ReactNode }) {
   const labelId = useId();
   return (
     <div className="flex min-w-0 flex-col gap-1">

@@ -68,6 +68,41 @@ describe('Language and direction', () => {
     expect(html).toContain('Auto (Right edge)');
     expect(html).toContain('中文（繁體）');
   });
+
+  it('names the direction, binding and digits Auto gives an Arabic book, and offers the Arabic defaults (#381)', () => {
+    const english = render(WritingSection, createDefaultConfig('en'));
+    expect(english).toContain(DEFAULT_LABELS.documentDirection);
+    expect(english).toContain('Auto (Left to right)');
+    expect(english).toContain(DEFAULT_LABELS.numerals);
+    expect(english).toContain('Auto (European 0 1 2 3)');
+    expect(english).not.toContain(DEFAULT_LABELS.arabicDefaults);
+
+    const arabic = render(WritingSection, { ...createDefaultConfig('ar'), locale: 'ar' });
+    expect(arabic).toContain('Auto (Right to left)');
+    expect(arabic).toContain('Auto (Right edge)');
+    expect(arabic).toContain('Auto (Arabic-Indic ٠ ١ ٢ ٣)');
+    expect(arabic).toContain(DEFAULT_LABELS.arabicDefaults);
+    // The Maghreb prints European digits; an explicit left to right binds
+    // on the left again.
+    const maghreb = render(WritingSection, { ...createDefaultConfig('ar'), locale: 'ar-MA', direction: 'ltr' });
+    expect(maghreb).toContain('Auto (European 0 1 2 3)');
+    expect(maghreb).toContain('Auto (Left edge)');
+    expect(maghreb).toContain(`${DEFAULT_LABELS.documentDirection} (changed)${DEFAULT_LABELS.documentDirectionLtr}`);
+  });
+
+  it('finds the direction and digit fields by search, in English and Spanish', () => {
+    const config = createDefaultConfig('en');
+    for (const [labels, query] of [
+      [DEFAULT_LABELS, 'digits'],
+      [DEFAULT_LABELS, 'right to left'],
+      [ES, 'cifras'],
+      [ES, 'derecha a izquierda'],
+    ] as const) {
+      const index = buildSectionSearchIndex(labels, config, []);
+      const plan = planSettingsSearch(index, compileMatcher(query).tokens, false, config);
+      expect(plan.find((g) => g.sections.includes('writing'))?.id, query).toBe('writing');
+    }
+  });
 });
 
 describe('Body text', () => {

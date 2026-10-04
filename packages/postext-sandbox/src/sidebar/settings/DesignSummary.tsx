@@ -11,6 +11,7 @@ import type { SettingsGroupId } from '../sections/registry';
 import { pageDrawingConfig } from '../sections/cjkGridReadout';
 import { documentLocaleLabel } from '../sections/BodyTextSection/constants';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
+import { documentDirection, documentLanguage } from '../../context/documentDirection';
 import { PagePreview } from './PagePreview';
 
 interface DesignSummaryProps {
@@ -28,7 +29,11 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   // The page as it is set: the character grid's margins when it is on.
   const drawn = useMemo(() => pageDrawingConfig(config), [config]);
   const layout = resolveLayoutConfig(drawn.layout);
-  const page = resolvePageConfig(drawn.page, config.locale, layout.writingMode);
+  // The language and its direction: a right-to-left book is bound on the
+  // right when the binding is Auto.
+  const language = documentLanguage(config, defaultDocumentLocale(uiLocale));
+  const direction = documentDirection(config.direction, language);
+  const page = resolvePageConfig(drawn.page, language, layout.writingMode, direction);
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const palette = config.colorPalette ?? [];
@@ -43,10 +48,11 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
         : labels.settingsSummaryOneColumn;
   const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
   // Writing system: the language, with the direction and the binding when
-  // they are a choice (Chinese text, vertical lines, a right binding).
-  const language = config.locale ?? defaultDocumentLocale(uiLocale);
+  // they are a choice (Chinese text, vertical lines, right-to-left text, a
+  // right binding).
   const vertical = layout.writingMode === 'vertical-rl';
   const writing = [
+    direction === 'rtl' ? labels.documentDirectionRtl : '',
     vertical || isCjkLanguage(language) ? (vertical ? labels.writingModeVerticalShort : labels.writingModeHorizontal) : '',
     vertical || page.binding === 'right' ? (page.binding === 'right' ? labels.settingsSummaryBoundRight : labels.settingsSummaryBoundLeft) : '',
   ].filter(Boolean);
