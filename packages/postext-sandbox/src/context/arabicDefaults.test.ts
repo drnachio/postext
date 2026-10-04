@@ -248,4 +248,15 @@ describe('document direction and digits', () => {
       applied: false,
     });
   });
+
+  it('turns kashida justification back on when the author turned it off', () => {
+    const base: PostextConfig = { ...arabicBook(), bodyText: { kashida: 'none', lineHeight: { value: 1.75, unit: 'em' } } };
+    const r = arabicDefaults(base, { locale: 'ar' });
+    expect(change(r, 'kashida')).toMatchObject({ from: { kind: 'switch', on: false }, to: { kind: 'switch', on: true }, customised: true, applied: false });
+    const ticked = arabicDefaults(base, { locale: 'ar', include: ['kashida'] }).config;
+    expect(ticked.bodyText).toEqual({ lineHeight: { value: 1.75, unit: 'em' } });
+    expect(resolveBodyTextConfig(ticked.bodyText, 'ar').kashida).toBe('auto');
+    // Unset or 'auto' is already on in an Arabic book.
+    expect(ids(arabicDefaults(arabicBook(), { locale: 'ar' }))).not.toContain('kashida');
+  });
 });

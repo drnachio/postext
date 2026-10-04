@@ -32,6 +32,7 @@ const ITEM_LABELS: Record<ArabicDefaultId, keyof SandboxLabels> = {
   lineHeight: 'bodyLineHeight',
   textAlign: 'bodyTextAlign',
   hyphenation: 'bodyHyphenation',
+  kashida: 'bodyKashida',
   emphasis: 'bodyEmphasis',
   numerals: 'numerals',
   resourceTypes: 'chineseDefaultsResourceTypes',

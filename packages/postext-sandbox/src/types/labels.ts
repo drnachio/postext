@@ -608,6 +608,18 @@ export interface SandboxLabels {
   bodyTashkilKeep: string;
   bodyTashkilStrip: string;
   bodyTashkilStripVowels: string;
+  bodyKashida: string;
+  bodyKashidaTooltip: string;
+  bodyKashidaPatterns: string;
+  bodyKashidaPatternsTooltip: string;
+  bodyKashidaPatternsAuto: string;
+  bodyKashidaPatternsNaskh: string;
+  bodyKashidaPatternsSimple: string;
+  bodyKashidaPatternsNastaliq: string;
+  bodyKashidaPerWord: string;
+  bodyKashidaPerWordTooltip: string;
+  bodyKashidaMaxLength: string;
+  bodyKashidaMaxLengthTooltip: string;
   bodyHyphenationLocale: string;
   bodyHyphenationLocaleTooltip: string;
   bodyHyphenationRagged: string;

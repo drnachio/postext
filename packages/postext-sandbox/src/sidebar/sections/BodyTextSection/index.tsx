@@ -20,7 +20,7 @@ import {
 import { documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
 import { defaultDocumentLocale } from '../../../controls/hyphenation';
 import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
-import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
+import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
 import { TypeSample } from '../../settings/TypeSample';
@@ -279,6 +279,16 @@ export const BodyTextSection = memo(function BodyTextSection() {
             isOptimalLineBreakingDefault={isOptimalLineBreakingDefault}
             updateBodyText={updateBodyText}
             updateHyphenation={updateHyphenation}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        {bodyText.textAlign === 'justify' && (
+          <KashidaFields
+            bodyText={bodyText}
+            raw={raw}
+            arabicScript={arabicScript}
+            updateBodyText={updateBodyText}
             resetField={resetField}
             labels={labels}
           />

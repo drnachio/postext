@@ -1,8 +1,8 @@
 'use client';
 
 import { DEFAULT_BODY_TEXT_CONFIG } from 'postext';
-import type { BodyTextConfig, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
-import { NestedGroup, NumberInput, ToggleSwitch } from '../../../controls';
+import type { BodyTextConfig, HyphenationConfig, KashidaPatterns, ResolvedBodyTextConfig } from 'postext';
+import { NestedGroup, NumberInput, SelectInput, ToggleSwitch } from '../../../controls';
 import type { useSandboxLabels } from '../../../context/SandboxContext';
 import { HyphenateCompoundsField, HyphenationLocaleField, RaggedHyphenationFields } from './HyphenationFields';
 
@@ -200,3 +200,82 @@ export function JustificationSubsection({
     </NestedGroup>
   );
 }
+
+/**
+ * Kashida justification (`bodyText.kashida` and its details, #375): a
+ * justified line of Arabic-script text elongates letter joins with
+ * tatweels. On by default in a book written in Arabic script
+ * (`arabicScript`), so the switch shows there, or wherever the author set
+ * it; the details show while it is on.
+ */
+export function KashidaFields({
+  bodyText,
+  raw,
+  arabicScript,
+  updateBodyText,
+  resetField,
+  labels,
+}: Pick<Props, 'bodyText' | 'raw' | 'updateBodyText' | 'resetField' | 'labels'> & { arabicScript: boolean }) {
+  if (!arabicScript && raw?.kashida === undefined) return null;
+  const on = bodyText.kashida === 'auto';
+  const D = DEFAULT_KASHIDA;
+  const patterns = bodyText.kashidaPatterns ?? D.patterns;
+  return (
+    <>
+      <ToggleSwitch
+        label={labels.bodyKashida}
+        checked={on}
+        // The language's default is written as unset, the other as itself.
+        onChange={(checked) => (checked === arabicScript ? resetField('kashida') : updateBodyText({ kashida: checked ? 'auto' : 'none' }))}
+        tooltip={labels.bodyKashidaTooltip}
+        isDefault={on === arabicScript}
+        onReset={() => resetField('kashida')}
+      />
+      {on && (
+        <NestedGroup>
+          <SelectInput
+            label={labels.bodyKashidaPatterns}
+            value={patterns}
+            options={[
+              { value: 'auto', label: labels.bodyKashidaPatternsAuto },
+              { value: 'naskh', label: labels.bodyKashidaPatternsNaskh },
+              { value: 'simple', label: labels.bodyKashidaPatternsSimple },
+              { value: 'nastaliq', label: labels.bodyKashidaPatternsNastaliq },
+            ]}
+            onChange={(v) => (v === 'auto' ? resetField('kashidaPatterns') : updateBodyText({ kashidaPatterns: v as KashidaPatterns }))}
+            tooltip={labels.bodyKashidaPatternsTooltip}
+            isDefault={patterns === D.patterns}
+            onReset={() => resetField('kashidaPatterns')}
+          />
+          <NumberInput
+            label={labels.bodyKashidaPerWord}
+            value={bodyText.kashidaPerWord ?? D.perWord}
+            onChange={(v) => updateBodyText({ kashidaPerWord: v })}
+            min={1}
+            max={6}
+            step={1}
+            tooltip={labels.bodyKashidaPerWordTooltip}
+            isDefault={(bodyText.kashidaPerWord ?? D.perWord) === D.perWord}
+            onReset={() => resetField('kashidaPerWord')}
+          />
+          <NumberInput
+            label={labels.bodyKashidaMaxLength}
+            value={bodyText.kashidaMaxLength ?? D.maxLength}
+            onChange={(v) => updateBodyText({ kashidaMaxLength: v })}
+            min={0}
+            max={3}
+            step={0.1}
+            suffix="em"
+            tooltip={labels.bodyKashidaMaxLengthTooltip}
+            isDefault={(bodyText.kashidaMaxLength ?? D.maxLength) === D.maxLength}
+            onReset={() => resetField('kashidaMaxLength')}
+          />
+        </NestedGroup>
+      )}
+    </>
+  );
+}
+
+/** The engine's kashida defaults once it is on (`DEFAULT_KASHIDA_CONFIG`,
+ *  not exported from `postext`). */
+const DEFAULT_KASHIDA = { patterns: 'auto' as KashidaPatterns, perWord: 1, maxLength: 0.6 };

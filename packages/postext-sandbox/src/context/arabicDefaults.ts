@@ -4,8 +4,6 @@
 // ticks and unticks rows, and dispatches `config` as one step;
 // `undoArabicDefaults` takes that step back.
 //
-// Only settings the engine has today are listed. Kashida justification
-// joins the list when the engine gains it.
 
 import type {
   DigitSystem,
@@ -59,6 +57,7 @@ export type ArabicDefaultId =
   | 'lineHeight'
   | 'textAlign'
   | 'hyphenation'
+  | 'kashida'
   | 'emphasis'
   | 'numerals'
   | 'resourceTypes'
@@ -327,6 +326,19 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
       to: { kind: 'switch', on: false },
       customised: own,
       apply: (c) => ({ ...c, bodyText: { ...c.bodyText, hyphenation: { ...c.bodyText?.hyphenation, enabled: false } } }),
+    });
+  }
+
+  // Kashida: justified Arabic lines elongate letter joins (#375). The
+  // engine does so by default in an Arabic book; the row turns back an
+  // author's 'none'.
+  if (body?.kashida === 'none') {
+    rows.push({
+      id: 'kashida',
+      from: { kind: 'switch', on: false },
+      to: { kind: 'switch', on: true },
+      customised: true,
+      apply: (c) => set(c, 'bodyText', without(c.bodyText, 'kashida')),
     });
   }
 
