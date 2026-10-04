@@ -545,6 +545,9 @@ importers:
       postext-citeproc:
         specifier: workspace:*
         version: link:../postext-citeproc
+      postext-epub:
+        specifier: workspace:*
+        version: link:../postext-epub
       postext-folio:
         specifier: workspace:*
         version: link:../postext-folio

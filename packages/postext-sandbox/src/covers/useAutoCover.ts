@@ -31,29 +31,40 @@ export interface FirstChapterDoc {
 // Tries that met pictures not decoded yet, by `coverTargetKey`.
 const missingTries = new Map<string, number>();
 
-/** Paint `page` into a `COVER_WIDTH` JPEG (on white: a page without a paper
- *  colour is transparent). `missing` when a picture of the page has not
- *  been decoded yet, unless `allowMissing` (placeholders then). */
-export async function renderCoverImage(page: VDTPage, doc: VDTDocument, allowMissing = false): Promise<{ bytes: ArrayBuffer; mime: string } | 'missing' | null> {
-  if (typeof document === 'undefined' || page.width <= 0) return null;
+/** Paint `page` into a JPEG `width` pixels wide, `COVER_WIDTH` by default
+ *  (on white: a page without a paper colour is transparent); `trimmed`
+ *  leaves out the cut-line margin a layout with crop marks has around the
+ *  page. `missing` when a picture of the page has not been decoded yet,
+ *  unless `allowMissing` (placeholders then). */
+export async function renderCoverImage(
+  page: VDTPage,
+  doc: VDTDocument,
+  allowMissing = false,
+  { width = COVER_WIDTH, trimmed = false }: { width?: number; trimmed?: boolean } = {},
+): Promise<{ bytes: ArrayBuffer; mime: string } | 'missing' | null> {
+  const off = trimmed && doc.trimOffset > 0 ? doc.trimOffset : 0;
+  const pageW = page.width - 2 * off;
+  const pageH = page.height - 2 * off;
+  if (typeof document === 'undefined' || pageW <= 0 || pageH <= 0) return null;
   // Painted at twice the size and scaled down: small text anti-aliases
   // better than when drawn at the final size.
   const big = document.createElement('canvas');
+  const scale = (width * 2) / pageW;
   let missing = false;
   renderPageToCanvas(page, doc, big, {
-    scale: (COVER_WIDTH * 2) / page.width,
+    scale,
     onWarning: (w) => { if (w.kind === 'missingImage') missing = true; },
   });
   if (missing && !allowMissing) return 'missing';
   const out = document.createElement('canvas');
-  out.width = COVER_WIDTH;
-  out.height = Math.max(1, Math.round((page.height / page.width) * COVER_WIDTH));
+  out.width = width;
+  out.height = Math.max(1, Math.round((pageH / pageW) * width));
   const ctx = out.getContext('2d');
   if (!ctx) return null;
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, out.width, out.height);
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(big, 0, 0, out.width, out.height);
+  ctx.drawImage(big, off * scale, off * scale, pageW * scale, pageH * scale, 0, 0, out.width, out.height);
   big.width = 1;
   big.height = 1;
   const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, 'image/jpeg', 0.85));
