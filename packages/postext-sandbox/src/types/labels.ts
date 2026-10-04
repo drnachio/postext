@@ -71,6 +71,32 @@ export interface SandboxLabels {
   pdfInlineUnavailable: string;
   pdfOpen: string;
 
+  // EPUB viewport: the reader of the generated file and its toolbar.
+  // `__size__` = file size, `__chapter__`/`__count__` = chapter being laid
+  // out, `__done__`/`__total__` = documents written, `__family__`,
+  // `__file__`, `__detail__` = what a warning is about, `__page__` /
+  // `__index__` = position in the book.
+  epubToolbar: string;
+  epubReader: string;
+  epubDownload: string;
+  epubDownloadSize: string;
+  epubGenerating: string;
+  epubProgressLayout: string;
+  epubProgressInputs: string;
+  epubProgressDocuments: string;
+  epubProgressPackage: string;
+  epubReady: string;
+  epubError: string;
+  epubContents: string;
+  epubWarnings: string;
+  epubWarningMissingImage: string;
+  epubWarningMissingFont: string;
+  epubWarningMissingFace: string;
+  epubWarningFontWithheld: string;
+  epubWarningUnsupported: string;
+  epubPageFrame: string;
+  epubChapterFrame: string;
+
   // Page section
   page: string;
   pageBackgroundColor: string;
