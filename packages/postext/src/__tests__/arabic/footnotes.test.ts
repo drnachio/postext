@@ -94,9 +94,13 @@ describe('Arabic footnotes', () => {
 
   it('opens each note with the same marker, on the line', () => {
     const first = notes(doc)[0]!;
-    const seg = first.lines[0]!.segments![0]!;
-    expect(seg.text).toBe('(١)');
-    expect(seg.script).toBeUndefined();
+    // The number may be measured in pieces (the brackets apart from the
+    // digit in a right-to-left paragraph): read it up to the gap after it.
+    const segs = first.lines[0]!.segments!;
+    const gap = segs.findIndex((s) => s.text === '\u2002');
+    const number = segs.slice(0, gap);
+    expect(number.map((s) => s.text).join('')).toBe('(١)');
+    for (const seg of number) expect(seg.script).toBeUndefined();
   });
 
   it('numbers the notes again on every page', () => {
