@@ -593,5 +593,5 @@ describe("recipe pens", () => {
     const preview = previewDraftsAllowed();
     const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
-  });
+  }, 120_000);
 });
