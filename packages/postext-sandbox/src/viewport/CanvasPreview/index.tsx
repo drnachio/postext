@@ -12,7 +12,7 @@ import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { clearOverlay, drawOverlay } from './overlay';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
-import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { layoutCacheKey } from '../../book/layoutKeys';
@@ -386,7 +386,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // the first build until faces are loaded. The worker loads its own copy
     // of the same fonts separately (see `useLayoutWorker`).
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
+      const missing = missingConfigFontSpecs(deferredConfig);
       if (missing.length > 0) {
         onGeneratingChangeRef.current?.(true);
         ensureConfigFontsLoaded(deferredConfig).then(() => {

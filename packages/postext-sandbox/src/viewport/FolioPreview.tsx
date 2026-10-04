@@ -9,7 +9,7 @@ import { buildBookChapters, type HeldChapterDoc } from '../book/buildBook';
 import { layoutCacheKey } from '../book/layoutKeys';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination';
 import { stitchDocuments, type StitchedBook } from '../book/stitch';
-import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
 import { ensureResourceImages } from '../controls/resourceImages';
 import { getBlob } from '../storage/blobStore';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
@@ -219,7 +219,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     let cancelled = false;
     const { onGeneratingChange: generating, onPageCountChange: counted } = callbacksRef.current;
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
+      const missing = missingConfigFontSpecs(deferredConfig);
       if (missing.length > 0) {
         generating?.(true);
         ensureConfigFontsLoaded(deferredConfig).then(() => {

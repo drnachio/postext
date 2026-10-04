@@ -20,7 +20,7 @@ import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
 import { useShadowDom } from '../../hooks/useShadowDom';
-import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
@@ -313,9 +313,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     // Wait for required fonts, so measurement isn't poisoned by fallbacks.
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(currentConfig).filter(
-        (s) => !document.fonts.check(s),
-      );
+      const missing = missingConfigFontSpecs(currentConfig);
       if (missing.length > 0) {
         await ensureConfigFontsLoaded(currentConfig);
         if (seq !== renderSeqRef.current) return;

@@ -10,7 +10,7 @@ import { useEffect, type MutableRefObject } from 'react';
 import { renderPageToCanvas } from 'postext';
 import type { VDTDocument, VDTPage } from 'postext';
 import { useSandboxCoverSaver, useSandboxStateGetter } from '../context/SandboxContext';
-import { getConfigFontSpecs } from '../controls/fontLoader';
+import { missingConfigFontSpecs } from '../controls/fontLoader';
 import { coverTargetKey, coverToCapture, sessionCoverAttempts as attempted } from './autoCover';
 
 /** Width of a cover picture, in pixels (a Books row shows it at 36 px;
@@ -99,7 +99,7 @@ export function useAutoCover(firstChapterDocRef: MutableRefObject<FirstChapterDo
       void (async () => {
         if (typeof document !== 'undefined' && document.fonts) {
           await document.fonts.ready;
-          if (getConfigFontSpecs(getState().config).some((spec) => !document.fonts.check(spec))) return;
+          if (missingConfigFontSpecs(getState().config).length > 0) return;
         }
         // Still the same book, still without a cover, still this document.
         const now = getState();
