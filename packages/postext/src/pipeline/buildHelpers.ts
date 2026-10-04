@@ -8,7 +8,9 @@ import { spaceDirectiveLines } from '../parse/attrs';
 import { dimensionToPx } from '../units';
 import {
   createBoundingBox,
+  pageIsMirrored,
   type VDTBlock,
+  type VDTPage,
   type BoundingBox,
   type ResolvedConfig,
 } from '../vdt';
@@ -46,6 +48,12 @@ export interface PageMetrics {
    *  its width; see `VDTPage.flow`), and `physical` holds them on the
    *  sheet. On a horizontal page the two frames are one. */
   vertical: boolean;
+  /** Whether the flow is laid out mirrored (a right-to-left document,
+   *  `resolvedDirection()`; see `VDTMirroredFlowFrame`): `contentArea`,
+   *  `trimBox` and `bleedBox` are then the sheet's rects turned over its
+   *  vertical axis (`x` → `pageWidthPx − x`), and `physical` holds them on
+   *  the sheet. Never set together with `vertical`, which wins. */
+  mirrored: boolean;
   flowWidthPx: number;
   flowHeightPx: number;
   physical: { contentArea: BoundingBox; trimBox: BoundingBox; bleedBox: BoundingBox };
@@ -55,6 +63,18 @@ export interface PageMetrics {
  *  (see `pageRectToFlow`): `(x, y, w, h)` → `(y, W − x − w, h, w)`. */
 export function sheetRectToFlow(rect: BoundingBox, sheetWidthPx: number): BoundingBox {
   return createBoundingBox(rect.y, sheetWidthPx - (rect.x + rect.width), rect.height, rect.width);
+}
+
+/** A sheet rect in the flow frame a page of `metrics` lays its flow out in
+ *  (see `pageRectToFlow`): turned on a vertical page, mirrored on a
+ *  right-to-left one, as it is otherwise. */
+export function sheetRectToPageFlow(
+  rect: BoundingBox,
+  metrics: Pick<PageMetrics, 'pageWidthPx'> & Partial<Pick<PageMetrics, 'vertical' | 'mirrored'>>,
+): BoundingBox {
+  if (metrics.vertical) return sheetRectToFlow(rect, metrics.pageWidthPx);
+  if (metrics.mirrored) return mirrorContentArea(rect, metrics.pageWidthPx);
+  return rect;
 }
 
 export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
@@ -105,14 +125,32 @@ export function computePageMetrics(resolved: ResolvedConfig): PageMetrics {
       trimBox: sheetRectToFlow(trimBox, pageWidthPx),
       bleedBox: sheetRectToFlow(bleedBox, pageWidthPx),
       vertical: true,
+      mirrored: false,
       flowWidthPx: pageHeightPx,
       flowHeightPx: pageWidthPx,
       physical,
     };
   }
+  if (resolved.direction === 'rtl') {
+    // A right-to-left flow is a left-to-right page turned over the sheet's
+    // vertical axis: the margin written `left` (the inner one of a recto)
+    // lands on the flow's right, and the trim and bleed boxes, centred on
+    // the sheet, stay where they are.
+    return {
+      trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset,
+      contentArea: mirrorContentArea(contentArea, pageWidthPx),
+      trimBox: mirrorContentArea(trimBox, pageWidthPx),
+      bleedBox: mirrorContentArea(bleedBox, pageWidthPx),
+      vertical: false,
+      mirrored: true,
+      flowWidthPx: pageWidthPx,
+      flowHeightPx: pageHeightPx,
+      physical,
+    };
+  }
   return {
     trimWidthPx, trimHeightPx, pageWidthPx, pageHeightPx, trimOffset, contentArea, trimBox, bleedBox,
-    vertical: false, flowWidthPx: pageWidthPx, flowHeightPx: pageHeightPx, physical,
+    vertical: false, mirrored: false, flowWidthPx: pageWidthPx, flowHeightPx: pageHeightPx, physical,
   };
 }
 
@@ -151,6 +189,27 @@ export function pageMirrored(
   if (!mirror) return false;
   const isEvenPage = (pageIndex + pageIndexOffset + 1) % 2 === 0;
   return isEvenPage !== (resolved.page.binding === 'right');
+}
+
+/** Whether `page` swaps its mirrored margins as seen from its flow: the
+ *  parity the rules keyed to a page's spine side read (a callout's
+ *  `'outer'` corner icon, an `'outer'` side column, the flush end of a
+ *  turned float, a floated box's outer side). On a left-to-right page it
+ *  is {@link pageMirrored}. A right-to-left page's flow is turned over the
+ *  sheet (`VDTMirroredFlowFrame`), which puts the spine of a page whose
+ *  spine is on its right on the flow's left: there the flow parity is the
+ *  physical one inverted, so a right-bound right-to-left book behaves, in
+ *  its flow, as a left-bound left-to-right one. Without mirrored margins
+ *  no page swaps, in either direction. */
+export function flowPageMirrored(
+  resolved: Pick<ResolvedConfig, 'page'>,
+  page: Pick<VDTPage, 'index' | 'flow'>,
+  pageIndexOffset = 0,
+  mirror = resolved.page.margins.mirror,
+): boolean {
+  const physical = pageMirrored(resolved, page.index, pageIndexOffset, mirror);
+  if (!pageIsMirrored(page)) return physical;
+  return mirror ? !physical : false;
 }
 
 /** Content area for the page at `pageIndex` (position in `doc.pages`). With

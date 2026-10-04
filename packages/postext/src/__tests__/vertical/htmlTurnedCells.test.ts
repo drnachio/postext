@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildDocument, renderToHtml } from '../../index';
+import { buildDocument, renderToHtml, verticalFlowOf } from '../../index';
 import type { PostextConfig, Dimension } from '../../types';
 import type { VDTLine } from '../../vdt';
 import { SizedStubCtx } from './stub';
@@ -69,7 +69,7 @@ describe('turned marks in a vertical line of the HTML', () => {
   it('sets the mainland interpunct in half a cell, and stretches an en dash over its cell', () => {
     const doc = buildDocument({ markdown: '这是一个测试‧再测试。丙–丁。列夫·托尔斯泰写了书。' }, config('zh-Hans'));
     // The layout measured the dash for the renderers without font metrics.
-    expect(doc.pages[0]!.flow!.dashAdvances).toEqual({ 'Test Serif': { '–': 0.5 } });
+    expect(verticalFlowOf(doc.pages[0]!)!.dashAdvances).toEqual({ 'Test Serif': { '–': 0.5 } });
     const cells = turnedCells(renderToHtml(doc, { mode: 'single' }));
     expect(cells).toEqual([
       { text: '‧', cell: 0.5, scale: 1 },

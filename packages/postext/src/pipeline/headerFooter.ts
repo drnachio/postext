@@ -6,6 +6,7 @@ import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, R
 import {
   createBoundingBox,
   flowRectToPage,
+  pageIsVertical,
   type VDTBlock,
   type VDTDocument,
   type VDTDesignSlot,
@@ -1054,10 +1055,12 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     // Text in the flow (openers, part pages, in-column designs) reads as the
     // page's flow does; running heads and folios are horizontal on the
     // sheet, whatever the flow (see below).
-    setMeasureWritingMode(page.flow ? 'vertical-rl' : 'horizontal-tb');
+    setMeasureWritingMode(pageIsVertical(page) ? 'vertical-rl' : 'horizontal-tb');
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
-    const frames = page.flow ? verticalFrames : physicalFrames;
+    // A right-to-left page lays these out in its mirrored flow, whose trim
+    // and bleed boxes are the sheet's (centred, so their own mirror images).
+    const frames = pageIsVertical(page) ? verticalFrames : physicalFrames;
     const extras: SlotLayoutExtras = {
       frames, pageRole: page.role, resourceById,
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,

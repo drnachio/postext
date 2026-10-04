@@ -4,7 +4,7 @@ import { renderToHtml } from '../../html-backend';
 import { resolveAllConfig } from '../../pipeline/config';
 import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/cjkGrid';
 import { computePageMetrics } from '../../pipeline/buildHelpers';
-import { flowRectToPage } from '../../index';
+import { flowRectToPage, verticalFlowOf } from '../../index';
 import type { PostextConfig } from '../../types';
 
 // CJK characters one em wide, anything else half.
@@ -206,7 +206,7 @@ describe('character grid (cjk.grid)', () => {
     expect(cells.columns).toEqual([page.contentArea.x]);
     expect(cells.columnChars).toEqual([38]);
     expect(cells.rows).toHaveLength(20);
-    const central = page.flow!.centralBaselines?.['Noto Serif SC'] ?? 0.38;
+    const central = verticalFlowOf(page)!.centralBaselines?.['Noto Serif SC'] ?? 0.38;
     lines.forEach(({ l }, j) => expect(cells.rows[j]! + 10.5 / 2).toBeCloseTo(l.baseline - central * 10.5, 6));
   });
 

@@ -208,8 +208,9 @@ export function cjkGridCells(
   contentArea: { x: number; y: number },
   pitch: number,
   pageColumns?: readonly { bbox: { x: number; width: number }; kind?: string }[],
-  /** The page's flow frame (`VDTPage.flow`), on a vertical page. */
-  pageFlow?: { centralBaselines?: Record<string, number> },
+  /** The page's flow frame (`VDTPage.flow`): the cells stand on the
+   *  central axis on a vertical page. */
+  pageFlow?: { writingMode: string },
 ): CjkGridCells | undefined {
   const grid = resolved.cjk?.grid;
   if (!grid?.show || !grid.charsPerLine || !grid.linesPerPage) return undefined;
@@ -237,6 +238,6 @@ export function cjkGridCells(
   // above the baseline, set 0.8 of the pitch down; on a vertical page the
   // characters stand in the middle of the pitch (`lineBaselineOffset`).
   const rows: number[] = [];
-  for (let j = 0; j < grid.linesPerPage; j++) rows.push(pageFlow ? contentArea.y + j * pitch + (pitch - em) / 2 : contentArea.y + j * pitch + pitch * 0.8 - em * 0.88);
+  for (let j = 0; j < grid.linesPerPage; j++) rows.push(pageFlow?.writingMode === 'vertical-rl' ? contentArea.y + j * pitch + (pitch - em) / 2 : contentArea.y + j * pitch + pitch * 0.8 - em * 0.88);
   return { cell: em, chars: grid.charsPerLine, columns, columnChars, rows };
 }

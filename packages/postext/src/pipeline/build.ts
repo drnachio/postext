@@ -7,6 +7,8 @@ import {
   createVDTDocument,
   createVDTBlock,
   createBoundingBox,
+  pageIsMirrored,
+  pageIsVertical,
   type VDTDocument,
   type VDTBlock,
   type VDTColumn,
@@ -35,6 +37,7 @@ import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
 import { cjkCompositionOf, getCjkComposition, setCjkComposition } from '../measure/cjkPunctuation';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMeasureUprightDigits, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
+import { orientLinesToFrames } from './mirrorFrame';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
@@ -94,7 +97,7 @@ import { chooseParagraphSplit } from './orphanWidow';
 import {
   applyStyleAttrs,
   computePageMetrics,
-  pageMirrored,
+  flowPageMirrored,
   sheetRectToFlow,
   isMarkerBlock,
   nextNonMarkerBlock,
@@ -511,8 +514,11 @@ function placeDocumentPass(
     bleed: sheetRectToFlow(pageMetrics.physical.bleedBox, pageWidthPx),
     upright: true,
   };
+  // A right-to-left page's flow is the sheet mirrored, and the trim and
+  // bleed boxes, centred on the sheet, are their own mirror images: the
+  // physical frames serve it unchanged.
   const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox; upright?: boolean } =>
-    (page?.flow ? verticalFrames : physicalFrames);
+    (page && pageIsVertical(page) ? verticalFrames : physicalFrames);
   doc.trimOffset = trimOffset;
   // A right-bound book (`page.binding`): hosts show its spreads mirrored.
   if (resolved.page.binding === 'right') doc.binding = 'right';
@@ -955,11 +961,18 @@ function placeDocumentPass(
    *  px: the upright frame is as long as the grid multiple within that
    *  room, less the float gap, so the band it takes is `avail` at most. */
   const rotationFor = (f: PlannedFloat, avail: number, page?: VDTPage): FloatRotation | undefined =>
-    page?.flow
+    page && pageIsVertical(page)
       ? uprightOn(page)
       : f.rotate
-        ? { direction: f.rotate, length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
+        ? { direction: flowRotation(f.rotate, page), length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
         : undefined;
+  /** `placement.rotate` keeps its meaning on the sheet: `'ccw'` turns the
+   *  picture's top to the sheet's left. A right-to-left page's flow is the
+   *  sheet mirrored, where the same turn on the sheet is the opposite one,
+   *  so the flow turns the block the other way (the renderers' frame and
+   *  their counter-flip of the picture compose back to the asked turn). */
+  const flowRotation = (rotate: ResourceRotation, page?: VDTPage): ResourceRotation =>
+    page && pageIsMirrored(page) ? (rotate === 'ccw' ? 'cw' : 'ccw') : rotate;
   /** A resource on a vertical page stands upright: its frame at most as
    *  wide as the page's flow is tall (the content area's width on the
    *  sheet), the float gap kept. */
@@ -1103,7 +1116,7 @@ function placeDocumentPass(
   /** Whether a rotated float on `page` sits flush to the band's right edge:
    *  with mirrored margins the spine of a page whose spine is on its right
    *  (a verso of a left-bound book, a recto of a right-bound one). */
-  const rotatedFlushEnd = (page: VDTPage): boolean => pageMirrored(resolved, page.index, pageIndexOffset);
+  const rotatedFlushEnd = (page: VDTPage): boolean => flowPageMirrored(resolved, page, pageIndexOffset);
 
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
@@ -1270,7 +1283,7 @@ function placeDocumentPass(
     const slice = sliceOf(f);
     // A side float never turns: it stacks upright in the side column (on a
     // vertical page it is counter-rotated to stand upright there too).
-    const rotated = side && !page.flow ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
+    const rotated = side && !pageIsVertical(page) ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
@@ -2868,9 +2881,10 @@ function placeDocumentPass(
   /** Whether a page swaps its mirrored margins (a verso of a left-bound
    *  book, a recto of a right-bound one: an `'outer'` corner icon hangs on
    *  the left there). A vertical page has no outer side: a box's outer
-   *  corner stays where the style puts it. */
+   *  corner stays where the style puts it. A right-to-left page answers in
+   *  its flow (`flowPageMirrored`), where its spine side is turned over. */
   const mirroredOf = (page: VDTPage): boolean =>
-    !page.flow && pageMirrored(resolved, page.index, pageIndexOffset);
+    !pageIsVertical(page) && flowPageMirrored(resolved, page, pageIndexOffset);
   /** Where a block's paint ends: its last line's foot (a list tail's box
    *  bakes its bottom margin in and may reach past a cut with every line
    *  inside it), else its box's. */
@@ -3157,7 +3171,7 @@ function placeDocumentPass(
         const width = page.contentArea.width;
         const slice = sliceOf(f);
         // On a vertical page the figure stands upright.
-        const upright = page.flow ? uprightOn(page) : undefined;
+        const upright = pageIsVertical(page) ? uprightOn(page) : undefined;
         const measure = measureFloat(f.resourceId, width, slice, upright);
         if (!measure) { i++; continue; }
         const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
@@ -4411,7 +4425,7 @@ function placeDocumentPass(
     // A resource on a vertical page stands upright, its frame at most as
     // wide as the flow is tall (less the float gap it keeps).
     const blockPage = doc.pages[cursor.pageIndex]!;
-    const upright = blockPage.flow && rawBlock.type === 'resourceBlock'
+    const upright = pageIsVertical(blockPage) && rawBlock.type === 'resourceBlock'
       ? { uprightMaxLength: uprightOn(blockPage).length }
       : {};
     let measuredBlock = tryLoose
@@ -5643,7 +5657,10 @@ function placeDocumentPass(
   });
 
   // Vertical pages: the axis each font's upright characters turn about.
-  if (doc.pages.some((p) => p.flow)) stampCentralBaselines(doc);
+  if (doc.pages.some((p) => pageIsVertical(p))) stampCentralBaselines(doc);
+  // Right-to-left pages: lines advance through the mirrored flow in the
+  // reverse of their visual order.
+  if (doc.pages.some((p) => pageIsMirrored(p))) orientLinesToFrames(doc);
 
   doc.converged = true;
   doc.iterationCount = 1;

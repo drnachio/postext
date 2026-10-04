@@ -305,6 +305,8 @@ describe("package exports", () => {
       "flowRectToPage",
       "pageRectToFlow",
       "pageIsVertical",
+      "pageIsMirrored",
+      "verticalFlowOf",
       "DEFAULT_CENTRAL_BASELINE",
       "verticalOrientation",
       "verticalRuns",
