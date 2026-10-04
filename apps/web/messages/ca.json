@@ -401,12 +401,13 @@
   "Showcase": {
     "eyebrow": "Aparador",
     "title": "Llibres de debò, compostos al teu navegador",
-    "lead": "Un llibre de text, una revista, un poema èpic anotat, un catàleg d'exposició, un clàssic xinès en 120 capítols. Obre'ls al Sandbox, canvia una regla i mira com es recompon cada pàgina.",
+    "lead": "Un llibre de text, una revista, un poema èpic anotat, un catàleg d'exposició, un clàssic xinès en 120 capítols, Les mil i una nits en àrab. Obre'ls al Sandbox, canvia una regla i mira com es recompon cada pàgina.",
     "open": "Obrir al Sandbox",
     "guideName": "Guia de Postext",
     "guideDescription": "La guia inclosa: 13 capítols, tres parts i coberta",
     "all": "Veure tots els presets",
     "books": {
+      "alf-layla": "Les mil i una nits · ألف ليلة وليلة",
       "bioquimica-feduchi": "Bioquímica Feduchi · Capítol 1",
       "deep-sky": "Cel profund",
       "don-quijote": "Don Quijote · Gustave Doré",
@@ -417,6 +418,7 @@
       "senales": "Senyals 2020"
     },
     "descriptions": {
+      "alf-layla": "Les mil i una nits completes en àrab, en el text de Bulaq: un llibre clàssic egipci enquadernat per la dreta, cada pàgina en un marc de doble filet, les nits escrites en paraules i les aquarel·les de Sani ol-Molk. Només en àrab",
       "bioquimica-feduchi": "Manual de bioquímica a columna i mitja: columna principal al costat del llom i columna exterior amb figures, conceptes clau i activitats",
       "deep-sky": "Revista d'astronomia a dues columnes amb obertures a sang, requadres i cites",
       "don-quijote": "Edició literària a columna i mitja amb glosses al marge i làmines de Doré",
