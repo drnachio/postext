@@ -209,7 +209,8 @@ type RunPaint = (probe: VDTLineSegment) => { font: string; color: string };
 function segmentBox(seg: VDTLineSegment, inherited: TextDirection, rootLang: string | undefined, tracking: number, font: string, color: string, paint: RunPaint): SegmentBox {
   const attrs = dirAttr(seg.rtl ? 'rtl' : 'ltr', inherited) + (seg.lang !== undefined && seg.lang !== rootLang ? ` lang="${esc(seg.lang)}"` : '');
   const decl = tracking !== 0 && joiningScriptIn(seg.text) ? 'letter-spacing:0;' : '';
-  const html = seg.runs && seg.runs.length > 0 ? wordRunsHtml(seg, font, color, paint) : undefined;
+  const html = seg.runs && seg.runs.length > 0 ? wordRunsHtml(seg, font, color, paint)
+    : seg.kashida && seg.kashida.length > 0 ? kashidaTextHtml(seg.text, seg.kashida) : undefined;
   if (!attrs && !decl && html === undefined) return PLAIN_BOX;
   return html === undefined ? { attrs, decl } : { attrs, decl, html };
 }
@@ -224,7 +225,13 @@ function segmentBox(seg: VDTLineSegment, inherited: TextDirection, rootLang: str
  * the segment's baseline without growing its box.
  */
 function wordRunsHtml(seg: VDTLineSegment, font: string, color: string, paint: RunPaint): string {
+  // Where each run starts in the segment's text, for its inserted
+  // tatweels (`VDTLineSegment.kashida`).
+  let at = 0;
   return seg.runs!.map((run) => {
+    const start = at;
+    at += run.text.length;
+    const text = kashidaTextHtml(run.text, seg.kashida, start);
     const probe: VDTLineSegment = {
       kind: 'text', text: run.text, width: 0,
       ...(run.bold ? { bold: true } : {}),
@@ -234,9 +241,37 @@ function wordRunsHtml(seg: VDTLineSegment, font: string, color: string, paint: R
     const own = paint(probe);
     const runColor = run.color ?? own.color;
     const decl = (own.font !== font ? `font:${own.font};line-height:0;` : '') + (runColor !== color ? `color:${runColor};` : '');
-    return decl ? `<span style="${decl}">${esc(run.text)}</span>` : esc(run.text);
+    return decl ? `<span style="${decl}">${text}</span>` : text;
   }).join('');
 }
+
+/**
+ * `text` escaped, with the tatweels kashida justification inserted into it
+ * (#375; `offsets` into the segment's text, of which `text` starts at
+ * `base`) in spans that cannot be selected: they are painted, joined to
+ * the letters around them (the browser shapes one font's text whole
+ * across spans), but a copy of the page reads the words as written, as
+ * the PDF's text does. A tatweel the author typed is not among the
+ * offsets and copies. Plain `esc(text)` when none falls in it.
+ */
+function kashidaTextHtml(text: string, offsets: readonly number[] | undefined, base = 0): string {
+  if (!offsets || offsets.length === 0) return esc(text);
+  let out = '';
+  let last = 0;
+  for (let k = 0; k < offsets.length; k++) {
+    const i = offsets[k]! - base;
+    if (i < last || i >= text.length) continue;
+    // Consecutive tatweels (a longer elongation) share one span.
+    let j = i + 1;
+    while (k + 1 < offsets.length && offsets[k + 1]! - base === j && j < text.length) { j++; k++; }
+    out += `${esc(text.slice(last, i))}<span style="${KASHIDA_DECL}">${esc(text.slice(i, j))}</span>`;
+    last = j;
+  }
+  return out + esc(text.slice(last));
+}
+
+/** Inserted tatweels: painted, never selected or copied. */
+const KASHIDA_DECL = '-webkit-user-select:none;user-select:none;';
 
 /** What vertical lines need: the Chinese region, the central axis of each
  *  family (`VDTFlowFrame.centralBaselines`), `cjk.uprightDigits`, and the

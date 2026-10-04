@@ -8,6 +8,7 @@ import { lineTracking } from '../knuthPlass/tracking';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/bodyText';
 import { collectConfigWarnings } from '../configWarnings';
 import { buildDocument } from '../pipeline';
+import { renderToHtml } from '../html-backend';
 import type { InlineSpan } from '../parse';
 import type { PostextConfig } from '../types';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../vdt';
@@ -269,6 +270,20 @@ describe('kashida in a built document', () => {
       expect(source.slice(line.sourceStart, line.sourceEnd).trim()).toBe(written.trim());
     }
     expect(lines(on).flatMap((l) => l.segments ?? []).some((s) => s.href === 'https://example.org' && s.text === 'BBB')).toBe(true);
+  });
+
+  it('keeps the inserted tatweels out of a copy of the HTML', () => {
+    const on = buildDocument({ markdown }, config({ locale: 'ar' }));
+    const inserted = lines(on).flatMap((l) => l.segments ?? []).reduce((n, s) => n + (s.kashida?.length ?? 0), 0);
+    expect(inserted).toBeGreaterThan(0);
+    const html = renderToHtml(on);
+    const unselectable = [...html.matchAll(/<span style="-webkit-user-select:none;user-select:none;">(ـ+)<\/span>/g)].map((m) => m[1]!);
+    expect(unselectable.join('').length).toBe(inserted);
+    // Outside those spans the words read as written: the text has no tatweel.
+    expect(html.replace(/<span style="-webkit-user-select:none;user-select:none;">ـ+<\/span>/g, '').includes('ـ')).toBe(false);
+    // Without kashida nothing is wrapped.
+    const off = buildDocument({ markdown }, config({ locale: 'ar', bodyText: { kashida: 'none' } }));
+    expect(renderToHtml(off)).not.toContain('user-select:none');
   });
 
   it('leaves an English book as it was', () => {
