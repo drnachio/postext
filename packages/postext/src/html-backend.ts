@@ -160,8 +160,13 @@ interface HtmlPaint extends RenderHtmlOptions {
   /** The direction the document's root declares (`dir`, #379): a box of
    *  text running the other way declares its own. */
   dir?: TextDirection;
-  /** The language the document's root declares (`renderLangOf`). */
+  /** The language a right-to-left document's root and pages declare
+   *  (`renderLangOf`). */
   lang?: string;
+  /** The language the document's root declares, whatever its direction: a
+   *  word in another one named by the author (`VDTLineSegment.lang`)
+   *  declares its own. */
+  rootLang?: string;
 }
 
 /** A direction of text, as a `dir` attribute names it. */
@@ -178,16 +183,16 @@ function dirAttr(own: TextDirection, inherited: TextDirection): string {
 }
 
 /** What a text segment's box adds to the markup of an unmarked one (#379):
- *  its `dir` (see {@link dirAttr}), declarations (no tracking on a word of
+ *  attributes — its `dir` (see {@link dirAttr}) and `lang` —, declarations (no tracking on a word of
  *  a joining script, which the engine measured untracked) and, for a word
  *  whose letters change style inside it (`VDTLineSegment.runs`), the inner
  *  markup that replaces its plain text. */
 interface SegmentBox {
-  dir: string;
+  attrs: string;
   decl: string;
   html?: string;
 }
-const PLAIN_BOX: SegmentBox = { dir: '', decl: '' };
+const PLAIN_BOX: SegmentBox = { attrs: '', decl: '' };
 
 /** The font and colour (CSS values) a run of text in a style is painted
  *  in where a word's letters change style (see {@link wordRunsHtml}). */
@@ -195,16 +200,18 @@ type RunPaint = (probe: VDTLineSegment) => { font: string; color: string };
 
 /**
  * The box of a word segment of a line (#379): its direction against the
- * one it inherits, its letters untracked when they are of a joining script
- * on a tracked line (`tracking`), and its styled runs (`VDTLineSegment.runs`)
- * painted by `paint` around the segment's own `font` / `color`.
+ * one it inherits, the language the author named for its text
+ * (`VDTLineSegment.lang`) where it is not the root's (`rootLang`), its
+ * letters untracked when they are of a joining script on a tracked line
+ * (`tracking`), and its styled runs (`VDTLineSegment.runs`) painted by
+ * `paint` around the segment's own `font` / `color`.
  */
-function segmentBox(seg: VDTLineSegment, inherited: TextDirection, tracking: number, font: string, color: string, paint: RunPaint): SegmentBox {
-  const dir = dirAttr(seg.rtl ? 'rtl' : 'ltr', inherited);
+function segmentBox(seg: VDTLineSegment, inherited: TextDirection, rootLang: string | undefined, tracking: number, font: string, color: string, paint: RunPaint): SegmentBox {
+  const attrs = dirAttr(seg.rtl ? 'rtl' : 'ltr', inherited) + (seg.lang !== undefined && seg.lang !== rootLang ? ` lang="${esc(seg.lang)}"` : '');
   const decl = tracking !== 0 && joiningScriptIn(seg.text) ? 'letter-spacing:0;' : '';
   const html = seg.runs && seg.runs.length > 0 ? wordRunsHtml(seg, font, color, paint) : undefined;
-  if (!dir && !decl && html === undefined) return PLAIN_BOX;
-  return html === undefined ? { dir, decl } : { dir, decl, html };
+  if (!attrs && !decl && html === undefined) return PLAIN_BOX;
+  return html === undefined ? { attrs, decl } : { attrs, decl, html };
 }
 
 /**
@@ -460,12 +467,12 @@ function renderTextSegment(
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
     const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
-    return `<span${box.dir} style="${pos}">${inner}</span>`;
+    return `<span${box.attrs} style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
-    return `<span${box.dir} style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+    return `<span${box.attrs} style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
   }
-  return `<span${box.dir} style="${pos}${colorDecl}">${text}</span>`;
+  return `<span${box.attrs} style="${pos}${colorDecl}">${text}</span>`;
 }
 
 /**
@@ -494,12 +501,12 @@ function renderWordTextSegment(
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
     const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
-    return `<span${box.dir} style="${pos}">${inner}</span>`;
+    return `<span${box.attrs} style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
-    return `<span${box.dir} style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+    return `<span${box.attrs} style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${text}</span></span>`;
   }
-  return `<span${box.dir} style="${pos}${colorDecl}">${text}</span>`;
+  return `<span${box.attrs} style="${pos}${colorDecl}">${text}</span>`;
 }
 
 /** {@link renderWordTextSegment} for a segment that holds CJK text (`cjk`)
@@ -522,12 +529,12 @@ function renderMarkedWordSegment(
   if (seg.refResourceId !== undefined) {
     // Anchors carry an explicit color so the UA link blue never leaks in.
     const inner = `<a href="${refAnchorHref(refKey(seg))}" style="text-decoration:none;${fontDecl}${featuresDecl}${fontDecl ? 'line-height:0;' : ''}color:${color};">${text}</a>`;
-    return `<span${box.dir} style="${pos}">${inner}</span>`;
+    return `<span${box.attrs} style="${pos}">${inner}</span>`;
   }
   if (fontDecl) {
-    return `<span${box.dir} style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
+    return `<span${box.attrs} style="${pos}"><span style="${fontDecl}${featuresDecl}line-height:0;${colorDecl}">${text}</span></span>`;
   }
-  return `<span${box.dir} style="${pos}${colorDecl}">${text}</span>`;
+  return `<span${box.attrs} style="${pos}${colorDecl}">${text}</span>`;
 }
 
 /** A `:ref` painted as several runs (a label in small capitals: one run per
@@ -602,7 +609,7 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
  * line's `text` holds the text of every segment, except the leader of a
  * contents entry (`tocEntry`).
  */
-function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr'): string {
+function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr', rootLang?: string): string {
   if (line.cjkComposed) return renderComposedSegments(line, block, targets, rootDir);
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
@@ -671,7 +678,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    return renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text), segmentBox(seg, rootDir, tracking, font, color, (probe) => ({ font: quoteFontString(pickSegmentFont(probe, block)), color: pickSegmentColor(probe, block) })));
+    return renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text), segmentBox(seg, rootDir, rootLang, tracking, font, color, (probe) => ({ font: quoteFontString(pickSegmentFont(probe, block)), color: pickSegmentColor(probe, block) })));
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -792,7 +799,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     // The composer sets left-to-right text: in a right-to-left document
     // its boxes say so (#379).
     const dir = dirAttr(seg.rtl ? 'rtl' : 'ltr', rootDir);
-    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir ? { dir, decl: '' } : PLAIN_BOX);
+    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir ? { attrs: dir, decl: '' } : PLAIN_BOX);
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -896,7 +903,7 @@ function renderChip(
     // neutral characters are ordered and its brackets mirrored as the
     // engine resolved them.
     const dir = dirAttr(run.rtl ? 'rtl' : 'ltr', rootDir);
-    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false, dir ? { dir, decl: '' } : PLAIN_BOX));
+    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false, dir ? { attrs: dir, decl: '' } : PLAIN_BOX));
     tx += run.width;
   }
   return parts.join('');
@@ -958,7 +965,7 @@ function renderBullet(block: VDTBlock, rootDir: TextDirection = 'ltr'): string {
   return html;
 }
 
-function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr'): string {
+function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr', rootLang?: string): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
   // Tracking — the block's (column balancing, a runt set short) and the
@@ -977,7 +984,7 @@ function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string
     strikethroughDecl +
     trackingDecl +
     (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
-    `">${renderSegments(line, block, targets, rootDir)}</div>`
+    `">${renderSegments(line, block, targets, rootDir, rootLang)}</div>`
   );
 }
 
@@ -1290,6 +1297,8 @@ function renderResourceLine(
   targets?: ReadonlySet<string>,
   /** The direction the document's root declares (see {@link dirAttr}). */
   rootDir: TextDirection = 'ltr',
+  /** The language the document's root declares. */
+  rootLang?: string,
 ): string {
   const baseFont = quoteFontString(fonts.normal);
   const parts: string[] = [];
@@ -1314,7 +1323,7 @@ function renderResourceLine(
       const colorDecl = segColor !== color ? `color:${segColor};` : '';
       const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
       // Its direction, untracked joining letters and styled runs (#379).
-      const box = segmentBox(seg, rootDir, tracking, font, segColor, (probe) => ({ font: quoteFontString(pickResourceFont(probe, fonts)), color: segColor }));
+      const box = segmentBox(seg, rootDir, rootLang, tracking, font, segColor, (probe) => ({ font: quoteFontString(pickResourceFont(probe, fonts)), color: segColor }));
       // A line set word by word as every line was before the CJK
       // features (see `renderSegments`).
       return composed
@@ -1502,7 +1511,7 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
     const color = cell.isHeader ? t.headerColor : t.color;
     for (const line of cell.lines) {
-      parts.push(renderResourceLine(line, fonts, color, rb.linkColor, color, options.linkTargets, options.dir));
+      parts.push(renderResourceLine(line, fonts, color, rb.linkColor, color, options.linkTargets, options.dir, options.rootLang));
     }
   }
   return parts.join('');
@@ -1555,7 +1564,7 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
     boldItalic: rb.captionBoldItalicFontString,
   };
   for (const line of rb.captionLines) {
-    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor, options.linkTargets, options.dir));
+    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor, options.linkTargets, options.dir, options.rootLang));
   }
   const noteFonts: ResourceLineFonts = {
     normal: rb.noteFontString,
@@ -1564,7 +1573,7 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
     boldItalic: rb.noteBoldItalicFontString,
   };
   for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
-    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor, rb.noteColor, options.linkTargets, options.dir));
+    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor, rb.noteColor, options.linkTargets, options.dir, options.rootLang));
   }
   if (!rot) return anchor + parts.join('');
   return (
@@ -1797,7 +1806,7 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   const v = options.vertical;
   parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block, options.dir));
   for (const line of block.lines) {
-    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets) : renderLine(line, block, options.linkTargets, options.dir));
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang));
   }
   return parts.join('');
 }
@@ -2041,9 +2050,10 @@ export function renderToHtmlIndexed(
   const reported = new Set<string>();
   const linkTargets = anchoredResourceIds(doc);
   for (const id of options.refTargets ?? []) linkTargets.add(id);
-  const anchorPaint: Pick<HtmlPaint, 'anchors' | 'pageIndexOffset' | 'dir' | 'lang'> = {
+  const anchorPaint: Pick<HtmlPaint, 'anchors' | 'pageIndexOffset' | 'dir' | 'lang' | 'rootLang'> = {
     ...(doc.anchors ? { anchors: doc.anchors } : {}),
     pageIndexOffset: doc.pageIndexOffset ?? 0,
+    ...(docLang ? { rootLang: docLang } : {}),
     ...(rtl ? { dir: 'rtl' as const, ...(docLang ? { lang: docLang } : {}) } : {}),
   };
   const bleedInset = doc.trimOffset > 0

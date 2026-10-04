@@ -227,3 +227,61 @@ export function shiftLineX(line: VDTLine, dx: number): void {
   line.bbox.x += dx;
   if (line.measure) line.measure = { x: line.measure.x + dx, width: line.measure.width };
 }
+
+/** A stretch of a paragraph's text in a language the author named on an
+ *  inline isolate (`:ltr[…]{lang=en}`): `[start, end)` in the joined text. */
+export interface LanguageRange {
+  start: number;
+  end: number;
+  lang: string;
+}
+
+/**
+ * The stretches of a paragraph's spans in a language their isolate names
+ * (`InlineSpan.direction.lang`, the innermost isolate that names one), as
+ * ranges of the joined text; empty when none does.
+ */
+export function spanLanguages(spans: readonly { text: string; direction?: { lang?: string; outer?: unknown } }[]): LanguageRange[] {
+  const out: LanguageRange[] = [];
+  let at = 0;
+  for (const span of spans) {
+    let lang: string | undefined;
+    for (let d = span.direction as { lang?: string; outer?: unknown } | undefined; d && lang === undefined; d = d.outer as typeof d) lang = d.lang;
+    const end = at + span.text.length;
+    if (lang !== undefined && end > at) {
+      const last = out[out.length - 1];
+      if (last && last.end === at && last.lang === lang) last.end = end;
+      else out.push({ start: at, end, lang });
+    }
+    at = end;
+  }
+  return out;
+}
+
+/**
+ * Stamps `VDTLineSegment.lang` on the segments of a paragraph's lines whose
+ * text lies in one of `ranges` (#379, see {@link spanLanguages}): a segment
+ * takes the language of its first character read from the paragraph text
+ * (`text`). Segments of a cut line are replaced, never changed in place.
+ */
+export function applySegmentLanguages(lines: VDTLine[], text: string, ranges: readonly LanguageRange[]): void {
+  if (ranges.length === 0) return;
+  let from = 0;
+  for (const line of lines) {
+    const segments = line.segments;
+    if (!segments || segments.length === 0) continue;
+    const { at, next } = alignLine(segments, text, from);
+    from = next;
+    let changed = false;
+    const out = segments.map((seg, s) => {
+      if (seg.kind === 'space') return seg;
+      const first = at[s]!.find((q) => q >= 0);
+      if (first === undefined) return seg;
+      const range = ranges.find((r) => first >= r.start && first < r.end);
+      if (!range || seg.lang === range.lang) return seg;
+      changed = true;
+      return { ...seg, lang: range.lang };
+    });
+    if (changed) line.segments = out;
+  }
+}

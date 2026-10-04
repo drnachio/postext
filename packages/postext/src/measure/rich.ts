@@ -28,7 +28,7 @@ import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isB
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
 import { insideJoiningWord, joiningScriptIn, wordLetterSpacing } from './joining';
-import { applyLineDirections, getMeasureDirection } from './bidiLines';
+import { applyLineDirections, applySegmentLanguages, getMeasureDirection, spanLanguages } from './bidiLines';
 import { needsBidi, resolveParagraph, spanIsolates, type BidiParagraph } from '../bidi';
 
 export interface RichBreakPoint {
@@ -1555,6 +1555,9 @@ function measureRichText(
   // A paragraph with right-to-left text: its levels, read once, cut its
   // words where they change direction and give its lines their order.
   const bidi = paragraphBidi(spans, plainText, options);
+  // The languages the paragraph's isolates name (`:ltr[…]{lang=en}`), set
+  // on the segments of their text (`VDTLineSegment.lang`).
+  const languages = spans.some((sp) => sp.direction?.lang !== undefined || sp.direction?.outer !== undefined) ? spanLanguages(spans) : [];
   const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText, bidi);
   if (options?.labelColumnPx !== undefined) setLabelTabs(tokens, (t) => t.labelTab, options.labelColumnPx, (t, w) => { t.width = w; });
   const repeatHyphen = options?.repeatHyphen === true;
@@ -1620,6 +1623,7 @@ function measureRichText(
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         if (hasSmallCaps) expandSmallCaps(kpLines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
         if (bidi) withDirections(kpLines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
+        if (languages.length > 0) applySegmentLanguages(kpLines, plainText, languages);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -1889,6 +1893,7 @@ function measureRichText(
 
   if (hasSmallCaps) expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
   if (bidi) withDirections(lines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
+  if (languages.length > 0) applySegmentLanguages(lines, plainText, languages);
   return { lines, totalHeight: y };
 }
 

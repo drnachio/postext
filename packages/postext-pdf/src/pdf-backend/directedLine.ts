@@ -85,7 +85,7 @@ export function segmentLanguages(segments: readonly VDTLineSegment[], docLang: s
   const own = segments.map((seg): string | null => {
     if (seg.kind === 'space') return null;
     if (seg.kind !== 'text' || seg.chip) return '';
-    const named = (seg as VDTLineSegment & { lang?: string }).lang;
+    const named = seg.lang;
     if (named) return named.split('-')[0]!.toLowerCase() === docPrimary ? '' : named;
     for (const ch of seg.text) {
       const cp = ch.codePointAt(0)!;

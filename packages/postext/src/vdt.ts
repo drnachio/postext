@@ -351,6 +351,11 @@ export interface VDTLineSegment {
    *  cuts segments at level boundaries, so a segment never mixes
    *  directions. Absent on left-to-right runs. */
   rtl?: true;
+  /** The language of the segment's text when the author named one on the
+   *  isolate it is in (`:ltr[…]{lang=en}`, `:rtl[…]{lang=fa}`; the
+   *  innermost that names one), a BCP 47 tag as written. Renderers declare
+   *  it (HTML `lang`, PDF `/Lang`). Absent otherwise. */
+  lang?: string;
   /** The run's UAX #9 embedding level, when it is more than 1 (a number or
    *  a Latin word inside an Arabic phrase inside an English paragraph) or a
    *  renderer needs it for tagging and `/ActualText`. Absent otherwise:
