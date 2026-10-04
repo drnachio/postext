@@ -28,6 +28,8 @@ import { ContributionWorkflow } from "./contributing/ContributionWorkflow";
 import { ChinesePageModels } from "./chinese-layout/ChinesePageModels";
 import { PunctuationPositions } from "./chinese-layout/PunctuationPositions";
 import { PunctuationWidths } from "./chinese-layout/PunctuationWidths";
+import { ArabicSpread } from "./arabic-layout/ArabicSpread";
+import { BaytLayout } from "./arabic-layout/BaytLayout";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registry: Record<string, React.ComponentType<{ labels: any }>> = {
@@ -61,6 +63,8 @@ const registry: Record<string, React.ComponentType<{ labels: any }>> = {
   ChinesePageModels,
   PunctuationPositions,
   PunctuationWidths,
+  ArabicSpread,
+  BaytLayout,
 };
 
 interface IllustrationProps {

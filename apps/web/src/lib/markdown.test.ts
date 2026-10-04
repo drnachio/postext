@@ -188,6 +188,19 @@ describe("page renditions", () => {
     }
   });
 
+  it("renders the Arabic layout guide as plain Markdown", () => {
+    for (const locale of ["en", "es", "zh"]) {
+      const md = pageMarkdown(locale, "/docs/arabic-layout")!;
+      expect(md).toMatch(/^# (Arabic layout|Composición árabe|阿拉伯文排版)/);
+      expect(md).toMatch(/^> \*\*(Figure|Figura|图): /m);
+      expect(md).toMatch(/^\| .*`arabic-abjad`/m);
+      expect(md).not.toMatch(/<\/?(table|thead|tbody|tr|td|th|code)\b|style=\{\{|\{\/\*/);
+      expect(md).toContain("الليلة {1:ordinal-feminine}");
+      expect(md).toContain("﴿بسم الله الرحمن الرحيم﴾");
+      expect(llmsTxt(locale)).toContain(`https://postext.dev/${locale}/docs/arabic-layout.md`);
+    }
+  });
+
   it("llms.txt follows the llmstxt.org shape", () => {
     const txt = llmsTxt("en");
     expect(txt).toMatch(/^# Postext\n\n> /);

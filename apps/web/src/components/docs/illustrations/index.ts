@@ -30,3 +30,5 @@ export { ContributionWorkflow } from "./contributing/ContributionWorkflow";
 export { ChinesePageModels } from "./chinese-layout/ChinesePageModels";
 export { PunctuationPositions } from "./chinese-layout/PunctuationPositions";
 export { PunctuationWidths } from "./chinese-layout/PunctuationWidths";
+export { ArabicSpread } from "./arabic-layout/ArabicSpread";
+export { BaytLayout } from "./arabic-layout/BaytLayout";

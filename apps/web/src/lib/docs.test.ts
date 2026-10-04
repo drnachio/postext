@@ -14,6 +14,7 @@ describe("docs table of contents", () => {
       "justification",
       "document-format",
       "chinese-layout",
+      "arabic-layout",
       "contributing",
       "sandbox",
       "skill",
@@ -38,14 +39,16 @@ describe("docs table of contents", () => {
     }
   });
 
-  it("puts Chinese layout in Part II at order 6 and the practice pages after it", () => {
+  it("puts Chinese and Arabic layout in Part II at orders 6 and 7 and the practice pages after them", () => {
     expect(order("chinese-layout")).toBe(6);
+    expect(order("arabic-layout")).toBe(7);
     expect(docPart(6).key).toBe("craft");
+    expect(docPart(7).key).toBe("craft");
     expect(docPart(order("document-format")!).key).toBe("craft");
     for (const slug of ["contributing", "sandbox", "skill"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([7, 8, 9]);
+    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([8, 9, 10]);
   });
 
   it("gives the language sections h3 headings that anchors can target", () => {
@@ -57,20 +60,20 @@ describe("docs table of contents", () => {
     expect(es).toContain("3 idiomas-y-escrituras");
   });
 
-  it("gives every heading of the Chinese layout page its own title", () => {
+  it.each(["chinese-layout", "arabic-layout"])("gives every heading of the %s page its own title", (slug) => {
     for (const locale of ["en", "es", "ca", "zh"] as const) {
-      const texts = extractToc(getDocSource("chinese-layout", locale)!.source).map((t) => t.text);
+      const texts = extractToc(getDocSource(slug, locale)!.source).map((t) => t.text);
       expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
     }
   });
 
-  it("keeps Markdown markers literal in the Chinese layout page's code spans", () => {
+  it.each(["chinese-layout", "arabic-layout"])("keeps Markdown markers literal in the %s page's code spans", (slug) => {
     // MDX reads Markdown inside JSX, so <code>*…*</code> prints an italic
     // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
     // <code>{'*…*'}</code> prints nothing. A character reference stays
     // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
     for (const locale of ["en", "es", "ca", "zh"] as const) {
-      const { source } = getDocSource("chinese-layout", locale)!;
+      const { source } = getDocSource(slug, locale)!;
       for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
         expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
       }
