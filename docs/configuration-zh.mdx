@@ -5513,7 +5513,7 @@ const config: PostextConfig = {
       <td><code>levels</code></td>
       <td><code>TocLevelConfig[]</code></td>
       <td>一级</td>
-      <td>列出的标题级别，每级带有条目的字体样式：<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（默认为正文行距，使目录落在网格上）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（整个条目的缩进）、<code>numberWidth</code> / <code>numberGap</code>（编号栏的宽度和间隔，标题从编号栏之后开始；编号在栏内右对齐）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>。未设置的字段继承正文。无论编号用什么字体和字号，它都落在标题第一行的基线上，Canvas、HTML和PDF中都是如此（postext 1.4及以前，编号像列表项目符号那样以x字高居中，所以展示字体或较大的字号会浮在标题上方）。自己编写的渲染器可以从条目块的<code>bulletBaselineY</code>取得这条基线；<code>bulletY</code>仍是编号em框的中点，与1.4相同，所以早于这个新字段的渲染器会把编号画在一直以来的位置。</td>
+      <td>列出的标题级别，每级带有条目的字体样式：<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（默认为正文行距，使目录落在网格上）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（整个条目的缩进）、<code>numberWidth</code> / <code>numberGap</code>（编号栏的宽度和间隔，标题从编号栏之后开始；编号在栏内右对齐；某个编号比<code>numberWidth</code>宽时，如<code>الفصل الحادي عشر</code>或<code>第十二章</code>，该级的编号栏加宽到最宽的编号）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>。未设置的字段继承正文。无论编号用什么字体和字号，它都落在标题第一行的基线上，Canvas、HTML和PDF中都是如此（postext 1.4及以前，编号像列表项目符号那样以x字高居中，所以展示字体或较大的字号会浮在标题上方）。自己编写的渲染器可以从条目块的<code>bulletBaselineY</code>取得这条基线；<code>bulletY</code>仍是编号em框的中点，与1.4相同，所以早于这个新字段的渲染器会把编号画在一直以来的位置。</td>
     </tr>
     <tr>
       <td><code>unnumbered</code></td>

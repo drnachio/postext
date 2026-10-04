@@ -354,6 +354,11 @@ export interface TocBlockInfo {
   pageIndex?: number;
   /** Subtitle line under the title (an entry's `{author}`), when any. */
   subtitle?: string;
+  /** A numbered entry: the numbers of every numbered entry of its level in
+   *  the same contents (one array the entries share), so the number column
+   *  takes the widest of them (`الفصل الحادي عشر`) when it is wider than
+   *  the configured `numberWidth`. */
+  levelNumbers?: readonly string[];
   /** A part row's title and palette overrides. */
   title?: string;
   palette?: Record<string, string>;

@@ -4255,7 +4255,9 @@ export interface TocEntryStyleConfig {
   indent?: Dimension;
   /** Width of the number column: the title starts after it plus
    *  `numberGap`; numbers are right-aligned in it, on the baseline of the
-   *  title's first line whatever their face and size. Default `2em`. */
+   *  title's first line whatever their face and size. A number wider than
+   *  this (`الفصل الحادي عشر`, `Chapter 12`) widens the column of its
+   *  level in that contents to the widest number. Default `2em`. */
   numberWidth?: Dimension;
   /** Gap between the number column and the title. Default `0.5em`. */
   numberGap?: Dimension;

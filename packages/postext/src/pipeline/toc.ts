@@ -47,6 +47,14 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
   const out: ContentBlock[] = [];
   const base = { sourceStart: directive.sourceStart, sourceEnd: directive.sourceEnd };
   let partRows = 0;
+  // The numbers of each level's numbered entries, for the number column.
+  const levelNumbers = new Map<number, string[]>();
+  for (const entry of outline) {
+    if (!entry.listed || entry.kind === 'part' || !listedLevels.has(entry.level) || !entry.numbered || !entry.number) continue;
+    const numbers = levelNumbers.get(entry.level);
+    if (numbers) numbers.push(entry.number);
+    else levelNumbers.set(entry.level, [entry.number]);
+  }
   for (const entry of outline) {
     if (!entry.listed) continue;
     if (entry.kind === 'part') {
@@ -76,12 +84,31 @@ function tocBlocksFor(directive: ContentBlock, outline: readonly OutlineEntry[],
       ...(entry.pageLabel !== undefined ? { pageLabel: entry.pageLabel } : {}),
       ...(entry.pageIndex !== undefined ? { pageIndex: entry.pageIndex } : {}),
       ...(subtitle ? { subtitle } : {}),
+      ...(entry.numbered && entry.number ? { levelNumbers: levelNumbers.get(entry.level) } : {}),
     };
     // Every character maps to the directive line, so a click on the
     // contents lands on `:::toc`.
     out.push({ ...base, type: 'paragraph', text, spans, sourceMap: new Array<number>(text.length).fill(directive.sourceStart), toc: info });
   }
   return out;
+}
+
+/** The widest of a level's numbers in `font`, memoised per array and
+ *  font (every entry of the level asks with the same array). */
+const widestCache = new WeakMap<readonly string[], Map<string, number>>();
+function widestNumber(numbers: readonly string[], font: string): number {
+  let byFont = widestCache.get(numbers);
+  if (!byFont) {
+    byFont = new Map();
+    widestCache.set(numbers, byFont);
+  }
+  let widest = byFont.get(font);
+  if (widest === undefined) {
+    widest = 0;
+    for (const n of numbers) widest = Math.max(widest, flowTextWidth(n, font));
+    byFont.set(font, widest);
+  }
+  return widest;
 }
 
 function lineHeightPxOf(lineHeight: { value: number; unit: string }, fontSizePx: number, dpi: number): number {
@@ -213,18 +240,25 @@ export function measureTocBlock(
     firstLineIndentPx: 0, hangingIndent: false,
   };
 
-  // Number column (numbered entries): the title starts after it.
+  // Number column (numbered entries): the title starts after it. A label
+  // wider than the column (`الفصل {1:ordinal}` → الفصل الحادي عشر, or a
+  // `Chapter {1}`) widens it to the level's widest number, so every title
+  // of the level starts at one place and none is printed over; numbers
+  // that fit leave the configured width as it is.
   const indentPx = dimensionToPx(entry.indent, dpi, fontSizePx);
   const hasNumber = info.numbered && info.number.length > 0;
-  const numberWidthPx = hasNumber ? dimensionToPx(entry.numberWidth, dpi, fontSizePx) : 0;
+  const numberFont = hasNumber
+    ? buildFontString(entry.numberFontFamily, dimensionToPx(entry.numberFontSize, dpi), entry.numberFontWeight.toString())
+    : '';
+  const numberWidthPx = hasNumber
+    ? Math.max(dimensionToPx(entry.numberWidth, dpi, fontSizePx), widestNumber(info.levelNumbers ?? [info.number], numberFont))
+    : 0;
   const numberGapPx = hasNumber ? dimensionToPx(entry.numberGap, dpi, fontSizePx) : 0;
   const textX = indentPx + numberWidthPx + numberGapPx;
   const availableW = Math.max(1, columnWidth - textX);
   let listBullet: ListBulletStyle | undefined;
   let bulletXOffsetInColumn = 0;
   if (hasNumber) {
-    const numberFontSizePx = dimensionToPx(entry.numberFontSize, dpi);
-    const numberFont = buildFontString(entry.numberFontFamily, numberFontSizePx, entry.numberFontWeight.toString());
     const numberW = flowTextWidth(info.number, numberFont);
     listBullet = {
       indentPx, bulletText: info.number, bulletFontString: numberFont, bulletColor: entry.numberColor.hex,
