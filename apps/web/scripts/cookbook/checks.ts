@@ -125,6 +125,9 @@ export interface ProbeFacts {
   /** `"rtl"` when the document's text runs right to left (the resolved
    *  `config.direction`, also when the locale implied it). */
   direction?: "rtl";
+  /** The digit system the engine writes numbers in, when the document is
+   *  right to left or names one (`config.numerals`, resolved from the locale). */
+  numerals?: "latn" | "arab" | "arabext";
   pages?: ProbePage[];
   specimen?: {
     trimMm: [number, number];
@@ -264,11 +267,12 @@ export function detect(meta: RecipeMeta, facts: ProbeFacts, pen: ComposedPen, re
   const fonts = (facts.faces?.used ?? []).map(({ family, weight, style }) => ({ family, weight, style }));
   // Vertical and right-to-left text bind a book on the right without
   // saying page.binding, and an Arabic locale sets the text right to left
-  // without saying direction: the document's binding and direction count
-  // as the keys.
+  // without saying direction or numerals: the document's binding, direction
+  // and digits count as the keys.
   const paths = [...stats.paths];
   if (facts.binding === "right" && !paths.includes("page.binding")) paths.push("page.binding");
   if (facts.direction === "rtl" && !paths.includes("direction")) paths.push("direction");
+  if (facts.numerals && !paths.includes("numerals")) paths.push("numerals");
   const { detected } = detectFeatures(registry, { paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
   const directives = new Set<string>();
   const inline = new Set<string>();

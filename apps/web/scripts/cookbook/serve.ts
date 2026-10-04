@@ -126,6 +126,12 @@ function errorPage(message: string): string {
  *  `packages/postext/dist` (tsc keeps the imports extensionless, so the
  *  server tries `.js` and `/index.js`). */
 function localModule(rel: string): { file: string; path: string } | null {
+  // HarfBuzz as the workspace installed it, untransformed (see shim.ts).
+  const hb = /^harfbuzzjs\/([\w.-]+\.(?:mjs|js|wasm))$/.exec(rel);
+  if (hb) {
+    const file = safeFile(path.join(REPO_DIR, "packages", "postext-pdf", "node_modules", "harfbuzzjs", "dist"), hb[1]!);
+    return file ? { file, path: rel } : null;
+  }
   const match = /^(postext|postext-pdf|postext-citeproc|postext-folio)\/(.+)$/.exec(rel);
   if (!match) return null;
   const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
@@ -199,7 +205,8 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
           res.writeHead(302, { location: LOCAL_PREFIX + found.path, "cache-control": "no-store" });
           return res.end();
         }
-        return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(found.file));
+        const type = found.file.endsWith(".wasm") ? "application/wasm" : "text/javascript; charset=utf-8";
+        return send(res, 200, type, fs.readFileSync(found.file));
       }
       if (route === "/favicon.ico") return send(res, 204, "text/plain", "");
       return send(res, 404, "text/plain", `not found: ${route}`);

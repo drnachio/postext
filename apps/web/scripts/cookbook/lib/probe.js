@@ -711,6 +711,10 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // A right-to-left document (direction 'rtl', or 'auto' in an Arabic,
   // Hebrew or Persian locale): the resolved config says so only then.
   if (docs[0].config?.direction === 'rtl') out.direction = 'rtl';
+  // The digits of a right-to-left document are the locale's choice even when
+  // the config does not name them (٠–٩ for 'ar', 0–9 for 'ar-MA'): the resolved
+  // config carries numerals only when they are not latn.
+  if (docs[0].config?.numerals || out.direction) out.numerals = docs[0].config?.numerals ?? 'latn';
 
   // Pages: roles, emptiness, coverage, hero legibility, alt-text material.
   const heroSet = new Set(hero);

@@ -181,6 +181,12 @@ describe("right-binding detection", () => {
     const userConfig = { locale: "ar" };
     const arabic = detect(meta(), facts({ userConfig, binding: "right", direction: "rtl" }), pen, registry).features;
     expect(arabic).toEqual(expect.arrayContaining(["right-binding", "text-direction"]));
+    expect(arabic).not.toContain("document-digits");
+    // The probe records the digits the locale chose (latn for 'ar-MA' too).
+    const digits = (numerals: "latn" | "arab") => detect(meta(),
+      facts({ userConfig, binding: "right", direction: "rtl", numerals }), pen, registry).features;
+    expect(digits("arab")).toContain("document-digits");
+    expect(digits("latn")).toContain("document-digits");
     expect(detect(meta(), facts({ userConfig: { locale: "en" } }), pen, registry).features).not.toContain("text-direction");
   });
 });
