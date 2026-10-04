@@ -87,9 +87,10 @@ const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
 export interface XhtmlOptions {
   /** Map of a same-document or cross-document link: given the `href` of an
-   *  `<a>` (after entity decoding), returns the href to write. Fragments are
-   *  made NCNames ({@link xmlId}) before it is called. */
-  rewriteHref?: (href: string) => string;
+   *  `<a>` (after entity decoding), returns the href to write, or undefined
+   *  to drop the attribute (a link to nowhere). Fragments are made NCNames
+   *  ({@link xmlId}) before it is called. */
+  rewriteHref?: (href: string) => string | undefined;
   /** Map of an `<img src>` (after entity decoding). */
   rewriteSrc?: (src: string) => string;
   /** Ids already used in the document the fragment goes into; the converter
@@ -195,7 +196,11 @@ export function htmlToXhtml(html: string, options: XhtmlOptions = {}): string {
       } else if (attrName === 'href' && !foreign && name === 'a') {
         const hash = value.indexOf('#');
         if (hash >= 0) value = value.slice(0, hash + 1) + xmlId(value.slice(hash + 1));
-        if (options.rewriteHref) value = options.rewriteHref(value);
+        if (options.rewriteHref) {
+          const mapped = options.rewriteHref(value);
+          if (mapped === undefined) continue;
+          value = mapped;
+        }
       } else if (attrName === 'src' && name === 'img' && options.rewriteSrc) {
         value = options.rewriteSrc(value);
       }

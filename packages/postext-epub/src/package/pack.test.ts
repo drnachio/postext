@@ -110,7 +110,7 @@ describe('buildNav / buildNcx', () => {
     const navs = descendants(doc, 'nav');
     expect(navs.map((n) => n.attrs['epub:type'])).toEqual(['toc', 'landmarks', 'page-list']);
     expect(navs[2]!.attrs.hidden).toBe('hidden');
-    expect(nav).toContain('<h1 id="toc-title">Índice</h1>');
+    expect(nav).toContain('<h1>Índice</h1>');
     expect(nav).toContain('<a href="pages/page-0001.xhtml#pt-a-uno">Capítulo 1</a>');
     expect(nav).toContain('<a epub:type="bodymatter" href="pages/page-0001.xhtml">Inicio</a>');
   });
@@ -123,7 +123,9 @@ describe('buildNav / buildNcx', () => {
     const ncx = buildNcx(sample());
     expect(ncx).toContain('<meta name="dtb:depth" content="2"/>');
     expect(ncx).toContain('<navPoint id="np-2" playOrder="2">');
+    // A page target at a TOC entry's place shares its play order.
     expect(ncx).toContain('<pageTarget id="pt-1" type="front" value="1" playOrder="3">');
+    expect(ncx).toContain('<pageTarget id="pt-2" type="normal" value="2" playOrder="2">');
     expect(() => parseXml(ncx)).not.toThrow();
   });
 });

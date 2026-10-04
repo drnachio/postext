@@ -100,7 +100,7 @@ export function buildOpf(pub: EpubPublication, identifier = bookIdentifier(pub.m
   if (pub.layout === 'fixed') {
     add(`<meta property="rendition:layout">pre-paginated</meta>`);
     add(`<meta property="rendition:spread">${pub.fixed?.spread ?? 'landscape'}</meta>`);
-    add(`<meta property="rendition:orientation">${pub.fixed?.orientation ?? 'auto'}</meta>`);
+    if (pub.fixed?.orientation && pub.fixed.orientation !== 'auto') add(`<meta property="rendition:orientation">${pub.fixed.orientation}</meta>`);
   }
   const cover = pub.items.find((i) => i.properties?.includes('cover-image'));
   // EPUB 2 readers (and some current ones) look the cover picture up here.
@@ -158,16 +158,16 @@ export function buildNav(pub: EpubPublication): string {
   // An empty list is invalid: a book with no headings lists its title.
   const toc = pub.toc.length ? pub.toc : [{ label: pub.metadata.title, href: firstHref(pub) }];
   const parts = [
-    `<nav epub:type="toc" id="toc" role="doc-toc" aria-labelledby="toc-title">\n<h1 id="toc-title">${escapeXml(s.contents)}</h1>\n${navList(toc, 0)}\n</nav>`,
+    `<nav epub:type="toc" id="toc" role="doc-toc">\n<h1>${escapeXml(s.contents)}</h1>\n${navList(toc, 0)}\n</nav>`,
   ];
   if (pub.landmarks.length) {
     const items = pub.landmarks.map((l) =>
       `  <li><a epub:type="${escapeAttr(l.type)}" href="${escapeAttr(l.href)}">${escapeXml(l.label)}</a></li>`);
-    parts.push(`<nav epub:type="landmarks" id="landmarks" hidden="hidden" aria-labelledby="landmarks-title">\n<h2 id="landmarks-title">${escapeXml(s.landmarks)}</h2>\n<ol>\n${items.join('\n')}\n</ol>\n</nav>`);
+    parts.push(`<nav epub:type="landmarks" id="landmarks" hidden="hidden">\n<h2>${escapeXml(s.landmarks)}</h2>\n<ol>\n${items.join('\n')}\n</ol>\n</nav>`);
   }
   if (pub.pageList.length) {
     const items = pub.pageList.map((p) => `  <li><a href="${escapeAttr(p.href)}">${escapeXml(p.label)}</a></li>`);
-    parts.push(`<nav epub:type="page-list" id="page-list" hidden="hidden" role="doc-pagelist" aria-labelledby="page-list-title">\n<h2 id="page-list-title">${escapeXml(s.pages)}</h2>\n<ol>\n${items.join('\n')}\n</ol>\n</nav>`);
+    parts.push(`<nav epub:type="page-list" id="page-list" hidden="hidden" role="doc-pagelist">\n<h2>${escapeXml(s.pages)}</h2>\n<ol>\n${items.join('\n')}\n</ol>\n</nav>`);
   }
   return xhtmlDocument({
     lang: pub.metadata.language,
@@ -181,20 +181,29 @@ export function buildNav(pub: EpubPublication): string {
  *  page list. */
 export function buildNcx(pub: EpubPublication, identifier = bookIdentifier(pub.metadata)): string {
   const toc = pub.toc.length ? pub.toc : [{ label: pub.metadata.title, href: firstHref(pub) }];
-  let order = 0;
+  // One play order per target: EPUBCheck rejects two entries that point at
+  // the same place with different orders (a part's entry and its page).
+  const orders = new Map<string, number>();
+  const playOrder = (src: string): number => {
+    let n = orders.get(src);
+    if (n === undefined) orders.set(src, (n = orders.size + 1));
+    return n;
+  };
+  let pointCount = 0;
   let maxDepth = 0;
   const points = (list: readonly EpubNavPoint[], depth: number): string => list.map((p) => {
     maxDepth = Math.max(maxDepth, depth);
-    const n = ++order;
+    const n = ++pointCount;
+    const order = playOrder(p.href);
     const kids = p.children?.length ? `\n${points(p.children, depth + 1)}` : '';
-    return `${indent(depth + 1)}<navPoint id="np-${n}" playOrder="${n}">\n` +
+    return `${indent(depth + 1)}<navPoint id="np-${n}" playOrder="${order}">\n` +
       `${indent(depth + 2)}<navLabel><text>${escapeXml(stripInvalidXmlChars(p.label))}</text></navLabel>\n` +
       `${indent(depth + 2)}<content src="${escapeAttr(p.href)}"/>${kids}\n` +
       `${indent(depth + 1)}</navPoint>`;
   }).join('\n');
   const navMap = points(toc, 1);
   const pageTargets = pub.pageList.map((p, i) =>
-    `    <pageTarget id="pt-${i + 1}" type="${/^\d+$/.test(p.label) ? 'normal' : 'front'}" value="${i + 1}" playOrder="${++order}">\n` +
+    `    <pageTarget id="pt-${i + 1}" type="${/^\d+$/.test(p.label) ? 'normal' : 'front'}" value="${i + 1}" playOrder="${playOrder(p.href)}">\n` +
     `      <navLabel><text>${escapeXml(p.label)}</text></navLabel>\n` +
     `      <content src="${escapeAttr(p.href)}"/>\n` +
     `    </pageTarget>`);

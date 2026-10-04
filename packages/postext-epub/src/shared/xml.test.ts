@@ -56,6 +56,10 @@ describe('htmlToXhtml', () => {
     expect([...ids]).toEqual(['_1a']);
   });
 
+  it('drops a link the rewrite has no target for', () => {
+    expect(htmlToXhtml('<a href="#gone" class="x">t</a>', { rewriteHref: () => undefined })).toBe('<a class="x">t</a>');
+  });
+
   it('hoists style elements and drops scripts and comments', () => {
     const styles: string[] = [];
     const out = htmlToXhtml('<div><style>.a>b{x:1}</style><!-- c --><script>alert(1)</script>t</div>', { hoistStyle: (c) => styles.push(c) });
