@@ -165,6 +165,14 @@ describe("validateRecipeMeta (fixture)", () => {
     );
   });
 
+  it("takes the book block or the cjk block, which both declare showBook", () => {
+    const meta = fixtureMeta();
+    meta.kit = ["core", "fonts", "viewer", "pdf", "arabic", "book"];
+    expect(validate(meta).filter((e) => e.startsWith("kit:"))).toEqual([]);
+    meta.kit = ["core", "fonts", "viewer", "pdf", "cjk", "arabic", "book"];
+    expect(validate(meta)).toContain('kit: list "book" or "cjk", not both (the cjk block carries its own showBook)');
+  });
+
   it("keeps unreleased engines out", () => {
     const meta = fixtureMeta();
     meta.engine.postext = "1.5.0";

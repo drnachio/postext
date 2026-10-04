@@ -250,7 +250,9 @@
           "viewer",
           "pdf",
           "images",
-          "cjk"
+          "cjk",
+          "arabic",
+          "book"
         ]
       },
       "minItems": 3,

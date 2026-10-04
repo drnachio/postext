@@ -636,6 +636,8 @@ export function validateRecipeMeta(
     errors.push(pdf ? `kit: a "pdf" output needs the "pdf" kit block` : `kit: the "pdf" block is only for recipes with a "pdf" output`);
   }
   for (const block of REQUIRED_KIT) if (!kit.includes(block)) errors.push(`kit: must include "${block}"`);
+  // Both blocks declare showBook: composed together, the module would not parse.
+  if (kit.includes("book") && kit.includes("cjk")) errors.push(`kit: list "book" or "cjk", not both (the cjk block carries its own showBook)`);
   const downloads = obj(m.downloads);
   if (downloads.pdf && !pdf) errors.push(`downloads.pdf: needs a "pdf" output`);
   // A draft previewing the next release may pin it; a recipe is captured

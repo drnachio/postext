@@ -78,10 +78,13 @@ export const REQUIRED_AUTHORED_SECTIONS: readonly SectionId[] = ["build", "metho
 // ─── Pens ───────────────────────────────────────────────────────────────────
 
 /** Kit blocks, inlined by composition in this order. `cjk` (Chinese,
- *  Japanese and Korean faces by unicode-range slices) is optional and
- *  listed only by the recipes that set such text. */
-export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk";
-export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk"];
+ *  Japanese and Korean faces by unicode-range slices) and `arabic` (the
+ *  arabic files of Arabic-script faces) are listed only by the recipes that
+ *  set such text; `book` (`showBook`, spreads of a book bound on either
+ *  edge) by the right-bound books. The cjk block carries its own copy of
+ *  `showBook`, so a recipe lists `book` or `cjk`, never both. */
+export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book";
+export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book"];
 export const REQUIRED_KIT: readonly KitBlock[] = ["core", "fonts", "viewer"];
 
 export type CardMode = "spread" | "page" | "loupe" | "crop" | "screenshot";
