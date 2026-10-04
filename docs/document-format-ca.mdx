@@ -190,12 +190,16 @@ Les directives són etiquetes de control d'una sola línia escrites com a `:::no
       <td><code>:::index</code></td>
       <td>Imprimeix aquí l'índex analític: tots els termes marcats amb <code>:index</code> al llibre, ordenats i agrupats per inicial, amb les pàgines on cauen, compostos segons la configuració <code>index</code>. <code>:::index&#123;index="nombres"&#125;</code> imprimeix un índex amb nom. Vegeu <a href="#índex-analític">Índex analític</a>.</td>
     </tr>
+    <tr>
+      <td><code>:::verse</code> … <code>:::</code></td>
+      <td>Un poema a la manera àrab clàssica: un bayt per línia, amb els dos hemistiquis separats per <code>||</code>, compostos l'un al costat de l'altre amb una amplada comuna. Vegeu <a href="#verse">més avall</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Els valors dels atributs poden anar entre cometes dobles (<code>"…"</code>), cometes simples (<code>'…'</code>) o sense cometes (<code>startAt=17</code>). Una clau sense `=` es tracta com una bandera present amb valor buit.
 
-Avui només es reconeixen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` i `index` com a directives d'una sola línia — qualsevol altra línia `:::nombre` que no sigui un contenidor (més avall) s'analitza com a paràgraf i genera un avís **Directiva desconeguda** al sandbox. El motor també ho registra, com una entrada `unknownDirective` als `contentWarnings` del document (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
+Avui només es reconeixen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` i `index` com a directives d'una sola línia (i `references` i `verse` com a blocs amb tanca) — qualsevol altra línia `:::nombre` que no sigui un contenidor (més avall) s'analitza com a paràgraf i genera un avís **Directiva desconeguda** al sandbox. El motor també ho registra, com una entrada `unknownDirective` als `contentWarnings` del document (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
 
 ### Valors dels atributs
 
@@ -500,6 +504,28 @@ El requadre de resposta d'una fitxa és un requadre l'únic contingut del qual �
 Per a un salt fix en lloc d'espai, fes servir `:::columnbreak` o `:::pagebreak`.
 
 
+### `:::verse`
+
+Un poema a la manera àrab clàssica (una qaṣīda, una qiṭʿa): cada vers, el *bayt*, en una línia i en dues meitats, el *ṣadr* al costat de l'inici (la dreta en àrab) i l'*ʿajuz* al costat del final, amb un buit entre totes dues. Escriu un bayt per línia, amb els hemistiquis separats per `||` (també val `\\` amb un espai a cada banda, com als textos de Wikisource). Una línia sense separador és un hemistiqui solt, centrat al poema.
+
+```md
+فأنشد يقول:
+
+:::verse
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **Una sola amplada.** Tots els hemistiquis del poema es componen amb la mateixa amplada, de manera que cada ṣadr comença a la mateixa vertical i cada ʿajuz acaba en una altra, i les lletres de la rima queden alineades al llarg del poema. L'amplada és la de l'hemistiqui més ample, com a màxim la meitat de la mesura menys el buit; `width` la fixa (`width=55mm`). Cada hemistiqui s'hi porta primer amb caixides (el vers s'allarga més que la prosa: el doble de `bodyText.kashidaMaxLength`) i després amb els seus espais; un hemistiqui d'una sola paraula que no l'omple deixa la resta al buit.
+- **El buit** fa 2 em per defecte; `gap` el fixa (`gap=3em`; un número sense unitat va en em). `ornament` imprimeix una marca al centre (`ornament="٭"`), que no forma part del text.
+- **Massa ample.** Un hemistiqui més ample que l'amplada comuna estreny primer els espais fins a `bodyText.minWordSpacing`. Si tot i així no hi cap, el seu bayt es compon esglaonat: el ṣadr alineat amb el costat de l'inici en una línia pròpia i l'ʿajuz alineat amb el costat del final a la següent.
+- **Col·locació.** El poema va centrat a la columna; `align=start` l'alinea amb el costat de l'inici. Un bayt no es parteix mai entre columnes o pàgines, i el poema segueix les regles d'òrfenes i vídues dels paràgrafs (un poema de tres bayts o menys va sencer). El paràgraf anterior, que l'introdueix («فأنشد يقول:»), manté la seva última línia al costat dels primers bayts.
+- **Tipus.** El poema pren la font, el cos i l'interlineat del text; `style` li assigna un estil de paràgraf (`style="vers"`), que és com un poema vocalitzat obté l'interlineat addicional que demanen les seves harakat. `dir=ltr` o `dir=rtl` en fixa la direcció com en qualsevol bloc; un poema en alfabet llatí en un llibre d'esquerra a dreta porta el ṣadr a l'esquerra.
+
+El text pla del poema separa hemistiquis i bayts (un tabulador i un salt de línia), de manera que una cerca o un passatge copiat el llegeixen tal com es va escriure; les caixides i l'ornament en queden fora.
+
+
 ### `:::toc`
 
 `:::toc` imprimeix l'índex de continguts al punt on és. S'expandeix en blocs ordinaris — un per encapçalament dels nivells que enumera `toc.levels` (el nivell 1 per defecte) i un per `:::part` — de manera que l'índex flueix per columnes i pàgines com qualsevol altre text, i un clic sobre una entrada porta a la línia de la directiva. Cada entrada mostra el número de l'encapçalament (el resultat del seu `numberingTemplate` o, si no n'hi ha, l'ordinal de capítol), el títol, una línia de punts i l'etiqueta de la pàgina on comença i, si `toc.subtitle` està activat, una segona línia amb un atribut de l'encapçalament, com els autors del capítol (`{author="…"}`). Cada part rep una fila pròpia, dissenyada per `toc.parts.design` i acolorida amb la `palette` de la part. Els encapçalaments l'estil dels quals declara `numbered: false` apareixen sense número; `{toc="false"}` en un encapçalament el deixa fora (normalment, el mateix encapçalament de l'índex).
@@ -726,6 +752,25 @@ Les edicions xineses marquen el text entre línies en comptes de fer-ho amb curs
 - **`:warichu[nota]`** compon una nota (双行夹注) en dues files a mig cos dins de la línia; la de dalt es llegeix primer (la de la dreta en text vertical). Una nota llarga omple el que queda de línia i continua a la línia, la columna o la pàgina següents. `open` i `close` l'envolten de signes a la mida del text; `cjk.warichu` fixa la mida, el color i els signes per defecte. Una nota en escriptura llatina es talla entre les seves paraules.
 
 El pas de línia no canvia mai: marques i lectures viuen a l'interlineat, i la composició avisa quan el buit entre les línies d'un paràgraf és massa estret per a elles (`cjkMarksExceedLeading`, `rubyExceedsLeading`), i quan les marques sota una línia i les lectures sobre la següent no caben juntes al buit que comparteixen, en un mateix paràgraf o entre dos. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques, lectures i notes es dibuixen en paràgrafs, títols, elements de llista, cites i requadres; als peus de figura, les cel·les i les notes de taula, i als encapçalaments i dissenys, el text s'imprimeix sense elles. Amb `cjk.bookTitleMark: 'brackets'` els 《》 d'un títol són puntuació del text: els peus, les cel·les, les notes, les files de l'índex general, els marcadors del PDF i les entrades de l'índex alfabètic els conserven. Vegeu [Configuració › Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu).
+
+
+### Direcció del text al marcatge
+
+Un document va en la direcció que implica el seu `locale` (`direction` a la configuració: de dreta a esquerra per a l'àrab, el persa, l'urdú o l'hebreu). Dins del document, el marcatge fixa la direcció d'un bloc o d'un tram de text, per a una cita anglesa en un llibre àrab o una d'àrab en un llibre anglès.
+
+- **Un títol o un contenidor**: `{dir=ltr}` o `{dir=rtl}` als seus atributs, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Tots els blocs d'un contenidor prenen aquesta direcció, fins a un contenidor niat o un títol que en fixi una altra. Un paràgraf normal, una llista o una cita no tenen atributs propis: embolcalla'ls en `:::paragraphs{dir=…}`. Els altres valors s'ignoren.
+- **Un tram de text**: `:ltr[…]` i `:rtl[…]` aïllen el seu text (els LRI…PDI i RLI…PDI de l'algorisme bidireccional d'Unicode): s'ordena per dins, i el paràgraf que l'envolta hi veu un sol caràcter neutre. `{lang=…}` marca la llengua del tram a l'HTML i al PDF. Una crida de nota, un `:ref` o una fórmula a dins formen part de l'aïllament, i els aïllaments es nien.
+
+```markdown
+:::paragraphs{dir=ltr}
+The opening of the *Nights* in Lane's translation.
+:::
+
+ترجمها :ltr[Edward William Lane]{lang=en} سنة ١٨٣٩.
+```
+
+Un bloc compost en contra de la direcció del document conserva el seu propi costat d'inici: el sagnat, els marcadors de llista i el final alineat de l'última línia passen al costat per on comença el seu text. Fes servir un aïllament quan un títol llatí acaba en un caràcter neutre (un punt, un parèntesi) que, si no, s'uniria a l'àrab que l'envolta. També es respecten els caràcters de control d'Unicode (U+2066–2069, U+202A–202E, U+200E, U+200F, U+061C). A l'editor del Sandbox cada línia va en la direcció de la seva primera lletra. Vegeu [Composició àrab](/ca/docs/arabic-layout#direcció-i-algorisme-bidireccional).
+
 ## Notes a peu de pàgina
 
 Una nota a peu de pàgina té dues parts: la crida `[^id]` al lloc on se cita la nota, i la definició, un paràgraf propi que comença per `[^id]:` en qualsevol punt del capítol.
@@ -1208,7 +1253,7 @@ Postext no reconeix les característiques següents de CommonMark. O es tracten 
 
 Aquesta llista s'anirà reduint amb el temps. Mentrestant, qualsevol cosa que no aparegui explícitament a dalt s'ha de considerar text literal.
 
-Més enllà de la sintaxi, les escriptures de dreta a esquerra (àrab, hebreu…) encara no es componen bé: no hi ha composició bidireccional. El xinès es compon en horitzontal i en vertical, amb el tall de línies, l'amplada de la puntuació, la justificació entre caràcters, les marques, el ruby i el warichu que espera la seva regió (vegeu [Composició xinesa](/ca/docs/chinese-layout)); el japonès i el coreà passen pel mateix compositor amb les regles de la Xina continental. Els patrons de partició de mots existeixen per a vuit llengües, i les etiquetes integrades per a aquestes vuit i el xinès. Vegeu [Llengües i escriptures](/ca/docs/configuration#llengües-i-escriptures).
+Més enllà de la sintaxi, l'àrab i les altres escriptures de dreta a esquerra es componen de dreta a esquerra, amb l'algorisme bidireccional i l'enquadernació per la dreta (vegeu [Composició àrab](/ca/docs/arabic-layout)). El xinès es compon en horitzontal i en vertical, amb el tall de línies, l'amplada de la puntuació, la justificació entre caràcters, les marques, el ruby i el warichu que espera la seva regió (vegeu [Composició xinesa](/ca/docs/chinese-layout)); el japonès i el coreà passen pel mateix compositor amb les regles de la Xina continental. Els patrons de partició de mots existeixen per a vuit llengües, i les etiquetes integrades per a aquestes vuit, el xinès i l'àrab. Vegeu [Llengües i escriptures](/ca/docs/configuration#llengües-i-escriptures).
 
 
 ## Normes de redacció

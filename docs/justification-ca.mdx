@@ -325,6 +325,24 @@ bodyText: {
 
 Està desactivat per defecte, de manera que els documents conserven les seves línies llevat que ho demanin. Al capítol en anglès d'abans, 10 ‰ va deixar les línies que superaven `maxWordSpacing` en una o cap per font, i 20 ‰ en cap en tres fonts de quatre. Mantén-lo baix: a partir d'uns 20 ‰ el tracking comença a notar-se com una línia més clara o més fosca.
 
+### Caixida en el text àrab
+
+Una línia àrab justificada no s'espaia entre lletres: les seves lletres s'enllacen, i separar-les trenca els enllaços. S'estira en dos llocs: els espais entre paraules i les caixides (kashida), els enllaços allargats que el cal·lígraf traça entre dues lletres unides (كتاب → كتـاب). Postext els insereix com a tatweels (U+0640, ـ), sencers, que la font dibuixa com un sol traç; l'Amiri converteix una sèrie d'un a set en una caixida corba.
+
+`bodyText.kashida` val `'auto'` per defecte en un document la llengua del qual s'escriu amb alfabet àrab (`ar`, `fa`, `ur`…) i `'none'` en qualsevol altre; posa-hi `'auto'` per allargar les paraules àrabs citades en un llibre d'una altra llengua. Cada línia, tret de l'última del paràgraf, obre primer els espais fins a una quarta part de la seva amplada i després pren caixides per a la resta del sobrant, un tatweel cada vegada, primer als millors llocs i volta rere volta, tornant a mesurar cada paraula sencera amb els seus tatweels; el que sobra, menys d'un tatweel, torna als espais. Knuth-Plass compta l'allargament possible de cada paraula com a estirament, de manera que tria els talls sabent que una línia de paraules àrabs s'hi pot eixamplar.
+
+On pot anar una caixida surt de les regles de [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT): només entre dues lletres que s'enllacen, mai després d'una lletra que no enllaça amb la següent (ا د ذ ر ز و ة), mai al final de la paraula, mai dins del lām-alif, i sempre després dels signes de la lletra anterior. `kashidaPatterns: 'naskh'` segueix les regles clàssiques del naskh (la matriu de Benatia amb les prohibicions d'Afifi: res després de kāf o lām, res abans de ṣād, ʿayn o wāw, un hāʾ pronominal final s'allarga just abans); `'simple'`, les prioritats de Microsoft per a tipus moderns senzills; `'nastaliq'`, les regles del naskh adaptades al nastaʿlīq. El valor per defecte, `'auto'`, mira la font del text: cap caixida en un tipus ruqʿa o dīwānī com l'Aref Ruqaa, regles de nastaʿlīq en un tipus nastaʿlīq, naskh en els altres. Una paraula pren com a màxim `kashidaPerWord` allargaments (1 per defecte) de `kashidaMaxLength` em com a molt (0,6, tres tatweels de l'Amiri). Una paraula amb un tatweel escrit per l'autor s'allarga allà. Les paraules llatines, les xifres, els títols, les línies en bandera i l'última línia d'un paràgraf no en prenen mai cap.
+
+```ts
+bodyText: {
+  kashida: 'auto',          // el normal en un llibre àrab
+  kashidaPatterns: 'naskh', // 'auto' el tria per la font
+  kashidaMaxLength: 0.6,    // em
+}
+```
+
+Els tatweels formen part del text pintat (cada segment els enumera a `VDTLineSegment.kashida` i la línia els compta a `VDTLine.kashida`); el text pla, el mapa de fonts, els enllaços i el text copiat del PDF els deixen fora.
+
 ### L'última línia
 
 En el model caixa-cola-penalització, cada paràgraf acaba amb una cola d'amplada 0 i infinitament estirable seguida d'un tall forçat. Aquesta cola final absorbeix a cost zero tot l'espai que quedi a l'última línia, de manera que les últimes línies surten irregulars de manera natural: es renderitzen a la seva amplada natural, i el `justifiedSpaceRatio` només es calcula per a les línies que no són finals.

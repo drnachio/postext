@@ -7777,7 +7777,7 @@
       "heading": {
         "en": "Direction and the bidirectional algorithm",
         "es": "Dirección y algoritmo bidireccional",
-        "ca": "Llengües i escriptures",
+        "ca": "Direcció i algorisme bidireccional",
         "zh": "文字方向与双向算法"
       }
     },
@@ -7841,7 +7841,7 @@
       "heading": {
         "en": "Document, block and inline direction",
         "es": "Dirección del documento, del bloque y del texto en línea",
-        "ca": "Llengües i escriptures",
+        "ca": "Direcció del document, del bloc i del text en línia",
         "zh": "文档、块与行内方向"
       }
     },
@@ -7913,7 +7913,7 @@
       "heading": {
         "en": "Isolates",
         "es": "Aislamientos",
-        "ca": "Llengües i escriptures",
+        "ca": "Aïllaments",
         "zh": "隔离段"
       }
     },
@@ -8045,7 +8045,7 @@
       "heading": {
         "en": "Digits and numeral styles",
         "es": "Cifras y estilos de numeración",
-        "ca": "Numeració",
+        "ca": "Xifres i estils de numeració",
         "zh": "数字系统与编号样式"
       }
     },
@@ -8104,7 +8104,7 @@
       "heading": {
         "en": "Ordinal and cardinal words",
         "es": "Ordinales y cardinales con letras",
-        "ca": "Nombres en lletres",
+        "ca": "Ordinals i cardinals en lletres",
         "zh": "序数词与基数词"
       }
     },
@@ -8231,7 +8231,7 @@
       "heading": {
         "en": "Starting an Arabic book",
         "es": "Empezar un libro en árabe",
-        "ca": "Llengua del document",
+        "ca": "Començar un llibre en àrab",
         "zh": "开始一本阿拉伯文书"
       }
     },
@@ -8294,7 +8294,7 @@
       "heading": {
         "en": "Fonts",
         "es": "Fuentes",
-        "ca": "Proveïdor de fonts al navegador (Fontsource + WOFF2)",
+        "ca": "Fonts",
         "zh": "字体"
       }
     },
@@ -8304,11 +8304,13 @@
     "label": {
       "en": "Kashida justification",
       "es": "Justificación con cachida",
+      "ca": "Justificació amb caixida",
       "zh": "卡希达两端对齐"
     },
     "definition": {
       "en": "A justified Arabic line takes its slack in its word spaces and in kashidas, whole tatweels inserted between two joined letters at the places the Naskh rules rank best (never after ا د ر و, never inside lām-alif), instead of letter-spacing; on by default in Arabic-script books, off in Ruqʿa faces.",
       "es": "Una línea árabe justificada reparte su holgura entre los espacios y las cachidas, tatweels enteros insertados entre dos letras enlazadas en los sitios que mejor puntúan las reglas del naskh (nunca tras ا د ر و, nunca dentro del lām-alif), en lugar de espaciar las letras; activa por defecto en libros en alfabeto árabe, desactivada en tipos ruqʿa.",
+      "ca": "Una línia àrab justificada pren el sobrant als espais entre paraules i en caixides, tatweels sencers inserits entre dues lletres enllaçades als llocs que millor puntuen les regles del naskh (mai després d'ا د ر و, mai dins del lām-alif), en lloc d'espaiar les lletres; activada per defecte en llibres en alfabet àrab, desactivada en tipus ruqʿa.",
       "zh": "两端对齐的阿拉伯文行把空白分给词间空格和卡希达，即按纳斯赫体规则排在最好位置、插入两个相连字母之间的整个延长符（绝不在ا د ر و之后，绝不在lām-alif之内），而不是加字距；用阿拉伯字母书写的书默认开启，鲁格阿体字体中关闭。"
     },
     "aliases": {
@@ -8328,6 +8330,14 @@
         "justificación árabe",
         "كشيدة"
       ],
+      "ca": [
+        "caixida",
+        "kashida",
+        "tatweel",
+        "allargament",
+        "justificació àrab",
+        "كشيدة"
+      ],
       "zh": [
         "卡希达",
         "延长符",
@@ -8343,6 +8353,7 @@
       "heading": {
         "en": "Kashida in Arabic Text",
         "es": "Cachida en el texto árabe",
+        "ca": "Caixida en el text àrab",
         "zh": "阿拉伯文的卡希达"
       }
     },
@@ -8360,11 +8371,13 @@
     "label": {
       "en": "Arabic verse (bayt in two hemistichs)",
       "es": "Verso árabe (bayt en dos hemistiquios)",
+      "ca": "Vers àrab (bayt en dos hemistiquis)",
       "zh": "阿拉伯诗体（一联两个半行）"
     },
     "definition": {
       "en": ":::verse sets a poem one bayt a line, the ṣadr on the start side and the ʿajuz on the end side, every hemistich justified to one common width with kashidas and spaces so the rhyme letters line up; a bayt too wide is staggered, never split between pages, and the introducing line stays with it.",
       "es": ":::verse compone un poema con un bayt por línea, el ṣadr en el lado del comienzo y el ʿajuz en el del final, cada hemistiquio justificado a una anchura común con cachidas y espacios para que las letras de la rima se alineen; un bayt demasiado ancho se escalona, nunca se parte entre páginas, y la línea que lo introduce va con él.",
+      "ca": ":::verse compon un poema amb un bayt per línia, el ṣadr al costat de l'inici i l'ʿajuz al del final, cada hemistiqui justificat a una amplada comuna amb caixides i espais perquè les lletres de la rima s'alineïn; un bayt massa ample s'esglaona, no es parteix mai entre pàgines, i la línia que l'introdueix va amb ell.",
       "zh": ":::verse按每行一联排诗，前半行（ṣadr）在起始一侧，后半行（ʿajuz）在结束一侧，每个半行用卡希达和空格对齐到同一宽度，使韵脚字母上下对齐；太宽的联错开排，绝不跨页拆开，引出诗的那一行与诗留在一起。"
     },
     "aliases": {
@@ -8388,6 +8401,16 @@
         "قصيدة",
         "بيت"
       ],
+      "ca": [
+        "cassida",
+        "bayt",
+        "hemistiqui",
+        "poesia àrab clàssica",
+        "vers en dues columnes",
+        "poema àrab",
+        "قصيدة",
+        "بيت"
+      ],
       "zh": [
         "卡西达",
         "联",
@@ -8405,6 +8428,7 @@
       "heading": {
         "en": "`:::verse`",
         "es": "`:::verse`",
+        "ca": "`:::verse`",
         "zh": "`:::verse`"
       }
     },

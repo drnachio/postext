@@ -39,7 +39,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Disposició](#disposició) — nombre de columnes, espai entre columnes, filets, [escriptura vertical](#escriptura-vertical).
 - [Capçaleres i peus](#capçaleres-i-peus) — elements de text i de línia per pàgina amb marcadors, paritat i alineació.
 - [Text de cos](#text-de-cos) — tipografia, partició de mots, vídues i òrfenes.
-- [Llengua del document](#llengua-del-document) — el `locale` de primer nivell: alternativa per a la partició de mots, tipus de recurs integrats i cadenes de continuació de taules i d'avisos partits, llengua etiquetada en un PDF accessible; i les [llengües i escriptures](#llengües-i-escriptures) que Postext compon.
+- [Llengua del document](#llengua-del-document) — el `locale` de primer nivell: alternativa per a la partició de mots, tipus de recurs integrats i cadenes de continuació de taules i d'avisos partits, llengua etiquetada en un PDF accessible; les [xifres](#xifres-del-document) (`numerals`) i la [direcció del text](#direcció-del-text) (`direction`) que se'n desprenen; i les [llengües i escriptures](#llengües-i-escriptures) que Postext compon. La guia dels llibres de dreta a esquerra és [Composició àrab](/ca/docs/arabic-layout).
 - [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental) — `cjk`: les convencions regionals i el tall de línia del text en xinès, japonès i coreà, com s'eixamplen les seves línies justificades, les amplades de la puntuació i la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els números que van drets en text vertical, i les marques, el ruby i les notes warichu. La guia de tot plegat és [Composició xinesa](/ca/docs/chinese-layout).
 - [Encapçalaments](#encapçalaments) — valors generals i sobreescriptures H1–H6.
 - [Llistes no ordenades](#llistes-no-ordenades) i [Llistes ordenades](#llistes-ordenades) — vinyetes, numeració, imbricació.
@@ -130,7 +130,7 @@ La propietat `page` controla les dimensions físiques i l'aparença de la pàgin
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>La vora per la qual s'enquaderna el llibre. <code>'auto'</code> és <code>'right'</code> quan <code>layout.writingMode</code> és <code>'vertical-rl'</code>, i <code>'left'</code> en cas contrari. Un llibre enquadernat per la dreta comença en una pàgina esquerra i emmiralla els marges a l'inrevés. Val per a tot el llibre: el <code>layout</code> propi d'un estil de títol no el canvia. Mira <a href="#enquadernació">Enquadernació</a>.</td>
+      <td>La vora per la qual s'enquaderna el llibre. <code>'auto'</code> és <code>'right'</code> quan <code>layout.writingMode</code> és <code>'vertical-rl'</code> o el document va de dreta a esquerra (<a href="#direcció-del-text"><code>direction</code></a>), i <code>'left'</code> en cas contrari. Un llibre enquadernat per la dreta comença en una pàgina esquerra i emmiralla els marges a l'inrevés. Val per a tot el llibre: el <code>layout</code> propi d'un estil de títol no el canvia. Mira <a href="#enquadernació">Enquadernació</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +165,8 @@ Amb aquesta configuració tota pàgina senar té 2,2 cm de marge a l'esquerra (e
 - El PDF porta `/ViewerPreferences << /Direction /R2L >>` i `/PageLayout /TwoPageRight` (la pàgina 1 sola i després per parells), etiquetat o no. Acrobat i Foxit els respecten; el visor integrat de Chrome no fa cas de cap dels dos.
 
 Els folis i les capçaleres no canvien de costat per si sols: una plantilla que posa el número de pàgina a la cantonada exterior necessita els seus elements de pàgina parella i senar preparats per a la vora dreta (els elements admeten `parity`).
+
+Un llibre escrit de dreta a esquerra (àrab, persa, hebreu…) també s'enquaderna per la dreta: `'auto'` dona la vora dreta quan la [`direction`](#direcció-del-text) del document resulta `'rtl'`. Un llibre així emmiralla a més tot el seu flux: la primera columna és la de la dreta, i els sagnats, els marcadors de llista, els flotants i les notes queden a la dreta; les ranures de capçalera i peu continuen sent físiques. Vegeu [Composició àrab](/ca/docs/arabic-layout#ordre-de-les-pàgines-i-enquadernació-per-la-dreta).
 
 ### Mides de pàgina predefinides
 
@@ -597,9 +599,15 @@ Els valors per defecte de la taula següent són els d'un element de text que af
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>Alineació horitzontal de les línies dins de la caixa de l'element. <code>'justify'</code> eixampla els espais entre paraules de cada línia ajustada, excepte l'última de cada paràgraf, fins que la línia omple la caixa; les línies que acompanyen una caplletra omplen l'espai que queda al seu costat. Amb <code>hyphenate</code>, una paraula que no cap en el que queda d'una línia justificada també es parteix per una síl·laba per omplir-la. L'última línia d'un paràgraf, una línia sense espais per eixamplar i un text que no s'ajusta s'alineen a l'esquerra. El text justificat es compon paràgraf a paràgraf, de manera que diverses línies en blanc entre paràgrafs compten com una. El llenç i el PDF col·loquen cada paraula on la va posar la maquetació; l'HTML eixampla els espais amb <code>word-spacing</code>.</td>
+      <td>Alineació horitzontal de les línies dins de la caixa de l'element. <code>'justify'</code> eixampla els espais entre paraules de cada línia ajustada, excepte l'última de cada paràgraf, fins que la línia omple la caixa; les línies que acompanyen una caplletra omplen l'espai que queda al seu costat. Amb <code>hyphenate</code>, una paraula que no cap en el que queda d'una línia justificada també es parteix per una síl·laba per omplir-la. L'última línia d'un paràgraf, una línia sense espais per eixamplar i un text que no s'ajusta s'alineen a l'esquerra. El text justificat es compon paràgraf a paràgraf, de manera que diverses línies en blanc entre paràgrafs compten com una. El llenç i el PDF col·loquen cada paraula on la va posar la maquetació; l'HTML eixampla els espais amb <code>word-spacing</code>. <code>'start'</code> i <code>'end'</code> segueixen la <code>direction</code> del text: la dreta i l'esquerra d'un text de dreta a esquerra. <code>'left'</code> i <code>'right'</code> són els costats de la caixa mateixa; en un disseny que es compon en el flux d'una pàgina de dreta a esquerra (una franja d'obertura, el disseny d'un títol) el flux està emmirallat, així que en són l'inici i el final, com al text general.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>la del document</td>
+      <td>Direcció base del text: on van els seus caràcters neutres, l'ordre dels seus trams en una línia i quins costats volen dir <code>'start'</code> i <code>'end'</code>. <code>'auto'</code> llegeix la primera lletra forta del text resolt i, si no n'hi ha, pren la <a href="#direcció-del-text"><code>direction</code></a> del document. Els trams en àrab o hebreu es llegeixen de dreta a esquerra sigui quina sigui la base. Un text que conté una lletra àrab no s'espaia mai (s'ignora tot el seu <code>letterSpacing</code>) i les seves paraules no es tallen en ajustar ni en truncar; una paraula més ampla que la caixa la desborda i s'avisa com a <code>unbreakableWordOverflow</code>.</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1306,9 +1314,9 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>Alineació del text. El text justificat distribueix l'espaiat al llarg de cada línia per obtenir vores uniformes. Les últimes línies dels paràgrafs justificats es componen en bandera, a la seva amplada natural — llevat de quan Knuth-Plass ha acceptat una línia final sobreomplerta confiant en la compressió de la cola (glue): en aquest cas els espais entre paraules es comprimeixen perquè la línia encaixi exactament en la mesura (semàntica de glue-setting de TeX, aplicada de manera idèntica als backends canvas, HTML i PDF).</td>
+      <td>Alineació del text. <code>'left'</code> (o <code>'start'</code>) és el costat per on comença la línia: la dreta d'un paràgraf de dreta a esquerra (vegeu <a href="#direcció-del-text">Direcció del text</a>). El text justificat distribueix l'espaiat al llarg de cada línia per obtenir vores uniformes. Les últimes línies dels paràgrafs justificats es componen en bandera, a la seva amplada natural — llevat de quan Knuth-Plass ha acceptat una línia final sobreomplerta confiant en la compressió de la cola (glue): en aquest cas els espais entre paraules es comprimeixen perquè la línia encaixi exactament en la mesura (semàntica de glue-setting de TeX, aplicada de manera idèntica als backends canvas, HTML i PDF).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1363,6 +1371,30 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td><code>number</code></td>
       <td><code>0</code></td>
       <td>Tracking màxim que pot prendre una línia justificada, en mil·lèsimes d'em en un sentit o en l'altre (la unitat d'InDesign: 10 = 0,01 em per caràcter), quan només amb els seus espais entre paraules s'estiraria més enllà de <code>maxWordSpacing</code> o es comprimiria per sota de <code>minWordSpacing</code>. La part de l'ajust que passa del límit va a les lletres, així que els espais d'una línia fluixa tornen a <code>maxWordSpacing</code> i una línia atapeïda hi cap amb <code>minWordSpacing</code>. Knuth-Plass el té en compte en triar els talls, i només a les línies que l'espaiat entre paraules duria més enllà dels límits: les altres, l'última línia d'un paràgraf (llevat que es desbordi), una línia d'una sola paraula i una línia amb un chip no el fan servir. La línia el desa com a <code>letterSpacing</code>, i canvas, HTML i PDF el pinten. Requereix <code>optimalLineBreaking</code>. Amb <code>0</code> queda desactivat. Vegeu <a href="/ca/docs/justification#tracking-com-a-últim-recurs">Tracking com a últim recurs</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td><code>'auto'</code> en un document en alfabet àrab; si no, <code>'none'</code></td>
+      <td>Justificació amb caixida: una línia justificada de text en alfabet àrab pren el sobrant als espais entre paraules (fins a una quarta part de la seva amplada) i després en caixides, tatweels sencers (U+0640) inserits entre dues lletres enllaçades, mai com a espaiat entre lletres. Knuth-Plass compta l'allargament de cada paraula com a estirament. Mai en paraules llatines, xifres, títols, línies en bandera ni a l'última línia d'un paràgraf. Els tatweels es pinten però queden fora del text pla i del text copiat. Vegeu <a href="/ca/docs/justification#caixida-en-el-text-àrab">Caixida en el text àrab</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Quins enllaços prenen caixida i en quin ordre: les regles clàssiques del naskh, les prioritats de Microsoft o les regles del naskh adaptades al nastaʿlīq (segons raqim-kashida). <code>'auto'</code> mira la font del text: cap en un tipus ruqʿa o dīwānī (Aref Ruqaa), regles de nastaʿlīq en un tipus nastaʿlīq, naskh en els altres.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Màxim d'allargaments en una paraula.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>Allargament màxim en un enllaç, en em; en pren tants tatweels sencers com hi càpiguen.</td>
     </tr>
     <tr>
       <td><code>optimalLineBreaking</code></td>
@@ -1608,24 +1640,59 @@ const magreb: PostextConfig = { locale: 'ar-MA' };                  // 1, 2, 3
 const forzado: PostextConfig = { locale: 'ar', numerals: 'latn' };  // 1, 2, 3
 ```
 
+#### Direcció del text
+
+`direction`, al primer nivell, fixa la direcció base del document: `'ltr'`, `'rtl'` o `'auto'` (el valor predeterminat), que és `'rtl'` quan l'escriptura del `locale` s'escriu de dreta a esquerra (àrab, persa, urdú, hebreu, siríac, thaana, n'ko, adlam…, segons `directionOf(tag)`) i `'ltr'` en els altres casos. Un document de dreta a esquerra es compon en un marc emmirallat: les línies comencen a la dreta, la primera columna és la de la dreta, els sagnats, els marcadors de llista, els flotants, les notes a peu de pàgina i les caixes queden a la dreta, i [`page.binding: 'auto'`](#enquadernació) l'enquaderna per la dreta. La configuració resolta només porta `direction: 'rtl'` en un document així, de manera que un document d'esquerra a dreta es resol igual que abans. Un valor desconegut es llegeix com a `'auto'` i s'avisa com a `unknownConfigValue`. L'algorisme bidireccional d'Unicode (UAX #9) ordena els trams de cada línia en qualsevol de les dues direccions: una cita àrab en un llibre anglès es llegeix de dreta a esquerra al seu lloc.
+
+Dins del document, un títol o un contenidor `:::` admet `{dir=ltr}` o `{dir=rtl}`, i `:ltr[…]` i `:rtl[…]` aïllen un tram de text (vegeu [Direcció del text al marcatge](/ca/docs/document-format#direcció-del-text-al-marcatge)); un recurs de taula admet `table.direction`. Un bloc compost en contra de la direcció del document conserva el seu propi costat d'inici: el sagnat, els marcadors de llista i el final alineat de l'última línia passen al costat per on comença el seu text.
+
+Un ajust que anomena un costat es refereix a un costat del text o del flux, mai del plec, de manera que un disseny fet per a un llibre anglès continua valent quan el llibre passa a l'àrab. `'start'` i `'end'` s'accepten com a noms explícits:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Ajust</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>textAlign</code> del cos, els títols, els estils de paràgraf, les parts, les notes a peu de pàgina i el cos dels avisos; <code>align</code> del peu i de la seva nota</td><td>Els costats del text: <code>'left'</code> és el costat per on comença la línia, la dreta d'un paràgraf àrab, i allà va l'última línia d'un paràgraf justificat.</td><td>Sinònims de <code>'left'</code> i <code>'right'</code>. La configuració resolta porta <code>'left'</code> / <code>'right'</code>; la desada conserva el que s'hi va escriure.</td></tr>
+    <tr><td><code>align</code> d'una cel·la de taula</td><td>Els costats del text de la cel·la, llegits en la direcció de la taula (<code>table.direction</code>).</td><td>Sinònims, llegits en la direcció de la taula.</td></tr>
+    <tr><td><code>placement.align</code> (flotants, figures estretes)</td><td>Els costats del flux: en un llibre de dreta a esquerra, <code>'left'</code> és la dreta del plec.</td><td>Sinònims.</td></tr>
+    <tr><td><code>stripe.side</code>, <code>icon.cornerSide</code> i <code>labelTab.position</code> dels avisos (<code>'top-start'</code>, <code>'top-end'</code>)</td><td>Els costats del flux, els mateixos per a totes les caixes de la pàgina.</td><td>La direcció de la caixa mateixa (un <code>:::callout&#123;dir=ltr&#125;</code> en un llibre àrab comença per l'esquerra del plec).</td></tr>
+    <tr><td>Ranures de capçalera i peu; elements de disseny ancorats al plec</td><td>Els costats del plec.</td><td>Només els elements de text: l'inici i el final de la seva pròpia <code>direction</code>.</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate` conserva el seu sentit físic en una pàgina emmirallada: una figura girada en el sentit de les agulles del rellotge queda girada així al plec. Qui llegeix la maquetació troba el marc emmirallat a cada pàgina (`VDTPage.flow` amb `direction: 'rtl'`, `pageIsMirrored(page)`) i l'ordre visual dels segments de cada línia a `VDTLine.order`; `flowToPage` i `pageToFlow` passen del flux al plec i a l'inrevés. Vegeu [Composició àrab](/ca/docs/arabic-layout#direcció-i-algorisme-bidireccional).
+
+```ts
+const arab: PostextConfig = { locale: 'ar' };                          // de dreta a esquerra, enquadernat per la dreta
+const angles: PostextConfig = { locale: 'en', direction: 'rtl' };      // forçat; poques vegades és el que vols
+```
+
 ### Llengües i escriptures
 
 Postext compon escriptures alfabètiques que s'escriuen d'esquerra a dreta, i el xinès en horitzontal i en vertical. [Composició xinesa](/ca/docs/chinese-layout) explica com es compon el xinès i quins ajustos el governen; les claus són a [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental), [Escriptura vertical](#escriptura-vertical) i [Enquadernació](#enquadernació). El que rep cada escriptura:
 
 - **El xinès** el compon el compositor CJK quan un paràgraf té més caràcters CJK que espais entre paraules: les seves línies es tallen entre caràcters amb les regles de principi i final de línia de `cjk.lineBreak` (cap línia no comença per 。、」 o ー, cap no acaba en 「 o （), mantenen senceres —— i ……, un número amb els seus signes i una paraula llatina, i una línia justificada s'eixampla entre els seus caràcters fins a la mesura. L'amplada de la puntuació, la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els punts d'èmfasi, les marques de nom propi i de títol, el ruby i les notes warichu segueixen la regió de `locale`, al llarg de la línia horitzontal o de la vertical (`layout.writingMode: 'vertical-rl'`). Un paràgraf llatí que cita unes poques paraules CJK conserva la divisió òptima de línies i es pot tallar al costat d'aquestes; un signe d'obertura o tancament CJK, el punt volat o un signe d'amplada completa citats en text llatí (〈h〉, ％) no canvien res.
 - **El japonès i el coreà** passen pel mateix compositor i es componen sense partició de mots, però amb els valors per defecte de la Xina continental: les seves regles pròpies (JLREQ, KLREQ) no estan implementades. El coreà es talla entre síl·labes a més de pels seus espais.
-- **Les escriptures de dreta a esquerra** (àrab, hebreu, persa, urdú…) encara no estan admeses. No hi ha algorisme bidireccional: les línies es tallen i s'alineen com si el text anés d'esquerra a dreta, contra el marge esquerre, i el que mostra cada línia depèn de com es pinta. A la sortida canvas i PDF, una línia alineada a l'esquerra i sense format en línia es dibuixa com un sol tram de text, que el navegador o el motor tipogràfic del PDF posen de dreta a esquerra pel seu compte, així que allà una línia tota en una escriptura de dreta a esquerra es pot llegir bé, però no una que barregi direccions, xifres o puntuació. La sortida HTML, les línies justificades, centrades o alineades a la dreta i les que porten format en línia es dibuixen paraula a paraula d'esquerra a dreta: cada paraula es llegeix bé, però les paraules surten en ordre de lectura invertit. `page.binding: 'right'` compon els plecs d'un llibre així enquadernat per la dreta, però no les seves línies.
+- **L'àrab i les altres escriptures de dreta a esquerra** (persa, urdú, hebreu…) es componen de dreta a esquerra; [Composició àrab](/ca/docs/arabic-layout) explica com. La [`direction`](#direcció-del-text) del document surt de l'escriptura del `locale`, l'algorisme bidireccional d'Unicode ordena les paraules llatines i les xifres dins de cada línia, el llibre s'enquaderna per la dreta amb la primera columna a la dreta, i cada número que escriu el motor pren les [xifres](#xifres-del-document) de la regió. Una paraula amb una lletra de l'alfabet àrab no es parteix, no s'espaia ni es talla mai, i una línia àrab justificada s'estira als espais i amb caixides. Els signes vocàlics, l'èmfasi, les notes a peu de pàgina i les cadenes de l'àrab són a [Text àrab](#text-àrab). El persa, l'urdú i l'hebreu reben la direcció, les xifres i les regles de paraula sencera, però no cadenes integrades pròpies.
 
-Hi ha patrons de partició de mots per a vuit llengües (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); els tipus de recurs integrats i les cadenes de continuació existeixen en aquestes vuit i en xinès. El xinès, el japonès i el coreà es componen sense partició de mots. Qualsevol altra llengua es divideix amb els patrons de l'anglès dels EUA, amb un avís a la consola, i rep les cadenes angleses. Per a un document així, fixa `hyphenation.enabled: false` i passa `resourceTypes` i les cadenes de continuació de `tableStyle` en la seva llengua.
+Hi ha patrons de partició de mots per a vuit llengües (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); els tipus de recurs integrats i les cadenes de continuació existeixen en aquestes vuit, en xinès i en àrab. El xinès, el japonès, el coreà i les llengües que s'escriuen de dreta a esquerra es componen sense partició de mots. Qualsevol altra llengua es divideix amb els patrons de l'anglès dels EUA, amb un avís a la consola, i rep les cadenes angleses. Per a un document així, fixa `hyphenation.enabled: false` i passa `resourceTypes` i les cadenes de continuació de `tableStyle` en la seva llengua.
 
 ### Text àrab
 
-Quatre ajustos serveixen el text en alfabet àrab. Cap no canvia un document escrit en una altra escriptura.
+Aquests ajustos serveixen el text en alfabet àrab; cap no canvia un document escrit en una altra escriptura. [Composició àrab](/ca/docs/arabic-layout) els explica juntament amb la resta d'un llibre àrab: direcció, enquadernació, xifres, vers, índex general i índex analític.
 
 - **Signes vocàlics i interlineat.** Els signes vocàlics d'un text vocalitzat (fatḥa, kasra, shadda, tanwīn, l'alif volat, els signes alcorànics) s'apilen sobre i sota les lletres, a l'interlineat, que no creix per ells. Cada línia amb signes anota fins on arriba la seva tinta (`VDTLine.markInk`), i el retall de columna dels renderitzadors inclou els signes de la primera i l'última línia de cada columna. Quan un signe sobre una paraula toca les lletres o els signes que pengen sota la paraula de sobre, la composició avisa del paràgraf (`arabicMarksExceedLeading`, al tauler Revisió del Sandbox). Només es comparen paraules que estan una sobre l'altra. El text vocalitzat en part demana uns 1,7–1,85 em de `lineHeight`, i el vers vocalitzat del tot 1,9–2,1 em.
 - **Èmfasi.** La lletra àrab no té cursiva, així que en un document el `locale` del qual s'escriu en alfabet àrab `*…*` es compon per defecte en negreta (`bodyText.emphasis: 'auto'`). `'color'` el compon en rodona amb `italicColor`, i `'overline'` traça una ratlla per sobre de les paraules, el khaṭṭ fawqī dels llibres àrabs. L'ajust abasta tot text compost amb les fonts del cos: paràgrafs, llistes, cites, estils de paràgraf, cos dels requadres, notes i encapçalaments. Els peus, les cel·les de taula, l'índex general i l'índex analític conserven els seus propis ajustos de cursiva. Es triï el que es triï, el motor no inclina mai lletres àrabs: les paraules àrabs d'un tram en cursiva van en rodona i les seves paraules llatines conserven la cursiva. En un document així, les cites van en rodona per defecte.
 - **Tashkīl.** `bodyText.tashkil: 'strip'` treu els signes vocàlics i alcorànics del text que es compon, per a una edició sense vocals feta a partir d'una font vocalitzada: fatḥa, ḍamma, kasra i els seus tanwīn, sukūn, shadda, l'alif volat (هٰذا passa a هذا) i els signes U+0656–U+065F i U+06D6–U+06ED. `'strip-vowels'` conserva la shadda, tal com la imprimeixen la majoria dels llibres moderns. La hamza i la madda es queden (أ إ آ són lletres, també teclejades amb signes combinants). La font conserva els seus signes; les línies, els encapçalaments i l'índex general es componen sense aquests signes, i cada caràcter compost continua apuntant al seu lloc a la font.
 - **Notes a peu de pàgina.** `footnotes.markerTemplate: '({n})'` escriu les crides «(١)» amb les xifres del document, `numbering: 'page'` les reinicia a cada pàgina i `noteNumberPosition: 'inline'` posa sobre la línia el número de la nota. El filet separador i els números de nota queden al principi de la columna, a la dreta en un llibre de dreta a esquerra.
+- **Paraules senceres.** Una paraula amb una lletra de l'alfabet àrab no es parteix, no es talla ni s'espaia mai, en un llibre àrab o citada en un altre. Un estil que posa `letterSpacing` a un text àrab s'avisa (`joiningScriptLetterSpacing`), i una paraula més ampla que la seva línia la desborda i s'avisa (`unbreakableWordOverflow`). Vegeu [Composició àrab](/ca/docs/arabic-layout#formes-enllaçades-i-paraules-senceres).
+- **Caixida i vers.** Una línia àrab justificada s'estira amb caixides a més dels espais (`bodyText.kashida`, vegeu [Caixida en el text àrab](/ca/docs/justification#caixida-en-el-text-àrab)), i un poema clàssic es compon un bayt per línia en dos hemistiquis d'una mateixa amplada amb `:::verse` (vegeu [`:::verse`](/ca/docs/document-format#verse)).
+- **Índex analític.** Un índex en àrab ordena alfabèticament i no té en compte l'article ال (`index.ignoreArticle`), els signes vocàlics ni els suports de la hamza; vegeu [Índex analític](#índex-analític).
 ### Òrfenes, vídues, *runts* i regles de cohesió
 
 Consulta [Partició de mots i justificació](/ca/docs/justification) per entendre la mecànica de demèrits que hi ha al darrere. Aquesta secció és la referència de les claus de `bodyText` que governen aquestes penalitzacions.
@@ -1806,7 +1873,7 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineació de tots els nivells d'encapçalament (no hi ha un valor per nivell): en bandera, justificada, centrada o alineada a la dreta. Un encapçalament justificat compon la seva última línia a l'esquerra, com un paràgraf, així que un encapçalament d'una sola línia es veu com <code>'left'</code>. Canvas, HTML i PDF col·loquen les línies de la mateixa manera, prefix de numeració inclòs. L'obertura per defecte d'un encapçalament <code>span: 'page'</code> sense disseny avançat també la segueix (justificada queda a l'esquerra); un disseny avançat alinea els seus propis elements de text amb el seu <code>align</code>.</td>
     </tr>
@@ -4120,7 +4187,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineació horitzontal de les línies del peu. <code>'justify'</code> porta totes les línies llevat de l'última a l'amplada completa. Sobre una barra de peu les línies s'alineen dins del seu farciment; un peu lateral s'alinea dins de la seva pròpia amplada.</td>
     </tr>
@@ -4237,7 +4304,7 @@ El subobjecte `note` estilitza `Resource.note`, una línia breu (font, crèdits,
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineació horitzontal de les línies de la nota, com <code>align</code> per al peu.</td>
     </tr>
@@ -4443,9 +4510,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>alineació del cos</td>
-      <td>Alineació horitzontal. <code>'center'</code> i <code>'right'</code> deixen cada línia en bandera per l'altre costat — una dedicatòria, una signatura.</td>
+      <td>Alineació horitzontal. <code>'center'</code> i <code>'right'</code> deixen cada línia en bandera per l'altre costat — una dedicatòria, una signatura. En un paràgraf de dreta a esquerra, <code>'left'</code> és el seu costat d'inici, la dreta.</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4872,7 +4939,7 @@ El vidre continua calent una hora després d'apagar la flama.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, color principal</td>
-      <td>Franja sòlida al llarg d'un costat. Una franja <code>'left'</code> / <code>'right'</code> estreny el contingut; una franja <code>'top'</code> el desplaça cap avall. En una caixa amb <code>borderRadius</code> les seves cantonades exteriors s'arrodoneixen amb les del marc (fins a postext 1.4 quedaven rectes i sobresortien per fora de l'arrodoniment).</td>
+      <td>Franja sòlida al llarg d'un costat. Una franja <code>'left'</code> / <code>'right'</code> estreny el contingut; una franja <code>'top'</code> el desplaça cap avall. <code>'left'</code> i <code>'right'</code> són costats del flux del text (en un llibre de dreta a esquerra <code>'left'</code> és la dreta del plec); <code>'start'</code> i <code>'end'</code> segueixen la direcció de la caixa mateixa, de manera que un <code>:::callout&#123;dir=ltr&#125;</code> en un llibre àrab posa a la seva esquerra una franja <code>'start'</code>. En una caixa amb <code>borderRadius</code> les seves cantonades exteriors s'arrodoneixen amb les del marc (fins a postext 1.4 quedaven rectes i sobresortien per fora de l'arrodoniment).</td>
     </tr>
     <tr>
       <td><code>icon</code></td>
