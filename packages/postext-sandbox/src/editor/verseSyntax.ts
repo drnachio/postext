@@ -2,6 +2,7 @@
 
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
+import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 
 /**
  * Editor support for `:::verse` poems (#378): a highlighter that marks the
@@ -105,3 +106,28 @@ export const verseTheme = Prec.highest(
     },
   }),
 );
+
+/** `:::v`, `:::ve`, … `:::verse` alone at the start of a line. */
+const VERSE_OPENER_RE = /^\s*:::v(?:e(?:r(?:se?)?)?)?$/;
+
+/** The completion source: a `:::verse` block after `:::v…` at the start
+ *  of a line, with one bayt to fill: the caret before the `||` that parts
+ *  its two hemistichs. */
+export function verseCompletionSource(cx: CompletionContext): CompletionResult | null {
+  const line = cx.state.doc.lineAt(cx.pos);
+  const before = line.text.slice(0, cx.pos - line.from);
+  if (!VERSE_OPENER_RE.test(before)) return null;
+  const start = line.from + before.indexOf(':::');
+  return {
+    from: start,
+    to: cx.pos,
+    filter: false,
+    options: [{
+      label: ':::verse',
+      apply: (view, _c, from, to) => {
+        const insert = ':::verse\n || \n:::';
+        view.dispatch({ changes: { from, to, insert }, selection: { anchor: from + ':::verse\n'.length } });
+      },
+    }],
+  };
+}
