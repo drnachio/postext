@@ -73,7 +73,7 @@ import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlock
 import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
 import { directDesignTextBlock } from '../design/bidiText';
-import type { ParagraphContainerPlan } from './paragraphContainers';
+import { paragraphStyleIdOf, type ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
 import { getMeasureDirection, shiftLineX } from '../measure/bidiLines';
 
@@ -790,6 +790,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     if (letterSpacingPx !== undefined) blk.letterSpacing = letterSpacingPx;
     blk.contentIndex = blockIdx;
     blk.containerId = containerId;
+    const paragraphStyleId = paragraphStyleIdOf(raw, container, derivedCtx.resolved);
+    if (paragraphStyleId !== undefined) blk.paragraphStyleId = paragraphStyleId;
     blk.dirty = false;
     blk.snappedToGrid = false;
     blk.headingLevel = headingLevel;

@@ -533,6 +533,9 @@ export function measureIndexBlock(
     );
     const out = pageLinks(linkSegments(measured.lines, spans));
     for (const line of out) line.bbox.x += indentPx;
+    // Where the entry starts, for renditions that set it as text of its
+    // own (`VDTLine.indexLevel`).
+    if (out[0]) out[0].indexLevel = level;
     return out;
   };
   const own = entryLines(rawBlock.spans, info.level);

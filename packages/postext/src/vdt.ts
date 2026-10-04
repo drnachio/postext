@@ -637,6 +637,13 @@ export interface VDTLine {
    *  paint them as they are. A column or page never breaks between two
    *  lines of one bayt. Absent on any other line. */
   verse?: { bayt: number; part: 'bayt' | 'sadr' | 'ajuz' | 'single' };
+  /** The first line of an entry of a back-of-book index (`:::index`): the
+   *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
+   *  may set more than one entry (the page-less entries heading its
+   *  sub-entry, see {@link VDTBlock.indexLevel}); its other lines are the
+   *  entries' turnover lines, and a line before the first entry is the
+   *  group's letter. Absent on any other line. */
+  indexLevel?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -1205,6 +1212,17 @@ export interface VDTBlock {
   footnoteNote?: string;
   /** A bibliography entry (#269): the key of the work it lists. */
   bibEntry?: string;
+  /** The paragraph style (`paragraphStyles[].id`) the block's text is set
+   *  in: a paragraph of a `:::paragraphs{style=…}` container (the innermost
+   *  one), a poem whose `:::verse` fence names a style. Every fragment of a
+   *  split paragraph carries it. Metadata for other renditions (a
+   *  reflowable EPUB); the layout does not read it. */
+  paragraphStyleId?: string;
+  /** A block of a back-of-book index (`:::index`): the level of the entry
+   *  it sets (0 a main entry). The page-less entries heading that entry
+   *  are set in the same block, above it; each entry's first line carries
+   *  its own level ({@link VDTLine.indexLevel}). */
+  indexLevel?: number;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no

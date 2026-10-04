@@ -110,7 +110,7 @@ import {
   rollbackTrailingBlocks,
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
-import { planParagraphContainers } from './paragraphContainers';
+import { paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
   footnoteIdsOfLines,
@@ -2260,6 +2260,11 @@ function placeDocumentPass(
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
     if (raw.bibEntry !== undefined) blk.bibEntry = raw.bibEntry;
+    // Metadata for other renditions: the paragraph style the text is set
+    // in, the level of an index entry.
+    const paragraphStyleId = paragraphStyleIdOf(raw, blk.contentIndex !== undefined ? paragraphContainers.byBlock[blk.contentIndex] : undefined, resolved);
+    if (paragraphStyleId !== undefined) blk.paragraphStyleId = paragraphStyleId;
+    if (raw.index) blk.indexLevel = raw.index.level;
     // A text block whose direction opposes its page frame's, which runs in
     // the document's direction (a right-to-left document's pages are
     // mirrored, #370): an Arabic quotation in an English book, an English
