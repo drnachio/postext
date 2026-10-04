@@ -79,8 +79,11 @@ export const GUIDE_COVER_RESOURCE_ID = 'guide-cover';
 
 /** How the Folio viewer shows the guide: a stapled booklet (its cover a
  *  sheet a little heavier than the pages) on thick gloss coated paper, on a
- *  blue felt mat in studio light. */
+ *  blue felt mat in studio light, seen from low over its foot and a little
+ *  to its left. */
 export const GUIDE_FOLIO: FolioConfig = {
+  tilt: 44,
+  yaw: -14,
   paper: { type: 'coatedGloss', grammage: 170 },
   binding: { type: 'saddleStitch', cover: 'pages' },
   surface: { type: 'felt', color: { hex: '#3a4a86', model: 'hex' } },

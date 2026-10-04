@@ -375,7 +375,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       const tall = flipper ? 1 / Math.max(0.7, Math.cos((resolveFolioConfig(appearance.folio).tilt * Math.PI) / 180)) : 1;
       deviceWidth = fitWidth(Math.min(availW / 2, availH > 0 ? availH * tall * ar : Infinity));
       left = Math.floor((boxW - 2 * deviceWidth) / 2);
-      top = Math.max(0, Math.floor((boxH - Math.round(deviceWidth / ar)) / 2));
+      // Centred even when the tilted book's spread is taller than the box
+      // (it overflows both edges): the camera centres the book on it.
+      top = Math.floor((boxH - Math.round(deviceWidth / ar)) / 2);
     }
     const deviceHeight = Math.max(1, Math.round(deviceWidth / ar));
     Object.assign(spreadEl.style, {
