@@ -201,7 +201,6 @@ function FixedReader({ book, handleRef, onPosition }: { book: ViewerBook; handle
       ref={areaRef}
       role="region"
       aria-label={labels.epubReader}
-      aria-roledescription="carousel"
       tabIndex={0}
       onKeyDown={onKey}
       className="absolute inset-0 flex items-center justify-center outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
