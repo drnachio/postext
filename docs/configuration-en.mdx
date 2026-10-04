@@ -39,7 +39,7 @@ This reference is long. These are the main blocks:
 - [Layout](#layout) — column count, gutters, rules, [vertical writing](#vertical-writing).
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
-- [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; and the [languages and scripts](#languages-and-scripts) Postext sets.
+- [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; the [digits](#document-digits) (`numerals`) and the [text direction](#text-direction) (`direction`) it implies; and the [languages and scripts](#languages-and-scripts) Postext sets. The guide to right-to-left books is [Arabic layout](/en/docs/arabic-layout).
 - [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby and warichu notes. The guide to all of it is [Chinese layout](/en/docs/chinese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
@@ -130,7 +130,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code>, else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
+      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code> or the document runs right to left (<a href="#text-direction"><code>direction</code></a>), else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +165,8 @@ With this configuration every odd page has a 2.2 cm margin on the left (the spin
 - The PDF carries `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout /TwoPageRight` (page 1 alone, then pairs), tagged or not. Acrobat and Foxit follow them; Chrome's built-in viewer ignores both.
 
 Folios and running heads do not move by themselves: a template that prints the page number at the outer corner needs its odd and even elements set for the right edge (elements take a `parity`).
+
+A book written right to left (Arabic, Persian, Hebrew…) is bound on the right as well: `'auto'` gives the right edge when the document's [`direction`](#text-direction) resolves to `'rtl'`. Such a book also mirrors its whole flow, so its first column is the right one and its indents, list markers, floats and notes stand on the right; header and footer slots stay physical. See [Arabic layout](/en/docs/arabic-layout#page-order-and-right-binding).
 
 ### Page size presets
 
@@ -600,9 +602,15 @@ The defaults in the table below are those of a text element you add yourself. Th
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>Horizontal alignment of the lines inside the element's box. <code>'justify'</code> stretches the word spaces of every wrapped line but the last of each paragraph so the line fills the box; the lines beside a drop cap fill the room beside it. With <code>hyphenate</code>, a word that does not fit the rest of a justified line is also cut at a syllable to fill it. The last line of a paragraph, a line with no space to stretch and a text that does not wrap are set flush left. Justified text is laid out paragraph by paragraph, so blank lines between paragraphs count as one. The canvas and the PDF place every word where the layout put it; the HTML widens the spaces with <code>word-spacing</code>.</td>
+      <td>Horizontal alignment of the lines inside the element's box. <code>'justify'</code> stretches the word spaces of every wrapped line but the last of each paragraph so the line fills the box; the lines beside a drop cap fill the room beside it. With <code>hyphenate</code>, a word that does not fit the rest of a justified line is also cut at a syllable to fill it. The last line of a paragraph, a line with no space to stretch and a text that does not wrap are set flush left. Justified text is laid out paragraph by paragraph, so blank lines between paragraphs count as one. The canvas and the PDF place every word where the layout put it; the HTML widens the spaces with <code>word-spacing</code>. <code>'start'</code> and <code>'end'</code> follow the text's <code>direction</code>: the right and the left of a right-to-left text. <code>'left'</code> and <code>'right'</code> are the box's own sides; in a design laid out in the flow of a right-to-left page (an opener band, a heading design) the flow is mirrored, so they are its start and end, as in the body text.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>the document's</td>
+      <td>Base direction of the text: where its neutral characters go, the order of its runs on a line and the sides <code>'start'</code> and <code>'end'</code> mean. <code>'auto'</code> reads the first strong letter of the resolved text and falls back to the document's <a href="#text-direction"><code>direction</code></a>. Arabic and Hebrew runs read right to left whatever the base. A text that holds an Arabic letter is never letter-spaced (<code>letterSpacing</code> is ignored for the whole text) and its words are never cut while wrapping or truncating; a word wider than the box overflows and is reported as <code>unbreakableWordOverflow</code>.</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1310,9 +1318,9 @@ The `bodyText` property controls the typography of all paragraph text.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>Text alignment. Justified text distributes spacing across each line for even edges. Last lines of justified paragraphs render ragged at their natural width — except when Knuth-Plass accepted an overfull final line relying on glue shrink, in which case the inter-word spaces compress so the line fits the measure exactly (TeX glue-setting semantics, applied identically in the canvas, HTML, and PDF backends).</td>
+      <td>Text alignment. <code>'left'</code> (or <code>'start'</code>) is the side a line starts on: the right of a right-to-left paragraph (see <a href="#text-direction">Text direction</a>). Justified text distributes spacing across each line for even edges. Last lines of justified paragraphs render ragged at their natural width — except when Knuth-Plass accepted an overfull final line relying on glue shrink, in which case the inter-word spaces compress so the line fits the measure exactly (TeX glue-setting semantics, applied identically in the canvas, HTML, and PDF backends).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1637,24 +1645,58 @@ const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
 const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
 ```
 
+#### Text direction
+
+The top-level `direction` sets the base direction of the document: `'ltr'`, `'rtl'`, or `'auto'` (the default), which is `'rtl'` when the script of `locale` is written right to left (Arabic, Persian, Urdu, Hebrew, Syriac, Thaana, N'Ko, Adlam…, read by `directionOf(tag)`) and `'ltr'` otherwise. A right-to-left document is laid out in a mirrored frame: its lines start on the right, its first column is the right one, its indents, list markers, floats, footnotes and boxes stand on the right, and [`page.binding: 'auto'`](#binding) binds it on the right. The resolved config carries `direction: 'rtl'` only for such a document, so a left-to-right document resolves as before. An unknown value is read as `'auto'` and reported as `unknownConfigValue`. The Unicode Bidirectional Algorithm (UAX #9) orders each line's runs in either direction: an Arabic quotation in an English book reads right to left in place.
+
+Inside the document, a heading or a `:::` container takes `{dir=ltr}` or `{dir=rtl}`, and the inline `:ltr[…]` and `:rtl[…]` isolate a run of text (see [Text direction in the markup](/en/docs/document-format#text-direction-in-the-markup)); a table resource takes `table.direction`. A block set against the document's direction keeps its own start side: its indent, list markers and the flush end of its last line move to the side its text starts on.
+
+A setting that names a side means a side of the text or of the body flow, never of the sheet, so a design made for an English book works when the book is switched to Arabic. `'start'` and `'end'` are accepted as explicit names:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Setting</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>textAlign</code> of the body, headings, paragraph styles, parts, footnotes and callout bodies; caption and caption note <code>align</code></td><td>The sides of the text: <code>'left'</code> is the side a line starts on, the right of an Arabic paragraph, where a justified paragraph's last line goes.</td><td>Synonyms of <code>'left'</code> and <code>'right'</code>. Resolved configs carry <code>'left'</code> / <code>'right'</code>; saved configs keep what was written.</td></tr>
+    <tr><td>Table cell <code>align</code></td><td>The sides of the cell's text, read in the table's direction (<code>table.direction</code>).</td><td>Synonyms, read in the table's direction.</td></tr>
+    <tr><td><code>placement.align</code> (floats, narrow figures)</td><td>The sides of the body flow: in a right-to-left book <code>'left'</code> is the sheet's right.</td><td>Synonyms.</td></tr>
+    <tr><td>Callout <code>stripe.side</code>, <code>icon.cornerSide</code>, <code>labelTab.position</code> (<code>'top-start'</code>, <code>'top-end'</code>)</td><td>The sides of the body flow, the same for every box of the page.</td><td>The box's own direction (a <code>:::callout&#123;dir=ltr&#125;</code> in an Arabic book starts on the sheet's left).</td></tr>
+    <tr><td>Header and footer slots; design elements anchored to the sheet</td><td>The sheet's sides.</td><td>Text elements only: the start and end of the element's own <code>direction</code>.</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate` keeps its physical meaning on a mirrored page: a figure turned clockwise is turned clockwise on the sheet. A host reading the layout finds the mirrored frame on each page (`VDTPage.flow` with `direction: 'rtl'`, `pageIsMirrored(page)`) and the visual order of each line's segments in `VDTLine.order`; `flowToPage` and `pageToFlow` map between the flow and the sheet. See [Arabic layout](/en/docs/arabic-layout#direction-and-the-bidirectional-algorithm).
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // right to left, bound on the right
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // forced; rarely what you want
+```
+
 ### Languages and scripts
 
 Postext sets alphabetic scripts written left to right, and Chinese across the page and down it. [Chinese layout](/en/docs/chinese-layout) explains how Chinese is set and which settings control it; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
 
 - **Chinese** is set by the CJK composer when a paragraph holds more CJK characters than word spaces: its lines break between characters under the line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keep —— and ……, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure. Punctuation widths, hanging punctuation, the space between Han and Latin, the character grid, emphasis dots, the proper-name and book-title marks, ruby and warichu notes follow the region of `locale`, across the line or down it (`layout.writingMode: 'vertical-rl'`). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing.
 - **Japanese and Korean** go through the same composer and are set without hyphenation, but with the mainland Chinese defaults: their own rules (JLREQ, KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
-- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…) are not supported yet. There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order. `page.binding: 'right'` lays out right-bound spreads for such a book, but not its lines.
+- **Arabic and other right-to-left scripts** (Persian, Urdu, Hebrew…) are set right to left: [Arabic layout](/en/docs/arabic-layout) explains how. The document's [`direction`](#text-direction) comes from the script of `locale`, the Unicode Bidirectional Algorithm orders the Latin words and numbers inside each line, the book is bound on the right with its first column on the right, and every number the engine writes takes the region's [digits](#document-digits). A word that holds an Arabic-script letter is never hyphenated, letter-spaced or cut, and a justified Arabic line is stretched at its spaces and with kashidas. Vowel marks, emphasis, footnotes and the strings of Arabic are under [Arabic text](#arabic-text). Persian, Urdu and Hebrew get the direction, the digits and the whole-word rules, but no built-in strings of their own.
 
-Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight, in Chinese and in Arabic. Chinese, Japanese, Korean and the languages written right to left are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
 
 ### Arabic text
 
-Four settings serve text in Arabic script. None changes a document written in another script.
+These settings serve text in Arabic script; none changes a document written in another script. [Arabic layout](/en/docs/arabic-layout) explains them with the rest of an Arabic book: direction, binding, digits, verse, contents and index.
 
 - **Vowel marks and leading.** The vowel marks of a vocalised text (fatḥa, kasra, shadda, tanwīn, the dagger alef, the Qurʾānic signs) stack over and under the letters, in the leading, which never grows for them. Each line that holds marks records how far their ink reaches (`VDTLine.markInk`), and the renderers' column clip takes in the marks of a column's first and last lines. When a mark over a word meets the letters or marks hanging under the word above it, the build reports the paragraph (`arabicMarksExceedLeading`, in the Sandbox's Checks panel). Only words standing over each other are compared. Partly vocalised text wants about 1.7–1.85 em of `lineHeight`, fully vocalised verse 1.9–2.1 em.
 - **Emphasis.** Arabic type has no italics, so in a document whose `locale` is written in Arabic script `*…*` is set in bold by default (`bodyText.emphasis: 'auto'`). `'color'` sets it upright in `italicColor`, and `'overline'` draws a rule over the words, the khaṭṭ fawqī of Arabic books. The setting reaches every text set in the body's faces: paragraphs, lists, blockquotes, paragraph styles, callout bodies, notes and headings. Captions, table cells, the contents and the index keep their own italic settings. Whatever is chosen, the engine never slants Arabic letters: the Arabic words of a run set in italics stand upright and its Latin words keep their italics. A blockquote is upright by default in such a document.
 - **Tashkīl.** `bodyText.tashkil: 'strip'` takes the vowel and Qurʾānic marks out of the text the layout sets, for an unvocalised edition made from a vocalised source: fatḥa, ḍamma, kasra and their tanwīn, sukūn, shadda, the dagger alef (هٰذا becomes هذا) and the marks U+0656–U+065F and U+06D6–U+06ED. `'strip-vowels'` keeps the shadda, as most modern books print it. Hamza and madda stay (أ إ آ are letters, also when typed with combining marks). The source keeps its marks; the lines, the headings and the contents are set without them, and every character set still maps to its place in the source.
 - **Footnotes.** `footnotes.markerTemplate: '({n})'` writes the markers «(١)» in the document digits, `numbering: 'page'` starts them again on every page, and `noteNumberPosition: 'inline'` sets the note's own number on the line. The separator rule and the note numbers stand at the start of the column, on the right in a right-to-left book.
+- **Whole words.** A word that holds an Arabic-script letter is never hyphenated, cut or letter-spaced, in an Arabic book or quoted in another. A style that sets `letterSpacing` on Arabic text is reported (`joiningScriptLetterSpacing`), and a word wider than its line overflows it and is reported (`unbreakableWordOverflow`). See [Arabic layout](/en/docs/arabic-layout#shaping-and-whole-words).
+- **Index.** An index in Arabic sorts in alphabetical order and ignores the article ال (`index.ignoreArticle`), the vowel marks and the hamza seats; see [Back-of-book index](#back-of-book-index).
 
 ### Orphans, widows, runts, and keep-together rules
 
@@ -1836,7 +1878,7 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alignment of every heading level (there is no per-level value): ragged right, justified, centred or ragged left. A justified heading sets its last line flush left, like a paragraph, so a one-line heading reads as <code>'left'</code>. Canvas, HTML and PDF place the lines the same way, a number prefix included. The default opener of a <code>span: 'page'</code> heading without an advanced design follows it too (justified sets flush left); an advanced design aligns its own text elements with their <code>align</code>.</td>
     </tr>
@@ -4158,7 +4200,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the caption lines. <code>'justify'</code> spreads every line but the last to the full width. On a caption bar the lines align inside its padding; a side caption aligns within its own width.</td>
     </tr>
@@ -4275,7 +4317,7 @@ The `note` sub-object styles `Resource.note`, a short run (source, credits, a re
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the note lines, as <code>align</code> for the caption.</td>
     </tr>
@@ -4481,9 +4523,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>body alignment</td>
-      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block.</td>
+      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block. In a right-to-left paragraph <code>'left'</code> is its start side, the right.</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4911,7 +4953,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, main colour</td>
-      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down. On a box with a <code>borderRadius</code> its outer corners are rounded with the frame's (up to postext 1.4 they stayed square and stuck out past the rounding).</td>
+      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down. <code>'left'</code> and <code>'right'</code> are sides of the body flow (in a right-to-left book <code>'left'</code> is the sheet's right); <code>'start'</code> and <code>'end'</code> follow the box's own direction, so a <code>:::callout&#123;dir=ltr&#125;</code> in an Arabic book puts a <code>'start'</code> stripe on its left. On a box with a <code>borderRadius</code> its outer corners are rounded with the frame's (up to postext 1.4 they stayed square and stuck out past the rounding).</td>
     </tr>
     <tr>
       <td><code>icon</code></td>

@@ -7773,12 +7773,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Languages and scripts",
-        "es": "Idiomas y escrituras",
+        "en": "Direction and the bidirectional algorithm",
+        "es": "Dirección y algoritmo bidireccional",
         "ca": "Llengües i escriptures",
-        "zh": "语言与文字"
+        "zh": "文字方向与双向算法"
       }
     },
     "since": "1.15.0",
@@ -7837,12 +7837,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Languages and scripts",
-        "es": "Idiomas y escrituras",
+        "en": "Document, block and inline direction",
+        "es": "Dirección del documento, del bloque y del texto en línea",
         "ca": "Llengües i escriptures",
-        "zh": "语言与文字"
+        "zh": "文档、块与行内方向"
       }
     },
     "since": "1.15.0",
@@ -7909,12 +7909,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Languages and scripts",
-        "es": "Idiomas y escrituras",
+        "en": "Isolates",
+        "es": "Aislamientos",
         "ca": "Llengües i escriptures",
-        "zh": "语言与文字"
+        "zh": "隔离段"
       }
     },
     "since": "1.15.0",
@@ -8041,12 +8041,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Numbering",
-        "es": "Numeración",
+        "en": "Digits and numeral styles",
+        "es": "Cifras y estilos de numeración",
         "ca": "Numeració",
-        "zh": "页码编号"
+        "zh": "数字系统与编号样式"
       }
     },
     "since": "1.15.0"
@@ -8100,12 +8100,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Spelled-out numbers",
-        "es": "Números con letras",
+        "en": "Ordinal and cardinal words",
+        "es": "Ordinales y cardinales con letras",
         "ca": "Nombres en lletres",
-        "zh": "以文字书写的编号"
+        "zh": "序数词与基数词"
       }
     },
     "since": "1.15.0"
@@ -8227,12 +8227,12 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Document language",
-        "es": "Idioma del documento",
+        "en": "Starting an Arabic book",
+        "es": "Empezar un libro en árabe",
         "ca": "Llengua del document",
-        "zh": "文档语言"
+        "zh": "开始一本阿拉伯文书"
       }
     },
     "since": "1.15.0"
@@ -8290,12 +8290,12 @@
     },
     "group": "fonts",
     "docs": {
-      "slug": "configuration",
+      "slug": "arabic-layout",
       "heading": {
-        "en": "Browser font provider (Fontsource + WOFF2)",
-        "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)",
+        "en": "Fonts",
+        "es": "Fuentes",
         "ca": "Proveïdor de fonts al navegador (Fontsource + WOFF2)",
-        "zh": "浏览器字体提供函数（Fontsource + WOFF2）"
+        "zh": "字体"
       }
     },
     "since": "1.15.0"

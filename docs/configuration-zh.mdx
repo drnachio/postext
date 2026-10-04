@@ -39,7 +39,7 @@ const document = buildDocument(content, {
 - [版式](#版式)：栏数、栏间距、栏线、[竖排](#竖排)。
 - [页眉与页脚](#页眉与页脚)：每页的文字元素和线条元素，支持占位符、奇偶页和对齐方式。
 - [正文](#正文)：排印、断词、段首孤行与段末孤行。
-- [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签；另见Postext排版所支持的[语言与文字](#语言与文字)。
+- [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签，以及由它决定的[数字](#文档数字)（`numerals`）和[文本方向](#文本方向)（`direction`）；另见Postext排版所支持的[语言与文字](#语言与文字)。从右到左书籍的说明见[阿拉伯文排版](/zh/docs/arabic-layout)。
 - [东亚排版](#东亚排版)：`cjk`，涵盖中文、日文和韩文的地区惯例与断行、两端对齐时行内空白的分配、标点宽度与悬挂、汉字与拉丁字母之间的空白、字符网格、竖排中的直立数字，以及着重号、注音和割注。完整指南见[中文排版](/zh/docs/chinese-layout)。
 - [标题](#标题)：共享默认值以及H1–H6各自的覆盖设置。
 - [无序列表](#无序列表)与[有序列表](#有序列表)：项目符号、编号、嵌套。
@@ -130,7 +130,7 @@ const document = buildDocument(content, {
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#binding">装订</a>。</td>
+      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>或文档从右到左（<a href="#文本方向"><code>direction</code></a>）时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#binding">装订</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +165,8 @@ const document = buildDocument(content, {
 - 无论是否带标签，PDF都写入`/ViewerPreferences << /Direction /R2L >>`和`/PageLayout /TwoPageRight`（第1页单独，之后两两成对）。Acrobat和Foxit会遵循这两项设置，Chrome内置的查看器则都忽略。
 
 页码和书眉不会自行移动：把页码印在外侧角的模板，需要为右侧装订分别设置奇数页和偶数页的元素（元素可以带`parity`）。
+
+从右到左书写的书（阿拉伯文、波斯文、希伯来文等）也在右侧装订：文档的[`direction`](#文本方向)解析为`'rtl'`时，`'auto'`给出右侧。这样的书还会把整个文字流镜像：第一栏在右边，缩进、列表标记、浮动体和脚注都在右侧；页眉和页脚的槽位保持物理方向。见[阿拉伯文排版](/zh/docs/arabic-layout#页序与右侧装订)。
 
 ### 页面尺寸预设
 
@@ -598,9 +600,15 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>各行在元素方框内的水平对齐方式。<code>'justify'</code>会拉宽每一段中除最后一行以外所有折行的词间距，让行填满方框；首字下沉旁边的行填满它旁边的空间。开启<code>hyphenate</code>时，放不进两端对齐行剩余空间的词还会在音节处断开来填满这一行。段落的最后一行、没有可拉伸空格的行，以及不折行的文本都齐左排。两端对齐的文本按段落逐段排版，所以段落之间的多个空行算作一个。Canvas和PDF把每个词放在版面给定的位置；HTML则用<code>word-spacing</code>加宽空格。</td>
+      <td>各行在元素方框内的水平对齐方式。<code>'justify'</code>会拉宽每一段中除最后一行以外所有折行的词间距，让行填满方框；首字下沉旁边的行填满它旁边的空间。开启<code>hyphenate</code>时，放不进两端对齐行剩余空间的词还会在音节处断开来填满这一行。段落的最后一行、没有可拉伸空格的行，以及不折行的文本都齐左排。两端对齐的文本按段落逐段排版，所以段落之间的多个空行算作一个。Canvas和PDF把每个词放在版面给定的位置；HTML则用<code>word-spacing</code>加宽空格。<code>'start'</code>和<code>'end'</code>跟随文本的<code>direction</code>：对从右到左的文本即右边和左边。<code>'left'</code>和<code>'right'</code>是方框自身的两侧；在从右到左页面的文字流中排出的设计（章首区段、标题设计）里，文字流是镜像的，所以它们就是起始侧和结束侧，与正文相同。</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>文档的方向</td>
+      <td>文本的基本方向：决定中性字符的归属、一行中各段的顺序，以及<code>'start'</code>和<code>'end'</code>指哪一侧。<code>'auto'</code>读取解析后文本的第一个强方向字母，没有时取文档的<a href="#文本方向"><code>direction</code></a>。阿拉伯文和希伯来文的片段无论基本方向如何都从右到左读。含阿拉伯字母的文本从不加字距（整段文本的<code>letterSpacing</code>都被忽略），折行或截断时也从不切开其中的词；比方框还宽的词会溢出，并报告为<code>unbreakableWordOverflow</code>。</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1297,19 +1305,19 @@ interface ElementPlacement {
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>*…*</code>的排法：斜体；粗体并用<code>boldColor</code>；正体并用<code>italicColor</code>；或正体并在词上加线。<code>'auto'</code>在用阿拉伯字母书写的文档中为<code>'bold'</code>，其他文档中为<code>'italic'</code>。见<a href="#arabic-text">阿拉伯文</a>。</td>
+      <td><code>*…*</code>的排法：斜体；粗体并用<code>boldColor</code>；正体并用<code>italicColor</code>；或正体并在词上加线。<code>'auto'</code>在用阿拉伯字母书写的文档中为<code>'bold'</code>，其他文档中为<code>'italic'</code>。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
     </tr>
     <tr>
       <td><code>tashkil</code></td>
       <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
       <td><code>'keep'</code></td>
-      <td>阿拉伯文元音符号：照原样排；全部去掉；或去掉但保留shadda。见<a href="#arabic-text">阿拉伯文</a>。</td>
+      <td>阿拉伯文元音符号：照原样排；全部去掉；或去掉但保留shadda。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>文字对齐方式。两端对齐会把间距分配到每一行，使左右边缘整齐。两端对齐段落的末行按自然宽度齐左排出；例外是Knuth-Plass接受了一个依靠胶料收缩的超长末行，这时词间距会压缩，使这一行正好填满行长（TeX的胶料设定语义，Canvas、HTML和PDF三种后端的处理完全一致）。</td>
+      <td>文字对齐方式。<code>'left'</code>（或<code>'start'</code>）是一行开始的一侧：从右到左的段落即右侧（见<a href="#文本方向">文本方向</a>）。两端对齐会把间距分配到每一行，使左右边缘整齐。两端对齐段落的末行按自然宽度齐左排出；例外是Knuth-Plass接受了一个依靠胶料收缩的超长末行，这时词间距会压缩，使这一行正好填满行长（TeX的胶料设定语义，Canvas、HTML和PDF三种后端的处理完全一致）。</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1634,24 +1642,58 @@ const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
 const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
 ```
 
+#### 文本方向
+
+顶层的`direction`设定文档的基本方向：`'ltr'`、`'rtl'`或`'auto'`（默认值）。`'auto'`在`locale`的文字从右到左书写时（阿拉伯文、波斯文、乌尔都文、希伯来文、叙利亚文、塔纳文、恩科文、阿德拉姆文等，由`directionOf(tag)`判断）为`'rtl'`，否则为`'ltr'`。从右到左的文档在镜像的版框中排版：各行从右边开始，第一栏在右边，缩进、列表标记、浮动体、脚注和框都位于右侧，[`page.binding: 'auto'`](#装订)让它在右侧装订。只有这样的文档，解析后的配置才带有`direction: 'rtl'`，所以从左到右的文档解析结果与以前相同。未知的值按`'auto'`读取，并报告为`unknownConfigValue`。Unicode双向算法（UAX #9）在两种方向中都安排每行各段的顺序：英文书中的阿拉伯文引文在原位从右到左读。
+
+在文档内部，标题或`:::`容器可以带`{dir=ltr}`或`{dir=rtl}`，行内的`:ltr[…]`和`:rtl[…]`把一段文字隔离开（见[标记中的文本方向](/zh/docs/document-format#标记中的文本方向)）；表格资源可以设`table.direction`。与文档方向相反的块保留自己的起始侧：它的缩进、列表标记和末行的齐边都移到其文字开始的一侧。
+
+凡是指明某一侧的设置，指的都是文字或文字流的一侧，而不是纸面的一侧，所以为英文书做的设计在书改为阿拉伯文后照样可用。`'start'`和`'end'`可以作为明确的名称使用：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>设置</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>正文、标题、段落样式、部分、脚注和标注框正文的<code>textAlign</code>；题注及题注注释的<code>align</code></td><td>文字的两侧：<code>'left'</code>是一行开始的一侧，阿拉伯文段落即右侧，两端对齐段落的末行也排向这一侧。</td><td><code>'left'</code>和<code>'right'</code>的同义词。解析后的配置只带<code>'left'</code> / <code>'right'</code>；保存的配置保留原来写的值。</td></tr>
+    <tr><td>表格单元格的<code>align</code></td><td>单元格文字的两侧，按表格的方向（<code>table.direction</code>）读取。</td><td>同义词，按表格的方向读取。</td></tr>
+    <tr><td><code>placement.align</code>（浮动体、窄图）</td><td>文字流的两侧：在从右到左的书中<code>'left'</code>是纸面的右侧。</td><td>同义词。</td></tr>
+    <tr><td>标注框的<code>stripe.side</code>、<code>icon.cornerSide</code>、<code>labelTab.position</code>（<code>'top-start'</code>、<code>'top-end'</code>）</td><td>文字流的两侧，对页面上所有框都相同。</td><td>框自身的方向（阿拉伯文书中的<code>:::callout&#123;dir=ltr&#125;</code>从纸面左侧开始）。</td></tr>
+    <tr><td>页眉和页脚的槽位；锚定在纸面上的设计元素</td><td>纸面的两侧。</td><td>仅限文本元素：元素自身<code>direction</code>的起始和结束。</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate`在镜像页面上保持物理含义：顺时针旋转的图在纸面上也是顺时针旋转。读取版面的宿主程序可以在每页找到镜像版框（带`direction: 'rtl'`的`VDTPage.flow`，`pageIsMirrored(page)`），在`VDTLine.order`中找到每行各段的视觉顺序；`flowToPage`和`pageToFlow`在文字流与纸面之间换算。见[阿拉伯文排版](/zh/docs/arabic-layout#文字方向与双向算法)。
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // 从右到左，右侧装订
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // 强制设定；很少需要
+```
+
 ### 语言与文字
 
 Postext能排从左到右书写的拼音文字，以及横排和竖排的中文。[中文排版](/zh/docs/chinese-layout)介绍中文的排法和相关设置；对应的配置键位于[东亚排版](#东亚排版)、[竖排](#竖排)和[装订](#装订)。各种文字的支持情况如下：
 
 - **中文**：段落中的CJK字符多于词间空格时，由CJK排版器处理：行在字符之间断开，遵守`cjk.lineBreak`的避头尾规则（行首不出现。、」或ー，行尾不出现「或（），——和……不拆开，数字连同其符号、拉丁文单词都保持完整；两端对齐的行在字符之间均匀分配空白以填满行长。标点宽度、标点悬挂、汉字与拉丁文之间的间距、字符网格、着重号、专名号和书名号、注音以及割注，都按`locale`的地区处理，横排（沿行）和竖排（`layout.writingMode: 'vertical-rl'`）都一样。只引用少量CJK词语的拉丁文段落保持最优断行，并可以在这些词语旁边断行；拉丁文中引用的CJK括号、间隔号或全角符号（〈h〉、％）不影响任何处理。
 - **日文和韩文**：使用同一个排版器，不断词，但采用中国大陆中文的默认值：它们各自的规范（JLREQ、KLREQ）尚未实现。韩文除了在空格处断行，也在音节之间断行。
-- **从右到左的文字**（阿拉伯文、希伯来文、波斯文、乌尔都文……）目前还不支持。没有双向算法：各行按从左到右的方向断行并对齐到左边距，每行显示的效果取决于它的绘制方式。在Canvas和PDF输出中，没有行内格式的左对齐行作为一整段文字绘制，由浏览器或PDF的字体引擎自行转为从右到左，因此全部由同一种从右到左文字组成的行可以正确阅读，但混有不同方向、数字或标点的行则不行。HTML输出，两端对齐、居中和右对齐的行，以及带行内格式的行，都是从左到右逐词绘制的：每个词本身读起来正确，但词的顺序与阅读顺序相反。`page.binding: 'right'`可以为这类书排出右装订的跨页，但处理不了其中的行。
+- **阿拉伯文及其他从右到左的文字**（波斯文、乌尔都文、希伯来文等）从右到左排，具体做法见[阿拉伯文排版](/zh/docs/arabic-layout)。文档的[`direction`](#文本方向)由`locale`的文字决定，Unicode双向算法安排每行中拉丁词和数字的顺序，书在右侧装订、第一栏在右边，引擎生成的每个数字都采用该地区的[数字](#文档数字)。含阿拉伯字母的词从不断词、加字距或切开，两端对齐的阿拉伯文行在空格处和用卡希达（kashida）拉伸。元音符号、强调、脚注和阿拉伯文的内置文字见[阿拉伯文](#阿拉伯文)。波斯文、乌尔都文和希伯来文有方向、数字和整词规则，但没有自己的内置文字。
 
-断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文。中文、日文和韩文不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文和阿拉伯文。中文、日文、韩文和从右到左书写的语言不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
 
 ### 阿拉伯文
 
-以下四项设置服务于阿拉伯字母文本。对用其他文字书写的文档，它们都不起作用。
+以下设置服务于阿拉伯字母文本；对用其他文字书写的文档，它们都不起作用。[阿拉伯文排版](/zh/docs/arabic-layout)把它们与阿拉伯文书籍的其余部分（方向、装订、数字、诗体、目录和索引）放在一起说明。
 
 - **元音符号与行距。** 标注元音的文本中，元音符号（fatḥa、kasra、shadda、tanwīn、短竖alif、《古兰经》符号）叠在字母上下，位于行距之中，而行距不会为它们增高。每个带元音符号的行都会记下笔画伸到多远（`VDTLine.markInk`），渲染器的栏裁剪会把每栏首行和末行的符号包含在内。某个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，构建会报告该段落（`arabicMarksExceedLeading`，显示在沙盒的检查面板中）。只比较上下相叠的词。部分标注元音的文本宜用约1.7–1.85 em的`lineHeight`，全部标注元音的诗句宜用1.9–2.1 em。
 - **强调。** 阿拉伯文字体没有斜体，所以在`locale`用阿拉伯字母书写的文档中，`*…*`默认排成粗体（`bodyText.emphasis: 'auto'`）。`'color'`把它排成正体并用`italicColor`，`'overline'`在词上加一条线，即阿拉伯文书籍中的khaṭṭ fawqī。该设置作用于所有用正文字体排的文本：段落、列表、引用块、段落样式、提示框正文、注释和标题。图注、表格单元格、目录和索引保留各自的斜体设置。无论选哪种，引擎都不会把阿拉伯字母排斜：斜体片段中的阿拉伯文词排成正体，其中的拉丁文词保持斜体。在这类文档中，引用块默认为正体。
 - **Tashkīl。** `bodyText.tashkil: 'strip'`从排版文本中去掉元音符号和《古兰经》符号，用于由标注元音的底本制作不标元音的版本：fatḥa、ḍamma、kasra及其tanwīn、sukūn、shadda、短竖alif（هٰذا变成هذا），以及U+0656–U+065F和U+06D6–U+06ED的符号。`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留（أ إ آ是字母，用组合符号输入时也一样）。源文本保留其符号；行、标题和目录不带符号排出，每个排出的字符仍对应它在源文本中的位置。
 - **脚注。** `footnotes.markerTemplate: '({n})'`用文档数字写出注码「(١)」，`numbering: 'page'`让编号每页重新开始，`noteNumberPosition: 'inline'`把注文自己的编号排在行内。分隔线和注文编号位于栏的起始一侧，在从右到左的书中即右侧。
+- **整词。** 含阿拉伯字母的词从不断词、切开或加字距，无论是在阿拉伯文书中还是被其他语言的书引用。为阿拉伯文文本设置`letterSpacing`的样式会被报告（`joiningScriptLetterSpacing`），比所在行还宽的词会溢出该行并被报告（`unbreakableWordOverflow`）。见[阿拉伯文排版](/zh/docs/arabic-layout#连写成形与整词)。
+- **索引。** 阿拉伯文索引按字母顺序排序，并忽略冠词ال（`index.ignoreArticle`）、元音符号和hamza的承载字母；见[索引](#索引)。
 
 ### 段首孤行、段末孤行、孤字与不拆分规则
 
@@ -1833,7 +1875,7 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>所有标题级别的对齐方式（没有按级别设置的值）：齐左、两端对齐、居中或齐右。两端对齐的标题像段落一样把最后一行排成齐左，所以单行标题看起来与<code>'left'</code>相同。Canvas、HTML和PDF以同样方式放置各行，编号前缀也包括在内。没有高级设计的<code>span: 'page'</code>标题，其默认章首区段也遵循这一设置（两端对齐时排成齐左）；高级设计则用各文本元素自己的<code>align</code>对齐。</td>
     </tr>
@@ -4155,7 +4197,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>题注各行的水平对齐。<code>'justify'</code>把除最后一行外的每一行撑满整个宽度。在色条上时，各行在其内边距以内对齐；侧边题注在自身宽度内对齐。</td>
     </tr>
@@ -4272,7 +4314,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>注释各行的水平对齐，与题注的<code>align</code>相同。</td>
     </tr>
@@ -4478,9 +4520,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>正文对齐方式</td>
-      <td>水平对齐。<code>'center'</code>和<code>'right'</code>让每一行从另一侧参差排列，适合献辞、署名块。</td>
+      <td>水平对齐。<code>'center'</code>和<code>'right'</code>让每一行从另一侧参差排列，适合献辞、署名块。在从右到左的段落中，<code>'left'</code>是它的起始侧，即右侧。</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4906,7 +4948,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>、<code>'left'</code>、<code>1.5em</code>、主色</td>
-      <td>沿一条边的实色色条。<code>'left'</code> / <code>'right'</code>色条会缩窄内容；<code>'top'</code>色条把内容往下推。在设了<code>borderRadius</code>的框上，色条的外侧角随框形一起变圆（postext 1.4及以前它们保持直角，会伸出圆角之外）。</td>
+      <td>沿一条边的实色色条。<code>'left'</code> / <code>'right'</code>色条会缩窄内容；<code>'top'</code>色条把内容往下推。<code>'left'</code>和<code>'right'</code>指文字流的两侧（在从右到左的书中<code>'left'</code>是纸面的右侧）；<code>'start'</code>和<code>'end'</code>跟随框自身的方向，所以阿拉伯文书中的<code>:::callout&#123;dir=ltr&#125;</code>把<code>'start'</code>色条放在左侧。在设了<code>borderRadius</code>的框上，色条的外侧角随框形一起变圆（postext 1.4及以前它们保持直角，会伸出圆角之外）。</td>
     </tr>
     <tr>
       <td><code>icon</code></td>

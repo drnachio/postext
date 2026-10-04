@@ -754,6 +754,23 @@ Chinese editions mark text between the lines rather than with italics or underli
 The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
 
+### Text direction in the markup
+
+A document runs in the direction its `locale` implies (`direction` in the configuration: right to left for Arabic, Persian, Urdu or Hebrew). Inside it, the markup sets the direction of a block or of a run of text, for an English quotation in an Arabic book or an Arabic one in an English book.
+
+- **A heading or a container**: `{dir=ltr}` or `{dir=rtl}` in its attributes, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Every block inside a container takes the direction, down to a nested container or heading that sets another. A plain paragraph, a list or a quote has no attributes of its own: wrap it in `:::paragraphs{dir=…}`. Other values are ignored.
+- **A run of text**: `:ltr[…]` and `:rtl[…]` isolate their text (the LRI…PDI and RLI…PDI of the Unicode Bidirectional Algorithm): it is ordered inside, and the paragraph around it sees one neutral character. `{lang=…}` tags the run's language in the HTML and the PDF. A note marker, a `:ref` or a formula inside is part of the isolate, and isolates nest.
+
+```markdown
+:::paragraphs{dir=ltr}
+The opening of the *Nights* in Lane's translation.
+:::
+
+ترجمها :ltr[Edward William Lane]{lang=en} سنة ١٨٣٩.
+```
+
+A block set against the document's direction keeps its own start side: its indent, list markers and the flush end of its last line move to the side its text starts on. Use an isolate when a Latin title ends in a neutral character (a full stop, a bracket) that would otherwise join the Arabic around it. The Unicode controls themselves (U+2066–2069, U+202A–202E, U+200E, U+200F, U+061C) are honoured too. In the Sandbox editor each line runs in the direction of its first letter. See [Arabic layout](/en/docs/arabic-layout#direction-and-the-bidirectional-algorithm).
+
 ## Footnotes
 
 A footnote has two parts: the marker `[^id]` where the note is cited, and the definition, a paragraph of its own that opens with `[^id]:` anywhere in the chapter.
@@ -1237,7 +1254,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, right-to-left scripts (Arabic, Hebrew…) are not set correctly yet: there is no bidirectional layout. Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight and Chinese. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions

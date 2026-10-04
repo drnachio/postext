@@ -754,6 +754,23 @@ Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subra
 El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y la composición avisa cuando el hueco entre las líneas de un párrafo es demasiado estrecho para ellas (`cjkMarksExceedLeading`, `rubyExceedsLeading`), y cuando las marcas bajo una línea y las lecturas sobre la siguiente no caben juntas en el hueco que comparten, en un mismo párrafo o entre dos. Dales a los párrafos anotados un estilo de párrafo con más interlineado. Las marcas, lecturas y notas se dibujan en párrafos, títulos, elementos de lista, citas y recuadros; en los pies de figura, las celdas y las notas de tabla, y en los encabezados y diseños, el texto se imprime sin ellas. Con `cjk.bookTitleMark: 'brackets'` los 《》 de un título son puntuación del texto: los pies, las celdas, las notas, las filas del índice general, los marcadores del PDF y las entradas del índice alfabético los conservan. Ver [Configuración › Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu).
 
 
+### Dirección del texto en el marcado
+
+Un documento va en la dirección que implica su `locale` (`direction` en la configuración: de derecha a izquierda para el árabe, el persa, el urdu o el hebreo). Dentro de él, el marcado fija la dirección de un bloque o de un tramo de texto, para una cita inglesa en un libro árabe o una árabe en un libro inglés.
+
+- **Un título o un contenedor**: `{dir=ltr}` o `{dir=rtl}` en sus atributos, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Todos los bloques de un contenedor toman esa dirección, hasta un contenedor anidado o un título que fije otra. Un párrafo normal, una lista o una cita no tienen atributos propios: envuélvelos en `:::paragraphs{dir=…}`. Los demás valores se ignoran.
+- **Un tramo de texto**: `:ltr[…]` y `:rtl[…]` aíslan su texto (los LRI…PDI y RLI…PDI del algoritmo bidireccional de Unicode): se ordena por dentro, y el párrafo que lo rodea ve un solo carácter neutro. `{lang=…}` marca el idioma del tramo en el HTML y en el PDF. Una llamada de nota, un `:ref` o una fórmula dentro forman parte del aislamiento, y los aislamientos se anidan.
+
+```markdown
+:::paragraphs{dir=ltr}
+The opening of the *Nights* in Lane's translation.
+:::
+
+ترجمها :ltr[Edward William Lane]{lang=en} سنة ١٨٣٩.
+```
+
+Un bloque compuesto contra la dirección del documento conserva su propio lado de principio: su sangría, sus marcadores de lista y el final alineado de su última línea pasan al lado por el que empieza su texto. Usa un aislamiento cuando un título latino acaba en un carácter neutro (un punto, un paréntesis) que, si no, se uniría al árabe que lo rodea. También se respetan los propios caracteres de control de Unicode (U+2066–2069, U+202A–202E, U+200E, U+200F, U+061C). En el editor del Sandbox cada línea va en la dirección de su primera letra. Véase [Composición árabe](/es/docs/arabic-layout#dirección-y-algoritmo-bidireccional).
+
 ## Notas al pie
 
 Una nota al pie tiene dos partes: la llamada `[^id]` en el lugar donde se cita la nota, y la definición, un párrafo propio que empieza por `[^id]:` en cualquier punto del capítulo.
@@ -1237,7 +1254,7 @@ Postext no reconoce las siguientes características de CommonMark. O se tratan c
 
 Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
 
-Más allá de la sintaxis, las escrituras de derecha a izquierda (árabe, hebreo…) todavía no se componen bien: no hay composición bidireccional. El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho y el chino. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
+Más allá de la sintaxis, el árabe y las demás escrituras de derecha a izquierda se componen de derecha a izquierda, con el algoritmo bidireccional y la encuadernación por la derecha (véase [Composición árabe](/es/docs/arabic-layout)). El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho, el chino y el árabe. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
 
 
 ## Normas de redacción
