@@ -401,12 +401,13 @@
   "Showcase": {
     "eyebrow": "Showcase",
     "title": "Real books, set in your browser",
-    "lead": "A textbook, a magazine, an annotated epic poem, an exhibition catalogue, a Chinese classic in 120 chapters. Open any of them in the Sandbox, change a rule and watch every page reflow.",
+    "lead": "A textbook, a magazine, an annotated epic poem, an exhibition catalogue, a Chinese classic in 120 chapters, the Arabian Nights in Arabic. Open any of them in the Sandbox, change a rule and watch every page reflow.",
     "open": "Open in the Sandbox",
     "guideName": "The Postext guide",
     "guideDescription": "The built-in guide: 13 chapters, three parts, a cover",
     "all": "Browse every preset",
     "books": {
+      "alf-layla": "One Thousand and One Nights · ألف ليلة وليلة",
       "bioquimica-feduchi": "Feduchi Biochemistry · Chapter 1",
       "deep-sky": "Deep Sky",
       "don-quijote": "Don Quixote · Gustave Doré",
@@ -417,6 +418,7 @@
       "senales": "Signals 2020"
     },
     "descriptions": {
+      "alf-layla": "The whole Thousand and One Nights in Arabic, the Bulaq text: a classical Egyptian book bound on the right, each page in a double-ruled frame, the nights named in words and Sani ol-Molk’s watercolours. In Arabic only",
       "bioquimica-feduchi": "A column-and-a-half biochemistry textbook, the main column at the spine and an outer column of figures, key concepts and activities",
       "deep-sky": "A two-column astronomy magazine with full-bleed openers, boxes and pull quotes",
       "don-quijote": "A column-and-a-half literary edition with margin glosses and Doré's plates",

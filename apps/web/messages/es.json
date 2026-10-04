@@ -401,12 +401,13 @@
   "Showcase": {
     "eyebrow": "Escaparate",
     "title": "Libros de verdad, compuestos en tu navegador",
-    "lead": "Un libro de texto, una revista, un poema épico anotado, un catálogo de exposición, un clásico chino en 120 capítulos. Ábrelos en el Sandbox, cambia una regla y mira cómo se recompone cada página.",
+    "lead": "Un libro de texto, una revista, un poema épico anotado, un catálogo de exposición, un clásico chino en 120 capítulos, Las mil y una noches en árabe. Ábrelos en el Sandbox, cambia una regla y mira cómo se recompone cada página.",
     "open": "Abrir en el Sandbox",
     "guideName": "Guía de Postext",
     "guideDescription": "La guía incluida: 13 capítulos, tres partes y cubierta",
     "all": "Ver todos los presets",
     "books": {
+      "alf-layla": "Las mil y una noches · ألف ليلة وليلة",
       "bioquimica-feduchi": "Bioquímica Feduchi · Capítulo 1",
       "deep-sky": "Cielo profundo",
       "don-quijote": "Don Quijote · Gustave Doré",
@@ -417,6 +418,7 @@
       "senales": "Señales 2020"
     },
     "descriptions": {
+      "alf-layla": "Las mil y una noches completas en árabe, en el texto de Bulaq: un libro clásico egipcio encuadernado a la derecha, cada página en un marco de doble filete, las noches escritas en palabras y las acuarelas de Sani ol-Molk. Solo en árabe",
       "bioquimica-feduchi": "Manual de bioquímica a columna y media: columna principal junto al lomo y columna exterior con figuras, conceptos clave y actividades",
       "deep-sky": "Revista de astronomía a dos columnas con aperturas a sangre, recuadros y citas",
       "don-quijote": "Edición literaria a columna y media con glosas al margen y láminas de Doré",

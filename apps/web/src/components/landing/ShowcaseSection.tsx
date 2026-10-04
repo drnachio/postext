@@ -20,11 +20,12 @@ interface PresetEntry {
    *  original rather than the translation in the site's language). */
   openLocale?: string;
   /** The binding edge of the book the shelf opens: a right-bound book
-   *  (Chinese or Japanese set vertically) shows its spine on the right. */
+   *  (Chinese or Japanese set vertically, Arabic) shows its spine on the
+   *  right. */
   binding?: "left" | "right";
   /** Where the book stands on the shelf: the books without one keep the
    *  index order (by id) and come first, the others follow by this number
-   *  (紅樓夢, the eighth book, stands last). */
+   *  (ألف ليلة وليلة and 紅樓夢, the two right-bound books, stand last). */
   shelfOrder?: number;
 }
 

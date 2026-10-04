@@ -15,14 +15,17 @@ describe("the showcase shelf", () => {
     expect(shelfOrder(books).map((b) => b.id)).toEqual(["a", "b", "c", "z"]);
   });
 
-  it("shows 紅樓夢 eighth, after the guide and six showcase books, right-bound and opening in Chinese", () => {
+  it("stands the two right-bound books last, ألف ليلة وليلة then 紅樓夢, each opening in its own language", () => {
     const presets = shelfOrder((presetIndex as { presets: { id: string; shelfOrder?: number; binding?: string; openLocale?: string }[] }).presets);
-    // The guide stands first on the shelf, ahead of the index's books.
-    expect(presets.length + 1).toBeGreaterThanOrEqual(8);
-    const last = presets[presets.length - 1]!;
-    expect(last.id).toBe("hongloumeng");
-    expect(last.binding).toBe("right");
-    expect(last.openLocale).toBe("zh-Hant");
+    const [nights, dream] = presets.slice(-2);
+    expect(nights!.id).toBe("alf-layla");
+    expect(nights!.binding).toBe("right");
+    expect(nights!.openLocale).toBe("ar");
+    expect(dream!.id).toBe("hongloumeng");
+    expect(dream!.binding).toBe("right");
+    expect(dream!.openLocale).toBe("zh-Hant");
+    // Every other book is left-bound and stands before them.
+    expect(presets.slice(0, -2).every((p) => p.binding !== "right" && p.shelfOrder === undefined)).toBe(true);
   });
 
   it("describes 紅樓夢 by its vertical, right-bound edition", () => {
@@ -32,6 +35,15 @@ describe("the showcase shelf", () => {
     const [es, en] = entry.description.split(" · ");
     expect(es).toContain("compuesto en vertical y con el lomo a la derecha");
     expect(en).toContain("set vertically and bound on the right");
+  });
+
+  it("describes ألف ليلة وليلة as an Arabic book bound on the right", () => {
+    const entry = (presetIndex as { presets: { id: string; description: string; tags: string[]; locales: string[] }[] }).presets.find((p) => p.id === "alf-layla")!;
+    expect(entry.locales).toEqual(["ar"]);
+    expect(entry.tags).toEqual(expect.arrayContaining(["arabic", "right-to-left", "right-bound"]));
+    const [es, en] = entry.description.split(" · ");
+    expect(es).toContain("encuadernado a la derecha");
+    expect(en).toContain("bound on the right");
   });
 
   it("keeps every licence tag short enough for a Books panel row, as the preset itself states it", () => {
