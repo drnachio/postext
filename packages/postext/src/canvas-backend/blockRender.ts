@@ -7,6 +7,7 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText, verticalPaintActive } from './verticalText';
+import { counterFlipBox } from './mirrorFrame';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
@@ -75,15 +76,19 @@ function renderMathRender(
   const sx = widthPx / viewBox.width;
   const sy = heightPx / viewBox.height;
   const path2ds = getMathPaths(render);
-  ctx.save();
-  ctx.translate(topLeftX, topLeftY);
-  ctx.scale(sx, sy);
-  ctx.translate(-viewBox.minX, -viewBox.minY);
-  for (let i = 0; i < paths.length; i++) {
-    ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
-    ctx.fill(path2ds[i]!);
-  }
-  ctx.restore();
+  // Paths are not a run or a picture the mirrored frame turns back on its
+  // own (see `mirrorFrame.ts`): the formula asks for it.
+  counterFlipBox(ctx, topLeftX, widthPx, () => {
+    ctx.save();
+    ctx.translate(topLeftX, topLeftY);
+    ctx.scale(sx, sy);
+    ctx.translate(-viewBox.minX, -viewBox.minY);
+    for (let i = 0; i < paths.length; i++) {
+      ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
+      ctx.fill(path2ds[i]!);
+    }
+    ctx.restore();
+  });
 }
 
 function renderMathSegment(

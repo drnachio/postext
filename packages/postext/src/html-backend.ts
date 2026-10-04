@@ -28,7 +28,7 @@ import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
-import { DEFAULT_CENTRAL_BASELINE } from './vdt';
+import { DEFAULT_CENTRAL_BASELINE, verticalFlowOf } from './vdt';
 import type { CjkRegion } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
@@ -572,6 +572,11 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   const links = linkRuns();
   let x = leadingGap;
   const segs = line.segments;
+  // Segments advance along the line in `line.order` when it has one (a
+  // line with right-to-left runs, or any line of a mirrored page): their
+  // x are taken in that order; the markup stays in logical order, so the
+  // text copies as written.
+  const at = line.order ? orderedOffsets(segs, line.order, leadingGap, useJustify ? justifiedSpaceWidth : undefined) : undefined;
   const cjk = block.tocEntry !== undefined || hasCJK(line.text);
   const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
     const font = quoteFontString(pickSegmentFont(seg, block));
@@ -583,6 +588,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
+    if (at) x = at[i]!;
     if (seg.kind === 'space') {
       x += useJustify ? justifiedSpaceWidth : seg.width;
       continue;
@@ -618,6 +624,21 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
+}
+
+/** The x of each segment (by index) of a line whose segments advance in
+ *  `order` from `start`, spaces taking `spaceWidth` when the line is
+ *  justified. */
+function orderedOffsets(segs: readonly VDTLineSegment[], order: readonly number[], start: number, spaceWidth: number | undefined): number[] {
+  const out = new Array<number>(segs.length).fill(start);
+  let x = start;
+  for (const i of order) {
+    const seg = segs[i];
+    if (!seg) continue;
+    out[i] = x;
+    x += seg.kind === 'space' && spaceWidth !== undefined ? spaceWidth : seg.width;
+  }
+  return out;
 }
 
 /** {@link renderSegments} for a line of the CJK composer: hung marks and
@@ -1729,8 +1750,9 @@ function renderPageDetailed(
     ? { ...pageOptions, ink: { id: `pt-ink-${ink.hex.replace(/[^0-9a-z]/gi, '')}-${page.index}`, matrix: ink.matrix } }
     : pageOptions;
   // A vertical page's flow sets its text down the column.
-  const options: HtmlPaint = page.flow
-    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(page.flow.centralBaselines ? { axes: page.flow.centralBaselines } : {}), ...(page.flow.dashAdvances ? { dashes: page.flow.dashAdvances } : {}) } }
+  const vflow = verticalFlowOf(page);
+  const options: HtmlPaint = vflow
+    ? { ...inked, vertical: { region: verticalRegion ?? 'mainland', uprightDigits: verticalDigits ?? 2, ...(vflow.centralBaselines ? { axes: vflow.centralBaselines } : {}), ...(vflow.dashAdvances ? { dashes: vflow.dashAdvances } : {}) } }
     : inked;
   const blocks: Array<{ id: string; html: string }> = [];
   for (const col of page.columns) {
@@ -1760,7 +1782,7 @@ function renderPageDetailed(
   const footnoteRulesHtml = footnoteRuleSegments(page).map((r) =>
     `<div class="pt-footnote-rule" style="position:absolute;left:${r.x}px;top:${r.y - r.lineWidthPx / 2}px;width:${r.width}px;height:${r.lineWidthPx}px;background:${r.color};"></div>`,
   ).join('');
-  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, page.flow ? page.height : page.width, page.flow ? page.width : page.height) : '';
+  const gridHtml = gridCells ? renderCharacterGridSvg(gridCells, vflow ? page.height : page.width, vflow ? page.width : page.height) : '';
   const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + slotParts.join('');
   // A vertical page's flow: one box turned a quarter turn clockwise, its
   // text lines turned back and set vertically (see `renderVerticalLine`).
@@ -1769,9 +1791,15 @@ function renderPageDetailed(
     .map((a) => zeroSizeAnchor(anchorElementId(a.id), a.x, a.y))
     .join('');
   const flowHtml = gridHtml + openerHtml + anchorsHtml + blocksHtml + footnoteRulesHtml;
-  const innerHtml = defsHtml + (page.flow
+  // A right-to-left page's flow: one box turned over the sheet's vertical
+  // axis, every text run and picture in it turned back about its own box
+  // (`MIRRORED_FLOW_STYLE`), so the layout lands mirrored and reads as
+  // written.
+  const innerHtml = defsHtml + (vflow
     ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
-    : flowHtml) + slotParts.join('');
+    : page.flow?.writingMode === 'horizontal-tb'
+      ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
+      : flowHtml) + slotParts.join('');
   const outerHtml =
     `<div class="pt-page" id="${pageElementId((options.pageIndexOffset ?? 0) + page.index)}" data-page="${page.index}" style="` +
     `position:relative;` +
@@ -1783,6 +1811,17 @@ function renderPageDetailed(
     `">${innerHtml}</div>`;
   return { outerHtml, innerHtml, blocks, decorationHtml };
 }
+
+/** What turns the runs and pictures of a mirrored flow back (see
+ *  `VDTMirroredFlowFrame`): every text run of the output is an absolutely
+ *  positioned box set `white-space:pre` (line segments, plain lines, list
+ *  markers, design text lines), and pictures are `<img>` or inline `<svg>`
+ *  (formulas). Each turns about its own centre, so it stays where the
+ *  mirrored layout put it. A box that sets a transform of its own (a
+ *  stretched dash, a turned design picture) keeps it and stays mirrored. */
+const MIRRORED_FLOW_STYLE =
+  '<style>.pt-flow-mirrored [style*="white-space:pre"],.pt-flow-mirrored img,' +
+  '.pt-flow-mirrored svg:not(.pt-char-grid){transform:scaleX(-1);}</style>';
 
 /** The character grid (稿纸) as one SVG path over the page, under the
  *  text (see `cjkGridCells`). */

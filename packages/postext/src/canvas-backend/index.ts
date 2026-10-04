@@ -1,5 +1,5 @@
 import type { RenderWarning, VDTDocument, VDTPage } from '../vdt';
-import { computePageTextExtent } from '../vdt';
+import { computePageTextExtent, verticalFlowOf } from '../vdt';
 import { dimensionToPx } from '../units';
 import { columnClipRect } from '../columnClip';
 import { pageColumnRule } from '../columnRule';
@@ -11,6 +11,7 @@ import { documentInkHex } from '../svg/singleInk';
 import { renderLangOf } from '../locale';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock';
 import { setVerticalPaint } from './verticalText';
+import { beginMirroredFlow } from './mirrorFrame';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -182,9 +183,11 @@ function paintContext(
   }
 
   // A vertical page paints its flow through the page's frame — a quarter
-  // turn clockwise — with the vertical text painter on; the running heads,
-  // folios, background and crop marks stay on the sheet.
-  const flow = page.flow;
+  // turn clockwise — with the vertical text painter on; a right-to-left
+  // page through its mirror, text and pictures turned back about their
+  // boxes (`beginMirroredFlow`). The running heads, folios, background and
+  // crop marks stay on the sheet.
+  const flow = verticalFlowOf(page);
   let outerVertical: ReturnType<typeof setVerticalPaint> = null;
   if (flow) {
     ctx.save();
@@ -195,6 +198,7 @@ function paintContext(
       ...(flow.centralBaselines ? { axes: flow.centralBaselines } : {}),
     });
   }
+  const endMirror = page.flow?.writingMode === 'horizontal-tb' ? beginMirroredFlow(ctx, page.flow.mirror.originX) : undefined;
 
   if (doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
@@ -266,6 +270,7 @@ function paintContext(
     setVerticalPaint(outerVertical);
     ctx.restore();
   }
+  endMirror?.();
 
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);
