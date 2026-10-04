@@ -345,7 +345,8 @@ headings
   `{1:I}` upper roman, `{1:i}` lower roman, `{1:A}`/`{1:a}` alpha, `{1:01}` zero-padded,
   `{1:words}`/`{1:Words}`/`{1:WORDS}` spelled out, `{1:ordinal}`/`{1:Ordinal}`/`{1:ORDINAL}`
   ordinal words (English or Spanish by `locale`, else the hyphenation locale; Chinese documents: 十二 and
-  第十二; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
+  第十二; Arabic: definite ordinals الفصل الأول, with `-feminine`/`-f` الليلة الأولى … الحادية بعد الألف,
+  `-classical` مائة; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
   `{1:一}` informal in the document's script (`第{1:一}回` → 第一回 … 第一百二十回), `{1:〇}` cjk-decimal
   (一二〇), `{1:壹}` financial, `{1:①}` circled, `{1:甲}` stems, `{1:子}` branches, `{1:１}` fullwidth, or a
   CSS name (`{1:trad-chinese-informal}`). Design placeholder `{numberHan}`: the counter in informal numerals. Arabic: `{1:١}`

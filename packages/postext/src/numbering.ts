@@ -1,5 +1,5 @@
 import type { ContentBlock } from './parse';
-import { caseWords, numberToWords, type WordsCase } from './numberWords';
+import { caseWords, numberToWords, type NumberWordsOptions, type WordsCase } from './numberWords';
 import type { DigitSystem, OrderedListNumberFormat } from './types';
 import { localeScript } from './locale';
 import { chineseNumeral, cjkDecimal, circledDecimal, fullwidthDecimal, fixedSymbol, CJK_HEAVENLY_STEMS, CJK_EARTHLY_BRANCHES } from './chineseNumerals';
@@ -70,11 +70,17 @@ export type NumeralStyle =
   | EastAsianNumeralStyle
   | ArabicNumeralStyle;
 
+type SpelledBase = 'words' | 'Words' | 'WORDS' | 'ordinal' | 'Ordinal' | 'ORDINAL';
+
 /** A counter spelled out in words (heading templates only): cardinal
  *  (`words`) or ordinal (`ordinal`), the case of the suffix picking the
  *  case of the words — `{1:words}` "twenty-one", `{1:Words}` "Twenty-one",
- *  `{1:WORDS}` "TWENTY-ONE". */
-export type SpelledNumeralStyle = 'words' | 'Words' | 'WORDS' | 'ordinal' | 'Ordinal' | 'ORDINAL';
+ *  `{1:WORDS}` "TWENTY-ONE". Modifiers after a hyphen choose the gender
+ *  and the spelling of a language that inflects them (Arabic):
+ *  `{1:ordinal-feminine}` (or `-f`) الأولى, `-masculine` (`-m`, the
+ *  default) الأول, `-classical` مائة for مئة; `{1:ordinal-f-classical}`
+ *  combines them. Other languages ignore the modifiers. */
+export type SpelledNumeralStyle = SpelledBase | `${SpelledBase}-${string}`;
 
 /** Format of a counter in a heading numbering template. */
 export type CounterStyle = NumeralStyle | SpelledNumeralStyle;
@@ -206,21 +212,55 @@ function templateStyle(raw: string, locale?: string): NumeralStyle {
 
 const SPELLED_STYLES = new Set<string>(['words', 'Words', 'WORDS', 'ordinal', 'Ordinal', 'ORDINAL']);
 
+/** The modifiers a spelled style takes, lower-cased, and what each sets. */
+const SPELLED_MODIFIERS: Readonly<Record<string, NumberWordsOptions>> = {
+  f: { gender: 'feminine' },
+  feminine: { gender: 'feminine' },
+  m: { gender: 'masculine' },
+  masculine: { gender: 'masculine' },
+  classical: { spelling: 'classical' },
+  modern: { spelling: 'modern' },
+};
+
+interface SpelledStyle {
+  kind: 'cardinal' | 'ordinal';
+  wordsCase: WordsCase;
+  options: NumberWordsOptions;
+}
+
+/** What a spelled style token says (`Ordinal-feminine` → an ordinal, first
+ *  letter capital, feminine); `undefined` when the token is not one — an
+ *  unknown modifier included. */
+function parseSpelledStyle(token: string): SpelledStyle | undefined {
+  const [base, ...mods] = token.split('-');
+  if (base === undefined || !SPELLED_STYLES.has(base)) return undefined;
+  let options: NumberWordsOptions = {};
+  for (const mod of mods) {
+    const set = SPELLED_MODIFIERS[mod.toLowerCase()];
+    if (!set) return undefined;
+    options = { ...options, ...set };
+  }
+  return {
+    kind: base.toLowerCase() === 'ordinal' ? 'ordinal' : 'cardinal',
+    wordsCase: base === base.toUpperCase() ? 'upper' : base[0] === base[0]!.toUpperCase() ? 'capital' : 'lower',
+    options,
+  };
+}
+
 function counterStyleOf(raw: string | undefined, locale?: string): CounterStyle {
   if (!raw) return 'decimal';
   const key = raw.trim();
-  if (SPELLED_STYLES.has(key)) return key as SpelledNumeralStyle;
+  if (parseSpelledStyle(key)) return key as SpelledNumeralStyle;
   return templateStyle(key, locale);
 }
 
 /** A counter value in a template style; spelled-out styles use the
  *  document language `locale`, decimal ones the document's `digits`. */
 export function formatCounter(n: number, style: CounterStyle, locale?: string, digits?: DigitSystem): string {
-  if (!SPELLED_STYLES.has(style)) return formatNumeral(n, style as NumeralStyle, digits);
+  const spelled = parseSpelledStyle(style);
+  if (!spelled) return formatNumeral(n, style as NumeralStyle, digits);
   if (n <= 0) return '';
-  const kind = style.toLowerCase() === 'ordinal' ? 'ordinal' : 'cardinal';
-  const wordsCase: WordsCase = style === style.toUpperCase() ? 'upper' : style[0] === style[0]!.toUpperCase() ? 'capital' : 'lower';
-  return caseWords(numberToWords(n, kind, locale), wordsCase, locale);
+  return caseWords(numberToWords(n, spelled.kind, locale, spelled.options), spelled.wordsCase, locale);
 }
 
 /** The tokens of a numbering template. `locale` (the document language)

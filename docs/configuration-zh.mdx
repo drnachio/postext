@@ -2393,7 +2393,9 @@ headings: {
   </tbody>
 </table>
 
-英文、西班牙文和中文会用文字书写；其他语言采用英文词，与内置的表格续表字符串相同。中文按`locale`的书写系统采用`simp-chinese-informal`或`trad-chinese-informal`的小写数字（一万 / 一萬），序数前加“第”；汉字没有大小写，所以同一后缀的三种写法输出相同。英文遵循美式用法（*one hundred five*，不加*and*）。西班牙文用阳性形式，与*capítulo*或*libro*的编号方式一致（*capítulo primero*、*tercero*、*veintiuno*），13到29的序数按RAE推荐的写法连写为一个词（*decimotercero*、*vigesimoprimero*）。基数最多拼写到999 999，西班牙文序数最多到999；更大的数字以阿拉伯数字输出。
+英文、西班牙文、中文和阿拉伯文会用文字书写；其他语言采用英文词，与内置的表格续表字符串相同。中文按`locale`的书写系统采用`simp-chinese-informal`或`trad-chinese-informal`的小写数字（一万 / 一萬），序数前加“第”；汉字没有大小写，所以同一后缀的三种写法输出相同。英文遵循美式用法（*one hundred five*，不加*and*）。西班牙文用阳性形式，与*capítulo*或*libro*的编号方式一致（*capítulo primero*、*tercero*、*veintiuno*），13到29的序数按RAE推荐的写法连写为一个词（*decimotercero*、*vigesimoprimero*）。基数最多拼写到999 999，西班牙文序数最多到999；更大的数字以阿拉伯数字输出。
+
+阿拉伯文数词与所计名词的性一致，因此后缀可加修饰：阴性名词用`-feminine`（或`-f`），阳性名词用`-masculine`（`-m`，默认）；`-classical`把百写作مائة（布拉格版和多数埃及版的写法），而不是现代的مئة。`{1:ordinal}`输出标题所用的带冠词主格序数词：`الفصل {1:ordinal}`输出*الفصل الأول*、*الفصل الحادي عشر*、*الفصل الحادي والعشرون*；`الليلة {1:ordinal-feminine}`输出*الليلة الأولى*、*الليلة الحادية عشرة*、*الليلة الحادية والعشرون*、*الليلة المئتان*，超过一百时采用古典的“在……之后”格式：*الليلة الخامسة والأربعون بعد الثلاثمئة*、*الليلة الحادية بعد الألف*。`{1:words}`输出基数词（واحد وعشرون；阴性为إحدى عشرة、واحدة وعشرون）。序数词拼写到9 999，基数词到99 999；修饰可以组合（`{1:ordinal-f-classical}`），其他语言忽略修饰。阿拉伯文没有大小写，因此后缀的大小写不起作用。设计占位符`{numberWords}`和`{numberOrdinalWords}`输出阳性形式；阴性的章首请把序数词放在该级的模板中，再用`{number}`输出。
 
 在标题设计中，`{numberWords}` / `{numberWordsLower}`和`{numberOrdinalWords}` / `{numberOrdinalWordsLower}`以同样方式拼写标题的计数，所以章首可以写*Chapter One*，而目录列出`1`。文本元素的`textTransform: 'uppercase'`可给出大写：
 
