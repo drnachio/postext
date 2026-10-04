@@ -85,7 +85,7 @@ function localImports(): Record<string, string> {
   };
   for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
   for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
-  for (const dep of ["@pdf-lib/fontkit", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
+  for (const dep of ["@pdf-lib/fontkit", "harfbuzzjs", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
   imports.citeproc = esm("postext-citeproc", "citeproc");
   imports.three = esm("postext-folio", "three");
   return imports;
