@@ -2,7 +2,7 @@ export const DEFAULT_MARKDOWN_ES = `---
 title: "Postext"
 subtitle: "Un tipógrafo programable para la web"
 author: "Ignacio Ferro"
-publishDate: "2026-09-23"
+publishDate: "2026-10-04"
 ---
 
 # Postext {style="cover" toc="false" kicker="Motor de maquetación de código abierto · La guía" publisher="postext.dev · Licencia MIT · Cada página de este libro la ha compuesto Postext en tu navegador"}
@@ -28,7 +28,7 @@ Postext es de código abierto, con licencia MIT. Texto © 2026 Ignacio Ferro y q
 
 # Por qué Postext {lead="La tipografía impresa pasó cinco siglos aprendiendo a componer una página; los navegadores aprendieron a disponer una interfaz. Postext lleva lo primero a lo segundo: un motor que convierte Markdown en páginas compuestas con criterio editorial." summary="La distancia entre la web y la página, y qué la salva"}
 
-Postext es un **motor de maquetación de código abierto** que lleva a la web el oficio de la tipografía impresa profesional. Recibe **contenido semántico** escrito en Markdown enriquecido y un objeto de configuración, y calcula una maquetación completamente resuelta en la que cada línea, cada título, cada figura y cada tabla tiene una posición precisa, medida en unidades tipográficas reales. Después la dibujan tres renderizadores —una vista previa viva en canvas, HTML posicionado y un PDF listo para imprenta— que leen la misma geometría, de modo que lo que ves en pantalla es exactamente lo que va a imprenta.
+Postext es un **motor de maquetación de código abierto** que lleva a la web el oficio de la tipografía impresa profesional. Recibe **contenido semántico** escrito en Markdown enriquecido y un objeto de configuración, y calcula una maquetación completamente resuelta en la que cada línea, cada título, cada figura y cada tabla tiene una posición precisa, medida en unidades tipográficas reales. Después la dibujan tres renderizadores —una vista previa viva en canvas, HTML posicionado y un PDF listo para imprenta— que leen la misma geometría, de modo que lo que ves en pantalla es exactamente lo que va a imprenta; con esas mismas páginas se escribe además un libro electrónico EPUB 3.
 
 Este libro es su propia demostración. La cubierta, el índice que se numera solo, las portadillas en tres colores, la banda que abre cada capítulo, las cabeceras de estas páginas y cada figura que flota hasta su sitio las ha maquetado Postext, en tu navegador, hace un momento. Nada se ha colocado a mano: el Markdown solo dice qué es cada cosa, y la configuración decide cómo se ve.
 
@@ -38,7 +38,7 @@ Abre el panel **Texto** y elige este capítulo en el selector de capítulos de s
 
 ## Cómo leer este libro
 
-El libro se organiza en tres partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, los tres formatos de salida y el proyecto que los rodea.
+El libro se organiza en tres partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, los cuatro formatos de salida y el proyecto que los rodea.
 
 Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado _Pruébalo en el Sandbox_: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —**Restaurar el original…**, en el menú de la fila de la guía del panel **Libros**, la devuelve a su estado original—, así que cambia lo que quieras. Los capítulos pueden leerse en cualquier orden; cuando uno depende de otro, lo dice.
 
@@ -76,7 +76,7 @@ Otras herramientas abordan partes del problema. Los procesadores de texto pagina
 - Sus formatos de origen son propietarios, binarios o difíciles de generar por programa
 - Viven fuera de las herramientas de frontend que un equipo web ya usa
 
-Postext adopta otra posición, resumida en :ref{id="tools-comparison"}. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, lee Markdown, aplica las reglas de la tipografía profesional y devuelve una maquetación que se puede dibujar como canvas, HTML o PDF. Está pensada para que la incrusten, configuren y amplíen desarrolladores que quieren páginas de calidad editorial sin salir de sus herramientas, y para que la configuren diseñadores que nunca necesitan tocar el código.
+Postext adopta otra posición, resumida en :ref{id="tools-comparison"}. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, lee Markdown, aplica las reglas de la tipografía profesional y devuelve una maquetación que se puede dibujar como canvas, HTML o PDF, o escribir como libro electrónico EPUB. Está pensada para que la incrusten, configuren y amplíen desarrolladores que quieren páginas de calidad editorial sin salir de sus herramientas, y para que la configuren diseñadores que nunca necesitan tocar el código.
 
 ## Un oficio con mucha memoria
 
@@ -88,7 +88,7 @@ Durante siglos, estas reglas se aplicaron a mano, por cajistas que leían cada p
 
 Postext resulta útil allí donde un texto largo y estructurado tiene que parecer diseñado y no simplemente mostrado:
 
-- **Editoriales y equipos editoriales** que quieren que el mismo original produzca un PDF listo para imprenta y una edición fiel en pantalla, sin mantener dos maquetaciones sincronizadas
+- **Editoriales y equipos editoriales** que quieren que el mismo original produzca un PDF listo para imprenta, una edición fiel en pantalla y un libro electrónico, sin mantener varias maquetaciones sincronizadas
 - **Plataformas de documentación y de enseñanza** cuyos libros de texto, manuales y cursos necesitan figuras, tablas, referencias numeradas y matemáticas bien compuestas en cada página
 - **Desarrolladores** que construyen experiencias de lectura —informes, revistas, catálogos, documentos generados— y quieren calidad editorial de una biblioteca en lugar de una aplicación de escritorio
 - **Diseñadores y tipógrafos** que quieren describir un diseño una sola vez, como reglas, y verlo aplicado con coherencia a lo largo de cientos de páginas
@@ -97,7 +97,7 @@ Lo que comparten es la preferencia por describir el resultado en lugar de coloca
 
 ## Lo que Postext no es
 
-Tener claro el alcance mantiene afilado el núcleo. Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; el renderizador de PDF, en cambio, también funciona en Node.
+Tener claro el alcance mantiene afilado el núcleo. Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; los generadores de PDF y de EPUB, en cambio, también funcionan en Node.
 
 La misma modestia se aplica al contenido. Postext no intenta entender el texto que compone; aplica reglas a la estructura que recibe. Un título tiene que estar marcado como título, una figura tiene que declararse como recurso y una tabla tiene que ser una tabla. A cambio, nunca enmienda al autor: nada se mueve, se renombra ni se reescribe, y cada decisión que toma el motor es visible en la maquetación y puede rastrearse hasta una regla de la configuración.
 
@@ -169,7 +169,7 @@ Como cada capítulo se maqueta por separado, continuando a los anteriores, el re
 
 **8 idiomas** con separación silábica mediante los patrones de Liang que TeX usa desde 1983: inglés, español, francés, alemán, italiano, portugués, catalán y neerlandés.
 
-**3 renderizadores** —canvas, HTML y PDF— dibujan una misma geometría, línea a línea, de modo que la página que revisas en pantalla es la página que va a imprenta.
+**4 salidas** —canvas, HTML, PDF y EPUB 3— salen de una misma maquetación, de modo que la página que revisas en pantalla es la página que va a imprenta.
 
 **0 reflujos** de la página mientras se maqueta. Todo se calcula en memoria, en un worker cuando el anfitrión lo pide, y la misma entrada produce siempre las mismas páginas.
 :::
@@ -179,16 +179,16 @@ El equilibrado converge tramo a tramo, entre aperturas de capítulo y saltos de 
 
 ## El árbol virtual del documento
 
-Lo que sobrevive al bucle es el **VDT**, el árbol virtual del documento: páginas que contienen columnas, columnas que contienen bloques, bloques que contienen líneas, cada uno con su caja en unidades reales, junto a una lista plana de todos los bloques para acceder rápido. El árbol es geometría pura —no sabe nada de canvas, HTML ni PDF— y eso es justo lo que permite a tres renderizadores dibujar salidas idénticas. Cada línea recuerda además el tramo de Markdown del que procede, y así un clic en la página lleva el cursor del editor a la palabra correcta.
+Lo que sobrevive al bucle es el **VDT**, el árbol virtual del documento: páginas que contienen columnas, columnas que contienen bloques, bloques que contienen líneas, cada uno con su caja en unidades reales, junto a una lista plana de todos los bloques para acceder rápido. El árbol es geometría pura —no sabe nada de canvas, HTML, PDF ni EPUB— y eso es justo lo que permite a todos los renderizadores dibujar salidas idénticas. Cada línea recuerda además el tramo de Markdown del que procede, y así un clic en la página lleva el cursor del editor a la palabra correcta.
 
 Las páginas registran también para qué sirven. Una página puede ser de cuerpo, una apertura de capítulo, una portadilla de parte o una página en blanco insertada para alcanzar la paridad correcta, y ese papel es lo que permite a las cabeceras, los folios y los adornos decidir dónde aparecen. Las etiquetas de página —el folio impreso dentro de su secuencia— se calculan una sola vez, en el árbol, de modo que el canvas, el HTML y el PDF coinciden en ellas sin hacer cada uno su propia cuenta. Un prefacio numerado en romanos y un cuerpo que vuelve a empezar en uno no necesitan ningún caso especial en ningún renderizador: cada uno imprime la etiqueta que le da el árbol, sin volver a contar.
 
 ## Fuera del hilo principal
 
-Una maquetación puede tardar más que una pulsación de tecla, así que el motor puede ejecutarse en un Web Worker. El worker conserva su propia caché de medición entre compilaciones y se cancela de forma cooperativa: cuando se pide una compilación nueva, la anterior se detiene en su siguiente punto de control y gana la última petición. El Sandbox maqueta así todas sus vistas, y el renderizador de PDF tiene un worker propio, de modo que la interfaz sigue respondiendo mientras se compone un libro entero.
+Una maquetación puede tardar más que una pulsación de tecla, así que el motor puede ejecutarse en un Web Worker. El worker conserva su propia caché de medición entre compilaciones y se cancela de forma cooperativa: cuando se pide una compilación nueva, la anterior se detiene en su siguiente punto de control y gana la última petición. El Sandbox maqueta así todas sus vistas, y los generadores de PDF y de EPUB tienen cada uno su worker, de modo que la interfaz sigue respondiendo mientras se compone o se escribe un libro entero.
 
 :::callout{type="note" title="En código"}
-\`buildDocument(content, config)\` devuelve el VDT. \`renderPage\` dibuja una página en un canvas, \`renderToHtml\` devuelve HTML posicionado y \`renderToPdf\`, del paquete _postext-pdf_, devuelve los bytes de un PDF, de un documento o de un libro entero pasado como una lista de capítulos. \`createLayoutWorker\`, de _postext/worker_, ejecuta la compilación fuera del hilo principal.
+\`buildDocument(content, config)\` devuelve el VDT. \`renderPage\` dibuja una página en un canvas, \`renderToHtml\` devuelve HTML posicionado y \`renderToPdf\`, del paquete _postext-pdf_, devuelve los bytes de un PDF, de un documento o de un libro entero pasado como una lista de capítulos. \`renderToEpub\`, de _postext-epub_, escribe esos mismos capítulos como un archivo EPUB 3. \`createLayoutWorker\`, de _postext/worker_, ejecuta la compilación fuera del hilo principal.
 :::
 
 :::part{number="II" title="El oficio" palette="band=#b7820f"}
@@ -230,7 +230,7 @@ La separación silábica usa los mismos **patrones de Liang** en los que TeX con
 
 La separación solo actúa en el texto justificado, donde se gana el sueldo. Hay dos oportunidades de corte siempre disponibles, sea cual sea el ajuste: un guion entre dos letras es un corte legítimo, y una palabra más ancha que toda la medida se divide por la última sílaba que cabe o, si no hay más remedio, por el último carácter.
 
-Los guiones opcionales escritos en el texto se respetan como puntos de corte, al mismo precio que los del patrón. El idioma también puede cambiar dentro de un libro: todos los capítulos comparten el idioma de la configuración, así que una edición en varios idiomas, como esta, se configura una vez por idioma, y cada versión de la guía divide las palabras según sus propias reglas.
+Los guiones opcionales escritos en el texto se respetan como puntos de corte, al mismo precio que los del patrón. El catalán sigue las normas del Institut d'Estudis Catalans: una palabra con _l·l_ geminada, como _col·lecció_, se divide entre las dos _l_, y el guion ocupa el lugar del punto volado: _col-_ al final de una línea y _lecció_ al principio de la siguiente. El idioma también puede cambiar dentro de un libro: todos los capítulos comparten el idioma de la configuración, así que una edición en varios idiomas, como esta, se configura una vez por idioma, y cada versión de la guía divide las palabras según sus propias reglas.
 
 ## Espaciado y líneas en bandera
 
@@ -250,11 +250,23 @@ El resto de un libro chino sigue los mismos ajustes. Las plantillas de capítulo
 
 Los libros chinos marcan además el texto de maneras que la tipografía latina no conoce. El énfasis se señala con un punto junto a cada carácter y no con cursiva, así que en un documento chino \`*…*\` pone puntos de énfasis en los caracteres chinos que abarca, como \`:dots[…]\`; \`cjk.emphasis: 'italic'\` conserva la cursiva. \`:name[…]\` traza la línea recta de los nombres propios, y \`:book[…]\` señala el título de una obra, y \`cjk.bookTitleMark\` elige cómo: con los signos angulares dobles de China continental o con la línea ondulada de Taiwán y Hong Kong. \`:ruby[…]{rt="…"}\` compone una lectura, en pinyin sobre los caracteres o en zhuyin a la derecha de cada uno, y \`:warichu[…]\` compone una nota en dos filas de medio cuerpo dentro de la línea, que sigue en la línea o la página siguiente cuando no cabe. Ninguna cambia el interlineado: el panel **Revisión** avisa cuando los puntos, las líneas o las lecturas necesitan entre líneas más hueco del que deja el párrafo. En texto vertical, los puntos pasan a la derecha de la columna, las líneas a su izquierda, y de una nota se lee primero la fila de la derecha.
 
+## El árabe, de derecha a izquierda
+
+El árabe, el persa, el urdu y el hebreo se escriben de derecha a izquierda, y Postext los compone a partir del mismo Markdown y la misma configuración que cualquier otra lengua. Lo decide el idioma del documento: con \`locale: 'ar'\`, las líneas empiezan a la derecha, la primera columna es la de la derecha, el libro se encuaderna por su borde derecho y los pliegos se leen de derecha a izquierda. El motor maqueta esa página como si fuera de izquierda a derecha y luego la refleja entera, pintando cada palabra, imagen y fórmula del derecho, de modo que un diseño hecho para un libro en español funciona sin cambios: un ajuste que nombra un lado se refiere a un lado del texto, y \`start\` y \`end\` se aceptan como nombres explícitos de ese lado. Las cabeceras y los folios se quedan en el pliego, donde un diseñador los espera.
+
+Dentro de una línea, los números, las palabras latinas y las citas siguen leyéndose de izquierda a derecha. El orden de esos tramos lo decide el algoritmo bidireccional de Unicode, implementado por completo; el texto se guarda, se busca y se copia en el orden en que se escribió, y solo se reordena al pintarlo. Los paréntesis y las comillas angulares se reflejan en los tramos de derecha a izquierda. Un bloque que va contra la dirección del libro lleva \`{dir=ltr}\` o \`{dir=rtl}\`, y un tramo de texto, \`:ltr[…]\` o \`:rtl[…]\`, un aislamiento con el que su punto final deja de irse al extremo equivocado de la línea.
+
+Las letras árabes se enlazan, y cada una toma la forma que le piden sus vecinas, así que una palabra se mide y se pinta como una sola cadena modelada, nunca letra a letra; el PDF la modela con HarfBuzz y relaciona cada glifo con sus caracteres, de modo que el texto copiado y los lectores de pantalla reciben las palabras que se escribieron. De ahí salen tres reglas: no se divide con guiones, no se espacian las letras y no se corta una palabra por dentro; si no cabe, desborda la línea y se avisa en lugar de partirla. Las líneas justificadas se estiran primero en sus espacios y después con la **cachida**, los enlaces alargados que el calígrafo traza entre dos letras unidas, que solo se ponen donde las reglas del naskh lo permiten y se dejan fuera del texto copiado. El cortador de líneas cuenta ese alargamiento como estiramiento, así que elige los cortes sabiendo dónde puede ensancharse una línea. El énfasis se compone en negrita, porque la tipografía árabe no tiene cursiva, y el motor nunca inclina una letra árabe.
+
+Las vocales se apilan encima y debajo de las letras, dentro del interlineado, que nunca crece solo: el panel **Revisión** señala el párrafo cuyas marcas tocarían la línea de arriba, con el interlineado que necesitaría. Los números que genera el motor —folios, números de capítulo, de figura y de nota— toman las cifras de la región, las arábigo-índicas en el oriente árabe y las europeas en el Magreb, mientras que los números que escribe el autor nunca se tocan; un título puede escribir su número como un ordinal en letras, y los preliminares pueden contar en el orden abjad de los manuscritos. Los poemas clásicos se escriben en \`:::verse\`, un verso por línea con sus dos hemistiquios separados por \`||\`: cada hemistiquio se lleva a un mismo ancho, primero con cachidas, y las rimas quedan alineadas a lo largo del poema. La edición árabe de esta guía se compone así, encuadernada a la derecha, y entre los libros de ejemplo _Las mil y una noches_ recoge la obra entera en árabe, a la manera de la imprenta de Bulaq.
+
 ## Énfasis y tramos
 
 Un párrafo rara vez es un único tramo de texto. La negrita, la cursiva y la negrita cursiva se componen en los cortes reales de la familia —una cursiva verdadera, no una redonda inclinada—, cada uno medido con sus propias métricas, de modo que una palabra en negrita ocupa exactamente el sitio que necesita. El color del texto en negrita, del texto en cursiva y de las referencias puede fijarse por separado; en este libro, las referencias a figuras y tablas van en negrita y en el color de parte, para que sean fáciles de encontrar en la página y en el PDF, donde además son enlaces.
 
 Los superíndices y los subíndices se componen más pequeños y desplazados de la línea base sin alterar el interlineado, y las muestras de color en línea se asientan en la línea base como una letra más. Todos ellos son atómicos: el cortador de líneas puede cortar antes o después, pero nunca por dentro, así que una fórmula o una muestra nunca acaban partidas entre dos líneas.
+
+Otros dos tramos distinguen palabras sin recurrir a otro tipo de letra. \`:smallcaps[…]\` compone versalitas a partir de las mayúsculas de la fuente, igual en todas las salidas, para siglas y para los nombres de los personajes de una obra de teatro. \`:chip[…]\` pone una palabra en una cajita redondeada que fluye con la línea —teclas, etiquetas, el banco de palabras de un ejercicio—, con un estilo con nombre, sin cortarse nunca por dentro y con palabras que siguen siendo texto real en el HTML y en el PDF.
 
 ## Huérfanas, viudas y líneas cortas
 
@@ -420,9 +432,9 @@ Algunos recursos son más anchos de lo que la página es alta: una cronología, 
 
 Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el subconjunto habitual de SVG —formas, trazados, grupos, trazados de recorte, rellenos y trazos sólidos, opacidad y texto— en operaciones de dibujo nativas, y rasteriza a 600 ppp lo que queda fuera; una figura también puede traer un máster PDF propio, que se incrusta tal cual. Para imprimir a una tinta, un interruptor recolorea todos los diagramas como tintas de un solo color, según su luminancia, en los tres renderizadores.
 
-El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en catalán en la catalana, en inglés en la inglesa y en chino en la china.
+El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en catalán en la catalana, en inglés en la inglesa, en chino en la china y en árabe en la árabe.
 
-Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto. Lo mismo vale para la roseta: su microtexto sigue legible a cualquier ampliación, y un lector de pantalla encuentra en el PDF las palabras que las figuras llevan escritas.
+Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto. Lo mismo vale para el microtexto de la roseta, legible a cualquier ampliación.
 
 :::callout{type="try"}
 Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
@@ -477,7 +489,7 @@ Una parte también puede cambiar el color del libro. Los colores de la configura
 :::part{number="III" title="La práctica" palette="band=#c0452f"}
 7. Escribir para Postext
 8. El Sandbox
-9. Salida: canvas, HTML y PDF
+9. Salida: canvas, HTML, PDF y EPUB
 10. El libro en 3D
 11. Hoja de ruta y comunidad
 :::
@@ -511,6 +523,16 @@ Las referencias merecen una mirada más atenta, porque con ellas se escribe la m
 El mismo \`:ref\` nombra cualquier lugar del libro que lleve un identificador: un título escrito \`## Método {#metodo}\`, un recuadro abierto con \`{#id}\` o una frase marcada \`[estas palabras]{#clave}\`. Imprime _sección 3.2_ o _capítulo 4_, el título con \`style=title\` o la página con \`style=page\`, y la página es la correcta porque el motor vuelve a componer el libro hasta que no cambia. Cada una de estas referencias es un enlace en el PDF, en el HTML y en estas vistas previas.
 
 Las obras se citan como las escribe Pandoc, \`[@garcia2020, pág. 33]\` o \`@garcia2020\` dentro de la frase, con las referencias en el front matter o en un bloque \`:::references\` de BibTeX. El estilo de cita es un ajuste, no una propiedad del texto: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 o un estilo propio, que se elige en Diseño › Citas, donde una vista previa muestra el resultado. La bibliografía va tras el último capítulo, o allí donde se escriba \`:::bibliography\`.
+
+## Notas al pie
+
+Una nota se cita con \`[^id]\` justo después de la palabra o del signo al que pertenece, y se escribe en cualquier lugar del capítulo como un párrafo que empieza por \`[^id]:\`. Las notas se numeran en el orden en que se citan por primera vez, de nuevo desde uno en cada capítulo; \`footnotes.numbering\` puede seguir la numeración a lo largo del libro o reiniciarla en cada página, como hacen los libros chinos y los árabes clásicos, y los números pueden imprimirse en círculos o entre paréntesis. La nota se compone al pie de la columna que contiene la línea que la cita, bajo un filete corto, y la línea y su nota comparten siempre columna: si la nota no cabe, la línea pasa con ella a la siguiente. \`footnotes.placement: 'chapterEnd'\` reúne en cambio las notas de un capítulo después de su último bloque. Una llamada sin nota y una nota que nadie cita aparecen en el panel **Revisión**. Esta guía no tiene notas; entre los libros de ejemplo, _El paraíso perdido_ lleva ochocientas, marcadas con letras que vuelven a empezar en cada página.
+
+## Un índice al final
+
+El índice analítico se escribe donde el texto trata cada término. \`:index[anemia]\` imprime la palabra y la registra; \`:index{term="Corazón!válvulas"}\` no imprime nada y registra la página bajo una subentrada. La marca \`main\` pone la página en negrita, \`range="start"\` y \`range="end"\` acotan un pasaje que ocupa varias páginas, y \`see\` y \`seealso\` escriben las remisiones. \`:::index\` imprime el índice donde está, normalmente bajo un título cuyo estilo lo compone a dos columnas, y junto al principal pueden convivir índices con nombre, de personas o de lugares.
+
+El motor lee la página de cada marca después de maquetar, así que los números siguen al texto: si se añade un párrafo, se mueve un capítulo o se cambia el formato, el índice imprime las páginas nuevas. Las entradas se ordenan según el alfabeto del idioma del documento —en español, la _ñ_ con encabezado propio después de la _n_— y se agrupan bajo su letra inicial, las páginas seguidas se unen en un intervalo y cada número es un enlace en el PDF. Un índice árabe ignora el artículo _al-_ al ordenar, y uno chino ordena por la lectura de cada carácter.
 
 ## Recuadros
 
@@ -546,7 +568,7 @@ Todo lo que cuenta este libro puede probarse ahora mismo, sin escribir código. 
 
 ## Un recorrido por la interfaz
 
-La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre siete paneles —Libros, Capítulos, Texto, Recursos, Fuentes, Diseño y Revisión, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en cinco pestañas: Canvas, PDF, Folio, HTML y EPUB 3.
+La interfaz sigue la disposición de un editor conocido, esbozada en :ref{id="sandbox-ui"}. Una **barra de actividad** a la izquierda cambia entre siete paneles —Libros, Capítulos, Texto, Recursos, Fuentes, Diseño y Revisión, este último con el número de asuntos pendientes—. Una **barra lateral** redimensionable aloja el panel activo; al hacer clic en el icono activo se pliega. El **visor**, a la derecha, muestra la misma maquetación en cinco pestañas: Canvas, PDF, Folio, HTML y EPUB 3. La interfaz está en español, inglés, catalán, chino simplificado y árabe, y en árabe se dispone de derecha a izquierda; un ajuste de botones y campos grandes hace que cada control sea más fácil de alcanzar con el dedo o con un pulso poco firme.
 
 La barra lateral y el visor comparten la ventana, y la frontera entre ambos se puede arrastrar. Cada panel y el visor recuerdan su estado entre visitas: la ampliación y el modo de vista del canvas, el modo de columnas de la vista HTML, los grupos abiertos en el panel Diseño. El tema y el idioma de la interfaz se cambian desde el pie de la barra de actividad, y el idioma de la interfaz es independiente del idioma del libro.
 
@@ -562,7 +584,7 @@ El panel **Diseño** edita la configuración completa —más de quinientos camp
 
 ## Las cinco vistas
 
-La vista **canvas** es la vista previa de trabajo: amplía desde un cuarto del tamaño real hasta cuatro veces, ajusta la página al ancho o al alto del visor y muestra páginas sueltas o pliegos, con la primera página sola como página impar, tal como se abre un libro impreso. La vista **PDF** genera un PDF real en el navegador y lo muestra en el visor del propio navegador, con botones para generarlo de nuevo, descargarlo e imprimirlo. La vista **Folio** muestra el libro encuadernado y abierto sobre una mesa, en tres dimensiones, con hojas que se pasan con la mano; tiene un capítulo propio, _El libro en 3D_. La vista **HTML** muestra la misma maquetación como HTML posicionado, aislado del resto de la página, con un control del tamaño del texto y dos modos de lectura: una columna que se desplaza o tantas columnas como quepan en la pantalla. La vista **EPUB 3** genera en el navegador un libro electrónico con una de dos maquetaciones: la **fija** conserva las páginas impresas línea a línea, con texto real que se puede seleccionar y buscar; la **fluida** deja que el texto se adapte a la pantalla y al tamaño de letra de quien lee. Un pequeño lector muestra el archivo, y el botón de descarga lo guarda.
+La vista **canvas** es la vista previa de trabajo: amplía desde un cuarto del tamaño real hasta cuatro veces, ajusta la página al ancho o al alto del visor y muestra páginas sueltas o pliegos, con la primera página sola como página impar, tal como se abre un libro impreso. La vista **PDF** genera un PDF real en el navegador y lo muestra en el visor del propio navegador, con botones para generarlo de nuevo, descargarlo e imprimirlo. La vista **Folio** muestra el libro encuadernado y abierto sobre una mesa, en tres dimensiones, con hojas que se pasan con la mano; tiene un capítulo propio, _El libro en 3D_. La vista **HTML** muestra la misma maquetación como HTML posicionado, aislado del resto de la página, con un control del tamaño del texto y dos modos de lectura: una columna que se desplaza o tantas columnas como quepan en la pantalla. La vista **EPUB 3** genera en el navegador un libro electrónico con una de dos maquetaciones: la **fija** conserva las páginas impresas línea a línea, con texto real que se puede seleccionar y buscar; la **fluida** deja que el texto se adapte a la pantalla y al tamaño de letra de quien lee. Un pequeño lector dentro de la pestaña muestra el mismo archivo que vas a descargar: las flechas del teclado, un deslizamiento en el móvil o los botones pasan sus páginas, una lista salta a cualquier capítulo y un libro fluido puede leerse con la letra más grande o más pequeña.
 
 Las vistas canvas, HTML y Folio pueden maquetar el capítulo actual o el libro completo; el PDF tiene su propia elección, de modo que se puede corregir rápidamente un solo capítulo mientras las vistas previas muestran el libro; el EPUB es siempre el libro completo. Esta guía se abre en el modo de libro completo. Un libro compuesto en vertical, como la edición china de esta guía, se lee en la vista HTML solo página a página, porque en una única columna que se desplaza sus líneas quedarían tumbadas.
 
@@ -582,9 +604,9 @@ El panel **Revisión** lista todo lo que el motor ha notado al componer el libro
 
 ## Proyectos, presets y compartir
 
-Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son libros guardados localmente, en **Mis libros** dentro del panel **Libros**, cada uno con su nombre, su descripción y su imagen de cubierta; se pueden duplicar, exportar e importar. Los **presets** son libros de solo lectura desde los que empezar, en **Libros de ejemplo**: esta guía y una galería de ediciones de muestra —una revista de astronomía, un _Quijote_ ilustrado, una revista de medio ambiente, un catálogo de exposición, dos manuales universitarios, _Sueño en el pabellón rojo_ en chino y _Las mil y una noches_ en árabe, encuadernado a la derecha—, cada una con un diseño propio. **Hacer una copia propia** convierte uno en un proyecto tuyo.
+Tu trabajo se guarda en el navegador mientras escribes. Los **proyectos** son libros guardados localmente, en **Mis libros** dentro del panel **Libros**, cada uno con su nombre, su descripción y su imagen de cubierta; se pueden duplicar, exportar e importar. Los **presets** son libros de solo lectura desde los que empezar, en **Libros de ejemplo**: esta guía y una galería de ediciones de muestra —una revista de astronomía, un _Quijote_ ilustrado, una revista de medio ambiente, un catálogo de exposición, dos manuales universitarios, _Sueño en el pabellón rojo_ en chino, _Las mil y una noches_ en árabe, encuadernado a la derecha, y un _Paraíso perdido_ anotado con los grabados de Doré—, cada una con un diseño propio. **Hacer una copia propia** convierte uno en un proyecto tuyo.
 
-Los presets siguen a su origen. Cuando un paquete de preset cambia en el servidor, el Sandbox lo nota en cuestión de segundos: un preset sin tocar se recarga solo, y uno que has editado muestra un aviso que ofrece recargarlo, de modo que el trabajo en curso nunca se sobrescribe. Los presets se pueden ocultar de la lista y volver a mostrar, y cada uno se puede abrir en cualquiera de sus idiomas cuando tiene más de uno, como esta guía, que también está en chino simplificado.
+Los presets siguen a su origen. Cuando un paquete de preset cambia en el servidor, el Sandbox lo nota en cuestión de segundos: un preset sin tocar se recarga solo, y uno que has editado muestra un aviso que ofrece recargarlo, de modo que el trabajo en curso nunca se sobrescribe. Los presets se pueden ocultar de la lista y volver a mostrar, y cada uno se puede abrir en cualquiera de sus idiomas cuando tiene más de uno, como esta guía, que está en español, inglés, catalán, chino simplificado y árabe.
 
 Un libro viaja como un único archivo **.postext**: sus capítulos, su configuración, sus recursos y sus fuentes, además de la paginación ya calculada, de modo que se abre paginado. Las recetas del Recetario se abren en el Sandbox de la misma manera, como libros tuyos; una receta que ya abriste antes pregunta si quieres **Abrir mi copia**, con tus cambios, o **Sustituir por la versión publicada**, que puede haberse corregido desde entonces. Y la barra de direcciones contiene siempre un enlace permanente a lo que estás viendo: el libro, el idioma, el visor, el capítulo y la página.
 
@@ -596,9 +618,9 @@ Ve hasta una página que te guste y copia la dirección del navegador: al abrir 
 
 El Sandbox es a su vez un paquete, _postext-sandbox_, un componente de React que cualquier aplicación web puede incrustar. Quien lo aloja decide el Markdown y la configuración iniciales, el idioma de la interfaz y cada etiqueta, los orígenes de los presets que ofrece, y el selector de tema, el selector de idioma y el enlace de inicio que muestra. El Sandbox que estás usando es exactamente ese componente, incrustado en el sitio web de Postext.
 
-# Salida: canvas, HTML y PDF {lead="Un árbol, tres renderizadores. El canvas previsualiza, el HTML se lee en pantalla y el PDF va a imprenta, y los tres dibujan las mismas líneas en las mismas posiciones." summary="Los tres renderizadores, el PDF accesible y el uso de la biblioteca"}
+# Salida: canvas, HTML, PDF y EPUB {lead="Un árbol, cuatro salidas. El canvas previsualiza, el HTML se lee en pantalla, el PDF va a imprenta y el EPUB va al dispositivo de quien lee, y todas se escriben a partir de la misma maquetación." summary="Los renderizadores, el PDF accesible, los libros EPUB y el uso de la biblioteca"}
 
-Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en las tres salidas.
+Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en el canvas, el HTML y el PDF, y un EPUB de maquetación fija los conserva también. Un EPUB fluido renuncia a la página a propósito y conserva todo lo demás que resolvió la maquetación: los números, las notas, las referencias y los folios impresos.
 
 ## Canvas
 
@@ -640,26 +662,40 @@ Un PDF vale lo que valen las fuentes que lleva dentro. Postext incrusta cada tip
 
 Las familias llegan de donde el Sandbox las encontró. Las de Google Fonts se descargan tipo a tipo desde Fontsource y se descomprimen al vuelo; las que se suben en el panel de Fuentes se incrustan a partir de los archivos que les diste. Una familia disponible solo en WOFF no se admite en el PDF, porque ese formato no se puede incrustar con garantías; WOFF2, TrueType y OpenType funcionan.
 
+## EPUB 3
+
+El paquete _postext-epub_ escribe un libro maquetado como archivo EPUB 3, el formato de las tiendas de libros electrónicos, las bibliotecas y las aplicaciones de lectura. Lee los mismos documentos de capítulo que el PDF de un libro entero, así que los folios, las notas, las citas, las referencias cruzadas, el índice general y el analítico llegan resueltos, y devuelve el archivo como bytes, en el navegador o en Node, sin servidor. EPUB define dos maquetaciones, comparadas en :ref{id="epub-renditions"}, y el generador produce cualquiera de las dos a partir de la misma maquetación.
+
+La **maquetación fija** conserva la página impresa. Cada página se convierte en un documento propio, del tamaño de la página, con el texto donde lo pone el PDF y en las fuentes del libro, de modo que se mantienen las columnas, los flotantes, las cabeceras, las aperturas y todos los cortes de línea. El texto sigue siendo texto: se puede seleccionar, buscar y leer en voz alta, y los enlaces del libro funcionan entre páginas —referencias cruzadas, notas, el índice impreso y el analítico—. Los pliegos se emparejan como en papel, y un libro encuadernado a la derecha, en árabe o en chino vertical, se pasa de derecha a izquierda. Conviene a los libros cuyas páginas están diseñadas como páginas —un libro ilustrado, un manual, un catálogo, una revista— leídos en una pantalla grande; en un móvil, la página se reduce y quien lee tiene que ampliarla.
+
+## Libros fluidos
+
+La **maquetación fluida** renuncia a la página y conserva el texto. Cada capítulo se convierte en un documento que el sistema de lectura compone de nuevo para su pantalla, con el tipo de letra, el tamaño y los márgenes que elige quien lee. El generador no vuelve al Markdown: reconstruye cada párrafo a partir de las líneas que compuso el motor, quita los guiones que añadieron los cortes de línea y conserva los que pertenecen a la palabra, de modo que un párrafo repartido entre dos columnas o dos páginas vuelve a ser un solo párrafo. Las figuras y las tablas siguen al texto que las cita, con sus pies numerados y su texto alternativo; las tablas siguen siendo tablas de verdad, con filas de encabezado y celdas combinadas; los recuadros se convierten en apartes con su título, y las notas enlazan con el final del capítulo y vuelven. Cada página impresa deja una marca donde empieza su texto, de modo que se puede encontrar la página 112 de la edición impresa, y el índice analítico apunta a esas marcas.
+
+El aspecto sale de la configuración. Una hoja de estilos derivada de ella da a los títulos, los recuadros, las tablas, los pies y las listas sus tamaños y sus colores, relativos al cuerpo del texto, para que el tamaño que elige quien lee se aplique a todo. Los párrafos compuestos con un estilo de párrafo lo conservan, porque la maquetación anota qué estilo compuso cada bloque, y los niveles del índice analítico se distinguen de la misma manera; un capítulo configurado de otro modo, o una parte que cambia los colores del libro, añade una segunda hoja con solo las reglas que cambian. Un destacado repite palabras del texto, así que se muestra pero queda oculto para los lectores de pantalla y la lectura en voz alta, y sus palabras se leen una sola vez. El chino vertical conserva sus líneas verticales, y un libro árabe va de derecha a izquierda.
+
+Las dos maquetaciones llevan la misma navegación: una tabla de contenidos a partir de los títulos y las partes, una lista de los folios impresos y puntos de referencia para la cubierta, el índice impreso y el comienzo del texto. Se incrustan todas las familias que nombra el diseño, salvo las marcadas como no redistribuibles, y cada imagen va una sola vez. Las dos llevan los metadatos de EPUB Accessibility 1.1 y las dos pasan EPUBCheck, el validador del W3C que aplican las tiendas a los archivos que reciben, sin errores ni avisos, tanto esta guía como todos los libros de ejemplo. En el Sandbox, la pestaña **EPUB 3** escribe el archivo en un worker, de modo que la página sigue respondiendo mientras se escribe un libro largo.
+
 ## Elegir una salida
 
-Las tres salidas comparten la maquetación, pero sirven a momentos distintos de la vida de un libro. El **canvas** es la vista de trabajo: rápida, fiel, la que el Sandbox mantiene abierta mientras escribes y diseñas. El **HTML** sirve para leer en pantalla y para publicar dentro de una aplicación web: las mismas páginas como marcado posicionado, o el texto reorganizado en los modos de lectura del visor, aislado de los estilos de la página que lo rodea. El **PDF** es el objeto terminado: el archivo que va a la imprenta, a un archivo o al dispositivo de un lector, etiquetado, con marcadores y con búsqueda.
+Las cuatro salidas comparten la maquetación, pero sirven a momentos distintos de la vida de un libro. El **canvas** es la vista de trabajo: rápida, fiel, la que el Sandbox mantiene abierta mientras escribes y diseñas. El **HTML** sirve para leer en pantalla y para publicar dentro de una aplicación web: las mismas páginas como marcado posicionado, o el texto reorganizado en los modos de lectura del visor, aislado de los estilos de la página que lo rodea. El **PDF** es el objeto terminado: el archivo que va a la imprenta, a un archivo o al dispositivo de un lector, etiquetado, con marcadores y con búsqueda. El **EPUB** es para los lectores de libros electrónicos y las tiendas: maquetación fija cuando lo que importa es la página, fluida cuando lo que importa es el texto.
 
-Nada obliga a elegir entre ellas. Un libro puede escribirse en el Sandbox con el canvas abierto, revisarse en el visor HTML por alguien que lee en el móvil y enviarse a imprenta como PDF esa misma tarde, desde la misma fuente y la misma configuración, sin que ninguna de las tres se aparte de las otras.
+Nada obliga a elegir entre ellas. Un libro puede escribirse en el Sandbox con el canvas abierto, revisarse en el visor HTML por alguien que lee en el móvil y enviarse esa misma tarde a imprenta como PDF y a una tienda como EPUB, desde la misma fuente y la misma configuración, sin que ninguna salida se aparte de las otras.
 
 ## Usar la biblioteca
 
-El motor se distribuye como dos paquetes en npm: _postext_, para la maquetación y los renderizadores de canvas y HTML, y _postext-pdf_, para la salida en PDF. Los dos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
+El motor se distribuye en npm como _postext_, para la maquetación y los renderizadores de canvas y HTML, con un paquete para cada salida más pesada: _postext-pdf_ para el PDF, _postext-epub_ para el EPUB 3 y _postext-folio_ para el libro en 3D. Todos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
 
-El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ también se ejecuta en el navegador, y además en Node, de modo que un PDF puede producirse en un servidor a partir de una maquetación calculada en otro sitio. Los dos paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
+El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ y _postext-epub_ también se ejecutan en el navegador, y además en Node, de modo que un PDF o un EPUB pueden producirse en un servidor a partir de una maquetación calculada en otro sitio. Un libro entero viaja igual: \`openBundle\` lee un archivo .postext, \`buildBundle\` maqueta sus capítulos en orden y el resultado pasa directamente a \`renderToPdf\` o a \`renderToEpub\`. Los paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
 
 :::callout{type="note" title="Cuatro pasos"}
 1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
 2. Compila el documento con \`buildDocument(content, config)\`
 3. Dibuja sus páginas con \`renderPage\` o genéralas con \`renderToHtml\`
-4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes
+4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes; para un libro electrónico, pasa los capítulos a \`renderToEpub\`
 :::
 
-El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten.
+El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten. El generador de EPUB y el visor Folio llevan su propia numeración y declaran el motor como dependencia de par, así que un proyecto los actualiza a la vez.
 
 ## Páginas como imágenes, desde un script
 
@@ -735,7 +771,7 @@ Postext no aspira a ser una plataforma documental universal. Aspira a ser un mot
 
 El trabajo se organiza en cuatro fases, resumidas en :ref{id="development-phases"}. No son hitos estrictos: describen el orden en que las capacidades se vuelven lo bastante estables para producción.
 
-Las dos primeras fases están prácticamente terminadas: el modelo de datos, el analizador y la capa de medición, el formato del documento, el motor de columnas con su equilibrado, sus flotantes y sus tablas, y la maquinaria de libro de capítulos, partes, índice y cabeceras. La tercera fase ha entregado su núcleo —corte óptimo de líneas con penalizaciones editoriales, separación silábica en ocho idiomas, matemáticas, notas al pie y notas de final de capítulo, y el chino en horizontal y en vertical— y tiene pendientes las notas al margen. La cuarta, la salida, ha publicado el canvas, el HTML, un PDF etiquetado y libros EPUB 3, junto con el worker, el Sandbox y sus presets, y la vista Folio, que muestra una maquetación como un libro impreso.
+Las dos primeras fases están prácticamente terminadas: el modelo de datos, el analizador y la capa de medición, el formato del documento, el motor de columnas con su equilibrado, sus flotantes y sus tablas, y la maquinaria de libro de capítulos, partes, índice y cabeceras. La tercera fase ha entregado su núcleo —corte óptimo de líneas con penalizaciones editoriales, separación silábica en ocho idiomas, matemáticas, notas al pie y notas de final de capítulo, citas bibliográficas, un índice analítico, el chino en horizontal y en vertical y el árabe de derecha a izquierda con justificación por cachida— y tiene pendientes las notas al margen. La cuarta, la salida, ha publicado el canvas, el HTML, un PDF etiquetado y libros EPUB 3, junto con el worker, el Sandbox y sus presets, y la vista Folio, que muestra una maquetación como un libro impreso.
 
 Lo que falta importa tanto como lo que ya está hecho. Las **notas al margen** tienen un sitio en el modelo de datos, pero todavía no se maquetan. El código en línea no tiene estilo propio, el texto aún no rodea obstáculos, el japonés y el coreano se componen con las reglas del chino y no con las suyas, y la maquetación solo ocurre en el navegador. Son los siguientes problemas que merece la pena resolver, y aquellos en los que más cuenta la ayuda.
 
@@ -747,7 +783,7 @@ El camino habitual de la idea al código es corto: una issue describe el problem
 
 ## Dónde cuenta la ayuda
 
-Todas las partes del proyecto dan la bienvenida a quien quiera contribuir. El **motor** tiene problemas profundos —corte de líneas, equilibrado, numeración, colocación de flotantes— y otros más accesibles en sus pruebas y sus mediciones de rendimiento. El **backend de PDF** tiene la incrustación de fuentes, la gestión del color y la accesibilidad. El **Sandbox** tiene sus paneles, sus editores y sus traducciones, organizados para que cada texto de la interfaz se añada de la misma manera en todos los idiomas. **El diseño y la tipografía** necesitan personas que conozcan las tradiciones editoriales, sobre todo las de escrituras que el motor aún no atiende bien. Y la **documentación** y sus traducciones, hoy en inglés y en español, están abiertas a cualquiera que sepa explicar algo con claridad.
+Todas las partes del proyecto dan la bienvenida a quien quiera contribuir. El **motor** tiene problemas profundos —corte de líneas, equilibrado, numeración, colocación de flotantes— y otros más accesibles en sus pruebas y sus mediciones de rendimiento. El **backend de PDF** tiene la incrustación de fuentes, la gestión del color y la accesibilidad. El **Sandbox** tiene sus paneles, sus editores y sus traducciones, organizados para que cada texto de la interfaz se añada de la misma manera en todos los idiomas. **El diseño y la tipografía** necesitan personas que conozcan las tradiciones editoriales, sobre todo las de escrituras que el motor aún no atiende bien. Y la **documentación** y sus traducciones, hoy en inglés, español, catalán, chino simplificado y árabe, están abiertas a cualquiera que sepa explicar algo con claridad.
 
 El mejor primer paso es pequeño: lee la guía de contribución del repositorio, preséntate en las discussions, elige una issue con la etiqueta _good first issue_ o traduce una página de la documentación.
 
@@ -768,7 +804,7 @@ Otras cosas, sencillamente, aún no están hechas. Maquetar en un servidor, sin 
 
 ## Licencia
 
-Postext se publica con la **licencia MIT**: el motor, el renderizador de PDF y el Sandbox pueden usarse, modificarse e incrustarse tanto en proyectos abiertos como cerrados, con fines comerciales o no, siempre que el aviso de licencia acompañe al código. Los tipos de letra de este libro son fuentes abiertas servidas por Google Fonts, los diagramas forman parte del código del Sandbox y el texto de esta guía pertenece al proyecto y a quienes contribuyen a él.
+Postext se publica con la **licencia MIT**: el motor, los generadores de PDF y de EPUB, el visor Folio y el Sandbox pueden usarse, modificarse e incrustarse tanto en proyectos abiertos como cerrados, con fines comerciales o no, siempre que el aviso de licencia acompañe al código. Los tipos de letra de este libro son fuentes abiertas servidas por Google Fonts, los diagramas forman parte del código del Sandbox y el texto de esta guía pertenece al proyecto y a quienes contribuyen a él.
 
 ## Valores
 
@@ -786,5 +822,5 @@ Si algo de esto te resuena, el repositorio es el siguiente paso. Abre una issue,
 postext.dev · github.com/drnachio/postext
 :::
 
-# Contraportada {style="back" toc="false" book="Postext" blurb="Postext compone Markdown como libros, revistas y manuales, en el navegador: cada párrafo cortado entero, columnas que terminan a la par, figuras que llegan después de las palabras que las llaman y un PDF listo para imprenta. Cada página de esta guía la ha compuesto el propio Postext." licence="Código abierto · Licencia MIT"}
+# Contraportada {style="back" toc="false" book="Postext" blurb="Postext compone Markdown como libros, revistas y manuales, en el navegador: cada párrafo cortado entero, columnas que terminan a la par, figuras que llegan después de las palabras que las llaman, un PDF listo para imprenta y un EPUB para lectores electrónicos. Cada página de esta guía la ha compuesto el propio Postext." licence="Código abierto · Licencia MIT"}
 `;

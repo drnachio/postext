@@ -49,6 +49,7 @@ export const DEFAULT_RESOURCE_IDS = {
   vectorChart: 'vector-chart',
   vectorClip: 'vector-clip',
   sandboxUi: 'sandbox-ui',
+  epubRenditions: 'epub-renditions',
   // Tables
   featureTable: 'feature-comparison',
   toolsTable: 'tools-comparison',
@@ -85,7 +86,7 @@ export const DEFAULT_RESOURCE_IDS = {
 // ───────────────────────────────────────────────────────────────────────────
 
 import { COLUMN_VW, DEFS, FS, P, PAGE_VW, bar, edge, localizeFigure, mirrorFragment, mirrorSvg, node, text } from './svgKit';
-import { balancingSvg, bookAnatomySvg, cjkCompositionSvg, columnLayoutsSvg, floatSlotsSvg, sandboxUiSvg, vectorChartSvg, vectorClipSvg, vectorRosetteSvg } from './guideFigures';
+import { balancingSvg, bookAnatomySvg, cjkCompositionSvg, columnLayoutsSvg, epubRenditionsSvg, floatSlotsSvg, sandboxUiSvg, vectorChartSvg, vectorClipSvg, vectorRosetteSvg } from './guideFigures';
 
 const PIPELINE = byLang(
   { parse: 'Parse', measure: 'Measure', layout: 'Layout', config: 'Configuration', loop: ['at most', '5 passes'], aria: 'Postext pipeline' },
@@ -391,6 +392,7 @@ export const SVG_FIGURES: Record<string, GuideFigure> = {
   'default-balancing': { generate: drawn(balancingSvg, true), width: PAGE_VW, height: 200 },
   'default-book-anatomy': { generate: drawn(bookAnatomySvg, true), width: PAGE_VW, height: 168 },
   'default-sandbox-ui': { generate: drawn(sandboxUiSvg, true), width: PAGE_VW, height: 322 },
+  'default-epub-renditions': { generate: drawn(epubRenditionsSvg, true), width: PAGE_VW, height: 232 },
   'default-vector-rosette': { generate: drawn(vectorRosetteSvg), width: PAGE_VW, height: 222 },
   'default-vector-chart': { generate: drawn(vectorChartSvg, true), width: PAGE_VW, height: 186 },
   'default-vector-clip': { generate: drawn(vectorClipSvg, true), width: PAGE_VW, height: 170 },
@@ -647,6 +649,12 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
         [':ref', 'تذكر موردًا، فترقّمه وتجعله يطفو'],
         ['::resource', 'تُدرج موردًا في النقطة نفسها'],
         [':swatch', 'عيّنة لون داخل السطر'],
+        ['[^id]', 'علامة حاشية؛ و[^id]: تفتح نصها'],
+        [':index', 'تُدرج مصطلحًا في الفهرس الأبجدي'],
+        [':::index', 'تطبع الفهرس الأبجدي بأرقام صفحات حقيقية'],
+        [':::verse', 'قصيدة عمودية، يفصل || بين شطري البيت'],
+        [':chip', 'كلمة في إطار صغير يجري مع السطر'],
+        [':ltr · :rtl', 'مقطع من اليسار إلى اليمين أو من اليمين إلى اليسار'],
         ['# العنوان {style="…"}', 'نمط عنوان، وسمات تستعملها التصاميم'],
       ],
     );
@@ -668,6 +676,12 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
         [':ref', '提及一个资源，为它编号并让它浮动'],
         ['::resource', '把资源嵌在确切的位置'],
         [':swatch', '行内色样'],
+        ['[^id]', '脚注标记；[^id]:开始注文'],
+        [':index', '把词条收进书末索引'],
+        [':::index', '排出索引，页码都是真实的'],
+        [':::verse', '阿拉伯古典诗，上下半句用||隔开'],
+        [':chip', '随行排进小框里的词'],
+        [':ltr · :rtl', '从左到右或从右到左排的一段文字'],
         ['# 标题 {style="…"}', '标题样式，以及供版面设计取用的属性'],
       ],
     );
@@ -689,6 +703,12 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
         [':ref', 'Cita un recurs, el numera i el fa flotar'],
         ['::resource', 'Insereix un recurs al punt exacte'],
         [':swatch', 'Mostra de color en línia'],
+        ['[^id]', 'Crida de nota; [^id]: n\'obre el text'],
+        [':index', 'Registra un terme a l\'índex analític'],
+        [':::index', 'Imprimeix l\'índex analític, amb folis reals'],
+        [':::verse', 'Un poema clàssic, amb els hemistiquis separats per ||'],
+        [':chip', 'Una paraula en una capseta que flueix amb la línia'],
+        [':ltr · :rtl', 'Un tram d\'esquerra a dreta o de dreta a esquerra'],
         ['# Títol {style="…"}', 'Estil de títol i atributs per als dissenys'],
       ],
     );
@@ -710,6 +730,12 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
           [':ref', 'Cita un recurso, lo numera y lo hace flotar'],
           ['::resource', 'Inserta un recurso en el punto exacto'],
           [':swatch', 'Muestra de color en línea'],
+          ['[^id]', 'Llamada de nota; [^id]: abre su texto'],
+          [':index', 'Registra un término en el índice analítico'],
+          [':::index', 'Imprime el índice analítico, con folios reales'],
+          [':::verse', 'Un poema clásico, con los hemistiquios separados por ||'],
+          [':chip', 'Una palabra en una cajita que fluye con la línea'],
+          [':ltr · :rtl', 'Un tramo de izquierda a derecha o de derecha a izquierda'],
           ['# Título {style="…"}', 'Estilo de título y atributos para los diseños'],
         ],
       )
@@ -729,6 +755,12 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
           [':ref', 'Mentions a resource, numbers it and floats it'],
           ['::resource', 'Embeds a resource at the exact point'],
           [':swatch', 'An inline colour swatch'],
+          ['[^id]', 'A footnote marker; [^id]: opens its text'],
+          [':index', 'Files a term in the back-of-book index'],
+          [':::index', 'Prints the index, with real page numbers'],
+          [':::verse', 'A classical poem, its halves split by ||'],
+          [':chip', 'A word in a small box that flows with the line'],
+          [':ltr · :rtl', 'A run set left to right or right to left'],
           ['# Title {style="…"}', 'A heading style, and attributes for the designs'],
         ],
       );
@@ -1260,6 +1292,25 @@ FIGURE_SPECS.push(
       '剪切成圆盘形的蓝色条纹，三个相互重叠的朱红、蓝色和金色半透明圆，以及五颗金色的星。',
       'Franges blaves retallades en un disc, tres cercles translúcids superposats en vermelló, blau i or, i cinc estrelles daurades.',
       'خطوط زرقاء مقصوصة في قرص، وثلاث دوائر شفافة متراكبة بالزنجفري والأزرق والذهبي، وخمس نجوم ذهبية.',
+    ),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.epubRenditions,
+    fileId: 'default-epub-renditions',
+    placement: { position: 'auto', span: 'page' },
+    caption: byLang(
+      'One layout, two e-books: the fixed layout keeps every printed page, the reflowable book keeps the text and lets the reading system set it again, with a marker where each printed page begins.',
+      'Una maquetación, dos libros electrónicos: la maquetación fija conserva cada página impresa; la fluida conserva el texto y deja que el sistema de lectura lo componga de nuevo, con una marca donde empieza cada página impresa.',
+      '同一个版面，两种电子书：固定版式保留每一个印刷页，流式版式保留文字，交给阅读系统重新排版，并在每个印刷页开始的地方留下标记。',
+      'Una maquetació, dos llibres electrònics: la maquetació fixa conserva cada pàgina impresa; la fluida conserva el text i deixa que el sistema de lectura el torni a compondre, amb una marca on comença cada pàgina impresa.',
+      'إخراج واحد وكتابان إلكترونيان: التخطيط الثابت يحفظ كل صفحة مطبوعة، والكتاب القابل لإعادة التدفق يحفظ النص ويترك لنظام القراءة أن ينضّده من جديد، مع علامة حيث تبدأ كل صفحة مطبوعة.',
+    ),
+    altText: byLang(
+      'A two-column page in the middle, with arrows to a tablet on one side showing the same spread and to a phone on the other showing one column of larger text, a figure and a page marker.',
+      'Una página a dos columnas en el centro, con flechas hacia una tableta que muestra el mismo pliego y hacia un teléfono que muestra una sola columna de letra más grande, una figura y una marca de página.',
+      '中间是一张双栏页面，箭头一边指向显示同一跨页的平板电脑，另一边指向手机，手机上是一栏字号较大的文字、一幅图和一个页码标记。',
+      'Una pàgina a dues columnes al centre, amb fletxes cap a una tauleta que mostra el mateix plec i cap a un telèfon que mostra una sola columna de lletra més grossa, una figura i una marca de pàgina.',
+      'صفحة بعمودين في الوسط، تخرج منها أسهم إلى جهاز لوحي يعرض الصفحتين المتقابلتين نفسيهما، وإلى هاتف يعرض عمودًا واحدًا بحرف أكبر وشكلًا وعلامة صفحة.',
     ),
   },
 );

@@ -439,9 +439,11 @@ export function createArabicGuideConfig(): PostextConfig {
       margins: { top: mm(178), bottom: mm(66), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(),
       bodyStyle: {
-        fontFamily: AR_TEXT, fontSize: pt(12.5), lineHeight: pt(21), color: col('white'), textAlign: 'left',
+        // 19 pt lines: the five chapters of part III fit the 36 mm between
+        // the margins (at 21 pt the fifth ran onto a page of its own).
+        fontFamily: AR_TEXT, fontSize: pt(12.5), lineHeight: pt(19), color: col('white'), textAlign: 'left',
         numberColor: col('white'), bulletColor: col('white'),
-        orderedLists: { numberFormat: 'arabic', separator: '', gap: mm(3), indent: mm(0), fontFamily: AR_SANS, numberFontSize: pt(10), itemSpacing: pt(1) },
+        orderedLists: { numberFormat: 'arabic', separator: '', gap: mm(3), indent: mm(0), fontFamily: AR_SANS, numberFontSize: pt(10), itemSpacing: pt(0.5) },
       },
     },
     toc: toc(),

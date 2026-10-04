@@ -2,7 +2,7 @@ export const DEFAULT_MARKDOWN_EN = `---
 title: "Postext"
 subtitle: "A programmable typesetter for the web"
 author: "Ignacio Ferro"
-publishDate: "2026-09-23"
+publishDate: "2026-10-04"
 ---
 
 # Postext {style="cover" toc="false" kicker="Open-source layout engine · The guide" publisher="postext.dev · MIT licence · Every page of this book was set by Postext in your browser"}
@@ -28,7 +28,7 @@ Postext is open source under the MIT licence. Text © 2026 Ignacio Ferro and the
 
 # Why Postext {lead="Print typography spent five centuries learning how to set a page; browsers learned how to lay out an interface. Postext brings the first to the second: a layout engine that turns Markdown into pages set to editorial standards." summary="The gap between the web and the page, and what fills it"}
 
-Postext is an **open-source layout engine** that brings the craft of professional print typography to the web. It takes **semantic content** written in enriched Markdown and a configuration object, and computes a fully resolved layout in which every line, heading, figure and table has a precise position, measured in real typographic units. That layout is then drawn by three renderers — a live canvas preview, positioned HTML and a print-ready PDF — which all read the same geometry, so what you see on screen is exactly what goes to press.
+Postext is an **open-source layout engine** that brings the craft of professional print typography to the web. It takes **semantic content** written in enriched Markdown and a configuration object, and computes a fully resolved layout in which every line, heading, figure and table has a precise position, measured in real typographic units. That layout is then drawn by three renderers — a live canvas preview, positioned HTML and a print-ready PDF — which all read the same geometry, so what you see on screen is exactly what goes to press, and written as an EPUB 3 e-book from the same pages.
 
 This book is its own demonstration. Its cover, the contents page that numbers itself, the part dividers in three colours, the band that opens each chapter, the running heads at the top of these pages and every figure that floats into place were all laid out by Postext, in your browser, a moment ago. Nothing here was placed by hand: the Markdown only says what things are, and the configuration decides how they look.
 
@@ -38,7 +38,7 @@ Open the **Text** panel and pick this chapter in the chapter switcher at its hea
 
 ## How to read this book
 
-The book is organised in three parts. **Foundations**, the part you are in, explains the problem Postext solves and how the engine is built: what goes in, what comes out and what happens in between. **The craft** is about typography: how a line is set, how a page is framed, where figures and tables go and how a set of chapters becomes a book. **In practice** turns to the tools: the document format, the Sandbox, the three output formats and the project around them.
+The book is organised in three parts. **Foundations**, the part you are in, explains the problem Postext solves and how the engine is built: what goes in, what comes out and what happens in between. **The craft** is about typography: how a line is set, how a page is framed, where figures and tables go and how a set of chapters becomes a book. **In practice** turns to the tools: the document format, the Sandbox, the four output formats — canvas, HTML, PDF and EPUB — and the project around them.
 
 Each chapter opens with a short introduction on its band, and most of them close their sections with a box headed _Try it in the Sandbox_: a small experiment you can run on this very book, right now, to see the feature at work. Nothing in them can break anything — **Restore the original…**, in the menu of the guide's row in the **Books** panel, brings it back as it shipped — so change freely. The chapters can be read in any order; when one depends on another, it says so.
 
@@ -76,7 +76,7 @@ Other tools address parts of the problem. Word processors paginate. Adobe InDesi
 - Their source formats are proprietary, binary or hard to generate programmatically
 - They live outside the frontend toolchain a web team already uses
 
-Postext takes a different position, summarised in :ref{id="tools-comparison"}. It is a **JavaScript library** that runs in the browser, reads Markdown, applies the rules of professional typography and hands back a layout you can render as canvas, HTML or PDF. It is meant to be embedded, configured and extended by developers who want publication-grade pages without leaving their tools — and configured by designers who never need to touch the code.
+Postext takes a different position, summarised in :ref{id="tools-comparison"}. It is a **JavaScript library** that runs in the browser, reads Markdown, applies the rules of professional typography and hands back a layout you can render as canvas, HTML or PDF, or write as an EPUB e-book. It is meant to be embedded, configured and extended by developers who want publication-grade pages without leaving their tools — and configured by designers who never need to touch the code.
 
 ## A craft with a long memory
 
@@ -88,7 +88,7 @@ For centuries these rules were applied by hand, by compositors who read every pa
 
 Postext is useful wherever long, structured text has to look like it was designed rather than merely displayed:
 
-- **Publishers and editorial teams** who want the same source to produce a print-ready PDF and a faithful on-screen edition, without keeping two layouts in sync
+- **Publishers and editorial teams** who want the same source to produce a print-ready PDF, a faithful on-screen edition and an e-book, without keeping separate layouts in sync
 - **Documentation and education platforms** whose textbooks, manuals and courses need figures, tables, numbered references and mathematics set properly on every page
 - **Developers** building reading experiences — reports, magazines, catalogues, generated documents — who want editorial quality from a library instead of a desktop application
 - **Designers and typographers** who want to describe a design once, as rules, and see it applied consistently across hundreds of pages
@@ -97,7 +97,7 @@ What they share is a preference for describing the result instead of placing it 
 
 ## What Postext is not
 
-Being clear about scope keeps the core sharp. Postext does not replace CSS for interfaces; it is a specialised engine for long-form, structured content. It is not a WYSIWYG editor: you write Markdown and describe the design, and the engine sets the pages. It does not manage responsive breakpoints — choosing a configuration per screen size is the host application's decision. It does not load fonts for you: the engine measures with the fonts the browser already has, so a page must load its faces before laying out. And the layout engine is browser-only for now, because its measurements come from the canvas font metrics of a real browser; the PDF renderer, on the other hand, also runs in Node.
+Being clear about scope keeps the core sharp. Postext does not replace CSS for interfaces; it is a specialised engine for long-form, structured content. It is not a WYSIWYG editor: you write Markdown and describe the design, and the engine sets the pages. It does not manage responsive breakpoints — choosing a configuration per screen size is the host application's decision. It does not load fonts for you: the engine measures with the fonts the browser already has, so a page must load its faces before laying out. And the layout engine is browser-only for now, because its measurements come from the canvas font metrics of a real browser; the PDF and EPUB writers, on the other hand, also run in Node.
 
 The same modesty applies to the content. Postext does not try to understand the text it sets; it applies rules to the structure it is given. A heading must be marked as a heading, a figure must be declared as a resource and a table must be a table. In exchange, it never second-guesses the author: nothing is moved, renamed or rewritten, and every decision the engine takes is visible in the layout and traceable to a rule in the configuration.
 
@@ -169,7 +169,7 @@ Because each chapter is laid out on its own, continued from the ones before it, 
 
 **8 languages** hyphenated with the Liang patterns TeX has used since 1983: English, Spanish, French, German, Italian, Portuguese, Catalan and Dutch.
 
-**3 renderers** — canvas, HTML and PDF — draw one and the same geometry, line for line, so the page you proof on screen is the page that goes to press.
+**4 outputs** — canvas, HTML, PDF and EPUB 3 — come from one and the same layout, so the page you proof on screen is the page that goes to press.
 
 **0 reflows** of the page while laying out. Everything is computed in memory, in a worker when the host asks for it, and the same input always yields the same pages.
 :::
@@ -179,16 +179,16 @@ Balancing converges segment by segment, between chapter openers and explicit pag
 
 ## The virtual document tree
 
-What survives the loop is the **VDT**, the virtual document tree: pages that hold columns, columns that hold blocks, blocks that hold lines, each with its box in real units, alongside a flat list of every block for quick access. The tree is pure geometry — it knows nothing about canvas, HTML or PDF — and that is exactly what lets three renderers draw matching output. Every line also remembers the stretch of Markdown it came from, which is how a click on the page puts the editor's cursor on the right word.
+What survives the loop is the **VDT**, the virtual document tree: pages that hold columns, columns that hold blocks, blocks that hold lines, each with its box in real units, alongside a flat list of every block for quick access. The tree is pure geometry — it knows nothing about canvas, HTML, PDF or EPUB — and that is exactly what lets every renderer draw matching output. Every line also remembers the stretch of Markdown it came from, which is how a click on the page puts the editor's cursor on the right word.
 
 Pages also record what they are for. A page can be a body page, a chapter opener, a part divider or a blank page inserted to reach the right parity, and that role is what lets running heads, folios and decorations choose where to appear. Page labels — the printed page number in its sequence — are computed once, in the tree, so the canvas, the HTML and the PDF agree on them without doing their own counting. A preface numbered in roman numerals and a body that restarts at one need no special case in any renderer: each prints the label the tree gives it.
 
 ## Off the main thread
 
-A layout can take longer than a keystroke, so the engine can run in a Web Worker. The worker keeps its own measurement cache between builds and cancels cooperatively: when a new build is requested, the previous one stops at its next checkpoint and the last request wins. The Sandbox lays out every view this way, and the PDF renderer has a worker of its own, so the interface stays responsive while a whole book is being set.
+A layout can take longer than a keystroke, so the engine can run in a Web Worker. The worker keeps its own measurement cache between builds and cancels cooperatively: when a new build is requested, the previous one stops at its next checkpoint and the last request wins. The Sandbox lays out every view this way, and the PDF and EPUB writers have workers of their own, so the interface stays responsive while a whole book is being set or written.
 
 :::callout{type="note" title="In code"}
-\`buildDocument(content, config)\` returns the VDT. \`renderPage\` draws a page on a canvas, \`renderToHtml\` returns positioned HTML, and \`renderToPdf\` from the _postext-pdf_ package returns the bytes of a PDF — of one document or of a whole book passed as an array of chapters. \`createLayoutWorker\` from _postext/worker_ runs the build off the main thread.
+\`buildDocument(content, config)\` returns the VDT. \`renderPage\` draws a page on a canvas, \`renderToHtml\` returns positioned HTML, and \`renderToPdf\` from the _postext-pdf_ package returns the bytes of a PDF — of one document or of a whole book passed as an array of chapters. \`renderToEpub\` from _postext-epub_ writes the same chapters as an EPUB 3 file. \`createLayoutWorker\` from _postext/worker_ runs the build off the main thread.
 :::
 
 :::part{number="II" title="The craft" palette="band=#b7820f"}
@@ -230,7 +230,7 @@ Hyphenation uses the same **Liang patterns** TeX has relied on since 1983, serve
 
 Hyphenation only runs on justified text, where it earns its keep. Two break opportunities are always available, whatever the setting: a hard hyphen between two letters is a legitimate break, and a word wider than the whole measure is divided at the last syllable that fits, or at the last character if it has to be.
 
-Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. The language can also change within a book: every chapter shares the configuration's language, so an edition in several languages, like this one, is configured once per language, and each version of the guide hyphenates by its own rules.
+Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. Catalan follows the rules of the Institut d'Estudis Catalans: a word with a geminated _l·l_, such as _col·lecció_, divides between the two _l_, and the hyphen takes the place of the middle dot, _col-_ at the end of one line and _lecció_ at the start of the next. The language can also change within a book: every chapter shares the configuration's language, so an edition in several languages, like this one, is configured once per language, and each version of the guide hyphenates by its own rules.
 
 ## Word spacing and ragged lines
 
@@ -250,11 +250,23 @@ The rest of a Chinese book follows the same settings. Chapter templates, page nu
 
 Chinese books also mark text in ways Latin type has no use for. Emphasis is shown by a dot beside each character, not by italics, so in a Chinese document \`*…*\` sets emphasis dots on the Chinese characters it holds, as \`:dots[…]\` does; \`cjk.emphasis: 'italic'\` keeps italics. \`:name[…]\` draws the straight line of a proper name, and \`:book[…]\` marks the title of a book, and \`cjk.bookTitleMark\` chooses how: the double angle brackets of the mainland or the wavy line of Taiwan and Hong Kong. \`:ruby[…]{rt="…"}\` sets a reading, pinyin over the characters or zhuyin to the right of each one, and \`:warichu[…]\` sets a note in two half-size rows inside the line, carried on to the next line or page when it does not fit. None of them changes the leading: the **Checks** panel says when dots, lines or readings need more room between the lines than the paragraph leaves. In vertical text the dots move to the right of the column, the lines to its left, and the right row of a note is read first.
 
+## Arabic and right-to-left text
+
+Arabic, Persian, Urdu and Hebrew are written from right to left, and Postext sets them from the same Markdown and configuration as any other language. The document language decides it: with \`locale: 'ar'\` the lines start on the right, the first column is the right-hand one, the book is bound on its right edge and its spreads read from right to left. The engine lays such a page out as a left-to-right page and then mirrors it whole, painting every word, image and formula the right way round, so a design made for an English book works unchanged: a setting that names a side means a side of the text, and \`start\` and \`end\` are accepted as plain names for it. Running heads and folios stay on the sheet, where a designer expects them.
+
+Inside a line, numbers, Latin words and quotations still read from left to right. The order of those runs is decided by the Unicode Bidirectional Algorithm, implemented in full; the text is stored, searched and copied in the order it was typed, and only the painting is reordered. Brackets and guillemets are mirrored in right-to-left runs. A block set against the book's direction takes \`{dir=ltr}\` or \`{dir=rtl}\`, and a run of text \`:ltr[…]\` or \`:rtl[…]\`, an isolate whose full stop no longer wanders to the wrong end of the line.
+
+Arabic letters join, and each takes the form its neighbours ask for, so a word is measured and painted as one shaped string, never letter by letter; the PDF shapes it with HarfBuzz and maps every glyph back to its characters, so copied text and screen readers get the words that were typed. Three rules follow: no hyphenation, no letter spacing, and no cut inside a word, which overflows the line and is reported rather than divided. Justified lines are stretched at their spaces first, then by **kashida**, the elongated joins a calligrapher draws between two connected letters, placed only where the Naskh rules allow one and left out of the copied text. The line breaker counts that elongation as stretch, so it chooses its breaks knowing where a line can widen. Emphasis is set in bold, since Arabic type has no italics, and the engine never slants an Arabic letter.
+
+Vowel marks stack over and under the letters, in the leading, which never grows on its own: the **Checks** panel reports a paragraph whose marks would touch the line above, with the leading it would need. Generated numbers — folios, chapter, figure and note numbers — take the digits of the region, Arabic-Indic in the east of the Arab world and European in the Maghreb, while numbers the author types are never rewritten; a heading can spell its number as an ordinal word, and front matter can count in the abjad order of the manuscripts. Classical poems are written in \`:::verse\`, one verse a line with its two halves separated by \`||\`: every half is brought to one width, with kashidas first, so the rhymes line up down the poem. The Arabic edition of this guide is set this way, bound on the right, and among the sample books _One Thousand and One Nights_ sets the whole work in Arabic, in the manner of the Bulaq press.
+
 ## Emphasis and runs
 
 A paragraph is rarely a single run of text. Bold, italic and bold italic are set in the real faces of the family — a true italic, not a slanted roman — each measured with its own metrics, so a word in bold takes exactly the room it needs. The colour of bold text, italic text and references can be set separately; in this book, references to figures and tables are set in bold in the part colour, so they are easy to find on the page and in the PDF, where they are also links.
 
 Superscripts and subscripts are set smaller and shifted from the baseline without disturbing the leading, and inline colour swatches sit on the baseline like a letter. All of these are atomic: the line breaker can break before or after them but never inside them, so a formula or a swatch never ends up split across two lines.
+
+Two more runs set words apart without a face of their own. \`:smallcaps[…]\` sets small capitals drawn from the face's capitals, the same way in every output, for acronyms and the names of the characters in a play. \`:chip[…]\` sets a word in a small rounded box that flows with the line — keyboard keys, tags, the word bank of an exercise — styled by name, never broken inside, and with words that stay real text in the HTML and the PDF.
 
 ## Orphans, widows and runts
 
@@ -420,7 +432,7 @@ Some resources are wider than the page is tall: a timeline, a wide table of resu
 
 SVG diagrams are drawn as vectors everywhere. The PDF converts the common subset of SVG — shapes, paths, groups, clip paths, solid fills and strokes, opacity and text — into native drawing operations, and rasterises anything beyond it at 600 dpi; a figure can also bring a PDF master of its own, embedded as it is. For single-colour printing, a switch recolours every diagram as tints of one ink, by luminance, in all three renderers.
 
-Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition, Catalan in the Catalan one, Chinese in the Chinese one and English in this one.
+Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition, Catalan in the Catalan one, Chinese in the Chinese one, Arabic in the Arabic one and English in this one.
 
 Three figures set here to prove the point. The rosette of :ref{id="vector-rosette"} is made of Bézier curves, hairline strokes and a line of microtext two and a half points tall; the chart of :ref{id="vector-chart"} combines a filled area, a dashed line and text labels; and :ref{id="vector-clip"} uses a clipping path, a group drawn with transparency and one shape reused five times. Open the PDF, zoom in to several times their size and look at the edges: they stay as sharp as the text around them, because they are drawn with the same operators, not pasted in as pictures. Try selecting the chart's labels, or searching for them: they are text.
 
@@ -477,7 +489,7 @@ A part can also recolour the book. Colours in the configuration can be linked to
 :::part{number="III" title="In practice" palette="band=#c0452f"}
 7. Writing for Postext
 8. The Sandbox
-9. Output: canvas, HTML and PDF
+9. Output: canvas, HTML, PDF and EPUB
 10. The book in 3D
 11. Roadmap and community
 :::
@@ -510,7 +522,17 @@ References deserve a closer look, because they are how most of a book's apparatu
 
 The same \`:ref\` names any place of the book that carries an identifier: a heading written \`## Method {#method}\`, a box opened with \`{#id}\`, or a phrase marked \`[these words]{#key}\`. It prints _section 3.2_ or _chapter 4_, the title with \`style=title\`, or the page with \`style=page\`, and the page is right because the engine lays the book out again until it settles. Every such reference is a link in the PDF, the HTML and these previews.
 
-Works are cited as Pandoc writes them, \`[@garcia2020, p. 33]\` or \`@garcia2020\` in the sentence, with the references in the front matter or in a \`:::references\` block of BibTeX. The citation style is a setting, not a property of the text: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 or a style of your own, chosen under Design › Citations, where a preview shows the result. The bibliography follows the last chapter, or stands wherever \`:::bibliography\` is written.
+Works are cited as Pandoc writes them, \`[@garcia2020, p. 33]\` or \`@garcia2020\` in the sentence, with the references in the front matter or in a \`:::references\` block of BibTeX. The citation style is a setting, not a property of the text: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 or a style of your own, chosen under Design › Citations, where a preview shows the result. The bibliography follows the last chapter, or stands wherever \`:::bibliography\` is written. A citation of a work the references do not hold prints as written and is listed among the warnings.
+
+## Footnotes
+
+A note is cited with \`[^id]\` right after the word or the punctuation it belongs to, and written anywhere in the chapter as a paragraph that opens with \`[^id]:\`. Notes are numbered in the order they are first cited, from one again in each chapter; \`footnotes.numbering\` can run them on through the book or start them again on every page, as Chinese and classical Arabic books do, and the numbers can be printed as circled figures or inside brackets. A note is set at the foot of the column that holds the line citing it, under a short rule, and the line and its note always share a column: when the note does not fit, the line moves on with it. \`footnotes.placement: 'chapterEnd'\` gathers a chapter's notes after its last block instead. A marker with no note and a note that nothing cites are both reported in the **Checks** panel. This guide has no notes; among the sample books, _Paradise Lost_ carries eight hundred, lettered again on every page.
+
+## An index at the back
+
+A back-of-book index is written where the text discusses each term. \`:index[anaemia]\` prints the word and files it; \`:index{term="Heart!valves"}\` prints nothing and files the page under a sub-entry. A \`main\` flag sets the page in bold, \`range="start"\` and \`range="end"\` bound a discussion that runs over several pages, and \`see\` and \`seealso\` write cross-references. \`:::index\` prints the index where it stands, usually under a heading whose style sets it in two columns, and named indexes, of persons or of places, live beside the main one.
+
+The engine reads the page of every mark after layout, so the numbers follow the text: add a paragraph, move a chapter or change the trim, and the index prints the new pages. Entries are sorted in the alphabetical order of the document's language and grouped under their initial letters, consecutive pages join into a range, and every number is a link in the PDF. An Arabic index ignores the article _al-_ when it sorts, and a Chinese one sorts by the reading of each character.
 
 ## Callouts
 
@@ -546,7 +568,7 @@ Everything described in this book can be tried right now, without writing code. 
 
 ## A tour of the interface
 
-The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Resources, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in five tabs: Canvas, PDF, Folio, HTML and EPUB 3.
+The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Resources, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in five tabs: Canvas, PDF, Folio, HTML and EPUB 3. The interface speaks English, Spanish, Catalan, Simplified Chinese and Arabic, and runs from right to left in Arabic; a setting for large buttons and fields makes every control easier to reach by touch or with an unsteady hand.
 
 The sidebar and the viewport share the window, and the boundary between them can be dragged. Every panel and the viewport remember their state between visits: the zoom and view mode of the canvas, the column mode of the HTML view, the groups open in the Design panel. The theme and the interface language are switched from the foot of the activity bar, and the language of the interface is independent of the language of the book.
 
@@ -562,7 +584,7 @@ The **Design** panel edits the whole configuration — more than five hundred fi
 
 ## The five views
 
-The **canvas** view is the working preview: it zooms from a quarter of real size to four times, fits the page to the width or the height of the viewport, and shows single pages or spreads, with the first page on its own as a recto, the way a printed book opens. The **PDF** view generates a real PDF in the browser and shows it in the browser's own viewer, with buttons to generate it again, download it and print it. The **Folio** view shows the book bound and lying open on a desk, in three dimensions, with leaves that turn under the hand; it has a chapter of its own, _The book in 3D_. The **HTML** view shows the same layout as positioned HTML, isolated from the rest of the page, with a control for the size of the text and two reading modes: one scrolling column, or as many columns as fit the screen. The **EPUB 3** view writes the book as an e-book, in the browser, in one of two layouts: a **fixed layout** keeps the printed pages line for line, with real text that can be selected and searched; a **reflowable** book lets the text flow to the reader's screen and type size. A small reader shows the file, and the download button saves it.
+The **canvas** view is the working preview: it zooms from a quarter of real size to four times, fits the page to the width or the height of the viewport, and shows single pages or spreads, with the first page on its own as a recto, the way a printed book opens. The **PDF** view generates a real PDF in the browser and shows it in the browser's own viewer, with buttons to generate it again, download it and print it. The **Folio** view shows the book bound and lying open on a desk, in three dimensions, with leaves that turn under the hand; it has a chapter of its own, _The book in 3D_. The **HTML** view shows the same layout as positioned HTML, isolated from the rest of the page, with a control for the size of the text and two reading modes: one scrolling column, or as many columns as fit the screen. The **EPUB 3** view writes the book as an e-book, in the browser, in one of two layouts: a **fixed layout** keeps the printed pages line for line, with real text that can be selected and searched; a **reflowable** book lets the text flow to the reader's screen and type size. A small reader inside the tab shows the file you are about to download: the arrow keys, a swipe on a phone or the buttons turn its pages, a list jumps to any chapter, and a reflowable book can be read at a larger or smaller size.
 
 The canvas, HTML and Folio views can lay out the current chapter or the whole book; the PDF has its own choice, so a single chapter can be proofed quickly while the previews show the book; the EPUB is always the whole book. This guide opens in whole-book mode. A book set vertically, like the Chinese edition of this guide, reads in the HTML view page by page only, because a single scrolling column would turn its lines on their side.
 
@@ -582,9 +604,9 @@ The **Checks** panel lists everything the engine noticed while setting the book:
 
 ## Projects, presets and sharing
 
-Your work is saved in the browser as you type. **Projects** are books stored locally, listed under **My books** in the **Books** panel, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from, listed under **Sample books**: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue, two university textbooks, _Dream of the Red Chamber_ in Chinese and _One Thousand and One Nights_ in Arabic, bound on the right — each set with a design of its own. **Make my own copy** turns one into a project of yours.
+Your work is saved in the browser as you type. **Projects** are books stored locally, listed under **My books** in the **Books** panel, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from, listed under **Sample books**: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue, two university textbooks, _Dream of the Red Chamber_ in Chinese, _One Thousand and One Nights_ in Arabic, bound on the right, and an annotated _Paradise Lost_ with Doré's plates — each set with a design of its own. **Make my own copy** turns one into a project of yours.
 
-Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which also comes in Simplified Chinese.
+Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which comes in English, Spanish, Catalan, Simplified Chinese and Arabic.
 
 A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. The recipes of the Cookbook open in the Sandbox the same way, as books of your own; a recipe you have opened before asks whether to open your copy, with your changes, or replace it with the published version, which may have been corrected since. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
@@ -596,9 +618,9 @@ Scroll to a page you like and copy the address from the browser: opening that li
 
 The Sandbox is itself a package, _postext-sandbox_, a React component that any web application can embed. Its host decides the initial Markdown and configuration, the interface language and every label, the sources of presets it offers, and the theme toggle, language switcher and home link it shows. The Sandbox you are using is exactly that component, embedded in the Postext website.
 
-# Output: canvas, HTML and PDF {lead="One tree, three renderers. The canvas previews, the HTML reads on screen, the PDF goes to press — and all three draw the same lines at the same positions." summary="The three renderers, accessible PDF and using the library"}
+# Output: canvas, HTML, PDF and EPUB {lead="One tree, four outputs. The canvas previews, the HTML reads on screen, the PDF goes to press and the EPUB goes to the reader's device, and all of them are written from the same layout." summary="The renderers, accessible PDF, EPUB books and using the library"}
 
-Because every renderer reads the same VDT, the promise _what you see is what you get_ is literal: line breaks, page boundaries and the position of every figure match across the three outputs.
+Because every renderer reads the same VDT, the promise _what you see is what you get_ is literal: line breaks, page boundaries and the position of every figure match across the canvas, the HTML and the PDF, and a fixed-layout EPUB keeps them too. A reflowable EPUB gives up the page on purpose and keeps everything else the layout resolved: the numbers, the notes, the references and the printed page numbers.
 
 ## Canvas
 
@@ -640,26 +662,40 @@ A PDF is only as good as the fonts inside it. Postext embeds every face the layo
 
 The families come from wherever the Sandbox found them. Google Fonts are fetched face by face from Fontsource and decompressed on the fly; families uploaded in the Fonts panel are embedded from the files you gave. A family available only as WOFF is not accepted by the PDF, because the format cannot be embedded reliably; WOFF2, TrueType and OpenType files all work.
 
+## EPUB 3
+
+The _postext-epub_ package writes a laid-out book as an EPUB 3 file, the format of e-book stores, libraries and reading apps. It reads the same chapter documents as the PDF of a whole book, so page numbers, notes, citations, cross-references, the contents and the index arrive resolved, and it returns the file as bytes, in the browser or in Node, with no server. EPUB defines two renditions, set side by side in :ref{id="epub-renditions"}, and the writer produces either one from the same layout.
+
+A **fixed layout** keeps the printed page. Each page becomes a document of its own, at the page's size, with the text where the PDF puts it and in the book's own fonts, so columns, floats, running heads, openers and every line break survive. The text stays text: it can be selected, searched and read aloud, and the links of the book work between pages — cross-references, notes, the printed contents and the index. Spreads pair as they do in print, and a book bound on the right, in Arabic or in vertical Chinese, turns from right to left. It suits books whose pages are designed as pages, an illustrated book, a textbook, a catalogue or a magazine, read on a large screen; on a phone the page is scaled down and the reader zooms in to read it.
+
+## Reflowable books
+
+A **reflowable** book gives up the page and keeps the text. Each chapter becomes one document that the reading system sets again for its screen, in the typeface, size and margins the reader picks. The writer does not go back to the Markdown: it rebuilds every paragraph from the lines the engine set, removing the hyphens the line breaks added and keeping those that belong to the word, so a paragraph split across two columns or two pages is one paragraph again. Figures and tables follow the text that cites them, with their numbered captions and alternative text; tables stay real tables, with header rows and merged cells; boxes become asides with their titles; and notes link to the end of the chapter and back. Each printed page leaves a marker where its text begins, so a reader can find page 112 of the printed edition, and the index points to those markers.
+
+The look comes from the configuration. A style sheet derived from it gives the headings, boxes, tables, captions and lists their sizes and colours, relative to the body text, so the reader's choice of size carries through. Paragraphs set in a paragraph style keep it, because the layout records which style set each block, and the levels of the index are told apart the same way; a chapter configured differently, or a part that recolours the book, adds a second sheet with only the rules that change. A pull quote repeats words of the text, so it is shown but hidden from screen readers and read-aloud, and its words are read once. Vertical Chinese keeps its vertical lines, and an Arabic book runs from right to left.
+
+Both renditions carry the same navigation: a table of contents from the headings and the parts, a list of the printed page numbers, and landmarks for the cover, the printed contents and the start of the text. Every family the design names is embedded, unless it is marked as not redistributable, and every picture goes in once. Both carry the metadata of EPUB Accessibility 1.1, and both pass W3C EPUBCheck, the validator e-book stores run on the files they receive, with no errors and no warnings, for this guide and for every sample book. In the Sandbox, the **EPUB 3** tab writes the file on a worker, so the page stays responsive while a long book is written. Anything the file cannot carry, such as a picture with no stored file, is listed among its warnings.
+
 ## Choosing an output
 
-The three outputs share the layout but serve different moments of a book's life. The **canvas** is the working view: fast, faithful, and the one the Sandbox keeps open while you write and design. The **HTML** is for reading on screen and for publishing inside a web application: the same pages as positioned markup, or the text reflowed into the reading modes of the viewer, isolated from the styles of the page around it. The **PDF** is the finished artefact: the file that goes to the printer, to an archive or to a reader's device, tagged, bookmarked and searchable.
+The four outputs share the layout but serve different moments of a book's life. The **canvas** is the working view: fast, faithful, and the one the Sandbox keeps open while you write and design. The **HTML** is for reading on screen and for publishing inside a web application: the same pages as positioned markup, or the text reflowed into the reading modes of the viewer, isolated from the styles of the page around it. The **PDF** is the finished artefact: the file that goes to the printer, to an archive or to a reader's device, tagged, bookmarked and searchable. The **EPUB** is for e-book readers and stores: a fixed layout when the page is the point, a reflowable book when the text is.
 
-Nothing forces a choice between them. A book can be written in the Sandbox with the canvas open, reviewed in the HTML viewer by someone reading on a phone, and sent to press as a PDF the same afternoon, from the same source and the same configuration, without any of the three drifting from the others.
+Nothing forces a choice between them. A book can be written in the Sandbox with the canvas open, reviewed in the HTML viewer by someone reading on a phone, sent to press as a PDF and to an e-book store as an EPUB the same afternoon, from the same source and the same configuration, without any of them drifting from the others.
 
 ## Using the library
 
-The engine ships as two packages on npm: _postext_ for the layout and the canvas and HTML renderers, and _postext-pdf_ for PDF output. Both are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
+The engine ships on npm as _postext_, for the layout and the canvas and HTML renderers, with a package for each heavier output: _postext-pdf_ for PDF, _postext-epub_ for EPUB 3 and _postext-folio_ for the book in 3D. All are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
-The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
+The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ and _postext-epub_ run in the browser too, and also in Node, so a PDF or an EPUB can be produced on a server from a layout computed elsewhere. A whole book travels the same way: \`openBundle\` reads a .postext file, \`buildBundle\` lays out its chapters in order, and the result goes straight to \`renderToPdf\` or \`renderToEpub\`. The packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
 
 :::callout{type="note" title="Four steps"}
 1. Load the fonts the configuration names, so the browser can measure them
 2. Build the document with \`buildDocument(content, config)\`
 3. Draw its pages with \`renderPage\`, or render them with \`renderToHtml\`
-4. For print, pass the same document to \`renderToPdf\` with a font provider
+4. For print, pass the same document to \`renderToPdf\` with a font provider; for e-books, pass the chapters to \`renderToEpub\`
 :::
 
-The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share.
+The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share. The EPUB writer and the Folio viewer keep version numbers of their own and name the engine as a peer dependency, so a project upgrades them together.
 
 ## Pages as images, from a script
 
@@ -735,7 +771,7 @@ Postext is not trying to be a universal document platform. It aims to be a very 
 
 The work is organised in four phases, summarised in :ref{id="development-phases"}. They are not strict milestones; they describe the order in which capabilities become stable enough for production.
 
-The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, and Chinese set horizontally and vertically — and has margin notes still open. The fourth, output, has shipped canvas, HTML, a tagged PDF and EPUB 3 books, together with the worker, the Sandbox and its presets, and the Folio view that shows a layout as a printed book.
+The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, citations, a back-of-book index, Chinese set horizontally and vertically, and Arabic set from right to left with kashida justification — and has margin notes still open. The fourth, output, has shipped canvas, HTML, a tagged PDF and EPUB 3 books, together with the worker, the Sandbox and its presets, and the Folio view that shows a layout as a printed book.
 
 What is still missing is as important as what has shipped. **Margin notes** have a place in the data model but are not laid out yet. Inline code has no style of its own, text does not yet flow around obstacles, Japanese and Korean are set with the Chinese rules rather than their own, and layout happens in the browser only. These are the next problems worth solving, and the ones where help counts most.
 
@@ -747,7 +783,7 @@ The usual path from idea to code is short: an issue describes the problem, a dis
 
 ## Where help counts
 
-Every part of the project welcomes contributors. The **engine** has deep problems — line breaking, balancing, numbering, float placement — and approachable ones in its tests and benchmarks. The **PDF backend** has font embedding, colour management and accessibility. The **Sandbox** has its panels, its editors and its translations, organised so every interface string is added the same way in every language. **Design and typography** need people who know editorial traditions, especially those of scripts the engine does not yet serve well. And the **documentation** and its translations, currently in English and Spanish, are open to anyone who can explain something clearly.
+Every part of the project welcomes contributors. The **engine** has deep problems — line breaking, balancing, numbering, float placement — and approachable ones in its tests and benchmarks. The **PDF backend** has font embedding, colour management and accessibility. The **Sandbox** has its panels, its editors and its translations, organised so every interface string is added the same way in every language. **Design and typography** need people who know editorial traditions, especially those of scripts the engine does not yet serve well. And the **documentation** and its translations, currently in English, Spanish, Catalan, Simplified Chinese and Arabic, are open to anyone who can explain something clearly.
 
 The best first step is small: read the contributing guide in the repository, introduce yourself in the discussions, pick an issue labelled _good first issue_, or translate a page of the documentation.
 
@@ -768,7 +804,7 @@ Other things are simply not done yet. Laying out on a server, without a browser,
 
 ## Licence
 
-Postext is released under the **MIT licence**: the engine, the PDF renderer and the Sandbox can be used, modified and embedded in open and closed projects alike, commercially or not, provided the licence notice travels with the code. The typefaces of this book are open fonts served by Google Fonts, the diagrams are part of the Sandbox's source, and the text of this guide belongs to the project and its contributors.
+Postext is released under the **MIT licence**: the engine, the PDF and EPUB writers, the Folio viewer and the Sandbox can be used, modified and embedded in open and closed projects alike, commercially or not, provided the licence notice travels with the code. The typefaces of this book are open fonts served by Google Fonts, the diagrams are part of the Sandbox's source, and the text of this guide belongs to the project and its contributors.
 
 ## Values
 
@@ -786,5 +822,5 @@ If any of this resonates with you, the repository is the next step. Open an issu
 postext.dev · github.com/drnachio/postext
 :::
 
-# Back cover {style="back" toc="false" book="Postext" blurb="Postext sets Markdown as books, magazines and textbooks, in the browser: every paragraph broken as a whole, columns that end level, figures placed after the words that call them, and a PDF ready for print. Every page of this guide was set by Postext itself." licence="Open source · MIT licence"}
+# Back cover {style="back" toc="false" book="Postext" blurb="Postext sets Markdown as books, magazines and textbooks, in the browser: every paragraph broken as a whole, columns that end level, figures placed after the words that call them, a PDF ready for print and an EPUB for e-readers. Every page of this guide was set by Postext itself." licence="Open source · MIT licence"}
 `;

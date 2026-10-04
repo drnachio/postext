@@ -688,3 +688,109 @@ export function vectorClipSvg(lang: GuideLang): string {
   ${text(231 + S, 158, 'use', { size: 9, color: P.muted })}
 </svg>`;
 }
+
+// ── EPUB renditions ─────────────────────────────────────────────────────────
+
+/** One layout written as the two EPUB 3 renditions: on the left a tablet
+ *  showing the fixed layout, the printed spread as it is; on the right a
+ *  phone showing the reflowable book, one column of larger type with the
+ *  figure after its text and a marker where printed page 12 begins. */
+const EPUB_RENDITIONS = byLang(
+  {
+    aria: 'one layout written as a fixed-layout and as a reflowable EPUB', page: 'The layout', pageNote: 'pages, columns, lines',
+    fixed: 'Fixed layout', fixedNote: 'one document per printed page', flow: 'Reflowable', flowNote: 'one document per chapter', marker: 'p. 12',
+  },
+  {
+    aria: 'una misma maquetación escrita como EPUB de maquetación fija y como EPUB fluido', page: 'La maquetación', pageNote: 'páginas, columnas, líneas',
+    fixed: 'Maquetación fija', fixedNote: 'un documento por página impresa', flow: 'Maquetación fluida', flowNote: 'un documento por capítulo', marker: 'p. 12',
+  },
+  {
+    aria: '同一个版面写成固定版式和流式版式两种EPUB', page: '版面', pageNote: '页、栏、行',
+    fixed: '固定版式', fixedNote: '每个印刷页一个文档', flow: '流式版式', flowNote: '每章一个文档', marker: '第12页',
+  },
+  {
+    aria: 'una mateixa maquetació escrita com a EPUB de maquetació fixa i com a EPUB fluid', page: 'La maquetació', pageNote: 'pàgines, columnes, línies',
+    fixed: 'Maquetació fixa', fixedNote: 'un document per pàgina impresa', flow: 'Maquetació fluida', flowNote: 'un document per capítol', marker: 'p. 12',
+  },
+  {
+    aria: 'إخراج واحد يُكتب ملف EPUB بتخطيط ثابت وملفًا قابلًا لإعادة التدفق', page: 'الإخراج', pageNote: 'صفحات وأعمدة وأسطر',
+    fixed: 'تخطيط ثابت', fixedNote: 'مستند لكل صفحة مطبوعة', flow: 'قابل لإعادة التدفق', flowNote: 'مستند لكل فصل', marker: 'ص ١٢',
+  },
+);
+
+export function epubRenditionsSvg(lang: GuideLang): string {
+  const { aria: ariaLabel, page, pageNote, fixed, fixedNote, flow, flowNote, marker } = EPUB_RENDITIONS[lang];
+  const labelY = 210;
+  const label = (cx: number, name: string, note: string): string =>
+    text(cx, labelY, name, { size: FS.label, weight: 600 }) + text(cx, labelY + 14, note, { size: FS.small, color: P.muted, italic: true });
+  /** A printed page in miniature: a running head, two columns, a figure
+   *  at the head of the second column; `band` opens it as a chapter. */
+  const miniPage = (x: number, y: number, w: number, h: number, band: boolean): string => {
+    const m = w * 0.09;
+    const colW = (w - 3 * m) / 2;
+    const top = y + (band ? h * 0.3 : m * 1.6);
+    const pitch = w / 20;
+    const barH = pitch * 0.45;
+    let out = card(x, y, w, h);
+    if (band) out += `<rect x="${x}" y="${y}" width="${w}" height="${h * 0.24}" fill="${GILT}" />` + bar(x + m, y + h * 0.1, w * 0.5, '#ffffff', barH * 1.8);
+    else out += bar(x + m, y + m * 0.7, w * 0.3, '#dde4ec', barH * 0.8);
+    out += lines(x + m, top, y + h - m, colW, pitch, '#c8d3e0', 6, barH);
+    const fx = x + 2 * m + colW;
+    const figH = band ? 0 : h * 0.26;
+    if (figH) out += `<rect x="${fx}" y="${top}" width="${colW}" height="${figH}" rx="1.5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="0.8" />`;
+    out += lines(fx, top + (figH ? figH + pitch : 0), y + h - m, colW, pitch, '#c8d3e0', 6, barH);
+    return out;
+  };
+  // The tablet, landscape, showing the printed spread.
+  const tx = 51;
+  const tw = 236;
+  const ty = 18;
+  const th = 168;
+  const pw = 96;
+  const ph = 128;
+  const sy = ty + (th - ph) / 2;
+  const sx = tx + (tw - 2 * pw) / 2;
+  const tablet = `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="14" fill="${NIGHT}" />`
+    + `<rect x="${tx + 10}" y="${ty + 10}" width="${tw - 20}" height="${th - 20}" rx="4" fill="#e9edf2" />`
+    + miniPage(sx, sy, pw, ph, true) + miniPage(sx + pw, sy, pw, ph, false);
+  // The layout itself: one printed page.
+  const px = 327;
+  const pageW = 116;
+  const pageH = 152;
+  const py = ty + (th - pageH) / 2;
+  const layout = miniPage(px, py, pageW, pageH, false);
+  // The phone, portrait, showing the same text reflowed.
+  const fx = 489;
+  const fw = 94;
+  const fy = 8;
+  const fh = 186;
+  const scrX = fx + 6;
+  const scrW = fw - 12;
+  const m = 8;
+  let flowText = `<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" rx="14" fill="${NIGHT}" />`
+    + `<rect x="${scrX}" y="${fy + 14}" width="${scrW}" height="${fh - 28}" rx="3" fill="${P.paper}" />`;
+  const cx = scrX + m;
+  const cw = scrW - 2 * m;
+  let y = fy + 24;
+  flowText += bar(cx, y, cw * 0.7, P.blue, 5);
+  y += 13;
+  flowText += lines(cx, y, y + 34, cw, 8.5, '#c8d3e0', 4, 3.4);
+  y += 36;
+  flowText += `<rect x="${cx}" y="${y}" width="${cw}" height="34" rx="2" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="1" />` + bar(cx, y + 38, cw * 0.8, P.blueMid, 2.6);
+  y += 48;
+  flowText += lines(cx, y, y + 17, cw, 8.5, '#c8d3e0', 4, 3.4);
+  y += 19;
+  // The marker where printed page 12 begins.
+  const tagW = lang === 'zh-Hans' ? 32 : 26;
+  flowText += `<line x1="${cx}" y1="${y + 4}" x2="${cx + cw - tagW - 3}" y2="${y + 4}" stroke="${P.amber}" stroke-width="0.9" stroke-dasharray="2.5 2" />`
+    + `<rect x="${cx + cw - tagW}" y="${y - 2}" width="${tagW}" height="12" rx="6" fill="${P.amberTint}" stroke="${P.amber}" stroke-width="0.8" />`
+    + text(cx + cw - tagW / 2, y + 7, marker, { size: 7.5, color: P.amberDark, weight: 600 });
+  y += 14;
+  flowText += lines(cx, y, fy + fh - 18, cw, 8.5, '#c8d3e0', 4, 3.4);
+  const arrows = edge(`M${px - 6},${ty + th / 2} L${tx + tw + 8},${ty + th / 2}`, { color: P.blue, marker: 'ahBlue' })
+    + edge(`M${px + pageW + 6},${ty + th / 2} L${fx - 8},${ty + th / 2}`, { color: P.blue, marker: 'ahBlue' });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 232" role="img" aria-label="${ariaLabel}">
+  ${tablet}${layout}${flowText}${arrows}
+  ${label(tx + tw / 2, fixed, fixedNote)}${label(px + pageW / 2, page, pageNote)}${label(fx + fw / 2, flow, flowNote)}
+</svg>`;
+}
