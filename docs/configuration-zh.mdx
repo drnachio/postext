@@ -2208,7 +2208,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td><code>numberPosition</code></td>
       <td><code>'before' | 'replace'</code></td>
       <td><code>'before'</code></td>
-      <td>生成的编号放在哪里。<code>'before'</code>：放在标题前，用<code>numberSeparator</code>连接。<code>'replace'</code>：编号就是整个标题，源文本里写的标题不印出，所以在<code>numberingTemplate: 'الليلة {1:ordinal-feminine}'</code>下，<code># Night</code>印成الليلة الثانية。目录把编号列为该条目的标题（没有编号栏），页眉（<code>{chapterTitle}</code>、<code>{titleText}</code>）和PDF书签也读作编号；这样的标题<code>{number}</code>为空。只对有模板（级别的或其样式的）的编号标题生效，其他标题保留原标题。<a href="#heading-styles">标题样式</a>可以设置自己的值，设为<code>'before'</code>可保留其级别会替换掉的标题。</td>
+      <td>生成的编号放在哪里。<code>'before'</code>：放在标题前，用<code>numberSeparator</code>连接。<code>'replace'</code>：编号就是整个标题，源文本里写的标题不印出，所以在<code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code>下，<code># Night</code>印成الليلة الثانية。目录把编号列为该条目的标题（没有编号栏），页眉（<code>{chapterTitle}</code>、<code>{titleText}</code>）和PDF书签也读作编号；这样的标题<code>{number}</code>为空。只对有模板（级别的或其样式的）的编号标题生效，其他标题保留原标题。<a href="#heading-styles">标题样式</a>可以设置自己的值，设为<code>'before'</code>可保留其级别会替换掉的标题。</td>
     </tr>
     <tr>
       <td><code>breakBefore</code></td>
