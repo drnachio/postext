@@ -291,7 +291,7 @@ function renderSegments(
     // right-to-left one (and any complex text), and a word set in several
     // styles. The kashidas justification inserted are painted, not read.
     const shaped = (seg.runs !== undefined || (directed && (seg.rtl || needsComplexShaping(seg.text))))
-      && paintShapedSegment(ctx, seg, x, baseline + (seg.baselineShift ?? 0), font, size, color, block, fontCache, actualText, line.kashida !== undefined);
+      && paintShapedSegment(ctx, seg, x, baseline + (seg.baselineShift ?? 0), font, size, color, block, fontCache, actualText, kashidaOf(seg, line));
     if (shaped) {
       // Painted by HarfBuzz.
     } else if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
@@ -338,7 +338,7 @@ function paintShapedSegment(
   block: VDTBlock,
   fontCache: FontCache,
   actualText: string | undefined,
-  hideTatweel: boolean,
+  hideTatweel: boolean | number,
 ): boolean {
   const direction = seg.rtl ? 'rtl' : 'ltr';
   if (seg.runs && drawStyledWordPx(ctx, seg.text, x, baseline, font, size, color, wordParts(seg, font, color, ctx, (bold, italic) => ({ font: fontCache.get(pickSegmentFont(bold, italic, block)) ?? undefined, color: colorFromHex(pickSegmentColor(bold, italic, block), ctx.colorSpace) })), { direction, actualText, hideTatweel })) return true;
@@ -668,4 +668,13 @@ export function renderBlock(
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);
   }
+}
+
+/** The tatweels of a segment its text read leaves out: the ones kashida
+ *  justification inserted (`VDTLineSegment.kashida`), so one the author
+ *  typed stays; every one on a line of a VDT that only counts them
+ *  (`VDTLine.kashida`, before the per-segment offsets). */
+function kashidaOf(seg: VDTLineSegment, line: VDTLine): boolean | number {
+  if (seg.kashida) return seg.kashida.length;
+  return line.kashida !== undefined && !line.segments?.some((s) => s.kashida);
 }

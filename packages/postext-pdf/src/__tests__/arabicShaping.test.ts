@@ -238,6 +238,22 @@ describe('Arabic in the PDF (HarfBuzz)', () => {
     if (hasPdftotext) expect(extract(bytes, 'kashida')).toEqual([squeeze('كتاب الله')]);
   });
 
+  it('keeps a tatweel the author typed when the word lists the ones inserted', async () => {
+    // The author typed one tatweel; justification added two after it.
+    const doc = directed(buildDocument({ markdown: 'كتـــاب الله' }, config()));
+    const line = lines(doc)[0]!;
+    line.kashida = 2;
+    const seg = line.segments!.find((s) => s.text.includes('ـ'))!;
+    seg.kashida = [3, 4];
+    const bytes = await renderToPdf(doc, { fontProvider });
+    // Amiri joins the tatweels and the alef into one glyph: its span reads
+    // the typed tatweel and the alef.
+    expect(actualTexts(pageContent(await PDFDocument.load(bytes)))).toEqual(['ـا']);
+    // Poppler reads a span of two characters in a right-to-left line
+    // backwards (see the module notes): count the tatweels only.
+    if (hasPdftotext) expect([...extract(bytes, 'typed-kashida').join('')].filter((c) => c === 'ـ')).toHaveLength(1);
+  });
+
   it.skipIf(!hasPdftotext)('reads back in logical order (pdftotext)', async () => {
     for (const [name, doc] of [
       ['legacy', legacy(buildDocument({ markdown: PARAGRAPHS.join('\n\n') }, config()))],

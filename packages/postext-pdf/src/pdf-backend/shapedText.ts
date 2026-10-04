@@ -168,16 +168,21 @@ function shapingOf(font: PDFFont, text: string, direction: 'ltr' | 'rtl', langua
  * default all of them), encoded in `font`: cached per font, direction,
  * language, whether tatweels are read, and stretch.
  */
+/** `ShapedTextOptions.hideTatweel` as a count (`Infinity`: all). */
+function tatweelsToHide(hide: boolean | number | undefined): number {
+  return hide === true ? Number.POSITIVE_INFINITY : typeof hide === 'number' && hide > 0 ? hide : 0;
+}
+
 function shapedShow(
   font: PDFFont,
   text: string,
   direction: 'ltr' | 'rtl',
   language: string | undefined,
-  hideTatweel: boolean,
+  hideTatweel: number,
   from?: number,
   to?: number,
 ): ShapedShow | null {
-  const key = `${direction}|${language ?? ''}|${hideTatweel ? 1 : 0}|${from ?? ''}|${to ?? ''}|${text}`;
+  const key = `${direction}|${language ?? ''}|${hideTatweel}|${from ?? ''}|${to ?? ''}|${text}`;
   return cached(showsByFont, font, key, () => {
     const shaping = shapingOf(font, text, direction, language);
     return shaping ? encodeStretch(font, shaping, from ?? 0, to ?? shaping.run.glyphs.length, hideTatweel) : null;
@@ -322,10 +327,11 @@ function buildShaping(font: PDFFont, text: string, direction: 'ltr' | 'rtl', lan
  * the stretch reads through its span as written; one cut by the stretch
  * (a vowel sign in another colour than its letter) reads, in each
  * stretch, as the characters of the glyphs shown there. With
- * `hideTatweel`, a cluster holding a tatweel reads through a span without
- * it: justification inserted it.
+ * `hideTatweel` (how many, `Infinity` for all), a cluster holding a tatweel
+ * reads through a span without that many of its tatweels: justification
+ * inserted them. A tatweel the author typed next to them stays read.
  */
-function encodeStretch(font: PDFFont, shaping: Shaping, from: number, to: number, hideTatweel: boolean): ShapedShow | null {
+function encodeStretch(font: PDFFont, shaping: Shaping, from: number, to: number, hideTatweel: number): ShapedShow | null {
   const embedder = embedderOf(font);
   if (!embedder) return null;
   const face = embedder.font;
@@ -336,16 +342,18 @@ function encodeStretch(font: PDFFont, shaping: Shaping, from: number, to: number
   // The span each cluster of the stretch reads through, by cluster.
   const spans: string[] = [];
   const spanOfCluster = new Map<number, number | undefined>();
+  let toHide = hideTatweel;
   const spanOf = (i: number): number | undefined => {
     const c = shaping.clusterOf[i]!;
     if (spanOfCluster.has(c)) return spanOfCluster.get(c);
     const cluster = shaping.clusters[c]!;
-    const tatweel = hideTatweel && cluster.text.includes('ـ');
+    const tatweel = toHide > 0 && cluster.text.includes('ـ');
     let span: number | undefined;
     if (cluster.span || tatweel) {
       const whole = cluster.glyphs.every(inside);
-      const text = whole ? cluster.text : cluster.glyphs.filter(inside).map((g) => String.fromCodePoint(...shaping.wants[g]!)).join('');
-      spans.push(tatweel ? text.replace(/ـ/g, '') : text);
+      let text = whole ? cluster.text : cluster.glyphs.filter(inside).map((g) => String.fromCodePoint(...shaping.wants[g]!)).join('');
+      if (tatweel) text = text.replace(/ـ/g, (t) => (toHide-- > 0 ? '' : t));
+      spans.push(text);
       span = spans.length - 1;
     }
     spanOfCluster.set(c, span);
@@ -468,8 +476,10 @@ export interface ShapedTextOptions {
    *  span at all. */
   actualText?: string | null;
   /** Leave tatweels (U+0640) out of the text read: justification inserted
-   *  them (`VDTLine.kashida`). */
-  hideTatweel?: boolean;
+   *  them. `true`: every one; a number: that many, the ones kashida
+   *  justification inserted into a word (`VDTLineSegment.kashida`), so a
+   *  tatweel the author typed stays in the text read. */
+  hideTatweel?: boolean | number;
   outline?: TextOutline;
 }
 
@@ -556,7 +566,7 @@ function layoutShapedText(
     // The files of a right-to-left run follow each other leftwards.
     if (run.rtl) files.reverse();
     for (const { font: file, text: part } of files) {
-      const shown = shapedShow(file, part, run.rtl ? 'rtl' : 'ltr', options.language, options.hideTatweel === true);
+      const shown = shapedShow(file, part, run.rtl ? 'rtl' : 'ltr', options.language, tatweelsToHide(options.hideTatweel));
       if (!shown) {
         // A file HarfBuzz cannot read (a standard font): fontkit's glyphs.
         if (state.rise !== 0) shows.push({ font: file, op: setTextRise(0) });
@@ -686,7 +696,7 @@ export function drawStyledWordPx(
   const direction = options.direction ?? 'ltr';
   const base = shapingOf(file, text, direction, options.language);
   if (!base) return false;
-  const hide = options.hideTatweel === true;
+  const hide = tatweelsToHide(options.hideTatweel);
   const sizePt = sizePx * ctx.scale;
   const n = base.run.glyphs.length;
   const partOf = base.owner.map((offset) => parts.findIndex((p) => offset >= p.start && offset < p.end));
