@@ -37,8 +37,8 @@ export function CollectionStrips({ view, t }: { view: RecipeView; t: RecipeT }) 
             </p>
             <p className="cb-collection-links">
               {/* No-break spaces keep each arrow on its title's line. */}
-              {prev ? <Link href={recipeHref(prev.slug, locale)} prefetch={false}>←{"\u00a0"}{titleOf(prev, view)}</Link> : <span />}
-              {next ? <Link href={recipeHref(next.slug, locale)} prefetch={false}>{titleOf(next, view)}{"\u00a0"}→</Link> : <span />}
+              {prev ? <Link href={recipeHref(prev.slug, locale)} prefetch={false}><span className="inline-block rtl:-scale-x-100">←</span>{"\u00a0"}{titleOf(prev, view)}</Link> : <span />}
+              {next ? <Link href={recipeHref(next.slug, locale)} prefetch={false}>{titleOf(next, view)}{"\u00a0"}<span className="inline-block rtl:-scale-x-100">→</span></Link> : <span />}
             </p>
           </nav>
         );

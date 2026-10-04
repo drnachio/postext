@@ -1,0 +1,76 @@
+---
+title: "Una pàgina de llibre sobre una retícula de base"
+summary: "Una pàgina a dues columnes amb marges en mirall i una caixa de 44 interlineats justos, de manera que el text cau a la mateixa retícula als dos costats del llom."
+plain: "Tres pàgines d'un assaig sobre com es componien els llibres antics. Ensenya a fer que cada línia de text quedi a la mateixa alçada a les dues columnes i a les dues pàgines encarades."
+description: "Un assaig sobre el cànon de les proporcions de la pàgina, compost amb Postext amb marges 2:3:4:6 en mirall i dues columnes de 44 línies en una retícula de base."
+question: "Com componc una pàgina a dues columnes amb cada línia sobre la mateixa retícula en tot el plec?"
+aliases: ["ritme vertical", "alinear línies entre columnes", "alçada de la caixa", "caixa de text", "cànon de Van de Graaf", "marges 2:3:4:6", "llistes fora de la retícula", "columnes arran del peu"]
+pageNotes: { "1": "L'obertura: el títol en cursiva vermella ocupa la primera columna i el dibuix del cànon encapçala la segona; sota cada línia de text corren les ratlles vermell pàl·lid de la retícula.", "2": "Una pàgina parella amb el marge exterior a l'esquerra. La nota de taller, en cos menor, cau entre les ratlles de la retícula; el títol que la segueix queda mitja línia fora i el text que va a sota hi torna.", "3": "Una pàgina senar amb el marge interior a l'esquerra: el dibuix comparatiu a tota l'amplada encapçala la pàgina i l'assaig acaba a sota en dues columnes anivellades; el colofó tanca la segona." }
+---
+
+## Què compondràs
+
+Les pàgines 9 a 11 de *La página pautada*, un volum sobre l'ofici del llibre, recullen sencer «El canon secreto», un assaig sobre les proporcions que els copistes medievals donaven a les seves pàgines. Els marges segueixen aquest cànon, 2:3:4:6 i en mirall, en un format de 210 × 280 mm amb dues columnes de Vollkorn. El text de les dues columnes i de les dues pàgines encarades s'assenta en una retícula de base dibuixada en vermell pàl·lid. El títol, en Playfair Display, omple la primera columna de l'obertura, i el dibuix del cànon encapçala la segona. Els títols de secció queden mitja línia fora de la retícula i el text que els segueix hi torna. Una nota de taller en cos menor porta un interlineat propi de 10 pt. A la pàgina 11, l'assaig acaba sota una figura a tota l'amplada en dues columnes d'igual alçada, i el colofó tanca la segona.
+
+## Elaboració
+
+### 1 · Que els títols surtin de la retícula, però mai les llistes
+
+<Excerpt region="flow" />
+
+L'espai que un títol porta a sobre es respecta tal com és, així que amb línia i mitja el títol queda entre dues ratlles de la retícula, i el text que el segueix s'ajusta a la ratlla següent ([retícula de base](/ca/docs/configuration#retícula-de-base)). Abans del primer element d'una llista no hi ha aquest ajust, i per això la resposta curta posa a zero els marges de les llistes (valdria qualsevol nombre enter d'interlineats); amb l'1,5 em per defecte, els tres elements de la pàgina 10 quedarien 1,3 pt per sota de les línies de la columna del costat. Les dues línies del títol, de 46 pt, ocupen quatre interlineats cadascuna, i el seu marge inferior un més, així que l'assaig comença a la línia 10.
+
+<PageShot page={2} crop="0.14,0.1373,0.795,0.3207" caption="Pàgina 10: la llista de la segona columna segueix la retícula dels paràgrafs del costat; la nota de taller cau entre les ratlles, i el títol que la segueix queda mitja línia fora, amb el seu text de nou a la retícula." />
+
+### 2 · Sortir de la retícula a posta, i tornar-hi
+
+<Excerpt region="note" />
+
+La nota és un contenidor `:::paragraphs` en 7,8 sobre 10 pt, fora de la retícula. Després de l'últim paràgraf, la posició s'arrodoneix fins a la ratlla següent, i el títol que ve després queda on quedaria després d'un paràgraf normal ([el contenidor `:::paragraphs`](/ca/docs/configuration#el-contenidor-paragraphs)). El colofó fa servir el mateix contenidor en 7,5 sobre 10 pt: les seves quatre línies sumen 40 pt, 0,2 pt menys que tres interlineats, així que l'última columna de l'assaig acaba a l'alçada de la del costat.
+
+### 3 · Col·locar les figures on la retícula les pugui absorbir
+
+<Excerpt region="figures" />
+
+Un flotant mai no cau per sobre del paràgraf que el cita ([col·locació](/ca/docs/document-format#collocació)). Tot i així, el cànon, citat a la primera columna, ocupa el capdamunt de la segona a la mateixa pàgina 9; la comparació a tota l'amplada, citada a la pàgina 10, espera a l'11. Cada banda s'arrodoneix a interlineats sencers, de manera que el text sota un dibuix comença en una ratlla de la retícula, a l'alçada de la columna del costat i de la pàgina del davant. Mesura el dibuix pensant en aquest arrodoniment: amb 61,8 mm, la banda del cànon, peu inclòs, ocupa 17 interlineats; amb 62,5 mm n'ocuparia 18 i deixaria gairebé una línia en blanc sota el peu.
+
+<PageShot page={3} crop="0.05,0.07,0.83,0.435" caption="Pàgina 11: el text sota la figura a tota l'amplada comença en una ratlla de la retícula, i l'assaig acaba en dues columnes anivellades; el colofó tanca la segona." />
+
+### 4 · Deixar que l'equilibrat quadri les columnes
+
+<Excerpt region="balance" />
+
+Tota columna plena de les pàgines 9 i 10 acaba a la línia 44, perquè la caixa fa exactament 44 interlineats i el text s'hi va ajustar. Les regles que mantenen cada títol amb el seu text i eviten vídues, òrfenes i línies curtes vénen activades per defecte. Si una d'elles deixa una columna amb una línia de menys, l'equilibrat posa l'espai que falta sobre un títol anterior ([equilibrat de columnes](/ca/docs/configuration#equilibratge-de-columnes)), on es veu com un forat; retoca el text fins que l'equilibrat no tingui res a omplir. A l'última pàgina reparteix les línies que queden perquè les dues columnes acabin a la mateixa ratlla.
+
+### 5 · Marges en mirall, i folis des de la pàgina 9
+
+<Excerpt region="heads" />
+
+La resposta curta calcula el marge de peu: als 280 mm del format els resta els 24 mm del marge de capçalera i una caixa d'exactament `LINES` interlineats (44 × 13,4 pt = 208 mm), i queden 48 mm, les sis unitats que demana la progressió 2:3:4:6. Amb `mirror: true`, els 16 mm de `left` són el marge interior, que cau a l'esquerra a les pàgines senars i a la dreta a les parelles ([marges simètrics](/ca/docs/configuration#marges-simètrics-mirall)), així que les capçaleres, ancorades a `OUTER` mil·límetres de la vora de la pàgina, acaben on ho fa la caixa, del costat del tall; `pages: 'body'` les treu de l'obertura. `startAt: 9` imprimeix els folis 9 a 11, i `pageIndexOffset: 8` compta les vuit pàgines anteriors, de manera que el mirall, la paritat de les capçaleres i `breakBefore: 'odd'` segueixen el llibre enquadernat. Amb un desplaçament de 7, la primera pàgina comptaria com a parella i el salt hi ficaria una pàgina en blanc abans de l'assaig.
+
+## Variants
+
+### Amagar la retícula per a impremta
+
+`enabled` només decideix si es dibuixen les ratlles sobre les pàgines ja compostes; la composició segueix la retícula de 13,4 pt en tots dos casos, així que no es mou cap línia.
+
+```diff
+-  baselineGrid: { enabled: true, color: col('grid') },
++  baselineGrid: { enabled: false },
+```
+
+### Veure què fa l'equilibrat
+
+Sense equilibrat, les deu últimes línies de la pàgina 11 i el colofó van totes a la primera columna, i la segona queda buida.
+
+```diff
+-const balancing = { stretchAfterFloats: false };
++const balancing = { enabled: false };
+```
+
+## Errors freqüents
+
+- Un nivell de títol amb `span: 'page'` i sense `advancedDesign` hauria d'estendre el títol sobre les dues columnes, però postext 1.4.1 el mesura amb l'amplada d'una sola: «El canon secreto» s'imprimeix en una línia a tota l'amplada i reserva l'alçada de dues; el filet de columna travessa aquesta banda. Aquí el títol es queda a la primera columna.
+- La regla segons la qual un flotant `top` mai no cau a la pàgina que el cita val per als flotants a tota l'amplada. Un flotant `top` de columna sí que pot caure a la pàgina que el cita, al capdamunt d'una columna posterior, com la figura 1.1 a la pàgina 9.
+- El format, els marges i l'espai entre columnes van en unitats absolutes (mm, pt, cm, in). Un `em` no hi té cap cos amb què mesurar-se, i la composició s'atura amb «dimensionToPx: baseFontSizePx is required for unit "em"».
+- L'espai entre paraules de Vollkorn és estret, 0,2 em, així que en columnes d'uns 50 caràcters algunes línies justificades queden fluixes o atapeïdes. El text es va ajustar línia a línia amb l'informe de línies fluixes de la captura; torna a comprovar-ho si canvies el text o l'amplada.

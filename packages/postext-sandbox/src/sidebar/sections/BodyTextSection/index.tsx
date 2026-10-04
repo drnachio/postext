@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
 import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
-import type { BodyTextConfig, ColonListRoom, HyphenationConfig } from 'postext';
+import type { BodyTextConfig, ColonListRoom, EmphasisStyle, HyphenationConfig, TashkilMode } from 'postext';
 import { ChevronRight } from 'lucide-react';
 import {
   CollapsibleSection,
@@ -20,12 +20,14 @@ import {
 import { documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants';
 import { defaultDocumentLocale } from '../../../controls/hyphenation';
 import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
-import { JustificationSubsection, RaggedBreakingSubsection } from './JustificationSubsection';
+import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
 import { TypeSample } from '../../settings/TypeSample';
 import { AlignPicture } from '../../settings/pictures';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
+import { isArabicScriptLanguage } from '../../../context/arabicDefaults';
+import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -140,13 +142,35 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
   const isColonListRoomDefault = bodyText.colonListRoom === D.colonListRoom;
 
+  // `*…*` is set in bold by default in a language written in Arabic script
+  // (the engine's `defaultEmphasisFor`): Auto names what it gives.
+  const arabicScript = isArabicScriptLanguage(effectiveDocumentLocale);
+  const emphasisName = (e: EmphasisStyle) =>
+    e === 'bold' ? labels.bodyEmphasisBold : e === 'color' ? labels.bodyEmphasisColor : e === 'overline' ? labels.bodyEmphasisOverline : labels.bodyEmphasisItalic;
+  const emphasis = raw?.emphasis === 'italic' || raw?.emphasis === 'bold' || raw?.emphasis === 'color' || raw?.emphasis === 'overline' ? raw.emphasis : 'auto';
+  const EMPHASIS_OPTIONS = [
+    { value: 'auto', label: labels.cjkAuto.replace('__value__', emphasisName(arabicScript ? 'bold' : 'italic')) },
+    { value: 'italic', label: labels.bodyEmphasisItalic },
+    { value: 'bold', label: labels.bodyEmphasisBold },
+    { value: 'color', label: labels.bodyEmphasisColor },
+    { value: 'overline', label: labels.bodyEmphasisOverline },
+  ];
+  const tashkil: TashkilMode = raw?.tashkil === 'strip' || raw?.tashkil === 'strip-vowels' ? raw.tashkil : 'keep';
+  const TASHKIL_OPTIONS = [
+    { value: 'keep', label: labels.bodyTashkilKeep },
+    { value: 'strip', label: labels.bodyTashkilStrip },
+    { value: 'strip-vowels', label: labels.bodyTashkilStripVowels },
+  ];
+
   const COLON_LIST_ROOM_OPTIONS = [
     { value: 'item', label: labels.bodyColonListRoomItem },
     { value: 'line', label: labels.bodyColonListRoomLine },
   ];
 
+  // In a right-to-left book `left` is the start: flush right, ragged left.
+  const rtl = useRightToLeftFlow();
   const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.bodyTextAlignLeft, icon: <AlignPicture align="left" /> },
+    { value: 'left', label: flowSideLabels(rtl, labels.bodyTextAlignLeft, labels.headingsTextAlignRight).left, icon: <AlignPicture align={rtl ? 'right' : 'left'} /> },
     { value: 'justify', label: labels.bodyTextAlignJustify, icon: <AlignPicture align="justify" /> },
   ];
 
@@ -216,6 +240,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
           isDefault={isBoldFontWeightDefault}
           onReset={() => resetField('boldFontWeight')}
         />
+        <SelectInput
+          label={labels.bodyEmphasis}
+          value={emphasis}
+          options={EMPHASIS_OPTIONS}
+          onChange={(v) => (v === 'auto' ? resetField('emphasis') : updateBodyText({ emphasis: v as EmphasisStyle }))}
+          tooltip={labels.bodyEmphasisTooltip}
+          isDefault={emphasis === 'auto'}
+          onReset={() => resetField('emphasis')}
+        />
       </FieldGroup>
       <FieldGroup title={labels.bodyGroupParagraph}>
         <SelectInput
@@ -246,6 +279,16 @@ export const BodyTextSection = memo(function BodyTextSection() {
             isOptimalLineBreakingDefault={isOptimalLineBreakingDefault}
             updateBodyText={updateBodyText}
             updateHyphenation={updateHyphenation}
+            resetField={resetField}
+            labels={labels}
+          />
+        )}
+        {bodyText.textAlign === 'justify' && (
+          <KashidaFields
+            bodyText={bodyText}
+            raw={raw}
+            arabicScript={arabicScript}
+            updateBodyText={updateBodyText}
             resetField={resetField}
             labels={labels}
           />
@@ -363,6 +406,19 @@ export const BodyTextSection = memo(function BodyTextSection() {
         <FieldRow label={labels.documentLocale} tooltip={labels.bodyDocumentLocaleMoved} isDefault>
           <DocumentLocalePointer tag={effectiveDocumentLocale} />
         </FieldRow>
+        {/* Arabic vowel marks: offered in a book written in Arabic script,
+            or wherever they were set. */}
+        {(arabicScript || tashkil !== 'keep') && (
+          <SelectInput
+            label={labels.bodyTashkil}
+            value={tashkil}
+            options={TASHKIL_OPTIONS}
+            onChange={(v) => (v === 'keep' ? resetField('tashkil') : updateBodyText({ tashkil: v as TashkilMode }))}
+            tooltip={labels.bodyTashkilTooltip}
+            isDefault={tashkil === 'keep'}
+            onReset={() => resetField('tashkil')}
+          />
+        )}
       </FieldGroup>
       <CollapsibleSection title={labels.bodyGroupLineControl} sectionId="bodyText-lineControl" variant="subsection">
         <ToggleSwitch
@@ -504,7 +560,7 @@ function DocumentLocalePointer({ tag }: { tag: string }) {
     >
       <span lang={tag} className="min-w-0 truncate">{name}</span>
       <span className="sr-only"> — {labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}</span>
-      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate)" />
+      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) rtl:-scale-x-100" />
     </button>
   );
 }

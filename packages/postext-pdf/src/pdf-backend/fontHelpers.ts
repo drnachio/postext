@@ -134,6 +134,11 @@ function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, ou
       if (seg.ruby) for (const run of seg.ruby.runs) if (run.text) add(out, run.fontString, run.text);
       if (!seg.text) continue;
       add(out, seg.fontString ?? pickFace(!!seg.bold, !!seg.italic, faces), seg.text);
+      // A word set in several styles is shaped whole in each face one of
+      // its runs takes (`drawStyledWordPx`).
+      for (const run of seg.runs ?? []) {
+        if (!!run.bold !== !!seg.bold || !!run.italic !== !!seg.italic) add(out, pickFace(!!run.bold, !!run.italic, faces), seg.text);
+      }
     }
   }
 }

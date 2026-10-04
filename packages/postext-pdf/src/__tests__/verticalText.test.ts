@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import { PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFRawStream, PDFRef, PDFStream, decodePDFRawStream } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { buildDocument } from 'postext';
+import { buildDocument, verticalFlowOf } from 'postext';
 import type { PostextConfig } from 'postext';
 import { renderToPdf } from '../pdf-backend';
 import { parseFontString } from '../fontString';
@@ -205,12 +205,12 @@ describe('vertical text in the PDF (#191)', () => {
     const page = doc.pages[0]!;
     const line = page.columns[0]!.blocks[0]!.lines[0]!;
     const show = uprightShows(pageOps(pdf), pageFonts(pdf))[0]!;
-    const axisFlowY = line.baseline - (page.flow!.centralBaselines?.['Noto Serif TC'] ?? 0.38) * 16;
+    const axisFlowY = line.baseline - (verticalFlowOf(page)!.centralBaselines?.['Noto Serif TC'] ?? 0.38) * 16;
     // Flow points: x along the line, y from the frame's top (y up).
     expect(show.tm[5]).toBeCloseTo(420 - axisFlowY, 3);
     // The pen at the vertical origin (0.88 em above the baseline): the cell
     // top when the em box's centre is 0.38 em above it.
-    const central = page.flow!.centralBaselines?.['Noto Serif TC'] ?? 0.38;
+    const central = verticalFlowOf(page)!.centralBaselines?.['Noto Serif TC'] ?? 0.38;
     expect(show.tm[4]).toBeCloseTo(line.bbox.x + 16 * (0.5 - (0.88 - central)), 3);
   });
 
@@ -253,7 +253,7 @@ describe('vertical text in the PDF (#191)', () => {
     // The twin shows only the three characters after the cluster, from the
     // second cell on.
     expect(shows.flatMap((s) => s.cids)).toHaveLength(3);
-    const central = page.flow!.centralBaselines?.['Noto Serif TC'] ?? 0.38;
+    const central = verticalFlowOf(page)!.centralBaselines?.['Noto Serif TC'] ?? 0.38;
     expect(shows[0]!.tm[4]).toBeCloseTo(line.bbox.x + 16 + 16 * (0.5 - (0.88 - central)), 3);
     // The cluster: shaped horizontally, stood upright in the first cell.
     const cluster = [...ops.matchAll(/0 1 -1 0 ([-\d.]+) [-\d.]+ Tm/g)].map((m) => Number(m[1]));

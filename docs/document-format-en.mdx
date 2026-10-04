@@ -43,7 +43,7 @@ Frontmatter is parsed with [`gray-matter`](https://github.com/jonschlinkert/gray
 YAML gives its values types: `1984` is a number, `2026-04-15` a date, `[Ana Gil, Luis Paz]` a list. Postext prints each of those four fields as text whatever its type:
 
 - a number in its plain decimal form, and a boolean as `true` or `false` (`title: 1984` prints *1984*). YAML reads a number as a value, not digit by digit: `1.50` prints *1.5*, `017` (octal) *15*, `1:30` (base 60) *90*;
-- a date as its calendar day, written out in the document's language — the `locale` setting, else the hyphenation locale: `publishDate: 2026-04-15` prints *April 15, 2026* in English, *15 de abril de 2026* in Spanish, *15. April 2026* in German. A date with a time of day prints the day of its UTC time and drops the time: `2026-09-24T23:30:00-05:00` is 04:30 UTC on the 25th and prints *September 25, 2026*;
+- a date as its calendar day, written out in the document's language — the `locale` setting, else the hyphenation locale: `publishDate: 2026-04-15` prints *April 15, 2026* in English, *15 de abril de 2026* in Spanish, *15. April 2026* in German. Arabic dates use the Gregorian calendar unless the tag names another (`ar-u-ca-islamic` prints the Hijri date), with the digits the tag implies (`ar-EG`: ١٥ أبريل ٢٠٢٦; `ar-u-nu-latn`: 15 أبريل 2026). A date with a time of day prints the day of its UTC time and drops the time: `2026-09-24T23:30:00-05:00` is 04:30 UTC on the 25th and prints *September 25, 2026*;
 - a list as its items joined by commas (`author: [Ana Gil, Luis Paz]` prints *Ana Gil, Luis Paz*).
 
 Quote a value to print it exactly as written — a number that must keep its digits, a date that must keep its day: `publishDate: "15/04/2026"`, `title: "1984"`. The text reaches `doc.metadata`, the placeholders (`{title}`, `{publishDate}`…) and the PDF title and author. One of the four fields with no text form — a nested map, an empty `title:` — is left out of `doc.metadata`. `extractFrontmatter` still returns the values as YAML typed them; `metadataText(value, locale)` gives the text Postext prints for one.
@@ -190,12 +190,16 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::index</code></td>
       <td>Print the back-of-book index here: every term marked with <code>:index</code> in the book, sorted and grouped by letter, with the pages it falls on, typeset per the <code>index</code> configuration. <code>:::index&#123;index="names"&#125;</code> prints a named index. See <a href="#back-of-book-index">Back-of-book index</a>.</td>
     </tr>
+    <tr>
+      <td><code>:::verse</code> … <code>:::</code></td>
+      <td>A poem in classical Arabic layout: one bayt a line, its two hemistichs separated by <code>||</code>, set side by side at one common width. See <a href="#verse">below</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today (and `references` and `verse` as fenced blocks) — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
 
 ### Attribute values
 
@@ -501,6 +505,27 @@ An answer box of a worksheet is a box whose only content is space: the question 
 For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
 
+### `:::verse`
+
+A poem in the classical Arabic layout (a qaṣīda, a qiṭʿa): each verse, the *bayt*, on one line in two halves, the *ṣadr* on the start side (the right in Arabic) and the *ʿajuz* on the end side, with a gap between them. Write one bayt a line, its hemistichs separated by `||` (a `\\` with a space on each side, as in Wikisource texts, works too). A line without a separator is a single hemistich, centred on the poem.
+
+```md
+فأنشد يقول:
+
+:::verse
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **One width.** Every hemistich of the poem is set to one width, so each ṣadr starts on the same vertical and each ʿajuz ends on another, and the rhyme letters line up down the poem. The width is that of the widest hemistich, at most half the measure less the gap; `width` sets it (`width=55mm`). Each hemistich is brought to it with kashidas first (verse elongates more than prose: twice `bodyText.kashidaMaxLength`), then its word spaces; a hemistich of one word that cannot fill it leaves the rest in the gap.
+- **The gap** is 2 em by default; `gap` sets it (`gap=3em`, a bare number is in ems). `ornament` prints a mark in its middle (`ornament="٭"`), which is not part of the text.
+- **Too wide.** A hemistich wider than the common width first tightens its word spaces to `bodyText.minWordSpacing`. If it still does not fit, its bayt is set staggered: the ṣadr flush with the start side on its own line, the ʿajuz flush with the end side on the next.
+- **Placement.** The poem is centred in the column; `align=start` sets it flush with the start side. A bayt is never split between columns or pages, and the poem follows the orphan and widow rules of paragraphs (a poem of three bayts or fewer stays whole). The paragraph before the poem, which introduces it («فأنشد يقول:»), keeps its last line with the first bayts.
+- **Type.** The poem takes the body text's face, size and leading; `style` names a paragraph style for it (`style="verse"`), which is how a vocalised poem gets the extra leading its harakat need. `dir=ltr` or `dir=rtl` sets its direction like any block; a poem in Latin script in a left-to-right book has its ṣadr on the left.
+
+The plain text of the poem keeps the hemistichs and bayts apart (a tab and a line break), so a search or a copied passage reads it as written; the kashidas and the ornament are left out.
+
 ### `:::toc`
 
 `:::toc` prints the table of contents where it stands. It expands into ordinary blocks — one per heading of the levels `toc.levels` lists (level 1 by default) and one per `:::part` — so the contents flow through columns and pages like any other text and a click on an entry lands on the directive line. An entry shows the heading's number (its `numberingTemplate` output, else the chapter ordinal), its title, a dotted leader and the label of the page it starts on, and, when `toc.subtitle` is enabled, a second line with a heading attribute such as the chapter's `{author="…"}`. A part gets a row of its own, designed by `toc.parts.design` and coloured with the part's own `palette`. Headings whose style has `numbered: false` are listed without a number; `{toc="false"}` on a heading keeps it out (the contents' own heading, typically).
@@ -728,6 +753,23 @@ Chinese editions mark text between the lines rather than with italics or underli
 
 The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
+
+### Text direction in the markup
+
+A document runs in the direction its `locale` implies (`direction` in the configuration: right to left for Arabic, Persian, Urdu or Hebrew). Inside it, the markup sets the direction of a block or of a run of text, for an English quotation in an Arabic book or an Arabic one in an English book.
+
+- **A heading or a container**: `{dir=ltr}` or `{dir=rtl}` in its attributes, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Every block inside a container takes the direction, down to a nested container or heading that sets another. A plain paragraph, a list or a quote has no attributes of its own: wrap it in `:::paragraphs{dir=…}`. Other values are ignored. A container's `lang` (`:::paragraphs{dir=ltr lang=en}`) names the language of the blocks inside it the same way: their ordered lists number in that language's digits.
+- **A run of text**: `:ltr[…]` and `:rtl[…]` isolate their text (the LRI…PDI and RLI…PDI of the Unicode Bidirectional Algorithm): it is ordered inside, and the paragraph around it sees one neutral character. `{lang=…}` tags the run's language in the HTML and the PDF. A note marker, a `:ref` or a formula inside is part of the isolate, and isolates nest.
+
+```markdown
+:::paragraphs{dir=ltr}
+The opening of the *Nights* in Lane's translation.
+:::
+
+ترجمها :ltr[Edward William Lane]{lang=en} سنة ١٨٣٩.
+```
+
+A block set against the document's direction keeps its own start side: its indent, list markers and the flush end of its last line move to the side its text starts on. Use an isolate when a Latin title ends in a neutral character (a full stop, a bracket) that would otherwise join the Arabic around it. The Unicode controls themselves (U+2066–2069, U+202A–202E, U+200E, U+200F, U+061C) are honoured too. In the Sandbox editor each line runs in the direction of its first letter. See [Arabic layout](/en/docs/arabic-layout#direction-and-the-bidirectional-algorithm).
 
 ## Footnotes
 
@@ -1212,7 +1254,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, right-to-left scripts (Arabic, Hebrew…) are not set correctly yet: there is no bidirectional layout. Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight and Chinese. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions

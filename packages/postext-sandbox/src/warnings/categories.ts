@@ -36,13 +36,18 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'sideColumnPercentClamped':
     case 'cjkGridClamped':
     case 'unknownNumberFormat':
+    case 'unknownNumerals':
     case 'unknownConfigKey':
+    case 'unknownConfigValue':
     case 'headingDesignCut':
       return 'design';
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'unbreakableWordOverflow':
+    case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'arabicMarksExceedLeading':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':

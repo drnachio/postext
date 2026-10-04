@@ -1,8 +1,9 @@
 import type { ContentBlock } from './parse';
-import { caseWords, numberToWords, type WordsCase } from './numberWords';
-import type { OrderedListNumberFormat } from './types';
+import { caseWords, numberToWords, type NumberWordsOptions, type WordsCase } from './numberWords';
+import type { DigitSystem, OrderedListNumberFormat } from './types';
 import { localeScript } from './locale';
 import { chineseNumeral, cjkDecimal, circledDecimal, fullwidthDecimal, fixedSymbol, CJK_HEAVENLY_STEMS, CJK_EARTHLY_BRANCHES } from './chineseNumerals';
+import { abjadNumeral, arabicIndicDecimal, arabicLettering, asciiDigits, persianDecimal, withDigits, ABJAD_LETTERS, HIJAI_LETTERS } from './arabicNumerals';
 
 /** The East Asian numeral styles, named as in CSS Counter Styles 3: Chinese
  *  numerals in the informal (一百二十) and formal (壹佰贰拾) longhand of
@@ -33,6 +34,32 @@ export const EAST_ASIAN_NUMERAL_STYLES: readonly EastAsianNumeralStyle[] = Objec
   'fullwidth-decimal',
 ] as const);
 
+/** The Arabic-script numeral styles: the Arabic-Indic digits of the
+ *  Mashriq (`arabic-indic`, ١٢٣) and the Extended Arabic-Indic digits of
+ *  Persian and Urdu (`persian`, ۱۲۳), named as in CSS Counter Styles 3; the
+ *  additive abjad numerals of Classical Arabic (`arabic-abjad`, يا = 11)
+ *  and their Maghrebi values (`arabic-abjad-maghrebi`); and the letter
+ *  series of list items, in abjad order (`abjad`: أ ب ج د هـ) and in
+ *  alphabetical order (`hijai`: أ ب ت ث). `'arabic'` is not among them: it
+ *  has always meant the European decimal digits. */
+export type ArabicNumeralStyle =
+  | 'arabic-indic'
+  | 'persian'
+  | 'arabic-abjad'
+  | 'arabic-abjad-maghrebi'
+  | 'abjad'
+  | 'hijai';
+
+/** Every {@link ArabicNumeralStyle}, in the order a picker lists them. */
+export const ARABIC_NUMERAL_STYLES: readonly ArabicNumeralStyle[] = Object.freeze([
+  'arabic-indic',
+  'persian',
+  'abjad',
+  'hijai',
+  'arabic-abjad',
+  'arabic-abjad-maghrebi',
+] as const);
+
 export type NumeralStyle =
   | 'decimal'
   | 'decimal-02'
@@ -40,13 +67,20 @@ export type NumeralStyle =
   | 'lower-alpha'
   | 'upper-roman'
   | 'lower-roman'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
+
+type SpelledBase = 'words' | 'Words' | 'WORDS' | 'ordinal' | 'Ordinal' | 'ORDINAL';
 
 /** A counter spelled out in words (heading templates only): cardinal
  *  (`words`) or ordinal (`ordinal`), the case of the suffix picking the
  *  case of the words — `{1:words}` "twenty-one", `{1:Words}` "Twenty-one",
- *  `{1:WORDS}` "TWENTY-ONE". */
-export type SpelledNumeralStyle = 'words' | 'Words' | 'WORDS' | 'ordinal' | 'Ordinal' | 'ORDINAL';
+ *  `{1:WORDS}` "TWENTY-ONE". Modifiers after a hyphen choose the gender
+ *  and the spelling of a language that inflects them (Arabic):
+ *  `{1:ordinal-feminine}` (or `-f`) الأولى, `-masculine` (`-m`, the
+ *  default) الأول, `-classical` مائة for مئة; `{1:ordinal-f-classical}`
+ *  combines them. Other languages ignore the modifiers. */
+export type SpelledNumeralStyle = SpelledBase | `${SpelledBase}-${string}`;
 
 /** Format of a counter in a heading numbering template. */
 export type CounterStyle = NumeralStyle | SpelledNumeralStyle;
@@ -95,6 +129,16 @@ const NUMBER_FORMAT_NAMES: ReadonlyMap<string, NumberFormatStyle> = new Map<stri
   ...EAST_ASIAN_NUMERAL_STYLES.map((name): [string, NumberFormatStyle] => [name, name]),
   // CSS keeps `cjk-ideographic` as another name of the traditional informal.
   ['cjk-ideographic', 'trad-chinese-informal'],
+  ...ARABIC_NUMERAL_STYLES.map((name): [string, NumberFormatStyle] => [name, name]),
+  // The W3C "Ready-made Counter Styles" names: `urdu` is `persian` with a
+  // suffix of its own (a numbering format carries none), and
+  // `maghrebi-abjad` the Maghrebi values. Their `arabic-abjad` is a
+  // 28-letter series where 11 is ك; here it is the additive numeral (11
+  // يا), as in Arabic books, and the series is `abjad`.
+  ['urdu', 'persian'],
+  ['maghrebi-abjad', 'arabic-abjad-maghrebi'],
+  ['arabic-alpha', 'hijai'],
+  ['arabic-alphabetic', 'hijai'],
 ]);
 
 /** The one-character tokens of the heading templates (`{1:i}`), which the
@@ -112,6 +156,12 @@ const NUMBER_FORMAT_TOKENS: ReadonlyMap<string, NumberFormatStyle> = new Map<str
   ['甲', 'cjk-heavenly-stem'],
   ['子', 'cjk-earthly-branch'],
   ['１', 'fullwidth-decimal'],
+  // A single أ cannot tell the two Arabic letter series apart: their first
+  // letters name them (أبجد, أبتث).
+  ['١', 'arabic-indic'],
+  ['۱', 'persian'],
+  ['أبجد', 'abjad'],
+  ['أبتث', 'hijai'],
 ]);
 
 /** Whether `locale` is written in Traditional characters (`zh-Hant`,
@@ -132,8 +182,9 @@ export function chineseInformalStyle(locale?: string): 'simp-chinese-informal' |
  * spellings the engine accepts (see `NUMBER_FORMAT_NAMES`: `decimal` /
  * `arabic`, `lower-roman` / `roman-lower` / `i`, `upper-alpha` /
  * `alpha-upper` / `upper-latin` / `A`, the CSS names of the East Asian
- * styles and their one-character tokens `〇`, `①`, `甲`, `子`, `１`…; names
- * are case-insensitive). `一` and `壹` name the informal and formal Chinese
+ * styles and their one-character tokens `〇`, `①`, `甲`, `子`, `１`…, the
+ * Arabic styles and their tokens `١`, `۱`, `أبجد`, `أبتث`; names are
+ * case-insensitive). `一` and `壹` name the informal and formal Chinese
  * numerals of the document's script: Traditional when `locale` is
  * (`zh-Hant`, `zh-TW`…), else Simplified. `undefined` for anything else —
  * the caller numbers in decimal.
@@ -161,21 +212,55 @@ function templateStyle(raw: string, locale?: string): NumeralStyle {
 
 const SPELLED_STYLES = new Set<string>(['words', 'Words', 'WORDS', 'ordinal', 'Ordinal', 'ORDINAL']);
 
+/** The modifiers a spelled style takes, lower-cased, and what each sets. */
+const SPELLED_MODIFIERS: Readonly<Record<string, NumberWordsOptions>> = {
+  f: { gender: 'feminine' },
+  feminine: { gender: 'feminine' },
+  m: { gender: 'masculine' },
+  masculine: { gender: 'masculine' },
+  classical: { spelling: 'classical' },
+  modern: { spelling: 'modern' },
+};
+
+interface SpelledStyle {
+  kind: 'cardinal' | 'ordinal';
+  wordsCase: WordsCase;
+  options: NumberWordsOptions;
+}
+
+/** What a spelled style token says (`Ordinal-feminine` → an ordinal, first
+ *  letter capital, feminine); `undefined` when the token is not one — an
+ *  unknown modifier included. */
+function parseSpelledStyle(token: string): SpelledStyle | undefined {
+  const [base, ...mods] = token.split('-');
+  if (base === undefined || !SPELLED_STYLES.has(base)) return undefined;
+  let options: NumberWordsOptions = {};
+  for (const mod of mods) {
+    const set = SPELLED_MODIFIERS[mod.toLowerCase()];
+    if (!set) return undefined;
+    options = { ...options, ...set };
+  }
+  return {
+    kind: base.toLowerCase() === 'ordinal' ? 'ordinal' : 'cardinal',
+    wordsCase: base === base.toUpperCase() ? 'upper' : base[0] === base[0]!.toUpperCase() ? 'capital' : 'lower',
+    options,
+  };
+}
+
 function counterStyleOf(raw: string | undefined, locale?: string): CounterStyle {
   if (!raw) return 'decimal';
   const key = raw.trim();
-  if (SPELLED_STYLES.has(key)) return key as SpelledNumeralStyle;
+  if (parseSpelledStyle(key)) return key as SpelledNumeralStyle;
   return templateStyle(key, locale);
 }
 
 /** A counter value in a template style; spelled-out styles use the
- *  document language `locale`. */
-export function formatCounter(n: number, style: CounterStyle, locale?: string): string {
-  if (!SPELLED_STYLES.has(style)) return formatNumeral(n, style as NumeralStyle);
+ *  document language `locale`, decimal ones the document's `digits`. */
+export function formatCounter(n: number, style: CounterStyle, locale?: string, digits?: DigitSystem): string {
+  const spelled = parseSpelledStyle(style);
+  if (!spelled) return formatNumeral(n, style as NumeralStyle, digits);
   if (n <= 0) return '';
-  const kind = style.toLowerCase() === 'ordinal' ? 'ordinal' : 'cardinal';
-  const wordsCase: WordsCase = style === style.toUpperCase() ? 'upper' : style[0] === style[0]!.toUpperCase() ? 'capital' : 'lower';
-  return caseWords(numberToWords(n, kind, locale), wordsCase, locale);
+  return caseWords(numberToWords(n, spelled.kind, locale, spelled.options), spelled.wordsCase, locale);
 }
 
 /** The tokens of a numbering template. `locale` (the document language)
@@ -258,7 +343,27 @@ function toRoman(n: number): string {
   return s;
 }
 
-export function formatNumeral(n: number, style: NumeralStyle): string {
+/**
+ * The style a document writes `style` in: `decimal` takes the document's
+ * digit system (`'arab'` → `arabic-indic`, `'arabext'` → `persian`); every
+ * other style, and every style in a `'latn'` document, is kept. What a
+ * page label records as its format, so that the PDF's `/PageLabels` and a
+ * book's next chapter see the digits the page prints.
+ */
+export function documentNumeralStyle<S extends NumeralStyle>(style: S, digits: DigitSystem | undefined): S | 'arabic-indic' | 'persian' {
+  if (style !== 'decimal' || !digits || digits === 'latn') return style;
+  return digits === 'arab' ? 'arabic-indic' : 'persian';
+}
+
+/**
+ * `n` in `style`. `digits`, the document's digit system, writes the
+ * decimal styles (`decimal`, `decimal-02`) in Arabic-Indic or Persian
+ * digits; a style the author names is printed as named.
+ */
+export function formatNumeral(n: number, style: NumeralStyle, digits?: DigitSystem): string {
+  if (digits !== undefined && digits !== 'latn' && (style === 'decimal' || style === 'decimal-02')) {
+    return withDigits(formatNumeral(n, style), digits);
+  }
   if (n === 0) {
     // The positional East Asian styles have a zero; the others print
     // nothing for it, as before.
@@ -274,6 +379,10 @@ export function formatNumeral(n: number, style: NumeralStyle): string {
         return '⓪';
       case 'fullwidth-decimal':
         return '０';
+      case 'arabic-indic':
+        return '٠';
+      case 'persian':
+        return '۰';
       default:
         return '';
     }
@@ -310,6 +419,18 @@ export function formatNumeral(n: number, style: NumeralStyle): string {
       return circledDecimal(n);
     case 'fullwidth-decimal':
       return fullwidthDecimal(n);
+    case 'arabic-indic':
+      return arabicIndicDecimal(n);
+    case 'persian':
+      return persianDecimal(n);
+    case 'arabic-abjad':
+      return abjadNumeral(n, 'mashriqi');
+    case 'arabic-abjad-maghrebi':
+      return abjadNumeral(n, 'maghrebi');
+    case 'abjad':
+      return arabicLettering(n, ABJAD_LETTERS);
+    case 'hijai':
+      return arabicLettering(n, HIJAI_LETTERS);
     default:
       // A style from outside the type (a hand-written config, a stale
       // continuation) numbers in decimal rather than printing "undefined".
@@ -360,6 +481,7 @@ function renderTemplate(
   counters: number[],
   currentLevel: number,
   locale?: string,
+  digits?: DigitSystem,
 ): string {
   const pieces: RenderPiece[] = [];
   for (const t of tokens) {
@@ -369,7 +491,7 @@ function renderTemplate(
     }
     if (t.level > currentLevel) continue;
     const value = counters[t.level] ?? 0;
-    const rendered = value > 0 ? formatCounter(value, t.style, locale) : '';
+    const rendered = value > 0 ? formatCounter(value, t.style, locale, digits) : '';
     pieces.push({ kind: 'counter', text: rendered });
   }
   return renderCounterTemplate(pieces);
@@ -408,14 +530,18 @@ export interface PageLabelInfo {
 export function buildPageLabels(
   pageCount: number,
   segments: PageNumberSegment[],
+  /** The document's digit system: a decimal page is labelled in it, and
+   *  records `arabic-indic` or `persian` as its format (see
+   *  {@link documentNumeralStyle}). */
+  digits?: DigitSystem,
 ): PageLabelInfo[] {
   if (pageCount <= 0) return [];
   if (segments.length === 0) {
     // Defensive default — behave as a plain decimal-from-1 sequence.
     return Array.from({ length: pageCount }, (_, i) => ({
       value: i + 1,
-      label: String(i + 1),
-      format: 'decimal' as NumeralStyle,
+      label: formatNumeral(i + 1, 'decimal', digits),
+      format: documentNumeralStyle('decimal' as NumeralStyle, digits),
     }));
   }
   const sorted = [...segments].sort((a, b) => a.startPageIndex - b.startPageIndex);
@@ -439,8 +565,8 @@ export function buildPageLabels(
       if (s.startAt !== undefined) curValue = s.startAt;
       segIdx++;
     }
-    const label = formatNumeral(curValue, curFormat);
-    out[i] = { value: curValue, label, format: curFormat };
+    const label = formatNumeral(curValue, curFormat, digits);
+    out[i] = { value: curValue, label, format: documentNumeralStyle(curFormat, digits) };
     curValue++;
   }
   return out;
@@ -489,11 +615,12 @@ export type HeadingCounterStart = readonly number[];
 
 /** The value a heading's `startAt` attribute (`# Appendix {startAt=1}`)
  *  sets its level's counter to, in place of advancing it: a positive
- *  integer, else undefined (the attribute is ignored). */
+ *  integer, in any digits (`{startAt=٣}`), else undefined (the attribute
+ *  is ignored). */
 export function headingCounterStart(block: Pick<ContentBlock, 'attrs'>): number | undefined {
   const raw = block.attrs?.startAt;
   if (raw === undefined) return undefined;
-  const n = Number(raw);
+  const n = Number(asciiDigits(raw));
   return Number.isInteger(n) && n >= 1 ? n : undefined;
 }
 
@@ -507,6 +634,9 @@ export interface HeadingNumberingOptions {
   /** Document language of spelled-out counters (`{1:words}`,
    *  `{1:ordinal}`). English when unset. */
   locale?: string;
+  /** The document's digit system, for the decimal counters (`{1}`,
+   *  `{1:01}`); `'latn'` when unset. */
+  numerals?: DigitSystem;
   /** A template replacing the level's for one heading (a heading style's
    *  `numberingTemplate`); `undefined` keeps the level's. */
   templateFor?: (block: ContentBlock) => string | undefined;
@@ -553,7 +683,7 @@ export function computeHeadingNumbering(
     values[i] = counters[lvl];
     const tokens = tokensOf(options.templateFor?.(b) ?? templates[lvl as 1 | 2 | 3 | 4 | 5 | 6] ?? '');
     if (!tokens) continue;
-    const rendered = renderTemplate(tokens, counters, lvl, options.locale);
+    const rendered = renderTemplate(tokens, counters, lvl, options.locale, options.numerals);
     if (rendered.length > 0) prefixes[i] = rendered;
   }
   return { prefixes, values };

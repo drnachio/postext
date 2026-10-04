@@ -25,6 +25,7 @@ import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
+import { joiningScriptIn } from '../measure/joining';
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
 import type { InlineSpan } from '../parse/types';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
@@ -35,6 +36,8 @@ import {
   resolveDesignText,
   type DesignPlaceholderContext,
 } from './placeholders';
+import { hasJoiningScript, joinsWithNext } from '../bidi';
+import { designBaseDirection, directRuns } from './bidiText';
 import {
   RichMeasurer,
   ellipsisEndCut,
@@ -67,6 +70,12 @@ export interface WrappedLine {
   /** A justified line: the px added to each of its word spaces (the runs'
    *  widths include it). */
   wordSpacingPx?: number;
+  /** The order to paint `runs` in, when it is not their own (see
+   *  `VDTDesignTextLine.order`). */
+  order?: number[];
+  /** A word of a joining script wider than the room runs past it (see
+   *  `VDTDesignTextLine.wordOverflow`). */
+  wordOverflow?: true;
 }
 
 export interface ResolvedPadding {
@@ -111,6 +120,13 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   dropCap?: boolean;
   /** Tracking after every glyph, in px; 0 when the element sets none. */
   letterSpacingPx: number;
+  /** The text's base direction when it is right to left (see
+   *  `VDTDesignTextBlock.direction`). */
+  direction?: 'rtl';
+  /** The text starts on the right of its box: a right-to-left text on the
+   *  sheet, or a left-to-right one in a mirrored flow. `'start'`, `'end'`
+   *  and the flush last line of `'justify'` follow it. */
+  startRight?: true;
   /** Outline stroked over the glyphs; absent when the element sets none. */
   stroke?: { widthPx: number; color: string; hollow?: boolean };
   /** Content box (inside padding) offsets, relative to element x/y. */
@@ -248,6 +264,13 @@ export interface LayoutContext {
   /** Resources by id, for `kind: 'image'` elements. Without it (or for an
    *  unknown id) an image element is skipped. */
   resourceById?: ReadonlyMap<string, Resource>;
+  /** The document's base direction (`ResolvedConfig.direction`), the
+   *  default of every text element's. Absent: left to right. */
+  direction?: 'ltr' | 'rtl';
+  /** The slot is painted in the flow of a mirrored (right-to-left) page:
+   *  its x axis runs from the sheet's right edge, so the runs of a line go
+   *  in the reverse of their visual order (see `design/bidiText.ts`). */
+  mirrored?: boolean;
 }
 
 function pageMatchesParity(pageIndex: number, parity: PageParity): boolean {
@@ -588,6 +611,9 @@ function breakWordWithHyphenation(
     if (!NO_BREAK_SPACES.includes(word[i]!) || NO_BREAK_SPACES.includes(word[i - 1]!)) continue;
     if (measure(word.slice(0, i)) <= maxWidth) return { head: word.slice(0, i), tail: word.slice(i + 1) };
   }
+  // A word of a joining script (Arabic) is never hyphenated or cut: it runs
+  // past the line, whole.
+  if (hasJoiningScript(word)) return undefined;
   if (useHyphenation) {
     // Syllables only: the slash joints would ride along into the pieces.
     const hy = withoutSlashJoints(word, hyphenateText(word));
@@ -941,7 +967,7 @@ export function layoutDesignSlot(
       // flow the text already runs down.
       const prims = el.writingMode === 'vertical-rl' && getMeasureWritingMode() !== 'vertical-rl'
         ? layoutVerticalTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge)
-        : layoutTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge);
+        : layoutTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge, context);
       resolvedGeo.set(el.id, prims[0]!);
       primsByElement.set(el, prims);
     } else if (el.kind === 'rule') {
@@ -997,6 +1023,7 @@ export function layoutDesignSlot(
  *  `line` in `maxWidth`: the longest such head, or undefined. Used to fill
  *  a justified line (EF-109). */
 function syllableFill(line: string, word: string, measure: TextMeasure, maxWidth: number): { head: string; tail: string } | undefined {
+  if (hasJoiningScript(word)) return undefined;
   const hy = withoutSlashJoints(word, hyphenateText(word));
   if (!hy.includes(SOFT_HYPHEN) || hy.split(SOFT_HYPHEN).join('') !== word) return undefined;
   const parts = hy.split(SOFT_HYPHEN);
@@ -1148,6 +1175,8 @@ function layoutTextElement(
   container: AnchorReference,
   dpi: number,
   anchoredToElement: boolean,
+  /** The document's direction and the slot's frame (`LayoutContext`). */
+  frame: { direction?: 'ltr' | 'rtl'; mirrored?: boolean } = {},
 ): ResolvedTextPrimitive[] {
   let text = resolvedText;
   const fontSizePx = dimPx(el.fontSize, dpi);
@@ -1158,9 +1187,12 @@ function layoutTextElement(
   // exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc` do.
   // Negative tracking tightens a display title (EF-82); a width never drops
   // below zero, however tight.
+  // A text in a joining script (Arabic…) is set untracked: spacing its
+  // letters apart breaks the joins (`measure/joining.ts`).
   const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
-  const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
+  const letterSpacingPx = Number.isFinite(trackingPx) && !joiningScriptIn(text) ? trackingPx : 0;
   const measure: TextMeasure = (t) => Math.max(0, flowTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
+  const measureIn = (t: string, font: string): number => Math.max(0, flowTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };
   // Inline marks: a text that carries any is laid out in runs; one that
@@ -1170,6 +1202,11 @@ function layoutTextElement(
     : undefined;
   const richM = rich?.hasMarks ? new RichMeasurer(rich, letterSpacingPx) : undefined;
   if (rich && !rich.hasMarks) text = rich.text;
+  // The base direction: the element's, `'auto'` from its first strong
+  // letter, else the document's. Vertical text is not reordered.
+  const vertical = getMeasureWritingMode() === 'vertical-rl';
+  const base = vertical ? 'ltr' : designBaseDirection(el.direction, richM ? richM.rt.text : text, frame.direction ?? 'ltr');
+  const mirrored = !vertical && frame.mirrored === true;
   const strokeWidthPx = el.stroke ? Math.max(0, dimPx(el.stroke.width, dpi, fontSizePx)) : 0;
   const stroke = el.stroke && strokeWidthPx > 0
     ? { widthPx: strokeWidthPx, color: colorHex(el.stroke.color ?? el.color), ...(el.stroke.hollow ? { hollow: true } : {}) }
@@ -1227,7 +1264,9 @@ function layoutTextElement(
   // letter spans lines, so a single truncated line cannot hold it.
   const wraps = el.overflow === 'wrap' || el.dropCap !== undefined;
   const justify = el.align === 'justify' && wraps;
+  // A letter joined to the next one (Arabic) is never set apart.
   const dropCap = el.dropCap && wraps && contentMax !== undefined && paragraphs.length > 0 && paragraphs[0]!.length > 1
+    && !joinsWithNext(paragraphs[0]!, 0)
     ? el.dropCap
     : undefined;
   let m: TextMeasurement;
@@ -1258,7 +1297,6 @@ function layoutTextElement(
     // Justified lines fill their room by stretching their word spaces, and
     // a word that does not fit may be cut at a syllable to fill (EF-109).
     const fill = justify && (el.hyphenate ?? false);
-    const measureIn = (t: string, font: string): number => Math.max(0, flowTextWidth(t, font) + letterSpacingPx * graphemeCount(t));
     let lineNo = 0;
     paragraphs.forEach((para, p) => {
       const offsetOf = (i: number): number => {
@@ -1299,8 +1337,23 @@ function layoutTextElement(
   // Set vertically (in a vertical flow, or turned by `writingMode`): each
   // line's characters stand on the middle of its line box, as a vertical
   // line of the body does (`lineBaselineOffset`).
-  if (getMeasureWritingMode() === 'vertical-rl') {
+  if (vertical) {
     for (const line of m.lines) line.baselineY = line.topY + lineBaselineOffset(line.height, fontString);
+  } else {
+    // Right-to-left text: each line's runs cut where the direction
+    // changes, flagged and ordered for the frame the slot is painted in.
+    // A justified run keeps its spaces' share of the stretch.
+    for (const line of m.lines) {
+      // An Arabic word wider than a wrapping line's room is left whole and
+      // runs past it: flagged for a warning.
+      if (wraps && contentMax !== undefined && line.width > contentMax - (line.xOffset ?? 0) + 0.5 && joiningScriptIn(line.text)) line.wordOverflow = true;
+      const runs: DesignTextRun[] = line.runs ?? [{ text: line.text, fontString, width: line.width }];
+      const spacing = line.wordSpacingPx ?? 0;
+      const directed = directRuns(runs, base, mirrored, (r, t) => measureIn(t, r.fontString) + spacing * stretchableSpaces(t));
+      if (!directed) continue;
+      line.runs = directed.runs;
+      if (directed.order) line.order = directed.order;
+    }
   }
   // The tracking after a line's last glyph is advance, not ink: a box that
   // shrink-wraps its text leaves it out (EF-153), as the alignment of each
@@ -1353,6 +1406,8 @@ function layoutTextElement(
     verticalAlign: el.verticalAlign,
     needsClip: m.needsClip || el.overflow === 'clip',
     letterSpacingPx,
+    ...(base === 'rtl' ? { direction: 'rtl' as const } : {}),
+    ...((base === 'rtl') !== mirrored ? { startRight: true as const } : {}),
     contentX: padding.left,
     contentY: padding.top,
     contentWidth: Math.max(0, elementWidth - padding.left - padding.right),

@@ -1,0 +1,70 @@
+---
+title: "Un índex analític que segueix el text"
+summary: "Termes marcats on el text els explica, impresos per :::index a dues columnes amb les pàgines que els dona buildBundle, intervals i remissions."
+plain: "Dos capítols d'un llibre de fisiologia amb un índex al final. Les paraules es marquen al text i el llibre troba sol els números de pàgina, sense escriure'ls a mà."
+description: "Dos capítols d'un manual de fisiologia i el seu índex analític compostos amb Postext: marques al text, pàgines principals, intervals i remissions."
+question: "Com faig un índex analític amb números de pàgina que segueixin el text quan aquest es mou?"
+aliases: ["índex analític", "índex alfabètic", "índex de matèries", "vegeu també", "intervals de pàgines", "back-of-book index", ":::index"]
+pageNotes: { "9": "L'índex s'obre a la pàgina 305 sota la mateixa banda vermella que els capítols: lletres de grup en el color d'accent, subentrades a un quadratí, pàgines principals en negreta i remissions en cursiva.", "10": "L'índex continua a la pàgina 306, de la I a la W, i el colofó flota al peu de la pàgina." }
+---
+
+## Què compondràs
+
+La part IV de *Principios de fisiología humana*, un manual en pàgina de 210 × 277 mm: el capítol 14, *El corazón como bomba*, i el 15, *Los vasos y la presión arterial*, s'obren en pàgina senar sota una banda vermella i porten els requadres clínics i els peus en una columna lateral exterior. La part es tanca amb un índex analític d'unes noranta entrades i trenta subentrades a dues columnes, com el compon un manual de medicina: entrades en minúscula, lletres de grup en el color d'accent, subentrades a un quadratí, la pàgina que defineix el terme en negreta, *véase* i *véase también* en cursiva. No s'ha teclejat cap número de pàgina. Cada terme està marcat al capítol, on el text l'explica, i l'índex llegeix les pàgines on han caigut aquestes marques, de la 297 a la 304.
+
+## Elaboració
+
+### 1 · Marca el passatge, no la paraula
+
+<Excerpt region="answer" />
+
+Qui fa un índex marca els llocs on s'explica un terme, no cada vegada que apareix la paraula. Els dos capítols diuen *volumen sistólico* una dotzena de vegades, i l'índex envia el lector a dos llocs: la pàgina 298, on es defineix, i la 299-300, on s'explica què el regula. Una marca visible, `:index[gasto cardíaco]{main}`, imprimeix les seves paraules i les arxiva. Una d'invisible, `mitral:index{term="corazón!válvulas!mitral"}`, no imprimeix res i pren la pàgina de la paraula anterior; així el passatge de les quatre vàlvules arxiva *mitral*, *tricúspide*, *aórtica* i *pulmonar* sota *corazón* sense tocar la frase. El `!` separa nivells: *corazón* en té tres, vàlvules i després cada vàlvula. Una marca funciona també en un títol (els intervals de 14.1 i 15.6 hi comencen) i en un requadre (*insuficiencia cardíaca* es defineix a la nota lateral de la pàgina 300).
+
+### 2 · Pàgines principals, intervals i remissions
+
+<Excerpt region="answer" />
+
+`main` posa en negreta la pàgina que defineix un terme, de manera que qui cerca *precarga* va primer a la 299. `range="start"` i `range="end"`, amb el mateix terme, delimiten una explicació que travessa un salt de pàgina: *volumen sistólico, regulación, 299-300*. Un `main` a l'inici posa en negreta tot l'interval. Una pàgina marcada una altra vegada dins del seu propi interval s'hi fon, i un `main` en aquest punt posa l'interval en negreta. `see` substitueix els números de pàgina (*inotropismo. Véase contractilidad*) i `seealso` va darrere seu (*insuficiencia cardíaca, 300. Véase también fracción de eyección*). Una destinació amb nivells s'escriu amb `!` i s'imprimeix amb dos punts: *Véase presión arterial: media*.
+
+### 3 · Un capítol d'índex a dues columnes
+
+<Excerpt region="answer" />
+
+L'índex és l'últim document Markdown del llibre: `# Índice analítico {style="index"}` i, a sota, `:::index`. L'estil de títol canvia la columna i mitja dels capítols per dues columnes separades 6 mm, només a la seva secció, i dona a l'índex la seva pròpia obertura i la seva capçalera. Es compon en la lletra del text a 8,6/11,4 pt, un quadratí per nivell de subentrada, i les línies que es parteixen sagnen dos quadratins, perquè mai no quedin alineades amb una subentrada. En castellà els intervals s'escriuen complets i amb guionet (*303-304*), com als llibres en castellà; l'edició anglesa fa servir `rangeFormat: 'chicago'`, que suprimeix les xifres que es repeteixen (*303–4*, però *299–300*).
+
+### 4 · Per què els números segueixen el text
+
+<Excerpt region="build" />
+
+`buildBundle` compon els capítols en ordre i veu que el tercer conté `:::index`. Després de la primera passada reuneix les marques de tots els capítols amb la pàgina on ha caigut cadascuna i les dona al capítol de l'índex com a esquema. Després torna a compondre el llibre, tres passades com a màxim, fins que cap número no es mou. Reescriu un paràgraf del capítol 14, canvia el format o el cos de lletra, i l'índex es reimprimeix amb les pàgines noves. Al PDF cada número de pàgina és un enllaç a la seva pàgina.
+
+### 5 · Obertures i capçaleres
+
+<Excerpt region="opener" />
+
+Capítols i índex comparteixen una obertura: una banda des del tall fins a 62 mm (46 mm a l'índex), amb el títol recolzat al seu peu mitjançant una caixa alineada a baix, de manera que un títol de dues línies i un d'una acaben a la mateixa línia. L'avanttítol imprimeix `{chapterNumber}`, que l'atribut `{startAt=14}` del títol fixa en 14, i `page.pageNumbering.startAt: 297` col·loca la part on seria dins del llibre. L'estil de l'índex porta `numbered: false`, així que no es converteix en el capítol 16.
+
+## Variants
+
+### Escriu tots els intervals complets
+
+Alguns llibres anglesos també escriuen complets els dos números d'un interval.
+
+```diff
+-  rangeFormat: t({ en: 'chicago', es: 'full' }), rangeSeparator: t({ en: '–', es: '-' }),
++  rangeFormat: 'full', rangeSeparator: t({ en: '–', es: '-' }),
+```
+
+### Un índex sense lletres de grup
+
+Un índex curt sol encadenar els grups, separats només per una línia en blanc.
+
+```diff
+-  groups: { ...label, fontSize: pt(9.5), letterSpacing: pt(0), color: col('accent') },
++  groups: { enabled: false },
+```
+
+## Errors freqüents
+
+- La captura d'aquesta recepta no avisa de `indexSeeUnknown`: una remissió amb una destinació escrita d'una altra manera que l'entrada (*número de Reynolds* davant de *Reynolds, número de*) s'imprimeix sense queixa. Confronta cada *Véase* de l'índex acabat amb la seva destinació.
+- Una llista de subentrades que es parteix entre columnes no repeteix la seva entrada principal en una línia *corazón (cont.)*; una entrada sense pàgina pròpia va sempre amb la seva primera subentrada, així que un encapçalament mai no tanca una columna tot sol.

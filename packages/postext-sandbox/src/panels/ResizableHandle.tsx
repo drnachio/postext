@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { cn } from '../ui/cn';
+import { useUiRtl } from '../ui/direction';
 
 interface ResizableHandleProps {
   onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
@@ -11,12 +12,14 @@ interface ResizableHandleProps {
   value: number;
   min?: number;
   max?: number;
-  /** Keyboard resize: ←/→ by 2 %, Shift by 10 %, Home/End to the limits. */
+  /** Keyboard resize: ←/→ by 2 % (mirrored in a right-to-left interface,
+   *  where the sidebar is at the right), Shift by 10 %, Home/End to the
+   *  limits. */
   onValueChange: (value: number) => void;
 }
 
 /** The splitter between the sidebar and the viewport, drawn over the
- *  sidebar's right edge: a thin line that can be dragged anywhere along
+ *  sidebar's end edge (its right, or its left in a right-to-left UI): a thin line that can be dragged anywhere along
  *  its height, and a 44×44 grip at mid-height (WCAG 2.5.5) that also takes
  *  the keyboard — a focusable `separator` with a value, as the WAI-ARIA
  *  window splitter pattern describes. The grip reaches into the preview
@@ -24,6 +27,7 @@ interface ResizableHandleProps {
 export function ResizableHandle({ onPointerDown, value, min = 15, max = 60, onValueChange }: ResizableHandleProps) {
   const [active, setActive] = useState(false);
   const labels = useSandboxLabels();
+  const rtl = useUiRtl();
 
   return (
     <div
@@ -39,13 +43,13 @@ export function ResizableHandle({ onPointerDown, value, min = 15, max = 60, onVa
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
       className="group absolute top-0 bottom-0 z-20"
-      style={{ right: -4, width: 8, cursor: 'col-resize', touchAction: 'none' }}
+      style={{ insetInlineEnd: -4, width: 8, cursor: 'col-resize', touchAction: 'none' }}
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute top-0 bottom-0"
         style={{
-          left: 3,
+          insetInlineStart: 3,
           width: 1,
           backgroundColor: active ? 'var(--brand)' : 'var(--rule)',
           transition: 'background-color 150ms',
@@ -55,8 +59,9 @@ export function ResizableHandle({ onPointerDown, value, min = 15, max = 60, onVa
         onKeyDown={(e) => {
           const step = e.shiftKey ? 10 : 2;
           let next: number | null = null;
-          if (e.key === 'ArrowLeft') next = value - step;
-          else if (e.key === 'ArrowRight') next = value + step;
+          // The arrow that points away from the sidebar widens it.
+          if (e.key === 'ArrowLeft') next = rtl ? value + step : value - step;
+          else if (e.key === 'ArrowRight') next = rtl ? value - step : value + step;
           else if (e.key === 'Home') next = min;
           else if (e.key === 'End') next = max;
           if (next === null) return;
@@ -71,12 +76,12 @@ export function ResizableHandle({ onPointerDown, value, min = 15, max = 60, onVa
         aria-valuemax={max}
         tabIndex={0}
         className="peer absolute flex h-8 w-2 pt-large:h-11 pt-large:w-11 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
-        style={{ top: 'calc(50% - 22px)', left: 0, cursor: 'col-resize' }}
+        style={{ top: 'calc(50% - 22px)', insetInlineStart: 0, cursor: 'col-resize' }}
       >
         <span
           aria-hidden="true"
           className={cn(
-            'ml-px hidden h-8 w-[7px] rounded-full border transition-colors pt-large:block',
+            'ms-px hidden h-8 w-[7px] rounded-full border transition-colors pt-large:block',
             active ? 'border-(--brand) bg-(--brand)' : 'border-(--slate) bg-(--surface)',
           )}
         />

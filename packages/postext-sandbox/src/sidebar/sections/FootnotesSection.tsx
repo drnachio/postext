@@ -11,9 +11,11 @@ import {
   NestedGroup,
   NumberInput,
   SelectInput,
+  TextInput,
   ToggleSwitch,
 } from '../../controls';
 import { listNumberFormatValue, numberFormatOptions } from './OrderedListsSection/numberFormat';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const SIZE_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARKER_UNITS: DimensionUnit[] = ['em', 'pt'];
@@ -33,6 +35,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
   const bodyColor = useSandboxSelector((s) => s.config.bodyText?.color);
   const bodyAlign = useSandboxSelector((s) => s.config.bodyText?.textAlign);
   const fn = resolveFootnotesConfig(raw);
+  const textSide = flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
 
   const write = (next: FootnotesConfig | undefined) => {
     const empty = !next || Object.keys(next).length === 0;
@@ -156,6 +159,30 @@ export const FootnotesSection = memo(function FootnotesSection() {
           />
         </NestedGroup>
       )}
+      <SelectInput
+        label={labels.footnotesNoteNumberPosition}
+        value={raw?.noteNumberPosition ?? 'auto'}
+        variant="segmented"
+        stacked
+        options={[
+          { value: 'auto', label: labels.footnotesNoteNumberPositionAuto },
+          { value: 'superscript', label: labels.footnotesMarkerPositionSuperscript },
+          { value: 'inline', label: labels.footnotesMarkerPositionInline },
+        ]}
+        onChange={(v) => (v === 'auto' ? resetField('noteNumberPosition') : update({ noteNumberPosition: v as FootnotesConfig['noteNumberPosition'] }))}
+        tooltip={labels.footnotesNoteNumberPositionTooltip}
+        isDefault={(raw?.noteNumberPosition ?? 'auto') === 'auto'}
+        onReset={() => resetField('noteNumberPosition')}
+      />
+      <TextInput
+        label={labels.footnotesMarkerTemplate}
+        value={raw?.markerTemplate ?? '{n}'}
+        onChange={(v) => (v.trim() === '' || v === '{n}' ? resetField('markerTemplate') : update({ markerTemplate: v }))}
+        tooltip={labels.footnotesMarkerTemplateTooltip}
+        isDefault={raw?.markerTemplate === undefined || raw.markerTemplate === '{n}'}
+        onReset={() => resetField('markerTemplate')}
+        widthCh={8}
+      />
       <DimensionInput
         label={labels.footnotesFontSize}
         value={fn.fontSize}
@@ -191,7 +218,7 @@ export const FootnotesSection = memo(function FootnotesSection() {
         label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
         value={fn.textAlign ?? bodyAlign ?? 'justify'}
         options={[
-          { value: 'left', label: labels.bodyTextAlignLeft },
+          { value: 'left', label: textSide.left },
           { value: 'justify', label: labels.bodyTextAlignJustify },
         ]}
         onChange={(v) => update({ textAlign: v as FootnotesConfig['textAlign'] })}

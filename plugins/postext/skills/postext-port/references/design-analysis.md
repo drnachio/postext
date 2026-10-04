@@ -91,6 +91,27 @@ A thread-bound woodblock edition (线装) has its furniture in the centre strip 
 title, fish-tail 鱼尾, chapter, leaf number). Postext sets one page per page, so reset such a book with
 fore-edge heads rather than a centre strip.
 
+## 2b. Arabic books: mirrored pages
+
+An Arabic book is an English book seen in a mirror, and Postext lays it out that way: measure it as you
+would an English book, but read every side from the start (right) of the text.
+
+- **Binding**: right; page 1 is the left page of its spread; a recto opener opens on a left page.
+- **Margins**: `page.margins.left` stays the *inner* margin with `mirror: true`; on an Arabic recto (odd,
+  left page) the inner margin is on the page's right. Measure inner/outer, not left/right.
+- **Columns**: column 1 is the right one; a side column at `'outer'` sits on the fore-edge.
+- **Type**: Naskh body 13–15 pt where Latin would be 10–11 pt; leading 1.55–1.7 em unvocalised, 1.7–1.85
+  partly vocalised, 1.9–2.1 em fully vocalised verse. Identify the face: Amiri (Būlāq look, curved kashidas),
+  Noto Naskh / a Monotype-style Naskh (straight kashidas), Kufi or Ruqʿa headings.
+- **Justification**: count elongated joins on a few lines; many long kashidas → keep `kashida: 'auto'` (and
+  `kashidaMaxLength` up to 1 em for a Būlāq look), none → `kashida: 'none'`.
+- **Furniture**: folio centred (often top centre between dashes in classical prints, `– ١٢ –`) or in the outer
+  corner; chapter title on left (odd) pages; classical prints may have no running head, only a ruled frame.
+- **Verse**: measure the hemistich width and the gap between ṣadr and ʿajuz (→ `:::verse{width=… gap=…}`);
+  note an ornament between them (٭, ✻).
+- **Notes**: «(١)» in the text, numbering per page or per chapter, the rule on the right.
+- **Digits**: ٠–٩ (Mashriq) or 0–9 (Maghreb) on folios and lists → `numerals` / the locale's region.
+
 ## 3. Type
 
 `pdf_extract.py roles` / `inventory.py` list every (font, size, colour) with

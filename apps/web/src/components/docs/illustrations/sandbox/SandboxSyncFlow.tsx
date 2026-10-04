@@ -11,9 +11,11 @@ export interface SandboxSyncFlowLabels {
   vdtSubtitle: string;
   canvasLabel: string;
   htmlLabel: string;
-  /** The Folio tab (the book in 3D), drawn between HTML and PDF when given. */
+  /** The Folio tab (the book in 3D), drawn between PDF and HTML when given. */
   folioLabel?: string;
   pdfLabel: string;
+  /** The EPUB 3 tab, drawn last when given. */
+  epubLabel?: string;
   singleSource: string;
 }
 
@@ -41,10 +43,19 @@ function DocGlyph({ cy }: { cy: number }) {
 export function SandboxSyncFlow({ labels }: { labels: SandboxSyncFlowLabels }) {
   // Geometry: two inputs merge at a junction, feed ONE central VDT,
   // a single stem leaves it and fans out to identical output tabs.
-  const outputs = [labels.canvasLabel, labels.htmlLabel, ...(labels.folioLabel ? [labels.folioLabel] : []), labels.pdfLabel];
-  // Box centres: three outputs at 58 / 130 / 202, four spread over a
-  // slightly taller figure.
-  const centres = outputs.length === 4 ? [36, 98, 160, 222] : [58, 130, 202];
+  // In the order of the Sandbox's tab bar.
+  const outputs = [
+    labels.canvasLabel,
+    labels.pdfLabel,
+    ...(labels.folioLabel ? [labels.folioLabel] : []),
+    labels.htmlLabel,
+    ...(labels.epubLabel ? [labels.epubLabel] : []),
+  ];
+  // Box centres: three outputs at 58 / 130 / 202, four or five spread over
+  // a slightly taller figure.
+  const centres = outputs.length >= 5
+    ? [26, 78, 130, 182, 234]
+    : outputs.length === 4 ? [36, 98, 160, 222] : [58, 130, 202];
   const inPaths = [
     "M190 79 C 232 79, 234 130, 256 130",
     "M190 181 C 232 181, 234 130, 256 130",
@@ -58,7 +69,7 @@ export function SandboxSyncFlow({ labels }: { labels: SandboxSyncFlowLabels }) {
       title={labels.title}
       desc={labels.desc}
       caption={labels.caption}
-      viewBox={`0 0 790 ${outputs.length === 4 ? 258 : 248}`}
+      viewBox={`0 0 790 ${outputs.length >= 5 ? 260 : outputs.length === 4 ? 258 : 248}`}
       maxWidth={790}
     >
       <defs>

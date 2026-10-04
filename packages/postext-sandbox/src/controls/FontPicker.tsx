@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useId, useSyncExternalStore, type RefObject } from 'react';
-import { chineseScriptOf, cjkRegionOf } from 'postext';
+import { chineseScriptOf, cjkRegionOf, localeScript } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { Popover, type PopoverCloseReason } from '../ui';
 import { FieldRow } from './FieldRow';
@@ -74,10 +74,20 @@ FALLBACK_FONTS.push(
   { family: 'LXGW WenKai TC', subsets: ['chinese-traditional', 'latin'] },
 );
 
+/** Arabic book faces on Google Fonts, in the order the picker offers them
+ *  to an Arabic document (book Naskhs first, then the display faces). */
+export const ARABIC_FONTS = [
+  'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', 'Markazi Text', 'Lateef',
+  'Noto Kufi Arabic', 'Reem Kufi', 'Aref Ruqaa', 'El Messiri',
+] as const;
+FALLBACK_FONTS.push(...ARABIC_FONTS.map((family) => ({ family, subsets: ['arabic', 'latin', 'latin-ext'] })));
+
 let cachedFonts: FontEntry[] | null = null;
 let fetchPromise: Promise<FontEntry[]> | null = null;
 
-async function fetchGoogleFonts(): Promise<FontEntry[]> {
+/** The Google families and their subsets, from Fontsource (once per
+ *  session; the built-in list when the API does not answer). */
+export async function fetchGoogleFonts(): Promise<FontEntry[]> {
   if (cachedFonts) return cachedFonts;
   if (fetchPromise) return fetchPromise;
 
@@ -110,15 +120,33 @@ export function chineseSubsetsFor(locale: string | undefined): string[] {
     : ['chinese-traditional', 'chinese-hongkong'];
 }
 
-/** The families first that cover the document's Chinese characters (in
- *  the order of `subsets`, then by name as listed), and the rest. */
-export function rankFontsForScript(fonts: readonly FontEntry[], subsets: readonly string[]): { script: FontEntry[]; other: FontEntry[] } {
+/** The Fontsource subsets that hold a document's own script, best first:
+ *  the Chinese ones (`chineseSubsetsFor`), `arabic` for a language written
+ *  in the Arabic script (Arabic, Persian, Urdu). None otherwise. */
+export function scriptSubsetsFor(locale: string | undefined): string[] {
+  const chinese = chineseSubsetsFor(locale);
+  if (chinese.length > 0) return chinese;
+  return locale !== undefined && localeScript(locale) === 'Arab' ? ['arabic'] : [];
+}
+
+/** The families first that cover the document's script (in the order of
+ *  `subsets`; within a subset, the `preferred` families in their order,
+ *  then the rest by name as listed), and the rest. */
+export function rankFontsForScript(
+  fonts: readonly FontEntry[],
+  subsets: readonly string[],
+  preferred: readonly string[] = [],
+): { script: FontEntry[]; other: FontEntry[] } {
   if (subsets.length === 0) return { script: [], other: [...fonts] };
   const rank = (f: FontEntry) => {
     const i = subsets.findIndex((s) => f.subsets.includes(s));
     return i === -1 ? Infinity : i;
   };
-  const script = fonts.filter((f) => rank(f) !== Infinity).sort((a, b) => rank(a) - rank(b));
+  const pref = (f: FontEntry) => {
+    const i = preferred.indexOf(f.family);
+    return i === -1 ? preferred.length : i;
+  };
+  const script = fonts.filter((f) => rank(f) !== Infinity).sort((a, b) => rank(a) - rank(b) || pref(a) - pref(b));
   return { script, other: fonts.filter((f) => rank(f) === Infinity) };
 }
 
@@ -157,8 +185,8 @@ function FontListItem({
       aria-selected={selected}
       role="option"
       className={selected
-        ? 'w-full px-3 py-1.5 text-left text-sm transition-colors'
-        : 'w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-(--background)'}
+        ? 'w-full px-3 py-1.5 text-start text-sm transition-colors'
+        : 'w-full px-3 py-1.5 text-start text-sm transition-colors hover:bg-(--background)'}
       style={{
         fontFamily: `"${font}", sans-serif`,
         backgroundColor: selected ? 'var(--brand)' : undefined,
@@ -204,7 +232,7 @@ export function FontPicker({
   // A Chinese document lists the families with its characters first; one
   // that names no language is in the interface's.
   const documentLocale = useSandboxSelector((s) => s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale));
-  const scriptSubsets = chineseSubsetsFor(documentLocale);
+  const scriptSubsets = scriptSubsetsFor(documentLocale);
   const customFonts = useSyncExternalStore(
     subscribeCustomFonts,
     getCustomFontSnapshot,
@@ -237,13 +265,17 @@ export function FontPicker({
   // collision doesn't render the same family twice.
   const customSet = new Set(customFonts);
   const filteredCustom = customFonts.filter(matches);
-  const ranked = rankFontsForScript(fonts.filter((f) => !customSet.has(f.family) && matches(f.family)), scriptSubsets);
+  const ranked = rankFontsForScript(
+    fonts.filter((f) => !customSet.has(f.family) && matches(f.family)),
+    scriptSubsets,
+    scriptSubsets[0] === 'arabic' ? ARABIC_FONTS : [],
+  );
   const filteredScript = ranked.script.map((f) => f.family);
   const filteredGoogle = ranked.other.map((f) => f.family);
   const hasAny = filteredCustom.length > 0 || filteredScript.length > 0 || filteredGoogle.length > 0;
-  const scriptGroupLabel = scriptSubsets[0] === 'chinese-simplified'
-    ? labels.fontPickerChineseSimplifiedGroup
-    : labels.fontPickerChineseTraditionalGroup;
+  const scriptGroupLabel = scriptSubsets[0] === 'arabic' ? labels.fontPickerArabicGroup
+    : scriptSubsets[0] === 'chinese-simplified' ? labels.fontPickerChineseSimplifiedGroup
+      : labels.fontPickerChineseTraditionalGroup;
 
   const pick = (font: string) => {
     onChange(font);
@@ -284,6 +316,7 @@ export function FontPicker({
       >
         <div style={{ padding: '8px 8px 4px' }}>
           <input
+            dir="auto"
             ref={searchRef}
             type="text"
             value={search}
@@ -365,7 +398,7 @@ function FontTrigger({ buttonRef, value, open, muted, onClick }: {
       aria-labelledby={ids ? `${ids.labelId} ${valueId}` : undefined}
       aria-describedby={ids?.descriptionId}
       className={cn(
-        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-1.5 pl-2 transition-colors',
+        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pe-1.5 ps-2 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

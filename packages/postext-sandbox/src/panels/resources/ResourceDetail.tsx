@@ -22,6 +22,7 @@ import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
 import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
 import type { TableCellPos, TableModel } from 'postext';
+import { flowSideLabels, useRightToLeftFlow } from '../../sidebar/settings/flowSides';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-2 py-1.5';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
@@ -148,7 +149,21 @@ export function ResourceDetail({
     else delete table.styleId;
     onChange(touch({ table }));
   };
-  const placementAlign = currentPlacement.align ?? 'left';
+  // `start` / `end` are synonyms of left / right for a float (#371).
+  const placementAlign = currentPlacement.align === 'start' ? 'left' : currentPlacement.align === 'end' ? 'right' : currentPlacement.align ?? 'left';
+  // In a right-to-left book the body's sides are mirrored: a float's
+  // `left` stands on the sheet's right.
+  const rtlBook = useRightToLeftFlow();
+  const floatSide = flowSideLabels(rtlBook, labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
+  // A table runs with the document unless it names its own direction.
+  const tableDirection = resource.table?.direction;
+  const tableRtl = tableDirection ? tableDirection === 'rtl' : rtlBook;
+  const setTableDirection = (direction: string) => {
+    const table: NonNullable<Resource['table']> = { ...(resource.table ?? { model: { rows: [] } }) };
+    if (direction === 'ltr' || direction === 'rtl') table.direction = direction;
+    else delete table.direction;
+    onChange(touch({ table }));
+  };
 
   // The id is edited locally and committed (renamed) on blur / Enter so the
   // detail pane is not remounted on every keystroke.
@@ -238,7 +253,7 @@ export function ResourceDetail({
       <PanelHeader
         title={
           <div className="flex min-w-0 flex-1 items-center gap-1">
-            <IconButton label={labels.resourceBack} icon={<ChevronLeft size={16} />} onClick={onBack} />
+            <IconButton label={labels.resourceBack} icon={<ChevronLeft size={16} className="rtl:-scale-x-100" />} onClick={onBack} />
             <span className="min-w-0 flex-1 truncate" title={resource.id}>
               {resource.id || labels.resourceUntitled}
             </span>
@@ -265,6 +280,7 @@ export function ResourceDetail({
           }
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -330,6 +346,7 @@ export function ResourceDetail({
 
         <Field label={labels.resourceAltLabel} hint={labels.resourceAltHint}>
           <input
+            dir="auto"
             type="text"
             value={resource.altText ?? ''}
             onChange={(e) => onChange(touch({ altText: e.target.value }))}
@@ -436,9 +453,9 @@ export function ResourceDetail({
                   className={inputClass}
                   style={{ ...inputStyle, opacity: alignApplies ? 1 : 0.5 }}
                 >
-                  <option value="left">{labels.headerFooterElementAlignLeft}</option>
+                  <option value="left">{floatSide.left}</option>
                   <option value="center">{labels.headerFooterElementAlignCenter}</option>
-                  <option value="right">{labels.headerFooterElementAlignRight}</option>
+                  <option value="right">{floatSide.right}</option>
                 </select>
               </div>
               {placementPosition !== 'here' && placementSpan === 'column' && (
@@ -516,8 +533,24 @@ export function ResourceDetail({
           </Field>
         )}
         {resource.kind === 'table' && (
+          <Field label={labels.resourceTableDirectionLabel} hint={labels.resourceTableDirectionHint}>
+            <select
+              value={tableDirection ?? ''}
+              onChange={(e) => setTableDirection(e.target.value)}
+              aria-label={labels.resourceTableDirectionLabel}
+              className={inputClass}
+              style={inputStyle}
+            >
+              <option value="">{labels.resourceTableDirectionDocument}</option>
+              <option value="ltr">{labels.documentDirectionLtr}</option>
+              <option value="rtl">{labels.documentDirectionRtl}</option>
+            </select>
+          </Field>
+        )}
+        {resource.kind === 'table' && (
           <Field label={labels.resourceTableLabel}>
             <TableEditor
+              direction={tableRtl ? 'rtl' : 'ltr'}
               model={resource.table?.model ?? { rows: [] }}
               onModelChange={(model: TableModel) =>
                 onChange(touch({ table: { ...resource.table, model } }))

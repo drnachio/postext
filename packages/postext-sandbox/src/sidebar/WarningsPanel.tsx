@@ -29,8 +29,11 @@ function iconFor(kind: WarningPayload['kind']) {
       return Type;
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'unbreakableWordOverflow':
+    case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'arabicMarksExceedLeading':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -98,8 +101,10 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'fontFamilyStack':
       return Type;
     case 'unknownNumberFormat':
+    case 'unknownNumerals':
       return List;
     case 'unknownConfigKey':
+    case 'unknownConfigValue':
       return FileWarning;
     case 'unsupportedHyphenationLocale':
     case 'missingGlyph':
@@ -125,10 +130,16 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLooseLineTitle;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineTitle;
+    case 'unbreakableWordOverflow':
+      return labels.warningsUnbreakableWordOverflowTitle;
+    case 'joiningScriptLetterSpacing':
+      return labels.warningsJoiningScriptLetterSpacingTitle;
     case 'cjkMarksExceedLeading':
       return labels.warningsCjkMarksLeadingTitle;
     case 'rubyExceedsLeading':
       return labels.warningsRubyLeadingTitle;
+    case 'arabicMarksExceedLeading':
+      return labels.warningsArabicMarksLeadingTitle;
     case 'headingHierarchy':
       return labels.warningsHeadingHierarchyTitle;
     case 'consecutiveHeadings':
@@ -236,8 +247,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsFontFamilyStackTitle;
     case 'unknownNumberFormat':
       return labels.warningsUnknownNumberFormatTitle;
+    case 'unknownNumerals':
+      return labels.warningsUnknownNumeralsTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
+    case 'unknownConfigValue':
+      return labels.warningsUnknownConfigValueTitle;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleTitle;
     case 'missingGlyph':
@@ -300,6 +315,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.ratio.toFixed(2)}× · ${labels.warningsThresholdLabel} ${payload.threshold.toFixed(2)}×`;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineDetail.replace('__text__', payload.text);
+    case 'unbreakableWordOverflow':
+      return labels.warningsUnbreakableWordOverflowDetail.replace('__text__', payload.text);
+    case 'joiningScriptLetterSpacing':
+      return labels.warningsJoiningScriptLetterSpacingDetail.replace('__text__', payload.text);
     case 'cjkMarksExceedLeading':
       return labels.warningsCjkMarksLeadingDetail
         .replace('__text__', payload.text)
@@ -310,6 +329,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__text__', payload.text)
         .replace('__need__', String(payload.neededEm))
         .replace('__gap__', String(payload.gapEm));
+    case 'arabicMarksExceedLeading':
+      return labels.warningsArabicMarksLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__pitch__', String(payload.lineHeightEm));
     case 'headingHierarchy':
       return `H${payload.from} → H${payload.to} · ${labels.warningsHeadingHierarchyDetail}`;
     case 'consecutiveHeadings':
@@ -439,8 +463,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path}: "${payload.value}" — ${labels.warningsFontFamilyStackDetail.replace('__used__', payload.used)}`;
     case 'unknownNumberFormat':
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumberFormatDetail.replace('__used__', payload.used)}`;
+    case 'unknownNumerals':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumeralsDetail.replace('__used__', payload.used)}`;
     case 'unknownConfigKey':
       return `${payload.path} — ${labels.warningsUnknownConfigKeyDetail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
+    case 'unknownConfigValue':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownConfigValueDetail.replace('__used__', payload.used)}`;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleDetail
         .replace('__locale__', payload.locale)
@@ -503,7 +531,7 @@ function WarningItem({
       title={title}
       subtitle={detail}
       tags={lineTag ? (
-        <span className="ml-auto shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
+        <span className="ms-auto shrink-0 text-[10px] font-medium" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>
           {lineTag}
         </span>
       ) : undefined}
@@ -579,11 +607,11 @@ function WarningGroup({ title, count, children }: { title: string; count: number
     <Collapsible.Root open={open} onOpenChange={setOpen} className="border-b border-(--rule)">
       <Collapsible.Trigger
         className={cn(
-          'flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-2 text-left text-xs font-semibold text-(--foreground) transition-colors',
+          'flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-2 text-start text-xs font-semibold text-(--foreground) transition-colors',
           'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
         )}
       >
-        <ChevronRight size={13} aria-hidden="true" className="shrink-0 text-(--slate)" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
+        <ChevronRight size={13} aria-hidden="true" className="shrink-0 text-(--slate) rtl:-scale-x-100" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
         <span className="min-w-0 flex-1">{title}</span>
         <span className="rounded-full bg-(--surface) px-1.5 text-[0.62rem] font-medium text-(--slate) tabular-nums">{count}</span>
       </Collapsible.Trigger>

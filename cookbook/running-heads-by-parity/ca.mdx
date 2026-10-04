@@ -1,0 +1,93 @@
+---
+title: "Capçaleres segons la paritat en un llibre d'assajos"
+summary: "Capçaleres per paritat i tipus de pàgina: el títol del llibre a les parelles, el de l'assaig tallat a les senars i només un foli al peu a les obertures."
+plain: "Cinc pàgines d'un llibre d'assajos de butxaca. Ensenya a posar el títol del llibre a dalt de les pàgines de l'esquerra i el de l'assaig a les de la dreta."
+description: "Un Montaigne de butxaca compost amb Postext: capçaleres per paritat i tipus de pàgina, folis en pestanyes al marge i títols llargs amb punts suspensius."
+question: "Com poso el títol del llibre a les pàgines parelles, el del capítol a les senars i el foli per fora?"
+aliases: ["capçalera", "titolet", "títol corrent", "capçaleres de pàgina parella i senar", "foli exterior", "foli en pestanya", "títol de capítol llarg", "tallar títol amb punts suspensius", "amagar capçalera a l'obertura", "color de la pàgina en blanc", "capçalera blava per defecte"]
+pageNotes: { "3": "La capçalera de la pàgina senar talla amb punts suspensius el títol de l'assaig, de 87 caràcters, abans d'un filet sèpia de 0,5 pt i de la pestanya del foli al marge exterior.", "4": "La pàgina 32 queda en blanc, sense capçalera ni foli: el capítol IV acaba a la 31 i el V ha d'obrir en senar." }
+---
+
+## Què compondràs
+
+Les pàgines 29 a 33 dels *Assajos* de Montaigne en edició de butxaca i traducció nova: el capítol IV sencer i l'inici del V. Les parelles porten el títol del llibre en versals espaiades, i les senars, el de l'assaig en cursiva, tallat amb punts suspensius perquè el del capítol IV té 87 caràcters. Cada foli va en una pestanya sèpia al marge exterior, a 3 mm d'un filet de 0,5 pt a la vora de la caixa. Les obertures només tenen un foli al peu, i la pàgina en blanc anterior al capítol V no porta capçalera ni foli. El text va en Baskervville sobre paper ossi; els títols, en Libre Caslon Display, i els folis i el títol del llibre, en Alegreya SC. La configuració defineix totes les capçaleres, així que la del motor (Open Sans de 8 pt, en blau) no s'imprimeix.
+
+## Elaboració
+
+### 1 · Substitueix la capçalera blava de sèrie
+
+<Excerpt region="palette" />
+
+Cada color de la configuració enllaça amb una d'aquestes entrades. Si deixes `header` sense definir, el motor dibuixa la seva capçalera de sèrie: `{title}` a les senars i `{chapterTitle}` a les parelles sobre un filet d'1 pt, en Open Sans 600 de 8 pt i en blau `#295AA3` ([encapçalaments i peus](/ca/docs/configuration#capçaleres-i-peus)). Si `main-color` pren el valor del sèpia, canvien els colors per defecte del text, però aquesta capçalera continua en blau, perquè les ranures de disseny no llegeixen la paleta. Per això aquí cada capçalera s'escriu sencera, amb els seus colors en hexadecimal. La negreta, la cursiva i les referències també prenen `main-color` per defecte, i `bodyText` els retorna el color de la tinta.
+
+### 2 · Totes les capçaleres surten d'una pestanya
+
+<Excerpt region="tab" />
+
+La resposta curta ancora a `'page'` la pestanya de cada capçalera, així que els seus desplaçaments es mesuren des del tall. Des de la cantonada `top-right`, una `x` positiva treu la pestanya de la pàgina; per això la de la senar la porta negativa. De la pestanya penja el filet, i del filet, el títol ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)). Les mesures de la pestanya van en constants perquè les altres peces es mesuren a partir d'aquestes. El filet fa `TAB_H` d'alt. El foli i els dos títols comparteixen una caixa de línia de 9 pt, i la línia de base d'un text de disseny cau al 80 % de l'alçada d'aquesta caixa, així que tots tres queden sobre la mateixa línia de base amb qualsevol cos.
+
+<PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Pàgina 30, parella: pestanya, filet i títol del llibre, cap endins des del marge exterior." />
+
+<PageShot page={3} crop="0.29,0.045,0.67,0.05" caption="Pàgina 31, senar: el títol de l'assaig, retallat abans del filet i de la pestanya del marge exterior." />
+
+### 3 · Marges en mirall i línies senceres
+
+<Excerpt region="page" />
+
+Amb `mirror: true`, el marge `right` és l'exterior a la pàgina senar i passa a l'esquerra a la parella, així que `OUTER` és sempre el del tall davanter, on pengen les pestanyes. El marge inferior es calcula a partir del format, del marge superior i de `LINES`, de manera que la caixa de text té exactament `LINES` línies de `LEAD` (aquí, 31 de 14 pt), tingui el format o el marge superior que tingui. Tota pàgina plena acaba a la línia 31, i per això dues pàgines encarades, com la <PageRef page={2}>30 i la 31</PageRef>, acaben a la mateixa altura.
+
+### 4 · L'obertura mostra el títol sencer
+
+<Excerpt region="opener" />
+
+L'obertura compon el títol complet amb `overflow: 'wrap'`, partit a cada `\\` de la línia del títol. Només una obertura a tota la pàgina respecta aquests salts, i d'aquí ve el `span: 'page'` del nivell ([salts de línia als títols](/ca/docs/document-format#salts-de-línia-als-títols)). A la capçalera, `{chapterTitle}` dona sempre el títol en una sola línia, i els punts suspensius tallen aquesta línia. El número romà surt de l'atribut `{num="IV"}` del títol, i les versaletes al costat de la placa, del `subtitle` del frontmatter.
+
+### 5 · Cada assaig obre en pàgina senar
+
+<Excerpt region="levels" />
+
+Qualsevol objecte `headings` desactiva el salt de pàgina de l'H1; per això aquí es torna a declarar. Amb `'odd'`, un assaig que acaba en senar va seguit d'una pàgina parella en blanc. Aquí el capítol IV acaba en <PageRef page={3}>una senar</PageRef>, de manera que la 32 queda en blanc i el V obre a la 33. El `pages: 'body'` de les capçaleres les deixa fora de les pàgines en blanc i de les obertures (les pàgines el primer bloc de les quals és aquest títol). El `pages: 'opener'` del peu imprimeix el foli només a les obertures ([elements de text](/ca/docs/configuration#elements-de-text)).
+
+### 6 · Els folis comencen pel 29
+
+<Excerpt region="build" />
+
+`parity` es calcula a partir del lloc que ocupa la pàgina al llibre, i el foli no hi intervé. `pageIndexOffset: 28` suma 28 a l'índex de cada pàgina, així que les senars i les parelles, els marges en mirall i les capçaleres de cada costat segueixen la pàgina del llibre. Després, `pageNumbering.startAt` numera aquestes pàgines del 29 al 33. Sense aquest desplaçament, la primera pàgina composta és senar, sigui quin sigui el seu foli. Amb el foli 29 coincideix per casualitat, però amb `startAt: 30` el títol del llibre cauria a la 31 i el de l'assaig a la 32, cadascun al costat equivocat del plec.
+
+## Variants
+
+### Posa un titolet curt als títols llargs
+
+Escriu el titolet a la línia del títol, `{num="IV" short="Los objetos falsos"}`, i imprimeix l'atribut en lloc del títol sencer; un capítol sense `short` no hi imprimeix res.
+
+```diff
+-  { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
++  { kind: 'text', id: 'essay', content: '{attr.short}', parity: 'odd', pages: 'body',
+```
+
+### Deixa que els assajos obrin a qualsevol pàgina
+
+Amb `'any'`, cada assaig comença a la pàgina següent, parella o senar, i mai no s'hi afegeix una pàgina en blanc. La placa penja de la cantonada superior esquerra de la caixa de text i el foli del peu va centrat a sota, així que tots dos queden igual en parella que en senar.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Pinta de sèpia la pàgina en blanc
+
+Un element `box` amb `pages: 'blank'` només s'imprimeix a les pàgines que afegeix el salt a senar: en aquesta edició omple de sèpia la pàgina 32, i l'edició anglesa, que no té pàgina en blanc, no canvia.
+
+```diff
+ const footer = { elements: [folio({ id: 'drop-folio', parity: 'all', pages: 'opener',
+-  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD })] };
++  anchor: { to: 'container', edge: 'bottom' }, y: -HEAD }),
++  { kind: 'box', id: 'blank-leaf', pages: 'blank', style: { backgroundColor: col('sepia') },
++    placement: { anchor: page('top-left'),
++      size: { width: mm(TRIM.width), height: mm(TRIM.height) } } }] };
+```
+
+## Errors freqüents
+
+- `CAP` està ajustat al títol de l'assaig IV a cada edició, l'únic que mostra aquí una capçalera. La de l'assaig V quedaria tallada a mitja paraula («Si el jefe de una plaza sitiada debe salir a parlam…»), així que un llibre de títols llargs necessita el titolet curt de les variants.
+- A l'edició anglesa, pujar `minWordSpacing` de 0,7 a 0,75 deixa la primera línia de l'assaig V («Quintus Marcius, the Roman legate…») sense cap tall dins de la forquilla, i els seus espais entre paraules s'obren fins a 2,4 vegades la seva amplada normal. A l'espanyola no passa. Després de qualsevol canvi, revisa les línies més obertes que llista la captura.

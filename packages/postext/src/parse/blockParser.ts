@@ -5,7 +5,7 @@
  * positions back into the original markdown.
  */
 
-import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
+import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
@@ -13,6 +13,7 @@ import { buildBlockMapping } from './sourceMapping';
 import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
 import { joinEastAsianLines } from './softBreaks';
+import { asciiDigits } from '../arabicNumerals';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -24,7 +25,7 @@ const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
-export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references']);
+export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line, after a space — or right
@@ -59,7 +60,10 @@ function isFenceLine(trimmed: string): boolean {
 /** A footnote definition: `[^id]:` opening a paragraph. */
 const FOOTNOTE_DEF_RE = /^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*/u;
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
-const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
+/** An ordered list item: its number in European, Arabic-Indic (١.) or
+ *  Persian (۱.) digits — what an Arabic or Persian keyboard types — then
+ *  `.` or `)`. */
+const ORDERED_LIST_ITEM_RE = /^(\s*)([0-9]+|[\u0660-\u0669]+|[\u06f0-\u06f9]+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 
 /** One-line `$$ ... $$` display math (the whole line is the formula). */
@@ -130,11 +134,62 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  */
 export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const marks = extractIndexMarks(markdown);
-  if (!marks) return attachContainerAnchors(parseBlocks(markdown));
+  if (!marks) return attachDirections(attachContainerAnchors(parseBlocks(markdown)));
   const result = parseBlocks(marks.text);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
-  return attachContainerAnchors(result);
+  return attachDirections(attachContainerAnchors(result));
+}
+
+/** The direction a `dir` attribute names (`{dir=rtl}`, any case), or
+ *  undefined for none or a value other than `ltr` / `rtl`. */
+function directionAttr(attrs: DirectiveAttrs | undefined): 'ltr' | 'rtl' | undefined {
+  const v = attrs?.dir?.trim().toLowerCase();
+  return v === 'ltr' || v === 'rtl' ? v : undefined;
+}
+
+/** The language a `lang` attribute names (`{lang=en}`), trimmed, or
+ *  undefined for none. */
+function langAttr(attrs: DirectiveAttrs | undefined): string | undefined {
+  const v = attrs?.lang?.trim();
+  return v ? v : undefined;
+}
+
+/**
+ * Block directions (#367): a heading's `{dir=…}` sets its own, a
+ * container's (`:::callout{dir=ltr}`, `:::paragraphs{dir=rtl}`) its own and
+ * that of every block inside it, down to a nested container or heading
+ * that sets another. Stamped on `ContentBlock.direction`, so the layout
+ * reads one field per block; blocks outside any `dir` keep none and follow
+ * the document's `direction`. A container's `lang` (`:::paragraphs{dir=ltr
+ * lang=en}`) is stamped the same way on `ContentBlock.lang` (#401).
+ */
+function attachDirections<T extends { blocks: ContentBlock[] }>(result: T): T {
+  const open: Array<'ltr' | 'rtl' | undefined> = [];
+  const langs: Array<string | undefined> = [];
+  for (const b of result.blocks) {
+    const inherited = open[open.length - 1];
+    const inheritedLang = langs[langs.length - 1];
+    if (b.type === 'containerStart') {
+      const d = directionAttr(b.containerAttrs) ?? inherited;
+      open.push(d);
+      if (d) b.direction = d;
+      const lang = langAttr(b.containerAttrs) ?? inheritedLang;
+      langs.push(lang);
+      if (lang) b.lang = lang;
+      continue;
+    }
+    if (b.type === 'containerEnd') {
+      open.pop();
+      langs.pop();
+      continue;
+    }
+    const own = b.type === 'heading' ? directionAttr(b.attrs) : b.verse ? directionAttr(b.verse.attrs) : undefined;
+    const d = own ?? inherited;
+    if (d) b.direction = d;
+    if (inheritedLang) b.lang = inheritedLang;
+  }
+  return result;
 }
 
 /** Text blocks an anchor can sit in. */
@@ -196,6 +251,93 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
 
   const lineEndOffset = (k: number): number =>
     lineOffsets[k]! + rawLines[k]!.length;
+
+  /** The spans, plain text and source map of a run of inline Markdown
+   *  (`raw`, whose source runs from `srcStart` to `srcEnd`): chips,
+   *  footnote markers, references, citations, swatches, maths and the
+   *  inline formatting, as a paragraph's text is read. */
+  const inlineRun = (raw: string, srcStart: number, srcEnd: number): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
+    const chipExtract = extractInlineChips(protectCodeSpans(raw), srcStart);
+    const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
+    const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
+    const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
+    const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
+    const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
+    issues.push(...mathExtract.issues);
+    const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
+      injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
+      refExtract.refs,
+    ), fnExtract.markers), chipExtract.chips);
+    return joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
+  };
+
+  /**
+   * A `:::verse` poem whose fence is line `start` (#378): every non-blank
+   * line up to the closing `:::` is a bayt, its two hemistichs split at the
+   * first `||` (or a `\\` with a space on each side, the Wikisource
+   * markup); a line without one is a single hemistich. The poem is one
+   * paragraph block (`ContentBlock.verse`) whose text joins the
+   * hemistichs with a tab and the bayts with a line feed; each hemistich
+   * is read as inline Markdown on its own, and the tab maps to the
+   * separator in the source, the line feed to the line's end. An unclosed
+   * poem runs to the end of the text. A poem with no line is dropped.
+   */
+  const parseVerse = (start: number, attrsRaw: string): { block?: ContentBlock; next: number } => {
+    let k = start + 1;
+    let text = '';
+    const spans: ContentBlock['spans'] = [];
+    const sourceMap: number[] = [];
+    const sep = (ch: string, at: number) => {
+      text += ch;
+      spans.push({ text: ch, bold: false, italic: false });
+      sourceMap.push(at);
+    };
+    const hemistich = (from: number, to: number) => {
+      const raw = markdown.slice(from, to);
+      const lead = raw.length - raw.trimStart().length;
+      const body = raw.trim();
+      if (body === '') return;
+      const run = inlineRun(body, from + lead, from + lead + body.length);
+      text += run.text;
+      spans.push(...run.spans);
+      sourceMap.push(...run.sourceMap);
+    };
+    let lastLine = start;
+    for (; k < rawLines.length; k++) {
+      const raw = rawLines[k]!;
+      if (CONTAINER_CLOSE_RE.test(raw.trim())) break;
+      if (raw.trim() === '') continue;
+      if (text !== '') sep('\n', lineOffsets[k]! - 1);
+      const lineStart = lineOffsets[k]!;
+      const bar = raw.indexOf('||');
+      const wiki = bar < 0 ? /\s\\\\\s/.exec(raw) : null;
+      const cut = bar >= 0 ? bar : wiki ? wiki.index + 1 : -1;
+      if (cut >= 0) {
+        hemistich(lineStart, lineStart + cut);
+        sep('\t', lineStart + cut);
+        hemistich(lineStart + cut + 2, lineStart + raw.length);
+      } else {
+        hemistich(lineStart, lineStart + raw.length);
+      }
+      lastLine = k;
+    }
+    const closed = k < rawLines.length;
+    const next = closed ? k + 1 : k;
+    if (text === '') return { next };
+    const attrs = parseDirectiveAttrs(attrsRaw);
+    return {
+      block: {
+        type: 'paragraph',
+        text,
+        spans,
+        verse: { attrs },
+        sourceStart: lineOffsets[start]!,
+        sourceEnd: closed ? lineEndOffset(k) : lineEndOffset(lastLine),
+        sourceMap,
+      },
+      next,
+    };
+  };
 
   // Open fenced containers, innermost last. Each entry remembers what it
   // needs to emit the matching `containerEnd` (or an `unclosedContainer`
@@ -365,6 +507,14 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       continue;
     }
 
+    // A poem (#378): `:::verse{attrs}` … `:::`, one bayt a line.
+    if (refsMatch && refsMatch[1] === 'verse') {
+      const verse = parseVerse(i, refsMatch[2] ?? '');
+      if (verse.block) blocks.push(verse.block);
+      i = verse.next;
+      continue;
+    }
+
     // Container opening fence — `:::name` / `:::name{attrs}` whose name is a
     // known container. Emits a `containerStart` marker; the blocks that
     // follow are parsed as usual until the matching closing fence.
@@ -519,7 +669,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
             markerLength = taskMatch[2]!.length + 1 + 3 + 1;
           } else if (orderedMatch) {
             listKind = 'ordered';
-            startNumber = parseInt(orderedMatch[2]!, 10);
+            startNumber = parseInt(asciiDigits(orderedMatch[2]!), 10);
             itemText = orderedMatch[4]!;
             // number digits + separator (1) + space (1)
             markerLength = orderedMatch[2]!.length + 1 + 1;
@@ -655,18 +805,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         srcStart += rawLines[startIdx]!.indexOf(def[0]) + def[0].length;
       }
       const srcEnd = lineEndOffset(lastIdx);
-      const chipExtract = extractInlineChips(protectCodeSpans(paraLines.join(' ')), srcStart);
-      const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
-      const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-      const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
-      const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
-      const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-      issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-        refExtract.refs,
-      ), fnExtract.markers), chipExtract.chips);
-      const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
+      const mapping = inlineRun(paraLines.join(' '), srcStart, srcEnd);
       blocks.push({
         type: 'paragraph',
         text: mapping.text,

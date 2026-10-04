@@ -17,6 +17,7 @@ export function InstallChip({ className, command = "pnpm add postext" }: { class
   return (
     <button
       type="button"
+      dir="ltr"
       onClick={copy}
       aria-label={copied ? t("copiedAriaLabel") : t("copyAriaLabel")}
       className={cn(
@@ -26,7 +27,7 @@ export function InstallChip({ className, command = "pnpm add postext" }: { class
     >
       <span className="text-brand">$</span>
       <span>{command}</span>
-      <span className="ml-2 text-slate transition-colors group-hover:text-brand">
+      <span className="ms-2 text-slate transition-colors group-hover:text-brand">
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       </span>
     </button>

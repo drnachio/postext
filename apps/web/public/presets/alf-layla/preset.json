@@ -1,0 +1,8433 @@
+{
+ "version": 2,
+ "configVersion": 8,
+ "id": "alf-layla",
+ "name": "ألف ليلة وليلة · One Thousand and One Nights",
+ "description": "Las mil y una noches completas en árabe, en el texto de Bulaq: un libro clásico egipcio encuadernado a la derecha, con marco de doble filete, las noches en palabras y las acuarelas de Sani ol-Molk · The complete Thousand and One Nights in Arabic, the Bulaq text: a classical Egyptian book bound on the right, with a double-ruled frame, the nights in words and Sani ol-Molk’s watercolours",
+ "locale": "ar",
+ "locales": [
+  "ar"
+ ],
+ "openLocale": "ar",
+ "thumbnail": "thumbnail.jpg",
+ "license": "Public domain · CC BY 4.0 · OFL fonts",
+ "credits": "مؤسسة هنداوي · Bulaq 1835 · صنيع الملك · William Harvey · Wikimedia Commons",
+ "tags": [
+  "book",
+  "arabic",
+  "right-to-left",
+  "right-bound",
+  "verse",
+  "plates",
+  "parts"
+ ],
+ "view": {
+  "canvasScope": "chapter"
+ },
+ "chapters": {
+  "ar": [
+   {
+    "title": "الغلاف",
+    "file": "chapters/ar/000a-cover.md"
+   },
+   {
+    "title": "كلمة في هذه الطبعة",
+    "file": "chapters/ar/000b-note.md"
+   },
+   {
+    "title": "بسم الله الرحمن الرحيم (الأول)",
+    "file": "chapters/ar/100-basmala-v1.md"
+   },
+   {
+    "title": "حكايات الملك شهريار وأخيه الملك شاه زمان",
+    "file": "chapters/ar/101-frame.md"
+   },
+   {
+    "title": "حكاية التاجر مع العفريت",
+    "file": "chapters/ar/102-merchant-jinni.md"
+   },
+   {
+    "title": "حكاية الصياد مع العفريت",
+    "file": "chapters/ar/103-fisherman-jinni.md"
+   },
+   {
+    "title": "حكاية الحمَّال مع البنات",
+    "file": "chapters/ar/104-porter-ladies.md"
+   },
+   {
+    "title": "حكاية الصبية والتفاح وريحان العبد",
+    "file": "chapters/ar/105-three-apples.md"
+   },
+   {
+    "title": "حكاية الأحدب والنصراني والمباشر واليهودي والخياط",
+    "file": "chapters/ar/106-hunchback.md"
+   },
+   {
+    "title": "حكاية أنيس الجليس وعلي نور",
+    "file": "chapters/ar/107-anis-al-jalis.md"
+   },
+   {
+    "title": "حكاية التاجر أيوب وابنه غانم وابنته فتنة",
+    "file": "chapters/ar/108-ghanim.md"
+   },
+   {
+    "title": "حكاية الملك عمر النعمان مع ولدَيْه بشركان وضوء المكان",
+    "file": "chapters/ar/109-umar-numan.md"
+   },
+   {
+    "title": "زفاف نزهة الزمان إلى الملك شركان",
+    "file": "chapters/ar/110-nuzhat-wedding.md"
+   },
+   {
+    "title": "حكاية مقتل الملك عمر النعمان",
+    "file": "chapters/ar/111-umar-death.md"
+   },
+   {
+    "title": "حكاية الدير",
+    "file": "chapters/ar/112-convent.md"
+   },
+   {
+    "title": "حكاية عزيز وعزيزة والملك سليمان",
+    "file": "chapters/ar/113-taj-al-muluk.md"
+   },
+   {
+    "title": "حكاية الأميرة دنيا مع تاج الملوك",
+    "file": "chapters/ar/114-dunya-taj-al-muluk.md"
+   },
+   {
+    "title": "مغامرة كان ما كان ابن ضوء المكان",
+    "file": "chapters/ar/115-kan-ma-kan.md"
+   },
+   {
+    "title": "حكايةٌ طريفةٌ تتعلَّق بالطيور والحيوان",
+    "file": "chapters/ar/116-birds-beasts.md"
+   },
+   {
+    "title": "حكاية علي بن بكار وشمس النهار",
+    "file": "chapters/ar/117-ali-bakkar.md"
+   },
+   {
+    "title": "حكاية قمر الزمان مع الملكة بدور",
+    "file": "chapters/ar/118-qamar-zaman-budur.md"
+   },
+   {
+    "title": "حكاية نعمة ونِعَم",
+    "file": "chapters/ar/119-nima-num.md"
+   },
+   {
+    "title": "حكاية علاء الدين أبي الشامات",
+    "file": "chapters/ar/120-alaeddin-shamat.md"
+   },
+   {
+    "title": "حكاية حاتم الطائي وحكايات أخرى",
+    "file": "chapters/ar/121-g-hatim.md"
+   },
+   {
+    "title": "حكاية الخليفة المزوَّر وحكايات أخرى",
+    "file": "chapters/ar/122-g-false-caliph.md"
+   },
+   {
+    "title": "حكاية علي شار وزمرد",
+    "file": "chapters/ar/123-ali-shar-zumurrud.md"
+   },
+   {
+    "title": "حكاية جبير بن عمير والست بدور",
+    "file": "chapters/ar/124-jubayr-budur.md"
+   },
+   {
+    "title": "حكاية اليمني والست جوارٍ",
+    "file": "chapters/ar/125-yemeni-six-slave-girls.md"
+   },
+   {
+    "title": "حكاية الرجل والصحن من ذهب وحكايات أخرى",
+    "file": "chapters/ar/126-g-golden-plate.md"
+   },
+   {
+    "title": "حكاية الفرس الطائر",
+    "file": "chapters/ar/127-ebony-horse.md"
+   },
+   {
+    "title": "حكاية أنس الوجود والورد في الأكمام",
+    "file": "chapters/ar/128-uns-al-wujud.md"
+   },
+   {
+    "title": "حكاية أبي نواس والغلمان الحسان وحكايات أخرى",
+    "file": "chapters/ar/129-g-abu-nuwas.md"
+   },
+   {
+    "title": "حكاية علي المصري التاجر من بغداد",
+    "file": "chapters/ar/130-ali-misri.md"
+   },
+   {
+    "title": "حكاية الجارية تودُّد",
+    "file": "chapters/ar/131-tawaddud.md"
+   },
+   {
+    "title": "حكاية الملك المغرور وملك الموت وحكايات أخرى",
+    "file": "chapters/ar/132-g-angel-of-death.md"
+   },
+   {
+    "title": "حكاية مغامرات حاسب كريم الدين",
+    "file": "chapters/ar/133-hasib-karim-al-din.md"
+   },
+   {
+    "title": "بسم الله الرحمن الرحيم (الرابع)",
+    "file": "chapters/ar/134-basmala-v4.md"
+   },
+   {
+    "title": "حكاية سندباد البحري",
+    "file": "chapters/ar/135-sindbad.md"
+   },
+   {
+    "title": "حكاية مدينة النحاس",
+    "file": "chapters/ar/136-city-of-brass.md"
+   },
+   {
+    "title": "حكاية الملك وولده والجارية والوزراء السبعة",
+    "file": "chapters/ar/137-seven-viziers.md"
+   },
+   {
+    "title": "حكاية جودر الصياد وأخويه",
+    "file": "chapters/ar/138-judar.md"
+   },
+   {
+    "title": "حكاية عجيب وغريب",
+    "file": "chapters/ar/139-ajib-gharib.md"
+   },
+   {
+    "title": "حكاية عتبة وريَّا وحكايات أخرى",
+    "file": "chapters/ar/140-g-utbah.md"
+   },
+   {
+    "title": "حكاية دليلة المحتالة",
+    "file": "chapters/ar/141-dalila.md"
+   },
+   {
+    "title": "حكاية علي الزيبق المصري",
+    "file": "chapters/ar/142-ali-zaybaq.md"
+   },
+   {
+    "title": "حكاية أردشير وحياة النفوس",
+    "file": "chapters/ar/143-ardashir.md"
+   },
+   {
+    "title": "حكاية أردشير وحياة النفوس",
+    "file": "chapters/ar/144-ardashir-v5.md"
+   },
+   {
+    "title": "حكاية جلناز وبدر باسم",
+    "file": "chapters/ar/145-julnar.md"
+   },
+   {
+    "title": "حكاية سيف الملوك وبديعة الجمال",
+    "file": "chapters/ar/146-sayf-al-muluk.md"
+   },
+   {
+    "title": "حكاية حسن الصائغ",
+    "file": "chapters/ar/147-hasan-basra.md"
+   },
+   {
+    "title": "خليفة الصياد",
+    "file": "chapters/ar/148-khalifa-fisherman.md"
+   },
+   {
+    "title": "مسرور وزين المواصف",
+    "file": "chapters/ar/149-masrur-zayn.md"
+   },
+   {
+    "title": "حكاية علي نور الدين ومريم",
+    "file": "chapters/ar/150-ali-nur-maryam.md"
+   },
+   {
+    "title": "حكاية علي نور الدين ومريم",
+    "file": "chapters/ar/151-ali-nur-maryam-v6.md"
+   },
+   {
+    "title": "حكاية الأمير شجاع الدين والمرأة الإفرنجية وحكايات أخرى",
+    "file": "chapters/ar/152-g-shuja.md"
+   },
+   {
+    "title": "حكاية الملك جليعاد والشماس",
+    "file": "chapters/ar/153-jaliad-shimas.md"
+   },
+   {
+    "title": "حكاية أبي قِير وأبي صِير",
+    "file": "chapters/ar/154-abu-qir-abu-sir.md"
+   },
+   {
+    "title": "حكاية عبد الله البحري وعبد الله البرِّي",
+    "file": "chapters/ar/155-abdallah-sea.md"
+   },
+   {
+    "title": "حكاية هارون الرشيد وأبي الحسن العماني",
+    "file": "chapters/ar/156-rashid-abu-hasan-omani.md"
+   },
+   {
+    "title": "حكاية إبراهيم وجميلة",
+    "file": "chapters/ar/157-ibrahim-jamila.md"
+   },
+   {
+    "title": "حكاية أبي الحسن الخراساني",
+    "file": "chapters/ar/158-abu-hasan-khorasani.md"
+   },
+   {
+    "title": "حكاية قمر الزمان وزوجة الجوهري",
+    "file": "chapters/ar/159-qamar-zaman-jeweller.md"
+   },
+   {
+    "title": "حكاية عبد الله بن فاضل وأخوَيْه",
+    "file": "chapters/ar/160-abdallah-fadil.md"
+   },
+   {
+    "title": "حكاية الإسكافي معروف",
+    "file": "chapters/ar/161-maruf.md"
+   },
+   {
+    "title": "الخاتمة",
+    "file": "chapters/ar/162-conclusion.md"
+   },
+   {
+    "title": "الفهرس",
+    "file": "chapters/ar/900-fihris.md"
+   },
+   {
+    "title": "خاتمة الطبع",
+    "file": "chapters/ar/901-colophon.md"
+   },
+   {
+    "title": "المصادر والحقوق",
+    "file": "chapters/ar/902-credits.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "ar",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 170.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 240.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 31.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 22.381,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 21.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 25.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "single"
+  },
+  "bodyText": {
+   "fontFamily": "Amiri",
+   "fontSize": {
+    "value": 13.0,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 23.0,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 1,
+    "unit": "em"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#1f1a14",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1f1a14",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1f1a14",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "emphasis": "bold",
+   "avoidWidows": true,
+   "avoidOrphans": true
+  },
+  "headings": {
+   "fontFamily": "Amiri",
+   "color": {
+    "hex": "#1f1a14",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "textAlign": "center",
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 19,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 29,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "any"
+     },
+     "marginBottom": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "slot": {
+       "elements": [
+        {
+         "kind": "image",
+         "id": "headpiece",
+         "resourceId": "headpiece",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 0.0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0.0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 124.0,
+            "unit": "mm"
+           },
+           "height": {
+            "value": 31.0,
+            "unit": "mm"
+           }
+          }
+         },
+         "decorative": true
+        },
+        {
+         "kind": "text",
+         "id": "title",
+         "placement": {
+          "anchor": {
+           "to": "#headpiece",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 4.5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 124.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Amiri",
+         "fontSize": {
+          "value": 19,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.55,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1f1a14",
+          "model": "hex",
+          "paletteId": "ink"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "mark",
+         "placement": {
+          "anchor": {
+           "to": "#title",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0.5,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 124.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "۞",
+         "fontFamily": "Amiri",
+         "fontSize": {
+          "value": 12,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#9a2f1f",
+          "model": "hex",
+          "paletteId": "rubric"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 15,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#9a2f1f",
+      "model": "hex",
+      "paletteId": "rubric"
+     },
+     "marginTop": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 11.5,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 3,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginTop": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 11.5,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 4,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 13.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginTop": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 11.5,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 5,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 13.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginTop": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 0,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 6,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 13.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginTop": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 0,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "cover",
+    "name": "الغلاف",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 186.619,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "leather",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#4a1d17",
+          "model": "hex",
+          "paletteId": "leather"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "c-frame",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 11.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 11.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 148.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 218.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#d2ad5c",
+          "model": "hex",
+          "paletteId": "gold"
+         },
+         "borderWidth": {
+          "value": 2.2,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "c-frame-in",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 14.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 14.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 142.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 212.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#d2ad5c",
+          "model": "hex",
+          "paletteId": "gold"
+         },
+         "borderWidth": {
+          "value": 0.6,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "c-head",
+        "resourceId": "headpiece-gold",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 20.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 122.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "c-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 11.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 62,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 148.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "ألف ليلة وليلة",
+        "fontFamily": "Aref Ruqaa",
+        "fontSize": {
+         "value": 46,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#d2ad5c",
+         "model": "hex",
+         "paletteId": "gold"
+        }
+       },
+       {
+        "kind": "box",
+        "id": "c-panel-rule",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 25.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 102,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 120,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 73.907,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#d2ad5c",
+          "model": "hex",
+          "paletteId": "gold"
+         },
+         "borderWidth": {
+          "value": 0.9,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "c-panel",
+        "resourceId": "cover-panel",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 104,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 116,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "c-sub",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 11.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 189,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 148.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "في ستة أجزاء",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 17,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#d2ad5c",
+         "model": "hex",
+         "paletteId": "gold"
+        }
+       },
+       {
+        "kind": "image",
+        "id": "c-rosette",
+        "resourceId": "rosette-gold",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 204,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 13,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    }
+   },
+   {
+    "id": "titlepage",
+    "name": "صفحة العنوان",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 186.619,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "frame-tp-odd-all",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 16.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 19.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 133.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 203.619,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#1f1a14",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "borderWidth": {
+          "value": 1.3,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "parity": "odd",
+        "pages": "all"
+       },
+       {
+        "kind": "box",
+        "id": "frame-in-tp-odd-all",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 17.8,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 20.3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 130.4,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 201.019,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#1f1a14",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "borderWidth": {
+          "value": 0.45,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "parity": "odd",
+        "pages": "all"
+       },
+       {
+        "kind": "image",
+        "id": "tp-head",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 21.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 35.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "tp-title",
+        "placement": {
+         "anchor": {
+          "to": "#tp-head",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 14,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "ألف ليلة وليلة",
+        "fontFamily": "Aref Ruqaa",
+        "fontSize": {
+         "value": 40,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-sub",
+        "placement": {
+         "anchor": {
+          "to": "#tp-title",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "وهي الحكايات العجيبة والأخبار الغريبة\\nالتي حدّثت بها شهرزاد الملك شهريار",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.7,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-vol",
+        "placement": {
+         "anchor": {
+          "to": "#tp-sub",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 7,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "في ستة أجزاء",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 15,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-ed",
+        "placement": {
+         "anchor": {
+          "to": "#tp-vol",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 10,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "على نص طبعة بولاق، بضبط مؤسسة هنداوي",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 12.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.6,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-pic",
+        "placement": {
+         "anchor": {
+          "to": "#tp-ed",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "مزيّنة بتصاوير صنيع الملك ورسوم وليم هارفي",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 12.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.6,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "image",
+        "id": "tp-rosette",
+        "resourceId": "rosette",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 76.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 183.619,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 14,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "tp-imprint",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 21.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 205.619,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Postext · ١٤٤٨هـ / ٢٠٢٦م",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 11,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#6b5f52",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "margins": {
+     "top": {
+      "value": 162.0,
+      "unit": "mm"
+     }
+    },
+    "bodyStyle": {
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "textAlign": "center"
+    }
+   },
+   {
+    "id": "front",
+    "name": "مقدمات",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "frame-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-odd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 43.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 39.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "ألف ليلة وليلة",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      }
+     ]
+    },
+    "marginBottom": {
+     "value": 23.0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "back",
+    "name": "الفهرس",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "frame-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-odd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 43.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 39.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "ألف ليلة وليلة",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      }
+     ]
+    },
+    "marginBottom": {
+     "value": 23.0,
+     "unit": "pt"
+    },
+    "toc": false
+   },
+   {
+    "id": "credits",
+    "name": "المصادر",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "frame-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-odd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 43.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 39.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "ألف ليلة وليلة",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      }
+     ]
+    },
+    "marginBottom": {
+     "value": 23.0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "colophon",
+    "name": "خاتمة الطبع",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "box",
+       "id": "frame-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 20.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-odd-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 21.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-odd-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 25.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-odd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 43.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "odd",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-body",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-body",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "box",
+       "id": "frame-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 16.5,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 19.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 133.0,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 203.619,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 1.3,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "box",
+       "id": "frame-in-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 20.3,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 201.019,
+          "unit": "mm"
+         }
+        }
+       },
+       "style": {
+        "borderColor": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "borderWidth": {
+         "value": 0.45,
+         "unit": "pt"
+        },
+        "borderRadius": {
+         "value": 0,
+         "unit": "mm"
+        }
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "rule",
+       "id": "band-even-opener",
+       "direction": "horizontal",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 17.8,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 27.0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 130.4,
+          "unit": "mm"
+         }
+        }
+       },
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "thickness": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "folio-even-opener",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 129.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 16,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "opener"
+      },
+      {
+       "kind": "text",
+       "id": "head-even",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 39.0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 21.322,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 88.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "ألف ليلة وليلة",
+       "fontFamily": "Amiri",
+       "fontSize": {
+        "value": 11,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "parity": "even",
+       "pages": "body"
+      }
+     ]
+    },
+    "marginBottom": {
+     "value": 23.0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cycle",
+    "name": "حكاية من سيرة",
+    "numbered": false,
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "cycle",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.cycle}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 11.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "#cycle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "mark",
+        "placement": {
+         "anchor": {
+          "to": "#title",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "۞",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 12,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "continued",
+    "name": "تتمة حكاية",
+    "numbered": false,
+    "toc": false,
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "cont",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "تتمة",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 11.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "title",
+        "placement": {
+         "anchor": {
+          "to": "#cont",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 19,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.55,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "mark",
+        "placement": {
+         "anchor": {
+          "to": "#title",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "۞",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 12,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "basmala",
+    "name": "البسملة",
+    "numbered": false,
+    "toc": false,
+    "advancedDesign": {
+     "enabled": true,
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "headpiece",
+        "resourceId": "headpiece",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 31.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "basmala",
+        "placement": {
+         "anchor": {
+          "to": "#headpiece",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 20,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.6,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1f1a14",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "night",
+    "name": "ليلة",
+    "numbered": false,
+    "toc": false,
+    "runningChapter": false,
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 13.5,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "lineHeight": {
+     "value": 23.0,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#9a2f1f",
+     "model": "hex",
+     "paletteId": "rubric"
+    },
+    "marginTop": {
+     "value": 23.0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 8.114,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "night",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 124.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "۞  {titleText}  ۞",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 13.5,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.7037037037037037,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#9a2f1f",
+         "model": "hex",
+         "paletteId": "rubric"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "taper",
+    "name": "خاتمة",
+    "textAlign": "center",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "imprint",
+    "name": "بيانات الطبع",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "textAlign": "center",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "credits",
+    "name": "المصادر",
+    "fontSize": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 19,
+     "unit": "pt"
+    },
+    "textAlign": "justify",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "credits-en",
+    "name": "Sources (English)",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "spaceBetween": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 23.0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "verse",
+    "name": "شعر",
+    "marginTop": {
+     "value": 11.5,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "note",
+    "name": "تنبيه",
+    "textAlign": "justify",
+    "firstLineIndent": {
+     "value": 1,
+     "unit": "em"
+    }
+   }
+  ],
+  "parts": {
+   "breakBefore": {
+    "parity": "odd"
+   },
+   "breakAfter": {
+    "enabled": true,
+    "parity": "odd"
+   },
+   "margins": {
+    "top": {
+     "value": 150,
+     "unit": "mm"
+    }
+   },
+   "design": {
+    "elements": [
+     {
+      "kind": "box",
+      "id": "frame-part-odd-all",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 16.5,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 19.0,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 133.0,
+         "unit": "mm"
+        },
+        "height": {
+         "value": 203.619,
+         "unit": "mm"
+        }
+       }
+      },
+      "style": {
+       "borderColor": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "borderWidth": {
+        "value": 1.3,
+        "unit": "pt"
+       },
+       "borderRadius": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "parity": "odd",
+      "pages": "all"
+     },
+     {
+      "kind": "box",
+      "id": "frame-in-part-odd-all",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 17.8,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 20.3,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 130.4,
+         "unit": "mm"
+        },
+        "height": {
+         "value": 201.019,
+         "unit": "mm"
+        }
+       }
+      },
+      "style": {
+       "borderColor": {
+        "hex": "#1f1a14",
+        "model": "hex",
+        "paletteId": "ink"
+       },
+       "borderWidth": {
+        "value": 0.45,
+        "unit": "pt"
+       },
+       "borderRadius": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "parity": "odd",
+      "pages": "all"
+     },
+     {
+      "kind": "image",
+      "id": "part-head",
+      "resourceId": "headpiece",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 21.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 35.0,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 124.0,
+         "unit": "mm"
+        },
+        "height": {
+         "value": 31.0,
+         "unit": "mm"
+        }
+       }
+      },
+      "decorative": true
+     },
+     {
+      "kind": "text",
+      "id": "part-book",
+      "placement": {
+       "anchor": {
+        "to": "#part-head",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 18,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 124.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "ألف ليلة وليلة",
+      "fontFamily": "Aref Ruqaa",
+      "fontSize": {
+       "value": 18,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "center",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "part-title",
+      "placement": {
+       "anchor": {
+        "to": "#part-book",
+        "edge": "below"
+       },
+       "offset": {
+        "x": {
+         "value": 0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 8,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 124.0,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Aref Ruqaa",
+      "fontSize": {
+       "value": 34,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "center",
+      "verticalAlign": "middle",
+      "lineHeight": 1.4,
+      "overflow": "wrap",
+      "color": {
+       "hex": "#9a2f1f",
+       "model": "hex",
+       "paletteId": "rubric"
+      }
+     },
+     {
+      "kind": "image",
+      "id": "part-rosette",
+      "resourceId": "rosette",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 75.0,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 128,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 16,
+         "unit": "mm"
+        },
+        "height": "auto"
+       }
+      },
+      "decorative": true
+     }
+    ]
+   },
+   "bodyStyle": {
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 23.0,
+     "unit": "pt"
+    },
+    "textAlign": "center"
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 12.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "numberWidth": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "marginTop": {
+      "value": 3,
+      "unit": "pt"
+     }
+    },
+    {
+     "level": 2,
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 12,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 23.0,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "indent": {
+      "value": 1.5,
+      "unit": "em"
+     },
+     "numberWidth": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "numberGap": {
+      "value": 0,
+      "unit": "mm"
+     }
+    }
+   ],
+   "pageNumber": {
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a14",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   },
+   "parts": {
+    "enabled": true,
+    "height": {
+     "value": 46.0,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "design": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "toc-part",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "center"
+        },
+        "offset": {
+         "x": {
+          "value": 0,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 124.0,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{titleText}",
+       "fontFamily": "Aref Ruqaa",
+       "fontSize": {
+        "value": 16,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "center",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "wrap",
+       "color": {
+        "hex": "#9a2f1f",
+        "model": "hex",
+        "paletteId": "rubric"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "box",
+     "id": "frame-odd-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 20.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 19.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 133.0,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 203.619,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 1.3,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "box",
+     "id": "frame-in-odd-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 21.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 20.3,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 201.019,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 0.45,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "rule",
+     "id": "band-odd-body",
+     "direction": "horizontal",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 21.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 27.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       }
+      }
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "thickness": {
+      "value": 0.45,
+      "unit": "pt"
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folio-odd-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 25.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 16,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "box",
+     "id": "frame-odd-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 20.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 19.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 133.0,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 203.619,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 1.3,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "odd",
+     "pages": "opener"
+    },
+    {
+     "kind": "box",
+     "id": "frame-in-odd-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 21.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 20.3,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 201.019,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 0.45,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "odd",
+     "pages": "opener"
+    },
+    {
+     "kind": "rule",
+     "id": "band-odd-opener",
+     "direction": "horizontal",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 21.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 27.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       }
+      }
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "thickness": {
+      "value": 0.45,
+      "unit": "pt"
+     },
+     "parity": "odd",
+     "pages": "opener"
+    },
+    {
+     "kind": "text",
+     "id": "folio-odd-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 25.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 16,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "opener"
+    },
+    {
+     "kind": "text",
+     "id": "head-odd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 43.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 88.0,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body"
+    },
+    {
+     "kind": "box",
+     "id": "frame-even-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 16.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 19.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 133.0,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 203.619,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 1.3,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "box",
+     "id": "frame-in-even-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 17.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 20.3,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 201.019,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 0.45,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "rule",
+     "id": "band-even-body",
+     "direction": "horizontal",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 17.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 27.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       }
+      }
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "thickness": {
+      "value": 0.45,
+      "unit": "pt"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folio-even-body",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 129.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 16,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    },
+    {
+     "kind": "box",
+     "id": "frame-even-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 16.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 19.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 133.0,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 203.619,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 1.3,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "even",
+     "pages": "opener"
+    },
+    {
+     "kind": "box",
+     "id": "frame-in-even-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 17.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 20.3,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       },
+       "height": {
+        "value": 201.019,
+        "unit": "mm"
+       }
+      }
+     },
+     "style": {
+      "borderColor": {
+       "hex": "#1f1a14",
+       "model": "hex",
+       "paletteId": "ink"
+      },
+      "borderWidth": {
+       "value": 0.45,
+       "unit": "pt"
+      },
+      "borderRadius": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     "parity": "even",
+     "pages": "opener"
+    },
+    {
+     "kind": "rule",
+     "id": "band-even-opener",
+     "direction": "horizontal",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 17.8,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 27.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 130.4,
+        "unit": "mm"
+       }
+      }
+     },
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "thickness": {
+      "value": 0.45,
+      "unit": "pt"
+     },
+     "parity": "even",
+     "pages": "opener"
+    },
+    {
+     "kind": "text",
+     "id": "folio-even-opener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 129.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 16,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "opener"
+    },
+    {
+     "kind": "text",
+     "id": "head-even",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 39.0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 21.322,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 88.0,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "ألف ليلة وليلة",
+     "fontFamily": "Amiri",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1f1a14",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body"
+    }
+   ]
+  },
+  "footer": {
+   "elements": []
+  },
+  "captionStyle": {
+   "fontFamily": "Amiri",
+   "fontSize": {
+    "value": 11.5,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1f1a14",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "center",
+   "labelBold": false,
+   "note": {
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b5f52",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "align": "center",
+    "gap": {
+     "value": 1,
+     "unit": "pt"
+    }
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "main-color",
+    "name": "اللون الرئيسي",
+    "value": {
+     "hex": "#1f1a14",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "ink",
+    "name": "حبر",
+    "value": {
+     "hex": "#1f1a14",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rubric",
+    "name": "حمرة",
+    "value": {
+     "hex": "#9a2f1f",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "ورق",
+    "value": {
+     "hex": "#f6efdf",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "tint",
+    "name": "صفرة",
+    "value": {
+     "hex": "#efe3c6",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "leather",
+    "name": "جلد",
+    "value": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "gold",
+    "name": "ذهب",
+    "value": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "goldDark",
+    "name": "ذهب داكن",
+    "value": {
+     "hex": "#a8823a",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "رمادي",
+    "value": {
+     "hex": "#6b5f52",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "plate",
+    "name": "لوحة",
+    "namePlural": "لوحات",
+    "shortLabel": "لوحة",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "page",
+     "width": 1,
+     "align": "center"
+    }
+   },
+   {
+    "id": "ornament",
+    "name": "زخرفة",
+    "namePlural": "زخارف",
+    "shortLabel": "زخرفة",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal"
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  },
+  "folio": {
+   "paper": {
+    "type": "bible",
+    "grammage": 40,
+    "bulk": 1.3,
+    "texture": "laid",
+    "textureStrength": 0.5,
+    "shade": {
+     "hex": "#f3ead6",
+     "model": "hex"
+    }
+   },
+   "binding": {
+    "type": "hardcover",
+    "cover": "pages",
+    "coverMaterial": "leather",
+    "coverColor": {
+     "hex": "#4a1d17",
+     "model": "hex",
+     "paletteId": "leather"
+    },
+    "spineImage": "spine"
+   },
+   "surface": {
+    "type": "walnut"
+   },
+   "lighting": {
+    "environment": "lamp"
+   }
+  }
+ },
+ "localized": {
+  "ar": {}
+ },
+ "resources": [
+  {
+   "id": "sani-01a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-01a.jpg",
+   "width": 1300,
+   "height": 848,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الصياد يحمل السمك الملوَّن إلى الملك",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الصياد يحمل السمك الملوَّن إلى الملك"
+  },
+  {
+   "id": "sani-01b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-01b.jpg",
+   "width": 1300,
+   "height": 703,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الصبية تخرج من الحائط وتكلِّم السمك في المقلاة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الصبية تخرج من الحائط وتكلِّم السمك في المقلاة"
+  },
+  {
+   "id": "sani-01c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-01c.jpg",
+   "width": 1300,
+   "height": 707,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "السمك في المقلاة بين يدي الملك والوزير",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: السمك في المقلاة بين يدي الملك والوزير"
+  },
+  {
+   "id": "sani-12a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-12a.jpg",
+   "width": 648,
+   "height": 663,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.684,
+    "align": "center"
+   },
+   "caption": "بنت العم تضرب زوجها المسحور، ونصفه حجر",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: بنت العم تضرب زوجها المسحور، ونصفه حجر"
+  },
+  {
+   "id": "sani-12b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-12b.jpg",
+   "width": 664,
+   "height": 629,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.739,
+    "align": "center"
+   },
+   "caption": "الساحرة تسحر المدينة بحيرةً وأهلها سمكًا",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الساحرة تسحر المدينة بحيرةً وأهلها سمكًا"
+  },
+  {
+   "id": "sani-12c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-12c.jpg",
+   "width": 1300,
+   "height": 529,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الملك والشاب يتزوجان ابنتَي الصياد",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الملك والشاب يتزوجان ابنتَي الصياد"
+  },
+  {
+   "id": "sani-11a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-11a.jpg",
+   "width": 1300,
+   "height": 639,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ابن الملك فوق الشجرة والعبيد يقبلون من البحر",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: ابن الملك فوق الشجرة والعبيد يقبلون من البحر"
+  },
+  {
+   "id": "sani-11b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-11b.jpg",
+   "width": 692,
+   "height": 744,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.651,
+    "align": "center"
+   },
+   "caption": "الفرس الطائر يحمل ابن الملك",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الفرس الطائر يحمل ابن الملك"
+  },
+  {
+   "id": "sani-11c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-11c.jpg",
+   "width": 727,
+   "height": 942,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.54,
+    "align": "center"
+   },
+   "caption": "الخليفة والبنات والكلبتان في الديوان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الخليفة والبنات والكلبتان في الديوان"
+  },
+  {
+   "id": "sani-15a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-15a.jpg",
+   "width": 1300,
+   "height": 773,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "العفريتة تحضر مجلس الخليفة وتفكّ سحر الكلبتين",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: العفريتة تحضر مجلس الخليفة وتفكّ سحر الكلبتين"
+  },
+  {
+   "id": "sani-15b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-15b.jpg",
+   "width": 1300,
+   "height": 738,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "زفاف البنات الثلاث",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: زفاف البنات الثلاث"
+  },
+  {
+   "id": "sani-15c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-15c.jpg",
+   "width": 1300,
+   "height": 797,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الصياد يرمي شبكته بين يدي الخليفة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الصياد يرمي شبكته بين يدي الخليفة"
+  },
+  {
+   "id": "sani-06a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-06a.jpg",
+   "width": 1300,
+   "height": 733,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "جعفر يُساق إلى المشنقة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: جعفر يُساق إلى المشنقة"
+  },
+  {
+   "id": "sani-06b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-06b.jpg",
+   "width": 1300,
+   "height": 717,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الشيخ والشاب واقفان بين يدي الخليفة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الشيخ والشاب واقفان بين يدي الخليفة"
+  },
+  {
+   "id": "sani-04a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-04a.jpg",
+   "width": 1300,
+   "height": 739,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "بدر الدين حسن عند الخان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: بدر الدين حسن عند الخان"
+  },
+  {
+   "id": "sani-04b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-04b.jpg",
+   "width": 1300,
+   "height": 744,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ليلة العرس: بدر الدين حسن مكان الأحدب",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: ليلة العرس: بدر الدين حسن مكان الأحدب"
+  },
+  {
+   "id": "sani-04c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-04c.jpg",
+   "width": 1300,
+   "height": 768,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "بدر الدين حسن نائم",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: بدر الدين حسن نائم"
+  },
+  {
+   "id": "sani-03a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-03a.jpg",
+   "width": 1300,
+   "height": 763,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الجواري في الحمّام",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الجواري في الحمّام"
+  },
+  {
+   "id": "sani-03b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-03b.jpg",
+   "width": 1300,
+   "height": 739,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "علي نور الدين وأنيس الجليس",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: علي نور الدين وأنيس الجليس"
+  },
+  {
+   "id": "sani-09a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-09a.jpg",
+   "width": 1300,
+   "height": 723,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الطبيب اليهودي يعود الشاب المريض",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الطبيب اليهودي يعود الشاب المريض"
+  },
+  {
+   "id": "sani-09b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-09b.jpg",
+   "width": 1300,
+   "height": 751,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الشاب والصبية في مجلس الشراب",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الشاب والصبية في مجلس الشراب"
+  },
+  {
+   "id": "sani-10a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-10a.jpg",
+   "width": 1300,
+   "height": 754,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "العجوز تحدِّث بنت القاضي",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: العجوز تحدِّث بنت القاضي"
+  },
+  {
+   "id": "sani-10c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-10c.jpg",
+   "width": 1300,
+   "height": 812,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "المزيِّن يأخذ ارتفاع الشمس بالأسطرلاب",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: المزيِّن يأخذ ارتفاع الشمس بالأسطرلاب"
+  },
+  {
+   "id": "sani-14a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-14a.jpg",
+   "width": 1300,
+   "height": 681,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الطحّان يضرب الخياط بالسوط وهو يدير الطاحون",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الطحّان يضرب الخياط بالسوط وهو يدير الطاحون"
+  },
+  {
+   "id": "sani-14b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-14b.jpg",
+   "width": 1300,
+   "height": 711,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "المرأة تكلِّم الخياط من الطاقة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: المرأة تكلِّم الخياط من الطاقة"
+  },
+  {
+   "id": "sani-19a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-19a.jpg",
+   "width": 1300,
+   "height": 735,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الشاب والصبية والصندوق",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الشاب والصبية والصندوق"
+  },
+  {
+   "id": "sani-19b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-19b.jpg",
+   "width": 1300,
+   "height": 762,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "السيدة زبيدة وجواريها يرين الشاب",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: السيدة زبيدة وجواريها يرين الشاب"
+  },
+  {
+   "id": "sani-07a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-07a.jpg",
+   "width": 1300,
+   "height": 702,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "عزيزة تطعم عزيزًا",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: عزيزة تطعم عزيزًا"
+  },
+  {
+   "id": "sani-07c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-07c.jpg",
+   "width": 1300,
+   "height": 714,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "عزيز وعزيزة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: عزيز وعزيزة"
+  },
+  {
+   "id": "sani-05b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-05b.jpg",
+   "width": 1300,
+   "height": 780,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "السيدة دنيا تكتب الرسالة",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: السيدة دنيا تكتب الرسالة"
+  },
+  {
+   "id": "sani-05c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-05c.jpg",
+   "width": 1300,
+   "height": 802,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "العجوز تكلِّم تاج الملوك في السوق",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: العجوز تكلِّم تاج الملوك في السوق"
+  },
+  {
+   "id": "sani-13a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-13a.jpg",
+   "width": 1300,
+   "height": 750,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "تاج الملوك والوزير وعزيز في دكان السوق",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: تاج الملوك والوزير وعزيز في دكان السوق"
+  },
+  {
+   "id": "sani-13b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-13b.jpg",
+   "width": 1300,
+   "height": 818,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "تاج الملوك والوزير وعزيز في الحمّام",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: تاج الملوك والوزير وعزيز في الحمّام"
+  },
+  {
+   "id": "sani-08a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-08a.jpg",
+   "width": 1300,
+   "height": 763,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الملك شركان يسير وحده",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الملك شركان يسير وحده"
+  },
+  {
+   "id": "sani-08b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-08b.jpg",
+   "width": 1300,
+   "height": 743,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "قتال الملك شركان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: قتال الملك شركان"
+  },
+  {
+   "id": "sani-20a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-20a.jpg",
+   "width": 1300,
+   "height": 766,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الملكة إبريزة تحدِّث الملك شركان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الملكة إبريزة تحدِّث الملك شركان"
+  },
+  {
+   "id": "sani-20c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-20c.jpg",
+   "width": 1300,
+   "height": 812,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "شركان وإبريزة في ضوء القمر",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: شركان وإبريزة في ضوء القمر"
+  },
+  {
+   "id": "sani-02a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-02a.jpg",
+   "width": 1300,
+   "height": 724,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ضوء المكان مريضًا في بيت الوقّاد",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: ضوء المكان مريضًا في بيت الوقّاد"
+  },
+  {
+   "id": "sani-18b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-18b.jpg",
+   "width": 1300,
+   "height": 797,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "زينة المدينة بالمصابيح",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: زينة المدينة بالمصابيح"
+  },
+  {
+   "id": "sani-18c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-18c.jpg",
+   "width": 1300,
+   "height": 872,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "نزهة الزمان والملك شركان في ليلة الزفاف",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: نزهة الزمان والملك شركان في ليلة الزفاف"
+  },
+  {
+   "id": "sani-16a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-16a.jpg",
+   "width": 1300,
+   "height": 791,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ضوء المكان يقاتل الروم",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: ضوء المكان يقاتل الروم"
+  },
+  {
+   "id": "sani-16b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-16b.jpg",
+   "width": 1300,
+   "height": 782,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الملك حردوب يشاور ذات الدواهي",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: الملك حردوب يشاور ذات الدواهي"
+  },
+  {
+   "id": "sani-17b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-17b.jpg",
+   "width": 1300,
+   "height": 778,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "أهل بغداد يستقبلون الملك ضوء المكان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: أهل بغداد يستقبلون الملك ضوء المكان"
+  },
+  {
+   "id": "sani-21c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-21c.jpg",
+   "width": 1300,
+   "height": 768,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "مأتم الملك ضوء المكان",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: مأتم الملك ضوء المكان"
+  },
+  {
+   "id": "sani-22b",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-22b.jpg",
+   "width": 1300,
+   "height": 870,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "غانم فوق الشجرة والعبيد الثلاثة يحملون الصندوق",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: غانم فوق الشجرة والعبيد الثلاثة يحملون الصندوق"
+  },
+  {
+   "id": "sani-22c",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-22c.jpg",
+   "width": 1300,
+   "height": 802,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "العبيد الثلاثة يتحادثون",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: العبيد الثلاثة يتحادثون"
+  },
+  {
+   "id": "sani-23a",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/sani-23a.jpg",
+   "width": 1300,
+   "height": 702,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "أم غانم وأخته وقوت القلوب عند فراشه",
+   "note": "من تصاوير صنيع الملك",
+   "altText": "لوحة مائية لصنيع الملك: أم غانم وأخته وقوت القلوب عند فراشه"
+  },
+  {
+   "id": "harvey-23",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-23.jpg",
+   "width": 1100,
+   "height": 1485,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.519,
+    "align": "center"
+   },
+   "caption": "العفريت يرفع سيفه على التاجر",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: العفريت يرفع سيفه على التاجر"
+  },
+  {
+   "id": "harvey-12",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-12.jpg",
+   "width": 1100,
+   "height": 1336,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.576,
+    "align": "center"
+   },
+   "caption": "شيخ البحر على كتفَي السندباد",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: شيخ البحر على كتفَي السندباد"
+  },
+  {
+   "id": "harvey-08",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-08.jpg",
+   "width": 1100,
+   "height": 679,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "قمر الزمان",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: قمر الزمان"
+  },
+  {
+   "id": "harvey-10",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-10.jpg",
+   "width": 1100,
+   "height": 1088,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.708,
+    "align": "center"
+   },
+   "caption": "أنس الوجود",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: أنس الوجود"
+  },
+  {
+   "id": "harvey-21",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-21.jpg",
+   "width": 1100,
+   "height": 902,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.854,
+    "align": "center"
+   },
+   "caption": "عبد الله البرّي وعبد الله البحري",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: عبد الله البرّي وعبد الله البحري"
+  },
+  {
+   "id": "harvey-03",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/harvey-03.jpg",
+   "width": 1100,
+   "height": 1396,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.552,
+    "align": "center"
+   },
+   "caption": "الدخان يخرج من القمقم ويصير عفريتًا",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الدخان يخرج من القمقم ويصير عفريتًا"
+  },
+  {
+   "id": "lane-nima",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-nima.jpg",
+   "width": 1100,
+   "height": 699,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "نُعم تفيق حين ترى ورقة نعمة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: نُعم تفيق حين ترى ورقة نعمة"
+  },
+  {
+   "id": "lane-alaeddin",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-alaeddin.jpg",
+   "width": 1100,
+   "height": 860,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.895,
+    "align": "center"
+   },
+   "caption": "علاء الدين يطلع من الطابق على مجلس أمه",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: علاء الدين يطلع من الطابق على مجلس أمه"
+  },
+  {
+   "id": "lane-hatim",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-hatim.jpg",
+   "width": 1100,
+   "height": 1291,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.596,
+    "align": "center"
+   },
+   "caption": "قبر حاتم الطائي على رأس الجبل",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: قبر حاتم الطائي على رأس الجبل"
+  },
+  {
+   "id": "lane-false-caliph",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-false-caliph.jpg",
+   "width": 1100,
+   "height": 1514,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.509,
+    "align": "center"
+   },
+   "caption": "الخليفة المزوَّر يدخل قصره في موكبه",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الخليفة المزوَّر يدخل قصره في موكبه"
+  },
+  {
+   "id": "lane-zumurrud",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-zumurrud.jpg",
+   "width": 1100,
+   "height": 1318,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.584,
+    "align": "center"
+   },
+   "caption": "زمرد تتدلى من الطاقة بحبل",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: زمرد تتدلى من الطاقة بحبل"
+  },
+  {
+   "id": "lane-jubayr",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-jubayr.jpg",
+   "width": 1100,
+   "height": 1302,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.591,
+    "align": "center"
+   },
+   "caption": "عقد جبير بن عمير على الست بدور",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: عقد جبير بن عمير على الست بدور"
+  },
+  {
+   "id": "lane-ebony-horse",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-ebony-horse.jpg",
+   "width": 1100,
+   "height": 410,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ابن الملك على الفرس الأبنوس بين العسكر",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: ابن الملك على الفرس الأبنوس بين العسكر"
+  },
+  {
+   "id": "lane-ali-misri",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-ali-misri.jpg",
+   "width": 1100,
+   "height": 996,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.773,
+    "align": "center"
+   },
+   "caption": "علي المصري يفتح الصناديق",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: علي المصري يفتح الصناديق"
+  },
+  {
+   "id": "lane-brass",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-brass.jpg",
+   "width": 1100,
+   "height": 1389,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.554,
+    "align": "center"
+   },
+   "caption": "فارس النحاس على الرابية",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: فارس النحاس على الرابية"
+  },
+  {
+   "id": "lane-judar",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-judar.jpg",
+   "width": 1100,
+   "height": 401,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "جودر والمغربي عند البركة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: جودر والمغربي عند البركة"
+  },
+  {
+   "id": "lane-lab",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-lab.jpg",
+   "width": 1100,
+   "height": 1403,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.549,
+    "align": "center"
+   },
+   "caption": "الملكة لاب الساحرة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الملكة لاب الساحرة"
+  },
+  {
+   "id": "lane-sayf",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-sayf.jpg",
+   "width": 1100,
+   "height": 1052,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.732,
+    "align": "center"
+   },
+   "caption": "ابن الملك الأزرق يختطف دولة خاتون",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: ابن الملك الأزرق يختطف دولة خاتون"
+  },
+  {
+   "id": "lane-bahram",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-bahram.jpg",
+   "width": 562,
+   "height": 3000,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.131,
+    "align": "center"
+   },
+   "caption": "بهرام المجوسي",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: بهرام المجوسي"
+  },
+  {
+   "id": "lane-dahnash",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-dahnash.jpg",
+   "width": 1100,
+   "height": 1286,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.599,
+    "align": "center"
+   },
+   "caption": "حسن على كتفَي العفريت دهنش",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: حسن على كتفَي العفريت دهنش"
+  },
+  {
+   "id": "lane-khalifa",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-khalifa.jpg",
+   "width": 1100,
+   "height": 649,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الرشيد وجعفر يريان خليفة الصياد",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الرشيد وجعفر يريان خليفة الصياد"
+  },
+  {
+   "id": "lane-abu-sir",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-abu-sir.jpg",
+   "width": 1100,
+   "height": 1475,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.522,
+    "align": "center"
+   },
+   "caption": "الملك يشير بإلقاء أبي صير في البحر",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الملك يشير بإلقاء أبي صير في البحر"
+  },
+  {
+   "id": "lane-jamila",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-jamila.jpg",
+   "width": 1083,
+   "height": 2338,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.324,
+    "align": "center"
+   },
+   "caption": "السيدة جميلة ترقص",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: السيدة جميلة ترقص"
+  },
+  {
+   "id": "lane-maruf-jinni",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-maruf-jinni.jpg",
+   "width": 1100,
+   "height": 1462,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.527,
+    "align": "center"
+   },
+   "caption": "أبو السعادات خادم الخاتم يظهر لمعروف",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: أبو السعادات خادم الخاتم يظهر لمعروف"
+  },
+  {
+   "id": "lane-maruf-plough",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-maruf-plough.jpg",
+   "width": 1100,
+   "height": 693,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "معروف يحرث أرض الفلاح",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: معروف يحرث أرض الفلاح"
+  },
+  {
+   "id": "cover-panel",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/cover-panel.jpg",
+   "width": 1359,
+   "height": 819,
+   "caption": "شركان وإبريزة في ضوء القمر",
+   "altText": "لوحة مائية لصنيع الملك: شركان وإبريزة في ضوء القمر"
+  },
+  {
+   "id": "headpiece",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/headpiece.svg",
+   "width": 1200,
+   "height": 300,
+   "caption": "سرلوح"
+  },
+  {
+   "id": "headpiece-gold",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/headpiece-gold.svg",
+   "width": 1200,
+   "height": 300,
+   "caption": "سرلوح مذهَّب"
+  },
+  {
+   "id": "rosette",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/rosette.svg",
+   "width": 200,
+   "height": 200,
+   "caption": "شمسة"
+  },
+  {
+   "id": "rosette-gold",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/rosette-gold.svg",
+   "width": 200,
+   "height": 200,
+   "caption": "شمسة مذهَّبة"
+  },
+  {
+   "id": "rosette-colophon",
+   "typeId": "ornament",
+   "kind": "svg",
+   "file": "resources/rosette.svg",
+   "width": 200,
+   "height": 200,
+   "caption": "",
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.14,
+    "align": "center"
+   }
+  },
+  {
+   "id": "spine",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/spine-ar.jpg",
+   "width": 1056,
+   "height": 3360,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.2,
+    "align": "center"
+   },
+   "caption": "كعب الكتاب",
+   "altText": ""
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Amiri",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/Amiri-Regular.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/Amiri-Bold.ttf"
+    }
+   ]
+  },
+  {
+   "name": "Aref Ruqaa",
+   "variants": [
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/ArefRuqaa-Bold.ttf"
+    }
+   ]
+  }
+ ]
+}

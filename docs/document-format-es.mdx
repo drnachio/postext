@@ -43,7 +43,7 @@ El frontmatter se parsea con [`gray-matter`](https://github.com/jonschlinkert/gr
 YAML da tipo a sus valores: `1984` es un número, `2026-04-15` una fecha, `[Ana Gil, Luis Paz]` una lista. Postext imprime esos cuatro campos como texto, sea cual sea su tipo:
 
 - un número, en su forma decimal simple, y un booleano, como `true` o `false` (`title: 1984` imprime *1984*). YAML lee un número como un valor, no cifra a cifra: `1.50` imprime *1.5*, `017` (octal) *15* y `1:30` (base 60) *90*;
-- una fecha, como su día del calendario escrito en el idioma del documento —el ajuste `locale` o, si no está, el idioma de la separación silábica—: `publishDate: 2026-04-15` imprime *15 de abril de 2026* en español, *April 15, 2026* en inglés y *15. April 2026* en alemán. Una fecha con hora imprime el día de su hora UTC y descarta la hora: `2026-09-24T23:30:00-05:00` son las 04:30 UTC del día 25 e imprime *25 de septiembre de 2026*;
+- una fecha, como su día del calendario escrito en el idioma del documento —el ajuste `locale` o, si no está, el idioma de la separación silábica—: `publishDate: 2026-04-15` imprime *15 de abril de 2026* en español, *April 15, 2026* en inglés y *15. April 2026* en alemán. Las fechas en árabe usan el calendario gregoriano salvo que la etiqueta nombre otro (`ar-u-ca-islamic` imprime la fecha de la hégira), con las cifras que indique la etiqueta (`ar-EG`: ١٥ أبريل ٢٠٢٦; `ar-u-nu-latn`: 15 أبريل 2026). Una fecha con hora imprime el día de su hora UTC y descarta la hora: `2026-09-24T23:30:00-05:00` son las 04:30 UTC del día 25 e imprime *25 de septiembre de 2026*;
 - una lista, como sus elementos separados por comas (`author: [Ana Gil, Luis Paz]` imprime *Ana Gil, Luis Paz*).
 
 Pon el valor entre comillas para imprimirlo exactamente como está escrito —un número que deba conservar sus cifras, una fecha que deba conservar su día—: `publishDate: "15/04/2026"`, `title: "1984"`. El texto llega a `doc.metadata`, a los marcadores (`{title}`, `{publishDate}`…) y al título y el autor del PDF. Si uno de esos cuatro campos no tiene forma de texto —un mapa anidado, un `title:` vacío—, no pasa a `doc.metadata`. `extractFrontmatter` sigue devolviendo los valores con el tipo que les dio YAML; `metadataText(value, locale)` da el texto que Postext imprime para uno de ellos.
@@ -190,12 +190,16 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
       <td><code>:::index</code></td>
       <td>Imprime aquí el índice analítico: todos los términos marcados con <code>:index</code> en el libro, ordenados y agrupados por inicial, con las páginas en que caen, compuestos según la configuración <code>index</code>. <code>:::index&#123;index="nombres"&#125;</code> imprime un índice con nombre. Ver <a href="#índice-analítico">Índice analítico</a>.</td>
     </tr>
+    <tr>
+      <td><code>:::verse</code> … <code>:::</code></td>
+      <td>Un poema a la manera árabe clásica: un bayt por línea, sus dos hemistiquios separados por <code>||</code>, compuestos uno junto a otro con una anchura común. Véase <a href="#verse">más abajo</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Los valores de los atributos pueden ir entre comillas dobles (<code>"…"</code>), comillas simples (<code>'…'</code>) o sin comillas (<code>startAt=17</code>). Una clave sin `=` se trata como una bandera presente con valor vacío.
 
-Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e `index` como directivas de una sola línea — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+Hoy solo se reconocen `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` e `index` como directivas de una sola línea (y `references` y `verse` como bloques con valla) — cualquier otra línea `:::nombre` que no sea un contenedor (más abajo) se parsea como párrafo y genera un aviso **Directiva desconocida** en el sandbox. El motor también lo registra, como una entrada `unknownDirective` en los `contentWarnings` del documento (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
 
 ### Valores de los atributos
 
@@ -501,6 +505,27 @@ El recuadro de respuesta de una ficha es un recuadro cuyo único contenido es es
 Para un salto fijo en lugar de espacio, usa `:::columnbreak` o `:::pagebreak`.
 
 
+### `:::verse`
+
+Un poema a la manera árabe clásica (una qaṣīda, una qiṭʿa): cada verso, el *bayt*, en una línea y en dos mitades, el *ṣadr* en el lado del comienzo (la derecha en árabe) y el *ʿajuz* en el lado del final, con un hueco entre ambos. Escribe un bayt por línea, con los hemistiquios separados por `||` (también vale `\\` con un espacio a cada lado, como en los textos de Wikisource). Una línea sin separador es un hemistiquio suelto, centrado en el poema.
+
+```md
+فأنشد يقول:
+
+:::verse
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **Una sola anchura.** Todos los hemistiquios del poema se componen con la misma anchura, de modo que cada ṣadr empieza en la misma vertical y cada ʿajuz acaba en otra, y las letras de la rima quedan alineadas a lo largo del poema. La anchura es la del hemistiquio más ancho, como mucho la mitad de la medida menos el hueco; `width` la fija (`width=55mm`). Cada hemistiquio se lleva a ella primero con cachidas (el verso se alarga más que la prosa: el doble de `bodyText.kashidaMaxLength`) y después con sus espacios; un hemistiquio de una sola palabra que no la llena deja el resto en el hueco.
+- **El hueco** mide 2 em por defecto; `gap` lo fija (`gap=3em`; un número sin unidad va en em). `ornament` imprime una marca en su centro (`ornament="٭"`), que no forma parte del texto.
+- **Demasiado ancho.** Un hemistiquio más ancho que la anchura común aprieta primero sus espacios hasta `bodyText.minWordSpacing`. Si aun así no cabe, su bayt se compone escalonado: el ṣadr alineado con el lado del comienzo en su propia línea y el ʿajuz alineado con el lado del final en la siguiente.
+- **Colocación.** El poema va centrado en la columna; `align=start` lo alinea con el lado del comienzo. Un bayt nunca se parte entre columnas o páginas, y el poema sigue las reglas de huérfanas y viudas de los párrafos (un poema de tres bayts o menos va entero). El párrafo anterior, que lo introduce («فأنشد يقول:»), mantiene su última línea junto a los primeros bayts.
+- **Tipo.** El poema toma la fuente, el cuerpo y el interlineado del texto; `style` le asigna un estilo de párrafo (`style="verso"`), que es como un poema vocalizado obtiene el interlineado extra que piden sus harakat. `dir=ltr` o `dir=rtl` fija su dirección como en cualquier bloque; un poema en alfabeto latino en un libro de izquierda a derecha lleva el ṣadr a la izquierda.
+
+El texto plano del poema separa hemistiquios y bayts (un tabulador y un salto de línea), así que una búsqueda o un pasaje copiado lo leen tal como se escribió; las cachidas y el ornamento quedan fuera.
+
 ### `:::toc`
 
 `:::toc` imprime el índice de contenidos en el punto donde está. Se expande en bloques ordinarios — uno por encabezado de los niveles que enumera `toc.levels` (el nivel 1 por defecto) y uno por `:::part` — de modo que el índice fluye por columnas y páginas como cualquier otro texto, y un clic sobre una entrada lleva a la línea de la directiva. Cada entrada muestra el número del encabezado (el resultado de su `numberingTemplate` o, en su defecto, el ordinal de capítulo), su título, una línea de puntos y la etiqueta de la página en que empieza y, si `toc.subtitle` está activado, una segunda línea con un atributo del encabezado, como los autores del capítulo (`{author="…"}`). Cada parte recibe una fila propia, diseñada por `toc.parts.design` y coloreada con la `palette` de la parte. Los encabezados cuyo estilo declara `numbered: false` aparecen sin número; `{toc="false"}` en un encabezado lo deja fuera (el propio encabezado del índice, normalmente).
@@ -728,6 +753,23 @@ Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subra
 
 El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y la composición avisa cuando el hueco entre las líneas de un párrafo es demasiado estrecho para ellas (`cjkMarksExceedLeading`, `rubyExceedsLeading`), y cuando las marcas bajo una línea y las lecturas sobre la siguiente no caben juntas en el hueco que comparten, en un mismo párrafo o entre dos. Dales a los párrafos anotados un estilo de párrafo con más interlineado. Las marcas, lecturas y notas se dibujan en párrafos, títulos, elementos de lista, citas y recuadros; en los pies de figura, las celdas y las notas de tabla, y en los encabezados y diseños, el texto se imprime sin ellas. Con `cjk.bookTitleMark: 'brackets'` los 《》 de un título son puntuación del texto: los pies, las celdas, las notas, las filas del índice general, los marcadores del PDF y las entradas del índice alfabético los conservan. Ver [Configuración › Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu).
 
+
+### Dirección del texto en el marcado
+
+Un documento va en la dirección que implica su `locale` (`direction` en la configuración: de derecha a izquierda para el árabe, el persa, el urdu o el hebreo). Dentro de él, el marcado fija la dirección de un bloque o de un tramo de texto, para una cita inglesa en un libro árabe o una árabe en un libro inglés.
+
+- **Un título o un contenedor**: `{dir=ltr}` o `{dir=rtl}` en sus atributos, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Todos los bloques de un contenedor toman esa dirección, hasta un contenedor anidado o un título que fije otra. Un párrafo normal, una lista o una cita no tienen atributos propios: envuélvelos en `:::paragraphs{dir=…}`. Los demás valores se ignoran. El `lang` de un contenedor (`:::paragraphs{dir=ltr lang=en}`) nombra del mismo modo el idioma de los bloques que contiene: sus listas numeradas usan las cifras de ese idioma.
+- **Un tramo de texto**: `:ltr[…]` y `:rtl[…]` aíslan su texto (los LRI…PDI y RLI…PDI del algoritmo bidireccional de Unicode): se ordena por dentro, y el párrafo que lo rodea ve un solo carácter neutro. `{lang=…}` marca el idioma del tramo en el HTML y en el PDF. Una llamada de nota, un `:ref` o una fórmula dentro forman parte del aislamiento, y los aislamientos se anidan.
+
+```markdown
+:::paragraphs{dir=ltr}
+The opening of the *Nights* in Lane's translation.
+:::
+
+ترجمها :ltr[Edward William Lane]{lang=en} سنة ١٨٣٩.
+```
+
+Un bloque compuesto contra la dirección del documento conserva su propio lado de principio: su sangría, sus marcadores de lista y el final alineado de su última línea pasan al lado por el que empieza su texto. Usa un aislamiento cuando un título latino acaba en un carácter neutro (un punto, un paréntesis) que, si no, se uniría al árabe que lo rodea. También se respetan los propios caracteres de control de Unicode (U+2066–2069, U+202A–202E, U+200E, U+200F, U+061C). En el editor del Sandbox cada línea va en la dirección de su primera letra. Véase [Composición árabe](/es/docs/arabic-layout#dirección-y-algoritmo-bidireccional).
 
 ## Notas al pie
 
@@ -1212,7 +1254,7 @@ Postext no reconoce las siguientes características de CommonMark. O se tratan c
 
 Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
 
-Más allá de la sintaxis, las escrituras de derecha a izquierda (árabe, hebreo…) todavía no se componen bien: no hay composición bidireccional. El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho y el chino. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
+Más allá de la sintaxis, el árabe y las demás escrituras de derecha a izquierda se componen de derecha a izquierda, con el algoritmo bidireccional y la encuadernación por la derecha (véase [Composición árabe](/es/docs/arabic-layout)). El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho, el chino y el árabe. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
 
 
 ## Normas de redacción

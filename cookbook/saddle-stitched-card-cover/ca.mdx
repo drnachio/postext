@@ -1,0 +1,58 @@
+---
+title: "Un fanzín grapat amb plec de coberta de cartolina"
+summary: "Dos blocs :::paper posen una cartolina salmó al plec exterior d'un fanzín de vuit pàgines, i postext-folio el grapa a cavall amb paper de diari."
+plain: "Una revista petita i doblegada sobre un riu, amb una coberta gruixuda de color i paper de diari fi a dins. Al visor 3D és tancada sobre la taula i s'obre com la de debò."
+description: "Un fanzín de vuit pàgines amb plec de coberta de cartolina i plec interior de paper de diari: dos blocs :::paper, grapat i cover: 'pages', en un pen."
+question: "Com imprimeixo una coberta, un encart o un plec de làmines en un paper diferent de la resta del llibre?"
+aliases: ["fanzín", "fanzine", "quadernet", "grapat a cavall", "grapat", "coberta de cartolina", "paper de diari", "paper premsa", "plec de coberta", "riso"]
+pageNotes: { "1": "La coberta sobre blanc: la línia del número, Low Tide en una grotesca blava grossa, una entradeta en cursiva i onze línies de marea blaves de llargades diferents al peu.", "3": "El reportatge dels territs: avanttítol blau, títol negre, un filet blau curt i text justificat.", "8": "La contracoberta: Low Tide en blau i una línia petita en versals, centrades." }
+---
+
+## Què compondràs
+
+El número 3 de *Low Tide*, un fanzín gratuït sobre un estuari: vuit pàgines de 140 × 200 mm, dos plecs doblegats i grapats pel llom. El plec exterior, pàgines 1–2 i 7–8, és una cartolina salmó; l'interior, pàgines 3–6, paper de diari barat. La coberta s'imprimeix en un sol blau de risografia sobre la cartolina nua, sense camp de color propi, de manera que a les pàgines planes de sota surt sobre blanc, i a Folio reposa tancada sobre la taula amb el color de la seva cartolina fins que la passes. Els dos papers són dos blocs del Markdown, i l'enquadernació, tres opcions de `config.folio`.
+
+## Elaboració
+
+### 1 · Tanca el plec exterior
+
+<Excerpt region="cover-sheet" />
+
+Un quadernet grapat és una pila de plecs doblegats, així que el plec de coberta porta les dues primeres pàgines i les dues últimes. Un bloc tanca les pàgines 1–2, un altre les 7–8, i les del mig queden fora de tots dos, en el paper del mateix llibre. Cada bloc comença i acaba en pàgina nova, que aquí és just la pàgina que necessiten la coberta i la benvinguda.
+
+### 2 · Paper de diari, grapat, tapes de les pàgines
+
+<Excerpt region="folio" />
+
+`folio.paper` és el paper de diari de qualsevol pàgina fora d'un bloc. `saddleStitch` doblega els plecs al voltant de les grapes, sense llom pla, i `cover: 'pages'` fa girar les pàgines 1 i 8 com a cobertes. En un grapat la coberta gira com els altres plecs, només que més rígida, i un full de coberta que anomena el seu propi paper (la cartolina) es dibuixa amb aquest paper.
+
+### 3 · Una coberta a una tinta
+
+<Excerpt region="covers" />
+
+La coberta és un estil de títol amb marges zero i un disseny de pàgina sencera: la línia del número, el títol en Bricolage Grotesque a 70 pt, l'entradeta en Newsreader cursiva i onze línies de marea les llargades de les quals surten d'un generador amb llavor, de manera que cada execució dibuixa les mateixes. Res no pinta el fons de la pàgina: el posa la cartolina.
+
+### 4 · Una obertura per a cada peça
+
+<Excerpt region="features" />
+
+Cada reportatge és un títol de primer nivell amb l'estil `feature`: pàgina nova, un avanttítol pres dels seus atributs, el títol i un filet blau curt. Passar les cinc peces per un sol estil deixa l'interior del fanzín en dues famílies i un accent.
+
+### 5 · Obre'l grapat
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `createFolioFromDocument` llegeix l'enquadernació i les cobertes de `doc.config.folio`, i el paper de cada full de `page.paper`. El pen avisa quan el nombre de pàgines és senar, perquè la pàgina 8 només pot ser la contracoberta si cau en un verso.
+
+## Variants
+
+### Una coberta més gruixuda i blanca
+
+Canvia els dos blocs i el plec de coberta és una cartolina blanca de 300 g; les pàgines interiors continuen en paper de diari.
+
+```diff
+-:::paper{type=cardStock grammage=250 shade=#f2c9b4}
++:::paper{type=cardStock grammage=300 shade=#fbfaf6}
+```
+
+### Un quadernet senzill
+
+Treu els blocs i la coberta és un plec del mateix paper de diari, una mica més gruixut. <RecipeLink slug="paper-swatch-book">El mostrari</RecipeLink> va en sentit contrari i dona a cada full el seu propi paper.

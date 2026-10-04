@@ -1,24 +1,44 @@
-// What the three editions of the guide say about the book and the Sandbox,
+// What the five editions of the guide say about the book and the Sandbox,
 // held to the code that makes it true: each edition's body size and
-// leading, the groups of the Design panel, the regions whose punctuation
-// keeps a full square, what the Chinese edition itself sets, and the length
-// of a vertical book's lines in the HTML view.
+// leading, the groups of the Design panel, the viewer's tabs, the regions
+// whose punctuation keeps a full square, what the Chinese edition itself
+// sets, and the length of a vertical book's lines in the HTML view.
 
 import { describe, expect, it } from 'vitest';
 import { buildDocument, resolveCjkConfig, type CjkRegion, type PostextConfig } from 'postext';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { createPostextGuideConfig } from '../context/guideConfig';
 import { GUIDE_FOLIO } from '../context/guideKit';
 import { SETTINGS_GROUPS, type SettingsGroupId } from '../sidebar/sections/registry';
 import { DEFAULT_LABELS } from '../types/defaultLabels';
+import { VIEWPORT_TABS } from '../storage/viewHash';
 import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
 
 const spanish = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/es.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
 };
+const catalan = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ca.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
+const chinese = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/zh.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
+const arabic = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ar.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
 
-type Edition = 'en' | 'es' | 'zh-Hans';
-const EDITIONS: Record<Edition, string> = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS };
+type Edition = 'en' | 'es' | 'ca' | 'zh-Hans' | 'ar';
+const EDITIONS: Record<Edition, string> = {
+  en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR,
+};
+
+/** A number as an edition writes it — Arabic-Indic digits and the Arabic
+ *  decimal separator ٫ in the Arabic one, a decimal comma in the Spanish and
+ *  Catalan ones — as a JavaScript number. */
+const numberOf = (written: string | undefined): number =>
+  Number((written ?? '').replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)).replace(/[,٫]/, '.'));
+/** A number in any of those forms, for the regular expressions below. */
+const N = '[\\d٠-٩]+(?:[.,٫][\\d٠-٩]+)?';
 
 /** The first match of `re` in the edition, or a failure naming what is missing. */
 function claim(edition: Edition, re: RegExp): RegExpMatchArray {
@@ -48,13 +68,15 @@ describe('what the guide says about itself and the Sandbox', () => {
     const stated: Record<Edition, RegExp> = {
       en: /this book uses (\d+(?:\.\d+)?) points on (\d+(?:\.\d+)?)/,
       es: /este libro usa (\d+(?:,\d+)?) puntos sobre (\d+(?:,\d+)?)/,
+      ca: /aquest llibre fa servir (\d+(?:,\d+)?) punts sobre (\d+(?:,\d+)?)/,
       'zh-Hans': /本书用(\d+(?:\.\d+)?) ?pt的字号配(\d+(?:\.\d+)?) ?pt的行距/,
+      ar: new RegExp(`(?:يستخدم|يستعمل) هذا الكتاب (${N}) نقطة على (${N})`),
     };
     for (const edition of Object.keys(stated) as Edition[]) {
       const [, size, leading] = claim(edition, stated[edition]);
       const body = createPostextGuideConfig(edition).bodyText!;
-      expect(body.fontSize, edition).toEqual({ value: Number(size!.replace(',', '.')), unit: 'pt' });
-      expect(body.lineHeight, edition).toEqual({ value: Number(leading!.replace(',', '.')), unit: 'pt' });
+      expect(body.fontSize, edition).toEqual({ value: numberOf(size), unit: 'pt' });
+      expect(body.lineHeight, edition).toEqual({ value: numberOf(leading), unit: 'pt' });
     }
   });
 
@@ -69,12 +91,16 @@ describe('what the guide says about itself and the Sandbox', () => {
     const names: Record<Edition, string[]> = {
       en: SETTINGS_GROUPS.map((g) => (DEFAULT_LABELS[g.labelKey] as string).replace(/&/g, 'and').toLowerCase()),
       es: SETTINGS_GROUPS.map((g) => spanish.default.Sandbox[g.labelKey]!.toLowerCase()),
+      ca: SETTINGS_GROUPS.map((g) => catalan.default.Sandbox[g.labelKey]!.toLowerCase()),
       'zh-Hans': SETTINGS_GROUPS.map((g) => zh[g.id]),
+      ar: SETTINGS_GROUPS.map((g) => arabic.default.Sandbox[g.labelKey]!.toLowerCase()),
     };
     const lists: Record<Edition, RegExp> = {
       en: /The \*\*Design\*\* panel edits[^:]*: ([^.]*)\./,
       es: /El panel \*\*Diseño\*\* edita[^:]*: ([^.]*)\./,
+      ca: /El tauler \*\*Disseny\*\* edita[^:]*: ([^.]*)\./,
       'zh-Hans': /\*\*Design\*\*面板用来编辑[^：]*：([^。]*)。/,
+      ar: /تحرّر لوحة \*\*التصميم\*\*[^:]*: ([^.]*)\./,
     };
     for (const edition of Object.keys(lists) as Edition[]) {
       const list = claim(edition, lists[edition])[1]!.toLowerCase();
@@ -84,6 +110,38 @@ describe('what the guide says about itself and the Sandbox', () => {
         expect(at, `${edition}: “${name}” after “${list.slice(0, from)}”`).toBeGreaterThanOrEqual(0);
         from = at + name.length;
       }
+    }
+  });
+
+  it('names the viewer’s tabs, how many and in the order the tab bar shows them', () => {
+    const labels: Record<Edition, Record<string, string>> = {
+      en: DEFAULT_LABELS as unknown as Record<string, string>,
+      es: spanish.default.Sandbox,
+      ca: catalan.default.Sandbox,
+      'zh-Hans': chinese.default.Sandbox,
+      ar: arabic.default.Sandbox,
+    };
+    const COUNT: Record<Edition, string[]> = {
+      en: ['four', 'five', 'six'],
+      es: ['cuatro', 'cinco', 'seis'],
+      ca: ['quatre', 'cinc', 'sis'],
+      'zh-Hans': ['四', '五', '六'],
+      ar: ['أربعة', 'خمسة', 'ستة'],
+    };
+    const said: Record<Edition, [RegExp, RegExp, RegExp]> = {
+      en: [/shows the same layout in (\w+) tabs: ([^.]*)\./, /, | and /, /^## The (\w+) views$/m],
+      es: [/muestra la misma maquetación en (\w+) pestañas: ([^.]*)\./, /, | y /, /^## Las (\w+) vistas$/m],
+      ca: [/mostra la mateixa maquetació en (\w+) pestanyes: ([^.]*)\./, /, | i /, /^## Les (\w+) vistes$/m],
+      'zh-Hans': [/用(.)个标签页显示同一个版面：([^。]*)。/, /、|和/, /^## (.)种视图$/m],
+      ar: [/تعرض الإخراج نفسه في (\S+) تبويبات: ([^.]*)\./, / و/, /^## العروض ال(\S+)$/m],
+    };
+    const count = (edition: Edition, word: string) => COUNT[edition].indexOf(word) + 4;
+    for (const edition of Object.keys(said) as Edition[]) {
+      const [sentence, separator, heading] = said[edition];
+      const [, n, list] = claim(edition, sentence);
+      expect(list!.split(separator), edition).toEqual(VIEWPORT_TABS.map((tab) => labels[edition][tab]));
+      expect(count(edition, n!), edition).toBe(VIEWPORT_TABS.length);
+      expect(count(edition, claim(edition, heading)[1]!), edition).toBe(VIEWPORT_TABS.length);
     }
   });
 
@@ -97,13 +155,17 @@ describe('what the guide says about itself and the Sandbox', () => {
     const regions: Record<Edition, Record<CjkRegion, string>> = {
       en: { mainland: 'mainland', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
       es: { mainland: 'China continental', taiwan: 'Taiwán', hongkong: 'Hong Kong' },
+      ca: { mainland: 'Xina continental', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
       'zh-Hans': { mainland: '大陆', taiwan: '台湾', hongkong: '香港' },
+      ar: { mainland: 'البر الصيني', taiwan: 'تايوان', hongkong: 'هونغ كونغ' },
     };
     // The sentence that says so, up to the mark that ends it.
     const sentences: Record<Edition, RegExp> = {
       en: /([^.]*)\bevery mark a full square\b/,
       es: /([^.]*)cada signo ocupa un cuadratín entero/,
+      ca: /([^.]*)cada signe ocupa un quadratí sencer/,
       'zh-Hans': /([^。]*)的标点一律占一个字/,
+      ar: /([^.]*)كل علامة (?:في )?مربع(?:ًا)? كامل/,
     };
     for (const edition of Object.keys(sentences) as Edition[]) {
       const subject = claim(edition, sentences[edition])[1]!;
@@ -125,19 +187,21 @@ describe('what the guide says about itself and the Sandbox', () => {
       figures: figure?.name === '图' && figure.resetOn === 'h1',
     };
     const features: [keyof typeof uses, RegExp][] = [
-      ['grid', /\bgrid\b|retícula/],
-      ['pageNumbers', /page numbers|folios/],
-      ['chapters', /\bchapters\b|capítulos/],
-      ['figures', /\bfigures\b|figuras/],
+      ['grid', /\bgrid\b|retícula|شبكة/],
+      ['pageNumbers', /page numbers|folios|folis|أرقام (?:ال)?صفح|ترقيم (?:ال)?صفح/],
+      ['chapters', /\bchapters\b|capítulos|capítols|فصول/],
+      ['figures', /\bfigures\b|figuras|أشكال/],
     ];
     const sentences: Partial<Record<Edition, RegExp>> = {
       en: /The Chinese edition of this guide ([^.]*)\./,
       es: /La edición china de esta guía ([^.]*)\./,
+      ca: /L'edició xinesa d'aquesta guia ([^.]*)\./,
+      ar: /(?:الطبعة|النسخة) الصينية من هذا الدليل ([^.]*)\./,
     };
     for (const edition of Object.keys(sentences) as Edition[]) {
       const said = claim(edition, sentences[edition]!)[1]!;
       // “All of it”: everything the paragraph lists.
-      if (/\ball of it\b|lo usa todo/.test(said)) expect(Object.values(uses).every(Boolean), `${edition}: “${said}”`).toBe(true);
+      if (/\ball of it\b|lo usa todo|ho fa servir tot/.test(said)) expect(Object.values(uses).every(Boolean), `${edition}: “${said}”`).toBe(true);
       for (const [feature, words] of features) {
         if (words.test(said)) expect(uses[feature], `${edition}: ${feature} in “${said}”`).toBe(true);
       }
@@ -150,14 +214,17 @@ describe('what the guide says about itself and the Sandbox', () => {
     const said: Record<Edition, [RegExp, RegExp, RegExp, RegExp, RegExp]> = {
       en: [/This guide is set as ([^.]*)\./, /saddle-stitched/, /coated gloss paper of (\d+) grams/, /felt/, /studio light/],
       es: [/Esta guía está montada como ([^.]*)\./, /grapado a caballete/, /estucado brillo de (\d+) gramos/, /fieltro/, /luz de estudio/],
+      ca: [/Aquesta guia està muntada com ([^.]*)\./, /grapat a cavall/, /estucat brillant de (\d+) grams/, /feltre/, /llum d'estudi/],
       'zh-Hans': [/本指南设为([^。]*)。/, /骑马钉/, /(\d+)g\/m²的光面铜版纸/, /毛毡/, /摄影棚光照/],
+      // The Arabic interface's words (messages/ar.json): تدبيس سرجي, مطلي لامع, لبّاد, استوديو.
+      ar: [/([^.\n]*تدبيس سرجي[^.\n]*)\./, /تدبيس سرجي/, /مطلي لامع[^.\d٠-٩]*([\d٠-٩]+) غرام/, /لبّاد|لباد/, /استوديو/],
     };
     for (const edition of Object.keys(said) as Edition[]) {
       const [sentence, binding, paper, surface, light] = said[edition];
       const text = claim(edition, sentence)[1]!;
       expect(text, edition).toMatch(binding);
       expect(GUIDE_FOLIO.binding?.type).toBe('saddleStitch');
-      expect(Number(text.match(paper)?.[1]), edition).toBe(GUIDE_FOLIO.paper?.grammage);
+      expect(numberOf(text.match(paper)?.[1]), edition).toBe(GUIDE_FOLIO.paper?.grammage);
       expect(GUIDE_FOLIO.paper?.type).toBe('coatedGloss');
       expect(text, edition).toMatch(surface);
       expect(GUIDE_FOLIO.surface?.type).toBe('felt');
@@ -190,7 +257,9 @@ describe('what the guide says about itself and the Sandbox', () => {
     const clauses: Record<Edition, [RegExp, RegExp, RegExp]> = {
       en: [new RegExp(`${vertical}the HTML view ([^;.]*)`), /\bheight\b/, /\bwidth\b/],
       es: [new RegExp(`${vertical}la vista HTML ([^;.]*)`), /\baltura\b/, /\bancho\b/],
+      ca: [new RegExp(`${vertical}la vista HTML ([^;.]*)`), /alçada/, /amplada/],
       'zh-Hans': [new RegExp(`${vertical}HTML视图([^；。，]*)`), /高度/, /宽度/],
+      ar: [new RegExp(`${vertical}(?:عرض|معاينة) HTML ([^؛;.]*)`), /ارتفاع/, /عرض/],
     };
     for (const edition of Object.keys(clauses) as Edition[]) {
       const [sentence, height, width] = clauses[edition];

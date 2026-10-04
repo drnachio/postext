@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30 min',
   order: 3,
-  plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages and PDF files from code.",
+  plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages, PDF files and EPUB e-books from code.",
 };
 
 # Configuration
@@ -39,7 +39,7 @@ This reference is long. These are the main blocks:
 - [Layout](#layout) — column count, gutters, rules, [vertical writing](#vertical-writing).
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
 - [Body text](#body-text) — typography, hyphenation, orphans and widows.
-- [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; and the [languages and scripts](#languages-and-scripts) Postext sets.
+- [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; the [digits](#document-digits) (`numerals`) and the [text direction](#text-direction) (`direction`) it implies; and the [languages and scripts](#languages-and-scripts) Postext sets. The guide to right-to-left books is [Arabic layout](/en/docs/arabic-layout).
 - [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby and warichu notes. The guide to all of it is [Chinese layout](/en/docs/chinese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
 - [Unordered lists](#unordered-lists) and [Ordered lists](#ordered-lists) — bullets, numbering, nesting.
@@ -62,6 +62,7 @@ This reference is long. These are the main blocks:
 - [Programmatic use](#programmatic-usage) — `buildDocument`, the warnings it reports, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
 - [Integrating the HTML viewer](#integrating-the-html-viewer) and [Generating PDFs](#generating-pdfs) — end-to-end recipes.
+- [EPUB books](#epub-books-postext-epub) — fixed-layout and reflowable EPUB 3 files from the same layout, and checking them with EPUBCheck.
 
 
 ## Page
@@ -130,7 +131,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code>, else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
+      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code> or the document runs right to left (<a href="#text-direction"><code>direction</code></a>), else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +166,8 @@ With this configuration every odd page has a 2.2 cm margin on the left (the spin
 - The PDF carries `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout /TwoPageRight` (page 1 alone, then pairs), tagged or not. Acrobat and Foxit follow them; Chrome's built-in viewer ignores both.
 
 Folios and running heads do not move by themselves: a template that prints the page number at the outer corner needs its odd and even elements set for the right edge (elements take a `parity`).
+
+A book written right to left (Arabic, Persian, Hebrew…) is bound on the right as well: `'auto'` gives the right edge when the document's [`direction`](#text-direction) resolves to `'rtl'`. Such a book also mirrors its whole flow, so its first column is the right one and its indents, list markers, floats and notes stand on the right; header and footer slots stay physical. See [Arabic layout](/en/docs/arabic-layout#page-order-and-right-binding).
 
 ### Page size presets
 
@@ -345,10 +348,18 @@ Three settings choose a numbering format, and each grew its own spelling: page l
     <tr><td>Earthly branches</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
     <tr><td>Circled</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Fullwidth digits</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
+    <tr><td>Arabic-Indic digits</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Persian digits</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>, <code>urdu</code>, <code>۱</code></td></tr>
+    <tr><td>Arabic letters, abjad order</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Arabic letters, alphabetical order</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>, <code>arabic-alpha</code>, <code>arabic-alphabetic</code>, <code>أبتث</code></td></tr>
+    <tr><td>Abjad numerals</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Abjad numerals, Maghrebi values</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>, <code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 The East Asian styles keep their [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) names in all three settings. The informal Chinese numerals write 十 for 10 to 19 without a leading 一 (十二, but 一百一十), one 零 for a run of zeros inside the number (一百零一, 一千零五十), and 万 or 萬 for ten thousand, 亿 or 億 for a hundred million (一万零一十). Only `cjk-decimal` uses 〇, digit by digit, the way years are written (二〇二六, GB/T 15835—2011). The stems stop at 10, the branches at 12 and the circled digits at 50; past them the number prints in digits. `一` and `壹` follow the script of the document's `locale`: Traditional for `zh-Hant`, `zh-TW` or `zh-HK`, Simplified otherwise. Some older editions write 101 as 一百一 with no 零; Postext does not print that form.
+
+The Arabic styles keep the CSS names where CSS has one (`arabic-indic`, `persian`; `urdu` and `maghrebi-abjad` from the W3C *Ready-made Counter Styles* are read as `persian` and `arabic-abjad-maghrebi`). `arabic` keeps its old meaning, the European digits. `arabic-abjad` writes the additive abjad numerals of Classical Arabic and manuscript foliation, highest value first: 11 is يا, 1446 غتمو, and the thousands count goes before غ (2000 بغ, 1002 غب); past 999 999 the number prints in digits. The W3C note uses the name for a 28-letter series where 11 is ك; Postext calls that series `abjad`, the lettering of list items in abjad order (أ، ب، ج، د، هـ), and `hijai` the alphabetical order (أ، ب، ت، ث). Both write the first letter with its hamza (أ), and a heh that would stand alone as هـ, with a tatweel, so neither is read as the digits ١ and ٥; past 28 they double, as `lower-alpha` does (أأ, أب). The Maghrebi values follow the mnemonic صعفض قرست ثخذ ظغش (ص 60, ض 90); the W3C list swaps ص and ض. A single أ cannot tell the two letter series apart, so their tokens are their first four letters: `{1:أبجد}`, `{1:أبتث}`. A document's own digits are set with [`numerals`](#document-digits).
 
 The other spellings are for configurations that nothing type-checks: JSON presets and plain JavaScript. The TypeScript types still name only each setting's own spelling — the one the Sandbox writes and `resolveAllConfig` returns, the East Asian names included — so a typed `PostextConfig` keeps to it, and another spelling needs a cast.
 
@@ -592,9 +603,15 @@ The defaults in the table below are those of a text element you add yourself. Th
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>Horizontal alignment of the lines inside the element's box. <code>'justify'</code> stretches the word spaces of every wrapped line but the last of each paragraph so the line fills the box; the lines beside a drop cap fill the room beside it. With <code>hyphenate</code>, a word that does not fit the rest of a justified line is also cut at a syllable to fill it. The last line of a paragraph, a line with no space to stretch and a text that does not wrap are set flush left. Justified text is laid out paragraph by paragraph, so blank lines between paragraphs count as one. The canvas and the PDF place every word where the layout put it; the HTML widens the spaces with <code>word-spacing</code>.</td>
+      <td>Horizontal alignment of the lines inside the element's box. <code>'justify'</code> stretches the word spaces of every wrapped line but the last of each paragraph so the line fills the box; the lines beside a drop cap fill the room beside it. With <code>hyphenate</code>, a word that does not fit the rest of a justified line is also cut at a syllable to fill it. The last line of a paragraph, a line with no space to stretch and a text that does not wrap are set flush left. Justified text is laid out paragraph by paragraph, so blank lines between paragraphs count as one. The canvas and the PDF place every word where the layout put it; the HTML widens the spaces with <code>word-spacing</code>. <code>'start'</code> and <code>'end'</code> follow the text's <code>direction</code>: the right and the left of a right-to-left text. <code>'left'</code> and <code>'right'</code> are the box's own sides; in a design laid out in the flow of a right-to-left page (an opener band, a heading design) the flow is mirrored, so they are its start and end, as in the body text.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>the document's</td>
+      <td>Base direction of the text: where its neutral characters go, the order of its runs on a line and the sides <code>'start'</code> and <code>'end'</code> mean. <code>'auto'</code> reads the first strong letter of the resolved text and falls back to the document's <a href="#text-direction"><code>direction</code></a>. Arabic and Hebrew runs read right to left whatever the base. A text that holds an Arabic letter is never letter-spaced (<code>letterSpacing</code> is ignored for the whole text) and its words are never cut while wrapping or truncating; a word wider than the box overflows and is reported as <code>unbreakableWordOverflow</code>.</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1289,10 +1306,22 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Render inline <code>:ref</code> labels in italics.</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How <code>*…*</code> is set: in italics, in the bold face and <code>boldColor</code>, upright in <code>italicColor</code>, or upright with a rule over the words. <code>'auto'</code> is <code>'bold'</code> in a document written in Arabic script and <code>'italic'</code> in any other. See <a href="#arabic-text">Arabic text</a>.</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>Arabic vowel marks: set as written, all taken out, or taken out except the shadda. See <a href="#arabic-text">Arabic text</a>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>Text alignment. Justified text distributes spacing across each line for even edges. Last lines of justified paragraphs render ragged at their natural width — except when Knuth-Plass accepted an overfull final line relying on glue shrink, in which case the inter-word spaces compress so the line fits the measure exactly (TeX glue-setting semantics, applied identically in the canvas, HTML, and PDF backends).</td>
+      <td>Text alignment. <code>'left'</code> (or <code>'start'</code>) is the side a line starts on: the right of a right-to-left paragraph (see <a href="#text-direction">Text direction</a>). Justified text distributes spacing across each line for even edges. Last lines of justified paragraphs render ragged at their natural width — except when Knuth-Plass accepted an overfull final line relying on glue shrink, in which case the inter-word spaces compress so the line fits the measure exactly (TeX glue-setting semantics, applied identically in the canvas, HTML, and PDF backends).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1347,6 +1376,30 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>number</code></td>
       <td><code>0</code></td>
       <td>Most tracking a justified line may take, in thousandths of an em either way (the InDesign unit: 10 = 0.01 em per character), when its word spaces alone would stretch past <code>maxWordSpacing</code> or shrink past <code>minWordSpacing</code>. The part of the adjustment beyond the limit goes into the letters, so a loose line's spaces come back to <code>maxWordSpacing</code> and a tight one fits at <code>minWordSpacing</code>. Knuth-Plass weighs it when it chooses the breaks, and only for the lines word spacing alone would take past the limits: the others, a paragraph's last line (unless it runs over), a line of one word and a line holding a chip take none. The line records it as <code>letterSpacing</code>, and the canvas, HTML and PDF paint it. Needs <code>optimalLineBreaking</code>. <code>0</code> turns it off. See <a href="/en/docs/justification#tracking-as-a-last-resort">Tracking as a last resort</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td><code>'auto'</code> in an Arabic-script document, else <code>'none'</code></td>
+      <td>Kashida justification: a justified line of Arabic-script text takes its slack in its word spaces (up to a quarter of their width) and then in kashidas, whole tatweels (U+0640) inserted between two joined letters, never as letter-spacing. Knuth-Plass counts each word's elongation as stretch. Never in Latin words, digits, headings, ragged lines or a paragraph's last line. The tatweels are painted but left out of plain and copied text. See <a href="/en/docs/justification#kashida-in-arabic-text">Kashida in Arabic text</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Which joins take a kashida, and in what order: the classical Naskh rules, the Microsoft priorities, or the Naskh rules tailored for Nastaʿlīq (after raqim-kashida). <code>'auto'</code> reads the body font: none in a Ruqʿa or Dīwānī face (Aref Ruqaa), Nastaʿlīq rules in a Nastaʿlīq face, Naskh otherwise.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Most elongations in one word.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>Longest elongation at one join, in ems; it takes as many whole tatweels as fit.</td>
     </tr>
     <tr>
       <td><code>optimalLineBreaking</code></td>
@@ -1564,12 +1617,13 @@ Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `z
     <tr><td>Dutch (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>Chinese, Simplified (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>Chinese, Traditional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>Arabic (<code>ar</code>, <code>ar-EG</code>, <code>ar-MA</code>…)</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional.
+The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
 
-A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region.
+A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region. A document in a language written right to left (Arabic, Persian, Urdu, Hebrew…) declares its language too: the font's language forms (`locl`) and the fallback font follow it.
 
 ```ts
 const config: PostextConfig = {
@@ -1578,15 +1632,73 @@ const config: PostextConfig = {
 };
 ```
 
+#### Document digits
+
+The top-level `numerals` sets the digits of every number the engine writes: page numbers and the page labels of the contents, the index and page references; ordered-list and footnote numbers; heading and chapter counters, `{chapterNumber}`; the `{h1}` and `{n}` of a figure number and of a reference to it; `{totalPages}`, `{bookTotalPages}` and `{numberDecimal}`. `'latn'` writes 0–9, `'arab'` the Arabic-Indic digits ٠–٩ and `'arabext'` the Persian digits ۰–۹. Only the decimal format changes — `decimal`, the lists' `arabic`, or a setting left at its default — so a format the author names prints as named: `lower-roman` stays i, ii, iii, and `arabic-indic` in a Latin document still writes ١, ٢, ٣. The text of the document is never rewritten.
+
+The default, `'auto'`, takes the digits of `locale` (`defaultNumeralsFor(tag)`): `'arab'` for Arabic with no region or with any region outside the Maghreb (`ar`, `ar-EG`, `ar-SA`, `ar-AE`…), `'latn'` for `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` and `ar-EH`, `'arabext'` for Persian (`fa`), Pashto (`ps`) and the Urdu of India (`ur-IN`), and `'latn'` for everything else, the Urdu of Pakistan included. CLDR gives `latn` for a bare `ar` and for `ar-AE`; Arabic books of the Mashriq and the Gulf print ٠–٩, which is what Postext follows. A tag that names its digits keeps them: `ar-MA-u-nu-arab`. A page numbered in the document digits records `arabic-indic` or `persian` as its `pageNumberFormat`, so the PDF page labels show the same digits. An unknown value follows the language and is reported as `unknownNumerals`.
+
+Numbers the author types are read in any of the three systems: a list item `٣.` starts at 3, and `{startAt=٥}`, `:::numbering{startAt=٥}`, `:::space{lines=٢}` and `:::part{number="٣"}` (for `{numberDecimal}`) read the value.
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
+```
+
+#### Text direction
+
+The top-level `direction` sets the base direction of the document: `'ltr'`, `'rtl'`, or `'auto'` (the default), which is `'rtl'` when the script of `locale` is written right to left (Arabic, Persian, Urdu, Hebrew, Syriac, Thaana, N'Ko, Adlam…, read by `directionOf(tag)`) and `'ltr'` otherwise. A right-to-left document is laid out in a mirrored frame: its lines start on the right, its first column is the right one, its indents, list markers, floats, footnotes and boxes stand on the right, and [`page.binding: 'auto'`](#binding) binds it on the right. The resolved config carries `direction: 'rtl'` only for such a document, so a left-to-right document resolves as before. An unknown value is read as `'auto'` and reported as `unknownConfigValue`. The Unicode Bidirectional Algorithm (UAX #9) orders each line's runs in either direction: an Arabic quotation in an English book reads right to left in place.
+
+Inside the document, a heading or a `:::` container takes `{dir=ltr}` or `{dir=rtl}`, and the inline `:ltr[…]` and `:rtl[…]` isolate a run of text (see [Text direction in the markup](/en/docs/document-format#text-direction-in-the-markup)); a table resource takes `table.direction`. A block set against the document's direction keeps its own start side: its indent, list markers and the flush end of its last line move to the side its text starts on.
+
+A setting that names a side means a side of the text or of the body flow, never of the sheet, so a design made for an English book works when the book is switched to Arabic. `'start'` and `'end'` are accepted as explicit names:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Setting</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>textAlign</code> of the body, headings, paragraph styles, parts, footnotes and callout bodies; caption and caption note <code>align</code></td><td>The sides of the text: <code>'left'</code> is the side a line starts on, the right of an Arabic paragraph, where a justified paragraph's last line goes.</td><td>Synonyms of <code>'left'</code> and <code>'right'</code>. Resolved configs carry <code>'left'</code> / <code>'right'</code>; saved configs keep what was written.</td></tr>
+    <tr><td>Table cell <code>align</code></td><td>The sides of the cell's text, read in the table's direction (<code>table.direction</code>).</td><td>Synonyms, read in the table's direction.</td></tr>
+    <tr><td><code>placement.align</code> (floats, narrow figures)</td><td>The sides of the body flow: in a right-to-left book <code>'left'</code> is the sheet's right.</td><td>Synonyms.</td></tr>
+    <tr><td>Callout <code>stripe.side</code>, <code>icon.cornerSide</code>, <code>labelTab.position</code> (<code>'top-start'</code>, <code>'top-end'</code>)</td><td>The sides of the body flow, the same for every box of the page.</td><td>The box's own direction (a <code>:::callout&#123;dir=ltr&#125;</code> in an Arabic book starts on the sheet's left).</td></tr>
+    <tr><td>Header and footer slots; design elements anchored to the sheet</td><td>The sheet's sides.</td><td>Text elements only: the start and end of the element's own <code>direction</code>.</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate` keeps its physical meaning on a mirrored page: a figure turned clockwise is turned clockwise on the sheet. A host reading the layout finds the mirrored frame on each page (`VDTPage.flow` with `direction: 'rtl'`, `pageIsMirrored(page)`) and the visual order of each line's segments in `VDTLine.order`; `flowToPage` and `pageToFlow` map between the flow and the sheet. See [Arabic layout](/en/docs/arabic-layout#direction-and-the-bidirectional-algorithm).
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // right to left, bound on the right
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // forced; rarely what you want
+```
+
 ### Languages and scripts
 
 Postext sets alphabetic scripts written left to right, and Chinese across the page and down it. [Chinese layout](/en/docs/chinese-layout) explains how Chinese is set and which settings control it; the keys are under [East Asian typography](#east-asian-typography), [Vertical writing](#vertical-writing) and [Binding](#binding). What each script gets:
 
 - **Chinese** is set by the CJK composer when a paragraph holds more CJK characters than word spaces: its lines break between characters under the line-start and line-end rules of `cjk.lineBreak` (no line starts with 。、」 or ー, none ends with 「 or （), keep —— and ……, a number with its signs and a Latin word whole, and a justified line is spread between its characters to the measure. Punctuation widths, hanging punctuation, the space between Han and Latin, the character grid, emphasis dots, the proper-name and book-title marks, ruby and warichu notes follow the region of `locale`, across the line or down it (`layout.writingMode: 'vertical-rl'`). A Latin paragraph that quotes a few CJK words keeps optimal line breaking and may break next to them; a CJK bracket, the middle dot or a fullwidth sign quoted in Latin text (〈h〉, ％) changes nothing.
 - **Japanese and Korean** go through the same composer and are set without hyphenation, but with the mainland Chinese defaults: their own rules (JLREQ, KLREQ) are not implemented. Korean text breaks between syllables as well as at its spaces.
-- **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…) are not supported yet. There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order. `page.binding: 'right'` lays out right-bound spreads for such a book, but not its lines.
+- **Arabic and other right-to-left scripts** (Persian, Urdu, Hebrew…) are set right to left: [Arabic layout](/en/docs/arabic-layout) explains how. The document's [`direction`](#text-direction) comes from the script of `locale`, the Unicode Bidirectional Algorithm orders the Latin words and numbers inside each line, the book is bound on the right with its first column on the right, and every number the engine writes takes the region's [digits](#document-digits). A word that holds an Arabic-script letter is never hyphenated, letter-spaced or cut, and a justified Arabic line is stretched at its spaces and with kashidas. Vowel marks, emphasis, footnotes and the strings of Arabic are under [Arabic text](#arabic-text). Persian, Urdu and Hebrew get the direction, the digits and the whole-word rules, but no built-in strings of their own.
 
-Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight, in Chinese and in Arabic. Chinese, Japanese, Korean and the languages written right to left are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+
+### Arabic text
+
+These settings serve text in Arabic script; none changes a document written in another script. [Arabic layout](/en/docs/arabic-layout) explains them with the rest of an Arabic book: direction, binding, digits, verse, contents and index.
+
+- **Vowel marks and leading.** The vowel marks of a vocalised text (fatḥa, kasra, shadda, tanwīn, the dagger alef, the Qurʾānic signs) stack over and under the letters, in the leading, which never grows for them. Each line that holds marks records how far their ink reaches (`VDTLine.markInk`), and the renderers' column clip takes in the marks of a column's first and last lines. When a mark over a word meets the letters or marks hanging under the word above it, the build reports the paragraph (`arabicMarksExceedLeading`, in the Sandbox's Checks panel). Only words standing over each other are compared. Partly vocalised text wants about 1.7–1.85 em of `lineHeight`, fully vocalised verse 1.9–2.1 em.
+- **Emphasis.** Arabic type has no italics, so in a document whose `locale` is written in Arabic script `*…*` is set in bold by default (`bodyText.emphasis: 'auto'`). `'color'` sets it upright in `italicColor`, and `'overline'` draws a rule over the words, the khaṭṭ fawqī of Arabic books. The setting reaches every text set in the body's faces: paragraphs, lists, blockquotes, paragraph styles, callout bodies, notes and headings. Captions, table cells, the contents and the index keep their own italic settings. Whatever is chosen, the engine never slants Arabic letters: the Arabic words of a run set in italics stand upright and its Latin words keep their italics. A blockquote is upright by default in such a document.
+- **Tashkīl.** `bodyText.tashkil: 'strip'` takes the vowel and Qurʾānic marks out of the text the layout sets, for an unvocalised edition made from a vocalised source: fatḥa, ḍamma, kasra and their tanwīn, sukūn, shadda, the dagger alef (هٰذا becomes هذا) and the marks U+0656–U+065F and U+06D6–U+06ED. `'strip-vowels'` keeps the shadda, as most modern books print it. Hamza and madda stay (أ إ آ are letters, also when typed with combining marks). The source keeps its marks; the lines, the headings and the contents are set without them, and every character set still maps to its place in the source.
+- **Footnotes.** `footnotes.markerTemplate: '({n})'` writes the markers «(١)» in the document digits, `numbering: 'page'` starts them again on every page, and `noteNumberPosition: 'inline'` sets the note's own number on the line. The separator rule and the note numbers stand at the start of the column, on the right in a right-to-left book.
+- **Whole words.** A word that holds an Arabic-script letter is never hyphenated, cut or letter-spaced, in an Arabic book or quoted in another. A style that sets `letterSpacing` on Arabic text is reported (`joiningScriptLetterSpacing`), and a word wider than its line overflows it and is reported (`unbreakableWordOverflow`). See [Arabic layout](/en/docs/arabic-layout#shaping-and-whole-words).
+- **Kashida and verse.** A justified line of Arabic is stretched with kashidas as well as at its spaces (`bodyText.kashida`, see [Kashida in Arabic text](/en/docs/justification#kashida-in-arabic-text)), and a classical poem is set one bayt a line in two hemistichs of one width with `:::verse` (see [`:::verse`](/en/docs/document-format#verse)).
+- **Index.** An index in Arabic sorts in alphabetical order and ignores the article ال (`index.ignoreArticle`), the vowel marks and the hamza seats; see [Back-of-book index](#back-of-book-index).
 
 ### Orphans, widows, runts, and keep-together rules
 
@@ -1768,7 +1880,7 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alignment of every heading level (there is no per-level value): ragged right, justified, centred or ragged left. A justified heading sets its last line flush left, like a paragraph, so a one-line heading reads as <code>'left'</code>. Canvas, HTML and PDF place the lines the same way, a number prefix included. The default opener of a <code>span: 'page'</code> heading without an advanced design follows it too (justified sets flush left); an advanced design aligns its own text elements with their <code>align</code>.</td>
     </tr>
@@ -2096,6 +2208,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td>What stands between the number and the title: in the column, in the default opener of a <code>span: 'page'</code> level, in the running heads that print the heading line and in the PDF bookmarks. The level-1 separator also joins a part's number and title in the default part page and in the default part row of the contents. Chinese chapter heads take an ideographic space or nothing (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). The contents keep their own number column (<code>toc.levels[].numberGap</code>). A <a href="#heading-styles">heading style</a> may set its own. When a title is broken in two with <code>{'\\\\'}</code>, as the couplet titles of Chinese novels are, the single-line forms (the column, the contents, the running heads) join the halves with an ideographic space when both sides are Chinese or Japanese characters, and with a space otherwise.</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>Where the generated number stands. <code>'before'</code>: before the title, joined by <code>numberSeparator</code>. <code>'replace'</code>: the number is the whole title and the title written in the source is not printed, so <code># Night</code> under <code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code> prints الليلة الثانية. The contents list the number as the entry's title (no number column), and the running heads (<code>{chapterTitle}</code>, <code>{titleText}</code>) and the PDF bookmarks read it too; <code>{number}</code> is empty for such a heading. Only for numbered headings with a template (the level's or their style's); any other keeps its title. A <a href="#heading-styles">heading style</a> may set its own, <code>'before'</code> to keep the titles its level would replace.</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>
@@ -2373,7 +2491,9 @@ Two numbering-template suffixes write a counter in words, in the document langua
   </tbody>
 </table>
 
-English, Spanish and Chinese are spelled out; any other language takes the English words, as the built-in table continuation strings do. Chinese writes the informal numerals of `simp-chinese-informal` or `trad-chinese-informal`, after the script of `locale` (一万 / 一萬), with 第 before an ordinal; Han characters have no case, so the three spellings of a suffix print alike. English follows American usage (*one hundred five*, no *and*). Spanish uses masculine forms, as a *capítulo* or a *libro* is numbered (*capítulo primero*, *tercero*, *veintiuno*), and writes the ordinals from 13 to 29 as one word, as the RAE prefers (*decimotercero*, *vigesimoprimero*). Cardinals are spelled up to 999 999 and Spanish ordinals up to 999; larger numbers print in digits.
+English, Spanish, Chinese and Arabic are spelled out; any other language takes the English words, as the built-in table continuation strings do. Chinese writes the informal numerals of `simp-chinese-informal` or `trad-chinese-informal`, after the script of `locale` (一万 / 一萬), with 第 before an ordinal; Han characters have no case, so the three spellings of a suffix print alike. English follows American usage (*one hundred five*, no *and*). Spanish uses masculine forms, as a *capítulo* or a *libro* is numbered (*capítulo primero*, *tercero*, *veintiuno*), and writes the ordinals from 13 to 29 as one word, as the RAE prefers (*decimotercero*, *vigesimoprimero*). Cardinals are spelled up to 999 999 and Spanish ordinals up to 999; larger numbers print in digits.
+
+Arabic numbers agree in gender with the noun they count, so the suffix takes a modifier: `-feminine` (or `-f`) for a feminine noun, `-masculine` (`-m`, the default) for a masculine one; `-classical` spells the hundreds مائة, as Bulaq and most Egyptian prints do, instead of the modern مئة. `{1:ordinal}` writes the definite nominative ordinal a heading uses: `الفصل {1:ordinal}` gives *الفصل الأول*, *الفصل الحادي عشر*, *الفصل الحادي والعشرون*; `الليلة {1:ordinal-feminine}` gives *الليلة الأولى*, *الليلة الحادية عشرة*, *الليلة الحادية والعشرون*, *الليلة المئتان*, and above a hundred the classical "after" formula: *الليلة الخامسة والأربعون بعد الثلاثمئة*, *الليلة الحادية بعد الألف*. `{1:words}` writes the cardinal (واحد وعشرون; feminine إحدى عشرة, واحدة وعشرون). Ordinals are spelled up to 9 999 and cardinals up to 99 999; the modifiers combine (`{1:ordinal-f-classical}`), and other languages ignore them. Arabic has no capitals, so the case of the suffix changes nothing. The design placeholders `{numberWords}` and `{numberOrdinalWords}` write the masculine forms; for a feminine opener, put the ordinal in the level's template and print it with `{number}`.
 
 In a heading design, `{numberWords}` / `{numberWordsLower}` and `{numberOrdinalWords}` / `{numberOrdinalWordsLower}` spell the heading's counter the same way, so the opener can say *Chapter One* while the contents list `1`. A text element's `textTransform: 'uppercase'` gives the capitals:
 
@@ -2983,6 +3103,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>Size of an inline marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>How a note's number is written, <code>{n}</code> standing for it in the number format and the document's digits: <code>'({n})'</code> gives the parenthesised markers of Arabic books, «(١)». It writes the marker in the text and the number that opens the note alike. A template without <code>{n}</code> is read as the default.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Where the number that opens the note stands, raised or on the line at the note size. <code>'auto'</code> follows <code>markerPosition</code>. Arabic books raise the marker in the text and set the note's own number on the line.</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>
@@ -4076,7 +4208,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the caption lines. <code>'justify'</code> spreads every line but the last to the full width. On a caption bar the lines align inside its padding; a side caption aligns within its own width.</td>
     </tr>
@@ -4193,7 +4325,7 @@ The `note` sub-object styles `Resource.note`, a short run (source, credits, a re
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the note lines, as <code>align</code> for the caption.</td>
     </tr>
@@ -4399,9 +4531,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>body alignment</td>
-      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block.</td>
+      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block. In a right-to-left paragraph <code>'left'</code> is its start side, the right.</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4829,7 +4961,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, main colour</td>
-      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down. On a box with a <code>borderRadius</code> its outer corners are rounded with the frame's (up to postext 1.4 they stayed square and stuck out past the rounding).</td>
+      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down. <code>'left'</code> and <code>'right'</code> are sides of the body flow (in a right-to-left book <code>'left'</code> is the sheet's right); <code>'start'</code> and <code>'end'</code> follow the box's own direction, so a <code>:::callout&#123;dir=ltr&#125;</code> in an Arabic book puts a <code>'start'</code> stripe on its left. On a box with a <code>borderRadius</code> its outer corners are rounded with the frame's (up to postext 1.4 they stayed square and stuck out past the rounding).</td>
     </tr>
     <tr>
       <td><code>icon</code></td>
@@ -5392,7 +5524,7 @@ const config: PostextConfig = {
       <td><code>levels</code></td>
       <td><code>TocLevelConfig[]</code></td>
       <td>level 1</td>
-      <td>Heading levels listed, each with its entry typography: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (defaults to the body leading, so the contents sit on the grid), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (of the whole entry), <code>numberWidth</code> / <code>numberGap</code> (the number column the title starts after; numbers are right-aligned in it), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Unset fields inherit the body text. The number sits on the baseline of the title's first line, whatever its face and size, on canvas, in HTML and in the PDF (up to postext 1.4 it was centred on the x-height like a list bullet, so a display face or a larger size rode above the title). A renderer of your own finds that baseline in the entry block's <code>bulletBaselineY</code>; <code>bulletY</code> is still the number's em-box midpoint, as in 1.4, so a renderer that predates the new field draws the numbers where it always did.</td>
+      <td>Heading levels listed, each with its entry typography: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (defaults to the body leading, so the contents sit on the grid), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (of the whole entry), <code>numberWidth</code> / <code>numberGap</code> (the number column the title starts after; numbers are right-aligned in it, and a number wider than <code>numberWidth</code>, such as <code>الفصل الحادي عشر</code> or <code>Chapter 12</code>, widens the column of its level to the widest one), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Unset fields inherit the body text. The number sits on the baseline of the title's first line, whatever its face and size, on canvas, in HTML and in the PDF (up to postext 1.4 it was centred on the x-height like a list bullet, so a display face or a larger size rode above the title). A renderer of your own finds that baseline in the entry block's <code>bulletBaselineY</code>; <code>bulletY</code> is still the number's em-box midpoint, as in 1.4, so a renderer that predates the new field draws the numbers where it always did.</td>
     </tr>
     <tr>
       <td><code>unnumbered</code></td>
@@ -5503,7 +5635,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>', '</code>, <code>', '</code>, <code>'–'</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code>; the first two <code>'، '</code> in Arabic script</td>
       <td>What is printed between the term and its first page, between two pages, and between the ends of a range.</td>
     </tr>
     <tr>
@@ -5527,7 +5659,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
-      <td>by language, italic</td>
+      <td>by language, italic (upright in Arabic script)</td>
       <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 in Traditional Chinese)… A Chinese index sets the reference after a full stop, with no space: <code>贾琏 12。见贾政</code>.</td>
     </tr>
     <tr>
@@ -5541,6 +5673,12 @@ const config: PostextConfig = {
       <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
       <td><code>'auto'</code></td>
       <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, after that letter's Chinese entries (the collator sets Latin letters after Chinese characters): <code>sort="jia mu"</code> ends the <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key in characters that have only the reading you want, which sorts in place: <code>sort="崇阳"</code> for 重阳, <code>sort="航业"</code> for 行业. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> in Arabic</td>
+      <td>Sort and group Arabic entries as if a leading article <code>ال</code> (<code>ٱل</code>) were not there: البصرة files under ب, between بدر and بغداد, and prints as written. <code>الله</code> keeps its article, and an entry with its own <code>sort</code> key sorts by that key as given. Whatever this says, an Arabic index ignores the vowel signs and the tatweel, files أ إ آ ٱ under ا, and sorts ؤ as و, ئ and ى as ي, ة as ه.</td>
     </tr>
     <tr>
       <td><code>groups.enabled</code></td>
@@ -5957,7 +6095,8 @@ The `folio` property sets how the Folio viewer (`postext-folio`) presents the pr
 
 ```ts
 interface FolioConfig {
-  tilt?: number;                  // Degrees from straight above, 0–40.
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
   paper?: {
     type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
          | 'bible' | 'newsprint' | 'cardStock' | 'board';
@@ -6002,7 +6141,13 @@ interface FolioConfig {
       <td><code>tilt</code></td>
       <td><code>number</code></td>
       <td><code>22</code></td>
-      <td>Angle of the view away from straight above, in degrees, clamped to 0–40. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+      <td>Angle of the view away from straight above, in degrees, clamped to 0–70. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>How far the view is turned round the book, in degrees, brought into −180–180. At 0 the book is seen from the foot of its pages; a positive angle brings the eye round to its right, a negative one to its left. With <code>tilt</code> it is the view the viewer opens on and the one <code>resetView()</code> eases back to.</td>
     </tr>
     <tr>
       <td><code>paper.type</code></td>
@@ -6390,13 +6535,14 @@ Besides these, the panel always lists the warnings the layout itself raises (`VD
 
 ### Configuration warnings
 
-Four mistakes in the configuration itself are never silent, and no toggle hides them. The engine does not fail on any of them; it substitutes a value, or leaves the setting out, and says so:
+Six mistakes in the configuration itself are never silent, and no toggle hides them. The engine does not fail on any of them; it substitutes a value, or leaves the setting out, and says so:
 
 - **Unknown number format** — an ordered-list `numberFormat`, a `page.pageNumbering.format` or a resource type's `counterFormat` that is none of the [numbering format spellings](#numbering-format-spellings). It numbers in decimal.
 - **Font stack in a font family** — a `fontFamily` (or any `…FontFamily`) that holds a CSS font stack. The text is set in the stack's first family (see [One family per `fontFamily`](#one-family-per-fontfamily)).
 - **Side column with no room** — a `'oneAndHalf'` layout's `sideColumnPercent` (the document's, or a heading style's own `layout`) that would leave one of the columns under 1% of the content width, or that is not a number. The columns are cut at the nearest value both can take, and `used` names it (`sideColumnPercentClamped`; see the [`'oneAndHalf'` layout](#layout-types)).
 - **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](#character-grid)).
 - **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
+- **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`).
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:
 
@@ -7264,8 +7410,8 @@ The package exposes a single entry point and a handful of types:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — takes a `VDTDocument` (or a book's chapters as an array of them) and returns the raw PDF bytes.
 - **`PdfFontProvider`** — the callback signature `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` that `renderToPdf` uses to request font bytes when it needs to embed a new family/weight/style combination. `request.codePoints` holds the characters the pages set in that face; the answer is one file, or several that make the face together (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)).
-- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` and `colorSpace` fall back to the document's `pdfGeneration` when left out (see [PDF generation (config)](#pdf-generation-config)). `resourceBytes` is described in [Resource bytes and print masters](#resource-bytes-and-print-masters); `onWarning` in [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for) and [Warnings in the document](#warnings-in-the-document). `characterGrid: true` prints the grid `cjk.grid.show` draws on screen, which the PDF otherwise leaves out (see [Character grid](#character-grid)).
-- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family; `'missingGlyph'` (`PdfMissingGlyphWarning`), characters no file of a face has a glyph for; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), a variable font asked for at a weight other than its default instance; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), a CFF face over 2 MB embedded whole; or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; the font warnings without one go to `console.warn`).
+- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm? }`. `outlines`, `accessible` and `colorSpace` fall back to the document's `pdfGeneration` when left out (see [PDF generation (config)](#pdf-generation-config)). `resourceBytes` is described in [Resource bytes and print masters](#resource-bytes-and-print-masters); `onWarning` in [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for) and [Warnings in the document](#warnings-in-the-document). `characterGrid: true` prints the grid `cjk.grid.show` draws on screen, which the PDF otherwise leaves out (see [Character grid](#character-grid)). `harfbuzzWasm` says where to load HarfBuzz's `harfbuzz.wasm` from (a URL, relative to the page, or the file's bytes) for a document with right-to-left or joining text; left out, the copy beside postext-pdf's module, then the same harfbuzzjs release from jsDelivr and esm.sh.
+- **`PdfWarning`** — a non-fatal problem reported through `onWarning`; narrow on `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), a face set in another cut of its family; `'missingGlyph'` (`PdfMissingGlyphWarning`), characters no file of a face has a glyph for; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), a variable font asked for at a weight other than its default instance; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), a CFF face over 2 MB embedded whole; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), right-to-left or joining text drawn without HarfBuzz, which could not be loaded (`reason` lists where it was looked for), so Arabic marks are misplaced; or `'missingImage'`, an image with no bytes drawn as a placeholder (reported only to an `onWarning` you pass; the font warnings without one go to `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`** — helper that turns a WOFF2 file into TTF bytes, which is the format `pdf-lib` can embed directly.
 - **`createPdfWorker(options?)`**, from `postext-pdf/worker` — the same render on a Web Worker; see [Rendering the PDF on a worker](#rendering-the-pdf-on-a-worker).
 
@@ -7627,7 +7773,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **The document sets the look.** The paper, the binding, the desk and the light are the document's [`folio` settings](#folio-viewer-config) (`doc.config.folio`). A page set inside a `:::paper` run carries its own stock (`VDTPage.paper`), and its leaf is drawn with that paper's colour, surface, thickness and stiffness. With `binding.cover: 'pages'` the first page is the front board and the last, when it is a verso, the back board (`covers`).
 - **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either): the spine runs along the page's inner edge and the leaf turns over it, a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.
 - **What the pointer does.** `interaction` (and `setInteraction` later) sets what the left button, one finger or a pen does on the book: `'hand'` (the default) takes and turns the pages, `'orbit'` turns the view as a right-drag does (for trackpads and tablets), `'select'` leaves the pointer to the host, to select text, say. `pageAt(event)` gives the page under a pointer and where on it (`{ page, x, y }`, fractions of the page from its top left corner), on the book as it is seen, tilted or orbited; `pointOnScreen(point)` goes the other way, for drawing a caret or a selection over the page. `refreshPage(src)` shows again a page canvas the host drew anew in place. The sandbox uses all of them to select text and follow the editor's caret on the 3D pages.
-- **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt`. The sandbox puts that on a **Reset view** button.
+- **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt` and `yaw`, and `getView()` gives the view as it is seen now (`{ tilt, yaw }`, degrees) to store as those settings. The sandbox puts them on two buttons, **Reset view** and **Save as default view**.
 - **Fonts and images first.** As for `renderPage`, the faces the document uses must be loaded in `document.fonts` and its resource images registered with `registerResourceImage` before pages are painted.
 - **Accessible.** The viewer is a focusable group that takes ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End; its buttons and page count are labelled (`labels` translates them), and each page canvas carries `alt` text (`alt: (index) => …`).
 - **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change. WebGL books are heavy for a phone (a texture per page side): the sandbox offers its Folio tab only where WebGL2 is available and the screen's short side is at least 600 px. `canFlip()` says whether the leaves will turn in 3D here: WebGL2, and no reduced motion.
@@ -7690,6 +7836,77 @@ The pen imports `postext` and `postext-folio` from a CDN, lays a short document 
 `createFolio` with pages drawn on canvases, a blank last page and the paper colour.
 
 <CodePenExample name="folio-images" title="Postext · a 3D book of images" description="Turn any pages in 3D with postext-folio: image URLs, img or canvas elements." height={600} />
+
+## EPUB books (`postext-epub`)
+
+`postext-epub` writes a laid-out book as an EPUB 3.3 file, in the browser or in Node, with no server. It reads the same chapter documents `renderToPdf` takes for a book, so page numbers, notes, citations, cross-references, the contents and the index arrive resolved, and it returns the file as bytes. It is the writer behind the sandbox's **EPUB 3** tab.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` is a peer dependency, as for `postext-pdf`: upgrade the two together, and on a CDN pin them to the same version.
+
+### Fixed layout and reflowable
+
+EPUB 3 defines two renditions, set by the package's `rendition:layout` property; `layout` picks one:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>EPUB name</td><td><code>pre-paginated</code> (fixed layout, FXL)</td><td><code>reflowable</code>, the EPUB default</td></tr>
+    <tr><td>Content documents</td><td>One XHTML document per printed page, at the trimmed page size in CSS px</td><td>One XHTML document per chapter (a part opens one of its own)</td></tr>
+    <tr><td>What it keeps</td><td>The page: columns, floats, running heads, openers, line breaks and positions, in the embedded fonts. Text stays real text: selectable, searchable, read aloud</td><td>The text and its structure: headings, paragraphs rebuilt from the lines, lists, boxes as asides, figures and tables after the text that cites them, notes, links, print page markers. A style sheet derived from the configuration</td></tr>
+    <tr><td>What it gives up</td><td>The reader's choice of typeface, size and margins; on a small screen the page is scaled down</td><td>Columns, running heads, page design and the exact line breaks</td></tr>
+    <tr><td>Spreads and direction</td><td><code>page-spread-left</code> / <code>page-spread-right</code> from parity and binding; a right-bound book reads right to left</td><td>Reading direction from the binding; vertical Chinese keeps <code>vertical-rl</code>, Arabic is <code>dir="rtl"</code></td></tr>
+    <tr><td>Suited to</td><td>Designed pages: illustrated books, textbooks, catalogues, magazines; large screens</td><td>Running text: novels, essays, reports; phones and e-ink readers</td></tr>
+  </tbody>
+</table>
+
+Both renditions carry the same navigation: a table of contents from the headings and part pages, a page list with the printed page labels, landmarks (cover, printed contents, start of the body) and an NCX for older reading systems.
+
+### Writing a book
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // one VDTDocument per chapter, in book order
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Lantern', creators: ['Ada Lovelace'], language: 'en' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+A single document is a book of one chapter: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` and `language` (a BCP 47 tag) are required; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` and `modified` are optional. A bare ISBN becomes `urn:isbn:…`. Without an `identifier` the book gets a `urn:uuid:` derived from its title, creators and language, so a new version of the same book keeps its place in a reader's library. Pass `modified` too for byte-identical output.
+- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it.
+- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. A picture with no bytes is reported as `missingImage` and left as an empty frame.
+- **`cover`**: `{ bytes, mediaType, alt? }`, a JPEG, PNG, WebP or SVG picture. The book then opens on a cover document holding it, and it is the package's `cover-image` (the thumbnail in a library). Without one, the fixed layout names its first page as the cover and the reflowable book has no cover picture.
+- **`onProgress({ phase, done, total })`**: `resources` (fonts and pictures), `documents` (pages for a fixed layout, chapters for a reflowable one), then `package`. **`signal`** aborts between steps.
+- **`readEpub(bytes)`** reads a file back for a viewer, without `DOMParser`: layout, metadata, reading direction, every file by path, the manifest, the spine, the table of contents, the page list, the fixed-layout viewport and the cover. The sandbox's reader is built on it.
+
+Both renditions carry EPUB Accessibility 1.1 metadata (access modes, features such as the table of contents and print page numbers, hazards and a summary) and make no WCAG conformance claim by default. The full option list and the limitations are in the [package README](https://www.npmjs.com/package/postext-epub).
+
+### Checking a file with EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) is the reference validator for EPUB; ebook stores check the files they receive with it. With it installed (`brew install epubcheck`, or the Java release), `epubcheck book.epub` lists errors, warnings and usage notes; the usage notes Postext output leaves (`CSS-028`, `OBS-001`, `HTM_062`) are informational. In the Postext repository, `pnpm --filter postext-epub epubcheck` checks the test suite's sample books, `node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both` lays out one `.postext` file or preset folder and checks both renditions, and `pnpm --filter postext-epub validate` runs the whole matrix of books (the guide, the showcase presets, Chinese, Arabic and Cookbook books), each of which passes with no errors or warnings.
 
 ## Bundles (`.postext` files)
 

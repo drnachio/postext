@@ -7,6 +7,7 @@ import type {
   VDTDesignBoxStyle,
 } from 'postext';
 import { segmentOrientation } from 'postext';
+import { drawRightToLeftRun } from './rtlRun';
 import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
 import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
@@ -203,13 +204,18 @@ function renderTextBlock(
       drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline);
       continue;
     }
-    // Inline marks: each run in its own font, one after another.
+    // Inline marks, or a line with right-to-left text: each run in its own
+    // font and direction, one after another in the line's paint order.
     let x = originX + line.xOffset;
-    for (const run of line.runs) {
+    const order = line.order && line.order.length === line.runs.length ? line.order : undefined;
+    for (let k = 0; k < line.runs.length; k++) {
+      const run = line.runs[order ? order[k]! : k]!;
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
+      const y = line.baselineY + (run.baselineShift ?? 0);
+      if (run.rtl) drawRightToLeftRun(ctx, run.text, x, y, runFont, runSize, color, outline);
       // A vertical line: the orientation its author gave the run.
-      drawTextPx(ctx, run.text, x, line.baselineY + (run.baselineShift ?? 0), runFont, runSize, color, outline, undefined, segmentOrientation(run));
+      else drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, undefined, segmentOrientation(run));
       x += run.width;
     }
   }

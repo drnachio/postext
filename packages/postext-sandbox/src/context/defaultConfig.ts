@@ -1,5 +1,6 @@
 import type { PostextConfig, ResourceType } from 'postext';
 import { chineseScriptOf, cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
+import { arabicDefaults, isArabicScriptLanguage } from './arabicDefaults';
 import { chineseDefaults } from './chineseDefaults';
 
 /** The sandbox's pristine configuration: the default colour palette plus the
@@ -14,9 +15,14 @@ export function createDefaultConfig(locale = 'en'): PostextConfig {
  *  `locale`: the pristine one, and for a Chinese interface the Chinese
  *  defaults of its script too (the document language, Noto faces, 2 em
  *  indents, 图/表 captions, 第一章 numbering: what "Apply Chinese
- *  defaults" sets), so the book reads as Chinese from the first line. */
+ *  defaults" sets), so the book reads as Chinese from the first line. An
+ *  Arabic interface likewise sets the document language and the Arabic
+ *  defaults (right to left, Amiri, 1.75 leading, kashida, Arabic-Indic
+ *  digits, شكل/جدول captions, الفصل الأول numbering: what "Arabic
+ *  defaults" sets with its classical faces). */
 export function createBlankBookConfig(locale = 'en'): PostextConfig {
   const config = createDefaultConfig(locale);
+  if (isArabicScriptLanguage(locale)) return arabicDefaults({ ...config, locale }, { locale }).config;
   if (!chineseScriptOf(locale)) return config;
   return chineseDefaults(config, { locale, fallbackLocale: locale }).config;
 }

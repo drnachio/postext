@@ -1,0 +1,61 @@
+---
+title: "One book, two EPUB 3 files: fixed and reflowable"
+summary: "renderToEpub from postext-epub writes the chapters buildBundle laid out as a fixed-layout EPUB and a reflowable one; readEpub lists what each file holds."
+plain: "A small book of fables, laid out for print once and saved as two e-books: one that keeps every printed page, and one whose text a phone or an e-reader sets again at its own size."
+description: "A three-chapter book laid out with buildBundle and written with postext-epub as a fixed-layout and a reflowable EPUB 3, each read back with readEpub."
+question: "How do I export my book as an EPUB, with fixed pages or with text that reflows?"
+aliases: ["EPUB", "EPUB 3", "ebook", "e-book", "fixed layout", "reflowable", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "The title page: the author in small blue capitals, the title Fables of Aesop in a display serif, a short rule and an italic subtitle.", "3": "The opener of Book I, The Lion’s Court, with the fable The Lion and the Mouse under it." }
+---
+
+## What you'll build
+
+*Fables of Aesop*, eighteen fables in three books on a 120 × 190 mm page, with a title page, an imprint on its verso and a sunk opener for each book. The Spanish edition sets Clarín’s *¡Adiós, Cordera!* in three chapters on the same page. The book is laid out once, chapter by chapter, and that layout becomes two EPUB 3 files. The fixed layout keeps every printed page: the openers, the running heads and the line breaks, in the embedded Caslon. The reflowable file keeps the text and its structure, and the reading system sets it again on a phone or an e-ink screen. Both download from the page, and both pass W3C EPUBCheck.
+
+## Method
+
+### 1 · Lay the book out as chapters
+
+<Excerpt region="openers" />
+
+`buildBundle` lays out each chapter as a document of its own, carrying page numbers and parity from one to the next, so `docs` is the array `renderToPdf` would print. The EPUB writer reads the same array: each chapter becomes a navigation entry, and the reflowable file writes one XHTML document per chapter. The title page and its imprint are the first chapter, and its front matter is the book’s title, subtitle and author.
+
+### 2 · Hand the writer the font files
+
+<Excerpt region="embed" />
+
+The faces the browser loaded are not files the writer can read, so the pen fetches the same Fontsource woff2 files again; the browser has them cached. Each one becomes a font file in the EPUB and an `@font-face` rule. Without them the fixed layout would place text set in Caslon in a reader’s own face, and the lines would no longer fit their measure.
+
+### 3 · Write both renditions
+
+The code is [the short answer](#the-short-answer) above. `layout: 'fixed'` writes one XHTML document per printed page at the trimmed page size, with real, selectable text; `layout: 'reflowable'` rebuilds paragraphs from the laid-out lines, drops the hyphens the line breaks added and derives a stylesheet from the configuration. A fixed `modified` date makes each run produce the same bytes. The metadata comes from the first chapter’s front matter, so the file’s title and author are the ones printed on the title page.
+
+### 4 · Read each file back
+
+<Excerpt region="shelf" />
+
+`readEpub` opens the file the way a reading system does: the spine in reading order, the contents, the page list and the layout. The fixed file has one spine entry per page; the reflowable one has four, one per chapter. Both carry a page list of the printed folios, so a reader can follow a citation to page 9 in either. The `<a download>` link gives the bytes a file name; nothing goes through a server.
+
+## Variations
+
+### Give the fixed layout a cover picture
+
+Paint the title page to a canvas and pass it as the cover; `showsFirstPage` tells the writer not to add it as a page of its own.
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### Print the same chapters as a PDF
+
+`renderToPdf(docs, …)` from `postext-pdf` takes the same array, so the PDF, the EPUB and the screen come from one layout. <RecipeLink slug="catalan-pocket-novella">The Catalan pocket novella</RecipeLink> shows the PDF side.
+
+## Pitfalls
+
+The reflowable file keeps a heading’s text but not its design: the kicker of each opener (*Book I*) is a design element, so it is not in the text. Put words the reader must see in the heading itself or in the text.

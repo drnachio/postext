@@ -1,0 +1,260 @@
+{/* docs/skill-ca.mdx */}
+
+export const metadata = {
+  title: 'Skill per a agents: portar una publicació a Postext',
+  sidebarTitle: 'Skill',
+  description: 'Instal·la la skill postext-port a Claude Code, Codex o qualsevol agent i deixa que converteixi un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un projecte de Postext que segueix la maquetació original',
+  lang: 'ca',
+  lastUpdated: '2026-10-04',
+  readingTime: '8 min',
+  order: 10,
+  plainSummary: "Aquesta pàgina és per a qui ja té un llibre o un document en un altre format, com ara PDF, Word o InDesign, i el vol passar a Postext. Un assistent d'intel·ligència artificial, que s'anomena agent, pot fer gairebé tota la feina si li dones un petit complement anomenat skill. La skill ensenya l'agent a copiar el text i a reconstruir el disseny de l'original. La pàgina explica com instal·lar-la, què demanar-li i com revisar el resultat. Un vídeo d'uns cinc minuts mostra cada pas.",
+};
+
+# Skill per a agents
+
+**Converteix una publicació existent en un projecte de Postext amb un agent de programació.**
+
+Molta gent arriba a Postext amb un llibre que ja existeix: un manual en PDF
+d'impremta, un informe en Word, un curs en PowerPoint, un catàleg en InDesign,
+un EPUB. Portar-lo implica dues feines:
+
+- **El contingut**: el Markdown enriquit de cada capítol, amb les seves
+  directives i microformats.
+- **El disseny**: un manifest de configuració que reprodueixi les regles de
+  maquetació de l'original (geometria de pàgina, retícula de línies de base,
+  tipografia, obertures, cornises, requadres, flotants, taules, parts).
+
+Un LLM pot fer bona part d'aquesta feina, però només si sap com
+funciona Postext. El Markdown de Postext no és CommonMark, i la configuració
+té paranys que només apareixen quan una pàgina es compon malament. La skill
+**`postext-port`** empaqueta aquest coneixement juntament amb les eines amb
+què construïm cada preset del sandbox, perquè el teu agent faci el port
+bé.
+
+Segueix el format obert [Agent Skills](https://agentskills.io), així que
+funciona amb Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode
+i [molts altres agents](https://skills.sh).
+
+## Mira el tutorial
+
+Cinc minuts, sense programar: prepara la carpeta, aplega els originals
+vectorials, afegeix un PDF de referència, demana-ho a l'agent i revisa el
+resultat al sandbox.
+
+<TutorialVideo />
+
+També a YouTube: [mira'l allà](https://youtu.be/6lXSY7A72VA) o a la
+[llista de Postext](https://www.youtube.com/playlist?list=PLb9LUQYJSvyg).
+
+## Què conté la skill
+
+- **Un flux de treball**:
+  1. acordar l'encàrrec;
+  2. inventariar la font;
+  3. mesurar el disseny en una fitxa d'especificacions;
+  4. crear l'esquelet del projecte;
+  5. extreure el contingut;
+  6. curar-lo com a Markdown de Postext;
+  7. preparar fonts i imatges;
+  8. verificar pàgina a pàgina;
+  9. empaquetar.
+- **Referències**:
+  - el format de document i el manifest de configuració, tots dos
+    contrastats amb el motor;
+  - el format de projecte (bundle);
+  - una guia per format d'origen;
+  - un mètode d'anàlisi del disseny;
+  - un catàleg de casos de maquetació ja resolts: parts amb color
+    propi, obertures de capítol, vers, glosses al marge, notes a peu de pàgina,
+    índexs analítics,
+    requadres flotants, dividits i niats, originals vectorials per a
+    impremta, figures amb text viu, imatges en cel·les, taules apaïsades,
+    edicions bilingües i més;
+  - llibres xinesos, en horitzontal o en vertical i enquadernats per la
+    dreta: què preguntar a l'encàrrec (escriptura, regió, direcció,
+    enquadernació), com mesurar una retícula de caràcters, com llegir PDF
+    verticals, el ruby i el warichu d'InDesign, la maquetació d'Àsia
+    oriental de Word i els EPUB de dreta a esquerra, i com retallar les
+    fonts CJK al llibre (vegeu [Composició xinesa](/ca/docs/chinese-layout));
+  - llibres àrabs, moderns o clàssics i vocalitzats, compostos de dreta a
+    esquerra i enquadernats per la dreta: la llengua que gira el llibre,
+    què preguntar (regió i xifres, vocalització, vers, índex al final), com
+    mesurar una pàgina emmirallada, com llegir l'àrab de PDF, Word i
+    Wikisource, els poemes com a `:::verse`, les notes «(١)» per pàgina i
+    les fonts àrabs retallades amb les seves taules d'enllaç (vegeu
+    [Composició àrab](/ca/docs/arabic-layout));
+  - l'objecte imprès: com llegir el paper, l'enquadernació, les cobertes
+    i el llom de la font i fixar-los a la configuració `folio` que mostra el
+    [visor Folio](/ca/docs/sandbox#pestanya-folio), comprovats pel linter.
+- **Scripts** (Python i Node), descrits a la secció següent.
+
+## Scripts
+
+<table>
+  <thead>
+    <tr>
+      <th>Script</th>
+      <th>Què fa</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>inventory.py</code></td><td>Primera mirada a qualsevol font: geometria, fonts, estils en ús, imatges, pàgines que necessiten OCR</td></tr>
+    <tr><td><code>measure_layout.py</code></td><td>Marges, columnes, espai entre columnes i interlineat (la retícula de línies de base) d'un PDF</td></tr>
+    <tr><td><code>pdf_extract.py</code></td><td>PDF → capítols en esborrany per <em>rol tipogràfic</em> (font/cos/color): ordre de lectura, paràgrafs, eliminació de guionets, negretes/cursives, superíndexs i subíndexs, llistes, peus</td></tr>
+    <tr><td><code>pdf_figures.py</code></td><td>Retalla figures d'un PDF: fotos a resolució nativa, previsualitzacions SVG, originals vectorials en PDF per a impremta</td></tr>
+    <tr><td><code>extract_tables.py</code></td><td>Taules de PDF → <code>TableModel</code> de Postext</td></tr>
+    <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítols en esborrany, amb els estils de Word assignats a requadres i estils de paràgraf</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>IDML d'InDesign → capítols en esborrany per estil de paràgraf, taules i imatges ancorades; el ruby, el tate-chu-yoko, els punts d'èmfasi i el warichu passen a <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> i <code>:warichu</code>, i avisa de les històries verticals i de l'enquadernació de dreta a esquerra</td></tr>
+    <tr><td><code>index_marks.py</code></td><td>Reconstrueix un índex analític imprès com a marques <code>:index</code>: llegeix les pàgines de l'índex al PDF, cerca cada terme a la seva pàgina i marca les mateixes paraules als capítols</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, fer subconjunts, escalar i separar fonts (una font xinesa retallada als caràcters del llibre conserva les seves formes i mètriques verticals, i una d'àrab, les formes d'enllaç i el tatweel); passar imatges a sRGB, retallar-les i unir-les; convertir il·lustracions <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
+    <tr><td><code>preset_kit.py</code></td><td>Crea el projecte i el seu script generador, construeix <code>preset.json</code> i empaqueta el <code>.postext</code></td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Detecta tot el que el parser i el carregador fan malament en silenci i, en text xinès, japonès o coreà, els caràcters que les fonts del projecte no poden compondre; en text àrab, la manca d'una llengua àrab, les fonts només llatines o sense enllaços, l'espaiat entre lletres, la partició de mots forçada i l'èmfasi en cursiva</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Compon el projecte (una carpeta o un fitxer <code>.postext</code>) sense navegador amb el motor real, llegint-ne la configuració igual que el Sandbox, i mostra els avisos. Amb <code>--jpeg</code> pinta les pàgines que li demanis (<code>--pages 12-15</code>) com a fitxers JPEG amb el renderitzador de canvas del mateix motor, en un o dos segons, així que l'agent mira les seves pàgines sense generar un PDF; <code>--out</code> escriu el PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>Posa les pàgines de la font i de Postext l'una al costat de l'altra, a partir del PDF de la composició o de la seva carpeta de JPEG</td></tr>
+  </tbody>
+</table>
+
+## Instal·lació
+
+### Qualsevol agent (skills.sh)
+
+La CLI [`skills`](https://skills.sh) detecta els teus agents i hi instal·la la skill:
+
+```bash
+npx skills add drnachio/postext --skill postext-port
+```
+
+Tria agents concrets amb `-a` i instal·la-la per a tots els teus projectes amb `-g`:
+
+```bash
+npx skills add drnachio/postext --skill postext-port -a codex -a claude-code -g
+```
+
+El web publica la mateixa skill, així que això també funciona:
+
+```bash
+npx skills add https://postext.dev
+```
+
+### Plugin de Claude Code
+
+El repositori de Postext també és un marketplace de plugins de Claude
+Code. Dins de Claude Code:
+
+```text
+/plugin marketplace add drnachio/postext
+/plugin install postext@postext
+```
+
+O des del terminal:
+
+```bash
+claude plugin marketplace add drnachio/postext
+```
+
+```bash
+claude plugin install postext@postext
+```
+
+### Que la instal·li l'agent
+
+Pots demanar-ho al teu agent, per exemple: *«Instal·la la skill de Postext per
+portar publicacions (`npx skills add drnachio/postext --skill postext-port`) i
+fes-la servir per portar aquest PDF»*. Els agents que llegeixen
+`https://postext.dev/llms.txt` hi troben aquesta pàgina i l'ordre
+d'instal·lació.
+
+### Eines que fan servir els scripts
+
+```bash
+python3 -m pip install pymupdf pillow fonttools brotli
+```
+
+```bash
+brew install pandoc poppler
+```
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
+```
+
+Cal Pandoc per a fonts en Word, PowerPoint, EPUB i HTML, i poppler
+per a les imatges de pàgina de la font. Els paquets de Node mouen el
+renderitzador sense navegador (Node 22.15 o posterior); `@napi-rs/canvas` és un
+canvas precompilat amb què pinta les pàgines del llibre directament en
+JPEG. Eines opcionals: `ocrmypdf` per a
+escanejos, ImageMagick, i veraPDF per comprovar PDF/UA.
+
+## Com fer-la servir
+
+Deixa els fitxers d'origen a la teva carpeta de treball i demana el port. Per
+exemple:
+
+- *«Porta els capítols 1 a 3 de `manual.pdf` a Postext, reproduint-ne la
+  maquetació a dues columnes, les obertures de capítol i els requadres.»*
+- *«Converteix `curso.docx` en un llibre de Postext. Els estils "Nota" i
+  "Actividad" són requadres.»*
+- *«Converteix `presentacion.pptx` en un dossier de Postext: les diapositives
+  són seccions i les notes de l'orador, el text.»*
+- *«Tenim el paquet d'InDesign (IDML + PDF d'impremta) d'aquest manual.
+  Construeix el preset de Postext del capítol 1 en castellà i anglès.»*
+
+L'agent segueix el flux de treball:
+
+1. **Encàrrec.** Pregunta el que no pot deduir: reproducció fidel o
+   redisseny, un capítol de mostra o el llibre sencer, llengües, impressió o
+   pantalla, i els drets sobre textos, imatges i fonts.
+2. **Inventari i mesurament.** Llegeix la font i escriu una fitxa de dades
+   mesurades: format, marges, columnes, interlineat, rols tipogràfics,
+   paleta, obertures, cornises, famílies de requadres i costums de
+   col·locació.
+3. **Projecte.** Crea `mi-libro/` amb un generador `build_preset.py` que
+   desa la fitxa com a constants i produeix `preset.json`.
+4. **Contingut.** Extreu capítols en esborrany amb l'extractor adequat i
+   els cura com a Markdown de Postext: requadres, estils de paràgraf, parts,
+   atributs d'encapçalament per a les obertures, citacions `:ref`, recursos de
+   taules i figures.
+5. **Verificació.** Passa el linter, compon el projecte sense navegador,
+   pinta com a JPEG les pàgines en què està treballant i les mira, i les
+   compara amb la font pàgina a pàgina fins que coincideixen els salts de
+   pàgina, les figures i els requadres. El PDF es genera per a les
+   comprovacions d'impremta, no per a cada revisió.
+6. **Lliurament.** Fixa el paper, l'enquadernació i les cobertes del llibre
+   per al visor Folio i empaqueta `mi-libro.postext`.
+
+Obre el resultat al [Sandbox](/ca/sandbox): **Llibres → Nou → Obrir
+un fitxer .postext…**. La importació pren els capítols i textos de l'idioma del
+sandbox. Per treballar amb una carpeta de projectes en una còpia local de
+Postext, defineix `POSTEXT_PRIVATE_PRESETS_DIR` (consulta
+[Sandbox](/ca/docs/sandbox)).
+
+### Carregar el resultat des del codi
+
+El fitxer lliurat no depèn del Sandbox. El paquet `postext` l'obre amb `openBundle`, compon el llibre amb `buildBundle` i el renderitza en canvas, HTML o PDF (consulta [Paquets](/ca/docs/configuration#paquets-fitxers-postext)). Així, una adaptació pot alimentar directament un programa. Quan el que produeix aquest programa necessita ajustos, torna a exportar-lo a un `.postext` amb `createBundle`, retoca'l al Sandbox i torna a carregar el fitxer corregit. El `render.mjs` de la skill, que compon sense navegador, accepta tant un `.postext` empaquetat com una carpeta de projecte.
+
+## Què cal esperar
+
+- **Els extractors produeixen esborranys; l'agent els cura.** Compta amb una
+  revisió per capítol contrastada amb les pàgines originals. Aquesta revisió és la
+  que dona la qualitat.
+- **Només configuració i Markdown.** La skill mai no modifica el motor per
+  encaixar-hi un llibre. Quan Postext no pot expressar alguna cosa, l'agent tria
+  l'expressió més propera i l'anota com a diferència coneguda.
+- **Els drets els decideixes tu.** L'agent pregunta abans de reproduir
+  imatges o fonts amb llicències dubtoses. Les fonts amb llicència es
+  marquen `redistributable: false`, així que els projectes exportats les
+  deixen fora.
+- **Fidelitat on importa.** L'objectiu és la mateixa retícula, tipografia,
+  obertures, requadres, col·locació de figures i salts de pàgina a la
+  majoria de les pàgines (amb un marge d'una pàgina per capítol), no
+  talls de línia idèntics.
+
+## On és
+
+La skill és al repositori a
+[`plugins/postext/skills/postext-port`](https://github.com/drnachio/postext/tree/main/plugins/postext/skills/postext-port).
+Cobreix tots els casos que van sorgir en construir els presets del sandbox,
+públics i privats. Si un port es troba amb un cas que encara no cobreix,
+obre una incidència o una pull request que millori la skill, i el port
+següent el tindrà resolt.

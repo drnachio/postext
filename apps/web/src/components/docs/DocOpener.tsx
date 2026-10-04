@@ -26,7 +26,7 @@ export function DocOpener({
       <div className="relative px-6 pt-8 pb-7 md:px-8 md:pt-10 md:pb-8">
         <span
           aria-hidden="true"
-          className="display pointer-events-none absolute -top-1 right-5 select-none text-[6rem] leading-[0.85] md:right-7 md:text-[8.5rem]"
+          className="display pointer-events-none absolute -top-1 end-5 select-none text-[6rem] leading-[0.85] md:end-7 md:text-[8.5rem]"
         >
           {number}
         </span>

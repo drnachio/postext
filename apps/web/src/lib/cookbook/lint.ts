@@ -16,6 +16,7 @@ import {
   POSTEXT_PDF_URL,
   POSTEXT_CITEPROC_URL,
   POSTEXT_FOLIO_URL,
+  POSTEXT_EPUB_URL,
   POSTEXT_URL,
   POSTEXT_WORKER_URL,
   configKeys,
@@ -74,7 +75,7 @@ export const LIMITS = {
 } as const;
 
 /** The only module URLs a pen imports (unpinned: the capture pins them). */
-export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL];
+export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL];
 
 /** Hosts (and path prefixes) a pen may fetch from. Nothing else: no hotlinking. */
 export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [
@@ -94,6 +95,10 @@ export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; 
   images: { module: "postext", name: "registerResourceImage" },
   // loadCjkFonts needs no engine symbol; cjkPdfProvider uses the pdf block's.
   cjk: null,
+  // Likewise loadArabicFonts and arabicPdfProvider.
+  arabic: null,
+  // showBook calls the viewer block's showPages.
+  book: null,
 };
 
 /** Namespace URIs in inline SVG, never fetched. */
@@ -141,17 +146,56 @@ function isCjk(code: number): boolean {
   return CJK_BLOCKS.some(([lo, hi]) => code >= lo && code <= hi);
 }
 
+/** The Unicode blocks of Arabic-script text: Arabic, its supplement and
+ *  extensions A–C, the presentation forms A and B, the Rumi numerals,
+ *  Arabic Extended-C and the mathematical alphabetic symbols. The arabic
+ *  file of an Arabic face served by Fontsource (the arabic kit block)
+ *  covers them. */
+const ARABIC_BLOCKS: readonly [number, number][] = [
+  [0x0600, 0x06ff], [0x0750, 0x077f], [0x0870, 0x08ff], [0xfb50, 0xfdff], [0xfe70, 0xfeff],
+  [0x10e60, 0x10e7f], [0x10ec0, 0x10eff], [0x1ee00, 0x1eeff],
+];
+
+function isArabic(code: number): boolean {
+  return ARABIC_BLOCKS.some(([lo, hi]) => code >= lo && code <= hi);
+}
+
 /** Characters outside Fontsource's `latin` subset (what a PDF recipe
- *  embeds), and those of them in the CJK blocks. */
-function nonLatin(text: string): { other: string[]; cjk: string[] } {
+ *  embeds), split into those in the CJK blocks, those in the Arabic blocks
+ *  and the rest. */
+function nonLatin(text: string): { other: string[]; cjk: string[]; arabic: string[] } {
   const other = new Set<string>();
   const cjk = new Set<string>();
+  const arabic = new Set<string>();
   for (const ch of text) {
     const code = ch.codePointAt(0) ?? 0;
     if (isLatin(code)) continue;
-    (isCjk(code) ? cjk : other).add(ch);
+    (isCjk(code) ? cjk : isArabic(code) ? arabic : other).add(ch);
   }
-  return { other: [...other], cjk: [...cjk] };
+  return { other: [...other], cjk: [...cjk], arabic: [...arabic] };
+}
+
+/** Whether a text is mostly Arabic: more Arabic-script letters than Latin
+ *  ones. An English or Spanish page quoting a line of Arabic is not. */
+function mostlyArabic(text: string): boolean {
+  const arabic = text.match(/(?=\p{L})\p{Script=Arabic}/gu)?.length ?? 0;
+  const latin = text.match(/\p{Script=Latin}/gu)?.length ?? 0;
+  return arabic > latin;
+}
+
+/** Scripts written right to left, as the engine's `directionOf` reads a
+ *  locale (packages/postext/src/locale.ts; the historic ones left out). */
+const RTL_SCRIPTS = new Set(["Arab", "Aran", "Hebr", "Syrc", "Thaa", "Nkoo", "Adlm", "Rohg", "Mand", "Samr"]);
+
+/** The script a language tag names or implies once maximised ('ar' →
+ *  'Arab', 'ur' → 'Arab', 'ks-Deva' → 'Deva'), or undefined. */
+function tagScript(tag: string | undefined): string | undefined {
+  if (!tag) return undefined;
+  try {
+    return new Intl.Locale(tag.trim().replace(/_/g, "-")).maximize().script;
+  } catch {
+    return undefined;
+  }
 }
 
 // ─── lintPen ────────────────────────────────────────────────────────────────
@@ -164,10 +208,12 @@ export interface LintPenOptions {
 }
 
 /** The functions each kit block declares. */
-function kitFunctions(kit: Partial<Record<KitBlock, string>>): Map<string, KitBlock> {
-  const map = new Map<string, KitBlock>();
+function kitFunctions(kit: Partial<Record<KitBlock, string>>): Map<string, KitBlock[]> {
+  const map = new Map<string, KitBlock[]>();
   for (const block of KIT_ORDER) {
-    for (const m of (kit[block] ?? "").matchAll(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/gm)) map.set(m[1], block);
+    for (const m of (kit[block] ?? "").matchAll(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/gm)) {
+      map.set(m[1], [...(map.get(m[1]) ?? []), block]);
+    }
   }
   return map;
 }
@@ -207,7 +253,7 @@ export function lintPen(
   const title = /^\/\/ ═+ Postext Cookbook · Nº (\d{3,}) · (.+?) ═*\s*$/.exec(lines[0] ?? "");
   if (!title) fails.push(`script.js line 1: the banner starts "// ═══ Postext Cookbook · Nº ${number} · <title> ═══"`);
   else if (title[1] !== number) fails.push(`script.js line 1: the banner says Nº ${title[1]}; recipe.json says ${number}`);
-  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|zh)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
+  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
   if (!url || url[2] !== slug) fails.push(`script.js line 2: the banner links https://postext.dev/en/cookbook/${slug}`);
   if (!/^\/\/ Code: MIT\b/.test(lines[2] ?? "")) fails.push(`script.js line 3: the banner credits "// Code: MIT · Text: … · Photo: …"`);
   const needs = /^\/\/ Fonts: .+ · Needs postext ≥ (\d+\.\d+\.\d+)\s*$/.exec(lines[3] ?? "");
@@ -287,6 +333,15 @@ export function lintPen(
     fails.push(
       `script.js: a "pdf" output, an import from ${POSTEXT_PDF_URL} and the "pdf" kit block go together ` +
         `(output ${pdfOutput ? "yes" : "no"}, import ${pdfImport ? "yes" : "no"}, kit ${pdfKit ? "yes" : "no"})`,
+    );
+  }
+  // An EPUB has no kit block: the pen writes the file and offers it itself.
+  const epubImport = imports.some((imp) => imp.url === POSTEXT_EPUB_URL);
+  const epubOutput = meta.outputs?.includes("epub") ?? false;
+  if (epubOutput !== epubImport) {
+    fails.push(
+      `script.js: an "epub" output and an import from ${POSTEXT_EPUB_URL} go together ` +
+        `(output ${epubOutput ? "yes" : "no"}, import ${epubImport ? "yes" : "no"})`,
     );
   }
   const pdfNames = new Set(imports.filter((imp) => imp.url === POSTEXT_PDF_URL).flatMap((imp) => imp.names));
@@ -403,10 +458,15 @@ export function lintPen(
   const defined = kit ? kitFunctions(kit) : null;
   if (defined) {
     const usedBlocks = new Set<KitBlock>(["core", "fonts", "viewer"]);
-    for (const [name, block] of defined) {
+    // A function two blocks declare (showBook: cjk and book) is satisfied
+    // by either; the message names the last, the one for new recipes.
+    for (const [name, blocks] of defined) {
       if (!referencesIdentifier(ownBare, name)) continue;
-      usedBlocks.add(block);
-      if (!meta.kit?.includes(block)) fails.push(`script.js: calls ${name}() from the "${block}" kit block, which recipe.json "kit" does not list`);
+      const listed = blocks.filter((block) => meta.kit?.includes(block));
+      for (const block of listed) usedBlocks.add(block);
+      if (!listed.length) {
+        fails.push(`script.js: calls ${name}() from the "${blocks[blocks.length - 1]}" kit block, which recipe.json "kit" does not list`);
+      }
     }
     for (const block of meta.kit ?? []) {
       if (!usedBlocks.has(block)) warns.push(`recipe.json: the "${block}" kit block is inlined but never called`);
@@ -420,7 +480,10 @@ export function lintPen(
 
   // Content files.
   const cjkKit = meta.kit?.includes("cjk") ?? false;
+  const arabicKit = meta.kit?.includes("arabic") ?? false;
   let cjkText = false;
+  let arabicText = false;
+  let arabicBook = false;
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
     // Chinese and Japanese have no spaces: their characters count, 1.7 to the word.
@@ -449,6 +512,17 @@ export function lintPen(
     if (odd.cjk.length && !cjkKit) {
       warns.push(`${file}: Chinese, Japanese or Korean text needs the cjk kit block: load its faces with loadCjkFonts(FONTS, markdown) (gotcha cjk-fonts-slices)`);
     }
+    // Arabic letters are set from the arabic file of an Arabic face, which
+    // loadFonts never fetches: the arabic block does, unless the recipe
+    // builds its own FontFace (a face from its assets).
+    if (odd.arabic.length) {
+      arabicText = true;
+      if (mostlyArabic(text)) arabicBook = true;
+      if (!arabicKit && !/\bnew\s+FontFace\s*\(/.test(ownBare)) {
+        fails.push(`${file}: Arabic text needs an Arabic face: list the arabic kit block and load the faces with ` +
+          "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
+      }
+    }
     if (pdfOutput && odd.other.length) {
       const shown = odd.other.slice(0, 8).join(" ");
       warns.push(cjkKit
@@ -458,12 +532,20 @@ export function lintPen(
     }
   }
   if (cjkKit) lintCjk(ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, fails, warns);
-  // A book bound on its right edge (page.binding, or vertical text with no
-  // binding said) lies open mirrored; the cjk block's showBook shows it so.
+  if (arabicText) lintArabic(scan, ownBare, arabicKit && pdfOutput, arabicBook, fails);
+  // A book bound on its right edge lies open mirrored; the book block's
+  // showBook (the cjk block has the same) shows it so. The binding is the
+  // engine's (resolvePageBinding): page.binding as written, else 'auto',
+  // the right edge for vertical text and for text that runs right to left
+  // (direction, else the script of locale).
   const binding = configString(scan, "page.binding");
-  const rightBound = binding === "right" || (binding === undefined && configString(scan, "layout.writingMode") === "vertical-rl");
+  const direction = configString(scan, "direction");
+  const rtl = direction === "rtl" || ((direction === undefined || direction === "auto") &&
+    RTL_SCRIPTS.has(tagScript(configString(scan, "locale")) ?? ""));
+  const rightBound = binding === "right" || ((binding === undefined || binding === "auto") &&
+    (configString(scan, "layout.writingMode") === "vertical-rl" || rtl));
   if (rightBound && /\bshowPages\s*\(/.test(ownBare) && !/\bshowBook\s*\(/.test(ownBare)) {
-    warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    warns.push("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the book kit block (gotcha cjk-spread-order)");
   }
 
   // Size.
@@ -509,6 +591,28 @@ function lintCjk(
   }
   if (/\bloadCjkFonts\s*\([^;]*\bvertical\s*:\s*true/.test(ownBare) && !postextNames.has("loadVerticalAlternates")) {
     fails.push("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
+  }
+}
+
+/** What a recipe whose text holds Arabic must do: hand the PDF the arabic
+ *  files (`arabicPdf`: it lists the arabic block and outputs a PDF), and,
+ *  when the text is mostly Arabic, tag the document with an Arabic-script
+ *  language. The tag turns the book right to left (direction 'auto'), binds
+ *  it on the right, picks the digits and the strings; a Latin page that
+ *  quotes Arabic keeps its own language. */
+function lintArabic(
+  scan: ReturnType<typeof scanJs>,
+  ownBare: string,
+  arabicPdf: boolean,
+  arabicBook: boolean,
+  fails: string[],
+): void {
+  if (arabicPdf && !/\barabicPdfProvider\b/.test(ownBare)) {
+    fails.push("script.js: renderToPdf takes fontProvider: arabicPdfProvider (fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)");
+  }
+  const script = tagScript(configString(scan, "locale"));
+  if (arabicBook && script !== "Arab" && script !== "Aran") {
+    fails.push("script.js: set config.locale to the text's language ('ar', 'ar-EG', 'ar-MA'…), not LANG: the tag sets the text right to left, binds the book on the right and picks its digits (gotcha arabic-locale-tag)");
   }
 }
 
@@ -707,7 +811,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
   for (const locale of LOCALES) {
     const writeup = readWriteup(slug, locale, headings);
     if (!writeup) {
-      fails.push(`${locale}.mdx is missing (${locale === "zh" ? "the zh page shows the English write-up meanwhile" : `the ${locale} page would 404`})`);
+      fails.push(`${locale}.mdx is missing (${locale === "zh" || locale === "ca" || locale === "ar" ? `the ${locale} page shows the English write-up meanwhile` : `the ${locale} page would 404`})`);
       continue;
     }
     fails.push(...writeup.issues);
@@ -729,8 +833,8 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     for (const link of refs.links) {
       if (!link.startsWith(`/${locale}/`)) fails.push(`${locale}.mdx: ${link} must use the /${locale}/ prefix`);
       else if (link.startsWith(`/${locale}/docs/`) && !docLinkExists(link)) fails.push(`${locale}.mdx: ${link} does not resolve`);
-      else if (/^\/(en|es|zh)\/cookbook\/([a-z0-9-]+)/.test(link)) {
-        const target = /^\/(en|es|zh)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
+      else if (/^\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)/.test(link)) {
+        const target = /^\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
         if (!knownSlugs.includes(target)) fails.push(`${locale}.mdx: ${link} names no recipe`);
       }
     }

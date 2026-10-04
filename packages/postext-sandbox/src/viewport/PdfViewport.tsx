@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  configUsesPlaceholder,
   metadataText,
   resolveDebugConfig,
   resolvePdfGenerationConfig,
@@ -15,7 +14,7 @@ import { createPdfWorker, type PdfWorkerHandle, type RenderProgress } from 'post
 import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { chapterLayoutFromDoc } from '../book/pagination';
-import { layOutBookChain } from '../book/chain';
+import { layOutBookPrint } from '../book/printChain';
 import { layoutCacheKey } from '../book/layoutKeys';
 import type { ComposedBook } from '../book/types';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../controls/fontLoader';
@@ -163,40 +162,14 @@ export function PdfViewport() {
       const layoutSpan = perfSpan('pdf.layout', { scope });
       const docs: VDTDocument[] = [];
       if (scope === 'book') {
-        // The book as its chapters in order, each laid out after the ones
-        // before it — the documents the previews show, so a chapter the
-        // worker has already built (or holds in its cache) costs nothing
-        // and the contents chapter is laid out once, with the outline the
-        // plan already settled. Pages and numbering chain on what the
-        // chapters actually came to, not on the records; so does the
-        // book's page count (`{bookTotalPages}`) when a chapter printed
-        // another one than the book came to.
-        const count = snapshotPlan.chapters.length;
-        const chain = await layOutBookChain(
-          snapshotPlan.chapters,
-          async (chapterPlan, continuation, pagesBefore) => {
-            const chapter = snapshotChapters.find((c) => c.id === chapterPlan.chapterId);
-            if (!chapter) return null;
-            setProgress({ pass: chapterPlan.index + 1, blocks: chapterPlan.index, totalBlocks: count, pages: pagesBefore });
-            const book = composeBookMemo(snapshotChapters, chapter.id);
-            return layoutWorker.build(
-              { markdown: book.markdown, metadata: book.metadata, resources: snapshotResources, continuation, outline: chapterPlan.outline, ...(chapterPlan.citations ? { citations: chapterPlan.citations } : {}) },
-              snapshotConfig,
-              {
-                cacheKey: layoutCacheKey({
-                  markdown: book.markdown,
-                  metadata: book.metadata,
-                  config: snapshotConfig,
-                  resources: snapshotResources,
-                  continuation,
-                  continuationKey: chapterPlan.continuationKey,
-                  outlineKey: chapterPlan.outlineKey,
-                }),
-              },
-            );
-          },
-          configUsesPlaceholder(snapshotConfig, 'bookTotalPages'),
-        );
+        const chain = await layOutBookPrint({
+          plan: snapshotPlan,
+          chapters: snapshotChapters,
+          resources: snapshotResources,
+          config: snapshotConfig,
+          build: layoutWorker.build,
+          onChapter: (index, count, pagesBefore) => setProgress({ pass: index + 1, blocks: index, totalBlocks: count, pages: pagesBefore }),
+        });
         docs.push(...chain);
       } else {
         const doc = await layoutWorker.build(

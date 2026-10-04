@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<circle cx="100" cy="100" r="94" fill="none" stroke="#1f1a14" stroke-width="4"/>
+<circle cx="100" cy="100" r="84" fill="none" stroke="#9a2f1f" stroke-width="2"/>
+<circle cx="172" cy="100" r="5" fill="#1f1a14"/>
+<circle cx="166.5" cy="127.6" r="5" fill="#9a2f1f"/>
+<circle cx="150.9" cy="150.9" r="5" fill="#1f1a14"/>
+<circle cx="127.6" cy="166.5" r="5" fill="#9a2f1f"/>
+<circle cx="100" cy="172" r="5" fill="#1f1a14"/>
+<circle cx="72.4" cy="166.5" r="5" fill="#9a2f1f"/>
+<circle cx="49.1" cy="150.9" r="5" fill="#1f1a14"/>
+<circle cx="33.5" cy="127.6" r="5" fill="#9a2f1f"/>
+<circle cx="28" cy="100" r="5" fill="#1f1a14"/>
+<circle cx="33.5" cy="72.4" r="5" fill="#9a2f1f"/>
+<circle cx="49.1" cy="49.1" r="5" fill="#1f1a14"/>
+<circle cx="72.4" cy="33.5" r="5" fill="#9a2f1f"/>
+<circle cx="100" cy="28" r="5" fill="#1f1a14"/>
+<circle cx="127.6" cy="33.5" r="5" fill="#9a2f1f"/>
+<circle cx="150.9" cy="49.1" r="5" fill="#1f1a14"/>
+<circle cx="166.5" cy="72.4" r="5" fill="#9a2f1f"/>
+<polygon points="100,42 117,59 141,59 141,83 158,100 141,117 141,141 117,141 100,158 83,141 59,141 59,117 42,100 59,83 59,59 83,59" fill="#9a2f1f" stroke="#1f1a14" stroke-width="3"/>
+<polygon points="100,70 108.8,78.8 121.2,78.8 121.2,91.2 130,100 121.2,108.8 121.2,121.2 108.8,121.2 100,130 91.2,121.2 78.8,121.2 78.8,108.8 70,100 78.8,91.2 78.8,78.8 91.2,78.8" fill="#f6efdf" stroke="#1f1a14" stroke-width="2"/>
+<circle cx="100" cy="100" r="9" fill="#1f1a14"/>
+</svg>

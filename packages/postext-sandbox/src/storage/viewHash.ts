@@ -7,15 +7,17 @@
  * The book on screen is a preset (its manifest id, plus the content locale
  * a bilingual bundle was opened in) or a local project (its storage id —
  * only the browser holding the project can follow such a link); `view` is
- * the viewer tab (canvas, html or pdf); the chapter is 1-based and the page
- * the number printed on it (the book's page number, as the chapter is laid
- * out continuing the chapters before it). A reload — or a shared link —
- * thus lands on the same page of the same chapter of the same book in the
- * same viewer. The provider opens the book the fragment names, the canvas
- * and HTML viewers write the page as the reader scrolls and jump to it once
- * their document is ready, and the PDF viewer opens its iframe at that
- * page. A part the fragment leaves out means "whatever is there": no book
- * keeps the one last open, no page lands on the chapter's first page.
+ * the viewer tab (canvas, pdf, folio, html or epub); the chapter is
+ * 1-based and the page the number printed on it (the book's page number,
+ * as the chapter is laid out continuing the chapters before it). A reload
+ * — or a shared link — thus lands on the same page of the same chapter of
+ * the same book in the same viewer. The provider opens the book the
+ * fragment names, the canvas and HTML viewers write the page as the reader
+ * scrolls and jump to it once their document is ready, and the PDF viewer
+ * opens its iframe at that page; the EPUB tab, which always takes the
+ * whole book, has no page of its own. A part the fragment leaves out means
+ * "whatever is there": no book keeps the one last open, no page lands on
+ * the chapter's first page.
  */
 
 import { canonicalLocaleTag } from 'postext';
@@ -42,11 +44,12 @@ export interface ViewHash {
 
 export const EMPTY_VIEW_HASH: ViewHash = { preset: null, project: null, lang: null, view: null, chapter: null, page: null };
 
-const VIEWS: readonly ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
+/** The viewers, in the order of the tab bar (the guide names them so). */
+export const VIEWPORT_TABS: readonly ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub'];
 
 /** Whether a stored or linked value names one of the viewers. */
 export function isViewportTab(value: unknown): value is ViewportTab {
-  return VIEWS.includes(value as ViewportTab);
+  return VIEWPORT_TABS.includes(value as ViewportTab);
 }
 /** A BCP 47-ish tag: `es`, `en-US`, `pt-BR`, `zh-Hant`. */
 const LANG_RE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$/;

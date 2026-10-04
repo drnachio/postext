@@ -1,0 +1,75 @@
+---
+title: "Un llibre fet de capítols solts"
+summary: "buildBundle compon cinc fitxers Markdown com un sol llibre: cada capítol obre en pàgina senar i pàgines, capítols i figures es numeren correlativament."
+plain: "Un petit manual d'apicultura escrit en fitxers separats, un per capítol. Postext els uneix en un sol llibre i els números de pàgina, capítol i figura continuen d'un fitxer al següent."
+description: "Un manual d'apicultura en quatre estacions, compost per buildBundle amb un fitxer Markdown per capítol; l'índex dona la pàgina en què obre cadascun."
+question: "Com componc un llibre capítol a capítol sense que es talli la numeració de pàgines, capítols i figures?"
+aliases: ["llibre per capítols", "capítols en fitxers separats", "numeració de pàgines contínua", "numeració seguida", "capítol en pàgina senar", "índex del llibre", "PDF del llibre sencer", "buildBundle"]
+pageNotes: { "6": "La pàgina 6 queda en blanc: Hivern ocupa una sola pàgina, així que Primavera obre a la 7, la senar següent, i la parella que queda entre totes dues no porta capçalera ni foli.", "11": "La pàgina 11 és l'única senar de text seguit del llibre: la capçalera diu ESTIU, el títol del capítol, al costat del foli." }
+---
+
+## Què compondràs
+
+*Un any d'abellar* és un manual breu de quatre capítols, un per estació. Arrenca a la tardor, quan surt l'última alça i comença l'any de l'apicultor. Cada capítol és un fitxer Markdown sense números de pàgina, capítol ni figura. `buildBundle` porta el compte d'un fitxer a l'altre i compon els capítols, més un cinquè fitxer amb la coberta i l'índex, com un llibre d'onze pàgines. Cada capítol obre en pàgina senar, sota una cantonada de bresca que porta el seu número. L'índex, a la pàgina parella davant de Tardor, repeteix aquesta obertura en mirall, amb el títol enganxat al llom, i dona la pàgina de cada capítol. El mateix quadre de cria, dibuixat amb codi, surt a cada capítol, de la figura 1.1 a la 4.1. La pàgina 6 queda en blanc perquè Hivern cap en una pàgina i Primavera ha d'obrir en senar.
+
+## Elaboració
+
+### 1 · Un fitxer per capítol
+
+<Excerpt region="chapters" />
+
+Cada estació és un document propi, així que pots reescriure un capítol sense obrir els altres. El primer document porta el frontmatter, la coberta i l'índex. A Postext 1.4.1 els documents següents no n'hereten cap metadada, i el PDF pren el títol i l'autora només del primer.
+
+### 2 · Regles que passen d'un document a l'altre
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. [`buildBundle`](/ca/docs/configuration#compondre-i-renderitzar-un-paquet) compon els documents en ordre amb una sola configuració i passa a cadascun una `continuation` amb el que han deixat els anteriors: el nombre de pàgines físiques ja compostes, perquè segueixin la paritat, els marges en mirall i les capçaleres de parelles i senars; el foli següent, i els comptadors de capítols i figures. Amb `parity: 'odd'`, un capítol que segueix un altre acabat en pàgina senar comença amb una pàgina parella en blanc, i aquesta pàgina pertany al seu propi document ([saltar abans](/ca/docs/configuration#saltar-abans)). La coberta i l'índex són [estils de títol](/ca/docs/configuration#estils-dencapçalament) amb `numbered: false`, per la qual cosa Tardor continua sent el capítol 1. Tots dos hereten del nivell de capítol `span: 'page'`, que posa cadascun a la seva pàgina sense necessitat de `:::pagebreak`. L'estil de l'índex desactiva la paritat heretada, que deixaria en blanc la pàgina 2.
+
+### 3 · Un índex de tot el llibre
+
+<Excerpt region="contents" />
+
+`:::toc` és al primer document, però recull els capítols i les seccions de tot el llibre. `buildBundle` compon el llibre, anota cada títol amb la pàgina que li ha tocat i el torna a compondre amb aquest esquema fins que els folis deixen de moure's, tres passades com a màxim ([taula de continguts](/ca/docs/configuration#índex-de-continguts)). Els mesos sota cada títol surten d'un atribut del títol, `{months="…"}`, que també imprimeix l'obertura.
+
+### 4 · Una obertura, en mirall per a l'índex
+
+<Excerpt region="opener" />
+
+`{chapterNumber}` continua comptant des dels documents compostos abans, així que l'obertura de Primavera mostra un 3 encara que el seu fitxer no porta cap número. La caixa del número es calcula a partir del centre de la seva cel·la de la bresca, i número i bresca pengen tots dos de la cantonada superior dreta de la sang; si canvies el format o afegeixes sang per a impremta, es mouen junts. A l'índex, l'avanttítol (que surt de `{subtitle}`) i el títol van alineats a la dreta, contra el llom, i la bresca passa a la cantonada exterior de la pàgina parella; així el seu títol cau a la mateixa altura que el de Tardor al plec.
+
+### 5 · Capçaleres a tots els documents
+
+<Excerpt region="running-heads" />
+
+Només el primer document té frontmatter, així que a Postext 1.4.1 `{title}` surt buit a tots els documents següents, Tardor inclòs. Per això la capçalera de les pàgines parelles porta el títol del llibre escrit com a text fix. `{chapterTitle}` i `{pageNumber}` es resolen pàgina a pàgina i surten a tots els documents; la pàgina 11, l'única senar de text seguit, porta ESTIU al costat del foli. `pages: 'body'` deixa sense capçalera les obertures i la pàgina en blanc.
+
+### 6 · Plecs en pantalla, un PDF per al llibre
+
+<Excerpt region="build" />
+
+`buildBundle` retorna una llista de documents, un per fitxer Markdown. `showPages` aparella les pàgines per `pageIndexOffset + page.index`, així que la pàgina 1 queda sola, com a senar, i les altres queden acarades per parells: la 2 amb la 3, la 4 amb la 5, i així fins al final. `renderToPdf` rep la mateixa llista i escriu un únic fitxer amb els folis del llibre i un marcador per cada capítol i secció.
+
+## Variants
+
+### Imprimeix un capítol amb els folis del llibre
+
+Passa un sol document a `renderToPdf` per treure una prova de Primavera, numerada del 6 al 8 com al llibre. La pàgina 6 en blanc va amb ella, perquè la pàgina parella en blanc que precedeix una obertura pertany al capítol que obre després.
+
+```diff
+-offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
++offerPdf(() => renderToPdf(docs[3], { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+```
+
+### Numera les figures correlativament en tot el llibre
+
+Un comptador de figures que no es reinicia numera els quatre quadres de l'1 al 4 en tot el llibre, en lloc d'1.1 a 4.1.
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG),
++  resourceTypes: defaultResourceTypes(LANG)
++    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+## Errors freqüents
+
+- A dalt d'una pàgina, i sota una figura que l'encapçala, un títol de secció perd el seu `marginTop`. Si l'aire del títol surt del marge, en aquests dos llocs queda a una línia del seu text i a la resta, a una línia i mitja. Aquí l'aire és a la mateixa línia del títol: `lineHeight` fa una línia i mitja i el marge, una línia, així que tots els títols de secció del llibre queden a la mateixa distància del seu text.
+- Per defecte, una línia justificada pot estirar els espais fins al doble de la seva amplada, i l'algorisme de tall ho prefereix a un guionet. Composta així, l'edició anglesa no partia ni una paraula i deixava espais gairebé del doble al costat de línies estretes al 0,7. `maxWordSpacing: 1.7` obliga l'algorisme a partir paraules. Després de canviar-ho, revisa l'última línia de cada paràgraf: un límit més estricte hi pot deixar una paraula sola, i s'arregla canviant unes quantes paraules del paràgraf.

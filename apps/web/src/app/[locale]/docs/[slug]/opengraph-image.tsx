@@ -3,6 +3,7 @@ import {
   generateOgImage,
   ogSize,
   ogContentType,
+  ogTextLocale,
 } from "@/lib/og-image";
 import { getTranslations } from "next-intl/server";
 import { getDocSource, getDocSlugsForLocale } from "@/lib/docs";
@@ -31,13 +32,14 @@ export default async function OgImage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const doc = getDocSource(slug, locale);
+  const textLocale = ogTextLocale(locale);
+  const doc = getDocSource(slug, textLocale);
 
   const title = doc?.meta.title ?? "Postext";
   const description = doc?.meta.description;
   if (!doc) return generateOgImage({ title, description });
 
-  const t = await getTranslations({ locale, namespace: "Docs" });
+  const t = await getTranslations({ locale: textLocale, namespace: "Docs" });
   const part = docPart(doc.meta.order);
   const name = t(`part${part.key[0]!.toUpperCase()}${part.key.slice(1)}` as "partFoundations");
 

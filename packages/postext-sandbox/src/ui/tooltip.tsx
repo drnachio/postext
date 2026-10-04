@@ -5,7 +5,8 @@ import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, TOOLTIP_Z_INDEX } from './surface';
 
-export type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
+/** `inline-start` / `inline-end` follow the interface's direction. */
+export type TooltipSide = 'top' | 'right' | 'bottom' | 'left' | 'inline-start' | 'inline-end';
 
 /** Mount once near the sandbox root: shares the open delay across every
  *  tooltip and lets adjacent tooltips open instantly once one is showing. */

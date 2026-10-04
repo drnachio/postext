@@ -28,6 +28,22 @@ jobs:
 
       - run: pnpm turbo run test
 
+      # W3C EPUBCheck on postext-epub's sample books (src/epubcheck.test.ts,
+      # skipped by `pnpm test`): fixed and reflowable, with and without a
+      # cover, must pass with no errors or warnings. The runner's Java runs
+      # the official release.
+      - name: EPUBCheck
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
+          unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP/epubcheck"
+          JAR=$(find "$RUNNER_TEMP/epubcheck" -name epubcheck.jar | head -1)
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec java -jar "%s" "$@"\n' "$JAR" > "$RUNNER_TEMP/bin/epubcheck"
+          chmod +x "$RUNNER_TEMP/bin/epubcheck"
+          export PATH="$RUNNER_TEMP/bin:$PATH"
+          epubcheck --version
+          pnpm --filter postext-epub epubcheck
+
       - run: pnpm turbo run check-types
 
       - run: pnpm turbo run lint

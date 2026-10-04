@@ -7,7 +7,7 @@
  * metrics of their own.
  */
 
-import type { VDTBlock, VDTDesignSlot, VDTDocument, VDTLine, VDTPage } from '../vdt';
+import { verticalFlowOf, type VDTBlock, type VDTDesignSlot, type VDTDocument, type VDTLine, type VDTPage } from '../vdt';
 import { fontEm, fontFamilyOf, measureCentralBaseline } from '../measure/vertical';
 import { measureTextWidth } from '../measure/canvas';
 import { stretchedDashesOf } from '../writingMode';
@@ -122,14 +122,15 @@ function dashAdvances(dashes: Map<string, Set<string>>): Record<string, Record<s
  *  Horizontal pages are left alone. */
 export function stampCentralBaselines(doc: VDTDocument): void {
   for (const page of doc.pages) {
-    if (!page.flow) continue;
+    const flow = verticalFlowOf(page);
+    if (!flow) continue;
     const found = flowFonts(page);
     const out: Record<string, number> = {};
     for (const family of familiesOf(found.fonts)) out[family] = measureCentralBaseline(family);
-    if (Object.keys(out).length > 0) page.flow.centralBaselines = out;
-    else delete page.flow.centralBaselines;
+    if (Object.keys(out).length > 0) flow.centralBaselines = out;
+    else delete flow.centralBaselines;
     const dashes = dashAdvances(found.dashes);
-    if (dashes) page.flow.dashAdvances = dashes;
-    else delete page.flow.dashAdvances;
+    if (dashes) flow.dashAdvances = dashes;
+    else delete flow.dashAdvances;
   }
 }

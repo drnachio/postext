@@ -211,6 +211,23 @@ describe("lintPen (fixture)", () => {
     );
   });
 
+  it("ties the epub output to the postext-epub import (#404)", () => {
+    const epub = (s: string) => s
+      .replace("const LANG", "import { renderToEpub } from 'https://esm.sh/postext-epub';\nconst LANG")
+      .replace("// @kit", "await renderToEpub([doc], { layout: 'fixed', metadata: { title: 'F', language: 'en' } });\n\n// @kit");
+    const meta = { ...fixtureMeta(), outputs: ["canvas" as const, "pdf" as const, "epub" as const] };
+    expect(lint(epub, { meta }).fails).toEqual([]);
+    expect(lint(epub).fails).toContain(
+      'script.js: an "epub" output and an import from https://esm.sh/postext-epub go together (output no, import yes)',
+    );
+    expect(lint(undefined, { meta }).fails).toContain(
+      'script.js: an "epub" output and an import from https://esm.sh/postext-epub go together (output yes, import no)',
+    );
+    const pinned = lint((s) => epub(s).replace("esm.sh/postext-epub'", "esm.sh/postext-epub@0.1.0'"), { meta }).fails;
+    expect(pinned.some((f) => f.includes("no version pins"))).toBe(true);
+    expect(usedApis(epub(SCRIPT))).toContain("renderToEpub");
+  });
+
   it("catches the engine traps", () => {
     expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toContain(
       "script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)",
@@ -259,6 +276,8 @@ describe("lintPen (fixture)", () => {
 });
 
 // ─── Chinese, Japanese and Korean recipes (the cjk kit block) ───────────────
+
+const SHOW_BOOK = "script.js: a right-bound book shows its spreads mirrored with showBook(…) from the book kit block (gotcha cjk-spread-order)";
 
 const OPENING = "此開卷第一回也。作者自云：因曾歷過一番夢幻之後，故將真事隱去，而借「通靈」之說，撰此《石頭記》一書也。";
 
@@ -327,7 +346,7 @@ describe("lintPen (a Chinese recipe)", () => {
     );
     const vertical = (s: string) => s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  layout: { writingMode: 'vertical-rl' },");
     const shown = lintCjk((s) => vertical(s).replace("showBook(doc,", "showPages(doc,")).warns;
-    expect(shown).toContain("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    expect(shown).toContain(SHOW_BOOK);
     expect(lintCjk(vertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
     const twin = lintCjk((s) => s.replace("await loadCjkFonts(FONTS, markdown);", "await loadCjkFonts(FONTS, markdown, { vertical: true });")).fails;
     expect(twin).toContain("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");
@@ -350,7 +369,7 @@ describe("lintPen (a Chinese recipe)", () => {
     expect(latinBook.warns.filter((w) => /cjk|CJK|showBook/.test(w))).toEqual([]);
     // Without the block, showPages still gets the advice.
     const noBlock = lint((s) => s.replace("  page: {\n", "  page: {\n    binding: 'right',\n"), { sources: { content: latin } }).warns;
-    expect(noBlock).toContain("script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)");
+    expect(noBlock).toContain(SHOW_BOOK);
     // A vertical heading style does not bind a horizontal book on the right.
     const verticalHead = (s: string) =>
       s.replace("  locale: 'zh-Hant',", "  locale: 'zh-Hant',\n  headingStyles: [{ id: 'side', layout: { writingMode: 'vertical-rl' } }],")
@@ -363,8 +382,120 @@ describe("lintPen (a Chinese recipe)", () => {
         .replace("showBook(doc,", "showPages(doc,");
     expect(lintCjk(leftVertical).warns.filter((w) => w.includes("showBook"))).toEqual([]);
     expect(lintCjk((s) => leftVertical(s).replace("binding: 'left'", "binding: 'right'")).warns).toContain(
-      "script.js: a right-bound book shows its spreads mirrored with showBook(…) from the cjk block (gotcha cjk-spread-order)",
+      SHOW_BOOK,
     );
+  });
+});
+
+// ─── Arabic recipes (the arabic and book kit blocks) ────────────────────────
+
+/** The opening of the first night, with a Latin marker and digits. */
+const NIGHT = "قالت شهرزاد: بلغني أيها الملك السعيد أن تاجرًا كان كثير المال (١٢٣) and 45 dinars.";
+
+/** The fixture turned into an Arabic book: the arabic files loaded after
+ *  loadFonts, the PDF from arabicPdfProvider, the locale written out and
+ *  the spreads shown right-bound. */
+function arabicScript(s: string): string {
+  return s
+    .replace("const FONTS = { Newsreader: ['400', '400i', '700'], Archivo: ['700'] };",
+      "const FONTS = { Newsreader: ['400', '400i', '700'], Archivo: ['700'], Amiri: ['400', '700'] };")
+    .replace("await loadFonts(FONTS, markdown);", "await loadFonts(FONTS, markdown);\nawait loadArabicFonts(FONTS, markdown);")
+    .replace("fontProvider: fontsourceProvider", "fontProvider: arabicPdfProvider")
+    .replace("  locale: LANG,", "  locale: 'ar',")
+    .replace("showPages(doc,", "showBook(doc,");
+}
+
+function arabicMeta(blocks: KitBlock[] = ["arabic", "book"]): RecipeMeta {
+  const meta = fixtureMeta();
+  return {
+    ...meta,
+    kit: [...meta.kit, ...blocks],
+    credits: { ...meta.credits, fonts: [...meta.credits.fonts, { family: "Amiri", license: "OFL-1.1" }] },
+  };
+}
+
+describe("lintPen (an Arabic recipe)", () => {
+  const arabicContent = { en: `# الليلة الأولى\n\n${NIGHT}\n`, es: `# الليلة الأولى\n\n${NIGHT}\n` };
+  const lintArabic = (edit: (s: string) => string = (s) => s, content: Record<string, string> = arabicContent, meta = arabicMeta()) =>
+    lint((s) => edit(arabicScript(s)), { meta, sources: { content } });
+
+  it("passes a pen that loads the arabic files and shows a right-bound book", () => {
+    const { fails, warns } = lintArabic();
+    expect(fails).toEqual([]);
+    expect(warns.filter((w) => /arabic|Arabic|showBook|latin|kit block/.test(w))).toEqual([]);
+  });
+
+  it("counts Arabic in words, as Latin text", () => {
+    const word = "حكاية ";
+    const long = { en: `# أ\n\n${word.repeat(2600)}\n`, es: "# أ\n" };
+    expect(lintArabic(undefined, long).fails).toContain("content.en.md: 2601 words (at most 2500)");
+    const fits = { en: `# أ\n\n${word.repeat(2400)}\n`, es: "# أ\n" };
+    expect(lintArabic(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
+  });
+
+  it("asks for the arabic block, arabicPdfProvider and an Arabic locale", () => {
+    const noBlock = lint((s) => arabicScript(s).replace("await loadArabicFonts(FONTS, markdown);\n", ""), {
+      meta: arabicMeta(["book"]), sources: { content: arabicContent },
+    }).fails;
+    expect(noBlock).toContain(
+      "content.en.md: Arabic text needs an Arabic face: list the arabic kit block and load the faces with loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)",
+    );
+    // Arabic letters are not reported as characters outside latin.
+    expect(noBlock.concat(lintArabic().warns).filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
+    const latinPdf = lintArabic((s) => s.replace("fontProvider: arabicPdfProvider", "fontProvider: fontsourceProvider")).fails;
+    expect(latinPdf).toContain(
+      "script.js: renderToPdf takes fontProvider: arabicPdfProvider (fontsourceProvider embeds only the latin file of an Arabic face; gotcha arabic-fonts-subset)",
+    );
+    const lang = lintArabic((s) => s.replace("  locale: 'ar',", "  locale: LANG,")).fails;
+    expect(lang).toContain(
+      "script.js: set config.locale to the text's language ('ar', 'ar-EG', 'ar-MA'…), not LANG: the tag sets the text right to left, binds the book on the right and picks its digits (gotcha arabic-locale-tag)",
+    );
+    for (const tag of ["ar-EG", "ar_MA", "fa-IR", "ur"]) {
+      expect(lintArabic((s) => s.replace("'ar'", `'${tag}'`)).fails.filter((f) => f.includes("locale"))).toEqual([]);
+    }
+    expect(lintArabic((s) => s.replace("'ar'", "'he'")).fails.some((f) => f.includes("config.locale"))).toBe(true);
+  });
+
+  it("accepts a face the recipe builds itself instead of the block", () => {
+    const own = lint((s) => arabicScript(s)
+      .replace("await loadArabicFonts(FONTS, markdown);", "document.fonts.add(await new FontFace('Amiri', amiriBytes).load());")
+      .replace("const FONTS", "const amiriBytes = new Uint8Array(0);\nconst FONTS")
+      .replace("fontProvider: arabicPdfProvider", "fontProvider: fontsourceProvider"), {
+      meta: arabicMeta(["book"]), sources: { content: arabicContent },
+    }).fails;
+    expect(own.filter((f) => /Arabic|arabic/.test(f))).toEqual([]);
+  });
+
+  it("lets a Latin page quote Arabic in an Arabic face, in its own language", () => {
+    const quote = {
+      en: `# The first night\n\nThe frame tale opens on a sentence every reader of the Nights knows by heart, and the translator kept its rhythm:\n\n> ${NIGHT}\n`,
+      es: "# La primera noche\n\nTexto.\n",
+    };
+    const ltr = (s: string) => arabicScript(s).replace("  locale: 'ar',", "  locale: LANG,").replace("showBook(doc,", "showPages(doc,");
+    const { fails, warns } = lintArabic(ltr, quote, arabicMeta(["arabic"]));
+    expect(fails).toEqual([]);
+    expect(warns.filter((w) => /arabic|Arabic|showBook/.test(w))).toEqual([]);
+  });
+
+  it("reads a right-to-left book as right-bound from its locale or direction", () => {
+    const plain = (s: string) => s.replace("showBook(doc,", "showPages(doc,");
+    expect(lintArabic(plain).warns).toContain(SHOW_BOOK);
+    expect(lintArabic((s) => plain(s).replace("  locale: 'ar',", "  locale: 'ar',\n  direction: 'auto',")).warns).toContain(SHOW_BOOK);
+    // A Latin locale with direction 'rtl' is right-bound too…
+    const latin = { en: "# One\n\nA page of Latin text.\n", es: "# Uno\n\nUna página de texto latino.\n" };
+    const rtl = (s: string) => s.replace("  locale: LANG,", "  locale: LANG,\n  direction: 'rtl',");
+    expect(lint(rtl, { sources: { content: latin } }).warns).toContain(SHOW_BOOK);
+    // …and an Arabic book that says direction 'ltr', or binds itself on
+    // the left, is not.
+    expect(lintArabic((s) => plain(s).replace("  locale: 'ar',", "  locale: 'ar',\n  direction: 'ltr',")).warns).not.toContain(SHOW_BOOK);
+    expect(lintArabic((s) => plain(s).replace("  page: {\n", "  page: {\n    binding: 'left',\n")).warns).not.toContain(SHOW_BOOK);
+    expect(lintArabic((s) => plain(s).replace("  page: {\n", "  page: {\n    binding: 'auto',\n")).warns).toContain(SHOW_BOOK);
+  });
+
+  it("takes showBook from the book block or the cjk block, never both", () => {
+    const noBook = lintArabic(undefined, undefined, arabicMeta(["arabic"])).fails;
+    expect(noBook).toContain('script.js: calls showBook() from the "book" kit block, which recipe.json "kit" does not list');
+    expect(lintArabic(undefined, undefined, arabicMeta(["arabic", "cjk"])).fails.filter((f) => f.includes("showBook"))).toEqual([]);
   });
 });
 
@@ -479,5 +610,5 @@ describe("recipe pens", () => {
     const preview = previewDraftsAllowed();
     const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
-  });
+  }, 120_000);
 });

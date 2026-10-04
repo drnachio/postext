@@ -15,6 +15,7 @@ import {
   ToggleSwitch,
 } from '../../../controls';
 import { HeadingLevelSection } from './HeadingLevelSection';
+import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides';
 
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -153,11 +154,12 @@ export const HeadingsSection = memo(function HeadingsSection() {
     { value: 'off', label: labels.balanceClosingBoxOff },
   ];
 
+  const textSide = flowSideLabels(useRightToLeftFlow(), labels.headingsTextAlignLeft, labels.headingsTextAlignRight);
   const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.headingsTextAlignLeft },
+    { value: 'left', label: textSide.left },
     { value: 'justify', label: labels.headingsTextAlignJustify },
     { value: 'center', label: labels.headingsTextAlignCenter },
-    { value: 'right', label: labels.headingsTextAlignRight },
+    { value: 'right', label: textSide.right },
   ];
 
   return (

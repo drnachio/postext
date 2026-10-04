@@ -1,0 +1,98 @@
+---
+title: "Poemes compostos vers a vers"
+summary: "Cada vers és un paràgraf, i el que no hi cap continua amb 4 em de sagnat francès. Els espais eme guarden els sagnats de 1918; :::space separa les estrofes."
+plain: "Un llibret amb quatre poemes sobre la natura de Gerard Manley Hopkins. Ensenya a respectar cada vers per separat, amb els sagnats originals del poeta i una línia en blanc entre estrofes."
+description: "Quatre poemes de Hopkins amb Postext: un paràgraf per vers, els sagnats de 1918, sagnat francès als llargs, :::space entre estrofes i índex amb punts."
+question: "Com componc poemes vers a vers, amb sagnats, estrofes separades, sagnat francès i sense partir paraules?"
+aliases: ["poesia", "poema", "vers", "estrofa", "espai entre estrofes", "vers sagnat", "sagnat", "espai eme", "unidor de paraules", "vers llarg", "vers partit", "sagnat francès", "salts de línia", "poemari", "plaquette", "línies de punts", "punts guia", "dedicatòria", "data del poema", "ornament", "vinyeta", "cul-de-llàntia", "frontispici", "avantportada", "Gerard Manley Hopkins"]
+pageNotes: { "2": "El frontispici: un fotograma d'una fronda de falguera i una branca de server amb baies, en blanc sobre un fons sàlvia donat a pinzellades, amb el peu a sota en cursiva.", "4": "L'índex: quatre títols en cursiva després dels seus números, línies de punts espaiats fins al número de pàgina, i després una breu nota sobre el text i el colofó.", "6": "The Windhover: la dedicatòria va damunt del primer vers, els versos que rimen en -iding i en -illion entren 2 em, i quatre versos llargs continuen a la línia de sota amb 4 em de sagnat francès.", "7": "Pied Beauty: els versos entren 1 o 2 em segons la rima, i el mig vers final, Praise him., queda a 8 em del marge." }
+---
+
+## Què compondràs
+
+Un poemari de 140 × 216 mm amb quatre poemes de Gerard Manley Hopkins sobre la natura, segons la primera edició (1918). Després de l'avantportada, un fotograma de falguera i server fa de frontispici davant de la portada, composta en Italiana. L'índex dona el número romà i el títol en cursiva de cada poema, amb punts espaiats fins a la pàgina. Cada poema obre pàgina sota el seu número. Els versos són paràgrafs i conserven els sagnats de 1918: a *Pied Beauty* s'esglaonen segons la rima, i els llargs de *The Windhover* continuen a la línia de sota amb 4 em de sagnat, el doble que els seus sagnats. Entre estrofes queda una línia en blanc, i cap paraula no es parteix tret d'on la va partir Hopkins. Sota cada poema va la data, a la dreta, i després de l'últim, una branqueta de server. Els poemes porten el foli centrat a baix.
+
+## Elaboració
+
+### 1 · Cada vers és un paràgraf
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Postext ajunta en una sola les línies d'un paràgraf de Markdown, i per això cada vers ha de ser un paràgraf. L'estil del vers els compon en bandera, perquè justificats estirarien fins a la mesura la primera part d'un vers partit. El que passa a la línia següent porta 4 em de sagnat francès, més que els 1 o 2 em dels versos sagnats per la rima, perquè ningú no ho prengui per un altre vers ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). Un paràgraf perd els espais amb què comença, també els espais eme, i un estil amb sagnat francès no aplica el de primera línia. Per això `indentVerse` converteix cada parell d'espais inicials en un espai eme precedit d'un unidor de paraules, un caràcter d'amplada zero on s'atura el retall. Els versos que rimen entre si queden a la mateixa distància del marge, com el 1918. Les línies en blanc no afegeixen espai: cada separació entre estrofes és una línia `:::space` dins del contenidor, que deixa una línia de la retícula de base i es descarta si cau al capdamunt d'una pàgina ([`:::space`](/ca/docs/document-format#space)).
+
+<PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, pàgina 6: els versos que rimen en -iding entren 2 em, i els quatre que no hi caben continuen a la línia de sota, amb 4 em de sagnat francès." />
+
+### 2 · Les línies que envolten un poema també tenen estil
+
+<Excerpt region="lines" />
+
+La dedicatòria de *The Windhover*, damunt del poema, i el lloc i la data, sota cadascun, acompanyen els versos sense formar-ne part. Cadascuna d'aquestes línies és un contenidor `:::paragraphs` amb un sol paràgraf, i per això admet un estil propi. Cap dels dos estils no fixa l'interlineat i els seus marges fan una línia (15 pt), de manera que el poema no surt de la retícula del cos. La data queda una línia per sota de l'últim vers, alineada a la dreta, en Marcellus SC de 8 pt, la mateixa lletra dels folis.
+
+### 3 · Cada poema obre pàgina sota el seu número
+
+<Excerpt region="poem-head" />
+
+En lloc del seu text, el títol imprimeix un disseny a la columna. Allà, `{number}` és el comptador amb el format de `numberingTemplate: '{1:I}'`, de I a IV, i `{titleText}` és el títol ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El nivell no té marge inferior, i `minHeight` fa que el títol de cada poema ocupi sis línies de la retícula (31,75 mm). El número i un títol d'una línia n'omplen quatre, i un títol que passa a dues línies n'omple cinc; així, tots els poemes comencen a la mateixa línia de la pàgina. A la <PageRef page={6}>pàgina 6</PageRef>, aquesta línia és la de la dedicatòria. La paritat `'any'` salta a la pàgina següent, parella o senar, i entre els poemes no queda cap pàgina en blanc.
+
+### 4 · Els preliminars també són títols
+
+<Excerpt region="front" />
+
+Un estil de títol pot saltar a una pàgina nova i dibuixar-hi un disseny, així que l'avantportada, el frontispici i la portada són un títol cadascun, amb el seu estil. Amb `numbered: false` no entren al compte, i el primer poema continua sent el I. `toc: false` els deixa fora de l'índex, i com que el seu peu de pàgina és buit, les seves pàgines no porten foli ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els estils ocupen la pàgina sencera perquè un disseny a la columna es retalla a la caixa de text: la làmina, que va a sang, perdria les vores i es quedaria sense peu. El peu de la làmina surt de l'atribut `caption` del títol; l'autor, el títol i el subtítol de la portada, del frontmatter.
+
+### 5 · L'índex s'omple sol
+
+<Excerpt region="contents" />
+
+`:::toc` recull cada títol l'estil del qual l'admet a l'índex, amb el número de la mateixa plantilla i l'etiqueta de la pàgina on cau. El llibre es torna a compondre fins que aquestes etiquetes deixen de canviar ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). El títol de la mateixa pàgina, Contents, té un estil amb `numbered: false`; sense aquest estil, Contents seria el poema I. Amb `'. '` com a caràcter de farciment, cada punt va seguit d'un espai. Els punts s'alineen a la dreta, perquè coincideixin d'una entrada a l'altra, i surten amb la lletra i el color dels números de pàgina, perquè `toc.leader` no té ajust de color.
+
+### 6 · Un ornament és un tipus de recurs sense rètol
+
+<Excerpt region="ornament" />
+
+Una imatge al text és un recurs, i tot recurs té un tipus. El tipus de l'ornament té buit el prefix del peu i la branqueta no porta peu, de manera que a sota no apareix cap rètol com «Figure 1» ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). El `defaultPlacement` del tipus col·loca la branqueta on és `::resource{id="sprig"}`, centrada i amb una cinquena part de la mesura; per al cul-de-llàntia sota *Inversnaid* n'hi ha prou amb aquesta línia del Markdown. `resourceTypes` substitueix la llista predeterminada, per la qual cosa aquest llibre no té tipus de figura ni de taula. Si els necessites, posa `...defaultResourceTypes()` a la llista, davant de l'ornament.
+
+## Variants
+
+### Sagna més els versos partits
+
+Amb un sagnat francès més gran, la resta de cada vers partit queda més lluny del marge. Serveix per a poemes en què molts versos no caben a la línia.
+
+```diff
+-  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
++  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+```
+
+### Comença tots els versos al marge
+
+Sense `indentVerse`, Postext retalla els espais inicials i tots els versos comencen al marge; només els versos partits continuen sagnats.
+
+```diff
+-const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
++const verses = markdown; // leading spaces left to the trim
+```
+
+### Obre cada poema en pàgina senar
+
+Amb la paritat `'odd'`, cada poema salta a la pàgina senar següent. El llibre passa de vuit pàgines a onze, i les tres parelles que queden en blanc no porten foli, perquè els folis es filtren pel rol de la pàgina.
+
+```diff
+ const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
+-  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'any' } };
++  marginBottom: pt(0), breakBefore: { enabled: true, parity: 'odd' } };
+```
+
+### Numera els poemes amb xifres
+
+L'estil del comptador a la plantilla canvia alhora el número de la pàgina del poema i el de l'índex.
+
+```diff
+-const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
++const poems = { level: 1, numberingTemplate: '{1}', advancedDesign: poemHead,
+```
+
+## Errors freqüents
+
+- Deixa una línia en blanc després de cada vers. Dos versos sense una línia en blanc entre ells formen un sol paràgraf, i el poema es recompon com a prosa.
+- Dona a l'estil del vers el seu propi `textAlign`. Un estil de paràgraf hereta el del cos, i el vers justificat estira fins a la mesura la primera part de cada vers partit.
+- Un vers que comença per un any i un punt, com «1877. », o per un guionet i un espai es converteix en un element de llista, perquè cada vers és un paràgraf. Posa-hi al davant un unidor de paraules (U+2060), com fa `indentVerse` abans d'un sagnat.
+- Perquè dues paraules passin juntes a la línia de sota, uneix-les amb un espai de no separació (U+00A0), com *the soil* i *bright wings.* a la pàgina 5. Es manté en un vers de text pla; en un amb cursiva o negreta el motor continua tallant-hi.
+- Un element del peu de pàgina amb `pages` a `'all'` s'imprimeix també a les pàgines en blanc. Aquí el foli es compon de dos elements, un per a les obertures i un altre per a les pàgines de text, així que una pàgina parella en blanc queda en blanc.

@@ -55,6 +55,7 @@ import { SearchScope } from '../search/SearchScope';
 import { SlotEditor } from './HeaderFooterSection/SlotEditor';
 import { PartsOrderedListsOverrides, PartsUnorderedListsOverrides } from './PartsListOverrides';
 import { breakParityOptions } from './HeadingsSection/breakParityOptions';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -134,6 +135,9 @@ interface HeadingStyleCardProps {
  *  the body text — and resets by dropping its key. */
 function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove }: HeadingStyleCardProps) {
   const labels = useSandboxLabels();
+  const rtl = useRightToLeftFlow();
+  const textSide = flowSideLabels(rtl, labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
+  const columnSide = flowSideLabels(rtl, labels.sideColumnSideLeft, labels.sideColumnSideRight);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -239,7 +243,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
 
   const PARITY_OPTIONS = breakParityOptions(labels);
   const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.bodyTextAlignLeft },
+    { value: 'left', label: textSide.left },
     { value: 'justify', label: labels.bodyTextAlignJustify },
     { value: 'center', label: labels.partsBodyTextAlignCenter },
   ];
@@ -253,8 +257,8 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     { value: 'floats', label: labels.sideColumnRoleFloats },
   ];
   const SIDE_SIDE_OPTIONS = [
-    { value: 'right', label: labels.sideColumnSideRight },
-    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'right', label: columnSide.right },
+    { value: 'left', label: columnSide.left },
     { value: 'outer', label: labels.sideColumnSideOuter },
     { value: 'inner', label: labels.sideColumnSideInner },
   ];
@@ -326,6 +330,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           hint={idTaken ? labels.paragraphStyleIdHintDuplicate : labels.headingStyleUsageHint.replace('__id__', style.id)}
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -343,6 +348,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         </Field>
         <Field label={labels.paragraphStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => set('name', e.target.value.length > 0 ? e.target.value : undefined)}

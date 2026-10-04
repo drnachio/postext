@@ -385,6 +385,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     refreshPage: viewer.refreshPage,
     setLabels: viewer.setLabels,
     resetView: viewer.resetView,
+    getView: viewer.getView,
     setInteraction: viewer.setInteraction,
     pageAt: viewer.pageAt,
     pointOnScreen: viewer.pointOnScreen,

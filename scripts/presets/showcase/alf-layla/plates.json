@@ -1,0 +1,1350 @@
+{
+ "_doc": "Plates of the alf-layla bundle; see plates.py. box = [x0, y0, x1, y1] as fractions of the source page.",
+ "sources": {
+  "sani": {
+   "artist": "Abu'l-Hasan Ghaffari (Sani ol-Molk), with assistants",
+   "work": "هزار و یک شب, Golestan Palace Library MS 2240, vol. 1, 1849–1856",
+   "credit": "صنيع الملك (أبو الحسن غفاري)، ألف ليلة وليلة بالفارسية، مكتبة قصر كلستان، طهران · Wikimedia Commons, public domain",
+   "creditEn": "Sani ol-Molk (Abu'l-Hasan Ghaffari), Persian Thousand and One Nights, Golestan Palace Library MS 2240, 1849–56 · Wikimedia Commons, public domain"
+  },
+  "harvey": {
+   "artist": "William Harvey (designs), wood engravings by Landells, Whymper and others",
+   "work": "E. W. Lane, The Thousand and One Nights, London 1839–41",
+   "credit": "وليم هارفي، حفر على الخشب لترجمة إدوارد لين (لندن ١٨٣٩–١٨٤١) · Wikimedia Commons, public domain",
+   "creditEn": "William Harvey, wood engravings for E. W. Lane's translation (London 1839–41) · Wikimedia Commons, public domain"
+  },
+  "lane": {
+   "artist": "William Harvey (designs), wood engravings by the engravers Lane's lists of illustrations name",
+   "work": "E. W. Lane, The Thousand and One Nights, London 1840–41 (Internet Archive scans of vols. 2 and 3)",
+   "credit": "وليم هارفي، حفر على الخشب لترجمة إدوارد لين (لندن ١٨٤٠–١٨٤١) · Internet Archive, public domain",
+   "creditEn": "William Harvey, wood engravings for E. W. Lane's translation (London 1840–41) · Internet Archive, public domain"
+  }
+ },
+ "plates": [
+  {
+   "id": "sani-01a",
+   "source": "sani",
+   "file": "sani-ms01.jpg",
+   "ms": 1,
+   "box": [
+    0.075,
+    0.0443,
+    0.925,
+    0.3536
+   ],
+   "tale": "fisherman-jinni",
+   "find": "فوجد فيها أربع سمكات",
+   "captionFa": "ماهی‌گیر ماهی‌ها را نزد سلطان آورده",
+   "caption": "الصياد يحمل السمك الملوَّن إلى الملك",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-01b",
+   "source": "sani",
+   "file": "sani-ms01.jpg",
+   "ms": 1,
+   "box": [
+    0.075,
+    0.395,
+    0.925,
+    0.6514
+   ],
+   "tale": "fisherman-jinni",
+   "find": "وإذا بالحائط قد انشق",
+   "captionFa": "کنیز ماهی‌ها را سرخ می‌کند",
+   "caption": "الصبية تخرج من الحائط وتكلِّم السمك في المقلاة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-01c",
+   "source": "sani",
+   "file": "sani-ms01.jpg",
+   "ms": 1,
+   "box": [
+    0.075,
+    0.6936,
+    0.925,
+    0.9514
+   ],
+   "tale": "fisherman-jinni",
+   "find": "لا بد أن أنظر بعيني",
+   "captionFa": "کنیز در حضور سلطان ماهی را سرخ می‌کند",
+   "caption": "السمك في المقلاة بين يدي الملك والوزير",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-12a",
+   "source": "sani",
+   "file": "sani-ms12.jpg",
+   "ms": 12,
+   "box": [
+    0.52,
+    0.0429,
+    0.925,
+    0.2714
+   ],
+   "tale": "ensorcelled-prince",
+   "find": "نصفك حجرا",
+   "captionFa": "دختر عموی [او] را … می‌زند",
+   "caption": "بنت العم تضرب زوجها المسحور، ونصفه حجر",
+   "confidence": "caption partly read; scene certain"
+  },
+  {
+   "id": "sani-12b",
+   "source": "sani",
+   "file": "sani-ms12.jpg",
+   "ms": 12,
+   "box": [
+    0.075,
+    0.3036,
+    0.49,
+    0.52
+   ],
+   "tale": "ensorcelled-prince",
+   "find": "فسحرتهم سمكا",
+   "captionFa": "دختر … را به صورت … کرد",
+   "caption": "الساحرة تسحر المدينة بحيرةً وأهلها سمكًا",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-12c",
+   "source": "sani",
+   "file": "sani-ms12.jpg",
+   "ms": 12,
+   "box": [
+    0.075,
+    0.7629,
+    0.925,
+    0.9536
+   ],
+   "tale": "ensorcelled-prince",
+   "find": "فتزوج الملك بإحدى بنتيه",
+   "captionFa": "عروسی دختران … سلطان",
+   "caption": "الملك والشاب يتزوجان ابنتَي الصياد",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-11a",
+   "source": "sani",
+   "file": "sani-ms11.jpg",
+   "ms": 11,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3
+   ],
+   "tale": "third-qalandar",
+   "find": "ونزلت من فوق الشجرة",
+   "captionFa": "ملک‌زاده بالای درخت است و غلامان سیاه …",
+   "caption": "ابن الملك فوق الشجرة والعبيد يقبلون من البحر",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-11b",
+   "source": "sani",
+   "file": "sani-ms11.jpg",
+   "ms": 11,
+   "box": [
+    0.53,
+    0.33,
+    0.925,
+    0.5914
+   ],
+   "tale": "third-qalandar",
+   "find": "فطار بي",
+   "captionFa": "ملک‌زاده سوار اسب … به هوا می‌رود",
+   "caption": "الفرس الطائر يحمل ابن الملك",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-11c",
+   "source": "sani",
+   "file": "sani-ms11.jpg",
+   "ms": 11,
+   "box": [
+    0.075,
+    0.6229,
+    0.49,
+    0.9536
+   ],
+   "tale": "porter-ladies",
+   "find": "هاتين الكلبتين",
+   "captionFa": "خلیفه نشسته … کور و دختر و سگ حاضرند",
+   "caption": "الخليفة والبنات والكلبتان في الديوان",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-15a",
+   "source": "sani",
+   "file": "sani-ms15.jpg",
+   "ms": 15,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.325
+   ],
+   "tale": "zubayda",
+   "find": "ثم حملتني أنا والكلبتين",
+   "captionFa": "عفریت در مجلس خلیفه حاضر شدن",
+   "caption": "العفريتة تحضر مجلس الخليفة وتفكّ سحر الكلبتين",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-15b",
+   "source": "sani",
+   "file": "sani-ms15.jpg",
+   "ms": 15,
+   "box": [
+    0.075,
+    0.3593,
+    0.925,
+    0.6286
+   ],
+   "tale": "porter-ladies",
+   "find": "وزوج الثلاث للثلاثة الصعاليك",
+   "captionFa": "عروسی سه دختر با ملک‌زادگان",
+   "caption": "زفاف البنات الثلاث",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-15c",
+   "source": "sani",
+   "file": "sani-ms15.jpg",
+   "ms": 15,
+   "box": [
+    0.075,
+    0.6629,
+    0.925,
+    0.9536
+   ],
+   "tale": "three-apples",
+   "find": "الصياد",
+   "captionFa": "صیاد جهت خلیفه دام انداختن",
+   "caption": "الصياد يرمي شبكته بين يدي الخليفة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-06a",
+   "source": "sani",
+   "file": "sani-ms06.jpg",
+   "ms": 6,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3179
+   ],
+   "tale": "three-apples",
+   "find": "لأجل الصلب",
+   "captionFa": "جعفر را پای دار آوردن",
+   "caption": "جعفر يُساق إلى المشنقة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-06b",
+   "source": "sani",
+   "file": "sani-ms06.jpg",
+   "ms": 6,
+   "box": [
+    0.075,
+    0.3593,
+    0.925,
+    0.6286
+   ],
+   "tale": "three-apples",
+   "find": "وأنا الذي قتلتها",
+   "captionFa": "پیر و جوان نزد خلیفه ایستاده‌اند",
+   "caption": "الشيخ والشاب واقفان بين يدي الخليفة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-04a",
+   "source": "sani",
+   "file": "sani-ms04.jpg",
+   "ms": 4,
+   "box": [
+    0.075,
+    0.0393,
+    0.925,
+    0.3143
+   ],
+   "tale": "nur-al-din-shams-al-din",
+   "find": "فنزل في بعض الخانات",
+   "captionFa": "بدرالدین داخل کاروانسرا شده",
+   "caption": "بدر الدين حسن عند الخان",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-04b",
+   "source": "sani",
+   "file": "sani-ms04.jpg",
+   "ms": 4,
+   "box": [
+    0.075,
+    0.355,
+    0.925,
+    0.6321
+   ],
+   "tale": "nur-al-din-shams-al-din",
+   "find": "أقبح من هذا الأحدب",
+   "captionFa": "عروسی … بدرالدین",
+   "caption": "ليلة العرس: بدر الدين حسن مكان الأحدب",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-04c",
+   "source": "sani",
+   "file": "sani-ms04.jpg",
+   "ms": 4,
+   "box": [
+    0.075,
+    0.6714,
+    0.925,
+    0.9571
+   ],
+   "tale": "nur-al-din-shams-al-din",
+   "find": "فنام عند قبر أبيه",
+   "captionFa": "… بدرالدین … خوابیده",
+   "caption": "بدر الدين حسن نائم",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-03a",
+   "source": "sani",
+   "file": "sani-ms03.jpg",
+   "ms": 3,
+   "box": [
+    0.075,
+    0.0464,
+    0.925,
+    0.33
+   ],
+   "tale": "anis-al-jalis",
+   "find": "ثم أدخلها الحمام",
+   "captionFa": "کنیزکان در حمام …",
+   "caption": "الجواري في الحمّام",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-03b",
+   "source": "sani",
+   "file": "sani-ms03.jpg",
+   "ms": 3,
+   "box": [
+    0.075,
+    0.3571,
+    0.925,
+    0.6321
+   ],
+   "tale": "anis-al-jalis",
+   "find": "وإذا بابن الوزير الذي اسمه علي نور الدين",
+   "captionFa": "علی نورالدین … انیس الجلیس …",
+   "caption": "علي نور الدين وأنيس الجليس",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-09a",
+   "source": "sani",
+   "file": "sani-ms09.jpg",
+   "ms": 9,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.325
+   ],
+   "tale": "jewish-doctor",
+   "find": "آدمي مريض",
+   "captionFa": "طبیب یهودی به عیادت جوان آمده است",
+   "caption": "الطبيب اليهودي يعود الشاب المريض",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-09b",
+   "source": "sani",
+   "file": "sani-ms09.jpg",
+   "ms": 9,
+   "box": [
+    0.075,
+    0.3393,
+    0.925,
+    0.6321
+   ],
+   "tale": "jewish-doctor",
+   "find": "فسقوني الشراب",
+   "captionFa": "جوان با دختر … می‌خورند",
+   "caption": "الشاب والصبية في مجلس الشراب",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-10a",
+   "source": "sani",
+   "file": "sani-ms10.jpg",
+   "ms": 10,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3214
+   ],
+   "tale": "lame-young-man",
+   "find": "ثم مضت العجوز",
+   "captionFa": "مکالمهٔ عجوز با دختر قاضی",
+   "caption": "العجوز تحدِّث بنت القاضي",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-10c",
+   "source": "sani",
+   "file": "sani-ms10.jpg",
+   "ms": 10,
+   "box": [
+    0.075,
+    0.6536,
+    0.925,
+    0.9536
+   ],
+   "tale": "lame-young-man",
+   "find": "فأخذت الأصطرلاب",
+   "captionFa": "اضطراب … دلاک",
+   "caption": "المزيِّن يأخذ ارتفاع الشمس بالأسطرلاب",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-14a",
+   "source": "sani",
+   "file": "sani-ms14.jpg",
+   "ms": 14,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.2929
+   ],
+   "tale": "barber-brother-1",
+   "find": "بت الليلة في الطاحون",
+   "captionFa": "مرد خیاط را آسیابان تازیانه می‌زند",
+   "caption": "الطحّان يضرب الخياط بالسوط وهو يدير الطاحون",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-14b",
+   "source": "sani",
+   "file": "sani-ms14.jpg",
+   "ms": 14,
+   "box": [
+    0.075,
+    0.3071,
+    0.925,
+    0.5679
+   ],
+   "tale": "barber-brother-1",
+   "find": "في روشن الدار",
+   "captionFa": "صحبت داشتن خانم … با مرد خیاط",
+   "caption": "المرأة تكلِّم الخياط من الطاقة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-19a",
+   "source": "sani",
+   "file": "sani-ms19.jpg",
+   "ms": 19,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.325
+   ],
+   "tale": "steward",
+   "find": "ووضعتني في صندوق",
+   "captionFa": "در مسجد جوان و دختر … نشسته‌اند",
+   "caption": "الشاب والصبية والصندوق",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-19b",
+   "source": "sani",
+   "file": "sani-ms19.jpg",
+   "ms": 19,
+   "box": [
+    0.075,
+    0.3393,
+    0.925,
+    0.6321
+   ],
+   "tale": "steward",
+   "find": "ربتها السيدة زبيدة",
+   "captionFa": "سیده زبیده با کنیزکان به دیدن جوان آمده",
+   "caption": "السيدة زبيدة وجواريها يرين الشاب",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-07a",
+   "source": "sani",
+   "file": "sani-ms07.jpg",
+   "ms": 7,
+   "box": [
+    0.075,
+    0.0443,
+    0.925,
+    0.3179
+   ],
+   "tale": "aziz",
+   "find": "فأخذت لقمة",
+   "captionFa": "عزیزه لقمه به دهن عزیز گذاردن",
+   "caption": "عزيزة تطعم عزيزًا",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-07c",
+   "source": "sani",
+   "file": "sani-ms07.jpg",
+   "ms": 7,
+   "box": [
+    0.075,
+    0.675,
+    0.925,
+    0.9536
+   ],
+   "tale": "aziz",
+   "find": "عزيز على عزيزة",
+   "captionFa": "مهر کردن عزیز از عزیزه",
+   "caption": "عزيز وعزيزة",
+   "confidence": "caption partly read"
+  },
+  {
+   "id": "sani-05b",
+   "source": "sani",
+   "file": "sani-ms05.jpg",
+   "ms": 5,
+   "box": [
+    0.075,
+    0.3357,
+    0.925,
+    0.6271
+   ],
+   "tale": "dunya-taj-al-muluk",
+   "find": "كتبت هذه الأبيات",
+   "captionFa": "نامه نوشتن سیدهٔ دنیا",
+   "caption": "السيدة دنيا تكتب الرسالة",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-05c",
+   "source": "sani",
+   "file": "sani-ms05.jpg",
+   "ms": 5,
+   "box": [
+    0.075,
+    0.6536,
+    0.925,
+    0.9536
+   ],
+   "tale": "dunya-taj-al-muluk",
+   "find": "ثم إن العجوز قالت لتاج الملوك",
+   "captionFa": "تکلم کردن پیرزن با تاج‌الملوک در بازار",
+   "caption": "العجوز تكلِّم تاج الملوك في السوق",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-13a",
+   "source": "sani",
+   "file": "sani-ms13.jpg",
+   "ms": 13,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3214
+   ],
+   "tale": "dunya-taj-al-muluk",
+   "find": "وإذا قعدت في تلك الدكان",
+   "captionFa": "تاج‌الملوک و وزیر و عزیز در … سوق نشسته",
+   "caption": "تاج الملوك والوزير وعزيز في دكان السوق",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-13b",
+   "source": "sani",
+   "file": "sani-ms13.jpg",
+   "ms": 13,
+   "box": [
+    0.075,
+    0.3357,
+    0.925,
+    0.6393
+   ],
+   "tale": "dunya-taj-al-muluk",
+   "find": "ودخل بهما الحمام",
+   "captionFa": "به حمام رفتن تاج‌الملوک با وزیر و عزیز",
+   "caption": "تاج الملوك والوزير وعزيز في الحمّام",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-08a",
+   "source": "sani",
+   "file": "sani-ms08.jpg",
+   "ms": 8,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.325
+   ],
+   "tale": "umar-numan",
+   "find": "فسار وحده",
+   "captionFa": "ملک شرکان یکه‌سوار … می‌رود",
+   "caption": "الملك شركان يسير وحده",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-08b",
+   "source": "sani",
+   "file": "sani-ms08.jpg",
+   "ms": 8,
+   "box": [
+    0.075,
+    0.3393,
+    0.925,
+    0.6143
+   ],
+   "tale": "umar-numan",
+   "find": "والتحم القتال",
+   "captionFa": "جنگ ملک شرکان با … نصرانی",
+   "caption": "قتال الملك شركان",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-20a",
+   "source": "sani",
+   "file": "sani-ms20.jpg",
+   "ms": 20,
+   "box": [
+    0.075,
+    0.0443,
+    0.925,
+    0.3286
+   ],
+   "tale": "umar-numan",
+   "find": "إبريزة",
+   "captionFa": "ملکه ابریزه با ملک شرکان حرف می‌زند",
+   "caption": "الملكة إبريزة تحدِّث الملك شركان",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-20c",
+   "source": "sani",
+   "file": "sani-ms20.jpg",
+   "ms": 20,
+   "box": [
+    0.075,
+    0.6521,
+    0.925,
+    0.9536
+   ],
+   "tale": "umar-numan",
+   "find": "حتى أصارعكم قبل أن يغيب القمر",
+   "captionFa": "ملک شرکان و ملکه ابریزه حرف می‌زنند",
+   "caption": "شركان وإبريزة في ضوء القمر",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-02a",
+   "source": "sani",
+   "file": "sani-ms02.jpg",
+   "ms": 2,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3071
+   ],
+   "tale": "umar-numan",
+   "find": "الوقاد",
+   "captionFa": "ضوء‌المکان در خانهٔ گلخن‌تاب …",
+   "caption": "ضوء المكان مريضًا في بيت الوقّاد",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-18b",
+   "source": "sani",
+   "file": "sani-ms18.jpg",
+   "ms": 18,
+   "box": [
+    0.075,
+    0.3107,
+    0.925,
+    0.6107
+   ],
+   "tale": "nuzhat-wedding",
+   "find": "أوقدوا الشموع",
+   "captionFa": "چراغانی شهر است",
+   "caption": "زينة المدينة بالمصابيح",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-18c",
+   "source": "sani",
+   "file": "sani-ms18.jpg",
+   "ms": 18,
+   "box": [
+    0.075,
+    0.625,
+    0.925,
+    0.9536
+   ],
+   "tale": "nuzhat-wedding",
+   "find": "ودخل عليها شركان",
+   "captionFa": "نزهة‌الزمان و ملک شرکان در حجله نشسته‌اند",
+   "caption": "نزهة الزمان والملك شركان في ليلة الزفاف",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-16a",
+   "source": "sani",
+   "file": "sani-ms16.jpg",
+   "ms": 16,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3357
+   ],
+   "tale": "convent",
+   "captionFa": "ضوء‌المکان با رومیان در ضرب و جنگ است",
+   "caption": "ضوء المكان يقاتل الروم",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-16b",
+   "source": "sani",
+   "file": "sani-ms16.jpg",
+   "ms": 16,
+   "box": [
+    0.075,
+    0.3571,
+    0.925,
+    0.6464
+   ],
+   "tale": "umar-death",
+   "find": "حردوب",
+   "captionFa": "ملک حردوب با ذات‌الدواهی شور می‌کند",
+   "caption": "الملك حردوب يشاور ذات الدواهي",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-17b",
+   "source": "sani",
+   "file": "sani-ms17.jpg",
+   "ms": 17,
+   "box": [
+    0.075,
+    0.3464,
+    0.925,
+    0.6393
+   ],
+   "tale": "kan-ma-kan",
+   "find": "لملاقاته",
+   "captionFa": "اهل بغداد به پیشواز ملک ضوء‌المکان آمده‌اند",
+   "caption": "أهل بغداد يستقبلون الملك ضوء المكان",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-21c",
+   "source": "sani",
+   "file": "sani-ms21.jpg",
+   "ms": 21,
+   "box": [
+    0.075,
+    0.6643,
+    0.925,
+    0.9536
+   ],
+   "tale": "kan-ma-kan",
+   "captionFa": "عزاداری ضوء‌المکان است",
+   "caption": "مأتم الملك ضوء المكان",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-22b",
+   "source": "sani",
+   "file": "sani-ms22.jpg",
+   "ms": 22,
+   "box": [
+    0.075,
+    0.3143,
+    0.925,
+    0.6393
+   ],
+   "tale": "ghanim-slave-of-love",
+   "find": "الحاملين الصندوق",
+   "captionFa": "غانم بر درخت رفته، سه نفر غلام صندوقی می‌آورند",
+   "caption": "غانم فوق الشجرة والعبيد الثلاثة يحملون الصندوق",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-22c",
+   "source": "sani",
+   "file": "sani-ms22.jpg",
+   "ms": 22,
+   "box": [
+    0.075,
+    0.6536,
+    0.925,
+    0.9536
+   ],
+   "tale": "ghanim-slave-of-love",
+   "find": "العبيد الثلاثة قالوا",
+   "captionFa": "سه غلام نشسته با یکدیگر حرف می‌زنند",
+   "caption": "العبيد الثلاثة يتحادثون",
+   "confidence": "caption read"
+  },
+  {
+   "id": "sani-23a",
+   "source": "sani",
+   "file": "sani-ms23.jpg",
+   "ms": 23,
+   "box": [
+    0.075,
+    0.0429,
+    0.925,
+    0.3057
+   ],
+   "tale": "ghanim",
+   "find": "وهما أمه وأخته",
+   "captionFa": "مادر و خواهر غانم با قوت‌القلوب بر بستر غانم نشسته",
+   "caption": "أم غانم وأخته وقوت القلوب عند فراشه",
+   "confidence": "caption read"
+  },
+  {
+   "id": "harvey-23",
+   "source": "harvey",
+   "file": "harvey-23.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (23).jpg",
+   "tale": "merchant-jinni",
+   "find": "قم حتى أقتلك",
+   "kind": "plate",
+   "caption": "العفريت يرفع سيفه على التاجر",
+   "confidence": "subject identified from the picture"
+  },
+  {
+   "id": "harvey-12",
+   "source": "harvey",
+   "file": "harvey-12.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (12).jpg",
+   "tale": "sindbad",
+   "kind": "plate",
+   "find": "شيخ",
+   "caption": "شيخ البحر على كتفَي السندباد",
+   "confidence": "subject identified from the picture"
+  },
+  {
+   "id": "harvey-08",
+   "source": "harvey",
+   "file": "harvey-08.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (8).jpg",
+   "tale": "qamar-zaman-budur",
+   "find": "واسم تلك الجنية ميمونة",
+   "kind": "plate",
+   "caption": "قمر الزمان",
+   "confidence": "Commons description: Kamar ez-Zeman"
+  },
+  {
+   "id": "harvey-10",
+   "source": "harvey",
+   "file": "harvey-10.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (10).jpg",
+   "tale": "uns-al-wujud",
+   "find": "فلما سمع الأسد مقالته",
+   "kind": "plate",
+   "caption": "أنس الوجود",
+   "confidence": "Commons description: Uns el-Wujood"
+  },
+  {
+   "id": "harvey-21",
+   "source": "harvey",
+   "file": "harvey-21.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (21).jpg",
+   "tale": "abdallah-sea",
+   "find": "رأى فيها آدميا",
+   "kind": "plate",
+   "caption": "عبد الله البرّي وعبد الله البحري",
+   "confidence": "subject identified from the picture (a man of the sea)"
+  },
+  {
+   "id": "harvey-03",
+   "source": "harvey",
+   "file": "harvey-03.jpg",
+   "tone": "gray",
+   "commons": "File:Harvey W, 1001 nights (3).jpg",
+   "tale": "fisherman-jinni",
+   "find": "خرج من ذلك القمقم دخان",
+   "kind": "plate",
+   "caption": "الدخان يخرج من القمقم ويصير عفريتًا",
+   "confidence": "subject identified from the picture"
+  },
+  {
+   "id": "harvey-13",
+   "source": "harvey",
+   "file": "harvey-13.jpg",
+   "commons": "File:Harvey W, 1001 nights (13).jpg",
+   "tale": null,
+   "kind": "ornament",
+   "caption": "",
+   "confidence": "arabesque gateway headpiece"
+  },
+  {
+   "id": "harvey-17",
+   "source": "harvey",
+   "file": "harvey-17.jpg",
+   "commons": "File:Harvey W, 1001 nights (17).jpg",
+   "tale": null,
+   "kind": "ornament",
+   "caption": "",
+   "confidence": "arabesque roundel (frame with figures)"
+  },
+  {
+   "id": "lane-nima",
+   "source": "lane",
+   "file": "lane-v2-n217.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 217
+   },
+   "box": [
+    0.215,
+    0.1667,
+    0.68,
+    0.3902
+   ],
+   "tone": "gray",
+   "tale": "nima-num",
+   "find": "ثم دس الورقة في داخل العلبة",
+   "kind": "plate",
+   "caption": "نُعم تفيق حين ترى ورقة نعمة",
+   "titleEn": "Noam reviving at the sight of Neameh's Name",
+   "engraver": "Thompson",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-alaeddin",
+   "source": "lane",
+   "file": "lane-v2-n273.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 273
+   },
+   "box": [
+    0.23,
+    0.2311,
+    0.71,
+    0.5152
+   ],
+   "tone": "gray",
+   "tale": "alaeddin-shamat",
+   "find": "فلعل الخادم نسي الطابق مفتوحا فطلع منه",
+   "kind": "plate",
+   "caption": "علاء الدين يطلع من الطابق على مجلس أمه",
+   "titleEn": "'Ala ed-Deen's sudden appearance in his Mother's Apartment",
+   "engraver": "Gray",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-hatim",
+   "source": "lane",
+   "file": "lane-v2-n355.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 355
+   },
+   "box": [
+    0.27,
+    0.1591,
+    0.675,
+    0.5189
+   ],
+   "tone": "gray",
+   "tale": "hatim",
+   "find": "إن هذا قبر حاتم الطائي",
+   "kind": "plate",
+   "caption": "قبر حاتم الطائي على رأس الجبل",
+   "titleEn": "Liberality of Hatim Et-Taee after his Death",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-false-caliph",
+   "source": "lane",
+   "file": "lane-v2-n407.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 407
+   },
+   "box": [
+    0.26,
+    0.1553,
+    0.66,
+    0.572
+   ],
+   "tone": "gray",
+   "tale": "false-caliph",
+   "find": "فطلع الخليفة الثاني وركب البغلة",
+   "kind": "plate",
+   "caption": "الخليفة المزوَّر يدخل قصره في موكبه",
+   "titleEn": "The False Khaleefeh entering his Palace",
+   "engraver": "Gray",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-zumurrud",
+   "source": "lane",
+   "file": "lane-v2-n471.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 471
+   },
+   "box": [
+    0.305,
+    0.197,
+    0.66,
+    0.5189
+   ],
+   "tone": "gray",
+   "tale": "ali-shar-zumurrud",
+   "find": "وتدلي له من الطاقة بحبل",
+   "kind": "plate",
+   "caption": "زمرد تتدلى من الطاقة بحبل",
+   "titleEn": "Zumurrud descending from the Window",
+   "engraver": "Slader",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-jubayr",
+   "source": "lane",
+   "file": "lane-v2-n512.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 512
+   },
+   "box": [
+    0.37,
+    0.1856,
+    0.725,
+    0.5038
+   ],
+   "tone": "gray",
+   "tale": "jubayr-budur",
+   "find": "اعقد عقدي على هذه الصبية",
+   "kind": "plate",
+   "caption": "عقد جبير بن عمير على الست بدور",
+   "titleEn": "Marriage of Jubeyr and the Lady Budoor",
+   "engraver": "Miss Williams",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-ebony-horse",
+   "source": "lane",
+   "file": "lane-v2-n548.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 548
+   },
+   "box": [
+    0.295,
+    0.1894,
+    0.805,
+    0.3333
+   ],
+   "tone": "gray",
+   "tale": "ebony-horse",
+   "find": "فأمر الملك العسكر الذين حوله أن يبعدوا عنها",
+   "kind": "plate",
+   "caption": "ابن الملك على الفرس الأبنوس بين العسكر",
+   "titleEn": "The King's Son on the Magic Horse amid the Troops at San'a",
+   "engraver": "Folkard",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-ali-misri",
+   "source": "lane",
+   "file": "lane-v2-n644.jpg",
+   "ia": {
+    "id": "thousandandonen01lanegoog",
+    "n": 644
+   },
+   "box": [
+    0.375,
+    0.5606,
+    0.74,
+    0.8106
+   ],
+   "tone": "gray",
+   "tale": "ali-misri",
+   "find": "فتح صندوقا من الصناديق",
+   "kind": "plate",
+   "caption": "علي المصري يفتح الصناديق",
+   "titleEn": "'Alee of Cairo opening the Chests of Treasure",
+   "engraver": "M. A. Williams",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-brass",
+   "source": "lane",
+   "file": "lane-h3-n146.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 146
+   },
+   "box": [
+    0.27,
+    0.12,
+    0.75,
+    0.5
+   ],
+   "tone": "gray",
+   "tale": "city-of-brass",
+   "find": "فإذا عليها فارس من نحاس",
+   "kind": "plate",
+   "caption": "فارس النحاس على الرابية",
+   "titleEn": "Horseman of Brass",
+   "engraver": "Harriet Clarke",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-judar",
+   "source": "lane",
+   "file": "lane-h3-n210.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 210
+   },
+   "box": [
+    0.18,
+    0.78,
+    0.64,
+    0.885
+   ],
+   "tone": "gray",
+   "tale": "judar",
+   "find": "وارمني في البركة",
+   "kind": "plate",
+   "caption": "جودر والمغربي عند البركة",
+   "titleEn": "Joodar drawing the Maghrabee out of the Lake",
+   "engraver": "M. A. Cook",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-lab",
+   "source": "lane",
+   "file": "lane-h3-n316.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 316
+   },
+   "box": [
+    0.25,
+    0.1,
+    0.75,
+    0.5
+   ],
+   "tone": "gray",
+   "tale": "julnar",
+   "find": "واسمها الملكة لاب",
+   "kind": "plate",
+   "caption": "الملكة لاب الساحرة",
+   "titleEn": "Queen Láb performing the Incantation",
+   "engraver": "Green",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-sayf",
+   "source": "lane",
+   "file": "lane-h3-n359.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 359
+   },
+   "box": [
+    0.25,
+    0.17,
+    0.75,
+    0.47
+   ],
+   "tone": "gray",
+   "tale": "sayf-al-muluk",
+   "find": "أنا اسمي دولة خاتون",
+   "kind": "plate",
+   "caption": "ابن الملك الأزرق يختطف دولة خاتون",
+   "titleEn": "Son of the Blue King carrying off Dólet Khátoon",
+   "engraver": "M. Jackson",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-bahram",
+   "source": "lane",
+   "file": "lane-h3-n413.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 413
+   },
+   "box": [
+    0.53,
+    0.09,
+    0.76,
+    0.86
+   ],
+   "tone": "gray",
+   "tale": "hasan-basra",
+   "find": "وكان اسم ذلك الملعون بهرام المجوسي",
+   "kind": "plate",
+   "caption": "بهرام المجوسي",
+   "titleEn": "The Magian summoning the Camels",
+   "engraver": "Harriet Clarke",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-dahnash",
+   "source": "lane",
+   "file": "lane-h3-n473.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 473
+   },
+   "box": [
+    0.2,
+    0.08,
+    0.8,
+    0.52
+   ],
+   "tone": "gray",
+   "tale": "hasan-basra",
+   "find": "عبدك دهنش بن فقطش",
+   "kind": "plate",
+   "caption": "حسن على كتفَي العفريت دهنش",
+   "titleEn": "Hasan upon the Shoulders of the 'Efreet Dahnash",
+   "engraver": "Green",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-khalifa",
+   "source": "lane",
+   "file": "lane-h3-n559.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 559
+   },
+   "box": [
+    0.12,
+    0.7,
+    0.66,
+    0.9
+   ],
+   "tone": "gray",
+   "tale": "khalifa-fisherman",
+   "find": "فرأى خليفة الصياد واقفا في الماء",
+   "kind": "plate",
+   "caption": "الرشيد وجعفر يريان خليفة الصياد",
+   "titleEn": "The Khaleefeh and Jaafar discovering the Fisherman",
+   "engraver": "Whimper",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-abu-sir",
+   "source": "lane",
+   "file": "lane-h3-n625.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 625
+   },
+   "box": [
+    0.18,
+    0.58,
+    0.62,
+    0.95
+   ],
+   "tone": "gray",
+   "tale": "abu-qir-abu-sir",
+   "find": "وأشار بيده، وإذا بشيء برق",
+   "kind": "plate",
+   "caption": "الملك يشير بإلقاء أبي صير في البحر",
+   "titleEn": "The King making the sign to cast Aboo Seer into the Sea",
+   "engraver": "M. A. Williams",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-jamila",
+   "source": "lane",
+   "file": "lane-h3-n678.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 678
+   },
+   "box": [
+    0.37,
+    0.55,
+    0.68,
+    0.97
+   ],
+   "tone": "gray",
+   "tale": "ibrahim-jamila",
+   "find": "أشتهي أن ترقص السيدة جميلة",
+   "kind": "plate",
+   "caption": "السيدة جميلة ترقص",
+   "titleEn": "Jemeeleh Dancing",
+   "engraver": "T. Williams",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-maruf-jinni",
+   "source": "lane",
+   "file": "lane-h3-n695.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 695
+   },
+   "box": [
+    0.22,
+    0.1,
+    0.7,
+    0.5
+   ],
+   "tone": "gray",
+   "tale": "maruf",
+   "find": "اسمي أبو السعادات",
+   "kind": "plate",
+   "caption": "أبو السعادات خادم الخاتم يظهر لمعروف",
+   "titleEn": "The Jinnee appearing to Maaroof",
+   "engraver": "Whimper",
+   "confidence": "Lane's list of illustrations"
+  },
+  {
+   "id": "lane-maruf-plough",
+   "source": "lane",
+   "file": "lane-h3-n718.jpg",
+   "ia": {
+    "id": "thousandandonen01harvgoog",
+    "n": 718
+   },
+   "box": [
+    0.2,
+    0.74,
+    0.68,
+    0.93
+   ],
+   "tone": "gray",
+   "tale": "maruf",
+   "find": "ثم أخذ المحراث وساق الثيران",
+   "kind": "plate",
+   "caption": "معروف يحرث أرض الفلاح",
+   "titleEn": "Maaroof at the Plough",
+   "engraver": "Nugent",
+   "confidence": "Lane's list of illustrations"
+  }
+ ]
+}

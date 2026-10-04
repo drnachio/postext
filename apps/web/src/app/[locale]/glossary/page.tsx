@@ -21,7 +21,7 @@ export async function generateMetadata({
   });
 }
 
-const SECTION_TITLE = { type: "categoryType", cjk: "categoryCjk", web: "categoryWeb" } as const;
+const SECTION_TITLE = { type: "categoryType", cjk: "categoryCjk", arabic: "categoryArabic", web: "categoryWeb" } as const;
 
 /** The site's glossary (WCAG 3.1.3 and 3.1.4): the trade words, grouped
  *  and sorted in the reader's language, then every abbreviation with its
@@ -104,7 +104,7 @@ export default async function GlossaryPage({
                     <dt className="font-head text-lg font-bold text-foreground 2xl:text-xl">
                       {term.term}
                       {term.native && (
-                        <span lang="zh-Hans" className="ml-2 font-body font-normal text-slate">
+                        <span lang="zh-Hans" className="ms-2 font-body font-normal text-slate">
                           {term.native}
                         </span>
                       )}

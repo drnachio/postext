@@ -9,7 +9,7 @@ import { buildBookChapters, type HeldChapterDoc } from '../book/buildBook';
 import { layoutCacheKey } from '../book/layoutKeys';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination';
 import { stitchDocuments, type StitchedBook } from '../book/stitch';
-import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../controls/fontLoader';
 import { ensureResourceImages } from '../controls/resourceImages';
 import { getBlob } from '../storage/blobStore';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
@@ -44,6 +44,8 @@ export interface FolioPreviewHandle {
   next: () => void;
   /** Eases the view back to the one the settings give. */
   resetView: () => void;
+  /** The view as it is seen now, in degrees; null without the 3D book. */
+  getView: () => { tilt: number; yaw: number } | null;
   regenerate: () => void;
 }
 
@@ -200,6 +202,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     prev: () => viewerRef.current?.prev(),
     next: () => viewerRef.current?.next(),
     resetView: () => viewerRef.current?.resetView(),
+    getView: () => viewerRef.current?.getView() ?? null,
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 
@@ -216,7 +219,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     let cancelled = false;
     const { onGeneratingChange: generating, onPageCountChange: counted } = callbacksRef.current;
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
+      const missing = missingConfigFontSpecs(deferredConfig);
       if (missing.length > 0) {
         generating?.(true);
         ensureConfigFontsLoaded(deferredConfig).then(() => {
@@ -448,6 +451,9 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     <>
       <div
         ref={hostRef}
+        // The 3D book is physical: a right-to-left book turns its own
+        // leaves leftward, the interface's direction does not mirror it.
+        dir="ltr"
         className="h-full w-full overflow-hidden text-(--foreground)"
         style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
       />

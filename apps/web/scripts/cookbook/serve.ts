@@ -126,12 +126,21 @@ function errorPage(message: string): string {
  *  `packages/postext/dist` (tsc keeps the imports extensionless, so the
  *  server tries `.js` and `/index.js`). */
 function localModule(rel: string): { file: string; path: string } | null {
-  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio)\/(.+)$/.exec(rel);
+  // HarfBuzz as the workspace installed it, untransformed (see shim.ts).
+  const hb = /^harfbuzzjs\/([\w.-]+\.(?:mjs|js|wasm))$/.exec(rel);
+  if (hb) {
+    const file = safeFile(path.join(REPO_DIR, "packages", "postext-pdf", "node_modules", "harfbuzzjs", "dist"), hb[1]!);
+    return file ? { file, path: rel } : null;
+  }
+  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio|postext-epub)\/(.+)$/.exec(rel);
   if (!match) return null;
   const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
   const asked = match[2]!;
   const base = asked.replace(/\.js$/, "");
-  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : [`${base}.js`, `${base}/index.js`];
+  // A file the package ships beside its modules (postext-pdf's
+  // harfbuzz.wasm, fetched from `new URL('./harfbuzz.wasm', import.meta.url)`)
+  // is served as it is.
+  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : /\.wasm$/.test(asked) ? [asked] : [`${base}.js`, `${base}/index.js`];
   for (const candidate of candidates) {
     const file = safeFile(dist, candidate);
     if (file) return { file, path: `${match[1]}/${candidate}` };
@@ -199,7 +208,8 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
           res.writeHead(302, { location: LOCAL_PREFIX + found.path, "cache-control": "no-store" });
           return res.end();
         }
-        return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(found.file));
+        const type = found.file.endsWith(".wasm") ? "application/wasm" : "text/javascript; charset=utf-8";
+        return send(res, 200, type, fs.readFileSync(found.file));
       }
       if (route === "/favicon.ico") return send(res, 204, "text/plain", "");
       return send(res, 404, "text/plain", `not found: ${route}`);

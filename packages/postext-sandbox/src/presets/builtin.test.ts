@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
-import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineChineseGuide, pristineGuideFollowsViewer } from './builtin';
+import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineArabicGuide, isPristineChineseGuide, pristineGuideFollowsViewer } from './builtin';
 import { localeShortTag } from './localeNames';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import { isPristineBook, sampleBook } from '../book/chapterOps';
+import { createPostextGuideConfig } from '../context/guideConfig';
 
 const preset = (extra: Partial<Parameters<typeof createPostextGuidePreset>[0]> = {}) =>
   createPostextGuidePreset({ name: 'The Postext guide', ...extra });
@@ -11,13 +12,62 @@ const preset = (extra: Partial<Parameters<typeof createPostextGuidePreset>[0]> =
 const svgFileIds = (resources: { kind: string; svg?: { fileId: string } }[]) =>
   resources.filter((r) => r.kind === 'svg').map((r) => r.svg!.fileId);
 
-describe('the built-in guide in three languages', () => {
-  it('lists Spanish, English and Simplified Chinese, the last shown as 简', () => {
+describe('the built-in guide in five languages', () => {
+  it('lists Spanish, Catalan, English, Arabic and Simplified Chinese, the last two shown as ع and 简', () => {
     const { summary } = preset();
-    expect(summary.locales).toEqual(['es', 'en', 'zh-Hans']);
+    expect(summary.locales).toEqual(['es', 'ca', 'en', 'ar', 'zh-Hans']);
     expect([...BUILTIN_PRESET_LOCALES]).toEqual(summary.locales);
     expect(localeShortTag('zh-Hans', summary.locales!)).toEqual({ text: '简', lang: 'zh-Hans' });
+    expect(localeShortTag('ar', summary.locales!)).toEqual({ text: 'ع', lang: 'ar' });
     expect(localeShortTag('es', summary.locales!).text).toBe('es');
+    expect(localeShortTag('ca', summary.locales!).text).toBe('ca');
+  });
+
+  it('loads the Catalan edition, hyphenated in Catalan, with its own figures', async () => {
+    const loaded = await preset().load('ca-ES');
+    expect(loaded.locale).toBe('ca');
+    expect(loaded.config.locale).toBe('ca');
+    expect(loaded.config.bodyText?.hyphenation?.locale).toBe('ca');
+    expect(loaded.chapters[0]!.markdown).toContain('Un tipògraf programable per al web');
+    expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ca'))).toBe(true);
+  });
+
+  it('loads the Arabic edition for any Arabic tag, right to left in Arabic faces, with its own figures', async () => {
+    for (const tag of ['ar', 'ar-EG', 'ar_MA']) {
+      const loaded = await preset().load(tag);
+      expect(loaded.locale).toBe('ar');
+      const config = loaded.config;
+      expect(config.locale).toBe('ar');
+      // Direction, binding and digits come from the language.
+      expect(config.direction).toBeUndefined();
+      expect(config.page?.binding).toBeUndefined();
+      expect(config.bodyText?.fontFamily).toBe('Amiri');
+      expect(config.headings?.fontFamily).toBe('Noto Kufi Arabic');
+      expect(config.captionStyle?.fontFamily).toBe('IBM Plex Sans Arabic');
+      expect(config.bodyText?.hyphenation?.enabled).toBe(false);
+      expect(config.bodyText?.kashida).toBe('auto');
+      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول']);
+      expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ar'))).toBe(true);
+      const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
+      expect(table.caption).toBe('مقاسات الصفحة الجاهزة واستعمالاتها المعتادة.');
+      expect(loaded.chapters[0]!.markdown).toMatch(/\p{Script=Arabic}/u);
+    }
+  });
+
+  it('sets no tracking, capitals or Latin-only face where the Arabic design prints Arabic', () => {
+    const config = createPostextGuideConfig('ar');
+    const json = JSON.stringify(config);
+    expect(json).not.toContain('"letterSpacing":{"value":1');
+    expect(json).not.toContain('uppercase');
+    const latinFaces = ['Lora', 'Geist', 'Bricolage Grotesque'];
+    for (const face of latinFaces) expect(json, face).not.toContain(`"${face}"`);
+    // Fraunces only for the cover's title, the brand name "Postext".
+    const texts: { fontFamily?: string; content: string }[] = [];
+    JSON.parse(json, (_k, v: unknown) => {
+      if (v && typeof v === 'object' && (v as { kind?: string }).kind === 'text') texts.push(v as { fontFamily?: string; content: string });
+      return v;
+    });
+    expect(texts.filter((e) => e.fontFamily === 'Fraunces').map((e) => e.content)).toEqual(['{title}']);
   });
 
   it('loads the Chinese edition for any Chinese tag', async () => {
@@ -47,8 +97,8 @@ describe('the built-in guide in three languages', () => {
   });
 
   it('cuts every edition into the same chapters', async () => {
-    const counts = await Promise.all(['en', 'es', 'zh-Hans'].map(async (l) => (await preset().load(l)).chapters.length));
-    expect(counts).toEqual([14, 14, 14]);
+    const counts = await Promise.all(['en', 'es', 'ca', 'zh-Hans', 'ar'].map(async (l) => (await preset().load(l)).chapters.length));
+    expect(counts).toEqual([14, 14, 14, 14, 14]);
   });
 
   it('follows the language asked for when the host passes one of the samples', async () => {
@@ -58,14 +108,16 @@ describe('the built-in guide in three languages', () => {
     expect(custom.chapters[0]!.markdown).toContain('# Mine');
   });
 
-  it('sets the Chinese edition in its own design even under a host config', async () => {
+  it('sets the Chinese and Arabic editions in their own design even under a host config', async () => {
     const host: PostextConfig = { bodyText: { fontFamily: 'Host Serif' } };
     expect((await preset({ configOverride: host }).load('en')).config).toBe(host);
     const zh = await preset({ configOverride: host }).load('zh-Hans');
     expect(zh.config.bodyText?.fontFamily).toBe('Noto Serif SC');
+    const ar = await preset({ configOverride: host }).load('ar');
+    expect(ar.config.bodyText?.fontFamily).toBe('Amiri');
   });
 
-  it('has a fingerprint that covers the three editions', async () => {
+  it('has a fingerprint that covers the five editions', async () => {
     const a = await preset().fingerprint!();
     const b = await preset().fingerprint!();
     expect(a).toMatch(/^builtin-[0-9a-f]{8}$/);
@@ -73,12 +125,12 @@ describe('the built-in guide in three languages', () => {
   });
 });
 
-describe('pristine guide detection with three languages', () => {
+describe('pristine guide detection with five languages', () => {
   let n = 0;
   const ids = () => `c${n++}`;
 
   it('reads every untouched edition as pristine', () => {
-    for (const sample of [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS]) {
+    for (const sample of [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR]) {
       expect(GUIDE_SAMPLE_DOCUMENTS).toContain(sample);
       expect(isPristineBook(sampleBook(sample, ids, 'Guide'), GUIDE_SAMPLE_DOCUMENTS)).toBe(true);
     }
@@ -107,8 +159,28 @@ describe('pristine guide detection with three languages', () => {
     // The interface's own edition, or an edited book, stays.
     expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
     expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_ES, 'en')).toBe(true);
+    // The interface's own edition cut into its chapters stays too (it was
+    // reopened on every visit, leaving its resources out of the state).
+    expect(pristineGuideFollowsViewer(es, DEFAULT_MARKDOWN_ES, 'es')).toBe(false);
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_EN, 'en')).toBe(false);
     const edited = { ...en, chapters: en.chapters.map((c, i) => (i === 3 ? { ...c, markdown: `${c.markdown}\n\nEdited.` } : c)) };
     expect(pristineGuideFollowsViewer(edited, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
+  });
+
+  it('keeps the Arabic guide opened on purpose, like the Chinese one', () => {
+    const ar = sampleBook(DEFAULT_MARKDOWN_AR, ids, 'Guide');
+    const en = sampleBook(DEFAULT_MARKDOWN_EN, ids, 'Guide');
+    expect(isPristineArabicGuide(ar)).toBe(true);
+    expect(isPristineArabicGuide(en)).toBe(false);
+    // Opened from English or Spanish, it stays…
+    expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_EN, 'en')).toBe(false);
+    expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_ES, null)).toBe(false);
+    // …the Arabic interface's own follows the next interface…
+    expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_EN, 'ar')).toBe(true);
+    expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_ZH_HANS, 'ar-EG')).toBe(true);
+    // …and the Arabic interface swaps another edition for its own.
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_AR, 'en')).toBe(true);
+    expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_AR, 'en')).toBe(false);
   });
 
   it('drops an edited Chinese guide', () => {

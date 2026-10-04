@@ -23,6 +23,8 @@ import {
 import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
+import { kashidaMeasureOptions } from '../measure/kashida';
+import { measureVerse } from './verse';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
@@ -33,6 +35,9 @@ import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
+import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
+import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
+import { startEndAsLeftRight } from '../defaults/shared';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -63,6 +68,11 @@ export interface BlockMeasureContext
   /** The anchors a `:ref` may name and the words it prints (#262); absent
    *  when no reference names anything but resources. */
   anchorRefs?: AnchorRefContext;
+  /** Filled by the measurement: the content indices of the blocks whose
+   *  style asks for letter-spacing (`letterSpacing`) on text of a joining
+   *  script (Arabic…), which is set without it. The build reports them
+   *  (`joiningScriptLetterSpacing`). */
+  joiningLetterSpacing?: Set<number>;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -161,7 +171,7 @@ export function measureContentBlock(
     // per `placement.align`.
     const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
     const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left';
+    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
     const { resourceBlock, measured } = runMeasurement({
       vdtType,
@@ -270,6 +280,8 @@ export function measureContentBlock(
   const vertical = measuringVertically();
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
+    || s.direction !== undefined
     || (vertical && (s.combineUpright || s.orientation)));
 
   // List items reserve horizontal space for indent + bullet + gap.
@@ -279,6 +291,28 @@ export function measureContentBlock(
     measureFirstLineIndent,
     measureHangingIndent,
   } = computeMeasureViewport(columnWidth, style, listBullet);
+
+  // A poem (#378): its bayts are laid out by `pipeline/verse.ts`, each
+  // hemistich measured on its own; none of the paragraph's levers apply.
+  if (contentBlock.verse) {
+    const direction = contentBlock.direction ?? getMeasureDirection();
+    const measured = measureVerse({
+      contentBlock,
+      style,
+      measureMaxWidth,
+      dpi: resolved.page.dpi,
+      minWordSpacing: resolved.bodyText.minWordSpacing,
+      kashida: kashidaMeasureOptions(resolved.bodyText, style.fontString, style.fontSizePx),
+      direction,
+      frameDirection: getMeasureDirection(),
+      ...(cache ? { cache } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    if (lineXShift > 0) for (const line of measured.lines) shiftLineX(line, lineXShift);
+    const linked = { ...measured, lines: linkSegments(measured.lines, contentBlock.spans) };
+    const { prefixLen, absoluteSourceMap } = stampSourceRanges(linked, rawBlock, contentBlock, bodyOffset, ctx.source);
+    return { kind, contentBlock, measured: linked, prefixLen, absoluteSourceMap };
+  }
 
   // First-paragraph-after-heading: typographic convention used in many
   // scientific publications and book styles where the paragraph that
@@ -343,7 +377,16 @@ export function measureContentBlock(
   const letterSpacingPx = hasRichFonts
     ? (style.letterSpacingPx ?? 0) + (opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0)
     : 0;
+  // The words of a joining script take none of the style's tracking (the
+  // measurer leaves them untracked, `measure/joining.ts`): say so.
+  if (ctx.joiningLetterSpacing && hasRichFonts && (style.letterSpacingPx ?? 0) !== 0 && joiningScriptIn(contentBlock.text)) {
+    ctx.joiningLetterSpacing.add(blockIdx);
+  }
+  // The paragraph's base direction: its own (`{dir=…}`), else the
+  // document's (`setMeasureDirection`). Passed only when the block sets
+  // one, so the measurements of every other block keep their cache keys.
   const measureOptions = {
+    ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
     firstLineIndentPx: effectiveFirstLineIndent,
@@ -375,6 +418,11 @@ export function measureContentBlock(
     // common-case cache keys stay unchanged.
     justifyTrackingPx: resolved.bodyText.maxJustifyTracking > 0 && style.textAlign === 'justify' && vdtType !== 'heading'
       ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
+      : undefined,
+    // Kashida justification (#375): undefined when off (every document
+    // not in an Arabic-script language), so those cache keys are unchanged.
+    kashida: style.textAlign === 'justify' && vdtType !== 'heading'
+      ? kashidaMeasureOptions(resolved.bodyText, style.fontString, style.fontSizePx)
       : undefined,
     // Breaks after a closed dash (EF-141) and Knuth–Plass on ragged running
     // text (EF-147): left undefined when off, the 1.4 breaks.
@@ -423,7 +471,9 @@ export function measureContentBlock(
     const target = measured.lines.length - 1;
     const natural = wordSpacingProfile(measured.lines);
     const loosestAllowed = Math.max(resolved.bodyText.maxWordSpacing, natural.loosest) + 1e-9;
-    for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts)) {
+    // An Arabic paragraph takes no tracking: its words would stay untracked
+    // and only its spaces would tighten, which the first rung already tries.
+    for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts && !mostlyJoiningScript(contentBlock.text))) {
       const spacing = letterSpacingPx - (rung / 1000) * style.fontSizePx;
       const attempt = runMeasurement({
         vdtType, rawBlock, contentBlock, style, measureMaxWidth, mathEnabled, cache,
@@ -446,9 +496,22 @@ export function measureContentBlock(
 
   if (measured.lines.length === 0) return null;
 
-  if (lineXShift > 0) {
+  // A paragraph whose direction opposes its frame's (the document's: a
+  // right-to-left document's pages are mirrored, #370), such as an Arabic
+  // quotation in an English book: its lines start on the frame's far side,
+  // their indent too (`VDTLine.measure`).
+  // A paragraph style's indent and a list item's marker column go to that
+  // side too: the lines take the measure from the block's left edge, the
+  // marker the room on its right (`mirrorListMarker`).
+  const opposite = contentBlock.direction !== undefined && contentBlock.direction !== getMeasureDirection();
+  if (opposite) {
+    mirrorLineSpans(measured.lines, measureMaxWidth, measureOptions.restWidths);
+  }
+
+  const xShift = opposite ? Math.max(0, columnWidth - lineXShift - measureMaxWidth) : lineXShift;
+  if (xShift > 0) {
     for (const line of measured.lines) {
-      line.bbox.x += lineXShift;
+      shiftLineX(line, xShift);
     }
   }
 

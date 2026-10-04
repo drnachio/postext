@@ -16,7 +16,7 @@ export function ResetButton({ onClick, label }: ResetButtonProps) {
     <IconButton
       size={18}
       label={label ?? labels.resetToDefault}
-      tooltipSide="left"
+      tooltipSide="inline-start"
       onClick={onClick}
       icon={<RotateCcw size={11} />}
     />

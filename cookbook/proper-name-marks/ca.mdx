@@ -1,0 +1,66 @@
+---
+title: "Marques de nom i de títol, en vertical i en horitzontal"
+summary: "Els Annals bàsics de Xiang Yu amb marques :name i :book, en vertical i en horitzontal: les línies van a l'esquerra dels noms i després a sota."
+plain: "Pàgines de mostra d'un clàssic de la història xinesa. Ensenya a marcar en vermell els noms amb una línia recta i els títols de llibres amb una d'ondulada, en text vertical i horitzontal."
+description: "Línies de nom propi i línies ondulades de títol en un text xinès clàssic, compost en vertical i en horitzontal des d'un mateix Markdown amb Postext."
+aliases: ["marca de nom propi", "línia de nom propi", "marca de títol", "subratllat ondulat", "專名號", "私名號", "書名號", "全式標點", "xinès clàssic", "Shiji", "Xiang Yu", "pàgines de mostra", "樣張"]
+pageNotes: { "1": "Pàgina 1, en vertical: una banda anyil baixa per la vora dreta amb 史記選讀 en caràcters blancs grans; després, la presentació i cinc normes numerades en lletra Kai, amb línies rectes vermelles a l'esquerra dels noms, línies ondulades vermelles a l'esquerra dels títols i tres punts vermells a la dreta de 萬人敵.", "2": "Pàgina 2, en vertical: la banda amb 項羽本紀 i l'autor; després, el passatge en nou columnes que es llegeixen des de la dreta, amb una línia vermella a l'esquerra de cada nom.", "3": "Pàgina 3, en horitzontal: la banda travessa el cap de la pàgina amb 項羽本紀; després, el mateix passatge en línies de 28 caràcters, cada nom subratllat en vermell, i el colofó en lletra grisa petita." }
+---
+
+## Què compondràs
+
+Tres pàgines de mostra per a una antologia de les *Memòries històriques*, en el format de 140 × 203 mm d'un llibre xinès 大32開. El passatge és el començament dels Annals bàsics de Xiang Yu amb la puntuació completa d'una edició de clàssics: una línia recta al costat de cada persona, lloc, estat i dinastia, i una línia ondulada al costat de cada títol de llibre o de capítol, totes dues en vermelló. La pàgina 1 porta la presentació i les normes de l'edició en lletra Kai. Les pàgines 2 i 3 componen dues vegades el mateix Markdown, en vertical i en horitzontal, i el plec mostra on va cada marca: a l'esquerra del nom a les línies verticals, a sota a les horitzontals. El llibre s'enquaderna per la dreta i una banda anyil porta cada títol. <RecipeLink slug="critical-edition-line-numbers">La recepta Núm. 044, Lycidas en el text de 1645</RecipeLink>, distingeix els noms a la manera europea, en cursiva.
+
+## Elaboració
+
+### 1 · El marcatge posa les marques; la direcció d'escriptura, el seu costat
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `:name[項梁]` i `:book[史記]` conserven els seus caràcters en el text, de manera que la cerca, el text copiat i el PDF llegeixen 項梁 i 史記, i hi afegeixen les marques al costat ([Marques xineses, ruby i warichu](/ca/docs/document-format#marques-xineses-ruby-i-warichu)). El costat el decideix només la direcció d'escriptura: `layout.writingMode: 'vertical-rl'` posa les línies a l'esquerra dels caràcters, i l'estil de títol `across`, la disposició del qual és `'horizontal-tb'`, a sota. `bookTitleMark: 'wavy'` és el que un document `zh-Hant` rep per defecte; hi va escrit perquè, en passar a `zh-Hans`, els títols sortirien entre 《》. Quan dues marques del mateix tipus es toquen, com a 東漢班固 o a 史記項羽本紀, cadascuna cedeix un vuitè de quadratí al punt de trobada, i les línies es llegeixen com dos noms.
+
+### 2 · Un interlineat amb lloc per a les marques
+
+<Excerpt region="type" />
+
+Les marques viuen a l'espai entre línies i mai no canvien el pas de línia ([Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu)). Amb 10,5 pt sobre 18 pt l'espai és de 0,71 quadratins, i hi caben les línies de nom d'una columna i els punts de la següent, com a la cinquena norma de la pàgina 1. La retícula compta la pàgina en caràcters, 42 al llarg de cada línia i 17 línies a l'ample, i mou els marges perquè la caixa mesuri exactament això: 25,7 mm de marge al cap i 21,7 mm al peu ([Retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters)).
+
+### 3 · Una obertura que gira amb la pàgina
+
+<Excerpt region="opener" />
+
+El disseny d'un títol es compon en el flux de la seva pàgina, de manera que un mateix joc d'elements serveix en les dues direccions ([Escriptura vertical](/ca/docs/configuration#escriptura-vertical)). Ancorada a la cantonada superior esquerra de la sang, la banda travessa el cap de la pàgina horitzontal i baixa per la vora dreta de les verticals, que és on comença la lectura. L'avanttítol, el títol i l'autor també s'apilen en el flux: un sota l'altre en horitzontal, un a l'esquerra de l'altre en vertical. La longitud de la banda es mesura al llarg del flux: 181,3 mm l'aturen al peu del text vertical, lluny del foli, i a la pàgina horitzontal passen del tall.
+
+### 4 · Folis en un llibre enquadernat per la dreta
+
+<Excerpt region="folios" />
+
+El text vertical enquaderna el llibre per la dreta ([Enquadernació](/ca/docs/configuration#enquadernació)): la pàgina 1 queda a l'esquerra del llom i la vora exterior d'una pàgina senar és l'esquerra. El foli senar va a baix a l'esquerra i el parell a baix a la dreta, al revés que en un llibre occidental, i `pageNumbering.format: 'trad-chinese-informal'` els imprimeix 一, 二, 三. El rètol entre tots dos surt d'un atribut de cada títol, `slug="…"`; amb el colofó, és l'únic que canvia entre l'edició anglesa i l'espanyola.
+
+### 5 · Una segona tinta
+
+<Excerpt region="palette" />
+
+Una edició de clàssics imprimeix les marques amb la tinta del text. Una antologia escolar les pot imprimir en un segon color, per separar-les dels traços dels caràcters: `annotationColor` les enllaça amb l'entrada `mark` de la paleta, el vermelló dels comentaris en tinta vermella, i un sol canvi en aquesta entrada canvia el to de totes les línies i tots els punts del llibre.
+
+## Variants
+
+### Imprimeix els títols entre 《》
+
+Els llibres de la Xina continental que no són de clàssics posen els títols entre claudàtors angulars: el Markdown no canvia i els claudàtors s'imprimeixen com a puntuació del text.
+
+```diff
+-  bookTitleMark: 'wavy', // zh-Hant's default; mainland editions of the classics use it too
++  bookTitleMark: 'brackets', // 《史記》《項羽本紀》
+```
+
+### Imprimeix les marques amb la tinta del text
+
+Sense `annotationColor`, cada marca pren el color del bloc que marca.
+
+```diff
+-  annotationColor: col('mark'), // unset, the marks print in the colour of the text
+```
+
+## Errors freqüents
+
+- Un títol que dibuixa un disseny imprimeix el seu text a través del disseny, i el text de disseny perd les marques: `# :book[項羽本紀]` no mostraria cap línia ondulada a la banda. Les capçaleres, els peus de figura i les cel·les de taula també imprimeixen el seu text sense marques.
+- Postext no s'atura per `cjkMarksExceedLeading`: la composició ho anota a `doc.contentWarnings` i el tauler Revisió del Sandbox ho mostra, però les pàgines s'imprimeixen igualment, amb les marques enganxades a la línia veïna. Si canvies l'interlineat, revisa aquesta llista; amb 15 pt recull tots els paràgrafs marcats d'aquestes pàgines.

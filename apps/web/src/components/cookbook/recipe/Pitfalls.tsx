@@ -22,7 +22,7 @@ export function GotchaCard({ view, t, id }: { view: RecipeView; t: RecipeT; id: 
         {docs && feature && (
           <>
             {" "}
-            <Link href={docs}>{feature.label[locale]} →</Link>
+            <Link href={docs}>{feature.label[locale]} <span className="inline-block rtl:-scale-x-100">→</span></Link>
           </>
         )}
       </p>
@@ -53,7 +53,7 @@ function WarningCard({ view, t, kind }: { view: RecipeView; t: RecipeT; kind: Wa
         {docs && (
           <>
             {" "}
-            <Link href={docs}>{t("readDocs")} →</Link>
+            <Link href={docs}>{t("readDocs")} <span className="inline-block rtl:-scale-x-100">→</span></Link>
           </>
         )}
       </p>

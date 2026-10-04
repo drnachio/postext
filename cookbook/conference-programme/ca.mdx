@@ -1,0 +1,67 @@
+---
+title: "Programa de congrés amb una graella de cel·les combinades"
+summary: "Un programa de dues jornades: mergeCells estén la plenària per les tres sales i els tallers per dues franges, i cada ponència porta el color del seu itinerari."
+plain: "El programa imprès d'un congrés de tipografia de dos dies. El seu horari deixa que una xerrada ocupi totes les sales o dues franges horàries, amb cada tema del seu color."
+description: "Un programa de congrés en català fet amb Postext: una graella de cel·les combinades i colors per itinerari que continua en una altra pàgina, i obertures negres."
+question: "Com combino les cel·les d'una graella perquè una plenària ocupi totes les sales i un taller dues franges?"
+aliases: ["programa de congrés", "programa de jornades", "graella", "horari", "agenda", "rowspan", "colspan", "cel·les combinades", "taula per colors", "català"]
+pageNotes: { "1": "La coberta sobre negre: la ela geminada majúscula, L·L, dibuixada com una L violeta, un punt ambre i una L turquesa, cada L un pal alt amb el peu arrodonit. A sota, 7es Jornades · Programa en versaletes ambre, Jornades de Tipografia i Edició Digital en una lletra de rètol ampla i blanca, les dates 12–13.11.2026 en violeta i Girona · La Impremta, Barri Vell.", "2": "El dijous s'obre amb una banda negra a dalt de la pàgina: Primera jornada · 12 de novembre en versals ambre, un 12 blanc d'uns 39 mm d'alçada amb Dijous al costat i una filera de formes violetes, turqueses i ambre al peu de la banda. A sota, tres paràgrafs d'avisos pràctics amb tres mostres de color que anomenen els itineraris, i després Qui parla dijous i les primeres notes de ponents, cada nom en negreta i les línies següents sagnades.", "3": "La Taula 1, la graella del dijous, omple la pàgina: una fila de capçalera negra amb l'hora i les tres sales, les parts del dia en versaletes violetes, la conferència inaugural en una cel·la negra que ocupa les tres sales, dos tallers que omplen dues franges cadascun i cada ponència en una peça violeta, turquesa o ambre. Continua a la pàgina següent tanca la pàgina.", "4": "La graella acaba a dalt de la pàgina sota la mateixa fila de capçalera, amb el peu acabat en (continuació): el passeig i el sopar del vespre, i una nota sobre la durada de les sessions. A sota, la resta de ponents del dijous i Al vespre en dues columnes igualades.", "5": "El divendres s'obre amb la mateixa banda, un 13 i Divendres. Una introducció breu i el primer ponent del divendres queden sobre la Taula 2, que ocupa sencera el peu de la pàgina: la plenària i la cloenda en negre, un taller en dues franges i les ponències en els colors del seu itinerari.", "6": "Un plànol de La Impremta a dalt de la pàgina: les dues sales de ponències, el vestíbul amb el guarda-roba al costat, l'escala que puja a l'aula de tallers i el pati amb dos arbres, numerats de l'1 al 6 en cercles negres i anomenats a la nota sota la Figura 1. A sota, els últims ponents del divendres, Com arribar i el colofó en dues columnes." }
+---
+
+## Què compondràs
+
+El programa imprès, en català, d'unes jornades de tipografia inventades que se celebren a Girona. La coberta dibuixa la ela geminada majúscula, L·L, amb tres mòduls de color sobre negre. Cada jornada s'obre amb una banda negra de 76 mm i el dia del mes en una xifra de 144 pt. La graella del dijous és una taula. La conferència inaugural ocupa una cel·la negra que abasta les tres sales, i cada taller, dues franges horàries. Les parts del dia encapçalen les seves files a tota l'amplada, i cada ponència és una peça del color del seu itinerari; les mostres de color del peu fan de llegenda. La graella no cap en una pàgina, així que omple la 3 i acaba a la 4, sota la seva fila de capçalera repetida. La del divendres, més curta, cap sencera al peu de la seva pàgina d'obertura.
+
+## Elaboració
+
+### 1 · Converteix cada línia del programa en una fila
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada jornada és text pla en un fitxer de contingut, amb una línia per franja horària: `|` separa les sales, una lletra indica l'itinerari, `*` marca una plenària sobre emplenament negre, `/` obre cada línia que segueix el títol i `^` allarga la sessió de la franja anterior. Totes les combinacions surten de `mergeCells`. Una línia amb una sola sessió, com la plenària o una pausa, ocupa les tres columnes de sala. Un taller ocupa la seva cel·la i la de sota, i una part del dia (MATÍ, TARDA), que s'escriu com una línia sense `|`, les quatre columnes. Les cel·les cobertes continuen a la quadrícula, marcades amb `hiddenBy`, perquè la columna de cada cel·la és la seva posició a la fila ([Construir models de taula](/ca/docs/configuration#construir-models-de-taula)). `headerRowCount: 1` converteix els noms de les sales en la fila de capçalera. Els `columnWidths` són pesos relatius, i 12 + 3 × 42 sumen els 138 mm de l'amplada de caixa, així que la columna de l'hora fa 12 mm i cada sala 42. `setAlignment(…, 'left', 'middle')` centra cada taller en vertical a les seves dues files.
+
+### 2 · Deixa que el dijous continuï i el divendres quedi sencer
+
+<Excerpt region="split" />
+
+La graella del dijous es cita a la pàgina 2 i va a dalt d'una pàgina. Un flotant no puja mai per sobre de la seva referència, així que la graella obre la pàgina 3. No hi cap, i `overflow: 'split'` la talla entre dues files, mai dins d'una cel·la combinada ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). La pàgina 3 acaba amb la fila de les 17.30 i l'avís a sota. La 4 repeteix la fila de capçalera i el peu complet, amb la llegenda de colors, seguit de `(continuació)`, i la nota només apareix sota aquesta última part. La del divendres va al peu d'una pàgina i cap sota el text que la cita a la pàgina 5. Postext 1.4.1 només inclou en anglès i en castellà els noms dels tipus de recurs i aquests dos textos, així que les paraules catalanes, plurals inclosos, s'escriuen sobre `defaultResourceTypes('ca')` i a l'estil de taula. `numberingTemplate: '{n}'` amb `resetOn: 'never'` numera les dues graelles en una sola sèrie: Taula 1 i Taula 2.
+
+### 3 · Talla els emplenaments en peces
+
+<Excerpt region="tiles" />
+
+`setCellBackground`, a la resposta curta, dona a cada sessió el color de la paleta del seu itinerari, i uns filets d'1,6 pt del color del paper tallen els emplenaments en peces separades per línies blanques ([Estil de taules](/ca/docs/configuration#estil-de-taules)). Una taula té un sol color de text per a les cel·les del cos, així que el blanc de la plenària és un xip l'estil del qual fixa el color i treu l'emplenament, la vora i el marge lateral del xip. Les hores i les parts del dia també són xips, en Chivo Mono ([Estils de xip](/ca/docs/configuration#estils-de-xip)). Un xip no es parteix mai entre dues línies; el títol d'una plenària i la línia del seu ponent caben cadascun en una línia de la cel·la de tres sales. A la nota del plànol, el xip `sala` deixa el text tal com és i manté en una línia el número i el nom de cada sala, cosa que a la 1.4.1 no aconsegueix un espai de no separació.
+
+### 4 · Obre cada jornada amb una banda
+
+<Excerpt region="opener" />
+
+El disseny del títol de primer nivell dibuixa la banda: una caixa de 76 mm d'alçada des de la vora de sang, amb la franja de mòduls al llarg del seu peu. La data surt de l'atribut `date` del títol, i la xifra, de `day`. El traç de l'1 d'Unbounded 800 a 144 pt comença 0,76 mm dins de la seva caixa, i el de la primera majúscula de la data, entre 0,1 i 0,2 mm dins de la seva; per això la xifra es desplaça 0,6 mm a l'esquerra, i la data, la xifra i el text comencen el seu traç a menys de 0,2 mm els uns dels altres. El nom del dia va a la dreta de la xifra, baixat `BASELINE` × (144 − 26) pt perquè les dues línies de base coincideixin, perquè en un text de disseny amb `lineHeight: 1` la línia de base queda a 0,8 de l'alçada de la seva caixa. `minHeight` reserva la pàgina fins a 7 mm per sota de la banda, i la retícula de base arrodoneix aquesta reserva cap amunt fins a 14 línies, així que la caixa de la primera línia de text comença 10,2 mm sota la banda. Amb `AIR = 0` mana la caixa de la mateixa xifra, que baixa més enllà del peu de la banda, i el text comença 5,6 mm sota la banda.
+
+### 5 · Sagna les notes dels ponents
+
+<Excerpt region="bios" />
+
+Cada ponent és un paràgraf d'un bloc `:::paragraphs{style="bio"}`. El nom en negreta comença a la vora de la columna i les línies següents entren 4 mm, en sagnat francès, així que els noms queden alineats columna avall, com en un índex ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). El text va en bandera, un ajust en què la 1.4.1 no evita les últimes línies d'una sola paraula, així que cada nota es va reescriure fins que la seva última línia en va tenir almenys dues.
+
+## Variants
+
+### Arrodoneix les cantonades de la graella
+
+Una taula partida arrodoneix les cantonades superiors de la seva primera part, a la pàgina 3, i les inferiors de l'última, a la pàgina 4, on només es veu la dreta perquè la columna de l'hora no té emplenament.
+
+```diff
+-  cellPadding: mm(1.5) };
++  cellPadding: mm(1.5), borderRadius: mm(2.5) };
+```
+
+### Numera cada graella per jornada
+
+Si es compta per títols de primer nivell, com als tipus predefinits, surten la Taula 1.1 i la Taula 2.1, i el plànol passa a ser la Figura 2.1; l'estil de la coberta no es numera, així que el dijous és el títol 1.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
++  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
+```
+
+## Errors freqüents
+
+- Les columnes de la pàgina 4 s'igualen a mà, amb un `:::columnbreak` abans de la nota de Rosa Fontanet. Postext 1.4.1 no iguala l'última pàgina d'un capítol quan l'obre la resta d'una taula partida, així que la primera columna arriba al peu i la segona es queda curta. Mou el salt cada vegada que canviï el text del dijous.

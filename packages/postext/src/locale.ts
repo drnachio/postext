@@ -1,4 +1,4 @@
-import type { CjkRegion, HyphenationLocale, LocaleTag } from './types';
+import type { CjkRegion, DigitSystem, HyphenationLocale, LocaleTag, NumeralsSetting } from './types';
 
 /** The languages whose hyphenation patterns ship with the engine. */
 export const HYPHENATION_LOCALES: readonly HyphenationLocale[] = Object.freeze([
@@ -37,6 +37,26 @@ export function isCjkLanguage(tag: unknown): boolean {
   return isTag(tag) && CJK_LANGUAGES.has(languageOf(tag));
 }
 
+/** Whether `tag` names a language written in a right-to-left script once
+ *  maximised (`'ar'`, `'fa-IR'`, `'ur'`, `'he'`, `'yi'`, `'ks-Arab'`); not
+ *  `'ks-Deva'` or `'az'` (Latin). See {@link directionOf}. */
+function isRightToLeftLanguage(tag: unknown): boolean {
+  return directionOf(tag) === 'rtl';
+}
+
+/**
+ * Whether `tag` names a language set without hyphenation: Chinese,
+ * Japanese and Korean ({@link isCjkLanguage}), and the languages written in
+ * a right-to-left script — Arabic, Persian, Urdu, Hebrew, Yiddish… An
+ * Arabic word is never divided at a line end: its letters join, and the
+ * line is justified with the spaces and kashida instead (arabic-typography
+ * §5); Hebrew books do not divide words either. No patterns ship for any
+ * of them, and asking for none is not a fallback worth reporting.
+ */
+export function isUnhyphenatedLanguage(tag: unknown): boolean {
+  return isCjkLanguage(tag) || isRightToLeftLanguage(tag);
+}
+
 /** `Intl.Locale(tag).maximize()`, memoised; `undefined` for a tag the
  *  runtime rejects (or a runtime without `Intl.Locale`). */
 const maximized = new Map<string, Intl.Locale | null>();
@@ -59,6 +79,30 @@ function maximize(tag: string): Intl.Locale | undefined {
  *  `zh-Hant`; `'Latn'` for `en`. `undefined` for a missing or invalid tag. */
 export function localeScript(tag: unknown): string | undefined {
   return isTag(tag) ? maximize(tag)?.script : undefined;
+}
+
+/** Scripts written from right to left (ISO 15924 codes): Arabic (and its
+ *  Nastaliq variant), Hebrew, Syriac, Thaana, N'Ko, Adlam, Hanifi Rohingya,
+ *  Mandaic, Samaritan, Mende Kikakui, Garay, and the historic ones
+ *  (Imperial Aramaic, Avestan, Chorasmian, Cypriot, Elymaic, Hatran, Old
+ *  Hungarian, Kharoshthi, Lydian, Manichaean, Old North and South Arabian,
+ *  Nabataean, Old Turkic, Old Uyghur, Palmyrene, Inscriptional and Psalter
+ *  Pahlavi, Phoenician, Parthian, Sogdian and Old Sogdian, Yezidi). */
+const RTL_SCRIPTS = new Set([
+  'Arab', 'Aran', 'Hebr', 'Syrc', 'Thaa', 'Nkoo', 'Adlm', 'Rohg', 'Mand', 'Samr', 'Mend', 'Gara',
+  'Armi', 'Avst', 'Chrs', 'Cprt', 'Elym', 'Hatr', 'Hung', 'Khar', 'Lydi', 'Mani', 'Narb', 'Sarb',
+  'Nbat', 'Orkh', 'Ougr', 'Palm', 'Phli', 'Phlp', 'Phnx', 'Prti', 'Sogd', 'Sogo', 'Yezi',
+]);
+
+/** The direction text in `tag`'s language runs, from the script the tag
+ *  names or implies once maximised (`localeScript`): `'rtl'` for Arabic
+ *  (`ar`, `fa`, `ur`, `ps`, `ug`, `az-Arab`), Hebrew (`he`, `yi`), Syriac,
+ *  Thaana (`dv`), N'Ko, Adlam (`ff-Adlm`) and the other right-to-left
+ *  scripts; `'ltr'` for every other tag, and for a missing or invalid
+ *  one. */
+export function directionOf(tag: unknown): 'ltr' | 'rtl' {
+  const script = localeScript(tag);
+  return script !== undefined && RTL_SCRIPTS.has(script) ? 'rtl' : 'ltr';
 }
 
 /** The typographic region of a Chinese tag, which decides its typographic
@@ -110,19 +154,24 @@ export function canonicalLocaleTag(tag: unknown): string | undefined {
 }
 
 /** The `lang` a renderer declares for a resolved document (the HTML root,
- *  the canvas context): its language in canonical form (`zh-Hant-TW`),
- *  from `locale`, else the hyphenation tag. Only Chinese, Japanese and
- *  Korean documents declare one — there the browser picks regional glyph
- *  forms from it (Han characters unified in Unicode, punctuation set in the
- *  corner or the centre of the em box) — so the output of every other
- *  document is unchanged. */
+ *  the canvas context): its language in canonical form (`zh-Hant-TW`,
+ *  `ar-EG`), from `locale`, else the hyphenation tag. Only two kinds of
+ *  document declare one, so the output of every other document is
+ *  unchanged:
+ *  - Chinese, Japanese and Korean: the browser picks regional glyph forms
+ *    from it (Han characters unified in Unicode, punctuation set in the
+ *    corner or the centre of the em box);
+ *  - languages written right to left (Arabic, Persian, Urdu, Hebrew…): the
+ *    font's language-specific forms (`locl`: the Urdu and Persian digits
+ *    and letter shapes of a shared Arabic font) and the fallback font
+ *    follow it, and assistive technology reads the text in its language. */
 export function renderLangOf(config: {
   locale?: string;
   bodyText?: { hyphenation?: { tag?: string; locale?: string } };
 } | undefined): string | undefined {
   const h = config?.bodyText?.hyphenation;
   const tag = presentTag(config?.locale) ?? presentTag(h?.tag) ?? presentTag(h?.locale);
-  return isCjkLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
+  return isCjkLanguage(tag) || isRightToLeftLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
 }
 
 /**
@@ -147,7 +196,11 @@ export interface DocumentLanguage {
 /** The document languages with built-in strings, in the order a language
  *  picker lists them: the eight hyphenation languages, then Chinese in
  *  Simplified characters, in Traditional characters (Taiwan) and in
- *  Traditional characters as set in Hong Kong. */
+ *  Traditional characters as set in Hong Kong, then Arabic — bare, as set
+ *  in Egypt and as set in Morocco. The strings are the same in the three
+ *  Arabic entries; the region decides what a regional default reads from
+ *  the tag (digits: Arabic-Indic ٠–٩ in the Mashriq, European 0–9 in the
+ *  Maghreb; month names in dates). */
 export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'en-us', name: 'English' },
   { tag: 'es', name: 'Español' },
@@ -160,6 +213,9 @@ export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'zh-Hans', name: '中文（简体）' },
   { tag: 'zh-Hant', name: '中文（繁體）' },
   { tag: 'zh-Hant-HK', name: '中文（香港）' },
+  { tag: 'ar', name: 'العربية' },
+  { tag: 'ar-EG', name: 'العربية (مصر)' },
+  { tag: 'ar-MA', name: 'العربية (المغرب)' },
 ].map((l) => Object.freeze(l)));
 
 /**
@@ -186,7 +242,8 @@ const warnedTags = new Set<string>();
  * {@link matchHyphenationLocale}, falling back to `'en-us'` for a language
  * with no bundled patterns. The fallback is reported once per tag on the
  * console, since the text is then hyphenated with another language's rules
- * (Chinese, Japanese and Korean excepted: they are set without hyphenation);
+ * (Chinese, Japanese, Korean and the right-to-left languages excepted: they
+ * are set without hyphenation, see {@link isUnhyphenatedLanguage});
  * `warn: false` skips the report (hyphenation is off, so no text uses the
  * patterns). A missing or blank tag gives `'en-us'` silently.
  */
@@ -194,9 +251,9 @@ export function hyphenationLocaleFor(tag: LocaleTag, warn = true): HyphenationLo
   if (!isTag(tag)) return 'en-us';
   const match = matchHyphenationLocale(tag);
   if (match) return match;
-  // Chinese, Japanese and Korean need no patterns: nothing to report. The
-  // body text resolves hyphenation off for them (see `resolveHyphenation`).
-  if (isCjkLanguage(tag)) return 'en-us';
+  // Chinese, Japanese, Korean, Arabic, Hebrew… need no patterns: nothing
+  // to report (the body text resolves hyphenation off for them).
+  if (isUnhyphenatedLanguage(tag)) return 'en-us';
   if (warn && !warnedTags.has(tag)) {
     warnedTags.add(tag);
     console.warn(
@@ -327,4 +384,71 @@ export function matchContentLocale(candidates: readonly string[], wanted: string
     }
   }
   return best;
+}
+
+// ---------------------------------------------------------------------------
+// Digits: which digit system a document's generated numbers are written in.
+
+/** The Arabic-speaking Maghreb, where books print European digits (alreq
+ *  §Numbers): Morocco, Algeria, Tunisia, Libya, Mauritania and Western
+ *  Sahara. */
+const MAGHREB_REGIONS = new Set(['MA', 'DZ', 'TN', 'LY', 'MR', 'EH']);
+
+const DIGIT_SYSTEMS = new Set<string>(['latn', 'arab', 'arabext']);
+
+/** Whether `value` names a digit system (`'latn'`, `'arab'`, `'arabext'`). */
+export function isDigitSystem(value: unknown): value is DigitSystem {
+  return typeof value === 'string' && DIGIT_SYSTEMS.has(value);
+}
+
+/**
+ * The digits a book in `tag` prints its page numbers, list and note numbers
+ * and counters in (`PostextConfig.numerals: 'auto'`):
+ *
+ * - Arabic (`ar`): the Arabic-Indic digits (`'arab'`, ٠–٩) without a region
+ *   or with any region but the Maghreb's, whose books print European digits
+ *   (`'latn'`: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR`, `ar-EH`).
+ *   CLDR's own defaults give `latn` for a bare `ar` and for `ar-AE`; Arabic
+ *   book publishing in the Mashriq and the Gulf prints ٠–٩, and a book is
+ *   what this setting is for.
+ * - Persian (`fa`), Pashto (`ps`) and the Urdu of India (`ur-IN`): the
+ *   Extended Arabic-Indic digits (`'arabext'`, ۰–۹). The Urdu of Pakistan
+ *   (`ur`, `ur-PK`) takes `'latn'`, as CLDR does: Pakistani books print
+ *   both, and the European digits are the safe default.
+ * - Every other language: `'latn'`.
+ *
+ * A tag that names its digits in a Unicode extension
+ * (`ar-MA-u-nu-arab`, `fa-u-nu-latn`) has those when they are one of the
+ * three. A missing or invalid tag gives `'latn'`.
+ */
+export function defaultNumeralsFor(tag: unknown): DigitSystem {
+  if (!isTag(tag)) return 'latn';
+  let locale: Intl.Locale | undefined;
+  try {
+    locale = typeof Intl.Locale === 'function' ? new Intl.Locale(tag.trim().replace(/_/g, '-')) : undefined;
+  } catch {
+    locale = undefined;
+  }
+  if (isDigitSystem(locale?.numberingSystem)) return locale.numberingSystem;
+  const language = languageOf(tag);
+  // The region as written: a bare `ar` is not Egyptian Arabic.
+  const region = locale?.region ?? tag.trim().split(/[-_]/).slice(1).find((s) => /^[A-Za-z]{2}$|^\d{3}$/.test(s))?.toUpperCase();
+  switch (language) {
+    case 'ar':
+      return region !== undefined && MAGHREB_REGIONS.has(region) ? 'latn' : 'arab';
+    case 'fa':
+    case 'ps':
+      return 'arabext';
+    case 'ur':
+      return region === 'IN' ? 'arabext' : 'latn';
+    default:
+      return 'latn';
+  }
+}
+
+/** The digit system of a `numerals` setting for a document in `tag`: the
+ *  setting itself when it names one, else (`'auto'`, unset, or a value the
+ *  engine does not know) the language's ({@link defaultNumeralsFor}). */
+export function resolveNumerals(setting: NumeralsSetting | undefined, tag: unknown): DigitSystem {
+  return isDigitSystem(setting) ? setting : defaultNumeralsFor(tag);
 }

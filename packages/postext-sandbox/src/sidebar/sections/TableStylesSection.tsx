@@ -76,6 +76,7 @@ function TableStyleCard({ style, resolved, otherIds, onChange, onResetField, onR
       <div className="mb-2 flex flex-col gap-2">
         <FieldRow stacked label={labels.idLabel} tooltip={labels.styleIdHelp} hint={idTaken ? labels.tableStyleIdHintDuplicate : labels.tableStyleUsageHint} className="mb-0">
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -93,6 +94,7 @@ function TableStyleCard({ style, resolved, otherIds, onChange, onResetField, onR
         </FieldRow>
         <FieldRow stacked label={labels.tableStyleNameLabel} tooltip={labels.styleNameHelp} className="mb-0">
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => onChange({ name: e.target.value.length > 0 ? e.target.value : undefined })}

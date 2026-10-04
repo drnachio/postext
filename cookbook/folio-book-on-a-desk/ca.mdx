@@ -1,0 +1,54 @@
+---
+title: "Un llibre compost sobre la taula, en 3D"
+summary: "createFolioFromDocument, del paquet postext-folio, obre un capítol compost com un llibre en tela sobre una taula de noguera, amb l'aspecte de config.folio."
+plain: "El primer capítol d'una novel·la curta, mostrat com un llibre de debò obert sobre una taula. Passes les pàgines amb el ratolí, i el paper, la coberta i la taula es trien a la configuració."
+description: "Un capítol de novel·la compost amb postext i obert en 3D amb postext-folio: paper, enquadernació, taula i llum a config.folio, en un CodePen mínim."
+question: "Com mostro el meu document compost com un llibre en 3D que el lector fulleja amb la mà?"
+aliases: ["Folio", "postext-folio", "llibre animat", "passar pàgina", "llibre en 3D", "previsualització del llibre", "fullejar"]
+pageNotes: { "1": "L'obertura del capítol: un avanttítol verd petit, el títol The Last Crossing i un filet curt; a sota, la primera pàgina de text justificat.", "2": "Un verso amb el nom de l'autora i el foli a la capçalera, i un intertítol verd en cursiva." }
+---
+
+## Què compondràs
+
+El primer capítol de *The Ferryman’s Ledger*, una novel·la curta en pàgina de 129 × 198 mm, obert com un llibre sobre una taula de noguera. La coberta és de tela verd ampolla, les pàgines són d'un paper esponjat de color crema dels que es fan servir en novel·la, i el lector agafa la pàgina dreta per la vora i la passa: el full es corba i projecta la seva ombra sobre el de sota. El text es compon una vegada amb `buildDocument`, i una crida al paquet `postext-folio` converteix aquesta composició en el llibre. Tot allò de què està fet el llibre (paper, enquadernació, taula, llum, l'angle de la vista) va a la configuració, de manera que el mateix document porta el seu aspecte a la pestanya Folio del Sandbox.
+
+## Elaboració
+
+### 1 · Digues de què està fet el llibre
+
+<Excerpt region="folio" />
+
+`config.folio` el llegeix el visor 3D i res més: la composició, el canvas, el PDF i l'HTML l'ignoren, així que canviar el paper no mou ni una línia. `bookWove` és un paper esponjat per a novel·la, i amb 70 g/m² al seu gruix específic dona un full d'unes 112 µm; el visor el multiplica pel nombre de pàgines per obtenir el gruix del bloc. El color de la tela està enllaçat amb l'accent de la paleta, el mateix verd de l'avanttítol i els folis.
+
+### 2 · Una obertura tranquil·la i les capçaleres
+
+<Excerpt region="opener" />
+
+El capítol comença a un terç de l'alçada d'una pàgina senar, sota un avanttítol que surt dels atributs del títol. En 3D una obertura enfonsada es llegeix com en una novel·la impresa: el blanc del cap de la pàgina és el primer que veu el lector en obrir les cobertes.
+
+<Excerpt region="running-heads" />
+
+### 3 · Obre el document com un llibre
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `createFolioFromDocument` rep un contenidor i el document compost: pinta cada pàgina amb `renderPageToCanvas` a la mida exacta de l'espai de pàgina, només al voltant del plec obert, i encaixa el llibre al contenidor. El contenidor necessita una alçada pròpia o el llibre no hi té lloc. `textureBaseUrl` apunta a les taules fotografiades de postext.dev; sense aquest paràmetre, la noguera es dibuixa amb mapes procedurals.
+
+## Variants
+
+### Una rústica sobre roure, amb llum de dia
+
+Canvia tres paràmetres i el mateix capítol és una coberta tova sobre una taula clara; no es torna a compondre res.
+
+```diff
+-  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
+-    coverColor: col('accent') }, // the case wraps the pages; boards a little larger
+-  surface: { type: 'walnut' },
+-  lighting: { environment: 'studio', intensity: 1, shadows: true },
++  binding: { type: 'paperback', cover: 'case', coverMaterial: 'paper',
++    coverColor: col('accent') },
++  surface: { type: 'oak' },
++  lighting: { environment: 'daylight', intensity: 1, shadows: true },
+```
+
+### Cada full en un altre paper
+
+<RecipeLink slug="paper-swatch-book">Un mostrari de papers</RecipeLink> imprimeix cada full en el seu propi paper amb `:::paper`, i <RecipeLink slug="folio-settings-bench">el banc de proves</RecipeLink> canvia tots els paràmetres en directe amb `setAppearance`.

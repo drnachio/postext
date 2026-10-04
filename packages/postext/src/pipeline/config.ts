@@ -1,4 +1,4 @@
-import type { PostextConfig, ResolvedHeadingLevelConfig } from '../types';
+import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types';
 import {
   resolvePageConfig,
   resolveLayoutConfig,
@@ -31,7 +31,7 @@ import {
 } from '../defaults';
 import { dimensionToPx } from '../units';
 import { applyCjkGrid } from './cjkGrid';
-import { presentTag } from '../locale';
+import { directionOf, presentTag, resolveNumerals } from '../locale';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
 // Resolved configs are never mutated (derived variants spread them), so
@@ -62,10 +62,15 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   // in heading templates and `:::numbering`, and so does the `cjk` region.
   const documentLocale = documentLocaleOf(config?.locale, bodyText.hyphenation);
   const layout = resolveLayoutConfig(config?.layout);
+  const direction = resolveDirection(config?.direction, documentLocale);
   const headings = verticalBalancing(resolveHeadingsConfig(config?.headings), layout, config?.headings?.balancing?.enabled);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
-  const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode);
+  const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode, direction);
+  // The digits of the generated numbers, from the document language unless
+  // the config names them; kept only when they are not the European ones,
+  // so a Latin document resolves exactly as before.
+  const numerals = resolveNumerals(config?.numerals, documentLocale);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -86,12 +91,16 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     parts: resolvePartsConfig(config?.parts, page, bodyText, unorderedLists, orderedLists),
     headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists, layout),
     toc: resolveTocConfig(config?.toc, bodyText),
-    index: resolveIndexConfig(config?.index, bodyText),
+    index: resolveIndexConfig(config?.index, bodyText, documentLocale),
     footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale),
     crossRefs: resolveCrossRefsConfig(config?.crossRefs, documentLocale),
     citations: resolveCitationsConfig(config?.citations),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
+    // Only a right-to-left document carries it: a left-to-right one
+    // resolves (and hashes) as it did before directions existed.
+    ...(direction === 'rtl' ? { direction } : {}),
+    ...(numerals !== 'latn' ? { numerals } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
     // result is cached against the config object, so a palette the caller
@@ -122,12 +131,34 @@ function verticalBalancing(
   return { ...headings, balancing: { ...headings.balancing, enabled: false } };
 }
 
+/** The base direction of a document: `direction` as written when it is
+ *  `'ltr'` or `'rtl'`; otherwise (`'auto'`, unset, or a value the engine
+ *  does not know, which `collectConfigWarnings` reports) the direction of
+ *  the document language's script (`directionOf`). */
+export function resolveDirection(direction: unknown, documentLocale: string): 'ltr' | 'rtl' {
+  if (direction === 'ltr' || direction === 'rtl') return direction;
+  return directionOf(documentLocale);
+}
+
+/** The resolved base direction of a document (see
+ *  `ResolvedConfig.direction`). */
+export function resolvedDirection(resolved: ResolvedConfig): 'ltr' | 'rtl' {
+  return resolved.direction === 'rtl' ? 'rtl' : 'ltr';
+}
+
 /** The document language: `locale`, else the hyphenation locale as written
  *  (which the Sandbox fills from the app language) — the same rule the table
  *  continuation strings and `documentLocale` follow; a blank tag counts as
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
   return documentLocaleOf(resolved.locale, resolved.bodyText.hyphenation);
+}
+
+/** The digit system of the document's generated numbers (see
+ *  `PostextConfig.numerals`): `'latn'` unless the config or its language
+ *  says otherwise. */
+export function documentNumerals(resolved: ResolvedConfig): DigitSystem {
+  return resolved.numerals ?? 'latn';
 }
 
 function documentLocaleOf(locale: string | undefined, h: ResolvedConfig['bodyText']['hyphenation']): string {

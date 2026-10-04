@@ -15,7 +15,7 @@ export async function InstallSection() {
 
   return (
     <section id="install" aria-labelledby="install-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-20 -z-10 size-[36rem] rounded-full bg-red/10 blur-[150px] dark:bg-red/15" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -end-20 -z-10 size-[36rem] rounded-full bg-red/10 blur-[150px] dark:bg-red/15" />
       <div className="mx-auto max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <div className="relative grid grid-cols-1 gap-12 p-2 md:grid-cols-12 md:p-10">
           <CropMarks className="hidden md:block" />
@@ -35,7 +35,7 @@ export async function InstallSection() {
                 href="/docs"
                 className="rounded-md bg-brand px-5 py-2.5 font-sans text-sm font-semibold text-brand-contrast transition-colors hover:bg-brand-hover"
               >
-                {hero("getStarted")} →
+                {hero("getStarted")} <span className="inline-block rtl:-scale-x-100">→</span>
               </Link>
               <a
                 href="https://github.com/drnachio/postext"

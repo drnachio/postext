@@ -31,29 +31,42 @@ export function localeOptionsFor(value: string | undefined): { value: string; la
 
 /** The Document language options: every language with built-in strings
  *  (the engine's `DOCUMENT_LANGUAGES`: the hyphenation languages plus
- *  Chinese in Simplified and Traditional characters), each named in its own
- *  language. Written out, not mapped, so the settings search indexes the
- *  names (a test keeps the list equal to the engine's). */
+ *  Chinese in Simplified and Traditional characters and Arabic), each named
+ *  in its own language. Written out, not mapped, so the settings search
+ *  indexes the names (a test keeps the list equal to the engine's). */
 export const DOCUMENT_LOCALE_OPTIONS: { value: string; label: string }[] = [
   ...LOCALE_OPTIONS,
   { value: 'zh-Hans', label: '中文（简体）' },
   { value: 'zh-Hant', label: '中文（繁體）' },
   { value: 'zh-Hant-HK', label: '中文（香港）' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'ar-EG', label: 'العربية (مصر)' },
+  { value: 'ar-MA', label: 'العربية (المغرب)' },
 ];
+
+/** The document language a tag that is not one of the options reads as:
+ *  for Chinese, the option of the same script, and of the same region when
+ *  one is (Hong Kong), else the region's script option; for a hyphenation
+ *  language, its patterns' option (`es-ES` → Español); else the option that
+ *  is the bare language (`ar-SA` → العربية). */
+function documentLanguageOf(tag: string): { tag: string; name: string } | undefined {
+  const region = cjkRegionOf(tag);
+  if (region !== undefined) {
+    return DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag) && cjkRegionOf(l.tag) === region)
+      ?? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag));
+  }
+  const patterns = matchHyphenationLocale(tag);
+  if (patterns) return DOCUMENT_LANGUAGES.find((l) => l.tag === patterns);
+  return DOCUMENT_LANGUAGES.find((l) => !l.tag.includes('-') && sameContentLocale(l.tag, tag));
+}
 
 /** The options of the Document language select whose value is `value`: the
  *  document languages, plus the stored tag itself when it is not one of them
- *  (`zh-TW`, `es-ES`, `sv`), named after the language it reads as
- *  (`中文（繁體） (zh-TW)`), else shown as written. */
+ *  (`zh-TW`, `es-ES`, `ar-SA`, `sv`), named after the language it reads as
+ *  (`中文（繁體） (zh-TW)`, `العربية (ar-SA)`), else shown as written. */
 export function documentLocaleOptionsFor(value: string | undefined): { value: string; label: string }[] {
   if (!value || DOCUMENT_LOCALE_OPTIONS.some((o) => o.value === value)) return DOCUMENT_LOCALE_OPTIONS;
-  const region = cjkRegionOf(value);
-  const same = region !== undefined
-    // Chinese: the option of the same script, and of the same region when
-    // one is (Hong Kong), else the region's script option.
-    ? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, value) && cjkRegionOf(l.tag) === region)
-      ?? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, value))
-    : DOCUMENT_LANGUAGES.find((l) => l.tag === matchHyphenationLocale(value));
+  const same = documentLanguageOf(value);
   return [...DOCUMENT_LOCALE_OPTIONS, { value, label: same ? `${same.name} (${value})` : value }];
 }
 
@@ -63,10 +76,5 @@ export function documentLocaleOptionsFor(value: string | undefined): { value: st
 export function documentLocaleLabel(tag: string): string {
   const exact = DOCUMENT_LOCALE_OPTIONS.find((o) => o.value === tag);
   if (exact) return exact.label;
-  const region = cjkRegionOf(tag);
-  const same = region !== undefined
-    ? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag) && cjkRegionOf(l.tag) === region)
-      ?? DOCUMENT_LANGUAGES.find((l) => sameContentLocale(l.tag, tag))
-    : DOCUMENT_LANGUAGES.find((l) => l.tag === matchHyphenationLocale(tag));
-  return same?.name ?? tag;
+  return documentLanguageOf(tag)?.name ?? tag;
 }

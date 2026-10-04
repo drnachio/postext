@@ -1,0 +1,85 @@
+---
+title: "Novel·la en rústica: obertures enfonsades i capítols senars"
+summary: "The Awakening en rústica de 140 × 216 mm: coberta pintada, colofó sense capçaleres i cada capítol enfonsat en pàgina senar sota un número romà en cursiva."
+plain: "Els dos primers capítols d'una novel·la nord-americana en una edició en rústica. Cada capítol comença en una pàgina de la dreta, més avall, sota un número gran."
+description: "The Awakening, de Kate Chopin, composta amb Postext: coberta pintada, colofó al dors, capítols enfonsats en senar, una parella en blanc sense foli i florons."
+question: "Com obro cada capítol en pàgina senar i a un terç de l'alçada, com en una novel·la en rústica?"
+aliases: ["novel·la en rústica", "rústica", "novel·la", "obertura enfonsada", "obertura de capítol", "pàgina senar", "pàgina dreta", "recto", "pàgina en blanc", "verso en blanc", "paritat", "versaletes", "primera frase en versaletes", "floró", "vinyeta de tancament", "ornament", "colofó", "pàgina de crèdits", "coberta", "capçaleres per secció", "Kate Chopin", "El despertar"]
+pageNotes: { "1": "La coberta: el golf entre els troncs dels roures, un lugre a l'horitzó i una ombrel·la blanca que puja pel camí entre la camamilla; a sota, el títol en cursiva gran i el nom de l'autora en versaletes.", "2": "El colofó, en cos petit al peu de la pàgina, sense capçalera ni foli.", "3": "El capítol I, enfonsat en una pàgina senar: una I cursiva, un filet curt vermell òxid, la primera frase en dues línies centrades de versaletes i el text a 81 mm de la vora superior.", "6": "Una pàgina parella en blanc, sense capçalera ni foli, perquè el capítol II comenci en senar.", "7": "El capítol II s'obre com el I, amb la primera frase partida després del punt i coma." }
+---
+
+## Què compondràs
+
+Els dos primers capítols de *The Awakening* (1899), de Kate Chopin, ocupen vuit pàgines de rústica de 140 × 216 mm. La coberta, una pintura generada amb models de difusió i carregada com a JPEG, mostra el golf des de Grand Isle: un lugre a l'horitzó entre els roures i l'ombrel·la blanca que puja entre la camamilla. El colofó va al peu del seu dors. Cada capítol comença en pàgina senar, amb el text a 81 mm de la vora superior, sota un número romà en cursiva de 48 pt, un filet vermell òxid de 18 mm i la primera frase en versaletes, partida en dues línies centrades. El capítol I acaba a la 5 amb un floró de camamilla, de manera que la 6 queda en blanc, sense capçalera ni foli, i el II comença a la 7. Les capçaleres porten el nom de l'autora a les parelles i el títol en cursiva a les senars.
+
+## Elaboració
+
+### 1 · L'obertura surt del títol i del seu atribut
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Els capítols de Chopin només porten número, així que el títol de cadascun en Markdown és aquest número (`# I`), i `{titleText}` l'imprimeix. `{attr.lead}` imprimeix l'atribut `lead` del títol, que conté la primera frase del capítol; el paràgraf de Markdown que va a sota comença per la frase següent ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El text d'un disseny no es pot justificar, així que la primera frase va centrada, i el `\n` de cada atribut la talla pel sentit, després de *cage* i després de *bright;*. Aquest `\n` només talla la línia si `paragraphIndent` és més gran que zero; amb 0 s'imprimeixen tal qual els dos caràcters. La frase comença nou línies de la retícula per sota de la vora superior de la caixa de text, i un `minHeight` de 12 línies deixa una línia en blanc a sota; sense `minHeight`, el text arrenca enganxat a la frase ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). `marginBottom: pt(0)` substitueix el marge de mig cos que el nivell porta per defecte i que baixaria el text una línia.
+
+`breakBefore` amb paritat `'odd'` porta cada capítol a una pàgina senar. La configuració ho repeteix perquè qualsevol objecte `headings` anul·la el salt que el nivell porta per defecte ([saltar abans](/ca/docs/configuration#saltar-abans)). Per forçar una pàgina senar on no hi ha títol, escriu `:::pagebreak{parity="odd"}` al Markdown; en una maquetació de dues o més columnes, `:::columnbreak` passa el text a la columna següent ([`:::pagebreak`](/ca/docs/document-format#pagebreak)).
+
+### 2 · Una pàgina de rústica amb línies senceres
+
+<Excerpt region="page" />
+
+El marge inferior és el que queda dels 216 mm d'alçada després del marge superior i 35 línies de 14 pt, així que totes les pàgines plenes acaben a la mateixa línia, com la 3 i la 4. Amb `mirror: true`, el marge interior de 20 mm queda al costat del llom tant a les senars com a les parelles ([marges simètrics](/ca/docs/configuration#marges-simètrics-mirall)). La mesura de 104,5 mm admet uns 69 caràcters de Crimson Pro de 10,5 pt. El text base admet espais entre paraules de 0,7 a 1,9 vegades el normal; amb el mínim per defecte, 0,6, una línia d'aquestes pàgines es tanca fins a 0,62. També fixa `maxRuntTracking: 0`. Amb el valor per defecte, el paràgraf que acaba en *nodding good-by to him.* es compon amb una línia menys mitjançant un interlletratge negatiu que el llenç no pinta, i els seus espais surten aixafats.
+
+### 3 · Capçaleres que se salten les obertures i les pàgines en blanc
+
+<Excerpt region="heads" />
+
+`parity: 'even'` posa el nom de l'autora, en versaletes de Cormorant SC, a les pàgines parelles, i `'odd'`, el títol en cursiva a les senars; els folis van a la vora exterior de la caixa de text. `pages: 'body'` aparta els quatre elements de les obertures i de la pàgina 6, la parella en blanc que afegeix el salt amb paritat. Amb `pages: 'all'`, aquesta pàgina imprimiria *6* i *Kate Chopin*. Les obertures porten en lloc seu un foli al peu, un element del `footer` que `pages: 'opener'` reserva per a elles ([elements de text](/ca/docs/configuration#elements-de-text)).
+
+### 4 · La coberta és una secció sense capçaleres
+
+<Excerpt region="cover" />
+
+La coberta és un títol, `# The Awakening {style="cover"}`. El seu estil col·loca la pintura als 134 mm superiors, el títol del frontmatter a 50 pt i el nom de l'autora en versaletes. L'estil regeix a més la secció que obre aquest títol, les pàgines 1 i 2, fins al capítol I. El seu `header` i el seu `footer` buits treuen el foli al peu de la coberta i les capçaleres del colofó. El seu marge superior col·loca el colofó a les sis últimes línies de la caixa de text, així que l'última línia del colofó queda a l'altura de l'última de la pàgina 3 ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). L'estil necessita `span: 'page'` encara que el llibre tingui una sola columna. Un disseny que es queda a la columna es retalla per la vora superior, aquí a 165 mm; sense `span: 'page'`, la pintura no s'imprimiria i el títol perdria la part de dalt.
+
+<PageShot page={2} crop="0,0.7,1,0.24" caption="Pàgina 2: el colofó al peu del dors de la coberta, sense capçalera ni foli." />
+
+### 5 · Un floró tanca cada capítol
+
+<Excerpt region="tailpiece" />
+
+El tipus d'ornament no té prefix de peu, així que la flor de camamilla s'imprimeix sense rètol, amb una amplada del 17 % de la mesura, al lloc de `::resource{id="tailpiece-1"}` ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Una inserció en línia deixa una línia de la retícula per sobre, i el `:::space` que la precedeix n'afegeix una altra entre l'última línia del capítol i la flor ([`:::space`](/ca/docs/document-format#space)). Els dos florons fan servir el mateix fitxer, `fleuron.svg`, amb dos identificadors diferents, perquè cada recurs es col·loca una sola vegada.
+
+## Variants
+
+### Deixa que el capítol II continuï a la pàgina següent
+
+Amb la paritat `'any'`, el capítol II comença a la pàgina 6, que és parella, i el llibre acaba a la 7; el foli al peu es centra a la caixa de text, no a la pàgina, així que en aquesta parella continua quedant sota el centre del text.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
+```
+
+### Marca un canvi d'escena dins d'un capítol
+
+Entre dues línies `:::space`, la mateixa flor marca un canvi d'escena, i el paràgraf següent comença sense sagnat perquè `indentAfterHeading` està desactivat. Després de *seemed long to him.*, la flor cau al peu de la pàgina 4; el segon espai ja no hi cap i desapareix. El canvi afegeix quatre línies, que empenyen el floró del capítol I, sol, a la pàgina 6, sota una capçalera, així que hauràs de tornar a ajustar el capítol quan n'hi afegeixis un.
+
+```diff
+ const resources = [
++  svg('break-1', 'fleuron.svg', 40, 12, 'A scene break.'),
+```
+
+```md
+That was why the morning seemed long to him.
+
+:::space
+
+::resource{id="break-1"}
+
+:::space
+
+“You are burnt beyond recognition,” he added, …
+```
+
+## Errors freqüents
+
+- Amb `'always-odd'`, darrere de cada secció va una pàgina separadora en blanc abans del farciment de paritat, així que el capítol I passaria a la pàgina 5, després de dues pàgines en blanc, i el llibre arribaria a deu pàgines.
+- Aquestes pàgines estan ajustades a mà. Amb un marge exterior de 16 mm en lloc de 15,5, la pàgina 7 parteix *after-din-ner* per un segon guionet i acaba una línia abans, la 8 tanca un paràgraf amb el fragment *spondent.* i el segon floró passa a una novena pàgina. Revisa el peu de totes les pàgines quan canviïs la mesura, el cos o l'enfonsament.
+- *Mr.* i *Mrs.* van units al nom amb un espai de no separació (U+00A0). A la 1.4.1 es manté en els paràgrafs sense cursives ni negretes, però en un amb cursives es talla com un espai normal. El paràgraf que acaba en *seemed long to him.* porta un espai corrent, perquè unir-hi el nom obre la seva primera línia fins a 2,2 vegades l'espai normal entre paraules.

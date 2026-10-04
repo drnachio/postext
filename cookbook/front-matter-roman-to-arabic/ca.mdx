@@ -1,0 +1,92 @@
+---
+title: "Preliminars amb folis romans i després la pàgina 1"
+summary: "La coberta i els preliminars són títols sense numerar comptats en romans; :::numbering torna a comptar des de 1 a la pàgina senar on comença la novel·la."
+plain: "Les primeres pàgines d'una edició de butxaca de Frankenstein. Ensenya a numerar les pàgines prèvies a la novel·la amb i, ii, iii i a començar de nou a la pàgina 1 quan arrenca la història."
+description: "La coberta i els preliminars de Frankenstein van de la i a la x, i la Carta I obre a la pàgina 1, senar. L'índex i el PDF numeren igual."
+question: "Com numero els preliminars i, ii, iii i torno a comptar des de 1 a la pàgina senar on comença la novel·la?"
+aliases: ["xifres romanes", "paginació en romans", "preliminars", "pàgines preliminars", "coberta", "avantportada", "portadella", "portada", "pàgina de crèdits", "pàgina de drets", "dedicatòria", "epígraf", "frontispici", "pàgina parella en blanc", "signatura d'una carta", "reiniciar la numeració", "etiquetes de pàgina del PDF"]
+pageNotes: { "3": "L'avantportada, pàgina iii. El seu estil l'envia a pàgina senar, així que el dors de la coberta, la pàgina ii, queda en blanc i sense foli.", "4": "El frontispici, pàgina iv, queda davant de la portada, la v; cap de les dues porta foli.", "10": "Última pàgina del pròleg: el seu foli, x, va en versaletes centrat al peu.", "11": "La Carta I obre en pàgina senar sota l'aurora boreal sobre Sant Petersburg; el seu foli, 1, és al mateix lloc que la x de la pàgina del davant.", "13": "Pàgina 3: a les pàgines senars, la capçalera porta el títol de la carta al costat del foli, tots dos cap al marge exterior.", "14": "Pàgina 4, final de la Carta I: la capçalera porta el títol del llibre al costat del foli, i la signatura de Walton va alineada a la dreta." }
+---
+
+## Què compondràs
+
+Els primers fulls de *Frankenstein* en una edició de butxaca de 129 × 198 mm: una coberta amb un llamp sobre el Mont Blanc i el dors en blanc, l'avantportada, un frontispici amb el vaixell de Walton atrapat en el gel davant de la portada, els crèdits al peu del seu revers, la dedicatòria a Godwin sobre l'epígraf de Milton, l'índex i el pròleg de 1818. Aquestes deu pàgines es compten de la i a la x, encara que només l'índex i el pròleg porten número. La novel·la comença amb la Carta I en pàgina senar, sota l'aurora boreal, i el seu foli, 1, ocupa el lloc de la x del davant. La carta continua fins a la signatura de Walton. A l'índex, la ix del pròleg i l'1 de la carta surten de les pàgines compostes, i un visor de PDF numera igual. La coberta, el frontispici i l'aurora boreal són pintures generades amb models de difusió i carregades com a mapes de bits JPEG; la marca editorial i el cristall de gel estan dibuixats en codi.
+
+## Elaboració
+
+### 1 · Cada full és un títol amb disseny
+
+<Excerpt region="leaves" />
+
+Un títol obre pàgina i surt com a marcador al PDF; el disseny del seu estil col·loca els textos i les imatges del full. Amb `numbered: false` i `toc: false`, els fulls no compten com a capítol ni surten a l'índex. Com que la capçalera i el peu són buits, aquestes pàgines compten però no es folien: la portada no porta número i continua sent la pàgina v, i per això el pròleg pot ser la ix. Només l'avantportada conserva el salt a senar, i això deixa en blanc el dors de la coberta. Els crèdits, la dedicatòria, l'epígraf i el comiat de Walton són blocs `:::paragraphs` amb els estils del final del fragment.
+
+### 2 · L'índex pren els números de la composició
+
+<Excerpt region="contents" />
+
+`:::toc` recull cada títol que el seu estil deixa passar, amb l'etiqueta de la pàgina on cau ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). L'índex i el pròleg comparteixen l'estil `front`, que fixa `toc: false`, i el pròleg l'anul·la amb `{toc="true"}`. Ni el pròleg ni la Carta I van numerats, així que les seves entrades no porten número de capítol. La segona línia de l'entrada de la carta és el seu atribut `to="…"`. Els números de pàgina van en la lletra dels folis. Les entrades arrenquen a l'alçada de la primera línia del pròleg, de manera que les dues pàgines del plec casen.
+
+### 3 · La novel·la obre en pàgina senar, sota l'aurora boreal
+
+<Excerpt region="letter" />
+
+La pintura surt a sang pel cap de la pàgina i es fon amb el paper al peu, on comença la carta. A Postext 1.4.1 una imatge mai no compta per a l'espai que reserva una obertura (els seus textos, filets i caixes sí, encara que estiguin ancorats a la pàgina), així que només `minHeight` baixa la primera línia per sota de la pintura ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). L'avanttítol i la data surten dels atributs `to` i `dateline` del títol. La Carta I afegeix `{style="letter"}`, un estil que es limita a fixar `numbered: false`, perquè les cartes de Walton van abans del capítol I i no es numeren.
+
+### 4 · Les capçaleres tornen amb la novel·la
+
+<Excerpt region="heads" />
+
+Una secció conserva la capçalera i el peu del document tret que el seu estil els substitueixi. Els preliminars substitueixen tots dos i l'estil de les cartes no, així que des de la pàgina 1 la novel·la porta aquestes capçaleres a les pàgines corrents i, a l'obertura, el foli al peu que defineix la resposta curta. `{pageNumber}` imprimeix l'etiqueta de la pàgina on és, i per això el mateix disseny de foli, el de `folio()`, posa x a un costat del llom i 1 a l'altre.
+
+### 5 · El PDF porta la mateixa numeració
+
+<Excerpt region="build" />
+
+`buildDocument` repeteix la composició fins que les etiquetes de l'índex deixen de canviar, així que n'hi ha prou amb una crida. `renderToPdf` porta aquestes etiquetes al PDF: en un visor que llegeixi les etiquetes de pàgina, la numeració va de la i a la x i després des de l'1, i «anar a la pàgina 1» obre la Carta I. Cada títol dona un marcador amb el seu propi text, i per això els fulls porten noms senzills (en anglès, com la mostra): Cover, Half title, Frontispiece, Title page, Imprint, Dedication.
+
+## Variants
+
+### Numera els preliminars en majúscules
+
+Els romans en majúscula surten en versals de la lletra dels folis, més altes que les versaletes dels romans en minúscula.
+
+```diff
+-const pageNumbering = { format: 'lower-roman', startAt: 1 }; // startAt spelled out: cover = i
++const pageNumbering = { format: 'upper-roman', startAt: 1 }; // startAt spelled out: cover = I
+```
+
+### Numera el llibre seguit
+
+Treu `startAt` i el compte continua en aràbics: la Carta I passa a ser la pàgina 11, com en els llibres que compten els preliminars amb el text.
+
+```diff
+-:::numbering{format="decimal" startAt=1}
++:::numbering{format="decimal"}
+```
+
+### Prescindeix del frontispici
+
+Esborra el títol `# Frontispiece` i envia la portada a pàgina senar: la pàgina iv queda en blanc, el pròleg continua sent la ix i la Carta I, l'1.
+
+```diff
+-  { id: 'title', ...blind, advancedDesign: design([ // v: four frontmatter fields, one attribute
++  { id: 'title', ...blind, breakBefore: { enabled: true, parity: 'odd' },
++    advancedDesign: design([ // v: four frontmatter fields, one attribute
+```
+
+### Afegeix sang i marques de tall per a impremta
+
+Amb `cutLines`, la coberta i l'obertura, ancorades a la sang, sobrepassen el tall en 3 mm; els folis i el nombre de pàgines no canvien ([marques de tall](/ca/docs/configuration#marques-de-tall)).
+
+```diff
+     backgroundColor: col('paper'), pageNumbering,
++    cutLines: { enabled: true }, // a 3 mm bleed and crop marks
+```
+
+## Errors freqüents
+
+- Els fulls preliminars hereten el salt `'odd'` del nivell 1. Si no el toques, cadascun espera una pàgina senar. Els preliminars passen llavors de deu pàgines a catorze, amb quatre pàgines parelles més en blanc, i el frontispici queda davant d'una pàgina buida en lloc de davant de la portada. Posa a cada estil el seu propi salt amb `parity: 'any'`, com fa aquesta recepta, o treu-lo amb `breakBefore: { enabled: false }`, perquè un títol amb `span: 'page'` obre pàgina de totes maneres.
+- Treu el `:::pagebreak` de davant de `:::numbering` si el nivell 1 salta amb `'always-odd'`, el valor per defecte de l'H1 al motor. Si el text anterior acaba en pàgina senar, el salt de pàgina emplena fins a la senar següent, i després el títol afegeix la seva pàgina de separació i torna a emplenar, de manera que queden tres pàgines en blanc seguides en lloc d'una. Després d'un salt `'odd'`, com aquí, el `:::pagebreak` no canvia res; després de `'any'`, és el que posa la pàgina 1 en senar.
+- Si el pròleg creix una pàgina, la Carta I se'n va dues pàgines més enllà, perquè el salt a senar li afegeix al davant una pàgina parella en blanc. Revisa el nombre de pàgines cada vegada que toquis els preliminars.
+- Mantén els textos del disseny d'una obertura per sobre del peu de la caixa de text. A Postext 1.4.1, un disseny de títol que baixa d'aquí perd tota l'alçada reservada, `minHeight` inclòs. A la coberta no es nota, perquè no la segueix cap text; a l'obertura d'un capítol, el text començaria just a sota del títol.
+- Els punts guia de l'índex fan servir la lletra i el color dels números de pàgina, i `toc.leader` no té color propi, així que aquí surten en blau acer.

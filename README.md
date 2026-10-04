@@ -7,7 +7,7 @@
 
 🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs)
 
-Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for both HTML and PDF.
+Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for HTML, PDF and EPUB.
 
 Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for DOM-free text measurement.
 
@@ -35,7 +35,7 @@ Built on top of [`@chenglou/pretext`](https://github.com/chenglou/pretext) for D
 
 2. **Engine.** postext parses the content structure, calls pretext for pixel-perfect text measurement without touching the DOM, then runs the layout algorithm: column balancing, resource placement, typographic quality rules, reference systems. All driven by configuration files.
 
-3. **Output.** Format-agnostic layout geometry — precise coordinates and dimensions for every element. Renderers translate this geometry to the target format: HTML/CSS for the web, PDF for print.
+3. **Output.** Format-agnostic layout geometry — precise coordinates and dimensions for every element. Renderers translate this geometry to the target format: HTML/CSS for the web, PDF for print, EPUB 3 for e-book readers.
 
 ---
 
@@ -174,6 +174,7 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
 - **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF.
+- **EPUB 3 writer** (`postext-epub`). The whole book as an EPUB 3.3 file, written in the browser or in Node: a **fixed layout** (`pre-paginated`) that keeps every printed page with real, selectable text, or a **reflowable** book in semantic XHTML (paragraphs rebuilt from the lines, notes, figures and tables in reading order, print page markers) styled from the same configuration. Fonts embedded, with navigation, print page numbers and accessibility metadata; validated with W3C EPUBCheck.
 - **3D book viewer** (`postext-folio`). Spreads whose leaves curl in three.js, with real shadows, turned by hand or by key; a right-bound book lies mirrored. Pages are painted on demand, at the size they are shown, around the open spread only.
 - **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation; **(1.5)** also straight from esm.sh.
 - **React.** **(1.5)** `postext/react` shows a document's pages in a component; the main entry never loads React.
@@ -181,7 +182,7 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 
 ### Sandbox
 
-- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / HTML / Folio (3D) / PDF previews with source ↔ preview sync, a Checks panel, and permalinks to any page.
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book, a Checks panel, and permalinks to any page.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
 - Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.
@@ -214,6 +215,7 @@ postext/
 │   ├── postext/                  # Core layout engine library
 │   ├── postext-pdf/              # PDF rendering backend
 │   ├── postext-folio/            # 3D book viewer (three.js)
+│   ├── postext-epub/             # EPUB 3 writer (fixed layout and reflowable)
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
@@ -230,7 +232,8 @@ postext/
 | `packages/postext` | The core library. Semantic content in, layout geometry out. Zero DOM dependencies. Published to npm as `postext`. |
 | `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready PDF (outlines, links, font embedding, color spaces). |
 | `packages/postext-folio` | The 3D book viewer: a laid-out document (or any page images) as spreads whose leaves turn in three.js. Published to npm as `postext-folio`. |
-| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live canvas/HTML/Folio/PDF viewports — embedded by the web app. |
+| `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
+| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, and hosted sandbox at [postext.dev](https://postext.dev). |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
 
@@ -308,6 +311,17 @@ To leaf through the result as a book in 3D, hand the same document to `postext-f
 import { createFolioFromDocument } from 'postext-folio';
 
 createFolioFromDocument(document.getElementById('book')!, doc);
+```
+
+To publish it as an e-book, hand the book's chapters to `postext-epub` (`npm install postext-epub`):
+
+```ts
+import { renderToEpub } from 'postext-epub';
+
+const epub = await renderToEpub([doc], {
+  layout: 'reflowable', // or 'fixed': every printed page as it is
+  metadata: { title: 'Hello', language: 'en' },
+});
 ```
 
 ### Asynchronous layout in a Web Worker (recommended for UIs)
@@ -392,6 +406,7 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] Nested, floated and splittable callouts; inline chips
 - [x] Tagged, accessible PDF/UA-1 output and vector figures in PDF
 - [x] `.postext` book bundles and bilingual showcase presets
+- [x] EPUB 3 output, fixed layout and reflowable, checked with W3C EPUBCheck
 
 What comes next is driven by the community — open an issue to propose it.
 

@@ -98,6 +98,15 @@ export interface ResolvedConfig {
    *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
    *  out heading numbers follow it. */
   locale?: PostextConfig['locale'];
+  /** The document's base direction, `PostextConfig.direction` resolved
+   *  (`'auto'` from the document language): present only when it is
+   *  `'rtl'`, so a left-to-right document resolves as it always has. Read
+   *  it with `resolvedDirection()`. */
+  direction?: 'rtl';
+  /** The digits of the generated numbers (`PostextConfig.numerals`, with
+   *  `'auto'` resolved from the document language) when they are not the
+   *  European ones; absent for `'latn'` (see `documentNumerals`). */
+  numerals?: 'arab' | 'arabext';
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
@@ -140,6 +149,11 @@ export interface VDTChipRun {
   /** The first of a subscript and a superscript set over each other, as
    *  on {@link VDTLineSegment.stacked}. */
   stacked?: boolean;
+  /** Paint this run right to left (its bidi level is odd), as
+   *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored.
+   *  The engine cuts a chip's runs where the direction changes. Absent on
+   *  left-to-right runs. */
+  rtl?: true;
 }
 
 /** A laid-out inline chip (`:chip[…]`): a box drawn from
@@ -169,6 +183,13 @@ export interface VDTChip {
   /** Text colour (hex); absent to paint the runs in the surrounding text
    *  colour (bold / italic colours included). */
   color?: string;
+  /** The order in which renderers advance through `runs` from the box's
+   *  start (indices into it), when it is not 0, 1, … n − 1: as
+   *  {@link VDTLine.order}, the visual order of the runs (UAX #9 L2 on
+   *  the chip's own text, its base direction that of its first strong
+   *  letter) in a left-to-right frame, its reverse on a mirrored page.
+   *  Absent on a chip with no right-to-left run. */
+  order?: number[];
 }
 
 export interface VDTLineSegment {
@@ -323,6 +344,37 @@ export interface VDTLineSegment {
    *  'brackets'`, the brackets of a warichu note): painted, and read in
    *  copied text, but no character of the plain text or the source. */
   inserted?: boolean;
+  /** Paint this run right to left: its bidi embedding level (UAX #9) is
+   *  odd. The segment's `text` stays in logical order; a renderer shapes it
+   *  as one right-to-left run, which reverses it and mirrors its brackets
+   *  (HarfBuzz applies `rtlm` and the Unicode mirroring pairs). The engine
+   *  cuts segments at level boundaries, so a segment never mixes
+   *  directions. Absent on left-to-right runs. */
+  rtl?: true;
+  /** The language of the segment's text when the author named one on the
+   *  isolate it is in (`:ltr[…]{lang=en}`, `:rtl[…]{lang=fa}`; the
+   *  innermost that names one), a BCP 47 tag as written. Renderers declare
+   *  it (HTML `lang`, PDF `/Lang`). Absent otherwise. */
+  lang?: string;
+  /** The run's UAX #9 embedding level, when it is more than 1 (a number or
+   *  a Latin word inside an Arabic phrase inside an English paragraph) or a
+   *  renderer needs it for tagging and `/ActualText`. Absent otherwise:
+   *  `rtl` gives level 1, its absence level 0. */
+  level?: number;
+  /** Styled sub-runs of one atomic word: a style change inside an Arabic
+   *  word (`كتا**ب**`) must not cut the word, or its letters lose their
+   *  joining forms. The segment is painted as one shaped run whose clusters
+   *  take each sub-run's style; the runs' texts concatenate to `text`.
+   *  Absent on a segment set in one style. */
+  runs?: { text: string; bold?: boolean; italic?: boolean; color?: string }[];
+  /** The tatweels (U+0640) kashida justification inserted into this word
+   *  (`bodyText.kashida`, #375), as offsets into `text`, ascending: they
+   *  are painted with the word (the font joins them into its elongation)
+   *  and counted in `width`, but they are no character of the source, so
+   *  plain text, source maps, links and copied or extracted text leave
+   *  them out (`writtenText` in `measure/kashida.ts`). A tatweel the author
+   *  typed is not listed. Absent when none was inserted. */
+  kashida?: number[];
 }
 
 /** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */
@@ -502,6 +554,12 @@ export interface VDTLine {
    *  a `cjkLooseLine` content warning. Typically the line before a long
    *  Latin word or web address that cannot break. Absent otherwise. */
   cjkLoose?: boolean;
+  /** The line holds a word of a joining script (Arabic, Syriac, N'Ko…)
+   *  wider than its measure. Such a word is never cut between its letters
+   *  (its pieces would lose their joining forms), so it runs past the
+   *  measure, and the build reports an `unbreakableWordOverflow` content
+   *  warning. Absent otherwise. */
+  wordOverflow?: true;
   /** Set by the CJK composer (a paragraph set as Chinese, Japanese or
    *  Korean text, `composesAsCjk`): its characters were measured one by
    *  one, so a renderer paints two CJK marks that meet apart — the marks
@@ -530,6 +588,13 @@ export interface VDTLine {
    *  book-title lines, #193), for renderers to draw as they are; absent on
    *  a line with none. */
   marks?: VDTLineMark[];
+  /** How far the ink of the line's words that carry Arabic vowel marks
+   *  (ḥarakāt, #376) reaches above (`above`) and below (`below`) its
+   *  baseline, px: the marks stack past the letters and may leave the
+   *  line's box, and the renderers' column clip takes them in
+   *  (`columnClipRect`). Measured from the glyphs' ink when the measurer
+   *  gives it, else estimated. Absent on a line with no such mark. */
+  markInk?: { above: number; below: number };
   /** Tracking this line takes on top of its block's (`VDTBlock.letterSpacing`),
    *  px after every glyph — negative tightens: a justified line its word
    *  spaces alone would set past `bodyText.maxWordSpacing` or
@@ -537,6 +602,48 @@ export interface VDTLine {
    *  the widths of its text segments; renderers paint the line with the sum
    *  of both. Absent when the line takes none. */
   letterSpacing?: number;
+  /** The order in which renderers advance along the line through
+   *  `segments` (indices into it), when it is not 0, 1, … n − 1. The
+   *  engine computes it from the paragraph's bidi levels (UAX #9 L1/L2):
+   *  the visual order, left to right on the sheet, in a left-to-right
+   *  frame; its reverse in a mirrored (right-to-left) frame, which turns
+   *  the whole flow. Segments stay in logical order, so copied text, links
+   *  and tagging read them as written. Absent on a line with no
+   *  right-to-left run. */
+  order?: number[];
+  /** The span the line's text fills and aligns in, when it is not
+   *  `[bbox.x, right edge of the block]`: set on the lines of a block whose
+   *  direction opposes its frame's (an English quotation in an Arabic book),
+   *  whose indent and ragged edge fall on the other side. Absent
+   *  otherwise. Its start side is the right of the span: renderers align
+   *  the line there (see {@link lineTextAlign}). */
+  measure?: { x: number; width: number };
+  /** How many kashidas (tatweels, U+0640) justification inserted into the
+   *  line's words, for warnings and overlays. The tatweels themselves are in
+   *  the segments' text, and each segment lists where
+   *  ({@link VDTLineSegment.kashida}); copied and extracted text leaves them
+   *  out. The line's `bbox.width` counts them, and its spaces take only
+   *  what they leave of the slack. Absent when there are none. */
+  kashida?: number;
+  /** A line of a `:::verse` poem (#378): which bayt of the poem it sets
+   *  (0-based) and what of it: `'bayt'`, the whole bayt, its ṣadr on the
+   *  start side and its ʿajuz on the end side with the gap between them
+   *  (a `space` segment flagged `labelTab`, whose `text` is the tab the
+   *  plain text has there), each hemistich set to the poem's common width;
+   *  `'sadr'` and `'ajuz'`, a bayt too wide for that set staggered on two
+   *  lines or more, the ṣadr flush with the start side and the ʿajuz with
+   *  the end; `'single'`, a line of one hemistich, centred. The widths of
+   *  the line's segments are final (the block is set flush left): renderers
+   *  paint them as they are. A column or page never breaks between two
+   *  lines of one bayt. Absent on any other line. */
+  verse?: { bayt: number; part: 'bayt' | 'sadr' | 'ajuz' | 'single' };
+  /** The first line of an entry of a back-of-book index (`:::index`): the
+   *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
+   *  may set more than one entry (the page-less entries heading its
+   *  sub-entry, see {@link VDTBlock.indexLevel}); its other lines are the
+   *  entries' turnover lines, and a line before the first entry is the
+   *  group's letter. Absent on any other line. */
+  indexLevel?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -857,7 +964,7 @@ export function resourceBlockRectToPage(
  * originY: 0, width: page.height, height: page.width }`, so a flow point
  * `(x, y)` lands at page `(page.width − y, x)` (see {@link flowToPage}).
  */
-export interface VDTFlowFrame {
+export interface VDTVerticalFlowFrame {
   writingMode: 'vertical-rl';
   rotation: VDTResourceRotation;
   /** Where the ideographic em box's centre sits above the alphabetic
@@ -876,34 +983,102 @@ export interface VDTFlowFrame {
   dashAdvances?: Record<string, Record<string, number>>;
 }
 
+/**
+ * The frame a right-to-left page's flow is laid out in (`VDTPage.flow`,
+ * a document whose resolved `direction` is `'rtl'`). The engine sets a
+ * right-to-left page as the mirror image of a left-to-right one: the flow
+ * is laid out exactly as a left-to-right page (first column at the flow's
+ * left, list markers and indents at the left, the footnote rule at the
+ * left end, page numbers of the contents at the right…) and the frame
+ * turns it over the sheet's vertical axis, a flow point `(x, y)` landing
+ * at page `(mirror.originX − x, y)` (`originX` = `page.width`). So the
+ * first column stands on the right, markers and indents on the right, and
+ * a right-bound book's recto, whose spine is on its right, has it on the
+ * flow's left, where a left-bound book's recto has it (see
+ * `flowPageMirrored` in the pipeline).
+ *
+ * Renderers paint the flow through the mirror and turn every glyph run,
+ * picture and formula back about its own box, so text and images never
+ * read mirrored; rules, frames and backgrounds paint mirrored as they
+ * are. Within a line the segments advance along the flow's x axis in
+ * `VDTLine.order`, which on such a page is the reverse of their visual
+ * order on the sheet.
+ */
+export interface VDTMirroredFlowFrame {
+  writingMode: 'horizontal-tb';
+  direction: 'rtl';
+  mirror: {
+    /** Page x the flow's x is measured back from: `page.width`. */
+    originX: number;
+  };
+}
+
+/** The frame a page's flow is laid out in, when it is not the sheet's
+ *  own: a vertical page's ({@link VDTVerticalFlowFrame}) or a right-to-left
+ *  page's ({@link VDTMirroredFlowFrame}). */
+export type VDTFlowFrame = VDTVerticalFlowFrame | VDTMirroredFlowFrame;
+
 /** Where the ideographic em box's centre sits above the alphabetic
  *  baseline, in ems, when the font was not measured: the value of every
  *  Source Han / Noto CJK face (em box from −0.12 to 0.88 em). */
 export const DEFAULT_CENTRAL_BASELINE = 0.38;
 
-/** Whether a page's flow is set vertically (`page.flow`). */
+/** The page's flow frame when the flow is set vertically, else
+ *  `undefined`. */
+export function verticalFlowOf(page: Pick<VDTPage, 'flow'>): VDTVerticalFlowFrame | undefined {
+  const flow = page.flow;
+  return flow && flow.writingMode === 'vertical-rl' ? flow : undefined;
+}
+
+/** Whether a page's flow is set vertically (`page.flow` is a
+ *  `'vertical-rl'` frame). */
 export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
-  return page.flow !== undefined;
+  return page.flow?.writingMode === 'vertical-rl';
+}
+
+/** Whether a page's flow is laid out mirrored, right to left
+ *  ({@link VDTMirroredFlowFrame}). */
+/**
+ * The side a line is set from, as the renderers align it (#371): its
+ * block's `textAlign`, except on a line with a {@link VDTLine.measure} (a
+ * block set against its frame's direction), whose start side is the right
+ * of its span: `left` (the start; also the last line of a justified
+ * paragraph, `justify` coming back as `right`) is flush right, `right` (the
+ * end) flush left, and a centred line stays centred. A justified line that
+ * is not its paragraph's last is filled across the span either way.
+ */
+export function lineTextAlign(line: Pick<VDTLine, 'measure'>, textAlign: TextAlign): TextAlign {
+  if (!line.measure) return textAlign;
+  return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
+}
+
+export function pageIsMirrored(page: Pick<VDTPage, 'flow'>): boolean {
+  return page.flow?.writingMode === 'horizontal-tb' && page.flow.direction === 'rtl';
 }
 
 /** Map a point of a page's flow frame to page coordinates: the identity on
- *  a horizontal page, `(page.width − y, x)` on a vertical one. */
+ *  a left-to-right horizontal page, `(page.width − y, x)` on a vertical
+ *  one, `(page.width − x, y)` on a right-to-left one. */
 export function flowToPage(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
-  const r = page.flow?.rotation;
-  if (!r) return { x, y };
+  const flow = page.flow;
+  if (!flow) return { x, y };
+  if (flow.writingMode === 'horizontal-tb') return { x: flow.mirror.originX - x, y };
+  const r = flow.rotation;
   return { x: r.originX - y, y: r.originY + x };
 }
 
 /** Map a page point into the page's flow frame (the inverse of
- *  {@link flowToPage}). */
+ *  {@link flowToPage}; the mirror is its own inverse). */
 export function pageToFlow(page: Pick<VDTPage, 'flow'>, x: number, y: number): { x: number; y: number } {
-  const r = page.flow?.rotation;
-  if (!r) return { x, y };
+  const flow = page.flow;
+  if (!flow) return { x, y };
+  if (flow.writingMode === 'horizontal-tb') return { x: flow.mirror.originX - x, y };
+  const r = flow.rotation;
   return { x: y - r.originY, y: r.originX - x };
 }
 
 /** Map an axis-aligned rect of a page's flow frame to the page: width and
- *  height swap on a vertical page. */
+ *  height swap on a vertical page; a right-to-left page mirrors it. */
 export function flowRectToPage(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): BoundingBox {
   if (!page.flow) return rect;
   const a = flowToPage(page, rect.x, rect.y);
@@ -921,11 +1096,16 @@ export function pageRectToFlow(page: Pick<VDTPage, 'flow'>, rect: BoundingBox): 
 }
 
 /** The flow frame of a vertical page `width` × `height` px (physical). */
-export function verticalFlowFrame(width: number, height: number): VDTFlowFrame {
+export function verticalFlowFrame(width: number, height: number): VDTVerticalFlowFrame {
   return {
     writingMode: 'vertical-rl',
     rotation: { direction: 'cw', originX: width, originY: 0, width: height, height: width },
   };
+}
+
+/** The flow frame of a right-to-left page `width` px wide (physical). */
+export function mirroredFlowFrame(width: number): VDTMirroredFlowFrame {
+  return { writingMode: 'horizontal-tb', direction: 'rtl', mirror: { originX: width } };
 }
 
 export interface ResolvedResourceBlock {
@@ -1032,6 +1212,17 @@ export interface VDTBlock {
   footnoteNote?: string;
   /** A bibliography entry (#269): the key of the work it lists. */
   bibEntry?: string;
+  /** The paragraph style (`paragraphStyles[].id`) the block's text is set
+   *  in: a paragraph of a `:::paragraphs{style=…}` container (the innermost
+   *  one), a poem whose `:::verse` fence names a style. Every fragment of a
+   *  split paragraph carries it. Metadata for other renditions (a
+   *  reflowable EPUB); the layout does not read it. */
+  paragraphStyleId?: string;
+  /** A block of a back-of-book index (`:::index`): the level of the entry
+   *  it sets (0 a main entry). The page-less entries heading that entry
+   *  are set in the same block, above it; each entry's first line carries
+   *  its own level ({@link VDTLine.indexLevel}). */
+  indexLevel?: number;
   /** Id of the heading style (`{style="…"}`) applied to this heading. */
   headingStyleId?: string;
   /** True for a heading whose style has `numbered: false`: it advances no
@@ -1069,6 +1260,11 @@ export interface VDTBlock {
   color: string;
   boldColor?: string;
   italicColor?: string;
+  /** Set when the block's `*…*` runs (its segments flagged `italic`) are
+   *  set upright with a rule over them (`bodyText.emphasis: 'overline'`,
+   *  #376): the layout draws the rules as `VDTLine.marks`. Absent
+   *  otherwise. */
+  emphasis?: 'overline';
   /** Colour for inline `:ref` segments (`refResourceId` set). */
   refColor?: string;
   textAlign: TextAlign;
@@ -1166,6 +1362,11 @@ export interface VDTBlock {
    *  outermost first — the top-level box stays `containerId`. A nested
    *  frame's own id is the last entry of its path. Absent at top level. */
   calloutPath?: number[];
+  /** Base direction of the block's text (its paragraph embedding level),
+   *  when it differs from its page frame's: a left-to-right island in a
+   *  right-to-left book, an Arabic quotation in a left-to-right one.
+   *  Absent when the block runs as its frame does. */
+  direction?: 'ltr' | 'rtl';
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
@@ -1293,6 +1494,10 @@ export interface VDTDesignTextRun {
   /** Vertical text: stood upright or turned by its author (`:upright[…]`,
    *  `:sideways[…]`), as {@link VDTLineSegment.orientation}. */
   orientation?: 'upright' | 'sideways';
+  /** Paint this run right to left (its bidi level is odd), as
+   *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored,
+   *  never tracked. Absent on left-to-right runs. */
+  rtl?: true;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -1314,6 +1519,21 @@ export interface VDTDesignTextLine {
    *  word space (U+0020 and the no-break space U+00A0), as CSS
    *  `word-spacing` adds it. The runs' widths already include it. */
   wordSpacingPx?: number;
+  /** The order in which renderers advance through `runs` from `xOffset`
+   *  (indices into it), when it is not 0, 1, … n − 1. As
+   *  {@link VDTLine.order}: the visual order of the runs (UAX #9 L1/L2 on
+   *  the line, at the block's base direction) when the block is painted
+   *  on the sheet or in a left-to-right flow, its reverse when it is
+   *  painted in the flow of a mirrored page (an opener, a heading design,
+   *  a contents part row). A line whose text needs the bidi algorithm is
+   *  always set in `runs`, cut where the direction changes. Absent on a
+   *  line with no right-to-left run. */
+  order?: number[];
+  /** The line of a wrapping text holds a word of a joining script (Arabic)
+   *  wider than the room: such a word is never cut, so it runs past the
+   *  box, and the build reports an `unbreakableWordOverflow` warning, as
+   *  for {@link VDTLine.wordOverflow}. Absent otherwise. */
+  wordOverflow?: true;
 }
 
 /** Outline of the glyphs of a design text block, resolved to px / hex. */
@@ -1364,6 +1584,11 @@ export interface VDTDesignTextBlock {
    *  PDF marks it an artifact and the HTML hides it from assistive
    *  technology, so the text is read once. */
   artifact?: boolean;
+  /** The base direction of the block's text (`DesignTextElement.direction`,
+   *  by default the document's) when it is right to left: its lines'
+   *  runs were ordered at that paragraph level, and an HTML line takes
+   *  `dir="rtl"`. Absent for left-to-right text. */
+  direction?: 'rtl';
   /** Set vertically on a page or a slot whose text is horizontal
    *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
    *  out in the block's own frame, turned a quarter turn clockwise about
@@ -1472,7 +1697,7 @@ export interface VDTPage {
    *  by the margins, mirrored on even pages when `margins.mirror` is on.
    *  Columns, float bands, header/footer containers and opener bands all
    *  derive from it — renderers read it instead of inferring the area from
-   *  the column bboxes. On a vertical page it is in flow coordinates (see
+   *  the column bboxes. On a vertical or right-to-left page it is in flow coordinates (see
    *  {@link flow}); `flowRectToPage(page, page.contentArea)` is the
    *  physical area. */
   contentArea: BoundingBox;
@@ -1485,8 +1710,12 @@ export interface VDTPage {
    *  header and the footer are physical, as are crop marks and the page
    *  background. Text painted in the flow is set vertically: upright CJK
    *  characters, Latin turned sideways; resource blocks carry a `'ccw'`
-   *  rotation that composes with the frame to stand upright. Absent on
-   *  horizontal pages. */
+   *  rotation that composes with the frame to stand upright. Also present
+   *  on every page of a right-to-left document ({@link VDTMirroredFlowFrame}):
+   *  the same elements are then in flow coordinates mirrored onto the sheet
+   *  (`x` → `page.width − x`), the header, the footer, crop marks and the
+   *  background staying physical. Absent on left-to-right horizontal
+   *  pages. */
   flow?: VDTFlowFrame;
   /** Page classification (see `PageRole`), stamped after placement by
    *  `classifyPages`. Drives the per-element `pages` filter of design
@@ -1590,8 +1819,16 @@ export interface ConfigWarning {
    *  style, a paragraph style — and the same under
    *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
-   *  `suggestion` names the key it is closest to, when one is close. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped';
+   *  `suggestion` names the key it is closest to, when one is close.
+   *  `unknownConfigValue`: a setting that takes one of a few words holding
+   *  another (`direction: 'right'`); the engine reads its default, and
+   *  `used` is what that came to (`direction`: `ltr` or `rtl`, from the
+   *  document language; `bodyText.emphasis`: `italic` or `bold`, from it
+   *  too; `bodyText.tashkil`: `keep`).
+   *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
+   *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
+   *  language, and `used` is the digit system that gives. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -1703,6 +1940,18 @@ export type ContentWarning = ContentWarningBase & (
    *  address that cannot break. `text` is the line's text. Found by the
    *  layout, so `collectContentWarnings` never returns it. */
   | { kind: 'cjkLooseLine'; text: string }
+  /** A word of a joining script (Arabic, Syriac, N'Ko…) wider than its
+   *  line: such a word is never divided (its letters connect, and a piece
+   *  would lose its joining forms), so it runs past the measure
+   *  (`VDTLine.wordOverflow`). `text` is the line's text. Found by the
+   *  layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'unbreakableWordOverflow'; text: string }
+  /** A paragraph or heading whose style sets letter-spacing
+   *  (`letterSpacing`) on words of a joining script: they are set without
+   *  it, since spacing their letters apart breaks the joins, and only the
+   *  other words and the spaces take it. `text` is the block's first
+   *  line. Found by the layout. */
+  | { kind: 'joiningScriptLetterSpacing'; text: string }
   /** A paragraph with Chinese marks (emphasis dots, proper-name or
    *  book-title lines, #193) whose line gap is narrower than the marks
    *  need: half an em for marks on one side of the text, five eighths for
@@ -1715,6 +1964,17 @@ export type ContentWarning = ContentWarningBase & (
    *  line gap is narrower than the readings: they overlap the next line.
    *  `gapEm` and `neededEm` in em of the text. */
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph of vocalised Arabic (#376) whose vowel marks meet the
+   *  ink of the line above or below it in its column: a mark over a word
+   *  reaches down-hanging letters or marks of the line above, or a kasra
+   *  under a word the marks of the line below. Only words standing over
+   *  each other are compared. The line pitch never changes for the marks:
+   *  give the paragraph more leading (1.7–1.85 em for partly vocalised
+   *  text, 1.9–2.1 for fully vocalised verse). `lineHeightEm` is the
+   *  distance between the two baselines and `neededEm` the height the two
+   *  lines' ink takes there, in em of the text; `text` is the lower line.
+   *  Found by the layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'arabicMarksExceedLeading'; text: string; lineHeightEm: number; neededEm: number }
   /** Markup typed with fullwidth characters, as a Chinese or Japanese
    *  input method types it: a `：：：` fence, a `＃` heading, a `［＾…］`
    *  footnote marker, `｛…｝` attributes after a fence or heading, or

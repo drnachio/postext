@@ -66,13 +66,13 @@ export default async function CookiePolicyPage({
               <p className="mt-2">{t("cookiesWeUseText")}</p>
 
               <div className="mt-4 overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
+                <table className="w-full border-collapse text-start text-sm">
                   <thead>
                     <tr className="border-b border-rule">
-                      <th className="py-3 pr-4 kicker text-slate">
+                      <th className="py-3 pe-4 kicker text-slate">
                         {t("tableName")}
                       </th>
-                      <th className="py-3 pr-4 kicker text-slate">
+                      <th className="py-3 pe-4 kicker text-slate">
                         {t("tableDuration")}
                       </th>
                       <th className="py-3 kicker text-slate">
@@ -82,10 +82,10 @@ export default async function CookiePolicyPage({
                   </thead>
                   <tbody>
                     <tr className="border-b border-rule/50">
-                      <td className="py-3 pr-4 font-mono text-foreground">
+                      <td className="py-3 pe-4 font-mono text-foreground">
                         postext_consent
                       </td>
-                      <td className="py-3 pr-4">{t("duration365")}</td>
+                      <td className="py-3 pe-4">{t("duration365")}</td>
                       <td className="py-3">{t("purposeConsent")}</td>
                     </tr>
                   </tbody>

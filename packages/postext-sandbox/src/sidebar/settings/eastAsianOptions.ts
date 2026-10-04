@@ -1,4 +1,4 @@
-import type { EastAsianNumeralStyle } from 'postext';
+import type { ArabicNumeralStyle, EastAsianNumeralStyle } from 'postext';
 import type { SandboxLabels } from '../../types/labels';
 
 /** The East Asian numeral styles, as every numbering select lists them
@@ -15,6 +15,20 @@ export function eastAsianNumberFormatOptions(labels: SandboxLabels): { value: Ea
     { value: 'cjk-earthly-branch', label: labels.numberFormatCjkEarthlyBranch },
     { value: 'circled-decimal', label: labels.numberFormatCircledDecimal },
     { value: 'fullwidth-decimal', label: labels.numberFormatFullwidthDecimal },
+  ];
+}
+
+/** The Arabic-script numeral styles, listed after the East Asian ones in
+ *  every numbering select: Arabic-Indic and Persian digits, the two letter
+ *  series of list items, then the additive abjad numerals. */
+export function arabicNumberFormatOptions(labels: SandboxLabels): { value: ArabicNumeralStyle; label: string }[] {
+  return [
+    { value: 'arabic-indic', label: labels.numberFormatArabicIndic },
+    { value: 'persian', label: labels.numberFormatPersian },
+    { value: 'abjad', label: labels.numberFormatAbjad },
+    { value: 'hijai', label: labels.numberFormatHijai },
+    { value: 'arabic-abjad', label: labels.numberFormatArabicAbjad },
+    { value: 'arabic-abjad-maghrebi', label: labels.numberFormatArabicAbjadMaghrebi },
   ];
 }
 

@@ -11,6 +11,7 @@ import {
   at, box, col, colorPalette, image, mm, pt, rule, slot, text, type TextOpts,
 } from './guideKit';
 import { createChineseGuideConfig } from './guideConfigZh';
+import { createArabicGuideConfig } from './guideConfigAr';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit';
 
@@ -25,14 +26,16 @@ export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit';
 // the preset carries no font files.
 //
 // The Chinese edition is a vertical book bound on the right, designed in
-// `guideConfigZh.ts` on the same page and palette.
+// `guideConfigZh.ts` on the same page and palette; the Arabic edition is
+// set right to left and bound on the right, in Arabic faces, designed in
+// `guideConfigAr.ts`.
 //
 // Geometry: a 170 mm text area in two 80.5 mm columns keeps the page/column
 // width ratio the example figures are drawn for (≈ 2.11, see
 // `defaultResources`), so their type comes out the same size at both spans.
 
 /** The Latin editions. */
-type LatinLang = Exclude<GuideLang, 'zh-Hans'>;
+type LatinLang = Exclude<GuideLang, 'zh-Hans' | 'ar'>;
 
 const GUTTER = 9;
 /** Height of a chapter opener's band below the top margin. */
@@ -45,6 +48,7 @@ const COVER_ART_H = 168;
 const WORDING: Record<LatinLang, { book: string; kicker: string; partLabel: string; tocPart: string }> = {
   en: { book: 'The Postext Guide', kicker: 'Chapter {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
   es: { book: 'Guía de Postext', kicker: 'Capítulo {chapterNumber} · {partTitle}', partLabel: 'Parte', tocPart: 'Parte {number} · {titleText}' },
+  ca: { book: 'Guia de Postext', kicker: 'Capítol {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
 };
 
 /** How a small label is set: in capitals, spaced out (`tracking` in points). */
@@ -258,6 +262,7 @@ function paragraphStyles(): ParagraphStyleConfig[] {
 const CALLOUT_WORDS: Record<LatinLang, { try: [string, string]; note: [string, string]; quote: string; figures: [string, string] }> = {
   en: { try: ['Try it', 'Try it in the Sandbox'], note: ['Technical note', 'Technical note'], quote: 'Pull quote', figures: ['Key figures', 'In figures'] },
   es: { try: ['Pruébalo', 'Pruébalo en el Sandbox'], note: ['Nota técnica', 'Nota técnica'], quote: 'Cita destacada', figures: ['Cifras', 'En cifras'] },
+  ca: { try: ['Prova-ho', 'Prova-ho al Sandbox'], note: ['Nota tècnica', 'Nota tècnica'], quote: 'Cita destacada', figures: ['Xifres', 'En xifres'] },
 };
 
 function calloutStyles(lang: LatinLang): CalloutStyleConfig[] {
@@ -351,13 +356,15 @@ function toc(lang: LatinLang) {
   };
 }
 
-/** The Postext guide's configuration for `locale`: the English, Spanish or
- *  Chinese edition (any Chinese tag reads the Chinese one, set vertically). */
+/** The Postext guide's configuration for `locale`: the English, Spanish,
+ *  Catalan, Chinese or Arabic edition (any Chinese tag reads the Chinese
+ *  one, set vertically; any Arabic tag the Arabic one, set right to left). */
 export function createPostextGuideConfig(locale = 'en'): PostextConfig {
   const lang = guideLang(locale);
   if (lang === 'zh-Hans') return createChineseGuideConfig();
+  if (lang === 'ar') return createArabicGuideConfig();
   return {
-    locale: lang === 'es' ? 'es' : 'en-us',
+    locale: lang === 'en' ? 'en-us' : lang,
     page: {
       sizePreset: '21x28', width: mm(PAGE_W), height: mm(PAGE_H),
       margins: { top: mm(M_TOP), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(M_OUTER), mirror: true },
@@ -369,7 +376,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       firstLineIndent: mm(4), indentAfterHeading: false, paragraphSpacing: false,
       color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
       referenceColor: col('band'), referenceBold: true, referenceItalic: false,
-      hyphenation: { enabled: true, locale: lang === 'es' ? 'es' : 'en-us' },
+      hyphenation: { enabled: true, locale: lang === 'en' ? 'en-us' : lang },
       avoidWidows: true, avoidOrphans: true, avoidRunts: true, optimalLineBreaking: true,
     },
     headings: {

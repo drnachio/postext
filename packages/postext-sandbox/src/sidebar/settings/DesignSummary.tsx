@@ -11,6 +11,7 @@ import type { SettingsGroupId } from '../sections/registry';
 import { pageDrawingConfig } from '../sections/cjkGridReadout';
 import { documentLocaleLabel } from '../sections/BodyTextSection/constants';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
+import { documentDirection, documentLanguage } from '../../context/documentDirection';
 import { PagePreview } from './PagePreview';
 
 interface DesignSummaryProps {
@@ -28,7 +29,11 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
   // The page as it is set: the character grid's margins when it is on.
   const drawn = useMemo(() => pageDrawingConfig(config), [config]);
   const layout = resolveLayoutConfig(drawn.layout);
-  const page = resolvePageConfig(drawn.page, config.locale, layout.writingMode);
+  // The language and its direction: a right-to-left book is bound on the
+  // right when the binding is Auto.
+  const language = documentLanguage(config, defaultDocumentLocale(uiLocale));
+  const direction = documentDirection(config.direction, language);
+  const page = resolvePageConfig(drawn.page, language, layout.writingMode, direction);
   const body = resolveBodyTextConfig(config.bodyText, config.locale);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
   const palette = config.colorPalette ?? [];
@@ -43,10 +48,11 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
         : labels.settingsSummaryOneColumn;
   const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
   // Writing system: the language, with the direction and the binding when
-  // they are a choice (Chinese text, vertical lines, a right binding).
-  const language = config.locale ?? defaultDocumentLocale(uiLocale);
+  // they are a choice (Chinese text, vertical lines, right-to-left text, a
+  // right binding).
   const vertical = layout.writingMode === 'vertical-rl';
   const writing = [
+    direction === 'rtl' ? labels.documentDirectionRtl : '',
     vertical || isCjkLanguage(language) ? (vertical ? labels.writingModeVerticalShort : labels.writingModeHorizontal) : '',
     vertical || page.binding === 'right' ? (page.binding === 'right' ? labels.settingsSummaryBoundRight : labels.settingsSummaryBoundLeft) : '',
   ].filter(Boolean);
@@ -93,7 +99,7 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
                   style={{ backgroundColor: p.value.hex }}
                 />
               ))}
-              {palette.length > 8 && <span className="ml-1 text-[0.66rem] text-(--slate)">+{palette.length - 8}</span>}
+              {palette.length > 8 && <span dir="ltr" className="ms-1 text-[0.66rem] text-(--slate)">+{palette.length - 8}</span>}
             </span>
           </SummaryLine>
         )}
@@ -111,13 +117,13 @@ function SummaryLine({ onClick, group, wrap, children }: { onClick: () => void; 
       type="button"
       onClick={onClick}
       className={cn(
-        'group/line -mx-1 flex min-h-6 min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-left text-xs text-(--foreground) transition-colors',
+        'group/line -mx-1 flex min-h-6 min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-start text-xs text-(--foreground) transition-colors',
         'hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
       )}
     >
       <span className={cn('min-w-0', wrap ? '[text-wrap:pretty]' : 'truncate')}>{children}</span>
       <span className="sr-only">— {group}</span>
-      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
+      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity rtl:-scale-x-100 group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
     </button>
   );
 }

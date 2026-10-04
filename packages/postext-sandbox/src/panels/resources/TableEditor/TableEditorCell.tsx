@@ -89,12 +89,15 @@ export function TableEditorCell({
     } else if (e.key === 'ArrowDown' && (atEnd || ext)) {
       e.preventDefault();
       onNavigate('down', ext);
-    } else if (e.key === 'ArrowLeft' && (atStart || ext)) {
-      e.preventDefault();
-      onNavigate('left', ext);
-    } else if (e.key === 'ArrowRight' && (atEnd || ext)) {
-      e.preventDefault();
-      onNavigate('right', ext);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      // In a right-to-left table the text starts at the right and the
+      // next column (`right`, one column on) stands to the left.
+      const rtl = getComputedStyle(el).direction === 'rtl';
+      const toEnd = e.key === (rtl ? 'ArrowLeft' : 'ArrowRight');
+      if (toEnd ? atEnd || ext : atStart || ext) {
+        e.preventDefault();
+        onNavigate(toEnd ? 'right' : 'left', ext);
+      }
     }
   };
 
@@ -130,7 +133,9 @@ export function TableEditorCell({
         onFocusCapture={() => onFocus(pos)}
         onPasteCapture={handlePaste}
         style={{
-          textAlign: cell.align ?? 'left',
+          // `left` / `right` are the cell's start and end (#371): flush
+          // right in a right-to-left table.
+          textAlign: cell.align === 'center' ? 'center' : cell.align === 'right' || cell.align === 'end' ? 'end' : 'start',
           fontWeight: cell.isHeader ? 600 : 400,
         }}
       >
@@ -156,6 +161,8 @@ export function TableEditorCell({
           multiline
           rows={1}
           hidePreview
+          // The cell runs the table's way, as on the page.
+          inheritDirection
           focusRequest={focusRequest}
           onFocusConsumed={onFocusConsumed}
           onSelectionChange={onSelectionChange ? (sel) => onSelectionChange(pos, sel) : undefined}

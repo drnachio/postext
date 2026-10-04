@@ -220,6 +220,9 @@ export interface InlineMarkdownInputProps {
   rows?: number;
   /** Hide the live preview row (e.g. compact table-cell editing). */
   hidePreview?: boolean;
+  /** Run the field the way of its container (a table cell, set the way
+   *  its table runs) instead of the way of its own text (`dir="auto"`). */
+  inheritDirection?: boolean;
   /** Optional content shown as the preview when `value` is empty. */
   emptyPreview?: string;
   /** Pending focus/selection request (from a preview click). Consumed once;
@@ -239,6 +242,7 @@ export function InlineMarkdownInput({
   multiline = false,
   rows = 2,
   hidePreview = false,
+  inheritDirection = false,
   emptyPreview,
   focusRequest = null,
   onFocusConsumed,
@@ -309,6 +313,7 @@ export function InlineMarkdownInput({
     <div className="flex w-full min-w-0 flex-col gap-1">
       {multiline ? (
         <textarea
+          dir={inheritDirection ? undefined : 'auto'}
           ref={fieldRef as React.RefObject<HTMLTextAreaElement>}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -323,6 +328,7 @@ export function InlineMarkdownInput({
         />
       ) : (
         <input
+          dir={inheritDirection ? undefined : 'auto'}
           ref={fieldRef as React.RefObject<HTMLInputElement>}
           type="text"
           value={value}
@@ -339,6 +345,7 @@ export function InlineMarkdownInput({
       {!hidePreview && (
         <div
           id={previewId}
+          dir={inheritDirection ? undefined : 'auto'}
           aria-live="polite"
           className="rounded px-2 py-1"
           style={{

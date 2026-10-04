@@ -6,6 +6,8 @@ import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, R
 import {
   createBoundingBox,
   flowRectToPage,
+  pageIsMirrored,
+  pageIsVertical,
   type VDTBlock,
   type VDTDocument,
   type VDTDesignSlot,
@@ -82,11 +84,17 @@ function textAlignOffsetX(
   align: DesignTextAlign,
   contentWidth: number,
   lineWidth: number,
+  /** The text starts on the right of its box (`ResolvedTextPrimitive.startRight`). */
+  startRight = false,
 ): number {
   // A justified line fills its room; the last line of a paragraph is set
-  // flush left.
-  if (align === 'left' || align === 'justify') return 0;
-  if (align === 'right') return Math.max(0, contentWidth - lineWidth);
+  // flush with the start. `start` / `end` are the sides the text's
+  // direction reads from and to.
+  const side = align === 'start' || align === 'justify'
+    ? (startRight ? 'right' : 'left')
+    : align === 'end' ? (startRight ? 'left' : 'right') : align;
+  if (side === 'left') return 0;
+  if (side === 'right') return Math.max(0, contentWidth - lineWidth);
   return Math.max(0, (contentWidth - lineWidth) / 2);
 }
 
@@ -122,11 +130,13 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
   const lines = prim.lines.map((l) => ({
     text: l.text,
     xOffset: prim.contentX + (l.xOffset ?? 0)
-      + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx)),
+      + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx), prim.startRight),
     baselineY: (prim.vertical ? 0 : prim.y) + prim.contentY + vOffset + l.baselineY,
     width: l.width,
     ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
     ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
+    ...(l.order ? { order: [...l.order] } : {}),
+    ...(l.wordOverflow ? { wordOverflow: true as const } : {}),
   }));
 
   return {
@@ -149,6 +159,7 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
       ? { letterSpacingPx: prim.letterSpacingPx }
       : {}),
     ...(prim.stroke ? { stroke: { ...prim.stroke } } : {}),
+    ...(prim.direction ? { direction: prim.direction } : {}),
     ...(prim.vertical ? { vertical: verticalTextOf(prim) } : {}),
   };
 }
@@ -388,6 +399,10 @@ export function measureHeadingDesign(
 /** Optional page-level inputs for `layoutSlotToVdt`. */
 export interface SlotLayoutExtras {
   frames?: DesignFrames;
+  /** The document's base direction and whether the slot is painted in the
+   *  flow of a mirrored page (see `LayoutContext`). */
+  direction?: 'ltr' | 'rtl';
+  mirrored?: boolean;
   pageRole?: PageRole;
   /** Resources by id, for `kind: 'image'` elements. */
   resourceById?: ReadonlyMap<string, Resource>;
@@ -454,7 +469,11 @@ export function layoutSlotToVdt(
 ): VDTDesignSlot | undefined {
   const result = layoutDesignSlot(
     slot,
-    { container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole, resourceById: extras?.resourceById },
+    {
+      container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole, resourceById: extras?.resourceById,
+      ...(extras?.direction ? { direction: extras.direction } : {}),
+      ...(extras?.mirrored ? { mirrored: true } : {}),
+    },
     pageIndex,
   );
   if (result.primitives.length === 0) return undefined;
@@ -990,12 +1009,15 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
   const numberless = numberlessStyles.size > 0
     ? (b: VDTBlock) => b.headingStyleId !== undefined && numberlessStyles.has(b.headingStyleId)
     : undefined;
+  // The digits of the chapter ordinals and page counts the slots print.
+  const numerals = resolved.numerals;
   const chapterNumberByPageIndex = computeChapterNumbers(
     doc.blocks,
     doc.pages.length,
     doc.pages,
     doc.chapterOrdinalOffset ?? 0,
     numberless,
+    numerals,
   );
   // The chapter in force at the top of each page (`{chapterTitleAtTop}`,
   // `{chapterNumberAtTop}`): the one a page runs on from, even where a new
@@ -1007,12 +1029,13 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     doc.pages,
     doc.chapterOrdinalOffset ?? 0,
     numberless,
+    numerals,
   );
   // A heading design (opener, in-column overlay, contents part row) prints
   // the chapter its block belongs to, not the page's: where two chapters
   // meet on a page, the page value is the later one's. Its height was
   // measured with this value too (`build.ts`).
-  const chapterNumberByBlock = computeChapterNumbersByBlock(doc.blocks, doc.chapterOrdinalOffset ?? 0, numberless);
+  const chapterNumberByBlock = computeChapterNumbersByBlock(doc.blocks, doc.chapterOrdinalOffset ?? 0, numberless, numerals);
   const chapterNumberOf = (block: VDTBlock, pageIndex: number): string =>
     chapterNumberByBlock.get(block) ?? chapterNumberByPageIndex[pageIndex] ?? '';
   // Parity (odd/even elements) counts the pages before a continued document.
@@ -1050,13 +1073,19 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     // Text in the flow (openers, part pages, in-column designs) reads as the
     // page's flow does; running heads and folios are horizontal on the
     // sheet, whatever the flow (see below).
-    setMeasureWritingMode(page.flow ? 'vertical-rl' : 'horizontal-tb');
+    setMeasureWritingMode(pageIsVertical(page) ? 'vertical-rl' : 'horizontal-tb');
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
-    const frames = page.flow ? verticalFrames : physicalFrames;
+    // A right-to-left page lays these out in its mirrored flow, whose trim
+    // and bleed boxes are the sheet's (centred, so their own mirror images).
+    const frames = pageIsVertical(page) ? verticalFrames : physicalFrames;
     const extras: SlotLayoutExtras = {
       frames, pageRole: page.role, resourceById,
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,
+      // Right-to-left text: the document's direction, and the mirror of a
+      // right-to-left page's flow, which the slots below are painted in.
+      ...(resolved.direction === 'rtl' ? { direction: 'rtl' as const } : {}),
+      ...(pageIsMirrored(page) ? { mirrored: true } : {}),
     };
     // Running heads and folios stay on the sheet: the physical content
     // area and trim box. `anchor.to: 'outer'` is the outer margin, on the
@@ -1069,7 +1098,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     const outer = outerRight
       ? { x: sheetArea.x + sheetArea.width, y: sheetArea.y, width: Math.max(0, trim.x + trim.width - (sheetArea.x + sheetArea.width)), height: sheetArea.height }
       : { x: trim.x, y: sheetArea.y, width: Math.max(0, sheetArea.x - trim.x), height: sheetArea.height };
-    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer } };
+    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer }, mirrored: false };
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;
@@ -1085,6 +1114,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1121,6 +1151,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1158,6 +1189,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1206,6 +1238,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
           bookTotalPages,
+          numerals,
           marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
@@ -1264,6 +1297,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
             chapterNumberByPageIndex,
             chapterAttrsByPageIndex,
             bookTotalPages,
+            numerals,
             marksFor,
             partTitleByPageIndex,
             partNumberByPageIndex,
@@ -1307,6 +1341,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
           bookTotalPages,
+          numerals,
           marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
@@ -1349,6 +1384,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,

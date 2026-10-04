@@ -1,0 +1,1622 @@
+{
+ "_doc": "Tale hierarchy of the Hindawi text; see text.py. level 1 = a tale cycle; chapter = opens a chapter file; anchor/split = an unheaded tale found by a phrase; repeat = Hindawi repeats a heading where a tale resumes (dropped); group = a heading of ours over a run of short tales, inserted before `before`.",
+ "tales": [
+  {
+   "id": "frame",
+   "title": "حكايات الملك شهريار وأخيه الملك شاه زمان",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ox-ass",
+   "title": "حكاية الحمار والثور مع صاحب الزرع",
+   "level": 2,
+   "parent": "frame",
+   "anchor": "اعلمي يا ابنتي أنه كان لأحد التجار أموال ومواش",
+   "night": 0
+  },
+  {
+   "id": "merchant-jinni",
+   "title": "حكاية التاجر مع العفريت",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "first-sheikh",
+   "title": "حكاية الشيخ الأول صاحب الغزالة",
+   "level": 2,
+   "parent": "merchant-jinni",
+   "anchor": "فانتبه منهم الشيخ الأول",
+   "night": 1
+  },
+  {
+   "id": "second-sheikh",
+   "title": "حكاية الشيخ الثاني صاحب الكلبتين",
+   "level": 2,
+   "parent": "merchant-jinni",
+   "anchor": "تقدم الشيخ الثاني صاحب الكلبتين",
+   "split": "فعند ذلك تقدم الشيخ الثاني",
+   "night": 2
+  },
+  {
+   "id": "third-sheikh",
+   "title": "حكاية الشيخ الثالث صاحب البغلة",
+   "level": 2,
+   "parent": "merchant-jinni",
+   "anchor": "أن الشيخ الثالث صاحب البغلة قال للجني",
+   "night": 3
+  },
+  {
+   "id": "fisherman-jinni",
+   "title": "حكاية الصياد مع العفريت",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "king-yunan",
+   "title": "حكاية الملك يونان والحكيم رويان",
+   "level": 2,
+   "parent": "fisherman-jinni",
+   "anchor": "ملك يقال له الملك يونان",
+   "night": 4
+  },
+  {
+   "id": "king-sindibad",
+   "title": "حكاية الملك السندباد والباز",
+   "level": 3,
+   "parent": "king-yunan",
+   "anchor": "ذكر أنه كان ملك ملوك الفرس يحب الفرجة",
+   "split": "ذكر أنه كان ملك ملوك الفرس",
+   "night": 5
+  },
+  {
+   "id": "vizier-prince",
+   "title": "حكاية الوزير وابن الملك والغولة",
+   "level": 3,
+   "parent": "king-yunan",
+   "anchor": "كان لذلك الملك ولد مولع بالصيد",
+   "split": "كان لذلك الملك ولد مولع بالصيد",
+   "night": 5
+  },
+  {
+   "id": "ensorcelled-prince",
+   "title": "حكاية الشاب المسحور صاحب الجزائر السود",
+   "level": 2,
+   "parent": "fisherman-jinni",
+   "anchor": "وذلك يا سيدي أنه كان والدي ملك هذه المدينة",
+   "split": "وذلك يا سيدي أنه كان والدي",
+   "night": 7
+  },
+  {
+   "id": "porter-ladies",
+   "title": "حكاية الحمَّال مع البنات",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "first-qalandar",
+   "title": "حكاية الصعلوك الأول",
+   "level": 2,
+   "parent": "porter-ladies"
+  },
+  {
+   "id": "second-qalandar",
+   "title": "حكاية الصعلوك الثاني",
+   "level": 2,
+   "parent": "porter-ladies"
+  },
+  {
+   "id": "third-qalandar",
+   "title": "حكاية الصعلوك الثالث",
+   "level": 2,
+   "parent": "porter-ladies"
+  },
+  {
+   "id": "zubayda",
+   "title": "حكاية البنت الأولى زبيدة",
+   "level": 2,
+   "parent": "porter-ladies"
+  },
+  {
+   "id": "amina",
+   "title": "حكاية البنت الثانية أمينة",
+   "level": 2,
+   "parent": "porter-ladies"
+  },
+  {
+   "id": "three-apples",
+   "title": "حكاية الصبية والتفاح وريحان العبد",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "nur-al-din-shams-al-din",
+   "title": "حكاية نور الدين مع أخيه شمس الدين",
+   "level": 2,
+   "parent": "three-apples"
+  },
+  {
+   "id": "hunchback",
+   "title": "حكاية الأحدب والنصراني والمباشر واليهودي والخياط",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "hunchback-frame",
+   "title": "حكاية الأحدب",
+   "level": 2,
+   "parent": "hunchback"
+  },
+  {
+   "id": "christian-broker",
+   "title": "حكاية النصراني",
+   "level": 2,
+   "parent": "hunchback"
+  },
+  {
+   "id": "steward",
+   "title": "حكاية المباشِر",
+   "level": 2,
+   "parent": "hunchback"
+  },
+  {
+   "id": "jewish-doctor",
+   "title": "حكاية الطبيب اليهودي",
+   "level": 2,
+   "parent": "hunchback"
+  },
+  {
+   "id": "tailor",
+   "title": "حكاية الخياط",
+   "level": 2,
+   "parent": "hunchback"
+  },
+  {
+   "id": "lame-young-man",
+   "title": "حكاية الأعرج مع مزين بغداد",
+   "level": 3,
+   "parent": "tailor"
+  },
+  {
+   "id": "barber",
+   "title": "حكاية مزين بغداد مع إخوته الستة",
+   "level": 3,
+   "parent": "tailor"
+  },
+  {
+   "id": "barber-brother-1",
+   "title": "حكاية الأخ الأكبر",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "barber-brother-2",
+   "title": "حكاية الحدار الأخ الثاني",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "barber-brother-3",
+   "title": "حكاية الأخ الثالث",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "barber-brother-4",
+   "title": "حكاية الأعور الأخ الرابع",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "barber-brother-5",
+   "title": "حكاية الأخ الخامس",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "barber-brother-6",
+   "title": "حكاية الأخ السادس",
+   "level": 4,
+   "parent": "barber"
+  },
+  {
+   "id": "anis-al-jalis",
+   "title": "حكاية أنيس الجليس وعلي نور",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ghanim",
+   "title": "حكاية التاجر أيوب وابنه غانم وابنته فتنة",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ghanim-slave-of-love",
+   "title": "حكاية غانم المتيَّم المسلوب",
+   "level": 2,
+   "parent": "ghanim"
+  },
+  {
+   "id": "eunuch-sawab",
+   "title": "حكاية العبد الأول صواب",
+   "level": 3,
+   "parent": "ghanim-slave-of-love"
+  },
+  {
+   "id": "eunuch-kafur",
+   "title": "حكاية العبد الثاني كافور",
+   "level": 3,
+   "parent": "ghanim-slave-of-love"
+  },
+  {
+   "id": "eunuch-bakhit",
+   "title": "حكاية العبد الثالث بخيت",
+   "level": 3,
+   "parent": "ghanim-slave-of-love"
+  },
+  {
+   "id": "umar-numan",
+   "title": "حكاية الملك عمر النعمان مع ولدَيْه بشركان وضوء المكان",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "nuzhat-wedding",
+   "title": "زفاف نزهة الزمان إلى الملك شركان",
+   "level": 2,
+   "parent": "umar-numan",
+   "chapter": true
+  },
+  {
+   "id": "umar-death",
+   "title": "حكاية مقتل الملك عمر النعمان",
+   "level": 2,
+   "parent": "umar-numan",
+   "chapter": true
+  },
+  {
+   "id": "first-damsel",
+   "title": "حكاية الصبية الأولى",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "second-damsel",
+   "title": "حكاية الصبية الثانية",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "third-damsel",
+   "title": "حكاية الصبية الثالثة",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "fourth-damsel",
+   "title": "حكاية الصبية الرابعة",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "fifth-damsel",
+   "title": "حكاية الصبية الخامسة",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "old-woman",
+   "title": "حكاية العجوز",
+   "level": 3,
+   "parent": "umar-death"
+  },
+  {
+   "id": "convent",
+   "title": "حكاية الدير",
+   "level": 2,
+   "parent": "umar-numan",
+   "chapter": true
+  },
+  {
+   "id": "taj-al-muluk",
+   "title": "حكاية عزيز وعزيزة والملك سليمان",
+   "level": 2,
+   "parent": "umar-numan",
+   "chapter": true
+  },
+  {
+   "id": "aziz",
+   "title": "حكاية الشاب عزيز",
+   "level": 3,
+   "parent": "taj-al-muluk"
+  },
+  {
+   "id": "dunya-taj-al-muluk",
+   "title": "حكاية الأميرة دنيا مع تاج الملوك",
+   "level": 3,
+   "parent": "taj-al-muluk",
+   "chapter": true
+  },
+  {
+   "id": "kan-ma-kan",
+   "title": "مغامرة كان ما كان ابن ضوء المكان",
+   "level": 2,
+   "parent": "umar-numan",
+   "chapter": true
+  },
+  {
+   "id": "dhat-al-dawahi-death",
+   "title": "مقتل العجوز ذات الدواهي",
+   "level": 3,
+   "parent": "kan-ma-kan"
+  },
+  {
+   "id": "birds-beasts",
+   "title": "حكايةٌ طريفةٌ تتعلَّق بالطيور والحيوان",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "girl-shepherd",
+   "title": "حكاية الصبية والراعي",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "tortoise-waterfowl",
+   "title": "حكاية السلحفاة وطائر الماء",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "wolf-fox",
+   "title": "حكاية الثعلب والذئب",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "wolf-fox-repeat",
+   "title": "حكاية الثعلب والذئب",
+   "level": 2,
+   "parent": "birds-beasts",
+   "repeat": true
+  },
+  {
+   "id": "mouse-weasel",
+   "title": "حكاية الفأرة وبنت عرس",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "crow-cat",
+   "title": "حكاية الغراب والسنَّور",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "fox-crow",
+   "title": "حكاية الثعلب والغراب",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "falcon-birds",
+   "title": "حكاية الصقر مع ضراري الطير",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "hedgehog-pigeons",
+   "title": "حكاية القنفذ والورشان",
+   "level": 2,
+   "parent": "birds-beasts"
+  },
+  {
+   "id": "ali-bakkar",
+   "title": "حكاية علي بن بكار وشمس النهار",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "qamar-zaman-budur",
+   "title": "حكاية قمر الزمان مع الملكة بدور",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "nima-num",
+   "title": "حكاية نعمة ونِعَم",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "alaeddin-shamat",
+   "title": "حكاية علاء الدين أبي الشامات",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "alaeddin-zubayda",
+   "title": "علاء الدين مع زبيدة العودية",
+   "level": 2,
+   "parent": "alaeddin-shamat"
+  },
+  {
+   "id": "g-hatim",
+   "title": "حكاية حاتم الطائي وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "hatim",
+   "chapter": true
+  },
+  {
+   "id": "hatim",
+   "title": "حكاية حاتم الطائي",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "man-zaida",
+   "title": "حكاية معن بن زائدة",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "lebtait",
+   "title": "حكاية بلدة لبطة",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "caliph-bedouin",
+   "title": "حكاية الخليفة والأعرابي",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "ibrahim-mahdi",
+   "title": "حكاية إبراهيم بن المهدي",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "iram",
+   "title": "حكاية عبد الله بن أبي قلابة وإرم ذات العماد",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "mamun-marriage",
+   "title": "زواج المأمون",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "hashish-eater",
+   "title": "حكاية الحشَّاش والسيدة النبيلة",
+   "level": 2,
+   "parent": "g-hatim"
+  },
+  {
+   "id": "g-false-caliph",
+   "title": "حكاية الخليفة المزوَّر وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "false-caliph",
+   "chapter": true
+  },
+  {
+   "id": "false-caliph",
+   "title": "حكاية الخليفة المزوَّر",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "ali-ajami",
+   "title": "حكاية علي العجمي",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "rashid-abu-yusuf",
+   "title": "حكاية هارون الرشيد وأبي يوسف",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "khalid-thief",
+   "title": "حكاية خالد بن عبد الله مع السارق المزيَّف",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "jafar-bean-seller",
+   "title": "حكاية جعفر البرمكي والفوَّال",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "abu-muhammad-lazybones",
+   "title": "حكاية أبي محمد الكسلان",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "yahya-khalid",
+   "title": "حكاية يحيى بن خالد",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "forger",
+   "title": "حكاية المزوِّر",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "mamun-scholar",
+   "title": "حكاية المأمون والفقيه الغريب",
+   "level": 2,
+   "parent": "g-false-caliph"
+  },
+  {
+   "id": "ali-shar-zumurrud",
+   "title": "حكاية علي شار وزمرد",
+   "level": 1,
+   "joinNextVolume": true,
+   "chapter": true
+  },
+  {
+   "id": "jubayr-budur",
+   "title": "حكاية جبير بن عمير والست بدور",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "yemeni-six-slave-girls",
+   "title": "حكاية اليمني والست جوارٍ",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "g-golden-plate",
+   "title": "حكاية الرجل والصحن من ذهب وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "golden-plate",
+   "chapter": true
+  },
+  {
+   "id": "golden-plate",
+   "title": "حكاية الرجل والصحن من ذهب",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "thief-alexandria",
+   "title": "حكاية اللص ووالي الإسكندرية",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "nasir-three-chiefs",
+   "title": "حكاية الملك الناصر والولاة الثلاثة",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "thief-money-changer",
+   "title": "حكاية اللص والصيرفي",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "qus-highwayman",
+   "title": "حكاية والي قوص وقاطع الطريق",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "ibrahim-mahdi-marriage",
+   "title": "حكاية زواج إبراهيم بن المهدي",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "charity",
+   "title": "حكايات الصدقة",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "abu-hassan-ziyadi",
+   "title": "حكاية أبي حسان الزيادي والخراساني",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "friend-in-need",
+   "title": "حكاية الصديق عند الضيق",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "baghdad-ruined-man",
+   "title": "حكاية إفلاس رجل من بغداد",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "mutawakkil-mahbuba",
+   "title": "حكاية المتوكِّل ومحبوبة",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "wardan-butcher",
+   "title": "حكاية وردان الجزار والمرأة والدب",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "sultan-daughter-ape",
+   "title": "حكاية بنت السلطان والقرد",
+   "level": 2,
+   "parent": "g-golden-plate"
+  },
+  {
+   "id": "ebony-horse",
+   "title": "حكاية الفرس الطائر",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "uns-al-wujud",
+   "title": "حكاية أنس الوجود والورد في الأكمام",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "g-abu-nuwas",
+   "title": "حكاية أبي نواس والغلمان الحسان وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "abu-nuwas",
+   "chapter": true
+  },
+  {
+   "id": "abu-nuwas",
+   "title": "حكاية أبي نواس والغلمان الحسان",
+   "level": 2,
+   "parent": "g-abu-nuwas"
+  },
+  {
+   "id": "love-and-virtue",
+   "title": "من حكايات العشق ومكارم الأخلاق",
+   "level": 2,
+   "parent": "g-abu-nuwas"
+  },
+  {
+   "id": "abdallah-mamar",
+   "title": "حكاية عبد الله بن معمر ورجل من البصرة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "udhri-lover",
+   "title": "حكاية العاشق العذري",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "badr-al-din-yemen",
+   "title": "حكاية بدر الدين وزير اليمن والشيخ",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "school-lovers",
+   "title": "حكاية العاشقين في مكتب التعليم",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "mutalammis",
+   "title": "حكاية المتلمس وزوجته أميمة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rashid-zubayda-pool",
+   "title": "حكاية هارون الرشيد والسيدة زبيدة في البحيرة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rashid-three-poets",
+   "title": "حكاية هارون الرشيد والشعراء الثلاثة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "musab-aisha",
+   "title": "حكاية مصعب بن الزبير وعائشة بنت طلحة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "abu-al-aswad",
+   "title": "حكاية أبي الأسود والجارية الحولاء",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rashid-slave-girls",
+   "title": "حكاية هارون الرشيد والجواري",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "miller-wife",
+   "title": "حكاية الطحان وزوجته",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "simpleton-sharper",
+   "title": "حكاية المغفل والشاطر",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rashid-zubayda-qadi",
+   "title": "حكاية هارون الرشيد والسيدة زبيدة والقاضي",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "hakim",
+   "title": "حكاية الحاكم بأمر الله",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "khosrau-anushirwan",
+   "title": "حكاية كسرى أنوشروان والصبية",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "water-carrier",
+   "title": "حكاية السقَّاء وزوجة الصائغ",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "khusrau-shirin",
+   "title": "حكاية خسرو وشيرين والصياد",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "yahya-poor-man",
+   "title": "حكاية يحيى بن خالد والفقير",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "jafar-musa-amin",
+   "title": "حكاية جعفر بن موسى ومحمد الأمين",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "said-salim",
+   "title": "حكاية سعيد بن سالم وابنا يحيى بن خالد",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "woman-trick",
+   "title": "حكاية مكيدة امرأة مع زوجها",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "israelite-woman",
+   "title": "حكاية الإسرائيلية والشيخين",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "jafar-old-bedouin",
+   "title": "حكاية جعفر البرمكي والشيخ",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "umar-young-man",
+   "title": "حكاية عمر بن الخطاب والشاب الحسن",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "mamun-pyramids",
+   "title": "حكاية المأمون والأهرام",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "thief-merchant",
+   "title": "حكاية اللص وتاجر القماش",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "masrur-ibn-al-qaribi",
+   "title": "حكاية مسرور السيَّاف وابن القاربي",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rashid-son",
+   "title": "حكاية هارون الرشيد وابنه",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "schoolmaster",
+   "title": "حكاية الفقيه والصبيان",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "king-incognito",
+   "title": "حكاية ملك خرج متخفيًا",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "rukh-chick",
+   "title": "حكاية عبد الرحمن المغربي وفرخ الرخِّ",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "adi-hind",
+   "title": "حكاية عدي بن زيد والأميرة هند",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "dibil",
+   "title": "حكاية دعبل الخزاعي والجارية وابن الوليد",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "ishaq-singer",
+   "title": "حكاية إسحاق الموصلي والمغني",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "three-sad-lovers",
+   "title": "حكاية ثلاثة عشَّاق حزَانَى",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "tayy-lovers",
+   "title": "حكاية عشَّاق بني طيٍّ",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "mad-lover",
+   "title": "حكاية العاشق المجنون",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "monk-conversion",
+   "title": "حكاية إسلام الراهب",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "abu-isa",
+   "title": "حكاية أبي عيسى وعشقه لقرَّة العين",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "amin-ibrahim",
+   "title": "حكاية الأمين وعمه إبراهيم بن المهدي",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "mutawakkil-fath",
+   "title": "حكاية المتوكل والفتح بن خاقان",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "races",
+   "title": "حكاية في محاسن اختلاف الأجناس",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "abu-suwayd",
+   "title": "حكاية أبي سويد والعجوز الصبيحة",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "ali-tahir",
+   "title": "حكاية علي بن طاهر والجارية مؤنس",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "abu-al-ayna",
+   "title": "حكاية أبي العيناء عن امرأتين عاشقتين",
+   "level": 3,
+   "parent": "love-and-virtue"
+  },
+  {
+   "id": "ali-misri",
+   "title": "حكاية علي المصري التاجر من بغداد",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "pilgrim-old-woman",
+   "title": "حكاية رجل من الحُجَّاج وامرأة عجوز",
+   "level": 2,
+   "parent": "ali-misri"
+  },
+  {
+   "id": "tawaddud",
+   "title": "حكاية الجارية تودُّد",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "g-angel-of-death",
+   "title": "حكاية الملك المغرور وملك الموت وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "proud-king",
+   "chapter": true
+  },
+  {
+   "id": "proud-king",
+   "title": "حكاية الملك المغرور وملك الموت",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "rich-king",
+   "title": "حكاية الملك الغني ومَلَك الموت",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "tyrant-king",
+   "title": "حكاية مَلِك إسرائيلي جبَّار ومَلَك الموت",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "dhul-qarnayn",
+   "title": "حكاية إسكندر ذي القرنين",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "anushirwan-sick",
+   "title": "حكاية أنو شروان وتظاهُره بالمرض",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "israelite-qadi",
+   "title": "حكاية القاضي الإسرائيلي وزوجته",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "pilgrim-woman-son",
+   "title": "حكاية امرأة مسافرة إلى الحج وابنها",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "devout-slave",
+   "title": "حكاية العبد الأول المتعبِّد",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "israelite-devotee",
+   "title": "حكاية المتعبِّد الإسرائيلي وزوجته",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "hajjaj-prisoner",
+   "title": "حكاية الحجاج بن يوسف الثقفي والسجين المتعبِّد",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "blacksmith-fire",
+   "title": "حكاية الحداد الذي يُدخِل يدَه في النار فلا تعدو عليه",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "israelite-cloud",
+   "title": "حكاية رجل إسرائيلي وسحابة",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "muslim-christian",
+   "title": "حكاية المسلم الجريء والنصراني",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "princess-physician",
+   "title": "حكاية بنت الملك والطبيب",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "prophet-horseman",
+   "title": "حكاية النبي والفارس",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "boatman-sheikh",
+   "title": "حكاية الملَّاح والشيخ",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "israelite-island-king",
+   "title": "حكاية إسرائيلي وملك الجزيرة",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "abu-al-hasan-darraj",
+   "title": "حكاية أبي الحسن الدرَّاج وأبي جعفر المجذوم",
+   "level": 2,
+   "parent": "g-angel-of-death"
+  },
+  {
+   "id": "hasib-karim-al-din",
+   "title": "حكاية مغامرات حاسب كريم الدين",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "buluqiya",
+   "title": "حكاية مغامرات بلوقيا",
+   "level": 2,
+   "parent": "hasib-karim-al-din"
+  },
+  {
+   "id": "janshah",
+   "title": "حكاية جانشاه ابن الملك طيغموس",
+   "level": 3,
+   "parent": "buluqiya"
+  },
+  {
+   "id": "janshah-repeat",
+   "title": "حكاية جانشاه ابن الملك طيغموس",
+   "level": 3,
+   "parent": "buluqiya",
+   "repeat": true
+  },
+  {
+   "id": "sindbad",
+   "title": "حكاية سندباد البحري",
+   "level": 1,
+   "joinNextVolume": true,
+   "chapter": true
+  },
+  {
+   "id": "sindbad-repeat",
+   "title": "حكاية سندباد البحري",
+   "level": 1,
+   "repeat": true,
+   "chapter": false
+  },
+  {
+   "id": "city-of-brass",
+   "title": "حكاية مدينة النحاس",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "seven-viziers",
+   "title": "حكاية الملك وولده والجارية والوزراء السبعة",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "king-vizier-wife",
+   "title": "حكاية الملك وزوجة وزيره",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "merchant-parrot",
+   "title": "حكاية التاجر وزوجته والدرة",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "fuller-son",
+   "title": "حكاية القصار وولده",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "unjust-suspicion",
+   "title": "حكاية اتهام غير عادل في زوجته",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "miser-loaves",
+   "title": "حكاية التاجر البخيل والخبز",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "woman-two-lovers",
+   "title": "حكاية امرأة مع العاشقَيْن",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "prince-ghula",
+   "title": "حكاية ابن الملك والجارية الشنيعة المنظر",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "drop-of-honey",
+   "title": "حكاية قطرة العسل",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "lost-dirham",
+   "title": "حكاية امرأة والدرهم الضائع",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "enchanted-spring",
+   "title": "حكاية عين الماء المسحورة",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "vizier-son-bath-keeper",
+   "title": "حكاية ولد الوزير وزوجة الحمَّامي",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "wife-youth-old-woman",
+   "title": "حكاية امرأة جميلة والشاب والعجوز",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "goldsmith-singer",
+   "title": "حكاية الصائغ والمغنية",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "man-who-never-laughed",
+   "title": "حكاية الرجل الحزين",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "jealous-merchant-prince",
+   "title": "حكاية التاجر الغيور وابن الملك",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "boy-bird-language",
+   "title": "حكاية الغلام ولغة الطير",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "woman-five-suitors",
+   "title": "حكاية امرأة والمعجبين الخمسة",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "three-wishes",
+   "title": "حكاية الدعوات الثلاث",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "stolen-necklace",
+   "title": "حكاية العقد المسروق",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "two-pigeons",
+   "title": "حكاية الحمامتين",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "bahram-datma",
+   "title": "حكاية الأمير بهرام وجارية الملك الدتما",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "merchant-son-house",
+   "title": "حكاية ابن التاجر والدار الحسن المليح",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "prince-ifrit-mistress",
+   "title": "حكاية ابن الملك والجارية والعفريت",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "poisoned-milk",
+   "title": "حكاية اللبن المسموم",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "blind-man-boy",
+   "title": "حكاية الأعمى وابن ثلاث وخمس سنين",
+   "level": 2,
+   "parent": "seven-viziers"
+  },
+  {
+   "id": "judar",
+   "title": "حكاية جودر الصياد وأخويه",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ajib-gharib",
+   "title": "حكاية عجيب وغريب",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "g-utbah",
+   "title": "حكاية عتبة وريَّا وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "utbah-rayya",
+   "chapter": true
+  },
+  {
+   "id": "utbah-rayya",
+   "title": "حكاية عتبة وريَّا",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "hind-divorce",
+   "title": "حكاية طلاق هند بنت النعمان",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "khuzaymah-ikrimah",
+   "title": "حكاية خزيمة بن بشر وعِكْرمة الفياض",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "yunus-walid",
+   "title": "حكاية يونس الكاتب والوليد بن سهل",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "rashid-bedouin-girl",
+   "title": "حكاية هارون الرشيد والبنت البدوية",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "asmai-three-girls",
+   "title": "حكاية الأصمعي والبنات الثلاث",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "ibrahim-mausili-iblis",
+   "title": "حكاية إبراهيم الموصلي وإبليس",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "udhra-lovers",
+   "title": "عاشقان من بني عذرة",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "bedouin-faithful-wife",
+   "title": "حكاية الأعرابي وزوجته الوفية",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "basra-lovers",
+   "title": "حكاية عاشقين من البصرة",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "ishaq-iblis",
+   "title": "إسحاق الموصلي وإبليس",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "medina-lovers",
+   "title": "حكاية عاشقين من أهل المدينة",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "nasir-vizier",
+   "title": "حكاية الملك الناصر ووزيره",
+   "level": 2,
+   "parent": "g-utbah"
+  },
+  {
+   "id": "dalila",
+   "title": "حكاية دليلة المحتالة",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ali-zaybaq",
+   "title": "حكاية علي الزيبق المصري",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ardashir",
+   "title": "حكاية أردشير وحياة النفوس",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "julnar",
+   "title": "حكاية جلناز وبدر باسم",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "sayf-al-muluk",
+   "title": "حكاية سيف الملوك وبديعة الجمال",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "hasan-basra",
+   "title": "حكاية حسن الصائغ",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "khalifa-fisherman",
+   "title": "خليفة الصياد",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "masrur-zayn",
+   "title": "مسرور وزين المواصف",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ali-nur-maryam",
+   "title": "حكاية علي نور الدين ومريم",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "g-shuja",
+   "title": "حكاية الأمير شجاع الدين والمرأة الإفرنجية وحكايات أخرى",
+   "level": 1,
+   "group": true,
+   "before": "shuja-al-din",
+   "chapter": true
+  },
+  {
+   "id": "shuja-al-din",
+   "title": "حكاية الأمير شجاع الدين والمرأة الإفرنجية",
+   "level": 2,
+   "parent": "g-shuja"
+  },
+  {
+   "id": "baghdad-youth",
+   "title": "حكاية الفتى البغدادي والجارية",
+   "level": 2,
+   "parent": "g-shuja"
+  },
+  {
+   "id": "jaliad-shimas",
+   "title": "حكاية الملك جليعاد والشماس",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "cat-mouse",
+   "title": "حكاية السِّنَّوْر والفأر",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "ascetic-butter",
+   "title": "حكاية الناسك المدفوق على رأسه السمن",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "fishes-pond",
+   "title": "حكاية السمك في غدير الماء",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "crow-serpent",
+   "title": "حكاية الغراب والحية",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "wild-ass-fox",
+   "title": "حكاية حمار الوحش والثعلب",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "wandering-prince",
+   "title": "حكاية ابن الملك السائح",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "crows-hawk",
+   "title": "حكاية الغراب",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "serpent-charmer",
+   "title": "حكاية الحاوي وأولاده وزوجته وأهل بيته",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "spider-wind",
+   "title": "حكاية العنكبوت والريح",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "two-kings",
+   "title": "حكاية الملِكَيْن",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "blind-cripple",
+   "title": "حكاية الأعمى والمُقعَد",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "lion-hunter",
+   "title": "حكاية الأسد والصياد",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "fox-wolf-2",
+   "title": "حكاية الثعلب والذئب",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "shepherd-thief",
+   "title": "حكاية الراعي واللص",
+   "level": 2,
+   "parent": "jaliad-shimas"
+  },
+  {
+   "id": "abu-qir-abu-sir",
+   "title": "حكاية أبي قِير وأبي صِير",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "abdallah-sea",
+   "title": "حكاية عبد الله البحري وعبد الله البرِّي",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "rashid-abu-hasan-omani",
+   "title": "حكاية هارون الرشيد وأبي الحسن العماني",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "ibrahim-jamila",
+   "title": "حكاية إبراهيم وجميلة",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "abu-hasan-khorasani",
+   "title": "حكاية أبي الحسن الخراساني",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "qamar-zaman-jeweller",
+   "title": "حكاية قمر الزمان وزوجة الجوهري",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "abdallah-fadil",
+   "title": "حكاية عبد الله بن فاضل وأخوَيْه",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "maruf",
+   "title": "حكاية الإسكافي معروف",
+   "level": 1,
+   "chapter": true
+  },
+  {
+   "id": "conclusion",
+   "title": "الخاتمة",
+   "level": 1,
+   "chapter": true
+  }
+ ]
+}

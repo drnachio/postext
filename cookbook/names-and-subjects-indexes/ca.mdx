@@ -1,0 +1,66 @@
+---
+title: "Un índex onomàstic i un índex de matèries"
+summary: "Les marques amb index=\"names\" van a l'índex de persones i la resta al de matèries; :::index els imprimeix a dues columnes i la maquetació en fixa les pàgines."
+plain: "Un capítol d'un llibre acadèmic sobre la història dels tipus d'impremta. Ensenya a crear dues llistes al final, una de persones i una altra de temes, amb la pàgina on surt cadascun."
+description: "Un capítol de monografia sobre tipus d'impremta que acaba amb un índex onomàstic i un de matèries, tots dos trets de marques :index en un sol Markdown."
+question: "Com imprimeixo un índex onomàstic i un de matèries a partir del mateix text?"
+aliases: ["índex onomàstic", "índex de noms", "índex de matèries", "índex analític", "index of names", "subject index", ":index", ":::index"]
+pageNotes: { "6": "L'índex onomàstic: cognoms invertits sota lletres en Bodoni i pàgines principals en negreta.", "7": "L'índex de matèries: subentrades i remissions amb «Vegeu» i «Vegeu també»." }
+---
+
+## Què compondràs
+
+El capítol quart de *Letras de metal*, una monografia sobre tipus d'impremta de 155 × 235 mm: una columna de Crimson Pro, títols en Bodoni cursiva i un sol color d'accent, vermell maó. L'assaig va de la textura de Gutenberg als moderns de Bodoni, passant per Jenson, Aldo i Griffo, Garamond i Plantin, Caslon i Baskerville, els punts de Fournier i els tipus espanyols que van tallar Pradell i Gil i que va imprimir Ibarra. Acaba com acaben aquests llibres, amb dos índexs en pàgines encarades: impressors, gravadors i mecenes a la parella; tipus, eines i llibres a la senar. Tots dos surten del mateix text marcat, i cada número de pàgina és la pàgina on va caure la marca.
+
+## Elaboració
+
+### 1 · Marca cada persona per a l'índex onomàstic i cada matèria per al principal
+
+La configuració és [la resposta curta](#la-resposta-curta) de més amunt; la resta és al Markdown. Una marca amb `index="names"` va a l'índex que imprimeix `:::index{index="names"}`, i totes les altres a l'índex principal, el que imprimeix `:::index` sense atributs. Així, `:index[Aldo Manucio]{term="Manucio, Aldo" index="names" main}` imprimeix el nom al text i anota una pàgina en negreta sota *Manucio* a l'onomàstic, mentre que `:index[cursiva]{term="Cursiva" main}`, dues línies més avall, anota la mateixa pàgina sota *Cursiva* al de matèries. Una persona que també és matèria del capítol pot portar les dues marques.
+
+### 2 · Inverteix els noms i ordena per la lletra on el lector buscarà
+
+Els noms van amb el cognom al davant: `term="Garamond, Claude"`, `term="Dall’Aglio, Margherita"`. La coma forma part del terme, de manera que l'ordenació posa *Didot, Firmin* abans de *Didot, François-Ambroise*, com faria un indexador. Quan la forma impresa cauria a la lletra equivocada, `sort` dona la clau: l'edició anglesa marca `term="42-line Bible" sort="Forty-two-line Bible"` perquè la Bíblia quedi sota la F i no obri un grup 0–9. Les subentrades (`term="Fundiciones!Plantin-Moretus"`), les pàgines principals en negreta (`main`), `range="start"` i `range="end"` al voltant de l'apartat de Bodoni i les remissions (`see="Cursiva"`, `seealso="Matrices"`) fan la resta. Una destinació amb nivells s'imprimeix amb dos punts: *Humana, lletra. Vegeu Lletra romana: veneciana*.
+
+### 3 · Compon una sola vegada; el document fixa els seus propis números
+
+<Excerpt region="build" />
+
+L'índex imprimeix números de pàgina que només existeixen després de maquetar, i imprimir-lo ocupa pàgines. `buildDocument()` ho resol: maqueta el capítol, llegeix la pàgina de cada marca, imprimeix els dos índexs i torna a maquetar cada vegada que un número canvia. Aquí els índexs van darrere del text, així que la segona passada confirma la primera; un índex col·locat abans del text desplaçaria totes les pàgines següents, i les passades continuarien fins que coincidissin. Afegeix un paràgraf a l'apartat de Bodoni i l'índex onomàstic donarà a Whittingham la seva pàgina nova sense que hi toquis res.
+
+### 4 · Dona a cada índex una obertura sobre dues columnes
+
+<Excerpt region="opener" />
+
+L'estil de títol de la resposta curta fa tres coses per `# Índice onomástico {style="index"}`: obre pàgina (`parity: 'any'`, perquè els dos índexs se segueixin sense una pàgina en blanc), compon a dues columnes separades 7 mm la secció que comença després i, amb `numbered: false`, no compta com a capítol. L'estil reutilitza l'obertura del capítol amb un enfonsament de sis línies i un títol de 20 pt, i les lletres de cada grup repeteixen la seva Bodoni en el color d'accent, amb l'alçada d'una línia de l'índex perquè les columnes no perdin el pas.
+
+### 5 · Posa el nom de l'índex a la pàgina senar
+
+<Excerpt region="running-heads" />
+
+La capçalera de la pàgina senar imprimeix `{chapterTitle}`, i el títol d'un índex és de primer nivell com el de qualsevol capítol, així que les pàgines que el segueixen diuen *Índex de matèries* a dalt. `pages: 'body'` treu les capçaleres de les dues obertures d'índex, que porten un foli al peu.
+
+## Variants
+
+### Imprimeix un únic índex
+
+Treu `index="names"` de les marques de persones i el segon títol: llavors totes les marques van a l'índex principal, noms i matèries en un sol alfabet.
+
+```diff
+-:index[Aldo Manucio]{term="Manucio, Aldo" index="names" main}
++:index[Aldo Manucio]{term="Manucio, Aldo" main}
+```
+
+### Treu les lletres de grup
+
+Un onomàstic tan curt es llegeix bé sense aquestes lletres. `groups.enabled: false` les treu i deixa una línia d'espai entre lletres; l'opció val per als dos índexs.
+
+```diff
+-  groups: { fontFamily: 'Bodoni Moda', fontSize: pt(11), fontWeight: 600, color: col('brick') },
++  groups: { enabled: false },
+```
+
+## Errors freqüents
+
+- La configuració `index` és comuna: els dos índexs comparteixen lletra, interlineat i lletres de grup.
+- Una marca en un peu de figura o en una cel·la de taula s'imprimeix tal qual. Marca la persona al paràgraf que cita la figura.

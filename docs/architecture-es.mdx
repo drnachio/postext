@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: 'Arquitectura técnica del motor de composición tipográfica Postext',
   lang: 'es',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '38 min',
   order: 2,
   plainSummary: "Esta página explica cómo funciona Postext por dentro, y está escrita para programadores. Primero, Postext mide cada palabra sin dibujar nada en pantalla, y por eso es muy rápido. Después calcula dónde va cada línea, cada imagen y cada columna, y guarda ese plan en memoria. Repite el cálculo hasta que nada se mueve. Al final dibuja las páginas terminadas como página web, como imagen en un canvas o como archivo PDF. Si cambias una palabra, solo se vuelve a calcular lo que ha cambiado.",
@@ -95,7 +95,7 @@ desdibujado.
     </tr>
     <tr>
       <td><strong>Backend</strong></td>
-      <td>Destino de renderizado que consume el VDT convergido. Hoy se distribuyen tres: <strong>canvas</strong> (previsualización bitmap), <strong>HTML</strong> (lectura en pantalla basada en DOM) y <strong>PDF</strong> (salida lista para imprimir a través de <code>postext-pdf</code>). Los tres comparten la misma medición (el módulo de medida sobre Pretext).</td>
+      <td>Destino de renderizado que consume el VDT convergido. Hoy se distribuyen tres: <strong>canvas</strong> (previsualización bitmap), <strong>HTML</strong> (lectura en pantalla basada en DOM) y <strong>PDF</strong> (salida lista para imprimir a través de <code>postext-pdf</code>). Los tres comparten la misma medición (el módulo de medida sobre Pretext). Un cuarto, <strong>EPUB</strong> (<code>postext-epub</code>), escribe el libro como libro electrónico a partir de los mismos documentos.</td>
     </tr>
     <tr>
       <td><strong>Pass</strong></td>
@@ -640,9 +640,12 @@ renderToHtmlIndexed(doc, options?): HtmlRenderIndex;    // desglose por página 
 
 // PDF (desde 'postext-pdf')
 renderToPdf(doc, options): Promise<Uint8Array>;
+
+// EPUB (desde 'postext-epub'), los capítulos de un libro en orden
+renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-Como los payloads binarios de los recursos viven fuera de banda, cada backend resuelve los `fileId` a su manera. El backend de canvas mantiene un registro de `CanvasImageSource` decodificados — la aplicación anfitriona registra cada bitmap o SVG una vez con `registerResourceImage(fileId, image)` y el renderizador lo consulta al dibujar. El backend HTML acepta un resolutor `resourceImageUrl(fileId)` en sus opciones y emite etiquetas `<img>` apuntando a las URLs (object URLs, data URIs, rutas de CDN) que devuelva el anfitrión. El backend PDF recibe un proveedor `resourceBytes` y embebe los bytes reales. Los recursos de tabla no necesitan nada de esto — su modelo viaja en línea, y todos los backends dibujan las celdas a partir de la geometría de tabla del VDT.
+Como los payloads binarios de los recursos viven fuera de banda, cada backend resuelve los `fileId` a su manera. El backend de canvas mantiene un registro de `CanvasImageSource` decodificados — la aplicación anfitriona registra cada bitmap o SVG una vez con `registerResourceImage(fileId, image)` y el renderizador lo consulta al dibujar. El backend HTML acepta un resolutor `resourceImageUrl(fileId)` en sus opciones y emite etiquetas `<img>` apuntando a las URLs (object URLs, data URIs, rutas de CDN) que devuelva el anfitrión. El backend PDF recibe un proveedor `resourceBytes` y embebe los bytes reales; el escritor EPUB también recibe uno y guarda cada imagen una sola vez como archivo del libro. Los recursos de tabla no necesitan nada de esto — su modelo viaja en línea, y todos los backends dibujan las celdas a partir de la geometría de tabla del VDT.
 
 `renderToHtmlIndexed` merece una nota: además de la cadena HTML completa, devuelve un desglose por página y por bloque (`HtmlRenderIndex`) para que quien lo llama pueda comparar con un render anterior y parchear solo los subárboles del DOM cuyo HTML cambió de verdad — la ruta de previsualización en vivo del sandbox.
 
@@ -677,6 +680,12 @@ Como los payloads binarios de los recursos viven fuera de banda, cada backend re
       <td><strong>Disponible</strong></td>
     </tr>
     <tr>
+      <td><strong>EPUB</strong></td>
+      <td>Consume el VDT ya medido con Pretext</td>
+      <td>Archivo EPUB 3: un documento XHTML por página impresa (maquetación fija) o por capítulo (maquetación fluida), con las fuentes incrustadas (<code>renderToEpub</code> en <code>postext-epub</code>)</td>
+      <td><strong>Disponible</strong></td>
+    </tr>
+    <tr>
       <td><strong>Server-side</strong></td>
       <td>Pretext + node-canvas</td>
       <td>Renderizado headless para SSR / generación por lotes</td>
@@ -685,7 +694,7 @@ Como los payloads binarios de los recursos viven fuera de banda, cada backend re
   </tbody>
 </table>
 
-Los tres backends disponibles consumen el mismo `VDTDocument`. La división entre `postext` (que exporta los backends de canvas y HTML) y `postext-pdf` (que exporta el backend de PDF) es puramente cuestión de dependencias: el camino PDF arrastra `pdf-lib` y `@pdf-lib/fontkit`, y la mayoría de integraciones web no los necesitan. Instala `postext-pdf` solo cuando realmente quieras emitir bytes PDF.
+Los cuatro backends disponibles consumen el mismo `VDTDocument`. La división entre `postext` (que exporta los backends de canvas y HTML) y `postext-pdf` (que exporta el backend de PDF) es puramente cuestión de dependencias: el camino PDF arrastra `pdf-lib` y `@pdf-lib/fontkit`, y la mayoría de integraciones web no los necesitan. Instala `postext-pdf` solo cuando realmente quieras emitir bytes PDF. `postext-epub` es un paquete aparte por la misma razón, y solo hace falta para libros electrónicos.
 
 **Restricción de solo navegador:** En la Fase 1, toda la computación de composición ocurre en el lado del cliente, en el navegador. El pipeline puede ejecutarse tanto en el hilo principal (`buildDocument`) como dentro de un Web Worker dedicado (`createLayoutWorker` desde `postext/worker`) — la ruta del worker es la integración recomendada para aplicaciones orientadas a UI porque mantiene la medición y el bucle de convergencia fuera del hilo principal, soporta cancelación *last-wins* mediante `AbortSignal`, y posee su propia caché de medición y caché de rasterización de matemáticas para que las reconstrucciones sucesivas sigan siendo baratas. Consulta [Configuración → Ejecutar la composición en un Web Worker](/es/docs/configuration#ejecutar-la-composición-en-un-web-worker) para el patrón de integración completo. El renderizado en servidor sigue siendo una decisión de alcance deliberada para más adelante — clavar primero la experiencia en el navegador, expandir a otros destinos después.
 

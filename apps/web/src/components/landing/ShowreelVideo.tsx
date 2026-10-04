@@ -198,10 +198,10 @@ export function ShowreelVideo({
           // the video shows its poster only until the first play; after the
           // end the button carries it
           style={near ? { backgroundImage: `url(${poster})` } : undefined}
-          className="group absolute inset-0 flex cursor-pointer bg-cover bg-center items-start justify-start p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
+          className="group absolute inset-0 flex cursor-pointer bg-cover bg-center items-start justify-start rtl:justify-end p-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:items-end sm:p-4 md:p-6"
         >
           {/* where the poster leaves room (its centre carries the title): bottom-left, or top-left on phones, where its foot line sits too close */}
-          <span className="flex items-center gap-1.5 rounded-full bg-brand py-0.5 pr-2.5 pl-0.5 font-sans text-[0.7rem] font-semibold text-brand-contrast shadow-[0_12px_40px_-10px_rgba(14,16,20,0.7)] transition-transform duration-300 group-hover:scale-105 sm:gap-2.5 sm:py-2 sm:pr-5 sm:pl-2 sm:text-sm md:text-base">
+          <span className="flex items-center gap-1.5 rounded-full bg-brand py-0.5 pe-2.5 ps-0.5 font-sans text-[0.7rem] font-semibold text-brand-contrast shadow-[0_12px_40px_-10px_rgba(14,16,20,0.7)] transition-transform duration-300 group-hover:scale-105 sm:gap-2.5 sm:py-2 sm:pe-5 sm:ps-2 sm:text-sm md:text-base">
             <span className="flex size-5 items-center justify-center rounded-full bg-brand-contrast/15 sm:size-8 md:size-9">
               <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-px size-2.5 sm:ml-0.5 sm:size-4 md:size-5" fill="currentColor">
                 <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />

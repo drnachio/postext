@@ -1,7 +1,7 @@
 import type {
   ColorValue,
   TableCell,
-  TableCellAlign,
+  TableCellAlignKeyword,
   TableCellImage,
   TableCellVerticalAlign,
   TableCellPos,
@@ -17,8 +17,9 @@ export interface CellRange {
   end: CellPos;
 }
 
-/** Horizontal alignment of a cell's content. */
-export type Align = TableCellAlign;
+/** Horizontal alignment of a cell's content (`'start'` / `'end'` included,
+ *  #371). */
+export type Align = TableCellAlignKeyword;
 
 /** Vertical alignment of a cell's content. */
 export type VAlign = TableCellVerticalAlign;

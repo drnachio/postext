@@ -38,6 +38,7 @@ export const FOLIO_PAPER_STOCKS: Readonly<Record<FolioPaperType, FolioPaperStock
 
 export const DEFAULT_FOLIO_CONFIG: ResolvedFolioConfig = {
   tilt: 22,
+  yaw: 0,
   paper: {
     type: 'uncoated',
     grammage: FOLIO_PAPER_STOCKS.uncoated.grammage,
@@ -56,6 +57,15 @@ export const DEFAULT_FOLIO_CONFIG: ResolvedFolioConfig = {
 const clamp = (value: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, value));
 const finite = (value: number | undefined): value is number => typeof value === 'number' && Number.isFinite(value);
 
+/** The lowest the view may be tilted, as the viewer's orbit allows. */
+export const FOLIO_MAX_TILT = 70;
+
+/** An angle in degrees brought into −180 … 180 (a whole turn is no turn). */
+export function wrapFolioYaw(deg: number): number {
+  const w = ((((deg + 180) % 360) + 360) % 360) - 180;
+  return w === -180 ? 180 : w;
+}
+
 /** `config.folio` with every setting filled in: a paper's unset fields
  *  follow its stock, `auto` finishes and textures too, and the cover
  *  material follows the binding. */
@@ -67,7 +77,8 @@ export function resolveFolioConfig(partial?: FolioConfig): ResolvedFolioConfig {
   const binding = partial?.binding?.type ?? d.binding.type;
   const material = partial?.binding?.coverMaterial;
   return {
-    tilt: finite(partial?.tilt) ? clamp(partial.tilt, 0, 40) : d.tilt,
+    tilt: finite(partial?.tilt) ? clamp(partial.tilt, 0, FOLIO_MAX_TILT) : d.tilt,
+    yaw: finite(partial?.yaw) ? wrapFolioYaw(partial.yaw) : d.yaw,
     paper: {
       type,
       grammage: finite(paper?.grammage) && paper.grammage > 0 ? clamp(paper.grammage, 20, 2500) : stock.grammage,
@@ -107,6 +118,7 @@ export function stripFolioDefaults(folio?: FolioConfig): FolioConfig | undefined
   const d = DEFAULT_FOLIO_CONFIG;
   const result: FolioConfig = {};
   if (folio.tilt !== undefined && folio.tilt !== d.tilt) result.tilt = folio.tilt;
+  if (folio.yaw !== undefined && wrapFolioYaw(folio.yaw) !== d.yaw) result.yaw = folio.yaw;
 
   if (folio.paper) {
     const type = folio.paper.type ?? d.paper.type;

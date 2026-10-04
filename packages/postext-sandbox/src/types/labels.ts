@@ -30,6 +30,7 @@ export interface SandboxLabels {
   html: string;
   pdf: string;
   folio: string;
+  epub: string;
   folioRegion: string;
   folioPrev: string;
   folioNext: string;
@@ -39,6 +40,7 @@ export interface SandboxLabels {
   folioLoading: string;
   folioToolbar: string;
   folioResetView: string;
+  folioSaveView: string;
   /** The Folio bar's interaction modes: what the left button does. */
   folioModes: string;
   folioModeHand: string;
@@ -68,6 +70,32 @@ export interface SandboxLabels {
   /** Shown instead of the embedded PDF where the browser cannot show one inside the page (phones). */
   pdfInlineUnavailable: string;
   pdfOpen: string;
+
+  // EPUB viewport: the reader of the generated file and its toolbar.
+  // `__size__` = file size, `__chapter__`/`__count__` = chapter being laid
+  // out, `__done__`/`__total__` = documents written, `__family__`,
+  // `__file__`, `__detail__` = what a warning is about, `__page__` /
+  // `__index__` = position in the book.
+  epubToolbar: string;
+  epubReader: string;
+  epubDownload: string;
+  epubDownloadSize: string;
+  epubGenerating: string;
+  epubProgressLayout: string;
+  epubProgressInputs: string;
+  epubProgressDocuments: string;
+  epubProgressPackage: string;
+  epubReady: string;
+  epubError: string;
+  epubContents: string;
+  epubWarnings: string;
+  epubWarningMissingImage: string;
+  epubWarningMissingFont: string;
+  epubWarningMissingFace: string;
+  epubWarningFontWithheld: string;
+  epubWarningUnsupported: string;
+  epubPageFrame: string;
+  epubChapterFrame: string;
 
   // Page section
   page: string;
@@ -129,6 +157,12 @@ export interface SandboxLabels {
   numberFormatCjkEarthlyBranch: string;
   numberFormatCircledDecimal: string;
   numberFormatFullwidthDecimal: string;
+  numberFormatArabicIndic: string;
+  numberFormatPersian: string;
+  numberFormatAbjad: string;
+  numberFormatHijai: string;
+  numberFormatArabicAbjad: string;
+  numberFormatArabicAbjadMaghrebi: string;
   separatorSpace: string;
   separatorIdeographicSpace: string;
   separatorNone: string;
@@ -178,10 +212,16 @@ export interface SandboxLabels {
   warningsLooseLineTitle: string;
   warningsCjkLooseLineTitle: string;
   warningsCjkLooseLineDetail: string;
+  warningsUnbreakableWordOverflowTitle: string;
+  warningsUnbreakableWordOverflowDetail: string;
+  warningsJoiningScriptLetterSpacingTitle: string;
+  warningsJoiningScriptLetterSpacingDetail: string;
   warningsCjkMarksLeadingTitle: string;
   warningsCjkMarksLeadingDetail: string;
   warningsRubyLeadingTitle: string;
   warningsRubyLeadingDetail: string;
+  warningsArabicMarksLeadingTitle: string;
+  warningsArabicMarksLeadingDetail: string;
   warningsHeadingHierarchyTitle: string;
   warningsHeadingHierarchyDetail: string;
   warningsConsecutiveHeadingsTitle: string;
@@ -340,6 +380,11 @@ export interface SandboxLabels {
   footnotesNumberFormatTooltip: string;
   footnotesMarkerPosition: string;
   footnotesMarkerPositionTooltip: string;
+  footnotesMarkerTemplate: string;
+  footnotesMarkerTemplateTooltip: string;
+  footnotesNoteNumberPosition: string;
+  footnotesNoteNumberPositionTooltip: string;
+  footnotesNoteNumberPositionAuto: string;
   footnotesMarkerPositionAuto: string;
   footnotesMarkerPositionSuperscript: string;
   footnotesMarkerPositionInline: string;
@@ -462,6 +507,26 @@ export interface SandboxLabels {
   chineseDefaultsListNumbers: string;
   chineseDefaultsNoNumber: string;
   chineseDefaultsBecomes: string;
+  documentDirection: string;
+  documentDirectionTooltip: string;
+  documentDirectionLtr: string;
+  documentDirectionRtl: string;
+  numerals: string;
+  numeralsTooltip: string;
+  numeralsLatn: string;
+  numeralsArab: string;
+  numeralsArabext: string;
+  arabicDefaults: string;
+  arabicDefaultsTooltip: string;
+  arabicDefaultsFaces: string;
+  arabicDefaultsDesignFonts: string;
+  arabicDefaultsClassical: string;
+  arabicDefaultsModern: string;
+  arabicDefaultsNothing: string;
+  arabicDefaultsApplied: string;
+  arabicDefaultsAppliedOne: string;
+  arabicDefaultsUndone: string;
+  arabicDefaultsUndonePartial: string;
   pageMarginsFromGrid: string;
   cjkEmphasis: string;
   cjkEmphasisTooltip: string;
@@ -533,6 +598,29 @@ export interface SandboxLabels {
   bodyFontWeightTooltip: string;
   bodyBoldFontWeight: string;
   bodyBoldFontWeightTooltip: string;
+  bodyEmphasis: string;
+  bodyEmphasisTooltip: string;
+  bodyEmphasisItalic: string;
+  bodyEmphasisBold: string;
+  bodyEmphasisColor: string;
+  bodyEmphasisOverline: string;
+  bodyTashkil: string;
+  bodyTashkilTooltip: string;
+  bodyTashkilKeep: string;
+  bodyTashkilStrip: string;
+  bodyTashkilStripVowels: string;
+  bodyKashida: string;
+  bodyKashidaTooltip: string;
+  bodyKashidaPatterns: string;
+  bodyKashidaPatternsTooltip: string;
+  bodyKashidaPatternsAuto: string;
+  bodyKashidaPatternsNaskh: string;
+  bodyKashidaPatternsSimple: string;
+  bodyKashidaPatternsNastaliq: string;
+  bodyKashidaPerWord: string;
+  bodyKashidaPerWordTooltip: string;
+  bodyKashidaMaxLength: string;
+  bodyKashidaMaxLengthTooltip: string;
   bodyHyphenationLocale: string;
   bodyHyphenationLocaleTooltip: string;
   bodyHyphenationRagged: string;
@@ -663,6 +751,8 @@ export interface SandboxLabels {
   headingNumberingTemplatePlaceholder: string;
   headingNumberSeparator: string;
   headingNumberSeparatorTooltip: string;
+  headingNumberReplacesTitle: string;
+  headingNumberReplacesTitleTooltip: string;
   headingLevelSnapToGrid: string;
   headingLevelSnapToGridTooltip: string;
   headingItalic: string;
@@ -848,6 +938,8 @@ export interface SandboxLabels {
   sideColumnSideTooltip: string;
   sideColumnSideRight: string;
   sideColumnSideLeft: string;
+  sideTextStart: string;
+  sideTextEnd: string;
   sideColumnSideOuter: string;
   sideColumnSideInner: string;
   columnRule: string;
@@ -925,6 +1017,8 @@ export interface SandboxLabels {
   folioAuto: string;
   folioTilt: string;
   folioTiltTooltip: string;
+  folioYaw: string;
+  folioYawTooltip: string;
   folioPaperType: string;
   folioPaperTypeTooltip: string;
   folioPaperUncoated: string;
@@ -1042,6 +1136,7 @@ export interface SandboxLabels {
   fontPickerGoogleGroup: string;
   fontPickerChineseSimplifiedGroup: string;
   fontPickerChineseTraditionalGroup: string;
+  fontPickerArabicGroup: string;
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
@@ -1129,6 +1224,14 @@ export interface SandboxLabels {
   pdfScopeBook: string;
   canvasScope: string;
   canvasScopeBookTooLong: string;
+  /** The EPUB tab's rendition choice, in the place of a scope selector
+   *  (the tab always takes the whole book): a fixed layout or a
+   *  reflowable book, each with a one-sentence explanation. */
+  epubLayout: string;
+  epubLayoutFixed: string;
+  epubLayoutReflowable: string;
+  epubLayoutFixedHint: string;
+  epubLayoutReflowableHint: string;
   importFileChapter: string;
   exportFileChapter: string;
   warningsChapterLabel: string;
@@ -1209,9 +1312,13 @@ export interface SandboxLabels {
    *  it numbers in decimal. `__used__` is the decimal spelling used. */
   warningsUnknownNumberFormatTitle: string;
   warningsUnknownNumberFormatDetail: string;
+  warningsUnknownNumeralsTitle: string;
+  warningsUnknownNumeralsDetail: string;
   warningsUnknownConfigKeyTitle: string;
   warningsUnknownConfigKeyDetail: string;
   warningsUnknownConfigKeySuggestion: string;
+  warningsUnknownConfigValueTitle: string;
+  warningsUnknownConfigValueDetail: string;
 
   // Color palette section
   colorPalette: string;
@@ -1484,6 +1591,9 @@ export interface SandboxLabels {
   resourceTableLabel: string;
   resourceTableStyleLabel: string;
   resourceTableStyleHint: string;
+  resourceTableDirectionLabel: string;
+  resourceTableDirectionHint: string;
+  resourceTableDirectionDocument: string;
   resourceTableStyleDefault: string;
   resourceTableStyleMissing: string;
   resourcePreviewEmptyTable: string;
@@ -1808,6 +1918,8 @@ export interface SandboxLabels {
   calloutStyleLabelPosition: string;
   calloutStyleLabelPositionTopRight: string;
   calloutStyleLabelPositionTopLeft: string;
+  calloutStyleLabelPositionTopStart: string;
+  calloutStyleLabelPositionTopEnd: string;
   calloutStyleLabelHeight: string;
   calloutStyleLabelPaddingX: string;
   calloutStyleLabelOffset: string;
@@ -2102,6 +2214,8 @@ export interface SandboxLabels {
   indexSeeItalic: string;
   indexLocale: string;
   indexLocaleTooltip: string;
+  indexIgnoreArticle: string;
+  indexIgnoreArticleTooltip: string;
   indexGroupBy: string;
   indexGroupByTooltip: string;
   indexGroupByAuto: string;
@@ -2291,6 +2405,12 @@ export interface SandboxLabels {
   partsPageTooltip: string;
   headerFooterElementTextAlign: string;
   headerFooterElementTextAlignTooltip: string;
+  headerFooterElementTextDirection: string;
+  headerFooterElementTextDirectionTooltip: string;
+  headerFooterElementTextDirectionDocument: string;
+  headerFooterElementTextDirectionAuto: string;
+  headerFooterElementAlignStart: string;
+  headerFooterElementAlignEnd: string;
   bodyTypeSample: string;
   bodyTypeSampleCaption: string;
   bodyGroupTypeface: string;
@@ -2364,6 +2484,7 @@ export interface SandboxLabels {
   colorHexInvalid: string;
   abbrHtml: string;
   abbrPdf: string;
+  abbrEpub: string;
   pdfReady: string;
   layoutDone: string;
   editorKeyboardHint: string;

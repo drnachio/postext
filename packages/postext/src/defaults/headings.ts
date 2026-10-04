@@ -1,5 +1,5 @@
 import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ClosingBoxLever, KeepWithNextSplit, ColorValue, Dimension } from '../types';
-import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
 import { resolveDesignSlot } from './headerFooter';
 
 const DEFAULT_BREAK_BEFORE: ResolvedHeadingBreakBeforeConfig = { enabled: false, parity: 'any' };
@@ -96,7 +96,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalFont = partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
   const generalLineHeight = partial.lineHeight ?? DEFAULT_HEADINGS_CONFIG.lineHeight;
   const generalColor = partial.color ?? DEFAULT_HEADINGS_CONFIG.color;
-  const generalTextAlign = partial.textAlign ?? DEFAULT_HEADINGS_CONFIG.textAlign;
+  const generalTextAlign = startEndAsLeftRight(partial.textAlign ?? DEFAULT_HEADINGS_CONFIG.textAlign);
   const generalFontWeight = partial.fontWeight ?? DEFAULT_HEADINGS_CONFIG.fontWeight;
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
@@ -152,6 +152,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       marginBottom: override?.marginBottom ?? generalMarginBottom,
       numberingTemplate: override?.numberingTemplate ?? def.numberingTemplate,
       numberSeparator: override?.numberSeparator ?? def.numberSeparator,
+      ...(override?.numberPosition === 'replace' ? { numberPosition: 'replace' as const } : {}),
       italic: override?.italic ?? def.italic,
       letterSpacing: override?.letterSpacing ?? def.letterSpacing,
       breakBefore: resolveBreakBefore(override?.breakBefore, def.breakBefore),
@@ -185,6 +186,7 @@ export function resolveHeadingLevelOverrides(
   if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
   if (partial.marginBottom !== undefined) out.marginBottom = partial.marginBottom;
   if (partial.numberSeparator !== undefined) out.numberSeparator = partial.numberSeparator;
+  if (partial.numberPosition === 'replace' || partial.numberPosition === 'before') out.numberPosition = partial.numberPosition;
   if (partial.italic !== undefined) out.italic = partial.italic;
   if (partial.letterSpacing !== undefined) out.letterSpacing = partial.letterSpacing;
   if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
@@ -386,6 +388,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       }
       if (level.numberSeparator !== undefined && level.numberSeparator !== def.numberSeparator) {
         entry.numberSeparator = level.numberSeparator;
+        levelHasOverride = true;
+      }
+      if (level.numberPosition === 'replace') {
+        entry.numberPosition = level.numberPosition;
         levelHasOverride = true;
       }
       if (level.italic !== undefined && level.italic !== def.italic) {

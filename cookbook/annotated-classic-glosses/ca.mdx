@@ -1,0 +1,77 @@
+---
+title: "Clàssic anotat amb glosses al marge"
+summary: "El berenar de bojos d'Alícia en edició anotada: glosses verdes i vermelles al marge exterior, al costat del que expliquen, amb crides del mateix color."
+plain: "Unes pàgines d'Alícia al país de les meravelles amb notes de l'editor al marge. Cada nota va al costat de les línies que explica, marcada amb una lletra de color."
+description: "El capítol VII d'Alícia en Postext com a edició anotada, a columna i mitja, amb la columna lateral reservada a les glosses i sempre al costat del tall exterior."
+question: "Com poso glosses al marge, al costat del paràgraf que expliquen, en lloc de notes a peu de pàgina?"
+aliases: ["notes al marge", "glosses marginals", "marginalia", "edició anotada", "alternativa a les notes a peu de pàgina", "notes de l'editor", "crides de nota en color", "Alícia al país de les meravelles", "Lewis Carroll", "caplletra a l'entradeta"]
+pageNotes: { "1": "El capítol VII s'obre sota una aquarel·la de la taula del te, sota un arbre, vista des de dalt: unes estovalles llargues i blanques amb tasses sobre la gespa verda, una tetera vermella, el pa amb mantega i el rellotge del Barreter amb la seva cadena, el Liró adormit dins d'una tetera en un extrem i una butaca vermella a l'altre. A sota van l'avanttítol CHAPTER VII en vermell, el títol A Mad Tea-Party i una entradeta de quatre línies en cursiva que comença amb una caplletra verda. La nota sobre aquesta edició queda al marge dret, al costat de l'entradeta. La glossa a (la Llebre de Març, en verd) acompanya el primer paràgraf i la b (el Barreter, en vermell) va a sota; les lletres volades a i b d'aquest paràgraf porten els mateixos colors.", "2": "Una pàgina parella: la columna de text a la dreta i les glosses a l'esquerra, la c sobre els cabells d'Alícia i la d sobre l'endevinalla en vermell, la e sobre la lògica del Barreter en verd i la f sobre la data en vermell, a baix, cadascuna al costat del paràgraf que porta la seva lletra volada.", "3": "Una pàgina senar: les glosses a la dreta, la g sobre la millor mantega i la h sobre el Liró, totes dues en verd i cadascuna a l'altura de la línia que porta la seva lletra. El fragment acaba dues línies per sobre del peu, amb el «I dare say you never even spoke to Time!» del Barreter." }
+---
+
+## Què compondràs
+
+El començament del capítol VII d'*Alice’s Adventures in Wonderland*, el berenar de bojos, en tres pàgines d'una edició anotada de 156 × 234 mm. El text de Carroll va en una columna justificada d'Unna, d'uns 66 caràcters per línia. Un canal de 33 mm al costat del tall exterior recull les vuit glosses de l'editor, cadascuna al costat del paràgraf que porta la seva crida, a la dreta a les pàgines senars i a l'esquerra a les parelles. Les de paraules i acudits van en verd i les d'història en vermell, igual que les lletres que les criden. El capítol s'obre sota una aquarel·la de la taula del te vista des de dalt, amb el número, el títol en Rozha One i una entradeta en cursiva amb caplletra verda, i al marge, al costat de l'entradeta, va la nota sobre aquesta edició.
+
+## Elaboració
+
+### 1 · Deixa el tall exterior per a les glosses
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. En una [disposició en columna i mitja](/ca/docs/configuration#tipus-de-disposició), `sideColumnPercent: 26` dona a la columna lateral 33 dels 127 mm que hi ha entre marges, i al text li queden 89,5 mm després de l'espai entre columnes de 4,5 mm. Amb `sideColumnRole: 'floats'` el text de Carroll no entra a la columna lateral, que només rep el que s'hi col·loca amb `span: 'side'`. Una [nota a peu de pàgina](/ca/docs/document-format#notes-a-peu-de-pàgina) espera al peu de la columna, sota un filet; al marge, cada glossa queda a l'altura de la línia que explica i les glosses no treuen línies a la columna de text. Els dos estils de glossa només es diferencien en el color del filet i del títol, així que el lector distingeix una glossa sobre una paraula d'una altra sobre història abans de llegir-la.
+
+### 2 · Reflecteix la pàgina perquè el canal segueixi el tall exterior
+
+<Excerpt region="page" />
+
+Amb `mirror: true` els marges s'intercanvien a cada pàgina parella, i `sideColumnSide: 'outer'` hi porta el canal, així que les glosses baixen per la dreta de les <PageRef page={1}>pàgines 81</PageRef> i <PageRef page={3}>83</PageRef> i per l'esquerra de la <PageRef page={2}>82</PageRef>. Els marges de 22 mm a dalt i a baix deixen 190 mm, lloc per a 38 línies de 14 pt, i cada glossa comença en una línia d'aquesta mateixa retícula.
+
+### 3 · Posa cada glossa abans del paràgraf que explica
+
+<Excerpt region="text" />
+
+Un requadre amb `span="side"` a la seva [tanca `:::callout`](/ca/docs/configuration#el-contenidor-callout) surt del flux i es col·loca al canal a l'altura del bloc que segueix la tanca. Per això la tanca de cada glossa va just abans del paràgraf que porta la seva crida, com a l'exemple de sota. Les glosses a i b acompanyen el primer paràgraf, de manera que les seves tanques queden entre el títol i aquest paràgraf. A la 1.4.1 els dos requadres compten llavors com el bloc que segueix el títol, i `indentAfterHeading: false` no arribaria al paràgraf. La configuració deixa aquesta opció en el seu valor per defecte i és l'estil `opening` el que treu el sagnat al paràgraf. El cos està ajustat a la columna: a 9,5 pt, el paràgraf que comença «“Have some wine,”» cap en una línia de 89,5 mm, i a 10,4 pt totes les mesures entre 77 i 93 mm li deixaven una última línia curta, com «ing tone.» o «tone.». L'espai entre paraules d'Unna és estret, 0,22 em, i amb el `minWordSpacing` per defecte, 0,6, una línia de la pàgina 83 el reduïa al 0,69 de la seva amplada; amb `minWordSpacing: 0.75` aquesta línia ja no és possible.
+
+```markdown
+:::callout{type="context" span="side" title="c · Hair"}
+Tenniel drew Alice with long, loose hair. …
+:::
+
+“Your hair wants cutting,”:chip[^c^]{style="context"} said the Hatter. …
+```
+
+### 4 · Dona a cada lletra el color de la seva glossa
+
+<Excerpt region="letters" />
+
+El Markdown no té marca per al text en color, però un estil de [chip](/ca/docs/document-format#xips-en-línia) sí que fixa un color de text, així que cada crida és un chip l'estil del qual es diu igual que el tipus de la seva glossa. `:chip[^c^]{style="context"}` imprimeix una c vermella, el mateix vermell del filet i del títol de la glossa c. Sense fons, contorn, farciment ni separació, el chip no afegeix amplada i cada línia es talla on es tallava amb un `^c^` sense res més.
+
+### 5 · Obre el capítol sota la taula del te
+
+<Excerpt region="opener" />
+
+La [ranura de disseny](/ca/docs/configuration#span-i-disseny-avançat) del títol ocupa tota la pàgina perquè l'aquarel·la pugui arribar al tall. Un element d'imatge no reserva alçada, així que l'avanttítol, el títol i l'entradeta pengen sota l'aquarel·la i són ells els que fixen la reserva, que acaba al text més baix, arrodonida a la retícula; el marge inferior que el títol porta per defecte afegeix una línia en blanc. Amb una entradeta de quatre línies el text comença a la línia 23, i una cinquena el baixaria a la 24. El número, l'entradeta i la nota sobre aquesta edició surten d'[atributs del títol](/ca/docs/document-format#atributs-dencapçalament), `{num="VII" headnote="…" source="…"}`. El número es pren d'aquí perquè `{chapterNumber}` imprimiria 1 en un fragment que és un document a part. El text de disseny no es justifica mai, així que la caplletra obre l'entradeta de l'editor, en cursiva i en bandera, i el text de Carroll comença justificat a sota, ja al flux. `dropSize()` calcula el cos de la caplletra perquè la seva part superior quedi a l'altura de les majúscules de la primera línia de l'entradeta.
+
+### 6 · Dona a cada glossa el color del que explica
+
+<Excerpt region="palette" />
+
+El verd gespa marca les glosses sobre paraules, dites i acudits, i el vermell melmelada les de persones, dates i història del text. N'hi ha prou amb un valor nou a `jam`, al mateix objecte `palette`, per tornar a pintar alhora les glosses d'història, les seves crides i l'avanttítol; l'aquarel·la de dalt es va triar per aquest mateix verd gespa i aquest vermell melmelada. Cada color enllaçat porta a més el seu hex, perquè la 1.4.1 pinta l'obertura i les capçaleres amb l'hex (ho explica «Errors freqüents»).
+
+## Variants
+
+### Deixa les glosses a la dreta a totes les pàgines
+
+Per a una edició que es llegeix pàgina a pàgina en pantalla, desactiva els marges simètrics: `'outer'` passa a ser la vora dreta de totes les pàgines, i les capçaleres no es mouen, perquè van ancorades a les vores de la pàgina.
+
+```diff
+-    mirror: true } };
++    mirror: false } };
+```
+
+### Porta les notes llargues al peu de la pàgina
+
+Escriu com a nota a peu de pàgina la que no càpiga al marge, amb `[^1]` al text i la seva definició `[^1]:` sota el paràgraf: Postext la compon al peu de la columna de text, a 89,5 mm d'amplada i sota un filet curt, i les glosses conserven el canal. <RecipeLink slug="novel-footnotes-column-foot">Notes al peu de la columna que les cita</RecipeLink> mostra com donar estil a aquestes notes.
+
+## Errors freqüents
+
+- Les glosses s'apilen en l'ordre del Markdown, l'una sota l'altra, així que una glossa llarga empeny cap avall la següent. A la <PageRef page={1}>pàgina 81</PageRef> les dues crides cauen a la segona línia del primer paràgraf: la glossa a comença a l'altura del paràgraf i la b a continuació, cinc línies per sota de la seva crida. On les crides quedin a prop, escriu glosses breus.
+- L'error «Un requadre lateral després d'un títol sagna el paràgraf següent», a dalt, aconsella posar el requadre després del primer paràgraf. Una glossa amb la tanca allà comença al costat del segon paràgraf (ho explica «Un requadre lateral comença a l'altura del bloc que segueix la seva tanca»), així que aquesta edició deixa les dues tanques abans del primer paràgraf i li treu el sagnat amb l'estil `opening`.

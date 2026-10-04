@@ -28,7 +28,7 @@ export function ContentsRow({ item, labels }: { item: ContentsItem; labels: Plat
             <span className="font-display text-[1.08rem] leading-snug font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) sm:text-[1.15rem]">
               {recipe.title}
               {recipe.draft && (
-                <span className="ml-2 inline-block rounded-[3px] bg-red-band px-1.5 py-0.5 align-middle font-sans text-[0.52rem] font-bold tracking-[0.14em] text-white uppercase">
+                <span className="ms-2 inline-block rounded-[3px] bg-red-band px-1.5 py-0.5 align-middle font-sans text-[0.52rem] font-bold tracking-[0.14em] text-white uppercase">
                   {labels.draft}
                 </span>
               )}
@@ -47,7 +47,7 @@ export function ContentsRow({ item, labels }: { item: ContentsItem; labels: Plat
           )}
           {reason && (
             <span className="mt-1 block truncate font-mono text-[0.68rem] text-slate">
-              <span aria-hidden="true">↳ </span>
+              <span aria-hidden="true"><span className="inline-block rtl:-scale-x-100">↳</span> </span>
               {reason}
             </span>
           )}

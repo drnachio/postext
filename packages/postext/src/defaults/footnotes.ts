@@ -1,6 +1,6 @@
 import type { FootnotesConfig, ResolvedFootnotesConfig } from '../types';
 import { parseNumberFormat } from '../numbering';
-import { dimensionsEqual, colorsEqual } from './shared';
+import { dimensionsEqual, colorsEqual, startEndAsLeftRight } from './shared';
 
 export const DEFAULT_FOOTNOTES_CONFIG: ResolvedFootnotesConfig = {
   placement: 'column',
@@ -41,11 +41,17 @@ export function resolveFootnotesConfig(partial?: FootnotesConfig, locale?: strin
       ? position
       : numberFormat === 'circled-decimal' ? 'inline' : 'superscript',
     markerSize: markerSize && Number.isFinite(markerSize.value) && markerSize.value > 0 ? markerSize : d.markerSize,
+    ...(typeof partial.markerTemplate === 'string' && partial.markerTemplate !== '{n}' && partial.markerTemplate.includes('{n}')
+      ? { markerTemplate: partial.markerTemplate }
+      : {}),
+    ...(partial.noteNumberPosition === 'superscript' || partial.noteNumberPosition === 'inline'
+      ? { noteNumberPosition: partial.noteNumberPosition }
+      : {}),
     chapterEndAlign: partial.chapterEndAlign === 'text' ? 'text' : 'foot',
     fontSize: partial.fontSize ?? d.fontSize,
     lineHeight: partial.lineHeight ?? d.lineHeight,
     ...(partial.color ? { color: partial.color } : {}),
-    ...(partial.textAlign ? { textAlign: partial.textAlign } : {}),
+    ...(partial.textAlign ? { textAlign: startEndAsLeftRight(partial.textAlign) } : {}),
     hangingIndent: partial.hangingIndent ?? d.hangingIndent,
     spaceBetween: partial.spaceBetween ?? d.spaceBetween,
     spaceAbove: partial.spaceAbove ?? d.spaceAbove,
@@ -68,6 +74,8 @@ export function stripFootnotesDefaults(footnotes?: FootnotesConfig): FootnotesCo
   if (footnotes.numberFormat !== undefined && parseNumberFormat(footnotes.numberFormat) !== d.numberFormat) result.numberFormat = footnotes.numberFormat;
   if (footnotes.markerPosition !== undefined && footnotes.markerPosition !== 'auto') result.markerPosition = footnotes.markerPosition;
   if (footnotes.markerSize && !dimensionsEqual(footnotes.markerSize, d.markerSize)) result.markerSize = footnotes.markerSize;
+  if (footnotes.markerTemplate !== undefined && footnotes.markerTemplate !== '{n}') result.markerTemplate = footnotes.markerTemplate;
+  if (footnotes.noteNumberPosition !== undefined && footnotes.noteNumberPosition !== 'auto') result.noteNumberPosition = footnotes.noteNumberPosition;
   if (footnotes.chapterEndAlign !== undefined && footnotes.chapterEndAlign !== d.chapterEndAlign) result.chapterEndAlign = footnotes.chapterEndAlign;
   if (footnotes.fontSize && !dimensionsEqual(footnotes.fontSize, d.fontSize)) result.fontSize = footnotes.fontSize;
   if (footnotes.lineHeight && !dimensionsEqual(footnotes.lineHeight, d.lineHeight)) result.lineHeight = footnotes.lineHeight;

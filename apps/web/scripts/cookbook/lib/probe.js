@@ -18,6 +18,8 @@ const LATIN = [
   [0x2212, 0x2212], [0x2215, 0x2215], [0xfeff, 0xfeff], [0xfffd, 0xfffd],
 ];
 const MAIN_COLOR = '#295AA3';
+/** Content warnings on how the text is set that C5 reports. */
+const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing']);
 const FALLBACK_DIRECTIVES = ['pagebreak', 'numbering', 'columnbreak', 'space', 'toc'];
 const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns', 'paper'];
 /** The parser's own fence patterns (packages/postext/src/parse/blockParser.ts). */
@@ -116,6 +118,11 @@ export function pdfState() {
   return { bytes: cb.pdf?.length ?? 0, error: cb.pdfError ?? null, fontFailures: cb.fontFailures ?? [], ms: round(cb.pdfMs ?? 0) };
 }
 
+/** The EPUBs the pen wrote (shim postext-epub.js), each read back. */
+export function epubState() {
+  return (record().epubs ?? []).map((epub) => ({ ...epub, ms: round(epub.ms) }));
+}
+
 export function pdfBase64() {
   const bytes = record().pdf;
   if (!bytes) return null;
@@ -186,9 +193,11 @@ function rangesOf(unicodeRange) {
 }
 
 /** Families served by unicode-range slices that reach the Han ideographs
- *  (the cjk kit block adds every file of such a face, loaded or not), with
- *  the code points their files cover: the PDF's cjkPdfProvider hands over
- *  whichever of those files the pages need. */
+ *  (the cjk kit block adds every file of such a face, loaded or not) or the
+ *  Arabic letters (the arabic block adds each face's arabic file next to
+ *  the latin ones loadFonts adds), with the code points their files cover:
+ *  the PDF's cjkPdfProvider and arabicPdfProvider hand over whichever of
+ *  those files the pages need. */
 function slicedFamilies() {
   const out = new Map();
   for (const face of document.fonts) {
@@ -199,7 +208,8 @@ function slicedFamilies() {
     out.set(family, list);
   }
   for (const [family, ranges] of out) {
-    if (!ranges.some(([lo, hi]) => lo <= 0x4e00 && hi >= 0x4e00) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+    const reaches = (cp) => ranges.some(([lo, hi]) => lo <= cp && hi >= cp);
+    if (!(reaches(0x4e00) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
       out.delete(family);
     }
   }
@@ -557,9 +567,10 @@ export function facts({ select = 'last', hero = [] } = {}) {
   const used = new Map();
   const garbage = [];
   const outside = new Map();
-  // C12: a character set in a CJK face from a file that was not loaded when
-  // the layout ran was measured in a fallback face (loadCjkFonts was not
-  // given it). The shim notes the faces loaded as each build starts.
+  // C12: a character set in a CJK or Arabic face from a file that was not
+  // loaded when the layout ran was measured in a fallback face (loadCjkFonts
+  // was not given it, or loadArabicFonts not the weight). The shim notes the
+  // faces loaded as each build starts.
   const atLayout = new Map();
   for (const [family, weight, style, range] of build.fonts ?? []) {
     if (!sliced.has(family)) continue;
@@ -582,7 +593,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (placeholders.has(ch)) continue;
       const cp = ch.codePointAt(0);
       if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
-      // A CJK face loaded by slices takes the character from its own files.
+      // A CJK or Arabic face loaded by slices takes the character from its own files.
       if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
       outside.set(ch, where);
     }
@@ -661,6 +672,16 @@ export function facts({ select = 'last', hero = [] } = {}) {
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
       detail: w.target ?? w.term ?? '',
     })));
+  // Content warnings about how the text is set, which no source check sees
+  // either: Arabic vowel marks that reach the next line (#376), a word wider
+  // than its measure, letter-spacing a joining script ignores (#368).
+  out.textWarnings = docs.flatMap((doc) => (doc.contentWarnings ?? [])
+    .filter((w) => TEXT_WARNING_KINDS.has(w.kind))
+    .map((w) => ({
+      kind: w.kind,
+      page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
+      detail: w.text ?? '',
+    })));
   out.converged = docs.every((doc) => doc.converged !== false);
   out.iterationCount = Math.max(...docs.map((doc) => doc.iterationCount ?? 0));
   let justified = 0;
@@ -704,6 +725,13 @@ export function facts({ select = 'last', hero = [] } = {}) {
       worst: round(cjkWorst, 0.01), threshold: trackingCap(docs[0]), lines: cjkShort.slice(0, 5) };
   }
   if (docs[0].binding === 'right') out.binding = 'right';
+  // A right-to-left document (direction 'rtl', or 'auto' in an Arabic,
+  // Hebrew or Persian locale): the resolved config says so only then.
+  if (docs[0].config?.direction === 'rtl') out.direction = 'rtl';
+  // The digits of a right-to-left document are the locale's choice even when
+  // the config does not name them (٠–٩ for 'ar', 0–9 for 'ar-MA'): the resolved
+  // config carries numerals only when they are not latn.
+  if (docs[0].config?.numerals || out.direction) out.numerals = docs[0].config?.numerals ?? 'latn';
 
   // Pages: roles, emptiness, coverage, hero legibility, alt-text material.
   const heroSet = new Set(hero);

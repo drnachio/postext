@@ -14,9 +14,18 @@ export type ContentBlockType =
  *  `flag` becomes `{ flag: '' }`. */
 export type DirectiveAttrs = Record<string, string>;
 
+/** A `:::verse` poem (#378): one bayt per source line, its hemistichs (the
+ *  ṣadr, then the ʿajuz) split at `||` (or a spaced `\\`, the Wikisource
+ *  convention); a line without one is a single hemistich, centred. */
+export interface VerseInfo {
+  /** The fence's attributes as written (`gap`, `width`, `align`,
+   *  `ornament`, `style`, `dir`); `pipeline/verse.ts` reads them. */
+  attrs: DirectiveAttrs;
+}
+
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references' | 'verse';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -61,6 +70,11 @@ export interface InlineSpan {
    *  reduced size (see `SMALL_CAPS_SIZE_RATIO`), capitals keep the full
    *  size. */
   smallCaps?: boolean;
+  /** Set by the measurer on the Arabic words of a run whose face is
+   *  slanted even when not italic (a style whose base face is italic):
+   *  measured and painted in that face with the slant taken off
+   *  (`uprightArabic.ts`). */
+  upright?: true;
   /** Tate-chu-yoko (`:tcy[12]`): in vertical text
    *  (`layout.writingMode: 'vertical-rl'`) the span's characters are set
    *  side by side in one upright cell of one em, squeezed across when
@@ -188,11 +202,35 @@ export interface InlineSpan {
    *  of a two-row note set inside the line at a smaller size. Every span of
    *  one note shares the object. */
   warichu?: InlineWarichu;
+  /** A directional isolate (`:rtl[…]` / `:ltr[…]`, #367): the span is
+   *  part of a run set in its own direction, isolated from the text around
+   *  it (UAX #9 RLI/LRI … PDI), so an English title inside Arabic, or an
+   *  Arabic name inside English, keeps its own order and never reorders
+   *  its neighbours. Every span of one isolate shares the object; an
+   *  isolate inside another names it as `outer`. `bidi.ts`
+   *  (`resolveSpans`) reads it when a line's order is resolved. */
+  direction?: InlineDirection;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never
    *  take a character of the plain text or the source map. */
   inserted?: boolean;
+}
+
+/** The directional isolate a span belongs to (see
+ *  {@link InlineSpan.direction}). */
+export interface InlineDirection {
+  /** The isolate's direction: `rtl` from `:rtl[…]`, `ltr` from `:ltr[…]`. */
+  dir: 'ltr' | 'rtl';
+  /** Tells isolates apart: two isolates side by side are two runs. Ids
+   *  count from 1 in each parse of a text. */
+  id: number;
+  /** The language of the isolate's text as written (`{lang=en}`), a BCP 47
+   *  tag; unset when the directive names none. Renderers may declare it
+   *  (HTML `lang`, PDF `/Lang`). */
+  lang?: string;
+  /** The isolate this one is nested in. */
+  outer?: InlineDirection;
 }
 
 /** An emphasis-dot mark: its shape, whether it is filled, and its side. */
@@ -321,6 +359,11 @@ export interface TocBlockInfo {
   pageIndex?: number;
   /** Subtitle line under the title (an entry's `{author}`), when any. */
   subtitle?: string;
+  /** A numbered entry: the numbers of every numbered entry of its level in
+   *  the same contents (one array the entries share), so the number column
+   *  takes the widest of them (`الفصل الحادي عشر`) when it is wider than
+   *  the configured `numberWidth`. */
+  levelNumbers?: readonly string[];
   /** A part row's title and palette overrides. */
   title?: string;
   palette?: Record<string, string>;
@@ -406,6 +449,10 @@ export interface ContentBlock {
   attrSources?: Record<string, { start: number; end: number }>;
   /** Plain-text indices of forced title breaks (`\\` in the source). */
   titleBreaks?: number[];
+  /** A numbered heading whose level or style sets `numberPosition:
+   *  'replace'`: its title is emptied before layout and the generated
+   *  number is printed (and listed) as the whole title (#401). */
+  numberIsTitle?: true;
   /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
   depth?: number;
   /** Discriminator for listItem blocks. Defaults to 'unordered' when absent. */
@@ -436,6 +483,12 @@ export interface ContentBlock {
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
   directiveAttrs?: DirectiveAttrs;
+  /** For a `:::verse` block (#378): the poem's fence attributes. The
+   *  block's `type` is `'paragraph'`; its text holds the hemistichs, a tab
+   *  (`\t`) where a bayt's two hemistichs meet (the source's `||`) and a
+   *  line feed (`\n`) between bayts, so the plain text and the source map
+   *  read the poem as written (see `pipeline/verse.ts`). */
+  verse?: VerseInfo;
   /** For a `:::references` block (#268): its body as written — BibTeX,
    *  CSL-JSON or CSL-YAML — up to the closing `:::`, not parsed as
    *  Markdown. */
@@ -465,6 +518,17 @@ export interface ContentBlock {
   /** For container marker blocks: identifier shared by the matching
    *  start/end pair. Ids start at 1 and increase per parse. */
   containerId?: number;
+  /** The block's base direction when the source sets one (#367): a
+   *  heading's own `{dir=ltr}` / `{dir=rtl}`, or that of the `:::`
+   *  container it sits in (the innermost that sets one; the container's
+   *  start marker carries it too). Absent when nothing sets it: the block
+   *  follows the document's `direction`. */
+  direction?: 'ltr' | 'rtl';
+  /** The language a `:::` container names for its blocks (`lang=en`),
+   *  the innermost that names one (#401). Absent when none does: the block
+   *  is in the document's language. Its ordered lists number in that
+   *  language's digits. */
+  lang?: string;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */

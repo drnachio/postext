@@ -8,11 +8,12 @@ import { findAnnotations, type AnnotationName } from 'postext';
 /**
  * Editor support for the Chinese annotations (#193–#195): `:dots[…]`,
  * `:name[…]`, `:book[…]`, `:ruby[…]{rt="…"}`, the compact ruby
- * `{紅樓|hóng|lóu}` and `:warichu[…]{…}`. The highlighter marks each
+ * `{紅樓|hóng|lóu}` and `:warichu[…]{…}`; and the directional isolates
+ * `:rtl[…]` / `:ltr[…]` (#367). The highlighter marks each
  * directive's brackets and attributes and shows its text the way the mark
  * reads (dots under it, a straight or wavy line, a note in a smaller size);
  * the completion source offers the directives after `:do`, `:na`, `:bo`,
- * `:ru` or `:wa`.
+ * `:ru`, `:wa`, `:rt` or `:lt`.
  */
 
 const delimMark = Decoration.mark({ class: 'cm-annotation-delim' });
@@ -22,10 +23,12 @@ const TEXT_MARKS: Record<AnnotationName, Decoration> = {
   book: Decoration.mark({ class: 'cm-annotation-book' }),
   ruby: Decoration.mark({ class: 'cm-annotation-ruby' }),
   warichu: Decoration.mark({ class: 'cm-annotation-warichu' }),
+  ltr: Decoration.mark({ class: 'cm-annotation-isolate' }),
+  rtl: Decoration.mark({ class: 'cm-annotation-isolate' }),
 };
 
 /** Openers the highlighter looks for before reading a line. */
-const HINT_RE = /:(?:dots|name|book|ruby|warichu)\[|\{[^{}\n|]*\|/;
+const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl)\[|\{[^{}\n|]*\|/;
 
 /** The decoration ranges of every annotation on a line, relative to it and
  *  sorted: the opener and closer (`delim`) and the text between. A nested
@@ -111,6 +114,10 @@ export const annotationTheme = Prec.highest(
       fontSize: '0.85em',
       color: 'var(--brand)',
     },
+    '.cm-annotation-isolate': {
+      textDecoration: 'underline dotted',
+      textDecorationColor: 'var(--brand)',
+    },
   }),
 );
 
@@ -122,6 +129,8 @@ const DIRECTIVES: ReadonlyArray<{ name: AnnotationName; prefix: RegExp; insert: 
   { name: 'book', prefix: /:bo(?:ok?)?$/, insert: ':book[]', caret: 6 },
   { name: 'ruby', prefix: /:ru(?:by?)?$/, insert: ':ruby[]{rt=""}', caret: 6 },
   { name: 'warichu', prefix: /:wa(?:r(?:i(?:c(?:hu?)?)?)?)?$/, insert: ':warichu[]', caret: 9 },
+  { name: 'rtl', prefix: /:rtl?$/, insert: ':rtl[]', caret: 5 },
+  { name: 'ltr', prefix: /:ltr?$/, insert: ':ltr[]', caret: 5 },
 ];
 
 /** The completion source: an annotation directive after its first letters. */

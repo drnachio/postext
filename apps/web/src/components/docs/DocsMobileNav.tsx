@@ -50,7 +50,7 @@ export function DocsMobileNav({ docs, toc }: DocsMobileNavProps) {
                       href={`#${item.id}`}
                       onClick={() => setOpen(false)}
                       className={`flex min-h-10 items-center rounded-md py-1 font-sans text-sm text-slate hover:text-foreground ${
-                        item.level === 3 ? "pl-6" : "pl-3"
+                        item.level === 3 ? "ps-6" : "ps-3"
                       }`}
                     >
                       {item.text}

@@ -1,0 +1,91 @@
+---
+title: "Llibre de text amb columna al marge"
+summary: "Columna i mitja amb la columna exterior només per a flotants: s'hi apilen figures i glosses amb span 'side', i captionSide hi porta la resta de peus."
+plain: "Un capítol d'un llibre de física amb una columna ampla de text i una altra d'estreta al costat de la vora exterior. L'estreta porta diagrames i notes breus al costat del text que acompanyen."
+description: "El codi d'un capítol de física a Postext amb una columna al marge exterior reservada a diagrames de raigs, glosses de termes clau i peus de figura."
+question: "Com reservo el marge exterior per a figures, peus i glosses sense que el text hi entri mai?"
+aliases: ["columna al marge", "columna marginal", "notes al marge", "apostil·les", "glosses", "peus laterals", "peus al marge", "figures al marge", "columna i mitja", "llibre de text de física", "manual escolar"]
+pageNotes: { "1": "El capítol 4 s'obre amb el títol Luz y lentes a la columna de text i un gran 4 verd al marge exterior, amb els objectius a sota i, a l'altura de l'apartat 4.1, una glossa al costat del paràgraf que defineix l'índex de refracció; a la part baixa de la columna de text, un diagrama d'una lupa al sol sobre fons fosc, amb el peu al costat, al marge.", "2": "A la pàgina parella la columna del marge queda a l'esquerra: s'hi apilen un diagrama de la refracció, la glossa de l'angle límit i un diagrama d'un bloc semicircular de vidre, i la figura de la fibra òptica, a la part baixa de la columna de text, porta el peu al marge.", "3": "Un panell fosc en què un feix blanc travessa un prisma i s'obre en un espectre creua les dues columnes al capdamunt de la pàgina senar; al marge, la glossa de la dispersió comença just sota la frase que defineix el terme, la de la distància focal queda a l'altura de l'apartat 4.3 i a baix va el peu d'un diagrama de lents sobre fons clar.", "4": "La figura de la lent divergent encapçala la columna del marge de l'última pàgina; el panell d'idees clau comença sota el paràgraf de tancament, a l'altura del títol «Preguntas», i acompanya les preguntes; un colofó d'una línia tanca el capítol." }
+---
+
+## Què compondràs
+
+El capítol 4 de *Palanca y lente*, un manual de física en pàgina de 210 × 275 mm. El text ocupa una columna ampla i no entra mai al marge exterior, un canal de 53 mm. El número del capítol, un 4 verd, va en aquest canal a l'altura del títol, i els objectius, a sota. Els diagrames s'apilen des del capdamunt del canal, i els termes clau van en glosses verd clar al costat del passatge que els defineix. Les figures que es queden a la columna de text, sobre fons fosc o clar, porten el peu al marge, a l'altura de la seva base. Només el panell del prisma creua les dues columnes. Els marges són simètrics, així que el canal queda sempre al costat exterior de la pàgina, a la dreta a les senars i a l'esquerra a les parelles.
+
+## Elaboració
+
+### 1 · Reserva el marge per als flotants
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. En una [disposició en columna i mitja](/ca/docs/configuration#tipus-de-disposició), `sideColumnPercent: 30` dona a la columna lateral el 30 % dels 176 mm d'amplada de la caixa (52,8 mm), i la columna de text es queda amb el que sobra després de l'espai entre columnes de 7 mm (116 mm, uns 75 caràcters de Merriweather de 9,3 pt). `sideColumnRole: 'floats'` tanca la columna lateral al text, i `sideColumnSide: 'outer'` la posa al costat exterior, que amb marges simètrics canvia d'una pàgina a l'altra. Les figures hi van amb `span: 'side'`. Un requadre amb `span="side"` a la tanca surt del flux i entra al canal a l'altura per on va el text, així que cada glossa comença al costat del bloc que segueix la seva tanca.
+
+### 2 · Deixa que la cita col·loqui cada figura
+
+<Excerpt region="figures" />
+
+El primer `:ref` a una figura la numera i la situa on indica la seva [col·locació](/ca/docs/document-format#collocació). Una figura amb `span: 'side'` s'apila des del capdamunt del canal de la pàgina que la cita, encara que la cita quedi més avall, i passa a la pàgina següent si no li basta la resta del canal. Les figures 4.2 i 4.3, citades totes dues a la <PageRef page={2}>pàgina 88</PageRef>, baixen pel canal d'aquella pàgina amb la glossa de l'angle límit entre elles. El prisma és un flotant `top` a tota l'amplada citat a la pàgina 88, i un flotant no queda mai per sobre de la seva cita, així que obre la 89 sobre les dues columnes. Les figures 4.1, 4.4 i 4.6 es queden a la columna de text i prenen `captionSide` del `defaultPlacement` del tipus figura. Ocupen l'espai inferior de la columna, així que cada peu queda a l'altura de la base de la seva figura; a l'espai superior s'alinearia amb la vora de dalt.
+
+### 3 · Obre el capítol al marge
+
+<Excerpt region="opener" />
+
+El títol de primer nivell es queda a la columna de text, on una [ranura de disseny](/ca/docs/configuration#span-i-disseny-avançat) n'apila el text, el filet i l'entradeta; l'avanttítol penja de la cantonada superior dreta de la pàgina i el número, de l'avanttítol, tots dos amb l'amplada del canal. `minHeight` fixa l'alçada de l'obertura en nou línies de la retícula (42,9 mm), que donen cabuda a un títol d'una línia, el filet i una entradeta de quatre, així que amb una entradeta més curta el text no puja. L'avanttítol i el número de 104 pt acaben 40,6 mm per sota del marge superior, dins d'aquestes nou línies, així que tampoc no fan baixar el text. El canal només és a la dreta a les pàgines senars, i per això el títol de primer nivell salta a pàgina senar. El requadre d'objectius va després del primer paràgraf i no just després del títol, i cap figura del marge no es cita abans que ell (ho explica «Errors freqüents»).
+
+### 4 · Porta els folis al costat del canal
+
+<Excerpt region="heads" />
+
+Cada element s'ancora a la pàgina física i es filtra per `parity`, així que el foli i la capçalera queden a la mateixa vora que el canal a totes dues bandes del plec. `pages: 'body'` els aparta de l'obertura, que porta en canvi un foli al peu del canal.
+
+### 5 · Comença el llibre al capítol 4
+
+<Excerpt region="build" />
+
+Aquestes pàgines són el capítol 4 d'un llibre més llarg. La continuació deixa el comptador de capítols en 3, així que `{chapterNumber}` imprimeix 4 i el `numberingTemplate: '{1}.{2}'` del segon nivell numera els apartats del 4.1 al 4.3; les figures van de la 4.1 a la 4.7. `## Preguntas {style="plain"}` pren una entrada de `headingStyles` amb `numbered: false`, així que aquest títol no porta número. Els folis comencen al 87 perquè la primera pàgina cau a la dreta, i a la dreta van els folis senars.
+
+### 6 · Anomena els colors una sola vegada
+
+<Excerpt region="palette" />
+
+Cada color de la configuració enllaça amb una entrada de la paleta i porta a més el seu hex, que `col()` copia del mateix objecte. Postext 1.4.1 pinta els elements de disseny i el color de les remissions amb aquest hex, no amb l'entrada de la paleta (ho explica «Errors freqüents»). Per canviar els colors del capítol, edita `palette`: els diagrames llegeixen el mateix objecte, així que el vidre, els raigs, els panells foscos i el fons clar canvien alhora que números, avanttítols i glosses. `main-color` apunta al color d'accent, així que els colors per defecte dels estils de text que la configuració no fixa surten en verd i no en el blau del motor.
+
+## Variants
+
+### Deixa els peus sota les figures
+
+Amb els valors per defecte del tipus figura, els peus de les figures 4.1, 4.4 i 4.6 ocupen línies de la columna de text, i el canal queda només per a diagrames i glosses.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
+-  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
++const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+```
+
+### Posa el canal a la dreta a totes les pàgines
+
+Per a un document que es llegeix pàgina a pàgina en pantalla, desactiva els marges simètrics i passa a la vora dreta el foli i la capçalera de les parelles; així els capítols poden obrir-se a qualsevol pàgina.
+
+```diff
+-  sideColumnSide: 'outer', // right on a recto, left on a verso (the margins are mirrored)
++  sideColumnSide: 'right', // what 'outer' means anyway once the margins stop mirroring
+-    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } }, // left: recto's inner
++    bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: false } },
+-      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
++      { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(LEAD),
+-const verso = { parity: 'even', edge: 'top-left' }; // x counts in from the left edge
++const verso = { parity: 'even', edge: 'top-right' };
+-  head({ id: 'verso-folio', ...verso, ...folio, x: OUTER }),
+-  head({ id: 'verso-title', ...verso, content: '{title}', x: OUTER + HEAD_GAP }),
++  head({ id: 'verso-folio', ...verso, ...folio, x: -OUTER }),
++  head({ id: 'verso-title', ...verso, content: '{title}', x: -(OUTER + HEAD_GAP) }),
+-  head({ id: 'drop-folio', ...recto, ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
++  head({ id: 'drop-folio', ...folio, pages: 'opener', edge: 'bottom-right', x: -OUTER,
+```
+
+### Obre el capítol sota una banda de color
+
+<RecipeLink slug="chapter-opener-bleed-band">Obertura de capítol sobre banda a sang</RecipeLink> porta una banda de color a sang per dalt de la pàgina i hi posa a sobre el títol i un número de capítol de 168 pt.
+
+## Errors freqüents
+
+- Figures i glosses s'apilen al canal en l'ordre en què el text hi arriba, mai l'una al costat de l'altra. La glossa de l'angle límit va després del paràgraf de la llei de Snell i abans del que cita la figura 4.3, així que a la <PageRef page={2}>pàgina 88</PageRef> s'apila entre les figures 4.2 i 4.3, al costat del paràgraf que presenta el terme. Amb la tanca després d'aquesta cita, cauria sota la figura 4.3.
+- A la primera pàgina d'un capítol, cita les figures del marge només després del requadre d'objectius. Les figures laterals s'apilen des del capdamunt del canal sense deixar lloc a l'avanttítol ni al número ancorats allà, així que una figura citada al primer paràgraf es pinta a sobre d'ells.

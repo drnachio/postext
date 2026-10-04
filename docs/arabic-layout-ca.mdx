@@ -1,0 +1,459 @@
+{/* docs/arabic-layout-ca.mdx */}
+
+export const metadata = {
+  title: 'Composició àrab',
+  sidebarTitle: 'Composició àrab',
+  description: "Com compon Postext l'àrab: direcció del text i algorisme bidireccional, llibres enquadernats per la dreta, paraules enllaçades que no es tallen ni s'espaien mai, justificació amb caixida, signes vocàlics, èmfasi, xifres i estils de numeració, ordinals en lletres, notes a peu de pàgina, vers clàssic, índex general, índex analític, cites i fonts",
+  lang: 'ca',
+  lastUpdated: '2026-10-04',
+  readingTime: '24 min',
+  order: 7,
+  plainSummary: "Aquesta pàgina explica com compon Postext el text en àrab. L'àrab es llegeix de dreta a esquerra, de manera que les línies, les columnes i les pàgines del llibre van en aquest sentit, mentre que els números i les paraules en anglès que apareixen al text es continuen llegint d'esquerra a dreta. Les lletres d'una paraula àrab van unides; per això Postext no parteix mai una paraula ni en separa les lletres, i per allargar una línia estira algunes de les unions. La pàgina tracta també els signes de les vocals que van damunt i davall de les lletres, les xifres que es fan servir a cada regió, les notes i els poemes. Acaba amb dos exemples complets i els límits que queden.",
+};
+
+# Composició àrab
+
+**Un llibre àrab va de dreta a esquerra, des de les lletres fins als plecs, i les seves paraules són traços enllaçats que no es poden tallar.**
+
+Postext compon l'àrab estàndard modern i l'àrab clàssic amb el mateix Markdown i la mateixa configuració que qualsevol altra llengua. Un sol ajust, la llengua del document, gira el llibre sencer: les línies comencen per la dreta, la primera columna és la de la dreta, el llibre s'enquaderna per la vora dreta i els plecs es llegeixen de dreta a esquerra, mentre que les paraules llatines i els números d'una línia es continuen llegint d'esquerra a dreta. Les paraules es mesuren i es pinten senceres, amb les formes que els dona la font, i una línia justificada s'estira als espais i allargant les unions entre lletres (caixida), mai separant les lletres. Aquesta pàgina explica què fa el motor i quins ajustos el governen. La [referència de configuració](/ca/docs/configuration#direcció-del-text) recull cada clau amb el valor per defecte, i el [format de document](/ca/docs/document-format#direcció-del-text-al-marcatge), el marcatge.
+
+Les regles segueixen els *Requisits per a la composició de l'àrab i el persa* del W3C ([alreq](https://www.w3.org/TR/alreq/)) i l'algorisme bidireccional d'Unicode ([UAX #9](https://www.unicode.org/reports/tr9/)) i, per a les convencions del llibre, els llibres impresos al Caire, a Beirut i a la impremta de Būlāq. Les referències són al final.
+
+## Començar un llibre en àrab
+
+N'hi ha prou de fixar la llengua del document i el tipus de lletra; tota la resta d'aquesta pàgina se'n deriva o té un valor per defecte per a l'àrab:
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  bodyText: { fontFamily: 'Amiri', lineHeight: { value: 1.75, unit: 'em' } },
+  headings: { fontFamily: 'Amiri' },
+};
+```
+
+`locale` admet `ar`, `ar-EG`, `ar-MA` o qualsevol altra etiqueta àrab. La llengua dona al llibre:
+
+- **la direcció**, de dreta a esquerra (`direction: 'auto'` la dedueix de l'escriptura de la llengua);
+- **l'enquadernació**, per la vora dreta (`page.binding: 'auto'`);
+- **les xifres** dels números generats, ٠–٩ al Màixriq i 0–9 al Magrib (`numerals: 'auto'`, més avall);
+- **sense partició de mots**, sense espaiat entre lletres ni *tracking* a les paraules àrabs, i amb justificació per caixida;
+- **èmfasi en negreta** en lloc de cursiva, i cites en rodona;
+- **els textos incorporats**: شكل i جدول per a figures i taules, numerades per capítol (شكل ٢-٣), الفصل i ص a les referències creuades, المراجع damunt la bibliografia, انظر i انظر أيضًا a l'índex analític, (تابع) després del peu d'una taula que continua;
+- **l'ordre de l'índex analític**, alfabètic (hijāʾī), sense tenir en compte l'article ال;
+- **l'etiqueta de llengua** a l'HTML (`lang="ar" dir="rtl"`), al canvas i al PDF (`/Lang`), perquè s'apliquin les formes de la font pròpies de la llengua.
+
+El Sandbox ho fa en un sol pas: tria العربية a **Disseny › Escriptura** i prem **Configuració per a l'àrab › Revisar…** (vegeu [Al Sandbox](#al-sandbox)).
+
+## Direcció i algorisme bidireccional
+
+Un paràgraf àrab va de dreta a esquerra, però els números, les paraules llatines i les cites que conté van d'esquerra a dreta. L'algorisme bidireccional d'Unicode decideix l'ordre d'aquestes peces a cada línia a partir dels caràcters mateixos; Postext l'implementa sencer (UAX #9, Unicode 18, tots els casos de les proves de conformitat). El text es desa i es cerca en ordre lògic, l'ordre en què es tecleja; només la pintura es reordena.
+
+### Direcció del document, del bloc i del text en línia
+
+La direcció es fixa en tres nivells:
+
+- **El document**: `direction: 'auto' | 'ltr' | 'rtl'`. `'auto'`, el valor per defecte, és de dreta a esquerra quan l'escriptura de `locale` s'escriu de dreta a esquerra (àrab, persa, urdú, hebreu, siríac, thaana, n'ko, adlam…) i d'esquerra a dreta en els altres casos. Fixa-la només per forçar-ne una: un llibre en català no la necessita, i un llibre àrab compost d'esquerra a dreta és gairebé sempre un error.
+- **Un bloc**: `{dir=ltr}` o `{dir=rtl}` després d'un títol, o en qualsevol contenidor `:::`: `:::paragraphs{dir=ltr}`, `:::callout{dir=ltr}`, `:::columns`, `:::part`. Tot el que hi ha dins del contenidor pren aquesta direcció, fins a un bloc niat que en fixi una altra. Els paràgrafs solts, els elements de llista i les cites no tenen atribut propi: embolcalla'ls en `:::paragraphs{dir=…}`. Un recurs de taula pren `table.direction`.
+- **Un tram de text**: `:ltr[…]` i `:rtl[…]` aïllen el seu text, amb un `{lang=…}` opcional que etiqueta el tram a l'HTML i al PDF.
+
+```markdown
+# Introduction {dir=ltr}
+
+:::paragraphs{dir=ltr}
+An English paragraph quoted in an Arabic book, set left to right with its indent on the left.
+:::
+
+نشر الكتاب في :ltr[The Arabian Nights, vol. 2]{lang=en} سنة ١٨٣٥.
+```
+
+Un bloc compost en direcció contrària a la del document conserva el seu propi costat d'inici: el sagnat de la primera línia, les marques de llista i el final en bandera de l'última línia passen al costat per on comença el seu text, i les seves línies s'alineen a la columna com demana el text. En un llibre àrab, una cita en anglès ha de portar `{dir=ltr}`: sense, el punt final, que és un caràcter neutre, pertany al paràgraf de dreta a esquerra i s'imprimeix a l'extrem esquerre de la línia, com ho mostraria un navegador. Un contenidor també pot indicar la seva llengua, `:::paragraphs{dir=ltr lang=en}`: les llistes numerades que conté es numeren amb les xifres d'aquesta llengua (1. 2. en un llibre àrab, ١. ٢. amb `lang=ar` en un de català). Els números de notes, figures, taules i títols del bloc conserven les xifres del document: pertanyen a les sèries del llibre.
+
+### Aïllaments
+
+`:ltr[…]` i `:rtl[…]` són aïllaments bidireccionals (els LRI…PDI i RLI…PDI d'UAX #9): el seu text s'ordena a dins i el paràgraf veu cadascun com un sol caràcter neutre. Fes-ne servir un quan un títol llatí acabi en un caràcter neutre (un punt, un parèntesi de tancament, un signe d'interrogació) que, si no, es llegiria amb l'àrab que l'envolta, o quan un tram comenci per una xifra o una lletra llatina que desviaria la conjectura d'un algorisme basat en el primer caràcter fort. Una nota a peu de pàgina, una `:ref` o una fórmula dins d'un aïllament en formen part. Els caràcters de control d'Unicode (U+2066–2069, U+202A–202E, U+200E i U+200F, la marca de lletra àrab U+061C) es respecten quan són a la font, però les directives són més fàcils de llegir i d'editar.
+
+### Nombres
+
+Un nombre es llegeix d'esquerra a dreta en qualsevol sistema de xifres, amb la xifra més significativa a l'esquerra: ١٤٤٥ igual que 1445. Les xifres europees després de lletres àrabs es llegeixen com a nombres àrabs (regla W2), de manera que `سنة 1835م` i `سنة ١٨٣٥م` s'ordenen igual. Dos nombres units per una barra, com un volum i una pàgina o una sura i un versicle (`١٣/٩٠`), formen un sol tram; un interval escrit amb guionet (`١٢-١٥`) es llegeix de dreta a esquerra, amb el 12 a la dreta, com esperen els lectors àrabs. El signe de percentatge ٪ (U+066A) es tecleja després del nombre i es mostra a la seva esquerra. El text que escriu l'autor no es reescriu mai: només els números que genera el motor prenen les xifres del document ([Xifres](#xifres-i-estils-de-numeració)).
+
+### Parèntesis i cometes
+
+Els parèntesis, els claudàtors, les claus i les cometes angulars s'emmirallen als trams de dreta a esquerra: un `(` teclejat davant d'una paraula àrab l'obre per la dreta. Tecleja'ls en ordre lògic, primer el d'obertura, com en català; el canvas, l'HTML i el PDF dibuixen el glif emmirallat (la característica `rtlm` de la font, o el punt de codi emmirallat). « » obren i tanquen una cita àrab de la mateixa manera.
+
+Els parèntesis ornamentals de les cites de l'Alcorà, ﴿ (U+FD3F) i ﴾ (U+FD3E), no s'emmirallen: des d'Unicode 14, ﴿ és el d'obertura i ﴾ el de tancament, i els seus glifs estan dibuixats per a text de dreta a esquerra. Tecleja primer ﴿: `﴿بسم الله الرحمن الرحيم﴾` s'imprimeix amb ﴿ a la dreta. Tampoc no són claudàtors aparellats, de manera que en un paràgraf d'esquerra a dreta (un verset àrab citat en un llibre en català) els parèntesis al costat d'una paraula llatina prenen la direcció del paràgraf: ﴿ queda a l'esquerra del verset i el parell es llegeix invertit, com en un navegador. Compon la cita com un aïllament de dreta a esquerra, `:rtl[﴿بسم الله الرحمن الرحيم﴾]`, i els dos parèntesis van amb el verset, ﴿ a la seva dreta.
+
+## Ordre de les pàgines i enquadernació per la dreta
+
+Un llibre àrab s'enquaderna per la vora dreta. La primera pàgina és una pàgina esquerra, els plecs es llegeixen de la pàgina dreta a l'esquerra i les columnes s'omplen de dreta a esquerra. Postext compon una pàgina així com una pàgina d'esquerra a dreta vista en un mirall: tot el que és al flux del text (columnes, línies, sagnats, marques de llista, flotants, notes, requadres, taules) ho col·loca el mateix codi que en un llibre en català, i després la pàgina s'emmiralla sencera, amb cada paraula, imatge i fórmula pintada del dret.
+
+<Illustration name="ArabicSpread" data='{"title": "Un plec àrab, enquadernat per la dreta", "desc": "Un plec de dues pàgines que s’uneixen al llom. La pàgina 2 és a la dreta i la 3 a l’esquerra. A cada pàgina la primera columna és la de la dreta i les línies van de dreta a esquerra; el marge interior és al costat del llom i l’exterior, al tall. Una fletxa mostra l’ordre de lectura de la pàgina 2 a la 3.", "caption": "La pàgina 2 a la dreta, la 3 a l’esquerra; la columna 1 a la dreta de cada pàgina.", "spine": "llom", "pageOrder": "pàgina següent", "columnOrder": "la columna 1 a la dreta", "lineDirection": "les línies van de dreta a esquerra", "inner": "interior", "outer": "exterior", "sample": "كان في قديم الزمان"}' />
+
+- **Enquadernació.** `page.binding: 'auto'` és la vora dreta en un document de dreta a esquerra. La pàgina 1 continua sent senar i continua sent el recto, de manera que `breakBefore.parity`, `:::pagebreak{parity="odd"}` i els recomptes de pàgines conserven el sentit; el recto és la pàgina esquerra del plec, i un capítol que obre en recto obre en una pàgina esquerra. Amb `margins.mirror`, el marge interior de les pàgines senars queda a la seva dreta. El PDF demana als visors plecs de dreta a esquerra (`/Direction /R2L`, `/PageLayout /TwoPageRight`), el Sandbox mostra els plecs com 3 | 2 i el seu visor HTML recorre les pàgines de dreta a esquerra. Vegeu [Enquadernació](/ca/docs/configuration#enquadernació).
+- **Columnes.** En una pàgina a dues columnes, la primera columna és la de la dreta; el filet de columna, una columna lateral i l'espai entre columnes la segueixen. Un flotant superior s'estén des de la dreta, i les notes a peu de pàgina van al peu de cada columna amb el filet separador a la dreta.
+- **Capçaleres i folis** es queden al full: les posicions de capçalera i peu són físiques, i el seu `left` i el seu `right` són els costats del full, com en qualsevol llibre. Ajusta-les a la vora dreta: el títol del capítol a la pàgina esquerra (senar), el títol del llibre a la dreta (parella) i el foli a la cantonada exterior (l'esquerra de les pàgines senars) o centrat, com fa la majoria dels llibres àrabs.
+
+### Què volen dir esquerra, dreta, inici i final
+
+Un ajust que anomena un costat es refereix a un costat del text, no del full, de manera que un disseny fet per a un llibre en català funciona sense canvis quan el llibre passa a l'àrab. `start` i `end` s'admeten a tot arreu com a noms explícits de l'inici i el final del text.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Ajust</th>
+      <th><code>left</code> / <code>right</code></th>
+      <th><code>start</code> / <code>end</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Alineació del text: <code>bodyText.textAlign</code>, títols, estils de paràgraf i de part, notes a peu de pàgina, <code>align</code> dels peus, cos dels requadres</td><td>Els costats del text: <code>left</code> és el costat per on comença una línia, la dreta d'un paràgraf àrab. Allà va l'última línia d'un paràgraf justificat.</td><td>Sinònims de <code>left</code> i <code>right</code>.</td></tr>
+    <tr><td>Cel·les de taula (<code>TableCell.align</code>)</td><td>Els costats del text de la cel·la, llegits en la direcció de la taula (<code>table.direction</code>).</td><td>Sinònims, llegits en la direcció de la taula.</td></tr>
+    <tr><td><code>placement.align</code> d'un flotant o d'una figura estreta</td><td>Els costats del flux del cos: en un llibre àrab <code>left</code> és la dreta del full.</td><td>Sinònims de <code>left</code> i <code>right</code>.</td></tr>
+    <tr><td><code>stripe.side</code>, <code>icon.cornerSide</code> i <code>position</code> de l'etiqueta d'un requadre</td><td>Els costats del flux del cos, els mateixos per a tots els requadres de la pàgina.</td><td>La direcció pròpia del requadre: l'inici d'un <code>:::callout&#123;dir=ltr&#125;</code> en un llibre àrab és l'esquerra del full.</td></tr>
+    <tr><td>Posicions de capçalera i peu, elements de disseny sobre el full</td><td>Els costats del full.</td><td>Només elements de text: l'inici i el final de la direcció pròpia de l'element.</td></tr>
+  </tbody>
+</table>
+
+Els elements de disseny que es col·loquen al flux, com la franja d'obertura d'un capítol o el disseny d'un títol, s'emmirallen amb ell: el seu `left` i el seu `right` són els costats d'inici i de final, com al text del cos. Un element de text admet `direction: 'ltr' | 'rtl' | 'auto'` (per defecte, la direcció del document; `'auto'` llegeix la primera lletra forta del text), i el seu `align: 'start'` i `'end'` la segueixen. `placement.rotate` conserva el sentit físic: una figura girada en el sentit de les agulles del rellotge gira en aquest sentit sobre el full.
+
+## Formes enllaçades i paraules senceres
+
+Les lletres d'una paraula àrab s'enllacen, i cadascuna pren la forma que li demanen les veïnes: inicial, medial, final o aïllada, amb lligadures com el lām-alif. Postext mesura i pinta una paraula com una sola cadena amb les seves formes, mai lletra a lletra. El canvas i l'HTML deixen les formes al navegador; el PDF les calcula amb HarfBuzz, que només es carrega quan un document conté àrab o una altra escriptura que el necessiti, i vincula cada glif amb els seus caràcters, de manera que el text que es copia del PDF i el que llegeix un lector de pantalla és el que es va teclejar.
+
+Dels enllaços se'n segueixen tres regles, que valen per a tota paraula que contingui una lletra de l'alfabet àrab, sigui en un llibre àrab o citada en un llibre en català:
+
+- **Sense partició de mots.** L'àrab no es parteix a final de línia, i la partició de mots està desactivada en un document escrit en alfabet àrab. Activar-la amb una llengua de patrons llatina (`hyphenation: { enabled: true, locale: 'en-us' }`) parteix les paraules llatines del llibre i deixa senceres les àrabs.
+- **Sense espaiat entre lletres.** Separar lletres enllaçades trenca els enllaços. El `letterSpacing` d'un estil i el *tracking* de la justificació se salten les paraules àrabs; la composició avisa d'un estil de cos o de títol que fixi espaiat entre lletres sobre text àrab (`joiningScriptLetterSpacing`).
+- **Sense talls.** Una paraula més ampla que la línia no es talla mai entre les seves lletres. Desborda la mesura, la línia queda marcada (`VDTLine.wordOverflow`) i la composició avisa (`unbreakableWordOverflow`). Passa en cel·les de taula estretes i en columnes laterals; eixampla-les o reescriu el text.
+
+Un canvi d'estil dins d'una paraula, com una lletra en color o un signe vocàlic en negreta (`كتا**ب**`), no parteix la paraula en dues: es mesura i se li donen les formes sencera, i la part amb estil es pinta al damunt. El PDF i l'HTML pinten exactament aquestes lletres; el canvas calcula on cau la lletra dins de la paraula ja formada, i el color pot tocar la veïna per un pèl. Un text de disseny no talla mai una paraula àrab en ajustar línies o en truncar, i no es dibuixa cap caplletra quan la primera lletra s'enllaça amb la següent.
+
+## Justificació i caixida
+
+Els llibres àrabs es componen justificats. Una línia no s'estira espaiant les lletres: s'estira als espais entre paraules i amb caixides, les unions allargades que traça un cal·lígraf entre dues lletres enllaçades (كتاب → كتـاب). Postext insereix les caixides com a tatweels sencers (U+0640, ـ), que la font dibuixa com un sol traç; l'Amiri converteix una sèrie de tatweels en una unió corba.
+
+`bodyText.kashida` és `'auto'` en un document escrit en alfabet àrab i `'none'` en qualsevol altre. Cada línia justificada, tret de l'última d'un paràgraf, obre primer els espais entre paraules fins a una quarta part de la seva amplada i després cobreix la resta del que li falta amb caixides, un tatweel cada vegada i per les millors unions primer; el que sobra, menys d'un tatweel, torna als espais. Knuth-Plass compta l'allargament possible de cada paraula com a estirament, de manera que tria els talls sabent que una línia de paraules àrabs s'hi pot eixamplar. Les paraules llatines, les xifres, els títols, les línies en bandera i l'última línia d'un paràgraf no porten mai caixida.
+
+On pot anar una caixida ho dicten les regles de [raqim-kashida](https://github.com/aliftype/raqim-kashida): només entre dues lletres que s'enllacen, mai després d'una lletra que no s'enllaça amb la següent (ا د ذ ر ز و ة), mai al final d'una paraula i mai dins del lām-alif. `kashidaPatterns` tria el joc de regles: `'naskh'` per a les regles clàssiques del naskh, `'simple'` per a les prioritats dels tipus moderns senzills, `'nastaliq'` per al nastaʿlīq, i `'auto'` el dedueix del tipus del cos (cap caixida en un tipus ruqʿa com l'Aref Ruqaa, l'estil del qual la prohibeix). `kashidaPerWord` (1 per defecte) i `kashidaMaxLength` (0,6 em) limiten quant s'estira una paraula; una paraula que porta un tatweel escrit per l'autor s'allarga allà. Els tatweels inserits es pinten, però queden fora del text pla, del mapa de la font i del text que es copia del PDF. [Caixida en el text àrab](/ca/docs/justification#caixida-en-el-text-àrab) detalla els jocs de regles.
+
+```ts
+bodyText: {
+  textAlign: 'justify',
+  kashida: 'auto',          // el valor per defecte en un llibre àrab
+  kashidaPatterns: 'naskh', // 'auto' el dedueix del tipus de lletra
+}
+```
+
+## Signes vocàlics
+
+Els signes vocàlics (ḥarakāt: fatḥa, ḍamma, kasra, sukūn, shadda, tanwīn, l'alif volat) i els signes alcorànics s'apilen damunt i davall de les lletres, a l'interlineat. La prosa moderna marca una shadda o una vocal aquí i allà; una edició clàssica vocalitza del tot el vers i gairebé gens la prosa; l'Alcorà va sempre vocalitzat del tot. L'interlineat no creix mai per si sol a causa dels signes, així que tria'l per al text més vocalitzat que contingui el llibre:
+
+<table>
+  <thead>
+    <tr>
+      <th>Text</th>
+      <th style={{ width: '200px' }}><code>lineHeight</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Prosa moderna sense vocalitzar</td><td>1,55–1,7 em</td></tr>
+    <tr><td>Prosa vocalitzada en part</td><td>1,7–1,85 em</td></tr>
+    <tr><td>Vers vocalitzat del tot, l'Alcorà</td><td>1,9–2,1 em</td></tr>
+  </tbody>
+</table>
+
+Cada línia amb signes anota fins on arriba la seva tinta per damunt i per davall de la línia de base (`VDTLine.markInk`), i el retall de columna del canvas i del PDF inclou els signes de la primera i l'última línia de cada columna. Quan un signe damunt d'una paraula toca les lletres o els signes que pengen sota la paraula de sobre, la composició avisa del paràgraf (`arabicMarksExceedLeading`, al tauler Revisió del Sandbox) amb l'interlineat que necessitaria. Només es comparen paraules que són l'una sobre l'altra, de manera que una paraula vocalitzada sota una de curta passa. Dona als passatges vocalitzats, i en particular al vers, un estil de paràgraf amb més interlineat.
+
+`bodyText.tashkil` treu signes del text que es compon, per a una edició sense vocals feta a partir d'una font vocalitzada: `'strip'` treu les vocals, el tanwīn, el sukūn, la shadda, l'alif volat (هٰذا es compon هذا) i els signes alcorànics; `'strip-vowels'` conserva la shadda, tal com la imprimeixen la majoria dels llibres moderns. La hamza i la madda es queden: أ إ آ són lletres. La font conserva els seus signes; els paràgrafs, els títols i l'índex general es componen sense.
+
+## Èmfasi
+
+La lletra àrab no té cursiva, i un tipus àrab inclinat és una deformació. En un document escrit en alfabet àrab, `*…*` es compon per defecte en negreta (`bodyText.emphasis: 'auto'`); `'color'` el compon en rodona amb `italicColor`, i `'overline'` traça una ratlla damunt de les paraules, el sobreratllat dels llibres àrabs antics. Es triï el que es triï, el motor no inclina mai lletres àrabs: en un tram en cursiva les paraules àrabs van en rodona i les llatines conserven la cursiva, de manera que `*Kitāb al-ʿIbar كتاب العبر*` imprimeix la transliteració en cursiva i el títol àrab en rodona. En un llibre àrab, les cites van en rodona per defecte; un estil la font del qual ja és cursiva (`blockquote.italic: true`, un nivell de títol en cursiva) compon també en rodona les seves paraules àrabs, en la seva font sense la inclinació, i en cursiva les llatines. Els peus, les cel·les de taula, l'índex general i l'índex analític conserven els seus propis ajustos de cursiva.
+
+```ts
+bodyText: { emphasis: 'overline', italicColor: { hex: '#8a1c1c', model: 'hex' } }
+```
+
+## Xifres i estils de numeració
+
+L'àrab s'escriu amb tres jocs de xifres, segons la regió:
+
+<table>
+  <thead>
+    <tr>
+      <th>Regió</th>
+      <th>Xifres</th>
+      <th style={{ width: '170px' }}><code>numerals</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>El Màixriq: Egipte, el Sudan, el Llevant, l'Iraq, la península Aràbiga (<code>ar</code>, <code>ar-EG</code>, <code>ar-SA</code>…)</td><td>٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩ (aràbigues orientals)</td><td><code>'arab'</code></td></tr>
+    <tr><td>El Magrib: el Marroc, Algèria, Tunísia, Líbia, Mauritània (<code>ar-MA</code>, <code>ar-DZ</code>, <code>ar-TN</code>…)</td><td>0 1 2 3 4 5 6 7 8 9 (europees)</td><td><code>'latn'</code></td></tr>
+    <tr><td>Persa, paixtu, urdú de l'Índia (<code>fa</code>, <code>ps</code>, <code>ur-IN</code>)</td><td>۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹ (formes perses)</td><td><code>'arabext'</code></td></tr>
+  </tbody>
+</table>
+
+La clau de primer nivell `numerals` fixa les xifres de tots els números que escriu el motor: els folis i els números de pàgina de l'índex general i de l'índex analític, els números de llista i de nota a peu de pàgina, els comptadors de títol i de capítol, els números de figura i les referències a aquestes figures, `{totalPages}`. `'auto'` pren les xifres de la regió a partir de `locale` (`ar` sense regió, i `ar-AE`, són del Màixriq, perquè així les imprimeixen allà els llibres); una etiqueta pot anomenar les seves (`ar-MA-u-nu-arab`). Els números que escriu l'autor no es canvien mai, i es llegeixen en qualsevol sistema: un element de llista `٣.` comença a 3, i `{startAt=٥}` val 5. Vegeu [Xifres del document](/ca/docs/configuration#xifres-del-document).
+
+Un format anomenat a la configuració s'imprimeix tal com s'anomena, de manera que un llibre pot barrejar sistemes. Els estils de numeració àrabs:
+
+<table>
+  <thead>
+    <tr>
+      <th>Estil</th>
+      <th>1, 2, 3 … 11, 1446</th>
+      <th style={{ width: '220px' }}>Nom</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Xifres aràbigues orientals</td><td>١، ٢، ٣ … ١١، ١٤٤٦</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Xifres perses</td><td>۱، ۲، ۳ … ۱۱، ۱۴۴۶</td><td><code>persian</code>, <code>۱</code></td></tr>
+    <tr><td>Numerals abjad (additius, valors del Màixriq)</td><td>ا، ب، ج … يا، غتمو</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Numerals abjad, valors del Magrib</td><td>ا، ب، ج … يا (ص 60، ش 1000)</td><td><code>arabic-abjad-maghrebi</code></td></tr>
+    <tr><td>Lletres en ordre abjad</td><td>أ، ب، ج، د، هـ، و …</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Lletres en ordre alfabètic (hijāʾī)</td><td>أ، ب، ت، ث، ج …</td><td><code>hijai</code>, <code>أبتث</code></td></tr>
+  </tbody>
+</table>
+
+Els numerals abjad sumen els valors de les seves lletres, de més gran a més petit, com compten els manuscrits i els cronogrames: 11 és يا, 1446 és غتمو, 2000 és بغ i 1002 és غب. Els dos estils de lletres numeren elements de llista i pàgines dels preliminars amb una lletra per element; tots dos escriuen la primera lletra amb la seva hamza (أ) i una he aïllada com هـ, perquè cap no es llegeixi com les xifres ١ i ٥. Una edició clàssica pagina els preliminars en ordre abjad i comença les xifres al text:
+
+```markdown
+:::numbering{format="abjad" startAt=1}
+
+# المقدمة {style="front-matter"}
+
+…
+
+:::pagebreak{parity="odd"}
+:::numbering{format="decimal" startAt=1}
+```
+
+Les llistes ordenades fan servir els mateixos noms. Una jerarquia àrab habitual és ١- , després أ- , després (١):
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'arabic', separator: '-' },
+    { level: 2, numberFormat: 'abjad', separator: '-' },
+    { level: 3, numberFormat: 'arabic', prefix: '(', separator: ')' },
+  ],
+},
+```
+
+`arabic` és el format decimal, escrit amb les xifres del document.
+
+### Ordinals i cardinals en lletres
+
+`{1:ordinal}` en una plantilla de títol escriu amb lletres àrabs l'ordinal determinat, i `{1:words}` el cardinal. Els ordinals àrabs concorden amb el substantiu que numeren, de manera que la plantilla indica el gènere després d'un guionet: `-feminine` (o `-f`) per a un substantiu femení com الليلة, i el masculí per defecte per a الفصل o الباب. `-classical` escriu مائة en lloc de مئة, com les edicions de Būlāq. Una nit no té títol propi: `numberPosition: 'replace'` imprimeix el número com el títol sencer, de manera que `# Nit` (o qualsevol títol escrit al text font) imprimeix الليلة الثانية, i l'índex general, els titolets i els marcadors del PDF diuen el mateix.
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
+},
+```
+
+Això imprimeix الليلة الأولى, الليلة الحادية عشرة, الليلة الخامسة والأربعون بعد الثلاثمئة i, a la 1001, الليلة الحادية بعد الألف; `'الفصل {1:ordinal}'` imprimeix الفصل الأول, الفصل الحادي عشر. Els ordinals s'escriuen fins a 9999 i els cardinals fins a 99 999; per sobre, el número s'imprimeix en xifres. Els marcadors de disseny `{numberWords}` i `{numberOrdinalWords}` donen les formes masculines. Vegeu [Nombres en lletres](/ca/docs/configuration#nombres-en-lletres).
+
+## Notes a peu de pàgina
+
+Un llibre àrab marca les notes amb el número entre parèntesis, «(١)», volat al text i sobre la línia al començament de la nota, i la majoria de les edicions clàssiques les numeren de nou a cada pàgina. El filet separador i els números de nota es col·loquen sols al costat d'inici, la dreta.
+
+```ts
+footnotes: {
+  markerTemplate: '({n})',      // «(١)» al text i a la nota
+  numbering: 'page',            // ١ de nou a cada pàgina
+  noteNumberPosition: 'inline', // el número de la nota, sobre la línia
+}
+```
+
+`markerTemplate` escriu igual la crida del text i el número que obre la nota, amb les xifres del document. El número d'una nota depèn de la pàgina on cau, de manera que un llibre numerat per pàgina es compon, es numera segons on han caigut les notes i es torna a compondre. Posa la crida abans del signe de puntuació que la segueixi, com fan els llibres àrabs: el `[^id]` va just després de la paraula, abans de la coma o el punt. Vegeu [Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina).
+
+## Vers clàssic
+
+Un poema àrab clàssic (qaṣīda, qiṭʿa) es compon amb un vers, el *bayt*, per línia, en dues meitats: el primer hemistiqui, el *ṣadr*, a la dreta, i el segon, l'*ʿajuz*, a l'esquerra, amb un blanc entre tots dos. Tots els hemistiquis del poema es porten a una mateixa amplada, de manera que cada ṣadr comença a la mateixa vertical i cada ʿajuz acaba en una altra, i les lletres de la rima s'alineen al llarg del poema.
+
+<Illustration name="BaytLayout" data='{"title": "Un bayt en dos hemistiquis", "desc": "Tres versos d’un poema. Cada línia té una primera meitat a la dreta i una segona meitat a l’esquerra, separades per un blanc. Totes les meitats tenen la mateixa amplada w, de manera que les meitats de la dreta comencen en una vertical i les de l’esquerra acaben en una altra, on s’alineen les lletres de la rima.", "caption": "Cada hemistiqui es compon a l’amplada comuna w; les lletres de la rima s’alineen a l’esquerra.", "sadr": "ṣadr (primer)", "ajuz": "ʿajuz (segon)", "gap": "blanc", "width": "w", "rhyme": "rima", "lines": [["يا حرقة الدهر كفي", "إن لم تكفي فعفي"], ["فلا بحظي أعطي", "ولا بصنعة كفي"], ["كم جاهل في الثريا", "وعالم متخفي"]]}' />
+
+Escriu el poema en un bloc `:::verse`, un bayt per línia, amb els hemistiquis separats per `||` (també val un `\\` amb un espai a cada banda, com a les transcripcions de Wikisource). Una línia sense separador és un hemistiqui sol, centrat al poema.
+
+```markdown
+فأنشد يقول:
+
+:::verse{style="verse"}
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **L'amplada comuna** és la de l'hemistiqui més ample, com a màxim la meitat de la mesura menys el blanc; `width` la fixa. Cada hemistiqui hi arriba primer amb caixides, que el vers admet amb més llibertat que la prosa, i després amb els espais entre paraules.
+- **El blanc** fa 2 em per defecte (`gap`); `ornament` imprimeix una marca al centre, com ٭.
+- **Un hemistiqui massa llarg** estreny primer els espais; si tot i així no hi cap, el seu bayt es compon esglaonat: el ṣadr alineat a la dreta en una línia pròpia i l'ʿajuz alineat a l'esquerra a la següent.
+- **Cohesió.** Un bayt no es reparteix mai entre columnes ni entre pàgines, un poema segueix les regles d'òrfenes i vídues dels paràgrafs, i la línia que el presenta («فأنشد يقول:») es queda amb els primers bayts.
+- **Tipus de lletra.** El poema pren el tipus i el cos del text; `style` anomena un estil de paràgraf, i així és com un poema vocalitzat rep l'interlineat que demanen els seus signes. Un poema en transliteració llatina dins d'un llibre en català es compon igual, amb el ṣadr a l'esquerra.
+
+El text pla conserva el poema tal com es va escriure, un bayt per línia, i en deixa fora les caixides i l'ornament. Vegeu [`:::verse`](/ca/docs/document-format#verse) al format de document.
+
+## Índex general i índex analític
+
+**Índex general.** Molts llibres àrabs, sobretot les edicions clàssiques, imprimeixen l'índex (فهرس o فهرس المحتويات) al final. `:::toc` imprimeix l'índex general allà on sigui, així que col·loca'l a l'últim capítol sota un títol que en quedi fora:
+
+```markdown
+# فهرس المحتويات {toc="false"}
+
+:::toc
+```
+
+Una línia de l'índex general es compon de dreta a esquerra: el número i el títol a la dreta, la línia de punts i el número de pàgina a l'esquerra. Un títol llatí en un llibre àrab conserva el número de pàgina a l'esquerra, i les seves paraules es llegeixen d'esquerra a dreta.
+
+**Índex analític.** L'índex analític d'un llibre àrab ordena les entrades per ordre alfabètic (hijāʾī) i les agrupa sota la primera lletra. No té en compte l'article determinat: البصرة s'ordena sota ب, entre بدر i بغداد, i s'imprimeix tal com està escrit (`index.ignoreArticle`, activat per defecte quan la llengua de l'índex és l'àrab; الله conserva l'article). Tampoc no té en compte els signes vocàlics ni el tatweel, ordena أ إ آ ٱ sota ا, i ordena ة amb ه i ى amb ي. Els números de pàgina se separen amb la coma àrab (، ) i una remissió diu انظر o انظر أيضًا. Una entrada amb una clau `sort` pròpia conserva l'article d'aquesta clau. Vegeu [Índex analític](/ca/docs/configuration#índex-analític).
+
+**Cites.** La bibliografia d'un llibre àrab pren els termes àrabs del llenguatge d'estils de cita (la configuració regional `ar` de CSL: ص per a una pàgina, مج per a un volum, و entre dos autors, وآخرون per a *et al.*) i les xifres del document a les crides numerades: `[٢، ص ١٢]`. El títol de la bibliografia és المراجع. Les comes i els punts i comes escrits en un estil CSL es queden com els té l'estil. Vegeu [Cites](/ca/docs/configuration#cites-1).
+
+## Fonts
+
+Postext compon cada estil en una sola família i no en recorre a cap altra per a un caràcter que falti, de manera que la font ha de contenir totes les lletres, signes i xifres àrabs que imprimeix el llibre. Fonts lliures per a llibres (totes amb la SIL Open Font License):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Font</th>
+      <th>Estil</th>
+      <th style={{ width: '240px' }}>Ús</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Amiri</td><td>Naskh basat en els tipus de les impremtes de Būlāq i Amīriyya de començament del segle XX; caixida corba, vocalització completa i un llatí a joc.</td><td>Edicions clàssiques, text vocalitzat, vers. Rodona i negreta.</td></tr>
+    <tr><td>Noto Naskh Arabic</td><td>Naskh modern neutre.</td><td>Prosa moderna, notes, taules. És una font variable: inclou un fitxer estàtic per gruix.</td></tr>
+    <tr><td>Scheherazade New</td><td>Naskh tradicional simplificat, amb signes molt clars i interlineat per defecte alt.</td><td>Text vocalitzat del tot, ensenyament de la llengua.</td></tr>
+    <tr><td>Reem Kufi</td><td>Cúfic basat en les inscripcions fatimites.</td><td>Títols d'exhibició, títols de nit i de capítol.</td></tr>
+    <tr><td>Aref Ruqaa</td><td>Ruqʿa.</td><td>Títols d'exhibició curts i portades. Sense caixida: el ruqʿa no s'allarga.</td></tr>
+  </tbody>
+</table>
+
+Markazi Text i Noto Kufi Arabic serveixen per a llibres moderns (text i títols), i El Messiri per a exhibició moderna. A un mateix cos nominal, una font naskh sembla més petita que una de llatina: el text d'un llibre àrab sol anar en 13–15 pt on el llatí aniria en 10–11 pt.
+
+- **Al navegador i al Sandbox**, Google Fonts i Fontsource serveixen cada família en un fitxer per subconjunt: `latin`, `latin-ext` i `arabic`. El navegador només carrega el fitxer `arabic` quan un caràcter el necessita, i una composició mesurada abans que arribi es mesura amb una font de substitució. El Sandbox el carrega abans de la primera composició; una aplicació amfitriona ho comprova amb una mostra que contingui una lletra àrab (`document.fonts.load('16px Amiri', 'ب')`). El proveïdor de fonts del PDF ha de passar a `renderToPdf` el fitxer `arabic` per al text àrab; el proveïdor de [Proveïdor de fonts al navegador](/ca/docs/configuration#proveïdor-de-fonts-al-navegador-fontsource--woff2) tria el fragment per punt de codi.
+- **En un paquet**, inclou les fonts senceres o reduïdes als caràcters del llibre, conservant les taules de composició OpenType (`GSUB`, `GPOS`): allà hi ha les formes d'enllaç, les lligadures, la posició dels signes i els parèntesis emmirallats. Un subconjunt sense aquestes taules imprimeix lletres aïllades.
+- **Els glifs que falten** s'imprimeixen com la caixa buida de la font; `renderToPdf` en dona avís per font (`missingGlyph`), i el Sandbox els enumera al tauler Revisió.
+- **El llatí dins de text àrab** es compon en la mateixa família. L'Amiri porta el seu propi llatí; amb una font naskh de llatí pobre, compon els passatges llatins llargs amb un estil de paràgraf que faci servir una font llatina.
+
+## Al Sandbox
+
+A **Disseny › Escriptura**, el selector Llengua del document ofereix العربية, العربية (مصر) i العربية (المغرب), i **Direcció del text** i **Xifres** mostren a què es resol *Automàtic*. **Configuració per a l'àrab › Revisar…** enumera el que canvia en preparar el llibre per a l'àrab abans d'aplicar-ho, amb una tria de tipus (*Clàssic*, Amiri; *Modern*, Noto Naskh Arabic amb títols en Noto Kufi Arabic): la direcció i l'enquadernació tornen a *Automàtic*, capçaleres i folis en una font amb lletres àrabs, interlineat d'1,75 em, text justificat, les xifres de la regió, شكل i جدول numerats per capítol, peus com شكل ١-١: العنوان, capítols numerats الفصل الأول, llistes numerades ١- أ- (١) i notes numerades de nou a cada pàgina. Tots els selectors de font mostren primer les famílies àrabs.
+
+L'editor dona a cada línia la direcció de la seva primera lletra: una línia en àrab comença per la dreta, i el cursor i les fletxes segueixen l'ordre visual, mentre que el marcatge que conté (atributs `{…}`, `[^id]`, un `:ref[…]`, fórmules, destinacions d'enllaç) es queda d'esquerra a dreta. Vegeu [Sandbox](/ca/docs/sandbox#tauler-de-disseny).
+
+## Dues configuracions completes
+
+### Un llibre modern en àrab estàndard
+
+Un llibre de 14 × 21 cm en Noto Naskh Arabic a 13 pt, amb títols en Noto Kufi Arabic, capítols numerats الفصل الأول, notes «(١)» numerades de nou a cada pàgina i el foli centrat al peu. La direcció, l'enquadernació per la dreta, les xifres ٠–٩, la caixida i l'èmfasi en negreta surten de `locale: 'ar-EG'`:
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const pt = (value: number) => ({ value, unit: 'pt' as const });
+const mm = (value: number) => ({ value, unit: 'mm' as const });
+const em = (value: number) => ({ value, unit: 'em' as const });
+const ink = { hex: '#1a1a1a', model: 'hex' as const };
+
+const config: PostextConfig = {
+  locale: 'ar-EG',
+  page: {
+    sizePreset: 'custom', width: mm(140), height: mm(210),
+    margins: { top: mm(18), bottom: mm(22), left: mm(16), right: mm(20), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Noto Naskh Arabic', fontSize: pt(13), lineHeight: em(1.7),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Kufi Arabic', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(20), numberingTemplate: 'الفصل {1:ordinal}', numberSeparator: ': ',
+        breakBefore: { enabled: true, parity: 'odd' } },
+      { level: 2, fontSize: pt(15) },
+    ],
+  },
+  captionStyle: { labelSeparator: ': ' },
+  orderedLists: {
+    levels: [
+      { level: 1, numberFormat: 'arabic', separator: '-' },
+      { level: 2, numberFormat: 'abjad', separator: '-' },
+    ],
+  },
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [] },
+  footer: { elements: [
+    { kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: 'Noto Naskh Arabic', fontSize: pt(11),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+};
+```
+
+`parity: 'odd'` obre cada capítol en un recto, que en aquest llibre és una pàgina esquerra. Uns dos punts separen l'etiqueta d'un peu del seu text (شكل ١-٢: …), perquè el punt que va per defecte després de les xifres aràbigues orientals es llegeix com a separador decimal.
+
+### Una edició clàssica vocalitzada
+
+Una edició de 17 × 24 cm d'un text clàssic en Amiri a 14 pt, amb les nits numerades en lletres, el vers vocalitzat del tot, el foli al cap de la pàgina entre ratlles, els preliminars paginats amb lletres abjad i l'índex general al final:
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  page: {
+    sizePreset: 'custom', width: mm(170), height: mm(240),
+    margins: { top: mm(24), bottom: mm(24), left: mm(18), right: mm(24), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Amiri', fontSize: pt(14), lineHeight: em(1.85),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    kashida: 'auto', kashidaPatterns: 'naskh',
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Amiri', color: ink, textAlign: 'center',
+    levels: [
+      { level: 1, fontSize: pt(18),
+        numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '',
+        breakBefore: { enabled: true, parity: 'any' } },
+    ],
+  },
+  paragraphStyles: [
+    { id: 'verse', lineHeight: em(2.1) },
+  ],
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [
+    { kind: 'text', id: 'folio', content: '– {pageNumber} –', fontFamily: 'Amiri', fontSize: pt(12),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+  footer: { elements: [] },
+};
+```
+
+Els capítols comencen amb `:::numbering{format="abjad" startAt=1}` abans de la introducció i `:::numbering{format="decimal" startAt=1}` abans de la primera nit; els poemes són blocs `:::verse{style="verse"}`; l'últim capítol és `# فهرس المحتويات {toc="false"}` seguit de `:::toc`. L'índex analític no necessita cap ajust per no tenir en compte l'article ال: `index.ignoreArticle` està activat en un índex àrab. Per a una edició de lectura sense vocals a partir de la mateixa font, afegeix `tashkil: 'strip'` a `bodyText`.
+
+## Límits coneguts
+
+- **El persa, l'urdú i l'hebreu** reben la direcció, les xifres, les regles de paraula sencera i l'enquadernació per la dreta, però no textos incorporats propis (les figures, les taules i l'índex analític s'imprimeixen en anglès) ni composició nastaʿlīq: un tipus nastaʿlīq es compon sobre una línia de base plana.
+- **La direcció de bloc** es fixa en títols i contenidors; un paràgraf solt necessita un `:::paragraphs{dir=…}` al voltant, i no hi ha `{dir=auto}`.
+- **Illes de direcció contrària.** En un bloc compost en direcció contrària a la del llibre, els peus i les línies de l'índex general i de l'índex analític segueixen la direcció del document, i la icona, la columna de marca i el títol d'un requadre es queden al costat d'inici del flux.
+- **El text dels dissenys** (capçaleres, obertures, títols de requadre) resol l'ordre bidireccional línia a línia, i un text que conté una lletra àrab perd sencer el seu espaiat entre lletres, també a les paraules llatines.
+- **Textos de disseny en cursiva.** Una capçalera o un text de portadella compostos en cursiva continuen inclinant les lletres àrabs.
+- **Els signes vocàlics** poden sobresortir de la vora d'un requadre o d'una cel·la de taula, el retall dels quals no creix per ells; `tashkil` deixa els signes dels peus, les cel·les de taula i el text dels dissenys.
+- **Números.** Els números de cita s'imprimeixen en xifres europees; els ordinals en lletres s'escriuen en la forma determinada i en nominatiu que fan servir els títols.
+- **Índex analític**: ة s'ordena sota ه, i els noms no s'ordenen saltant ابن o أبو; no hi ha índexs de rimes ni d'arrels.
+- **Vers**: no hi ha vers seguit dins de la prosa, ni bayts numerats, ni formes estròfiques amb una tornada centrada més enllà de línies centrades soltes; un hemistiqui més ample que la mesura es parteix des del costat d'inici, sense sagnat francès.
+- **Caixida**: el text que es copia de la sortida HTML conserva els tatweels inserits, i res no impedeix que les caixides de línies veïnes s'apilin l'una sobre l'altra.
+
+## Referències
+
+- W3C, [Arabic & Persian Layout Requirements (alreq)](https://www.w3.org/TR/alreq/), i l'[anàlisi de mancances de l'escriptura àrab](https://www.w3.org/International/alreq/gap-analysis/).
+- Annex 9 de l'estàndard Unicode, [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/); informe tècnic 53 d'Unicode, [Unicode Arabic Mark Rendering](https://www.unicode.org/reports/tr53/).
+- W3C, [Ready-made Counter Styles](https://www.w3.org/TR/predefined-counter-styles/), per a `arabic-indic`, `persian` i les sèries abjad.
+- aliftype, [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT), i la seva [presentació](https://aliftype.com/blog/introducing-raqim-kashida/english); M. Benatia, M. Elyaakoubi i A. Lazrek, “Arabic text justification”, *TUGboat* 27(2), 2006.
+- Titus Nemeth, [On Arabic justification](https://research.reading.ac.uk/typoarabic/on-arabic-justification-part-1/), TypoArabic, Universitat de Reading; Khatt Foundation, [The Big Kashida Secret](https://www.khtt.net/en/page/1821/the-big-kashida-secret).
+- Aḥmad Zakī Pāshā, *al-Tarqīm wa-ʿalāmātuhu fī al-lugha al-ʿarabiyya*, 1912 ([Hindawi](https://www.hindawi.org/books/82047270/)), sobre la puntuació àrab.
+- Documentació de l'[Amiri](https://www.amirifont.org) i de la [Scheherazade New](https://software.sil.org/scheherazade/), sobre la caixida, l'apilament de signes i els jocs estilístics.
+- Unicode CLDR, per a les xifres per defecte de cada regió.

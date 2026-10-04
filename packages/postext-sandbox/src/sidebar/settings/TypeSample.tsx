@@ -58,6 +58,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
     <figure className="mb-3 overflow-hidden rounded-md border border-(--rule)">
       <div
         lang={lang}
+        dir="auto"
         aria-hidden="true"
         className="px-3 py-2.5"
         style={{
@@ -67,7 +68,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
           fontWeight: body.fontWeight,
           fontSize: `${sizePx}px`,
           lineHeight: sizePt > 0 ? leadPt / sizePt : 1.3,
-          textAlign: body.textAlign === 'justify' ? 'justify' : 'left',
+          textAlign: body.textAlign === 'justify' ? 'justify' : 'start',
           hyphens: (body.textAlign === 'justify' || body.hyphenation.ragged) && body.hyphenation.enabled ? 'auto' : 'manual',
           textIndent: `${indentPt * (4 / 3)}px`,
           ...(vertical

@@ -31,7 +31,7 @@
 .cb-band-number {
   position: absolute;
   top: 0.4rem;
-  right: 1rem;
+  inset-inline-end: 1rem;
   display: flex;
   align-items: flex-start;
   font-size: clamp(5rem, 11vw, 9rem);
@@ -41,13 +41,14 @@
   font-variant-numeric: lining-nums;
 }
 .cb-band-no {
-  margin: 0.32em 0.1em 0 0;
+  margin-block: 0.32em 0;
+  margin-inline: 0 0.1em;
   font-size: 0.26em;
   letter-spacing: 0;
 }
 @media (min-width: 640px) {
   .cb-band-number {
-    right: 1.5rem;
+    inset-inline-end: 1.5rem;
   }
 }
 @media (max-width: 639.98px) {
@@ -57,9 +58,10 @@
   .cb-band-number {
     position: relative;
     top: auto;
-    right: auto;
-    float: right;
-    margin: -1.6rem 0 0.25rem 0.75rem;
+    inset-inline-end: auto;
+    float: inline-end;
+    margin-block: -1.6rem 0.25rem;
+    margin-inline: 0.75rem 0;
     opacity: 0.2;
   }
 }
@@ -76,7 +78,7 @@
 .cb-draft-tab {
   position: absolute;
   top: 0;
-  left: 1rem;
+  inset-inline-start: 1rem;
   padding: 0.3rem 0.6rem 0.35rem;
   border-radius: 0 0 4px 4px;
   background: var(--brand-night);
@@ -89,7 +91,7 @@
 }
 @media (min-width: 640px) {
   .cb-draft-tab {
-    left: 1.5rem;
+    inset-inline-start: 1.5rem;
   }
 }
 
@@ -254,11 +256,13 @@
   background: linear-gradient(to right, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
 }
 /* A right-bound book lies mirrored: the verso on the right, the recto on
-   the left, each shaded towards the fold. */
-[dir="rtl"] .cb-lt-page.is-verso::after {
+   the left, each shaded towards the fold. `:dir()`, not `[dir]`: the desk
+   sets the book's own direction, which an Arabic page's <html> must not
+   override. */
+.cb-lt-page.is-verso:dir(rtl)::after {
   background: linear-gradient(to right, rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.04) 3%, transparent 9%);
 }
-[dir="rtl"] .cb-lt-page.is-recto::after {
+.cb-lt-page.is-recto:dir(rtl)::after {
   background: linear-gradient(to left, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.05) 3%, transparent 9%);
 }
 .cb-lt-open {
@@ -369,8 +373,7 @@
 .cb-lt-film-tab[aria-selected="true"]::after {
   content: "";
   position: absolute;
-  left: 20%;
-  right: 20%;
+  inset-inline: 20%;
   bottom: -0.6rem;
   height: 3px;
   background: var(--brand);
@@ -515,7 +518,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.7rem 1rem 0.5rem 1.25rem;
+  padding-block: 0.7rem 0.5rem;
+  padding-inline: 1.25rem 1rem;
 }
 .cb-lb-count,
 .cb-lb-hint {
@@ -647,8 +651,9 @@
 }
 .cb-toc a {
   display: block;
-  padding: 0.22rem 0 0.22rem 0.75rem;
-  border-left: 3px solid color-mix(in srgb, var(--rule) 70%, transparent);
+  padding-block: 0.22rem;
+  padding-inline: 0.75rem 0;
+  border-inline-start: 3px solid color-mix(in srgb, var(--rule) 70%, transparent);
   font-family: var(--font-sans);
   font-size: 0.74rem;
   line-height: 1.35;
@@ -660,7 +665,7 @@
   color: var(--foreground);
 }
 .cb-toc a[aria-current] {
-  border-left-color: var(--part);
+  border-inline-start-color: var(--part);
   color: var(--part-ink);
   font-weight: 600;
 }
@@ -711,6 +716,9 @@
   content: " ↗";
   opacity: 0.55;
 }
+.cb-facts .cb-config a:dir(rtl)::after {
+  content: " ↖";
+}
 .cb-facts .cb-config a:hover {
   background: var(--surface-2);
 }
@@ -758,7 +766,7 @@
 }
 /* Generated blocks are UI, not prose: ragged, no hyphens. */
 .cb-writeup :is(.cb-answers, .cb-ingredients, .cb-credits, .cb-pitfall, .cb-excerpt, .cb-whole, .cb-whole-note, .cb-credits-links) {
-  text-align: left;
+  text-align: start;
   hyphens: manual;
   -webkit-hyphens: manual;
 }
@@ -885,7 +893,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.35rem 0.4rem 0.35rem 1rem;
+  padding-block: 0.35rem;
+  padding-inline: 1rem 0.4rem;
   background: var(--surface-2);
 }
 .cb-excerpt-file {
@@ -963,7 +972,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.3rem 0.4rem 0.3rem 0.5rem;
+  padding-block: 0.3rem;
+  padding-inline: 0.5rem 0.4rem;
   overflow-x: auto;
   background: var(--surface-2);
   scrollbar-width: none;
@@ -1146,15 +1156,25 @@
   margin: 1rem 0 1.25rem;
 }
 .cb-pitfall {
-  padding: 0.85rem 1.1rem 0.9rem 1.25rem;
+  padding-block: 0.85rem 0.9rem;
+  padding-inline: 1.25rem 1.1rem;
   overflow-wrap: anywhere;
-  border-radius: 0 8px 8px 0;
+  border-start-end-radius: 8px;
+  border-end-end-radius: 8px;
   background: var(--callout-bg);
   box-shadow: inset 4px 0 0 var(--brand-vermilion);
   scroll-margin-top: 5rem;
 }
 .cb-pitfall.is-warning {
   box-shadow: inset 4px 0 0 var(--brand-gilt);
+}
+/* The stripe stands at the start edge (an inset shadow has no logical
+   form). */
+.cb-pitfall:dir(rtl) {
+  box-shadow: inset -4px 0 0 var(--brand-vermilion);
+}
+.cb-pitfall.is-warning:dir(rtl) {
+  box-shadow: inset -4px 0 0 var(--brand-gilt);
 }
 .docs-content .cb-pitfall p {
   margin: 0 0 0.35rem;
@@ -1196,14 +1216,16 @@
 /* MDX components. */
 .cb-note {
   margin: 1.5rem 0;
-  padding: 0.9rem 1.1rem 0.9rem 1.2rem;
-  border-left: 4px solid var(--part, var(--brand));
-  border-radius: 0 6px 6px 0;
+  padding-block: 0.9rem;
+  padding-inline: 1.2rem 1.1rem;
+  border-inline-start: 4px solid var(--part, var(--brand));
+  border-start-end-radius: 6px;
+  border-end-end-radius: 6px;
   background: var(--callout-bg);
   font-family: var(--font-sans);
   font-size: 0.9em;
   line-height: 1.65;
-  text-align: left;
+  text-align: start;
   hyphens: manual;
 }
 .cb-note > :last-child {
@@ -1211,7 +1233,7 @@
 }
 .cb-pageref-mark {
   display: inline-block;
-  margin-left: 0.3em;
+  margin-inline-start: 0.3em;
   padding: 0.05rem 0.3rem;
   border-radius: 3px;
   /* A light tint: the part ink keeps 7:1 on it in both themes. */
@@ -1329,9 +1351,9 @@
 .cb-collection-links a:hover {
   color: var(--foreground);
 }
-/* The next recipe is set right, also when its title wraps. */
+/* The next recipe is set at the end, also when its title wraps. */
 .cb-collection-links > :nth-child(2) {
-  text-align: right;
+  text-align: end;
 }
 @media (max-width: 639.98px) {
   /* Two titles side by side get about 140 px each on a phone: one per line. */
@@ -1368,7 +1390,7 @@
   background: var(--surface-2);
 }
 .cb-prevnext-link.is-next {
-  text-align: right;
+  text-align: end;
 }
 .cb-prevnext-link .kicker {
   font-size: 0.58rem;

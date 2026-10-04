@@ -1,27 +1,32 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { BookOpen, FileText } from 'lucide-react';
+import { BookOpen, FileText, LayoutTemplate, TextWrap } from 'lucide-react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import type { LayoutScope } from '../book/types';
 import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
-import type { ViewportTab } from '../types';
-import { SegmentedControl, cn } from '../ui';
+import type { EpubLayout, SandboxLabels, ViewportTab } from '../types';
+import { SegmentedControl, cn, useUiRtl } from '../ui';
+import { VIEWPORT_TABS as ALL_TABS } from '../storage/viewHash';
 import { folioSupported } from './folioSupport';
 
-const ALL_TABS: ViewportTab[] = ['canvas', 'html', 'folio', 'pdf'];
+/** The expansion of each tab label that is an abbreviation. */
+const TAB_ABBR: Partial<Record<ViewportTab, keyof SandboxLabels>> = { pdf: 'abbrPdf', html: 'abbrHtml', epub: 'abbrEpub' };
 
 /** The bar above the preview: the scope selector of the tab shown at the
  *  left (each tab lays out the active chapter or the whole book — the
- *  canvas and the HTML preview share one choice, kept with the book; the
- *  PDF has its own; only while the book has more than one chapter) and the
- *  Canvas / HTML / PDF tabs at the right. The phone layout has no activity
- *  bar at the side, so it passes the logo (`leading`) and the theme and
- *  language controls (`trailing`) to this bar, and the scope choice shows
- *  as icons. Four tabs, the logo, the scope and the trailing controls do
- *  not fit one row on a phone held upright, so below 640px the bar has two
- *  rows: logo, scope and controls above, the tabs below sharing the full
- *  width — room for a fifth tab (an EPUB viewer is planned) at 320px. */
+ *  canvas, the folio and the HTML preview share one choice, kept with the
+ *  book; the PDF has its own; only while the book has more than one
+ *  chapter) and the Canvas / PDF / Folio / HTML / EPUB 3 tabs at the right.
+ *  The EPUB tab always builds the whole book, so in its place it shows the
+ *  rendition: a fixed layout or a reflowable book. The phone layout has no
+ *  activity bar at the side, so it passes the logo (`leading`) and the
+ *  theme and language controls (`trailing`) to this bar, and the scope (or
+ *  rendition) choice shows as icons. The tabs, the logo, the scope and the
+ *  trailing controls do not fit one row on a phone held upright, so below
+ *  640px the bar has two rows: logo, scope and controls above, the tabs
+ *  below sharing the full width — five of them fit at 320px (a phone's
+ *  screen offers no Folio, so it shows four). */
 export function ViewportTabs({ compact = false, leading, trailing }: { compact?: boolean; leading?: ReactNode; trailing?: ReactNode } = {}) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -30,6 +35,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   const activeViewport = useSandboxSelector((s) => s.activeViewport);
   const pdfScope = useSandboxSelector((s) => s.pdfScope);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
+  const epubLayout = useSandboxSelector((s) => s.epubLayout);
   const chapterCount = useSandboxSelector((s) => s.chapters.length);
   const multiChapter = chapterCount > 1;
   // A long book is shown a chapter at a time on the canvas and in HTML
@@ -38,6 +44,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   const bookScopeTitle = bookScopeBlocked
     ? labels.canvasScopeBookTooLong.replace('__n__', String(WHOLE_BOOK_MAX_CHAPTERS))
     : undefined;
+  const rtl = useUiRtl();
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -71,9 +78,25 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
       className={cn('flex shrink-0 items-stretch justify-between', compact ? 'flex-wrap' : 'h-9 pt-large:min-h-12')}
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
     >
-      {leading && <div className={cn('flex shrink-0 items-center border-r px-1 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
+      {leading && <div className={cn('flex shrink-0 items-center border-e px-1 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
       <div className={cn('flex min-w-0 flex-1 items-center', compact ? 'h-11 px-1.5 pt-large:min-h-12' : 'px-3')}>
-        {multiChapter && (
+        {activeViewport === 'epub' ? (
+          <SegmentedControl<EpubLayout>
+            value={epubLayout}
+            onValueChange={(next) => dispatch({ type: 'SET_EPUB_LAYOUT', payload: next })}
+            ariaLabel={labels.epubLayout}
+            size="sm"
+            options={compact
+              ? [
+                  { value: 'fixed', label: <LayoutTemplate size={13} aria-hidden="true" />, title: labels.epubLayoutFixed },
+                  { value: 'reflowable', label: <TextWrap size={13} aria-hidden="true" />, title: labels.epubLayoutReflowable },
+                ]
+              : [
+                  { value: 'fixed', label: labels.epubLayoutFixed, title: labels.epubLayoutFixedHint },
+                  { value: 'reflowable', label: labels.epubLayoutReflowable, title: labels.epubLayoutReflowableHint },
+                ]}
+          />
+        ) : multiChapter && (
           <SegmentedControl<LayoutScope>
             value={activeViewport === 'pdf' ? pdfScope : canvasScope}
             onValueChange={(next) => dispatch({ type: activeViewport === 'pdf' ? 'SET_PDF_SCOPE' : 'SET_CANVAS_SCOPE', payload: next })}
@@ -104,8 +127,9 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
         onKeyDown={(e) => {
           const idx = TABS.indexOf(activeViewport);
           let next: number | null = null;
-          if (e.key === 'ArrowRight') next = (idx + 1) % TABS.length;
-          else if (e.key === 'ArrowLeft') next = (idx - 1 + TABS.length) % TABS.length;
+          // The tabs run right to left in a right-to-left interface.
+          if (e.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) next = (idx + 1) % TABS.length;
+          else if (e.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) next = (idx - 1 + TABS.length) % TABS.length;
           else if (e.key === 'Home') next = 0;
           else if (e.key === 'End') next = TABS.length - 1;
           if (next === null) return;
@@ -117,6 +141,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
         {TABS.map((tab) => {
           const isActive = activeViewport === tab;
           const label = labels[tab];
+          const abbr = TAB_ABBR[tab];
           return (
             <button
               key={tab}
@@ -129,13 +154,13 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
                 'flex pt-large:min-w-11 cursor-pointer items-center justify-center text-[0.68rem]',
                 // On the second row of a phone bar the tabs share its width
                 // (the first one without a rule at the window's edge).
-                compact ? 'flex-1 px-1 first:border-l-0! min-[640px]:px-2 min-[640px]:flex-none min-[640px]:first:border-l!' : 'px-3',
+                compact ? 'flex-1 px-1 first:border-s-0! min-[640px]:px-2 min-[640px]:flex-none min-[640px]:first:border-s!' : 'px-3',
                 ' font-medium tracking-[0.01em] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
-              style={{ borderLeft: '1px solid var(--rule)' }}
+              style={{ borderInlineStart: '1px solid var(--rule)' }}
             >
-              {tab === 'canvas' || tab === 'folio' ? label : <abbr title={tab === 'html' ? labels.abbrHtml : labels.abbrPdf} className="no-underline">{label}</abbr>}
+              {abbr ? <abbr title={labels[abbr]} className="no-underline">{label}</abbr> : label}
             </button>
           );
         })}
@@ -153,7 +178,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
           }}
         />
       </div>
-      {trailing && <div className={cn('flex shrink-0 items-center gap-0.5 border-l px-0.5 pt-large:gap-0 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
+      {trailing && <div className={cn('flex shrink-0 items-center gap-0.5 border-s px-0.5 pt-large:gap-0 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
     </div>
   );
 }

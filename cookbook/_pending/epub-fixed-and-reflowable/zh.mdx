@@ -1,0 +1,61 @@
+---
+title: "一本书，两个EPUB 3文件：固定版式与流式版式"
+summary: "postext-epub的renderToEpub把buildBundle排好的各章写成一个固定版式EPUB和一个流式EPUB；readEpub列出每个文件里有什么。"
+plain: "一本小小的寓言集，为印刷排一次版，存成两本电子书：一本保留每一页印刷页面，另一本的文字由手机或电子阅读器按自己的字号重新排。"
+description: "用buildBundle排一本三章的书，再用postext-epub写成固定版式和流式两个EPUB 3文件，并用readEpub读回，全部在一个CodePen里。"
+question: "怎样把书导出为EPUB，用固定页面还是可重排的文字？"
+aliases: ["EPUB", "EPUB 3", "电子书", "固定版式", "流式版式", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "书名页：作者名用蓝色小号大写字母，书名Fables of Aesop用标题衬线体，下面是一条短线和斜体副题。", "3": "第一卷The Lion’s Court的章首页，下面是寓言The Lion and the Mouse。" }
+---
+
+## 成品一览
+
+《伊索寓言》（*Fables of Aesop*），十八篇寓言分为三卷，页面120 × 190 mm，有书名页、背面的版权页，每卷有下沉的章首页；西班牙语版用同样的设计排克拉林（Clarín）的短篇小说*¡Adiós, Cordera!*。全书按章排一次版，这份排版生成两个EPUB 3文件。固定版式保留每一页印刷页面：章首页、书眉和换行，用嵌入的Caslon字体。流式版式保留文字及其结构，由阅读系统在手机或电子墨水屏上重新排。两个文件都能从页面下载，也都通过W3C的EPUBCheck校验。
+
+## 做法
+
+### 1 · 按章排书
+
+<Excerpt region="openers" />
+
+`buildBundle`把每一章排成一个独立的文档，并把页码和奇偶页从一章带到下一章，所以`docs`就是`renderToPdf`要打印的那个数组。EPUB写入器读取同一个数组：每章是导航目录里的一项，流式文件为每章写一个XHTML文档。书名页和版权页是第一章，它的frontmatter提供书名、副题和作者。
+
+### 2 · 把字体文件交给写入器
+
+<Excerpt region="embed" />
+
+浏览器加载的字体不是写入器能读取的文件，所以代码再次获取同一批Fontsource woff2文件，浏览器已经缓存了它们。每个文件都成为EPUB里的一个字体文件和一条`@font-face`规则。没有它们，固定版式会用阅读器自己的字体放置用Caslon排的文字，行就不再符合原来的行宽。
+
+### 3 · 写出两种版式
+
+代码就是上面的[简短回答](#简短回答)。`layout: 'fixed'`为每一页印刷页面写一个XHTML文档，尺寸是裁切后的页面，文字是真正的文字，可以选中；`layout: 'reflowable'`根据排好的行重建段落，去掉换行时加上的连字符，并从配置生成样式表。固定的`modified`日期让每次运行得到相同的字节。元数据来自第一章的frontmatter，所以文件的书名和作者就是书名页上印的那些。
+
+### 4 · 把每个文件读回来
+
+<Excerpt region="shelf" />
+
+`readEpub`像阅读系统那样打开文件：阅读顺序（spine）、目录、页码列表和版式。固定版式文件每页一项；流式文件有四项，每章一项。两个文件都带有印刷页码列表，所以引文里的第9页在哪个文件里都能找到。`<a download>`链接给字节起一个文件名，不经过任何服务器。
+
+## 变化
+
+### 给固定版式加封面图片
+
+把书名页画到canvas上，作为封面传入；`showsFirstPage`告诉写入器不要再把它加成一页。
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### 把同样的章节印成PDF
+
+`postext-pdf`的`renderToPdf(docs, …)`接受同一个数组，所以PDF、EPUB和屏幕都来自同一份排版。<RecipeLink slug="catalan-pocket-novella">加泰罗尼亚语口袋本小说</RecipeLink>展示了PDF这一边。
+
+## 常见问题
+
+流式文件保留标题的文字，但不保留它的设计：每个章首页的眉题（*Book I*）是设计元素，不属于正文。读者必须看到的字要写在标题本身或正文里。

@@ -163,3 +163,52 @@ describe('createPdfFontProvider (#196)', () => {
     expect(fetched.filter((u) => u === uprightCss)).toHaveLength(2);
   });
 });
+
+// Abridged from `@fontsource/amiri@5/400.css`: one file per script, the
+// Arabic one first.
+const AMIRI_CSS = `
+/* amiri-arabic-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-arabic-400-normal.woff2) format('woff2'), url(./files/amiri-arabic-400-normal.woff) format('woff');
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+/* amiri-latin-ext-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-latin-ext-400-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+1E00-1E9F,U+2020,U+20A0-20AB;
+}
+/* amiri-latin-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-latin-400-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+2000-206F,U+FEFF,U+FFFD;
+}
+`;
+
+describe('Arabic faces (#381)', () => {
+  const slices = parseFontsourceCss(AMIRI_CSS, 'https://cdn.jsdelivr.net/npm/@fontsource/amiri@latest/400.css');
+  const picked = (text: string) => pickSlices(slices, [...text].map((c) => c.codePointAt(0)!)).map((s) => s.name);
+
+  it('reads the script subsets of a Fontsource stylesheet', () => {
+    expect(slices.map((s) => s.name)).toEqual(['arabic', 'latin-ext', 'latin']);
+  });
+
+  it('takes the Arabic file for Arabic letters, digits and presentation forms', () => {
+    expect(picked('الليلة الأولى')).toEqual(['latin', 'arabic']);
+    expect(picked('١٢٣')).toEqual(['arabic']);
+    expect(picked('ﷺ')).toEqual(['arabic']);
+    // A Latin word in the Arabic text needs the Latin file too; ā the
+    // extended one.
+    expect(picked('قال Shahrazād')).toEqual(['latin', 'latin-ext', 'arabic']);
+  });
+
+  it('takes the Latin file alone for text with no Arabic in it', () => {
+    expect(picked('Chapter 1')).toEqual(['latin']);
+    expect(picked('')).toEqual(['latin']);
+  });
+});

@@ -90,8 +90,8 @@ function PanelNav() {
           aria-hidden="true"
           style={{
             position: 'absolute',
-            // Flush with the bar's right edge: the bar's horizontal padding.
-            right: '-0.25rem',
+            // Flush with the bar's end edge: the bar's horizontal padding.
+            insetInlineEnd: '-0.25rem',
             top: indicator.top,
             height: indicator.height,
             width: 3,
@@ -116,7 +116,7 @@ function PanelNav() {
             ? `${label} (${labels.presetStaleBanner})`
             : label;
         return (
-          <Tooltip key={id} content={hint} side="right">
+          <Tooltip key={id} content={hint} side="inline-end">
             <button
               ref={(el) => { if (el) buttonRefs.current.set(id, el); }}
               type="button"
@@ -138,7 +138,7 @@ function PanelNav() {
               {showBadge && (
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-0.5 right-1.5 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
+                  className="pointer-events-none absolute top-0.5 end-1.5 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
                 >
                   {badgeText}
                 </span>
@@ -146,7 +146,7 @@ function PanelNav() {
               {showDot && (
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-1.5 right-3 h-2 w-2 rounded-full bg-(--brand)"
+                  className="pointer-events-none absolute top-1.5 end-3 h-2 w-2 rounded-full bg-(--brand)"
                   style={{ boxShadow: '0 0 0 2px var(--background)' }}
                 />
               )}
@@ -162,7 +162,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
   const labels = useSandboxLabels();
   return (
     <nav
-      className="flex h-full w-[3.7rem] shrink-0 flex-col items-center overflow-y-auto border-r px-1 pb-2"
+      className="flex h-full w-[3.7rem] shrink-0 flex-col items-center overflow-y-auto border-e px-1 pb-2"
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)', scrollbarWidth: 'none' }}
       aria-label={labels.activityBar}
     >
@@ -173,7 +173,7 @@ export function ActivityBar({ themeToggle, languageSwitcher, homeUrl, homeLink }
           {homeLink}
         </div>
       ) : homeUrl ? (
-        <Tooltip content="Postext" side="right">
+        <Tooltip content="Postext" side="inline-end">
           <a
             href={homeUrl}
             className="-mx-1 mb-2 flex h-9 pt-large:min-h-12 w-[calc(100%+0.5rem)] shrink-0 items-center justify-center border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
@@ -287,7 +287,7 @@ export function MobileNavBar() {
             {showBadge && (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-0.5 left-1/2 ml-1 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
+                className="pointer-events-none absolute top-0.5 start-1/2 ms-1 box-border h-4 min-w-4 rounded-full bg-(--brand) px-1 text-center text-[10px] leading-4 font-bold text-(--brand-contrast,var(--background)) tabular-nums"
               >
                 {warningCount > 99 ? '99+' : String(warningCount)}
               </span>
@@ -295,7 +295,7 @@ export function MobileNavBar() {
             {showDot && (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1.5 left-1/2 ml-2 h-2 w-2 rounded-full bg-(--brand)"
+                className="pointer-events-none absolute top-1.5 start-1/2 ms-2 h-2 w-2 rounded-full bg-(--brand)"
                 style={{ boxShadow: '0 0 0 2px var(--background)' }}
               />
             )}

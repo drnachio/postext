@@ -7,8 +7,12 @@ import {
   Geist,
   Noto_Sans_SC,
   Noto_Serif_SC,
+  Noto_Naskh_Arabic,
+  Noto_Sans_Arabic,
+  Noto_Kufi_Arabic,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -24,7 +28,7 @@ import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import { READING_PREPAINT_SCRIPT } from "@/components/reading/readingPrefs";
 import "../globals.css";
-import { htmlLang } from "@/i18n/locales";
+import { htmlDir, htmlLang } from "@/i18n/locales";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
@@ -60,6 +64,27 @@ const notoSansSc = Noto_Sans_SC({
 
 const notoSerifSc = Noto_Serif_SC({
   variable: "--font-noto-serif-sc",
+  preload: false,
+});
+
+// Arabic fallbacks, switched on for ar pages only (globals.css `--ar-*`):
+// Naskh behind the serifs (display and reading), Kufi behind the section
+// heads' grotesque, Noto Sans Arabic behind the UI sans and the mono.
+const notoNaskhArabic = Noto_Naskh_Arabic({
+  variable: "--font-noto-naskh-arabic",
+  subsets: ["arabic"],
+  preload: false,
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+  variable: "--font-noto-sans-arabic",
+  subsets: ["arabic"],
+  preload: false,
+});
+
+const notoKufiArabic = Noto_Kufi_Arabic({
+  variable: "--font-noto-kufi-arabic",
+  subsets: ["arabic"],
   preload: false,
 });
 
@@ -169,6 +194,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={htmlLang(locale)}
+      dir={htmlDir(locale)}
       suppressHydrationWarning
       className={cn(
         "dark h-full antialiased",
@@ -178,7 +204,10 @@ export default async function LocaleLayout({
         lora.variable,
         jetbrainsMono.variable,
         notoSansSc.variable,
-        notoSerifSc.variable
+        notoSerifSc.variable,
+        notoNaskhArabic.variable,
+        notoSansArabic.variable,
+        notoKufiArabic.variable
       )}
     >
       <body className="min-h-full flex flex-col font-body">
@@ -192,6 +221,9 @@ export default async function LocaleLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <NextIntlClientProvider messages={clientMessages}>
+          {/* Base UI's tabs, selects and popovers read the direction from
+              here (arrow keys, sides), not from the document. */}
+          <DirectionProvider direction={htmlDir(locale)}>
           <ThemeProvider>
             <CookieConsentProvider>
               <a href="#main-content" className="skip-to-content">
@@ -207,6 +239,7 @@ export default async function LocaleLayout({
               <CookieBanner />
             </CookieConsentProvider>
           </ThemeProvider>
+          </DirectionProvider>
         </NextIntlClientProvider>
         <Analytics />
       </body>

@@ -4,6 +4,7 @@ import { parseFontString } from '../fontString';
 import type { FontCache } from '../fontCache';
 import { type PageCtx, drawChipBoxPx, drawTextPx } from './primitives';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
+import { drawRightToLeftRun } from './rtlRun';
 
 /**
  * Inline chip (`:chip[…]`): the box, flagged as a layout artifact in a
@@ -26,10 +27,16 @@ export function paintChip(
   drawChipBoxPx(ctx, chip, xPx, baselinePx);
   tagContent(ctx, elem);
   let tx = xPx + chip.marginLeft + chip.borderWidth + chip.paddingX;
-  for (const run of chip.runs) {
+  // The runs in the chip's paint order (`VDTChip.order`), a right-to-left
+  // one shaped so.
+  const order = chip.order && chip.order.length === chip.runs.length ? chip.order : undefined;
+  for (let k = 0; k < chip.runs.length; k++) {
+    const run = chip.runs[order ? order[k]! : k]!;
     const font = fontCache.get(run.fontString) ?? fallbackFont;
     const size = parseFontString(run.fontString)?.sizePx ?? fallbackSize;
-    drawTextPx(ctx, run.text, tx, baselinePx + (run.baselineShift ?? 0), font, size, colorFor(run));
+    const y = baselinePx + (run.baselineShift ?? 0);
+    if (run.rtl) drawRightToLeftRun(ctx, run.text, tx, y, font, size, colorFor(run));
+    else drawTextPx(ctx, run.text, tx, y, font, size, colorFor(run));
     tx += run.width;
   }
 }

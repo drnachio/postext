@@ -1,0 +1,75 @@
+---
+title: "Notes finals en pàgina pròpia, a dues columnes"
+summary: "Un preprocessador breu numera les notes [^1] i les reuneix sota un títol Notes, l'estil del qual les compon en pàgina pròpia, a dues columnes."
+plain: "Una petita edició d'una famosa conferència científica sobre una espelma. Ensenya a reunir les notes al final, en una pàgina pròpia a dues columnes, en lloc de fer-ho al peu de cada pàgina."
+description: "La primera conferència de Faraday sobre l'espelma, amb sis notes finals. Cada crida [^1] surt volada, i les notes van en pàgina pròpia a dues columnes."
+question: "Com componc les notes [^1] com a notes finals, en pàgina pròpia i sota el seu títol?"
+aliases: ["notes a peu de pàgina", "notes finals", "notes al final", "crides de nota", "números volats", "superíndexs", "[^1]", "notes de GFM", "sagnat francès", "edició crítica", "notes de l'editor"]
+pageNotes: { "1": "L'obertura de la conferència I: un camp de sutge ocupa la meitat superior de la pàgina, amb la fotografia d'una espelma encesa recolzada a la seva vora inferior, l'avanttítol LECTURE I en taronja i el títol A Candle en crema. El text comença a sota; la seva primera crida és un 1 petit i volat en taronja fosc.", "4": "Un plafó fosc encapçala la pàgina: dues flames d'espelma, una sota un tub de vidre i una altra en secció amb fletxes d'aire que puja, amb el peu Figure 1. A sota continua la conferència fins al final, amb la crida 6 al primer paràgraf.", "5": "Les notes: una banda de sutge amb la fotografia d'una espelma acabada d'apagar que fa fum i, a sota, sis notes en dues columnes de cos menor, cada número en negreta taronja fosc penjat al sagnat, i un colofó; les dues columnes acaben a la mateixa línia." }
+---
+
+## Què compondràs
+
+La primera conferència de *The Chemical History of a Candle*, de Michael Faraday, en anglès, composta com una petita edició de lectura de 156 × 234 mm. S'obre sobre un camp de sutge amb una espelma encesa recolzada a la seva vora inferior, una fotografia generada amb models de difusió el negre de la qual és el del sutge, i continua en una columna justificada de Libre Bodoni. On un llibre posaria notes a peu de pàgina, uns números petits i volats, en taronja fosc, remeten a les notes, reunides en una pàgina pròpia sota una banda de sutge amb l'espelma ja apagada. Van a dues columnes en bandera, en cos de 8,2 pt i amb el número en negreta penjat al sagnat. Tres de les sis són de William Crookes, editor del text el 1861, i surten de la reimpressió del 1908; les altres tres, noves, van signades *Ed.* Les dues columnes acaben a la mateixa línia, i el colofó tanca la segona.
+
+## Elaboració
+
+### 1 · Converteix les notes a peu de pàgina en notes finals abans de compondre
+
+El preprocessador és [la resposta curta](#la-resposta-curta) de més amunt. Postext compon per si mateix les notes `[^1]` ([notes a peu de pàgina](/ca/docs/document-format#notes-a-peu-de-pàgina)): al peu de la columna que les cita o, amb `placement: 'chapterEnd'`, darrere de l'últim bloc del capítol. En tots dos casos es queden a la columna del capítol, amb la lletra del text i sota un filet curt. Aquesta edició vol per a les notes un títol, una banda i una pàgina a dues columnes, i això un estil de títol només ho dona a un títol escrit al Markdown. Per això el pen reescriu el Markdown abans de passar-lo a `buildDocument`, i el motor no veu mai una crida `[^1]`. Numera les crides per l'ordre en què el text les cita per primera vegada i col·loca totes les definicions, en aquest ordre, on hi ha la primera, sota `## Notes`. Cada nota comença per `**1**`, perquè `1. ` obriria una llista numerada. Un unidor de paraules (U+2060) obre cada crida; sense ell, el `**` de la crida que segueix `*Royal George*` s'ajuntaria amb l'asterisc que tanca la cursiva en un `***`, i els asteriscs sortirien impresos.
+
+### 2 · Reserva la negreta per a les crides
+
+<Excerpt region="markers" />
+
+El preprocessador escriu cada crida com a `**^n^**`. Els circumflexos posen el número al 58 % del cos del text, elevat un terç d'aquest cos ([format en línia](/ca/docs/document-format#format-en-línia)), i la negreta li dona el color de `bodyText.boldColor`, que aquí és lliure perquè Faraday no fa servir negretes. Una xifra de 5,8 pt necessita un contrast de 4,5:1 sobre el paper, i el taronja de la flama només arriba a 2,6:1; per això les crides van en el de la brasa, més fosc. La remissió `[Fig. 1]` de la <PageRef page={3}>pàgina 17</PageRef> surt del mateix color i en rodona, perquè `referenceColor` hereta el color de la negreta i `referenceBold: false` li treu la negreta.
+
+### 3 · Compon les notes en cos menor, amb el número penjat
+
+<Excerpt region="notes" />
+
+Les notes van a 8,2 pt sobre 10,7 pt, uns quatre cinquens del cos del text. El `hangingIndent` del seu estil de paràgraf es mesura a la font, un cop carregada: un 5 en negreta i un espai de mig quadratí sumen 1,12 em en Libre Bodoni, així que la primera paraula de cada nota queda alineada amb les línies següents ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). Amb el número fora, al sagnat francès, les notes no necessiten espai entre elles. Van en bandera perquè la justificació estiraria aquest espai, i una columna justificada de 55 mm a 8,2 pt quedaria amb massa blanc entre paraules. Les titlles marquen els subíndexs igual que els circumflexos marquen els superíndexs, com a `C~25~H~52~` a la nota 4 i `H~2~O` a la nota 5.
+
+### 4 · Dona a les notes una pàgina a dues columnes
+
+<Excerpt region="section" />
+
+El títol `## Notes {style="notes" …}` obre una secció les pàgines de la qual prenen la disposició i el disseny de l'estil. `parity: 'any'` la comença a la pàgina següent, sigui parella o senar, i `span: 'page'` estén la banda sobre les dues columnes, de manera que arriba al tall i la segona columna comença a sota ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). La banda fixa la reserva, però la primera línia de la retícula de base lliure d'ella queda només 3 mm per sota del sutge; amb els 5 mm que `BAND_GAP` suma a `minHeight`, les notes comencen una línia més avall. El filet de columna es declara al `layout` del document perquè la 1.4.1 no dibuixa el `columnRule` d'un estil de títol. L'equilibrat de columnes, actiu per defecte, talla l'última pàgina perquè les dues columnes acabin a la mateixa línia ([equilibrat de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
+
+### 5 · Obre la conferència sobre un camp de sutge
+
+<Excerpt region="opener" />
+
+El camp és una caixa ancorada a la pàgina, i l'espelma, un element d'imatge amb un JPEG, es recolza a la seva vora inferior. El primer nivell de títol porta `span: 'page'` tot i que la conferència va a una sola columna: sense això, la 1.4.1 retalla el disseny al capdamunt de la columna en lloc de pintar-lo des del tall. L'avanttítol, el subtítol i la signatura surten de la línia del títol, `# A Candle {kicker="Lecture I" subtitle="…" byline="…"}`, així que la conferència II no demanaria codi nou. Com que el camp baixa més que el títol, és ell qui fixa la reserva. S'hi suma el marge inferior per defecte del títol, de 0,5 em, i el text comença una línia de la retícula de base per sota de la primera lliure de sutge. El subtítol fa 86 mm d'amplada perquè es parteixi després d'un guió mitjà, perquè al text d'un disseny un espai de no separació no impedeix el tall.
+
+### 6 · Fes servir la flama sobre el sutge i la brasa sobre el paper
+
+<Excerpt region="palette" />
+
+El taronja de la flama dona un contrast de 6:1 sobre el sutge, però només de 2,6:1 sobre el paper. Per això es reserva per als avanttítols de les bandes fosques i per a la figura 1, i tot el que és petit i va en taronja sobre el paper (crides, números de nota, l'etiqueta del peu de figura) fa servir la brasa, més fosca, que dona 5,1:1. `main-color` apunta a la brasa, així que qualsevol valor per defecte que la configuració no repeteixi segueix el disseny en lloc de sortir en blau.
+
+<Note>Un aclariment breu es pot quedar al text, entre parèntesis. Les glosses que el lector necessita al costat de la línia poden anar en una columna lateral, com a <RecipeLink slug="textbook-margin-column">Llibre de text amb columna al marge</RecipeLink>.</Note>
+
+## Variants
+
+### Deixa que Postext compongui les notes
+
+Treu `endnotes()` i el títol `## Notes`, deixa una línia en blanc entre les definicions (el motor llegeix cadascuna fins a la línia en blanc següent) i afegeix `footnotes: { placement: 'chapterEnd' }` a la configuració. El motor numera les crides i compon les notes al final de la conferència, darrere del colofó, a la seva única columna; <RecipeLink slug="novel-footnotes-column-foot">Notes a peu de la columna que les cita</RecipeLink> mostra com donar estil a les notes que compon el motor.
+
+### Imprimeix les crides en tinta
+
+Si el text fa servir la negreta per al seu propi èmfasi, posa les crides en tinta: `boldColor` dona el mateix color a les crides i a cada paraula en negreta.
+
+```diff
+-const markers = { boldColor: col('ember'), // **^n^**: a superscript at 58 % of the text size
++const markers = { boldColor: col('ink'), // **^n^**: a superscript at 58 % of the text size
+```
+
+### Deixa que les columnes de notes acabin desiguals
+
+Sense l'equilibrat de l'última pàgina, la primera columna s'omple fins al peu abans que comenci la segona.
+
+```diff
+-  headings: { fontFamily: DISPLAY, color: col('ink'), levels: [
++  headings: { fontFamily: DISPLAY, color: col('ink'), balancing: { trailing: false }, levels: [
+```

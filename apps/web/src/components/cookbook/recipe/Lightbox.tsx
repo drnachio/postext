@@ -182,7 +182,7 @@ export function Lightbox({
           const dx = event.clientX - from.x;
           if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(event.clientY - from.y)) step((dx < 0) !== rtl ? 1 : -1);
         }}
-        dir={rtl ? "rtl" : undefined}
+        dir={rtl ? "rtl" : "ltr"}
       >
         <button type="button" className="cb-lt-nav" onClick={() => step(-1)} disabled={atStart} aria-label={t("prevSpread")}>
           {rtl ? <ChevronRight aria-hidden="true" className="size-5" /> : <ChevronLeft aria-hidden="true" className="size-5" />}

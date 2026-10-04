@@ -27,7 +27,7 @@ import {
   collectConfigWarnings,
   collectHeadingDesignCuts,
   parseNumberFormat,
-  isCjkLanguage,
+  isUnhyphenatedLanguage,
   matchHyphenationLocale,
   findLooseLines,
 } from 'postext';
@@ -109,11 +109,13 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   // What `:::index` raised: cross-references and ranges are only known
   // once the whole book's marks reach the index chapter.
   (doc.contentWarnings ?? []).forEach((w, i) => {
-    // …the justified CJK lines set short at their tracking cap, and the
-    // paragraphs whose leading is too tight for their Chinese marks or
-    // ruby readings.
+    // …the justified CJK lines set short at their tracking cap, the
+    // paragraphs whose leading is too tight for their Chinese marks, ruby
+    // readings or Arabic vowel marks, the Arabic-script words wider than
+    // their line and the styles whose letter-spacing such words do not take.
     if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine'
-      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading') return;
+      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
+      && w.kind !== 'unbreakableWordOverflow' && w.kind !== 'joiningScriptLetterSpacing') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
     delete payload.sourceEnd;
@@ -1154,12 +1156,13 @@ function computeDocumentWarnings(params: {
 /** The document's hyphenation language — its hyphenation locale, else its
  *  `locale` — when no patterns ship for it: the engine falls back to en-us
  *  (and says so only on the console). Not while hyphenation is switched
- *  off, which is the remedy, nor for Chinese, Japanese or Korean, which are
- *  set without hyphenation (the engine switches it off for them). */
+ *  off, which is the remedy, nor for Chinese, Japanese, Korean or a
+ *  right-to-left language (Arabic, Persian, Hebrew…), which are set
+ *  without hyphenation (see `isUnhyphenatedLanguage`). */
 export function collectHyphenationLocaleWarnings(config: PostextConfig): Warning[] {
   if (config.bodyText?.hyphenation?.enabled === false) return [];
   const tag = config.bodyText?.hyphenation?.locale?.trim() || config.locale?.trim();
-  if (!tag || matchHyphenationLocale(tag) || isCjkLanguage(tag)) return [];
+  if (!tag || matchHyphenationLocale(tag) || isUnhyphenatedLanguage(tag)) return [];
   return [{ id: `unsupported-hyphenation-locale-${tag}`, payload: { kind: 'unsupportedHyphenationLocale', locale: tag } }];
 }
 

@@ -11,7 +11,7 @@ interface NestedGroupProps {
  *  so rows inside switch to label-above-control on their own width. */
 export function NestedGroup({ children }: NestedGroupProps) {
   return (
-    <div className="@container relative mb-1.5 ml-1 border-l-2 border-(--rule) pl-3">
+    <div className="@container relative mb-1.5 ms-1 border-s-2 border-(--rule) ps-3">
       {children}
     </div>
   );

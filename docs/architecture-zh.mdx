@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '架构',
   description: 'Postext排版引擎的技术架构',
   lang: 'zh',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '38分钟',
   order: 2,
   plainSummary: "本页讲解Postext的内部工作原理，面向程序员。首先，Postext在不往屏幕上画任何东西的情况下测量每个词，所以速度很快。然后它算出每一行、每张图和每一栏的位置，并把这份排版方案保存在内存里。它反复计算，直到没有任何东西再移动。最后，它把排好的页面输出为网页、Canvas图像或PDF文件。你改动一个词时，只有改动的部分会重新计算。",
@@ -94,7 +94,7 @@ export const metadata = {
     </tr>
     <tr>
       <td><strong>后端</strong></td>
-      <td>消费已收敛VDT的渲染目标。目前已有三种：<strong>canvas</strong>（位图预览）、<strong>HTML</strong>（基于DOM的屏幕阅读）和<strong>PDF</strong>（通过<code>postext-pdf</code>输出可付印的文件）。三者共用同一套测量（基于Pretext的measure模块）。</td>
+      <td>消费已收敛VDT的渲染目标。目前已有三种：<strong>canvas</strong>（位图预览）、<strong>HTML</strong>（基于DOM的屏幕阅读）和<strong>PDF</strong>（通过<code>postext-pdf</code>输出可付印的文件）。三者共用同一套测量（基于Pretext的measure模块）。第四种是<strong>EPUB</strong>（<code>postext-epub</code>），用同样的文档把整本书写成电子书。</td>
     </tr>
     <tr>
       <td><strong>遍（Pass）</strong></td>
@@ -633,9 +633,12 @@ renderToHtmlIndexed(doc, options?): HtmlRenderIndex;    // 按页、按块的分
 
 // PDF（来自'postext-pdf'）
 renderToPdf(doc, options): Promise<Uint8Array>;
+
+// EPUB（来自'postext-epub'），按顺序传入一本书的各章
+renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
+由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
 
 `renderToHtmlIndexed`值得单独说明：除了完整的HTML字符串，它还返回按页、按块的分解结果（`HtmlRenderIndex`），调用方可以与上一次渲染做差异比较，只修补HTML确实发生变化的DOM子树。沙盒的实时预览走的就是这条路径。
 
@@ -670,6 +673,12 @@ renderToPdf(doc, options): Promise<Uint8Array>;
       <td><strong>已发布</strong></td>
     </tr>
     <tr>
+      <td><strong>EPUB</strong></td>
+      <td>接收已由Pretext测量过的VDT</td>
+      <td>EPUB 3文件：每个印刷页（固定版式）或每章（流式版式）一个XHTML文档，嵌入字体（<code>postext-epub</code>中的<code>renderToEpub</code>）</td>
+      <td><strong>已发布</strong></td>
+    </tr>
+    <tr>
       <td><strong>服务器端</strong></td>
       <td>Pretext + node-canvas</td>
       <td>用于SSR和批量生成的无头渲染</td>
@@ -678,7 +687,7 @@ renderToPdf(doc, options): Promise<Uint8Array>;
   </tbody>
 </table>
 
-三个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。
+四个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要。
 
 **仅限浏览器的约束：**在第一阶段，所有排版计算都在浏览器的客户端进行。流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)。服务器端渲染是一个有意推迟的范围决策：先把浏览器体验做好，再扩展到其他目标。
 

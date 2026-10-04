@@ -230,13 +230,14 @@ export function FontsPanel() {
               >
                 <IconButton
                   label={isOpen ? labels.customFontsCollapseFamily : labels.customFontsExpandFamily}
-                  icon={<ChevronRight size={13} className={cn('transition-transform', isOpen && 'rotate-90')} />}
+                  icon={<ChevronRight size={13} className={cn('transition-transform rtl:-scale-x-100', isOpen && 'rotate-90 rtl:-rotate-90')} />}
                   aria-expanded={isOpen}
                   onClick={() => toggleExpanded(family.name)}
                   tooltip={false}
                 />
                 {isEditing ? (
                   <input
+                    dir="auto"
                     type="text"
                     autoFocus
                     value={draftName}

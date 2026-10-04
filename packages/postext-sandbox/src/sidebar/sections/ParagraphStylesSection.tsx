@@ -17,6 +17,7 @@ import {
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -86,6 +87,7 @@ function ParagraphStyleCard({
   onRemove,
 }: ParagraphStyleCardProps) {
   const labels = useSandboxLabels();
+  const textSide = flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
   // Ragged styles hyphenate too once the body turns ragged hyphenation on.
   const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
   const [idDraft, setIdDraft] = useState(style.id);
@@ -105,7 +107,7 @@ function ParagraphStyleCard({
   const unset = (field: keyof ParagraphStyleConfig) => style[field] === undefined;
 
   const alignOptions = [
-    { value: 'left', label: labels.bodyTextAlignLeft },
+    { value: 'left', label: textSide.left },
     { value: 'justify', label: labels.bodyTextAlignJustify },
   ];
   const textTransformOptions = [
@@ -141,6 +143,7 @@ function ParagraphStyleCard({
           }
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -161,6 +164,7 @@ function ParagraphStyleCard({
         </Field>
         <Field label={labels.paragraphStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => onChange({ name: e.target.value.length > 0 ? e.target.value : undefined })}

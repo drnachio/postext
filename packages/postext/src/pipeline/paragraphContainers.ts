@@ -99,3 +99,18 @@ export function planParagraphContainers(
   }
   return { byId, byBlock };
 }
+
+/** The paragraph style a block is set in (`VDTBlock.paragraphStyleId`): a
+ *  poem's fence style when the config has it, else, for a paragraph, the
+ *  style of the innermost `:::paragraphs` container around it — as
+ *  `buildBlockKind` picks the block's style. */
+export function paragraphStyleIdOf(
+  raw: ContentBlock,
+  container: ParagraphContainer | undefined,
+  resolved: ResolvedConfig,
+): string | undefined {
+  if (raw.type !== 'paragraph') return undefined;
+  const verseStyle = raw.verse?.attrs.style?.trim();
+  if (verseStyle && resolved.paragraphStyles.some((s) => s.id === verseStyle)) return verseStyle;
+  return container?.styleId;
+}

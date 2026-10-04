@@ -21,10 +21,12 @@ import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
 import { isFontStack, primaryFontFamily } from './measure/font';
 import { dimensionToPx } from './units';
-import { resolveAllConfig, sideColumnPercentUsed } from './pipeline/config';
+import { resolveAllConfig, resolveDirection, resolvedLocale, sideColumnPercentUsed } from './pipeline/config';
 import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
+import { isDigitSystem } from './locale';
+import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -55,11 +57,64 @@ function percentText(n: number): string {
  * `htmlViewer.overrides`, design elements). Also a key the heading
  * settings or a paragraph style do not have (`unknownConfigKey`:
  * `headings`, its `balancing` and `levels`, `headingStyles`,
- * `paragraphStyles`). Pure.
+ * `paragraphStyles`). And a setting with a value outside its choices
+ * (`unknownConfigValue`: `direction`), and a `numerals` value that names
+ * no digit system (`unknownNumerals`). Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
   if (!config) return [];
-  return [...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config), ...collectCjkGridWarnings(config)];
+  return [
+    ...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config),
+    ...collectCjkGridWarnings(config), ...collectChoiceWarnings(config), ...collectNumeralsWarnings(config),
+  ];
+}
+
+/** Settings whose value is one of a few words: one written otherwise is
+ *  read as the default, and `used` names what that default came to. */
+function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  const direction = config.direction as unknown;
+  if (direction !== undefined && direction !== 'auto' && direction !== 'ltr' && direction !== 'rtl') {
+    const used = resolveDirection(undefined, resolvedLocale(resolveAllConfig(config)));
+    out.push({ kind: 'unknownConfigValue', path: 'direction', value: String(direction), used });
+  }
+  // `*…*` and the Arabic vowel marks (#376).
+  const emphasis = config.bodyText?.emphasis as unknown;
+  if (emphasis !== undefined && emphasis !== 'auto' && !isEmphasisStyle(emphasis)) {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.emphasis', value: String(emphasis), used: defaultEmphasisFor(config.locale) });
+  }
+  const tashkil = config.bodyText?.tashkil as unknown;
+  if (tashkil !== undefined && !isTashkilMode(tashkil)) {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.tashkil', value: String(tashkil), used: 'keep' });
+  }
+  const kashida = config.bodyText?.kashida as unknown;
+  if (kashida !== undefined && kashida !== 'auto' && kashida !== 'none') {
+    const used = resolveAllConfig(config).bodyText.kashida ?? 'none';
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.kashida', value: String(kashida), used });
+  }
+  const patterns = config.bodyText?.kashidaPatterns as unknown;
+  if (patterns !== undefined && patterns !== 'auto' && patterns !== 'naskh' && patterns !== 'simple' && patterns !== 'nastaliq') {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.kashidaPatterns', value: String(patterns), used: 'auto' });
+  }
+  // Where a heading's number stands (#401).
+  const position = (path: string, value: unknown) => {
+    if (value !== undefined && value !== 'before' && value !== 'replace') {
+      out.push({ kind: 'unknownConfigValue', path, value: String(value), used: 'before' });
+    }
+  };
+  (config.headings?.levels ?? []).forEach((l, i) => position(`headings.levels[${i}].numberPosition`, (l as { numberPosition?: unknown }).numberPosition));
+  (config.headingStyles ?? []).forEach((st, i) => position(`headingStyles[${i}].numberPosition`, (st as { numberPosition?: unknown }).numberPosition));
+  return out;
+}
+
+/** A `numerals` value that names no digit system (`'arabic'`, `'hindi'`,
+ *  a typo): the digits follow the document language, as with `'auto'`
+ *  (`unknownNumerals`, `used` the digit system that gives). */
+function collectNumeralsWarnings(config: PostextConfig): ConfigWarning[] {
+  const value: unknown = config.numerals;
+  if (value === undefined || value === 'auto' || isDigitSystem(value)) return [];
+  const used = resolveAllConfig(config).numerals ?? 'latn';
+  return [{ kind: 'unknownNumerals', path: 'numerals', value: String(value), used }];
 }
 
 // The keys of the heading settings, checked against their types: a key
@@ -76,14 +131,14 @@ const BALANCING_KEYS = {
 } satisfies Record<keyof ColumnBalancingConfig, true>;
 const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
-  marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, italic: true, letterSpacing: true,
+  marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
-  marginBottom: true, numberSeparator: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
+  marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {

@@ -20,7 +20,7 @@ import { composeBookMemo, toBookSelection } from '../../book/compose';
 import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
 import { useShadowDom } from '../../hooks/useShadowDom';
-import { ensureConfigFontsLoaded, getConfigFontSpecs } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs } from '../../controls/fontLoader';
 import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
@@ -313,9 +313,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     // Wait for required fonts, so measurement isn't poisoned by fallbacks.
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(currentConfig).filter(
-        (s) => !document.fonts.check(s),
-      );
+      const missing = missingConfigFontSpecs(currentConfig);
       if (missing.length > 0) {
         await ensureConfigFontsLoaded(currentConfig);
         if (seq !== renderSeqRef.current) return;
@@ -453,7 +451,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       // Signature gates incremental patching: when any of these change we
       // must rebuild the scroll container wholesale, otherwise we can try to
       // diff at page/block granularity.
-      const sig = `${mode}\x00${columnGapPx}\x00${PADDING_PX}`;
+      // The root's own markup is in it too: its language, direction and the
+      // way its pages run (a book switched to Arabic turns its root right
+      // to left, and a patch never rewrites the root).
+      const rootTag = indexed.html.slice(0, indexed.html.indexOf('>') + 1);
+      const sig = `${mode}\x00${columnGapPx}\x00${PADDING_PX}\x00${rootTag}`;
       const prev = lastRenderRef.current;
       const prevSig = lastRenderSigRef.current;
 
@@ -812,5 +814,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     };
   }, [docVersion, columnMode]);
 
-  return <div ref={hostRef} className="h-full w-full" />;
+  // Left to right whatever the interface's direction: the scroll and page
+  // geometry are physical, and a book carries its own direction.
+  return <div ref={hostRef} dir="ltr" className="h-full w-full" />;
 });

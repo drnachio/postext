@@ -1,0 +1,60 @@
+---
+title: "Un assaig d'història amb notes de Chicago"
+summary: "Un assaig d'història de quatre pàgines on les citacions [@clau, 87] surten com a notes de Chicago a peu de pàgina: completes la primera vegada, breus després."
+plain: "Un assaig sobre com les ciutats britàniques van adoptar l'hora de Londres. Cada font que cita l'autora es converteix en una nota numerada a peu de pàgina, i la llista d'obres va al final."
+description: "Assaig d'història amb Postext: citacions de Pandoc en notes a peu de pàgina de Chicago, forma breu en obres repetides, prefixos, localitzadors i bibliografia."
+question: "Com poso les citacions en notes a peu de pàgina de Chicago, amb forma breu en les següents?"
+aliases: ["Chicago", "Manual de Chicago", "CMOS", "notes i bibliografia", "citacions en nota", "ibid.", "ibídem", "notes breus", "humanitats", "assaig d'història"]
+pageNotes: { "1": "Pàgina 1: una banda verd fosc sobre la meitat superior amb la línia de la sèrie, les dates 1840–1880 en xifres grans i fines, el títol La hora del ferrocarril: cómo las ciudades británicas adoptaron la hora de Londres i el nom de l'autora; a sota, els primers paràgrafs i una primera nota que cita Schivelbusch complet.", "2": "Pàgina 2: les seccions Las compañías deciden i El hilo lleva la hora; al peu, les notes 2 a 6, on Howse apareix complet a la nota 3 i com a Howse, Greenwich Time and the Discovery of the Longitude a la nota 4.", "3": "Pàgina 3: Las ciudades dudan i Los tribunales se resisten, amb les notes 7 a 11 en forma breu i una nota de l'autora que cita dues obres amb el prefix véase.", "4": "Pàgina 4: l'última secció, la Bibliografía en ordre alfabètic amb sagnat francès, un colofó petit i les notes 12 a 15." }
+---
+
+## Què compondràs
+
+Una separata de la sèrie d'història de la tècnica d'una revista: un assaig d'unes 1.100 paraules sobre com les ciutats britàniques van deixar el seu propi migdia pel de Londres entre 1840 i 1880. La pàgina fa 156 × 234 mm, amb marges en mirall, en Crimson Pro d'11/14 pt, i una banda verd ferrocarril cobreix la meitat superior de la primera. L'autora escriu cada font com una clau, `[@howse1980, 87]`, i Postext compon cadascuna com una nota numerada a peu de pàgina en l'estil de notes i bibliografia de Chicago. La primera nota d'una obra dona autor, títol i editorial; les següents, la forma breu. Les notes pròpies de l'autora prenen el número de la mateixa sèrie, i la bibliografia tanca l'assaig.
+
+## Elaboració
+
+### 1 · Una nota per a cada citació
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `chicago-notes-bibliography` és un estil de notes: una citació deixa al text un número volat i les seves paraules passen a una nota a peu de pàgina, numerada juntament amb les `[^notas]` de l'autora; `notes: 'footnote'` ho diu de manera explícita. citeproc-js porta el compte de les obres ja citades, així que la nota 3 diu *Derek Howse, Greenwich Time and the Discovery of the Longitude (Oxford University Press, 1980), 87* i la nota 4, que torna al mateix llibre, *Howse, Greenwich Time and the Discovery of the Longitude, 90–91*. L'estil inclòs és la 18a edició del Manual de Chicago, que abandona *ibid.* i repeteix la forma breu, de manera que les notes 11 i 12 la imprimeixen dues vegades.
+
+### 2 · Les notes de l'autora també citen
+
+Una citació dins d'una `[^nota]` es queda en aquella nota i es compon dins de la línia, completa si és la primera vegada que apareix l'obra: la nota 1 és la frase de l'autora seguida de la referència completa de Schivelbusch. Tota citació acaba amb el punt de l'estil, així que una nota que acaba en una citació no porta punt propi al Markdown.
+
+### 3 · Prefixos, sufixos i localitzadors
+
+`[véase @simmons1991, 346–47; y @bartky2000, cap. 9]` posa *véase* davant de la primera obra, separa les dues amb punt i coma i conserva el localitzador de cadascuna. Un número tot sol és una pàgina; `cap.` i `chap.` anomenen un capítol en qualsevol dels dos idiomes. El text que segueix el localitzador és un sufix: `[@howse1980, 82–84, sobre los relojes de las diligencias]` imprimeix la frase darrere de les pàgines.
+
+### 4 · L'obertura va en una banda
+
+<Excerpt region="opener" />
+
+La banda baixa 122 mm des del tall i el text comença 9 mm per sota. Les dates surten d'un atribut del títol, `years="1840–1880"`, en Crimson Pro Light de 54 pt, perquè la targeta mostri una xifra tan gran com un títol; l'atribut de la signatura alimenta a més la capçalera de les pàgines parelles.
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Porta les notes al final
+
+Algunes revistes reuneixen les notes després de l'assaig; les citacions conserven les formes completa i breu.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+### Torna a escriure ibid.
+
+La 17a edició de l'estil de Chicago imprimeix *ibid.* a la nota que repeteix l'obra anterior. Enganxa el fitxer `.csl` d'aquest estil, del repositori d'estils de Zotero, en una cadena i fes-lo servir com a estil propi.
+
+```diff
+-  style: 'chicago-notes-bibliography', // CMOS 18th edition, notes and bibliography
++  style: 'custom', customStyle: CHICAGO_17TH_CSL, // the XML of the .csl file
+```
+
+## Errors freqüents
+
+- No tanquis amb punt una nota que acaba en una citació: l'estil ja hi posa el seu, i Postext no fon els dos, així que la nota acabaria amb dos punts.
+- En un estil de notes, `@howse1980` sense claudàtors deixa a la frase només el número de la nota, *Com ¹ diu*, sense el nom de l'autor. Escriu tu el nom i cita entre claudàtors: `Com diu Howse,[@howse1980]`.

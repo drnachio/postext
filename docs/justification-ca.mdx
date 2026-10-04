@@ -1,0 +1,558 @@
+{/* docs/justification-ca.mdx */}
+
+export const metadata = {
+  title: 'Partició de mots i justificació',
+  sidebarTitle: 'Partició de mots i justificació',
+  description: 'Com Postext talla línies, justifica el text i controla l\'espai entre paraules amb l\'algorisme Knuth-Plass',
+  lang: 'ca',
+  lastUpdated: '2026-09-29',
+  readingTime: '14 min',
+  order: 4,
+  plainSummary: "Aquesta pàgina explica com reparteix Postext les paraules al llarg de cada línia. Quan les dues vores d'un paràgraf van rectes, els espais entre paraules es poden obrir massa i queden lletjos. Postext mira el paràgraf sencer abans de decidir on acaba cada línia, i així els espais queden igualats. També sap partir les paraules llargues amb un guionet al lloc correcte. Pots fixar quant es poden obrir els espais i marcar les línies que encara queden fluixes. La pàgina també mostra com aconsegueix Postext que les columnes acabin a la mateixa alçada.",
+};
+
+# Partició de mots i justificació
+
+**La diferència entre una composició d'aficionat i una de professional viu en els espais entre paraules.**
+
+Obre qualsevol novel·la de butxaca. El text és justificat — les dues vores de cada paràgraf estan perfectament alineades. Però mira-ho més de prop. Els espais entre paraules són gairebé uniformes, línia rere línia. No hi ha rius d'espai en blanc que baixin per la pàgina. No hi ha línies on dues paraules suren amb un oceà enorme entre elles. Aconseguir-ho és molt més difícil del que sembla, i és el problema que més esforç d'enginyeria tipogràfica ha consumit en la història.
+
+Postext ho resol amb el mateix algorisme que TeX fa servir des de 1981: **Knuth-Plass per al tall òptim de línies**. Combinat amb patrons de partició de mots de qualitat TeX, límits configurables de l'espai entre paraules i un sistema visual de depuració per identificar les línies problemàtiques, el motor produeix text justificat amb estàndards editorials.
+
+
+## El problema
+
+Quan el text es configura amb `textAlign: 'justify'`, cada línia excepte l'última s'ha d'estirar o comprimir per omplir exactament l'amplada de la columna. El motor distribueix la diferència entre l'amplada natural del contingut i l'amplada de la columna entre els espais entre paraules d'aquella línia. (L'última línia es deixa irregular, a la seva amplada natural — amb una excepció que s'explica a [L'última línia](#lúltima-línia).)
+
+Si una línia té moltes paraules, cada espai absorbeix un ajust mínim — invisible per al lector. Però si una línia té poques paraules (perquè una paraula llarga ha forçat un tall prematur), cada espai s'ha d'estirar molt. El resultat és una **línia fluixa**: una línia on l'espai entre paraules és tan ample que trenca el ritme de lectura i crea forats visuals lletjos.
+
+El problema oposat també existeix. Si el motor encabeix massa paraules en una línia, els espais es comprimeixen per sota de la seva amplada natural, i en surt una **línia estreta** on les paraules semblen amuntegades.
+
+Un algorisme de tall de línies ingenu — el tipus que fa servir CSS — pren decisions línia per línia. Omple la línia actual amb tantes paraules com pot, talla i continua. Aquest enfocament **voraç de primer ajust** té una feblesa de fons: no pot veure el futur. Una decisió que sembla òptima per a la línia 5 pot forçar la línia 6 a un tall terrible. Quan l'algorisme arriba a la línia 6, ja és massa tard — la línia 5 ja està confirmada.
+
+
+## Knuth-Plass: veure el paràgraf sencer
+
+L'algorisme Knuth-Plass, publicat per Donald Knuth i Michael Plass el 1981, adopta un enfocament radicalment diferent. En lloc de tallar una línia cada vegada, considera **totes les maneres possibles de tallar el paràgraf sencer** i tria la combinació que minimitza la «lletjor» total de totes les línies. És l'algorisme que mou TeX, i és la raó per la qual els documents compostos amb TeX han estat la referència del text justificat durant més de quatre dècades.
+
+### El model Caixa-Cola-Penalització
+
+Knuth-Plass no pensa en termes de paraules i espais. Modela el text com una seqüència de tres primitives:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Primitiva</th>
+      <th style={{ width: '200px' }}>Representa</th>
+      <th>Comportament</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Caixa (Box)</strong></td>
+      <td>Una paraula o un fragment de text</td>
+      <td>Té una amplada fixa. No es pot estirar ni comprimir. No es pot trencar.</td>
+    </tr>
+    <tr>
+      <td><strong>Cola (Glue)</strong></td>
+      <td>Espai entre paraules</td>
+      <td>Té una amplada <em>natural</em>, una capacitat d'<em>estirament</em> i una capacitat de <em>compressió</em>. El motor pot ajustar la cola dins d'aquests límits per omplir la línia.</td>
+    </tr>
+    <tr>
+      <td><strong>Penalització (Penalty)</strong></td>
+      <td>Un punt de tall potencial</td>
+      <td>Té un cost. Penalització baixa = tall barat. Penalització alta = tall car. Una penalització <em>marcada</em> (flagged) indica un punt de partició de mots (afegeix un guionet visible si es fa servir).</td>
+    </tr>
+  </tbody>
+</table>
+
+Un paràgraf es converteix en una seqüència com aquesta:
+
+```
+[caixa "La"] [cola] [caixa "guineu"] [cola] [caixa "ràpida"] [cola] [caixa "marró"]
+[penalització -∞]  ← tall forçat al final del paràgraf
+```
+
+Quan la partició de mots és activa, les paraules llargues es divideixen en fragments separats per penalitzacions:
+
+```
+[caixa "ti"] [penalització 50, marcada] [caixa "po"] [penalització 50, marcada] [caixa "grafia"]
+```
+
+Cada penalització marcada té un cost de 50 — no és gratuïta, però és més barata que produir una línia fluixa.
+
+<Illustration name="BoxGluePenalty" data='{"title": "Primitives caixa-cola-penalització", "desc": "Clau visual de les tres primitives: caixa per a un fragment de paraula, cola per a l’espai entre paraules, penalització per a un possible punt de tall. El paràgraf d’exemple mostra com un punt de partició de mots es converteix en una penalització marcada.", "caption": "Cada paràgraf es converteix en una seqüència de caixes, coles i penalitzacions.", "box": "Caixa", "glue": "Cola", "penalty": "Penalització", "boxDesc": "paraula fixa", "glueDesc": "espai elàstic", "penaltyDesc": "possible tall", "exampleLabel": "Exemple: “L’art de la tipografia és antic.”"}' />
+
+### Com troba l'òptim
+
+L'algorisme fa servir programació dinàmica. Manté un conjunt de **nodes actius** — punts de tall potencials que podrien iniciar línies noves — i avalua cada tall factible des de cada node actiu. Per a cada tall candidat, calcula:
+
+1. **Ràtio d'ajust (r)**: quant s'ha d'estirar o comprimir la cola en aquesta línia. `r = 0` vol dir que la línia encaixa perfectament. `r > 0` vol dir estirament (fluixa). `r < 0` vol dir compressió (estreta).
+
+2. **Lletjor (badness)**: una mesura de com és de desigual l'espaiat, calculada com `100 × |r|³`. El creixement cúbic fa que una línia lleugerament fluixa sigui tolerable, però una de molt fluixa es penalitza severament. Una línia amb `r = 2` té lletjor 800; una amb `r = 0.5` té lletjor 12.
+
+3. **Classe d'ajust (fitness class)**: cada línia es classifica com a estreta (`r < -0.5`), normal (`-0.5 ≤ r < 0.5`), fluixa (`0.5 ≤ r < 1.0`) o molt fluixa (`r ≥ 1.0`). Si una línia estreta és al costat d'una de molt fluixa, el contrast xoca — per això es penalitzen les línies adjacents les classes de les quals disten més d'un pas.
+
+4. **Demèrits (demerits)**: el cost total de tallar aquí. Seguint TeX, la lletjor i la penalització del punt de tall es combinen en una fórmula quadràtica — `deméritos = (1 + fealdad + penalización)²` quan la penalització no és negativa; una penalització negativa (un tall *desitjable*) en canvi resta el seu quadrat: `(1 + fealdad)² − penalización²`. Després s'hi sumen dos demèrits plans:
+   - **Demèrit per guionets consecutius** (per defecte 3000): penalitza dues línies seguides amb guionet, perquè els guionets apilats molesten visualment.
+   - **Demèrit per classe d'ajust** (per defecte 100): s'hi afegeix quan la classe d'ajust d'aquesta línia dista més d'un pas de la de la línia anterior.
+
+   La penalització per línia curta descrita més avall també entra en aquesta fórmula, injectada com a lletjor addicional; les penalitzacions d'òrfenes i vídues actuen en una etapa posterior, quan un paràgraf es divideix entre columnes.
+
+L'algorisme tria la seqüència de talls amb els demèrits totals més baixos de tot el paràgraf — aquí hi ha tot el seu avantatge sobre el voraç.
+
+<Illustration name="BadnessCurve" data='{"title": "Lletjor en funció de la ràtio d’ajust", "desc": "La lletjor creix com 100 pel valor absolut de r al cub. Els estiraments o compressions petits són barats, però els extrems esdevenen extremadament costosos, i per això l’algorisme els evita.", "caption": "La lletjor creix cúbicament: una mica desigual es tolera, molt desigual es penalitza fort.", "xAxis": "r", "yAxis": "lletjor", "zero": "0", "tight": "estreta (r < 0)", "loose": "fluixa (r > 0)", "formula": "badness(r) = 100 · |r|³"}' />
+
+<Illustration name="FitnessClasses" data='{"title": "Classes d’ajust", "desc": "Cada línia es classifica com a estreta, normal, fluixa o molt fluixa segons la seva ràtio d’ajust. Es penalitzen les línies adjacents les classes de les quals difereixen en més d’un pas.", "caption": "Les línies contigües separades per més d’una classe incorren en el demèrit de classe.", "classes": [{"name": "Estreta", "range": "r < -0.5", "example": "comprimida"}, {"name": "Normal", "range": "-0.5 ≤ r < 0.5", "example": "just"}, {"name": "Fluixa", "range": "0.5 ≤ r < 1.0", "example": "una mica airejada"}, {"name": "Molt fluixa", "range": "r ≥ 1.0", "example": "molt airejada"}], "adjacentNote": "El demèrit de classe s’aplica quan línies veïnes disten més d’una classe."}' />
+
+L'algorisme recula pels nodes actius per trobar el camí amb els demèrits totals més baixos — el conjunt de punts de tall globalment òptim per a tot el paràgraf.
+
+#### Penalitzacions d'òrfenes, vídues i *runts*
+
+Postext amplia el model de costos estàndard amb tres penalitzacions editorials que allunyen el motor de composicions amb finals de paràgraf i de columna visualment pobres:
+
+- La **penalització d'òrfena** s'aplica quan una divisió candidata deixaria menys de `orphanMinLines` línies a la part superior de la columna següent. El valor per defecte d'`orphanPenalty` és `1000`.
+- La **penalització de vídua** s'aplica quan la divisió deixaria menys de `widowMinLines` línies al final de la columna actual. El valor per defecte de `widowPenalty` és `1000`.
+- La **penalització per línia curta** (el *runt* de la tipografia anglesa) s'aplica quan l'última línia del paràgraf seria més curta que aproximadament `runtMinCharacters × normalSpaceWidth` píxels — un compte d'espais entre paraules, no de lletres: el valor per defecte, 20, equival a una última línia d'unes 8 a 12 lletres. El valor per defecte de `runtPenalty` és `1000`, el mateix per a tota línia curta; amb `gradedRuntPenalty` es gradua segons el que li falta a la línia, `runtPenalty × (1 − ancho / umbral)`, de manera que un final de dues paraules costa menys que un d'una i guanya quan una línia de dalt pot cedir una paraula. A diferència d'òrfena/vídua (que sumen linealment al demèrit del tall), la penalització per línia curta s'injecta com a *badness* equivalent dins de la fórmula quadràtica de Knuth–Plass, de manera que competeix en la mateixa escala que el *badness* de línia (que satura a 10000) en lloc de quedar-ne aixafada.
+
+Quan la penalització perd igualment — perquè cap tall alternatiu no és viable —, el motor recorre al que fa un caixista a mà: compon el paràgraf amb una línia menys (`tightenRunts`). Els espais de totes les línies s'estrenyen, mai per sota de `minWordSpacing`, i si amb això no n'hi ha prou per pujar les paraules soltes hi entra a més una mica de tracking negatiu, l'escaló més petit que funcioni i mai més de `maxRuntTracking` mil·lèsimes d'em. La composició més curta també ha de respectar `maxWordSpacing`. Ficar les paraules en una línia menys estreny gairebé totes les línies, però pot moure un tall de manera que una altra línia s'hagi d'estirar molt. Si una composició estira una línia més enllà de `maxWordSpacing` o, si el paràgraf ja té una línia més oberta, més que aquella línia, no serveix com a solució, i la línia curta es queda. Només compten les línies que continuen justificades: una línia que el paràgraf compon en bandera perquè passa de 3 vegades l'espai normal (vegeu [Línies que l'algorisme no pot omplir](#línies-que-lalgorisme-no-pot-omplir)) no apuja el llistó, i la composició més curta no pot compondre en bandera més línies que el paràgraf. Tampoc no canvia una línia en bandera per línies justificades que passin d'aquest llistó: el paràgraf conserva la seva línia en bandera i la seva línia curta. L'equilibri de columnes segueix la mateixa regla en l'altre sentit: un paràgraf que s'havia de compondre una línia més llarg per omplir una columna curta es deixa com estava si aquella línia de més acabaria en una línia curta — omplir una columna no justifica deixar una síl·laba sola.
+
+La penalització per línia curta se suma als demèrits del node candidat dins del divisor de línies, així que el solver pot sacrificar una línia lleugerament més folgada a canvi d'una línia final més llarga — però només dins de `maxWordSpacing`: una línia estirada més enllà d'aquest límit porta un *badness* addicional més gran que qualsevol penalització per línia curta o per guionet, de manera que el divisor prefereix una última línia curta, o una última paraula partida, abans que un espai entre paraules que superi el límit. Les penalitzacions d'òrfenes i vídues entren en una optimització a part que s'executa quan un paràgraf travessa un límit de columna: cada divisió candidata es puntua — sumant els demèrits de folgança, òrfena i vídua — i guanya la divisió més barata, de manera que el motor preferirà de forma natural divisions que evitin totes dues sempre que sigui possible. Ajusta el compromís amb `orphanPenalty`, `widowPenalty` o `runtPenalty`; posar-ne qualsevol a `0` desactiva aquella regla. Els elements de llista s'hi apunten amb `avoidOrphansInLists`, `avoidWidowsInLists` i `avoidRuntsInLists` (tots a `true` per defecte).
+
+### Per què importa
+
+<Illustration name="GreedyVsKnuthPlass" data='{"title": "Primer ajust voraç davant de Knuth-Plass òptim", "desc": "Il·lustració costat per costat: l’algorisme voraç pren la primera línia que hi cap i enverina les línies següents, i produeix paràgrafs desiguals amb un espaiat irregular. Knuth-Plass avalua el paràgraf sencer globalment i produeix línies igualades.", "caption": "Una decisió voraç local perd on un pla globalment òptim guanya.", "greedyTitle": "Primer ajust voraç", "greedyLead": "Decideix línia a línia, sense mirar endavant", "greedyCons": ["Un mal tall enverina la línia següent", "Espaiat desigual en el paràgraf", "Rius d’espai en blanc", "Sense model de cost entre línies adjacents"], "greedyEquals": "= El que fa CSS", "kpTitle": "Knuth-Plass òptim", "kpLead": "Avalua cada conjunt de talls possible", "kpPros": ["Demèrits globalment mínims", "Espaiat igualat a tot el paràgraf", "Penalització de guionets consecutius", "Suavitat de classes d’ajust"], "kpEquals": "= El que fa Postext"}' />
+
+La diferència pràctica és visible. En una composició voraç, trobaràs paràgrafs on una línia és notablement més fluixa que les veïnes — i si t'hi fixes bé, veuràs que ha passat perquè la línia *anterior* ha agafat una paraula de més. Knuth-Plass ho evita canviant una línia actual lleugerament pitjor per una de següent molt millor, perquè pot veure'n les conseqüències.
+
+### Implementació de Postext
+
+Postext implementa l'algorisme Knuth-Plass complet al mòdul `knuthPlass/` del paquet principal: un nucli de programació dinàmica (nodes actius, demèrits, recorregut cap enrere) més dos camins adaptadors que converteixen el text al model caixa-cola-penalització:
+
+- **Camí de text pla**: fa servir `@chenglou/pretext` per mesurar el text sense DOM. Pretext proporciona amplades de segment i amplades de guionets discrecionals; Postext les converteix en elements KP.
+- **Camí de text enriquit**: gestiona trams en negreta i cursiva amb mesura basada en Canvas. Cada token amb estil es converteix en una o més caixes, amb punts de partició de mots inserits com a penalitzacions.
+
+Tots dos camins calculen el `justifiedSpaceRatio` per línia — l'amplada real de l'espai dividida per l'amplada natural —, que alimenta el sistema de depuració de línies fluixes descrit més endavant. La proporció només es calcula per a les línies que no són finals; com es compon la línia final s'explica a [L'última línia](#lúltima-línia).
+
+Al voltant del divisor de línies, la mesura del text viu al mòdul `measure/` — els camins de mesura pla i enriquit, les mètriques de glifs per Canvas i la gestió de cadenes de font — darrere d'una memòria cau de mesura explícita. `clearMeasurementCache` també buida la memòria cau subjacent d'amplades de text, de manera que les mesures continuen sent precises després que les fonts web acabin de carregar-se. L'anàlisi sintàctica, l'etapa que converteix el text font en blocs i trams en línia, viu al mòdul `parse/`. Consulta la pàgina d'[Arquitectura](/ca/docs/architecture) per veure l'organització a nivell de fitxer d'aquests mòduls.
+
+El tall de línies també interactua amb els tipus de contingut més recents. Els recursos flotants ocupen la banda superior o inferior d'una columna o pàgina, i escurcen les extensions de columna a les quals reaccionen les penalitzacions d'òrfenes, vídues i folgança (*slack*). Els peus i les cel·les de taula es mesuren com a seqüències de text enriquit amb salt de línia amb les fonts de peus i taules. Les línies de matemàtiques en bloc es centren i són atòmiques — mai no es justifiquen ni es tallen. Consulta [Format de document › Recursos](/ca/docs/document-format#recursos) i [Configuració › Estil de taules](/ca/docs/configuration#estil-de-taules) / [Estil de peus de recurs](/ca/docs/configuration#estil-dels-peus-de-recurs) per a més detall.
+
+**Comportament de reserva**: si Knuth-Plass no produeix talls vàlids (cosa que pot passar amb columnes extremadament estretes o paraules més llargues que l'amplada de columna), el motor recorre al tall voraç de Pretext (`layoutNextLine()`). Això garanteix que la composició sempre es completi.
+
+
+## Partició de mots
+
+La partició de mots i la justificació són inseparables. Sense partició de mots, l'única manera que té el motor d'evitar una línia fluixa és moure una paraula a la línia següent — cosa que sovint només desplaça el problema. La partició de mots dona al motor un conjunt molt més gran de punts de tall, i millora molt la qualitat del text justificat.
+
+<Illustration name="HyphenationExample" data='{"title": "Text justificat amb partició de mots i sense", "desc": "La columna esquerra no fa servir partició de mots: les amplades de línia varien molt perquè el motor només pot moure paraules senceres. La columna dreta fa servir partició: les amplades són gairebé uniformes i una paraula es parteix amb guionet.", "caption": "La partició de mots redueix molt la variació d’espaiat en el text justificat.", "withoutTitle": "Sense partició de mots", "withTitle": "Amb partició de mots", "withoutCaption": "Línies desiguals, forats llargs, rius visibles.", "withCaption": "Línies igualades, un guionet absorbeix la variació."}' />
+
+### Patrons de qualitat TeX
+
+Postext fa servir **Hypher** (`hypher` v0.2.5) per a la partició de mots, alimentat per **patrons de partició TeX/Liang**. Són els mateixos patrons que TeX fa servir des de 1983 — una representació compacta de regles de límits sil·làbics derivada per l'algorisme de generació de patrons de Frank Liang a partir de grans corpus de paraules.
+
+Els patrons codifiquen un conjunt de regles numerades que, superposades sobre una paraula, indiquen on es permeten els talls (nombres senars) i on es prohibeixen (nombres parells). Els paràmetres `leftmin` i `rightmin` del fitxer de patrons de cada llengua asseguren un nombre mínim de caràcters abans i després de qualsevol punt de tall. Per a l'anglès (`en-us`), normalment són 2 i 3 respectivament — una paraula ha de tenir com a mínim 2 caràcters abans del guionet i 3 després.
+
+### Llengües compatibles
+
+<table>
+  <thead>
+    <tr>
+      <th>Codi de llengua</th>
+      <th>Llengua</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'en-us'</code></td><td>Anglès (EUA)</td></tr>
+    <tr><td><code>'es'</code></td><td>Castellà</td></tr>
+    <tr><td><code>'fr'</code></td><td>Francès</td></tr>
+    <tr><td><code>'de'</code></td><td>Alemany</td></tr>
+    <tr><td><code>'it'</code></td><td>Italià</td></tr>
+    <tr><td><code>'pt'</code></td><td>Portuguès</td></tr>
+    <tr><td><code>'ca'</code></td><td>Català</td></tr>
+    <tr><td><code>'nl'</code></td><td>Neerlandès</td></tr>
+  </tbody>
+</table>
+
+Cada llengua carrega el seu propi conjunt de patrons. Les instàncies de Hypher es creen de manera mandrosa i es desen a la memòria cau — la primera crida per a una llengua paga el cost d'inicialització; les crides següents són instantànies. Una llengua amb etiqueta de regió fa servir els patrons de la seva llengua (`'es-ES'` es divideix amb `'es'`, `'en-GB'` amb `'en-us'`). Una llengua sense patrons inclosos recorre a `en-us`, i el motor n'avisa una vegada a la consola (vegeu [Partició de mots](/ca/docs/configuration#partició-de-mots) a la referència de configuració). El xinès, el japonès i el coreà són l'excepció: es componen sense partició de mots i sense l'avís, i les seves línies es tallen entre caràcters (vegeu [Xinès, japonès i coreà](#xinès-japonès-i-coreà) més avall).
+
+**El català** segueix les normes de l'Institut d'Estudis Catalans (*Llibre d'estil*, capítol VI). S'apliquen des de postext 1.14:
+
+- Cada tall deixa com a mínim dues lletres a cada costat (`ter-ra`, `cai-xa`, `plu-ja`).
+- La *ela geminada* es talla entre les dues *l*, i el guionet ocupa el lloc del punt volat: *il·lusió* queda `il-` | `lusió`. La línia es mesura sense el punt, així que la justificació i Knuth–Plass en veuen l'amplada real.
+- Dues vocals en hiat no se separen (`cièn-cia`, `ca-mions`). Una *i* o una *u* entre vocals compta com a consonant i obre la seva síl·laba (`fe-ia`, `ve-ient`).
+- No es talla just després d'un apòstrof (`s'ha-via`, mai `s'-havia`).
+- Les paraules amb prefix més comunes es tallen pel prefix (`vos-altres`, `cel-obert`, `ben-estar`).
+- Perquè les paraules amb pronoms enclítics només es tallin pel seu propi guionet (`portar-` | `lo`), com prefereix l'IEC, posa [`hyphenation.compounds`](/ca/docs/configuration#partició-de-mots) a `false`.
+
+### Per què Hypher (i no un algorisme propi)
+
+El sistema original de partició de mots de Postext feia servir una **heurística pròpia basada en vocals**: detectava límits sil·làbics trobant grups de vocals, prefixos comuns (`over-`, `under-`, `inter-`) i sufixos comuns (`-tion`, `-ment`, `-sion`). Era simple i ràpida, però limitada de base:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Aspecte</th>
+      <th>Heurística pròpia</th>
+      <th>Hypher (patrons TeX)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Precisió</strong></td>
+      <td>Bona per a paraules comunes, poc fiable per a les inusuals. La detecció per vocals omet molts punts de tall vàlids i en crea d'invàlids.</td>
+      <td>Gairebé perfecta. Els patrons es generen a partir de grans corpus i s'han refinat durant més de 40 anys.</td>
+    </tr>
+    <tr>
+      <td><strong>Cobertura lingüística</strong></td>
+      <td>Calia definir manualment conjunts de vocals, prefixos i sufixos per a cada llengua — feixuc i propens a errors.</td>
+      <td>Hi ha fitxers de patrons per a més de 50 llengües, mantinguts per la comunitat TeX. Afegir una llengua és afegir un import.</td>
+    </tr>
+    <tr>
+      <td><strong>Estàndard de la indústria</strong></td>
+      <td>No és un estàndard reconegut. Sense eines ni suport de la comunitat.</td>
+      <td>Els mateixos patrons que fan servir TeX, LibreOffice, Firefox, Chrome i pràcticament tots els sistemes de composició professional.</td>
+    </tr>
+    <tr>
+      <td><strong>Manteniment</strong></td>
+      <td>Cada cas especial és un bug que cal arreglar manualment.</td>
+      <td>Fitxers de patrons mantinguts per la comunitat. Les correccions vénen de l'upstream.</td>
+    </tr>
+    <tr>
+      <td><strong>Mida del bundle</strong></td>
+      <td>~170 línies, sense dependències.</td>
+      <td>El nucli de Hypher fa ~3 KB. Cada fitxer de patrons de llengua hi afegeix 20–80 KB (gzipped: 5–20 KB). Les vuit llengües incloses sumen aproximadament 300 KB (gzipped: ~80 KB).</td>
+    </tr>
+    <tr>
+      <td><strong>Rendiment</strong></td>
+      <td>Molt ràpida (escaneig simple de cadenes).</td>
+      <td>Ràpida (cerca en trie per caràcter). Negligible a la pràctica — la partició de mots mai no és el coll d'ampolla.</td>
+    </tr>
+  </tbody>
+</table>
+
+El compromís és clar: un bundle més gran a canvi d'una correcció molt millor i zero càrrega de manteniment. Per a un motor de composició orientat a la qualitat editorial, la correcció guanya. Una sola partició de mots incorrecta en un llibre imprès és més cara que uns quants kilobytes extra de patrons.
+
+### Com s'integra la partició de mots amb Knuth-Plass
+
+Abans que el text entri a l'algorisme Knuth-Plass, el motor el preprocessa amb Hypher i insereix **guionets tous** (Unicode `\u00AD`) a cada punt de tall legal. Aquests caràcters invisibles després es mapen a **penalitzacions** KP amb un cost de 50 i `flagged: true`.
+
+L'algorisme tracta els talls per partició de mots com una opció més per avaluar al costat dels límits naturals de paraula (on la cola permet un tall). Si fer servir un guionet produeix uns demèrits totals menors que deixar la línia fluixa, l'algorisme agafa el guionet. Si no, deixa la paraula intacta.
+
+El demèrit per guionets consecutius (per defecte 3000) assegura que l'algorisme eviti fermament col·locar guionets en dues línies adjacents — una convenció tipogràfica que pràcticament totes les guies d'estil imposen.
+
+Un guionet a l'última línia d'una columna o d'una pàgina envia el lector a la columna següent a mitja paraula. `bodyText.hyphenateAcrossColumns: false` l'aparta d'aquestes línies: quan la línia que tanca una columna acaba en guionet, el paràgraf es torna a tallar amb un guionet allà penalitzat com una línia curta, de manera que l'algorisme acaba aquella línia en una paraula sencera sempre que els espais entre paraules de les línies de dalt puguin absorbir la diferència dins de `maxWordSpacing` i `minWordSpacing`. On no poden, el guionet es queda. S'aplica al primer salt de columna de cada paràgraf i als següents que cauen on acaba una columna plena. Un salt posterior que cau en un altre lloc — una columna escurçada per evitar una vídua, una banda de tancament anivellada — rep un segon tall des d'aquella columna: les línies ja col·locades a les columnes anteriors conserven els seus talls, i només es torna a tallar la resta del paràgraf. Així el guionet només es queda on cap tall dins dels límits no l'evita, a la pràctica al primer salt de columna d'un paràgraf. L'algorisme distingeix les maneres d'arribar a una línia només fins a l'última línia que protegeix, així que un reintent costa més o menys el que la primera mesura: una mesura més per cada paràgraf que es torna a tallar.
+
+Per defecte, la partició de mots només s'aplica quan `bodyText.hyphenation.enabled` és `true` **i** `bodyText.textAlign` és `'justify'`: un marge en bandera està pensat per variar. El text en bandera també es pot dividir, amb `bodyText.hyphenation.ragged: true`. Una línia en bandera no té espai entre paraules per igualar, així que decideix una **zona de partició**: una paraula que no hi cap només es divideix quan passar-la sencera a la línia següent deixaria un forat més gran que `hyphenation.zone` (3 em per defecte). Knuth-Plass també compon el text seguit en bandera (`bodyText.optimalRagged`, activat per defecte): els seus espais entre paraules no canvien d'amplada, cada línia paga pel que li falta respecte de la mesura i la zona decideix quines síl·labes pot agafar; dos finals de línia seguits en síl·laba costen el que dos guionets seguits. Línia a línia (`optimalRagged: false`), mai no acaben més de dues línies seguides en síl·laba. Vegeu [Text en bandera](/ca/docs/configuration#text-en-bandera).
+
+Hi ha dues oportunitats de tall que no depenen d'aquest ajust. Un **guionet entre dues lletres** — `enseñanza-aprendizaje`, `físico-química` — és un punt on la línia pot acabar: la paraula ja porta el guionet, així que no s'hi afegeix res. Knuth-Plass el té en compte en tot paràgraf amb `bodyText.breakAfterHyphens` (activat per defecte), amb el preu d'una síl·laba; en un paràgraf justificat sense format en línia, només amb dues lletres a cada costat del guionet, perquè cap línia no acabi en la `e-` d'`e-mail`. Si es desactiva, com fins a postext 1.4, un paràgraf justificat sense format en línia no talla just després d'aquest guionet, mentre que el mateix paràgraf amb una paraula en cursiva en qualsevol lloc sí que ho fa; els llibres desats abans de postext 1.5 es llegeixen amb l'opció desactivada. La línia acaba en el guionet del mateix text, que la línia anota com a `hardHyphen` al costat de `hyphenated`, de manera que qui treu un guionet afegit (els titolets, el cursor del Sandbox) conserva aquest. Un **guió o un guió curt posat entre paraules sense espais** — `Madrid–Barcelona`, `I.—Que trata` o, en anglès, `say—that’s` — també és un punt on la línia pot acabar, amb tots dos divisors, gràcies a `bodyText.breakAfterDashes` (activat per defecte): la línia acaba en el guió, no s'hi afegeix res i no costa res. També ho és un guió o un guió curt que tanca un tram d'un estil davant d'una paraula en un altre (`calidad–*precio*`). La línia queda llavors com a `hyphenated`, sense `hardHyphen`. Mai després del guió que obre un incís o un diàleg (`—dijo`, `dijo "—Hola`; unes cometes que tanquen una paraula sí que poden anar davant del guió, com a `«no»—y` o en l'alemany `„nein“—und`), davant d'un signe de puntuació, davant d'unes cometes o d'un parèntesi (`pensaba—» y`, `dijo—«no»`), dins d'una sèrie de guions ni dins d'un interval de nombres (`1914–1918`). I una **paraula més ampla que tota la seva mesura** (una cel·la estreta de taula, un compost llarg en una columna estreta) mai no es deixa sobresortir: el motor la divideix per l'última síl·laba que hi cap, amb guionet, o per l'últim caràcter que hi cap quan el diccionari no hi ofereix cap síl·laba. Un tall al costat d'un guionet que ja porta la paraula cau darrere d'aquest guionet i no n'afegeix un altre, així que la paraula mai no en mostra dos. La resta de la paraula conserva els seus propis punts de tall: un compost continua tallant-se pels seus guionets i una adreça web per les seves juntures, mentre que fins a postext 1.4 la resta es dividia per les síl·labes del diccionari. Un paràgraf sense format en línia es talla per l'últim caràcter que hi cap, sense guionet, tret que es divideixi per síl·labes. Per a Knuth-Plass cap conjunt de talls al voltant d'una paraula així no és viable, de manera que un paràgraf justificat que la conté es compon línia a línia.
+
+
+### Paraules compostes
+
+Un compost unit per guionet (`teórico-práctico`, `físico-química`) es pot tallar en dues menes de lloc: després del seu propi guionet i a les síl·labes del diccionari de qualsevol de les seves parts (`teó-rico-práctico`). TeX, i el Manual d'estil de Chicago, deixen senceres les parts i només tallen un compost pel seu guionet. `bodyText.hyphenation.compounds: false` fa el mateix: el diccionari deixa en pau tota paraula amb un guionet entre dues lletres, que així només es talla després d'aquest guionet. Un guionet tou escrit a la paraula continua permetent el tall, i un compost més ample que tota la línia es continua dividint on calgui. El valor per defecte, `true`, continua dividint les parts, cosa que dona a una columna justificada estreta més maneres d'omplir les seves línies.
+
+L'ortografia portuguesa demana repetir al començament de la línia següent el guionet d'un compost tallat a final de línia (`vencer-` · `-se`), i també les normes de la Real Academia Española des de 2010 (`léxico-` · `-semántico`), perquè qui llegeix sàpiga que el guionet és de la paraula. `bodyText.repeatHyphen: true` ho fa. El guionet repetit es mesura amb la seva línia, així que el divisor li deixa lloc, i es pinta com la resta del text; al PDF porta un text de substitució que l'omet, de manera que el text que es copia o s'extreu del PDF llegeix la paraula una sola vegada (`vencer-se`). La línia l'anota com a `repeatedHyphen`, i el seu `plainStart` i el seu `sourceStart` apunten darrere seu, de manera que el mapa al text font, els enllaços i els titolets llegeixen la paraula tal com està escrita. Una adreça web mai no el porta. S'aplica al text seguit, els títols, les llistes, les cites i els requadres; un paràgraf sense format que conté un compost es talla llavors amb el divisor del text amb format.
+### On no es talla mai una línia
+
+Hi ha llocs que no són mai un punt de tall, amb cap dels dos algorismes:
+
+- **Un espai de no separació.** U+00A0, l'espai fi de no separació U+202F i l'espai de xifra U+2007 uneixen les paraules de tots dos costats: un nombre i la seva unitat, una referència de pàgina, un grup de milers. El mateix val per als peus, les cel·les de taula, els requadres i el text de disseny (capçaleres, obertures). Cadascun conserva la seva pròpia amplada, tal com es mesura; la justificació només estira els espais entre paraules. Una font sense glif per a U+202F o U+2007 els dona l'amplada que els donen els navegadors, la meitat d'un espai entre paraules i la d'una xifra, en totes les sortides, PDF inclòs; pràcticament totes les fonts tenen U+00A0. L'excepció és un grup unit així que és més ample que tota la línia, tingui format en línia o no: es talla en el seu últim espai de no separació, en lloc de partir-se dins d'una paraula. L'unidor de paraules U+2060 uneix sense ocupar lloc, també en text xinès: un número d'accepció `**①**` seguit d'un es queda a la línia del caràcter següent. També U+FEFF, l'espai de no separació d'amplada zero, encara que el caràcter pensat per a això és l'unidor de paraules.
+- **Text que es toca.** Una paraula en negreta o cursiva i la puntuació que la segueix (`**ósmosis**.`), els parèntesis que envolten una remissió en línia (`(:ref{id="fig-3"})`), una paraula composta en dos trams: el text sense espai entremig és una sola unitat, com si fos una paraula. Quan aquesta unitat no cap en el que queda de línia, baixa sencera. Quan obre una línia i tot i així no hi cap, la seva última paraula es parteix per una síl·laba perquè la puntuació baixi amb el final de la paraula; només una unitat sense síl·laba per on partir deixa que la seva puntuació obri la línia següent.
+- **Dins d'una paraula d'escriptura lligada.** Una paraula àrab (o siríaca, n'ko o mongola) no es parteix mai amb guionet, ni tan sols en un guionet tou escrit a dins, ni es talla entre les seves lletres: les seves lletres van lligades, i un tros compost a part prendria altres formes i una altra amplada. L'àrab i les altres llengües de dreta a esquerra tenen la partició de mots desactivada per defecte; si s'activa (per a les paraules llatines d'un llibre àrab, o en un llibre en català que cita en àrab), el diccionari se salta aquestes paraules. Una paraula en dos estils (`كتا**ب**`) continua sent una sola paraula, mesurada sencera. Si és més ampla que tota la línia, sobresurt de la mesura i la composició avisa amb `unbreakableWordOverflow`.
+
+Fins a postext 1.4, un paràgraf amb format en línia o amb un `:ref` es podia tallar en un espai de no separació, i una línia en bandera podia acabar en el `(` que precedeix una remissió o començar amb el punt que segueix una negreta.
+
+## Límits d'espaiat entre paraules
+
+El model de cola dona al motor límits explícits sobre quant es poden estirar o comprimir els espais entre paraules. Aquests límits es controlen amb dues propietats de configuració a `bodyText`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>2</code></td>
+      <td>Límit superior de l'espaiat entre paraules, com a multiplicador de l'amplada normal de l'espai. Amb el valor per defecte, els espais es poden estirar fins al 200% de la seva amplada natural.</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>0.6</code></td>
+      <td>Límit inferior de l'espaiat entre paraules, com a multiplicador de l'amplada normal de l'espai. Amb el valor per defecte, els espais es poden comprimir fins al 60% de la seva amplada natural.</td>
+    </tr>
+  </tbody>
+</table>
+
+Aquests multiplicadors es tradueixen directament als valors de `stretch` i `shrink` de la cola en el model Knuth-Plass:
+
+```
+estiramentPerEspai = ampladaNormalEspai × (maxWordSpacing - 1)
+compressióPerEspai = ampladaNormalEspai × (1 - minWordSpacing)
+```
+
+Amb els valors per defecte (2 / 0.6), si l'amplada normal de l'espai és 4 px:
+- Cada espai es pot estirar 4 px (de 4 px a 8 px)
+- Cada espai es pot comprimir 1.6 px (de 4 px a 2.4 px)
+
+**Límits més estrictes** (p. ex., `maxWordSpacing: 1.2`) produeixen un espaiat més uniforme però donen menys marge a l'algorisme, cosa que pot resultar en més partició de mots o, en casos extrems, desbordament. **Límits més amplis** (p. ex., `maxWordSpacing: 2.5`) donen més flexibilitat a l'algorisme però permeten un espaiat visiblement desigual en algunes línies.
+
+Els valors per defecte de 2 i 0.6 prioritzen la flexibilitat de l'algorisme — donen a Knuth-Plass prou marge per evitar desbordaments, particions de mots i línies curtes en columnes estretes, mantenint-se dins del rang que la literatura tipogràfica considera acceptable.
+
+### Línies que l'algorisme no pot omplir
+
+Knuth-Plass no estira una línia més enllà de `maxWordSpacing` quan té alternativa, i l'arranjament de les línies curtes tampoc (vegeu [Penalitzacions d'òrfenes, vídues i *runts*](#penalitzacions-dòrfenes-vídues-i-runts)). Una línia que passa del límit costa més que qualsevol altre defecte que sospesa —un guionet, una última línia curta, una línia una mica més fluixa que les veïnes— des que passa del límit, i el cost creix després amb el quadrat de la seva proporció d'estirament, de manera que l'algorisme prefereix partir una paraula, repartir l'excedent entre les línies del voltant o deixar dues línies una mica fluixes abans que una de massa fluixa.
+
+A vegades cap conjunt de talls no respecta els límits. La línia que no admet la paraula següent té molt pocs espais entre els quals repartir l'excedent: la primera línia d'un paràgraf, amb el seu sagnat, seguida d'una paraula massa llarga per pujar i massa curta per partir-se; una línia de termes llargs que no es poden dividir; una URL llarga que només talla per les seves pròpies juntures; un element de llista l'última paraula del qual no puja mentre qualsevol divisió sil·làbica deixaria una línia òrfena. La freqüència amb què passa depèn de la mesura, la font i la llengua. En una columna de 83 mm de text en anglès a 9,3 pt, entre el 2 % i el 8 % de les línies d'un capítol van superar `maxWordSpacing` segons la font (més com més ampla); el mateix capítol en castellà, la partició de mots del qual ofereix molts més talls, no en va tenir cap. Knuth-Plass accepta llavors la línia menys dolenta, i els seus espais superen el límit. Quan s'haurien d'estirar més de 3 vegades l'amplada normal de l'espai, el motor compon aquesta línia **en bandera**: es dibuixa amb el seu espaiat natural i cedeix el marge dret, com l'última línia d'un paràgraf. El llindar és el mateix que fa servir l'avís de línia fluixa del sandbox, de manera que una línia que el supera es corregeix en lloc d'assenyalar-se. Les línies dins del llindar es deixen tal com es van mesurar. El mateix val dins dels requadres, la mesura estreta dels quals és on més passa; fins a postext 1.4 un requadre mantenia justificada aquesta línia per molt que s'estiressin els seus espais.
+
+Per tenir menys línies així, per aquest ordre: comprova que la partició de mots està activada i en la llengua del text; eixampla la mesura o redueix el cos; deixa que les línies prenguin una mica de tracking (secció següent); o puja `maxWordSpacing`, que fa que aquestes mateixes línies comptin com a dins del límit sense compondre-les d'una altra manera.
+
+### Tracking com a últim recurs
+
+`bodyText.maxJustifyTracking` deixa que una línia així prengui una mica de tracking —espaiat entre lletres— en lloc de més espai entre paraules, fins a aquest nombre de mil·lèsimes d'em per caràcter (10 = 0,01 em, la unitat d'InDesign). Funciona en tots dos sentits: una línia els espais de la qual s'estirarien més enllà de `maxWordSpacing` separa les seves lletres fins que els espais tornen al límit, i una línia que només hi cabria amb els espais per sota de `minWordSpacing` ajunta les seves lletres en lloc d'enviar una paraula a la línia següent. Knuth-Plass ho té en compte en triar els talls: una línia amb tracking costa una mica més que una dins dels límits i molt menys que una que els supera, de manera que el tracking només es pren on no n'hi ha prou amb l'espaiat entre paraules. Les línies dins dels límits, l'última línia d'un paràgraf (llevat que es desbordi), una línia d'una sola paraula i una línia amb un xip no el fan servir mai. La línia el desa com a `VDTLine.letterSpacing`, sumat al tracking del seu bloc, i canvas, HTML i PDF el pinten. Les paraules d'una escriptura lligada (àrab…) no porten mai tracking, ni aquest ni cap altre (el `letterSpacing` d'un estil, l'equilibri de columnes, l'arranjament de *runts*): separar-ne les lletres trenca les unions. La línia no compta les seves lletres i les sortides les pinten sense tracking; un estil que defineix `letterSpacing` sobre aquest text genera l'avís `joiningScriptLetterSpacing`.
+
+```ts
+bodyText: {
+  maxWordSpacing: 2,
+  maxJustifyTracking: 10, // com a màxim 0,01 em per lletra, en un sentit o en l'altre
+}
+```
+
+Està desactivat per defecte, de manera que els documents conserven les seves línies llevat que ho demanin. Al capítol en anglès d'abans, 10 ‰ va deixar les línies que superaven `maxWordSpacing` en una o cap per font, i 20 ‰ en cap en tres fonts de quatre. Mantén-lo baix: a partir d'uns 20 ‰ el tracking comença a notar-se com una línia més clara o més fosca.
+
+### Caixida en el text àrab
+
+Una línia àrab justificada no s'espaia entre lletres: les seves lletres s'enllacen, i separar-les trenca els enllaços. S'estira en dos llocs: els espais entre paraules i les caixides (kashida), els enllaços allargats que el cal·lígraf traça entre dues lletres unides (كتاب → كتـاب). Postext els insereix com a tatweels (U+0640, ـ), sencers, que la font dibuixa com un sol traç; l'Amiri converteix una sèrie d'un a set en una caixida corba.
+
+`bodyText.kashida` val `'auto'` per defecte en un document la llengua del qual s'escriu amb alfabet àrab (`ar`, `fa`, `ur`…) i `'none'` en qualsevol altre; posa-hi `'auto'` per allargar les paraules àrabs citades en un llibre d'una altra llengua. Cada línia, tret de l'última del paràgraf, obre primer els espais fins a una quarta part de la seva amplada i després pren caixides per a la resta del sobrant, un tatweel cada vegada, primer als millors llocs i volta rere volta, tornant a mesurar cada paraula sencera amb els seus tatweels; el que sobra, menys d'un tatweel, torna als espais. Knuth-Plass compta l'allargament possible de cada paraula com a estirament, de manera que tria els talls sabent que una línia de paraules àrabs s'hi pot eixamplar.
+
+On pot anar una caixida surt de les regles de [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT): només entre dues lletres que s'enllacen, mai després d'una lletra que no enllaça amb la següent (ا د ذ ر ز و ة), mai al final de la paraula, mai dins del lām-alif, i sempre després dels signes de la lletra anterior. `kashidaPatterns: 'naskh'` segueix les regles clàssiques del naskh (la matriu de Benatia amb les prohibicions d'Afifi: res després de kāf o lām, res abans de ṣād, ʿayn o wāw, un hāʾ pronominal final s'allarga just abans); `'simple'`, les prioritats de Microsoft per a tipus moderns senzills; `'nastaliq'`, les regles del naskh adaptades al nastaʿlīq. El valor per defecte, `'auto'`, mira la font del text: cap caixida en un tipus ruqʿa o dīwānī com l'Aref Ruqaa, regles de nastaʿlīq en un tipus nastaʿlīq, naskh en els altres. Una paraula pren com a màxim `kashidaPerWord` allargaments (1 per defecte) de `kashidaMaxLength` em com a molt (0,6, tres tatweels de l'Amiri). Una paraula amb un tatweel escrit per l'autor s'allarga allà. Les paraules llatines, les xifres, els títols, les línies en bandera i l'última línia d'un paràgraf no en prenen mai cap.
+
+```ts
+bodyText: {
+  kashida: 'auto',          // el normal en un llibre àrab
+  kashidaPatterns: 'naskh', // 'auto' el tria per la font
+  kashidaMaxLength: 0.6,    // em
+}
+```
+
+Els tatweels formen part del text pintat (cada segment els enumera a `VDTLineSegment.kashida` i la línia els compta a `VDTLine.kashida`); el text pla, el mapa de fonts, els enllaços i el text copiat del PDF els deixen fora.
+
+### L'última línia
+
+En el model caixa-cola-penalització, cada paràgraf acaba amb una cola d'amplada 0 i infinitament estirable seguida d'un tall forçat. Aquesta cola final absorbeix a cost zero tot l'espai que quedi a l'última línia, de manera que les últimes línies surten irregulars de manera natural: es renderitzen a la seva amplada natural, i el `justifiedSpaceRatio` només es calcula per a les línies que no són finals.
+
+Hi ha una excepció. Knuth-Plass pot acceptar una línia final el contingut natural de la qual és *més ample* que la mesura, suposant que la seva cola entre paraules es comprimirà — aquesta és la semàntica estàndard d'ajust de cola (*glue-setting*) de TeX. Els tres backends detecten aquest cas (l'amplada natural del contingut de la línia supera la mesura efectiva) i comprimeixen els espais entre paraules d'aquesta última línia perquè encaixi exactament en la mesura en lloc de desbordar-la. La comprovació s'aplica de manera idèntica als backends de canvas, PDF i HTML.
+
+### Tall òptim vs. voraç
+
+La propietat `bodyText.optimalLineBreaking` (per defecte: `true`) controla quin algorisme de tall de línies fa servir el motor:
+
+- **`true`**: Algorisme de programació dinàmica Knuth-Plass. Avalua tots els conjunts de talls possibles i tria el globalment òptim. És la configuració recomanada per a qualsevol text justificat. El text corregut en bandera també el fa servir amb `bodyText.optimalRagged` (activat per defecte): els espais entre paraules no canvien d'amplada i l'algorisme pondera en canvi quant es queda curta cada línia respecte de la mesura, de manera que una línia 3 em més curta costa el mateix que una línia justificada amb `maxWordSpacing`; així el marge irregular queda més igualat i s'apliquen les regles contra les línies curtes.
+- **`false`**: Voraç de primer ajust, alimentat per `layoutNextLine()` de Pretext. Més ràpid però produeix resultats de menys qualitat. Fes-lo servir només quan el rendiment importa més que la qualitat tipogràfica (p. ex., previsualització en temps real amb recomptes de caràcters molt alts).
+
+Quan Knuth-Plass està actiu i no produeix talls vàlids (cosa que pot passar amb columnes extremadament estretes o paraules més llargues que l'amplada de columna), el motor recorre automàticament al tall voraç per a aquest paràgraf.
+
+
+### Xinès, japonès i coreà
+
+Un paràgraf amb més caràcters CJK que espais entre paraules el compon el compositor CJK, no Knuth-Plass. Cada buit entre dos caràcters és un lloc on la línia es pot tallar (llevat d'on ho impedeixen les regles de `cjk.lineBreak`), de manera que una cerca òptima no té res a sospesar; les línies s'omplen una darrere l'altra. Quan un caràcter no hi cap, la línia intenta primer admetre'l cedint blanc de la puntuació i dels espais (*push-in*: els espais entre paraules fins a un quart de quadratí, després els punts volats, els parèntesis, els signes de pausa, els espais entre xinès i llatí fins a un vuitè de quadratí i els signes de final d'oració, segons ho permeti `cjk.punctuationWidth`); només si no n'hi ha prou, un caràcter que no pot obrir línia s'emporta l'anterior. Les regles són a [Tipografia d'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental). [Composició xinesa](/ca/docs/chinese-layout) tracta la resta de la composició xinesa: l'amplada de la puntuació segons la regió, la retícula de caràcters i el text vertical.
+
+Una línia justificada d'un paràgraf així, llevat de l'última, s'eixampla fins a la mesura en l'ordre que fixa clreq (§6.2.2.4):
+
+1. Els espais entre paraules occidentals, per igual, fins a mig quadratí cadascun.
+2. Els espais entre xinès i llatí (`cjk.latinSpacing`), per igual, fins a mig quadratí cadascun.
+3. Tots els buits entre caràcters, per igual, també els espais entre xinès i llatí: entre caràcters han, entre un han i un signe de puntuació, entre un han i una paraula llatina. Mai dins d'una paraula llatina, d'un nombre o d'una ratlla o uns punts suspensius de dos quadratins, i mai al costat d'un connector (～, –, una ratlla — sola) o una barra. Un signe penjat fora del final de la línia (`cjk.hangingPunctuation`) queda fora de la mesura.
+
+L'última línia d'un paràgraf es compon sense eixamplar. L'espaiat es desa per segment de la línia (`VDTLineSegment.tracking`), de manera que el canvas, l'HTML i el PDF pinten les mateixes posicions, i el Sandbox col·loca el cursor al caràcter clicat.
+
+Una línia que necessitaria més de mig quadratí entre els seus caràcters —o més que `bodyText.maxJustifyTracking`, si està definit— es compon amb aquest màxim, curta, i s'assenyala amb un avís de contingut `cjkLooseLine` (al Sandbox, **Línia CJK curta**). Sol passar per una paraula llatina llarga o per una adreça web que no hi va poder pujar. Una línia sense cap caràcter CJK, com el començament d'una adreça web llarga, queda en bandera sense l'avís.
+
+Per al ressaltat de línies fluixes, una línia CJK és fluixa segons el seu espaiat: la seva proporció és 1 més el seu espaiat en vuitens de quadratí, de manera que amb el llindar per defecte de 3 s'assenyala una línia els caràcters de la qual se separen més d'un quart de quadratí (`lineLooseness(line, fontSizePx)` dona la proporció). L'equilibri de columnes pot allargar un paràgraf CJK una línia: talla les línies una mica abans de la mesura, un vuitè de quadratí cada vegada fins a dos quadratins, i les torna a eixamplar fins a ella.
+
+## Depuració de línies fluixes
+
+Fins i tot amb Knuth-Plass i partició de mots, algunes línies seran més fluixes del que seria ideal — especialment en columnes estretes amb paraules llargues, o en llengües amb poques oportunitats de partició de mots. La funció de depuració **ressaltat de línies fluixes** t'ajuda a trobar aquestes línies problemàtiques a l'instant.
+
+### Com funciona
+
+Cada línia de l'Arbre de Document Virtual porta un `justifiedSpaceRatio` — la proporció entre l'amplada real de l'espai justificat i l'amplada natural de l'espai de la font. Un valor d'1.0 vol dir que els espais són a la seva amplada natural. Un valor de 2.5 vol dir que els espais són 2.5 vegades més amples del normal.
+
+Quan `debug.looseLineHighlight.enabled` és `true`, el Sandbox pinta sobre la seva vista Canvas una capa semitransparent a cada línia el `justifiedSpaceRatio` de la qual supera el `threshold` configurat. El llindar per defecte és 3 — és a dir, només es ressalten les línies amb espais tres vegades més amples del normal. És un llistó deliberadament alt; les línies tan fluixes són problemes tipogràfics reals. És també l'amplada a partir de la qual el motor compon en bandera una línia justificada en lloc d'estirar-la (vegeu [Línies que l'algorisme no pot omplir](#línies-que-lalgorisme-no-pot-omplir)), de manera que amb el valor per defecte el ressaltat i l'avís `looseLines` gairebé no troben res en el text corregut: aquesta línia es corregeix en lloc d'assenyalar-se. Baixa el llindar a 1,5 o 2 per trobar les línies fluixes que continuen justificades.
+
+La capa no forma part de la pàgina, de manera que les pàgines exportades no la mostren mai. Per dibuixar-la en un canvas propi, crida `drawLooseLines(ctx, page, doc, { threshold })` just després de `renderPageToCanvas`; `findLooseLines(doc, { threshold })` retorna aquestes mateixes línies com a dades (consulta [Línies fluixes al teu propi canvas](/ca/docs/configuration#línies-fluixes-al-teu-propi-canvas)).
+
+### Configuració
+
+El ressaltat de línies fluixes forma part de la secció `debug` de `PostextConfig`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '180px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Si es ressalten les línies fluixes.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Color de la capa de ressaltat. El valor per defecte és un vermell semitransparent.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplicador de l'amplada normal de l'espai per sobre del qual una línia es considera fluixa. Valors més baixos en capturen més; valors més alts ressalten només les pitjors. A partir de 3 el text corregut gairebé no en mostra cap, perquè les línies que passen de 3 vegades es componen en bandera.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  looseLineHighlight: {
+    enabled: true,
+    threshold: 2.5,
+    color: { hex: '#ff660040', model: 'hex' },
+  },
+}
+```
+
+### Interpretar els resultats
+
+Quan actives el ressaltat de línies fluixes i veus bandes vermelles en certes línies, vol dir que el motor no ha pogut trobar una manera de compondre aquestes línies sense un espaiat excessiu. Comença per dalt: les causes estan ordenades de més probable a menys.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '240px' }}>Causa</th>
+      <th>Solució</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>La columna és massa estreta per a la mida de font</td>
+      <td>Augmenta l'amplada de columna, redueix la mida de font o canvia a una composició d'una sola columna.</td>
+    </tr>
+    <tr>
+      <td>Paraules llargues amb pocs punts de partició</td>
+      <td>Verifica que la partició de mots estigui activada i que la llengua correcta estigui configurada. Alguns termes tècnics o noms propis no tenen punts de tall vàlids.</td>
+    </tr>
+    <tr>
+      <td>La partició de mots està desactivada</td>
+      <td>Activa <code>bodyText.hyphenation.enabled</code>. La justificació sense partició de mots és gairebé sempre pitjor.</td>
+    </tr>
+    <tr>
+      <td>Unes poques línies continuen fluixes amb qualsevol font</td>
+      <td>Deixa que aquestes línies prenguin una mica de tracking: <code>bodyText.maxJustifyTracking: 10</code>. Vegeu <a href="#tracking-com-a-últim-recurs">Tracking com a últim recurs</a>.</td>
+    </tr>
+    <tr>
+      <td>Els límits d'espaiat són massa estrictes</td>
+      <td>Augmenta <code>maxWordSpacing</code> lleugerament (p. ex., de 2 a 2.4). Això dona més espai a l'algorisme.</td>
+    </tr>
+    <tr>
+      <td>La llengua té paraules compostes llargues (p. ex., l'alemany)</td>
+      <td>Assegura't que la llengua correcta estigui configurada. Els patrons de partició de mots de l'alemany gestionen bé les paraules compostes, però només si el motor sap que és alemany.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Justificació vertical: equilibri de columnes
+
+Knuth-Plass resol el problema *horitzontal* — on talla cada línia. L'equilibri de columnes resol el seu equivalent *vertical*: on acaba cada columna. Les editorials esperen que cada columna d'una pàgina comenci a dalt i acabi alineada amb el peu de pàgina, línia a línia en tot el plec. Les mateixes regles que protegeixen la qualitat del text hi juguen en contra: la protecció d'òrfenes i vídues, els encapçalaments amb `keepWithNext` i les figures indivisibles empenyen contingut a la columna següent abans que l'actual estigui completament plena, i deixen una o més línies de la retícula de base buides a la part inferior.
+
+Amb `headings.balancing` activat (el valor per defecte), el motor tanca aquests buits com ho faria un maquetista, aplicant les seves palanques en ordre estricte de prioritat editorial — cada palanca actua només sobre el que l'anterior no ha pogut absorbir:
+
+1. **Un requadre que tanca la columna.** Un requadre que acaba una columna curta baixa exactament l'espai que queda sota el seu peu, de manera que la seva vora inferior cau a l'última línia de la retícula, a nivell amb la columna contigua; aquest espai pot ser una fracció de línia. Actua primer i es queda tot el buit llevat que `closingBox` digui una altra cosa: `'last'` deixa que les palanques de sota prenguin abans les línies senceres i dona al requadre només el que deixen, de manera que un requadre que comenta el paràgraf de sobre queda a prop seu; `'off'` no mou mai el requadre.
+2. **Espai sobre els encapçalaments.** S'afegeixen línies completes de retícula al marge superior dels encapçalaments de la columna curta. Quan calen diverses línies i la columna conté diversos encapçalaments, les línies es reparteixen en rondes per ordre d'importància, de manera que l'encapçalament més important rep sempre la major part — 3 línies sobre un `h2` i un `h3` es converteixen en +2 sobre el `h2` i +1 sobre el `h3`. Els encapçalaments situats al principi d'una columna no reben mai espai addicional (les columnes continuen començant a dalt), i un encapçalament final no s'empeny mai cap al peu de la columna.
+3. **Espai després del final de les llistes.** S'afegeix una línia de retícula on acaba una llista o enumeració — l'aire després d'una llista es llegeix amb naturalitat. Amb un màxim per llista (`maxLinesAfterList`, per defecte 1). Després, una línia de retícula sota una fórmula en bloc o un requadre després dels quals continua el text, i una altra sota una figura o taula que encapçala la columna (`stretchAfterFloats`, `maxLinesAfterFloat`). El text sota la figura pot ser la continuació d'un paràgraf començat a la pàgina anterior; baixa igualment, la línia que les regles de tall van deixar lliure al peu de la columna (una línia que la regla de vídues va deixar buida, un espai entre paràgrafs sense lloc per a text al darrere).
+4. **Paràgrafs folgats.** Com a últim recurs, es recomponen paràgrafs de la columna amb una línia més — el `\looseness=+1` de TeX — fins a un màxim de `maxLooseParagraphs` (dos per defecte), una línia extra cadascun. El partidor torna a executar Knuth-Plass demanant exactament una línia addicional i accepta el resultat només quan **totes les línies de la solució folgada queden per sota de `maxWordSpacing`**: el color tipogràfic no supera mai el límit que ja tinguis configurat. El motor prefereix els paràgrafs més llargs de la columna, on l'espai extra es dilueix entre més espais i resulta invisible. Requereix `optimalLineBreaking` (el valor per defecte); els paràgrafs partits entre columnes en queden exclosos. Un paràgraf que l'arranjament de les línies curtes (`tightenRunts`) va compondre amb una línia menys compta la seva línia de més des d'aquella composició: pot recuperar la línia que li va treure l'arranjament, però només amb una composició sense línia curta i sense cap línia per sobre de `maxWordSpacing` (fins a postext 1.4 podia tornar amb una línia molt per sobre del límit).
+
+   Quan no n'hi ha prou amb l'espaiat entre paraules per guanyar la línia, el paràgraf pot prendre a més una mica de **tracking** positiu — el recurs clàssic del compositor. El motor prova primer la quantitat més petita (la meitat de `maxTracking` i després `maxTracking`, en mil·lèsimes d'em per caràcter; 10 = 0,01 em per defecte) i es queda la primera que guanya la línia, sempre sota el mateix límit d'espaiat entre paraules. El tracking es mesura a les línies del paràgraf i el pinten tots els backends (`letterSpacing` en canvas, `letter-spacing` en CSS, espaiat de caràcters en PDF). Es desactiva amb `trackParagraphs: false`.
+
+### Per què l'ajust és local
+
+Els salts de columna estan *lligats a elements*: l'element que obre la columna següent hi és perquè no cabia al buit. Empènyer la cua d'una columna cap avall com a màxim el seu propi buit no mou mai contingut a la columna o pàgina següent — cada columna es corregeix al seu lloc, sense recomposicions en cascada. Tot i així, el motor ho verifica empíricament: torna a executar la col·locació amb els ajustos proposats (fins a 8 passades), mesura el buit restant total i conserva sempre la millor maquetació trobada. Un paràgraf folgat que no aconsegueix guanyar la seva línia dins del límit d'espaiat, amb cap tracking, es descarta i es prova amb el candidat següent.
+
+### Quan es respecta una columna curta
+
+Una columna curta és a vegades el resultat *correcte*, i l'equilibri sap fer-se enrere:
+
+- L'**última columna d'una pàgina** només s'equilibra quan la pàgina flueix de manera natural cap a la següent. Les pàgines acabades amb `:::pagebreak`, amb el `breakBefore` d'un encapçalament o amb un inici de capítol conserven la seva última columna curta — un capítol acaba legítimament a mitja pàgina.
+- L'**última pàgina del document** no s'equilibra mai.
+- Una columna **sense cap punt elàstic utilitzable** (sense encapçalament elegible, final de llista ni paràgraf recomponible) conserva el seu buit abans que degradar la tipografia.
+
+```js
+const doc = buildDocument(content, {
+  headings: {
+    balancing: {
+      enabled: true,            // per defecte
+      maxLinesPerHeading: 4,    // màxim per encapçalament
+      stretchAfterLists: true,  // palanca 3
+      maxLinesAfterList: 1,     // màxim per final de llista
+      looseParagraphs: true,    // palanca 4 — limitada per bodyText.maxWordSpacing
+      maxLooseParagraphs: 2,    // paràgrafs folgats per columna curta
+      trackParagraphs: true,    // permet una mica de tracking en un paràgraf folgat
+      maxTracking: 10,          // ‰ d'em per caràcter (0,01 em)
+      closingBox: 'first',      // palanca 1: 'first' | 'last' | 'off'
+    },
+  },
+});
+```
+
+Al Sandbox aquestes opcions són a la secció *Títols* de **Disseny → Títols i índex** ("Equilibrar columnes", amb "Estirar després de llistes", "Estirar sota figures", "Requadre que tanca una columna" i "Paràgrafs folgats" niats a sota). Activa la retícula de base (**Disseny → Avançat → Ajudes en pantalla**) i mira la vista Canvas per veure'n l'efecte: amb l'equilibri apagat, les columnes curtes acaben per sobre de l'última línia de la retícula; amb l'equilibri encès, totes les columnes equilibrables tanquen a la mateixa línia. Consulta la pàgina de [Configuració](/ca/docs/configuration#equilibratge-de-columnes) per a la referència completa d'opcions.
+
+## Exemple complet
+
+Una configuració completa que mostra tots els ajustos de partició de mots i justificació:
+
+```ts
+import { buildDocument } from 'postext';
+
+const vdt = buildDocument(content, {
+  bodyText: {
+    fontFamily: 'EB Garamond',
+    fontSize: { value: 9, unit: 'pt' },
+    textAlign: 'justify',
+
+    // Tall òptim de línies Knuth-Plass (per defecte: true)
+    optimalLineBreaking: true,
+
+    // Partició de mots
+    hyphenation: {
+      enabled: true,
+      locale: 'es',
+    },
+
+    // Límits d'espaiat entre paraules (multiplicadors de l'amplada normal)
+    maxWordSpacing: 2,     // els espais s'estiren fins al 200%
+    minWordSpacing: 0.6,   // els espais es comprimeixen fins al 60%
+  },
+
+  // Depuració: ressaltar línies amb espaiat excessiu
+  debug: {
+    looseLineHighlight: {
+      enabled: true,
+      threshold: 2.5,
+      color: { hex: '#ff000040', model: 'hex' },
+    },
+  },
+});
+```
+
+Per a la llista completa d'opcions de configuració del cos de text, consulta la pàgina de [Configuració](/ca/docs/configuration#text-de-cos). Per veure com el pipeline de composició fa servir aquests ajustos durant la mesura de text, consulta la pàgina d'[Arquitectura](/ca/docs/architecture).

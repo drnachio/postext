@@ -1,0 +1,73 @@
+---
+title: "Una obra col·lectiva amb bibliografia a cada capítol"
+summary: "Tres assajos de tres autors, cadascun un document propi a buildBundle, i cadascun tancat per una llista Chicago autor-data amb només les obres que cita."
+plain: "Un llibre d'assajos d'autors diferents. Cada assaig porta el nom del seu autor sota el títol i acaba amb la seva pròpia llista de referències, com a les obres col·lectives."
+description: "Una obra col·lectiva a Postext: capítols de buildBundle amb signatura presa dels atributs del títol i bibliografia per capítol en estil Chicago autor-data."
+question: "Com dono a cada capítol d'una obra col·lectiva la seva signatura i la seva pròpia llista de referències?"
+aliases: ["obra col·lectiva", "volum col·lectiu", "actes", "capítols d'autor", "referències per capítol", "bibliografia per capítol", "Chicago autor-data", "signatura d'autor"]
+pageNotes: { "1": "Pàgina 1: la portada, un camp vermell d'impremta als dos terços superiors amb La página en obra en Caslon blanca de cos gran i el subtítol en cursiva; a sota, els editors en versals vermelles i els tres autors en cursiva.", "2": "Pàgina 2: l'índex, tres assajos numerats amb punts guia i número de pàgina, cadascun amb el nom del seu autor en cursiva grisa sota el títol.", "5": "Pàgina 5: el final del capítol 1 i la seva llista de Referències amb quatre obres, entre les quals Eisenstein 1979 i Gaskell 1972.", "8": "Pàgina 8: el final del capítol 2 i la seva pròpia llista de Referències, que repeteix Eisenstein 1979 perquè aquest capítol també la cita." }
+---
+
+## Què compondràs
+
+*La página en obra*, una petita col·lecció d'assajos sobre història de la impremta, amb dos editors i tres autors. Cada autor lliura el seu assaig en un fitxer Markdown amb el seu propi bloc BibTeX, i així el conserva el llibre: un volum de 155 × 235 mm en Libre Caslon, una portada vermella i capítols que s'obren amb el número, el títol i el nom de l'autor. Cada capítol es tanca amb la seva llista de Referències en Chicago autor-data, que recull només les obres citades en aquell assaig. Dos autors citen *The Printing Press as an Agent of Change*, d'Eisenstein, i l'obra apareix a les dues llistes; amb la *New Introduction to Bibliography* de Gaskell passa el mateix als capítols 1 i 3.
+
+## Elaboració
+
+### 1 · Un document per autor
+
+<Excerpt region="chapters" />
+
+L'abast de [la resposta curta](#la-resposta-curta) és el d'un document. `buildBundle` compon els quatre documents com un sol llibre, de manera que els folis, els números de capítol i l'índex segueixen la seqüència, mentre que cada `:::bibliography` reuneix les citacions del seu propi fitxer. Les referències es queden on les va escriure cada autor. Una clau definida en qualsevol capítol val per a tot el llibre, així que n'hi hauria hagut prou amb una sola entrada compartida, però amb capítols autònoms pots canviar l'ordre o substituir un assaig sense trencar la llista d'un altre.
+
+### 2 · La signatura és un atribut del títol
+
+<Excerpt region="byline" />
+
+El títol de cada assaig porta `author="…"` i un títol curt, `short="…"`, per a la capçalera. L'obertura imprimeix l'autor sota el títol, la capçalera de la pàgina parella anomena l'autor de l'assaig al qual pertany la pàgina i l'índex posa el nom en una línia sota cada entrada. Els preliminars no han de repetir la llista d'autors.
+
+### 3 · L'obertura
+
+<Excerpt region="opener" />
+
+Avanttítol, títol i signatura s'apilen des del capdamunt de la caixa, cadascun ancorat sota l'anterior, així que un títol de dues línies com el del capítol 3 fa baixar amb ell la signatura i el filet. La reserva de 48 mm admet dues línies de títol, i el text comença a la mateixa línia de la retícula a tots els capítols.
+
+### 4 · Capçaleres per a un llibre de diversos autors
+
+<Excerpt region="running-heads" />
+
+Una obra col·lectiva anomena l'autor a la pàgina parella i el capítol a la senar, on una monografia posaria el títol del llibre i el del capítol. Les capçaleres es limiten a `pages: 'body'`, de manera que les obertures només porten un foli al peu.
+
+### 5 · Els preliminars
+
+<Excerpt region="front" />
+
+La portada i l'índex són dos títols sense número al primer document, sense capçaleres i sense entrada a l'índex. Els seus dissenys llegeixen `{title}` i `{subtitle}` del frontmatter, i els editors i autors, dels atributs del mateix títol.
+
+## Variants
+
+### Una sola llista per a tot el volum
+
+Algunes editorials reuneixen totes les obres en una bibliografia final. Canvia l'abast i treu els tres títols `## Referencias`; la llista passa a anar darrere de l'últim capítol.
+
+```diff
+-    scope: 'chapter',
+-    title: '', // no bold title paragraph: each chapter has its own ## References heading
++    scope: 'book',
++    title: 'Bibliografía',
+```
+
+### Cita en APA
+
+Un volum de ciències socials canvia l'estil i res més.
+
+```diff
+-  style: 'chicago-author-date', // the humanities' author-date: (Eisenstein 1979)
++  style: 'apa',
+```
+
+## Errors freqüents
+
+- `scope: 'chapter'` llista el que el document cita abans del `:::bibliography`, no el que cita la seva secció H1. Amb tots els assajos en un mateix fitxer Markdown, la segona llista repeteix les obres del primer assaig i la tercera, les dels dos anteriors.
+- A tot el llibre mana la primera definició de cada clau. Si dos autors fan servir `smith2001` per a obres diferents, l'assaig posterior cita sense avís el llibre del primer: posa un prefix a les claus de cada autor o confronta les llistes amb els originals.
+- La desambiguació es calcula per al llibre sencer. Dues obres diferents de Smith del 2001 en capítols diferents poden sortir com a 2001a i 2001b, encara que la llista d'un capítol només en contingui una.

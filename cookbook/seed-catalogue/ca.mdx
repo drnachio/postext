@@ -1,0 +1,68 @@
+---
+title: "Catàleg de venda per correu amb imatges a les cel·les"
+summary: "Un catàleg de llavors: la llista de preus, una taula llegida d'un TSV, porta un sobre pintat a la cel·la de cada varietat i es parteix entre dues pàgines."
+plain: "Un catàleg de llavors de quatre pàgines amb la seva llista de preus. Cada varietat porta una petita pintura del seu sobre dins de la taula, i la llista continua d'una pàgina a la del davant."
+description: "Catàleg de llavors de quatre pàgines compost amb Postext. La seva llista de preus, llegida d'un TSV, porta un sobre pintat a cada fila i es parteix en dues."
+question: "Com poso una imatge a cada fila d'una taula de productes, amb el nom a sota?"
+aliases: ["catàleg de llavors", "catàleg de productes", "llista de preus", "venda per correu", "taula de productes", "taula amb imatges", "imatges en una taula", "miniatures en una taula", "full de comanda", "rowspan"]
+pageNotes: { "1": "La coberta, sobre paper color ant i dins d'un marc verd: Brindlewood Seed Co. en majúscules verdes espaiades, Spring Seeds en una egípcia vermella, una banda groga amb Catalog No. 12 · Spring 2027 i la pintura d'un gira-sol i una tomaquera amb tutor que surten de la terra llaurada. A sota, la carta To Our Growers a dues columnes, amb un xip vermell NEW i un altre de verd ORGANIC al text, signada per Ada Brindle i Tom Okafor.", "2": "La llista de preus comença sota una banda vermella amb Vegetable Seeds i una fila de capçalera fosca. Hi ha cinc varietats, cadascuna amb el seu sobre de llavors pintat damunt del nom; Heirloom tomatoes ocupa una cel·la crema combinada de quatre files, les descripcions porten xips NEW i ORGANIC i els preus per sobre i per unça van alineats a la dreta. Continued on the facing page tanca la pàgina.", "3": "La banda torna com a Vegetable Seeds (continued) sobre la fila de capçalera repetida: dues mongetes i dues carabasses, cada classe en una cel·la combinada al llarg de les seves files, i una nota amb les llavors que porta un sobre. A sota, From Our Trial Garden a dues columnes igualades.", "4": "El full de comanda: les dades de la casa en majúscules verdes, Order Sheet en l'egípcia vermella sobre un filet doble, una instrucció en cursiva, una taula arrodonida per a l'adreça del client i una altra per a la comanda, amb onze ratlles en blanc i les files de totals combinades, la garantia en lletra petita i el colofó." }
+---
+
+## Què compondràs
+
+La llista de preus de primavera de Brindlewood Seed Co., una casa de llavors inventada, en un quadernet de quatre pàgines sobre paper color ant. A la coberta, «Spring Seeds» va en Alfa Slab One sobre la pintura d'un gira-sol i una tomaquera, i a sota, a dues columnes, la carta als clients. La llista ocupa les pàgines 2 i 3. Cada varietat té la pintura del seu sobre a dalt de la cel·la, amb el nom a sota, i les classes d'hortalissa baixen per una primera columna de cel·les combinades. Els preus van a la dreta en una lletra estreta de rètols, i uns xips vermells i verds marquen les llavors noves i les ecològiques. La llista es talla després del pebrot per fregir i continua a la pàgina del davant sota la mateixa banda vermella, amb «(continued)» darrere del títol. La contracoberta és el full de comanda: dues taules de cantonades arrodonides amb ratlles en blanc per emplenar a mà.
+
+## Elaboració
+
+### 1 · Afegeix el que el TSV no porta
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. El TSV només porta paraules i preus. `setCellImage` col·loca el sobre de cada varietat, un recurs amb el nom de la varietat com a id, a dalt de la seva cel·la i al 55 % de l'amplada interior, de manera que el nom queda sota una imatge de 20,3 × 27,1 mm i cada fila creix fins a 36 mm. `mergeCells` estén cada classe cap avall per la primera columna i marca amb `hiddenBy` les cel·les que tapa. Les cel·les del cos d'una taula comparteixen una sola lletra, aquí Gelasio, així que cada preu és un xip sense fons, sense vora i sense marge interior als costats, en Cabin Condensed negreta a 1,12 em per les seves xifres de caixa alta.
+
+### 2 · Cita la llista i parteix-la entre les dues pàgines
+
+<Excerpt region="split" />
+
+La carta de la pàgina 1 cita la llista amb `:ref{id="vegetables" text="the price list"}`, i `text` imprimeix aquestes paraules en lloc d'un número. Una taula citada flota al primer forat lliure després de la cita, que aquí és el cap de la pàgina 2. La llista no hi cap sencera, així que el motor la talla entre files després de Jimmy Nardello, mai dins d'una classe combinada. A la pàgina 3 es repeteixen la fila de capçalera i la banda del peu, ara amb el sufix; l'avís va sota la primera part i la nota, sota l'última ([taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). `parseTSV` no marca cap cel·la com a capçalera, així que cal posar `headerRowCount: 1` a mà perquè la primera fila es pinti com a capçalera i es repeteixi a la pàgina 3. El sufix i l'avís van en cursiva amb la lletra del peu, i per això la banda es compon en Gelasio i no en Cabin Condensed, que no té cursiva.
+
+### 3 · Un recurs per a cada sobre
+
+<Excerpt region="pictures" />
+
+La imatge d'una cel·la remet a un recurs pel seu id, així que cada sobre és un recurs de mapa de bits propi, un JPEG de 360 × 480 px retallat al 3 : 4 del sobre, i `loadImage`, del kit, el registra amb el `fileId` mitjançant `registerResourceImage`. Ningú no cita els sobres, de manera que cap no es numera ni es col·loca fora de la seva cel·la. Les pintures no porten rètols: el nom va com a text de la cel·la, amb les fonts de la pàgina.
+
+### 4 · Un segon estil de taula per al full de comanda
+
+<Excerpt region="forms" />
+
+Les dues taules del full de comanda fan servir l'estil amb nom `form`, amb filets en quadrícula, 2,5 mm de radi a les cantonades del marc exterior i un fons crema sobre el qual escriure. La llista de preus conserva el `tableStyle` del document ([estils de taula amb nom](/ca/docs/configuration#estils-de-taula-amb-nom)). Una cel·la buida no necessita cap text, perquè la seva fila ocupa igualment una línia, aquí de 7,3 mm. Cada total combina quatre columnes en un sol rètol alineat a la dreta. L'estil de títol del full de comanda passa la pàgina 4 a una sola columna, així que les dues taules ocupen tota la mesura, 157 mm.
+
+### 5 · Mantén la carta sota la pintura
+
+<Excerpt region="cover" />
+
+La pintura de la coberta és un element d'imatge, i una imatge no suma res a l'alçada que reserva una obertura. Sense `minHeight`, la carta començaria a 55 mm de la vora superior de la pàgina, damunt del gira-sol. `SINK` deixa 10 mm d'aire sota la pintura i arrodoneix la distància des del marge superior a línies senceres de 13 pt, 34 en total, així que les dues columnes de la carta arrenquen a la retícula de base, a 177,9 mm de la vora.
+
+## Variants
+
+### Queda't només amb el que hi cap
+
+Amb `overflow: 'clip'`, la llista es queda en les cinc varietats que caben a la pàgina 2, amb la nota a sota, i a la pàgina 3 només queden les notes del camp d'assaig, a la primera columna.
+
+```diff
+-  overflow: 'split', continuedSuffix: '(continued)',
++  overflow: 'clip', continuedSuffix: '(continued)',
+```
+
+### Encongeix els sobres
+
+Al 40 %, les files baixen a 29 mm, però les dues mongetes comparteixen una cel·la combinada i juntes necessiten 57 mm, més dels 44 mm que queden a la pàgina 2. Les notes del camp d'assaig pugen a aquest forat, i la pàgina 3 només porta la resta de la llista, amb la pàgina en blanc per sota dels 157 mm.
+
+```diff
+-const PACKET = 0.55; // the packet picture's share of its cell's inner width
++const PACKET = 0.4; // the packet picture's share of its cell's inner width
+```
+
+## Errors freqüents
+
+- Un recurs que ningú no cita no es col·loca mai. Si treus el `:ref` de la carta, el catàleg es queda sense llista de preus.
+- En columnes de 75 mm, Knuth–Plass pot deixar una línia justificada amb els espais més oberts del que permet `maxWordSpacing`. La carta i les notes del camp d'assaig es van reescriure fins que la línia més oberta va estirar els espais 1,33 vegades la seva amplada normal. Les notes ocupen a més 14 línies justes: amb 13, l'equilibri de columnes de la pàgina de tancament deixa una línia de la retícula de base en blanc sobre From Our Trial Garden, i el títol comença una línia més avall que el text de l'altra columna.

@@ -9,6 +9,7 @@ import type { VDTLineSegment } from '../vdt';
 import type { KPItem } from './types';
 import { adjustLine } from './breakpoints';
 import { graphemeCount } from '../measure/graphemes';
+import { joiningScriptIn } from '../measure/joining';
 
 /**
  * Tracking (px after every character; negative tightens) of the line made
@@ -27,6 +28,7 @@ export function lineTracking(items: readonly KPItem[], lineStart: number, breakA
     const it = items[j]!;
     if (it.type === 'box') {
       width += it.width;
+      stretch += it.stretch ?? 0;
       chars += it.chars ?? 0;
       if (it.noTracking) noTracking = true;
     } else if (it.type === 'glue') {
@@ -52,7 +54,8 @@ export function lineTracking(items: readonly KPItem[], lineStart: number, breakA
 
 /** Add `tracking` px a grapheme to the width of every text segment (word,
  *  reference, script run) of a line; spaces, formulas, swatches and chips
- *  keep theirs. Two stacked scripts advance as far as the longer run: the
+ *  keep theirs, and so does a word of a joining script, which the breaker
+ *  counted no character of (its letters connect). Two stacked scripts advance as far as the longer run: the
  *  first keeps its zero width, the second takes the tracking of the longer
  *  of the two (as the breaker counted their characters). Returns the width
  *  added to the line. The change is linear in `tracking`, so the same call
@@ -61,7 +64,7 @@ export function trackSegments(segments: VDTLineSegment[], tracking: number): num
   let added = 0;
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!;
-    if (seg.kind !== 'text') continue;
+    if (seg.kind !== 'text' || joiningScriptIn(seg.text)) continue;
     const next = segments[i + 1];
     if (seg.stacked && next?.kind === 'text') {
       const delta = tracking * Math.max(graphemeCount(seg.text), graphemeCount(next.text));

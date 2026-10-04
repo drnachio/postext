@@ -14,6 +14,8 @@ const KIT: Record<KitBlock, string> = {
   pdf: "// ─── Kit · pdf\nfunction offerPdf() {}",
   images: "// ─── Kit · images\nfunction loadImage() {}",
   cjk: "// ─── Kit · cjk\nfunction loadCjkFonts() {}",
+  arabic: "// ─── Kit · arabic\nfunction loadArabicFonts() {}",
+  book: "// ─── Kit · book\nfunction showBook() {}",
 };
 
 const SCRIPT = [
@@ -133,7 +135,7 @@ describe("composePen", () => {
 
   it("composes against the real kit", () => {
     const kit = readKit();
-    expect(Object.keys(kit).sort()).toEqual(["cjk", "core", "fonts", "images", "pdf", "viewer"]);
+    expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "core", "fonts", "images", "pdf", "viewer"]);
     const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images", "cjk"] }, "en", { kit });
     expect(pen.js).toContain("function buildWithFonts(");
     expect(pen.js).toContain("function offerPdf(");
@@ -141,6 +143,25 @@ describe("composePen", () => {
     expect(pen.js).toContain("async function cjkPdfProvider(");
     // The cjk block comes last, after the pdf block it leans on.
     expect(pen.js.indexOf("// ─── Kit · cjk")).toBeGreaterThan(pen.js.indexOf("// ─── Kit · images"));
+  });
+
+  it("composes an Arabic right-bound book that parses as one module", () => {
+    const kit = readKit();
+    const blocks: KitBlock[] = ["core", "fonts", "viewer", "pdf", "arabic", "book"];
+    const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: blocks }, "en", { kit });
+    expect(pen.js).toContain("async function loadArabicFonts(");
+    expect(pen.js).toContain("async function arabicPdfProvider(");
+    expect(pen.js).toContain("function showBook(");
+    expect(pen.js.indexOf("// ─── Kit · book")).toBeGreaterThan(pen.js.indexOf("// ─── Kit · arabic"));
+    // Every block's top-level names are distinct: the composed file is one
+    // module scope, where a second declaration of a name does not parse.
+    // A book with Chinese and Arabic lists cjk and arabic, and takes the
+    // cjk block's showBook.
+    for (const list of [blocks, ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic"] as KitBlock[]]) {
+      const names = list.flatMap((block) =>
+        [...kit[block]!.matchAll(/^(?:async\s+)?(?:function|const|let)\s+([\w$]+)/gm)].map((m) => m[1]));
+      expect(names.filter((name, i) => names.indexOf(name) !== i)).toEqual([]);
+    }
   });
 });
 

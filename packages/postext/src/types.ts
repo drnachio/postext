@@ -1,4 +1,4 @@
-import type { EastAsianNumeralStyle, NumberFormatStyle, NumeralStyle } from './numbering';
+import type { ArabicNumeralStyle, EastAsianNumeralStyle, NumberFormatStyle, NumeralStyle } from './numbering';
 
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
@@ -20,15 +20,17 @@ export interface PostextResource {
 // (images, SVGs, HTML tables) that can be referenced inline.
 // ---------------------------------------------------------------------------
 
-/** How a counter renders for a given resource type. The East Asian styles
- *  keep their CSS names (`simp-chinese-informal`, `circled-decimal`…). */
+/** How a counter renders for a given resource type. The East Asian and
+ *  Arabic styles keep their CSS names (`simp-chinese-informal`,
+ *  `circled-decimal`, `arabic-indic`…). */
 export type ResourceCounterFormat =
   | 'decimal'
   | 'roman-lower'
   | 'roman-upper'
   | 'alpha-lower'
   | 'alpha-upper'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 /** When the per-type counter resets back to its starting value. `'never'`
  *  yields a single document-wide running count; `'h1'..'h6'` resets the
@@ -85,8 +87,10 @@ export interface ResourcePlacement {
    *  shrank — whose caption and note keep the slot's measure. A turned
    *  figure and one with its caption beside it stay flush left. Default
    *  `'left'` (up to postext 1.4 a narrower picture was always set flush
-   *  left). */
-  align?: 'left' | 'center' | 'right';
+   *  left). Sides of the body flow, so on a right-to-left document's
+   *  mirrored pages `'left'` is the sheet's right; `'start'` / `'end'`
+   *  (#371) are the same sides by their logical names. */
+  align?: 'left' | 'center' | 'right' | 'start' | 'end';
   /** Set the caption beside the figure, in the float-only side column of
    *  a `oneAndHalf` layout (`layout.sideColumnRole: 'floats'`): the body
    *  keeps its column, the caption goes to the margin level with the
@@ -138,6 +142,13 @@ export type ResourceKind = 'bitmap' | 'svg' | 'table';
 /** Horizontal alignment of a table cell's content. */
 export type TableCellAlign = 'left' | 'center' | 'right';
 
+/** A cell's alignment as a table model writes it: a {@link TableCellAlign},
+ *  or the logical `'start'` / `'end'` (#371), the side the cell's text
+ *  starts or ends on. Cell text reads like body text: `'left'` is the
+ *  start side too, the right in a right-to-left table (see
+ *  {@link TextAlignKeyword}); the layout keeps only the physical values. */
+export type TableCellAlignKeyword = TableCellAlign | 'start' | 'end';
+
 /** Vertical alignment of a table cell's content. */
 export type TableCellVerticalAlign = 'top' | 'middle' | 'bottom';
 
@@ -175,7 +186,7 @@ export interface TableCell {
   rowSpan?: number;
   /** When true, render as a header cell (`<th>`). */
   isHeader?: boolean;
-  align?: TableCellAlign;
+  align?: TableCellAlignKeyword;
   verticalAlign?: TableCellVerticalAlign;
   /** Fill colour of this cell, painted instead of the table style's header
    *  / body background. A palette-linked value (`paletteId`) follows the
@@ -257,6 +268,15 @@ export interface Resource {
      *  set in. Unset, or an id no style declares, falls back to the
      *  document's `tableStyle`. */
     styleId?: string;
+    /** The direction the table runs in (#371), when it is not the
+     *  document's: `'ltr'` for an English data table in an Arabic book,
+     *  `'rtl'` for an Arabic one in an English book. Its first column then
+     *  sits on the side its text starts on, its cells are read in that
+     *  direction and align from that side (`'left'` / `'start'` being the
+     *  start). Unset, the table runs with the document (in a right-to-left
+     *  document, first column on the right). Its caption and note follow
+     *  the document. */
+    direction?: 'ltr' | 'rtl';
   };
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
@@ -558,7 +578,8 @@ export type PageNumberFormat =
   | 'upper-roman'
   | 'lower-alpha'
   | 'upper-alpha'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 export interface PageNumberingConfig {
   /** Format for page labels. Default: `'decimal'`. The list and resource
@@ -592,12 +613,14 @@ export interface PageConfig {
   pageNumbering?: PageNumberingConfig;
   /** The edge the book is bound on. `'left'`: pages turn right to left, as
    *  in any Western book. `'right'`: the book is bound on its right edge,
-   *  as vertical Chinese and Japanese books are (clreq §7.1.1.1): page 1 is
+   *  as vertical Chinese and Japanese books and Arabic and Hebrew books
+   *  are (clreq §7.1.1.1): page 1 is
    *  still the recto (odd), but it is the LEFT page of a spread, its inner
    *  margin is on its right, and viewers show the pairs `[3 | 2]`. With
    *  mirrored margins the recto therefore swaps `left` and `right`: `left`
    *  stays the inner margin. `'auto'` (the default) is `'right'` when
-   *  `layout.writingMode` is `'vertical-rl'`, else `'left'`. Book-level:
+   *  `layout.writingMode` is `'vertical-rl'` or the document runs right to
+   *  left (`PostextConfig.direction`), else `'left'`. Book-level:
    *  a heading style's own `layout` never changes it. */
   binding?: PageBinding;
 }
@@ -739,6 +762,19 @@ export interface ResolvedLayoutConfig {
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
+/**
+ * A text alignment as a config writes it (#371): a {@link TextAlign}, or the
+ * logical `'start'` / `'end'`. Running text reads its alignment in its own
+ * direction: `'left'` and `'start'` are the side a line starts on, `'right'`
+ * and `'end'` the side it ends on — the left and the right of an English
+ * paragraph, the right and the left of an Arabic one, on a page of either
+ * direction (a right-to-left document's pages are mirrored, so its body
+ * flow's left is the sheet's right). The last line of a justified paragraph
+ * goes to the start side. `'start'` / `'end'` say so explicitly; a resolved
+ * config carries `'left'` / `'right'` only.
+ */
+export type TextAlignKeyword = TextAlign | 'start' | 'end';
+
 export type HyphenationLocale =
   | 'en-us'
   | 'es'
@@ -758,6 +794,22 @@ export type HyphenationLocale =
  * console. The tag itself is kept as the PDF's document language.
  */
 export type LocaleTag = HyphenationLocale | (string & {});
+
+/** The direction a document's text runs (`PostextConfig.direction`):
+ *  `'ltr'` left to right, `'rtl'` right to left (Arabic, Hebrew), `'auto'`
+ *  from the script of the document language. */
+export type DocumentDirection = 'auto' | 'ltr' | 'rtl';
+
+/** A digit system, named as the Unicode `-u-nu-` keyword names it: `'latn'`
+ *  the European digits 0–9, `'arab'` the Arabic-Indic digits ٠–٩ of the
+ *  Mashriq (U+0660–0669), `'arabext'` the Extended Arabic-Indic digits
+ *  ۰–۹ of Persian and Urdu (U+06F0–06F9). */
+export type DigitSystem = 'latn' | 'arab' | 'arabext';
+
+/** The digits a document's generated numbers are written in (see
+ *  `PostextConfig.numerals`): a {@link DigitSystem}, or `'auto'` to take
+ *  the one of the document language (`defaultNumeralsFor`). */
+export type NumeralsSetting = 'auto' | DigitSystem;
 
 export interface HyphenationConfig {
   enabled?: boolean;
@@ -804,6 +856,19 @@ export interface ResolvedHyphenationConfig {
   compounds: boolean;
 }
 
+/** `BodyTextConfig.kashida`. */
+export type KashidaSetting = 'auto' | 'none';
+/** `BodyTextConfig.kashidaPatterns`. */
+export type KashidaPatterns = 'auto' | 'naskh' | 'simple' | 'nastaliq';
+
+/** Kashida justification as resolved (see `BodyTextConfig.kashida`). */
+export interface ResolvedKashidaConfig {
+  patterns: KashidaPatterns;
+  perWord: number;
+  /** Longest elongation at one join, em. */
+  maxLength: number;
+}
+
 export interface BodyTextConfig {
   /** One family, as every `fontFamily` field: a CSS font stack is set in
    *  its first family (see `primaryFontFamily`) and reported by
@@ -822,7 +887,7 @@ export interface BodyTextConfig {
   referenceBold?: boolean;
   /** Whether reference labels are rendered italic. Default `false`. */
   referenceItalic?: boolean;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   fontWeight?: number;
   boldFontWeight?: number;
   hyphenation?: HyphenationConfig;
@@ -855,6 +920,39 @@ export interface BodyTextConfig {
    *  is taken only where word spacing alone would pass its limits), so it
    *  needs `optimalLineBreaking`. 0 (the default) turns it off. */
   maxJustifyTracking?: number;
+  /** Kashida justification (#375): a justified line of Arabic-script text
+   *  takes part of its slack by elongating letter joins with tatweels
+   *  (U+0640), the rest in its word spaces. Each word gets at most
+   *  {@link kashidaPerWord} elongations, at the joins the pattern set
+   *  ({@link kashidaPatterns}) ranks best, never after a letter that does
+   *  not join onward (ا د ذ ر ز و ة), never at the end of a word, never
+   *  inside lām-alif; a word that holds a tatweel the author typed is
+   *  lengthened there. Never in Latin text, digits, a heading, a ragged
+   *  line or a paragraph's last line, and never as letter-spacing.
+   *  Knuth–Plass counts each word's elongation as stretch, so lines with
+   *  Arabic words choose their breaks knowing they can stretch there.
+   *  The tatweels are painted as text; copied and extracted text leaves
+   *  them out (see `VDTLineSegment.kashida`).
+   *  `'auto'` elongates; `'none'` justifies with the spaces alone. Unset:
+   *  `'auto'` in a document whose language is written in the Arabic
+   *  script (`ar`, `fa`, `ur`…), `'none'` otherwise. */
+  kashida?: KashidaSetting;
+  /** Which joins take a kashida, and in what order (#375): `'naskh'`, the
+   *  classical Naskh rules (Benatia's matrix with Afifi's prohibitions, as
+   *  in raqim-kashida), for Amiri, Noto Naskh, Scheherazade and their
+   *  kind; `'simple'`, the Microsoft priorities, for simple modern faces;
+   *  `'nastaliq'`, the Naskh rules tailored for Nastaʿlīq. `'auto'` (the
+   *  default) reads the body font's family: no kashida at all in a Ruqʿa
+   *  or Dīwānī face (`Aref Ruqaa`), whose letters do not elongate,
+   *  `'nastaliq'` in a Nastaʿlīq one, else `'naskh'`. */
+  kashidaPatterns?: KashidaPatterns;
+  /** Most elongations in one word (#375). Default 1, the rule of book
+   *  typography; a classical verse line (`:::verse`) may take more. */
+  kashidaPerWord?: number;
+  /** Longest elongation at one join, in ems (#375): the tatweels inserted
+   *  there are whole ones, as many as fit in this. Default 0.6 (three
+   *  tatweels of Amiri, two of Noto Naskh Arabic). */
+  kashidaMaxLength?: number;
   /** Use Knuth-Plass optimal line breaking instead of greedy first-fit. Default true. */
   optimalLineBreaking?: boolean;
   /** Break ragged paragraphs with Knuth–Plass too: body text, blockquotes
@@ -1049,7 +1147,46 @@ export interface BodyTextConfig {
    *  container that closes on a list is set as in 1.4 under both rules: the
    *  list keeps its own space in its snap, and `marginBottom` follows. */
   paragraphContainerSpacing?: ParagraphContainerSpacing;
+  /** How Markdown emphasis (`*…*`) is set (see {@link EmphasisStyle}).
+   *  `'auto'` (the default): `'bold'` in a document whose language is
+   *  written in Arabic script (`ar`, `fa`, `ur`…), whose type has no
+   *  italics, and `'italic'` in any other. Whatever is chosen, the engine
+   *  never slants Arabic letters: an italic run sets its Arabic words
+   *  upright (#376). */
+  emphasis?: 'auto' | EmphasisStyle;
+  /** Arabic vowel marks (tashkīl) in the text (see {@link TashkilMode}).
+   *  Default `'keep'`. */
+  tashkil?: TashkilMode;
 }
+
+/** How `*…*` is set (`BodyTextConfig.emphasis`):
+ *  - `'italic'`: in the italic face, as postext always did;
+ *  - `'bold'`: in the bold face and `boldColor`, as `**…**` is (bold
+ *    and italic together stay bold);
+ *  - `'color'`: upright, in `italicColor`;
+ *  - `'overline'`: upright, in `italicColor`, with a rule over the words
+ *    (the Arabic khaṭṭ fawqī).
+ *  It applies to the body text and to what is set in its faces: lists,
+ *  blockquotes, paragraph styles, callout bodies, notes and headings.
+ *  Captions, table cells, the contents and the index keep their own
+ *  italic settings. */
+export type EmphasisStyle = 'italic' | 'bold' | 'color' | 'overline';
+
+/** What becomes of the Arabic vowel marks of the text
+ *  (`BodyTextConfig.tashkil`), for an edition without them made from a
+ *  vocalised source:
+ *  - `'keep'`: set as written;
+ *  - `'strip'`: every vowel and Qurʾānic mark is dropped: fatḥa, ḍamma,
+ *    kasra, their tanwīn, sukūn, shadda, the superscript (dagger) alef
+ *    U+0670 (هٰذا is set هذا) and the other marks U+0656–U+065F, and the
+ *    Qurʾānic annotation signs U+06D6–U+06ED;
+ *  - `'strip-vowels'`: as `'strip'`, but the shadda stays, as most modern
+ *    books print it.
+ *  Hamza and madda are kept in both: أ إ آ ؤ ئ are letters, also when
+ *  written with the combining U+0653–U+0655. The marks leave the text the
+ *  layout sets (body, headings, notes, the contents); the source keeps
+ *  them, and every character set still maps to its place in it. */
+export type TashkilMode = 'keep' | 'strip' | 'strip-vowels';
 
 /** The room kept for a list under the colon line that introduces it
  *  (`BodyTextConfig.colonListRoom`). */
@@ -1111,6 +1248,14 @@ export interface ResolvedBodyTextConfig {
   maxWordSpacing: number;
   minWordSpacing: number;
   maxJustifyTracking: number;
+  /** Kashida justification (see `BodyTextConfig.kashida`): `'auto'` and
+   *  its three details, all resolved, when it is on; all four absent when
+   *  it is off, so a document that does not use it resolves as it did
+   *  before kashidas existed. Read them with `resolvedKashida`. */
+  kashida?: 'auto';
+  kashidaPatterns?: KashidaPatterns;
+  kashidaPerWord?: number;
+  kashidaMaxLength?: number;
   optimalLineBreaking: boolean;
   optimalRagged: boolean;
   breakAfterDashes: boolean;
@@ -1137,6 +1282,10 @@ export interface ResolvedBodyTextConfig {
   colonListRoom: ColonListRoom;
   hyphenateAcrossColumns: boolean;
   paragraphContainerSpacing: ParagraphContainerSpacing;
+  /** `emphasis` resolved; absent when `*…*` is set in italics. */
+  emphasis?: Exclude<EmphasisStyle, 'italic'>;
+  /** `tashkil`; absent when the marks are kept. */
+  tashkil?: Exclude<TashkilMode, 'keep'>;
   /** Set only in the derived config a callout lays its children out with
    *  (a style's `body.italic` / `body.smallCaps`): the running text of a
    *  document is always upright, in lowercase. */
@@ -1305,7 +1454,7 @@ export interface CaptionNoteStyleConfig {
   /** Gap between the note and what precedes it (body or caption). Default `0.35em`. */
   gap?: Dimension;
   /** Horizontal alignment of the note. Default `'left'`. */
-  align?: TextAlign;
+  align?: TextAlignKeyword;
 }
 
 export interface ResolvedCaptionNoteStyleConfig {
@@ -1329,7 +1478,7 @@ export interface CaptionStyleConfig {
   /** Description text colour. Defaults to the body-text colour. */
   color?: ColorValue;
   /** Horizontal alignment of caption text. Default `'left'`. */
-  align?: TextAlign;
+  align?: TextAlignKeyword;
   /** Gap between the figure body and the caption. Default `0.75em`. */
   gap?: Dimension;
   /** Render the numbered label bold. Default `true`. */
@@ -1419,7 +1568,7 @@ export interface ParagraphStyleConfig {
   color?: ColorValue;
   /** Defaults to the body alignment. `'center'` and `'right'` set every
    *  line ragged from the other side (a dedication, a signature block). */
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Colour of bold runs. Defaults to `bodyText.boldColor`. */
   boldColor?: ColorValue;
   /** Colour of italic (`*…*`) runs — in an {@link italic} style, the runs
@@ -1543,7 +1692,13 @@ export interface CalloutFixedConfig {
 /** `'fill'` spans the available width; `'auto'` shrink-wraps the title
  *  (badge use — children are ignored). */
 export type CalloutWidth = 'fill' | 'auto';
-export type CalloutStripeSide = 'left' | 'right' | 'top';
+/** The edge a callout's stripe runs along. `'left'` / `'right'` are sides
+ *  of the body flow (on a right-to-left document's mirrored pages, its left
+ *  is the sheet's right); `'start'` / `'end'` (#371) are the box's own: the
+ *  side its text starts or ends on, which differs from the flow's in a box
+ *  set against the document's direction (`:::callout{dir=ltr}` in an
+ *  Arabic book). */
+export type CalloutStripeSide = 'left' | 'right' | 'top' | 'start' | 'end';
 export type CalloutIconKind = 'none' | 'glyph' | 'resource';
 export type CalloutIconAlign = 'top' | 'center';
 /** Where the in-box icon sits: `'inline'` (the default) in a column of its
@@ -1552,10 +1707,17 @@ export type CalloutIconAlign = 'top' | 'center';
  *  border, taking no room from the content (the icon of a marginal box). */
 export type CalloutIconPosition = 'inline' | 'corner';
 /** Which corner a `position: 'corner'` icon hangs on: `'right'` (the
- *  default) / `'left'` are fixed; `'outer'` / `'inner'` follow the page
- *  parity when the margins are mirrored (outer = right on a recto, left on
- *  a verso), like the side column of a `oneAndHalf` layout. */
-export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner';
+ *  default) / `'left'` are fixed sides of the body flow; `'outer'` /
+ *  `'inner'` follow the page parity when the margins are mirrored (outer =
+ *  right on a recto, left on a verso), like the side column of a
+ *  `oneAndHalf` layout; `'start'` / `'end'` (#371) the box's own direction
+ *  (see {@link CalloutStripeSide}). */
+export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner' | 'start' | 'end';
+
+/** The top corner a callout's label tab hugs: `'top-right'` / `'top-left'`
+ *  in the body flow's terms, `'top-start'` / `'top-end'` (#371) in the box's
+ *  own direction (see {@link CalloutStripeSide}). */
+export type CalloutLabelPosition = 'top-right' | 'top-left' | 'top-start' | 'top-end';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -1623,7 +1785,7 @@ export interface CalloutLabelConfig {
   /** Tab fill. Default: the main colour. */
   background?: ColorValue;
   /** Default `'top-right'`. */
-  position?: 'top-right' | 'top-left';
+  position?: CalloutLabelPosition;
   /** Tab height. Default `1.4em` of the label size. */
   height?: Dimension;
   /** Horizontal padding on each side of the text. Default `0.6em`. */
@@ -1714,7 +1876,8 @@ export interface CalloutBodyStyleConfig {
   /** Set the box's paragraphs and list items in small capitals (see
    *  `ParagraphStyleConfig.smallCaps`). Default `false`. */
   smallCaps?: boolean;
-  textAlign?: 'left' | 'justify';
+  /** `'start'` is `'left'` (see {@link TextAlignKeyword}). */
+  textAlign?: 'left' | 'justify' | 'start';
   /** Hyphenate when justified — and, when `bodyText.hyphenation.ragged` is
    *  on, when ragged too. Defaults to the body hyphenation setting. */
   hyphenation?: boolean;
@@ -1901,7 +2064,7 @@ export interface ResolvedCalloutStyleConfig {
     fontWeight: number;
     color: ColorValue;
     background: ColorValue;
-    position: 'top-right' | 'top-left';
+    position: CalloutLabelPosition;
     height: Dimension;
     paddingX: Dimension;
     offset: Dimension;
@@ -2136,6 +2299,10 @@ export interface ResolvedHeadingAdvancedDesignConfig {
   minHeight?: Dimension;
 }
 
+/** Where a heading's generated number stands (see
+ *  `HeadingLevelConfig.numberPosition`). */
+export type HeadingNumberPosition = 'before' | 'replace';
+
 export interface HeadingLevelConfig {
   level: number;
   fontSize?: Dimension;
@@ -2158,6 +2325,14 @@ export interface HeadingLevelConfig {
    *  Chinese sets U+3000 (`'　'`) or nothing (`''`). The contents keep
    *  their own number column (`toc.levels[].numberGap`). */
   numberSeparator?: string;
+  /** Where the generated number stands. `'before'` (default): before the
+   *  title, joined by `numberSeparator`. `'replace'`: the number is the
+   *  whole title, and the title written in the source is not printed: a
+   *  `# Night` under `الليلة {1:ordinal-feminine}` prints الليلة الثانية,
+   *  and its contents row, bookmark and running head read the same. Only
+   *  for numbered headings with a template (the level's, or their style's);
+   *  any other keeps its title. */
+  numberPosition?: HeadingNumberPosition;
   italic?: boolean;
   /** Tracking after every glyph of the heading (spaces and the numbering
    *  prefix included), as CSS `letter-spacing`: positive spreads the
@@ -2218,6 +2393,11 @@ export interface ResolvedHeadingLevelConfig {
   numberingTemplate: string;
   /** The level's own separator, else `' '`. */
   numberSeparator: string;
+  /** `'replace'` when the number stands for the title; absent for the
+   *  default `'before'` on a level. A heading style's overrides carry
+   *  `'before'` when the style sets it, to keep the title its level would
+   *  replace. */
+  numberPosition?: HeadingNumberPosition;
   italic: boolean;
   /** The level's own tracking, else `0`. */
   letterSpacing: Dimension;
@@ -2234,7 +2414,7 @@ export interface HeadingsConfig {
   fontFamily?: string;
   lineHeight?: Dimension;
   color?: ColorValue;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
@@ -2495,7 +2675,8 @@ export type OrderedListNumberFormat =
   | 'upper-alpha'
   | 'lower-roman'
   | 'upper-roman'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 export interface OrderedListLevelConfig {
   level: number;
@@ -2813,9 +2994,15 @@ export interface FolioLightingConfig {
  *  the view, the paper, the binding, the surface it lies on and the light.
  *  Canvas, PDF and HTML ignore it. */
 export interface FolioConfig {
-  /** How far the view is tilted from straight above, in degrees (0 … 40):
-   *  the foot of the pages comes closer. Default 22. */
+  /** How far the view is tilted from straight above, in degrees (0 … 70,
+   *  the lowest the reader can orbit it): the foot of the pages comes
+   *  closer. Default 22. */
   tilt?: number;
+  /** How far the view is turned round the book, in degrees (−180 … 180;
+   *  positive brings the eye round to the right of the book): 0 faces the
+   *  foot of the pages.
+   *  Default 0. */
+  yaw?: number;
   paper?: FolioPaperConfig;
   binding?: FolioBindingConfig;
   surface?: FolioSurfaceConfig;
@@ -2824,6 +3011,7 @@ export interface FolioConfig {
 
 export interface ResolvedFolioConfig {
   tilt: number;
+  yaw: number;
   paper: {
     type: FolioPaperType;
     grammage: number;
@@ -3084,6 +3272,18 @@ export interface FootnotesConfig {
   /** Size of an inline marker in the text, `em` of the text around it.
    *  Default `1em`. No effect on a superscript marker. */
   markerSize?: Dimension;
+  /** How a note's number is written, `{n}` standing for it in its number
+   *  format and the document's digits: `'({n})'` sets the parentheses of
+   *  Arabic books, «(١)» (#376). It writes the marker in the text and the
+   *  number that opens the note alike. Default `'{n}'`; a template
+   *  without `{n}` is read as the default. */
+  markerTemplate?: string;
+  /** Where the number that opens the note itself stands: raised
+   *  (`'superscript'`) or on the baseline at the note's size
+   *  (`'inline'`). Default `'auto'`: as the marker in the text
+   *  ({@link markerPosition}). Arabic books raise the marker in the text
+   *  and set the note's own «(١)» on the line. */
+  noteNumberPosition?: FootnoteMarkerPosition;
   /** `'chapterEnd'` placement: where the notes stand in the columns that
    *  close the chapter. `'foot'` sets them at the foot of the column, the
    *  room left over staying between the text and them (as notes at the
@@ -3099,7 +3299,7 @@ export interface FootnotesConfig {
   /** Note text colour. Defaults to the body colour. */
   color?: ColorValue;
   /** Alignment of the note text. Defaults to the body alignment. */
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Indent of the turnover lines of a note, so they align past its
    *  number. Default `0` (the lines run flush under the number). */
   hangingIndent?: Dimension;
@@ -3121,6 +3321,11 @@ export interface ResolvedFootnotesConfig {
   /** `'auto'` resolved against the number format. */
   markerPosition: 'superscript' | 'inline';
   markerSize: Dimension;
+  /** Set when it is not `'{n}'` (and holds `{n}`). */
+  markerTemplate?: string;
+  /** Set when it is not `'auto'`: the note's own number then stands so,
+   *  whatever {@link markerPosition} is. */
+  noteNumberPosition?: 'superscript' | 'inline';
   chapterEndAlign: 'foot' | 'text';
   fontSize: Dimension;
   lineHeight: Dimension;
@@ -3449,9 +3654,10 @@ export type PageRoleFilter = 'all' | PageRole;
 // ---------------------------------------------------------------------------
 
 export type HAlign = 'left' | 'center' | 'right';
-/** Alignment of a design text's lines: an {@link HAlign}, or `'justify'`
+/** Alignment of a design text's lines: an {@link HAlign}, `'justify'`, or
+ *  `'start'` / `'end'`, the sides its base direction reads from and to
  *  (see `DesignTextElement.align`). */
-export type DesignTextAlign = HAlign | 'justify';
+export type DesignTextAlign = HAlign | 'justify' | 'start' | 'end';
 export type VAlign = 'top' | 'middle' | 'bottom';
 
 export type AnchorEdge =
@@ -3566,8 +3772,24 @@ export interface DesignTextElement {
    *  but the last of each paragraph so it fills the box (the lines beside a
    *  drop cap fill the room beside it); with `hyphenate` a word that does not
    *  fit is also cut at a syllable to fill the line. A line with no space,
-   *  and a text that does not wrap, is set flush left. */
+   *  and a text that does not wrap, is set flush with the start (left for
+   *  left-to-right text). `'start'` and `'end'` follow the text's base
+   *  direction (`direction`): the right and the left of a right-to-left
+   *  text. `'left'` and `'right'` are the box's own sides; in a design laid
+   *  out in the flow of a right-to-left page (an opener, a heading design)
+   *  the flow is mirrored, so they are its start and end sides, as in the
+   *  body text. */
   align?: DesignTextAlign;
+  /** Base direction of the text (UAX #9 paragraph level): `'auto'` takes
+   *  it from the first strong letter of the resolved text, falling back to
+   *  the document's. Default: the document's direction
+   *  (`PostextConfig.direction`). Right-to-left runs (Arabic, Hebrew) are
+   *  ordered and painted right to left whatever the base; the base decides
+   *  where neutral characters go, the order of the runs on a line and the
+   *  sides `'start'` / `'end'` mean. A text with Arabic letters is never
+   *  tracked (`letterSpacing` is ignored), and its words are never cut
+   *  while wrapping or truncating. */
+  direction?: 'ltr' | 'rtl' | 'auto';
   /** Vertical alignment within the element's box. */
   verticalAlign?: VAlign;
   /** Leading of the element's lines. A number is a multiplier of
@@ -3842,7 +4064,7 @@ export interface PartsBodyStyleConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Bullet colour of unordered lists inside the part. */
   bulletColor?: ColorValue;
   /** Number colour of ordered lists inside the part (numbers are set bold). */
@@ -4050,7 +4272,9 @@ export interface TocEntryStyleConfig {
   indent?: Dimension;
   /** Width of the number column: the title starts after it plus
    *  `numberGap`; numbers are right-aligned in it, on the baseline of the
-   *  title's first line whatever their face and size. Default `2em`. */
+   *  title's first line whatever their face and size. A number wider than
+   *  this (`الفصل الحادي عشر`, `Chapter 12`) widens the column of its
+   *  level in that contents to the widest number. Default `2em`. */
   numberWidth?: Dimension;
   /** Gap between the number column and the title. Default `0.5em`. */
   numberGap?: Dimension;
@@ -4230,9 +4454,11 @@ export interface IndexConfig {
   turnoverIndent?: Dimension;
   /** Space above each main entry. Default `0`. */
   entrySpacing?: Dimension;
-  /** Between the term and its first page number. Default `', '`. */
+  /** Between the term and its first page number. Default `', '` (the
+   *  Arabic comma `'، '` in an index sorted in a language written in
+   *  Arabic script). */
   separator?: string;
-  /** Between two page numbers. Default `', '`. */
+  /** Between two page numbers. Default `', '` (`'، '` in Arabic script). */
   locatorSeparator?: string;
   /** Between the ends of a page range. Default `'–'` (en dash). */
   rangeSeparator?: string;
@@ -4247,7 +4473,8 @@ export interface IndexConfig {
    *  bold. */
   main?: { bold?: boolean; italic?: boolean };
   /** Cross-references. The labels default to `See` / `See also` (Spanish
-   *  `Véase` / `Véase también`), in italics. */
+   *  `Véase` / `Véase también`, Arabic `انظر` / `انظر أيضًا`), in italics
+   *  — upright in an Arabic-script index, whose fonts have no italics. */
   see?: { label?: string; alsoLabel?: string; italic?: boolean };
   /** Language whose alphabetical order sorts the entries (a BCP 47 tag).
    *  Default: the document language. */
@@ -4273,6 +4500,14 @@ export interface IndexConfig {
    *  Chinese collation data sets a pinyin or stroke index with no heads. */
   groupBy?: IndexGroupBy;
   groups?: IndexGroupsConfig;
+  /** Sort and group Arabic entries as if a leading article `ال` (`ٱل`)
+   *  were not there: البصرة files under ب, between بدر and بغداد, and
+   *  prints as written. The article is the definite `al-` only — `ابن`,
+   *  `أبو`, `وال`… are kept — and an entry with its own `sort` key is
+   *  sorted by that key as given. Default: `true` when the index sorts in
+   *  Arabic (`locale`, else the document language, is `ar` or `ar-…`),
+   *  else `false`. */
+  ignoreArticle?: boolean;
 }
 
 /** See {@link IndexConfig.groupBy}. */
@@ -4297,6 +4532,7 @@ export interface ResolvedIndexConfig {
   see: { label?: string; alsoLabel?: string; italic: boolean };
   locale?: string;
   groupBy: IndexGroupBy;
+  ignoreArticle: boolean;
   groups: {
     enabled: boolean;
     fontFamily: string;
@@ -4371,6 +4607,35 @@ export interface PostextConfig {
    *  bundled hyphenation languages; any other language gets the English
    *  ones. Defaults to `'en-us'`. */
   locale?: LocaleTag;
+
+  /** The base direction of the document's text. `'rtl'` sets paragraphs
+   *  right to left (Arabic, Hebrew, Persian, Urdu), `'ltr'` left to right;
+   *  `'auto'` (the default) takes it from the script of the document
+   *  language ({@link locale}, else the hyphenation locale): right to left
+   *  for a language written in Arabic, Hebrew, Syriac, Thaana, N'Ko, Adlam
+   *  or another right-to-left script (`directionOf`), else left to right.
+   *  A right-to-left document is bound on the right when `page.binding` is
+   *  `'auto'`. A block sets its own with `{dir=ltr}` / `{dir=rtl}` (a
+   *  heading, a `:::` container), a run of text with `:ltr[…]` /
+   *  `:rtl[…]`; inside a paragraph the order of mixed text follows the
+   *  Unicode Bidirectional Algorithm (`bidi.ts`). Any other value counts
+   *  as `'auto'` and is reported (`unknownConfigValue`). */
+  direction?: DocumentDirection;
+  /** The digits of every number the engine writes — page numbers (and the
+   *  page labels of the contents, the index and page references), ordered
+   *  list and footnote numbers, heading, chapter and resource counters, the
+   *  `{h1}` and `{n}` of a figure number, `{totalPages}`,
+   *  `{numberDecimal}`: `'latn'` 0–9, `'arab'` ٠–٩, `'arabext'` ۰–۹. Only
+   *  numbers in the decimal format change (`decimal`, the lists'
+   *  `arabic`, or no format at all); a format the author names —
+   *  `lower-roman`, `arabic-indic`, `persian` — prints as named, and the
+   *  author's own text is never rewritten. Default `'auto'`: the digits of
+   *  {@link locale} (`defaultNumeralsFor`) — `'arab'` for Arabic (`ar`,
+   *  `ar-EG`, `ar-SA`…) but `'latn'` in the Maghreb (`ar-MA`, `ar-DZ`,
+   *  `ar-TN`, `ar-LY`, `ar-MR`, `ar-EH`), `'arabext'` for Persian, Pashto
+   *  and the Urdu of India, `'latn'` for every other language; a tag that
+   *  names its digits (`ar-MA-u-nu-arab`) has them. */
+  numerals?: NumeralsSetting;
 
   debug?: DebugConfig;
 

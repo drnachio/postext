@@ -32,7 +32,9 @@ import { parseHashBundle, readViewHash, sameBook, writeViewHash, type ViewHash, 
  * opened for a fragment, whose chapter and page are applied to it. While
  * the canvas or the HTML preview shows the whole book, a switch changes no
  * document: the viewer keeps the fragment itself (it jumps to the chapter,
- * or stays where the reader clicked), so nothing is written here.
+ * or stays where the reader clicked), so nothing is written here. Under
+ * the PDF and EPUB tabs, which build the book as a file, a switch is
+ * written like any other, whatever the canvas scope.
  *
  * A preset's `lang=` names the edition it opens, not a tag to match
  * letter for letter: `lang=zh-TW` names the `zh-Hant` edition (and a
@@ -51,7 +53,10 @@ export function useChapterHashSync(): void {
   const bookVersion = useSandboxSelector((s) => s.bookVersion);
   const view = useSandboxSelector((s) => s.activeViewport);
   const book = useSandboxSelector(bookOnScreen, sameBookRecord);
-  const wholeBookOnScreen = useSandboxSelector((s) => s.activeViewport !== 'pdf' && s.canvasScope === 'book');
+  // The canvas, the folio and the HTML preview follow the canvas scope;
+  // the PDF tab has its own, and the EPUB tab always builds the whole book
+  // as a file — neither shows the book on screen page by page.
+  const wholeBookOnScreen = useSandboxSelector((s) => s.activeViewport !== 'pdf' && s.activeViewport !== 'epub' && s.canvasScope === 'book');
   const wholeBookRef = useRef(wholeBookOnScreen);
   wholeBookRef.current = wholeBookOnScreen;
   const bookRef = useRef(book);
@@ -150,7 +155,7 @@ export function useChapterHashSync(): void {
       // the seeding) keeps its chapter and page to itself.
       if (namesBookOnScreen(initial)) selectRef.current(initial.chapter, initial);
     }
-    // No viewer keeping the fragment (the PDF tab): name the chapter anyway.
+    // No viewer keeping the fragment (the PDF or EPUB tab): name the chapter anyway.
     if (readViewHash().chapter === null) {
       const chapter = chapters.findIndex((c) => c.id === activeChapterId);
       if (chapter >= 0) writeViewHash({ chapter, page: null });

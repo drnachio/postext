@@ -31,7 +31,7 @@ function ChapterShelf({
         <div className="relative px-5 pt-6 pb-5 sm:px-7 sm:pt-7 sm:pb-6">
           <span
             aria-hidden="true"
-            className="display pointer-events-none absolute -top-1 right-4 text-[5.5rem] leading-[0.85] select-none sm:right-7 sm:text-[7rem]"
+            className="display pointer-events-none absolute -top-1 end-4 text-[5.5rem] leading-[0.85] select-none sm:end-7 sm:text-[7rem]"
           >
             {chapter.number}
           </span>

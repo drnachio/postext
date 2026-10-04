@@ -35,6 +35,7 @@ import {
 import { SlotEditor } from './HeaderFooterSection/SlotEditor';
 import { PartsOrderedListsOverrides, PartsUnorderedListsOverrides } from './PartsListOverrides';
 import { breakParityOptions } from './HeadingsSection/breakParityOptions';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -123,7 +124,7 @@ export const PartsSection = memo(function PartsSection() {
   const mirror = parts.margins.mirror ?? false;
   const PARITY_OPTIONS = breakParityOptions(labels);
   const ALIGN_OPTIONS = [
-    { value: 'left', label: labels.bodyTextAlignLeft },
+    { value: 'left', label: flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight).left },
     { value: 'justify', label: labels.bodyTextAlignJustify },
     { value: 'center', label: labels.partsBodyTextAlignCenter },
   ];

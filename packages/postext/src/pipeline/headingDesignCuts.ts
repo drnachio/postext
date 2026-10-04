@@ -11,7 +11,7 @@
  * lists its results in the Checks panel.
  */
 
-import type { VDTBlock, VDTDesignSlot, VDTDocument } from '../vdt';
+import { pageIsVertical, type VDTBlock, type VDTDesignSlot, type VDTDocument } from '../vdt';
 
 /** A heading design laid out past the foot of what can print it. */
 export interface HeadingDesignCut {
@@ -76,7 +76,7 @@ export function collectHeadingDesignCuts(doc: VDTDocument): HeadingDesignCut[] {
     if (opener) {
       // The flow's foot: a vertical page's flow is as tall as the sheet is
       // wide (its foot is the sheet's left edge).
-      const over = textPast(page.openerBand!, (page.flow ? page.width : page.height) - trimOffset);
+      const over = textPast(page.openerBand!, (pageIsVertical(page) ? page.width : page.height) - trimOffset);
       if (over > 0.5) out.push(cutOf(opener, page.index, 'page', over));
     }
     for (const h of headings) {

@@ -15,7 +15,7 @@ import {
   NestedGroup,
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
-import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
+import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
 import { gridMarginsText, useCjkGrid } from './cjkGridReadout';
 
 const PAGE_SIZE_OPTIONS = [
@@ -163,6 +163,7 @@ export const PageSection = memo(function PageSection() {
     { value: 'lower-alpha', label: labels.pageNumberingFormatLowerAlpha },
     { value: 'upper-alpha', label: labels.pageNumberingFormatUpperAlpha },
     ...eastAsianNumberFormatOptions(labels),
+    ...arabicNumberFormatOptions(labels),
   ];
 
   const sizeReset = () => {

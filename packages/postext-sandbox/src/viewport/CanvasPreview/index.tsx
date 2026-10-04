@@ -12,7 +12,7 @@ import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { clearOverlay, drawOverlay } from './overlay';
 import { findResourceLocation } from './geometry';
 import type { BookPageMap } from '../usePageHashSync';
-import { ensureConfigFontsLoaded, getConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
+import { ensureConfigFontsLoaded, missingConfigFontSpecs, loadVerticalTwins, verticalTwinsSettled } from '../../controls/fontLoader';
 import { ensureResourceImages } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { layoutCacheKey } from '../../book/layoutKeys';
@@ -386,7 +386,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // the first build until faces are loaded. The worker loads its own copy
     // of the same fonts separately (see `useLayoutWorker`).
     if (typeof document !== 'undefined' && document.fonts) {
-      const missing = getConfigFontSpecs(deferredConfig).filter((s) => !document.fonts.check(s));
+      const missing = missingConfigFontSpecs(deferredConfig);
       if (missing.length > 0) {
         onGeneratingChangeRef.current?.(true);
         ensureConfigFontsLoaded(deferredConfig).then(() => {
@@ -941,10 +941,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
 
   // The scroller is a named region that takes the keyboard (arrow keys,
   // Page Up/Down, Home/End scroll it): the pages are bitmaps, so nothing
-  // inside it can take focus (WCAG 2.1.1).
+  // inside it can take focus (WCAG 2.1.1). Left to right whatever the
+  // interface's direction: the page geometry is physical, and a
+  // right-to-left book already lays its spreads out right to left.
   return (
     <div
       ref={containerRef}
+      dir="ltr"
       role="region"
       aria-label={regionLabel}
       tabIndex={0}

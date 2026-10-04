@@ -65,17 +65,21 @@ export const PdfToolbar = memo(function PdfToolbar({
           role="img"
           aria-label={labels.pdfDirty}
           title={labels.pdfDirty}
+          // Beside the toolbar, pointing at it: mirrored with the toolbar
+          // in a right-to-left interface (the bounce with it).
+          className="rtl:-scale-x-100"
           style={{
             position: 'absolute',
-            right: 'calc(100% + 6px)',
+            insetInlineEnd: 'calc(100% + 6px)',
             top: 6,
             color: 'var(--brand)',
             display: 'inline-flex',
-            animation: 'postext-dirty-bounce 1s ease-in-out infinite',
             pointerEvents: 'none',
           }}
         >
-          <ArrowRight size={18} aria-hidden="true" />
+          <span style={{ display: 'inline-flex', animation: 'postext-dirty-bounce 1s ease-in-out infinite' }}>
+            <ArrowRight size={18} aria-hidden="true" />
+          </span>
         </span>
       )}
       <ToolbarButton

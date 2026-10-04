@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { LOCALE_INFO, htmlLang, isSiteLocale } from "@/i18n/locales";
+import { LOCALE_INFO, htmlDir, htmlLang, isSiteLocale } from "@/i18n/locales";
 
 
 export function CompactLanguageSwitcher() {
@@ -63,7 +63,7 @@ export function CompactLanguageSwitcher() {
         style={{ touchAction: "manipulation" }}
       >
         {isSiteLocale(locale) ? (
-          <abbr title={LOCALE_INFO[locale].name} className="no-underline">{LOCALE_INFO[locale].code}</abbr>
+          <abbr lang={htmlLang(locale)} dir={htmlDir(locale)} title={LOCALE_INFO[locale].name} className="no-underline">{LOCALE_INFO[locale].code}</abbr>
         ) : locale.toUpperCase()}
       </button>
 
@@ -88,7 +88,7 @@ export function CompactLanguageSwitcher() {
                 aria-label={LOCALE_INFO[l].name}
                 className={`flex min-h-11 w-full min-w-11 items-center justify-center px-3 font-mono text-xs transition-colors hover:bg-surface hover:text-foreground ${l === locale ? "font-semibold text-brand" : "text-slate"}`}
               >
-                <abbr title={LOCALE_INFO[l].name} className="no-underline">{LOCALE_INFO[l].code}</abbr>
+                <abbr dir={htmlDir(l)} title={LOCALE_INFO[l].name} className="no-underline">{LOCALE_INFO[l].code}</abbr>
               </button>
             </li>
           ))}

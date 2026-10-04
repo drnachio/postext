@@ -3,6 +3,7 @@ import {
   generateOgImage,
   ogSize,
   ogContentType,
+  ogTextLocale,
 } from "@/lib/og-image";
 
 export const alt = "Cookie Policy — Postext";
@@ -15,8 +16,9 @@ export default async function OgImage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "CookiePolicy" });
-  const footer = await getTranslations({ locale, namespace: "Footer" });
+  const textLocale = ogTextLocale(locale);
+  const t = await getTranslations({ locale: textLocale, namespace: "CookiePolicy" });
+  const footer = await getTranslations({ locale: textLocale, namespace: "Footer" });
 
   return generateOgImage({
     title: t("title"),

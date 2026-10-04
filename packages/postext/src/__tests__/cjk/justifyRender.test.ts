@@ -95,7 +95,8 @@ describe('justified CJK lines reach the measure in every renderer', () => {
 
   it('in HTML: each tracked span carries its letter spacing and the line ends on the measure', () => {
     const html = renderToHtml(doc);
-    const lines = [...html.matchAll(/<div class="pt-line"[^>]*style="[^"]*left:([\d.]+)px;[^"]*">(.*?)<\/div>/g)];
+    // `s`: a paragraph's last line ends on the newline a copy takes (#403).
+    const lines = [...html.matchAll(/<div class="pt-line"[^>]*style="[^"]*left:([\d.]+)px;[^"]*">(.*?)<\/div>/gs)];
     const bodyLines = lines.filter((m) => block.lines.some((l) => m[2]!.includes(l.text.slice(0, 2))));
     expect(bodyLines.length).toBe(block.lines.length);
     bodyLines.forEach((m, li) => {

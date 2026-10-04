@@ -1,0 +1,68 @@
+---
+title: "Pòster científic en una sola pàgina"
+summary: "Pòster de congrés de 600 × 800 mm: una banda de títol sobre un requadre a tota l'amplada amb tres columnes de panells, un mapa de calor i una xifra de 150 pt."
+plain: "Un pòster gran per a un congrés científic, sobre els arbres del carrer i la calor. Ensenya a ordenar en columnes requadres de text i gràfics en una sola pàgina molt gran."
+description: "Pòster científic amb Postext: la banda de títol com a disseny de l'H1, tres columnes de requadres niats, mostres de color, xips i el pòster digital en PNG."
+question: "Com poso tres columnes de panells a l'amplada d'una pàgina a dues columnes, com en un pòster de congrés?"
+aliases: ["pòster científic", "cartell de congrés", "pòster de congrés", "pòster digital", "pòster A1", "tres columnes de panells", "retícula de pòster"]
+pageNotes: { "1": "A dalt, una banda verda porta el nom de la trobada, el títol Arbolado viario y calor en la acera en lletres blanques molt gruixudes, els autors amb les seves filiacions, una etiqueta P-47 i una marca rodona amb un arbre i un sol taronja. Sota el resum a dues columnes, sis panells formen tres columnes, cadascun sota un filet de color: Introducción i Métodos, amb un plànol del carrer; Resultados, amb filet taronja, −4,2 °C en xifres taronja molt grans, una llegenda de quatre colors, un mapa de calor de 16 illes de cases per hora i un gràfic de barres; Conclusiones, Plan de plantación i Referencias. Al peu corre una franja verd pàl·lid amb les paraules clau emmarcades en òvals." }
+---
+
+## Què compondràs
+
+Un pòster de congrés de 600 × 800 mm per a un estudi inventat sobre arbrat viari i calor a la vorera. Una banda verda porta el nom de la trobada, el títol en Bitter a 110 pt, els autors amb les seves filiacions i la marca del Departament de Geografia. Sota un resum a dues columnes, un requadre sense marc ocupa tota l'amplada i conté sis panells en tres columnes, cadascun sota un filet de 6 pt. La columna central comença amb −4,2 °C en taronja a 150 pt; segueixen un mapa de calor de l'aire per illa de cases i hora, amb la seva llegenda de mostres de color, i un gràfic de barres del paviment. Una franja tintada amb xips de paraules clau es recolza al marge inferior. El mateix fitxer compon l'edició anglesa, i el pen ofereix la pàgina com a PNG de 1701 × 2268 px.
+
+## Elaboració
+
+### 1 · Compon el plec a 72 ppp
+
+<Excerpt region="sheet" />
+
+A 300 ppp, el valor per defecte, el pòster talla cada línia al mateix lloc que a 72 ppp, però la pàgina fa 7087 × 9449 px, que un cop pintats ocupen 268 MB ([mides de pàgina predefinides](/ca/docs/configuration#mides-de-pàgina-predefinides)). A 72 ppp un punt és un píxel. El visor pinta les miniatures amb `renderPageToCanvas` i una `scale`, i `renderPage` genera el PNG de 1701 × 2268 px que demana la galeria en línia d'un congrés ([renderitzar una pàgina a un mapa de bits](/ca/docs/configuration#renderitzar-una-pàgina-a-un-bitmap)). L'interlineat reparteix en 56 línies els 750 mm que hi ha entre els marges, així que la franja de paraules clau, flotada al peu de la pàgina, acaba al marge inferior. Amb un interlineat rodó de 38 pt només hi caben 55 línies, i l'última queda 12,7 mm per sobre del marge; la franja ja no cap sota els panells i passa a una segona pàgina.
+
+### 2 · Dibuixa la banda del títol des de l'encapçalament
+
+<Excerpt region="band" />
+
+L'H1 porta com a atributs la trobada, el número del pòster, els autors i les filiacions, i el seu disseny els compon sobre un rectangle verd de 158 mm d'alt, ancorat a la pàgina ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El rectangle acaba 133 mm per sota del marge superior. Sense `minHeight`, el resum començaria a 0,9 mm del verd; un `minHeight` d'onze línies de la retícula de base el separa 14 mm. El text de disseny imprimeix text pla, així que les crides de filiació són els caràcters ¹ ² ³, les úniques xifres volades del rang Latin-1.
+
+### 3 · Nia els panells en un requadre a tota l'amplada
+
+<Excerpt region="answer" highlight="3-9,21" />
+
+El cos admet com a molt dues columnes, així que la retícula és un grup `:::columns{count=3}` dins d'un requadre, i `span="page"` estén aquest requadre sobre les dues columnes del cos, sota el resum ([`:::columns`](/ca/docs/document-format#columns)). Cada panell és un requadre niat en el grup: pren el seu propi estil, els 175 mm d'amplada de la columna i 18 mm de `marginTop` sota el panell de sobre ([el contenidor `:::callout`](/ca/docs/configuration#el-contenidor-callout)). `breaks="3,4"` porta el tercer panell, Resultados, al cap de la columna central, i el quart, Conclusiones, al de l'última. Sense això, el grup s'equilibra i talla pel panell més proper a cada terç de la pila. Amb aquest text els talls cauen en els mateixos dos panells; l'atribut els fixa per si el text canvia.
+
+### 4 · Deixa cada figura al seu panell
+
+<Excerpt region="figures" />
+
+Una figura amb posició `'here'` es queda al panell on la posa `::resource`; amb la col·locació per defecte, els tres dibuixos surten dels seus panells i el pòster passa a dues pàgines. `numberingTemplate: '{n}'` les numera 1, 2 i 3, mentre que el `{h1}.{n}` per defecte imprimeix Figura 1.1 sota un títol que és un H1 ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). La nota sota cada peu avisa que les dades són sintètiques.
+
+### 5 · Comparteix els colors del mapa de calor amb la seva llegenda
+
+<Excerpt region="palette" />
+
+Les cel·les del mapa de calor i les quatre mostres `:swatch{color="…"}` de la seva llegenda remeten a les mateixes entrades de la paleta, així que un valor nou per a `cool` canvia alhora el mapa i la llegenda ([format en línia](/ca/docs/document-format#format-en-línia)). La llegenda és un segon grup `:::columns`, amb dues entrades per columna, dins del panell de Resultados. Cada color porta a més el seu valor hexadecimal, que és el que la 1.4.1 pinta en el disseny de la banda.
+
+### 6 · Compon la xifra principal amb un estil de paràgraf
+
+<Excerpt region="type" />
+
+Els estils de paràgraf s'apliquen dins dels requadres, també als niats, així que −4,2 °C és un bloc `:::paragraphs{style="stat"}` en Bitter a 150 pt dins del panell de Resultados ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). A la 1.4.1 un estil de paràgraf no fixa el pes de la lletra, així que la xifra va en negreta i surt en Bitter 700. Un segon estil dona a les referències un sagnat francès de 9 mm. La franja de paraules clau és un requadre tintat amb `placement="bottom"`, que flota al peu de la pàgina sota la retícula.
+
+## Variants
+
+### Exporta el pòster digital a 150 ppp
+
+Si el congrés demana un fitxer més gran, surt un PNG de 3543 × 4724 px amb els mateixos talls de línia.
+
+```diff
+-  dpi: 72, backgroundColor: col('paper'),
++  dpi: 150, backgroundColor: col('paper'),
+```
+
+## Errors freqüents
+
+- Al canvas, Rethink Sans substitueix una xifra sola entre parèntesis, com el fascicle d'11(3), per la xifra en cercle, així que les referències donen només el volum i les pàgines.
+- A la 1.4.1 un requadre a tota l'amplada que tanca el document passa a una pàgina nova si no li queden a sota dues línies del cos. Per això la franja de paraules clau flota amb `placement="bottom"`, que l'assenta al marge inferior, dins dels 50 mm que queden sota la retícula.
+- A la 1.4.1 un paràgraf que segueix un grup `:::paragraphs` se'n separa només pel `spaceBetween` de l'estil, aquí 2,8 mm sota l'última referència. Un `:::space{lines=0.75}` abans de l'agraïment obre 10,8 mm, a prop dels 10,6 mm que separen els altres paràgrafs d'un panell.

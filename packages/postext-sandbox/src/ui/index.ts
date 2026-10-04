@@ -22,3 +22,4 @@ export { NumberField, type NumberFieldProps } from './number-field';
 export { ChoiceCards, type ChoiceCard } from './choice-cards';
 export { announce, SandboxAnnouncer } from './announcer';
 export { PortalProvider, PortalHost, usePortalContainer } from './portal';
+export { uiDirectionOf, useUiRtl } from './direction';

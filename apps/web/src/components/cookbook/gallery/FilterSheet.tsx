@@ -37,7 +37,7 @@ function Section({
   return (
     <details open={open} className="group/sec py-1">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md px-1 font-sans text-[0.9rem] font-semibold [&::-webkit-details-marker]:hidden">
-        <ChevronDownIcon aria-hidden="true" className="size-4 -rotate-90 text-slate transition-transform group-open/sec:rotate-0" />
+        <ChevronDownIcon aria-hidden="true" className="size-4 -rotate-90 text-slate transition-transform group-open/sec:rotate-0 rtl:rotate-90" />
         {title}
         {count ? <PickCount t={t} count={count} /> : null}
       </summary>
@@ -98,13 +98,13 @@ export function FilterSheet({
         closeLabel={t("close")}
         className="top-auto bottom-0 left-0 flex max-h-[88dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none rounded-t-xl p-0 sm:max-w-none data-open:slide-in-from-bottom-10"
       >
-        <div className="flex items-center gap-3 px-4 pt-4 pr-12 pb-2">
+        <div className="flex items-center gap-3 px-4 pt-4 pe-12 pb-2">
           <DialogTitle className="font-display text-xl font-semibold">{t("filters")}</DialogTitle>
           {picked > 0 && (
             <button
               type="button"
               onClick={() => clearFilters(locale)}
-              className="ml-auto min-h-10 rounded-md px-2 font-sans text-[0.8rem] font-semibold text-(--brand)"
+              className="ms-auto min-h-10 rounded-md px-2 font-sans text-[0.8rem] font-semibold text-(--brand)"
             >
               {t("clearAll")}
             </button>

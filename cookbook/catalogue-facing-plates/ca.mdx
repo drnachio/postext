@@ -1,0 +1,64 @@
+---
+title: "Fitxes de catàleg davant de les seves làmines"
+summary: "Cada fitxa obre pàgina parella i cita la làmina en començar el comentari; la làmina flota a la senar del davant amb 221 mm d'alçada i l'amplada proporcional."
+plain: "Un petit catàleg d'exposició amb tres gravats antics del Quixot. Cada fitxa va en una pàgina esquerra i la seva imatge ocupa sencera la pàgina dreta del davant."
+description: "Catàleg de gabinet compost amb Postext: tres gravats de Doré, cada fitxa en pàgina parella davant de la seva làmina i, al final, una llista d'obres il·lustrada."
+question: "Com componc cada fitxa de catàleg a la pàgina esquerra amb la seva làmina al davant, a la dreta?"
+aliases: ["catàleg d'art", "catàleg d'exposició", "làmina encarada", "pàgina del davant", "fitxa tècnica", "llista d'obres", "gravat en fusta", "xilografia", "art catalogue"]
+pageNotes: { "1": "La coberta: sobre un negre càlid, un filet daurat emmarca un detall quadrat del gravat dels molins, amb el cavaller i el seu cavall enganxats a l'aspa; a sota, DORÉ en grans majúscules color crema, el subtítol en cursiva Three plates for Don Quixote, 1863 i una línia de crèdit espaiada al peu.", "2": "La fitxa Cat. 1 en una pàgina parella: un 1 gran en sèpia al costat del títol en cursiva Don Quixote in His Library, un filet a tota l'amplada de la caixa de text, la fitxa tècnica a la columna exterior, una entradeta amb caplletra sèpia de tres línies i quatre paràgrafs justificats de comentari.", "3": "El gravat de la biblioteca omple la pàgina senar davant de la seva fitxa, centrat, amb el peu Cat. 1 i una línia de crèdit a sota.", "5": "La vetlla d'armes, a la llum de la lluna, ocupa la pàgina senar davant de la fitxa Cat. 2, amb el seu peu i la seva línia de crèdit.", "7": "L'aventura dels molins omple la pàgina senar davant de la fitxa Cat. 3, amb el seu peu i la seva línia de crèdit.", "8": "La llista d'obres: un 1–3 en sèpia al costat del títol Works in the Exhibition, una nota sobre l'edició de 1863, una taula amb la miniatura, el número, el títol, el capítol i la pàgina de cada làmina, i el colofó." }
+---
+
+## Què compondràs
+
+Un petit catàleg en anglès per a una exposició de gabinet: tres gravats en fusta del *Quixot* de Gustave Doré (París, 1863), en pàgina de 230 × 280 mm. La coberta compon DORÉ en Libre Bodoni de 88 pt sobre un negre càlid, sota un detall emmarcat de la làmina dels molins. Cada fitxa obre una pàgina parella amb un número de catàleg en sèpia al costat d'un títol en cursiva, la fitxa tècnica a la columna exterior, una entradeta amb caplletra de tres línies i el comentari. La primera frase del comentari cita la làmina, que obre la pàgina senar del davant, centrada i amb 221 mm d'alçada; làmina, peu i línia de crèdit omplen així la caixa de text. L'última pàgina és una llista d'obres amb una miniatura a la primera cel·la de cada fila i la pàgina on s'imprimeix cada làmina.
+
+## Elaboració
+
+### 1 · La làmina espera la pàgina del davant
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Cada fitxa salta a pàgina parella, i un flotant `top` no cau mai a la pàgina que el cita, així que la làmina citada a la primera frase del comentari se salta la parella i obre la senar del davant. Postext 1.4.1 no redueix un flotant perquè càpiga a l'espai que li queda a la seva pàgina, de manera que `plate()` calcula l'amplada del flotant a partir de la proporció de l'escaneig i de l'alçada que deixa la caixa de text un cop descomptats el peu i la línia de crèdit. `layout.fitFiguresToPage` reduiria una làmina massa alta per a la pàgina, però llavors la 1.4.1 enganxa la imatge reduïda a l'esquerra d'un flotant que continua ocupant tota l'amplada. Una fracció d'amplada estreny el mateix flotant, i `align: 'center'` centra la làmina juntament amb el seu peu.
+
+### 2 · El capçal de la fitxa surt del seu títol
+
+<Excerpt region="opener" />
+
+Cada títol `#` porta com a atributs el seu capítol, la seva fitxa tècnica i la seva entradeta, i l'obertura els col·loca. El número gran és el `{number}` del mateix títol, que dona `numberingTemplate: '{1}'`; com que cada fitxa té una sola làmina, coincideix amb el comptador `Cat.` de les làmines. A la 1.4.1 la caplletra només existeix al text de disseny, que no es pot justificar, així que l'entradeta és un atribut compost en bandera, a 13,5 pt, sobre el comentari justificat. `dropSize(3)` dona a la inicial el cos just perquè la seva part alta toqui les majúscules de la primera línia i el seu peu recolzi a la tercera línia de base. `minHeight` reserva lloc per a una entradeta de cinc línies, de manera que a Cat. 3, on l'entradeta n'ocupa quatre, el comentari comença a la mateixa línia que a les altres fitxes. `TITLE_Y` col·loca el títol 1,2 mm més avall que el número per alinear-ne les majúscules amb les xifres, que en Libre Bodoni mesuren 0,716 em davant dels 0,754 em de les majúscules.
+
+### 3 · Declara l'original i dibuixa'n una còpia més petita
+
+<Excerpt region="scans" />
+
+Postext mesura un mapa de bits pels píxels que declara, a la resolució del document, i no l'imprimeix mai més ample del que aquests píxels permeten. `plate()` declara l'original de cada làmina, l'escaneig de Commons reduït a 2400 px d'alçada: 1900 × 2400 px a Cat. 1, que a `page.dpi: 150` podria arribar a 322 mm. Per això mana la fracció d'amplada: la làmina fa 221 mm d'alçada, i a aquesta alçada 2400 px donen uns 275 ppp. Amb els 300 ppp per defecte, es quedaria en 161 mm d'amplada. El llenç dibuixa en aquesta caixa la imatge que estigui registrada, així que la recepta carrega d'`assets/` tres còpies de 835 px, 0,97 MB davant dels 5,8 MB dels originals. Si dibuixés els originals de 2400 px, els cels s'omplirien de bandes de moaré i les imatges de la captura pesarien uns 0,3 MB més, per sobre del límit d'1,4 MB del Receptari.
+
+### 4 · Una coberta des d'un estil de títol
+
+<Excerpt region="cover" />
+
+La coberta és el primer títol, `# Doré {style="cover" …}`, dibuixat per un estil sense folis. El seu element d'imatge dibuixa `windmills-detail-540.jpg`, un recurs registrat que cap paràgraf no cita i que, per tant, ni es numera ni porta peu. És un quadrat de 1100 px retallat de l'escaneig dels molins i reduït a 540 px, l'amplada que ocupa en una pàgina de 1000 px. La 1.4.1 mesura el text de disseny amb l'espaiat de 8 pt també darrere de l'última lletra, de manera que el nom centrat quedaria 4 pt a l'esquerra de l'eix de la pàgina; per això es desplaça a la dreta la meitat d'aquest espaiat.
+
+### 5 · Miniatures a les cel·les de la llista d'obres
+
+<Excerpt region="checklist" />
+
+La propietat `image` d'una cel·la ajusta un recurs de mapa de bits a l'amplada interior de la cel·la, aquí 23 mm. Cada miniatura és una còpia pròpia de 300 px, declarada amb aquesta mida, en lloc de la làmina de 835 px reduïda en dibuixar-la. La taula no té text de peu i el seu tipus deixa buit el prefix, així que no es dibuixa cap peu. L'estil de la llista només fixa `numbered: false` i el seu disseny; l'amplada de pàgina, el salt a pàgina parella i el marge inferior els pren del nivell 1.
+
+### 6 · Atura la maquetació si una fitxa no hi cap
+
+<Excerpt region="check" />
+
+Una fitxa que es passa de la seva pàgina parella continua enviant la làmina a la pàgina següent. La resta del comentari va darrere de la làmina, i una pàgina en blanc torna la fitxa següent a una parella, de manera que cada làmina posterior s'imprimeix dues pàgines després de la que indica la llista d'obres. La comprovació atura la maquetació a la primera pàgina sense làmina que no sigui una obertura i en mostra el número a la barra del visor.
+
+## Variants
+
+### Deixa aire sota les làmines
+
+Amb una alçada fixa, totes les làmines fan 190 mm, centrades, amb uns 31 mm de caixa de text buida sota la línia de crèdit.
+
+```diff
+-const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
++const PLATE_H = 190; // mm: the same height for every plate, with air below
+```
+
+### Posa figures a la columna exterior
+
+Per a figures i glosses que s'apilen en una columna exterior reservada a flotants, al costat del paràgraf que les cita, mira <RecipeLink slug="textbook-margin-column">el llibre de text amb columna al marge</RecipeLink>.

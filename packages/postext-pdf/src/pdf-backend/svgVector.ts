@@ -16,8 +16,12 @@
  * dash patterns, `display` / `visibility`, the same properties inside a
  * `style` attribute, and — when the caller supplies a {@link VectorFontResolver}
  * — `text` / `tspan` runs (`x`, `y`, single `dx` / `dy`, `font-family`,
- * `font-size`, `font-weight`, `font-style`, `text-anchor`), which are set as
- * real, selectable text in the document's embedded fonts.
+ * `font-size`, `font-weight`, `font-style`, `text-anchor`, `direction`),
+ * which are set as real, selectable text in the document's embedded fonts.
+ * Text in a right-to-left or joining script (Arabic) is shaped by HarfBuzz
+ * in its bidi runs (`shapedText.ts`), on the `direction` the browser lays
+ * it out with (left to right unless the SVG says otherwise); with HarfBuzz
+ * not loaded such text bails out to the raster embed.
  *
  * Anything else — images, gradients, patterns, masks, filters, markers,
  * symbols, nested `svg`, style sheets, `objectBoundingBox` clips, text on a
@@ -75,6 +79,8 @@ import {
   stroke,
 } from 'pdf-lib';
 import { type PageCtx, colorFromHex, textShows } from './primitives';
+import { shapedSvgText } from './shapedText';
+import { complexShaperReady, needsComplexShaping } from '../complexShaping';
 
 // ---------------------------------------------------------------- IR types
 
@@ -142,6 +148,9 @@ export interface VectorTextRun {
   /** Local → root transform. */
   matrix: VectorMatrix;
   fill: VectorPaint;
+  /** The paragraph direction of a run shaped by HarfBuzz (its `direction`
+   *  property); absent for text fontkit sets. */
+  base?: 'ltr' | 'rtl';
 }
 
 export interface VectorText {
@@ -844,6 +853,9 @@ interface Style {
   fontWeight: number;
   italic: boolean;
   textAnchor: 'start' | 'middle' | 'end';
+  /** CSS `direction`: the base direction of text, and which end
+   *  `text-anchor: start` names. */
+  direction: 'ltr' | 'rtl';
 }
 
 const ROOT_STYLE: Style = {
@@ -867,6 +879,7 @@ const ROOT_STYLE: Style = {
   fontWeight: 400,
   italic: false,
   textAnchor: 'start',
+  direction: 'ltr',
 };
 
 /** Presentation properties honoured from attributes and `style`. */
@@ -874,7 +887,7 @@ const STYLE_PROPS = new Set([
   'fill', 'fill-opacity', 'fill-rule', 'stroke', 'stroke-opacity', 'stroke-width', 'stroke-linecap',
   'stroke-linejoin', 'stroke-miterlimit', 'stroke-dasharray', 'stroke-dashoffset', 'opacity', 'color',
   'visibility', 'display', 'clip-path', 'clip-rule',
-  'font-family', 'font-size', 'font-weight', 'font-style', 'text-anchor',
+  'font-family', 'font-size', 'font-weight', 'font-style', 'text-anchor', 'direction',
   // Text properties that change glyph placement: accepted only at their defaults.
   'letter-spacing', 'word-spacing', 'writing-mode', 'text-decoration',
 ]);
@@ -885,7 +898,7 @@ const IGNORED_STYLE_PROPS = new Set([
   'font-variant', 'font-stretch', 'font-size-adjust',
   'font-feature-settings', 'font-variant-ligatures', 'font-variant-caps', 'font-variant-numeric',
   'font-variant-east-asian', 'line-height', 'text-align',
-  'text-rendering', 'direction', 'unicode-bidi', 'dominant-baseline',
+  'text-rendering', 'unicode-bidi', 'dominant-baseline',
   'baseline-shift', 'kerning', 'glyph-orientation-vertical', 'glyph-orientation-horizontal', 'white-space',
   'inline-size', 'shape-padding', 'shape-margin', 'shape-rendering', 'color-rendering', 'image-rendering',
   'color-interpolation', 'color-interpolation-filters', 'overflow', 'paint-order', 'vector-effect',
@@ -1003,6 +1016,8 @@ function cascade(parent: Style, attrs: Record<string, string>): Style {
     const v = anchor.trim();
     next.textAnchor = v === 'middle' ? 'middle' : v === 'end' ? 'end' : 'start';
   }
+  const direction = get('direction');
+  if (direction !== undefined && direction.trim() !== 'inherit') next.direction = direction.trim() === 'rtl' ? 'rtl' : 'ltr';
   for (const name of ['letter-spacing', 'word-spacing'] as const) {
     const v = get(name);
     if (v !== undefined && v.trim() !== 'normal' && parseLength(v, 0) !== 0) unsupported(name);
@@ -1064,6 +1079,7 @@ function collapseWhitespace(raw: string): string {
 interface TextChunk {
   runs: VectorTextRun[];
   anchor: 'start' | 'middle' | 'end';
+  direction: 'ltr' | 'rtl';
   /** Local → root transform of the run that opened the chunk. */
   matrix: Matrix;
 }
@@ -1079,6 +1095,8 @@ function layoutText(w: Walker, el: XmlEl, m: Matrix, style: Style, clips: Vector
   let chunk: TextChunk | null = null;
   let pendingSpace = false;
   let started = false;
+  // Each run's advance, as it was laid out.
+  const widths = new Map<VectorTextRun, number>();
 
   const visit = (node: XmlEl, nm: Matrix, ns: Style, isRoot: boolean): void => {
     for (const a of TEXT_UNSUPPORTED_ATTRS) if (node.attrs[a] !== undefined) unsupported(a);
@@ -1091,7 +1109,7 @@ function layoutText(w: Walker, el: XmlEl, m: Matrix, style: Style, clips: Vector
     if (y !== undefined) pen = { ...pen, y };
     pen = { x: pen.x + dx, y: pen.y + dy };
     if (isRoot || x !== undefined || y !== undefined) {
-      chunk = { runs: [], anchor: ns.textAnchor, matrix: nm };
+      chunk = { runs: [], anchor: ns.textAnchor, direction: ns.direction, matrix: nm };
       chunks.push(chunk);
     }
     for (const c of node.content) {
@@ -1112,12 +1130,20 @@ function layoutText(w: Walker, el: XmlEl, m: Matrix, style: Style, clips: Vector
         const fillPaint = ns.fill === 'none' ? null : ns.fill === 'currentColor' ? ns.color : ns.fill;
         const alpha = fillPaint ? fillPaint.alpha * ns.fillOpacity * ns.opacity : 0;
         if (ns.stroke !== 'none') unsupported('stroked text');
-        const width = font!.widthOf(text, ns.fontSize);
+        // Right-to-left and joining scripts are shaped by HarfBuzz, and
+        // measured by it; without it they go to the raster embed.
+        const complex = needsComplexShaping(text);
+        if (complex && !complexShaperReady()) unsupported('complex-script text (HarfBuzz not loaded)');
+        const shaped = complex && font!.pdfFont ? shapedSvgText(font!.pdfFont, text, ns.fontSize, ns.direction) : null;
+        const width = shaped ? shaped.advance : font!.widthOf(text, ns.fontSize);
         if (fillPaint && alpha > 0 && ns.visible) {
-          chunk!.runs.push({
+          const run: VectorTextRun = {
             text, font: font!, size: ns.fontSize, x: pen.x, y: pen.y, matrix: nm,
             fill: { hex: fillPaint.hex, alpha },
-          });
+            ...(complex ? { base: ns.direction } : {}),
+          };
+          chunk!.runs.push(run);
+          widths.set(run, width);
         }
         pen = { x: pen.x + width, y: pen.y };
         continue;
@@ -1135,14 +1161,16 @@ function layoutText(w: Walker, el: XmlEl, m: Matrix, style: Style, clips: Vector
   const runs: VectorTextRun[] = [];
   for (const ch of chunks) {
     if (ch.runs.length === 0) continue;
-    let shift = 0;
-    if (ch.anchor !== 'start') {
-      const first = ch.runs[0]!;
-      const last = ch.runs[ch.runs.length - 1]!;
-      const width = last.x + last.font.widthOf(last.text, last.size) - first.x;
-      shift = ch.anchor === 'middle' ? -width / 2 : -width;
-    }
-    for (const r of ch.runs) runs.push(shift === 0 ? r : { ...r, x: r.x + shift });
+    const first = ch.runs[0]!;
+    const last = ch.runs[ch.runs.length - 1]!;
+    const width = last.x + (widths.get(last) ?? 0) - first.x;
+    // A right-to-left chunk runs leftwards from its start: its `tspan`s
+    // take their places from the right, and `start` names its right end.
+    const rtl = ch.direction === 'rtl';
+    const placed = rtl ? ch.runs.map((r) => ({ ...r, x: first.x + width - (r.x - first.x) - (widths.get(r) ?? 0) })) : ch.runs;
+    const anchor = rtl ? (ch.anchor === 'start' ? 'end' : ch.anchor === 'end' ? 'start' : 'middle') : ch.anchor;
+    const shift = anchor === 'middle' ? -width / 2 : anchor === 'end' ? -width : 0;
+    for (const r of placed) runs.push(shift === 0 ? r : { ...r, x: r.x + shift });
   }
   if (runs.length > 0) w.shapes.push({ kind: 'text', runs, clips });
 }
@@ -1516,8 +1544,9 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
         // Text matrix: local → root, then undo the root y-flip so glyphs
         // stand upright, with the pen at the run's baseline start.
         const [a, b, c, d, e, f] = mul(run.matrix, [1, 0, 0, -1, run.x, run.y]);
-        // A face of several files switches font per stretch of characters.
-        const shows = textShows(font, run.text);
+        // A face of several files switches font per stretch of characters;
+        // right-to-left and joining scripts are shaped by HarfBuzz.
+        const shows = (run.base !== undefined ? shapedSvgText(font, run.text, run.size, run.base)?.shows : undefined) ?? textShows(font, run.text);
         const body: PDFOperator[] = [];
         let current = shows[0]!.font;
         for (const show of shows) {

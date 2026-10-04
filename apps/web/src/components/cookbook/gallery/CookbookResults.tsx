@@ -119,7 +119,7 @@ export function CookbookResults({ locale, parts }: { locale: Locale; parts: Resu
               type="button"
               onClick={() => thenFocus({ chip: i }, () => removeSelection(locale, chip.key, chip.id))}
               aria-label={t("removeFilter", { label: chip.text })}
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface pr-2.5 pl-3 font-sans text-[0.78rem] font-medium transition-colors hover:bg-surface-2 sm:h-10 sm:pr-2"
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface pe-2.5 ps-3 font-sans text-[0.78rem] font-medium transition-colors hover:bg-surface-2 sm:h-10 sm:pe-2"
             >
               {chip.text}
               <XIcon aria-hidden="true" className="size-3.5 text-slate" />
@@ -128,7 +128,7 @@ export function CookbookResults({ locale, parts }: { locale: Locale; parts: Resu
           <button
             type="button"
             onClick={() => thenFocus("search", () => clearFilters(locale))}
-            className="ml-1 min-h-11 rounded-md px-2 font-sans text-[0.78rem] font-semibold text-(--brand) hover:underline sm:min-h-10"
+            className="ms-1 min-h-11 rounded-md px-2 font-sans text-[0.78rem] font-semibold text-(--brand) hover:underline sm:min-h-10"
           >
             {t("clearAll")}
           </button>
@@ -269,7 +269,7 @@ function GapCallout({ gap, t, bySlug }: { gap: GapEntry; t: Translate; bySlug: M
   return (
     <aside
       aria-label={`${t("gapKicker")}: ${gap.label}`}
-      className="part-vermilion mt-6 max-w-4xl rounded-r-md border-l-4 border-(--part) bg-(--callout-bg) px-5 py-4"
+      className="part-vermilion mt-6 max-w-4xl rounded-e-md border-s-4 border-(--part) bg-(--callout-bg) px-5 py-4"
     >
       <p className="kicker text-(--part-ink)">
         {t("gapKicker")} · {gap.label}
@@ -297,7 +297,7 @@ function GapCallout({ gap, t, bySlug }: { gap: GapEntry; t: Translate; bySlug: M
               rel="noopener noreferrer"
               className="font-semibold text-(--part-ink) underline underline-offset-4"
             >
-              {t("askRecipe")} ↗
+              {t("askRecipe")} <span className="inline-block rtl:-scale-x-100">↗</span>
               <NewTabNote />
             </a>
           </>
@@ -335,7 +335,7 @@ function EmptyState({
           <CropMarks offset={6} length={14} />
           <span className="cb-blank-folio">—</span>
         </div>
-        <div className="min-w-0 flex-1 text-center sm:pt-2 sm:text-left">
+        <div className="min-w-0 flex-1 text-center sm:pt-2 sm:text-start">
           <p className="font-display text-[1.7rem] leading-tight font-semibold">{t("emptyTitle")}</p>
           <p className="mt-1.5 font-body text-[1.05rem] text-slate italic">
             {queryMiss ? t("emptyQuery", { q }) : t("emptyFilters")}
@@ -353,7 +353,7 @@ function EmptyState({
                     className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface px-3 font-sans text-[0.78rem] font-medium transition-colors hover:bg-surface-2"
                   >
                     {t("removeFilter", { label: selectionLabel(r.key, r.id, facets) })}
-                    <span aria-hidden="true">→</span>
+                    <span aria-hidden="true" className="inline-block rtl:-scale-x-100">→</span>
                     <span className="text-slate">{t("chapterCount", { count: r.count })}</span>
                   </button>
                 ))}
@@ -373,7 +373,7 @@ function EmptyState({
               rel="noopener noreferrer"
               className={`${BUTTON} bg-surface hover:bg-surface-2`}
             >
-              {t("askRecipe")} <span aria-hidden="true">↗</span>
+              {t("askRecipe")} <span aria-hidden="true" className="inline-block rtl:-scale-x-100">↗</span>
               <NewTabNote />
             </a>
             <button

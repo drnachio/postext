@@ -105,7 +105,7 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
                 <div style={{ color: 'var(--slate)', marginBottom: 4 }}>
                   {labels.colorPaletteDeleteInUse}
                 </div>
-                <ul style={{ margin: 0, paddingLeft: 16, marginBottom: 6 }}>
+                <ul style={{ margin: 0, paddingInlineStart: 16, marginBottom: 6 }}>
                   {usages.map((u, i) => (
                     <li key={i} style={{ fontSize: 11, lineHeight: '15px' }}>
                       {u}
@@ -125,6 +125,7 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
           <div className="mb-2 flex items-center gap-1">
             {isEditing ? (
               <input
+                dir="auto"
                 type="text"
                 autoFocus
                 value={draftName}

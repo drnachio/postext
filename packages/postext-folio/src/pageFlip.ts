@@ -931,9 +931,9 @@ export class PageFlipper {
   private surfaceKey = "";
   private raycaster = new Raycaster();
   /** The reader's own view (right-drag): turned round the book by `yaw`,
-   *  tilted by `pitch` (radians from straight above; null: the setting's
-   *  tilt). */
-  private orbit: { yaw: number; pitch: number | null } = { yaw: 0, pitch: null };
+   *  tilted by `pitch` (radians from straight above); null: the
+   *  settings' `yaw` and `tilt`. */
+  private orbit: { yaw: number | null; pitch: number | null } = { yaw: null, pitch: null };
   private paper: [number, number, number] = [1, 1, 1];
 
   constructor(
@@ -1034,6 +1034,14 @@ export class PageFlipper {
     this.appearance = appearance;
     this.resolved = resolveFolioConfig(withStockForExtent(appearance.folio, this.pageCount(appearance)));
     this.bookSpec = paperSpec(this.resolved.paper);
+    // The settings now give the view the reader orbited to (it was just
+    // saved as the book's): they drive it again, so editing them moves it.
+    const { yaw, pitch } = this.orbit;
+    if (yaw !== null && pitch !== null && !this.orbitFrame) {
+      const home = this.home();
+      const near = (Math.PI / 180) * 0.6;
+      if (Math.abs(Math.atan2(Math.sin(yaw - home.yaw), Math.cos(yaw - home.yaw))) < near && Math.abs(pitch - home.pitch) < near) this.orbit = { yaw: null, pitch: null };
+    }
     const specs = new Map<string, PaperSpec>();
     this.leafSpecs = (appearance.leafPapers ?? []).map((own) => {
       if (!own) return this.bookSpec;
@@ -1547,8 +1555,9 @@ export class PageFlipper {
     }
     // The camera, tilted about the book's horizontal axis and turned round
     // it as the reader has orbited it.
-    const tilt = this.orbit.pitch ?? (this.resolved.tilt * Math.PI) / 180;
-    const yaw = this.orbit.yaw;
+    const home = this.home();
+    const tilt = this.orbit.pitch ?? home.pitch;
+    const yaw = this.orbit.yaw ?? home.yaw;
     const sq = BINDINGS[this.resolved.binding.type].squareMm * k;
     const zTop = Math.max(this.topZ("left"), this.topZ("right"));
     const corners: Vector3[] = [];
@@ -1620,14 +1629,31 @@ export class PageFlipper {
     return p ? along(p, this.W / 2)[1] : 0;
   }
 
+  /** The view the settings give: `tilt` and `yaw` in radians. */
+  private home() {
+    return { yaw: (this.resolved.yaw * Math.PI) / 180, pitch: (this.resolved.tilt * Math.PI) / 180 };
+  }
+
+  /** The view as it is seen now (orbited or the settings'), in degrees:
+   *  `tilt` from straight above, `yaw` round the book (−180 … 180). */
+  view(): { tilt: number; yaw: number } {
+    const home = this.home();
+    const yaw = this.orbit.yaw ?? home.yaw;
+    const pitch = this.orbit.pitch ?? home.pitch;
+    // Whole degrees: what the settings' fields step by.
+    const deg = (rad: number) => Math.round((rad * 180) / Math.PI) + 0;
+    return { tilt: deg(pitch), yaw: deg(Math.atan2(Math.sin(yaw), Math.cos(yaw))) };
+  }
+
   /** Turns the view round the book (`dx`, px of a drag) and tilts it
    *  (`dy`), never below a low angle over the table. */
   orbitBy(dx: number, dy: number) {
     cancelAnimationFrame(this.orbitFrame);
     this.orbitFrame = 0;
-    const pitch = this.orbit.pitch ?? (this.resolved.tilt * Math.PI) / 180;
+    const home = this.home();
+    const pitch = this.orbit.pitch ?? home.pitch;
     this.orbit = {
-      yaw: this.orbit.yaw - dx * 0.006,
+      yaw: (this.orbit.yaw ?? home.yaw) - dx * 0.006,
       pitch: Math.min(MAX_PITCH, Math.max(0, pitch - dy * 0.006)),
     };
     // Pages in the air (a run of them still turning): the camera moves at
@@ -1640,22 +1666,25 @@ export class PageFlipper {
    *  of the view). */
   resetOrbit() {
     cancelAnimationFrame(this.orbitFrame);
-    const home = (this.resolved.tilt * Math.PI) / 180;
+    const home = this.home();
     // The shorter way round.
-    const yaw0 = Math.atan2(Math.sin(this.orbit.yaw), Math.cos(this.orbit.yaw));
-    const pitch0 = this.orbit.pitch ?? home;
-    if (Math.abs(yaw0) < 1e-3 && Math.abs(pitch0 - home) < 1e-3) {
-      this.orbit = { yaw: 0, pitch: null };
+    const dyaw0 = this.orbit.yaw === null ? 0 : Math.atan2(Math.sin(this.orbit.yaw - home.yaw), Math.cos(this.orbit.yaw - home.yaw));
+    const pitch0 = this.orbit.pitch ?? home.pitch;
+    if (Math.abs(dyaw0) < 1e-3 && Math.abs(pitch0 - home.pitch) < 1e-3) {
+      this.orbit = { yaw: null, pitch: null };
       return this.redraw();
     }
     const start = performance.now();
-    const duration = 450 + 250 * Math.min(1, Math.hypot(yaw0, pitch0 - home));
+    const duration = 450 + 250 * Math.min(1, Math.hypot(dyaw0, pitch0 - home.pitch));
     const step = (now: number) => {
       this.orbitFrame = 0;
       if (this.disposed) return;
       const t = Math.min(1, (now - start) / duration);
       const e = ease(t);
-      this.orbit = t < 1 ? { yaw: yaw0 * (1 - e), pitch: pitch0 + (home - pitch0) * e } : { yaw: 0, pitch: null };
+      // Eased towards the home the settings give now (they may change
+      // on the way).
+      const to = this.home();
+      this.orbit = t < 1 ? { yaw: to.yaw + dyaw0 * (1 - e), pitch: pitch0 + (to.pitch - pitch0) * e } : { yaw: null, pitch: null };
       this.layout();
       // Leaves in the air draw in their own frames.
       if (!this.raf && !this.starting) this.draw();

@@ -2,7 +2,7 @@ import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types';
 import type { BookContent } from '../book/types';
-import type { PanelId } from '../types/props';
+import type { EpubLayout, PanelId } from '../types/props';
 import { PROJECT_RECORD_VERSION, migrateConfig, normalizeBookContent, type MigrationDeps } from './projectMigration';
 
 const CONFIG_KEY = 'postext-sandbox-config';
@@ -29,6 +29,7 @@ const CANVAS_FIT_MODE_KEY = 'postext-sandbox-canvas-fit-mode';
 const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
+const EPUB_LAYOUT_KEY = 'postext-sandbox-epub-layout';
 const SETTINGS_GROUP_KEY = 'postext-sandbox-settings-group';
 const SETTINGS_HELP_MODE_KEY = 'postext-sandbox-settings-help';
 const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
@@ -402,6 +403,18 @@ export function loadHtmlColumnMode(): string | null {
   return getStorage()?.getItem(HTML_COLUMN_MODE_KEY) ?? null;
 }
 
+/** The EPUB tab's rendition: a fixed layout or a reflowable book. */
+export function saveEpubLayout(layout: EpubLayout): void {
+  getStorage()?.setItem(EPUB_LAYOUT_KEY, layout);
+}
+
+/** The EPUB rendition last picked, or null when none (or nothing known) is
+ *  stored. */
+export function loadEpubLayout(): EpubLayout | null {
+  const raw = getStorage()?.getItem(EPUB_LAYOUT_KEY);
+  return raw === 'fixed' || raw === 'reflowable' ? raw : null;
+}
+
 export function saveToolbarPinned(id: string, pinned: boolean): void {
   getStorage()?.setItem(TOOLBAR_PINNED_PREFIX + id, pinned ? 'true' : 'false');
 }
@@ -434,6 +447,7 @@ export function clearStorage(): void {
   storage?.removeItem(CANVAS_ZOOM_KEY);
   storage?.removeItem(HTML_FONT_SCALE_KEY);
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
+  storage?.removeItem(EPUB_LAYOUT_KEY);
   storage?.removeItem(SETTINGS_GROUP_KEY);
   storage?.removeItem(SETTINGS_HELP_MODE_KEY);
   storage?.removeItem(HIDDEN_PRESETS_KEY);

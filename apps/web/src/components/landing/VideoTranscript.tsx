@@ -20,22 +20,26 @@ export async function VideoTranscript({
   const t = await getTranslations("Transcript");
   const lang: TranscriptLocale = locale.startsWith("es")
     ? "es"
-    : locale.startsWith("zh")
+    : locale.startsWith("ca")
+      ? "ca"
+      : locale.startsWith("zh")
       ? "zh"
-      : "en";
+      : locale.startsWith("ar")
+        ? "ar"
+        : "en";
   const blocks = TRANSCRIPTS[video][lang];
   if (!blocks?.length) return null;
 
   return (
     <details
-      className="group/transcript mt-4 rounded-sm border border-rule bg-surface text-left [hyphens:manual]"
+      className="group/transcript mt-4 rounded-sm border border-rule bg-surface text-start [hyphens:manual]"
       lang={htmlLang(lang)}
     >
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm px-4 py-2 font-sans text-sm font-semibold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
         <svg
           aria-hidden="true"
           viewBox="0 0 24 24"
-          className="size-4 shrink-0 transition-transform group-open/transcript:rotate-90"
+          className="size-4 shrink-0 transition-transform group-open/transcript:rotate-90 rtl:-scale-x-100 rtl:group-open/transcript:-rotate-90"
           fill="none"
           stroke="currentColor"
           strokeWidth="2.25"
@@ -63,7 +67,7 @@ export async function VideoTranscript({
                 <div className="space-y-1.5 font-body text-base leading-relaxed text-foreground">
                   {block.scene && (
                     <p>
-                      <span className="kicker mr-2 text-[0.7rem] text-slate">
+                      <span className="kicker me-2 text-[0.7rem] text-slate">
                         {t("onScreen")}
                       </span>
                       <span className="italic">{block.scene}</span>
@@ -71,7 +75,7 @@ export async function VideoTranscript({
                   )}
                   {block.narration && (
                     <p>
-                      <span className="kicker mr-2 text-[0.7rem] text-slate">
+                      <span className="kicker me-2 text-[0.7rem] text-slate">
                         {t("narration")}
                       </span>
                       {block.narration}

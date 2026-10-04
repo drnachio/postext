@@ -1,0 +1,80 @@
+---
+title: "Una pàgina de diari vertical, en pisos"
+summary: "Dos fulls d'un diari xinès de 1912 en vertical: el text en dos pisos amb un filet entre ells, els telegrames en tres i el titular a tota l'alçada de tots dos."
+plain: "Dues pàgines d'un diari xinès de 1912, escrit en columnes que es llegeixen de dalt a baix. La pàgina es divideix en franges apilades, separades per una línia, com a la premsa d'aleshores."
+description: "Un diari xinès vertical a Postext: dos pisos (欄) de 25 caràcters amb filet, capçalera del diari i titular en un sol disseny, i els telegrames en tres pisos."
+question: "Com componc una pàgina de diari xinès en vertical, en pisos separats per filets?"
+aliases: ["欄", "栏", "pisos", "diari vertical", "diari xinès", "Shenbao", "申報", "capçalera del diari", "titular a tota pàgina", "data", "telegrames", "1912"]
+pageNotes: { "1": "El primer full: un bloc vermelló baixa per la vora dreta amb la capçalera del diari 民元舊聞 calada en lletra Kai i, a sota, la línia del número, 中華民國元年　歲次壬子 i 今日出紙兩張; al costat, el titular 西湖公宴孫中山紀事 en Song molt negra, centrat a tota l'alçada de la pàgina, i el seu sumari; després, la crònica en dos pisos amb un filet negre entre ells, i la notícia següent, 浙都督追祭攻寧陣亡將士, que obre al pis de baix després d'un filet fi, amb el seu sumari i la seva data.", "2": "El segon full: una capçalera horitzontal amb el nom del diari i 第二張; la crònica de les honres acaba al pis de dalt i la del monument ocupa la resta, amb la inscripció en Kai dos caràcters més avall; a l'esquerra, els telegrames en un requadre de tres pisos sota un 電報 vermelló; el colofó al peu." }
+---
+
+## Què compondràs
+
+Dos fulls d'un diari xinès tal com es componia el 1912, el primer any de la República, quan la premsa encara es llegia de dalt a baix. Els textos són del *Shenbao* de Xangai: el banquet a Sun Yat-sen al Llac de l'Oest, on Chen Qimei es va aixecar per protestar per un discurs i es va tornar a aixecar per disculpar-se; les honres als soldats de Zhejiang morts en la presa de Nanquín; el monument amb què Hangzhou va rebre l'exèrcit en tornar. Quatre telegrames del primer número del butlletí del Govern Provisional omplen un requadre. El text va en dos pisos (欄) de 25 caràcters amb un filet entre ells, i els telegrames en tres. Una capçalera del diari en vermelló i el titular principal, a tota l'alçada de la pàgina, obren el primer full. <RecipeLink slug="newspaper-front-page">Portada de diari</RecipeLink> compon la mateixa pàgina en horitzontal.
+
+## Elaboració
+
+### 1 · Converteix dues columnes en dos pisos
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `writingMode: 'vertical-rl'` la pàgina és una pàgina horitzontal girada un quart de volta, així que `layoutType: 'double'` apila dos pisos, i es llegeix primer el de dalt; el filet de columna passa a ser un filet que travessa la pàgina entre tots dos ([escriptura vertical](/ca/docs/configuration#escriptura-vertical)). La retícula de caràcters dona a cada pis 25 caràcters de cos 五號 (10,5 pt), el màxim d'una columna de diari, i a la pàgina 29 línies; arrodoneix l'espai entre columnes a dos quadratins i engrandeix els marges per deixar els pisos al mig ([retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters)).
+
+El text admet dos pisos com a màxim. Els telegrames van en tres dins d'un requadre: `span="page"` li dona l'alçada de la caixa de text, `placement="bottom"` el porta al peu del flux, que en una pàgina vertical és la vora esquerra, i `:::columns{count=3}` el talla en pisos. `columnGap` és el que deixen tres pisos de 18 caràcters de 9 pt en els 546 pt de la caixa de text, de manera que cada pis conté caràcters sencers.
+
+<PageShot page={2} crop="0.04,0.12,0.36,0.78" caption="Pàgina 2: els telegrames en tres pisos; la franja de la vora superior del requadre es dibuixa com un filet a la seva dreta." />
+
+### 2 · Posa la capçalera del diari i el titular en un sol disseny
+
+<Excerpt region="front" />
+
+El titular de la notícia principal havia de travessar els dos pisos sota la capçalera del diari. Un títol amb `span: 'page'` es compon com a obertura al capdamunt d'una pàgina, així que un segon títol així, darrere de la capçalera, hauria començat una pàgina nova. Per això l'H1 de la pàgina és la notícia principal, i el seu estil de títol dibuixa la capçalera del diari damunt del titular: un bloc vermelló de 6,5 línies amb el nom del diari calat i, a sota, la línia del número: l'any de la República i el del cicle, i 今日出紙兩張, «avui, dos fulls»; després, el titular en Noto Serif TC 900 a 44 pt. Al flux, l'amplada del disseny és l'alçada de la caixa de text sobre el paper, així que `size: { width: 'fill' }` amb `align: 'center'` centra el titular a tota l'alçada dels dos pisos. El disseny fa 13 línies, un nombre enter de línies de la retícula, i el text que el segueix comença en una línia de la retícula.
+
+<PageShot page={1} crop="0.54,0.1,0.44,0.82" caption="Pàgina 1: el bloc de la capçalera del diari, el titular centrat a tota l'alçada dels dos pisos, el sumari al costat i la data al capdamunt de la seva línia." />
+
+### 3 · Obre cada notícia amb un disseny de títol
+
+<Excerpt region="heads" />
+
+Un disseny de títol en columna viu dins del seu pis. El seu filet és `direction: 'horizontal'` al flux, així que sobre el paper baixa al llarg del pis i separa dues notícies. El titular comença al capdamunt del pis, el sumari dos caràcters més avall, i la data dona el lloc, el diari i el dia en què va sortir la crònica. `minHeight` manté cada capçal en quatre línies, i el text de cada notícia comença a la retícula.
+
+### 4 · Posa capçalera al segon full i signa'l al peu
+
+<Excerpt region="pagehead" />
+
+En una pàgina vertical, les capçaleres continuen en horitzontal, com descriu clreq. El marc de la capçalera és el marge que queda damunt dels pisos; la retícula l'engrandeix, i `HEAD` en repeteix el compte perquè el filet quedi 6 mm per sobre del primer caràcter. `pages: 'body'` deixa la pàgina 1 a la capçalera del diari. El colofó és un atribut de l'H1, així que l'edició anglesa i l'espanyola imprimeixen cadascuna la seva línia sota les mateixes pàgines en xinès.
+
+### 5 · Carrega cada veu amb el text que compon
+
+<Excerpt region="voices" />
+
+Fontsource serveix cada pes d'aquestes famílies en un centenar de fitxers, i `loadCjkFonts` baixa els que toca un text. Noto Serif TC 400 rep la mostra sencera; els seus pesos 700 i 900, només els titulars i les etiquetes dels telegrames; Noto Sans TC, les línies de la capçalera del diari, les dates i el colofó; LXGW WenKai TC, els sumaris, la inscripció i el nom del diari. Si una família rep menys text del que compon, la captura falla (C12) i anomena els caràcters que ha hagut de prendre d'una altra.
+
+## Variants
+
+### Dona quatre pisos als telegrames
+
+Quatre pisos de 14 caràcters caben en la mateixa alçada, i el requadre s'estreny fins a les línies que ocupen.
+
+```diff
+-  columnGap: pt((HEIGHT - 3 * 18 * 9) / 2), // three tiers of 18 characters of 9 pt
++  columnGap: pt((HEIGHT - 4 * 14 * 9) / 3), // four tiers of 14 characters of 9 pt
+```
+
+Al Markdown, `:::columns{count=4}`.
+
+### Compon les notícies en un sol pis
+
+Un pis de 52 caràcters ocupa tota l'alçada de la caixa de text: 193 mm de paper per cada línia. Cada capçal de notícia ocupa ara quatre línies de la pàgina sencera, i els dos fulls passen a ser tres.
+
+```diff
+-  layoutType: 'double', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
++  layoutType: 'single', writingMode: 'vertical-rl', // binding 'auto' becomes 'right'
+```
+
+Amb `charsPerLine: 2 * CHARS + 2` a la retícula.
+
+## Errors freqüents
+
+- La Noto Serif TC de Fontsource declara 爲, la forma que imprimia el *Shenbao*, en el rang d'un dels seus fitxers, però aquest fitxer no té el glif: el llenç el va dibuixar amb una font del sistema i el PDF se'n va quedar sense (C25). Les cròniques porten 為.
+- Les transcripcions de Wikisource porten errates que la pàgina corregeix: 己紀 per 已紀 i, dues vegades, 倍侍 per 陪侍 a la crònica del banquet; a la de les honres, 勸勵一番現在將土, amb 土 per 士 i el complement darrere de 一番, que aquí es compon 勸勵現在將士一番, «va arengar els oficials i soldats presents». La pàgina fa servir a més la forma normal de quatre variants: 寧 per 寗, 總 per 縂 (tres vegades) i 決 per 决 (dues) als telegrames, i 刊 per 刋 a la inscripció.
+- LXGW WenKai TC, tal com la serveix Fontsource, dibuixa 為 com 爲, així que la inscripció, en Kai, mostra la forma antiga que al text en Song li falta.
+- Els tres pisos del requadre són terços de la caixa de text i no coincideixen amb els dos pisos del text. Un diari compon aquestes seccions amb la seva pròpia retícula; el filet de la vora dreta del requadre separa les dues.

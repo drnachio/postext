@@ -48,10 +48,12 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
 };
 
 /** The edge a book is bound on: `'auto'` (or anything unknown) is the
- *  right edge in a vertical document (clreq §7.1.1.1), else the left. */
-export function resolvePageBinding(binding: PageConfig['binding'], writingMode?: WritingMode): 'left' | 'right' {
+ *  right edge in a vertical document (clreq §7.1.1.1) and in a document
+ *  whose text runs right to left (`direction`, the resolved
+ *  `PostextConfig.direction`), else the left. */
+export function resolvePageBinding(binding: PageConfig['binding'], writingMode?: WritingMode, direction?: 'ltr' | 'rtl'): 'left' | 'right' {
   if (binding === 'left' || binding === 'right') return binding;
-  return writingMode === 'vertical-rl' ? 'right' : 'left';
+  return writingMode === 'vertical-rl' || direction === 'rtl' ? 'right' : 'left';
 }
 
 function resolvePageNumbering(raw?: PageNumberingConfig, locale?: string): ResolvedPageNumberingConfig {
@@ -81,9 +83,10 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
 
 /** A page config in full. `locale` (the document language) decides the
  *  script of a page-number format written `一` or `壹`, and `writingMode`
- *  (the document's `layout.writingMode`) what `binding: 'auto'` is. */
-export function resolvePageConfig(partial?: PageConfig, locale?: string, writingMode?: WritingMode): ResolvedPageConfig {
-  if (!partial) return { ...DEFAULT_PAGE_CONFIG, binding: resolvePageBinding(undefined, writingMode) };
+ *  (the document's `layout.writingMode`) and `direction` (its resolved
+ *  `direction`) what `binding: 'auto'` is. */
+export function resolvePageConfig(partial?: PageConfig, locale?: string, writingMode?: WritingMode, direction?: 'ltr' | 'rtl'): ResolvedPageConfig {
+  if (!partial) return { ...DEFAULT_PAGE_CONFIG, binding: resolvePageBinding(undefined, writingMode, direction) };
   const sizePreset = partial.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
   const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
 
@@ -114,7 +117,7 @@ export function resolvePageConfig(partial?: PageConfig, locale?: string, writing
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
     pageNumbering: resolvePageNumbering(partial.pageNumbering, locale),
-    binding: resolvePageBinding(partial.binding, writingMode),
+    binding: resolvePageBinding(partial.binding, writingMode, direction),
   };
 }
 

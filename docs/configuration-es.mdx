@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30 min',
   order: 3,
-  plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
+  plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web, archivos PDF y libros electrónicos EPUB desde el código.",
 };
 
 # Configuración
@@ -39,7 +39,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Disposición](#disposición) — número de columnas, medianil, filetes, [escritura vertical](#escritura-vertical).
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
-- [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone.
+- [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; las [cifras](#cifras-del-documento) (`numerals`) y la [dirección del texto](#dirección-del-texto) (`direction`) que de él se siguen; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone. La guía de los libros de derecha a izquierda es [Composición árabe](/es/docs/arabic-layout).
 - [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, cómo se ensanchan sus líneas justificadas, los anchos de la puntuación y la puntuación colgada, el espacio entre chino y latín, la retícula de caracteres, los números que van de pie en texto vertical, y las marcas, el ruby y las notas warichu. La guía de todo ello es [Composición china](/es/docs/chinese-layout).
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
@@ -62,6 +62,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Uso programático](#uso-programático) — `buildDocument`, los avisos que registra, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
 - [Integrar el visor HTML](#integrar-el-visor-html) y [Generación de PDF](#generación-de-pdf) — recetas completas.
+- [Libros EPUB](#libros-epub-postext-epub) — archivos EPUB 3 de maquetación fija y fluida a partir de la misma maquetación, y cómo comprobarlos con EPUBCheck.
 
 
 ## Página
@@ -130,7 +131,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>El borde por el que se encuaderna el libro. <code>'auto'</code> es <code>'right'</code> cuando <code>layout.writingMode</code> es <code>'vertical-rl'</code>, y <code>'left'</code> en otro caso. Un libro encuadernado por la derecha empieza en una página izquierda y espeja los márgenes al revés. Vale para todo el libro: el <code>layout</code> propio de un estilo de título no lo cambia. Ver <a href="#encuadernación">Encuadernación</a>.</td>
+      <td>El borde por el que se encuaderna el libro. <code>'auto'</code> es <code>'right'</code> cuando <code>layout.writingMode</code> es <code>'vertical-rl'</code> o el documento va de derecha a izquierda (<a href="#dirección-del-texto"><code>direction</code></a>), y <code>'left'</code> en otro caso. Un libro encuadernado por la derecha empieza en una página izquierda y espeja los márgenes al revés. Vale para todo el libro: el <code>layout</code> propio de un estilo de título no lo cambia. Ver <a href="#encuadernación">Encuadernación</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +166,8 @@ Con esta configuración toda página impar tiene 2,2 cm de margen a la izquierda
 - El PDF lleva `/ViewerPreferences << /Direction /R2L >>` y `/PageLayout /TwoPageRight` (la página 1 sola y luego por pares), etiquetado o no. Acrobat y Foxit los respetan; el visor integrado de Chrome no hace caso de ninguno.
 
 Los folios y los encabezados no cambian de lado por sí solos: una plantilla que pone el número de página en la esquina exterior necesita sus elementos de página par e impar preparados para el borde derecho (los elementos admiten `parity`).
+
+Un libro escrito de derecha a izquierda (árabe, persa, hebreo…) también se encuaderna por la derecha: `'auto'` da el borde derecho cuando la [`direction`](#dirección-del-texto) del documento resulta `'rtl'`. Un libro así espeja además todo su flujo: su primera columna es la de la derecha, y sus sangrías, marcadores de lista, flotantes y notas quedan a la derecha; las ranuras de cabecera y pie siguen siendo físicas. Véase [Composición árabe](/es/docs/arabic-layout#orden-de-las-páginas-y-encuadernación-por-la-derecha).
 
 ### Tamaños de página predefinidos
 
@@ -345,10 +348,18 @@ Tres ajustes eligen un formato de numeración, y cada uno creció con su propia 
     <tr><td>Ramas terrestres</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
     <tr><td>En círculo</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Cifras de ancho completo</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
+    <tr><td>Cifras arábigo-índicas</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Cifras persas</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>, <code>urdu</code>, <code>۱</code></td></tr>
+    <tr><td>Letras árabes, orden abyad</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Letras árabes, orden alfabético</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>, <code>arabic-alpha</code>, <code>arabic-alphabetic</code>, <code>أبتث</code></td></tr>
+    <tr><td>Numerales abyad</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Numerales abyad, valores magrebíes</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>, <code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 Los estilos de Asia oriental conservan su nombre de [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) en los tres ajustes. Los numerales chinos informales escriben 十 del 10 al 19 sin un 一 delante (十二, pero 一百一十), un solo 零 por cada tramo de ceros dentro del número (一百零一, 一千零五十), y 万 o 萬 para la decena de millar, 亿 o 億 para los cien millones (一万零一十). Solo `cjk-decimal` usa 〇, cifra a cifra, como se escriben los años (二〇二六, GB/T 15835—2011). Los troncos llegan al 10, las ramas al 12 y las cifras en círculo al 50; más allá, el número se imprime en cifras. `一` y `壹` siguen la escritura del `locale` del documento: tradicional para `zh-Hant`, `zh-TW` o `zh-HK`, simplificada en los demás casos. Algunas ediciones antiguas escriben 101 como 一百一, sin 零; Postext no imprime esa forma.
+
+Los estilos árabes conservan el nombre CSS cuando lo hay (`arabic-indic`, `persian`; `urdu` y `maghrebi-abjad`, de la nota del W3C *Ready-made Counter Styles*, se leen como `persian` y `arabic-abjad-maghrebi`). `arabic` mantiene su sentido de siempre: las cifras europeas. `arabic-abjad` escribe los numerales abyad aditivos del árabe clásico y de la foliación de manuscritos, el valor mayor primero: 11 es يا, 1446 غتمو, y el número de millares va antes de غ (2000 بغ, 1002 غب); a partir de 999 999 el número se imprime en cifras. La nota del W3C usa ese nombre para una serie de 28 letras en la que 11 es ك; Postext llama a esa serie `abjad`, la que letra los elementos de lista en orden abyad (أ، ب، ج، د، هـ), y `hijai` al orden alfabético (أ، ب، ت، ث). Las dos escriben la primera letra con su hamza (أ) y una he que quedaría aislada como هـ, con tatweel, para que no se lean como las cifras ١ y ٥; pasadas las 28 letras se duplican, como `lower-alpha` (أأ, أب). Los valores magrebíes siguen la regla mnemotécnica صعفض قرست ثخذ ظغش (ص 60, ض 90); la lista del W3C intercambia ص y ض. Una sola أ no distingue las dos series de letras, así que su token son sus cuatro primeras letras: `{1:أبجد}`, `{1:أبتث}`. Las cifras del propio documento se eligen con [`numerals`](#cifras-del-documento).
 
 Las demás grafías son para las configuraciones que nada comprueba en tipos: los presets en JSON y el JavaScript sin tipos. Los tipos de TypeScript siguen nombrando solo la grafía propia de cada ajuste —la que escribe el Sandbox y devuelve `resolveAllConfig`, con los nombres de Asia oriental incluidos—, así que un `PostextConfig` tipado se ciñe a ella, y otra grafía necesita una conversión de tipo (*cast*).
 
@@ -592,9 +603,15 @@ Los valores por defecto de la tabla siguiente son los de un elemento de texto qu
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>Alineación horizontal de las líneas dentro de la caja del elemento. <code>'justify'</code> ensancha los espacios entre palabras de cada línea ajustada, salvo la última de cada párrafo, hasta que la línea llena la caja; las líneas que acompañan a una letra capital llenan el espacio que queda a su lado. Con <code>hyphenate</code>, una palabra que no cabe en lo que queda de una línea justificada también se parte por una sílaba para llenarla. La última línea de un párrafo, una línea sin espacios que ensanchar y un texto que no se ajusta se alinean a la izquierda. El texto justificado se compone párrafo a párrafo, así que varias líneas en blanco entre párrafos cuentan como una. El lienzo y el PDF colocan cada palabra donde la puso la maquetación; el HTML ensancha los espacios con <code>word-spacing</code>.</td>
+      <td>Alineación horizontal de las líneas dentro de la caja del elemento. <code>'justify'</code> ensancha los espacios entre palabras de cada línea ajustada, salvo la última de cada párrafo, hasta que la línea llena la caja; las líneas que acompañan a una letra capital llenan el espacio que queda a su lado. Con <code>hyphenate</code>, una palabra que no cabe en lo que queda de una línea justificada también se parte por una sílaba para llenarla. La última línea de un párrafo, una línea sin espacios que ensanchar y un texto que no se ajusta se alinean a la izquierda. El texto justificado se compone párrafo a párrafo, así que varias líneas en blanco entre párrafos cuentan como una. El lienzo y el PDF colocan cada palabra donde la puso la maquetación; el HTML ensancha los espacios con <code>word-spacing</code>. <code>'start'</code> y <code>'end'</code> siguen la <code>direction</code> del texto: la derecha y la izquierda de un texto de derecha a izquierda. <code>'left'</code> y <code>'right'</code> son los lados de la propia caja; en un diseño que se compone en el flujo de una página de derecha a izquierda (una banda de apertura, el diseño de un título) el flujo está espejado, así que son su principio y su final, como en el texto general.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>la del documento</td>
+      <td>Dirección base del texto: dónde van sus caracteres neutros, el orden de sus tramos en una línea y qué lados significan <code>'start'</code> y <code>'end'</code>. <code>'auto'</code> lee la primera letra fuerte del texto resuelto y, si no la hay, toma la <a href="#dirección-del-texto"><code>direction</code></a> del documento. Los tramos en árabe o hebreo se leen de derecha a izquierda sea cual sea la base. Un texto que contiene una letra árabe nunca se espacia (se ignora su <code>letterSpacing</code> entero) y sus palabras no se cortan al ajustar ni al truncar; una palabra más ancha que la caja la desborda y se avisa como <code>unbreakableWordOverflow</code>.</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1289,10 +1306,22 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Renderizar las etiquetas de <code>:ref</code> en línea en cursiva.</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Cómo se compone <code>*…*</code>: en cursiva, en la negrita y <code>boldColor</code>, en redonda con <code>italicColor</code>, o en redonda con una raya encima de las palabras. <code>'auto'</code> es <code>'bold'</code> en un documento escrito en alfabeto árabe e <code>'italic'</code> en cualquier otro. Véase <a href="#texto-árabe">Texto árabe</a>.</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>Signos vocálicos del árabe: como están escritos, quitados todos, o quitados salvo la shadda. Véase <a href="#texto-árabe">Texto árabe</a>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>Alineación del texto. El texto justificado distribuye el espaciado a lo largo de cada línea para bordes uniformes. Las últimas líneas de los párrafos justificados se componen en bandera, a su ancho natural — salvo cuando Knuth-Plass aceptó una línea final sobrellenada confiando en la compresión del pegamento (glue): en ese caso los espacios entre palabras se comprimen para que la línea encaje exactamente en la medida (semántica de glue-setting de TeX, aplicada de forma idéntica en los backends canvas, HTML y PDF).</td>
+      <td>Alineación del texto. <code>'left'</code> (o <code>'start'</code>) es el lado por el que empieza la línea: la derecha de un párrafo de derecha a izquierda (véase <a href="#dirección-del-texto">Dirección del texto</a>). El texto justificado distribuye el espaciado a lo largo de cada línea para bordes uniformes. Las últimas líneas de los párrafos justificados se componen en bandera, a su ancho natural — salvo cuando Knuth-Plass aceptó una línea final sobrellenada confiando en la compresión del pegamento (glue): en ese caso los espacios entre palabras se comprimen para que la línea encaje exactamente en la medida (semántica de glue-setting de TeX, aplicada de forma idéntica en los backends canvas, HTML y PDF).</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1347,6 +1376,30 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td><code>number</code></td>
       <td><code>0</code></td>
       <td>Tracking máximo que puede tomar una línea justificada, en milésimas de eme en uno u otro sentido (la unidad de InDesign: 10 = 0,01 em por carácter), cuando con solo sus espacios entre palabras se estiraría más allá de <code>maxWordSpacing</code> o se comprimiría por debajo de <code>minWordSpacing</code>. La parte del ajuste que pasa del límite va a las letras, así que los espacios de una línea floja vuelven a <code>maxWordSpacing</code> y una línea apretada cabe con <code>minWordSpacing</code>. Knuth-Plass lo tiene en cuenta al elegir los cortes, y solo en las líneas que el espaciado entre palabras llevaría más allá de los límites: las demás, la última línea de un párrafo (salvo que se desborde), una línea de una sola palabra y una línea con un chip no lo usan. La línea lo guarda como <code>letterSpacing</code>, y canvas, HTML y PDF lo pintan. Requiere <code>optimalLineBreaking</code>. Con <code>0</code> queda desactivado. Ver <a href="/es/docs/justification#tracking-como-último-recurso">Tracking como último recurso</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td><code>'auto'</code> en un documento en alfabeto árabe; si no, <code>'none'</code></td>
+      <td>Justificación con cachida: una línea justificada de texto en alfabeto árabe toma su holgura en los espacios entre palabras (hasta una cuarta parte de su anchura) y después en cachidas, tatweels enteros (U+0640) insertados entre dos letras enlazadas, nunca como espaciado entre letras. Knuth-Plass cuenta el alargamiento de cada palabra como estiramiento. Nunca en palabras latinas, cifras, títulos, líneas en bandera ni en la última línea de un párrafo. Los tatweels se pintan pero quedan fuera del texto plano y del copiado. Ver <a href="/es/docs/justification#cachida-en-el-texto-árabe">Cachida en el texto árabe</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué enlaces toman cachida y en qué orden: las reglas clásicas del naskh, las prioridades de Microsoft o las reglas del naskh adaptadas al nastaʿlīq (según raqim-kashida). <code>'auto'</code> mira la fuente del texto: ninguna en un tipo ruqʿa o dīwānī (Aref Ruqaa), reglas de nastaʿlīq en un tipo nastaʿlīq, naskh en los demás.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Máximo de alargamientos en una palabra.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>Alargamiento máximo en un enlace, en em; toma tantos tatweels enteros como quepan.</td>
     </tr>
     <tr>
       <td><code>optimalLineBreaking</code></td>
@@ -1564,12 +1617,13 @@ El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
     <tr><td>Neerlandés (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>Chino simplificado (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>Chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>Árabe (<code>ar</code>, <code>ar-EG</code>, <code>ar-MA</code>…)</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional.
+El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional. El árabe numera sus tipos del mismo modo, `{h1}-{n}` (شكل 2-3), escribe las referencias cruzadas como الفصل 3, القسم 2-1 y ص 12, titula la bibliografía المراجع, y su índice imprime انظر / انظر أيضًا, رموز y أرقام, con la coma y el punto y coma árabes (، ؛).
 
-Un documento en chino, japonés o coreano declara su idioma en la salida HTML (`lang` en la raíz `.pt-doc`, con `zh-Hant-TW` completo) y en el canvas que pinta (`ctx.lang`, en Chrome 136 y posteriores), de modo que el navegador dibuja las formas de glifo de su región: Unicode unifica los caracteres han, y un mismo punto de código se ve distinto en una fuente taiwanesa y en una japonesa. Los demás documentos no llevan `lang`, como antes. El PDF declara `/Lang` a partir de `locale` para todo documento, etiquetado o no, con su escritura y su región.
+Un documento en chino, japonés o coreano declara su idioma en la salida HTML (`lang` en la raíz `.pt-doc`, con `zh-Hant-TW` completo) y en el canvas que pinta (`ctx.lang`, en Chrome 136 y posteriores), de modo que el navegador dibuja las formas de glifo de su región: Unicode unifica los caracteres han, y un mismo punto de código se ve distinto en una fuente taiwanesa y en una japonesa. Los demás documentos no llevan `lang`, como antes. El PDF declara `/Lang` a partir de `locale` para todo documento, etiquetado o no, con su escritura y su región. Un documento en un idioma que se escribe de derecha a izquierda (árabe, persa, urdu, hebreo…) también declara su idioma: las formas de la lengua de la fuente (`locl`) y la fuente de reserva lo siguen.
 
 ```ts
 const config: PostextConfig = {
@@ -1578,15 +1632,73 @@ const config: PostextConfig = {
 };
 ```
 
+#### Cifras del documento
+
+La clave `numerals` de primer nivel fija las cifras de todos los números que escribe el motor: los números de página y las etiquetas de página del índice general, del índice alfabético y de las referencias a página; los números de las listas ordenadas y de las notas; los contadores de títulos y capítulos, `{chapterNumber}`; el `{h1}` y el `{n}` del número de una figura y de una referencia a ella; `{totalPages}`, `{bookTotalPages}` y `{numberDecimal}`. `'latn'` escribe 0–9, `'arab'` las cifras arábigo-índicas ٠–٩ y `'arabext'` las persas ۰–۹. Solo cambia el formato decimal —`decimal`, el `arabic` de las listas o un ajuste que se deja por defecto—, así que un formato que el autor nombra se imprime como se nombra: `lower-roman` sigue siendo i, ii, iii, y `arabic-indic` en un documento latino escribe ١, ٢, ٣. El texto del documento nunca se reescribe.
+
+El valor por defecto, `'auto'`, toma las cifras de `locale` (`defaultNumeralsFor(tag)`): `'arab'` para el árabe sin región o con cualquier región fuera del Magreb (`ar`, `ar-EG`, `ar-SA`, `ar-AE`…), `'latn'` para `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` y `ar-EH`, `'arabext'` para el persa (`fa`), el pastún (`ps`) y el urdu de la India (`ur-IN`), y `'latn'` para todo lo demás, incluido el urdu de Pakistán. CLDR da `latn` para `ar` sin región y para `ar-AE`; los libros árabes del Máshrek y del Golfo imprimen ٠–٩, y Postext sigue a los libros. Una etiqueta que nombra sus cifras las conserva: `ar-MA-u-nu-arab`. Una página numerada con las cifras del documento guarda `arabic-indic` o `persian` como `pageNumberFormat`, de modo que las etiquetas de página del PDF muestran las mismas cifras. Un valor desconocido sigue la lengua y se avisa como `unknownNumerals`.
+
+Los números que escribe el autor se leen en cualquiera de los tres sistemas: un elemento de lista `٣.` empieza en 3, y `{startAt=٥}`, `:::numbering{startAt=٥}`, `:::space{lines=٢}` y `:::part{number="٣"}` (para `{numberDecimal}`) leen el valor.
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const magreb: PostextConfig = { locale: 'ar-MA' };                  // 1, 2, 3
+const forzado: PostextConfig = { locale: 'ar', numerals: 'latn' };  // 1, 2, 3
+```
+
+#### Dirección del texto
+
+`direction`, en el primer nivel, fija la dirección base del documento: `'ltr'`, `'rtl'` o `'auto'` (lo predeterminado), que es `'rtl'` cuando la escritura del `locale` se escribe de derecha a izquierda (árabe, persa, urdu, hebreo, siríaco, thaana, n'ko, adlam…, según `directionOf(tag)`) y `'ltr'` en los demás casos. Un documento de derecha a izquierda se compone en un marco espejado: sus líneas empiezan a la derecha, su primera columna es la de la derecha, sus sangrías, marcadores de lista, flotantes, notas al pie y cajas quedan a la derecha, y [`page.binding: 'auto'`](#encuadernación) lo encuaderna por la derecha. La configuración resuelta solo lleva `direction: 'rtl'` en un documento así, de modo que un documento de izquierda a derecha se resuelve igual que antes. Un valor desconocido se lee como `'auto'` y se avisa como `unknownConfigValue`. El algoritmo bidireccional de Unicode (UAX #9) ordena los tramos de cada línea en cualquiera de las dos direcciones: una cita árabe en un libro inglés se lee de derecha a izquierda en su sitio.
+
+Dentro del documento, un título o un contenedor `:::` admite `{dir=ltr}` o `{dir=rtl}`, y `:ltr[…]` y `:rtl[…]` aíslan un tramo de texto (véase [Dirección del texto en el marcado](/es/docs/document-format#dirección-del-texto-en-el-marcado)); un recurso de tabla admite `table.direction`. Un bloque compuesto contra la dirección del documento conserva su propio lado de principio: su sangría, sus marcadores de lista y el final alineado de su última línea pasan al lado por el que empieza su texto.
+
+Un ajuste que nombra un lado se refiere a un lado del texto o del flujo, nunca del pliego, así que un diseño hecho para un libro inglés sigue valiendo cuando el libro pasa a árabe. `'start'` y `'end'` se aceptan como nombres explícitos:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>Ajuste</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>textAlign</code> del cuerpo, los títulos, los estilos de párrafo, las partes, las notas al pie y el cuerpo de los avisos; <code>align</code> del pie y de su nota</td><td>Los lados del texto: <code>'left'</code> es el lado por el que empieza la línea, la derecha de un párrafo árabe, y allí va la última línea de un párrafo justificado.</td><td>Sinónimos de <code>'left'</code> y <code>'right'</code>. La configuración resuelta lleva <code>'left'</code> / <code>'right'</code>; la guardada conserva lo que se escribió.</td></tr>
+    <tr><td><code>align</code> de una celda de tabla</td><td>Los lados del texto de la celda, leídos en la dirección de la tabla (<code>table.direction</code>).</td><td>Sinónimos, leídos en la dirección de la tabla.</td></tr>
+    <tr><td><code>placement.align</code> (flotantes, figuras estrechas)</td><td>Los lados del flujo: en un libro de derecha a izquierda, <code>'left'</code> es la derecha del pliego.</td><td>Sinónimos.</td></tr>
+    <tr><td><code>stripe.side</code>, <code>icon.cornerSide</code> y <code>labelTab.position</code> de los avisos (<code>'top-start'</code>, <code>'top-end'</code>)</td><td>Los lados del flujo, los mismos para todas las cajas de la página.</td><td>La dirección de la propia caja (un <code>:::callout&#123;dir=ltr&#125;</code> en un libro árabe empieza por la izquierda del pliego).</td></tr>
+    <tr><td>Ranuras de cabecera y pie; elementos de diseño anclados al pliego</td><td>Los lados del pliego.</td><td>Solo los elementos de texto: el principio y el final de su propia <code>direction</code>.</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate` conserva su sentido físico en una página espejada: una figura girada en el sentido de las agujas del reloj queda girada así en el pliego. Quien lee la maquetación encuentra el marco espejado en cada página (`VDTPage.flow` con `direction: 'rtl'`, `pageIsMirrored(page)`) y el orden visual de los segmentos de cada línea en `VDTLine.order`; `flowToPage` y `pageToFlow` pasan del flujo al pliego y al revés. Véase [Composición árabe](/es/docs/arabic-layout#dirección-y-algoritmo-bidireccional).
+
+```ts
+const arabe: PostextConfig = { locale: 'ar' };                         // de derecha a izquierda, encuadernado por la derecha
+const ingles: PostextConfig = { locale: 'en', direction: 'rtl' };      // forzado; rara vez es lo que quieres
+```
+
 ### Idiomas y escrituras
 
 Postext compone escrituras alfabéticas que se escriben de izquierda a derecha, y el chino a lo ancho de la página y a lo alto. [Composición china](/es/docs/chinese-layout) explica cómo se compone el chino y qué ajustes lo gobiernan; las claves están en [Tipografía de Asia oriental](#tipografía-de-asia-oriental), [Escritura vertical](#escritura-vertical) y [Encuadernación](#encuadernación). Lo que recibe cada escritura:
 
 - **El chino** lo compone el compositor CJK cuando un párrafo tiene más caracteres CJK que espacios entre palabras: sus líneas se cortan entre caracteres con las reglas de principio y final de línea de `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantienen enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida. El ancho de la puntuación, la puntuación colgada, el espacio entre chino y latín, la retícula de caracteres, los puntos de énfasis, las marcas de nombre propio y de título, el ruby y las notas warichu siguen la región de `locale`, a lo largo de la línea horizontal o de la vertical (`layout.writingMode: 'vertical-rl'`). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada.
 - **El japonés y el coreano** pasan por el mismo compositor y se componen sin separación silábica, pero con los valores por defecto de China continental: sus reglas propias (JLREQ, KLREQ) no están implementadas. El coreano se corta entre sílabas además de en sus espacios.
-- **Las escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…) todavía no están soportadas. No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido. `page.binding: 'right'` compone los pliegos de un libro así encuadernado por la derecha, pero no sus líneas.
+- **El árabe y las demás escrituras de derecha a izquierda** (persa, urdu, hebreo…) se componen de derecha a izquierda; [Composición árabe](/es/docs/arabic-layout) explica cómo. La [`direction`](#dirección-del-texto) del documento sale de la escritura del `locale`, el algoritmo bidireccional de Unicode ordena las palabras latinas y las cifras dentro de cada línea, el libro se encuaderna por la derecha con la primera columna a la derecha, y cada número que escribe el motor toma las [cifras](#cifras-del-documento) de la región. Una palabra con una letra del alfabeto árabe no se divide, no se espacia ni se corta nunca, y una línea árabe justificada se estira en sus espacios y con cachidas. Los signos vocálicos, el énfasis, las notas al pie y las cadenas del árabe están en [Texto árabe](#texto-árabe). El persa, el urdu y el hebreo reciben la dirección, las cifras y las reglas de palabra entera, pero no cadenas integradas propias.
 
-Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho y en chino. El chino, el japonés y el coreano se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
+Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho, en chino y en árabe. El chino, el japonés, el coreano y las lenguas que se escriben de derecha a izquierda se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
+
+### Texto árabe
+
+Estos ajustes sirven al texto en alfabeto árabe; ninguno cambia un documento escrito en otra escritura. [Composición árabe](/es/docs/arabic-layout) los explica junto con el resto de un libro árabe: dirección, encuadernación, cifras, verso, índice general e índice analítico.
+
+- **Signos vocálicos e interlineado.** Los signos vocálicos de un texto vocalizado (fatḥa, kasra, shadda, tanwīn, el alif volado, los signos coránicos) se apilan sobre y bajo las letras, en el interlineado, que no crece por ellos. Cada línea con signos anota hasta dónde llega su tinta (`VDTLine.markInk`), y el recorte de columna de los renderizadores incluye los signos de la primera y la última línea de cada columna. Cuando un signo sobre una palabra toca las letras o los signos que cuelgan bajo la palabra de encima, la composición avisa del párrafo (`arabicMarksExceedLeading`, en el panel Revisión del Sandbox). Solo se comparan palabras que están una sobre otra. El texto vocalizado en parte pide unos 1,7–1,85 em de `lineHeight`, y el verso vocalizado del todo 1,9–2,1 em.
+- **Énfasis.** La letra árabe no tiene cursiva, así que en un documento cuyo `locale` se escribe en alfabeto árabe `*…*` se compone por defecto en negrita (`bodyText.emphasis: 'auto'`). `'color'` lo compone en redonda con `italicColor`, y `'overline'` traza una raya encima de las palabras, el khaṭṭ fawqī de los libros árabes. El ajuste alcanza todo texto compuesto con las fuentes del cuerpo: párrafos, listas, citas, estilos de párrafo, cuerpo de los recuadros, notas y encabezados. Los pies, las celdas de tabla, el índice general y el índice analítico conservan sus propios ajustes de cursiva. Se elija lo que se elija, el motor nunca inclina letras árabes: las palabras árabes de un tramo en cursiva van en redonda y sus palabras latinas conservan la cursiva. En un documento así, las citas van en redonda por defecto.
+- **Tashkīl.** `bodyText.tashkil: 'strip'` quita los signos vocálicos y coránicos del texto que se compone, para una edición sin vocales hecha a partir de una fuente vocalizada: fatḥa, ḍamma, kasra y sus tanwīn, sukūn, shadda, el alif volado (هٰذا pasa a هذا) y los signos U+0656–U+065F y U+06D6–U+06ED. `'strip-vowels'` conserva la shadda, como la imprimen la mayoría de los libros modernos. La hamza y la madda se quedan (أ إ آ son letras, también tecleadas con signos combinantes). La fuente conserva sus signos; las líneas, los encabezados y el índice general se componen sin ellos, y cada carácter compuesto sigue apuntando a su lugar en la fuente.
+- **Notas al pie.** `footnotes.markerTemplate: '({n})'` escribe las llamadas «(١)» con las cifras del documento, `numbering: 'page'` las reinicia en cada página y `noteNumberPosition: 'inline'` pone sobre la línea el número de la nota. El filete separador y los números de nota quedan al principio de la columna, a la derecha en un libro de derecha a izquierda.
+- **Palabras enteras.** Una palabra con una letra del alfabeto árabe nunca se divide, se corta ni se espacia, en un libro árabe o citada en otro. Un estilo que pone `letterSpacing` a texto árabe se avisa (`joiningScriptLetterSpacing`), y una palabra más ancha que su línea la desborda y se avisa (`unbreakableWordOverflow`). Véase [Composición árabe](/es/docs/arabic-layout#formas-enlazadas-y-palabras-enteras).
+- **Cachida y verso.** Una línea árabe justificada se estira con cachidas además de en sus espacios (`bodyText.kashida`, véase [Cachida en el texto árabe](/es/docs/justification#cachida-en-el-texto-árabe)), y un poema clásico se compone un bayt por línea en dos hemistiquios de una misma anchura con `:::verse` (véase [`:::verse`](/es/docs/document-format#verse)).
+- **Índice analítico.** Un índice en árabe ordena alfabéticamente y no tiene en cuenta el artículo ال (`index.ignoreArticle`), los signos vocálicos ni los soportes de la hamza; véase [Índice analítico](#índice-analítico).
 
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
@@ -1768,7 +1880,7 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineación de todos los niveles de encabezado (no hay un valor por nivel): en bandera, justificada, centrada o alineada a la derecha. Un encabezado justificado compone su última línea a la izquierda, como un párrafo, así que un encabezado de una sola línea se ve como <code>'left'</code>. Canvas, HTML y PDF colocan las líneas del mismo modo, prefijo de numeración incluido. La apertura por defecto de un encabezado <code>span: 'page'</code> sin diseño avanzado la sigue también (justificada queda a la izquierda); un diseño avanzado alinea sus propios elementos de texto con su <code>align</code>.</td>
     </tr>
@@ -2096,6 +2208,12 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td>Lo que separa el número del título: en la columna, en la apertura por defecto de un nivel <code>span: 'page'</code>, en los titulillos que imprimen la línea del encabezado y en los marcadores del PDF. El separador del nivel 1 une también el número y el título de una parte en la página de parte y en la fila de parte del índice de contenidos cuando no tienen diseño propio. Los capítulos chinos llevan un espacio ideográfico o nada (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). El índice de contenidos conserva su propia columna de números (<code>toc.levels[].numberGap</code>). Un <a href="#estilos-de-encabezado">estilo de encabezado</a> puede fijar el suyo. Cuando un título se parte en dos con <code>{'\\\\'}</code>, como los títulos pareados de las novelas chinas, las formas de una sola línea (la columna, el índice de contenidos, los titulillos) unen las dos mitades con un espacio ideográfico si a ambos lados hay caracteres chinos o japoneses, y con un espacio en los demás casos.</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>Dónde va el número generado. <code>'before'</code>: delante del título, unido por <code>numberSeparator</code>. <code>'replace'</code>: el número es el título entero y el título escrito en el texto fuente no se imprime, así que <code># Noche</code> con <code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code> imprime الليلة الثانية. El índice general lista el número como título de la entrada (sin columna de número), y las cabeceras (<code>{chapterTitle}</code>, <code>{titleText}</code>) y los marcadores del PDF también lo leen; <code>{number}</code> queda vacío en ese título. Solo para títulos numerados con plantilla (la del nivel o la de su estilo); los demás conservan su título. Un <a href="#heading-styles">estilo de título</a> puede fijar el suyo, <code>'before'</code> para conservar los títulos que su nivel sustituiría.</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>
@@ -2373,7 +2491,9 @@ Dos sufijos de las plantillas de numeración escriben un contador con letras, en
   </tbody>
 </table>
 
-Se escriben con letras el inglés, el español y el chino; cualquier otro idioma toma las palabras en inglés, como hacen las cadenas integradas de continuación de tablas. El chino escribe los numerales informales de `simp-chinese-informal` o `trad-chinese-informal`, según la escritura de `locale` (一万 / 一萬), con 第 delante del ordinal; los caracteres han no tienen caja, así que las tres grafías de un sufijo imprimen lo mismo. El inglés sigue el uso estadounidense (*one hundred five*, sin *and*). El español usa las formas masculinas, como se numera un *capítulo* o un *libro* (*capítulo primero*, *tercero*, *veintiuno*), y escribe los ordinales del 13 al 29 en una sola palabra, como prefiere la RAE (*decimotercero*, *vigesimoprimero*). Los cardinales se escriben hasta 999 999 y los ordinales españoles hasta 999; los números mayores se imprimen en cifras.
+Se escriben con letras el inglés, el español, el chino y el árabe; cualquier otro idioma toma las palabras en inglés, como hacen las cadenas integradas de continuación de tablas. El chino escribe los numerales informales de `simp-chinese-informal` o `trad-chinese-informal`, según la escritura de `locale` (一万 / 一萬), con 第 delante del ordinal; los caracteres han no tienen caja, así que las tres grafías de un sufijo imprimen lo mismo. El inglés sigue el uso estadounidense (*one hundred five*, sin *and*). El español usa las formas masculinas, como se numera un *capítulo* o un *libro* (*capítulo primero*, *tercero*, *veintiuno*), y escribe los ordinales del 13 al 29 en una sola palabra, como prefiere la RAE (*decimotercero*, *vigesimoprimero*). Los cardinales se escriben hasta 999 999 y los ordinales españoles hasta 999; los números mayores se imprimen en cifras.
+
+Los números árabes concuerdan en género con el sustantivo que cuentan, así que el sufijo admite un modificador: `-feminine` (o `-f`) para un sustantivo femenino, `-masculine` (`-m`, el valor por defecto) para uno masculino; `-classical` escribe las centenas مائة, como las ediciones de Bulaq y la mayoría de las egipcias, en lugar del moderno مئة. `{1:ordinal}` escribe el ordinal definido en nominativo que usa un título: `الفصل {1:ordinal}` da *الفصل الأول*, *الفصل الحادي عشر*, *الفصل الحادي والعشرون*; `الليلة {1:ordinal-feminine}` da *الليلة الأولى*, *الليلة الحادية عشرة*, *الليلة الحادية والعشرون*, *الليلة المئتان* y, por encima de cien, la fórmula clásica de «después de»: *الليلة الخامسة والأربعون بعد الثلاثمئة*, *الليلة الحادية بعد الألف*. `{1:words}` escribe el cardinal (واحد وعشرون; en femenino إحدى عشرة, واحدة وعشرون). Los ordinales se escriben con letras hasta 9 999 y los cardinales hasta 99 999; los modificadores se combinan (`{1:ordinal-f-classical}`) y los demás idiomas los ignoran. El árabe no tiene mayúsculas, así que la caja del sufijo no cambia nada. Los marcadores de diseño `{numberWords}` y `{numberOrdinalWords}` escriben las formas masculinas; para una apertura en femenino, pon el ordinal en la plantilla del nivel e imprímelo con `{number}`.
 
 En un diseño de encabezado, `{numberWords}` / `{numberWordsLower}` y `{numberOrdinalWords}` / `{numberOrdinalWordsLower}` escriben el contador del encabezado del mismo modo, así la apertura puede decir *Capítulo uno* mientras el índice muestra `1`. El `textTransform: 'uppercase'` de un elemento de texto da las mayúsculas:
 
@@ -2983,6 +3103,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>Tamaño de una llamada en línea; <code>em</code> es el tamaño del texto que la rodea (<code>0.75em</code> es una reducción habitual). No afecta a una llamada volada.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>Cómo se escribe el número de una nota; <code>{n}</code> lo representa en el formato de numeración y las cifras del documento: <code>'({n})'</code> da las llamadas entre paréntesis de los libros árabes, «(١)». Escribe igual la llamada del texto y el número que abre la nota. Una plantilla sin <code>{n}</code> se lee como el valor por defecto.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Dónde va el número que abre la nota: volado, o sobre la línea al tamaño de la nota. <code>'auto'</code> sigue a <code>markerPosition</code>. Los libros árabes ponen volada la llamada del texto y sobre la línea el número de la nota.</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>
@@ -4076,7 +4208,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineación horizontal de las líneas del pie. <code>'justify'</code> lleva todas las líneas salvo la última al ancho completo. Sobre una barra de pie las líneas se alinean dentro de su relleno; un pie lateral se alinea dentro de su propio ancho.</td>
     </tr>
@@ -4193,7 +4325,7 @@ El subobjeto `note` estiliza `Resource.note`, una línea breve (fuente, crédito
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineación horizontal de las líneas de la nota, como <code>align</code> para el pie.</td>
     </tr>
@@ -4399,9 +4531,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>alineación del cuerpo</td>
-      <td>Alineación horizontal. <code>'center'</code> y <code>'right'</code> dejan cada línea en bandera por el otro lado — una dedicatoria, una firma.</td>
+      <td>Alineación horizontal. <code>'center'</code> y <code>'right'</code> dejan cada línea en bandera por el otro lado — una dedicatoria, una firma. En un párrafo de derecha a izquierda, <code>'left'</code> es su lado de principio, la derecha.</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4829,7 +4961,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, color principal</td>
-      <td>Franja sólida a lo largo de un lado. Una franja <code>'left'</code> / <code>'right'</code> estrecha el contenido; una franja <code>'top'</code> lo desplaza hacia abajo. En una caja con <code>borderRadius</code> sus esquinas exteriores se redondean con las del marco (hasta postext 1.4 quedaban rectas y asomaban por fuera del redondeo).</td>
+      <td>Franja sólida a lo largo de un lado. Una franja <code>'left'</code> / <code>'right'</code> estrecha el contenido; una franja <code>'top'</code> lo desplaza hacia abajo. <code>'left'</code> y <code>'right'</code> son lados del flujo del texto (en un libro de derecha a izquierda <code>'left'</code> es la derecha del pliego); <code>'start'</code> y <code>'end'</code> siguen la dirección de la propia caja, de modo que un <code>:::callout&#123;dir=ltr&#125;</code> en un libro árabe pone a su izquierda una franja <code>'start'</code>. En una caja con <code>borderRadius</code> sus esquinas exteriores se redondean con las del marco (hasta postext 1.4 quedaban rectas y asomaban por fuera del redondeo).</td>
     </tr>
     <tr>
       <td><code>icon</code></td>
@@ -5392,7 +5524,7 @@ const config: PostextConfig = {
       <td><code>levels</code></td>
       <td><code>TocLevelConfig[]</code></td>
       <td>nivel 1</td>
-      <td>Niveles de encabezado listados, cada uno con la tipografía de sus entradas: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (por defecto la interlínea del cuerpo, para que el índice caiga en la rejilla), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (de toda la entrada), <code>numberWidth</code> / <code>numberGap</code> (la columna de números tras la que empieza el título; los números se alinean a la derecha en ella), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Los campos sin fijar heredan el texto de cuerpo. El número se asienta en la línea base de la primera línea del título, sea cual sea su fuente y su cuerpo, en el lienzo, el HTML y el PDF (hasta postext 1.4 se centraba en la altura de la x como una viñeta, así que una fuente de rótulo o un cuerpo mayor quedaban por encima del título). Un renderizador propio encuentra esa línea base en el <code>bulletBaselineY</code> del bloque de la entrada; <code>bulletY</code> sigue siendo el centro vertical del cuadratín del número, como en 1.4, de modo que un renderizador anterior a ese campo dibuja los números donde siempre.</td>
+      <td>Niveles de encabezado listados, cada uno con la tipografía de sus entradas: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (por defecto la interlínea del cuerpo, para que el índice caiga en la rejilla), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (de toda la entrada), <code>numberWidth</code> / <code>numberGap</code> (la columna de números tras la que empieza el título; los números se alinean a la derecha en ella, y un número más ancho que <code>numberWidth</code>, como <code>الفصل الحادي عشر</code> o <code>Capítulo 12</code>, ensancha la columna de su nivel hasta el más ancho), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Los campos sin fijar heredan el texto de cuerpo. El número se asienta en la línea base de la primera línea del título, sea cual sea su fuente y su cuerpo, en el lienzo, el HTML y el PDF (hasta postext 1.4 se centraba en la altura de la x como una viñeta, así que una fuente de rótulo o un cuerpo mayor quedaban por encima del título). Un renderizador propio encuentra esa línea base en el <code>bulletBaselineY</code> del bloque de la entrada; <code>bulletY</code> sigue siendo el centro vertical del cuadratín del número, como en 1.4, de modo que un renderizador anterior a ese campo dibuja los números donde siempre.</td>
     </tr>
     <tr>
       <td><code>unnumbered</code></td>
@@ -5503,7 +5635,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>', '</code>, <code>', '</code>, <code>'–'</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code>; las dos primeras, <code>'، '</code> en escritura árabe</td>
       <td>Lo que se imprime entre el término y su primera página, entre dos páginas y entre los extremos de un intervalo.</td>
     </tr>
     <tr>
@@ -5527,7 +5659,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
-      <td>según el idioma, en cursiva</td>
+      <td>según el idioma, en cursiva (redonda en escritura árabe)</td>
       <td>Las palabras que preceden a una remisión. Sin fijar, siguen el idioma del documento: <em>Véase</em> / <em>Véase también</em>, <em>See</em> / <em>See also</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 en chino tradicional)… Un índice en chino pone la remisión tras un punto y sin espacio: <code>贾琏 12。见贾政</code>.</td>
     </tr>
     <tr>
@@ -5541,6 +5673,12 @@ const config: PostextConfig = {
       <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
       <td><code>'auto'</code></td>
       <td>Qué encabeza cada grupo. <code>'letter'</code>: la primera letra de la clave de orden. <code>'pinyin'</code>: una entrada que empieza por un carácter han va bajo la inicial latina de su lectura en pinyin (贾宝玉 bajo <code>J</code>), y una clave de orden latina bajo su letra, detrás de las entradas chinas de esa letra (el ordenador de cadenas pone las letras latinas después de los caracteres chinos): <code>sort="jia mu"</code> cierra la <code>J</code>. <code>'stroke'</code>: bajo el número de trazos del primer carácter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en chino simplificado). <code>'none'</code>: sin cabeceras; los símbolos, las cifras y las palabras solo se separan por <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índice en chino simplificado (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) por pinyin, uno en chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) por trazos y cualquier otro idioma por letra. Las entradas se ordenan con la colación de la que salen las cabeceras: un índice <code>zh-Hant</code> agrupado por pinyin se ordena por pinyin. Las lecturas y los trazos son los del ordenador de cadenas (CLDR); si lee mal un carácter (重 como <em>zhòng</em> en 重阳, 行 como <em>xíng</em> en 行业), da a la marca una clave <code>sort</code> escrita con caracteres que solo tengan la lectura buscada, que se ordena en su sitio: <code>sort="崇阳"</code> para 重阳, <code>sort="航业"</code> para 行业. Un navegador sin datos de colación china imprime un índice por pinyin o por trazos sin cabeceras.</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> en árabe</td>
+      <td>Ordena y agrupa las entradas árabes como si no llevaran el artículo inicial <code>ال</code> (<code>ٱل</code>): البصرة va bajo ب, entre بدر y بغداد, y se imprime tal como está escrita. <code>الله</code> conserva su artículo, y una entrada con clave <code>sort</code> propia se ordena por esa clave tal cual. En cualquier caso, un índice en árabe ignora los signos vocálicos y el tatweel, pone أ إ آ ٱ bajo ا, y ordena ؤ como و, ئ y ى como ي, ة como ه.</td>
     </tr>
     <tr>
       <td><code>groups.enabled</code></td>
@@ -5957,7 +6095,8 @@ La propiedad `folio` decide cómo presenta el visor Folio (`postext-folio`) el l
 
 ```ts
 interface FolioConfig {
-  tilt?: number;                  // Degrees from straight above, 0–40.
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
   paper?: {
     type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
          | 'bible' | 'newsprint' | 'cardStock' | 'board';
@@ -6002,7 +6141,13 @@ interface FolioConfig {
       <td><code>tilt</code></td>
       <td><code>number</code></td>
       <td><code>22</code></td>
-      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–40. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–70. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Cuánto gira la vista alrededor del libro, en grados, llevado a −180–180. Con 0 el libro se ve desde el pie de sus páginas; un ángulo positivo lleva la mirada hacia su derecha y uno negativo hacia su izquierda. Junto con <code>tilt</code> es la vista con que se abre el visor y a la que vuelve <code>resetView()</code>.</td>
     </tr>
     <tr>
       <td><code>paper.type</code></td>
@@ -6390,13 +6535,14 @@ Además de estos, el panel muestra siempre los avisos que emite la propia maquet
 
 ### Avisos de configuración
 
-Cuatro errores de la propia configuración nunca pasan en silencio, y ningún interruptor los oculta. El motor no falla por ninguno de ellos: sustituye el valor, o prescinde del ajuste, y lo dice.
+Seis errores de la propia configuración nunca pasan en silencio, y ningún interruptor los oculta. El motor no falla por ninguno de ellos: sustituye el valor, o prescinde del ajuste, y lo dice.
 
 - **Formato de numeración desconocido**: un `numberFormat` de lista numerada, un `page.pageNumbering.format` o el `counterFormat` de un tipo de recurso que no es ninguna de las [grafías de los formatos de numeración](#grafías-de-los-formatos-de-numeración). Numera en decimal.
 - **Lista de fuentes en una familia**: un `fontFamily` (o cualquier `…FontFamily`) que contiene una lista de fuentes CSS. El texto se compone en la primera familia de la lista (ver [Una sola familia por `fontFamily`](#una-sola-familia-por-fontfamily)).
 - **Columna lateral sin sitio**: un `sideColumnPercent` de una disposición `'oneAndHalf'` (la del documento, o el `layout` propio de un estilo de encabezado) que dejaría alguna de las columnas por debajo del 1% del ancho del área de contenido, o que no es un número. Las columnas se cortan en el valor más cercano que admiten las dos, y `used` lo indica (`sideColumnPercentClamped`; ver la [disposición `'oneAndHalf'`](#tipos-de-disposición)).
 - **Retícula de caracteres demasiado grande**: un `cjk.grid` con más caracteres por línea o más líneas por página de los que caben entre los márgenes. La retícula se compone con los que caben, y `used` indica el número (`cjkGridClamped`; ver [Retícula de caracteres](#retícula-de-caracteres)).
 - **Ajuste de encabezado desconocido**: una clave que no existe en `headings`, `headings.balancing`, un nivel de encabezado, un estilo de encabezado o un estilo de párrafo: un `letterSpacng` mal escrito, un `tracking` tomado de otra herramienta, un `level` en un estilo de encabezado, un `fontStyle: 'italic'` en un estilo de párrafo (que lleva `italic: true`). El motor la ignora (hasta postext 1.4 lo hacía sin decir nada). `value` es la clave, `used` va vacío y `suggestion` nombra el ajuste al que más se parece, cuando dista una o dos letras o solo cambia en mayúsculas (`unknownConfigKey`).
+- **Valor de ajuste desconocido**: un ajuste que admite unas pocas palabras lleva otra, como `direction: 'right'` (admite `auto`, `ltr` o `rtl`). El motor lee en su lugar el valor por defecto, y `used` dice en qué quedó: para `direction`, la dirección del idioma del documento (`unknownConfigValue`).
 
 El Sandbox los muestra en el panel **Revisión** con la ruta del ajuste. En código, `buildDocument` los deja en el documento como `configWarnings` (ausente cuando la configuración está limpia), y `collectConfigWarnings(config)` los devuelve sin componer nada:
 
@@ -7266,8 +7412,8 @@ El paquete expone un único punto de entrada y un puñado de tipos:
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — toma un `VDTDocument` (o los capítulos de un libro, como una lista de ellos) y devuelve los bytes crudos del PDF.
 - **`PdfFontProvider`** — la firma de callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` usa para pedir los bytes de una fuente cuando necesita incrustar una combinación family/weight/style nueva. `request.codePoints` contiene los caracteres que las páginas componen en esa variante; la respuesta es un archivo, o varios que juntos forman la variante (consulta [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas)).
-- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg? }`. `outlines`, `accessible` y `colorSpace` toman el valor del `pdfGeneration` del documento cuando no se pasan (ver [Generación de PDF (configuración)](#generación-de-pdf-configuración)). `resourceBytes` se describe en [Bytes de recursos y másteres de impresión](#bytes-de-recursos-y-másteres-de-impresión); `onWarning`, en [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor) y en [Avisos del documento](#avisos-del-documento). Con `characterGrid: true` el PDF imprime la retícula que `cjk.grid.show` dibuja en pantalla y que de otro modo deja fuera (ver [Retícula de caracteres](#retícula-de-caracteres)).
-- **`PdfWarning`** — un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para los que ningún archivo de una variante tiene glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una fuente variable pedida con un peso distinto del de su instancia por defecto; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una fuente CFF de más de 2 MB incrustada entera; o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, los avisos de fuentes van a `console.warn`).
+- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm? }`. `outlines`, `accessible` y `colorSpace` toman el valor del `pdfGeneration` del documento cuando no se pasan (ver [Generación de PDF (configuración)](#generación-de-pdf-configuración)). `resourceBytes` se describe en [Bytes de recursos y másteres de impresión](#bytes-de-recursos-y-másteres-de-impresión); `onWarning`, en [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor) y en [Avisos del documento](#avisos-del-documento). Con `characterGrid: true` el PDF imprime la retícula que `cjk.grid.show` dibuja en pantalla y que de otro modo deja fuera (ver [Retícula de caracteres](#retícula-de-caracteres)). `harfbuzzWasm` indica de dónde cargar el `harfbuzz.wasm` de HarfBuzz (una URL, relativa a la página, o los bytes del archivo) para un documento con texto de derecha a izquierda o de letras enlazadas; si no se pasa, la copia junto al módulo de postext-pdf y, después, la misma versión de harfbuzzjs en jsDelivr y en esm.sh.
+- **`PdfWarning`** — un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para los que ningún archivo de una variante tiene glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una fuente variable pedida con un peso distinto del de su instancia por defecto; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una fuente CFF de más de 2 MB incrustada entera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), texto de derecha a izquierda o de letras enlazadas dibujado sin HarfBuzz, que no se pudo cargar (`reason` dice dónde se buscó), así que las marcas del árabe quedan mal colocadas; o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, los avisos de fuentes van a `console.warn`).
 - **`decompressWoff2(bytes): Uint8Array`** — helper que convierte un archivo WOFF2 en bytes TTF, que es el formato que `pdf-lib` puede incrustar directamente.
 - **`createPdfWorker(options?)`**, de `postext-pdf/worker` — el mismo render en un Web Worker; consulta [Renderizar el PDF en un worker](#renderizar-el-pdf-en-un-worker).
 
@@ -7629,7 +7775,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **El documento define el aspecto.** El papel, la encuadernación, la mesa y la luz son los [ajustes `folio`](#visor-folio-configuración) del documento (`doc.config.folio`). Una página compuesta dentro de una tanda `:::paper` lleva su propio papel (`VDTPage.paper`), y su hoja se dibuja con el color, la superficie, el grosor y la rigidez de ese papel. Con `binding.cover: 'pages'`, la primera página es la tapa delantera y la última, si es un verso, la trasera (`covers`).
 - **El contenedor define el tamaño.** El libro lo ocupa entero, con los botones y el contador de páginas en los márgenes, así que dale una altura; al cambiar de tamaño, las páginas se vuelven a pintar al nuevo. Por debajo de 560 px de ancho muestra una página cada vez (`mode: 'auto'`; `'single'` y `'double'` fuerzan una u otra): el lomo va por el borde interior de la página y la hoja gira sobre él; arrastrar hacia el lomo avanza, deslizar en sentido contrario retrocede, y un toque pasa la página.
 - **Qué hace el puntero.** `interaction` (y después `setInteraction`) fija qué hace el botón izquierdo, un dedo o un lápiz sobre el libro: `'hand'` (por defecto) toma las páginas y las pasa, `'orbit'` gira la vista como al arrastrar con el botón derecho (para trackpads y tabletas), `'select'` deja el puntero al anfitrión, por ejemplo para seleccionar texto. `pageAt(event)` da la página bajo un puntero y el punto de ella (`{ page, x, y }`, fracciones de la página desde su esquina superior izquierda), sobre el libro tal como se ve, inclinado o girado; `pointOnScreen(point)` hace el camino inverso, para dibujar un cursor o una selección sobre la página. `refreshPage(src)` vuelve a mostrar el lienzo de una página que el anfitrión ha repintado en su sitio. El Sandbox los usa todos para seleccionar texto y seguir el cursor del editor sobre las páginas en 3D.
-- **El lector puede rodear el libro.** Arrastrar con el botón derecho gira la vista alrededor del libro (hasta 70° desde la vertical), también mientras pasan hojas; `resetView()` la devuelve con suavidad a la `tilt` de los ajustes. El Sandbox lo ofrece en un botón **Restablecer la vista**.
+- **El lector puede rodear el libro.** Arrastrar con el botón derecho gira la vista alrededor del libro (hasta 70° desde la vertical), también mientras pasan hojas; `resetView()` la devuelve con suavidad a la `tilt` y el `yaw` de los ajustes, y `getView()` da la vista tal como se ve ahora (`{ tilt, yaw }`, en grados) para guardarla en esos ajustes. El Sandbox los ofrece en dos botones, **Restablecer la vista** y **Guardar como vista por defecto**.
 - **Antes, fuentes e imágenes.** Como con `renderPage`, las fuentes del documento deben estar cargadas en `document.fonts` y sus imágenes registradas con `registerResourceImage` antes de pintar las páginas.
 - **Accesible.** El visor es un grupo enfocable que responde a ←/→ (en espejo para un libro encuadernado por la derecha), Re Pág/Av Pág, Inicio y Fin; sus botones y el contador de páginas llevan etiqueta (`labels` las traduce), y cada lienzo de página lleva texto alternativo (`alt: (index) => …`).
 - **Sin WebGL2**, o cuando el lector pide menos movimiento, los pliegos simplemente cambian. Un libro en WebGL pesa demasiado para un móvil (una textura por cada cara de página): el Sandbox ofrece su pestaña Folio solo donde hay WebGL2 y el lado corto de la pantalla mide al menos 600 px. `canFlip()` dice si las hojas pasarán en 3D en ese entorno: con WebGL2 y sin preferencia de menos movimiento.
@@ -7692,6 +7838,77 @@ El pen importa `postext` y `postext-folio` desde un CDN, compone un documento br
 `createFolio` con páginas dibujadas en lienzos, una última página en blanco y el color del papel.
 
 <CodePenExample name="folio-images" title="Postext · un libro de imágenes en 3D" description="Pasa en 3D cualquier página con postext-folio: URL de imágenes, elementos img o canvas." height={600} />
+
+## Libros EPUB (`postext-epub`)
+
+`postext-epub` escribe un libro maquetado como un archivo EPUB 3.3, en el navegador o en Node, sin servidor. Lee los mismos documentos por capítulo que `renderToPdf` recibe para un libro, así que los números de página, las notas, las citas, las referencias cruzadas, el índice general y el alfabético llegan resueltos, y devuelve el archivo como bytes. Es el escritor que usa la pestaña **EPUB 3** del Sandbox.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` es una dependencia *peer*, como en `postext-pdf`: actualiza los dos a la vez y, desde un CDN, fíjalos en la misma versión.
+
+### Maquetación fija y maquetación fluida
+
+EPUB 3 define dos maquetaciones, que el paquete declara con la propiedad `rendition:layout`; `layout` elige una:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Nombre en EPUB</td><td><code>pre-paginated</code> (maquetación fija, en inglés <em>fixed layout</em> o FXL)</td><td><code>reflowable</code> (maquetación fluida), la de EPUB por omisión</td></tr>
+    <tr><td>Documentos de contenido</td><td>Un documento XHTML por página impresa, con el tamaño de la página refilada en px CSS</td><td>Un documento XHTML por capítulo (una parte abre uno propio)</td></tr>
+    <tr><td>Qué conserva</td><td>La página: columnas, flotantes, cabeceras, aperturas, cortes de línea y posiciones, con las letras incrustadas. El texto sigue siendo texto: se selecciona, se busca y se lee en voz alta</td><td>El texto y su estructura: títulos, párrafos reconstruidos a partir de las líneas, listas, recuadros como apartes, figuras y tablas tras el texto que las cita, notas, enlaces y marcas de las páginas impresas. Una hoja de estilo derivada de la configuración</td></tr>
+    <tr><td>Qué pierde</td><td>La elección de letra, tamaño y márgenes de quien lee; en una pantalla pequeña la página se ve reducida</td><td>Las columnas, las cabeceras, el diseño de página y los cortes de línea exactos</td></tr>
+    <tr><td>Doble página y sentido</td><td><code>page-spread-left</code> / <code>page-spread-right</code> según la paridad y la encuadernación; un libro encuadernado por la derecha se lee de derecha a izquierda</td><td>El sentido de lectura sale de la encuadernación; el chino vertical conserva <code>vertical-rl</code> y el árabe lleva <code>dir="rtl"</code></td></tr>
+    <tr><td>Indicada para</td><td>Páginas diseñadas: libros ilustrados, libros de texto, catálogos, revistas; pantallas grandes</td><td>Texto corrido: novelas, ensayos, informes; móviles y lectores de tinta electrónica</td></tr>
+  </tbody>
+</table>
+
+Las dos maquetaciones llevan la misma navegación: un índice a partir de los títulos y las páginas de parte, una lista de páginas con los números impresos, puntos de referencia (cubierta, índice impreso, comienzo del cuerpo) y un NCX para lectores antiguos.
+
+### Escribir un libro
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // un VDTDocument por capítulo, en el orden del libro
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Linterna', creators: ['Ada Lovelace'], language: 'es' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+Un documento suelto es un libro de un capítulo: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escribe el archivo. `options` es `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` y `language` (una etiqueta BCP 47) son obligatorios; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` y `modified` son opcionales. Un ISBN sin prefijo pasa a `urn:isbn:…`. Sin `identifier`, el libro recibe un `urn:uuid:` derivado del título, los autores y el idioma, de modo que una versión nueva del mismo libro conserva su sitio en la biblioteca del lector. Pasa también `modified` para obtener un archivo idéntico byte a byte.
+- **`fonts`**: las variantes que se incrustan, `{ family, weight, style, bytes, format, unicodeRange? }`, con `format` uno de `woff2`, `woff`, `ttf`, `otf`. Cada variante pasa a ser un archivo y una regla `@font-face`; varios archivos con su `unicodeRange` forman una sola variante (los tramos de Google Fonts). Una familia, un peso o un estilo que las páginas usan sin variante incrustada se avisa como `missingFont`, y los lectores ponen una suya. Incrusta solo las letras cuya licencia lo permita.
+- **`resourceBytes(fileId)`**: las imágenes que colocan las páginas, de forma síncrona o asíncrona, como `{ bytes, mediaType }`; un `mediaType` vacío se lee de los bytes. Da los mapas de bits tal como están guardados y los SVG como su código fuente, no el máster PDF de imprenta (`svg.pdfFileId`). Cada imagen se guarda una vez. En un libro a una tinta (`diagramStyle.singleInk`) los SVG se recolorean en el archivo. Una imagen sin bytes se avisa como `missingImage` y queda como un marco vacío.
+- **`cover`**: `{ bytes, mediaType, alt? }`, una imagen JPEG, PNG, WebP o SVG. El libro se abre entonces con un documento de cubierta que la contiene, y es la `cover-image` del paquete (la miniatura en una biblioteca). Sin ella, la maquetación fija nombra cubierta a su primera página y el libro fluido no tiene imagen de cubierta.
+- **`onProgress({ phase, done, total })`**: `resources` (letras e imágenes), `documents` (páginas en la maquetación fija, capítulos en la fluida) y después `package`. **`signal`** interrumpe entre pasos.
+- **`readEpub(bytes)`** lee un archivo para un visor, sin `DOMParser`: maquetación, metadatos, sentido de lectura, cada archivo por su ruta, el manifiesto, el spine, el índice, la lista de páginas, el viewport de la maquetación fija y la cubierta. El lector del Sandbox se apoya en ella.
+
+Las dos maquetaciones llevan los metadatos de EPUB Accessibility 1.1 (modos de acceso, prestaciones como el índice y los números de página impresos, riesgos y un resumen) y no declaran conformidad con WCAG por omisión. La lista completa de opciones y las limitaciones están en el [README del paquete](https://www.npmjs.com/package/postext-epub).
+
+### Comprobar un archivo con EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) es el validador de referencia de EPUB; las tiendas de libros electrónicos comprueban con él los archivos que reciben. Con él instalado (`brew install epubcheck`, o la versión Java), `epubcheck libro.epub` enumera errores, avisos y notas de uso; las notas de uso que deja la salida de Postext (`CSS-028`, `OBS-001`, `HTM_062`) son informativas. En el repositorio de Postext, `pnpm --filter postext-epub epubcheck` comprueba los libros de muestra de las pruebas, `node packages/postext-epub/scripts/epubcheck.mjs libro.postext --layout both` maqueta un archivo `.postext` o una carpeta de preset y comprueba las dos maquetaciones, y `pnpm --filter postext-epub validate` recorre toda la matriz de libros (la guía, los presets de muestra y libros en chino, en árabe y del Recetario), que pasan todos sin errores ni avisos.
 
 ## Paquetes (archivos `.postext`)
 

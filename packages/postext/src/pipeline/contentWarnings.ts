@@ -20,7 +20,7 @@ import { parsePaperAttrs } from './paper';
 import { extractFrontmatter } from '../frontmatter';
 import { tableGridIssues } from '../table/model';
 import type { PostextConfig, Resource } from '../types';
-import type { ConfigWarning, ContentWarning, LayoutWarning, RenderWarning, VDTDocument } from '../vdt';
+import type { ConfigWarning, ContentWarning, LayoutWarning, RenderWarning, VDTDesignSlot, VDTDocument } from '../vdt';
 import type { HeadingDesignCut } from './headingDesignCuts';
 import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
@@ -264,6 +264,13 @@ export function collectContentWarnings(
         break;
       }
       case 'paragraph': {
+        // A poem's `{style=…}` names a paragraph style (#378): its fence
+        // line is the range.
+        const verseStyle = b.verse?.attrs.style;
+        if (verseStyle !== undefined && !paragraphStyles.has(verseStyle)) {
+          const fenceEnd = body.indexOf('\n', b.sourceStart);
+          out.push({ kind: 'unknownParagraphStyle', style: verseStyle, ...abs({ start: b.sourceStart, end: fenceEnd < 0 ? b.sourceEnd : fenceEnd }) });
+        }
         if (b.footnoteDef !== undefined && !footnoteDefs.has(b.footnoteDef)) {
           // The definition's `[^id]:` sits before its text, on its line.
           const lineStart = body.lastIndexOf('\n', b.sourceStart - 1) + 1;
@@ -483,6 +490,73 @@ export function cjkLooseLineWarnings(doc: VDTDocument): ContentWarning[] {
   return out;
 }
 
+/** An `unbreakableWordOverflow` warning for each line holding a word of a
+ *  joining script wider than the line (`VDTLine.wordOverflow`), on the page
+ *  it was placed on; and once per text for a design text line that does
+ *  (`VDTDesignTextLine.wordOverflow`: a running head repeats it on every
+ *  page), on the first page that shows it. */
+export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<string>();
+  const slot = (s: VDTDesignSlot | undefined, pageIndex: number): void => {
+    for (const b of s?.blocks ?? []) {
+      if (b.kind !== 'text') continue;
+      for (const line of b.lines) {
+        if (!line.wordOverflow || seen.has(line.text)) continue;
+        seen.add(line.text);
+        out.push({
+          kind: 'unbreakableWordOverflow',
+          text: line.text,
+          ...(b.sourceStart !== undefined ? { sourceStart: b.sourceStart } : {}),
+          ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+          pageIndex,
+        });
+      }
+    }
+  };
+  doc.pages.forEach((page, i) => {
+    slot(page.header, i);
+    slot(page.openerBand, i);
+    for (const col of page.columns) for (const block of col.blocks) slot(block.designOverlay, i);
+    for (const block of page.floats ?? []) slot(block.designOverlay, i);
+    slot(page.footer, i);
+  });
+  for (const block of doc.blocks) {
+    for (const line of block.lines) {
+      if (!line.wordOverflow) continue;
+      out.push({
+        kind: 'unbreakableWordOverflow',
+        text: line.text,
+        ...(line.sourceStart !== undefined ? { sourceStart: line.sourceStart } : {}),
+        ...(line.sourceEnd !== undefined ? { sourceEnd: line.sourceEnd } : {}),
+        ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+      });
+    }
+  }
+  return out;
+}
+
+/** A `joiningScriptLetterSpacing` warning for the first placed part of
+ *  each block (by content index, `blocks`) whose style tracks words of a
+ *  joining script, which are set untracked. */
+export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlySet<number>): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<number>();
+  for (const block of doc.blocks) {
+    const idx = block.contentIndex;
+    if (idx === undefined || !blocks.has(idx) || seen.has(idx)) continue;
+    seen.add(idx);
+    out.push({
+      kind: 'joiningScriptLetterSpacing',
+      text: block.lines[0]?.text ?? '',
+      ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : {}),
+      ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
+      ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+    });
+  }
+  return out;
+}
+
 /** Where a warning sits, for a message: `page 3` / `offset 120`. A
  *  configuration warning names its setting in the text instead. */
 function where(w: LayoutWarning | ContentWarning | ConfigWarning | RenderWarning | HeadingDesignCut): string {
@@ -587,11 +661,20 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
+    case 'unbreakableWordOverflow':
+      text = `The line "${w.text}" holds an Arabic-script word wider than the line — such a word is never divided, so it runs past the measure`;
+      break;
+    case 'joiningScriptLetterSpacing':
+      text = `"${w.text}": its style sets letter-spacing, which Arabic-script words do not take (it breaks their joins) — they are set without it`;
+      break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;
     case 'rubyExceedsLeading':
       text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
+      break;
+    case 'arabicMarksExceedLeading':
+      text = `The vowel marks of "${w.text}" meet the next line: the two lines' ink takes ${w.neededEm} em, and their baselines are ${w.lineHeightEm} em apart; set the paragraph with more leading`;
       break;
     case 'unknownNumberFormat':
       text = `${w.path}: unknown number format "${w.value}" — numbered as ${w.used}`;

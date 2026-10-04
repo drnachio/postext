@@ -20,13 +20,13 @@ export interface PlateLabels {
   /** Screen-reader prefix of the level: "Level 2 of 3". */
   levelOf: (level: number) => string;
   pages: (count: number) => string;
-  /** Short badges for the outputs worth flagging (pdf, html, bundle, live). */
+  /** Short badges for the outputs worth flagging (pdf, html, epub, bundle, live). */
   badges: Partial<Record<OutputId, string>>;
   draft: string;
   workaround: string;
 }
 
-const BADGE_ORDER: OutputId[] = ["pdf", "html", "bundle", "live"];
+const BADGE_ORDER: OutputId[] = ["pdf", "html", "epub", "bundle", "live"];
 
 /** "Nº 007" */
 export function plateNumber(prefix: string, n: number): string {
@@ -187,7 +187,7 @@ export function RecipeCard({
 
       {reason && (
         <p className="order-7 mt-1.5 truncate font-mono text-[0.68rem] text-slate">
-          <span aria-hidden="true">↳ </span>
+          <span aria-hidden="true"><span className="inline-block rtl:-scale-x-100">↳</span> </span>
           {reason}
         </p>
       )}

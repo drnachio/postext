@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { EMPTY_VIEW_HASH, parseViewHash, pdfPageFragment, readViewHash, sameBook, viewHashFragment, writeViewHash } from './viewHash';
+import { EMPTY_VIEW_HASH, isViewportTab, parseViewHash, pdfPageFragment, readViewHash, sameBook, viewHashFragment, writeViewHash } from './viewHash';
 
 // Minimal window stand-in: the helpers only touch `location` and
 // `history.replaceState`.
@@ -51,8 +51,14 @@ describe('view hash', () => {
     expect(parseViewHash('#preset=x&lang=e s&view=print')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'x' });
     expect(parseViewHash('#preset=&view=html')).toEqual({ ...EMPTY_VIEW_HASH, view: 'html' });
     expect(parseViewHash('#preset=don-quijote&view=folio')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'don-quijote', view: 'folio' });
+    expect(parseViewHash('#preset=don-quijote&view=epub')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'don-quijote', view: 'epub' });
     // Encoded ids come back decoded.
     expect(parseViewHash('#preset=libro%2Funo')).toEqual({ ...EMPTY_VIEW_HASH, preset: 'libro/uno' });
+  });
+
+  it('knows the five viewer tabs and nothing else', () => {
+    for (const view of ['canvas', 'pdf', 'folio', 'html', 'epub']) expect(isViewportTab(view)).toBe(true);
+    for (const view of ['print', 'EPUB', 'epub3', '', null, undefined]) expect(isViewportTab(view)).toBe(false);
   });
 
   it('builds the fragment, leaving unknown parts out, the book first', () => {
@@ -64,6 +70,7 @@ describe('view hash', () => {
       .toBe('#preset=bioquimica-feduchi&lang=es&view=canvas&chapter=1&page=7');
     // A project's fragment carries no locale; a preset is not named beside it.
     expect(viewHashFragment({ project: 'p1', preset: 'x', lang: 'es', view: 'html' })).toBe('#project=p1&view=html');
+    expect(viewHashFragment({ project: 'p1', view: 'epub', chapter: 0 })).toBe('#project=p1&view=epub&chapter=1');
     expect(viewHashFragment({ preset: 'libro/uno' })).toBe('#preset=libro%2Funo');
   });
 

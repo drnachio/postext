@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cardProblems, sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
 import { detect, detectFeatures, runChecks } from "../../../scripts/cookbook/checks.ts";
-import type { CheckInput, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
+import type { CheckInput, EpubRecord, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
 import { loadRegistry } from "./registry.ts";
 import type { ComposedPen, RecipeMeta } from "./types.ts";
 
@@ -51,6 +51,32 @@ function input(overrides: Partial<CheckInput> = {}): CheckInput {
 
 const of = (check: string, findings: ReturnType<typeof runChecks>) => findings.filter((f) => f.check === check);
 
+describe("C5: content warnings on how the text is set (#401)", () => {
+  const textWarnings = [
+    { kind: "arabicMarksExceedLeading", page: 3, detail: "وَقَالَ" },
+    { kind: "unbreakableWordOverflow", page: null, detail: "https://example.org/a-very-long-path" },
+    { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
+  ];
+
+  it("fails a recipe on the Arabic and word-overflow warnings it does not expect", () => {
+    const c5 = of("C5", runChecks(input({ facts: facts({ textWarnings }) })));
+    expect(c5.map((f) => [f.severity, f.detail])).toEqual([
+      ["fail", 'arabicMarksExceedLeading "وَقَالَ" on page 3'],
+      ["fail", 'unbreakableWordOverflow "https://example.org/a-very-long-path"'],
+      ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
+    ]);
+  });
+
+  it("lets a recipe that shows one list it in expect.warnings", () => {
+    const m = meta({ capture: { hero: 1, card: "page", expect: { warnings: ["arabicMarksExceedLeading"] } } } as Partial<RecipeMeta>);
+    const c5 = of("C5", runChecks(input({ meta: m, facts: facts({ textWarnings: textWarnings.slice(0, 1) }) })));
+    expect(c5).toEqual([]);
+    // Listed and absent: an info, as for the other warnings.
+    const absent = of("C5", runChecks(input({ meta: m, facts: facts({ textWarnings: [] }) })));
+    expect(absent.map((f) => [f.severity, f.detail])).toEqual([["info", "expect.warnings lists arabicMarksExceedLeading, which did not occur"]]);
+  });
+});
+
 describe("C24: loose lines", () => {
   it("judges Chinese lines by the space between their characters", () => {
     const cjkLoose = {
@@ -90,7 +116,22 @@ describe("C25: characters the PDF cannot set", () => {
   });
 });
 
-describe("C12: CJK files loaded after the layout", () => {
+describe("C14: a PDF shaped without HarfBuzz", () => {
+  it("fails a capture whose PDF set Arabic without HarfBuzz", () => {
+    const console = [{ type: "warn", text: "postext-pdf: HarfBuzz did not load, so right-to-left and joining text is shaped with fontkit and its marks are misplaced (https://esm.sh/x/harfbuzz.wasm: HTTP 404)" }];
+    const found = of("C14", runChecks(input({ console })));
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ severity: "fail" });
+    expect(found[0].detail).toMatch(/shaped without HarfBuzz: postext-pdf: HarfBuzz did not load/);
+  });
+
+  it("also knows the older releases' message", () => {
+    const console = [{ type: "warn", text: "postext-pdf: HarfBuzz did not load; complex scripts are shaped with fontkit ([unenv] module.require is not implemented yet!)" }];
+    expect(of("C14", runChecks(input({ console })))).toHaveLength(1);
+  });
+});
+
+describe("C12: CJK and Arabic files loaded after the layout", () => {
   it("fails a face that set characters it had not loaded", () => {
     const late = [{ family: "Noto Sans TC", weight: 700, style: "normal" as const, where: "p3 heading", chars: "章回" }];
     const faces = { used: [], loaded: [], missing: [], late };
@@ -100,6 +141,14 @@ describe("C12: CJK files loaded after the layout", () => {
       detail: "Noto Sans TC 700 sets 章 回 (p3 heading) from files not loaded when the layout ran: give loadCjkFonts the text this face sets, and list the weight in FONTS",
     }]);
     expect(of("C12", runChecks(input({ facts: facts({ faces: { used: [], loaded: [], missing: [] } }) })))).toEqual([]);
+  });
+
+  it("names loadArabicFonts for an Arabic weight that had only its latin file", () => {
+    const late = [{ family: "Amiri", weight: 700, style: "normal" as const, where: "p2 heading", chars: "اللي" }];
+    const faces = { used: [], loaded: [], missing: [], late };
+    expect(of("C12", runChecks(input({ facts: facts({ faces }) })))[0].detail).toBe(
+      "Amiri 700 sets ا ل ل ي (p2 heading) from files not loaded when the layout ran: list the weight in FONTS and load it with loadArabicFonts(FONTS, markdown) before the build",
+    );
   });
 });
 
@@ -149,5 +198,51 @@ describe("right-binding detection", () => {
     const userConfig = { layout: { writingMode: "vertical-rl" } };
     expect(detect(meta(), facts({ userConfig, binding: "right" }), pen, registry).features).toContain("right-binding");
     expect(detect(meta(), facts({ userConfig }), pen, registry).features).not.toContain("right-binding");
+  });
+
+  it("follows the document when an Arabic locale sets the text right to left", () => {
+    // locale 'ar' alone: the engine resolves direction 'rtl' and binds the
+    // book on the right; the probe reads both off the document.
+    const pen = { js: "" } as ComposedPen;
+    const userConfig = { locale: "ar" };
+    const arabic = detect(meta(), facts({ userConfig, binding: "right", direction: "rtl" }), pen, registry).features;
+    expect(arabic).toEqual(expect.arrayContaining(["right-binding", "text-direction"]));
+    expect(arabic).not.toContain("document-digits");
+    // The probe records the digits the locale chose (latn for 'ar-MA' too).
+    const digits = (numerals: "latn" | "arab") => detect(meta(),
+      facts({ userConfig, binding: "right", direction: "rtl", numerals }), pen, registry).features;
+    expect(digits("arab")).toContain("document-digits");
+    expect(digits("latn")).toContain("document-digits");
+    expect(detect(meta(), facts({ userConfig: { locale: "en" } }), pen, registry).features).not.toContain("text-direction");
+  });
+});
+
+describe("C30: the EPUBs a pen writes (#404)", () => {
+  const epub = (extra: Partial<EpubRecord> = {}): EpubRecord => ({
+    layout: "fixed", bytes: 120_000, ms: 300, documents: 4, pages: 4, toc: 1, readLayout: "fixed", warnings: [], error: null, ...extra,
+  });
+  const epubMeta = meta({ outputs: ["canvas", "pdf", "epub"] });
+
+  it("fails an epub recipe that wrote none, or a file that does not read back", () => {
+    expect(of("C30", runChecks(input({ meta: epubMeta, epubs: [] }))).map((f) => f.severity)).toEqual(["fail"]);
+    const broken = of("C30", runChecks(input({ meta: epubMeta, epubs: [
+      epub({ error: "readEpub: not a zip" }),
+      epub({ layout: "reflowable", documents: 0 }),
+      epub({ layout: "reflowable", readLayout: "fixed" }),
+    ] })));
+    expect(broken.map((f) => f.detail)).toEqual([
+      "the fixed EPUB: readEpub: not a zip",
+      "the reflowable EPUB has no content documents",
+      "the reflowable EPUB reads back as fixed",
+    ]);
+  });
+
+  it("passes both layouts and reports the writer's warnings", () => {
+    const fine = [epub(), epub({ layout: "reflowable", readLayout: "reflowable", documents: 2 })];
+    expect(of("C30", runChecks(input({ meta: epubMeta, epubs: fine })))).toEqual([]);
+    const warned = of("C30", runChecks(input({ meta: epubMeta, epubs: [epub({ warnings: ["missingFont: Literata"] })] })));
+    expect(warned).toEqual([{ check: "C30", severity: "warn", detail: "the fixed EPUB: missingFont: Literata" }]);
+    // A recipe without the output is not asked for one.
+    expect(of("C30", runChecks(input()))).toEqual([]);
   });
 });

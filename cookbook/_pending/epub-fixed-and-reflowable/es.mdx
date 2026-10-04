@@ -1,0 +1,61 @@
+---
+title: "Un libro, dos EPUB 3: maquetación fija y fluida"
+summary: "renderToEpub, de postext-epub, escribe los capítulos de buildBundle como un EPUB de maquetación fija y otro fluido; readEpub muestra qué lleva cada uno."
+plain: "Un cuento corto compuesto una vez para imprimir y guardado como dos libros electrónicos: uno que conserva cada página impresa y otro cuyo texto el móvil o el lector electrónico recompone a su tamaño."
+description: "Un libro de tres capítulos compuesto con buildBundle y escrito con postext-epub como EPUB 3 de maquetación fija y fluida, cada uno leído con readEpub."
+question: "¿Cómo exporto mi libro a EPUB, con páginas fijas o con un texto que se recompone?"
+aliases: ["EPUB", "EPUB 3", "libro electrónico", "ebook", "maquetación fija", "maquetación fluida", "texto fluido", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "La portada: el autor en versalitas azules, el título ¡Adiós, Cordera! en una romana de rótulo, un filete corto y el subtítulo en cursiva.", "3": "La apertura del capítulo I bajo el antetítulo ¡Adiós, Cordera!, con el comienzo del cuento debajo." }
+---
+
+## Lo que vas a componer
+
+*¡Adiós, Cordera!*, el cuento de Clarín, en tres capítulos sobre una página de 120 × 190 mm, con portada, página de créditos al dorso y una apertura hundida en cada capítulo; la edición inglesa compone dieciocho fábulas de Esopo con el mismo diseño. El libro se compone una vez, capítulo a capítulo, y esa composición da dos archivos EPUB 3. El de maquetación fija conserva cada página impresa: las aperturas, las cabeceras y los cortes de línea, en la Caslon incrustada. El fluido conserva el texto y su estructura, y el sistema de lectura lo vuelve a componer en un móvil o en una pantalla de tinta electrónica. Los dos se descargan desde la página y los dos pasan EPUBCheck, el validador del W3C.
+
+## Elaboración
+
+### 1 · Compón el libro por capítulos
+
+<Excerpt region="openers" />
+
+`buildBundle` compone cada capítulo como un documento propio y pasa de uno a otro el número de página y la paridad, así que `docs` es la misma lista que imprimiría `renderToPdf`. El escritor de EPUB lee esa lista: cada capítulo es una entrada del índice de navegación, y el archivo fluido escribe un documento XHTML por capítulo. La portada y su página de créditos forman el primer capítulo, y su frontmatter da el título, el subtítulo y el autor del libro.
+
+### 2 · Dale al escritor los archivos de las fuentes
+
+<Excerpt region="embed" />
+
+Las fuentes que cargó el navegador no son archivos que el escritor pueda leer, así que el código vuelve a pedir los mismos woff2 de Fontsource, que el navegador ya tiene en caché. Cada uno entra en el EPUB como un archivo con su regla `@font-face`. Sin ellos, la maquetación fija colocaría el texto compuesto en Caslon con una fuente del lector, y las líneas ya no cabrían en su medida.
+
+### 3 · Escribe las dos versiones
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `layout: 'fixed'` escribe un documento XHTML por página impresa, al tamaño de la página refilada y con texto de verdad, que se puede seleccionar; `layout: 'reflowable'` rehace los párrafos a partir de las líneas compuestas, quita los guiones que añadieron los cortes de línea y saca una hoja de estilos de la configuración. Una fecha `modified` fija hace que cada ejecución dé los mismos bytes. Los metadatos salen del frontmatter del primer capítulo, de modo que el título y el autor del archivo son los que se imprimen en la portada.
+
+### 4 · Lee cada archivo de vuelta
+
+<Excerpt region="shelf" />
+
+`readEpub` abre el archivo como lo abre un sistema de lectura: el orden de lectura (*spine*), el índice, la lista de páginas y la maquetación. El archivo fijo tiene una entrada por página; el fluido, cuatro, una por capítulo. Los dos llevan la lista de los folios impresos, así que una cita de la página 9 se encuentra en cualquiera de ellos. El enlace `<a download>` da nombre a los bytes; nada pasa por un servidor.
+
+## Variantes
+
+### Pon una imagen de cubierta a la maquetación fija
+
+Pinta la portada en un canvas y pásala como cubierta; `showsFirstPage` le dice al escritor que no la añada como una página más.
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### Imprime los mismos capítulos en PDF
+
+`renderToPdf(docs, …)`, de `postext-pdf`, recibe la misma lista, así que el PDF, el EPUB y la pantalla salen de una sola composición. <RecipeLink slug="catalan-pocket-novella">La novela catalana de bolsillo</RecipeLink> muestra el lado del PDF.
+
+## Errores frecuentes
+
+El archivo fluido conserva el texto de un título, pero no su diseño: el antetítulo de cada apertura es un elemento de diseño y no forma parte del texto. Lo que el lector tenga que ver va en el propio título o en el texto.

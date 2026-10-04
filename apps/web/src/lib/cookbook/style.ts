@@ -28,6 +28,9 @@ type Rule = { re: RegExp; label: string };
 
 const rule = (source: string, label = source): Rule => ({ re: new RegExp(source, "giu"), label });
 
+/** An Arabic phrase as a whole word or words: `\\b` only sees ASCII letters. */
+const arRule = (source: string, label = source): Rule => rule(`(?<!\\p{L})(?:${source})(?!\\p{L})`, label);
+
 const HARD: Record<Locale, Rule[]> = {
   en: [
     rule("\\bdelv(e|es|ed|ing)\\b", "delve"),
@@ -74,8 +77,39 @@ const HARD: Record<Locale, Rule[]> = {
     rule("\\bun sinfín de\\b", "un sinfín de"),
     rule("\\baprovecha(r)? al máximo\\b", "aprovechar al máximo"),
   ],
+  ca: [
+    rule("\\b(submergeix-te|submergim-nos|endinsem-nos|endinsar-nos en el (fascinant|apassionant))\\b", "submergeix-te / endinsem-nos"),
+    rule("\\ben (el|aquest) (vertiginós|canviant) món\\b", "en el vertiginós món"),
+    rule("\\ben (el món actual|l['’]era digital|constant evolució)\\b", "en el món actual / en constant evolució"),
+    rule("\\bsense fissures\\b", "sense fissures"),
+    rule("\\bdesbloque(ja|jar|gen)\\b", "desbloquejar"),
+    rule("\\b(és )?un (veritable |autèntic )?testimoni de\\b", "un testimoni de"),
+    rule("\\b(juga|juguen|jugar) un paper (crucial|fonamental|clau|vital|essencial)\\b", "juga un paper crucial"),
+    rule("\\b(cal|val la pena) (destacar|assenyalar|esmentar|remarcar)\\b", "cal destacar"),
+    rule("(?<!\\p{L})és (important|fonamental) (destacar|assenyalar|esmentar|remarcar)\\b", "és important destacar"),
+    rule("\\b(en resum|en conclusió|en definitiva|per concloure)\\b", "en resum / en conclusió"),
+    rule("\\b(tota una experiència|una autèntica joia|una veritable joia)\\b", "tota una experiència"),
+    rule("\\b(al següent|a un altre) nivell\\b", "portar al següent nivell"),
+    rule("\\bun (ampli )?ventall de (possibilitats|opcions|recursos|eines|estils)\\b", "un ventall de possibilitats"),
+    rule("\\buna infinitat de\\b", "una infinitat de"),
+    rule("\\btreure(-ne)? el màxim (profit|partit)\\b", "treure el màxim profit"),
+  ],
   // HARD_ZH, below, checks Chinese prose in every locale.
   zh: [],
+  ar: [
+    arRule("في (?:عالم|عصر) [^.؟!،]{0,30}(?:المتسارع|المتغير|المتطور|الرقمي)", "في عالم … المتسارع"),
+    arRule("(?:انطلق|لننطلق|ننطلق) في رحلة", "انطلق في رحلة"),
+    arRule("(?:غني|غنيّ) عن (?:القول|البيان)", "غني عن القول"),
+    arRule("لا يخفى على (?:أحد|أحدٍ)", "لا يخفى على أحد"),
+    arRule("(?:تجدر|وتجدر) الإشارة (?:إلى|الى) أن", "تجدر الإشارة إلى أن"),
+    arRule("(?:في|وفي) (?:الختام|نهاية المطاف|خلاصة القول)", "في الختام"),
+    arRule("(?:يلعب|تلعب|يؤدي|تؤدي) دورًا (?:محوريًا|حاسمًا|حيويًا|جوهريًا)", "يلعب دورًا محوريًا"),
+    arRule("إطلاق العنان", "إطلاق العنان"),
+    arRule("نقلة نوعية", "نقلة نوعية"),
+    arRule("(?:ب|ب)كل سلاسة", "بكل سلاسة"),
+    arRule("(?:إلى|الى) (?:المستوى|مستوى) (?:التالي|آخر)", "إلى المستوى التالي"),
+    arRule("(?:عالم|عالمًا) من الإمكانيات", "عالم من الإمكانيات"),
+  ],
 };
 
 const SOFT: Record<Locale, Rule[]> = {
@@ -105,8 +139,31 @@ const SOFT: Record<Locale, Rule[]> = {
     rule("\\bno es (solo|sólo|simplemente) un\\b", "no es solo un"),
     rule("\\bpotencia(r)? (tu|su|sus|tus)\\b", "potenciar"),
   ],
+  ca: [
+    rule("\\b(fascinant|apassionant|vibrant|impressionant|captivador(a)?|meticulos(a|ament))\\b", "fascinant/vibrant"),
+    rule("\\b(crucial|robust(a|os|es)?|d['’]avantguarda|a l['’]avantguarda)\\b", "crucial/robust/avantguarda"),
+    rule("\\bsens(e)? cap mena de dubte\\b", "sense cap mena de dubte"),
+    rule("\\bno (només|sols)\\b[^.!?]{1,80}\\bsinó (també|que)\\b", "no només … sinó també"),
+    rule("¿?(El|La) (resultat|clau|truc|secret|resposta)\\?", "El resultat? (revelació)"),
+    rule("(^|[.!?]\\s+)Imagina\\b", "Imagina…"),
+    rule("\\b(al cor de|l['’]art de|la màgia de)\\b", "al cor de / l'art de"),
+    rule("\\bun viatge\\b", "un viatge"),
+    rule("\\bde manera (fluida|eficient|efectiva)\\b", "de manera fluida"),
+    rule("\\bdescobreix (com|tot)\\b", "descobreix com"),
+    rule("\\bno és (només|simplement) un\\b", "no és només un"),
+    rule("\\bpotencia(r)? (el teu|la teva|els teus|les teves|el seu|la seva)\\b", "potenciar"),
+  ],
   // SOFT_ZH, below, checks Chinese prose in every locale.
   zh: [],
+  ar: [
+    arRule("(?:مذهل|مذهلة|رائع|رائعة|ساحر|ساحرة|مبهر|مبهرة|فريد من نوعه)", "مذهل/رائع/مبهر"),
+    arRule("(?:اكتشف|اكتشفوا) كيف", "اكتشف كيف"),
+    arRule("ليس (?:مجرد|فقط)[^.؟!]{1,80}بل", "ليس مجرد … بل"),
+    arRule("(?:في قلب|فن|سحر) (?:ال)", "في قلب / فن / سحر"),
+    arRule("(?:تخيّل|تخيل)", "تخيّل…"),
+    arRule("بلا شك|دون أدنى شك", "بلا شك"),
+    arRule("رحلة", "رحلة"),
+  ],
 };
 
 /** Stock phrases of Chinese prose written by machine, in Simplified and

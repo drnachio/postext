@@ -38,6 +38,7 @@ export function TabInputs({
       {activeTab === 'hex' && (
         <>
         <input
+          dir="ltr"
           type="text"
           aria-label={hexLabel}
           aria-invalid={hexError ? true : undefined}

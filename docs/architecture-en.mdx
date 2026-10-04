@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '38 min',
   order: 2,
   plainSummary: "This page explains how Postext works inside, and it is written for programmers. First, Postext measures every word without drawing anything on screen, which makes it very fast. Then it works out where every line, picture and column goes, and keeps that plan in memory. It repeats the work until nothing moves any more. Last, it draws the finished pages as a web page, a canvas image or a PDF file. When you change a word, only the parts that changed are worked out again.",
@@ -95,7 +95,7 @@ has gone fuzzy.
     </tr>
     <tr>
       <td><strong>Backend</strong></td>
-      <td>A rendering target that consumes the converged VDT. Three are shipping today: <strong>canvas</strong> (bitmap preview), <strong>HTML</strong> (DOM-based screen reading) and <strong>PDF</strong> (print-ready output via <code>postext-pdf</code>). All three share the same measurement (the measure module over Pretext).</td>
+      <td>A rendering target that consumes the converged VDT. Three are shipping today: <strong>canvas</strong> (bitmap preview), <strong>HTML</strong> (DOM-based screen reading) and <strong>PDF</strong> (print-ready output via <code>postext-pdf</code>). All three share the same measurement (the measure module over Pretext). A fourth, <strong>EPUB</strong> (<code>postext-epub</code>), writes the book as an e-book from the same documents.</td>
     </tr>
     <tr>
       <td><strong>Pass</strong></td>
@@ -640,9 +640,12 @@ renderToHtmlIndexed(doc, options?): HtmlRenderIndex;    // per-page / per-block 
 
 // PDF (from 'postext-pdf')
 renderToPdf(doc, options): Promise<Uint8Array>;
+
+// EPUB (from 'postext-epub'), a book's chapters in order
+renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-Because binary resource payloads live out-of-band, each backend resolves `fileId`s its own way. The canvas backend keeps a registry of decoded `CanvasImageSource`s — the host app registers each bitmap or SVG once with `registerResourceImage(fileId, image)` and the renderer looks it up at draw time. The HTML backend takes a `resourceImageUrl(fileId)` resolver in its options and emits `<img>` tags pointing at whatever URLs (object URLs, data URIs, CDN paths) the host returns. The PDF backend receives a `resourceBytes` provider and embeds the actual bytes. Table resources need none of this — their model is inline, and every backend draws the cells from the VDT's table geometry.
+Because binary resource payloads live out-of-band, each backend resolves `fileId`s its own way. The canvas backend keeps a registry of decoded `CanvasImageSource`s — the host app registers each bitmap or SVG once with `registerResourceImage(fileId, image)` and the renderer looks it up at draw time. The HTML backend takes a `resourceImageUrl(fileId)` resolver in its options and emits `<img>` tags pointing at whatever URLs (object URLs, data URIs, CDN paths) the host returns. The PDF backend receives a `resourceBytes` provider and embeds the actual bytes; the EPUB writer takes one too and stores each picture once as a file of the book. Table resources need none of this — their model is inline, and every backend draws the cells from the VDT's table geometry.
 
 `renderToHtmlIndexed` deserves a note: besides the full HTML string, it returns a per-page, per-block breakdown (`HtmlRenderIndex`) so callers can diff against a previous render and patch only the DOM subtrees whose HTML actually changed — the live-preview path in the sandbox.
 
@@ -677,6 +680,12 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
       <td><strong>Shipping</strong></td>
     </tr>
     <tr>
+      <td><strong>EPUB</strong></td>
+      <td>Consumes the VDT already measured with Pretext</td>
+      <td>EPUB 3 file: one XHTML document per printed page (fixed layout) or per chapter (reflowable), fonts embedded (<code>renderToEpub</code> in <code>postext-epub</code>)</td>
+      <td><strong>Shipping</strong></td>
+    </tr>
+    <tr>
       <td><strong>Server-side</strong></td>
       <td>Pretext + node-canvas</td>
       <td>Headless rendering for SSR / batch generation</td>
@@ -685,7 +694,7 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
   </tbody>
 </table>
 
-All three shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes.
+All four shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books.
 
 **Browser-only constraint:** In Phase 1, all layout computation happens client-side in the browser. The pipeline can run either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the full integration pattern. Server-side rendering remains a deliberate scope decision for later — nail the browser experience first, expand to other targets later.
 

@@ -1,0 +1,68 @@
+---
+title: "Espaiat uniforme en columnes estretes i justificades"
+summary: "Tall Knuth–Plass amb els espais entre 0,8 i 1,6 vegades el normal, al costat d'un control voraç amb les línies fluixes, soles i curtes marcades des del VDT."
+plain: "Una petita revista sobre tipografia, en columnes estretes amb el text alineat a tots dos costats. Ensenya a mantenir iguals els espais entre paraules, al costat d'una versió amb les línies desiguals marcades en groc."
+description: "Una revista de tipografia en A5 composta dues vegades: Knuth–Plass amb espaiat de 0,8 a 1,6 davant el tall voraç, amb les línies fluixes marcades des del VDT."
+question: "Com aconsegueixo una justificació uniforme en columnes estretes, amb la partició de mots de cada llengua?"
+aliases: ["justificació", "espaiat entre paraules", "rius", "carrers", "línies fluixes", "Knuth-Plass", "cola", "goma", "tall voraç", "primer ajust", "vídues", "òrfenes", "línies curtes", "partició de mots", "llengua de la partició", "columnes estretes", "ajust del text", "justifiedSpaceRatio", "minWordSpacing", "maxWordSpacing"]
+pageNotes: { "1": "Una banda grafit amb l'avanttítol Galerada · n.º 12 · Justificación en groc fosforescent, el títol El problema de los ríos en blanc i una entradeta en cursiva; a sota, un diagrama: una fila de caixes blanques unides per molles grogues l'última paraula de la qual sobrepassa una línia de traços que marca la mesura, i la mateixa fila partida, amb les molles estirades fins a la mesura. Sota la banda comencen dues columnes justificades.", "2": "Dues columnes plenes: les seccions Línea a línea o en bloque, Límites para la cola, Partir palabras i Viudas y huérfanas, amb la configuració vigent (minWordSpacing 0,8, maxWordSpacing 1,6; widowPenalty, orphanPenalty, slackWeight) en monoespaiada al costat d'un filet grafit.", "3": "El final de l'assaig en dues columnes anivellades, amb la configuració de les línies curtes i el colofó, sobre un banc de proves grafit al peu de la pàgina: un mateix paràgraf en bandera, justificat sense partir (amb grans forats) i justificat amb partició, i una nota en blanc." }
+---
+
+## Què compondràs
+
+El número 12 de *Galerada*, revista d'un taller tipogràfic, en A5 i a dues columnes d'uns quaranta caràcters, on cada línia justificada reparteix la folgança entre cinc o sis espais. L'obertura dibuixa sobre una banda grafit el model de Knuth i Plass: caixes de paraules unides per molles grogues de cola que s'estiren fins a omplir la mesura. L'assaig explica per què s'afluixen les columnes estretes i intercala en monoespaiada la configuració de cada regla. Al peu de la pàgina 3, un banc de proves compon un paràgraf en bandera, justificat sense partir paraules i justificat partint-les. El pen compon a més una segona edició amb el tall voraç, sense proteccions de vídues ni òrfenes, i, abans del número, mostra juntes les dues pàgines 2, com a la targeta: les línies fluixes, en groc fosforescent; les soles i les curtes, assenyalades al marge.
+
+## Elaboració
+
+### 1 · Estreny els límits i conserva les proteccions
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. [Knuth–Plass](/ca/docs/justification#knuth-plass-veure-el-paràgraf-sencer), la partició de mots, les penalitzacions de vídues, òrfenes i línies curtes i els títols units al seu text vénen activats per defecte, així que l'edició publicada només estreny els [límits de l'espaiat](/ca/docs/justification#límits-despaiat-entre-paraules) a 0,8 i 1,6 vegades un espai normal (per defecte són 0,6 i 2). Una línia que passa del límit superior costa més que qualsevol guionet o línia curta, així que l'algorisme prova abans altres talls; sense aquests dos límits, aquest assaig compon vuit línies per sobre d'1,6. La partició depèn de `locale` i del seu codi exacte: `'es'`, `'fr'` i `'de'` tenen els seus propis patrons de TeX, mentre que `'es-ES'` es parteix com l'anglès dels Estats Units sense cap avís.
+
+### 2 · Marca les línies fluixes des de l'arbre de composició
+
+<Excerpt region="marks" />
+
+Només el Sandbox aplica `debug.looseLineHighlight`, i `doc.warnings` mai no esmenta una línia fluixa, així que `marks()` llegeix directament el [VDT](/ca/docs/justification#depuració-de-línies-fluixes). Cada línia justificada porta el seu `justifiedSpaceRatio`, un paràgraf partit entre dues columnes torna com un bloc per fragment, i una línia de més de 3× no té proporció, perquè el motor [la compon en bandera](/ca/docs/justification#línies-que-lalgorisme-no-pot-omplir) i la marca amb `line.ragged`. Amb quaranta caràcters per línia, els límits no basten perquè totes quedin per sota d'1,6; mentre s'ajustava el text de l'assaig, les marques van assenyalar quines frases calia reescriure.
+
+### 3 · Posa el control al costat de la pàgina publicada
+
+<Excerpt region="compare" />
+
+Les dues edicions surten del mateix disseny, així que qualsevol diferència entre les dues pàgines 2 es deu a l'algorisme de tall i a les seves proteccions. Al text castellà, el control voraç deixa 26 de les seves 108 línies justificades per sobre d'1,6, i sis d'elles passen de 2; l'edició de Knuth–Plass manté les 105 entre 0,80 i 1,59. A la pàgina 2 del control, a més, un paràgraf acaba en una línia curta que només porta el final d'una paraula partida.
+
+### 4 · Dona a cada ajust el seu propi requadre
+
+<Excerpt region="bench" />
+
+Un requadre compon totes les columnes d'un grup [`:::columns`](/ca/docs/document-format#columns) amb un únic estil de text, així que cada fitxa és un requadre niat amb el seu propi `body`, i `breaks="3"` apila a la primera columna la fitxa en bandera i la que no parteix paraules. La fitxa en bandera no necessita `hyphenation: false`, perquè el text en bandera mai no es parteix. El banc flota al peu de la pàgina 3 amb `placement: 'bottom'`, i el seu farciment inferior repeteix el marc de 4 mm perquè el `marginBottom` de l'última fitxa es perd al final del requadre.
+
+### 5 · Dibuixa el model a l'obertura
+
+<Excerpt region="opener" />
+
+El diagrama és un [element d'imatge](/ca/docs/configuration#elements-dimatge) del disseny de l'H1. Com a figura seria un flotant `top` a tota l'amplada, i un flotant `top` citat a la pàgina 1 obre la pàgina 2. La banda és una caixa, i les caixes compten per a l'alçada que reserva una obertura, però les imatges no, així que el text comença sota la banda sense `minHeight`, una línia més avall pel `marginBottom` que l'H1 porta per defecte. Els rètols són text de disseny col·locat sobre les coordenades del mateix dibuix, perquè un SVG pintat com a imatge no pot fer servir les fonts web de la pàgina.
+
+## Variants
+
+### Parteix un text en alemany
+
+Els patrons de partició es trien pel codi exacte, així que un text alemany necessita `'de'`.
+
+```diff
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
++const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+```
+
+### Marca només les pitjors línies
+
+Puja el llindar d'1,6 a 2 i el ressaltador marca només les línies els espais de les quals passen del doble.
+
+```diff
+-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
++        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+```
+
+## Errors freqüents
+
+- Un requadre que queda al final d'una columna baixa fins al peu quan s'equilibren les columnes, lluny del paràgraf al qual pertany. Ajusta el text perquè la columna s'ompli, com va caldre amb el requadre de configuració sota «Límites para la cola».
+- A postext 1.4.1 una línia dins d'un requadre mai no es compon en bandera, per molt que s'estiri: la fitxa sense partició conserva una línia amb espais de gairebé quatre vegades el normal, que al text corrent es compondria en bandera.

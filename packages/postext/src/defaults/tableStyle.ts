@@ -44,7 +44,8 @@ const STATIC_DEFAULTS = {
 
 /** Localised continuation strings: the caption suffix of a continued slice
  *  and the marker under a slice that continues, one per bundled hyphenation
- *  language plus Chinese in each script (keyed by `stringsKeyOf`). English
+ *  language plus Chinese in each script and Arabic (keyed by
+ *  `stringsKeyOf`). English
  *  is the fallback for any locale not listed here. Add a language by adding
  *  a key. */
 const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesMarker: string }> = {
@@ -58,6 +59,9 @@ const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesM
   nl: { continuedSuffix: '(vervolg)', continuesMarker: 'Wordt vervolgd' },
   'zh-hans': { continuedSuffix: '（续）', continuesMarker: '接下页' },
   'zh-hant': { continuedSuffix: '（續）', continuesMarker: '接下頁' },
+  // «جدول ٢-١ (تابع)» on the slice that continues a table; «يتبع» under
+  // the slice that goes on overleaf.
+  ar: { continuedSuffix: '(تابع)', continuesMarker: 'يتبع' },
 };
 
 /** Default continuation strings for a (possibly regional) locale tag such

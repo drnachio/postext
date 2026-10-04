@@ -1,0 +1,62 @@
+---
+title: "PDF accessible i etiquetat (PDF/UA)"
+summary: "Una guia de reciclatge en PDF/UA-1 etiquetat, amb text alternatiu, cel·les de capçalera, llengua i índex enllaçat; la previsualització dibuixa les etiquetes."
+plain: "Una guia de reciclatge de quatre pàgines d'un ajuntament. Ensenya a crear un PDF que els lectors de pantalla poden seguir, amb descripcions de les imatges i taules que poden llegir en veu alta."
+description: "Una guia municipal de reciclatge composta en Postext i exportada com a PDF etiquetat que compleix PDF/UA-1, amb text alternatiu, capçaleres de taula i llengua."
+question: "Com exporto un PDF etiquetat (PDF/UA) amb text alternatiu, cel·les de capçalera i llengua del document?"
+aliases: ["PDF/UA", "PDF/UA-1", "PDF accessible", "PDF etiquetat", "lector de pantalla", "text alternatiu", "ordre de lectura", "arbre d'estructura", "cel·les de capçalera", "llengua del document", "veraPDF", "guia de reciclatge"]
+pageNotes: { "1": "La coberta: una banda blau marí als tres cinquens superiors, amb el títol Reciclar al barri en lletra blanca grossa en dues línies i, a baix, els cinc contenidors de carrer (groc, blau, verd, marró i gris, cadascun amb un pictograma blanc o fosc) sobre una vorada groga. A sota, una entradeta en cos gran i, al peu de la pàgina, el nom de l'ajuntament en lletra monoespaiada petita.", "2": "La pàgina 2: Índex, amb les dues seccions numerades i els seus apartats, línies de punts i números de pàgina, sobre tres requadres amb fons de color: Com fer servir aquesta guia, Aquesta guia, en altres formats i Dades útils. A la segona columna, Presentació, una carta de cinc paràgrafs, en un cos més gran que el del text i signada per la regidora de Medi Ambient.", "3": "La pàgina 3 amb el seu ordre de lectura dibuixat: una banda blau marí amb un 1 groc i el títol Què va a cada contenidor i, a sota, dues columnes en què cada bloc etiquetat és dins d'un requadre magenta, numerat de l'1 al 14 i amb el nom de la seva etiqueta (H1, P, Figure, H2, Table). La figura mostra els cinc contenidors; cada contenidor té un títol i un paràgraf, i la taula 1.1 dona el contenidor d'onze residus, amb un quadrat de color al costat del nom de cada contenidor i un de buit al costat de la deixalleria. El paràgraf del vidre continua a la segona columna i conserva el seu número, el 9, en un requadre discontinu, i el peu de pàgina està marcat com a Artifact.", "4": "La pàgina 4: una banda blau marí amb un 2 i El que no va al contenidor; després, la deixalleria amb una llista del que admet, els dies de recollida a la taula 2.1, quatre passos numerats per demanar la recollida de mobles i el colofó." }
+---
+
+## Què compondràs
+
+*Reciclar al barri* és la guia de reciclatge d'un ajuntament inventat: quatre pàgines A4 per llegir en pantalla o imprimir a casa. La coberta, blau marí, porta els cinc contenidors sobre una vorada groga. La pàgina 2 reuneix l'índex, tres requadres i la carta de la regidora; la 3 i la 4, les dues seccions, a dues columnes en bandera. El PDF etiquetat que exporta el codi supera les comprovacions PDF/UA-1 de veraPDF, amb títols, llistes, requadres i taules en ordre de lectura, text alternatiu a la figura i cel·les de capçalera a les taules. El fitxer declara títol i llengua (`es`), i els marcadors i les files de l'índex són enllaços. Com que les etiquetes no s'imprimeixen, el codi les dibuixa només a la previsualització de la pàgina 3, la que veus aquí, amb un requadre numerat per bloc i el nom de la seva etiqueta.
+
+## Elaboració
+
+### 1 · La llengua i el títol del document
+
+<Excerpt region="identity" />
+
+postext-pdf escriu la llengua de les etiquetes a partir de `locale`, aquí `/Lang es`, perquè un lector de pantalla llegeixi la guia amb pronunciació espanyola; si falta, el fitxer declara `en-US`. El `title` i l'`author` del frontmatter de `content.es.md` donen el títol i l'autor del PDF, i el fitxer demana als visors que mostrin aquest títol a la barra de la finestra en lloc del nom del fitxer. `defaultResourceTypes(LANG)` dona als peus i a les cites els noms en espanyol: «Figura 1.1», «tabla 1.1». El text accessible de la figura i de les taules és a [la resposta curta](#la-resposta-curta): l'`altText` dona la descripció alternativa de la figura (`/Alt`) i el resum de cada taula (`/Summary`), i la primera fila i la primera columna de les dues taules s'etiqueten com a cel·les de capçalera.
+
+### 2 · Un sol esquema, i una banda de coberta amb el títol i res més
+
+<Excerpt region="headings" />
+
+L'arbre d'etiquetes pren els elements H1 i H2 dels títols del Markdown, i els marcadors del PDF surten de la mateixa llista, de manera que la coberta, l'índex, la carta i les dues seccions són de nivell 1, i els intertítols, de nivell 2. postext-pdf etiqueta cada text del disseny d'un títol dins d'aquest títol. Per això la banda de la coberta porta només el títol, i l'entradeta i el nom de l'ajuntament van a sota, com a paràgrafs. Les bandes blau marí, la vorada i la fila de contenidors són elements de disseny, i el PDF marca les caixes i les imatges de disseny com a artefactes, així que no necessiten text alternatiu i el lector de pantalla se les salta.
+
+### 3 · Un índex amb enllaços
+
+<Excerpt region="contents" />
+
+`:::toc` recull els H1 i els H2 amb el número de pàgina que imprimeixen, i al PDF cadascuna de les seves onze files enllaça amb el començament de la seva pàgina. Les cites `:ref` de la pàgina 3, «figura 1.1» i «tabla 1.1», i la de la pàgina 4, «tabla 2.1», porten a la figura i a les taules. Les línies de punts fan servir la lletra dels números de pàgina, Atkinson Hyperlegible Next Bold, perquè en Public Sans una sèrie de punts ocupa més que el punt solt amb què es calcula la línia, i els punts es muntaven sobre els números.
+
+### 4 · L'ordre de lectura, dibuixat a la pàgina
+
+<Excerpt region="reading-order" />
+
+Un lector de pantalla segueix les etiquetes, i `renderToPdf` etiqueta cada pàgina en l'ordre en què la pinta: el títol de la banda, la primera columna de dalt a baix, la segona i, al final, els flotants de la pàgina. Aquesta funció repeteix aquest ordre per numerar els requadres de la pàgina 3, i l'arbre d'estructura del PDF dona els mateixos catorze elements en el mateix ordre. Aquest ordre obliga a posar la figura i les dues taules al flux, amb `placement: { position: 'here' }` i una línia `::resource`. Si flotés al peu de la primera columna, la figura 1.1 s'etiquetaria després de la taula 1.1, l'últim bloc de la seva pàgina. El paràgraf del vidre que continua a la segona columna conserva un sol número, el 9, perquè el PDF etiqueta les dues parts com un únic paràgraf.
+
+### 5 · Colors triats pel seu contrast
+
+<Excerpt region="palette" />
+
+PDF/UA-1 no comprova el color, però WCAG 2.2 demana 4,5:1 entre el text i el seu fons. La tinta dona 15,6:1 sobre blanc; la lletra blanca, 12,5:1 sobre les bandes blau marí, i el gris del peu de pàgina, 7,0:1. El groc dona 1,8:1 sobre blanc, així que només apareix sobre blau marí (6,9:1) i com a farciment. Els pictogrames segueixen el 3:1 que WCAG demana als gràfics: blanc quan arriba a aquesta proporció sobre el seu contenidor i tinta sobre el groc. `cell()` escriu el nom de cada contenidor al costat de la seva mostra de color, i dona a la deixalleria un quadrat buit, de manera que cap indicació no depèn de distingir colors.
+
+## Variants
+
+### Deixa flotar la figura
+
+Treu la col·locació i la figura 1.1 flota al peu de la primera columna de la pàgina 3, i el PDF l'etiqueta després de la taula 1.1, l'últim bloc de la pàgina.
+
+```diff
+-  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
++  { id: 'contenedores', typeId: 'figure', kind: 'svg',
+```
+
+## Errors freqüents
+
+El codi no pot validar el seu propi PDF, perquè veraPDF funciona fora del navegador. Baixa el fitxer i executa `verapdf -f ua1 accessible-tagged-pdf.pdf`; el PDF capturat per a aquesta pàgina passa la validació. El validador no sap si un text alternatiu descriu la seva imatge, així que escolta també la guia amb un lector de pantalla.
+
+Aquesta guia es va capturar amb postext 1.4.1, en què un enllaç de Markdown imprimia les seves paraules sense afegir cap enllaç al PDF; per això el colofó imprimeix l'adreça web completa. Des de postext 1.10 un enllaç `[texto](url)` funciona al PDF i s'etiqueta com a element `Link` el text del qual són les paraules enllaçades.

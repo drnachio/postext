@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { LOCALE_INFO, isSiteLocale } from "@/i18n/locales";
+import { LOCALE_INFO, htmlDir, htmlLang, isSiteLocale } from "@/i18n/locales";
 import { ChevronDown } from "lucide-react";
 
 
@@ -53,7 +53,11 @@ export function LanguageSwitcher() {
         className="flex min-h-10 items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-semibold text-slate transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand 2xl:text-sm 4xl:text-base"
         style={{ touchAction: "manipulation" }}
       >
-        {isSiteLocale(locale) ? LOCALE_INFO[locale].name : locale.toUpperCase()}
+        {/* Each name in its own language and direction (العربية reads right
+            to left on any page). */}
+        {isSiteLocale(locale) ? (
+          <span lang={htmlLang(locale)} dir={htmlDir(locale)}>{LOCALE_INFO[locale].name}</span>
+        ) : locale.toUpperCase()}
         <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -61,20 +65,20 @@ export function LanguageSwitcher() {
         <ul
           role="listbox"
           aria-label={t("label")}
-          className="absolute right-0 top-full z-50 mt-1 min-w-[8rem] rounded-md border border-rule bg-background py-1 shadow-lg"
+          className="absolute end-0 top-full z-50 mt-1 min-w-[8rem] rounded-md border border-rule bg-background py-1 shadow-lg"
         >
           {routing.locales.map((l) => (
             <li key={l} role="option" aria-selected={l === locale}>
               <button
                 type="button"
                 onClick={() => handleSelect(l)}
-                className={`flex min-h-10 w-full items-center gap-2 px-3 py-1.5 text-left font-mono text-xs transition-colors 2xl:text-sm ${
+                className={`flex min-h-10 w-full items-center gap-2 px-3 py-1.5 text-start font-mono text-xs transition-colors 2xl:text-sm ${
                   l === locale
                     ? "font-semibold text-brand"
                     : "text-slate hover:bg-surface hover:text-foreground"
                 }`}
               >
-                {LOCALE_INFO[l].name}
+                <span lang={htmlLang(l)} dir={htmlDir(l)}>{LOCALE_INFO[l].name}</span>
               </button>
             </li>
           ))}

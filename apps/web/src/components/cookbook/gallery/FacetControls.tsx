@@ -44,7 +44,7 @@ export function FacetOptionList({
           aria-pressed={o.active}
           disabled={!o.active && o.count === 0}
           onClick={() => onToggle(o.id)}
-          className="group/opt flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-left font-sans text-[0.82rem] transition-colors hover:bg-surface-2 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent sm:min-h-10"
+          className="group/opt flex min-h-10 w-full items-center gap-2.5 rounded-md px-2 text-start font-sans text-[0.82rem] transition-colors hover:bg-surface-2 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent sm:min-h-10"
         >
           <span
             aria-hidden="true"

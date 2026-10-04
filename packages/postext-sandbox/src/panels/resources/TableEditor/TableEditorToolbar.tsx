@@ -72,6 +72,9 @@ interface TableEditorToolbarProps {
   activeBackground: ColorValue | undefined;
   /** Set the active cell's fill (`undefined` clears it). */
   onSetBackground: (color: ColorValue | undefined) => void;
+  /** The table runs right to left: a cell's `left` (its start) is flush
+   *  right, so the button drawn flush right sets it. */
+  rtl?: boolean;
 }
 
 const btnBase =
@@ -144,7 +147,11 @@ export function TableEditorToolbar({
   onSetImage,
   activeBackground,
   onSetBackground,
+  rtl = false,
 }: TableEditorToolbarProps) {
+  // A cell's `left` is its start: in a right-to-left table, flush right.
+  const leftValue: TableCellAlign = rtl ? 'right' : 'left';
+  const rightValue: TableCellAlign = rtl ? 'left' : 'right';
   const labels = useSandboxLabels();
   const iconSize = 13;
   const imageActive = activeImageId !== undefined;
@@ -203,8 +210,8 @@ export function TableEditorToolbar({
       <Group>
         <Btn
           label={labels.tableEditorAlignLeft}
-          onClick={() => onSetAlign('left')}
-          active={(activeAlign ?? 'left') === 'left'}
+          onClick={() => onSetAlign(leftValue)}
+          active={(activeAlign ?? 'left') === leftValue}
         >
           <AlignLeft size={iconSize} aria-hidden="true" />
         </Btn>
@@ -217,8 +224,8 @@ export function TableEditorToolbar({
         </Btn>
         <Btn
           label={labels.tableEditorAlignRight}
-          onClick={() => onSetAlign('right')}
-          active={activeAlign === 'right'}
+          onClick={() => onSetAlign(rightValue)}
+          active={(activeAlign ?? 'left') === rightValue}
         >
           <AlignRight size={iconSize} aria-hidden="true" />
         </Btn>

@@ -1,0 +1,459 @@
+{/* docs/arabic-layout-zh.mdx */}
+
+export const metadata = {
+  title: '阿拉伯文排版',
+  sidebarTitle: '阿拉伯文排版',
+  description: 'Postext如何排阿拉伯文：文字方向与双向算法、右侧装订、不拆开也不加字距的连写词、卡希达两端对齐、元音符号、强调、数字与编号样式、序数词、脚注、古典诗歌、目录、索引、引用和字体',
+  lang: 'zh',
+  lastUpdated: '2026-10-04',
+  readingTime: '24分钟',
+  order: 7,
+  plainSummary: "本页说明Postext怎样排阿拉伯文。阿拉伯文从右往左读，所以书中的行、栏和页面都按这个方向排列，而正文里的数字和英文单词仍然从左往右读。一个词里的字母彼此相连，所以Postext从不拆开一个词，也不把字母拉开，而是通过拉长某些字母之间的连笔来撑满一行。本页还介绍字母上下的元音符号、各地区使用的数字、注释和诗歌。最后给出两套完整的示例配置，并列出尚未解决的问题。",
+};
+
+# 阿拉伯文排版
+
+**阿拉伯文书从字母到跨页都是从右往左排的，它的词是一笔连成、不能切开的笔画。**
+
+Postext用与其他语言相同的Markdown和配置来排现代标准阿拉伯语和古典阿拉伯语。只要一项设置，即文档语言，就能让整本书掉转方向：行从右边开始，第一栏在右边，书在右边缘装订，跨页从右往左读，而行内的拉丁文单词和数字仍然从左往右读。词作为整体测量和绘制，由字体完成连写成形；两端对齐的行在词间空格处撑开，并靠拉长字母之间的连笔（卡希达，kashida）撑开，从不把字母彼此拉开。本页说明引擎做了什么、由哪些设置控制。[配置参考](/zh/docs/configuration#文本方向)列出了每个键及其默认值，[文档格式](/zh/docs/document-format#标记中的文本方向)介绍了相关标记。
+
+这些规则依据W3C的《阿拉伯文与波斯文排版需求》（*Arabic & Persian Layout Requirements*，[alreq](https://www.w3.org/TR/alreq/)）和Unicode双向算法（[UAX #9](https://www.unicode.org/reports/tr9/)）；图书惯例则参照开罗、贝鲁特和布拉克（Būlāq）印书馆印行的书。参考资料列在本页末尾。
+
+## 开始一本阿拉伯文书
+
+设置文档语言和字体即可；本页其余内容要么由这两项推出，要么对阿拉伯文有默认值：
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  bodyText: { fontFamily: 'Amiri', lineHeight: { value: 1.75, unit: 'em' } },
+  headings: { fontFamily: 'Amiri' },
+};
+```
+
+`locale`可以取`ar`、`ar-EG`、`ar-MA`或任何其他阿拉伯语标签。这个语言为书确定：
+
+- **方向**：从右到左（`direction: 'auto'`从语言的文字读出方向）；
+- **装订**：在右边缘（`page.binding: 'auto'`）；
+- **数字**：生成的编号在马什里克地区用٠–٩，在马格里布地区用0–9（`numerals: 'auto'`，见下文）；
+- **不断词**，阿拉伯文词不加字母间距、不调整字距，并用卡希达做两端对齐；
+- **用粗体强调**而不用斜体，引用块排成正体；
+- **内置用词**：图和表用شكل和جدول，按章编号（شكل ٢-٣）；交叉引用中用الفصل和ص；参考文献标题为المراجع；索引中用انظر和انظر أيضًا；续表题注后加(تابع)；
+- **索引排序**：按字母（hijāʾī）顺序，忽略冠词ال；
+- **语言标签**：写入HTML（`lang="ar" dir="rtl"`）、Canvas和PDF（`/Lang`），使字体的语言字形生效。
+
+沙盒一步就能完成这些设置：在**设计 › 书写系统**下选择العربية，再按**阿拉伯语默认设置 › 查看…**（见[在沙盒中](#在沙盒中)）。
+
+## 文字方向与双向算法
+
+阿拉伯文段落从右到左排，但其中的数字、拉丁文单词和引文从左到右排。Unicode双向算法根据字符本身决定这些片段在每一行上的顺序；Postext完整实现了这一算法（UAX #9，Unicode 18，通过一致性测试的全部用例）。文本按逻辑顺序（即输入顺序）存储和搜索，只有绘制时才重新排序。
+
+### 文档、块与行内方向
+
+方向在三个层级上设置：
+
+- **文档**：`direction: 'auto' | 'ltr' | 'rtl'`。默认值`'auto'`在`locale`的文字从右向左书写时（阿拉伯文、波斯文、乌尔都文、希伯来文、叙利亚文、塔安那文、西非书面字母N'Ko、阿德拉姆文……）为从右到左，否则为从左到右。只有需要强制某个方向时才设置它：英文书不需要，而从左到右排的阿拉伯文书几乎总是出了错。
+- **块**：在标题后或任何`:::`容器上写`{dir=ltr}`或`{dir=rtl}`：`:::paragraphs{dir=ltr}`、`:::callout{dir=ltr}`、`:::columns`、`:::part`。容器里的所有内容都采用这个方向，直到某个嵌套块另设方向。普通段落、列表项和引用没有自己的属性：用`:::paragraphs{dir=…}`把它们包起来。表格资源用`table.direction`。
+- **一段文字**：`:ltr[…]`和`:rtl[…]`隔离其中的文字，可选的`{lang=…}`在HTML和PDF中为这段文字标注语言。
+
+```markdown
+# Introduction {dir=ltr}
+
+:::paragraphs{dir=ltr}
+An English paragraph quoted in an Arabic book, set left to right with its indent on the left.
+:::
+
+نشر الكتاب في :ltr[The Arabian Nights, vol. 2]{lang=en} سنة ١٨٣٥.
+```
+
+与文档方向相反的块保留自己的起始一侧：首行缩进、列表标记和末行的齐边移到其文字开始的那一侧，各行在栏内也按其文字的要求对齐。在阿拉伯文书中，英文引文应当写成`{dir=ltr}`：不加的话，句末的句号作为中性字符归属于从右到左的段落，会印在行的左端，就像浏览器显示的那样。容器也可以注明自己的语言，如`:::paragraphs{dir=ltr lang=en}`：其中的编号列表使用该语言的数字（在阿拉伯文书中为1. 2.，在中文书中写`lang=ar`则为١. ٢.）。块中的脚注、图、表和标题编号仍用文档的数字，因为它们属于全书统一的编号序列。
+
+### 隔离段
+
+`:ltr[…]`和`:rtl[…]`是双向隔离段（即UAX #9中的LRI…PDI和RLI…PDI）：其中的文字在内部排序，段落把每个隔离段看作一个中性字符。拉丁文标题以中性字符（句号、后括号、问号）结尾时，这个字符本会和周围的阿拉伯文一起被解读；或者一段文字以数字或拉丁字母开头，会让“首个强字符”算法猜错方向。这两种情况都应使用隔离段。隔离段中的脚注、`:ref`或公式都属于它。源文本中出现的Unicode控制字符本身（U+2066–2069、U+202A–202E、U+200E和U+200F，以及阿拉伯字母标记U+061C）也会被遵循，但指令更易读，也更易编辑。
+
+### 数字
+
+在每种数字系统中，数字都从左往右读，最高位在左边：١٤٤٥和1445都是如此。阿拉伯字母之后的欧洲数字按阿拉伯数字解读（规则W2），所以`سنة 1835م`和`سنة ١٨٣٥م`的排列顺序相同。用斜线连接的两个数，例如卷和页、或者章（sūra）和节（`١٣/٩٠`），保持为一段；用连字符写的范围（`١٢-١٥`）从右往左读，12在右边，符合阿拉伯文读者的习惯。百分号٪（U+066A）输入在数字之后，显示在数字左边。作者输入的文字从不被改写：只有引擎生成的数字才采用文档的数字（见[数字系统与编号样式](#数字系统与编号样式)）。
+
+### 括号与引号
+
+圆括号、方括号、花括号和书名号式的双尖引号（« »）在从右到左的片段中镜像显示：在阿拉伯文词之前输入的`(`在词的右侧把它括起来。像在英文中一样按逻辑顺序输入，先输入前括号；Canvas、HTML和PDF会绘制镜像字形（字体的`rtlm`特性，或镜像码位）。« »同样用来开始和结束阿拉伯文引文。
+
+《古兰经》引文用的花饰括号﴿（U+FD3F）和﴾（U+FD3E）不镜像：自Unicode 14起，﴿是前括号、﴾是后括号，它们的字形本就为从右到左的文字绘制。先输入﴿：`﴿بسم الله الرحمن الرحيم﴾`印出来﴿在右边。它们也不是成对括号，所以在从左到右的段落中（例如英文书中引用的阿拉伯文经文），紧挨拉丁文单词的括号取段落的方向：﴿落在经文左边，整对括号看起来是反的，浏览器中也一样。把引文设为从右到左的隔离段`:rtl[﴿بسم الله الرحمن الرحيم﴾]`，两个括号就随经文排，﴿在经文右边。
+
+## 页序与右侧装订
+
+阿拉伯文书在右边缘装订。它的第一页是左手边的页面，跨页从右页读到左页，栏从右往左填。Postext把这样的页面当作镜子里看到的从左到右页面来排：文字流中的一切（栏、行、缩进、列表标记、浮动体、注释、框、表格）都用与英文书相同的代码放置，然后把整个页面镜像，每个词、图像和公式仍按正确的朝向绘制。
+
+<Illustration name="ArabicSpread" data='{"title": "在右侧装订的阿拉伯文跨页", "desc": "两页在书脊处相接组成的跨页。第2页在右，第3页在左。每一页的第一栏在右边，行从右往左排；内侧页边距靠近书脊，外侧页边距在切口一侧。一个箭头表示从第2页到第3页的阅读顺序。", "caption": "第2页在右，第3页在左；每页的第1栏在右。", "spine": "书脊", "pageOrder": "下一页", "columnOrder": "第1栏在右", "lineDirection": "行从右往左", "inner": "内侧", "outer": "外侧", "sample": "كان في قديم الزمان"}' />
+
+- **装订。** 对从右到左的文档，`page.binding: 'auto'`就是右边缘。第1页仍是奇数页、仍是正面页，所以`breakBefore.parity`、`:::pagebreak{parity="odd"}`和页数的含义不变；正面页是跨页的左页，从正面页开始的章从左页开始。使用`margins.mirror`时，奇数页的内侧页边距在右边。PDF请求阅读器按从右到左显示跨页（`/Direction /R2L`、`/PageLayout /TwoPageRight`），沙盒把跨页显示为3 | 2，其HTML查看器按从右到左翻页。见[装订](/zh/docs/configuration#装订)。
+- **栏。** 双栏页面中第一栏在右边；栏间线、侧栏和栏间距随之调整。顶部浮动体从右边开始跨栏，脚注位于每栏底部，其分隔线在右边。
+- **书眉和页码**仍按纸面放置：页眉和页脚的位置是物理位置，其中的`left`和`right`就是纸面的两侧，与任何书一样。按右侧装订来设置它们：章名放在左（奇数）页，书名放在右（偶数）页，页码放在外角（奇数页的左边）或居中，大多数阿拉伯文书都这样做。
+
+### 左、右、起始与末尾的含义
+
+指明某一侧的设置指的是文字的一侧，而不是纸面的一侧，所以为英文书做的设计在把书切换为阿拉伯文后无须修改。`start`和`end`在所有地方都可以使用，明确表示文字的起始和末尾。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>设置</th>
+      <th><code>left</code> / <code>right</code></th>
+      <th><code>start</code> / <code>end</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>文字对齐：<code>bodyText.textAlign</code>、标题、段落样式和部分样式、脚注、题注的<code>align</code>、标注框正文</td><td>文字的两侧：<code>left</code>是一行开始的那一侧，在阿拉伯文段落中就是右侧。两端对齐段落的末行排在这一侧。</td><td>与<code>left</code>和<code>right</code>同义。</td></tr>
+    <tr><td>表格单元格（<code>TableCell.align</code>）</td><td>单元格文字的两侧，按表格的方向（<code>table.direction</code>）解读。</td><td>同义，按表格的方向解读。</td></tr>
+    <tr><td>浮动体或窄图的<code>placement.align</code></td><td>正文流的两侧：在阿拉伯文书中，<code>left</code>是纸面的右侧。</td><td>与<code>left</code>和<code>right</code>同义。</td></tr>
+    <tr><td>标注框的<code>stripe.side</code>、<code>icon.cornerSide</code>、标签的<code>position</code></td><td>正文流的两侧，对页面上所有框都相同。</td><td>框自身的方向：在阿拉伯文书中，<code>:::callout&#123;dir=ltr&#125;</code>的起始一侧是纸面的左侧。</td></tr>
+    <tr><td>页眉和页脚的位置、纸面上的设计元素</td><td>纸面的两侧。</td><td>仅限文字元素：元素自身方向的起始和末尾。</td></tr>
+  </tbody>
+</table>
+
+排在文字流中的设计元素（如章首色带或标题设计）随文字流一起镜像：它们的`left`和`right`就是文字流的起始和末尾两侧，与正文一样。文字元素接受`direction: 'ltr' | 'rtl' | 'auto'`（默认为文档的方向；`'auto'`读取其文字中的第一个强字符），它的`align: 'start'`和`'end'`随之而定。`placement.rotate`保持物理含义：顺时针旋转的图在纸面上就是顺时针旋转。
+
+## 连写成形与整词
+
+阿拉伯文一个词里的字母彼此相连，每个字母都采用相邻字母所要求的形式：词首、词中、词尾或独立形式，还有lām-alif这样的合字。Postext把一个词作为一个已成形的字符串来测量和绘制，从不逐个字母处理。Canvas和HTML把连写成形交给浏览器；PDF用HarfBuzz成形，只在文档含有阿拉伯文或其他需要它的文字时才加载，并把每个字形映射回它的字符，所以从PDF复制出来、被屏幕阅读器读出的文字就是当初输入的文字。HarfBuzz无法加载时PDF照样生成，但标音符号位置不对，`renderToPdf`会发出`complexShapingUnavailable`警告；宿主把该文件放在别处时，用`harfbuzzWasm`选项指向它。
+
+连写带来三条规则，适用于每个含有阿拉伯字母的词，无论它在阿拉伯文书中，还是被英文书引用：
+
+- **不断词。** 阿拉伯文不在行末拆分，阿拉伯字母文档关闭断词。用拉丁文断词语言打开断词（`hyphenation: { enabled: true, locale: 'en-us' }`）时，书中的拉丁文单词会断词，阿拉伯文词保持完整。
+- **不加字母间距。** 把相连的字母拉开会破坏连笔。样式的`letterSpacing`和两端对齐的字距调整都跳过阿拉伯文词；正文或标题样式对阿拉伯文设置了字母间距时，构建会报告（`joiningScriptLetterSpacing`）。
+- **不切开。** 比行宽还宽的词从不在字母之间切开。它会超出行宽，这一行被标记（`VDTLine.wordOverflow`），构建也会报告（`unbreakableWordOverflow`）。这种情况出现在窄的表格单元格和侧栏中；请加宽它们，或改写文字。
+
+词内的样式变化，例如一个着色的字母或一个加粗的元音符号（`كتا**ب**`），不会把词分成两半：词作为整体测量和成形，带样式的部分叠画在上面。PDF和HTML给准确的那几个字母上色；Canvas估算字母在成形后的词中的位置，颜色可能稍微漫到相邻字母上。设计文字在换行或截断时从不切开阿拉伯文词；第一个字母与下一个字母相连时，不绘制首字下沉。
+
+## 两端对齐与卡希达
+
+阿拉伯文书采用两端对齐。撑开一行时不拉开字母，而是在词间空格处撑开，并用卡希达撑开：卡希达是书法家在两个相连字母之间画出的拉长连笔（كتاب → كتـاب）。Postext以完整的tatweel（U+0640，ـ）插入卡希达，字体把它画成一笔；Amiri会把一串tatweel变成一道弧形连笔。
+
+在阿拉伯字母文档中，`bodyText.kashida`为`'auto'`，在其他文档中为`'none'`。除段落末行外，每个两端对齐的行先把词间空格撑开到最多其宽度的四分之一，然后把余下的空白交给卡希达，每次一个tatweel，先放在最合适的连笔处；剩下不足一个tatweel的部分再还给空格。Knuth–Plass把每个词可能的拉长量算作伸展量，所以它在选择断点时就知道一行阿拉伯文词可以在那里加宽。拉丁文单词、数字、标题、不齐行和段落末行从不加卡希达。
+
+卡希达能放在哪里，遵循[raqim-kashida](https://github.com/aliftype/raqim-kashida)的规则：只能放在两个相连的字母之间，从不放在不向后连接的字母（ا د ذ ر ز و ة）之后，从不放在词尾，也从不放在lām-alif内部。`kashidaPatterns`选择规则集：`'naskh'`是古典纳斯赫体的规则，`'simple'`是简洁现代字体的优先级，`'nastaliq'`用于波斯体（Nastaʿlīq），`'auto'`根据正文字体判断（在Aref Ruqaa这样的鲁格阿体字体中完全不加卡希达，这种书体不允许拉长）。`kashidaPerWord`（默认为1）和`kashidaMaxLength`（0.6 em）限制一个词能拉长多少；作者自己输入了tatweel的词就在那里拉长。插入的tatweel会被绘制，但不进入纯文本、源映射和从PDF复制出的文字。各规则集的细节见[阿拉伯文的卡希达](/zh/docs/justification#阿拉伯文的卡希达)。
+
+```ts
+bodyText: {
+  textAlign: 'justify',
+  kashida: 'auto',          // 阿拉伯文书的默认值
+  kashidaPatterns: 'naskh', // 'auto'根据字体判断
+}
+```
+
+## 元音符号
+
+元音符号（ḥarakāt：fatḥa、ḍamma、kasra、sukūn、shadda、tanwīn、短竖alif）和《古兰经》符号叠在字母上下，位于行距之中。现代散文只在个别地方标一个shadda或元音；古典版本的诗句全部标注元音，散文则少量标注；《古兰经》总是全部标注元音。行距不会为这些符号自动增大，所以请按书中元音标注最多的文本来选择行距：
+
+<table>
+  <thead>
+    <tr>
+      <th>文本</th>
+      <th style={{ width: '200px' }}><code>lineHeight</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>不标元音的现代散文</td><td>1.55–1.7 em</td></tr>
+    <tr><td>部分标注元音的散文</td><td>1.7–1.85 em</td></tr>
+    <tr><td>全部标注元音的诗句、《古兰经》</td><td>1.9–2.1 em</td></tr>
+  </tbody>
+</table>
+
+每个带符号的行都会记下这些符号的笔画在基线上下伸出多远（`VDTLine.markInk`），Canvas和PDF的栏裁剪会把每栏首行和末行的符号包含在内。某个词上方的符号碰到上一行该词正上方那个词下垂的字母或符号时，构建会报告该段落（`arabicMarksExceedLeading`，显示在沙盒的检查面板中），并给出所需的行距。只比较上下相叠的词，所以短词下方的标注元音的词不会触发报告。请给标注元音的段落，尤其是诗句，设置一个行距更大的段落样式。
+
+`bodyText.tashkil`从排版文本中去掉符号，用于由标注元音的底本制作不标元音的版本：`'strip'`去掉元音、tanwīn、sukūn、shadda、短竖alif（هٰذا排成هذا）以及《古兰经》符号；`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留：أ إ آ是字母。源文本保留其符号；段落、标题和目录不带符号排出。
+
+## 强调
+
+阿拉伯文字体没有斜体，倾斜的阿拉伯文字体是一种变形。在阿拉伯字母文档中，`*…*`默认排成粗体（`bodyText.emphasis: 'auto'`）；`'color'`把它排成正体并使用`italicColor`，`'overline'`在词上加一条线，即旧时阿拉伯文书籍中的上划线。无论选择哪种，引擎都不会把阿拉伯字母排斜：在排成斜体的片段中，阿拉伯文词排成正体，拉丁文单词保持斜体，所以`*Kitāb al-ʿIbar كتاب العبر*`把转写排成斜体，把阿拉伯文书名排成正体。在阿拉伯文书中，引用块默认为正体；字体本身为斜体的样式（`blockquote.italic: true`、设为斜体的标题级别）也把其中的阿拉伯文词排成正体（用去掉倾斜的同一字体），拉丁文词仍排斜体。题注、表格单元格、目录和索引保留各自的斜体设置。
+
+```ts
+bodyText: { emphasis: 'overline', italicColor: { hex: '#8a1c1c', model: 'hex' } }
+```
+
+## 数字系统与编号样式
+
+阿拉伯文使用三套数字，按地区选用：
+
+<table>
+  <thead>
+    <tr>
+      <th>地区</th>
+      <th>数字</th>
+      <th style={{ width: '170px' }}><code>numerals</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>马什里克：埃及、苏丹、黎凡特、伊拉克、阿拉伯半岛（<code>ar</code>、<code>ar-EG</code>、<code>ar-SA</code>……）</td><td>٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩（阿拉伯-印度数字）</td><td><code>'arab'</code></td></tr>
+    <tr><td>马格里布：摩洛哥、阿尔及利亚、突尼斯、利比亚、毛里塔尼亚（<code>ar-MA</code>、<code>ar-DZ</code>、<code>ar-TN</code>……）</td><td>0 1 2 3 4 5 6 7 8 9（欧洲数字）</td><td><code>'latn'</code></td></tr>
+    <tr><td>波斯语、普什图语、印度乌尔都语（<code>fa</code>、<code>ps</code>、<code>ur-IN</code>）</td><td>۰ ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹（波斯字形）</td><td><code>'arabext'</code></td></tr>
+  </tbody>
+</table>
+
+顶层的`numerals`决定引擎写出的每个数字所用的数字：页码以及目录和索引中的页码、列表和脚注的编号、标题和章的计数、图号及其引用、`{totalPages}`。`'auto'`从`locale`取所在地区的数字（不带地区的`ar`和`ar-AE`用马什里克数字，因为那里的阿拉伯文书就这样印）；标签也可以自己指明数字（`ar-MA-u-nu-arab`）。作者输入的数字从不改动，而且三种数字系统都能读取：列表项`٣.`从3开始，`{startAt=٥}`就是5。见[文档数字](/zh/docs/configuration#文档数字)。
+
+配置中指名的格式按所指名的样式输出，所以一本书可以混用不同的数字系统。阿拉伯文编号样式如下：
+
+<table>
+  <thead>
+    <tr>
+      <th>样式</th>
+      <th>1, 2, 3 … 11, 1446</th>
+      <th style={{ width: '220px' }}>名称</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>阿拉伯-印度数字</td><td>١، ٢، ٣ … ١١، ١٤٤٦</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>波斯数字</td><td>۱، ۲، ۳ … ۱۱، ۱۴۴۶</td><td><code>persian</code>, <code>۱</code></td></tr>
+    <tr><td>阿布杰德数码（累加制，马什里克数值）</td><td>ا، ب، ج … يا، غتمو</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>阿布杰德数码，马格里布数值</td><td>ا، ب، ج … يا (ص 60، ش 1000)</td><td><code>arabic-abjad-maghrebi</code></td></tr>
+    <tr><td>按阿布杰德顺序排列的字母</td><td>أ، ب، ج، د، هـ، و …</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>按字母（hijāʾī）顺序排列的字母</td><td>أ، ب، ت، ث، ج …</td><td><code>hijai</code>, <code>أبتث</code></td></tr>
+  </tbody>
+</table>
+
+阿布杰德数码把各字母的数值相加，数值大的字母在前，与手稿和纪年诗的计数方式相同：11是يا，1446是غتمو，2000是بغ，1002是غب。两种字母编号样式每项用一个字母，为列表项和前置部分的页面编号；两者都把第一个字母写成带hamza的أ，把单独的heh写成هـ，这样都不会被读成数字١和٥。古典版本的前置部分按阿布杰德顺序编页码，正文从数字重新开始：
+
+```markdown
+:::numbering{format="abjad" startAt=1}
+
+# المقدمة {style="front-matter"}
+
+…
+
+:::pagebreak{parity="odd"}
+:::numbering{format="decimal" startAt=1}
+```
+
+有序列表使用相同的名称。常见的阿拉伯文层级是١- ，然后是أ- ，再然后是(١)：
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'arabic', separator: '-' },
+    { level: 2, numberFormat: 'abjad', separator: '-' },
+    { level: 3, numberFormat: 'arabic', prefix: '(', separator: ')' },
+  ],
+},
+```
+
+`arabic`是十进制格式，用文档的数字写出。
+
+### 序数词与基数词
+
+标题模板中的`{1:ordinal}`用阿拉伯文词写出带定冠词的序数词，`{1:words}`写出基数词。阿拉伯文序数词与它所编号的名词保持一致，所以模板在连字符后注明性：`-feminine`（或`-f`）用于الليلة这样的阴性名词，الفصل或الباب等阳性名词用默认值。`-classical`把مئة写成مائة，与布拉克版的印法相同。每一夜没有自己的标题：`numberPosition: 'replace'`把编号印成整个标题，所以`# Night`（或源文本里写的任何标题）印成الليلة الثانية，目录、书眉和PDF书签也一样。
+
+```ts
+headings: {
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
+},
+```
+
+这会印出الليلة الأولى、الليلة الحادية عشرة、الليلة الخامسة والأربعون بعد الثلاثمئة，第1001夜则印出الليلة الحادية بعد الألف；`'الفصل {1:ordinal}'`印出الفصل الأول、الفصل الحادي عشر。序数词最多写到9 999，基数词最多写到99 999；超出时用数字输出。设计占位符`{numberWords}`和`{numberOrdinalWords}`给出阳性形式。见[以文字书写的编号](/zh/docs/configuration#以文字书写的编号)。
+
+## 脚注
+
+阿拉伯文书用括号里的数字«(١)»标注释，正文中的注码上标，注文开头的编号则排在行内；大多数古典版本每页重新编号。分隔线和注文编号自动位于起始一侧，即右侧。
+
+```ts
+footnotes: {
+  markerTemplate: '({n})',      // 正文和注文中都是«(١)»
+  numbering: 'page',            // 每页重新从١开始
+  noteNumberPosition: 'inline', // 注文自己的编号排在行内
+}
+```
+
+`markerTemplate`同时决定正文中的注码和注文开头的编号，都用文档的数字写出。注的编号取决于它落在哪一页，所以按页编号的书会先排版，再按注实际所在的位置编号，然后重新排版。像阿拉伯文书那样，把注码放在后面的标点之前：`[^id]`紧跟在词后，放在逗号或句点之前。见[脚注](/zh/docs/configuration#脚注)。
+
+## 古典诗歌
+
+古典阿拉伯诗（qaṣīda、qiṭʿa）每行排一联（*bayt*），每联分成两个半行：前半行（*ṣadr*）在右，后半行（*ʿajuz*）在左，中间留出间隔。全诗的每个半行都调整到同一宽度，所以每个ṣadr都从同一条竖线开始，每个ʿajuz都在另一条竖线结束，韵脚字母沿全诗上下对齐。
+
+<Illustration name="BaytLayout" data='{"title": "分为两个半行的一联", "desc": "一首诗的三联。每行的前半在右，后半在左，中间隔开。所有半行宽度都是w，所以右半行从同一条竖线开始，左半行在另一条竖线结束，韵脚字母在那里对齐。", "caption": "每个半行都排成共同宽度w；韵脚字母在左边对齐。", "sadr": "ṣadr（前半行）", "ajuz": "ʿajuz（后半行）", "gap": "间隔", "width": "w", "rhyme": "韵脚", "lines": [["يا حرقة الدهر كفي", "إن لم تكفي فعفي"], ["فلا بحظي أعطي", "ولا بصنعة كفي"], ["كم جاهل في الثريا", "وعالم متخفي"]]}' />
+
+把诗写在`:::verse`块中，每行一联，两个半行用`||`隔开（也可以像维基文库的转录那样用两侧各有一个空格的`\\`）。没有分隔符的行是单独一个半行，在诗的宽度内居中。
+
+```markdown
+فأنشد يقول:
+
+:::verse{style="verse"}
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **共同宽度**取最宽的半行的宽度，最多为行宽的一半减去间隔；`width`可以固定它。每个半行先用卡希达达到这个宽度（诗句比散文更能放开使用卡希达），然后再撑开词间空格。
+- **间隔**默认为2 em（`gap`）；`ornament`在间隔中央印一个符号，例如٭。
+- **过长的半行**先压缩词间空格；仍然放不下时，这一联错开排：ṣadr在自己的一行中右齐，ʿajuz在下一行左齐。
+- **不拆分。** 一联从不在栏或页之间拆开，诗遵循段落的孤行规则（段首孤行和段末孤行），引出诗的那一行（«فأنشد يقول:»）与开头几联排在一起。
+- **字体。** 诗使用正文的字体和字号；`style`指定一个段落样式，标注元音的诗就通过它得到符号所需的行距。英文书中用拉丁字母转写的诗也这样排，只是ṣadr在左。
+
+纯文本按原样保留诗，每行一联，不含卡希达和装饰符号。见文档格式中的[`:::verse`](/zh/docs/document-format#verse)。
+
+## 目录与索引
+
+**目录。** 许多阿拉伯文书，尤其是古典版本，把目录（فهرس或فهرس المحتويات）印在书末。`:::toc`放在哪里，目录就印在哪里，所以把它放在最后一章，并给该章标题设置为不收入目录：
+
+```markdown
+# فهرس المحتويات {toc="false"}
+
+:::toc
+```
+
+目录行从右到左排：编号和标题在右，前导符居中，页码在左。阿拉伯文书中的拉丁文标题页码仍在左边，标题本身的词从左往右读。
+
+**索引。** 阿拉伯文书的书后索引按字母（hijāʾī）顺序排列条目，并按首字母分组。排序时忽略定冠词：البصرة排在ب下，位于بدر和بغداد之间，印出时仍按原样（`index.ignoreArticle`，索引语言为阿拉伯文时默认打开；الله保留冠词）。排序也忽略元音符号和tatweel，把أ إ آ ٱ归在ا下，ة与ه、ى与ي一起排序。页码之间用阿拉伯文逗号（، ）连接，交叉引用写作انظر或انظر أيضًا。带有自己的`sort`键的条目保留该键中的冠词。见[索引](/zh/docs/configuration#索引)。
+
+**引用。** 阿拉伯文书中的参考文献使用引文样式语言的阿拉伯文术语（CSL的`ar`本地化：页用ص，卷用مج，两位作者之间用و，等人用وآخرون），编号式引注使用文档的数字：`[٢، ص ١٢]`。参考文献标题为المراجع。CSL样式中写定的逗号和分号保持样式原样。见[引用](/zh/docs/configuration#引用)。
+
+## 字体
+
+Postext为每个样式只用一个字体族，缺字时不会回退到其他字体，所以字体必须包含书中印出的每个阿拉伯字母、符号和数字。适合排书的免费字体（均采用SIL开放字体许可证）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>字体</th>
+      <th>风格</th>
+      <th style={{ width: '240px' }}>用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Amiri</td><td>仿二十世纪初布拉克和埃米里耶（Amīriyya）印书馆铅字的纳斯赫体；弧形卡希达，支持全部元音标注，配有相称的拉丁字母。</td><td>古典版本、标注元音的文本、诗歌。常规体和粗体。</td></tr>
+    <tr><td>Noto Naskh Arabic</td><td>中性的现代纳斯赫体。</td><td>现代散文、注释、表格。可变字体：每个字重打包一个静态文件。</td></tr>
+    <tr><td>Scheherazade New</td><td>简化的传统纳斯赫体，符号非常清晰，默认行距较大。</td><td>全部标注元音的文本、语言教学。</td></tr>
+    <tr><td>Reem Kufi</td><td>仿法蒂玛王朝铭文的库法体。</td><td>展示用标题、夜和章的标题。</td></tr>
+    <tr><td>Aref Ruqaa</td><td>鲁格阿体。</td><td>短的展示用标题和书名页。不加卡希达：鲁格阿体不拉长。</td></tr>
+  </tbody>
+</table>
+
+Markazi Text和Noto Kufi Arabic适用于现代图书（正文和标题），El Messiri适用于现代展示用途。在相同的标称字号下，纳斯赫体看起来比拉丁字体小：拉丁文正文用10–11 pt时，阿拉伯文书的正文通常用13–15 pt。
+
+- **在浏览器和沙盒中**，Google Fonts和Fontsource按子集为每个字体族分别提供文件：`latin`、`latin-ext`和`arabic`。浏览器只在某个字符需要时才加载`arabic`文件，在它到达之前测量的版面是用后备字体测量的。沙盒在第一次排版前加载它；宿主应用可以用含阿拉伯字母的样本检查它是否已加载（`document.fonts.load('16px Amiri', 'ب')`）。PDF字体提供函数必须把`arabic`文件交给`renderToPdf`，用于阿拉伯文文本；[浏览器字体提供函数](/zh/docs/configuration#浏览器字体提供函数fontsource--woff2)中的提供函数按码位选取子集。
+- **在文件包中**，完整地附带字体，或按书中用到的字符做子集，但要保留OpenType排版表（`GSUB`、`GPOS`）：连写形式、合字、符号位置和镜像括号都在这些表中。没有这些表的子集会印出互不相连的独立字母。
+- **缺失的字形**印成字体的空框；`renderToPdf`按字体报告它们（`missingGlyph`），沙盒在检查面板中列出它们。
+- **阿拉伯文中的拉丁文**用同一个字体族排。Amiri自带拉丁字母；如果纳斯赫字体的拉丁字母质量不好，请把较长的拉丁文段落放在使用拉丁字体的段落样式中。
+
+## 在沙盒中
+
+在**设计 › 书写系统**下，**文档语言**下拉框提供العربية、العربية (مصر)和العربية (المغرب)，**文字方向**和**数字**会写明*自动*解析成什么。**阿拉伯语默认设置 › 查看…**在应用之前列出把书设为阿拉伯文时会改变的内容，并可选择字体（*古典*：Amiri；*现代*：Noto Naskh Arabic，标题用Noto Kufi Arabic）：方向和装订改回*自动*，页眉和页码改用有阿拉伯字母的字体，行距1.75 em，两端对齐，所在地区的数字，شكل和جدول按章编号，题注排成شكل ١-١: العنوان，章编号为الفصل الأول，列表编号为١- أ- (١)，脚注每页重新编号。每个字体选择器都把阿拉伯文字体族排在最前面。
+
+编辑器让每一行采用其第一个字母的方向：阿拉伯文的行从右边开始，光标和方向键按视觉顺序移动，而行内的标记（`{…}`属性、`[^id]`、`:ref[…]`、公式、链接地址）保持从左到右。见[沙盒](/zh/docs/sandbox#版面设计面板)。
+
+## 两套完整配置
+
+### 现代标准阿拉伯语的现代图书
+
+一本14 × 21 cm的书，正文用13 pt的Noto Naskh Arabic，标题用Noto Kufi Arabic，章编号为الفصل الأول，注码«(١)»每页重新编号，页码在页脚居中。方向、右侧装订、数字٠–٩、卡希达和粗体强调都来自`locale: 'ar-EG'`：
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const pt = (value: number) => ({ value, unit: 'pt' as const });
+const mm = (value: number) => ({ value, unit: 'mm' as const });
+const em = (value: number) => ({ value, unit: 'em' as const });
+const ink = { hex: '#1a1a1a', model: 'hex' as const };
+
+const config: PostextConfig = {
+  locale: 'ar-EG',
+  page: {
+    sizePreset: 'custom', width: mm(140), height: mm(210),
+    margins: { top: mm(18), bottom: mm(22), left: mm(16), right: mm(20), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Noto Naskh Arabic', fontSize: pt(13), lineHeight: em(1.7),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Noto Kufi Arabic', color: ink,
+    levels: [
+      { level: 1, fontSize: pt(20), numberingTemplate: 'الفصل {1:ordinal}', numberSeparator: ': ',
+        breakBefore: { enabled: true, parity: 'odd' } },
+      { level: 2, fontSize: pt(15) },
+    ],
+  },
+  captionStyle: { labelSeparator: ': ' },
+  orderedLists: {
+    levels: [
+      { level: 1, numberFormat: 'arabic', separator: '-' },
+      { level: 2, numberFormat: 'abjad', separator: '-' },
+    ],
+  },
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [] },
+  footer: { elements: [
+    { kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: 'Noto Naskh Arabic', fontSize: pt(11),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+};
+```
+
+`parity: 'odd'`让每章从正面页开始，在这本书里就是左手边的页面。题注的标签和文字之间用冒号分隔（شكل ١-٢: …），因为阿拉伯-印度数字之后默认的句点会被读成小数点。
+
+### 标注元音的古典版本
+
+一部古典文本的17 × 24 cm版本，正文用14 pt的Amiri，各夜用文字编号，诗句全部标注元音，页码在页眉居中、两侧加短横，前置部分用阿布杰德字母编页码，目录在书末：
+
+```ts
+const config: PostextConfig = {
+  locale: 'ar',
+  page: {
+    sizePreset: 'custom', width: mm(170), height: mm(240),
+    margins: { top: mm(24), bottom: mm(24), left: mm(18), right: mm(24), mirror: true },
+  },
+  layout: { layoutType: 'single' },
+  bodyText: {
+    fontFamily: 'Amiri', fontSize: pt(14), lineHeight: em(1.85),
+    textAlign: 'justify', firstLineIndent: em(1.5),
+    kashida: 'auto', kashidaPatterns: 'naskh',
+    color: ink, boldColor: ink, italicColor: ink,
+  },
+  headings: {
+    fontFamily: 'Amiri', color: ink, textAlign: 'center',
+    levels: [
+      { level: 1, fontSize: pt(18),
+        numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '',
+        breakBefore: { enabled: true, parity: 'any' } },
+    ],
+  },
+  paragraphStyles: [
+    { id: 'verse', lineHeight: em(2.1) },
+  ],
+  footnotes: { markerTemplate: '({n})', numbering: 'page', noteNumberPosition: 'inline' },
+  header: { elements: [
+    { kind: 'text', id: 'folio', content: '– {pageNumber} –', fontFamily: 'Amiri', fontSize: pt(12),
+      overflow: 'clip', color: ink, placement: { anchor: { to: 'container', edge: 'center' } } },
+  ] },
+  footer: { elements: [] },
+};
+```
+
+各章的写法是：在引言之前写`:::numbering{format="abjad" startAt=1}`，在第一夜之前写`:::numbering{format="decimal" startAt=1}`；诗写成`:::verse{style="verse"}`块；最后一章是`# فهرس المحتويات {toc="false"}`，后面跟`:::toc`。索引无须设置就会忽略冠词ال：阿拉伯文索引默认打开`index.ignoreArticle`。要从同一底本制作不标元音的阅读版，在`bodyText`中加上`tashkil: 'strip'`。
+
+## 已知限制
+
+- **波斯文、乌尔都文和希伯来文**有方向、数字、整词规则和右侧装订，但没有各自的内置用词（图、表和索引印成英文），也没有波斯体（Nastaʿlīq）的排版：波斯体字体排在一条水平基线上。
+- **块方向**在标题和容器上设置；普通段落需要用`:::paragraphs{dir=…}`包起来，也没有`{dir=auto}`。
+- **反方向的块。** 在与书的方向相反的块中，题注、目录行和索引行仍按文档的方向排，框的图标、标记栏和标题仍在文字流的起始一侧。
+- **设计文字**（书眉、章首页、框标题）逐行确定双向顺序；含有阿拉伯字母的文字整体失去字母间距，其中的拉丁文单词也一样。
+- **斜体设计文本。** 设为斜体的页眉或篇章页文字仍会把阿拉伯字母排斜。
+- **元音符号**可能伸出框或表格单元格的边缘，它们的裁剪区域不会为符号扩大；`tashkil`不去掉题注、表格单元格和设计文字中的符号。
+- **数字。** 引注编号用欧洲数字印出；序数词只写成标题所用的主格、带定冠词的形式。
+- **索引**：ة归在ه下，人名不会跳过ابن或أبو排序；没有韵脚索引和词根索引。
+- **诗歌**：不支持嵌在散文中的诗句、带编号的联，也不支持带居中叠句的分节诗体（单独居中的行除外）；比版心还宽的半行从起始一侧折行，没有悬挂缩进。
+- **卡希达**：从HTML输出复制的文字仍包含插入的tatweel，相邻各行的卡希达也不会避免上下叠在一起。
+
+## 参考资料
+
+- W3C，[Arabic & Persian Layout Requirements (alreq)](https://www.w3.org/TR/alreq/)，以及[Arabic script gap analysis](https://www.w3.org/International/alreq/gap-analysis/)（阿拉伯字母差距分析）。
+- Unicode标准附件第9号，[Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/)；Unicode技术报告第53号，[Unicode Arabic Mark Rendering](https://www.unicode.org/reports/tr53/)。
+- W3C，[Ready-made Counter Styles](https://www.w3.org/TR/predefined-counter-styles/)，用于`arabic-indic`、`persian`和阿布杰德系列。
+- aliftype，[raqim-kashida](https://github.com/aliftype/raqim-kashida)（MIT），及其[介绍](https://aliftype.com/blog/introducing-raqim-kashida/english)；M. Benatia、M. Elyaakoubi和A. Lazrek，“Arabic text justification”，*TUGboat* 27(2)，2006。
+- Titus Nemeth，[On Arabic justification](https://research.reading.ac.uk/typoarabic/on-arabic-justification-part-1/)，TypoArabic，雷丁大学；Khatt Foundation，[The Big Kashida Secret](https://www.khtt.net/en/page/1821/the-big-kashida-secret)。
+- Aḥmad Zakī Pāshā，*al-Tarqīm wa-ʿalāmātuhu fī al-lugha al-ʿarabiyya*（《阿拉伯语的标点及其符号》），1912（[Hindawi](https://www.hindawi.org/books/82047270/)），关于阿拉伯文标点。
+- [Amiri](https://www.amirifont.org)和[Scheherazade New](https://software.sil.org/scheherazade/)的文档，关于卡希达、符号叠放和风格集。
+- Unicode CLDR，用于各地区的默认数字。

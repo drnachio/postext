@@ -1,0 +1,78 @@
+---
+title: "Una pàgina de novel·la xinesa en una retícula de 28 × 28"
+summary: "«El poble natal», de Lu Xun, en un 大32开: 28 caràcters per línia i 28 línies per pàgina, talls GB, puntuació Kaiming i espai entre xinès i llatí."
+plain: "El començament d'un relat de Lu Xun compost com un llibre de butxaca xinès. Ensenya a posar just 28 caràcters per línia i 28 línies per pàgina, amb les normes xineses de puntuació."
+description: "Una pàgina de novel·la xinesa continental amb Postext: cjk.grid fixa 28 × 28 caràcters de 五号 en un 大32开, amb talls GB, puntuació Kaiming i sagnat de dos."
+question: "Com componc una pàgina xinesa en caràcters, 28 per línia i 28 línies per pàgina?"
+aliases: ["novel·la xinesa", "xinès simplificat", "xinès horitzontal", "retícula de caràcters", "版心", "caixa en caràcters", "puntuació Kaiming", "开明式", "tall de línies GB", "避头尾", "puntuació a principi de línia", "espai entre xinès i llatí", "sagnat de dos caràcters", "大32开", "Lu Xun"]
+pageNotes: { "1": "La làmina: una lluna daurada en un cel blau fosc sobre una franja de mar i, a la sorra, entre fileres de síndries ratllades, un noi amb un anell de plata al coll que clava una forca d'acer a la sorra, davant seu, mentre l'animal al qual apuntava fuig entre les seves cames. A dalt, tres línies del relat en lletra de pinzell blanca.", "2": "L'obertura: el títol 故乡 en caràcters Song negres, separats mig caràcter, un filet blau curt i el nom de l'autor, 鲁迅; a sota, vint línies de text justificat, cada paràgraf amb dos caràcters de sagnat, i el foli 71 al peu." }
+---
+
+## Què compondràs
+
+El començament d'«El poble natal» (故乡, 1921), de Lu Xun, tal com el compondria una edició continental en rústica del seu primer llibre: una pàgina 大32开 de 140 × 203 mm la caixa de la qual es compta en caràcters, 28 per línia i 28 línies per pàgina, en Noto Serif SC de cos 五号 (10,5 pt). Cada paràgraf té un sagnat de dos caràcters; les comes i les cometes ocupen mig caràcter, com a la majoria dels llibres continentals; cap línia no comença amb 。 o ， ni acaba amb “. El relat s'obre en una pàgina senar, sota el títol en el pes negre de la Song. Al davant, una làmina pintada mostra el camp de síndries sota la lluna que recorda el narrador, amb la frase que el descriu en la lletra de pinzell Ma Shan Zheng. <RecipeLink slug="spanish-pocket-novel">Castellà justificat en una novel·la de butxaca</RecipeLink> fa la mateixa feina amb una escriptura llatina.
+
+## Elaboració
+
+### 1 · Una pàgina comptada en caràcters
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `cjk.grid` dona a la mesura 28 em de `bodyText.fontSize` (294 pt, 103,7 mm) i a la caixa 28 línies de `lineHeight` (462 pt, 163 mm), i mou els marges perquè hi càpiguen, de manera que una línia plena de caràcters xinesos en té exactament 28 i totes les pàgines plenes acaben a la mateixa línia ([Retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters)). Els cinc paràmetres que segueixen la retícula són els que `locale: 'zh-Hans'` ja dona per si sol; van escrits perquè els puguis canviar d'un en un, tot i que `compressAdjacent` no canvia res mentre `punctuationWidth` no sigui `'fullwidth'`: amb Kaiming, dos signes seguits mai no ocupen més d'1,5 em. A la <PageRef page={2}>pàgina 71</PageRef>, el 。 que tanca un paràgraf no hi cap, i les regles de principi de línia (tots els nivells de `lineBreak` llevat de `'none'`; `'gb'` hi afegeix la barra) li prohibeixen obrir línia. La línia el recull component a mig caràcter el 。 que segueix 事, i així 事。宏 s'estreny i el paràgraf no guanya cap línia ([Amplades de la puntuació](/ca/docs/configuration#amplades-de-la-puntuació)). El blanc de les línies curtes es reparteix entre els caràcters, mai entre paraules, i en aquestes pàgines mai no passa de 0,05 em ([Xinès, japonès i coreà](/ca/docs/justification#xinès-japonès-i-coreà)).
+
+<PageShot page={2} crop="0.1,0.82,0.8,0.11" caption="Pàgina 71: les últimes línies d'un paràgraf. 事。宏 s'estreny perquè 看。 càpiga a la línia en lloc d'obrir-ne una altra." />
+
+### 2 · Un 大32开 amb més cap que peu
+
+<Excerpt region="page" />
+
+Amb la retícula activada, els marges són mínims: la retícula col·loca la caixa en l'espai que deixen i reparteix el que sobra. A dalt 22 mm i a baix 18 deixen just 163 mm, així que el marge de cap continua sent 4 mm més alt que el de peu, com als llibres xinesos; als costats, 18 mm per banda deixen 0,3 mm per repartir. Si demanes més caràcters o línies dels que hi caben, la retícula es redueix al que hi cap i avisa amb `cjkGridClamped`; el cos i l'interlineat no canvien.
+
+### 3 · Un títol enfonsat un nombre enter de línies
+
+<Excerpt region="opener" />
+
+`minHeight` mesura vuit línies de 16,5 pt, de manera que el text comença a la novena línia de la retícula, sobre les mateixes línies de base que a qualsevol altra pàgina. Els 23 pt d'espaiat separen 故 i 乡 mig caràcter, l'habitual en un títol de dos caràcters; Postext no compta l'espaiat que queda després de l'últim caràcter en centrar la línia, així que el títol queda a l'eix de la pàgina ([Estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)).
+
+### 4 · El llibre a la pàgina parella, el relat a la senar
+
+<Excerpt region="heads" />
+
+Les novel·les continentals porten el títol del llibre sobre les pàgines parelles i el del relat sobre les senars, centrats, amb el foli a la vora exterior i un filet fi a sota. `pages: 'body'` deixa les capçaleres fora de l'obertura i de la làmina, i l'obertura porta el foli al peu. Les capçaleres van en Noto Sans SC, la Hei, a 8 pt: petites, però amb una veu diferent de la Song del text.
+
+### 5 · Una làmina a tota pàgina
+
+<Excerpt region="plate" />
+
+La il·lustració pertany a un títol propi, `# 月下的瓜地 {style="plate" …}`, l'estil del qual dibuixa la pàgina i li treu la capçalera i el foli. La làmina necessita `span: 'page'`, perquè el disseny d'un títol que es queda a la columna es talla al peu de la columna, 18 mm abans de la vora. `runningChapter: false` amb `toc: false` la deixa fora dels marcadors del PDF, que comencen per 故乡. Les tres línies de la cita són tres atributs i tres elements de text, perquè el text de disseny té el seu propi tall de línies i no aplica les amplades de la puntuació xinesa; en partir-les a mà, les línies perden a més les comes, com se sol fer amb les línies d'exhibició en xinès.
+
+### 6 · Lletres llatines i xifres en el text xinès
+
+<Excerpt region="styles" />
+
+La nota i el colofó de la <PageRef page={7}>pàgina 76</PageRef> són el lloc on les xifres i els noms llatins toquen els caràcters xinesos. `latinSpacing` posa un quart de quadratí allà on es toquen, com al 1921年 de la nota i al 用Noto Serif SC五号 del colofó, escrits sense cap espai ([Espai entre xinès i llatí](/ca/docs/configuration#espai-entre-xinès-i-llatí)); en una línia justificada, aquest espai és el primer que creix, fins a mig quadratí. La nota va a 9,1875 pt i no als 9 pt del 小五 perquè 32 dels seus caràcters omplin la mesura: a 9 pt a cada línia li sobraven dos terços d'em, i se'ls quedaven els espais entre xinès i llatí. Al Markdown, els noms de les fonts porten espais de no separació (U+00A0), que l'espai entre xinès i llatí respecta: amb espais normals, les línies en bandera del colofó partien Noto Sans / SC.
+
+## Variants
+
+### Compon tota la puntuació a amplada completa (全角式)
+
+Les comes, les comes d'enumeració i les cometes ocupen un caràcter sencer, 。” n'ocupa dos i a cada línia hi cap menys text.
+
+```diff
+-  punctuationWidth: 'kaiming', // ，、：； quotes, brackets ½ em; 。？！ one em, ½ at a line end
+-  compressAdjacent: true, // idle under Kaiming (no pair tops 1.5 em); 'fullwidth' needs it
++  punctuationWidth: 'fullwidth',
++  compressAdjacent: false,
+```
+
+### Mostra la retícula mentre compons
+
+El llenç dibuixa un quadrat gris clar per cada posició de caràcter de cada línia (稿纸); el PDF no l'inclou llevat que `renderToPdf` rebi `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+## Errors freqüents
+
+- La làmina és un títol, i un títol té marcador al PDF: sense `runningChapter: false` i `toc: false` a l'estil de la làmina, els marcadors començarien per 月下的瓜地, al primer nivell, abans de 故乡. Amb només un dels dos paràmetres, el marcador continua allà. El PDF etiquetat conserva el títol de la làmina com a H1.
+- La font dels títols ha de ser una de les que carrega `FONTS`, encara que un disseny pinti tots els títols: amb el pes 700 per defecte, el kit va trobar Noto Serif SC 700 a la maqueta i en va carregar el fitxer llatí amb un avís. `headings.fontWeight: 400` deixa els blocs de títol en la font del text.

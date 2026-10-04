@@ -1,0 +1,80 @@
+---
+title: "Obra de teatre: repartiment, personatges i acotacions"
+summary: "L'inici de l'obra de Wilde per a actors. Els noms van en negreta pruna i les acotacions en cursiva grisa; el repartiment surt d'un text tabulat."
+plain: "El començament d'una comèdia famosa d'Oscar Wilde, impresa per als actors. El nom de qui parla destaca en negreta de color, i les acotacions van en gris per saltar-les amb facilitat."
+description: "Edició per a actors de La importància de dir-se Ernest, composta amb Postext: portada de cartell pruna i el repartiment de l'estrena davant del primer acte."
+question: "Com componc una obra de teatre: personatges, acotacions, títols d'acte i escena, i el repartiment?"
+aliases: ["teatre", "obra dramàtica", "obra de teatre", "edició per a actors", "llibret", "acotacions", "parlaments", "personatges", "repartiment", "dramatis personae", "sagnat francès", "cartell", "portada", "floró", "clavell", "Oscar Wilde", "La importància de dir-se Ernest"]
+pageNotes: { "1": "La portada: un full color pruna dins d'un doble marc daurat amb els filets que es creuen a les cantonades. Damunt del títol va el subtítol en versals daurades espaiades; el títol ocupa quatre línies, amb «Importancia» i «Ernesto» en versals gruixudes i «La» i «de llamarse» en cursiva. A sota, un clavell daurat entre dues volutes, l'autor en versals espaiades i, al peu, el teatre i la data de l'estrena.", "2": "Els personatges de l'obra en una taula sota una banda pruna amb el repartiment de l'estrena, el teatre i la data, i l'actor que va estrenar cada paper a la dreta. A sota, els llocs de l'acció i un colofó.", "3": "El primer acte comença amb el títol en versals pruna i un clavell pruna. L'escena va en cursiva grisa centrada sota un rètol en versaletes, i després vénen els parlaments, cadascun amb el nom del personatge en negreta pruna, un guió llarg i les línies següents sagnades.", "4": "Parlaments amb sagnat francès i tres acotacions centrades entre ells: l'entrada i la sortida de Lane i l'entrada de Jack.", "5": "La pàgina acaba amb el parlament d'Algernon sobre els divorcis, que una acotació en cursiva grisa talla en dos." }
+---
+
+## Què compondràs
+
+El començament de *La importància de dir-se Ernest*, d'Oscar Wilde, en una edició per a actors de cinc pàgines de 140 × 216 mm. La portada és un cartell color pruna dins d'un doble marc daurat, amb *Importancia* i *Ernesto* en versals gruixudes de cartell i un clavell daurat sota el títol. Davant del primer acte, el repartiment anomena l'actor que va estrenar cada paper al teatre St James’s el 1895. Cada parlament comença amb el nom del personatge en negreta pruna i sagna 5 mm les línies següents, de manera que l'actor veu de seguida quan li toca parlar. Les acotacions van en cursiva grisa, tant si són dins d'un parlament com entre dos, i en repassar el paper la vista se les salta. L'edició espanyola és una traducció nova que segueix el costum del teatre en espanyol: guió llarg després del nom i acotacions entre parèntesis.
+
+## Elaboració
+
+### 1 · Un acte és un títol i prou
+
+<Excerpt region="acts" />
+
+L'acte s'obre amb un títol de primer nivell en Abril Fatface de 24 pt, sense ranura de disseny. `textTransform` el passa a versals, i les tres línies de 13,6 pt de la retícula que ocupa deixen aquestes versals 5,5 mm per sota de la vora superior de la caixa ([encapçalaments](/ca/docs/configuration#encapçalaments)). `textAlign: 'center'` no admet un valor per nivell, així que també centra els títols del repartiment i el rètol *Escena*. `breakBefore` amb paritat `'odd'` porta l'acte a una pàgina senar, davant del repartiment. La configuració ho ha de repetir, perquè qualsevol objecte `headings` desactiva el salt de pàgina del primer nivell ([saltar abans](/ca/docs/configuration#saltar-abans)).
+
+### 2 · El repartiment és una taula llegida de línies amb tabuladors
+
+<Excerpt region="cast" />
+
+Postext no té taules amb barres, així que cada taula és un recurs. Les files són a `content.cast.es.md`, una per línia i amb un tabulador entre cel·la i cel·la, i `parseTSV` les converteix en un model ([construir models de taula](/ca/docs/configuration#construir-models-de-taula)). L'única línia sense tabulador, la del repartiment de l'estrena amb el teatre i la data, passa a ser una fila combinada: `mergeCells` dona a la primera cel·la `colSpan: 2` i deixa la segona a la quadrícula, marcada amb `hiddenBy`. `headerRowCount: 1` posa aquesta fila a la banda pruna. Cap altra fila no porta emplenament, perquè el llenç deixa una línia clara entre dues cel·les emplenades contigües. La columna dels actors ocupa un terç de l'amplada, i cadascuna de les seves cel·les va alineada a la dreta. Els llocs de l'acció passen per la mateixa funció amb un estil de taula propi, sense filets ([estils de taula amb nom](/ca/docs/configuration#estils-de-taula-amb-nom)). Una taula compon tot el text de les cel·les en un sol color, la tinta del text tret que `bodyColor` n'indiqui un altre, així que aquí la negreta dels personatges surt en tinta i, al diàleg, en pruna.
+
+### 3 · Ornaments sense número ni peu
+
+<Excerpt region="ornament" />
+
+Un tipus de recurs amb `captionPrefix` i `shortLabel` buits imprimeix les il·lustracions soles, sense peu ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). El seu `defaultPlacement` col·loca el clavell on hi ha `::resource{id="fleuron"}`, centrat i amb una amplada de 0,24 de la mesura de 107 mm, uns 26 mm. Les dues taules fan servir un segon tipus, també sense número, així que cap no porta el rètol *Tabla 1*.
+
+### 4 · La portada és un estil de títol
+
+<Excerpt region="playbill" />
+
+`# La importancia de llamarse Ernesto {style="playbill" …}` porta el títol en quatre atributs que el disseny compon en dues famílies: Abril Fatface de 40 i 60 pt per als substantius i Libre Baskerville cursiva de 17 pt per a *La* i *de llamarse* ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El fons pruna, el marc i el clavell són un sol SVG dibuixat en codi i ancorat a la sang ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). L'estil porta `span: 'page'` encara que el llibre tingui una sola columna. Si el disseny es quedés a la columna, es tallaria per dalt i per baix per les vores de la caixa de text, a 20 mm de la vora superior del full i a 23,3 mm de la inferior. El `header` buit de l'estil treu les capçaleres del repartiment, que pertany a la mateixa secció, i el seu `footer` buit treu de la portada el foli al peu, que sortiria en pruna sobre pruna ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)).
+
+Les imatges d'una obertura no reserven alçada, així que el títol ocupa la pàgina només fins a la seva línia de text més baixa, la de l'estrena, a 176 mm. El buit que queda a sota no basta per al títol següent, i sense el `:::pagebreak` que segueix la portada les pàgines capturades surten iguals. El salt hi és per si es retoca la portada: si el treus i puges el teatre i l'estrena a 150 i 156 mm, *Personajes de la obra* comença sobre el full pruna. A la 1.4.1, una línia centrada amb `letterSpacing` queda desplaçada a l'esquerra la meitat d'aquest espaiat, i `line()` desplaça cada línia espaiada el mateix cap a la dreta. Així, *OSCAR WILDE* queda a 0,07 mm del centre en lloc de 0,56.
+
+### 5 · Capçaleres que se salten la primera pàgina de l'acte
+
+<Excerpt region="heads" />
+
+La pàgina parella porta el títol de l'obra, pres del frontmatter, i la senar el de l'acte, de `{chapterTitle}`; tots dos van en versals de Playfair Display SC, amb el foli en pruna a la vora exterior ([elements de text](/ca/docs/configuration#elements-de-text)). La primera pàgina de l'acte compta com a obertura perquè el seu primer bloc és un títol que salta de pàgina, així que `pages: 'body'` li treu les capçaleres, i el peu de pàgina hi posa en el seu lloc un foli centrat.
+
+<Note>
+Un guió de cinema sagna el diàleg pels dos costats en lloc de fer servir sagnat francès: <RecipeLink slug="screenplay-format">Format de guió cinematogràfic</RecipeLink> compon cada rèplica com un requadre sense marc de l'amplada del bloc de diàleg.
+</Note>
+
+## Variants
+
+### Alinea les acotacions amb les línies sagnades
+
+En bandera i amb un sagnat de primera línia de 5 mm, una acotació d'una línia comença a l'altura de les línies sagnades dels parlaments, i la descripció de l'escena es converteix en dos paràgrafs sagnats sota el seu rètol centrat.
+
+```diff
+ const direction = { id: 'direction', fontSize: pt(8.6),
+-  textAlign: 'center', firstLineIndent: pt(0) };
++  textAlign: 'left', firstLineIndent: mm(5) };
+```
+
+### Deixa una línia entre parlaments
+
+`paragraphSpacing: true` afegeix una línia en blanc de la retícula després de cada parlament. L'acte anglès passa llavors de tres a cinc pàgines, i l'espanyol, de tres a quatre.
+
+```diff
+   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
++  paragraphSpacing: true,
+ };
+```
+
+## Errors freqüents
+
+- Tota cursiva del diàleg pren `italicColor`, també la d'èmfasi, i l'*es* que subratlla Lane surt en el gris de les acotacions. El gris ha d'anar a `bodyText` perquè a la 1.4.1 un estil de paràgraf no pot donar a la seva cursiva un color propi; només en rodona quedaria aquest *es* en tinta.
+- A l'edició anglesa, tres parlaments de Wilde acaben en una paraula sola: *information.*, *that?* i *you.* L'script posa `bodyText.maxRuntTracking: 0` per l'error *L'arranjament de les línies curtes pot estrènyer un interlletratge que mai no es pinta*. Amb el valor per defecte, la 1.4.1 puja *that?* a la línia anterior amb 2,0 mm d'interlletratge negatiu que el llenç no pinta, i la línia surt amb els espais entre paraules a la meitat de la seva amplada. Tocant només l'espai entre paraules, *that?* puja únicament amb un `minWordSpacing` de 0,5, que estreny la línia igual, o amb una mesura 1,5 mm més ampla, que deixa deu línies per sobre d'1,5 vegades l'espai normal en lloc de dues. Les tres línies curtes s'hi queden, per no tocar el text de Wilde. La traducció espanyola es va reescriure allà on una línia acabava en una paraula d'una lletra o on una síl·laba quedava sola.
+- Els noms es divideixen com qualsevol altra paraula: a la pàgina 5 de l'edició anglesa, *Au-gusta* i *Gwen-dolen* es parteixen entre dues línies. Un caràcter d'unió de paraules (U+2060) dins d'*Augusta* manté el nom sencer, però estira la línia anterior fins a 1,71 vegades l'espai normal, així que el text anglès conserva els guionets.
+- Al llenç, Playfair Display SC dibuixa *fi* com una lligadura en minúscula, així que *first* sortiria amb una *fi* minúscula entre versaletes. Per això la banda del repartiment anglès diu *The original cast*.

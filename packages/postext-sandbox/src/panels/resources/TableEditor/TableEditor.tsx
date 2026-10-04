@@ -51,6 +51,10 @@ interface TableEditorProps {
   onFocusConsumed?: () => void;
   /** Selection inside the focused cell (`null` when it loses focus). */
   onCellSelectionChange?: (pos: TableCellPos, selection: InlineSelection | null) => void;
+  /** The direction the table runs (`table.direction`, else the
+   *  document's): a right-to-left table shows its first column on the
+   *  right, and its cells' `left` (their start) flush right. */
+  direction?: 'ltr' | 'rtl';
 }
 
 const columnCount = (m: TableModel): number =>
@@ -162,6 +166,7 @@ export function TableEditor({
   focusRequest = null,
   onFocusConsumed,
   onCellSelectionChange,
+  direction,
 }: TableEditorProps) {
   const labels = useSandboxLabels();
   // Bitmap / SVG resources a cell may embed (`TableCell.image`), by id.
@@ -494,7 +499,9 @@ export function TableEditor({
         canSplit={canSplit}
         headerRowActive={headerRowActive}
         headerColumnActive={headerColumnActive}
-        activeAlign={activeCell?.align}
+        // The toolbar shows a logical `start` / `end` as the side it is
+        // for a table running with the document.
+        activeAlign={activeCell?.align === 'start' ? 'left' : activeCell?.align === 'end' ? 'right' : activeCell?.align}
         activeVerticalAlign={activeCell?.verticalAlign}
         onAddRow={handleAddRow}
         onRemoveRow={handleRemoveRow}
@@ -505,6 +512,7 @@ export function TableEditor({
         onToggleHeaderRow={handleToggleHeaderRow}
         onToggleHeaderColumn={handleToggleHeaderColumn}
         onSetAlign={handleSetAlign}
+        rtl={direction === 'rtl'}
         onSetVerticalAlign={handleSetVerticalAlign}
         onPasteTsv={handlePasteTsv}
         imageOptions={imageOptions}
@@ -519,6 +527,7 @@ export function TableEditor({
           <label className="flex items-center gap-1.5" title={labels.tableEditorImageWidthHint}>
             <span>{labels.tableEditorImageWidth}</span>
             <input
+              dir="ltr"
               type="number"
               min={1}
               max={100}
@@ -529,7 +538,7 @@ export function TableEditor({
                 if (Number.isFinite(v)) handleSetImageWidth(v);
               }}
               aria-label={labels.tableEditorImageWidth}
-              className="w-14 rounded border bg-transparent px-1 py-0.5 text-right"
+              className="w-14 rounded border bg-transparent px-1 py-0.5 text-end"
               style={{ borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 11 }}
             />
             <span>%</span>
@@ -539,7 +548,7 @@ export function TableEditor({
       )}
 
       <div className="overflow-x-auto">
-        <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
+        <table dir={direction} style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
           <tbody>
             {model.rows.map((row, r) => (
               <tr key={r}>

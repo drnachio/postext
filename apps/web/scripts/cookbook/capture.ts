@@ -229,6 +229,8 @@ function evaluate(
   const pdfBytes = run.pdf?.bytes ?? null;
   const pdfPages = pdfBytes ? pdfPageCount(pdfBytes) : null;
   if (pdfBytes) files.set(`${slug}.pdf`, pdfBytes);
+  // The preview gets the PDF too: a local-engine run writes nothing else to look at.
+  if (pdfBytes) previews.set(`${slug}.pdf`, pdfBytes);
   const bundle = run.sandbox?.bytes ?? null;
   if (bundle) files.set(sandboxFile(slug), bundle);
   const vdtHash = facts?.vdt ? sha1(facts.vdt) : "";
@@ -253,6 +255,7 @@ function evaluate(
     timeoutMs: meta.capture.timeoutMs ?? 60_000,
     totalMs: run.timings.runMs,
     pdf: run.pdf ? { ...run.pdf, bytes: pdfBytes?.length ?? 0, pages: pdfPages } : null,
+    epubs: run.epubs,
     published: run.published,
     publishError: run.publishError,
     cardErrors: run.cardErrors,
@@ -580,7 +583,7 @@ export async function runCapture(opts: CaptureOptions): Promise<CaptureResult[]>
           const dir = path.join(userPath(opts.previewDir), task.slug, d.variant);
           fs.mkdirSync(dir, { recursive: true });
           // An earlier, longer run's pages would linger among the new ones.
-          for (const name of fs.readdirSync(dir)) if (/^(p\d+|card|og)\.png$/.test(name)) fs.rmSync(path.join(dir, name));
+          for (const name of fs.readdirSync(dir)) if (/^(p\d+|card|og)\.png$|\.pdf$/.test(name)) fs.rmSync(path.join(dir, name));
           for (const [name, bytes] of d.output.previews) fs.writeFileSync(path.join(dir, name), bytes);
           // What capture.json would record for the edition (a local-engine
           // preview writes no capture): diagnostics, detection, binding.

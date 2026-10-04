@@ -241,3 +241,37 @@ describe("ranking helpers", () => {
     expect(matchReason({ newsreader: ["fonts"], pdf: ["summary", "title"] })).toEqual({ field: "summary", terms: ["pdf"] });
   });
 });
+
+describe("processTerm in Catalan", () => {
+  const ca = (term: string) => processTerm(term, "ca");
+  it("folds a feminine plural and its singular onto one term", () => {
+    expect(ca("taules")).toBe(ca("taula"));
+    expect(ca("capçaleres")).toBe(ca("capçalera"));
+    expect(ca("imatges")).toBe(ca("imatge"));
+    expect(ca("colors")).toBe(ca("color"));
+  });
+  it("drops Catalan stop words and keeps diacritics folded", () => {
+    expect(ca("amb")).toBeNull();
+    expect(ca("Què")).toBeNull();
+    expect(ca("Índex")).toBe("index");
+  });
+});
+
+describe("processTerm in Arabic", () => {
+  const ar = (term: string) => processTerm(term, "ar");
+  it("folds the article, the vowel marks and the sound plurals", () => {
+    expect(ar("الجداول")).toBe(ar("جداول"));
+    expect(ar("الصفحات")).toBe(ar("صفحة"));
+    expect(ar("بالخط")).toBe(ar("خط"));
+    expect(ar("مُتَرْجِمُونَ")).toBe(ar("مترجم"));
+    expect(ar("إطار")).toBe(ar("اطار"));
+  });
+  it("drops Arabic stop words and reads Arabic-Indic digits", () => {
+    expect(ar("التي")).toBeNull();
+    expect(ar("على")).toBeNull();
+    expect(ar("٢٠٢٦")).toBe("2026");
+  });
+  it("keeps Arabic words when tokenizing", () => {
+    expect(tokenize("كيف أضيف حاشية سفلية، في PDF؟")).toEqual(["كيف", "أضيف", "حاشية", "سفلية", "في", "PDF"]);
+  });
+});

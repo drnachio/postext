@@ -77,7 +77,7 @@ export interface ProbeFacts {
     used: ProbeFace[];
     loaded: { family: string; weight: string; style: string }[];
     missing: ProbeFace[];
-    /** Characters a CJK face set from files not loaded when the layout ran. */
+    /** Characters a CJK or Arabic face set from files not loaded when the layout ran. */
     late?: (ProbeFace & { chars: string })[];
   };
   garbage?: { text: string; where: string }[];
@@ -96,6 +96,10 @@ export interface ProbeFacts {
   warnings?: { kind: string; page: number; overflowPx: number }[];
   /** Warnings `:::index` raised (#172): `doc.contentWarnings` of the index kinds. */
   indexWarnings?: { kind: string; page: number | null; detail: string }[];
+  /** Content warnings on how the text is set (`arabicMarksExceedLeading`,
+   *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
+   *  words they name. */
+  textWarnings?: { kind: string; page: number | null; detail: string }[];
   converged?: boolean;
   iterationCount?: number;
   loose?: {
@@ -122,6 +126,12 @@ export interface ProbeFacts {
   };
   /** `"right"` when the document is bound on its right edge (`doc.binding`). */
   binding?: "right";
+  /** `"rtl"` when the document's text runs right to left (the resolved
+   *  `config.direction`, also when the locale implied it). */
+  direction?: "rtl";
+  /** The digit system the engine writes numbers in, when the document is
+   *  right to left or names one (`config.numerals`, resolved from the locale). */
+  numerals?: "latn" | "arab" | "arabext";
   pages?: ProbePage[];
   specimen?: {
     trimMm: [number, number];
@@ -244,7 +254,7 @@ export function suggestLevel(
   const config = facts.userConfig ?? {};
   const named = NAMED_STYLES.some((key) => Array.isArray(config[key]) && (config[key] as unknown[]).length > 0);
   const intermediate =
-    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || stats.leaves >= 60 ||
+    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || meta.outputs.includes("epub") || stats.leaves >= 60 ||
     (facts.resources?.length ?? 0) > 1 || apis.length > 4;
   return intermediate ? 2 : 1;
 }
@@ -259,9 +269,14 @@ export function detect(meta: RecipeMeta, facts: ProbeFacts, pen: ComposedPen, re
   const resources = { svg: 0, bitmap: 0, table: 0 };
   for (const r of facts.resources ?? []) if (r.kind in resources) resources[r.kind as keyof typeof resources]++;
   const fonts = (facts.faces?.used ?? []).map(({ family, weight, style }) => ({ family, weight, style }));
-  // Vertical text binds a book on the right without saying page.binding:
-  // the document's binding counts as the key.
-  const paths = facts.binding === "right" && !stats.paths.includes("page.binding") ? [...stats.paths, "page.binding"] : stats.paths;
+  // Vertical and right-to-left text bind a book on the right without
+  // saying page.binding, and an Arabic locale sets the text right to left
+  // without saying direction or numerals: the document's binding, direction
+  // and digits count as the keys.
+  const paths = [...stats.paths];
+  if (facts.binding === "right" && !paths.includes("page.binding")) paths.push("page.binding");
+  if (facts.direction === "rtl" && !paths.includes("direction")) paths.push("direction");
+  if (facts.numerals && !paths.includes("numerals")) paths.push("numerals");
   const { detected } = detectFeatures(registry, { paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
   const directives = new Set<string>();
   const inline = new Set<string>();
@@ -316,6 +331,23 @@ export function pdfPageCount(bytes: Buffer): number {
 
 // ─── The checks ─────────────────────────────────────────────────────────────
 
+/** An EPUB the pen wrote, as the postext-epub shim recorded it and read it
+ *  back with readEpub (check C30). */
+export interface EpubRecord {
+  layout: string | null;
+  bytes: number;
+  ms: number;
+  /** Spine items, page-list entries and top-level contents entries readEpub found. */
+  documents: number;
+  pages: number;
+  toc: number;
+  /** The layout readEpub read from the package document. */
+  readLayout: string | null;
+  /** onWarning reports: `missingFont: Literata`, `missingImage: map.svg`. */
+  warnings: string[];
+  error: string | null;
+}
+
 export interface CheckInput {
   meta: RecipeMeta;
   facts: ProbeFacts | null;
@@ -338,6 +370,8 @@ export interface CheckInput {
   timeoutMs: number;
   totalMs: number;
   pdf: { button: boolean; timedOut: boolean; error: string | null; fontFailures: string[]; bytes: number; pages: number | null } | null;
+  /** The EPUBs the pen wrote with postext-epub (C30). */
+  epubs?: EpubRecord[];
   published: number[];
   publishError: string | null;
   cardErrors: string[];
@@ -433,11 +467,11 @@ function collect(input: CheckInput): Finding[] {
   for (const w of facts.warnings ?? []) {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind} on page ${w.page} (${w.overflowPx} px over)`);
   }
-  for (const w of facts.indexWarnings ?? []) {
+  for (const w of [...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? [])]) {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind}${w.detail ? ` "${w.detail}"` : ""}${w.page ? ` on page ${w.page}` : ""}`);
   }
   for (const kind of expected) {
-    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? [])];
+    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? [])];
     if (!seen.some((w) => w.kind === kind)) add("C5", "info", `expect.warnings lists ${kind}, which did not occur`);
   }
 
@@ -459,14 +493,17 @@ function collect(input: CheckInput): Finding[] {
   }
 
   // C12: faces the pages use that no FontFace covers, and characters a CJK
-  // face set from files that loaded after the layout (measured in another face).
+  // or Arabic face set from files that loaded after the layout (measured in
+  // another face).
   const faceName = (face: ProbeFace) => `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""}`;
   for (const face of facts.faces?.missing ?? []) {
     add("C12", "fail", `${faceName(face)} is used (${face.where}) but not loaded`);
   }
   for (const face of facts.faces?.late ?? []) {
     add("C12", "fail", `${faceName(face)} sets ${[...face.chars].join(" ")} (${face.where}) from files not loaded when the layout ran: ` +
-      `give loadCjkFonts the text this face sets, and list the weight in FONTS`);
+      (/\p{Script=Arabic}/u.test(face.chars)
+        ? "list the weight in FONTS and load it with loadArabicFonts(FONTS, markdown) before the build"
+        : "give loadCjkFonts the text this face sets, and list the weight in FONTS"));
   }
 
   // C14: the PDF.
@@ -490,6 +527,21 @@ function collect(input: CheckInput): Finding[] {
       }
       if (pdf.bytes > 2 * MB) add("C20", "fail", `the PDF weighs ${(pdf.bytes / MB).toFixed(2)} MB (limit 2 MB)`);
     }
+  }
+
+  // C30: the EPUBs. A recipe with an "epub" output writes at least one
+  // while its module runs, and every file reads back in its own layout.
+  const epubs = input.epubs ?? [];
+  if (meta.outputs.includes("epub") && !epubs.length) {
+    add("C30", "fail", "outputs include \"epub\" but the pen wrote no EPUB before it settled (call renderToEpub at top level)");
+  }
+  for (const epub of epubs) {
+    const name = `the ${epub.layout ?? "?"} EPUB`;
+    if (epub.error) add("C30", "fail", `${name}: ${firstLines(epub.error, 1)}`);
+    else if (!epub.bytes || !epub.documents) add("C30", "fail", `${name} has no content documents`);
+    else if (epub.readLayout !== epub.layout) add("C30", "fail", `${name} reads back as ${epub.readLayout ?? "no layout"}`);
+    for (const warning of epub.warnings) add("C30", "warn", `${name}: ${warning}`);
+    if (epub.bytes > 2 * MB) add("C20", "warn", `${name} weighs ${(epub.bytes / MB).toFixed(2)} MB`);
   }
 
   // C15 and the pictures.
@@ -607,7 +659,8 @@ function collect(input: CheckInput): Finding[] {
 
   // C25: characters a PDF recipe's fonts cannot set: those outside
   // Fontsource's latin subset that no loaded face covers (a CJK face the
-  // cjk block loads by slices covers its own), and what postext-pdf drew
+  // cjk block loads by slices covers its own, an Arabic face the arabic
+  // block completes covers the Arabic letters), and what postext-pdf drew
   // with no glyph (its missingGlyph warning, printed to the console).
   const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
   if (pdfRecipe && facts.nonLatin?.length) {
@@ -619,6 +672,12 @@ function collect(input: CheckInput): Finding[] {
       const hit = MISSING.exec(m.text);
       if (hit) add("C25", "warn", `the PDF has no glyph for "${hit[1]}" ${hit[2]}: ${hit[3]}`);
     }
+    // HarfBuzz not loaded: the PDF still builds, its Arabic shaped by
+    // fontkit with every mark misplaced, which no page count shows.
+    // postext-pdf says so on the console (its complexShapingUnavailable
+    // warning; the shim prints it even when the pen passes onWarning).
+    const noShaper = input.console.find((m) => /^postext-pdf: HarfBuzz did not load/.test(m.text));
+    if (noShaper) add("C14", "fail", `the PDF's right-to-left text was shaped without HarfBuzz: ${firstLines(noShaper.text, 1)}`);
   }
 
   // C26: hero legibility.

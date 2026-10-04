@@ -1,0 +1,85 @@
+---
+title: "Requadres de llibre de text amb codi de colors"
+summary: "Sis tipus de requadre en tres colors, que es distingeixen per una franja amb icona, un distintiu, una pestanya numerada, pictogrames o una marca lateral."
+plain: "Un capítol d'un llibre de biologia amb sis tipus de requadres, com avisos o notes de laboratori. Cada tipus té el seu color i el seu símbol, perquè l'alumne els distingeixi d'un cop d'ull."
+description: "Un capítol de biologia compost amb Postext: objectius en franja magenta, un consell al costat d'un filet verd, el RECUADRO 2.1 i un advertiment ambre."
+question: "Com faig requadres d'objectius, consells i advertiments amb icona, franja, cantonades arrodonides o pestanya?"
+aliases: ["requadres de llibre de text", "objectius d'aprenentatge", "per recordar", "consell d'estudi", "requadre d'advertiment", "RECUADRO 2.1", "requadre 2.1", "requadre 2-1", "requadre numerat", "etiqueta del requadre", "distintiu de cantonada", "insígnia", "tira d'icones", "pictogrames de seguretat", "autoavaluació", "termes clau", "quadre d'advertiment"]
+pageNotes: { "1": "L'obertura del capítol 2, Células y membranas: una cèl·lula magenta amb una vora de bicapa en perles, tallada per la cantonada superior dreta de la pàgina, amb un 2 blanc a dins. Sota el primer paràgraf, un requadre d'objectius sobre una franja magenta amb una icona de diana; a la columna dreta, un requadre «Para recordar» al costat d'un filet verd fi rematat per un distintiu amb una bombeta.", "2": "Un dibuix del mosaic fluid a tota l'amplada i, a sota, el RECUADRO 2.1 sobre les dues columnes: una pestanya negra i un matràs a la cantonada superior esquerra, un filet que en surt fins a la cantonada oposada, una figura de dues cèl·lules que es fusionen a l'esquerra i el text a la dreta. Més avall, a la columna esquerra, un advertiment amb marc ambre de cantonades arrodonides i un distintiu d'alerta penjat de la cantonada exterior.", "3": "Tres panells de glòbuls vermells en dissolucions salines al capdamunt de la pàgina, una pràctica amb un requadre de seguretat de tres pictogrames i passos numerats en verd, i un requadre rosa d'autoavaluació flotant al peu, marcat per una casella magenta amb una marca de verificació i un filet fi al costat del marc." }
+---
+
+## Què compondràs
+
+El capítol 2 de *Materia viva*, llibre de biologia de batxillerat en pàgina de 210 × 280 mm, s'obre sota una cèl·lula que surt per la cantonada superior de la pàgina, amb el número del capítol a dins. Segueixen sis tipus de requadre en tres colors, cadascun amb un element gràfic propi, perquè l'alumne distingeixi un objectiu d'un advertiment abans de llegir-los. En magenta van els objectius, sobre una franja amb una diana, i l'autoavaluació, amb una casella marcada fora del marc. En verd, el «Para recordar», al costat d'un filet fi rematat per una bombeta, i la pràctica, amb tres pictogrames de seguretat. L'advertiment és ambre i porta un distintiu d'alerta a la cantonada exterior. El RECUADRO 2.1 és lavanda, sota una pestanya negra i un matràs. Les negretes prenen el color del requadre, magenta al RECUADRO 2.1.
+
+## Elaboració
+
+### 1 · Dona un color a cada tipus de requadre
+
+<Excerpt region="palette" />
+
+Sis tipus de requadre es reparteixen tres tons: magenta per als objectius i l'autoavaluació, verd per al «Para recordar» i la pràctica, i ambre per a l'advertiment. El RECUADRO 2.1 té fons lavanda i fa servir el magenta en els termes clau. Cada to té un tint clar per als fons, i tots els paràmetres de color enllacen amb una entrada de la paleta, així que per canviar un to n'hi ha prou d'editar un valor. Amb un cos tan petit, el text necessita un contrast de 4,5:1. El magenta sobre el lavanda arriba a 4,9:1, però l'ambre sobre el fons de l'advertiment es queda en 2,2:1; per això l'advertiment reserva l'ambre per al marc i el distintiu, i compon el títol i els termes clau en `warnInk`, un ambre més fosc que arriba a 5,2:1.
+
+### 2 · Comparteix tota la resta
+
+<Excerpt region="base" />
+
+`box()` aplega els paràmetres comuns a tots els requadres: els marges, el farciment, la lletra del títol i del cos, i l'espaiat de les llistes. El seu argument `hue` acoloreix el títol, les vinyetes i els números i les negretes. `body.boldColor` posa en magenta el **model de mosaic fluid** dels objectius i en ocre la **paret cel·lular** de l'advertiment; les negretes del text corrent continuen en tinta ([tipografia dins d'un requadre](/ca/docs/configuration#tipografia-dins-dun-requadre)). Si declares `calloutStyles`, substitueixes l'únic estil que porta el motor, un requadre gris anomenat `note`. Un requadre que no té `type` o el té mal escrit pren el primer estil, així que la llista comença pels objectius, que apareixen a tots els capítols.
+
+### 3 · Franja, pestanya i distintiu
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. La franja dels objectius fa 7,5 mm i la diana 5 mm, així que la icona queda dins del color amb aire a tots dos costats. L'`offset` de la pestanya és igual a la seva alçada (`height`), de manera que la pestanya es recolza a la vora superior del requadre, sense tocar el títol. `'top-left'` és la cantonada exterior d'aquesta pàgina parella; el matràs va a continuació de la pestanya, i el filet recorre la vora superior des del matràs fins a la cantonada oposada. `position: 'corner'` penja el distintiu de l'advertiment amb la meitat de l'amplada fora de la vora, i `cornerSide: 'outer'` el porta al costat exterior, l'esquerre en aquesta pàgina parella. En aquest costat el motor sagna el títol perquè no topi amb el distintiu, tret que el farciment ja cobreixi mig distintiu més l'espai del títol; per això l'advertiment porta `BADGE / 2 + GAP` de farciment a tots dos costats, i el títol queda alineat amb el text. Només aquest requadre porta `borderRadius`. En un amb franja, la franja es pinta a part, com una barra rectangular, i les cantonades d'aquell costat continuarien rectes ([estils d'avís](/ca/docs/configuration#estils-davís)).
+
+### 4 · Tres elements gràfics més
+
+<Excerpt region="more" />
+
+La franja del «Para recordar» fa 2,5 pt, enfront dels 6,4 mm del distintiu, de manera que es veu com un filet fi amb la bombeta damunt de l'extrem superior; un farciment esquerre de mig distintiu més 2 mm aparta el text de la bombeta. `icon.width` encaixa la imatge en una caixa ampla en lloc d'un quadrat, així que els tres pictogrames de seguretat, dibuixats com una sola imatge de 24,5 mm, formen la columna d'icones del requadre de seguretat, centrada respecte al text. La marca de l'autoavaluació va fora del marc, en aquest ordre: marca, filet, espai i caixa. La casella quadrada sobre un filet de 0,75 pt la distingeix del «Para recordar», que porta un distintiu rodó. La tanca hi afegeix `span="page" placement="bottom"` perquè l'autoavaluació floti al peu de la <PageRef page={3}>pàgina 29</PageRef>.
+
+### 5 · Les icones també són recursos
+
+<Excerpt region="icons" />
+
+Totes les icones, el matràs de la pestanya i la cèl·lula de l'obertura són recursos SVG declarats al costat del contingut i registrats pel seu identificador de fitxer. Els estils els anomenen pel seu id de recurs i, com que el text no els cita, cap no es converteix en una figura numerada. Glifs com ✓ o ☞ serien més còmodes d'escriure, però no són als fitxers latin de Fontsource que carreguen les pàgines: el llenç els prendria d'una font del sistema i un PDF els perdria. Els dibuixos tampoc no porten text, perquè un SVG pintat com a imatge no pot fer servir les fonts de la pàgina; els colors s'anomenen als peus.
+
+### 6 · Obre el capítol amb una cèl·lula
+
+<Excerpt region="opener" />
+
+La cèl·lula és un element d'imatge ancorat a la cantonada superior dreta de la pàgina i desplaçat més enllà, de manera que en sobresurt sobretot el quart inferior esquerre, amb el número a dins. Tots dos caben en els 66 mm que `minHeight` reserva per a l'obertura. L'avanttítol i l'entradeta surten de la línia del títol, `# Células y \\ membranas {unit="La célula" lead="…"}`, i el `\\` parteix el títol només a l'obertura.
+
+## Variants
+
+### Estén un requadre sobre les dues columnes
+
+`span="page"` a la tanca estén qualsevol requadre sobre les dues columnes; el RECUADRO 2.1, a més, hi niua un grup `:::columns` per posar la figura al costat del text.
+
+```diff
+-:::callout{type="warning" title="¿Membrana o pared?"}
++:::callout{type="warning" title="¿Membrana o pared?" span="page"}
+```
+
+### Penja el distintiu del costat del llom
+
+`'inner'` porta el distintiu al costat del llom, l'esquerre a la pàgina senar i el dret a la parella; deixa lloc en aquell costat per a la meitat que sobresurt del requadre.
+
+```diff
+-    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'outer' }) }),
++    icon: icon('caution', BADGE, { position: 'corner', cornerSide: 'inner' }) }),
+```
+
+### Posa la pestanya a la cantonada dreta
+
+`'top-right'`, el valor per defecte, reflecteix tota l'etiqueta: la pestanya passa a la cantonada dreta, el matràs a la seva esquerra i el filet arriba des de l'esquerra.
+
+```diff
+-      position: 'top-left', // this verso's outer corner, above the badge ('top-right' by default)
++      position: 'top-right',
+```
+
+## Errors freqüents
+
+- La pestanya només s'imprimeix si la tanca porta l'atribut `label="RECUADRO 2.1"` i l'estil té un objecte `label`. Un estil sense aquest objecte ignora l'atribut.
+- Postext no numera els requadres. L'etiqueta és el text literal de la tanca, així que cada número, RECUADRO 2.1, RECUADRO 2.2, s'escriu a mà.
+- Un distintiu de cantonada sobresurt la meitat de la seva amplada pel costat del requadre, cap al marge al costat exterior de la pàgina. A l'altra columna d'aquella mateixa pàgina sobresurt cap a l'espai entre columnes, així que deixa els requadres amb distintiu a la columna exterior o fes-los lloc.
+- Un requadre només canvia el color de les vinyetes i els números si el seu `lists.color` és diferent d'`unorderedLists.color`. Si tots dos són el mateix magenta, una llista numerada dins del requadre pren `orderedLists.color`; per això aquest document posa les seves vinyetes en tinta.

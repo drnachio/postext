@@ -1,0 +1,67 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 115,
+  "status": "draft",
+  "chapter": "output",
+  "order": 160,
+  "level": 3,
+  "genres": ["novel"],
+  "outputs": ["canvas", "epub"],
+  "features": {
+    "primary": ["epub-export", "multi-chapter-books"],
+    "also": [
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "page-background",
+      "paragraph-styles",
+      "widows-orphans-runts",
+      "frontmatter",
+      "color-palette",
+      "font-loading"
+    ]
+  },
+  "answers": ["Q131"],
+  "gotchas": ["epub-embeds-given-fonts", "headings-drop-h1-break", "fonts-first", "config-cache-identity"],
+  "related": ["catalan-pocket-novella", "folio-book-on-a-desk", "bundle-round-trip"],
+  "engine": { "postext": "1.15.0" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": [1, 2, 3, 4, 5, 6] },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Eighteen fables from Three Hundred Æsop’s Fables, translated from the Greek by George Fyler Townsend (London, 1867), the opening capitals of each fable set in lower case",
+          "es": "Dieciocho fábulas de Three Hundred Æsop’s Fables, traducidas del griego por George Fyler Townsend (Londres, 1867), con las mayúsculas iniciales de cada fábula en minúscula"
+        },
+        "who": "Aesop, tr. George Fyler Townsend",
+        "source": "https://www.gutenberg.org/ebooks/21",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "¡Adiós, Cordera!, complete, from El Señor y lo demás, son cuentos (Madrid, 1893), its five parts grouped in three chapters, with dialogue dashes and « » quotation marks",
+          "es": "¡Adiós, Cordera!, completo, de El Señor y lo demás, son cuentos (Madrid, 1893), con sus cinco partes agrupadas en tres capítulos, raya en los diálogos y comillas « »"
+        },
+        "who": "Leopoldo Alas, Clarín",
+        "source": "https://www.gutenberg.org/ebooks/62361",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Libre Caslon Text", "license": "OFL-1.1" },
+      { "family": "Libre Caslon Display", "license": "OFL-1.1" },
+      { "family": "Jost", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "MIT" },
+  "created": "2026-10-04",
+  "updated": "2026-10-04"
+}

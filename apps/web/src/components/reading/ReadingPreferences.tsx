@@ -234,7 +234,7 @@ export function ReadingPreferences({ variant = "popover" }: { variant?: "popover
         hidden={!open}
         className={
           isPopover
-            ? "absolute right-0 top-full z-50 mt-2 max-h-[calc(100dvh-6rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-rule bg-popover p-4 text-popover-foreground shadow-lg"
+            ? "absolute end-0 top-full z-50 mt-2 max-h-[calc(100dvh-6rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-rule bg-popover p-4 text-popover-foreground shadow-lg"
             : "mt-2"
         }
       >

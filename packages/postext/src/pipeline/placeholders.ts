@@ -1,8 +1,9 @@
 import { BREAK_PLACEHOLDER, charBefore, charFrom, flattenTitleBreaks, joinsWide, plainTitleBreak, plainTitleBreaks, TITLE_BREAK_RE } from '../parse/inlineFormatting';
 import { collapseBreakingSpaces, collapseTitleSpaces } from '../measure/spaces';
 import type { InlineSpan } from '../parse';
-import type { DocumentMetadata } from '../types';
+import type { DigitSystem, DocumentMetadata } from '../types';
 import { metadataText } from '../frontmatter';
+import { withDigits } from '../arabicNumerals';
 import type { VDTBlock, VDTLine, VDTPage } from '../vdt';
 
 /** A minimal view of a page used by `computeChapterTitles` to detect
@@ -47,6 +48,10 @@ export interface PlaceholderContext {
   /** Physical pages of the whole book (`{bookTotalPages}`); defaults to
    *  `allPages.length`, the document being the whole book. */
   bookTotalPages?: number;
+  /** The document's digit system: `{totalPages}` and `{bookTotalPages}`
+   *  are written in it (the page labels already are). `'latn'` when
+   *  unset. */
+  numerals?: DigitSystem;
   /** The first and last marks of every page for a mark key (see
    *  `computePageMarks`); backs `{firstMark.<key>}` / `{lastMark.<key>}`.
    *  Called lazily, once per key a template names. Absent → `''`. */
@@ -227,8 +232,10 @@ export function computeChapterNumbers(
   /** Chapters that print no number at all (a heading style whose
    *  `numberingTemplate` is `''`): they count, but show no ordinal. */
   numberless?: (block: VDTBlock) => boolean,
+  /** The document's digit system, for the chapter ordinal. */
+  digits?: DigitSystem,
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, chapterNumberCounter(ordinalOffset, numberless), '');
+  return computeChapterValues(blocks, totalPages, pages, chapterNumberCounter(ordinalOffset, numberless, digits), '');
 }
 
 /**
@@ -245,8 +252,9 @@ export function computeChapterNumbersByBlock(
   blocks: readonly VDTBlock[],
   ordinalOffset = 0,
   numberless?: (block: VDTBlock) => boolean,
+  digits?: DigitSystem,
 ): Map<VDTBlock, string> {
-  const next = chapterNumberCounter(ordinalOffset, numberless);
+  const next = chapterNumberCounter(ordinalOffset, numberless, digits);
   const out = new Map<VDTBlock, string>();
   let current = '';
   for (const b of blocks) {
@@ -287,10 +295,12 @@ export interface ChapterNumberSource {
  *  nothing and shows nothing; a `numberless` one counts but shows nothing.
  *  One rule for the running heads (`computeChapterNumbers`, over the placed
  *  blocks) and for measuring an opener design before it is painted (over
- *  the content blocks), so both read the same value. */
+ *  the content blocks), so both read the same value. The ordinal is
+ *  written in the document's `digits`; a prefix already is. */
 export function chapterNumberCounter<B extends ChapterNumberSource>(
   ordinalOffset = 0,
   numberless?: (block: B) => boolean,
+  digits?: DigitSystem,
 ): (block: B) => string {
   let ordinal = ordinalOffset;
   let lastContentIndex: number | undefined;
@@ -307,7 +317,7 @@ export function chapterNumberCounter<B extends ChapterNumberSource>(
     if (b.contentIndex === undefined || b.contentIndex !== lastContentIndex) ordinal = b.headingNumber ?? ordinal + 1;
     lastContentIndex = b.contentIndex;
     const prefix = b.numberPrefix?.trim() ?? '';
-    return prefix.length > 0 ? prefix : numberless?.(b) ? '' : String(ordinal);
+    return prefix.length > 0 ? prefix : numberless?.(b) ? '' : withDigits(String(ordinal), digits);
   };
 }
 
@@ -351,8 +361,9 @@ export function computeChapterNumbersAtTop(
   pages?: ChapterTitlePageInfo[],
   ordinalOffset = 0,
   numberless?: (block: VDTBlock) => boolean,
+  digits?: DigitSystem,
 ): string[] {
-  return computeChapterValues(blocks, totalPages, pages, chapterNumberCounter(ordinalOffset, numberless), '', true);
+  return computeChapterValues(blocks, totalPages, pages, chapterNumberCounter(ordinalOffset, numberless, digits), '', true);
 }
 
 /** Shared walker behind `computeChapterTitles` / `computeChapterNumbers` /
@@ -736,9 +747,9 @@ function resolveName(name: string, ctx: PlaceholderContext): string {
     case 'pageNumber':
       return ctx.page.pageLabel;
     case 'totalPages':
-      return String(ctx.allPages.length);
+      return withDigits(String(ctx.allPages.length), ctx.numerals);
     case 'bookTotalPages':
-      return String(ctx.bookTotalPages ?? ctx.allPages.length);
+      return withDigits(String(ctx.bookTotalPages ?? ctx.allPages.length), ctx.numerals);
     case 'title':
       return metadataText(ctx.metadata.title) ?? '';
     case 'subtitle':

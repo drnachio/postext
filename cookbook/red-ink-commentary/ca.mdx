@@ -1,0 +1,78 @@
+---
+title: "Comentari en tinta vermella a la línia i al marge superior"
+summary: "Pàgina xinesa comentada en vertical: els comentaris laterals del manuscrit van en dues files vermelles dins la línia, i els del marge, sobre el text."
+plain: "Sis pàgines d'una novel·la clàssica xinesa, escrita en columnes que es llegeixen de dalt a baix. Les notes antigues d'un lector surten en vermell dins les línies i en una franja sobre el text."
+description: "El capítol 1 de la Història de la pedra (manuscrit Jiaxu) amb els comentaris de Zhiyan Zhai, en vertical amb Postext: notes warichu i comentaris a dalt."
+question: "Com componc una edició comentada, amb notes a dues línies dins la línia i comentaris al marge superior?"
+aliases: ["edició comentada", "comentari en vermell", "tinta vermelló", "Zhiyan Zhai", "Història de la pedra", "Somni del pavelló vermell", "notes al marge superior", "眉批", "雙行夾批", "脂批", "評點", "紅樓夢"]
+pageNotes: {"1": "La pàgina 1, senar en un llibre enquadernat per la dreta, s'obre amb 脂硯齋重評石頭記 en lletra vermella petita, baixant per la vora dreta de la caixa; després, 第一回 en caràcters grans en negreta i el dístic 甄士隱夢幻識通靈 / 賈雨村風塵懷閨秀 en dues columnes. El text comença a la seva esquerra. Una sola columna vermella al marge superior, 妙！自謂落墮情根，故無補天之用。, queda sobre el segon paràgraf, i els comentaris laterals es veuen com a parelles de files vermelles diminutes dins les columnes.", "4": "La pàgina 4: la llarga resposta de la pedra al taoista. Tres comentaris vermells ocupen la meitat esquerra del marge superior: vuit columnes de 事則實事… sobre el paràgraf que comença per 「竟不如我, i després 開卷一篇立意… en dues columnes i 斯亦太過。 en una, sobre la resta del discurs. A sota, petites notes vermelles de dues files interrompen les columnes.", "5": "La pàgina 5: cinc comentaris travessen el marge superior, cadascun sobre el passatge que discuteix: 雪芹舊有… i 若云雪芹… sobre el paràgraf que anomena Cao Xueqin, 能觧者方有辛酸之淚… sobre la quarteta 滿紙荒唐言，一把辛酸淚, 今而後… al seu costat, i 真。後之甄寶玉… sobre 廟傍住着, on apareix la família Zhen. El foli 五 va al peu del marge esquerre.", "6": "La pàgina 6, parella: les dues últimes columnes del paràgraf dels Zhen sota un marge superior buit; després, la nota de l'edició (本編說明) en Kai, dos caràcters més avall que el text, i el colofó en lletra de pal sec grisa i petita, amb les lletres llatines ajagudes al llarg de dues columnes. El títol del llibre encapçala el marge dret, sobre el foli 六."}
+---
+
+## Què compondràs
+
+El començament del capítol 1 de la *Història de la pedra* en el manuscrit Jiaxu, la còpia que conserva els comentaris de Zhiyan Zhai, compost en sis pàgines d'una edició comentada en format 16开, de 184 × 260 mm, en vertical i enquadernada per la dreta. El text de Cao Xueqin va en Noto Serif TC, amb 36 caràcters per columna i 18 columnes per pàgina. El manuscrit escriu en vermell, al costat de les columnes, els 61 comentaris laterals (側批) d'aquest fragment. Postext no compon res entre dues columnes, així que aquesta edició els posa dins la línia, cadascun plegat en dues files de vermelló a la meitat del cos just després de les paraules que glossa, com les edicions comentades impreses componen els seus 雙行夾批. Els deu comentaris del marge superior (眉批) van en lletra Kai vermella, en un pis de 42 mm sobre el text i damunt del passatge que discuteixen, de manera que el lector segueix el text i el comentari d'una sola passada.
+
+## Elaboració
+
+### 1 · Converteix la columna lateral en el marge superior
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Una pàgina vertical és una pàgina horitzontal girada un quart de volta, així que la columna lateral d'una [disposició en columna i mitja](/ca/docs/configuration#tipus-de-disposició) es converteix en un pis que travessa la pàgina, i `sideColumnSide: 'left'` el col·loca a dalt ([Escriptura vertical](/ca/docs/configuration#escriptura-vertical)). La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) arrodoneix `sideColumnPercent: 19` a 10 caràcters del cos, 120 pt, i l'espai entre columnes a dos; el filet de columna passa a ser la línia fina que separa els comentaris del text. L'estil dels comentaris no dibuixa caixa: Kai de 7 pt, 17 caràcters per columna, un cos amb què cap dels deu comentaris no acaba en una columna d'un sol caràcter, i `snapToGrid: false`, perquè els comentaris s'apilin amb el seu propi pas de 10 pt i no amb els 21 pt del cos.
+
+Els dos tipus de comentari es marquen on els posa el manuscrit. Un comentari lateral és un [`:warichu[…]`](/ca/docs/document-format#marques-xineses-ruby-i-warichu), al qual `cjk.warichu` dona el color; un comentari del marge superior és un requadre amb `span="side"` la tanca del qual va just abans del passatge que comenta:
+
+```markdown
+:::callout{type="meipi" span="side"}
+妙！自謂落墮情根，故無補天之用。
+:::
+
+原來女媧氏煉石補天之時，:warichu[補天濟世，勿認真，用常言。]于大荒山:warichu[荒唐也。]…
+```
+
+### 2 · Fes baixar el número del capítol i el seu dístic per les primeres columnes
+
+<Excerpt region="opener" />
+
+En una pàgina vertical l'obertura es compon en el marc del flux: el text hi baixa, `below` vol dir a l'esquerra i un desplaçament `x` fa baixar l'element per la columna. Primer va el títol del llibre en Hei vermella; després, 第一回 a 30 pt, dos dels seus propis caràcters més avall, i tot seguit les dues meitats del dístic, tretes dels [atributs del títol](/ca/docs/document-format#atributs-dencapçalament) `{a="…" b="…"}` i encara més baixes, de manera que el número i el dístic descendeixen en escala com en un 回目 imprès. `minHeight: mm(46)` deixa una columna lliure entre el dístic i el text.
+
+### 3 · Porta les capçaleres pel tall exterior
+
+<Excerpt region="fore-edge" />
+
+Són les capçaleres del tall exterior que descriuen els [Elements de text verticals](/ca/docs/configuration#elements-de-text-verticals): `anchor.to: 'outer'` és el marge del costat contrari al llom, l'esquerre en una pàgina senar i el dret en una de parella quan el llibre s'enquaderna per la dreta, i `writingMode: 'vertical-rl'` compon el text de dalt a baix. Aquí la caixa inclou el pis dels comentaris, així que els «quatre caràcters per sota del cap» es compten des de la vora superior dels comentaris vermells. `trad-chinese-informal` imprimeix els folis del 一 al 六.
+
+### 4 · Carrega cada veu amb el text que compon
+
+<Excerpt region="voices" />
+
+Fontsource serveix cada font xinesa en un centenar de fitxers per pes. La Song compon tota la mostra en el seu pes normal i en negreta només 第一回; la Kai, només els comentaris del marge superior i la nota de l'edició, i la Hei, les capçaleres, els folis i el colofó, així que cada crida baixa només els fitxers dels seus propis caràcters. `vertical: true` carrega a més la puntuació vertical de cada font per al llenç.
+
+### 5 · Dues tintes
+
+<Excerpt region="palette" />
+
+La pàgina s'imprimeix a dos colors, com es va escriure el manuscrit: un negre càlid per al text i un vermelló per a cada comentari, l'avanttítol del capítol i res més. El vermelló té un contrast de 5,5 : 1 amb el paper, prou per a les files de 6 pt dels comentaris laterals. `main-color` hi apunta, així que qualsevol valor per defecte que la configuració no redefineixi surt en vermell, mai en blau.
+
+## Variants
+
+### Imprimeix els comentaris a una tinta
+
+Per imprimir a un sol color, compon les notes en negre entre claudàtors i els comentaris del marge superior en la tinta apagada; els claudàtors van al cos del text, abans de la primera fila de la nota i després de l'última.
+
+```diff
+-  warichu: { color: col('vermilion') },
++  warichu: { color: col('ink'), open: '〔', close: '〕' },
+-  body: { fontFamily: KAI, fontSize: pt(7), lineHeight: pt(10), color: col('vermilion'),
++  body: { fontFamily: KAI, fontSize: pt(7), lineHeight: pt(10), color: col('muted'),
+```
+
+### Compara-la amb una edició en alfabet llatí
+
+La mateixa tècnica en una pàgina horitzontal és <RecipeLink slug="annotated-classic-glosses">el clàssic anotat amb glosses al marge</RecipeLink>: allà la columna lateral va al costat del tall exterior (`sideColumnSide: 'outer'`) i cada glossa es col·loca al costat del paràgraf que explica, no a sobre.
+
+## Errors freqüents
+
+- Un comentari del marge superior queda a l'altura de la columna on ha arribat el text a la seva tanca, així que la tanca va just abans del passatge que discuteix; si va després, el comentari comença al costat del paràgraf següent. Una tanca va entre dos blocs, mai dins d'un paràgraf, així que quan el manuscrit comenta una frase de l'interior d'un paràgraf llarg, aquesta edició talla el paràgraf en aquell punt: abans de 石頭聽了, abans de 廟傍住着 i una vegada dins del discurs de la pedra, abans de 竟不如我, on el paràgraf nou torna a obrir amb 「, com fa una cita que ocupa dos paràgrafs.
+- Al pis hi cap el que cap a la seva pàgina. Un comentari que no cap en el que en queda es desplaça cap a la dreta fins que la seva última columna toca la vora esquerra de la caixa, i si tot i així no hi cap, espera a la pàgina següent juntament amb tots els comentaris que van darrere. Cada comentari comença a més en una columna del text i deixa lliure una columna del cos després de l'anterior. Els tres comentaris del manuscrit sobre el discurs de la pedra ocupen onze columnes del pis: amb la tanca abans de 今之人, on els posa la transcripció, l'últim, 斯亦太過, passava a la <PageRef page={5}>pàgina 5</PageRef> i desplaçava un pas els comentaris d'aquella pàgina. Aquesta edició talla el discurs una frase abans, davant de 竟不如我, i els tres queden a la <PageRef page={4}>pàgina 4</PageRef>.
+- Amb `avoidWidows` actiu, un paràgraf que començaria a l'última columna d'una pàgina passa sencer a la següent, la pàgina es queda amb una columna de menys i el comentari la tanca del qual va abans d'aquell paràgraf es queda enrere. Els llibres xinesos deixen que un paràgraf comenci a qualsevol columna, així que `avoidWidows: false` omple cada pàgina amb les seves 18. `avoidOrphans` continua actiu: l'última columna d'un paràgraf sola al cap d'una pàgina (孤行) és justament el que un editor xinès evita.
+- Dos comentaris laterals escrits l'un darrere l'altre es pleguen en files que es llegeixen com una sola nota. El Markdown deixa entre ells un espai ideogràfic (U+3000).
+- Noto Serif TC no té glif per a algunes formes del manuscrit, com 縂, 竒 o 数. El llenç les pren d'una font del sistema, i el PDF les deixa en blanc i les anota a C25. Aquesta edició fa servir les seves formes normalitzades i conserva les variants que sí que tenen les fonts.

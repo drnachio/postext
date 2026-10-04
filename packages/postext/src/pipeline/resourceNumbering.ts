@@ -15,7 +15,7 @@
 
 import { resourceRefId } from './crossRefs';
 import type { ContentBlock } from '../parse';
-import type { HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../types';
+import type { DigitSystem, HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../types';
 import {
   formatNumeral,
   nextHeadingCounter,
@@ -135,20 +135,22 @@ function parseResourceTemplate(tpl: string): ResourceToken[] {
 /** Render a resource template against a per-type counter value and the heading
  *  context in effect. Empty heading counters collapse their adjacent separators
  *  via {@link renderCounterTemplate} (so `{h1}.{n}` with no h1 renders as the
- *  bare counter). */
+ *  bare counter). The heading numbers, and a decimal counter, are written in
+ *  the document's `digits`. */
 function renderResourceNumber(
   tokens: ResourceToken[],
   counterValue: number,
   style: NumeralStyle,
   heading: HeadingContext,
+  digits?: DigitSystem,
 ): string {
   const pieces: RenderPiece[] = tokens.map((t) => {
     if (t.kind === 'literal') return { kind: 'literal', text: t.text };
     if (t.kind === 'counter') {
-      return { kind: 'counter', text: formatNumeral(counterValue, style) };
+      return { kind: 'counter', text: formatNumeral(counterValue, style, digits) };
     }
     const value = heading[`h${t.level}` as keyof HeadingContext];
-    return { kind: 'counter', text: value > 0 ? formatNumeral(value, 'decimal') : '' };
+    return { kind: 'counter', text: value > 0 ? formatNumeral(value, 'decimal', digits) : '' };
   });
   return renderCounterTemplate(pieces);
 }
@@ -210,8 +212,10 @@ export function computeResourceNumbering(
   resources: Resource[],
   headingContext: HeadingContext[],
   start?: ResourceNumberingStart,
+  /** The document's digit system (`documentNumerals`). */
+  digits?: DigitSystem,
 ): ResourceNumberingMap {
-  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start).map;
+  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start, digits).map;
 }
 
 /** {@link computeResourceNumbering} plus the counter state at the end of the
@@ -222,6 +226,7 @@ export function computeResourceNumberingState(
   resources: Resource[],
   headingContext: HeadingContext[],
   start?: ResourceNumberingStart,
+  digits?: DigitSystem,
 ): ResourceNumberingResult {
   const typeById = new Map<string, ResourceType>();
   for (const t of resourceTypes) typeById.set(t.id, t);
@@ -289,7 +294,7 @@ export function computeResourceNumberingState(
       counter += 1;
       prevHeading = occ.heading;
       map[occ.resourceId] = {
-        number: renderResourceNumber(tokens, counter, style, occ.heading),
+        number: renderResourceNumber(tokens, counter, style, occ.heading, digits),
         typeId,
         heading: occ.heading,
       };

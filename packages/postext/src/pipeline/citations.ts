@@ -16,7 +16,7 @@ import type { CitationContext } from '../citations/context';
 import { citationEngine } from '../citations/registry';
 import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem } from '../citations/types';
 import { htmlToSpans, decodeEntities } from '../citations/html';
-import { stringsFor } from '../locale';
+import { languageOf, stringsFor } from '../locale';
 
 /** Id of the paragraph style the bibliography is set in. */
 export const BIBLIOGRAPHY_STYLE_ID = '__postext-bibliography';
@@ -33,7 +33,7 @@ const WARICHU_ID_BASE = 1_000_000;
 
 const BIBLIOGRAPHY_TITLES: Readonly<Record<string, string>> = {
   en: 'References', es: 'Referencias', fr: 'Références', de: 'Literatur', it: 'Bibliografia', pt: 'Referências',
-  ca: 'Referències', nl: 'Literatuur', 'zh-hans': '参考文献', 'zh-hant': '參考文獻',
+  ca: 'Referències', nl: 'Literatuur', 'zh-hans': '参考文献', 'zh-hant': '參考文獻', ar: 'المراجع',
 };
 
 /** The title a bibliography takes in a document language. */
@@ -42,12 +42,15 @@ export function defaultBibliographyTitle(locale: unknown): string {
 }
 
 /** The CSL locale citations are written in: the configured one, else the
- *  document language (`es` → `es-ES`, `zh-Hant` → `zh-TW`). */
+ *  document language (`es` → `es-ES`, `zh-Hant` → `zh-TW`, `ar-EG` →
+ *  `ar`). */
 export function citationLocale(resolved: ResolvedConfig, documentLocale: string | undefined): string {
   if (resolved.citations.locale) return resolved.citations.locale;
   const tag = (documentLocale ?? 'en-US').replace(/_/g, '-');
   const lower = tag.toLowerCase();
   if (lower.startsWith('zh')) return /hant|tw|hk|mo/.test(lower) ? 'zh-TW' : 'zh-CN';
+  // One CSL locale serves every Arabic tag (`ar-EG`, `ar-MA`…).
+  if (languageOf(lower) === 'ar') return 'ar';
   if (lower === 'en' || lower === 'en-us') return 'en-US';
   return tag;
 }
@@ -70,12 +73,21 @@ export interface ProcessedCitations {
 }
 
 const CJK = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}]/u;
+const ARABIC = /\p{sc=Arabic}/u;
 const isCjkItem = (item: CslItem | undefined): boolean =>
   !!item && ((typeof item.language === 'string' && /^(zh|ja|ko)/i.test(item.language)) || CJK.test(String(item.title ?? '')));
 
 /** Short locator words for a numbered marker the engine writes itself. */
 const LOCATOR_WORDS: Readonly<Record<string, string>> = {
   page: 'p.', chapter: 'chap.', section: '§', figure: 'fig.', volume: 'vol.', note: 'n.', line: 'l.', paragraph: '¶', column: 'col.', verse: 'v.',
+};
+
+/** The locator words of an Arabic citation ([٣، ص ١٢]), after the short
+ *  terms of the CSL Arabic locale (ص, فصل, عمود, سطر, فقرة), with مج for a
+ *  volume (the locale's م reads as the Gregorian-year mark) and بيت for a
+ *  verse. */
+const ARABIC_LOCATOR_WORDS: Readonly<Record<string, string>> = {
+  page: 'ص', chapter: 'فصل', section: '§', figure: 'شكل', volume: 'مج', note: 'ملاحظة', line: 'سطر', paragraph: '¶', column: 'عمود', verse: 'بيت',
 };
 
 /** Numbers as a marker lists them: sorted, consecutive ones joined into a
@@ -109,18 +121,22 @@ function markerSpans(
   // A Chinese citation writes the page after the number alone, as GB/T 7714
   // does (〔1〕12); other locators keep their word.
   const chinese = locale.toLowerCase().startsWith('zh');
+  // An Arabic one writes its locator word in Arabic and separates with the
+  // Arabic comma: [٢، ٥، ص ١٢].
+  const arabic = languageOf(locale) === 'ar';
+  const comma = arabic ? '،' : ',';
   const label = single?.label ?? 'page';
-  const word = chinese && label === 'page' ? '' : LOCATOR_WORDS[label] ?? '';
+  const word = chinese && label === 'page' ? '' : (arabic ? ARABIC_LOCATOR_WORDS : LOCATOR_WORDS)[label] ?? '';
   const loc = single?.locator ? (word ? `${word}\u00a0${single.locator}` : single.locator) : '';
   // Raised numbers are set close, "⁴,⁶": a space there would stretch on a
   // justified line.
-  const list = numberList(known.map((it) => numbers.get(it.id)!), cfg.collapseRanges, cfg.marker === 'superscript' ? ',' : ', ');
+  const list = numberList(known.map((it) => numbers.get(it.id)!), cfg.collapseRanges, cfg.marker === 'superscript' ? comma : `${comma} `);
   const span = (text: string, extra: Partial<InlineSpan> = {}): InlineSpan => ({ text, bold: base.bold, italic: base.italic, ...extra });
   const out: InlineSpan[] = [];
   if (narrative) out.push(span(cfg.marker === 'superscript' || cfg.marker === 'corner' ? narrative : `${narrative} `));
   switch (cfg.marker) {
     case 'parentheses':
-      out.push(span(`(${list}${loc ? `, ${loc}` : ''})`));
+      out.push(span(`(${list}${loc ? `${comma} ${loc}` : ''})`));
       break;
     case 'superscript':
       out.push(span(`${list}${loc ? `(${loc})` : ''}`, { script: 'sup' }));
@@ -129,7 +145,7 @@ function markerSpans(
       out.push(span(`〔${list}〕${loc}`));
       break;
     default:
-      out.push(span(`[${list}${loc ? `, ${loc}` : ''}]`));
+      out.push(span(`[${list}${loc ? `${comma} ${loc}` : ''}]`));
   }
   return out;
 }
@@ -140,9 +156,13 @@ function narrativeName(item: CslItem | undefined): string {
   if (names.length === 0) return '';
   const first = names[0]!.literal ?? names[0]!.family ?? '';
   const cjk = CJK.test(first);
+  // An Arabic name takes the Arabic conjunction, joined to the word it
+  // precedes: «الجاحظ والمبرد», «الجاحظ وآخرون».
+  const arabic = ARABIC.test(first);
   if (names.length === 1) return first;
-  if (names.length === 2) return cjk ? `${first}、${names[1]!.literal ?? names[1]!.family ?? ''}` : `${first} & ${names[1]!.literal ?? names[1]!.family ?? ''}`;
-  return cjk ? `${first}等` : `${first} et al.`;
+  const second = names[1]!.literal ?? names[1]!.family ?? '';
+  if (names.length === 2) return cjk ? `${first}、${second}` : arabic ? `${first} و${second}` : `${first} & ${second}`;
+  return cjk ? `${first}等` : arabic ? `${first} وآخرون` : `${first} et al.`;
 }
 
 const memo: { key: string; value: ProcessedCitations | null }[] = [];

@@ -7,6 +7,8 @@
  */
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
+import ca from "../../messages/ca.json";
+import ar from "../../messages/ar.json";
 import zh from "../../messages/zh.json";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
@@ -26,7 +28,7 @@ import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registr
 import { localizedText } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
-const MESSAGES: Record<string, Messages> = { en, es: es as Messages, zh: zh as Messages };
+const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages, ar: ar as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
@@ -50,7 +52,7 @@ const LABELS = {
     exampleSource: "source",
     home: "Home",
     sandbox: "Sandbox",
-    sandboxDesc: "Interactive in-browser editor: write markdown, tune the configuration and export print-ready PDF.",
+    sandboxDesc: "Interactive in-browser editor: write markdown, tune the configuration and export print-ready PDF and EPUB 3 e-books.",
     fullText: "Full text of every documentation page in one file",
     install: "Install",
     fullDocs: "Full documentation",
@@ -119,7 +121,7 @@ const LABELS = {
     exampleSource: "código",
     home: "Inicio",
     sandbox: "Sandbox",
-    sandboxDesc: "Editor interactivo en el navegador: escribe markdown, ajusta la configuración y exporta PDF listo para imprenta.",
+    sandboxDesc: "Editor interactivo en el navegador: escribe markdown, ajusta la configuración y exporta PDF listo para imprenta y libros electrónicos EPUB 3.",
     fullText: "Texto completo de todas las páginas de documentación en un solo archivo",
     install: "Instalación",
     fullDocs: "Documentación completa",
@@ -176,6 +178,75 @@ const LABELS = {
     licensePD: "dominio público",
     licenseAuthorised: "reproducido con permiso",
   },
+  ca: {
+    docs: "Documentació",
+    optional: "Optional",
+    lastUpdated: "Última actualització",
+    readingTime: "Temps de lectura",
+    canonical: "Versió HTML",
+    otherLanguages: "Altres idiomes",
+    figure: "Figura",
+    example: "Exemple executable",
+    exampleSource: "codi",
+    home: "Inici",
+    sandbox: "Sandbox",
+    sandboxDesc: "Editor interactiu al navegador: escriu markdown, ajusta la configuració i exporta un PDF a punt per a impremta i llibres electrònics EPUB 3.",
+    fullText: "Text complet de totes les pàgines de documentació en un sol fitxer",
+    install: "Instal·lació",
+    fullDocs: "Documentació completa",
+    links: "Enllaços",
+    localeDocs: "Documentació en català",
+    cookbook: "Receptari",
+    cookbookTitle: "Receptari de Postext",
+    cookbookDesc: "Exemples de Postext per copiar, des d'una obertura de capítol fins a un llibre sencer, cadascun amb les pàgines que compon i el codi complet.",
+    cookbookIntro:
+      "Cada recepta és un pen: un mòdul JavaScript (amb una pàgina HTML i el seu CSS quan els necessita) que importa postext des d'esm.sh i compon la seva pròpia pàgina. Cada enllaç d'aquí sota és la versió Markdown d'una recepta, amb l'explicació i el codi complet.",
+    allRecipes: "Totes les receptes, per capítols",
+    noRecipes: "Encara no hi ha receptes.",
+    part: "Part",
+    chapter: "Capítol",
+    recipe: "Recepta",
+    numberSign: "Núm.",
+    level: "Nivell",
+    outputs: "Sortides",
+    genres: "Gèneres",
+    draft: "Esborrany",
+    requires: "Requereix",
+    testedWith: "provada amb",
+    testedOn: "el",
+    pages: "Pàgines",
+    pdf: "PDF",
+    openInSandbox: "Obre al Sandbox",
+    answers: "Aquesta recepta respon a",
+    teaches: "Ensenya",
+    alsoUses: "També fa servir",
+    configAtAGlance: "La configuració d'un cop d'ull",
+    apis: "API",
+    typefaces: "Tipus de lletra",
+    lines: "línies",
+    wholeRecipe:
+      "Els fitxers d'aquí sota es componen a partir de la carpeta de la recepta, amb el text d'exemple i el kit comú del Receptari ja inclosos. Per executar-los com una sola pàgina, posa l'HTML a `<body>`, el CSS en un element `<style>` i l'script en un `<script type=\"module\">`; o enganxa cadascun al tauler corresponent d'un pen nou de CodePen (el JS com a mòdul). L'script importa postext des d'esm.sh, així que no cal instal·lar ni compilar res.",
+    wholeRecipeScript:
+      "Un sol fitxer, compost a partir de la carpeta de la recepta amb el text d'exemple i el kit comú del Receptari ja inclosos; construeix la seva pròpia pàgina. Per executar-lo, posa'l en un `<script type=\"module\">` d'una pàgina buida o enganxa'l al tauler JS d'un pen nou de CodePen (com a mòdul). Importa postext des d'esm.sh, així que no cal instal·lar ni compilar res.",
+    externals: "Recursos que carrega la pàgina",
+    sourceFolder: "Carpeta de la recepta",
+    notComposed: "No s'ha pogut compondre el codi d'aquesta recepta",
+    pitfall: "Error freqüent",
+    warning: "Avís de maquetació",
+    fix: "Solució",
+    fixedIn: "resolt a",
+    recipeBy: "Recepta",
+    creditText: "Text",
+    creditImages: "Imatges",
+    creditType: "Tipus de lletra",
+    creditCode: "Codi",
+    creditContent: "Contingut d'exemple",
+    source: "font",
+    related: "Relacionades",
+    licenseOriginal: "original",
+    licensePD: "domini públic",
+    licenseAuthorised: "reproduït amb permís",
+  },
   zh: {
     docs: "文档",
     optional: "Optional",
@@ -188,7 +259,7 @@ const LABELS = {
     exampleSource: "源代码",
     home: "首页",
     sandbox: "沙盒",
-    sandboxDesc: "在浏览器中运行的交互式编辑器：编写Markdown，调整配置，导出可直接付印的PDF。",
+    sandboxDesc: "在浏览器中运行的交互式编辑器：编写Markdown，调整配置，导出可直接付印的PDF和EPUB 3电子书。",
     fullText: "全部文档页面合为一个文件的完整文本",
     install: "安装",
     fullDocs: "完整文档",
@@ -244,6 +315,75 @@ const LABELS = {
     licenseOriginal: "原创",
     licensePD: "公有领域",
     licenseAuthorised: "经许可转载",
+  },
+  ar: {
+    docs: "التوثيق",
+    optional: "Optional",
+    lastUpdated: "آخر تحديث",
+    readingTime: "مدة القراءة",
+    canonical: "نسخة HTML",
+    otherLanguages: "لغات أخرى",
+    figure: "شكل",
+    example: "مثال قابل للتشغيل",
+    exampleSource: "الشيفرة",
+    home: "الرئيسية",
+    sandbox: "Sandbox",
+    sandboxDesc: "محرر تفاعلي في المتصفح: اكتب Markdown، واضبط الإعدادات، وصدّر ملف PDF جاهزًا للطباعة وكتابًا إلكترونيًا بصيغة EPUB 3.",
+    fullText: "النص الكامل لكل صفحات التوثيق في ملف واحد",
+    install: "التثبيت",
+    fullDocs: "التوثيق الكامل",
+    links: "روابط",
+    localeDocs: "التوثيق بالعربية",
+    cookbook: "دليل الوصفات",
+    cookbookTitle: "دليل وصفات Postext",
+    cookbookDesc: "أمثلة Postext جاهزة للنسخ، من صفحة افتتاح فصل إلى كتاب كامل، ومع كل منها الصفحات التي ينضّدها والشيفرة كاملة.",
+    cookbookIntro:
+      "كل وصفة مثال CodePen: وحدة JavaScript (ومعها صفحة HTML وأنماط CSS عند الحاجة) تستورد postext من esm.sh وتنضّد صفحتها بنفسها. كل رابط أدناه هو نسخة Markdown من وصفة، فيها الشرح والشيفرة كاملة.",
+    allRecipes: "كل الوصفات، مرتبة حسب الفصول",
+    noRecipes: "لا توجد وصفات بعد.",
+    part: "الجزء",
+    chapter: "الفصل",
+    recipe: "وصفة",
+    numberSign: "رقم",
+    level: "المستوى",
+    outputs: "المخرجات",
+    genres: "الأنواع",
+    draft: "مسودة",
+    requires: "تتطلب",
+    testedWith: "اختُبرت مع",
+    testedOn: "بتاريخ",
+    pages: "الصفحات",
+    pdf: "PDF",
+    openInSandbox: "افتح في Sandbox",
+    answers: "تجيب هذه الوصفة عن",
+    teaches: "تعلّم",
+    alsoUses: "تستخدم أيضًا",
+    configAtAGlance: "الإعدادات في لمحة",
+    apis: "واجهات API",
+    typefaces: "الخطوط",
+    lines: "سطرًا",
+    wholeRecipe:
+      "تُركَّب الملفات أدناه من مجلد الوصفة، ومعها نص المثال وأدوات دليل الوصفات المشتركة مضمّنة. لتشغيلها صفحةً واحدة، ضع HTML داخل `<body>`، وCSS داخل عنصر `<style>`، والسكربت داخل `<script type=\"module\">`؛ أو الصق كلًّا منها في اللوحة المقابلة من مثال CodePen جديد (مع ضبط JS وحدةً). يستورد السكربت postext من esm.sh، فلا حاجة إلى تثبيت أو بناء.",
+    wholeRecipeScript:
+      "ملف واحد، مركّب من مجلد الوصفة ومعه نص المثال وأدوات دليل الوصفات المشتركة مضمّنة؛ وهو ينشئ صفحته بنفسه. لتشغيله، ضعه داخل `<script type=\"module\">` في صفحة فارغة أو الصقه في لوحة JS في مثال CodePen جديد (وحدةً). يستورد postext من esm.sh، فلا حاجة إلى تثبيت أو بناء.",
+    externals: "الموارد التي تحمّلها الصفحة",
+    sourceFolder: "مجلد الوصفة",
+    notComposed: "تعذّر تركيب شيفرة هذه الوصفة",
+    pitfall: "خطأ شائع",
+    warning: "تحذير إخراج",
+    fix: "الحل",
+    fixedIn: "أُصلح في",
+    recipeBy: "الوصفة",
+    creditText: "النص",
+    creditImages: "الصور",
+    creditType: "الخطوط",
+    creditCode: "الشيفرة",
+    creditContent: "محتوى المثال",
+    source: "المصدر",
+    related: "وصفات ذات صلة",
+    licenseOriginal: "أصلي",
+    licensePD: "ملكية عامة",
+    licenseAuthorised: "منشور بإذن",
   },
 } as const;
 
@@ -849,7 +989,7 @@ export const GLOSSARY_PATH = "/glossary";
 export function glossaryMarkdown(locale: string): string {
   const t = messagesFor(locale).Glossary;
   const { categories, abbreviations } = glossarySections(siteLocale(locale));
-  const title = { type: t.categoryType, cjk: t.categoryCjk, web: t.categoryWeb } as const;
+  const title = { type: t.categoryType, cjk: t.categoryCjk, arabic: t.categoryArabic, web: t.categoryWeb } as const;
   const out = [header({ title: t.title, description: t.metaDescription, locale, path: GLOSSARY_PATH }), t.lead, ""];
   for (const c of categories) {
     out.push(`## ${title[c.category]}`, "");
@@ -1301,7 +1441,7 @@ export function llmsTxt(locale: string): string {
     "",
     m.Hero.subtitle,
     "",
-    `- ${labels.install}: \`pnpm add postext\` (PDF backend: \`pnpm add postext-pdf\`)`,
+    `- ${labels.install}: \`pnpm add postext\` (PDF backend: \`pnpm add postext-pdf\`; EPUB writer: \`pnpm add postext-epub\`)`,
     `- ${labels.home}: [${markdownUrl(locale)}](${markdownUrl(locale)})`,
     `- ${labels.fullDocs}: [${labels.fullText}](${SITE_URL}${locale === routing.defaultLocale ? "" : `/${locale}`}/llms-full.txt)`,
     "",

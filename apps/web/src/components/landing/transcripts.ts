@@ -2,10 +2,11 @@
  * Text alternatives for the narrated videos (WCAG 1.2.3 and 1.2.8): what is said, verbatim from the captions, and
  * what is shown, from the animation sources. One list of blocks per video and locale; each follows its own cut. The
  * Spanish and Chinese cuts have their own narration, timings and on-screen text, and the Chinese one is set vertically
- * (竖排), with scenes of its own where the English film is about space-separated text.
+ * (竖排), with scenes of its own where the English film is about space-separated text. There is no Catalan or
+ * Arabic cut: Catalan pages play the Spanish film and Arabic pages the English one, each with its own transcript.
  */
 export type TranscriptVideo = "showreel" | "tutorial";
-export type TranscriptLocale = "en" | "es" | "zh";
+export type TranscriptLocale = "en" | "es" | "zh" | "ca" | "ar";
 export interface TranscriptBlock {
   /** Start time in the cut, "m:ss". */
   time: string;
@@ -231,6 +232,150 @@ export const TRANSCRIPTS: Record<TranscriptVideo, Record<TranscriptLocale, Trans
         time: "2:12",
         scene: "片尾：Postext标志和标语“为网页而生的可编程排版引擎”，网址postext.dev，一行终端命令打出“$ pnpm add postext”，页脚为“开源 · MIT · GITHUB.COM/DRNACHIO/POSTEXT”。",
         narration: "Postext开源项目，网址postext.dev。",
+      },
+    ],
+    ca: [
+      {
+        time: "0:00",
+        scene: "Sobre fons fosc, «MAGÚNCIA · 1455» damunt d'un filet daurat. Darrere del titular «Durant cinc segles, la impremta va aprendre a compondre la pàgina.», l'any avança de 1455 a 2026 en grans xifres perfilades i al voltant cauen termes de l'ofici: Justificació, Kerning, Vídues, òrfenes, Columnes equilibrades, Interlineat, Retícula de base, par·ti·ció, Mesura, Flotants, Capçaleres, Rius. La càmera s'endinsa en el punt final, que omple la pantalla de daurat.",
+        narration: "Durant cinc segles, la impremta va aprendre a compondre la pàgina.",
+      },
+      {
+        time: "0:06",
+        scene: "Titular: «La web va aprendre a maquetar interfícies. Mai no va aprendre a compondre una pàgina.» Una finestra de navegador a example.com/longform/article mostra un article justificat a tres columnes, «Per què falla la web»; unes etiquetes vermelles assenyalen rius de blanc, una òrfena, una vídua, una imatge que cau sobre el text i una última columna desequilibrada. Al costat, una pastilla de codi diu «column-count: 3;», seguida de «…i poca cosa més.» i d'una llista ratllada amb els mateixos cinc defectes. La finestra es distorsiona i s'esfondra.",
+        narration: "La web va aprendre a maquetar interfícies. Mai pàgines. Per això el text llarg encara es trenca: rius, vídues, òrfenes, col·lisions.",
+      },
+      {
+        time: "0:19",
+        scene: "Després d'un esclat blanc i una escombrada de franges blava, daurada i vermella, el logotip de Postext puja al seu lloc amb el lema «El tipògraf programable per a la web». A sota: CODI OBERT · LLICÈNCIA MIT · v1.7.0 · FUNCIONA AL TEU NAVEGADOR.",
+        narration: "Això és Postext: el tipògraf programable per a la web.",
+      },
+      {
+        time: "0:25",
+        scene: "Secció 01 de 07, «Entra el contingut»: «El Markdown diu què és cada cosa.» Un fitxer Markdown, 03-por-que-postext.md, s'escriu sol: una directiva de part, el títol «Per què Postext» amb entradeta, un paràgraf que cita la figura fig-flow amb :ref, una línia ::resource i un bloc :::callout. Al costat, config.ts crida buildDocument amb maquetació a dues columnes, text justificat i partició de mots per a «es», sota la frase «La configuració decideix com es veu. El text no conté ni una sola decisió de maquetació.»",
+        narration: "Escrius Markdown semàntic, que diu què és cada cosa. La configuració decideix com es veu.",
+      },
+      {
+        time: "0:33",
+        scene: "Secció 02, «Pretext mesura»: «Mesurat sense tocar el DOM.» Un títol, un paràgraf i un requadre s'escanegen l'un rere l'altre i unes cotes en donen l'alçada en punts; un tauler de codi mostra prepare(text, '25px Lora') i layout(prepared, width, 38), que retorna una alçada i un nombre de línies. Dues barres competeixen amb 10.000 paràgrafs: «Reflow del navegador · DOM» amb prou feines avança i «Pretext · canvas + aritmètica» s'omple a l'instant, i un comptador puja fins a 600× sobre «més ràpid que el DOM mesurant text, perquè un llibre sencer es recompongui mentre escrius» i «Impulsat per @chenglou/pretext».",
+        narration: "Cada paràgraf es mesura sense tocar el DOM, fins a sis-centes vegades més de pressa, gràcies a Pretext, la biblioteca que ho ha fet possible.",
+      },
+      {
+        time: "0:43",
+        scene: "Secció 03, «Postext decideix»: «Cada línia col·locada abans de pintar un píxel.» Un anell de set segments s'il·lumina per torns, Estructura, Mesura, Col·locació, Flotants, Refinament, Equilibri i Ritme, cadascun amb una línia d'explicació, mentre al costat es munta una pàgina a dues columnes de la guia de Postext: els blocs etiquetats volen a les seves columnes, una figura es desplaça al seu lloc amb la nota «:ref{id=\"fig-flow\"} → peu de columna», cau la banda d'obertura, apareixen les línies, les columnes s'anivellen i baixa la retícula de base. L'anell recorre les iteracions 1 a 3 i mostra «Estable en 3 iteracions» amb una marca; un requadre dona la caixa i la línia de base d'una línia.",
+        narration: "Després, Postext decideix. Set passades col·loquen cada línia, porten cada figura al seu lloc i equilibren les columnes, fins que res no es mou.",
+      },
+      {
+        time: "0:55",
+        scene: "Secció 04, «El document virtual»: «Canvia una paraula. Només es recompon allò que canvia.», amb la nota «Com el virtual DOM de React, però per a pàgines: el VDT, un arbre de document virtual.» Set pàgines, de la p. 7 a la p. 13, en fila; un cursor marca una edició a la p. 11, la resta d'aquella columna es torna daurada com a BRUT i una franja passa a la p. 12, que rep una marca i ESTABLE, mentre les anteriors diuen ES SALTA i les següents INTACTA. Tres vinyetes expliquen la regla i un tauler titulat renderToHtmlIndexed() marca com a APEDAÇAT els nodes de l'arbre que han canviat.",
+        narration: "Tot viu en un document virtual, com el virtual DOM de React. Canvies una paraula, i només es recompon allò que canvia.",
+      },
+      {
+        time: "1:05",
+        scene: "«Un document llarg? Només es pinta el que hi ha a la pantalla.» Una columna de pàgines passa per un marc daurat retolat VIEWPORT, amb un marge de 200 píxels a dalt i a baix: les pàgines de dins es dibuixen senceres i les de fora són contorns discontinus. Un comptador gran indica quantes de les 48 pàgines estan pintades en cada moment (IntersectionObserver · +200 px), al costat de «Geometria: totes les pàgines. Píxels: només el que veus.»",
+        narration: "I en un llibre llarg, només es pinten les pàgines que són a la pantalla.",
+      },
+      {
+        time: "1:12",
+        scene: "Secció 05, «Justificació Knuth–Plass»: «Totes les maneres de tallar el paràgraf. Alhora.» A l'esquerra, un paràgraf sobre el tall de línies compost de manera voraç, com ho fa el navegador, amb les línies més obertes en vermell. A sota, cada paraula és un punt sobre una recta: arcs vermells per als talls voraços, arcs blaus tènues que proven tots els talls possibles i un camí daurat amb la millor combinació. A la dreta, la versió Knuth–Plass, d'espaiat uniforme, amb la lletjor de cada línia, la fórmula «(1 + lletjor + penalització)²» i una suma de demèrits menor.",
+        narration: "Un navegador talla les línies de manera voraç, una a una. Postext fa servir Knuth-Plass, l'algorisme de TeX: sospesa totes les maneres de tallar el paràgraf sencer i es queda amb la més uniforme.",
+      },
+      {
+        time: "1:27",
+        scene: "Secció 06, «Una maquetació, tres renderitzadors»: «El que veus és el que va a impremta.» Sota la línia de codi const vdt = buildDocument(content, config); una pàgina es divideix en tres. Canvas (renderToCanvas(), mapes de bits exactes al píxel) porta una lupa sobre la seva graella de píxels; HTML (renderToHtml(), seleccionable i adaptable) emmarca cada bloc amb la seva etiqueta <h1>, <p>, <figure>, etc.; en PDF (renderToPdf(), per a impremta, PDF/UA, CMYK) quatre planxes de color entren en registre i apareixen marques de tall i una tira de color.",
+        narration: "Una maquetació, tres renderitzadors: canvas, HTML i PDF per a impremta. El que veus és el que s'imprimeix.",
+      },
+      {
+        time: "1:38",
+        scene: "Secció 07, «Per què un estàndard obert»: «LaTeX va marcar el llistó del paper. Avui l'edició també viu a cada pantalla.» Dues targetes: LaTeX, 1984, amb creus al costat de «Pensat per a la pàgina impresa», «Lligat a les fonts i els paquets d'una màquina», «Compilar, esperar, repetir» i «Sense maquetació editorial a la web adaptable»; Postext, 2026, amb marques al costat de «Web, canvas i PDF d'impremta, una maquetació», «Un sol fitxer .postext ho porta tot», «Es recompon en directe mentre escrius» i «En qualsevol navegador · sense servidors · MIT». La targeta de Postext s'il·lumina.",
+        narration: "LaTeX va marcar l'estàndard del paper. Però avui l'edició viu a totes les pantalles.",
+      },
+      {
+        time: "1:46",
+        scene: "Rètol «Un fitxer, el llibre sencer» i titular «Un estàndard obert per a l'edició, més enllà d'on arriba LaTeX». Una icona de fitxer .postext s'obre en cinc peces: preset.json (configuració i disseny), chapters/*.md (un Markdown per capítol), fonts/*.woff2 (les tipografies pròpies), images/ · SVG (cada imatge, inclosa) i resources (taules, figures i peus). Peu: «Un ZIP corrent: obert, documentat i amb llicència MIT. Qualsevol eina el pot llegir i escriure.»",
+        narration: "Postext és un estàndard obert: un únic fitxer portàtil, documentat i amb llicència MIT, que qualsevol eina pot llegir i escriure.",
+      },
+      {
+        time: "1:58",
+        scene: "«La mostra · composta pel motor real»: un mur de pàgines de l'edició espanyola de la guia s'allunya en perspectiva mentre un comptador arriba a 48 pàgines. Text: «12 capítols, 3 parts i una portada, maquetats en més o menys mig segon. Cada pàgina de la guia de Postext, calculada en un navegador per postext v1.7.0 per a aquesta peça. Res col·locat a mà.» Després, etiquetes: Llibres de text, Revistes, Edicions literàries, Catàlegs.",
+        narration: "Per això és capaç de maquetar llibres de centenars de pàgines en dècimes de segon.",
+      },
+      {
+        time: "2:06",
+        scene: "Tancament: el logotip de Postext amb el lema «El tipògraf programable per a la web», l'adreça postext.dev, una línia de terminal que escriu «$ pnpm add postext» i el peu «Codi obert · MIT · github.com/drnachio/postext».",
+        narration: "Postext. Codi obert, a postext.dev.",
+      },
+    ],
+    ar: [
+      {
+        time: "0:00",
+        scene: "بطاقة داكنة كُتب عليها «ماينتس · 1455» فوق خط ذهبي رفيع. خلف العنوان «طوال خمسة قرون، تعلّمت الطباعة كيف تنضّد الصفحة.» تتصاعد السنة من 1455 إلى 2026 بأرقام مفرّغة ضخمة، وتحطّ حولها مصطلحات الطباعة: ضبط الأسطر، تقنين الأزواج، الأرامل واليتامى، الأعمدة المتوازنة، تباعد الأسطر، شبكة خطوط الأساس، hy·phen·a·tion (تقسيم الكلمات بالواصلة)، طول السطر، العناصر العائمة، الترويسات، الأنهار. تغوص الكاميرا في النقطة الأخيرة، فتغمر الشاشة باللون الذهبي.",
+        narration: "طوال خمسة قرون، تعلّمت الطباعة كيف تنضّد الصفحة.",
+      },
+      {
+        time: "0:05",
+        scene: "العنوان: «تعلّم الويب تخطيط الواجهات، ولم يتعلّم قط تنضيد الصفحة.» نافذة متصفح على example.com/longform/article فيها مقال مضبوط على ثلاثة أعمدة عنوانه «لماذا لا يستطيع الويب تنضيد الصفحة»؛ وتشير وسوم حمراء إلى أنهار من البياض، وأرملة، ويتيمة، وصورة تقع فوق النص، وعمود أخير غير متوازن. بجانبها شريحة شيفرة نصها «column-count: 3;» ثم «…ولا شيء يُذكر غير ذلك.» وقائمة مشطوبة بالعيوب الخمسة نفسها. ثم تضطرب النافذة وتنهار.",
+        narration: "تعلّم الويب تخطيط الواجهات، لا الصفحات. لذلك ما زال النص الطويل ينكسر: أنهار، وأرامل، ويتامى، وتصادمات.",
+      },
+      {
+        time: "0:18",
+        scene: "بعد وميض أبيض ومرور خطوط زرقاء وذهبية وحمراء، يرتفع شعار Postext واسمه إلى مكانهما مع العبارة «منضّد قابل للبرمجة للويب». وتحتها: مفتوح المصدر · رخصة MIT · v1.7.0 · يعمل في متصفحك.",
+        narration: "إليك Postext: منضّد قابل للبرمجة للويب.",
+      },
+      {
+        time: "0:24",
+        scene: "القسم 01 من 07، «المحتوى يدخل»: «Markdown يقول ما الأشياء.» ملف Markdown اسمه 03-why-postext.md يكتب نفسه: موجّه part، والعنوان «Why Postext» مع مقدمة، وفقرة تحيل إلى الشكل fig-flow بالموجّه :ref، وسطر ::resource، وكتلة :::callout. بجانبه ملف config.ts يستدعي buildDocument بتخطيط من عمودين ومتن مضبوط وتقسيم بالواصلة للغة en-us، تحت السطر «الإعداد يقرّر شكلها. لا شيء من الإخراج يعيش في النص.»",
+        narration: "تكتب Markdown دلاليًا، يقول ما الأشياء. ويقرّر الإعداد شكلها.",
+      },
+      {
+        time: "0:32",
+        scene: "القسم 02، «Pretext يقيس»: «قياس من دون لمس DOM.» عنوان وفقرة وإطار تُمسح واحدًا بعد آخر، وتعطي خطوط الأبعاد ارتفاعاتها بالنقاط؛ ولوحة شيفرة تعرض prepare(text, '25px Lora') وlayout(prepared, width, 38) يعيدان ارتفاعًا وعدد أسطر. شريطان يتسابقان عبر 10,000 فقرة: «إعادة التدفّق في المتصفح · DOM» بالكاد يتحرك، و«Pretext · مقاييس canvas + حساب» يمتلئ في الحال، وعدّاد يصعد إلى 600× فوق «قياس للنص أسرع منه في DOM، فيُعاد تدفّق كتاب كامل وأنت تكتب» و«Powered by @chenglou/pretext».",
+        narration: "تُقاس كل فقرة من دون لمس DOM، بسرعة تصل إلى ستمئة ضعف، بفضل Pretext، المكتبة التي جعلت ذلك ممكنًا.",
+      },
+      {
+        time: "0:42",
+        scene: "القسم 03، «Postext يقرّر»: «كل سطر يُوضع قبل أن يُرسم أي بكسل.» حلقة من سبعة أجزاء تضيء تباعًا، البنية والقياس والوضع والتعويم والتحسين والموازنة والإيقاع، مع وصف من سطر واحد لكل منها، بينما تتجمّع بجانبها صفحة من عمودين من دليل Postext: كتل موسومة تطير إلى أعمدتها، ويستقر شكل في مكانه تحت الملاحظة «:ref{id=\"fig-flow\"} → column foot»، وينزل شريط الافتتاح، وتظهر الأسطر، وتتساوى الأعمدة، وتمسح شبكة خطوط الأساس الصفحة نزولًا. تدور الحلقة في التكرارات من 1 إلى 3 وتعرض «استقر في 3 تكرارات» مع علامة صح؛ ويعرض إطار مربع إحاطة سطر واحد وخط أساسه.",
+        narration: "ثم يقرّر Postext. سبع مراحل تضع كل سطر، وتعوّم كل شكل، وتوازن كل عمود، وتتكرر حتى لا يتحرك شيء.",
+      },
+      {
+        time: "0:54",
+        scene: "القسم 04، «المستند الافتراضي»: «غيّر كلمة، فلا يُنضَّد من جديد إلا ما تغيّر.»، مع الملاحظة «مثل DOM الافتراضي في React، لكن للصفحات: VDT، شجرة المستند الافتراضية.» سبع صفحات، من p. 7 إلى p. 13، مصفوفة في صف؛ مؤشر كتابة يعلّم تعديلًا في p. 11، فيتحوّل باقي ذلك العمود إلى الذهبي بوسم DIRTY، وينسكب جزء يسير إلى p. 12 التي تنال علامة صح ووسم SETTLED، بينما تحمل الصفحات السابقة وسم SKIPPED واللاحقة وسم UNTOUCHED. ثلاث نقاط تعرض القاعدة، ولوحة عنوانها renderToHtmlIndexed() تعلّم العقد المتغيّرة في شجرة المستند بوسم PATCHED.",
+        narration: "كل ذلك يعيش في مستند افتراضي، مثل DOM الافتراضي في React. غيّر كلمة، فلا يُنضَّد من جديد إلا ما تغيّر.",
+      },
+      {
+        time: "1:03",
+        scene: "«مستند طويل؟ لا يُرسم إلا ما على الشاشة.» عمود من صفحات كتاب يمرّ عبر إطار ذهبي اسمه VIEWPORT، مع هامش 200 بكسل فوقه وتحته: الصفحات داخله مرسومة كاملة، والصفحات خارجه حدود متقطعة. عدّاد كبير يعرض عدد الصفحات المرسومة في تلك اللحظة من أصل 48 (IntersectionObserver · +200 px)، بجانب «الهندسة: كل صفحة. البكسلات: ما تراه فقط.»",
+        narration: "وفي الكتاب الطويل، لا تُرسم أبدًا إلا الصفحات الظاهرة على الشاشة.",
+      },
+      {
+        time: "1:10",
+        scene: "القسم 05، «ضبط الأسطر بخوارزمية Knuth–Plass»: «كل طرق تقسيم الفقرة. دفعة واحدة.» على اليسار فقرة عن تقسيم الأسطر منضّدة بطريقة أول ما يتسع، كما يفعل المتصفح، وتتحوّل أرخى أسطرها إلى الأحمر. وتحتها تصير كل كلمة نقطة على خط: أقواس حمراء تعلّم مواضع القطع الجشعة، وأقواس زرقاء باهتة تجرّب كل قطع ممكن، ومسار ذهبي يختار أفضل مجموعة. وعلى اليمين نسخة Knuth–Plass متساوية التباعد، مع رداءة كل سطر، والصيغة «(1 + badness + penalty)²»، ومجموع أدنى من نقاط العيب.",
+        narration: "يقسم المتصفح الأسطر بجشع، سطرًا بعد سطر. أما Postext فيستعمل Knuth–Plass، الخوارزمية التي يقوم عليها TeX. تزن كل طرق تقسيم الفقرة كاملة، وتحتفظ بأكثرها انتظامًا.",
+      },
+      {
+        time: "1:24",
+        scene: "القسم 06، «إخراج واحد، ثلاثة مُخرِجات»: «ما تراه هو ما يذهب إلى المطبعة.» تحت سطر الشيفرة const vdt = buildDocument(content, config); تنقسم صفحة واحدة إلى ثلاث. Canvas (renderToCanvas()، صور نقطية دقيقة حتى البكسل) تمرّ فوق شبكة بكسلاتها عدسة مكبّرة؛ وHTML (renderToHtml()، نص قابل للتحديد، يتكيّف مع تغيير الحجم) تُحاط كل كتلة فيه بإطار وتُوسم <h1> و<p> و<figure> وغيرها؛ وPDF (renderToPdf()، جاهز للطباعة، PDF/UA، CMYK) تنزلق فيه أربعة ألواح ألوان حتى تتطابق، ثم تظهر علامات القص وشريط الألوان.",
+        narration: "إخراج واحد وثلاثة مُخرِجات: Canvas وHTML وPDF جاهز للطباعة. ما تراه هو ما يذهب إلى المطبعة.",
+      },
+      {
+        time: "1:35",
+        scene: "القسم 07، «لماذا معيار مفتوح»: «وضع LaTeX المعيار للطباعة. والنشر اليوم يعيش أيضًا على كل شاشة.» بطاقتان: LaTeX، 1984، مع علامات خطأ أمام «مصمَّم للصفحة المطبوعة» و«بناء مقيّد بخطوط جهاز واحد وحزمه» و«ترجم، انتظر، كرّر» و«لا إخراج تحريري على الويب المتجاوب»؛ وPostext، 2026، مع علامات صح أمام «الويب وCanvas وPDF جاهز للطباعة من إخراج واحد» و«ملف .postext محمول واحد يحمل كل شيء» و«يُعاد تدفّقه مباشرةً وأنت تكتب» و«يعمل في أي متصفح · بلا خوادم · MIT». وتضيء بطاقة Postext.",
+        narration: "وضع LaTeX المعيار للطباعة. لكن النشر اليوم يعيش على كل شاشة.",
+      },
+      {
+        time: "1:41",
+        scene: "العنوان التمهيدي «ملف واحد، الكتاب كله»، والعنوان «معيار مفتوح للنشر، يبلغ ما لا يبلغه LaTeX.» تنفجر أيقونة ملف .postext إلى خمسة أجزاء: preset.json (الإعدادات والتصميم)، وchapters/*.md (ملف Markdown لكل فصل)، وfonts/*.woff2 (الخطوط نفسها)، وimages/ · SVG (كل صورة، مضمّنة)، وresources (الجداول والأشكال والتعليقات). والتعليق: «ملف ZIP عادي: مفتوح، موثّق، برخصة MIT. يمكن لأي أداة قراءته وكتابته.»",
+        narration: "Postext معيار مفتوح: ملف واحد محمول، موثّق وبرخصة MIT، يمكن لأي أداة قراءته وكتابته.",
+      },
+      {
+        time: "1:51",
+        scene: "«المعرض · نضّده المحرّك الحقيقي»: جدار من صفحات الكتب يبتعد في منظور بينما يبلغ عدّاد 48 صفحة. النص: «12 فصلًا، و3 أجزاء، وغلاف، أُخرجت في نحو نصف ثانية. كل صفحة من دليل Postext حسبها postext v1.7.0 في المتصفح لهذا الفيلم. لا شيء وُضع باليد.» ثم وسوم: كتب مدرسية، مجلات، طبعات أدبية، كتالوجات.",
+        narration: "لهذا يستطيع إخراج كتب من مئات الصفحات في أعشار من الثانية.",
+      },
+      {
+        time: "1:58",
+        scene: "بطاقة الختام: شعار Postext مع العبارة «منضّد قابل للبرمجة للويب»، والعنوان postext.dev، وسطر طرفية يكتب «$ pnpm add postext»، والتذييل «مفتوح المصدر · MIT · github.com/drnachio/postext».",
+        narration: "Postext. مفتوح المصدر، على postext.dev.",
       },
     ],
   },
@@ -541,6 +686,208 @@ export const TRANSCRIPTS: Record<TranscriptVideo, Record<TranscriptLocale, Trans
         time: "5:07",
         scene: "片尾：Postext标志、标语“为网页而生的可编程排版引擎”、postext.dev、一个写着“本视频的提示词都在简介里 ↓”的胶囊框，以及页脚“开源 · MIT · GITHUB.COM/DRNACHIO/POSTEXT”。",
         narration: "Postext开源项目，网址postext.dev。示例提示词都在视频简介里。",
+      },
+    ],
+    ca: [
+      {
+        time: "0:00",
+        scene: "Capçalera: el logotip de Postext, el rètol «Tutorial · 5 passos» i el títol «Converteix la teva publicació a Postext amb un agent d'IA. Sense programar.»",
+      },
+      {
+        time: "0:03",
+        scene: "«La teva publicació ja existeix.» Tres pàgines compostes amb Postext, un llibre, un manual i una revista, cauen l'una rere l'altra amb les seves etiquetes: InDesign (IDML), Word (DOCX) i PDF. S'agrupen a l'esquerra, una fletxa daurada discontínua passa per una insígnia «Agent d'IA» i apareix una icona de fitxer, mi-libro.postext, sota «Un agent la converteix a Postext. Cinc passos. Unes quantes peticions ben escrites.»",
+        narration: "Ja tens una publicació: un llibre, un manual, una revista. Viu a InDesign, a Word o en un PDF. En aquest tutorial, un agent d'intel·ligència artificial la convertirà a Postext per tu. Sense programar: cinc passos i unes quantes peticions ben escrites.",
+      },
+      {
+        time: "0:23",
+        scene: "«El pla»: cinc targetes numerades apareixen a mesura que s'anomena cada pas: 01 Prepara la carpeta, 02 Reuneix els originals vectorials, 03 Afegeix una referència, 04 Demana-ho a l'agent, 05 Revisa-ho al sandbox.",
+        narration: "El pla: preparar la carpeta, reunir els originals vectorials, afegir una referència, demanar-ho a l'agent i revisar el resultat.",
+      },
+      {
+        time: "0:35",
+        scene: "Pas 01, la carpeta: «Un projecte, una carpeta.» Una carpeta gran, mi-libro/, sura entre deu fitxers solts com MinionPro-Regular.otf, portada.jpg, fig-2-1.ai, capitulo-01.docx, mapa.svg, libro.idml i grafico.pdf. S'obre una finestra amb l'arbre de la carpeta i cada fitxer vola a la seva subcarpeta quan se l'anomena: referencia.pdf (com ha de quedar, pas 03), fuentes/ (Minion Pro, Myriad…, .otf .ttf .woff2), imagenes/ (fotografies, .jpg .png), ilustraciones/ (originals vectorials, .ai .svg .pdf) i textos/ (Word, InDesign IDML…).",
+        narration: "Pas u: reuneix-ho tot en una sola carpeta al teu ordinador. Un projecte, una carpeta. A dins, dona a cada tipus de material la seva pròpia subcarpeta: les tipografies, les imatges, les il·lustracions i els textos.",
+      },
+      {
+        time: "0:51",
+        scene: "La fila fuentes/ es ressalta i una targeta titulada «Tipografies» mostra una «Aa» gran, els estils Rodona, Cursiva i Negreta, els formats OTF, TTF i WOFF2 i la nota «Només es poden fer servir les que incloguis.» Després, «Com més ordenada, menys endevina.», mentre cada subcarpeta de l'arbre rep una marca.",
+        narration: "No t'oblidis de les tipografies: són la veu del disseny, i l'agent només pot fer servir les que incloguis. Com més ordenada sigui la carpeta, menys haurà d'endevinar l'agent.",
+      },
+      {
+        time: "1:04",
+        scene: "Pas 02, originals vectorials: «Reuneix els originals.» Un diagrama, un gràfic i un mapa es dibuixen en traç, amb els punts d'ancoratge a la vista, i apareixen tres icones de fitxer: .ai Illustrator, .svg SVG i .pdf PDF.",
+        narration: "Pas dos: si les teves il·lustracions són vectorials, com diagrames, gràfics o mapes, cerca els fitxers originals: Illustrator, SVG o PDF.",
+      },
+      {
+        time: "1:15",
+        scene: "Dos taulers mostren la mateixa figura, un diagrama en què Manuscrit i Plantilla apunten a Pàgines, amb el peu «Fig. 2.1 Contingut i disseny es troben.» A l'esquerra, «Retallada del PDF: una foto del dibuix» es torna borrosa i pixelada en ampliar-se; a la dreta, «L'original: el dibuix mateix» continua nítid. El tauler esquerre s'apaga, els rètols de l'original es reescriuen en anglès (Manuscript, Template, Pages), unes marques de tall l'emmarquen i tres marques diuen «Nítida a qualsevol mida», «Rètols com a text real» i «Original → impremta».",
+        narration: "Una figura retallada del PDF final és poca cosa més que una foto del dibuix. L'original és el dibuix mateix. Amb l'original, l'agent recompon cada figura: nítida a qualsevol mida, amb els rètols com a text real, a punt per traduir. I a impremta, l'original hi va tal com és.",
+      },
+      {
+        time: "1:37",
+        scene: "Pas 03, la referència: «Mostra com ha de quedar.» A l'arbre de la carpeta es ressalta referencia.pdf amb l'etiqueta «A l'arrel»; en surt una pàgina que es converteix en una pàgina de llibre gran, a dues columnes, marcada referencia.pdf.",
+        narration: "El pas tres és essencial: a l'arrel de la carpeta, posa-hi un fitxer que mostri amb claredat com s'ha de veure el producte final. L'ideal és un PDF.",
+      },
+      {
+        time: "1:47",
+        scene: "Sobre la pàgina apareixen les mesures: el contorn de les columnes, un espai entre columnes de 9 mm, un marge de 20 mm, etiquetes per al títol (Fraunces 28 pt), el text (Lora 9,4/13,6 pt) i un requadre (fons, 1 filet), i les línies de base amb un interlineat de 13,6 pt. Un fitxer, ficha-de-especificaciones.md, es va omplint: pàgina 210 × 280 mm; marges 24 · 20 · 22 · 20 mm, simètrics; 2 columnes, espai entre columnes 9 mm; retícula de base 13,6 pt; text Lora 9,4 / 13,6 pt, justificat; títols Fraunces 28 pt · Geist; obertures amb banda de color de 101 mm; requadres amb fons i filet esquerre. Després la paraula «Endevinar» es ratlla i «Mesurar.» s'encén en daurat.",
+        narration: "L'agent llegeix el disseny en aquestes pàgines: mesura marges, columnes, tipografies i espais, i els anota com a regles de maquetació. Sense referència, hauria d'endevinar. Amb referència, mesura.",
+      },
+      {
+        time: "2:03",
+        scene: "Pas 04, l'agent: «Demana-ho amb les teves paraules.» S'obre una finestra titulada «Agent · ~/mi-libro» al costat de les insígnies Claude Code, Codex i «o qualsevol altre agent». A la finestra s'escriu un missatge signat TU: «Instal·la la skill de Postext: `npx skills add drnachio/postext --skill postext-port`», i l'agent respon «✓ Skill instal·lada: postext-port». Una targeta de la skill postext-port enumera «Un mètode provat», «Tot sobre Postext» i «Eines per revisar la seva feina».",
+        narration: "Pas quatre: obre el teu agent, Claude Code, Codex o el que facis servir, en aquella carpeta, i demana-li que instal·li la skill de Postext. Una skill és un paquet de coneixement expert. Aquesta ensenya a l'agent a convertir una publicació a Postext, i li dona eines per revisar la seva pròpia feina.",
+      },
+      {
+        time: "2:24",
+        scene: "S'escriu la petició següent: «Fes servir la skill postext-port per convertir aquest llibre a Postext. El disseny és a referencia.pdf, les tipografies a fuentes/ i les il·lustracions originals a ilustraciones/: fes-les servir en lloc de retallar les figures del PDF. Comença només pel capítol 1 i ensenya'm la fitxa d'especificacions abans de construir-lo.» Al costat, referencia.pdf, fuentes/ i ilustraciones/ s'il·luminen a l'arbre de la carpeta a mesura que el missatge les anomena, i apareix una targeta amb «Cap. 1».",
+        narration: "Després, demana-li el que vols amb les teves paraules. Digues-li on són la referència, les tipografies i els originals, i que comenci per un sol capítol.",
+      },
+      {
+        time: "2:37",
+        scene: "Una quadrícula de dotze pàgines atenuades; la primera s'emmarca en daurat. Una fletxa circular compta les voltes de depuració sobre aquesta pàgina fins que apareix una marca, i llavors s'il·luminen les altres onze. A sota: Capítol de mostra → Depurar → Estendre.",
+        narration: "Si el contingut és llarg, comença per un capítol de mostra. Depura'l fins que sigui perfecte, i només llavors estén-lo a la resta.",
+      },
+      {
+        time: "2:46",
+        scene: "L'agent pregunta «Còpia fidel o redisseny?», «Quines llengües?» i «Paper, pantalla o tots dos?». Una llista de tasques avança per Fer inventari, Mesurar el disseny, Extreure el text, Tipografies i imatges, Comparar pàgina a pàgina i Empaquetar el fitxer, i apareix el fitxer mi-libro.postext. S'escriu una tercera petició: «El capítol 1 està aprovat. Converteix la resta de capítols amb el mateix disseny, compara cadascun amb referencia.pdf i empaqueta-ho tot en un únic fitxer .postext.» L'agent respon «✓ 12 capítols · 0 avisos · mi-libro.postext».",
+        narration: "L'agent et farà unes quantes preguntes: còpia fidel o redisseny, quines llengües, paper o pantalla. Després mesura, extreu, munta i comprova, i et lliura un fitxer Postext. Quan la mostra estigui bé, estendre-la al llibre sencer és només una petició més.",
+      },
+      {
+        time: "3:11",
+        scene: "Pas 05, el sandbox: «Revisa-ho pàgina a pàgina.» En una finestra de navegador s'escriu l'adreça postext.dev/ca/sandbox. El punter prem Llibres a la barra lateral, després Nou i després «Obrir un fitxer .postext…»; el fitxer hi entra volant, «El meu llibre, 12 capítols · 184 pàgines» apareix a dalt de la llista i les primeres pàgines s'obren a la vista Canvas.",
+        narration: "Pas cinc: obre el sandbox de Postext, a postext.dev. A Llibres, tria Nou i obre el teu fitxer.",
+      },
+      {
+        time: "3:20",
+        scene: "La pàgina de referència i la de Postext queden l'una al costat de l'altra, retolades Referència i Postext, i una línia daurada les recorre de dalt a baix. S'obre el tauler Revisió amb un comptador de 3 i la llista Vídua (p. 4), Línia oberta (p. 7) i La figura no hi cap (p. 9); uns requadres vermells marquen cada problema a la pàgina de Postext.",
+        narration: "Revisa-ho pàgina a pàgina al costat de la teva referència. El tauler Revisió t'assenyala els problemes: vídues, línies obertes, figures que no hi caben.",
+      },
+      {
+        time: "3:31",
+        scene: "Dues files de pàgines esquemàtiques, «Referència · PDF» i «Postext · fluid». A la fila fluida, una figura viatja de la primera pàgina al capdamunt de la segona i una línia discontínua uneix les seves dues posicions. Text: «Les mateixes regles, no les mateixes pàgines. El contingut flueix: una figura o un salt de pàgina poden caure en un altre lloc.» Després, un signe igual uneix cada parella de pàgines sota «El que ha de coincidir»: Marges i retícula de base, Tipografia, Estil de figures i requadres, Pàgines netes: sense vídues, columnes equilibrades. Un tauler vermell amb el signe ≠ diu «Decisions artesanals fetes a mà: no són regles, no serveixen per a contingut que canvia».",
+        narration: "Tingues en compte una cosa: les pàgines no han de ser per força idèntiques a les del PDF. Postext ha entès les regles de maquetació i ara el teu contingut és fluid, així que una figura o un salt de pàgina poden caure en un altre lloc. El que ha de coincidir és la qualitat: els mateixos valors de producció. Quan maquetem a mà, prenem petites decisions d'artesania que no són regles. I només amb regles es pot maquetar un contingut que canvia.",
+      },
+      {
+        time: "4:01",
+        scene: "Torna la finestra de l'agent amb una quarta petició: «Al sandbox, capítol 2, pàgina 7: el requadre «Recorda» es parteix en dues columnes i hi falta la cornisa. Revisió marca 3 línies obertes. Corregeix-ho i torna a empaquetar el fitxer.» S'hi adjunta una captura, captura-cap2-p7.png. Després, un bucle entre Sandbox (revisar) i Agent (corregir) fa les voltes 1 a 3 mentre el nombre d'avisos baixa de 3 a 0, i acaba amb una marca i «Perfecte.»",
+        narration: "Després explica a l'agent el que veus, amb la màxima precisió possible: el capítol, la pàgina i què falla. Una captura de pantalla hi ajuda. Obre la nova versió, torna a revisar i repeteix. Cada volta s'hi acosta més, fins que queda perfecte.",
+      },
+      {
+        time: "4:20",
+        scene: "«No només una versió Postext.» El fitxer mi-libro.postext es parteix en dos per una línia daurada. A l'esquerra, Contingut (què diu): chapters/es/02-la-celula.md, amb el títol «La cèl·lula», una frase que cita la figura fig-celula i un requadre «recorda». A la dreta, Forma (com es veu): una plantilla deduïda del teu original, amb pàgina de 210 × 280 mm simètrica, 2 columnes amb espai entre columnes de 9 mm, text Lora 9,4/13,6 justificat, títols en Fraunces numerats, requadres «recorda» amb fons i filet, i figures al capdamunt de la columna.",
+        narration: "I això és el millor: no només tens el teu contingut a Postext. Has separat el contingut de la forma. El text viu en capítols nets; el disseny, en una plantilla amb les regles de maquetació deduïdes del teu original.",
+      },
+      {
+        time: "4:35",
+        scene: "S'encenen les pastilles Corregir, Ampliar i Traduir sobre una fila de pàgines: es ressalta una línia i un esclat recorre les pàgines, entren dues pàgines més i les pàgines es giren per mostrar l'edició en anglès. S'escriu una petició: «Afegeix una edició en anglès: tradueix els capítols, els peus de figura i els rètols dels diagrames, i mantén el mateix disseny.» Peu: «Mateixes regles. Contingut nou. Les pàgines es componen soles.» Després, «Un fitxer, tot el llibre.»: una icona .postext es ramifica cap a una pàgina amb marques de tall (PDF per a impremta), una finestra de navegador (Lector web) i una parella de pàgines (Cada pàgina, composta).",
+        narration: "Així, quan el teu contingut canviï, quan el corregeixis, l'ampliïs o el tradueixis, no t'hauràs de preocupar pel format. Postext el torna a compondre amb les mateixes regles. Un sol fitxer per a tot el llibre: un PDF a punt per a impremta, un lector per a la web i pàgines que es componen soles.",
+      },
+      {
+        time: "4:57",
+        scene: "Tancament: el logotip de Postext, el lema «El tipògraf programable per a la web», postext.dev, una pastilla amb «Els prompts d'aquest vídeo són a la descripció ↓» i el peu «Codi obert · MIT · github.com/drnachio/postext».",
+        narration: "Postext. Codi obert, a postext.dev. Tens els prompts d'exemple a la descripció.",
+      },
+    ],
+    ar: [
+      {
+        time: "0:00",
+        scene: "بطاقة العنوان: شعار Postext، والعنوان التمهيدي «درس · 5 خطوات»، والعنوان «حوّل منشورك إلى Postext بمساعدة وكيل ذكاء اصطناعي. بلا شيفرة.»",
+      },
+      {
+        time: "0:03",
+        scene: "«منشورك موجود بالفعل.» ثلاث صفحات نضّدها Postext، كتاب ودليل استعمال ومجلة، تنزل واحدة بعد أخرى، موسومة InDesign (IDML) وWord (DOCX) وPDF. تتجمّع على اليسار، ويمرّ سهم ذهبي متقطع عبر شارة «وكيل ذكاء اصطناعي»، وتظهر أيقونة ملف اسمه my-book.postext، تحت «وكيل يحوّله إلى Postext. خمس خطوات. وبضعة طلبات محكمة الصياغة.»",
+        narration: "لديك منشور بالفعل: كتاب، أو دليل استعمال، أو مجلة. يعيش في InDesign، أو في Word، أو في ملف PDF. في هذا الدرس، سيحوّله وكيل ذكاء اصطناعي إلى Postext نيابةً عنك. بلا شيفرة: خمس خطوات فقط وبضعة طلبات محكمة الصياغة.",
+      },
+      {
+        time: "0:23",
+        scene: "«الخطة»: تظهر خمس بطاقات مرقّمة كلما ذُكرت خطوة: 01 جهّز المجلد، 02 أحضر الأصول المتجهة، 03 أضف مرجعًا، 04 اطلب من الوكيل، 05 افحص في Sandbox.",
+        narration: "هذه هي الخطة: جهّز المجلد، وأحضر الرسوم الأصلية، وأضف مرجعًا، واطلب من الوكيل، وافحص النتيجة.",
+      },
+      {
+        time: "0:33",
+        scene: "الخطوة 01، المجلد: «مشروع واحد، مجلد واحد.» مجلد كبير، my-book/، يطفو بين عشرة ملفات متناثرة مثل MinionPro-Regular.otf وcover.jpg وfig-2-1.ai وchapter-01.docx وmap.svg وbook.idml وchart.pdf. تنفتح نافذة على شجرة المجلد ويطير كل ملف إلى مجلده الفرعي حين يُذكر اسمه: reference.pdf (كيف يجب أن يبدو، الخطوة 03)، وfonts/ (Minion Pro وMyriad…، .otf .ttf .woff2)، وimages/ (صور فوتوغرافية، .jpg .png)، وartwork/ (الأصول المتجهة، .ai .svg .pdf)، وtext/ (Word وInDesign IDML…).",
+        narration: "الخطوة الأولى: ضع كل شيء في مجلد واحد على حاسوبك. مشروع واحد، مجلد واحد. وفي داخله، خصّص لكل نوع من المواد مجلدًا فرعيًا: الخطوط، والصور، والرسوم، وملفات النص.",
+      },
+      {
+        time: "0:50",
+        scene: "يُبرَز صف fonts/ وتعرض بطاقة عنوانها «الخطوط» «Aa» كبيرة، والأساليب Regular وItalic وBold، والصيغ OTF وTTF وWOFF2، والملاحظة «لا يمكن استعمال إلا الخطوط التي تضمّنها.» ثم «كلما كان المجلد أرتب، قلّ التخمين.»، بينما ينال كل مجلد فرعي في الشجرة علامة صح.",
+        narration: "لا تنسَ الخطوط. فهي تمنح التصميم صوته، ولا يستطيع الوكيل أن يستعمل إلا ما تضمّنه منها. كلما كان المجلد أرتب، قلّ ما يضطر الوكيل إلى تخمينه.",
+      },
+      {
+        time: "1:03",
+        scene: "الخطوة 02، الأصول المتجهة: «أحضر الأصول.» مخطط ورسم بياني وخريطة تُرسم خطوطًا مع ظهور نقاط الارتكاز، وتظهر ثلاث أيقونات ملفات: .ai Illustrator و.svg SVG و.pdf PDF.",
+        narration: "الخطوة الثانية: إن كانت رسومك متجهة، كالمخططات أو الرسوم البيانية أو الخرائط، فاعثر على ملفاتها الأصلية: Illustrator أو SVG أو PDF.",
+      },
+      {
+        time: "1:14",
+        scene: "لوحتان تعرضان الشكل نفسه، مخططًا يشير فيه Manuscript وTemplate كلاهما إلى Pages، وتعليقه «Fig. 2.1 Content and design meet.» (الشكل 2.1 يلتقي المحتوى والتصميم). على اليسار، «مقصوص من PDF: صورة للرسم» يصير ضبابيًا ومربّعًا كلما اقترب العرض؛ وعلى اليمين يبقى «الأصل: الرسم نفسه» حادًا. تتلاشى اللوحة اليسرى، وتُكتب تسميات الأصل من جديد بالإسبانية (Manuscrito وPlantilla وPáginas)، وتحيط به علامات القص، وتقول ثلاث علامات صح: «حاد بأي حجم» و«التسميات نص حي» و«نسخة الطباعة الأصلية ← المطبعة».",
+        narration: "الشكل المقصوص من ملف PDF النهائي ليس أكثر من صورة للرسم. أما الأصل فهو الرسم نفسه. وبه يعيد الوكيل بناء كل شكل: حادًا بأي حجم، وتسمياته ما زالت نصًا حقيقيًا جاهزًا للترجمة. وللطباعة، يذهب الأصل إلى المطبعة كما هو.",
+      },
+      {
+        time: "1:37",
+        scene: "الخطوة 03، المرجع: «أرِه كيف يجب أن يبدو.» في شجرة المجلد يُبرَز reference.pdf ويحمل وسم «في الجذر»؛ تطير منه صفحة وتصير صفحة كتاب كبيرة من عمودين موسومة reference.pdf.",
+        narration: "الخطوة الثالثة أساسية: في جذر المجلد، ضع ملفًا يبيّن بوضوح كيف يجب أن يبدو المنتج النهائي. وملف PDF هو الأمثل.",
+      },
+      {
+        time: "1:47",
+        scene: "تظهر القياسات فوق الصفحة: حدود الأعمدة، وفاصل بين الأعمدة 9 mm، وهامش 20 mm، وتسميات للعنوان (Fraunces 28 pt) والمتن (Lora 9.4/13.6 pt) والإطار (بلون خلفية، خط فاصل واحد)، وخطوط أساس بتباعد أسطر 13.6 pt. ويمتلئ ملف اسمه spec-sheet.md: الصفحة 210 × 280 mm؛ الهوامش 24 · 20 · 22 · 20 mm، متناظرة؛ عمودان، والفاصل 9 mm؛ شبكة خطوط الأساس 13.6 pt؛ المتن Lora 9.4 / 13.6 pt، مضبوط؛ العناوين Fraunces 28 pt · Geist؛ صفحات افتتاح بشريط ملوّن 101 mm؛ إطارات بلون خلفية وخط فاصل على اليسار. ثم تُشطب كلمة «خمّن» وتضيء «قِس.» بالذهبي.",
+        narration: "يقرأ الوكيل التصميم من تلك الصفحات. يقيس الهوامش والأعمدة والخطوط والمسافات، ويدوّنها قواعدَ إخراج. من دون مرجع، سيضطر إلى التخمين. ومعه، يقيس.",
+      },
+      {
+        time: "2:03",
+        scene: "الخطوة 04، الوكيل: «اطلبه بكلمات بسيطة.» تنفتح نافذة عنوانها «Agent · ~/my-book» بجانب الشارات Claude Code وCodex و«أو أي وكيل آخر». تُكتب رسالة منك (YOU): «ثبّت مهارة Postext: `npx skills add drnachio/postext --skill postext-port`»، ويجيب الوكيل «✓ ثُبّتت المهارة: postext-port». وتعدّد بطاقة لمهارة postext-port: «سير عمل مجرّب» و«كل شيء عن Postext» و«أدوات ليفحص عمله بنفسه».",
+        narration: "الخطوة الرابعة: افتح وكيلك، Claude Code أو Codex أو أيًّا كان ما تستعمله، في ذلك المجلد، واطلب منه تثبيت مهارة Postext. المهارة حزمة من خبرة المختصين. وهذه المهارة تعلّم الوكيل كيف يُدخل منشورًا إلى Postext، وتعطيه الأدوات ليفحص عمله بنفسه.",
+      },
+      {
+        time: "2:24",
+        scene: "يُكتب الطلب التالي: «استعمل مهارة postext-port لتحويل هذا الكتاب إلى Postext. التصميم في reference.pdf، والخطوط في fonts/، والرسوم الأصلية في artwork/: استعملها بدل قص الأشكال من ملف PDF. ابدأ بالفصل 1 فقط، وأرني ورقة المواصفات قبل أن تبنيه.» وبجانبه تضيء reference.pdf وfonts/ وartwork/ في شجرة المجلد كلما ذكرها الطلب، وتظهر بطاقة كُتب عليها «الفصل 1».",
+        narration: "ثم اطلب ما تريد بكلمات بسيطة. أخبره أين المرجع والخطوط والأصول، واطلب منه أن يبدأ بفصل واحد.",
+      },
+      {
+        time: "2:37",
+        scene: "شبكة من اثنتي عشرة صفحة كتاب باهتة؛ الأولى محاطة بإطار ذهبي. سهم دائري يعدّ جولات التحسين عليها حتى تظهر علامة صح، ثم تضيء الإحدى عشرة الأخرى. وتحتها: فصل نموذجي ← تحسين ← توسيع.",
+        narration: "إن كان المحتوى طويلًا، فابدأ بفصل نموذجي. حسّنه حتى يصير مثاليًا، وبعدها فقط وسّعه إلى الباقي.",
+      },
+      {
+        time: "2:46",
+        scene: "يسأل الوكيل «نسخة أمينة أم إعادة تصميم؟» و«أي لغات؟» و«للطباعة أم للشاشة أم لكليهما؟». وتمرّ قائمة تحقق على: جرد المواد، وقياس التصميم، واستخراج النص، والخطوط والصور، والمقارنة صفحةً صفحة، وحزم الملف، ثم يظهر الملف my-book.postext. ويُكتب طلب ثالث: «الفصل 1 معتمد. حوّل الفصول الباقية بالتصميم نفسه، وقارن كلًّا منها بملف reference.pdf، واحزم كل شيء في ملف .postext واحد.» ويردّ الوكيل «✓ 12 فصلًا · 0 تحذيرات · my-book.postext».",
+        narration: "سيطرح عليك الوكيل بضعة أسئلة: نسخة أمينة أم إعادة تصميم، وأي لغات، وطباعة أم شاشة. ثم يقيس، ويستخرج، ويجمّع، ويفحص. ويسلّمك ملف Postext. وما إن يصحّ النموذج، حتى يصير توسيعه إلى الكتاب كله مجرد طلب آخر.",
+      },
+      {
+        time: "3:14",
+        scene: "الخطوة 05، Sandbox: «افحصه صفحةً صفحة.» نافذة متصفح يُكتب فيها العنوان postext.dev/sandbox. ينقر المؤشر «الكتب» في الشريط الجانبي، ثم «جديد»، ثم «فتح ملف .postext…»؛ يطير الملف إلى الداخل، ويظهر «كتابي، 12 فصلًا · 184 صفحة» أعلى القائمة وتنفتح صفحاته الأولى في عرض Canvas.",
+        narration: "الخطوة الخامسة: افتح Sandbox، بيئة التجربة في Postext، على postext.dev. في «الكتب» اختر «جديد»، وافتح ملفك.",
+      },
+      {
+        time: "3:24",
+        scene: "تقف الصفحة المرجعية وصفحة Postext جنبًا إلى جنب، موسومتين «المرجع» و«Postext»، ويمسحهما خط ذهبي نزولًا. تنفتح لوحة «الفحوص» بشارة 3 وتعدّد: أرملة (ص. 4)، وسطر رخو (ص. 7)، وشكل لا يتسع (ص. 9)؛ وتعلّم مربعات حمراء كل مشكلة على صفحة Postext.",
+        narration: "راجعه صفحةً صفحة، بجانب مرجعك. لوحة «الفحوص» تدلّك على المشكلات: الأرامل، والأسطر الرخوة، والأشكال التي لا تتسع.",
+      },
+      {
+        time: "3:35",
+        scene: "صفّان من المخططات الهيكلية للصفحات، «المرجع · PDF» و«Postext · بعد إعادة التدفّق». في الصف الثاني ينتقل شكل من الصفحة الأولى إلى أعلى الثانية، ويصل خط متقطع بين موضعيه. النص: «القواعد نفسها، لا الصفحات نفسها. المحتوى يتدفّق: قد يقع شكل أو فاصل صفحة في موضع آخر.» ثم تجمع علامة مساواة كل زوج من الصفحات تحت «ما يجب أن يتطابق»: الهوامش وشبكة خطوط الأساس، والحروف والخطوط، وأنماط الأشكال والإطارات، وصفحات نظيفة: لا أرامل، وأعمدة متساوية. ولوحة حمراء عليها ≠ تقول: «قرارات حِرفية يدوية: ليست قواعد، فلا تستطيع تنضيد محتوى متغيّر».",
+        narration: "أمر واحد ينبغي أن تتذكّره: لا يلزم أن تطابق الصفحات ملف PDF الذي لديك. فقد تعلّم Postext قواعد الإخراج، وصار محتواك يتدفّق، لذلك قد يقع شكل أو فاصل صفحة في موضع آخر. ما ينبغي أن يتطابق هو الجودة: مستوى الصنعة نفسه. حين نُخرج الصفحات باليد، نتخذ قرارات حِرفية صغيرة ليست قواعد. والقواعد وحدها تستطيع تنضيد محتوى لا يكفّ عن التغيّر.",
+      },
+      {
+        time: "4:03",
+        scene: "تعود نافذة الوكيل بطلب رابع: «في Sandbox، الفصل 2، الصفحة 7: إطار «تذكّر» مقسوم على عمودين، والترويسة مفقودة. وتعرض «الفحوص» 3 أسطر رخوة. أصلح ذلك واحزم الملف من جديد.» وتُرفق لقطة شاشة، screenshot-ch2-p7.png. ثم تدور حلقة بين Sandbox (الفحص) والوكيل (الإصلاح) في الجولات من 1 إلى 3 بينما ينخفض عدد التحذيرات من 3 إلى 0، وتنتهي بعلامة صح و«مضبوط تمامًا.»",
+        narration: "ثم أخبر الوكيل بما تراه، بأقصى ما تستطيع من دقة: الفصل، والصفحة، وما الخطأ. ولقطة الشاشة تساعد. افتح النسخة الجديدة، وافحص من جديد، وكرّر. كل جولة تقترب أكثر، حتى يصير مضبوطًا تمامًا.",
+      },
+      {
+        time: "4:23",
+        scene: "«أكثر من نسخة Postext.» ينقسم الملف my-book.postext إلى اثنين على طول خط ذهبي. على اليسار، المحتوى (ما يقوله): chapters/en/02-the-cell.md، بالعنوان «The cell» (الخلية)، وجملة تحيل إلى الشكل fig-cell، وإطار «remember» (تذكّر). وعلى اليمين، الهيئة (كيف يبدو): قالب مستنتج من أصلك، بصفحة 210 × 280 mm متناظرة، وعمودين بينهما فاصل 9 mm، ومتن Lora 9.4/13.6 مضبوط، وعناوين Fraunces مرقّمة، وإطارات «remember» بلون خلفية وخط فاصل، وأشكال معوّمة إلى أعلى العمود.",
+        narration: "وهذا أفضل ما في الأمر: ما صنعته أكثر من نسخة Postext من محتواك. لقد فصلت المحتوى عن الهيئة. يعيش النص في فصول نظيفة. ويعيش التصميم في قالب، بقواعد إخراج مستنتجة من أصلك.",
+      },
+      {
+        time: "4:39",
+        scene: "تضيء شارات «تصحيح» و«توسيع» و«ترجمة» فوق صف من صفحات الكتاب: يُبرَز سطر ويعبر بريق الصفحات، وتنزلق صفحتان أخريان، ثم تنقلب الصفحات إلى الطبعة الإسبانية. ويُكتب طلب: «أضف طبعة إسبانية: ترجم الفصول والتعليقات وتسميات المخططات، وأبقِ التصميم نفسه.» والتعليق: «القواعد نفسها. محتوى جديد. الصفحات تنضّد نفسها.» ثم «ملف واحد، الكتاب كله.»: أيقونة .postext تتفرّع إلى صفحة بعلامات قص (PDF جاهز للطباعة)، ونافذة متصفح (قارئ ويب)، وزوج من الصفحات (كل صفحة منضّدة).",
+        narration: "فحين يتغيّر محتواك، حين تصحّحه أو توسّعه أو تترجمه، لا يلزمك التفكير في الإخراج. يعيد Postext تنضيده وفق القواعد نفسها. ملف واحد للكتاب كله: PDF جاهز للطباعة، وقارئ للويب، وصفحات تنضّد نفسها.",
+      },
+      {
+        time: "5:01",
+        scene: "بطاقة الختام: شعار Postext، والعبارة «منضّد قابل للبرمجة للويب»، وpostext.dev، وشارة كُتب عليها «الطلبات المستعملة في هذا الفيديو في الوصف ↓»، والتذييل «مفتوح المصدر · MIT · github.com/drnachio/postext».",
+        narration: "Postext. مفتوح المصدر، على postext.dev. ستجد أمثلة الطلبات في الوصف.",
       },
     ],
   },

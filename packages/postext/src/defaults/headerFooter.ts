@@ -375,6 +375,7 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     ...(el.stroke ? { stroke: el.stroke } : {}),
     ...(el.reserve === false ? { reserve: false } : {}),
     ...(el.writingMode === 'vertical-rl' ? { writingMode: 'vertical-rl' as const } : {}),
+    ...(el.direction === 'ltr' || el.direction === 'rtl' || el.direction === 'auto' ? { direction: el.direction } : {}),
     box: el.box,
   };
 }

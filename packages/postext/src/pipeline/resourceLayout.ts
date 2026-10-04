@@ -33,6 +33,7 @@
 
 import { findAnchorTarget, resolveAnchorRefLabel, unprefixedId, type AnchorTargets, type CrossRefStrings } from './crossRefs';
 import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
+import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import type {
@@ -44,6 +45,7 @@ import type {
   TableCell,
   TableModel,
   TableCellAlign,
+  TableCellAlignKeyword,
   TableCellVerticalAlign,
   TableRules,
 } from '../types';
@@ -74,7 +76,7 @@ import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { pickTableStyle } from '../defaults/tableStyle';
-import { resolveColorValue } from '../defaults/shared';
+import { resolveColorValue, startEndAsLeftRight } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
@@ -325,8 +327,8 @@ function fitWidth(intrinsicW: number, intrinsicH: number, columnWidth: number): 
 }
 
 /** Share of the free room set left of a body aligned per `placement.align`. */
-function alignFactor(align: 'left' | 'center' | 'right' | undefined): number {
-  return align === 'center' ? 0.5 : align === 'right' ? 1 : 0;
+function alignFactor(align: 'left' | 'center' | 'right' | 'start' | 'end' | undefined): number {
+  return align === 'center' ? 0.5 : align === 'right' || align === 'end' ? 1 : 0;
 }
 
 /** One resolved font set (normal / bold / italic / bold+italic), its colour,
@@ -729,6 +731,20 @@ export function planTableSlice(metrics: TableRowMetrics, startRow: number, bodyB
   return cut > floor || best <= floor ? cut : best;
 }
 
+/**
+ * The physical alignment of a cell's content (#371). Cell text reads its
+ * alignment in its own direction, as body text does: `'left'` / `'start'`
+ * is the side a line starts on, `'right'` / `'end'` the side it ends on. In
+ * a table that runs against its frame (`Resource.table.direction`: an
+ * English table in an Arabic book, whose mirrored flow's right is the
+ * sheet's left) that start side is the frame's right.
+ */
+function cellAlignOf(align: TableCellAlignKeyword | undefined, opposite: boolean): TableCellAlign {
+  const side = startEndAsLeftRight(align ?? 'left');
+  if (!opposite || side === 'center') return side;
+  return side === 'left' ? 'right' : 'left';
+}
+
 /** Share of a cell's spare height that goes above its content. */
 const VERTICAL_ALIGN_FACTOR: Readonly<Record<TableCellVerticalAlign, number>> = { top: 0, middle: 0.5, bottom: 1 };
 
@@ -747,6 +763,35 @@ function layoutTable(
   resources: Resource[],
   refStyle: { bold: boolean; italic: boolean; labelNumberGap?: string },
   selection?: readonly number[],
+  /** The table's own direction (`Resource.table.direction`), when it
+   *  opposes its frame's: its cells are measured in it, its first column
+   *  goes to the frame's right and its cells align from that side. */
+  opposite?: 'ltr' | 'rtl',
+): { layout: VDTResourceTableLayout; height: number; metrics?: TableRowMetrics } {
+  if (opposite && opposite !== getMeasureDirection()) {
+    const frame = getMeasureDirection();
+    setMeasureDirection(opposite);
+    try {
+      return mirrorTableLayout(layoutTableIn(model, columnWidth, style, resourceNumbering, resourceTypes, resources, refStyle, selection, true), columnWidth);
+    } finally {
+      setMeasureDirection(frame);
+    }
+  }
+  return layoutTableIn(model, columnWidth, style, resourceNumbering, resourceTypes, resources, refStyle, selection, false);
+}
+
+/** {@link layoutTable} with the cells' alignments read against the frame
+ *  (`opposite`: the table runs the other way, see {@link cellAlignOf}). */
+function layoutTableIn(
+  model: TableModel,
+  columnWidth: number,
+  style: TableLayoutStyle,
+  resourceNumbering: ResourceNumberingMap,
+  resourceTypes: ResourceType[],
+  resources: Resource[],
+  refStyle: { bold: boolean; italic: boolean; labelNumberGap?: string },
+  selection: readonly number[] | undefined,
+  opposite: boolean,
 ): { layout: VDTResourceTableLayout; height: number; metrics?: TableRowMetrics } {
   const { body, header, borderColor, borderWidthPx, cellPaddingPx } = style;
   const modelRowCount = model.rows.length;
@@ -823,16 +868,17 @@ function layoutTable(
         resources,
         refStyle,
       ), style.palette), style.chips, set);
+      const align = cellAlignOf(cell.align, opposite);
       const m = measureCellContent(
         spans,
         set,
         Math.max(1, cellWidth),
-        cell.align ?? 'left',
+        align,
         style.listGapPx,
       );
       // An embedded image sits at the top of the cell; the text (when
       // there is any) runs under it, a padding's worth below.
-      const image = cell.hiddenBy ? null : fitCellImage(cell.image, cell.align ?? 'left', Math.max(1, cellWidth), resources);
+      const image = cell.hiddenBy ? null : fitCellImage(cell.image, align, Math.max(1, cellWidth), resources);
       const textHeight = m.totalHeight;
       const textY = image ? image.height + (textHeight > 0 ? cellPaddingPx : 0) : 0;
       const lines = image && textHeight > 0 ? shiftLines(m.lines, 0, textY) : m.lines;
@@ -848,7 +894,7 @@ function layoutTable(
         colSpan,
         rowSpan,
         isHeader,
-        align: cell.align ?? 'left',
+        align,
         verticalAlign: cell.verticalAlign ?? 'top',
         lines,
         contentHeight,
@@ -973,6 +1019,35 @@ function layoutTable(
     rules: style.rules,
   };
   return metrics ? { layout, height: tableHeight, metrics } : { layout, height: tableHeight };
+}
+
+/**
+ * A table laid out for a frame of the other direction, turned over its
+ * vertical axis (#371): each cell's rect, its lines and its image move to
+ * the mirror place in the table's width, so the first column lands on the
+ * frame's right — the start side of the table. The lines themselves keep
+ * their order (they read in the table's direction, measured in it); the
+ * cells were already aligned from the mirrored side (`cellAlignOf`).
+ */
+function mirrorTableLayout<T extends { layout: VDTResourceTableLayout }>(result: T, width: number): T {
+  const flip = (x: number, w: number): number => width - x - w;
+  const cells = result.layout.cells.map((cell) => {
+    const rect = createBoundingBox(flip(cell.rect.x, cell.rect.width), cell.rect.y, cell.rect.width, cell.rect.height);
+    const dx = rect.x - cell.rect.x;
+    const lines = dx === 0 ? cell.lines : cell.lines.map((line) => {
+      const moved: VDTLine = { ...line, bbox: { ...line.bbox } };
+      shiftLineX(moved, dx);
+      return moved;
+    });
+    return {
+      ...cell,
+      rect,
+      lines,
+      ...(cell.image ? { image: { ...cell.image, rect: { ...cell.image.rect, x: cell.image.rect.x + dx } } } : {}),
+    };
+  });
+  const columnEdges = result.layout.columnEdges.map((e) => width - e).reverse();
+  return { ...result, layout: { ...result.layout, cells, columnEdges } };
 }
 
 /**
@@ -1114,6 +1189,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       resources,
       refStyle,
       slice ? tableSliceRows(resource.table.model, slice) : undefined,
+      resource.table.direction,
     );
     // Rounded outer frame: a part of a split table rounds only the ends
     // the table really has — the top on the first part, the bottom on the

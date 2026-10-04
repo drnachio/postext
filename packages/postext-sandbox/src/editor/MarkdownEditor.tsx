@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef } from 'react';
 import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
+import { useUiRtl } from '../ui/direction';
 import { useSandbox, useSandboxEditorStateRef } from '../context/SandboxContext';
 import { anchorsOf, referencesOf, type RefCompletionContext } from './refCompletion';
 import { indexTermsOf } from './indexSyntax';
@@ -53,6 +54,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
   };
 
   const hintId = useId();
+  const rtl = useUiRtl();
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
     externalValue: state.markdown,
@@ -64,6 +66,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     getRefContext: () => refContextRef.current,
     ariaLabel: state.labels.markdownEditor,
     ariaDescribedBy: hintId,
+    rtl,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),

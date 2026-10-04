@@ -29,6 +29,7 @@ import {
 import { NestedGroup } from '../../../controls';
 import { lineHeightFieldValue, lineHeightFromField } from './lineHeight';
 import { PlaceholderPicker } from './PlaceholderPicker';
+import { useRightToLeftFlow } from '../../settings/flowSides';
 import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields';
 import {
   type SlotKind,
@@ -72,6 +73,8 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
   const labels = useSandboxLabels();
   const [showPicker, setShowPicker] = useState(false);
 
+  const rtlBook = useRightToLeftFlow();
+  const logicalAlign = rtlBook || raw.direction !== undefined || raw.align === 'start' || raw.align === 'end';
   const update = (partial: Partial<DesignTextElement>) => {
     onChange({ ...raw, ...partial });
   };
@@ -246,14 +249,47 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         />
       )}
       <SelectInput
+        label={labels.headerFooterElementTextDirection}
+        value={raw.direction ?? 'document'}
+        options={[
+          { value: 'document', label: labels.headerFooterElementTextDirectionDocument },
+          { value: 'ltr', label: labels.documentDirectionLtr },
+          { value: 'rtl', label: labels.documentDirectionRtl },
+          { value: 'auto', label: labels.headerFooterElementTextDirectionAuto },
+        ]}
+        onChange={(v) => {
+          const next: DesignTextElement = { ...raw };
+          if (v === 'ltr' || v === 'rtl' || v === 'auto') next.direction = v;
+          else delete next.direction;
+          onChange(next);
+        }}
+        tooltip={labels.headerFooterElementTextDirectionTooltip}
+        isDefault={raw.direction === undefined}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.direction;
+          onChange(next);
+        }}
+      />
+      <SelectInput
         label={labels.headerFooterElementTextAlign}
         value={resolved.align}
-        variant="segmented"
+        // Start and end (the sides the text's direction reads from and to)
+        // join the sheet's sides when they can differ from left and right:
+        // a right-to-left book, an element with its own direction, or one
+        // already set so. The list then drops its icons for room.
+        variant={logicalAlign ? undefined : 'segmented'}
         options={[
           { value: 'left', label: labels.headerFooterElementAlignLeft, icon: <AlignLeft size={13} /> },
           { value: 'center', label: labels.headerFooterElementAlignCenter, icon: <AlignCenter size={13} /> },
           { value: 'right', label: labels.headerFooterElementAlignRight, icon: <AlignRight size={13} /> },
           { value: 'justify', label: labels.headerFooterElementAlignJustify, icon: <AlignJustify size={13} /> },
+          ...(logicalAlign
+            ? [
+                { value: 'start', label: labels.headerFooterElementAlignStart },
+                { value: 'end', label: labels.headerFooterElementAlignEnd },
+              ]
+            : []),
         ]}
         onChange={(v) => update({ align: v as DesignTextAlign })}
         tooltip={labels.headerFooterElementTextAlignTooltip}

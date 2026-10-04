@@ -1,4 +1,5 @@
 import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
+import { lineTextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -7,10 +8,13 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { lineInkExtent, lineTrailingTracking } from '../lineInk';
 import { fillFlowText, verticalPaintActive } from './verticalText';
+import { counterFlipBox } from './mirrorFrame';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { fillSegmentWord, type WordRun } from './wordRuns';
+import { joiningScriptIn } from '../measure/joining';
 
 function pickSegmentFont(
   bold: boolean,
@@ -75,15 +79,19 @@ function renderMathRender(
   const sx = widthPx / viewBox.width;
   const sy = heightPx / viewBox.height;
   const path2ds = getMathPaths(render);
-  ctx.save();
-  ctx.translate(topLeftX, topLeftY);
-  ctx.scale(sx, sy);
-  ctx.translate(-viewBox.minX, -viewBox.minY);
-  for (let i = 0; i < paths.length; i++) {
-    ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
-    ctx.fill(path2ds[i]!);
-  }
-  ctx.restore();
+  // Paths are not a run or a picture the mirrored frame turns back on its
+  // own (see `mirrorFrame.ts`): the formula asks for it.
+  counterFlipBox(ctx, topLeftX, widthPx, () => {
+    ctx.save();
+    ctx.translate(topLeftX, topLeftY);
+    ctx.scale(sx, sy);
+    ctx.translate(-viewBox.minX, -viewBox.minY);
+    for (let i = 0; i < paths.length; i++) {
+      ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
+      ctx.fill(path2ds[i]!);
+    }
+    ctx.restore();
+  });
 }
 
 function renderMathSegment(
@@ -117,6 +125,12 @@ interface BlockTextStyle {
  * redundant state changes (segments overwhelmingly share styling). `cjk`:
  * the line may hold CJK text, whose marks that meet are painted apart
  * (`fillWordsText`); without it, each segment is one `fillText`.
+ * `tracking` is the context's `letterSpacing` on entry: a word of a joining
+ * script is painted without it, and a word set in several styles is painted
+ * as one shaped word (see `fillSegmentWord`). `order`: the order to advance
+ * through the segments in (`VDTLine.order`, a line holding right-to-left
+ * text), each right-to-left one painted as a right-to-left run; the spaces
+ * go with their words, so justification is unchanged.
  */
 function renderSegments(
   ctx: CanvasRenderingContext2D,
@@ -126,11 +140,21 @@ function renderSegments(
   style: BlockTextStyle,
   justifiedSpaceWidth: number | undefined,
   cjk: boolean,
+  tracking = 0,
+  order?: readonly number[],
 ): void {
   let x = startX;
   let currentFont = '';
   let currentFill = '';
-  for (const seg of segments) {
+  const paint = cjk
+    ? (text: string, px: number, py: number): void => fillWordsText(ctx, text, px, py)
+    : (text: string, px: number, py: number): void => ctx.fillText(text, px, py);
+  const runStyle = (run: WordRun): { font: string; fill: string } => ({
+    font: pickSegmentFont(!!run.bold, !!run.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont),
+    fill: pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor),
+  });
+  for (let k = 0; k < segments.length; k++) {
+    const seg = segments[order ? order[k]! : k]!;
     if (seg.kind === 'space') {
       x += justifiedSpaceWidth ?? seg.width;
       continue;
@@ -171,8 +195,7 @@ function renderSegments(
       ctx.fillStyle = fill;
       currentFill = fill;
     }
-    if (cjk) fillWordsText(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0));
-    else ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
+    fillSegmentWord(ctx, seg, x, baseline + (seg.baselineShift ?? 0), tracking, paint, runStyle);
     x += seg.width;
   }
 }
@@ -183,7 +206,7 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined;
 }
 
 /**
@@ -313,10 +336,21 @@ function renderLine(
   const cjk = tocEntry || hasCJK(line.text);
   ctx.textBaseline = 'alphabetic';
 
+  // A line whose block runs against its frame (a right-to-left paragraph on
+  // a left-to-right page) carries its span (`measure`): it is justified
+  // across it and set ragged from its start side, the right.
+  const span = line.measure;
+  const lineX = span ? span.x : line.bbox.x;
+  const align = lineTextAlign(line, textAlign);
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
-  const lineIndent = line.bbox.x - columnX;
-  const effectiveWidth = columnWidth - lineIndent;
+  const lineIndent = lineX - columnX;
+  const effectiveWidth = span ? span.width : columnWidth - lineIndent;
   const segments = line.segments;
+  // Right-to-left runs on the line: painted in `order`, never as one text.
+  // A line with none (a Latin line of a mirrored page, whose `order` only
+  // turns the flow around) reads the same painted as one text.
+  const order = segments && line.order?.length === segments.length ? line.order : undefined;
+  const directed = segments?.some((s) => s.rtl) ?? false;
 
   // Justified rendering with per-segment spacing. Last lines render ragged at
   // natural width — except when overfull: Knuth-Plass may accept a final line
@@ -334,7 +368,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, cjk);
+      renderSegments(ctx, segments, lineX, line.baseline, style, justifiedSpaceWidth, cjk, tracking, order);
       return;
     }
   }
@@ -343,28 +377,29 @@ function renderLine(
   // set ragged from the left. Distribute the remaining space. The tracking
   // after the last glyph (`trailing`) is advance, not ink: left out, so the
   // letters are centred or end on the edge (EF-153).
-  if ((textAlign === 'center' || textAlign === 'right') && segments) {
+  if ((align === 'center' || align === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
-    const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk);
+    const startX = lineX + (align === 'center' ? slack / 2 : slack);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk, tracking, order);
     return;
   }
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref/own font or colour); otherwise one fillText
-  // paints the line.
-  if (segments && segments.some(segmentIsStyled)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, cjk);
+  // block (bold/italic/math/ref/own font or colour), or when a tracked line
+  // holds a word of a joining script, which is painted untracked; otherwise
+  // one fillText paints the line.
+  if (segments && (directed || segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
+    renderSegments(ctx, segments, lineX, line.baseline, style, undefined, cjk, tracking, order);
     return;
   }
 
   ctx.font = style.font;
   ctx.fillStyle = style.color;
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
-  const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
+  const plainX = lineX + (align === 'right' ? plainSlack : align === 'center' ? plainSlack / 2 : 0);
   if (cjk) fillWordsText(ctx, line.text, plainX, line.baseline);
   else ctx.fillText(line.text, plainX, line.baseline);
 }

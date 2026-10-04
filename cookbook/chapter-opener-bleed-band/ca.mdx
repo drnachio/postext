@@ -1,0 +1,98 @@
+---
+title: "Obertura de capítol sobre banda a sang"
+summary: "Obertura advancedDesign del títol de nivell 1: banda a sang amb el número de capítol sobre el filet, i avanttítol i entradeta presos dels seus atributs."
+plain: "Les pàgines d'inici de capítol d'un llibre de geologia. Una franja de color amb un número gran arriba fins a la vora superior, i el disseny es defineix una sola vegada per a tots els capítols."
+description: "Obertura de capítol de manual a Postext: banda a sang, número de 168 pt, avanttítol i entradeta del mateix títol i un estil que reacoloreix el capítol 4."
+question: "Com faig una obertura de capítol amb banda de color a sang, un número gran i el títol en dues línies?"
+aliases: ["obertura de capítol", "banda de color", "número de capítol gran", "número de capítol", "entradeta", "avanttítol", "llibre de text", "colors per capítol", "osca", "pestanya"]
+pageNotes: { "1": "Una banda terracota ocupa la part alta de la pàgina amb l'avanttítol «Capítol 3 · Tectònica de plaques», el títol «L'escorça inquieta» en dues línies, una entradeta en cursiva i un 3 blanc recolzat en el filet fosc de la banda; al peu de la pàgina, un tall d'una placa que s'enfonsa.", "3": "El capítol 4, «Foc des de baix», s'obre amb el mateix disseny en verd blavós.", "4": "El capítol 4 es tanca amb les preguntes de repàs, el colofó i, a tot l'ample del peu de la pàgina, un tall en verd blavós d'un volcà en escut i un estratovolcà." }
+---
+
+## Què compondràs
+
+Les obertures de capítol de *La Terra en moviment*, un manual d'introducció a la geologia en pàgina de 210 × 280 mm. El capítol 3 s'obre sota una banda terracota a sang per dalt. Hi van un avanttítol espaiat, el títol partit on va voler l'autor, una entradeta en cursiva i un número de 168 punts recolzat en el filet fosc de la banda, al costat de la vora exterior. A sota arrenquen dues columnes justificades, i el tall d'una placa que s'enfonsa ocupa el peu de la pàgina. El capítol 4 repeteix el disseny en verd blavós, inclosos l'osca, els números de secció, les remissions i l'etiqueta de la seva figura. El disseny es defineix una vegada, al títol de nivell 1. Cada capítol posa com a atributs a la seva línia de títol el tema de l'avanttítol, l'entradeta i, si canvia de color, un estil.
+
+## Elaboració
+
+### 1 · Penja la banda i el número de la pàgina
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. La banda i el seu filet pengen de la cantonada superior esquerra de la sang. Com tota caixa o filet sense amplada pròpia, s'estiren fins a l'altra vora d'aquest marc, de manera que arriben al tall, i a la sang tan bon punt `BLEED` passa de 0. El número penja de la cantonada superior dreta de la pàgina: `y: BAND - 0.8 * NUMERAL * PT` recolza la seva línia de base en el filet, i `BEARING` desplaça la seva caixa 2 mm cap a la vora de la pàgina per compensar el marge lateral de la xifra, de manera que la tinta queda més o menys arran del text. L'avanttítol penja del contenidor. El títol penja sota l'avanttítol i l'entradeta sota el títol, amb ancoratges `below` i `overflow: 'wrap'`, així que un títol més llarg empeny l'entradeta cap avall. L'entradeta és un element de text que pren el contingut de l'atribut `lead` del títol; una línia d'autor en seria un altre, `{attr.author}`, encadenat de la mateixa manera. `minHeight: BAND - TOP + AIR` fixa on comença el text. La caixa del número baixa 0,2 vegades el seu cos (11,9 mm) per sota del filet, i una obertura reserva lloc fins al seu element més baix, així que `AIR` ha de mesurar com a mínim 11,9 mm; amb menys, seria la caixa del número la que marcaria on comença el text.
+
+### 2 · Dona la pàgina al títol de capítol
+
+<Excerpt region="levels" />
+
+`span: 'page'` obre cada capítol en una pàgina nova i estén el títol de primer nivell sobre les dues columnes; després el dibuixa `advancedDesign`, de manera que el text del títol queda ocult i el cos comença sota l'alçada reservada. Tot sol, `span` pren la pàgina següent, sigui parella o senar, i qualsevol objecte `headings` desactiva el salt a pàgina senar que el nivell 1 porta per defecte. Per això el salt es torna a declarar amb `parity: 'odd'`, que porta cada obertura a una pàgina senar, on la vora dreta a la qual s'ancora el número és l'exterior. Al nivell 2, `numberingTemplate: '{1}.{2}'` numera les seccions 3.1, 3.2… en el color de la banda; un nivell 3 amb `'{1}.{2}.{3}'` continuaria amb 3.1.1.
+
+### 3 · Anomena una sola vegada el color del capítol
+
+<Excerpt region="palette" />
+
+Cada color de la configuració enllaça amb una d'aquestes entrades. Els valors per defecte del motor enllacen amb `main-color`, així que, en apuntar aquesta entrada al color de la banda, canvien també els que la configuració no fixa. El títol del capítol 4, `# Fuego \\ desde abajo {style="teal" topic="Volcanes" lead="…"}`, tria l'estil, que canvia `band` fins al títol de nivell 1 següent. Les ranures de disseny segueixen el canvi a través del seu enllaç amb la paleta, i es repinten els colors de text iguals al `band` de base, de manera que a <PageRef page={3}>les pàgines 43 i 44</PageRef> es tornen verd blavós l'osca, els números de secció i de llista, les remissions, l'etiqueta «Figura 4.1» i el foli al peu. La mateixa línia omple `{attr.topic}` i `{attr.lead}`, i la seva `\\` parteix `{titleText}` on vol l'autor ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament), [salts de línia als títols](/ca/docs/document-format#salts-de-línia-als-títols)).
+
+### 4 · Deixa que la primera cita col·loqui cada figura
+
+<Excerpt region="figure" />
+
+Un `:ref` numera la seva figura i la col·loca al primer buit lliure a partir del paràgraf que la cita. La figura 3.1 és `auto`. Es cita a l'obertura quan les dues columnes encara tenen lloc, així que ocupa el peu d'aquesta pàgina; com a flotant `top` hauria obert la pàgina 42, perquè un flotant mai no puja per damunt de la seva referència. La figura 4.1 es cita a la part baixa de la segona columna de la pàgina 43, on ja no hi cap una banda a tot l'ample, i `bottom` l'envia a la pàgina 44. És l'última pàgina del capítol, i en una última pàgina el motor puja els flotants del peu fins a deixar-los just sota les últimes línies de text, sense buit a sobre.
+
+### 5 · Capçaleres, una osca i un foli al peu
+
+<Excerpt region="heads" />
+
+Cada element de la capçalera penja d'una cantonada superior de la pàgina i es filtra per `parity`, de manera que el foli i l'osca queden sempre a la vora exterior. La caixa de l'osca penja de la cantonada del sagnat i s'eixampla amb `BLEED`, perquè continuï a sang més enllà del tall. `pages: 'body'` aparta tots aquests elements de les obertures, que porten en lloc seu un foli al peu definit a `footer`. La pàgina parella porta el títol del capítol, `{chapterTitle}`, en una sola línia, perquè la `\\` només parteix el títol a l'obertura. Els llibres de text solen portar la secció a la senar. Postext 1.4.1 no té marcador per a la secció, així que la capçalera senar porta el títol del llibre, `{title}`; en aquestes quatre pàgines no s'arriba a veure, perquè les dues senars són obertures.
+
+### 6 · Comença el llibre al capítol 3
+
+<Excerpt region="build" />
+
+Aquestes pàgines són els capítols 3 i 4 d'un llibre més llarg, així que `buildDocument` rep una `continuation` amb els comptadors tal com els van deixar els capítols 1 i 2. Amb `h1: 2` als seus `headings`, el `#` següent és el capítol 3: `{chapterNumber}` imprimeix 3, les seccions es numeren des de 3.1 i la primera figura passa a ser la 3.1. `pageNumbering.startAt: 41` fa que els folis comencin al 41. La primera pàgina continua sent senar sigui quin sigui el seu foli, perquè la paritat es compta sobre la pàgina física i `pageIndexOffset` es queda en 0; el primer foli, 41, és senar perquè hi concordi.
+
+## Variants
+
+### Fes la banda més alta
+
+`BAND` fixa l'alçada de la banda, la posició del número i l'espai reservat sobre el text. Amb una banda més alta, part del text passa a la pàgina següent, així que hauràs d'ajustar cada capítol (mira l'últim error freqüent) o deixar que els capítols vagin seguits.
+
+```diff
+-const BAND = 100; // mm from the trim to the foot of the band
++const BAND = 128; // mm from the trim to the foot of the band
+```
+
+### Imprimeix amb sang
+
+Amb 3 mm de sang, la banda, el seu filet i l'osca sobrepassen el tall en 3 mm, el número continua recolzat en el filet i `page.cutLines` s'activa amb el mateix valor.
+
+```diff
+-const BLEED = 0; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
++const BLEED = 3; // mm: 0 on screen; about 3 for print, which also switches on page.cutLines
+```
+
+### Afegeix un color per a un altre capítol
+
+Cada color de capítol és una entrada més a la paleta i un estil més; escriu `{style="slate"}` al títol d'aquest capítol.
+
+```diff
+   band2: '#2e6f73', // the second chapter colour, a teal; the sea in Figure 3.1
++  band3: '#3d4f6b', // a third chapter colour, a slate blue
+@@
+-const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } }];
++const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } },
++  { id: 'slate', palette: { band: palette.band3 } }];
+```
+
+### Deixa que els capítols vagin seguits
+
+Amb `'any'` cada capítol comença a la pàgina següent. Després d'un capítol que acaba en senar, el següent comença a la parella, sense pàgina en blanc al davant, i el seu número queda al costat del llom, perquè penja de la vora dreta de la pàgina. Aquestes pàgines queden igual, ja que el capítol 3 acaba en una parella.
+
+```diff
+-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
++      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
+```
+
+## Errors freqüents
+
+- La banda té una alçada fixa, mentre que l'avanttítol, el títol i l'entradeta pengen del marge superior i creixen cap avall, així que una entradeta més llarga o un títol de tres línies xoquen amb el filet. Limita les entradetes a unes cinc línies, com a les dues edicions, o calcula `BAND` a partir de l'obertura més llarga.
+- La fórmula de la `y` del número dona per fet `lineHeight: 1`. La línia de base d'un text de disseny és al 80 % de l'alçada de la seva caixa de línia, i `0.8 * NUMERAL` només mesura aquesta distància quan la caixa és tan alta com el cos. Si canvies l'interlineat o l'ancoratge, canvia també la fórmula. `BEARING` s'ajusta a ull, perquè cada xifra té el seu propi marge lateral (aquí el 3 i el 4 acaben a 0,8 mm l'un de l'altre).
+- La paleta d'un estil reacoloreix els elements de disseny i el text. Una imatge conserva els colors amb què es va dibuixar: la figura 4.1 és verd blavós perquè el codi la dibuixa a partir de `band2`, i una figura terracota col·locada al capítol 4 continuaria sent terracota.
+- Amb `parity: 'odd'`, un capítol que es passa unes línies de la seva última pàgina deixa una pàgina gairebé buida i una parella en blanc abans de l'obertura següent, i postext 1.4.1 compon aquesta pàgina amb una columna més curta que el seu text, així que es perd l'última línia del capítol. Ajusta el text, com fan aquí les dues edicions, i revisa l'última pàgina de cada capítol sempre que canviïn el text o `BAND`.

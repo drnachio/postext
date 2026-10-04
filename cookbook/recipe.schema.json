@@ -111,6 +111,7 @@
           "canvas",
           "html",
           "pdf",
+          "epub",
           "bundle",
           "live"
         ]
@@ -250,7 +251,9 @@
           "viewer",
           "pdf",
           "images",
-          "cjk"
+          "cjk",
+          "arabic",
+          "book"
         ]
       },
       "minItems": 3,
@@ -493,7 +496,12 @@
         "tilt": {
           "type": "number",
           "minimum": 0,
-          "maximum": 40
+          "maximum": 70
+        },
+        "yaw": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
         },
         "paper": {
           "type": "object",
@@ -779,7 +787,15 @@
           "type": "string",
           "minLength": 1
         },
+        "ca": {
+          "type": "string",
+          "minLength": 1
+        },
         "zh": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ar": {
           "type": "string",
           "minLength": 1
         }

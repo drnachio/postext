@@ -4,6 +4,7 @@ import {
   DEFAULT_TEXT_ELEMENT,
   defaultCjkEmphasis,
   loadVerticalAlternates,
+  localeScript,
   unregisterVerticalAlternates,
   primaryFontFamily,
   resolveBodyTextConfig,
@@ -278,17 +279,42 @@ export function getConfigFontSpecs(config: PostextConfig): string[] {
 }
 
 /**
+ * The characters a face must have loaded before a build measures with it,
+ * for `document.fonts.check/load`. A Google family comes as one file per
+ * script (`latin`, `arabic`… each with its `unicode-range`), and the
+ * browser fetches a file only when text needs it: checked with a space
+ * alone, an Arabic book would pass with only the Latin file in, measure its
+ * first build with a fallback face, and lay out again when the Arabic file
+ * lands. A document in a language written in the Arabic script asks for an
+ * Arabic letter and digit too. (Chinese faces come in about a hundred
+ * slices, fetched as the text needs them; the `loadingdone` rebuild covers
+ * those.)
+ */
+export function configFontSampleText(config: PostextConfig): string {
+  const tag = config.locale ?? config.bodyText?.hyphenation?.locale;
+  return tag !== undefined && localeScript(tag) === 'Arab' ? ' \u0628\u0661' : ' ';
+}
+
+/** The specs of `getConfigFontSpecs` not loaded yet for the document's
+ *  text (`configFontSampleText`). */
+export function missingConfigFontSpecs(config: PostextConfig): string[] {
+  if (typeof document === 'undefined' || !document.fonts) return [];
+  const text = configFontSampleText(config);
+  return getConfigFontSpecs(config).filter((s) => !document.fonts.check(s, text));
+}
+
+/**
  * Ensure every face the given config will render is actually available to
  * `CanvasRenderingContext2D.measureText`. Resolves once all faces pass
  * `document.fonts.check`, or after the timeout. Safe to call repeatedly.
  */
 export function ensureConfigFontsLoaded(config: PostextConfig): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
-  const specs = getConfigFontSpecs(config);
-  const missing = specs.filter((s) => !document.fonts.check(s));
+  const missing = missingConfigFontSpecs(config);
   if (missing.length === 0) return Promise.resolve();
+  const text = configFontSampleText(config);
   return Promise.race([
-    Promise.all(missing.map((s) => document.fonts.load(s).catch(() => []))).then(() => {}),
+    Promise.all(missing.map((s) => document.fonts.load(s, text).catch(() => []))).then(() => {}),
     new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
   ]);
 }
@@ -677,6 +703,8 @@ export function hasLatinEmphasis(blocks: readonly ContentBlock[]): boolean {
  * document), `*…*` puts dots under Chinese characters and keeps the
  * italics of the rest: the body family is asked for its italics only when
  * `doc` does not say the text holds no Latin letter or digit in emphasis.
+ * Where `bodyText.emphasis` sets `*…*` in bold, a colour or an overline
+ * (an Arabic document's default), the body family is asked for no italics.
  */
 export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
@@ -714,7 +742,10 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
   if (typeof body === 'string' && body.trim()) {
     const emphasis = config.cjk?.emphasis ?? 'auto';
     const dots = emphasis === 'dots' || (emphasis === 'auto' && defaultCjkEmphasis(config.locale) === 'dots');
-    const italics = !dots || doc?.latinEmphasis !== false;
+    // `bodyText.emphasis` other than italics (bold, as Arabic documents set
+    // it by default; a colour; an overline) sets `*…*` upright.
+    const slanted = resolveBodyTextConfig(config.bodyText, config.locale).emphasis === undefined;
+    const italics = slanted && (!dots || doc?.latinEmphasis !== false);
     for (const v of STANDARD_VARIANTS) if (italics || v.style !== 'italic') add(primaryFontFamily(body), v);
   }
   return usage;

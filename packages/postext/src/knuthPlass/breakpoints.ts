@@ -204,6 +204,8 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
     }
     if (item.type === 'box') {
       sumWidth += item.width;
+      // An Arabic word's kashidas (absent on every other box).
+      if (item.stretch !== undefined) sumStretch += item.stretch;
       if (trackingPerChar > 0) {
         sumChars += item.chars ?? 0;
         if (item.noTracking) sumNoTracking++;

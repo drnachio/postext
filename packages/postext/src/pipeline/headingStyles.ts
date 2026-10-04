@@ -63,6 +63,49 @@ export function headingMarksFor(blocks: ContentBlock[], resolved: ResolvedConfig
   return out;
 }
 
+/** Memo of {@link numberTitlesFor}: per parsed array, per the heading
+ *  settings it reads (a new resolved config every pass keeps the array). */
+const numberTitlesMemo = new WeakMap<readonly ContentBlock[], Map<string, ContentBlock[]>>();
+
+/**
+ * The parsed blocks with the title of every heading whose number stands
+ * for it (`numberPosition: 'replace'`, on the heading's level or style)
+ * emptied and the heading flagged `numberIsTitle`: the layout prints the
+ * generated number alone, with no separator, and the outline lists it as
+ * the title. Only numbered headings with a template; the source title of
+ * the others stays. `blocks` itself when no heading is concerned; memoised
+ * on the parsed array and the configuration.
+ */
+export function numberTitlesFor(blocks: ContentBlock[], resolved: ResolvedConfig): ContentBlock[] {
+  const replaces = resolved.headings.levels.some((l) => l.numberPosition === 'replace')
+    || resolved.headingStyles.some((s) => s.overrides.numberPosition === 'replace');
+  if (!replaces) return blocks;
+  const key = [
+    ...resolved.headings.levels.map((l) => `${l.level}:${l.numberPosition ?? ''}:${l.numberingTemplate}`),
+    ...resolved.headingStyles.map((st) => `${st.id}:${st.overrides.numberPosition ?? ''}:${st.numberingTemplate ?? '\u0000'}:${st.numbered}`),
+  ].join('\n');
+  let memo = numberTitlesMemo.get(blocks);
+  if (!memo) numberTitlesMemo.set(blocks, (memo = new Map()));
+  const known = memo.get(key);
+  if (known) return known;
+  let changed = false;
+  const out = blocks.map((b) => {
+    if (b.type !== 'heading' || !b.level || !headingIsNumbered(b, resolved)) return b;
+    const style = headingStyleOf(b, resolved);
+    const level = resolved.headings.levels.find((l) => l.level === b.level);
+    const position = style?.overrides.numberPosition ?? level?.numberPosition;
+    const template = style?.numberingTemplate ?? level?.numberingTemplate ?? '';
+    if (position !== 'replace' || template === '') return b;
+    changed = true;
+    const next: ContentBlock = { ...b, text: '', spans: [], sourceMap: [], numberIsTitle: true };
+    delete next.titleBreaks;
+    return next;
+  });
+  const result = changed ? out : blocks;
+  memo.set(key, result);
+  return result;
+}
+
 /** Whether a heading block advances the numbering counters. */
 export function headingIsNumbered(block: ContentBlock, resolved: ResolvedConfig): boolean {
   return headingStyleOf(block, resolved)?.numbered ?? true;

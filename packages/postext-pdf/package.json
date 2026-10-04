@@ -40,8 +40,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
-    "dev": "tsc --watch",
+    "build": "rm -rf dist && tsc && node scripts/copy-harfbuzz.mjs",
+    "dev": "node scripts/copy-harfbuzz.mjs && tsc --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
@@ -60,6 +60,7 @@
     "@postext/typescript-config": "workspace:*",
     "@types/node": "^26.5.0",
     "eslint": "^9.39.4",
+    "harfbuzzjs": "1.6.2",
     "postext": "workspace:*",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0",

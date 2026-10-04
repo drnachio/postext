@@ -1,0 +1,63 @@
+---
+title: "Un dictamen jurídic citat en OSCOLA"
+summary: "Un comentari de sentència de quatre pàgines les cites del qual [@robinson2018, para 21] surten com a notes OSCOLA: casos en cursiva, cita neutra, ibid i (n 1)."
+plain: "Un comentari breu sobre una sentència anglesa relativa a la policia. Cada sentència, llei o article en què es basa es cita en una nota numerada a peu de pàgina, amb l'estil de les facultats de dret britàniques."
+description: "Un comentari de sentència amb Postext: sentències, lleis i articles citats en notes OSCOLA, amb localitzadors, ibid, remissions (n 1) i un CSL retocat."
+question: "Com cito sentències i lleis en notes a peu de pàgina amb l'estil OSCOLA?"
+aliases: ["OSCOLA", "cita jurídica", "revista jurídica", "comentari de sentència", "jurisprudència", "taula de sentències", "cita neutra", "repertoris", "ibid", "dret anglès", "common law"]
+pageNotes: { "1": "Pàgina 1: una banda bordeus sobre la meitat superior amb la línia de la revista, el nom del cas Robinson en cursiva gran, v Chief Constable of West Yorkshire Police i la cita [2018] UKSC 4, [2018] AC 736, i el títol Acció, omissió i policia; a sota, els fets del cas i les notes 1 i 2, la segona ibid [21].", "2": "Pàgina 2: la secció No existeix un «test de Caparo», amb les notes 3 a 9: Donoghue v Stevenson, Anns, Murphy i Caparo completes, un repertori australià entre parèntesis i Robinson (n 1) [26–27].", "3": "Pàgina 3: Actes i omissions, amb notes a Smith v Littlewoods, Stovin v Wise, Hill, Michael i dos articles de revista.", "4": "Pàgina 4: La via legal, amb la Human Rights Act 1998 citada per articles i ibid s 7, la Compensation Act 2006, el comentari final, un colofó petit i les notes 17 a 23." }
+---
+
+## Què compondràs
+
+Una separata de la sèrie de comentaris de sentència d'una revista jurídica: quatre pàgines sobre *Robinson v Chief Constable of West Yorkshire Police*, la sentència del Tribunal Suprem britànic del 2018 sobre quan la policia té un deure de diligència. La pàgina fa 162 × 240 mm, amb marges en mirall, en Libre Baskerville de 9,4/13,6 pt, i la primera s'obre amb una banda bordeus i el nom del cas en cursiva de 60 pt. L'autora escriu cada font com una clau amb el seu localitzador, `[@caparo1990, 617–18]`, i Postext compon 23 notes a peu de pàgina en OSCOLA, la norma de cita de les facultats de dret britàniques: casos en cursiva, lleis en rodona, sense punt després d'AC, HL o edn, *ibid* per a la font de la nota anterior i *Robinson (n 1) [55]* després. Les resolucions són reals; l'autora i la revista, no.
+
+## Elaboració
+
+### 1 · Una nota OSCOLA per a cada font
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. OSCOLA és un estil de notes: `[@robinson2018, para 21]` deixa un número volat després del punt i el seu text passa al peu. La nota 1 dona el cas complet, *Robinson v Chief Constable of West Yorkshire Police [2018] UKSC 4, [2018] AC 736*; la nota 2, que el torna a citar tot seguit, diu *ibid [21]*; la nota 8, amb altres casos pel mig, *Robinson (n 1) [26–27]*. Un article de revista jurídica cita només en notes, així que `bibliography.auto: false` deixa la llista d'obres fora de l'última pàgina. Les paraules de l'estil continuen en anglès en aquesta edició (`locale: 'en-GB'`), com en una traducció que conserva l'aparat original.
+
+### 2 · Un cas és una dada, escrita com la imprimeixen els repertoris
+
+Un cas és un element CSL de `type: legal_case`: el nom a `title`, el tribunal a `authority`, la sèrie del repertori a `container-title` i la primera pàgina a `page`. OSCOLA posa l'any d'un repertori entre claudàtors quan l'any identifica el volum, com als Appeal Cases, així que la recepta escriu aquest any a `volume`, seguit del número de volum: `volume: "[1990] 2"` dona *[1990] 2 AC 605 (HL)*. Un cas posterior al 2001 té a més cita neutra: `authority: UKSC`, `number: "4"` i `issued: 2018` donen *[2018] UKSC 4*, i darrere va el repertori. Una llei és `type: legislation`, amb l'any al títol i sense `issued`, perquè l'any no surti dues vegades, i `[@hra1998, § 6]` cita un article com a *s 6*.
+
+### 3 · Dos retocs a l'estil inclòs
+
+<Excerpt region="oscola" />
+
+L'`oscola.csl` inclòs posa entre claudàtors el paràgraf citat només a la primera nota d'un cas. Les següents imprimien *para 55* i *ibid 27*, i una segona nota a la mateixa llei perdia la *s*. El retoc canvia una macro i una línia de l'XML de l'estil abans de compondre i el passa com a estil propi, sense tocar el text ni les referències.
+
+### 4 · El nom del cas a la banda
+
+<Excerpt region="opener" />
+
+La banda baixa 124 mm des del tall. El nom del cas, les parts i la cita són atributs del títol, així que un altre comentari de la sèrie només canvia el seu Markdown. *Robinson* va en Libre Baskerville cursiva de 60 pt perquè OSCOLA posa en cursiva els noms dels casos, i la cita de sota continua en rodona, com a les notes.
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Fes servir l'estil tal com ve
+
+Per comparar amb la sortida sense retocar, fes servir l'identificador inclòs. Els paràgrafs de les notes següents sortiran com a *para 55*.
+
+```diff
+-  style: 'custom', customStyle: OSCOLA, // the bundled 'oscola', patched above
++  style: 'oscola',
+```
+
+### Aplega les notes al final
+
+Algunes revistes imprimeixen les notes després del text. Les cites conserven les formes completa i breu i el seu número.
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+## Errors freqüents
+
+- Un repertori el volum del qual és un número sol, `volume: "2"`, imprimeix l'any entre parèntesis, *(1990) 2 AC*, que OSCOLA reserva per a sèries numerades al llarg dels anys, com els Commonwealth Law Reports (nota 7). Als Appeal Cases i als Weekly Law Reports escriu l'any entre claudàtors dins de `volume`.
+- `s` davant d'un localitzador vol dir pàgina (la *Seite* alemanya), no article: escriu `§ 6`. Un apartat com `6(1)` no es llegeix com a localitzador; anomena'l a la frase i cita l'article.
+- OSCOLA no porta bibliografia en un article, i l'estil no separa taules de casos i de lleis. Una tesi que les necessiti obté de `:::bibliography` una sola llista ordenada, amb la doctrina primer i després casos i lleis barrejats.

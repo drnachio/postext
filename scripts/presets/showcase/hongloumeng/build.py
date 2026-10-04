@@ -1783,8 +1783,8 @@ def main() -> None:
     if out == OUT:
         # The shelf opens the zh-Hant edition, a right-bound book: its cover
         # carries the stitching on the right, and so does the shelf's spine.
-        # It stands last on the shelf, the eighth book (`shelfOrder`).
-        _common.register(PRESET_ID, {**meta, "binding": "right", "shelfOrder": 1})
+        # It stands last on the shelf, after ألف ليلة وليلة (`shelfOrder`).
+        _common.register(PRESET_ID, {**meta, "binding": "right", "shelfOrder": 2})
     print(f"wrote {out} ({_common.bundle_size(out):.1f} MB)")
 
 

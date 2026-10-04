@@ -46,7 +46,7 @@ const ITEM_LABELS: Record<ChineseDefaultId, keyof SandboxLabels> = {
 
 /** The book on screen: the project, or the preset and its language, and
  *  the load (a book opened again is another book). Undo belongs to it. */
-function bookKeyOf(s: SandboxState): string {
+export function bookKeyOf(s: SandboxState): string {
   return [s.activeProjectId ?? '', s.activePresetId, s.presetApplied?.locale ?? '', s.bookVersion].join('\u0000');
 }
 
@@ -283,7 +283,7 @@ export function ChineseDefaultsField() {
   );
 }
 
-function Choice({ label, children }: { label: string; children: (labelId: string) => ReactNode }) {
+export function Choice({ label, children }: { label: string; children: (labelId: string) => ReactNode }) {
   const labelId = useId();
   return (
     <div className="flex min-w-0 flex-col gap-1">
@@ -319,7 +319,7 @@ function ChangeRow({ change, labels, uiLocale, fromLang, toLang, onToggle }: {
       <label htmlFor={id} className="flex pt-large:min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center">
         <span className="text-xs leading-[1.3] text-(--foreground)">
           {String(labels[ITEM_LABELS[change.id]])}
-          {note && <span className="ml-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}
+          {note && <span className="ms-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}
         </span>
         <span id={`${id}-values`} className="text-[0.68rem] leading-[1.35] text-(--slate) [overflow-wrap:anywhere]">
           <span lang={valueLang(change.from, fromLang)}>{valueText(change.from, labels, uiLocale)}</span>

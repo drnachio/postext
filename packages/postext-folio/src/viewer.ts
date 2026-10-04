@@ -136,6 +136,10 @@ export interface FolioViewer {
   /** Eases the view back to the one the settings give (after the reader
    *  orbited it with a right-drag). */
   resetView(): void;
+  /** The view as it is seen now, in degrees: `tilt` from straight above,
+   *  `yaw` round the book (−180 … 180), ready to store as `folio.tilt` and
+   *  `folio.yaw`; null without the 3D book. */
+  getView(): { tilt: number; yaw: number } | null;
   /** Changes what the left button does. */
   setInteraction(mode: FolioInteraction): void;
   /** A page's canvas was drawn again in place: shows it again. */
@@ -371,7 +375,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       const tall = flipper ? 1 / Math.max(0.7, Math.cos((resolveFolioConfig(appearance.folio).tilt * Math.PI) / 180)) : 1;
       deviceWidth = fitWidth(Math.min(availW / 2, availH > 0 ? availH * tall * ar : Infinity));
       left = Math.floor((boxW - 2 * deviceWidth) / 2);
-      top = Math.max(0, Math.floor((boxH - Math.round(deviceWidth / ar)) / 2));
+      // Centred even when the tilted book's spread is taller than the box
+      // (it overflows both edges): the camera centres the book on it.
+      top = Math.floor((boxH - Math.round(deviceWidth / ar)) / 2);
     }
     const deviceHeight = Math.max(1, Math.round(deviceWidth / ar));
     Object.assign(spreadEl.style, {
@@ -752,13 +758,14 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       const page = pageInSlot(hit.side);
       return page === null || page === undefined ? null : { page, x: hit.x, y: hit.y };
     }
-    // The DOM spread: its pages, as laid out (a right-bound book's in
-    // reverse order).
+    // The DOM spread: its pages in slot order (`render`), whatever side
+    // the layout puts them on (a right-bound book runs right to left, so
+    // its verso stands on the right); each is found by its own box.
     const els = [...spreadEl.children] as HTMLElement[];
     for (let k = 0; k < els.length; k++) {
       const r = els[k].getBoundingClientRect();
       if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) continue;
-      const side = (els.length === 1 ? 1 : rtl() ? 1 - k : k) as 0 | 1;
+      const side = (els.length === 1 ? 1 : k) as 0 | 1;
       const page = els.length === 1 ? pageInSlot(0) : pageInSlot(side);
       if (page === null || page === undefined) return null;
       return { page, x: (event.clientX - r.left) / r.width, y: (event.clientY - r.top) / r.height };
@@ -774,7 +781,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     const side = found as 0 | 1;
     if (flipper) return flipper.screenPoint(side, point.x, point.y);
     const els = [...spreadEl.children] as HTMLElement[];
-    const el = els.length === 1 ? els[0] : els[rtl() ? 1 - side : side];
+    const el = els.length === 1 ? els[0] : els[side];
     if (!el) return null;
     const r = el.getBoundingClientRect();
     return { x: r.left + point.x * r.width, y: r.top + point.y * r.height };
@@ -818,6 +825,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     },
     resetView() {
       flipper?.resetOrbit();
+    },
+    getView() {
+      return flipper?.view() ?? null;
     },
     setInteraction(next) {
       if (next === interaction) return;

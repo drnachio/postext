@@ -1,0 +1,75 @@
+---
+title: "Llistats de codi i tecles sense blocs de codi"
+summary: "Guia del terminal amb blocs de codi que passen a ser requadres foscos abans de compondre, amb la negreta i la cursiva com a colors i les tecles com a xips."
+plain: "Tres pàgines d'una guia per començar amb la línia d'ordres de l'ordinador. Ensenya a convertir els exemples de codi en requadres foscos de colors i a dibuixar tecles com Ctrl com a botonets dins del text."
+description: "Llistats de codi i tecles a Postext: els blocs entre accents greus es reescriuen com a requadres foscos que entren al marge, i Ctrl o Tab són xips."
+question: "Com mostro llistats de codi i dreceres de teclat si no hi ha blocs de codi?"
+aliases: ["bloc de codi", "codi font", "sessió de terminal", "sortida del terminal", "monoespaiada", "acolorir el codi", "drecera de teclat", "tecla", "xuleta", "codi en línia"]
+pageNotes: { "1": "L'obertura del capítol 4: un avanttítol petit en ambre, CAPÍTULO 4; el títol «Piezas que encajan» en una lletra de pal sec molt gruixuda; una entradeta en cursiva i dos paràgrafs justificats amb els noms de les ordres en lletra monoespaiada i una tecla Intro, al costat d'una nota al marge, El indicador, sota un filet ambre. A sota, un requadre gairebé negre amb la pestanya Terminal va de la columna de text al marge exterior: les ordres que es teclegen, en negreta ambre després del signe del dòlar, i les respostes de l'intèrpret, en gris clar. El paràgraf que segueix el requadre comença sense sagnat.", "2": "La secció «Cuando una orden no termina»: una nota En un Mac al marge exterior, al costat del títol; Ctrl, C, Tab i la fletxa amunt, dibuixades com a tecles petites amb contorn dins de les línies justificades, i quatre passos numerats en ambre amb un separador › gris. Al peu, un requadre gairebé negre, «Chuleta · bash y zsh», travessa el text i el marge i aparella en dues columnes les tecles Ctrl i una lletra amb el que fan.", "3": "La secció «Un guion para guardar»: un requadre gairebé negre sota una pestanya copia.sh retolada en verd, amb les paraules clau en negreta ambre, les cadenes en cursiva verda i els comentaris en gris; després, dos paràgrafs sobre el guió al costat d'una nota Modo archivo, el paràgraf de tancament i el colofó al marge." }
+---
+
+## Què compondràs
+
+Tres pàgines del capítol 4 de *La terminal, con calma*, una guia de butxaca inventada sobre la línia d'ordres, en format de 178 × 229 mm. El text va justificat en Charis SIL, en una columna de 100 mm, amb una columna lateral exterior per a les notes. Cada llistat és un requadre gairebé negre en JetBrains Mono que entra en aquesta columna, sota una pestanya amb el nom del fitxer o de la sessió. Les paraules clau i les ordres que tecleges surten en ambre, les cadenes en verd i els comentaris en gris. Ctrl, Tab i les altres tecles es dibuixen dins de les línies justificades, i una xuleta de dreceres amb Ctrl, a dues columnes, ocupa el peu de la pàgina 50. El Markdown conserva els blocs de codi de sempre; una funció breu converteix cadascun en un requadre abans de compondre.
+
+## Elaboració
+
+### 1 · Converteix cada bloc en un requadre abans de compondre
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. Postext 1.4.1 llegeix un bloc entre accents greus com a Markdown corrent: les línies es fonen en un sol paràgraf, cada parell de dòlars es converteix en una fórmula, un guió baix obre una cursiva i el comentari `# Copia cada carpeta…` passa a ser un títol de capítol. `listings()` reescriu cada bloc com un requadre `listing` amb un paràgraf per línia i una barra inversa davant de cada caràcter que el Markdown interpretaria. El sagnat el conserva el caràcter d'unió de paraules (U+2060) amb què comença cada línia. Sense aquest caràcter, l'analitzador retalla els espais de no separació, el cos del bucle de `copia.sh` perd el sagnat i desapareixen les dues línies en blanc del guió. El que segueix el llenguatge a la línia d'obertura (`copia.sh`, `Terminal`) s'imprimeix a la [pestanya del requadre](/ca/docs/configuration#estils-davís). El paràgraf que segueix un llistat va en `:::paragraphs{style="resume"}`, de manera que comença sense sagnat, com després d'un títol.
+
+### 2 · Deixa el text estret i que el codi travessi el marge
+
+<Excerpt region="page" />
+
+A 10 pt, Charis SIL compon uns 62 caràcters per línia a la columna de 100 mm. La columna lateral d'aquesta [disposició a columna i mitja](/ca/docs/configuration#tipus-de-disposició) només admet flotants i notes, així que el text no hi entra mai. El `span: 'page'` de l'estil del llistat (a la resposta curta) estén cada llistat per les dues columnes, 143 mm. Dins del seu marge interior, un requadre admet 73 caràcters de JetBrains Mono a 8,6 pt; la línia més llarga d'aquestes pàgines, la segona de `copia.sh`, en té 68.
+
+### 3 · Acoloreix el codi amb negreta i cursiva
+
+<Excerpt region="paint" />
+
+Postext no acoloreix la sintaxi, però cada requadre té el seu propi `boldColor` per a la negreta i el seu `italicColor` per a la cursiva, així que `paint()` posa en negreta les paraules clau (ambre) i en cursiva les cadenes entre cometes (verd). Els comentaris prenen un tercer color de `rem`, un estil de xip que imprimeix el text en gris amb la lletra monoespaiada, sense emplenament, contorn, marge interior ni separació. `KEYWORDS` aplega les paraules reservades de l'intèrpret i algunes ordres internes (`set`, `echo`, `cd`); els programes, com `mkdir` o `rsync`, queden en rodona. En un bloc `console`, `session()` posa en negreta el que tecleges després de l'indicador i deixa en rodona la resposta de l'intèrpret.
+
+### 4 · Compon les tecles i el codi en línia com a xips
+
+<Excerpt region="keycaps" />
+
+Postext treu els accents greus i compon el codi en línia amb la lletra del text ([format en línia](/ca/docs/document-format#format-en-línia)), així que `inlineCode()` converteix cada fragment en un xip `code`: la monoespaiada a 0,88 em, sense caixa. Les tecles són xips `key`, amb un emplenament clar i un contorn de 0,6 pt. El seu cos va en punts, de manera que fan 7,8 pt al text de 10 pt, a la nota del marge de 8,6 pt i a la xuleta de 8,4 pt; amb `em(0.78)`, les de la xuleta baixarien a 6,6 pt. Un xip no es parteix mai entre línies ni s'estira ([xips en línia](/ca/docs/document-format#xips-en-línia)), així que en una línia amb tecles tot el buit sobrant va als espais entre paraules. Amb `spacing`, l'algorisme de partició de línies cerca altres talls abans de deixar que un espai passi del 140 % de la seva amplada normal. Amb el valor per defecte, 200 %, cinc línies d'aquestes pàgines el superen; amb l'ajust, la més oberta arriba al 138 %.
+
+### 5 · Numera els passos sobre la retícula
+
+<Excerpt region="steps" />
+
+Els números van en Sora 800 amb el color d'accent, i el separador és un `›` monoespaiat en gris. Com que la seva lletra i el seu color no són els del número, el separador es dibuixa com un fragment propi ([llistes ordenades](/ca/docs/configuration#llistes-ordenades)). Els marges de la llista són zero, així que els passos continuen a la retícula de base de 14,5 pt del text que els envolta. Els 1,5 em per defecte obririen 5,3 mm sobre els passos i durien la xuleta a la pàgina 51.
+
+### 6 · Porta la xuleta al peu de la pàgina
+
+<Excerpt region="sheet" />
+
+La xuleta reutilitza l'estil del llistat, amb Sora per a les accions, i `placement: 'bottom'` la fa flotar fins al peu de la pàgina 50 ([requadres flotants](/ca/docs/configuration#el-contenidor-callout)). Dins del flux, un requadre que travessa la pàgina necessita lloc per a si mateix i per a dues línies de text a sota. Aquí saltaria a la pàgina 51 amb 58 mm buits sota els passos, i el capítol passaria a quatre pàgines. Al Markdown, `:::columns{count=2 breaks="8"}` obre la columna dreta al vuitè bloc, el seu títol. L'equilibrat tot sol talla per alçada, i quan una acció ocupa dues línies deixa *Órdenes e historial* al peu de la columna esquerra. Cada entrada comença pels mateixos dos xips, `Ctrl` i una lletra, tots dos en la monoespaiada, així que les accions arrenquen a la mateixa distància de la vora esquerra de la seva columna.
+
+## Variants
+
+### Penja la pestanya a la dreta
+
+La pestanya passa a la cantonada superior dreta del requadre, que en una pàgina senar queda sobre la columna lateral.
+
+```diff
+-    position: 'top-left' },
++    position: 'top-right' },
+```
+
+### Dona als comentaris el color de les cadenes
+
+Sense el xip `rem`, un comentari és una cursiva més i surt en el mateix verd que les cadenes.
+
+```diff
+-    else if (comment) out += `:chip[${chipText(comment)}]{style="rem"}`;
++    else if (comment) out += `*${escape(comment)}*`;
+```
+
+## Errors freqüents
+
+- Sagna els llistats amb espais. `codeLine()` converteix els espais inicials i les sèries d'espais en espais de no separació, mentre que un tabulador s'imprimeix com un espai corrent.
+- No passis de 73 caràcters en cap línia de codi. Una línia més llarga es parteix per un espai, i un comentari, que és un xip, no es parteix mai: baixa a una línia pròpia i surt de la vora del requadre.
+- Els escapaments de `codeLine()` també serveixen a la prosa. Un paràgraf que comença per un any, com `1998. Se inaugura el laboratorio`, es converteix en l'element 1998 d'una llista si no porta al davant un caràcter d'unió de paraules, i `\$40` impedeix que un preu obri una fórmula. Un diàleg que comença amb guió llarg no necessita escapament; un guionet i un espai obririen una llista.

@@ -38,7 +38,7 @@ import {
   setCharacterSpacing,
 } from 'pdf-lib';
 import { colorAlpha, hexToRgb, rgbToCmyk, rgbToGrayscale } from '../colors';
-import type { CjkRegion, ForcedOrientation, PdfColorSpace, RoundedOutline, VDTChip } from 'postext';
+import { joinsLetters, type CjkRegion, type ForcedOrientation, type PdfColorSpace, type RoundedOutline, type VDTChip } from 'postext';
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
@@ -73,6 +73,16 @@ export interface PageCtx {
    *  vertical painter reads it, since it sets its own spacing inside its
    *  text objects. */
   trackingPx?: number;
+  /** Set while a right-to-left page's flow paints through its mirror
+   *  (`VDTMirroredFlowFrame`, {@link mirrorMatrix}): every text object
+   *  and picture is turned back about its own box, so it reads as written
+   *  where the mirrored layout put it ({@link pushTextObject},
+   *  {@link counterFlipPx}). */
+  mirror?: boolean;
+  /** The advance (px) of the text {@link drawTextPx} is painting on a
+   *  mirrored page, for a painter that does not pass its own to
+   *  {@link pushTextObject}. */
+  runAdvancePx?: number;
 }
 
 /** What the vertical painter needs (see `verticalText.ts`): the Chinese
@@ -125,6 +135,33 @@ export function quarterTurnMatrix(
   return rot.direction === 'ccw'
     ? [0, 1, -1, 0, rot.originX * scale + pageHeightPt, pageHeightPt - rot.originY * scale]
     : [0, -1, 1, 0, rot.originX * scale - pageHeightPt, pageHeightPt - rot.originY * scale];
+}
+
+/** The matrix of a right-to-left page's flow (`VDTMirroredFlowFrame`,
+ *  `mirror.originX` px) in the backend's points: the flow turned over the
+ *  sheet's vertical axis, `x` → `originX − x`. */
+export function mirrorMatrix(originX: number, scale: number): PdfMatrix {
+  return [-1, 0, 0, 1, originX * scale, 0];
+}
+
+/** Paint what `paint` draws turned back about the horizontal extent
+ *  `[leftPx, leftPx + widthPx]` of the current frame, on a mirrored page
+ *  (`ctx.mirror`): a picture or a formula lands where the mirrored layout
+ *  put its box and reads unmirrored. Elsewhere it just paints. */
+export function counterFlipPx(ctx: PageCtx, leftPx: number, widthPx: number, paint: () => void): void {
+  if (!ctx.mirror) {
+    paint();
+    return;
+  }
+  const s = ctx.scale;
+  pushTransform(ctx, [-1, 0, 0, 1, (2 * leftPx + widthPx) * s, 0]);
+  ctx.mirror = false;
+  try {
+    paint();
+  } finally {
+    ctx.mirror = true;
+    popTransform(ctx);
+  }
 }
 
 /** `inner` then `outer`: the matrix that maps a point of `inner`'s frame
@@ -784,13 +821,49 @@ export function drawTextPx(
   /** Vertical text: the orientation the author gave it
    *  (`VDTLineSegment.tcy` / `orientation`). */
   orient?: ForcedOrientation,
+  /** The text is one bidi run in this direction (a design text or chip run
+   *  flagged `rtl`): shaped so, not cut into runs by its own letters. */
+  direction?: 'ltr' | 'rtl',
 ): void {
   if (!text) return;
   if (ctx.vertical) {
     verticalPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, orient);
     return;
   }
-  pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+  // On a mirrored page the text object is turned back about the run's box,
+  // which needs its advance: the face's, as the run is shown (joining
+  // letters are shown untracked, see `shapedText.ts`).
+  const outer = ctx.runAdvancePx;
+  if (ctx.mirror) ctx.runAdvancePx = textAdvancePx(font, text, sizePx, joinsLetters(text) ? 0 : ctx.trackingPx ?? 0).advance;
+  try {
+    // Right-to-left and joining scripts are shaped with HarfBuzz when the
+    // document loaded it (`shapedText.ts`).
+    if (complexPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, direction)) return;
+    pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+  } finally {
+    ctx.runAdvancePx = outer;
+  }
+}
+
+/** The painter of text HarfBuzz shapes (`shapedText.ts` registers it):
+ *  true when it painted `text`, false to leave it to fontkit. */
+type ComplexPainter = (
+  ctx: PageCtx,
+  text: string,
+  xPx: number,
+  baselinePx: number,
+  font: PDFFont,
+  sizePx: number,
+  color: Color,
+  outline?: TextOutline,
+  actualText?: string,
+  direction?: 'ltr' | 'rtl',
+) => boolean;
+let complexPainter: ComplexPainter | undefined;
+
+/** Register the painter {@link drawTextPx} hands complex-script text to. */
+export function registerComplexPainter(painter: ComplexPainter): void {
+  complexPainter = painter;
 }
 
 /** The painter of vertical text (`verticalText.ts` registers it, so this
@@ -852,7 +925,10 @@ export function drawMeasuredTextPx(
   }
   const shows = measuredTextShows(font, pieces, sizePx, trackingPx);
   if (!shows) return false;
-  pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, undefined, actualText);
+  // Every piece starts where the layout put it: the run is as wide as the
+  // layout measured it.
+  const advance = ctx.mirror ? pieces.reduce((sum, p) => sum + p.width, 0) : undefined;
+  pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, undefined, actualText, advance);
   return true;
 }
 
@@ -865,8 +941,14 @@ export function drawMeasuredTextPx(
  * it: copying, text extraction and assistive technology read it instead of
  * the glyphs. The span has no MCID, so in a tagged PDF it nests in the
  * structure sequence open around it.
+ *
+ * On a mirrored page (`ctx.mirror`) the text matrix turns the glyphs back
+ * about the run's box, `[xPx, xPx + advancePx]` (`advancePx`, else the
+ * advance {@link drawTextPx} measured): the pen starts at the box's right
+ * edge and runs leftwards in the flow, which the page's mirror shows
+ * left to right on the sheet.
  */
-function pushTextObject(
+export function pushTextObject(
   ctx: PageCtx,
   shows: readonly TextShow[],
   xPx: number,
@@ -876,8 +958,12 @@ function pushTextObject(
   color: Color,
   outline?: TextOutline,
   actualText?: string,
+  advancePx?: number,
 ): void {
   const { scale, pageHeightPt } = ctx;
+  const textMatrix = ctx.mirror
+    ? setTextMatrix(-1, 0, 0, 1, (xPx + (advancePx ?? ctx.runAdvancePx ?? 0)) * scale, pageHeightPt - baselinePx * scale)
+    : setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale);
   // Text render mode 2 fills then strokes the glyphs; mode 1 only strokes.
   const outlineOps = outline && outline.widthPx > 0
     ? [
@@ -907,7 +993,7 @@ function pushTextObject(
     beginText(),
     setFillingColor(color),
     setFontAndSize(fontKeyOn(ctx.page, first), sizePx * scale),
-    setTextMatrix(1, 0, 0, 1, xPx * scale, pageHeightPt - baselinePx * scale),
+    textMatrix,
     ...(actualText === undefined ? body : withActualText(ctx, actualText, body)),
     endText(),
     popGraphicsState(),

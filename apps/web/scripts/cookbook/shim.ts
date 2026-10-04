@@ -25,6 +25,8 @@ export interface EngineSpec {
   postextCiteproc: string;
   /** Pinned postext-folio version (versioned on its own, 0.x). */
   postextFolio: string;
+  /** Pinned postext-epub version (versioned on its own, 0.x). */
+  postextEpub: string;
   /** `local`: the workspace packages' `dist`, served by the pen server
    *  (previews of unreleased features; never written as a capture). */
   source: "npm" | "local";
@@ -33,7 +35,7 @@ export interface EngineSpec {
 const VERSION = /^\d+\.\d+\.\d+$/;
 
 /** The released version of a workspace package (its package.json). */
-export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citeproc" | "postext-folio"): string {
+export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citeproc" | "postext-folio" | "postext-epub"): string {
   const file = path.join(REPO_DIR, "packages", name, "package.json");
   const version = (JSON.parse(fs.readFileSync(file, "utf-8")) as { version?: string }).version ?? "";
   if (!VERSION.test(version)) throw new Error(`packages/${name}/package.json has no x.y.z version`);
@@ -43,13 +45,15 @@ export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citep
 /** `npm` (default: the released versions) or `npm@x.y.z` (both packages,
  *  which the release script publishes with one version). */
 export function resolveEngine(spec: string = "npm"): EngineSpec {
+  // The viewer and the EPUB writer have versions of their own.
+  const own = { postextFolio: releasedVersion("postext-folio"), postextEpub: releasedVersion("postext-epub") };
   if (spec === "npm") {
-    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), postextFolio: releasedVersion("postext-folio"), source: "npm" };
+    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), ...own, source: "npm" };
   }
   const match = /^npm@(\d+\.\d+\.\d+)$/.exec(spec);
-  if (match) return { postext: match[1], postextPdf: match[1], postextCiteproc: match[1], postextFolio: releasedVersion("postext-folio"), source: "npm" };
+  if (match) return { postext: match[1], postextPdf: match[1], postextCiteproc: match[1], ...own, source: "npm" };
   if (spec === "local") {
-    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), postextFolio: releasedVersion("postext-folio"), source: "local" };
+    return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), ...own, source: "local" };
   }
   throw new Error(`--engine expects npm, npm@x.y.z or local, not "${spec}"`);
 }
@@ -62,6 +66,7 @@ export const SHIM_PATHS = {
   "https://esm.sh/postext-pdf": "/__shim/postext-pdf.js",
   "https://esm.sh/postext-citeproc": "/__shim/postext-citeproc.js",
   "https://esm.sh/postext-folio": "/__shim/postext-folio.js",
+  "https://esm.sh/postext-epub": "/__shim/postext-epub.js",
 } as const;
 
 /** Where the local engine's modules are served (`packages/<name>/dist`). */
@@ -86,6 +91,10 @@ function localImports(): Record<string, string> {
   for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
   for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
   for (const dep of ["@pdf-lib/fontkit", "pdf-lib", "wawoff2"]) imports[dep] = esm("postext-pdf", dep);
+  // HarfBuzz (the PDF's Arabic shaping) from the workspace's own files, as a
+  // bundler ships it: esm.sh's build gives it a Node `process`, and its
+  // Emscripten loader then takes the Node path and fails in the browser.
+  imports.harfbuzzjs = `${LOCAL_PREFIX}harfbuzzjs/index.mjs`;
   imports.citeproc = esm("postext-citeproc", "citeproc");
   imports.three = esm("postext-folio", "three");
   return imports;
@@ -101,6 +110,8 @@ const RECORDER = `// The capture's record of what the pen did with the engine.
 export const cb = (window.__cb ??= {
   builds: [], images: [], engines: {}, pending: 0, lastBuildAt: 0, importedAt: 0,
   pdf: null, pdfError: null, pdfMs: 0, fontFailures: [],
+  // Every EPUB the pen writes (shim postext-epub.js, check C30).
+  epubs: [],
   // For the Sandbox bundle (probe sandboxBundle): what each registered
   // fileId was drawn from, the files handed to createBundle, the blob each
   // ImageBitmap was decoded from and the faces built from bytes.
@@ -266,9 +277,15 @@ export async function renderToPdf(input, options = {}) {
       throw error;
     }
   });
+  // A PDF shaped without HarfBuzz reaches the console (check C14) even
+  // when the pen keeps its warnings to itself.
+  const onWarning = options.onWarning && ((w) => {
+    if (w.kind === 'complexShapingUnavailable') console.warn(w.message);
+    options.onWarning(w);
+  });
   const t0 = performance.now();
   try {
-    const bytes = await real.renderToPdf(input, { ...options, fontProvider });
+    const bytes = await real.renderToPdf(input, { ...options, fontProvider, ...(onWarning ? { onWarning } : {}) });
     cb.pdf = bytes;
     cb.pdfMs = performance.now() - t0;
     return bytes;
@@ -276,6 +293,42 @@ export async function renderToPdf(input, options = {}) {
     cb.pdfError = String(error?.stack ?? error);
     throw error;
   }
+}
+`;
+}
+
+/** renderToEpub recorded: each file the pen writes is read back with the
+ *  package's own readEpub, as a reading system opens it (check C30). */
+function epubShim(url: string): string {
+  return `export * from '${url}';
+import * as real from '${url}';
+import { cb } from '/__shim/recorder.js';
+
+export async function renderToEpub(docs, options = {}) {
+  const entry = { layout: options.layout ?? null, bytes: 0, ms: 0, documents: 0, pages: 0, toc: 0,
+    readLayout: null, warnings: [], error: null };
+  cb.epubs.push(entry);
+  const onWarning = (w) => {
+    entry.warnings.push(w.kind + ': ' + (w.fileId ?? w.family ?? w.detail ?? ''));
+    options.onWarning?.(w);
+  };
+  const t0 = performance.now();
+  let bytes;
+  try {
+    bytes = await real.renderToEpub(docs, { ...options, onWarning });
+  } catch (error) {
+    entry.error = String(error?.stack ?? error);
+    throw error;
+  }
+  entry.ms = performance.now() - t0;
+  entry.bytes = bytes.length;
+  try {
+    const book = real.readEpub(bytes);
+    Object.assign(entry, { documents: book.spine.length, pages: book.pageList.length, toc: book.toc.length, readLayout: book.layout });
+  } catch (error) {
+    entry.error = 'readEpub: ' + String(error?.message ?? error);
+  }
+  return bytes;
 }
 `;
 }
@@ -294,6 +347,7 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
       "/__shim/postext-pdf.js": pdfShim(local("postext-pdf/index.js")),
       "/__shim/postext-citeproc.js": `export * from '${local("postext-citeproc/index.js")}';\n`,
       "/__shim/postext-folio.js": `export * from '${local("postext-folio/index.js")}';\n`,
+      "/__shim/postext-epub.js": epubShim(local("postext-epub/index.js")),
     };
   }
   return {
@@ -304,5 +358,6 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
     "/__shim/postext-pdf.js": pdfShim(`https://esm.sh/postext-pdf@${P}?deps=postext@${V}`),
     "/__shim/postext-citeproc.js": `export * from 'https://esm.sh/postext-citeproc@${engine.postextCiteproc}?deps=postext@${V}';\n`,
     "/__shim/postext-folio.js": `export * from 'https://esm.sh/postext-folio@${engine.postextFolio}?deps=postext@${V}';\n`,
+    "/__shim/postext-epub.js": epubShim(`https://esm.sh/postext-epub@${engine.postextEpub}?deps=postext@${V}`),
   };
 }

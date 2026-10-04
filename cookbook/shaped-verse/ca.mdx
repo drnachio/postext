@@ -1,0 +1,65 @@
+---
+title: "Poemes amb forma: Ales de Pasqua, amb cada vers centrat"
+summary: "Ales de Pasqua i L'altar, de George Herbert, compostos en text centrat, un paràgraf per vers, perquè la llargada dels versos dibuixi les dues figures."
+plain: "Dos poemes anglesos antics els versos dels quals dibuixen una figura: un altar i unes ales. Cada vers va centrat, i la seva llargada forma el dibuix."
+description: "Un quadernet de quatre pàgines compost amb Postext: dos poemes amb forma de Herbert, cada vers centrat sota un títol senzill i els blancs amb :::space."
+question: "Com espaio una portada i les estrofes d'un poema, si les línies en blanc del Markdown no afegeixen espai?"
+aliases: ["cal·ligrama", "poema visual", "poema figurat", "carmen figuratum", "vers centrat", "text centrat", "George Herbert", "Ales de Pasqua", "L'altar", "quadernet", "portada", "epígraf", "colofó", "cul-de-lampe", "espai vertical"]
+pageNotes: { "1": "La portada, a la manera de la de 1633: EL TEMPLE en versals violetes, el subtítol en cursiva, l'autor, l'epígraf del salm 29 sota un rètol en versaletes a mitja pàgina i, al peu, un rètol i dues línies sobre el que conté el quadernet.", "2": "L'altar: dos versos amples per a la llosa, dos una mica més estrets, vuit de curts per al fust i quatre de més amples per a la base, tots centrats sota el títol violeta.", "3": "Ales de Pasqua: dues estrofes que s'estrenyen des d'un vers llarg fins a «al teu costat» i tornen a eixamplar-se, de manera que la pàgina mostra dos rellotges de sorra, l'un sobre l'altre.", "4": "L'última pàgina: el lema de Herbert en cursiva sota un rètol en versaletes, amb una frase dels seus impressors; una nota sobre la impressió de 1633 sota un segon rètol, a l'altura del rètol del salm de la pàgina 1, i un colofó de cinc línies centrades, cadascuna més curta que l'anterior." }
+---
+
+## Què compondràs
+
+Un quadernet de quatre pàgines A5, un plec A4 doblegat per la meitat, que reuneix en versió castellana dos poemes amb forma de *The Temple*, de George Herbert. La portada imita la de 1633, amb l'epígraf del salm 29 inclòs. A dins, *L'altar* queda davant d'*Ales de Pasqua*. Cap vers no porta sagnat ni espais de farciment; cadascun va centrat, de manera que l'altar es recolza en un fust estret i cada estrofa de les ales s'aprima fins a «al teu costat» per obrir-se de nou. A l'última pàgina, sota el lema de Herbert, una nota explica que els impressors de 1633 van posar les ales de costat, i el colofó s'escurça línia a línia. Tot es compon amb el text de cos i tres nivells de títol en els tipus IM Fell, sense estils amb nom ni dissenys de pàgina.
+
+## Elaboració
+
+### 1 · Cada vers és un paràgraf centrat
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Postext ajunta en un sol paràgraf les línies seguides del Markdown, així que cada vers va en un paràgraf propi, amb una línia en blanc al darrere. `textAlign: 'center'` centra cada vers, amb la seva amplada natural, sobre l'eix de la mesura, i com que la 1.4.1 només aplica la partició de mots al text justificat, cap paraula no es parteix ([text de cos](/ca/docs/configuration#text-de-cos)). Cada vers obre el seu paràgraf, així que el sagnat de primera línia per defecte, d'1,5 em, el desplaçaria 3,3 mm a la dreta de l'eix dels títols; amb `firstLineIndent: pt(0)`, poemes i títols comparteixen eix.
+
+### 2 · La mesura admet el vers més llarg
+
+<Excerpt region="measure" />
+
+Un vers que no hi cap passa a una segona línia, i com que les dues meitats es centren per separat, la silueta mostra un esglaó que l'original no té. Amb una mesura de 75 mm es parteixen un vers de *L'altar* i un altre d'*Ales de Pasqua*, i el quadernet passa a sis pàgines. El vers més ample, el primer de les ales, fa 80,0 mm en castellà i 80,7 mm en anglès, així que en els 110 mm de mesura de la pàgina A5 hi caben tots sencers.
+
+### 3 · Títols senzills, centrats
+
+<Excerpt region="titles" />
+
+Cap nivell no porta disseny, només ajustos tipogràfics, i `headings.textAlign` centra els tres ([encapçalaments](/ca/docs/configuration#encapçalaments)). La paritat `'any'` obre cada poema a la pàgina següent, sigui parella o senar, de manera que l'altar de la pàgina 2 queda davant de les ales de la 3. Un `marginTop` no baixaria aquests títols, perquè la 1.4.1 descarta l'espai sobre un títol que obre pàgina. En canvi, l'interlineat del nivell 2, de tres línies de la retícula, deixa cada títol uns 5 mm més avall, i els dos poemes comencen a la línia 5 de la caixa. El nivell 1 obre el document i aquí no necessita salt, però el porta igualment perquè un segon títol `#` obri en pàgina senar. El nivell 3 compon els quatre rètols de les pàgines 1 i 4 en les versaletes d'IM Fell English SC, al cos del text.
+
+### 4 · El Markdown espaia i talla les pàgines
+
+<Excerpt region="pages" />
+
+Una línia en blanc entre paràgrafs no afegeix espai, així que cada blanc d'aquestes pàgines surt de `:::space`: una línia entre les estrofes d'*Ales de Pasqua* i, a la portada, cinc sobre el rètol del salm i deu sota l'epígraf ([`:::space`](/ca/docs/document-format#space)). Amb aquests comptes, l'última línia de la portada cau a l'última línia de la caixa, i els rètols del salm i de la nota queden tots dos a la línia 13, a 94 mm de la vora superior. `:::pagebreak` obre l'última pàgina ([`:::pagebreak`](/ca/docs/document-format#pagebreak)). El colofó també porta un paràgraf per línia; cada tall cau on el demana el sentit, i les cinc línies s'estrenyen com un cul de llàntia.
+
+## Variants
+
+### Obre cada poema en pàgina senar
+
+Amb la paritat `'odd'`, *L'altar* i *Ales de Pasqua* obren a les pàgines 3 i 5, totes dues senars, i el quadernet passa a sis pàgines, amb la 2 i la 4 en blanc.
+
+```diff
+-      breakBefore: { enabled: true, parity: 'any' } },
++      breakBefore: { enabled: true, parity: 'odd' } },
+```
+
+### Compon els versos en bandera
+
+Amb `textAlign: 'left'` cada vers arrenca al marge i els dos poemes conserven només el contorn dret; la resta del text de cos, del subtítol al colofó, també passa a l'esquerra, i només els títols continuen centrats.
+
+```diff
+-  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
++  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+```
+
+## Errors freqüents
+
+- Un vers més llarg que la mesura passa a una segona línia, i les dues meitats es centren per separat. Mesura el vers més ample abans de fixar el cos i els marges. Per a vers en bandera, amb sagnat francès als versos que no hi caben, consulta <RecipeLink slug="poetry-collection">Poemes compostos vers a vers</RecipeLink>.
+- Un paràgraf perd els espais inicials, així que no pots donar forma a un vers omplint-lo d'espais. L'amplada de cada vers depèn només de les seves paraules, i una traducció ha de buscar versos d'una amplada semblant a la de l'original, com fa l'edició castellana.
+- En centrar, cada vers conserva la seva amplada natural, així que la llosa i la base de *L'altar* no queden a escaire: el tercer i el quart vers de la llosa són més estrets que els dos primers. Justificar tampoc no les iguala, perquè la 1.4.1 deixa l'última línia d'un paràgraf justificat amb la seva amplada natural, i cadascun d'aquests versos és un paràgraf.
+- La portada i l'última pàgina arriben fins a l'última línia de la retícula. Una línia més a la portada, per un epígraf més llarg, un text que ja no cap en una línia o un `:::space` més gran, porta el rètol del peu i les dues línies que el segueixen a una pàgina pròpia; una línia més a l'última pàgina envia tota sola l'última línia del colofó a una cinquena pàgina. Si afegeixes una línia a qualsevol de les dues, treu-ne una altra d'un `:::space` de més amunt.
+- Postext no compon text de costat, com els impressors de 1633 van compondre *Easter Wings*: només giren figures i taules senceres. Aquí les estrofes van dretes, i la nota de la pàgina 4 ho diu.

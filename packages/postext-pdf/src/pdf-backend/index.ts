@@ -7,7 +7,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule, verticalFlowOf } from 'postext';
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
@@ -20,10 +20,15 @@ import {
   pushClipRect,
   pushFrame,
   quarterTurnMatrix,
+  mirrorMatrix,
   whiteColor,
 } from './primitives';
-// Registers the painter of vertical text with the primitives.
+// Register the painters of vertical and of complex-script text with the
+// primitives.
 import './verticalText';
+import './shapedText';
+import { codePointNeedsComplexShaping, loadComplexShaper } from '../complexShaping';
+import type { HarfBuzzWasmSource } from '../harfbuzz';
 import { collectFontText, type FontText } from './fontHelpers';
 import {
   computeContentArea,
@@ -96,8 +101,34 @@ export interface RenderToPdfOptions {
    *  placeholder and reported once per `fileId` as a `missingImage` warning
    *  carrying the page and the index of its document in `input`. Without
    *  it, the font warnings go to `console.warn` with their `message`, and
-   *  a `missingImage` is not reported. */
+   *  a `missingImage` is not reported. A document that sets right-to-left
+   *  or joining text while HarfBuzz cannot be loaded gets a
+   *  `complexShapingUnavailable` warning. */
   onWarning?: (warning: PdfWarning) => void;
+  /** Where to load HarfBuzz's `harfbuzz.wasm` from, for a document that
+   *  sets right-to-left or joining scripts: its URL (a relative one
+   *  resolves against the page's location) or its bytes. When omitted, the copy
+   *  beside postext-pdf's module (`dist/harfbuzz.wasm`, which a bundler
+   *  emits as an asset), then the same harfbuzzjs release from jsDelivr
+   *  and esm.sh. Give it when a host serves the package's files elsewhere
+   *  and cannot reach those CDNs. Only the first successful load counts:
+   *  HarfBuzz is loaded once per module instance. */
+  harfbuzzWasm?: HarfBuzzWasmSource;
+}
+
+/** Right-to-left or joining text drawn without HarfBuzz. */
+export interface PdfComplexShapingWarning {
+  /** `complexShapingUnavailable`: the pages set right-to-left or joining
+   *  text (Arabic, Hebrew, Syriac…) and HarfBuzz could not be loaded (no
+   *  WebAssembly, `harfbuzz.wasm` found nowhere). The PDF is drawn with
+   *  fontkit's shaping: Arabic keeps its joining but loses its mark
+   *  positions (harakat and dots collide or drift), and a right-to-left
+   *  run with digits or Latin in it may read in the wrong order. Point
+   *  `harfbuzzWasm` at the file. */
+  kind: 'complexShapingUnavailable';
+  /** Every place the binary was looked for, and why it failed. */
+  reason: string;
+  message: string;
 }
 
 /** A face set in another cut of its family. The render goes on; the text
@@ -176,7 +207,9 @@ export interface PdfCffEmbeddedWholeWarning {
  *  a font fallback ({@link PdfFontFallbackWarning}), characters a face
  *  lacks ({@link PdfMissingGlyphWarning}), a variable font set at its
  *  default weight ({@link PdfVariableFontWarning}), a CFF face embedded
- *  whole ({@link PdfCffEmbeddedWholeWarning}), or one of the engine's
+ *  whole ({@link PdfCffEmbeddedWholeWarning}), right-to-left or joining
+ *  text shaped without HarfBuzz ({@link PdfComplexShapingWarning}), or
+ *  one of the engine's
  *  render warnings (`RenderWarning`: an image painted as a placeholder,
  *  `formatWarning` describes it). Narrow on `kind`. */
 export type PdfWarning =
@@ -184,6 +217,7 @@ export type PdfWarning =
   | PdfMissingGlyphWarning
   | PdfVariableFontWarning
   | PdfCffEmbeddedWholeWarning
+  | PdfComplexShapingWarning
   | RenderWarning;
 
 /** The font warnings: the kinds that carry a `message`, logged when the
@@ -374,15 +408,25 @@ function renderPage(
   // column (`verticalText.ts`): characters upright through the fonts'
   // vertical twins, Latin words and long numbers sideways. Running heads,
   // folios and the marks stay on the sheet.
+  // A right-to-left page (`VDTMirroredFlowFrame`) paints its flow through
+  // its mirror the same way, with `ctx.mirror` on: each text object and
+  // picture is turned back about its own box (`pushTextObject`,
+  // `counterFlipPx`), so the geometry lands mirrored and the text reads as
+  // written. Link and structure rects map through the frame too.
   let flowMatrix: PdfMatrix | undefined;
-  if (vdtPage.flow) {
-    flowMatrix = quarterTurnMatrix(vdtPage.flow.rotation, scale, pageHeightPt);
+  const vflow = verticalFlowOf(vdtPage);
+  if (vflow) {
+    flowMatrix = quarterTurnMatrix(vflow.rotation, scale, pageHeightPt);
     pushFrame(ctx, flowMatrix);
     ctx.vertical = {
       region: doc.config.cjk?.region ?? 'mainland',
       uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
-      ...(vdtPage.flow.centralBaselines ? { axes: vdtPage.flow.centralBaselines } : {}),
+      ...(vflow.centralBaselines ? { axes: vflow.centralBaselines } : {}),
     };
+  } else if (vdtPage.flow?.writingMode === 'horizontal-tb') {
+    flowMatrix = mirrorMatrix(vdtPage.flow.mirror.originX, scale);
+    pushFrame(ctx, flowMatrix);
+    ctx.mirror = true;
   }
 
   tagArtifact(ctx, { type: 'Layout' });
@@ -498,6 +542,7 @@ function renderPage(
   if (flowMatrix) {
     popFrame(ctx);
     delete ctx.vertical;
+    delete ctx.mirror;
   }
 
   // Running headers and footers are pagination artifacts.
@@ -553,6 +598,12 @@ export function setRightToLeft(pdfDoc: PDFDocument): void {
   pdfDoc.catalog.set(PDFName.of('PageLayout'), PDFName.of('TwoPageRight'));
 }
 
+/** Whether any face sets a character HarfBuzz shapes. */
+function setsComplexScript(fontText: FontText): boolean {
+  for (const cps of fontText.values()) for (const cp of cps) if (codePointNeedsComplexShaping(cp)) return true;
+  return false;
+}
+
 export async function renderToPdf(
   input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,
@@ -581,6 +632,17 @@ export async function renderToPdf(
   const fontText: FontText = new Map();
   for (const doc of docs) collectFontText(doc, fontText);
   await fontCache.preloadFontStrings(fontText);
+  // HarfBuzz (WebAssembly) is fetched only for a document that sets
+  // right-to-left or joining scripts; the pages are then shaped with it
+  // synchronously. Without it the PDF still builds, its Arabic marks
+  // misplaced: said loudly, since nothing else in the file shows it.
+  if (setsComplexScript(fontText)) {
+    await loadComplexShaper(options.harfbuzzWasm, ({ reason }) => warn({
+      kind: 'complexShapingUnavailable',
+      reason,
+      message: `postext-pdf: HarfBuzz did not load, so right-to-left and joining text is shaped with fontkit and its marks are misplaced (${reason})`,
+    }));
+  }
 
   const missing = fontCache.missing();
   if (missing.length > 0) {

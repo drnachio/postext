@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline';
 import { computePageMetrics, contentAreaForPage, pageMirrored } from '../../pipeline/buildHelpers';
 import { resolveAllConfig } from '../../pipeline/config';
-import { flowRectToPage, flowToPage, pageRectToFlow, pageToFlow, type VDTDocument, type VDTPage } from '../../vdt';
+import { flowRectToPage, flowToPage, pageRectToFlow, pageToFlow, verticalFlowOf, type VDTDocument, type VDTPage } from '../../vdt';
 import type { PostextConfig, Dimension } from '../../types';
 import { installSizedStub } from './stub';
 
@@ -104,7 +104,7 @@ describe('vertical flow frame — page geometry', () => {
     const doc = buildDocument({ markdown: chapter(6) }, v);
     for (const page of doc.pages) {
       expect(page.flow?.writingMode).toBe('vertical-rl');
-      expect(page.flow?.rotation).toEqual({ direction: 'cw', originX: page.width, originY: 0, width: page.height, height: page.width });
+      expect(verticalFlowOf(page)?.rotation).toEqual({ direction: 'cw', originX: page.width, originY: 0, width: page.height, height: page.width });
       expect(page.width).toBeCloseTo(px(pt(300)));
       expect(page.height).toBeCloseTo(px(pt(420)));
       // The physical content area lies inside the sheet.

@@ -26,6 +26,9 @@ import { getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, mea
 import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
+import { joiningScriptIn } from './joining';
+import { getMeasureDirection } from './bidiLines';
+import { needsBidi } from '../bidi';
 
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 const FIGURE_SPACE = '\u2007';
@@ -43,6 +46,19 @@ function hasOverwideGluedGroup(text: string, font: string, widthPx: number): boo
   if (!PRETEXT_GLUE_RE.test(text)) return false;
   for (const word of text.match(WORDS_AND_SPACES_RE) ?? []) {
     if (PRETEXT_GLUE_RE.test(word) && measureTextWidth(word, font) > widthPx) return true;
+  }
+  return false;
+}
+
+/**
+ * Whether `text` holds a word of a joining script (Arabic…) wider than
+ * `widthPx`. Pretext would cut it between two letters; the word-by-word
+ * breaker never cuts one (`measure/joining.ts`): it lets it run past the
+ * measure and flags the line (`VDTLine.wordOverflow`).
+ */
+function hasOverwideJoiningWord(text: string, font: string, widthPx: number): boolean {
+  for (const word of text.match(WORDS_AND_SPACES_RE) ?? []) {
+    if (joiningScriptIn(word) && measureTextWidth(word, font) > widthPx) return true;
   }
   return false;
 }
@@ -226,6 +242,15 @@ export function measureBlock(
   if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits()))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
+  // A paragraph set right to left, or holding right-to-left text: the
+  // word-by-word breaker, which cuts its words where their direction
+  // changes (`ABC،`, `(API)` in Arabic), measuring each piece as it is
+  // painted (pretext measures `(API)` whole, its brackets kerned to letters
+  // they end up on the far side of), and gives its lines their order
+  // (`measure/bidiLines.ts`).
+  if ((options?.direction ?? getMeasureDirection()) === 'rtl' || needsBidi(text)) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
   const shouldHyphenate = options?.hyphenate ?? false;
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
@@ -243,6 +268,12 @@ export function measureBlock(
   // A glued group wider than the narrowest line likewise (EF-66): pretext
   // would cut it between characters.
   if (text.includes(FIGURE_SPACE) || hasOverwideGluedGroup(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - Math.max(0, indentPx))) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
+  // Words of a joining script stay whole: pretext would break one at a soft
+  // hyphen its author typed, and cut one wider than the line between two
+  // letters. The word-by-word breaker does neither.
+  if (joiningScriptIn(text) && (text.includes(SOFT_HYPHEN) || hasOverwideJoiningWord(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - Math.max(0, indentPx)))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   // A hyphen repeated at the start of the line after a compound's break

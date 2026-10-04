@@ -1,0 +1,66 @@
+---
+title: "Cartilla de lectura amb síl·labes en xips"
+summary: "Una unitat de cartilla dedicada a la ema, amb cada síl·laba en un xip del color de la seva vocal i sis paraules en una taula, cadascuna sota la seva aquarel·la."
+plain: "Tres pàgines d'una cartilla per aprendre a llegir, dedicades a la lletra M. Cada síl·laba va en una etiqueta del color de la seva vocal i cada paraula de la quadrícula porta el seu dibuix."
+description: "Una unitat de cartilla composta amb Postext: un estil de xip per vocal, paraules en xips de síl·labes enganxats, taula amb aquarel·les i pautes de cal·ligrafia."
+question: "Com componc síl·labes en xips de colors, un color per vocal, per a una cartilla de lectura?"
+aliases: ["cartilla", "síl·labes", "lectoescriptura", "infantil", "mètode sil·làbic", "fitxa de lectura", "aprendre a llegir"]
+pageNotes: { "1": "Una franja crema amb una Mm gegant, una papallona i una poma; a sota, les síl·labes ma, me, mi, mo, mu i am, em, im, om, um en xips del color de la seva vocal, i vuit paraules partides en xips de síl·labes.", "2": "Sis paraules amb dibuix, mano, mapa, mesa, mimosa, mono i muñeca, en una taula arrodonida de rajoles crema, cada aquarel·la sobre les seves síl·labes; a sota, pautes per repassar m, M i les cinc síl·labes.", "3": "Quatre frases a 24 pt amb les paraules noves en xips de síl·labes, un requadre crema de síl·labes per pintar, una nota per a la família i el colofó." }
+---
+
+## Què compondràs
+
+La unitat 7 de *Letra a letra*, una cartilla de lectura inventada: tres pàgines dedicades a la ema. L'obertura compon una Mm de DynaPuff a 190 pt sobre una franja crema, al costat de dues coses el nom de les quals comença per ema en castellà, una papallona (*mariposa*) i una poma (*manzana*). Les síl·labes de la unitat van en xips del color de la seva vocal: vermell la a, taronja la e, turquesa la i, blau la o i morat la u. Les que porten ema van emplenades i les altres, només amb el contorn, de manera que el nen veu quina meitat de *mesa* és d'aquesta unitat. La pàgina 38 reuneix sis paraules amb la seva aquarel·la en una taula de cantonades arrodonides i tres pautes per repassar. Les aquarel·les es van generar amb models de difusió; la franja, les icones i les pautes estan dibuixades en codi. La 39 porta quatre frases a 24 pt, un requadre de síl·labes per pintar i una nota per a la família.
+
+## Elaboració
+
+### 1 · Un estil de xip per vocal i una funció que escriu els xips
+
+[La resposta curta](#la-resposta-curta) treu els 21 estils de xip d'un mateix objecte, `syllable`. N'hi ha un d'emplenat per vocal per a les síl·labes amb ema, un altre amb contorn per vocal per a les altres, un bessó `-frase` de cadascun d'aquests deu i `pinta`, el contorn en tinta que el nen pinta. La funció `syllables()` converteix `{mi·mo·sa}` en tres `:chip[…]` sense res entre ells, de manera que les síl·labes d'una paraula es toquen i la vora blanca marca la junta. On hi ha un espai entre paraules, el xip guarda com a mínim el seu `gap`: amb 0,5 em, les paraules d'una fila de 24 pt queden a 4,2 mm, i l'espai tot sol en deixaria 2,3 mm. Dins d'una frase, aquest `gap` gairebé duplicaria l'espai davant de la paraula nova; per això, quan la paraula va darrere d'una altra, porta els bessons `-frase`, amb `gap` 0, i l'espai es queda en 2,3 mm.
+
+### 2 · Un interlineat que deixa lloc als xips
+
+<Excerpt region="reading" />
+
+El farciment vertical i la vora d'un xip es pinten fora de la seva línia i no sumen interlineat, així que un xip més alt que l'interlineat xoca amb els xips de la línia de sota. Un xip de síl·laba a 24 pt fa 10,4 mm d'alçada; amb 30 pt d'interlineat (10,6 mm), els xips de dues frases quedarien a 0,1 mm. Per això les línies que llegeix el nen porten 45 pt i les files de síl·labes 60 pt, tres i quatre línies de la retícula de base de 15 pt en què van les consignes.
+
+### 3 · Una aquarel·la a cada cel·la
+
+<Excerpt region="pictures" />
+
+`setCellImage` posa una imatge damunt del text d'una cel·la amb una fracció de la seva amplada interior, aquí 0,72 (36,5 mm), i la fila creix perquè hi càpiga. Cada aquarel·la és un JPEG pintat sobre blanc i multiplicat pel crema de les rajoles, de manera que s'assenta a la rajola sense requadre. Sota cada aquarel·la va la paraula en xips de síl·labes, que una cel·la admet com qualsevol paràgraf. L'estil de taula `dibujos` arrodoneix el marc i els seus emplenaments a 5 mm i separa les rajoles crema amb filets blancs de 4 pt.
+
+### 4 · Una línia d'espai abans del requadre
+
+<Excerpt region="boxes" />
+
+Entre l'última frase i el requadre per pintar, el Markdown porta `:::space{lines=1}`, una línia de 15 pt (5,3 mm). El `marginTop` del requadre és 0, així que aquesta línia és tot l'espai; sense ella, el requadre començaria just on acaba la línia de l'última frase. Un `:::space` que obre un requadre es descarta, de manera que el requadre comença amb el seu enunciat i els xips de la mostra de colors, i el seu propi `:::space` va darrere, entre la mostra i la tasca de pintar.
+
+### 5 · L'obertura de la lletra
+
+<Excerpt region="opener" />
+
+La Mm és el text del títol (`{titleText}`), i el número de la unitat, la sèrie i el nom de la lletra són atributs d'aquesta mateixa línia. La franja, la papallona i la poma són imatges, i una obertura no reserva alçada per a les imatges. Sense `minHeight`, l'obertura acaba al peu de la paraula *manzana*, a 88,7 mm de la vora superior de la pàgina, i el títol de la primera activitat comença a 99,3 mm, 2,6 mm per sobre del punt més baix de l'ona (101,9 mm). Amb un `minHeight` de 16 línies de la retícula de base, l'obertura acaba a 102,7 mm, i les dues línies de `marginTop` del títol el baixen a 113,3 mm, sobre la retícula i 11,4 mm per sota de l'ona.
+
+### 6 · Icones al costat dels títols d'activitat
+
+<Excerpt region="activities" />
+
+Cada títol d'activitat anomena el seu estil, com a `## Lee las frases {style="lee"}`, i l'estil dibuixa una icona amb el títol centrat al costat. Continuen sent títols de nivell 2, així que l'espai el fixa el nivell `H2`: dues línies de la retícula de base de `lineHeight` per al títol i dues més de `marginTop` a sobre.
+
+## Variants
+
+### Converteix les síl·labes en píndoles
+
+Un radi més gran que la meitat de l'alçada del xip es retalla a aquesta meitat, de manera que un valor gran dibuixa extrems rodons. Una síl·laba d'una sola lletra surt gairebé rodona, i les juntes dins d'una paraula es converteixen en osques.
+
+```diff
+-  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
++  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
+```
+
+## Errors freqüents
+
+Dona a `minHeight` línies senceres de la retícula de base. Amb 85 mm, 0,33 mm més enllà de la línia 16, el primer títol va començar 0,33 mm fora de la retícula. El seu bloc es va allargar llavors fins a la línia següent, 15,5 mm en lloc de 10,6, i tot el que va a sota a la pàgina 37 va baixar 5,3 mm.
+
+Amb l'equilibratge de columnes actiu, un `minHeight` de 16 línies deixava les activitats de la pàgina 37 on les deixaven 17: a la pàgina li sobrava una línia de la retícula de base, i l'equilibratge la posava damunt del títol de la primera activitat. La configuració el desactiva (`headings.balancing`), així que la línia sobrant es queda al peu de la pàgina.

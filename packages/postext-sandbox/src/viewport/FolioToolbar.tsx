@@ -1,7 +1,7 @@
 'use client';
 
 import type { FocusEventHandler } from 'react';
-import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, TextCursor } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, Save, TextCursor } from 'lucide-react';
 import type { FolioInteraction } from 'postext-folio';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
@@ -10,6 +10,7 @@ import {
   ToolbarButton,
   ToolbarSeparator,
   useToolbarRootProps,
+  PageTurnButtons,
 } from './CanvasToolbar';
 
 interface FolioToolbarProps {
@@ -32,6 +33,9 @@ interface FolioToolbarProps {
   onRegenerate: () => void;
   /** Back to the view the settings give, after the reader orbited it. */
   onResetView: () => void;
+  /** Stores the view as it is seen now as the book's (`folio.tilt` and
+   *  `folio.yaw`): Reset view comes back to it. */
+  onSaveView: () => void;
   onTogglePin: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -59,6 +63,7 @@ export function FolioToolbar({
   onSetInteraction,
   onRegenerate,
   onResetView,
+  onSaveView,
   onTogglePin,
   onPrev,
   onNext,
@@ -95,6 +100,11 @@ export function FolioToolbar({
         label={labels.folioResetView}
         onClick={onResetView}
       />
+      <ToolbarButton
+        icon={<Save size={16} aria-hidden="true" />}
+        label={labels.folioSaveView}
+        onClick={onSaveView}
+      />
       <ToolbarSeparator />
       <div role="group" aria-label={labels.folioModes} className="contents">
         <ToolbarButton
@@ -124,6 +134,7 @@ export function FolioToolbar({
         unpinLabel={labels.toolbarUnpin}
       />
       <ToolbarSeparator />
+      <PageTurnButtons>
       <ToolbarButton
         icon={<PrevIcon size={16} aria-hidden="true" />}
         label={labels.folioPrev}
@@ -144,6 +155,7 @@ export function FolioToolbar({
         onClick={onNext}
         disabled={pageCount === 0 || !canNext}
       />
+      </PageTurnButtons>
     </div>
   );
 }

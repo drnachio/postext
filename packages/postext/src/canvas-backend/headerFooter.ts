@@ -9,6 +9,7 @@ import type {
 import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
 import { fillFlowText, drawUprightInBox, setVerticalPaint } from './verticalText';
 import { segmentOrientation, type ForcedOrientation } from '../writingMode';
+import { paintRunInDirection, runPaintOrder } from './runDirection';
 
 /** Adds a rounded rectangle to the current path, as a closed subpath. */
 function traceRoundedRect(
@@ -139,13 +140,16 @@ function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignTextBloc
       paint(line.text, originX + line.xOffset, line.baselineY);
       continue;
     }
-    // Inline marks: each run in its own font, one after another.
+    // Inline marks, or a line with right-to-left text: each run in its own
+    // font and direction, one after another in the line's paint order.
     let x = originX + line.xOffset;
-    for (const run of line.runs) {
+    for (const i of runPaintOrder(line.order, line.runs.length)) {
+      const run = line.runs[i]!;
       ctx.font = run.fontString;
       // A vertical line: the orientation its author gave the run
       // (`:tcy`, `:upright`, `:sideways`).
-      paint(run.text, x, line.baselineY + (run.baselineShift ?? 0), segmentOrientation(run));
+      const runX = x;
+      paintRunInDirection(ctx, run.rtl, () => paint(run.text, runX, line.baselineY + (run.baselineShift ?? 0), segmentOrientation(run)));
       x += run.width;
     }
     ctx.font = block.fontString;

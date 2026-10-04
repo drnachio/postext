@@ -1,0 +1,74 @@
+---
+title: "Un sol original, edicions impresa i de pantalla"
+summary: "Les dues edicions surten d'una configuració: htmlViewer.overrides desa el disseny fosc i applyHtmlViewerOverrides el fusiona abans de compondre l'HTML."
+plain: "La secció del temps d'una revista, feta dues vegades amb el mateix text. Mostra com una mateixa configuració dona una versió impresa a columnes i una altra de fosca, d'una sola columna, per llegir en pantalla."
+description: "Una secció de revista a Postext, composta com a número imprès a dues columnes i com a vista de lectura HTML fosca i adaptable, a partir d'un sol Markdown."
+question: "Com mostro el mateix document com a vista de lectura HTML adaptable, amb un disseny de pantalla més senzill?"
+aliases: ["edició de pantalla", "vista de lectura", "edició web", "mode fosc", "tema nocturn", "HTML adaptable", "redimensionar", "ResizeObserver", "Shadow DOM", "htmlViewer overrides"]
+pageNotes: { "1": "L'avantportada d'Apuntes del tiempo: un fons blau pluja amb traços de pluja blancs en diagonal que deixen lliure el text, un gran número romà I, el títol de la part, Otoño, i al peu la llista dels tres apunts.", "2": "L'apunt Lluvia: una banda gris boira amb l'avanttítol Otoño · Apunte 1, el títol en Gloock i una entradeta en cursiva, dues columnes justificades i un pluviòmetre dibuixat en secció a dalt de la segona columna.", "3": "L'apunt Niebla: dues columnes equilibrades sobre un panorama que ocupa el peu de la pàgina, amb la fotografia d'una vall coberta de boira a l'alba; s'hi veuen el campanar d'una església, uns arbres i un riu, i en primer pla hi ha un marge amb una tanca.", "4": "L'apunt Viento: una rosa dels vents encapçala la segona columna, amb els pètals blaus més llargs cap a l'oest i el sud-oest, i l'apunt acaba amb el colofó del número." }
+---
+
+## Què compondràs
+
+*Apuntes del tiempo*, la secció de tardor d'una revista petita, composta dues vegades amb el mateix Markdown. En paper és un número de 225 × 297 mm: una avantportada blau pluja, tres apunts que s'obren sota una banda gris boira, dues columnes justificades, dibuixos d'un pluviòmetre i d'una rosa dels vents, i una fotografia d'una vall amb boira. En pantalla és una sola columna en bandera, en Newsreader gris clar sobre fons gairebé negre, amb text HTML que es pot seleccionar i copiar, sense avantportada, bandes ni folis. El tauler s'obre pel pluviòmetre, reduït a l'alçada del tauler i dibuixat en colors de nit, al costat de la seva pàgina impresa. Més amunt hi ha l'obertura de Lluvia; si arrossegues la cantonada del tauler, el text es recompon a la mida nova. El disseny de pantalla ocupa nou claus de `htmlViewer.overrides`, a la mateixa configuració que l'imprès.
+
+## Elaboració
+
+### 1 · Un joc de noms de color, dos jocs de valors
+
+<Excerpt region="palette" />
+
+Cada color de la configuració remet a un identificador de la paleta; l'hex que porta al costat és només el valor de dia, de reserva. Per això a l'edició de pantalla li n'hi ha prou de canviar un array per passar als colors de nit. La [configuració de pantalla](/ca/docs/configuration#visor-html) de [la resposta curta](#la-resposta-curta) es fusiona clau a clau, i els nivells de títol per `level`; qualsevol altre array, `colorPalette` inclòs, se substitueix sencer. `main-color` forma part de la paleta, de manera que també canvien els valors per defecte del motor que en depenen. A postext 1.4.1 la paleta nova no arriba als elements de disseny ni al color de les remissions, i per això `relink()` reescriu cada color enllaçat amb el valor que té a la paleta de la configuració fusionada.
+
+### 2 · Obertures: banda en paper, només paraules en pantalla
+
+<Excerpt region="opener" />
+
+Els elements d'avanttítol, títol i entradeta es defineixen una vegada i es copien als dos dissenys, així que les dues edicions mostren els mateixos atributs del títol: `{attr.kicker}`, `{attr.lead}` i el `{partTitle}` de la part. En paper, un títol de primer nivell obre pàgina i abasta les dues columnes, i el seu disseny penja una banda gris boira des de la sang. `minHeight` reserva l'alçada de la banda per sota del marge superior, més `AIR`, els 9 mm que separen la banda de la primera línia. Els títols impresos van a 54 pt perquè cadascun és una sola paraula curta i l'únic text gran de la seva pàgina. En pantalla, el mateix nivell passa a ser un títol en columna, sense banda ni aire. La configuració es fusiona per `level`, així que tot el que no repeteix queda com a l'edició impresa.
+
+### 3 · Una avantportada que només existeix en paper
+
+<Excerpt region="part" />
+
+A l'edició impresa, `:::part` obre <PageRef page={1}>l'avantportada blau pluja</PageRef>: una caixa a sang pels quatre costats, un element d'imatge amb traços de pluja que deixen lliure el text, el número i el títol que dona la tanca, i la llista d'apunts en blanc. La configuració de pantalla posa `parts.page: false`, així que no s'obre cap pàgina ni es compon la llista. La [part](/ca/docs/configuration#parts) continua aplicant el seu número i el seu títol als apunts que vénen al darrere, i l'avanttítol de pantalla diu «Otoño · Apunte 1», igual que l'imprès.
+
+### 4 · Dibuixa cada figura dues vegades
+
+<Excerpt region="figures" />
+
+Canviar la paleta no canvia els colors d'un SVG, així que cada dibuix es fa una vegada per paleta. La vall és una fotografia, un sol JPEG per a les dues edicions. `figures(edition)` crea els mateixos recursos per a les dues edicions, i cadascun apunta al fitxer de la seva edició: `gauge-day.svg` en paper i `gauge-night.svg` en pantalla. Identificadors, peus, textos alternatius i col·locació no canvien, de manera que cada `:ref` del Markdown porta a la mateixa figura, amb el mateix número, a les dues edicions. A la de pantalla, el text alternatiu va a l'`alt` de cada `<img>`, on el troba un lector de pantalla.
+
+### 5 · Allotja l'edició de pantalla
+
+<Excerpt region="screen" />
+
+Cada pàgina de pantalla és tan alta com el tauler, així que `fitFiguresToPage` redueix el pluviòmetre fins que hi càpiga en una pàgina amb el seu peu ([disposició](/ca/docs/configuration#disposició)). A 96 ppp, la resolució de referència de CSS, els mil·límetres i punts heretats de l'edició impresa es veuen a la seva mida nominal ([integrar el visor HTML](/ca/docs/configuration#integrar-el-visor-html)). La recepta escriu les línies amb posició absoluta de `renderToHtml` dins d'un Shadow DOM, on no arriben els selectors de la pàgina. L'`all: initial` de l'embolcall talla a més les propietats heretades, com ara `letter-spacing`: el motor va mesurar les línies sense aquestes propietats, i amb un valor heretat el text se solaparia. Les pàgines HTML són transparents si res no les pinta, així que `page.backgroundColor` pren de la paleta el paper nocturn. El ResizeObserver espera 150 ms i només recompon, amb una `config()` nova, quan canvia l'amplada o l'alçada del tauler; després torna a desplaçar el tauler a la mateixa proporció de la seva alçada, perquè el lector continuï per on anava.
+
+## Variants
+
+### Llegeix de dia
+
+Treu la paleta nocturna i fes servir els valors de dia per al tauler i les figures; l'edició de pantalla tindrà llavors pàgines blanques, text en tinta fosca i els dibuixos de dia.
+
+```diff
+-  colorPalette: paletteOf(night), // arrays are replaced whole: the night values
+   parts: { page: false }, // no divider page; the part still names the notes after it
+@@
+-pane.style.background = night.paper; // the pane's own ground, beside the pages and the scrollbar
++pane.style.background = day.paper; // the pane's own ground, beside the pages and the scrollbar
+@@
+-  const screenDoc = buildDocument({ markdown, resources: figures('night') },
++  const screenDoc = buildDocument({ markdown, resources: figures('day') },
+```
+
+### Dona a l'obertura impresa un número de capítol sobre una banda de color
+
+Per a una obertura impresa més rotunda, amb una banda saturada i un número de capítol gran, consulta <RecipeLink slug="chapter-opener-bleed-band">Obertura de capítol sobre banda a sang</RecipeLink>; la configuració de pantalla no canvia.
+
+## Errors freqüents
+
+- Revisa el final de cada apunt després d'editar. Si l'últim paràgraf d'un apunt deixa en una pàgina nova una cua de dues línies (el control de vídues no les separa), postext 1.4.1 dona a la columna d'aquella pàgina l'alçada d'una sola línia i el canvas retalla la segona. Els dos textos de mostra estan ajustats perquè cap apunt no acabi així.
+- En text en bandera, la 1.4.1 pot tancar una línia amb el «(» que precedeix una remissió, i en un tauler que el lector pot redimensionar, alguna amplada acabarà donant aquest tall. Aquests apunts citen les figures dins de la frase («la fig. 2 muestra»), mai entre parèntesis.
+- Deixa que un paràgraf de pantalla comenci a l'última línia d'una pàgina (`avoidWidows: false`). Amb aquesta regla activa, la 1.4.1 pot ficar sencer un paràgraf més alt que la pàgina al buit que queda sota una figura, i el paràgraf surt pel peu de la pàgina; passa, per exemple, amb taulers de 240 × 420 o 280 × 450 px.
+- Mantén el tauler a 400 px d'alçada com a mínim (el `min-height` de la recepta). En un tauler estret de menys d'uns 350 px d'alçada, l'obertura de pantalla és més alta que la caixa de text de la pàgina; postext 1.4.1 li treu llavors tota la reserva i compon el primer paràgraf damunt del títol.
+- Dona mida al tauler abans de compondre. Un tauler sense amplada, ocult o aixafat en una fila flex donaria una pàgina d'amplada zero; per això `showScreen()` descarta un tauler més estret o més baix que `FOLDED`, 200 px.

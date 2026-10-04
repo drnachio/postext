@@ -9,8 +9,11 @@ export type WarningKind =
   | 'duplicateFontVariant'
   | 'looseLine'
   | 'cjkLooseLine'
+  | 'unbreakableWordOverflow'
+  | 'joiningScriptLetterSpacing'
   | 'cjkMarksExceedLeading'
   | 'rubyExceedsLeading'
+  | 'arabicMarksExceedLeading'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
   | 'listAfterHeading'
@@ -65,7 +68,9 @@ export type WarningKind =
   | 'chapterFrontmatterIgnored'
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
+  | 'unknownNumerals'
   | 'unknownConfigKey'
+  | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
   | 'missingGlyph'
   | 'variableFontDefaultInstance'
@@ -94,8 +99,11 @@ export type WarningPayload =
     }
   | { kind: 'looseLine'; ratio: number; threshold: number }
   | { kind: 'cjkLooseLine'; text: string }
+  | { kind: 'unbreakableWordOverflow'; text: string }
+  | { kind: 'joiningScriptLetterSpacing'; text: string }
   | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  | { kind: 'arabicMarksExceedLeading'; text: string; lineHeightEm: number; neededEm: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
   | { kind: 'listAfterHeading' }
@@ -267,10 +275,16 @@ export type WarningPayload =
    *  `counterFormat` the engine does not know; it numbers in decimal
    *  (`used` is the decimal spelling of that field). */
   | { kind: 'unknownNumberFormat'; path: string; value: string; used: string }
+  /** A `numerals` value that names no digit system: the digits follow
+   *  the document language, `used` the system that gives. */
+  | { kind: 'unknownNumerals'; path: string; value: string; used: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */
   | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
+  /** A setting that takes one of a few words holding another
+   *  (`direction: 'right'`): the engine reads its default, `used`. */
+  | { kind: 'unknownConfigValue'; path: string; value: string; used: string }
   /** The document's language (its hyphenation locale, else `locale`) has
    *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
   | { kind: 'unsupportedHyphenationLocale'; locale: string }

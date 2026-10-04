@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { generateOgImage, ogSize, ogContentType } from "@/lib/og-image";
+import { generateOgImage, ogSize, ogContentType, ogTextLocale } from "@/lib/og-image";
 
 export const alt = "Postext — Cookbook";
 export const size = ogSize;
@@ -16,7 +16,8 @@ export function generateStaticParams() {
 
 export default async function OgImage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Cookbook" });
+  const textLocale = ogTextLocale(locale);
+  const t = await getTranslations({ locale: textLocale, namespace: "Cookbook" });
 
   return generateOgImage({
     // The title carries an <em> word, set in gilt italic like the page's.

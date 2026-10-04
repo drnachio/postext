@@ -245,12 +245,17 @@ interface RefSegment {
 }
 
 /** A reference being painted: where it starts (px), its text so far and
- *  its `Link` element (tagged render only). */
+ *  its `Link` element (tagged render only); with the widths of its runs
+ *  given to {@link RefRun.enter}, the left and right ends of the runs
+ *  painted so far (a reference in a right-to-left run is painted from its
+ *  right end leftwards). */
 export interface RefRunState {
   resourceId: string;
   startX: number;
   text: string;
   link?: StructElem;
+  left: number;
+  right: number;
 }
 
 /**
@@ -266,13 +271,16 @@ export class RefRun {
    *  text joins: a new child of `elem` at a reference's first run, the same
    *  one for the runs that continue it; none for plain text or an untagged
    *  render. */
-  enter(seg: RefSegment, x: number, elem: StructElem | undefined, resourceId = seg.refResourceId): StructElem | undefined {
+  enter(seg: RefSegment, x: number, elem: StructElem | undefined, resourceId = seg.refResourceId, width = 0): StructElem | undefined {
     if (resourceId === undefined) {
       this.current = undefined;
       return undefined;
     }
     if (!seg.refContinues || this.current?.resourceId !== resourceId) {
-      this.current = { resourceId, startX: x, text: '', link: elem ? elem.child('Link') : undefined };
+      this.current = { resourceId, startX: x, text: '', link: elem ? elem.child('Link') : undefined, left: x, right: x + width };
+    } else {
+      this.current.left = Math.min(this.current.left, x);
+      this.current.right = Math.max(this.current.right, x + width);
     }
     this.current.text += seg.text;
     return this.current.link;
@@ -327,7 +335,9 @@ export class UriRuns {
     if (this.run && this.run.uri !== uri) this.flush();
     if (uri === undefined) return undefined;
     if (this.run) {
-      this.run.x2 = x + width;
+      // A link in a right-to-left run grows leftwards.
+      this.run.x1 = Math.min(this.run.x1, x);
+      this.run.x2 = Math.max(this.run.x2, x + width);
       this.run.text += text;
     } else {
       this.run = { uri, x1: x, x2: x + width, text, elem: this.parent?.child('Link') };

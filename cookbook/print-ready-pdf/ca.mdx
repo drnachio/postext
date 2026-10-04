@@ -1,0 +1,72 @@
+---
+title: "PDF a punt per a impremta: sang, marques de tall i CMYK"
+summary: "Un fullet d'exposició amb 3 mm de sang i marques de tall, exportat a PDF CMYK amb els mapes i el plànol presos de màsters d'impressió."
+plain: "Un full de sala per a una exposició de mapes, a punt per a la impremta. Mostra com afegir un marge extra més enllà de la vora i marques de tall, i com desar un PDF en els colors que fan servir les impremtes."
+description: "Un fullet d'exposició de quatre pàgines, compost a Postext amb 3 mm de sang i marques de tall, en un PDF CMYK amb fonts, marcadors i màsters."
+question: "Com exporto un PDF per a impremta amb sang, marques de tall, CMYK, marcadors i etiquetes de pàgina?"
+aliases: ["PDF a punt per a impremta", "sang", "a sang", "marques de tall", "CMYK", "quadricromia", "màster d'impressió", "preimpressió", "fullet d'exposició", "full de sala", "prova en escala de grisos", "pestanya"]
+pageNotes: { "1": "La coberta, amb els seus 3 mm de sang i les marques de tall a les cantonades: un mar verd fosc amb illes en verds esglaonats, una ruta taronja discontínua amb quatre parades que surt del tall cap a la sang, el títol en Space Grotesk de 50 punts i, al peu, les dates i el lloc.", "2": "La primera pàgina interior: l'entradeta, les sales 1 i 2 amb el seu avanttítol al costat d'una parada de la ruta i la seva fitxa, i una pestanya taronja amb el foli 2 que surt per la vora esquerra.", "3": "Les sales 3 i 4, que acaben a la mateixa alçada que la pàgina 2, i la pestanya amb el foli 3 a la vora dreta.", "4": "La contracoberta: la informació pràctica, el plànol de l'exposició (figura 1) amb l'itinerari taronja que surt del vestíbul i recorre les sales 1 a 4, i una banda de relleu verda a sang per tres costats amb el lloc, les dates i el colofó." }
+---
+
+## Què compondràs
+
+El full de sala de *Cartografías imaginarias*, una exposició inventada de mapes de llocs imaginaris, tal com s'envia a la impremta. Cada pàgina, de 170 × 227 mm, va en un full 22 mm més gran amb la sang i les marques de tall. A la coberta, una ruta taronja travessa un arxipèlag en verds esglaonats i surt del tall cap a la sang. A dins, quatre sales en Karla en bandera s'obren sota avanttítols amb una parada de la ruta, i una pestanya taronja porta el foli al tall exterior; la contracoberta posa el plànol sobre una banda de relleu. El codi exporta el PDF d'impremta, en CMYK amb fonts, marcadors i etiquetes de pàgina, i una prova en grisos. En aquest PDF, mapes i plànol surten de màsters amb tintes triades a mà; el text, la pestanya i les parades passen per la conversió simple.
+
+## Elaboració
+
+### 1 · Colors de pantalla triats per la seva planxa
+
+<Excerpt region="palette" />
+
+Amb `colorSpace: 'cmyk'`, postext-pdf converteix cada color hexadecimal amb una fórmula simple, sense perfil ICC: el negre és 1 menys el canal RGB de valor més alt, i el cian, el magenta i el groc surten cadascun del seu propi canal i d'aquest negre. Per això un gris neutre s'imprimeix només amb la planxa del negre (`#161616` queda en K91) i un color amb un canal al màxim s'imprimeix sense negre: el taronja `#ff6626` queda en C0 M60 Y85 K0, igual a la pestanya que a les parades i la ruta. Quan el verd és el canal més alt, el magenta surt a 0, i el verd del mar queda en C82 M0 Y25 K76, que en una prova es veu blau petroli. D'aquí que els mapes i el plànol surtin de màsters d'impressió (pas 5) i que aquesta barreja de tres tintes quedi només al text petit en verd i negreta dels avanttítols, la referència a la figura i les etiquetes dels peus.
+
+### 2 · Una pestanya que sobreviu a la guillotina
+
+<Excerpt region="tab" />
+
+La caixa de la pestanya penja del marc de la sang i mesura `BLEED` més que la pestanya ja tallada, així que un tall desviat un mil·límetre cap a fora continua deixant taronja a la vora; el foli, en canvi, penja del marc de la pàgina, que és el format tallat, i se centra en els 10 mm que queden. `parity` tria les pàgines en què apareix cada element, i `edge` canvia amb ella per anar al tall exterior; `pages: 'body'` deixa la pestanya i les capçaleres (`{title}` i `{subtitle}`, del frontmatter) fora de les dues cobertes, que compten com a obertures perquè comencen amb un títol que ocupa la pàgina o salta a una de nova. Qualsevol element de la capçalera o del peu de pàgina es repeteix de la mateixa manera, així que una `image` amb `parity` i `pages` posa una marca d'aigua o una imatge decorativa a totes les pàgines; les ranures es pinten damunt del text, i un fons de color sota el text es fixa a `page.backgroundColor`.
+
+### 3 · La il·lustració fins a la sang, el text dins del tall
+
+<Excerpt region="covers" />
+
+`cutLines` afegeix a cada costat de la pàgina la sang, la separació de la marca i la marca de 5 mm, que aquí sumen 11 mm, i com que la resposta curta iguala la separació a la sang, les marques comencen a la vora de la sang i van cap a fora, a la planxa del negre. Un element d'imatge ancorat a la sang amb `width: 'fill'` pren l'amplada d'aquest marc i conserva la seva proporció: el mapa de la coberta està dibuixat a 176 × 233 mm, el format més 3 mm per costat, així que arriba fins a la vora de la sang, on comencen les marques, mentre el text penja de la caixa de text, ben dins del tall. La contracoberta és un estil de títol el peu de pàgina del qual substitueix el del document, amb una banda del mateix generador ancorada al peu de la sang i un marge inferior que atura el text 8 mm més amunt.
+
+### 4 · Títols que es converteixen en marcadors
+
+<Excerpt region="levels" />
+
+`renderToPdf` construeix els marcadors a partir dels títols, així que cada sala és un títol de primer nivell que segueix l'anterior sense salt de pàgina, i `numberingTemplate` dona a l'avanttítol el seu `{number}` i al marcador el seu prefix: el PDF llista la coberta, de «Sala 1 Una isla en ninguna parte» a «Sala 4 La isla del tesoro», i la informació pràctica. Un títol amb disseny amaga el seu propi text, però el conserva per als marcadors i les etiquetes d'accessibilitat; sense `fontFamily`, aquest text amagat va en Open Sans 700, una font que les pàgines carregarien i el PDF incrustaria només per a ell. Les etiquetes de pàgina segueixen `page.pageNumbering`, que aquí conserva el seu valor per defecte, decimal des d'1, de manera que la pàgina 3 del visor és la que porta un 3 a la pestanya.
+
+### 5 · Màsters d'impressió amb tintes exactes
+
+<Excerpt region="master" />
+
+Cada dibuix es defineix una sola vegada, com a traçats. La regió de l'art els converteix en l'SVG que pinta el llenç, i aquesta regió escriu els mateixos traçats en un PDF CMYK d'una pàgina, amb barreges triades perquè la prova s'assembli a la pantalla; així el mar va en C100 M45 Y80 K55 i no en el C82 M0 Y25 K76 de la conversió simple. Cada recurs anomena el seu màster a `svg.pdfFileId`, `pressPdf()` (a la resposta curta) lliura els bytes del màster a `renderToPdf` amb l'identificador de l'SVG, i postext-pdf incrusta aquesta pàgina tal com és, en vectors i amb les tintes del màster. Ho fa amb el plànol, que és una figura, i amb el mapa de la coberta i la banda de la contracoberta, que són imatges de disseny. La prova en escala de grisos rep els SVG, perquè un màster incrustat no es converteix mai i continuaria en color.
+
+## Variants
+
+### Demana 5 mm de sang
+
+L'art, la pestanya i l'escala gràfica es mesuren des de `BLEED`, i les marques de tall el segueixen gràcies a `markOffset`, així que per a una impremta que demani 5 mm n'hi ha prou amb aquest canvi, i cada full passa a mesurar 200 × 257 mm.
+
+```diff
+-const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
++const BLEED = 5; // mm of artwork past the trim: the cover, the tab and the back band reach it
+```
+
+### Imprimeix l'art des dels seus SVG
+
+Sense `pdfFileId`, el PDF d'impremta dibuixa cada imatge des del seu SVG, també en vectors però amb la conversió simple, i el mar surt en C82 M0 Y25 K76, un blau petroli.
+
+```diff
+-  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`, pdfFileId: `${id}.pdf`,
++  updatedAt: 0, ...extra, svg: { fileId: `${id}.svg`,
+```
+
+## Errors freqüents
+
+- postext-pdf 1.4.1 escriu cada pàgina amb una sola MediaBox, el full sencer de 192 × 249 mm, sense TrimBox ni BleedBox, i imprimeix les marques de tall només a la planxa del negre. Indica a la impremta el format tallat, 170 × 227 mm, o afegeix les caixes amb una eina de preimpressió si et demana PDF/X.
+- A la 1.4.1, una marca de tall comença a `markOffset` del tall, no de la sang, així que amb una sang més gran que la separació per defecte de 3 mm les marques s'imprimeixen damunt de la il·lustració. Mantén la separació igual a la sang, com fa aquí `cutLines`.
+- `renderToPdf` 1.4.1 no llegeix `config.pdfGeneration`. `pressPdf()` li passa l'espai de color com a opció, i els marcadors i l'etiquetatge vénen activats per defecte.
+- Un cop generat, cada botó es converteix en un enllaç «Open the PDF ↗» i un altre de baixada, i només els de baixada porten el nom del seu fitxer.

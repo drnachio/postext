@@ -33,7 +33,8 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
   }, [code]);
 
   return (
-    <div className={cn("group relative overflow-hidden rounded-lg border border-rule bg-surface", className)}>
+    // Code reads left to right on every page.
+    <div dir="ltr" className={cn("group relative overflow-hidden rounded-lg border border-rule bg-surface", className)}>
       {title && (
         <div className="flex min-h-[3.25rem] items-center gap-2 border-b border-rule px-4 py-2.5">
           <span aria-hidden="true" className="flex gap-1.5">
@@ -41,7 +42,7 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
             <span className="size-2.5 rounded-full bg-gold" />
             <span className="size-2.5 rounded-full bg-red" />
           </span>
-          <span className="ml-2 font-mono text-xs text-slate">{title}</span>
+          <span className="ms-2 font-mono text-xs text-slate">{title}</span>
         </div>
       )}
       <pre
@@ -54,7 +55,7 @@ export function CodeBlock({ code, copyable = true, title, className, codepen, ch
       {(copyable || codepen) && (
         <div
           className={cn(
-            "absolute right-3 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100",
+            "absolute end-3 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100",
             title ? "top-1.5" : "top-3",
           )}
         >

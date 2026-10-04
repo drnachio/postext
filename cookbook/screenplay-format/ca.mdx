@@ -1,0 +1,74 @@
+---
+title: "Format de guió cinematogràfic"
+summary: "Guió de rodatge en Courier Prime 12 sobre paper carta, amb les rèpliques en requadres sense marc de l'amplada del diàleg i les escenes numerades als dos marges."
+plain: "El guió d'un curtmetratge amb el format que fan servir els estudis de cinema. Porta una lletra de màquina d'escriure, i els diàlegs i els números d'escena van a distàncies fixes de la vora."
+description: "Un guió en Courier de 12 sobre paper carta, compost amb Postext: cada escena porta el seu número als dos marges i cada rèplica és un requadre sense marc."
+question: "Com componc un guió amb escenes numerades i cada rèplica en un bloc de 3,5 polzades sota el nom?"
+aliases: ["guió", "guió de cinema", "guió de rodatge", "guió tècnic", "encapçalament d'escena", "número d'escena", "nom del personatge", "bloc de diàleg", "acotació", "transició", "TALL A", "Courier 12", "enquadernadors", "trepant de tres forats"]
+pageNotes: { "1": "Una coberta de cartolina mostassa amb tres forats de trepant: dos enquadernadors de llautó ocupen el de dalt i el de baix, i el del centre queda buit. Una etiqueta blanca porta OBJETOS PERDIDOS en majúscules de màquina d'escriure i, a sota, guió de Maren Arrieta; més avall, un segell vermell fosc de doble filet diu GUION DE RODAJE, 14 OCT. 2026, i al peu hi ha Medialuz Producciones en majúscules espaiades.", "2": "L'interior de la coberta, del mateix color, amb els tres forats a la vora dreta i les potes de llautó dels enquadernadors al de dalt i al de baix. Un avís mecanografiat diu que el guió és de Medialuz Producciones i demana a qui el trobi que el torni; a sota, un segell vermell diu COPIA 07, i el colofó va al peu.", "3": "Pàgina 1 del guió, sense número i amb tres forats de trepant a la vora esquerra: el títol en majúscules sobre FUNDIDO DE ENTRADA: i les escenes 1 i 2, amb el seu número als dos marges al costat de l'encapçalament en negreta i majúscules. L'acció ocupa tota la mesura; set rèpliques de Teo i Dora van en un bloc més estret, cadascuna sota el nom del personatge, dues amb una acotació.", "4": "Pàgina 2, amb el número 2. a dalt a la dreta: la Dora demana nom i adreça, en Teo emplena l'imprès, una rèplica encapçalada DORA (CONT.), en Teo explicant què porta la butxaca de la tapa, amb un (luego) entre dues línies, l'escena 3 al magatzem i l'escena 4 fins al «Tóqueme algo.» de la Dora i el «¿Aquí?» d'en Teo.", "5": "Pàgina 3: la Dora explica el cas del senyor que va reclamar una arpa; després en Teo toca per a ella amb una cua a l'esquena, l'oficina es queda en silenci i ella segella l'imprès: DEVUELTO; CORTE A: alineat a la dreta, l'escena 5 davant la bústia de l'estació i FUNDIDO A NEGRO. sota l'última línia d'acció." }
+---
+
+## Què compondràs
+
+La versió de rodatge d'*Objetos perdidos*, un curtmetratge inventat de tres pàgines, enquadernada com els guions dels estudis: coberta de cartolina mostassa amb dos enquadernadors de llautó i etiqueta mecanografiada, l'interior segellat amb COPIA 07 i, al darrere, el guió en Courier Prime de 12 sobre 12 en paper carta foradat. Les mesures són les dels programes de guió: acció d'1,5 a 7,5 polzades; rèplica de 2,5 a 6, sota el nom del personatge a 3,7; acotació des de 3,1, i CORTE A: i FUNDIDO A NEGRO. fins al marge dret. Cada escena porta el seu número als dos marges. La pàgina 1 del guió no porta número; les altres, a dalt a la dreta i amb punt. Cada rèplica és un requadre sense marc que un farciment superior de −2,4 pt ajusta a línies senceres de 12 pt, i així acció i diàleg mantenen sis línies per polzada.
+
+## Elaboració
+
+### 1 · Ajusta un requadre sense marc al bloc de diàleg
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. El farciment d'un requadre es mesura des de la caixa de text, així que 1 polzada a l'esquerra i 1,5 a la dreta deixen el bloc de 3,5 polzades que comença a 2,5 de la vora del full ([estils d'avís](/ca/docs/configuration#estils-davís)). El nom del personatge és el títol del requadre i s'escriu a la tanca: `title="Dora (cont.)"`. `textTransform` el passa a majúscules, i `indent` el porta 1,2 polzades més enllà del farciment, fins a 3,7. `gap` val 0 perquè, per defecte, entre el nom i la rèplica queda mig quadratí, 6 pt. A la 1.4.1 el títol d'un requadre es compon en una línia d'1,2 vegades el seu cos, 14,4 pt aquí, i `titleStyle` no té un interlineat propi que la canviï. El farciment superior de −2,4 pt descompta aquests 2,4 pt de més, de manera que la rèplica ocupa un nombre enter de línies de 12 pt i el nom queda 0,48 pt per sobre de la seva línia de la retícula. Amb el farciment a 0, cada nom baixa 1,92 pt, cada rèplica allunya 2,4 pt més de la retícula el text que la segueix, i l'encapçalament de l'escena 3, en tornar a la retícula, queda a 33,6 pt de la seva primera línia d'acció en lloc de 24. Amb `snapToGrid` desactivat, el marge inferior d'una rèplica i el superior de la següent es fonen en una sola línia en blanc. Un requadre es manté sencer per defecte, de manera que una rèplica que ja no hi cap passa a la pàgina següent amb el seu nom.
+
+### 2 · Mesura la pàgina en polzades
+
+<Excerpt region="page" />
+
+Mida carta, amb el marge esquerre d'1,5 polzades per on passen els enquadernadors i una polzada als altres tres costats. Courier Prime és una lletra monoespaiada: a 12 pt cada caràcter fa una dècima de polzada, així que una línia d'acció admet 60 caràcters i una de diàleg 35, i amb un interlineat de 12 pt hi caben 54 línies a la pàgina. El text va en bandera, alineat a l'esquerra, i `paragraphSpacing` deixa una línia en blanc entre paràgrafs. Postext 1.4.1 només aplica la partició de mots al text justificat, així que cap paraula no es talla, com demana el format.
+
+### 3 · Fes de les acotacions i les transicions estils de paràgraf
+
+<Excerpt region="styles" />
+
+Un contenidor `:::paragraphs{style="paren"}` dins d'una rèplica sagna la primera línia 0,6 polzades des de la vora del diàleg, fins a 3,1 ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). Escriu cada acotació en una sola línia, perquè l'estil només sagna la primera. A l'estil del diàleg, `body.paragraphSpacing: false` deixa fora del requadre la línia en blanc que separa els paràgrafs d'acció, i `(luego)` queda just a sota de la línia anterior. `CORTE A:` i `FUNDIDO A NEGRO.` van en contenidors `transition`, el `textAlign: 'right'` dels quals els alinea amb el final de les línies d'acció. Un contenidor torna el text a la retícula de base després del seu últim paràgraf; aquest guió no en surt mai, així que l'encapçalament que segueix `CORTE A:` conserva les seves dues línies en blanc.
+
+### 4 · Penja els números d'escena als dos marges
+
+<Excerpt region="slugline" />
+
+`numberingTemplate: '{2}'` compta els títols de nivell 2, i `{number}` imprimeix aquest compte al disseny ([configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). Un títol amb disseny avançat conserva el seu lloc a la columna i dibuixa els seus elements en lloc del seu text ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)), i així els dos números es poden quedar als marges, al costat de l'encapçalament en negreta. Cadascun s'ancora a la caixa del mateix títol i en surt: 0,6 polzades a l'esquerra i, a la dreta, un quart de polzada més enllà del final del text, en una caixa de mitja polzada amb el text alineat a l'esquerra, perquè en un guió de més de nou escenes els números d'una i de dues xifres comencin al mateix lloc. El text propi del títol no es pinta, però es mesura, i per això el nivell va a 12 pt: amb els 15 pt per defecte, l'encapçalament de l'escena 1 passaria a dues línies i reservaria la segona. L'equilibri de columnes està desactivat: afegeix línies en blanc per omplir les pàgines curtes, i amb ell la pàgina 1 del guió deixa una línia en blanc de més sobre l'encapçalament de l'escena 1.
+
+### 5 · Forada i numera només les pàgines del guió
+
+<Excerpt region="furniture" />
+
+L'estil del títol del guió porta la seva pròpia capçalera (`header`), que substitueix la del document a les pàgines de la seva secció, del títol al final ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). La capçalera del document és buida, així que els forats i el número de pàgina només surten al guió. El número s'ancora a mitja polzada de la vora superior del full, i `pages: 'body'` el deixa fora de les pàgines d'obertura ([elements de text](/ca/docs/configuration#elements-de-text)). El títol del guió és de nivell 1 i obre pàgina, així que la pàgina 1 compta com a pàgina d'obertura i no porta número, com demana el format. Les cobertes també són títols de nivell 1; `:::numbering{startAt=1}`, entre l'interior de la coberta i el títol, dona el número 1 a la pàgina del títol, i la següent porta el 2. L'estil del títol fixa una línia de 12 pt; amb els 18 pt propis del nivell 1, el títol aniria en una línia de 21,6 pt i baixaria FUNDIDO DE ENTRADA: 9,6 pt.
+
+## Variants
+
+### Torna les rèpliques a la retícula
+
+Cada rèplica conserva llavors el seu marge inferior i la següent hi suma el superior, cosa que deixa dues línies en blanc entre rèpliques (tres abans d'un encapçalament d'escena) i porta el guió a una quarta pàgina.
+
+```diff
+-  snapToGrid: false,
+ };
+```
+
+### Escriu els encapçalaments d'escena sense negreta
+
+A màquina, els encapçalaments d'escena s'escrivien només en majúscules; la negreta va arribar amb els programes de guió.
+
+```diff
+-  fontSize: pt(12), fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left',
++  fontSize: pt(12), fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left',
+```
+
+```diff
+-      fontWeight: 700, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
++      fontWeight: 400, lineHeight: 1, color: col('ink'), align: 'left', overflow: 'wrap',
+```
+
+## Errors freqüents
+
+- Postext no imprimeix `(MÁS)` sota una rèplica que es parteix entre dues pàgines ni repeteix el nom sobre la resta. Deixa `keepTogether` amb el seu valor per defecte perquè cada rèplica passi sencera a la pàgina següent.
+- Els programes de guió afegeixen `(CONT.)` al nom automàticament. Aquí va al `title` de la tanca, així que escriu-lo tu on un personatge continua parlant després d'una acció.
+- El farciment de −2,4 pt serveix per a un títol del mateix cos que el text. Un títol més gran o més petit va en una altra línia, d'1,2 vegades el seu propi cos: torna a calcular el farciment com l'interlineat menys aquesta línia.

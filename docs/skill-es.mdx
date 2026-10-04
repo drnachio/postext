@@ -5,9 +5,9 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Instala la skill postext-port en Claude Code, Codex o cualquier agente y deja que convierta un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un proyecto de Postext que sigue la maquetación original',
   lang: 'es',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '8 min',
-  order: 9,
+  order: 10,
   plainSummary: "Esta página es para quien ya tiene un libro o un documento en otro formato, como PDF, Word o InDesign, y quiere pasarlo a Postext. Un asistente de inteligencia artificial, al que se llama agente, puede hacer casi todo el trabajo si le das un pequeño complemento llamado skill. La skill le enseña al agente a copiar el texto y a reconstruir el diseño del original. La página explica cómo instalarla, qué pedirle y cómo revisar el resultado. Un vídeo de unos cinco minutos muestra cada paso.",
 };
 
@@ -77,6 +77,13 @@ También en YouTube: [míralo allí](https://youtu.be/6lXSY7A72VA) o en la
     verticales, el ruby y el warichu de InDesign, la maquetación de Asia
     oriental de Word y los EPUB de derecha a izquierda, y cómo recortar las
     fuentes CJK al libro (ver [Composición china](/es/docs/chinese-layout));
+  - libros árabes, modernos o clásicos y vocalizados, compuestos de derecha a
+    izquierda y encuadernados por la derecha: el idioma que da la vuelta al
+    libro, qué preguntar (región y cifras, vocalización, verso, índice al
+    final), cómo medir una página espejada, cómo leer el árabe de PDF, Word y
+    Wikisource, los poemas como `:::verse`, las notas «(١)» por página y las
+    fuentes árabes recortadas con sus tablas de enlace (ver [Composición
+    árabe](/es/docs/arabic-layout));
   - el objeto impreso: cómo leer el papel, la encuadernación, las cubiertas
     y el lomo de la fuente y fijarlos como los ajustes `folio` que muestra el
     [visor Folio](/es/docs/sandbox#pestaña-folio), comprobados por el linter.
@@ -100,9 +107,9 @@ También en YouTube: [míralo allí](https://youtu.be/6lXSY7A72VA) o en la
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítulos en borrador, con los estilos de Word asignados a recuadros y estilos de párrafo</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>IDML de InDesign → capítulos en borrador por estilo de párrafo, tablas e imágenes ancladas; el ruby, el tate-chu-yoko, los puntos de énfasis y el warichu pasan a <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> y <code>:warichu</code>, y avisa de las historias verticales y de la encuadernación de derecha a izquierda</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Reconstruye un índice analítico impreso como marcas <code>:index</code>: lee las páginas del índice en el PDF, busca cada término en su página y marca las mismas palabras en los capítulos</td></tr>
-    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes (una fuente china recortada a los caracteres del libro conserva sus formas y métricas verticales); pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes (una fuente china recortada a los caracteres del libro conserva sus formas y métricas verticales, y una árabe sus formas de enlace y el tatweel); pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio y, en texto chino, japonés o coreano, los caracteres que las fuentes del proyecto no pueden componer</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio y, en texto chino, japonés o coreano, los caracteres que las fuentes del proyecto no pueden componer; en texto árabe, la falta de un idioma árabe, las fuentes solo latinas o sin enlaces, el espaciado entre letras, la separación silábica forzada y el énfasis en cursiva</td></tr>
     <tr><td><code>render.mjs</code></td><td>Compone el proyecto (una carpeta o un archivo <code>.postext</code>) sin navegador con el motor real, leyendo su configuración igual que el Sandbox, y muestra los avisos. Con <code>--jpeg</code> pinta las páginas que le pidas (<code>--pages 12-15</code>) como archivos JPEG con el renderizador de canvas del propio motor, en uno o dos segundos, así que el agente mira sus páginas sin generar un PDF; <code>--out</code> escribe el PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado, a partir del PDF de la composición o de su carpeta de JPEG</td></tr>
   </tbody>

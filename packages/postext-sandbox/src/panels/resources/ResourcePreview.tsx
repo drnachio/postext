@@ -8,6 +8,7 @@ import { getBlob } from '../../storage/blobStore';
 import { inlineSvgFonts } from '../../controls/svgFonts';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
 import { captionPreviewLabel } from './captionLabel';
+import { useRightToLeftFlow } from '../../sidebar/settings/flowSides';
 
 // ---------------------------------------------------------------------------
 // ResourcePreview — a mock embed of how a resource will appear in the document:
@@ -67,6 +68,7 @@ function CaptionFoot({ resource, type }: CaptionFootProps) {
   if (!label && tokens.length === 0) return null;
   return (
     <figcaption
+      dir="auto"
       className="text-xs"
       style={{ color: PAPER_MUTED, lineHeight: '16px', wordBreak: 'break-word' }}
     >
@@ -165,6 +167,10 @@ function CellImage({ resourceId, width }: { resourceId: string; width: number | 
 
 function TableBody({ resource }: TableBodyProps) {
   const labels = useSandboxLabels();
+  // The table runs its own way (`table.direction`, else the document's),
+  // as in the table editor, not the interface's.
+  const rtlBook = useRightToLeftFlow();
+  const direction = resource.table?.direction ?? (rtlBook ? 'rtl' : 'ltr');
   const model = resource.table?.model;
   if (!model || model.rows.length === 0) {
     return (
@@ -179,7 +185,7 @@ function TableBody({ resource }: TableBodyProps) {
   }
   return (
     <div className="overflow-x-auto">
-      <table style={{ borderCollapse: 'collapse', fontSize: 11 }}>
+      <table dir={direction} style={{ borderCollapse: 'collapse', fontSize: 11 }}>
         <tbody>
           {model.rows.map((row, r) => (
             <tr key={r}>
@@ -194,7 +200,8 @@ function TableBody({ resource }: TableBodyProps) {
                     style={{
                       border: '1px solid #c8c8c8',
                       padding: '2px 5px',
-                      textAlign: cell.align ?? 'left',
+                      // `left` / `right` are the cell's start and end (#371).
+                      textAlign: cell.align === 'center' ? 'center' : cell.align === 'right' || cell.align === 'end' ? 'end' : 'start',
                       verticalAlign: cell.verticalAlign ?? 'top',
                       fontWeight: cell.isHeader ? 600 : 400,
                       color: PAPER_INK,

@@ -25,4 +25,4 @@ export const STYLE_CATALOG: readonly CitationStyleInfo[] = [
 ];
 
 /** The CSL locales bundled, as a picker lists them. */
-export const LOCALE_TAGS: readonly string[] = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-PT', 'pt-BR', 'ca-AD', 'nl-NL', 'zh-CN', 'zh-TW'];
+export const LOCALE_TAGS: readonly string[] = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-PT', 'pt-BR', 'ca-AD', 'nl-NL', 'zh-CN', 'zh-TW', 'ar'];

@@ -25,6 +25,7 @@ import type {
   ResourceFloatSpan,
   ResourceRotation,
 } from '../types';
+import { startEndAsLeftRight } from '../defaults/shared';
 
 /** Resolved placement for a resource: never `undefined` fields (but
  *  `rotate`, absent for an upright resource). */
@@ -96,7 +97,7 @@ export function resolveResourcePlacement(
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
   const rawWidth = resource.placement?.width ?? type?.defaultPlacement?.width;
   const widthFraction = typeof rawWidth === 'number' && rawWidth > 0 && rawWidth < 1 ? rawWidth : 1;
-  const align = resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left';
+  const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide ?? false;
   return { position, span, widthFraction, align, captionSide, ...(rotate ? { rotate } : {}) };
 }

@@ -2,6 +2,7 @@ export type {
   ContentBlockType,
   DirectiveName,
   DirectiveAttrs,
+  VerseInfo,
   ContainerName,
   RefCase,
   RefStyle,
@@ -24,6 +25,7 @@ export type {
   EmphasisMark,
   InlineRuby,
   InlineWarichu,
+  InlineDirection,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
 export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans, extractInlineChips, injectChipSpans } from './inlineFormatting';

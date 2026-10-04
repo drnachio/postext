@@ -9,6 +9,7 @@ import type {
   ResolvedUnorderedListsConfig,
 } from '../types';
 import { resolveDesignSlot, stripDesignSlotDefaults } from './headerFooter';
+import { startEndAsLeftRight } from './shared';
 
 /** Static defaults of the `parts` section. Fields that inherit from another
  *  section (`margins` from the page, `bodyStyle.*` from the body text and
@@ -51,7 +52,7 @@ export function resolvePartsConfig(
       fontSize: partial?.bodyStyle?.fontSize ?? bodyText.fontSize,
       lineHeight: partial?.bodyStyle?.lineHeight ?? bodyText.lineHeight,
       color: partial?.bodyStyle?.color ?? bodyText.color,
-      textAlign: partial?.bodyStyle?.textAlign ?? bodyText.textAlign,
+      textAlign: startEndAsLeftRight(partial?.bodyStyle?.textAlign ?? bodyText.textAlign),
       bulletColor: partial?.bodyStyle?.bulletColor ?? unorderedLists.color,
       numberColor: partial?.bodyStyle?.numberColor ?? orderedLists.color,
       ...(partial?.bodyStyle?.unorderedLists ? { unorderedLists: partial.bodyStyle.unorderedLists } : {}),

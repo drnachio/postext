@@ -1,4 +1,5 @@
 import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
+import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
 import type { InlineSpan } from '../parse';
@@ -15,6 +16,7 @@ import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
 import { quoteFamily } from './font';
 import { trimChipLineEdges } from './chipEdges';
+import { directChipRuns } from '../design/bidiText';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount, graphemesOf } from './graphemes';
@@ -25,6 +27,10 @@ import type { CjkRegion } from '../types';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
+import { insideJoiningWord, joiningScriptIn, wordLetterSpacing } from './joining';
+import { applyLineDirections, applySegmentLanguages, getMeasureDirection, spanLanguages } from './bidiLines';
+import { TATWEEL, justifyLinesWithKashida, kashidaCapacity } from './kashida';
+import { needsBidi, resolveParagraph, spanIsolates, type BidiParagraph } from '../bidi';
 
 export interface RichBreakPoint {
   charIndex: number;
@@ -63,6 +69,10 @@ export interface RichToken {
   script?: 'sup' | 'sub';
   scriptFont?: string;
   baselineShift?: number;
+  /** The Arabic words of a slanted style set upright (`InlineSpan.upright`):
+   *  the face they are measured and painted in, the span's with its slant
+   *  taken off. */
+  faceFont?: string;
   /** An inline footnote marker at a size of its own
    *  (`footnotes.markerSize`): the font it is measured and painted with,
    *  on the baseline. */
@@ -125,6 +135,16 @@ export interface RichToken {
   cjkMarks?: VDTSegmentMarks;
   /** Characters the layout added (a book title's 《》). */
   inserted?: boolean;
+  /** One word of a joining script set in more than one style
+   *  (`كتا**ب**`), joined from the runs its spans cut it into (see
+   *  {@link joinStyledRuns}): each run's text and style, in order. The
+   *  token is measured whole, in the style of its longest run (`bold`,
+   *  `italic`), and becomes one segment painted as one shaped word
+   *  (`VDTLineSegment.runs`). */
+  runs?: { text: string; bold?: boolean; italic?: boolean }[];
+  /** How far kashidas may widen this word, px: its box's stretch in
+   *  Knuth–Plass (`measure/kashida.ts`). Absent on any other token. */
+  kashida?: number;
 }
 
 /** Whether a resolved swatch colour can fill the square: a six- or
@@ -222,20 +242,21 @@ export function stackedScriptPairs(scripts: readonly ('sup' | 'sub' | undefined)
 /** Font a token is measured with: its span font, or the script font of a
  *  superscript / subscript. */
 function tokenFont(
-  t: { bold: boolean; italic: boolean; scriptFont?: string },
+  t: { bold: boolean; italic: boolean; scriptFont?: string; faceFont?: string },
   normalFont: string,
   boldFont: string,
   italicFont: string,
   boldItalicFont: string,
 ): string {
-  return t.scriptFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  return t.scriptFont ?? t.faceFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
 }
 
 /** The script, small-caps and Chinese-mark fields a token derived from
  *  another (a split, a hyphenated head) carries on. */
-function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'smallCaps' | 'cjkMarks' | 'inserted'> {
+function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'inserted'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
+    ...(t.faceFont ? { faceFont: t.faceFont } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
     ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
     ...(t.inserted ? { inserted: true } : {}),
@@ -416,7 +437,8 @@ export function chipToken(
       runs.push({
         text: piece.text,
         fontString: piece.font,
-        width: measureTextWidth(piece.text, piece.font) + letterSpacingPx * graphemeCount(piece.text),
+        // A run of a joining script takes no tracking (`measure/joining.ts`).
+        width: measureTextWidth(piece.text, piece.font) + wordLetterSpacing(piece.text, letterSpacingPx) * graphemeCount(piece.text),
         ...(bold ? { bold: true } : {}),
         ...(italic ? { italic: true } : {}),
         ...(baselineShift !== undefined ? { baselineShift } : {}),
@@ -435,6 +457,9 @@ export function chipToken(
     first.width = 0;
     first.stacked = true;
   }
+  // Right-to-left runs cut where the direction changes, and their order
+  // (`VDTChip.order`).
+  const directed = directChipRuns(runs, (t, f) => measureTextWidth(t, f) + wordLetterSpacing(t, letterSpacingPx) * graphemeCount(t));
   const textWidth = runs.reduce((sum, r) => sum + r.width, 0);
   const paddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;
@@ -454,7 +479,8 @@ export function chipToken(
     width: boxWidth,
     chip: {
       styleId: box?.styleId ?? '',
-      runs,
+      runs: directed.runs,
+      ...(directed.order ? { order: directed.order } : {}),
       marginLeft: 0,
       marginRight: 0,
       boxWidth,
@@ -571,6 +597,9 @@ interface SoftBreak {
  * not break there, and it must not reach the line text.
  */
 function syllabify(word: string, hyphenate: boolean): { clean: string; soft: SoftBreak[] } {
+  // A word of a joining script is never divided, not even at a soft hyphen
+  // its author typed: its letters connect (`measure/joining.ts`).
+  if (joiningScriptIn(word)) return { clean: word.includes(SOFT_HYPHEN) ? word.split(SOFT_HYPHEN).join('') : word, soft: [] };
   const hyphenated = hyphenate ? withoutSlashJoints(word, hyphenateText(word)) : word;
   if (!hyphenated.includes(SOFT_HYPHEN)) return { clean: hyphenated, soft: [] };
   let clean = '';
@@ -654,6 +683,12 @@ function wordBreakPoints(
  * the word carries falls after it and adds none (`hard`): never "fisica-" |
  * "-universitaria" nor "fisica--". Null when not even one character fits,
  * or, with `syllablesOnly`, when no no-break space or syllable does.
+ *
+ * A word of a joining script (Arabic…) is never cut between its letters,
+ * and no hyphen marks a cut in it: only at a no-break space, or where it
+ * touches a run of another script (`ABCكتاب`), with nothing added. Null
+ * when no such place fits: the word then runs past the measure, and the
+ * line says so (`VDTLine.wordOverflow`).
  */
 export function emergencySplit(
   token: RichToken,
@@ -664,8 +699,13 @@ export function emergencySplit(
 ): { head: RichToken; tail: RichToken; hard?: boolean } | null {
   const text = token.text;
   if (text.length < 2) return null;
-  const hyphenW = measureTextWidth('-', font) + letterSpacingPx;
-  const widthBefore = (idx: number): number => textWidth(text.slice(0, idx), font, token.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(text.slice(0, idx)));
+  // Styled runs of one Arabic word (`RichToken.runs`) are one shaped word.
+  if (token.runs) return null;
+  const joining = joiningScriptIn(text);
+  // The word was measured untracked (`wordLetterSpacing`): its pieces too.
+  const spacing = joining ? 0 : letterSpacingPx;
+  const hyphenW = measureTextWidth('-', font) + spacing;
+  const widthBefore = (idx: number): number => textWidth(text.slice(0, idx), font, token.smallCaps) + (spacing === 0 ? 0 : spacing * graphemeCount(text.slice(0, idx)));
   const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel, ...scriptOf(token) };
   // A group glued by no-break spaces too wide for any line: the space is
   // the least bad place to part it (EF-66). The line ends before it and the
@@ -682,7 +722,7 @@ export function emergencySplit(
   // No hyphen where the cut falls next to an ideograph, or right after a
   // hyphen of the text.
   const afterHyphen = (idx: number): boolean => text[idx - 1] === '-';
-  const markW = (idx: number): number => (afterHyphen(idx) || hasCJK(text.slice(idx - 1, idx + 1)) ? 0 : hyphenW);
+  const markW = (idx: number): number => (joining || afterHyphen(idx) || hasCJK(text.slice(idx - 1, idx + 1)) ? 0 : hyphenW);
   const fits = (idx: number): boolean => widthBefore(idx) + markW(idx) <= lineMaxWidth;
   // The longest prefix that fits without its mark, found by doubling then
   // halving (prefix widths grow with their length): no cut past it fits,
@@ -716,6 +756,8 @@ export function emergencySplit(
       // Not right before a hyphen of the text: the next line would open
       // on it.
       if (text[idx] === '-') continue;
+      // Never between the letters of a word of a joining script.
+      if (joining && insideJoiningWord(text, idx)) continue;
       if (fits(idx)) { at = idx; break; }
     }
   }
@@ -912,7 +954,7 @@ export function atomicSpanToken(
       ...(markerFont ? { markerFont } : {}),
       ...(span.smallCaps ? { smallCaps: true } : {}),
       kind: 'text',
-      width: textWidth(span.text, refFont, span.smallCaps) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(span.text)),
+      width: textWidth(span.text, refFont, span.smallCaps) + (letterSpacingPx === 0 ? 0 : wordLetterSpacing(span.text, letterSpacingPx) * graphemeCount(span.text)),
       ...(span.ref ? { refResourceId: span.ref.resourceId, ...(span.ref.anchor ? { refAnchor: true as const } : {}), ...(span.ref.pageIndex !== undefined ? { refPageIndex: span.ref.pageIndex } : {}) } : {}),
       ...(span.footnote ? { footnoteId: span.footnote.id } : {}),
     };
@@ -924,7 +966,7 @@ export function atomicSpanToken(
       bold: span.bold,
       italic: span.italic,
       kind: 'text',
-      width: textWidth(span.text, font, false) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(span.text)),
+      width: textWidth(span.text, font, false) + (letterSpacingPx === 0 ? 0 : wordLetterSpacing(span.text, letterSpacingPx) * graphemeCount(span.text)),
       labelTab: span.labelTab,
     };
   }
@@ -974,6 +1016,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.labelTab ? { labelTab: true as const } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
+    ...(t.faceFont && !t.script ? { fontString: t.faceFont } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
   } as PendingSegment;
@@ -982,6 +1025,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
   if (t.orientation) seg.orientation = t.orientation;
   if (t.cjkMarks) seg.cjkMarks = t.cjkMarks;
   if (t.inserted) seg.inserted = true;
+  if (t.runs) seg.runs = t.runs;
   return seg;
 }
 
@@ -1025,6 +1069,11 @@ function tokenizeSpans(
   /** Whether the spans hold CJK characters (`hasCJK` of their text): only
    *  then is each word looked into. */
   cjkText = true,
+  /** The paragraph's bidi levels (`measure/bidiLines.ts`), when it has
+   *  right-to-left text: a word whose level changes inside it (`ABC،`,
+   *  `و١٤٤٥`, `(API)` in Arabic) is cut there into words that touch, each
+   *  measured as it is painted, as a run of its own direction. */
+  bidi?: BidiParagraph,
 ): RichToken[] {
   const tokens: RichToken[] = [];
   // Which characters of the joined text sit in a compound, a word (across
@@ -1033,17 +1082,22 @@ function tokenizeSpans(
   let spanStart = 0;
   // Tracking: every character (spaces included) advances `letterSpacingPx`
   // more, exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc`
-  // paint it, so measured widths stay in step with the renderers.
-  const track = (text: string): number => (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(text));
+  // paint it, so measured widths stay in step with the renderers. A word of
+  // a joining script takes none: the renderers paint it untracked too.
+  const track = (text: string): number => (letterSpacingPx === 0 ? 0 : wordLetterSpacing(text, letterSpacingPx) * graphemeCount(text));
   /** The script fields of a span's tokens (font at the script size, shift). */
-  const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift'> => {
-    if (!span.script) return {};
-    const base = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
-    const m = scriptMetrics(base, span.script);
+  // The span's own face: its style's, unslanted for the Arabic words of a
+  // slanted style (`uprightArabic.ts`).
+  const faceOf = (span: InlineSpan): string => {
+    const face = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    return span.upright ? uprightFace(face) : face;
+  };
+  const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont'> => {
+    if (!span.script) return span.upright ? { faceFont: faceOf(span) } : {};
+    const m = scriptMetrics(faceOf(span), span.script);
     return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
   };
-  const spanFont = (span: InlineSpan): string =>
-    scriptFieldsOf(span).scriptFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  const spanFont = (span: InlineSpan): string => scriptFieldsOf(span).scriptFont ?? faceOf(span);
 
   for (const span of spans) {
     const spanBase = spanStart;
@@ -1078,15 +1132,16 @@ function tokenizeSpans(
     // its soft hyphens can be told apart from the ones the source carries.
     // A no-break space is no boundary: it stays inside the word it glues
     // ("37 °C"), which the line then never breaks at (EF-66).
-    const parts = span.text.match(WORDS_AND_SPACES_RE);
-    if (!parts) continue;
+    const matched = span.text.match(WORDS_AND_SPACES_RE);
+    if (!matched) continue;
+    const parts = bidi ? cutAtLevels(matched, spanBase, bidi) : matched;
 
     let partStart = spanBase;
     for (const part of parts) {
       const partAt = partStart;
       partStart += part.length;
       const isSpace = isBreakingSpaceRun(part);
-      if (!isSpace && URL_LIKE_RE.test(part.replace(/\u00AD/g, ''))) {
+      if (!isSpace && URL_LIKE_RE.test(part.replace(/\u00AD/g, '')) && !(letterSpacingPx !== 0 && joiningScriptIn(part))) {
         const clean = part.replace(/\u00AD/g, '');
         const breakPoints: RichBreakPoint[] = urlBreakIndices(clean).map((charIndex) => ({
           charIndex,
@@ -1115,7 +1170,10 @@ function tokenizeSpans(
         : undefined;
       // A word that holds CJK characters: measured unit by unit, once each.
       const cjk = cjkText && !isSpace && hasCJK(clean) ? cjkWordBreaks(clean, font, sc, letterSpacingPx) : undefined;
-      const breakPoints = isSpace ? [] : wordBreakPoints(clean, soft, font, letterSpacingPx, sc, dashBreaks, touching, cjk);
+      // A word of a joining script is measured untracked, its break points
+      // (after a hyphen or a dash it carries) too.
+      const wordSpacing = isSpace ? letterSpacingPx : wordLetterSpacing(clean, letterSpacingPx);
+      const breakPoints = isSpace ? [] : wordBreakPoints(clean, soft, font, wordSpacing, sc, dashBreaks, touching, cjk);
       if (breakPoints.length > 0) {
         tokens.push({
           text: clean,
@@ -1130,26 +1188,133 @@ function tokenizeSpans(
           hyphenWidth: measureTextWidth('-', font) + letterSpacingPx,
         });
       } else {
+        // A word of a joining script loses the soft hyphens it may not
+        // break at (`syllabify`); any other keeps its text as written.
+        const word = clean !== part && !isSpace && joiningScriptIn(part) ? clean : part;
         tokens.push({
-          text: part,
+          text: word,
           bold: span.bold,
           italic: span.italic,
           captionLabel: span.captionLabel,
           ...scriptFields,
           ...(isSpace ? {} : scFields),
           kind: isSpace ? 'space' : 'text',
-          width: textWidth(part, font, sc && !isSpace) + track(part),
+          width: textWidth(word, font, sc && !isSpace) + track(word),
         });
       }
     }
   }
 
+  // A word of a joining script cut into runs by a style change is one
+  // word again (only text that holds such a script is looked at).
+  if (spans.length > 1) joinStyledRuns(tokens, normalFont, boldFont, italicFont, boldItalicFont);
   if (tokens.some((t) => t.script)) stackScriptTokens(tokens, normalFont, boldFont, italicFont, boldItalicFont);
   if (tokens.some((t) => t.chip)) {
     applyChipGaps(tokens, (t, run) => measureTextWidth(run, tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont)) + (letterSpacingPx === 0 ? 0 : letterSpacingPx * graphemeCount(run)));
   }
   if (dashBreaks) markDashJoins(tokens);
   return tokens;
+}
+
+/** A token that may be one run of a word set in several styles: plain
+ *  text, nothing set as a whole (a reference, a note marker, a chip, a
+ *  formula, a swatch), no script, small capitals, vertical run or marks. */
+function isStyledRunPart(t: RichToken | undefined): t is RichToken {
+  return t !== undefined && t.kind === 'text' && !t.mathRender && !t.swatch && !t.chip && t.refResourceId === undefined
+    && t.footnoteId === undefined && !t.labelTab && !t.script && !t.stacked && !t.smallCaps && !t.tcy && !t.orientation
+    && !t.cjkMarks && !t.inserted && !t.runs;
+}
+
+/** Whether two runs that touch (no space between) are pieces of one word
+ *  of a joining script: the cut between them falls between two of its
+ *  letters, or before a mark (see `insideJoiningWord`). */
+function joinsAcross(a: string, b: string): boolean {
+  if (a.length === 0 || b.length === 0) return false;
+  if (a.charCodeAt(a.length - 1) < 0x0600 && b.charCodeAt(0) < 0x0600) return false;
+  return insideJoiningWord(a + b, a.length);
+}
+
+/**
+ * Join the runs a style change cuts a word of a joining script into
+ * (`كتا**ب**`, a coloured letter or vowel sign in a primer) back into one
+ * token. Measured in pieces, each piece would be shaped alone: the letters
+ * at the cut would take their isolated or final forms, the widths would be
+ * off by a fifth or more (engine-ltr-audit §1.4), and the renderers would
+ * paint a broken word. The token is measured whole in the style of its
+ * longest run (an approximation when the runs differ in weight, never in
+ * joining) and keeps each run's text and style (`runs`), so the renderers
+ * shape the word once and give each run its style. It never breaks.
+ */
+function joinStyledRuns(
+  tokens: RichToken[],
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): void {
+  for (let i = 0; i + 1 < tokens.length; i++) {
+    if (!isStyledRunPart(tokens[i])) continue;
+    // Each next run is read against the whole word so far: a run of marks
+    // alone (`ب**َ**يت`, a coloured fatha) has no letter of its own to join
+    // from, the letter it sits on does.
+    let j = i + 1;
+    let word = tokens[i]!.text;
+    while (j < tokens.length && isStyledRunPart(tokens[j]) && joinsAcross(word, tokens[j]!.text)) {
+      word += tokens[j]!.text;
+      j++;
+    }
+    if (j === i + 1) continue;
+    const parts = tokens.slice(i, j);
+    const runs: { text: string; bold?: boolean; italic?: boolean }[] = [];
+    let dominant = parts[0]!;
+    let most = -1;
+    for (const p of parts) {
+      const last = runs[runs.length - 1];
+      if (last && !!last.bold === p.bold && !!last.italic === p.italic) last.text += p.text;
+      else runs.push({ text: p.text, ...(p.bold ? { bold: true } : {}), ...(p.italic ? { italic: true } : {}) });
+      const n = graphemeCount(p.text);
+      if (n > most) { most = n; dominant = p; }
+    }
+    const text = parts.map((p) => p.text).join('');
+    const merged: RichToken = {
+      text,
+      bold: dominant.bold,
+      italic: dominant.italic,
+      ...(parts[0]!.captionLabel ? { captionLabel: true } : {}),
+      kind: 'text',
+      width: textWidth(text, tokenFont(dominant, normalFont, boldFont, italicFont, boldItalicFont), false),
+      ...(dominant.faceFont ? { faceFont: dominant.faceFont } : {}),
+      ...(runs.length > 1 ? { runs } : {}),
+      ...(parts[parts.length - 1]!.dashJoin ? { dashJoin: true } : {}),
+    };
+    tokens.splice(i, j - i, merged);
+  }
+}
+
+/** The words of a span (`parts`, starting at `from` in the paragraph) cut
+ *  where their bidi level changes, never between two letters of a joining
+ *  script. Spaces are left whole. */
+function cutAtLevels(parts: readonly string[], from: number, bidi: BidiParagraph): string[] {
+  const out: string[] = [];
+  let at = from;
+  for (const part of parts) {
+    const start = at;
+    at += part.length;
+    if (isBreakingSpaceRun(part)) {
+      out.push(part);
+      continue;
+    }
+    let piece = 0;
+    for (let k = 1; k < part.length; k++) {
+      if (bidi.levels[start + k] === bidi.levels[start + k - 1] || insideJoiningWord(part, k)) continue;
+      const c = part.charCodeAt(k);
+      if (c >= 0xDC00 && c <= 0xDFFF) continue;
+      out.push(part.slice(piece, k));
+      piece = k;
+    }
+    out.push(part.slice(piece));
+  }
+  return out;
 }
 
 /** A run of words a dash break may read across: not a formula, a swatch,
@@ -1387,6 +1552,8 @@ function measureRichText(
   // Vertical text: a short number inside a Latin sentence runs sideways
   // with it, read against the whole paragraph (#222).
   if (measuringVertically()) spans = sidewaysNumberSpans(spans, getMeasureUprightDigits(), getMeasureRegion());
+  // Arabic letters are never slanted (#376, `uprightArabic.ts`).
+  spans = uprightArabicSpans(spans, italicFont, boldItalicFont, normalFont, boldFont);
   // Chinese, Japanese or Korean text: its own composer, which breaks
   // between characters under the document's line-break rules and spreads
   // justified lines between them — also text with no two CJK letters in a
@@ -1407,7 +1574,13 @@ function measureRichText(
   const textAlign = options?.textAlign ?? 'left';
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
-  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText);
+  // A paragraph with right-to-left text: its levels, read once, cut its
+  // words where they change direction and give its lines their order.
+  const bidi = paragraphBidi(spans, plainText, options);
+  // The languages the paragraph's isolates name (`:ltr[…]{lang=en}`), set
+  // on the segments of their text (`VDTLineSegment.lang`).
+  const languages = spans.some((sp) => sp.direction?.lang !== undefined || sp.direction?.outer !== undefined) ? spanLanguages(spans) : [];
+  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText, bidi);
   if (options?.labelColumnPx !== undefined) setLabelTabs(tokens, (t) => t.labelTab, options.labelColumnPx, (t, w) => { t.width = w; });
   const repeatHyphen = options?.repeatHyphen === true;
   const hasSmallCaps = tokens.some((t) => t.smallCaps);
@@ -1416,6 +1589,18 @@ function measureRichText(
   if (tokens.length === 0) {
     return { lines: [], totalHeight: 0 };
   }
+
+  // Kashida justification (#375): a justified paragraph with Arabic words.
+  const kashida = textAlign === 'justify' && options?.kashida && bidi ? options.kashida : undefined;
+  if (kashida) markKashidaCapacity(tokens, kashida, normalFont, boldFont, italicFont, boldItalicFont);
+  const fontOf = (seg: VDTLineSegment) => seg.fontString ?? pickSpanFont(!!seg.bold, !!seg.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  const withKashida = (lines: VDTLine[]) => {
+    if (!kashida) return;
+    justifyLinesWithKashida(lines, (li) => {
+      const indent = indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? indentPx : 0)) : 0;
+      return lineMeasure(maxWidthPx, options?.restWidths, li) - indent;
+    }, normalSpaceWidth, kashida, (seg, text) => textWidth(text, fontOf(seg), false));
+  };
 
   // Knuth-Plass optimal line breaking path. A Latin paragraph quoting CJK
   // words takes it too: the breaks next to their characters are free
@@ -1471,6 +1656,9 @@ function measureRichText(
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         if (hasSmallCaps) expandSmallCaps(kpLines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
+        if (bidi) withDirections(kpLines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
+        if (languages.length > 0) applySegmentLanguages(kpLines, plainText, languages);
+        withKashida(kpLines);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -1507,6 +1695,8 @@ function measureRichText(
     let lineSyllable = false;
     // The line ends after a hyphen the word carries (EF-140).
     let lineHardHyphen = false;
+    // A word of a joining script wider than the line runs past it.
+    let lineWordOverflow = false;
 
     // Consume leading spaces at line start (skip them)
     while (tokenIdx < tokens.length && tokens[tokenIdx]!.kind === 'space') {
@@ -1677,6 +1867,9 @@ function measureRichText(
 
       // No viable split. If line is empty, force-fit this token; else break to next line.
       if (lineTokens.length === 0) {
+        // A word of a joining script wider than the line is never cut: it
+        // runs past the measure, and the line says so.
+        if (token.width > lineMaxWidth && token.kind === 'text' && joiningScriptIn(token.text)) lineWordOverflow = true;
         lineTokens.push(token);
         lineWidth += token.width;
         tokenIdx++;
@@ -1726,6 +1919,7 @@ function measureRichText(
       segments,
       isLastLine,
       ...(justifiedSpaceRatio !== undefined ? { justifiedSpaceRatio } : {}),
+      ...(lineWordOverflow ? { wordOverflow: true as const } : {}),
     });
 
     y += lineHeightPx;
@@ -1733,5 +1927,54 @@ function measureRichText(
   }
 
   if (hasSmallCaps) expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
+  if (bidi) withDirections(lines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
+  if (languages.length > 0) applySegmentLanguages(lines, plainText, languages);
+  withKashida(lines);
   return { lines, totalHeight: y };
+}
+
+/** Give each Arabic word of a justified paragraph its kashida capacity
+ *  (`RichToken.kashida`), which Knuth–Plass counts as the stretch of its
+ *  box. A word in pieces (styled runs of a Latin word, a reference label, a
+ *  footnote marker) takes none. */
+function markKashidaCapacity(
+  tokens: RichToken[],
+  options: NonNullable<MeasureBlockOptions['kashida']>,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): void {
+  for (const t of tokens) {
+    if (t.kind !== 'text' || t.inserted || t.mathRender || t.swatch || t.chip || t.refResourceId !== undefined || t.footnoteId !== undefined || t.script) continue;
+    if (!joiningScriptIn(t.text)) continue;
+    const font = tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont);
+    const capacity = kashidaCapacity(t.text, options, measureTextWidth(TATWEEL, font));
+    if (capacity > 0) t.kashida = capacity;
+  }
+}
+
+/** A paragraph's bidi levels (UAX #9, with its inline `:rtl[…]` /
+ *  `:ltr[…]` isolates), when it is set right to left, holds a
+ *  right-to-left letter or sets a right-to-left isolate; undefined for any
+ *  other, which is measured as it always was. */
+function paragraphBidi(spans: readonly InlineSpan[], plainText: string, options: MeasureBlockOptions | undefined): BidiParagraph | undefined {
+  const base = options?.direction ?? getMeasureDirection();
+  const isolated = spans.some((s) => s.direction?.dir === 'rtl');
+  if (base !== 'rtl' && !isolated && !needsBidi(plainText)) return undefined;
+  return resolveParagraph(plainText, base, spans.some((s) => s.direction) ? spanIsolates(spans) : undefined);
+}
+
+/** The directions of a paragraph's lines (`measure/bidiLines.ts`). A piece
+ *  of a segment is measured in its font. */
+function withDirections(
+  lines: VDTLine[],
+  bidi: BidiParagraph,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): void {
+  applyLineDirections(lines, bidi, (seg, piece) =>
+    textWidth(piece, seg.fontString ?? pickSpanFont(!!seg.bold, !!seg.italic, normalFont, boldFont, italicFont, boldItalicFont), false));
 }

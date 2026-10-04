@@ -1,0 +1,73 @@
+---
+title: "Fanzín riso a dues tintes: il·lustració a una tinta"
+summary: "Fanzín per a risògraf de dos tambors: els dibuixos a tot color surten en tons de rosa, recolorits al canvas pel codi i al PDF per renderToPdf."
+plain: "Una petita revista plegada sobre els autobusos nocturns, pensada per a una màquina d'imprimir que només fa servir dues tintes. Els dibuixos en color es converteixen en tons d'una tinta rosa."
+description: "Un fanzín riso en què diagramStyle.singleInk i applySingleInkToSvg imprimeixen dibuixos SVG a tot color en tons d'una tinta plana, en pantalla i al PDF."
+question: "Com imprimeixo tots els dibuixos SVG en tons d'una tinta plana i la resta dels colors amb una segona?"
+aliases: ["risografia", "riso", "risògraf", "dues tintes", "tinta plana", "bitò", "fanzín", "fanzine", "fora de registre", "desregistre", "prova en grisos", "llibre de text a dos colors", "trama de punts"]
+pageNotes: { "1": "La portada: el número i la línia Six routes after midnight, three ridden end to end; a sota, una lluna plena en trama de punts rosa darrere de dos cables blaus, un pal de parada blau amb una banderola que diu NIGHT, N12, N27 i N41, i NIGHT BUSES en majúscules estretes i altes, en blau sobre una còpia rosa una mica fora de registre.", "2": "Pàgina 2: l'avanttítol Brackwater, 00:10 to 06:00 sobre AFTER THE LAST TRAIN, el paràgraf d'entrada, la nota de l'N12 després del seu xip rosa, una cita en majúscules estretes sota un filet rosa i el començament de la nota de l'N27.", "3": "Pàgina 3: la xarxa nocturna en tons de rosa amb el peu a sota, sobre fons rosa pàl·lid; el final de la nota de l'N27, la de l'N41 i una miniatura del mateix mapa en sis colors al costat de la nota As drawn.", "4": "La contraportada: un rètol de destinació rosa que diu NOT IN SERVICE, l'avís del número 5 amb tres llocs on recollir-lo, el colofó en lletra monoespaiada i una lluna en trama rosa a la cantonada inferior." }
+---
+
+## Què compondràs
+
+*Night Buses* és un fanzín gratuït, en anglès, sobre els autobusos nocturns d'una ciutat: quatre pàgines de 120 × 160 mm en un full plegat, per a un risògraf de dos tambors, blau i rosa fluorescent. Cada color de la configuració és una de les dues tintes, una trama del 25 % del rosa o el paper crema. Els dibuixos, a tot color (un mapa en sis colors, una lluna en grisos, un rètol de destinació ambre sobre negre), surten del tambor rosa en tons més densos com més fosc era el color. <PageRef page={3}>El mapa</PageRef> s'imprimeix en rosa, i més avall, a la mateixa pàgina, una miniatura conserva els colors originals. El títol de la portada es compon dues vegades, amb la còpia rosa 0,8 mm a la dreta de la blava i 0,5 mm més amunt. El codi exporta a més el PDF i una prova en grisos.
+
+## Elaboració
+
+### 1 · Tots els colors, dels dos tambors
+
+<Excerpt region="inks" />
+
+Un risògraf imprimeix cada tinta amb el seu propi tambor, així que un tercer color en qualsevol lloc de la configuració obligaria a muntar un tercer tambor. `screen()` barreja una part de la tinta amb el color del paper, igual que una trama imprimeix només una part dels punts i deixa veure el paper entre ells. La trama del 25 % del rosa és `#f2c7d3`, el fons dels xips i del peu. `main-color` apunta al rosa, de manera que qualsevol valor per defecte que la configuració no toqui s'imprimeix amb aquest tambor i no amb el blau que el motor porta de sèrie (`#295AA3`). `col()` escriu cada hex al costat del seu id perquè la 1.4.1 aplica la paleta als estils de text, però no als elements de disseny.
+
+### 2 · Recolorir cada dibuix una vegada per sortida
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Amb `diagramStyle.singleInk`, `renderToPdf` converteix cada color d'un SVG en un to d'`inkColor` la intensitat del qual és 1 menys la luminància relativa del color ([estil de diagrames](/ca/docs/configuration#estil-dels-diagrames)). L'N12 blau marí surt al 84 % i l'N50 groc, al 24 %. A la 1.4.1 el canvas pinta l'SVG registrat tal com és, així que `registerArt()` registra una còpia recolorida amb `applySingleInkToSvg` i guarda el dibuix original per a `resourceBytes`. Tant al canvas com al PDF rasteritzat a 300 ppp, la línia de l'N12 té el color (242, 109, 171), el to que surt de la fórmula amb una intensitat de 0,836. Una segona passada l'aclariria fins al 44 %, i per això el PDF no rep mai la còpia recolorida.
+
+### 3 · Imprimir el títol dues vegades, fora de registre
+
+<Excerpt region="cover" />
+
+Un risògraf imprimeix un tambor darrere l'altre, i el paper no entra mai dues vegades exactament al mateix lloc. `twice()` retorna dues còpies d'un element de text: primer la rosa, 0,8 mm a la dreta i 0,5 mm més amunt, i després la blava. Com que l'ordre de l'array és l'ordre de pintat, la blava tapa la rosa llevat d'una franja fina a les vores superior i dreta de cada lletra. El canvas i el PDF pinten colors opacs, així que on se superposen queda blau; en un risògraf sortiria morat. El disseny ocupa tota la pàgina perquè la línia del número queda per sobre de la caixa de text i el pal baixa més enllà del seu peu; si el disseny es queda dins de la columna, la 1.4.1 talla tots dos per les vores d'aquesta.
+
+### 4 · El text petit, en la tinta fosca
+
+<Excerpt region="inside" />
+
+Sobre el paper crema, el blau dona un contrast de 6,4:1 i el rosa fluorescent, de 2,9:1, poc per a lletra de 8 o 9 pt. Per això totes les paraules que compon el motor surten del tambor blau. Els xips porten Space Mono blava sobre la trama del 25 % (4,85:1), amb un contorn rosa, i el peu va en Epilogue blava sobre la mateixa trama. Del tambor rosa surten el filet sobre la cita, el contorn dels xips, les vinyetes, els quadrats dels folis i les còpies desplaçades dels títols. Les lletres dels dibuixos formen part de la il·lustració i surten en rosa amb ella. El nom de qui parla és el títol del requadre, en majúscules de Space Mono negreta de 7,5 pt, damunt de la cita.
+
+### 5 · La miniatura al costat de la seva nota
+
+<Excerpt region="drawn" />
+
+En una sola columna, un flotant ocupa tota l'amplada de la seva franja, així que una imatge petita flotada en deixaria buida la resta. Per això la miniatura és un disseny de títol: `### As drawn {style="drawn" note="…"}` pinta la imatge i, a la seva dreta, el títol com a rètol amb la nota a sota. Com que les imatges d'un disseny no reserven alçada, `minHeight` fixa un mínim igual a l'alçada de la imatge. Avui la nota fa més o menys el mateix; si fos més curta, el bloc següent trepitjaria la imatge. `registerSnapshot()` passa el mateix mapa de `network()` a un PNG i, com que la tinta única només recoloreix SVG, la miniatura conserva els seus sis colors en pantalla i al PDF.
+
+## Variants
+
+### Carrega un tambor taronja
+
+La lluna, el mapa, el rètol, els xips, el filet i les còpies desplaçades dels dos títols passen a taronja i el text continua en blau; el peu, la nota i el colofó continuaran parlant del tambor rosa fins que els canviïs.
+
+```diff
+-const DRUMS = { ink: '#1d4fb8', spot: '#f0509a' };
++const DRUMS = { ink: '#1d4fb8', spot: '#ff6c2f' };
+```
+
+### Imprimeix un llibre de text a dos colors
+
+Amb text negre i una tinta plana blava sobre paper blanc, els mateixos dibuixos surten en tons de blau, com els esquemes d'un llibre de text a dos colors; el peu, la nota i el colofó continuaran parlant del tambor rosa fins que els canviïs.
+
+```diff
+-const DRUMS = { ink: '#1d4fb8', spot: '#f0509a' };
+-const PAPER = '#f3efe6'; // cream stock: where no ink falls
++const DRUMS = { ink: '#1f1f1f', spot: '#0078bf' };
++const PAPER = '#ffffff'; // white stock: where no ink falls
+```
+
+## Errors freqüents
+
+- Passa a `renderToPdf` el dibuix original. A la 1.4.1, `renderToPdf` recoloreix qualsevol SVG que rebi, així que una còpia ja recolorida torna a passar per la fórmula i la línia de l'N12 baixa del 84 % al 44 %.
+- A la 1.4.1, `applySingleInkToSvg` reescriu els colors hex, `rgb()` i `rgba()` amb valors enters i les paraules `white` i `black`. Una forma que fa servir `red` o `hsl()`, o que deixa l'emplenament en el negre per defecte, conserva el seu color, i aquest color demanaria un tercer tambor. Dona un valor hex a cada emplenament i a cada traç.
+- `colorSpace: 'grayscale'` passa a grisos el que pinta postext i incrusta els mapes de bits tal com són, així que la miniatura PNG continua en color a la prova en grisos. La prova només la genera el segon botó en executar el codi; les pàgines de dalt són el canvas, i el PDF que es baixa en aquesta pàgina és el de color.
+- Amb l'espaiat entre paràgrafs activat, la 1.4.1 pot deixar una línia de més abans de la resta d'un paràgraf que continua a la pàgina següent sota un flotant superior. El text de la recepta no ho provoca. Si el canvies, mira la primera línia sota el mapa, perquè una línia de més pot portar la miniatura a una cinquena pàgina.
+- En executar el codi, els dos botons diuen «Build the PDF». El primer genera el PDF en color i el segon la prova en grisos; quan el fitxer és a punt, el seu botó es canvia per un enllaç «Open the PDF ↗» i un altre de baixada amb el nom del fitxer.

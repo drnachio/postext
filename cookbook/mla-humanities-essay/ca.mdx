@@ -1,0 +1,68 @@
+---
+title: "Un assaig d'humanitats amb obres citades en MLA"
+summary: "Un assaig literari amb cites [@clau, 48] que surten en MLA 9, autor i pàgina, amb una cita en bloc i la llista d'obres citades presa de dades CSL-YAML."
+plain: "Un assaig sobre un poema de Keats, tal com l'imprimeix una revista literària. L'autora escriu una clau curta per a cada font; Postext imprimeix l'autor i la pàgina entre parèntesis i la llista d'obres citades al final, en estil MLA."
+description: "Un assaig literari amb Postext: cites MLA 9 d'autor i pàgina amb citeproc-js, títol abreujat per a dues obres de Keats, cita en bloc i obres citades."
+question: "Com cito en MLA i munto la llista d'obres citades d'un assaig de literatura?"
+aliases: ["MLA", "MLA 9", "obres citades", "Works Cited", "autor-pàgina", "assaig literari", "humanitats", "cita en bloc", "cita llarga", "citeproc"]
+pageNotes: { "1": "Pàgina 1: una banda negra sobre la meitat superior amb l'avantítol ASSAIGS · POESIA ROMÀNTICA, el títol Freda pastoral en cursiva fina de mida gran, un subtítol sobre l'«Ode on a Grecian Urn» de Keats i la signatura Helena Ward, sobre una franja vermell argila; a sota, els primers paràgrafs amb cites com (Jack) i (McDermott).", "2": "Pàgina 2: títols de secció en versaletes vermelles; cites de l'oda amb referències MLA (Keats, «Ode» 1–3), després només els números de vers, com (8–9), i la frase d'Eliot seguida de (230).", "3": "Pàgina 3: la secció de les cartes, amb (Keats, Letters 41) i una cita en bloc sagnada 2 em amb la referència (Keats, Letters 48) després del punt final.", "4": "Pàgina 4: Obres citades, en ordre alfabètic amb sagnat francès; la segona obra de Keats comença amb una ratlla triple; un petit colofó a sota." }
+---
+
+## Què compondràs
+
+Un assaig d'una revista literària trimestral: quatre pàgines sobre qui diu els dos últims versos de l'«Ode on a Grecian Urn» de Keats. La pàgina fa 150 × 230 mm i va en Spectral, amb els títols de secció i les capçaleres en Spectral SC; l'obertura ocupa una banda del negre del vernís sobre una franja d'argila vermella, els dos colors d'un vas àtic. Les cites segueixen MLA 9, l'estil de gairebé tots els departaments de literatura i d'història de l'art: autor i pàgina entre parèntesis, només la pàgina quan la frase ja anomena l'autor, un títol abreujat quan dues obres són del mateix autor i la llista d'obres citades en pàgina a part. Cada cita és una clau en el text i l'estil és un sol paràmetre de configuració.
+
+## Elaboració
+
+### 1 · L'estil és MLA; les dades, CSL
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de cites es registra una vegada i `citations.style` anomena l'estil MLA inclòs; citeproc-js hi redacta cada cita i la llista. Les referències van en un bloc `:::references{format=csl-yaml}` al final de l'assaig. Aquí es fa servir CSL-YAML i no BibTeX perquè MLA necessita un títol abreujat per a les dues obres de Keats, i el lector de BibTeX de postext 1.12.1 descarta el camp `shorttitle`; en CSL el camp es diu `title-short`.
+
+### 2 · Tres maneres de citar
+
+El text cita una obra amb `[@jack1967]`, que imprimeix «(Jack)» perquè l'assaig es refereix al llibre sencer. Amb pàgina, `[@keats-letters, 41]` imprimeix «(Keats, *Letters* 41)»: se citen dues obres de Keats, així que citeproc hi afegeix el títol abreujat per distingir-les. Quan la frase ja anomena el crític, `[-@eliot1932, 230]` omet el nom i imprimeix «(230)». Un cop citada l'oda amb els seus números de vers, les cites següents porten només els números, escrits entre parèntesis normals, com permet MLA.
+
+### 3 · Una cita en bloc amb la referència després del punt
+
+<Excerpt region="quotation" />
+
+La carta sobre la Negative Capability passa de quatre línies de prosa, així que va a part com a cita en bloc de Markdown: en rodona, en el color del text, sagnada 2 em i sense sagnat de primera línia. MLA posa la referència d'una cita en bloc darrere del punt final, i l'original fa el mateix: `…fact and reason. [@keats-letters, 48]`. Un `:::space{lines=0.5}` a sobre i un altre a sota la separen dels paràgrafs que l'envolten.
+
+### 4 · Les obres citades, en pàgina a part
+
+<Excerpt region="works-cited" />
+
+El títol porta un estil que salta a pàgina nova, i `:::bibliography{title=""}` col·loca la llista a sota sense un segon títol. La llista va en ordre alfabètic amb sagnat francès, i la segona obra de Keats comença amb una ratlla triple en lloc del nom, com demana MLA per als autors repetits. Un foli al peu apareix en aquesta pàgina i a l'obertura, on no hi ha capçaleres.
+
+### 5 · L'obertura en els dos colors d'un vas
+
+<Excerpt region="opener" />
+
+<Excerpt region="palette" />
+
+La banda fa 116 mm i porta l'avantítol, el títol de 56 pt en Spectral Light cursiva, el subtítol i la signatura, tots presos d'atributs del títol. La franja d'argila és una segona caixa ancorada 3 mm per sobre del peu de la banda.
+
+## Variants
+
+### Posa la llista a continuació de l'assaig
+
+Una revista que compon les obres citades després de l'últim paràgraf, sense pàgina nova, treu el salt de l'estil del títol.
+
+```diff
+-  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: true, parity: 'any' } }],
++  headingStyles: [{ id: 'works-cited', breakBefore: { enabled: false } }],
+```
+
+### Cita en Chicago autor-any
+
+El mateix assaig en Chicago posa l'any després de l'autor, «(Brooks 1947, 165)», i la llista s'hi adapta.
+
+```diff
+-  style: 'modern-language-association', // MLA 9th edition, author-page
++  style: 'chicago-author-date',
+```
+
+## Errors freqüents
+
+- Una cita narrativa sense pàgina, `@stillinger1974 registra`, imprimeix el nom amb un segon espai darrere en postext 1.12.1. Cita aquesta obra entre claudàtors al final de la frase, com fa aquest assaig, o dona'n una pàgina.
+- citeproc-js imprimeix els títols tal com vénen a les dades. MLA escriu els títols anglesos amb majúscula a cada paraula principal, així que escriu-los així a les referències.

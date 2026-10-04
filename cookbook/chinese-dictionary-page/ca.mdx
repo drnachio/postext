@@ -1,0 +1,74 @@
+---
+title: "Una pàgina de diccionari xinès amb paraules guia"
+summary: "Quatre pàgines d'una selecció del Diccionari de Kangxi per ordre de pinyin: {firstMark.h2} i {lastMark.h2} imprimeixen a la capçalera el primer i l'últim lema."
+plain: "Quatre pàgines d'un diccionari xinès clàssic. La cantonada superior de cada pàgina mostra la primera i l'última entrada, per trobar una paraula fullejant."
+description: "Un diccionari xinès a dues columnes amb Postext: lemes amb el pinyin a sobre, accepcions numerades ① ② i paraules guia a la capçalera, amb tot el codi."
+question: "Com imprimeixo a la capçalera d'un diccionari xinès el primer i l'últim lema de cada pàgina?"
+aliases: ["diccionari", "diccionari xinès", "字典", "康熙字典", "Diccionari de Kangxi", "paraules guia", "reclams", "书眉", "書眉", "lemes", "ordre de pinyin", "pinyin sobre els lemes", "反切", "fanqie", "números en cercle", "números d'accepció", "unidor de paraules", "pestanya"]
+pageNotes: { "1": "Pàgina 634, parella. La capçalera diu 634 i 天—殄 sobre un filet fi. Dues columnes d'entrades de 天 tiān a 殄 tiǎn: cada lema en vermell, en la song supernegra, amb el pinyin a sobre, i després les lectures dels diccionaris de rimes i les accepcions seguides, numerades ① ② en vermell. Les entrades se succeeixen sense espai entre elles i les dues columnes acaben a l'última línia de la retícula. A la vora esquerra, una pestanya vermella amb una T.", "2": "Pàgina 635, senar: 腆—髫 i el foli a dalt a la dreta. La primera columna comença amb el final de l'entrada 殄 i continua amb les entrades de 腆 tiǎn a 髫 tiáo; la pestanya T, a la vora dreta.", "3": "Pàgina 636: comença amb el final de l'entrada 髫, i la capçalera diu 挑—鐵, el primer i l'últim lema que hi comencen; 挑 apareix una altra vegada amb la lectura tiǎo.", "4": "Pàgina 637: 餮—庭, el final de 鐵, les entrades de 餮 tiè a 庭 tíng i, a sota, un colofó: una frase en xinès en kai, en dues línies, i sis línies de crèdits en castellà." }
+---
+
+## Què compondràs
+
+Quatre pàgines del centre d'una edició de lectura del Diccionari de Kangxi (康熙字典, 1716), reordenat per pinyin, de 天 tiān a 庭 tíng. Cada lema va en vermell, en la song supernegra, amb el pinyin a sobre; les lectures dels diccionaris de rimes (反切) i les accepcions el segueixen en un sol paràgraf, amb les accepcions numerades ① ② en el mateix vermell. La pàgina és un 大32开 de 140 × 203 mm, a dues columnes de 17 caràcters de 小五 (9 pt), sobre una retícula de 31 línies, i cada columna arriba a la seva última línia. A la cantonada exterior de cada pàgina, la capçalera anomena el primer i l'últim lema que hi ha, de manera que qui cerca 蜩 va a la pàgina que porta 腆—髫. Per comparar-ho amb un diccionari en alfabet llatí, mira <RecipeLink slug="dictionary-thumb-index">el vocabulari mariner de Smyth</RecipeLink>.
+
+## Elaboració
+
+### 1 · Les paraules guia surten dels lemes
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada lema és un títol de segon nivell, i `{firstMark.h2}` i `{lastMark.h2}` imprimeixen el text del primer i de l'últim títol d'aquest nivell que comencen a la pàgina ([elements de text](/ca/docs/configuration#elements-de-text)). La marca són els caràcters del títol: `## {天|tiān}` marca 天, i la lectura es queda sobre el lema. Una entrada que passa d'una pàgina a la següent només compta on hi ha el lema: la <PageRef page={2}>pàgina 635</PageRef> comença amb el final de 殄 i porta 腆—髫. El primer nivell queda per a les lletres; en aquestes quatre pàgines no en comença cap, però la capçalera d'una lletra no comptaria com a paraula guia.
+
+### 2 · El pinyin sobre el lema
+
+<Excerpt region="headwords" />
+
+`{天|tiān}` és la forma curta de `:ruby[天]{rt="tiān"}`, una lectura sobre un caràcter ([marques xineses, ruby i warichu](/ca/docs/document-format#marques-xineses-ruby-i-warichu)). Un títol sense disseny propi compon la seva lectura; amb un disseny, el títol imprimiria 天 sol. La lectura pren la font del títol, la supernegra, llevat que `cjk.ruby.fontFamily` n'anomeni una altra, i per això s'anomena la song regular. La meitat de 15 pt són 7,5 pt, i la línia de 30 pt del títol deixa lloc per a la lectura sobre el lema: el títol ocupa dues línies de la retícula i el text que va a sota continua en les línies de 15 pt de les dues columnes. El pinyin puja el que baixen els traços descendents de la seva font i 0,04 em més, de manera que la g de tīng acaba 0,6 pt per sobre de la caixa de 汀.
+
+### 3 · Un paràgraf per a cada entrada
+
+<Excerpt region="senses" />
+
+El Diccionari de Kangxi compon cada entrada seguida: primer les lectures dels diccionaris de rimes i després cada accepció, introduïda per 又. Aquí el 又 s'ha canviat per números en cercle, escrits com `**②**`, i `boldColor` els imprimeix en el vermell dels lemes; no hi ha cap altra negreta al text. Una accepció que el Kangxi llegeix d'una altra manera conserva la seva lectura, com 跳 ② amb 徒刀切. El compositor tracta de ① a ⑳ com a lletres llatines, de manera que una línia podria acabar en un número l'accepció del qual comença a la línia següent: l'unidor de paraules (U+2060) escrit després de cada número ho impedeix i, de passada, treu l'espai entre xinès i llatí. L'equilibratge de columnes està desactivat (`headings.balancing.enabled: false`): cap columna obre espai sobre els seus lemes i cada entrada segueix l'anterior a la mateixa distància.
+
+### 4 · La pestanya de la T
+
+<Excerpt region="tab" />
+
+Les síl·labes del pinyin comencen per 23 de les 26 lletres (cap per I, U o V), així que l'alçada de la caixa es divideix en 23 passos de 7,13 mm, i a la T li toca el dinovè. La pestanya fa 9 mm i comença 3 mm fora del tall, de manera que la pàgina la talla recta per la vora exterior i només se'n veuen arrodonides les cantonades interiors; un fitxer per a impremta amb `page.cutLines` portaria aquests 3 mm a la sang. La lletra es centra en els 6 mm que queden a dins. Les quatre pàgines són de la T, de manera que la pestanya no canvia d'alçada; en <RecipeLink slug="dictionary-thumb-index">el vocabulari de Smyth</RecipeLink> baixa pel tall d'una lletra a la següent.
+
+### 5 · Cada font carrega els seus propis caràcters
+
+<Excerpt region="voices" />
+
+Fontsource talla cada font xinesa en un centenar de fitxers per intervals de caràcters, i `loadCjkFonts` carrega els que contenen el text que rep. La song regular rep tota la mostra, també el text en castellà del colofó. La supernegra, els trenta lemes; la negreta, els números d'accepció; la hei, els lemes i les xifres de les capçaleres, i la kai, la frase en xinès del colofó. `cjkPdfProvider` incrusta aquests mateixos fitxers al PDF, cadascun reduït als caràcters que fan servir les seves pàgines.
+
+## Variants
+
+### El primer lema a la parella i l'últim a la senar
+
+Hi ha diccionaris que imprimeixen una sola paraula guia per pàgina: la primera a dalt a la parella i l'última a dalt a la senar, de manera que el plec diu 天 … 髫.
+
+```diff
+-  head('verso-guide', '{firstMark.h2}—{lastMark.h2}', 'even', SIDE + 8, GUIDE),
+-  head('recto-guide', '{firstMark.h2}—{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
++  head('verso-guide', '{firstMark.h2}', 'even', SIDE + 8, GUIDE),
++  head('recto-guide', '{lastMark.h2}', 'odd', SIDE + 8, GUIDE),
+```
+
+### Pinyin amb ɑ i ɡ d'un sol ull
+
+Els diccionaris xinesos componen el pinyin en una font amb la a i la g d'un sol ull. Anomena Andika per a les lectures i afegeix-la a `FONTS` (`'Andika': ['400']`, amb el seu crèdit OFL).
+
+```diff
+-  ruby: { fontFamily: SONG, fontSize: em(0.5), color: col('cinnabar') },
++  ruby: { fontFamily: 'Andika', fontSize: em(0.5), color: col('cinnabar') },
+```
+
+### Lemes de la mida del text
+
+Un diccionari compacte posa el lema en negreta al principi del paràgraf. Posa les entrades dins de `:::paragraphs{style="entry"}`, comença cadascuna amb `**{天|tiān}**` i imprimeix `{firstMark.entry}`: un paràgraf que comença amb un tram en negreta marca la pàgina amb aquest tram.
+
+## Errors freqüents
+
+- El compositor pot tallar el títol d'una obra després del primer caràcter (《說|文》). Les trenta entrades són retalls d'articles del Kangxi molt més llargs, i els retalls es van triar perquè cap títol no es talli per aquí. Un unidor de paraules dins del títol (`《說⁠文》`) el manté sencer, a canvi d'una línia amb un caràcter menys.
+- Amb l'equilibratge de columnes activat, una columna en què ja no hi cap el lema següent amb dues línies del seu text a sota (`bodyText.widowMinLines`) acaba abans, i les línies que sobren van a sobre dels lemes, com a molt una per a cadascun: una entrada queda a una línia de l'anterior i la següent no. Desactivat, aquesta columna queda curta; els retalls de més amunt omplen, a més, totes les columnes menys l'última.

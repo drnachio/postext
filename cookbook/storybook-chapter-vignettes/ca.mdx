@@ -1,0 +1,62 @@
+---
+title: "Capítols de conte amb vinyetes i sumaris"
+summary: "Un sol estil de títol obre tots els capítols; cada títol anomena en atributs la seva vinyeta i el seu sumari en cursiva, que pinta l'obertura."
+plain: "Les primeres pàgines d'una edició infantil italiana de Pinotxo. Cada capítol comença amb una il·lustració pròpia en aquarel·la i un breu resum del que hi passa."
+description: "Pinocchio, de Collodi, en italià i compost amb Postext: cada capítol s'obre sota una vinyeta diferent, amb la línia del capítol i un sumari en cursiva."
+question: "Com encapçalo cada capítol d'un llibre infantil amb una vinyeta diferent i un sumari en cursiva?"
+aliases: ["llibre infantil", "conte", "vinyeta", "vinyeta de capçalera", "cul de llàntia", "sumari", "frontispici", "Pinotxo"]
+pageNotes: { "1": "La portada il·lustrada, en pàgina parella: una aquarel·la de turons toscans amb xiprers i un poble dalt de tot sota un cel blau pàl·lid, on un vell amb barret de palla porta un carro de llenya estirat per un ase fins al taller obert d'un fuster; a sota, LE AVVENTURE DI, Pinocchio en grans lletres de fantasia marrons, Storia di un burattino en cursiva i CARLO COLLODI.", "2": "El capítol I comença sota una vinyeta en aquarel·la que es fon amb el paper: mestre Ciliegia, calb i amb el nas vermell com una cirera, es queda paralitzat amb la destral enlaire sobre el tronc del seu banc, entre ribots, serres i encenalls. CAPITOLO I, el sumari de Collodi en dues línies de cursiva centrada, els primers paràgrafs i un disc color fusta amb el foli, centrat al peu.", "3": "Una pàgina plena del capítol I sota la capçalera LE AVVENTURE DI PINOCCHIO, amb el disc del foli a la cantonada exterior del peu.", "4": "El final del capítol I sota la capçalera CAPITOLO I, tancat per dues cireres vermelles amb el seu cuet, centrades i sense peu.", "5": "El capítol II comença sota una vinyeta en aquarel·la de Geppetto, amb la seva perruca groga arrissada, que rep el tronc de mans de mestre Ciliegia al costat d'una olla vermella de polenta fumejant; CAPITOLO II, un sumari de tres línies, els primers paràgrafs i el colofó." }
+---
+
+## Què compondràs
+
+Les primeres pàgines d'una edició infantil italiana de *Le avventure di Pinocchio*, de Collodi, compostes en Averia Serif Libre de 13/19 pt, en format de 190 × 240 mm. Davant del capítol I, a la pàgina parella, va una portada il·lustrada: una aquarel·la dels turons toscans, on un carro estirat per un ase porta llenya al taller d'un fuster, per sobre del títol en Fredericka the Great. Cada capítol comença sota una vinyeta en aquarel·la que es fon amb el paper (mestre Ciliegia amb la destral enlaire sobre el tronc que parla al capítol I, Geppetto amb la seva perruca groga rebent el tronc al II) i continua amb la línia del capítol i el sumari de Collodi en cursiva centrada. Les quatre imatges es van generar amb models de difusió a partir d'unes mateixes indicacions d'estil i la paleta de la pàgina. Només porten capçalera les pàgines 8 i 9, totes dues sense obertura. Els folis van en discos color fusta, i el capítol I acaba amb dues cireres sense peu ni número.
+
+## Elaboració
+
+### 1 · Un sol estil de títol, la vinyeta a cada títol
+
+El codi d'aquest pas és a [la resposta curta](#la-resposta-curta). El `resourceId` d'un element d'imatge admet els mateixos marcadors que un text de disseny, així que `'{attr.vignetta}'` dibuixa el recurs que anomena el títol, igual que `{attr.summary}` imprimeix el seu sumari. Els dos capítols comparteixen l'estil `capitolo` i anomenen la seva imatge a la línia de títol: `# Capitolo II {style="capitolo" vignetta="polenta" summary="…"}`. Un tercer capítol necessita un recurs i un títol més, no un altre estil ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). La línia del capítol es col·loca des del cap del contenidor, 6 mm per sota de la caixa de la vinyeta, en lloc d'ancorar-se a `#vignette`. Una imatge no reserva alçada, de manera que els textos ancorats a ella es mesuren com si el dibuix no hi fos i, sense `minHeight`, el text del capítol I començaria a 62 mm de la vora superior de la pàgina, dins del dibuix. Amb `minHeight` com a mínim de 14 línies, el text del capítol I comença a la mateixa línia que el del II, el sumari del qual ocupa una línia més; sense aquest mínim, el del capítol I comença 6,7 mm més amunt ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)).
+
+### 2 · Carrega les il·lustracions com a recursos de mapa de bits
+
+<Excerpt region="pictures" />
+
+Cada imatge és un JPEG de la carpeta `assets/` de la recepta, declarat amb la seva mida en píxels: la composició només llegeix aquestes mides, i el llenç pinta el que `loadImage()` hagi registrat amb cada identificador de fitxer quan dibuixa la pàgina. Les vinyetes i les cireres es van generar sobre blanc i després es van multiplicar pel color del paper, `#fffaf0`, de manera que els seus marges surten del color de la pàgina i les imatges no tenen una vora visible. La portada està retallada a 190:150, la forma del seu camp, perquè la imatge ajustada l'ompli sense una franja de paper. El paisatge i les vinyetes els pinten elements d'imatge dels dissenys; les cireres, la línia `::resource{id="ciliegie"}` del Markdown.
+
+### 3 · Fes de la portada un estil de títol
+
+<Excerpt region="frontispiece" />
+
+La portada és el primer títol del Markdown, `# Pinocchio {style="frontespizio" kicker="Le avventure di"}`, i el seu estil la pinta sencera: el paisatge, de 150 mm d'alçada des de la vora superior de la pàgina, i després l'avanttítol de l'atribut, el títol i, des de les metadades del principi del fitxer, el subtítol i l'autor. L'estil porta `span: 'page'` encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es retalla al cap de la caixa de text, i els 22 mm superiors de la il·lustració sortirien del color del paper. El `footer` buit treu el disc del foli que porten les obertures de capítol, i `pages: 'body'` ja deixa les capçaleres fora d'aquesta pàgina ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)).
+
+### 4 · Capçaleres a les pàgines de text, folis en discos
+
+<Excerpt region="folios" />
+
+`continuation` numera l'extracte des de la pàgina 6 del llibre, que és parella, així que la portada queda davant del capítol I i el primer foli imprès és el 7. `pages: 'body'` deixa les capçaleres fora de la portada i de les dues obertures, de manera que només surten a les pàgines 8 i 9: el títol del llibre a la parella i el del capítol a la senar ([elements de text](/ca/docs/configuration#elements-de-text)). El foli és un text de disseny dins d'un quadrat fix de 7,4 mm les cantonades del qual tenen un radi de mig costat, és a dir, un cercle; `verticalAlign: 'middle'` i l'alçada de línia que es calcula al comentari hi centren les xifres. Les xifres, color paper, tenen un contrast de 4,98:1 sobre la fusta. `trail()` desplaça cada rètol en majúscules espaiades a la dreta la meitat del seu espaiat, perquè la 1.4.1 centra una línia espaiada com si l'espai que segueix l'última lletra en formés part.
+
+### 5 · Tanca el capítol amb un cul de llàntia sense número
+
+<Excerpt region="tailpiece" />
+
+Un tipus de recurs imprimeix el seu `captionPrefix` i el seu número davant del peu. Amb el prefix buit i sense peu, sota les cireres no surt res; amb `captionPrefix: 'Fregio'`, el mateix recurs porta a sota *Fregio 1.* i creix 10 mm ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). El `defaultPlacement` del tipus col·loca cada recurs on hi ha la seva línia `::resource`, centrat i amb un sisè de la mesura d'amplada, així que al Markdown n'hi ha prou amb `::resource{id="ciliegie"}` després de l'últim paràgraf del capítol. Les altres imatges comparteixen el tipus, però cap `:ref` ni `::resource` no les anomena, així que mai no es col·loquen ni es compten.
+
+## Variants
+
+### Obre cada capítol en pàgina senar
+
+Amb `'odd'`, el capítol II passa a la pàgina 11 i la 10 queda en blanc; la portada desactiva el seu propi salt, perquè hereta el del nivell i, si no, passaria a la pàgina 7 després d'una pàgina 6 en blanc.
+
+```diff
+@@ l'estil de la portada @@
+   id: 'frontespizio',
++  breakBefore: { enabled: false },
+@@ headings, a config() @@
+-    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }],
++    levels: [{ level: 1, breakBefore: { enabled: true, parity: 'odd' } }],
+```
+
+## Errors freqüents
+
+- Al Markdown, un espai de no separació (U+00A0) uneix cada guió llarg de diàleg de Collodi a la seva paraula, perquè un guió de tancament no obri mai línia; dos més mantenen junts *di legno* i *in piedi* al final dels seus paràgrafs. A la 1.4.1, si el paràgraf porta negreta o cursiva, la línia encara es pot partir en un espai de no separació. L'únic paràgraf amb aquests espais i una paraula en cursiva, el de l'*ohi* de la pàgina 9, en té quatre, i a la captura tots cauen a mitja línia o al final del paràgraf.

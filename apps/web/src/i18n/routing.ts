@@ -1,7 +1,7 @@
 import { defineRouting } from "next-intl/routing";
 
 export const routing = defineRouting({
-  locales: ["en", "es", "zh"],
+  locales: ["en", "es", "ca", "zh", "ar"],
   defaultLocale: "en",
   localeDetection: true,
   // Every page's <head> declares its hreflang alternates (lib/seo.ts

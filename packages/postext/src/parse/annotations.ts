@@ -2,7 +2,9 @@
  * Chinese inline annotations (#193, #194, #195): emphasis dots
  * (`:dots[…]`), the proper-name and book-title marks (`:name[…]`,
  * `:book[…]`), ruby (`:ruby[…]{rt="…"}` and the compact `{紅樓|hóng|lóu}`)
- * and warichu notes (`:warichu[…]{open close}`).
+ * and warichu notes (`:warichu[…]{open close}`); and the directional
+ * isolates (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which
+ * set a run in its own direction inside text of the other.
  *
  * They preserve their text, as `:smallcaps[…]` does: the characters between
  * the brackets stay in the paragraph's plain text (search, the contents,
@@ -15,12 +17,12 @@
  * nested annotations included (`:warichu[甲戌側批：:name[寶玉]…]`).
  */
 
-import type { DirectiveAttrs, EmphasisMark, InlineRuby, InlineSpan, InlineWarichu } from './types';
+import type { DirectiveAttrs, EmphasisMark, InlineDirection, InlineRuby, InlineSpan, InlineWarichu } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { graphemesOf } from '../measure/graphemes';
 
 /** The inline annotation directives, by name. */
-export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu'] as const;
+export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl'] as const;
 export type AnnotationName = (typeof ANNOTATION_NAMES)[number];
 
 /** Private-use marks opening each kind of annotation while the emphasis
@@ -32,11 +34,13 @@ const OPEN: Record<AnnotationName, string> = {
   book: '',
   ruby: '',
   warichu: '',
+  ltr: '',
+  rtl: '',
 };
 const CLOSE = '';
 const KIND_OF_OPEN = new Map<string, AnnotationName>(ANNOTATION_NAMES.map((n) => [OPEN[n], n]));
-const MARK_RE = /[-]/;
-const MARKS_RE = /[-]/g;
+const MARK_RE = /[-]/;
+const MARKS_RE = /[-]/g;
 
 /** One annotation as written: its kind, its attributes, and (a compact
  *  ruby) its readings. Queued in the order of the marks in the text. */
@@ -48,7 +52,7 @@ export interface QueuedAnnotation {
 }
 
 /** `:dots[`, `:name[`… at the start of a match. */
-const OPENER_RE = /:(dots|name|book|ruby|warichu)\[/y;
+const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl)\[/y;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
@@ -266,6 +270,8 @@ interface Frame {
   id: number;
   /** The object every span of a warichu note shares. */
   warichu?: InlineWarichu;
+  /** The object every span of a directional isolate shares. */
+  direction?: InlineDirection;
   /** Indices (in the output) of the spans a ruby holds. */
   pieces?: number[];
 }
@@ -347,6 +353,11 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         case 'warichu':
           fields.warichu = f.warichu!;
           break;
+        case 'ltr':
+        case 'rtl':
+          // The innermost isolate: it names the ones around it.
+          fields.direction = f.direction!;
+          break;
         case 'ruby':
           break;
       }
@@ -385,6 +396,17 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         if (kind === 'ruby') {
           frame.pieces = [];
           rubies.push(frame);
+        }
+        if (kind === 'ltr' || kind === 'rtl') {
+          let outer: InlineDirection | undefined;
+          for (let i = stack.length - 1; i >= 0 && !outer; i--) outer = stack[i]!.direction;
+          const lang = entry.attrs.lang?.trim();
+          frame.direction = {
+            dir: kind,
+            id: frame.id,
+            ...(lang ? { lang } : {}),
+            ...(outer ? { outer } : {}),
+          };
         }
         stack.push(frame);
         continue;
@@ -451,6 +473,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
   if (span.properName !== undefined) out.properName = span.properName;
   if (span.bookTitle) out.bookTitle = span.bookTitle;
   if (span.warichu) out.warichu = span.warichu;
+  if (span.direction) out.direction = span.direction;
   if (withRuby && span.ruby) out.ruby = span.ruby;
   if (span.inserted) out.inserted = true;
   return out;
@@ -467,7 +490,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
 export function annotationSourceSkips(markdown: string, from: number, end: number): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   const slice = markdown.slice(from, end);
-  if (!/:(?:dots|name|book|ruby|warichu)\[|\{[^{}\n|]*\|/.test(slice)) return out;
+  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl)\[|\{[^{}\n|]*\|/.test(slice)) return out;
   // Inline code spans, which the parser protects.
   const code: Array<[number, number]> = [];
   const codeRe = /(?<!\\)`[^`\n]+?`/g;
@@ -554,7 +577,8 @@ export function withBookBrackets(spans: readonly InlineSpan[]): InlineSpan[] {
  *  plain (captions, table cells and notes, which do not draw them). The
  *  same array when none has one. With `bookBrackets` (`cjk.bookTitleMark:
  *  'brackets'`) a book title keeps its 《》, which are then punctuation of
- *  the text, not a mark. */
+ *  the text, not a mark. Directional isolates (`:rtl[…]`, `:ltr[…]`)
+ *  stay: they decide the order of the text, which no setting drops. */
 export function dropAnnotations(spans: InlineSpan[], bookBrackets = false): InlineSpan[] {
   if (bookBrackets && spans.some((s) => s.bookTitle)) spans = withBookBrackets(spans);
   if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu)) return spans;

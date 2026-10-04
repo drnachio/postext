@@ -1,10 +1,13 @@
 import { flowTextWidth } from '../measure/vertical';
-import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension } from '../types';
+import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension, DigitSystem } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
-import type { ResolvedConfig } from '../vdt';
+import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildFontString } from '../measure';
 import { formatNumeral, parseNumberFormat } from '../numbering';
+import { withDigits } from '../arabicNumerals';
+import { defaultNumeralsFor, languageOf } from '../locale';
+import { resolvedLocale } from './config';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
 
@@ -239,11 +242,20 @@ export function computeOrderedLevelIndentsPx(
       const measured = maxNumberWidthByDepth.get(prevIndex + 1);
       if (measured !== undefined) return measured;
       const sep = resolveSeparatorRun(prev, prevFontString, dpi, bodyFontSizePx);
-      if (!sep) return flowTextWidth(prev.prefix + '99' + prev.separator, prevFontString);
+      const sample = withDigits('99', resolved.numerals);
+      if (!sep) return flowTextWidth(prev.prefix + sample + prev.separator, prevFontString);
       return (prev.prefix ? flowTextWidth(prev.prefix, sep.fontString) : 0)
-        + flowTextWidth('99', prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
+        + flowTextWidth(sample, prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
     },
   );
+}
+
+/** The digits a list item numbers in: the document's, unless the
+ *  container it sits in names another language (`:::paragraphs{dir=ltr
+ *  lang=en}` in an Arabic book), whose own digits it takes (#401). */
+function listDigits(block: ContentBlock, resolved: ResolvedConfig): DigitSystem | undefined {
+  if (!block.lang || languageOf(block.lang) === languageOf(resolvedLocale(resolved))) return resolved.numerals;
+  return defaultNumeralsFor(block.lang);
 }
 
 /** An ordered-list item's number in its level's format, by the shared
@@ -251,17 +263,18 @@ export function computeOrderedLevelIndentsPx(
  *  (a Markdown list may start at `0.`) prints in digits, and so does a roman
  *  numeral from 4000 up. The resolver hands over the list spelling; a part's
  *  partial override is applied after it, so any spelling is read here too
- *  (unknown → arabic). */
-export function formatListNumber(n: number, format: OrderedListNumberFormat): string {
+ *  (unknown → arabic). Decimal numbers, and those digits, are written in
+ *  the document's `digits`. */
+export function formatListNumber(n: number, format: OrderedListNumberFormat, digits?: DigitSystem): string {
   const style = parseNumberFormat(format) ?? 'decimal';
-  if (n < 0 || (n === 0 && !EAST_ASIAN_ZERO.has(style))) return n.toString();
-  if ((style === 'lower-roman' || style === 'upper-roman') && n >= 4000) return n.toString();
-  return formatNumeral(n, style);
+  if (n < 0 || (n === 0 && !OWN_ZERO.has(style))) return withDigits(n.toString(), digits);
+  if ((style === 'lower-roman' || style === 'upper-roman') && n >= 4000) return withDigits(n.toString(), digits);
+  return formatNumeral(n, style, digits);
 }
 
-/** The styles with a zero of their own (零, 〇, ⓪, ０); an item numbered 0
- *  in them prints it. */
-const EAST_ASIAN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal']);
+/** The styles with a zero of their own (零, 〇, ⓪, ０, ٠, ۰); an item
+ *  numbered 0 in them prints it. */
+const OWN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal', 'arabic-indic', 'persian']);
 
 /**
  * Walks content blocks identifying contiguous ordered-list runs per depth,
@@ -371,7 +384,7 @@ export function computeOrderedListRunMetrics(
       const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
       const levelCfg = lists.levels[levelIdx]!;
       const sepRun = levelSeparatorRuns[levelIdx];
-      const number = formatListNumber(counter, levelCfg.numberFormat);
+      const number = formatListNumber(counter, levelCfg.numberFormat, listDigits(block, resolved));
       perBlock.set(i, sepRun
         ? {
             numberText: number,
@@ -541,4 +554,30 @@ export function resolveOrderedListItemStyle(
     bulletXOffsetInColumn: indentPx + prefixWidthPx + rightAlignOffsetPx,
     strikethroughText: false,
   };
+}
+
+/**
+ * The marker of a list item set against its frame's direction (#371): an
+ * English list in an Arabic book, an Arabic one in an English book. Its text
+ * runs from the block's left edge (`measureContentBlock` mirrors the lines),
+ * and each run of its marker — the prefix, the number or bullet, the
+ * separator — moves to the mirror place in the block's width, so the marker
+ * stands on the text's start side, its pieces in that side's reading order:
+ * `(1)` keeps its brackets, and right-aligned numbers end up aligned on the
+ * edge that faces the text. Call it once the marker positions are set.
+ */
+export function mirrorListMarker(blk: VDTBlock): void {
+  if (blk.bulletOffsetX === undefined || !blk.bulletText) return;
+  const left = blk.bbox.x;
+  const right = blk.bbox.x + blk.bbox.width;
+  const flip = (x: number, w: number): number => left + right - x - w;
+  const bulletFont = blk.bulletFontString ?? blk.fontString;
+  const markFont = blk.separatorFontString ?? bulletFont;
+  if (blk.separatorText !== undefined && blk.separatorX !== undefined) {
+    blk.separatorX = flip(blk.separatorX, flowTextWidth(blk.separatorText, markFont));
+  }
+  if (blk.prefixText !== undefined && blk.prefixX !== undefined) {
+    blk.prefixX = flip(blk.prefixX, flowTextWidth(blk.prefixText, markFont));
+  }
+  blk.bulletOffsetX = flip(blk.bulletOffsetX, flowTextWidth(blk.bulletText, bulletFont));
 }

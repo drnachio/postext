@@ -18,6 +18,7 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../controls';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 /** Between the label and the number: 图 1-1 or 图1-1. */
@@ -54,6 +55,7 @@ export function CaptionStyleFields({
   fieldIdPrefix,
 }: CaptionStyleFieldsProps) {
   const labels = useSandboxLabels();
+  const side = flowSideLabels(useRightToLeftFlow(), labels.alignLeft, labels.alignRight);
   const unset = (field: keyof CaptionStyleConfig) => raw?.[field] === undefined;
 
   const updateNote = (partial: Partial<CaptionNoteStyleConfig>) => {
@@ -69,9 +71,9 @@ export function CaptionStyleFields({
   const noteUnset = (field: keyof CaptionNoteStyleConfig) => raw?.note?.[field] === undefined;
 
   const alignOptions = [
-    { value: 'left', label: labels.alignLeft },
+    { value: 'left', label: side.left },
     { value: 'center', label: labels.alignCenter },
-    { value: 'right', label: labels.alignRight },
+    { value: 'right', label: side.right },
   ];
   const positionOptions = [
     { value: 'below', label: labels.captionPositionBelow },

@@ -1,0 +1,78 @@
+---
+title: "Clàssic de butxaca: capítols breus seguits"
+summary: "Dom Casmurro en butxaca: capítols breus seguits, amb títols dibuixats a la columna i sense línies ni títols solts als salts de pàgina."
+plain: "Cinc pàgines d'una novel·la clàssica brasilera en format de butxaca. Cada capítol curt comença just després de l'anterior, i cap pàgina no comença ni acaba amb una línia solta."
+description: "Dom Casmurro en butxaca amb Postext: capítols seguits sota títols centrats, partició de mots portuguesa i cap pàgina que obri amb una línia sola."
+question: "Com encadeno capítols breus, cada títol amb el seu text, sense òrfenes ni últimes línies d'una paraula?"
+aliases: ["capítols seguits", "capítols breus", "mantenir amb el següent", "títol unit al text", "vídues i òrfenes", "línies curtes", "llibre de butxaca", "partició de mots en portuguès", "Machado de Assis", "capítols en xifres romanes", "fragment d'un llibre", "comptadors de continuació"]
+pageNotes: { "1": "La coberta: MACHADO DE ASSIS en versals crema sobre una banda pruna, Dom Casmurro en Abril Fatface pruna sobre un panell crema amb un filet curt safrà, i el segell de la casuarina en safrà sobre COLEÇÃO CASUARINA a la banda del peu.", "2": "La làmina, pàgina 212 sense foliar: una pintura del Pa de Sucre i la Urca davant d'un cel de matí ambre amb un sol baix, un mar pruna esvalotat amb un nedador sol entre les onades, i CAPÍTULO CXXIII sobre una línia d'aquell capítol en cursiva crema.", "3": "La pàgina 213 continua amb el capítol CXVIII. A prop del peu comença el capítol CXIX, NÃO FAÇA ISSO, QUERIDA, sota un numeral pruna i amb dues línies de text a sota; la capçalera l'anomena.", "4": "Pàgina 214, sota la capçalera DOM CASMURRO: les dues últimes línies del CXIX, el capítol CXX, OS AUTOS, i al peu el CXXI, A CATASTROPHE, amb dues línies sota el seu títol.", "5": "Pàgina 215: el final del CXXI i el capítol CXXII, O ENTERRO, que anomena la capçalera.", "6": "Pàgina 216, sota DOM CASMURRO: el final del CXXII i el capítol CXXIII, OLHOS DE RESSACA.", "7": "Pàgina 217: les cinc últimes línies del CXXIII, que acaben en o nadador da manhã, i al peu de la pàgina el colofó en lletra petita grisa al costat del segell de la casuarina." }
+---
+
+## Què compondràs
+
+Cinc pàgines del final de *Dom Casmurro* (Machado de Assis, 1899), en el portuguès original, compostes com a llibre de butxaca de 110 × 178 mm per a una col·lecció inventada, la Coleção Casuarina. Les precedeixen una coberta en bandes pruna, crema i pruna, amb el títol en Abril Fatface i el segell safrà de la col·lecció, i una làmina pintada del mar esvalotat de Flamengo, generada amb models de difusió, davant de la 213. El text va del final del CXVIII al del CXXIII, i cap capítol no obre pàgina. Cadascun comença dues línies per sota del final de l'anterior (tres en el CXIX, per omplir la 213), amb un numeral romà en pruna, el títol en versals espaiades i un filet curt safrà. A la 214 en comencen dos; a la 215 i la 216, un. Totes les pàgines de text tret de l'última acaben a la línia 33, i cap no comença amb una línia sola.
+
+## Elaboració
+
+### 1 · Encadena els capítols, cada títol amb el seu text
+
+<Excerpt region="answer" highlight="17-24" />
+
+El nivell de capítol porta el salt desactivat, i `marginTop` col·loca cada títol dues línies per sota de l'última del capítol anterior. El seu disseny no porta `span`, així que el títol es dibuixa dins de la columna, en un bloc de tres línies d'alçada, i el text que va a sota cau a la retícula de base ([saltar abans](/ca/docs/configuration#saltar-abans), [span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). Les regles de cohesió conserven els valors per defecte. Els paràgrafs de quatre línies que segueixen el CXIX i el CXXI deixen dues línies al peu de la seva pàgina i en passen dues a la següent; amb `avoidOrphans: false` es partirien en tres i una, i les pàgines 214 i 215 començarien amb una línia sola ([òrfenes, vídues i *runts*](/ca/docs/configuration#òrfenes-vídues-runts-i-regles-de-cohesió)). L'equilibratge de columnes afegeix sobre el CXIX una tercera línia de blanc, i amb ella la pàgina 213 acaba a la línia 33 ([equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
+
+<PageShot page={3} crop="0,.683,1,.317" caption="Pàgina 213: el capítol CXIX comença tres línies per sota del final del CXVIII i conserva dues línies del seu text al peu." />
+
+### 2 · Compon una pàgina de 33 línies, amb partició de mots portuguesa
+
+<Excerpt region="text" />
+
+El marge inferior fa 16,3 mm, el que queda dels 178 mm d'alçada després del marge superior de 15 mm i 33 línies de 12,6 pt, així que totes les pàgines plenes acaben a la mateixa línia. Tinos, que té les mateixes amplades que la Times New Roman, compon uns 59 caràcters per línia en la mesura de 84 mm a 9,5 pt. `locale: 'pt'` divideix les paraules amb els patrons portuguesos: *at-tracção*, *af-fluencia*, *genealogica-mente* ([llengües admeses](/ca/docs/justification#llengües-compatibles)). Tots els paràgrafs porten sagnat, també el primer després d'un títol, com és costum a les edicions portugueses i brasileres, i per a això n'hi ha prou amb el valor per defecte d'`indentAfterHeading`.
+
+### 3 · Posa el títol del llibre a la pàgina parella i el capítol a la senar
+
+<Excerpt region="heads" />
+
+`{title}` imprimeix el títol de les metadades del document, i `{chapterTitle}`, el de l'últim capítol que comença a la pàgina o abans, així que la 217 anomena el CXXIII, que va començar a la 216 ([elements de text](/ca/docs/configuration#elements-de-text)). La 213 anomena el CXIX, que comença al peu, tot i que les seves primeres 25 línies tanquen el CXVIII: la 1.4.1 no té marcador per al capítol amb què obre una pàgina. `SHIFT` porta les capçaleres al centre de la caixa de text, a 1 mm del centre de la pàgina, perquè el marge interior fa 2 mm més que l'exterior.
+
+### 4 · Dibuixa la coberta i la làmina com a títols
+
+<Excerpt region="cover" />
+
+Totes dues són [estils de títol](/ca/docs/configuration#estils-dencapçalament) amb `numbered: false`, així que el primer capítol numerat continua sent el CXIX. `span: 'page'` les converteix en pàgines d'obertura. Sense això, les bandes de la coberta es tallen a les vores superior i inferior de la caixa de text, la capçalera i el foli 1 s'imprimeixen sobre la coberta i el títol surt en una sola línia. El peu de la làmina surt del seu títol: CAPÍTULO CXXIII és el text del títol, i la cita en cursiva, el seu atribut `quote` ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El `:::pagebreak` que segueix cadascuna aparta el text de les il·lustracions, perquè la 1.4.1 no reserva lloc per a la banda del peu de la coberta ni per a la imatge de la làmina.
+
+### 5 · Digues al fragment en quin punt del llibre és
+
+<Excerpt region="excerpt" />
+
+`continuation.headings` dona els comptadors de títols amb què comença el fragment. Amb `h1: 118`, el primer títol numerat és el capítol CXIX; sense això, els cinc capítols surten numerats del I al V. `numberingTemplate: '{1:I}'`, al nivell de capítol, posa aquests números en romans, i el disseny els imprimeix amb `{number}`. `:::numbering{startAt=212}`, després del salt de pàgina de la coberta, numera la làmina com a 212 i les pàgines de text de la 213 a la 217 ([`:::numbering`](/ca/docs/document-format#numbering)).
+
+## Variants
+
+### Obre cada capítol en una pàgina nova
+
+Amb un salt abans de cada capítol, les cinc pàgines de text passen a ser set: la 214 porta només el CXIX, el seu títol i quatre línies, i la 213, on no comença cap capítol, pren com a capçalera el títol de la làmina, CAPÍTULO CXXIII.
+
+```diff
+-  breakBefore: { enabled: false }, marginTop: pt(2 * LEAD), advancedDesign: chapterHead };
++  breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(2 * LEAD),
++  advancedDesign: chapterHead };
+```
+
+### Posa el número del capítol a la pàgina senar
+
+`{chapterNumber}` imprimeix el numeral del mateix capítol del qual surt el títol: *CXIX · NÃO FAÇA ISSO, QUERIDA*.
+
+```diff
+-  head('recto-chapter', '{chapterTitle}', 'odd', SHIFT),
++  head('recto-chapter', '{chapterNumber} · {chapterTitle}', 'odd', SHIFT),
+```
+
+## Errors freqüents
+
+- Si puges `widowMinLines` a 3, a la 1.4.1 el CXIX i el CXXI es queden al peu amb tres línies a sota, i els seus paràgrafs de quatre línies es parteixen en tres i una: les pàgines 214 i 215 comencen amb una línia sola, sigui quin sigui el valor d'`orphanPenalty`.
+- Si el CXVIII creix unes quantes línies, al CXIX només li queda lloc per a una línia sota el seu títol. `keepWithNext` porta llavors el títol a la pàgina 214, i la 213 acaba quatre o cinc línies abans del peu; amb `keepWithNext: false`, el títol tanca la 213 sense text a sota.
+- La làmina és un H1, així que `{chapterTitle}` hi recorre: una pàgina de text en què no ha començat cap capítol des de la làmina, com la 213 quan el CXIX passa a la següent, porta com a capçalera CAPÍTULO CXXIII.
+- Amb `avoidRunts` desactivat, l'última línia del llibre porta *manhã.* sola en lloc de *nadador da manhã.*
+- Sense el `:::pagebreak` que segueix la coberta, i sense la làmina, el capítol CXVIII comença a 19,5 mm de la vora superior de la coberta, sota la seva línia de títol de 3 mm. Sense el que segueix la làmina, onze línies de text s'imprimeixen sobre el mar si el peu de la làmina puja a 94 mm.
+- En aquestes pàgines cap línia no es talla pel guionet d'un pronom enclític (*Vesti-me*, *metteu-se*). Posa en cursiva *Emfim*, la primera paraula del CXXIII, i la 1.4.1 compon aquell paràgraf amb el tall de línies del text amb marques, que acaba una línia en *vencer-* i comença la següent amb *se a si mesma*, sense el guionet que l'ortografia portuguesa repeteix al principi de la línia.
+- Aquests salts de pàgina valen només per a aquest text a 9,5 sobre 12,6 pt en una mesura de 84 mm. Si canvies el text, el cos o la mesura, torna a mirar el peu de cada pàgina i el blanc sobre cada títol.

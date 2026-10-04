@@ -1,9 +1,9 @@
-import type { NumberFormatStyle, ResourceCounterFormat, ResourceType } from 'postext';
-import { formatNumeral, parseNumberFormat } from 'postext';
+import type { DigitSystem, NumberFormatStyle, ResourceCounterFormat, ResourceType } from 'postext';
+import { documentNumeralStyle, formatNumeral, parseNumberFormat } from 'postext';
 
 /** The resource spelling of each numeral style: `counterFormat` says
- *  `roman-lower` where page labels say `lower-roman`; the East Asian styles
- *  keep their CSS names everywhere. */
+ *  `roman-lower` where page labels say `lower-roman`; the East Asian and
+ *  Arabic styles keep their CSS names everywhere. */
 const RESOURCE_COUNTER_FORMATS: Record<NumberFormatStyle, ResourceCounterFormat> = {
   decimal: 'decimal',
   'lower-roman': 'roman-lower',
@@ -19,6 +19,12 @@ const RESOURCE_COUNTER_FORMATS: Record<NumberFormatStyle, ResourceCounterFormat>
   'cjk-earthly-branch': 'cjk-earthly-branch',
   'circled-decimal': 'circled-decimal',
   'fullwidth-decimal': 'fullwidth-decimal',
+  'arabic-indic': 'arabic-indic',
+  persian: 'persian',
+  'arabic-abjad': 'arabic-abjad',
+  'arabic-abjad-maghrebi': 'arabic-abjad-maghrebi',
+  abjad: 'abjad',
+  hijai: 'hijai',
 };
 
 /** A type's `counterFormat` in the resource spelling, read as the engine
@@ -42,21 +48,24 @@ const PREVIEW_HEADING: Record<string, number> = {
 
 /** Render a sample number for a type using a fixed sample counter (7) and the
  *  sample heading context above. Mirrors the runtime template syntax (`{n}`,
- *  `{h1}`..`{h6}`) but is intentionally lightweight for preview purposes. */
-function renderPreviewNumber(type: ResourceType): string {
-  const style = parseNumberFormat(type.counterFormat) ?? 'decimal';
+ *  `{h1}`..`{h6}`) but is intentionally lightweight for preview purposes.
+ *  Decimal numbers take the document's `digits`, as the engine writes them
+ *  (شكل ١-٧ in an Arabic book). */
+function renderPreviewNumber(type: ResourceType, digits: DigitSystem): string {
+  const style = documentNumeralStyle(parseNumberFormat(type.counterFormat) ?? 'decimal', digits);
   return type.numberingTemplate.replace(/\{([^}]+)\}/g, (_match, body: string) => {
     const key = body.trim();
     if (key === 'n') return formatNumeral(7, style);
     const h = PREVIEW_HEADING[key];
-    if (h !== undefined) return formatNumeral(h, 'decimal');
+    if (h !== undefined) return formatNumeral(h, documentNumeralStyle('decimal', digits));
     return _match;
   });
 }
 
-/** Builds the full preview string, e.g. "Fig. 1.7" or "Figure 1.7". */
-export function renderResourceTypePreview(type: ResourceType): string {
-  const number = renderPreviewNumber(type);
+/** Builds the full preview string, e.g. "Fig. 1.7" or "Figure 1.7", in the
+ *  document's digits (default European). */
+export function renderResourceTypePreview(type: ResourceType, digits: DigitSystem = 'latn'): string {
+  const number = renderPreviewNumber(type, digits);
   const prefix = type.shortLabel || type.captionPrefix || type.name;
   return [prefix, number].filter(Boolean).join(' ');
 }

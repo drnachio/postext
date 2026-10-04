@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadPanel, loadProjectId, saveProjectId } from './persistence';
+import { clearStorage, loadEpubLayout, loadPanel, loadProjectId, saveEpubLayout, saveProjectId } from './persistence';
 
 function installStorage(initial: Record<string, string> = {}) {
   const map = new Map(Object.entries(initial));
@@ -50,6 +50,22 @@ describe('project id', () => {
     saveProjectId(null);
     expect(loadProjectId()).toBeNull();
     expect(map.has('postext-sandbox-project')).toBe(false);
+  });
+});
+
+describe('EPUB layout', () => {
+  it('round-trips, ignores unknown values and goes with the rest of the view', () => {
+    const map = installStorage();
+    expect(loadEpubLayout()).toBeNull();
+    saveEpubLayout('fixed');
+    expect(loadEpubLayout()).toBe('fixed');
+    saveEpubLayout('reflowable');
+    expect(loadEpubLayout()).toBe('reflowable');
+    map.set('postext-sandbox-epub-layout', 'pre-paginated');
+    expect(loadEpubLayout()).toBeNull();
+    saveEpubLayout('fixed');
+    clearStorage();
+    expect(map.has('postext-sandbox-epub-layout')).toBe(false);
   });
 });
 

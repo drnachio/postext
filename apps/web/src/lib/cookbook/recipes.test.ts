@@ -28,16 +28,16 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`) => ({ en, es, zh });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`) => ({ en, es, ca, zh, ar });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer", "成品一览"),
-  short: L("The short answer", "La respuesta corta", "简短回答"),
-  ingredients: L("Ingredients", "Ingredientes", "用料"),
-  method: L("Method", "Elaboración", "做法"),
-  whole: L("The whole recipe", "La receta completa", "完整食谱"),
-  variations: L("Variations", "Variantes", "变化"),
-  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题"),
-  credits: L("Credits", "Créditos", "致谢"),
+  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده"),
+  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر"),
+  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات"),
+  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة"),
+  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة"),
+  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق"),
 } satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */
@@ -163,6 +163,14 @@ describe("validateRecipeMeta (fixture)", () => {
         'downloads.pdf: needs a "pdf" output',
       ]),
     );
+  });
+
+  it("takes the book block or the cjk block, which both declare showBook", () => {
+    const meta = fixtureMeta();
+    meta.kit = ["core", "fonts", "viewer", "pdf", "arabic", "book"];
+    expect(validate(meta).filter((e) => e.startsWith("kit:"))).toEqual([]);
+    meta.kit = ["core", "fonts", "viewer", "pdf", "cjk", "arabic", "book"];
+    expect(validate(meta)).toContain('kit: list "book" or "cjk", not both (the cjk block carries its own showBook)');
   });
 
   it("keeps unreleased engines out", () => {

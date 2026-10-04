@@ -10,8 +10,8 @@
  */
 
 /** Site locales: the write-ups, the registries and the gallery. */
-export type Locale = "en" | "es" | "zh";
-export const LOCALES: readonly Locale[] = ["en", "es", "zh"];
+export type Locale = "en" | "es" | "ca" | "zh" | "ar";
+export const LOCALES: readonly Locale[] = ["en", "es", "ca", "zh", "ar"];
 export type Localized<T = string> = Record<Locale, T>;
 
 /** Languages a recipe's sample document (the pen, its content.<locale>.md,
@@ -61,8 +61,8 @@ export const GENRE_IDS: readonly GenreId[] = [
   "novel", "poetry", "textbook", "workbook", "manual", "paper", "report", "magazine",
   "newsletter", "catalogue", "photobook", "ephemera", "any",
 ];
-export type OutputId = "canvas" | "html" | "pdf" | "bundle" | "live";
-export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "bundle", "live"];
+export type OutputId = "canvas" | "html" | "pdf" | "epub" | "bundle" | "live";
+export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "epub", "bundle", "live"];
 export type Level = 1 | 2 | 3;
 
 /** Write-up sections in their fixed order. Authored ones come from MDX H2
@@ -78,10 +78,13 @@ export const REQUIRED_AUTHORED_SECTIONS: readonly SectionId[] = ["build", "metho
 // ─── Pens ───────────────────────────────────────────────────────────────────
 
 /** Kit blocks, inlined by composition in this order. `cjk` (Chinese,
- *  Japanese and Korean faces by unicode-range slices) is optional and
- *  listed only by the recipes that set such text. */
-export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk";
-export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk"];
+ *  Japanese and Korean faces by unicode-range slices) and `arabic` (the
+ *  arabic files of Arabic-script faces) are listed only by the recipes that
+ *  set such text; `book` (`showBook`, spreads of a book bound on either
+ *  edge) by the right-bound books. The cjk block carries its own copy of
+ *  `showBook`, so a recipe lists `book` or `cjk`, never both. */
+export type KitBlock = "core" | "fonts" | "viewer" | "pdf" | "images" | "cjk" | "arabic" | "book";
+export const KIT_ORDER: readonly KitBlock[] = ["core", "fonts", "viewer", "pdf", "images", "cjk", "arabic", "book"];
 export const REQUIRED_KIT: readonly KitBlock[] = ["core", "fonts", "viewer"];
 
 export type CardMode = "spread" | "page" | "loupe" | "crop" | "screenshot";
@@ -175,7 +178,8 @@ export interface RecipeMeta {
   level: Level;
   /** 1–3 genres. */
   genres: GenreId[];
-  /** 1–4 outputs; "pdf" ⇔ the pdf kit block and a postext-pdf import. */
+  /** 1–4 outputs; "pdf" ⇔ the pdf kit block and a postext-pdf import;
+   *  "epub" ⇔ a postext-epub import. */
   outputs: OutputId[];
   features: {
     /** 1–3: what the recipe teaches. */

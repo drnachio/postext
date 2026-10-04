@@ -19,7 +19,8 @@ import type { GuideLang } from '../defaultResources/lang';
 // What every edition of the built-in Postext guide shares: the page, the
 // Postext palette, the part colours and the small builders its designs are
 // written with. The Latin editions are designed in `guideConfig.ts`, the
-// Chinese one, set vertically, in `guideConfigZh.ts`.
+// Chinese one, set vertically, in `guideConfigZh.ts`, the Arabic one, set
+// right to left and bound on the right, in `guideConfigAr.ts`.
 
 export const PAGE_W = 210;
 export const PAGE_H = 280;
@@ -69,6 +70,16 @@ export const PALETTE_NAMES: Record<GuideLang, Record<PaletteId, string>> = {
     'main-color': 'Postext蓝', vermilion: '朱红', muted: '注释灰', mist: '雾灰', rule: '线条',
     tint: '暖色底', panel: '冷色底',
   },
+  ca: {
+    ink: 'Tinta', night: 'Nit de coberta', paper: 'Paper', white: 'Blanc', band: 'Color de part', gilt: 'Or',
+    'main-color': 'Blau Postext', vermilion: 'Vermelló', muted: 'Gris de notes', mist: 'Boira', rule: 'Filets',
+    tint: 'Fons càlid', panel: 'Fons fred',
+  },
+  ar: {
+    ink: 'الحبر', night: 'ليل الغلاف', paper: 'الورق', white: 'الأبيض', band: 'لون الجزء', gilt: 'الذهبي',
+    'main-color': 'أزرق Postext', vermilion: 'الزنجفري', muted: 'رمادي الحواشي', mist: 'الضباب', rule: 'الخطوط',
+    tint: 'خلفية دافئة', panel: 'خلفية باردة',
+  },
 };
 
 /** Part colours, as `:::part{palette="band=#…"}` in the guide's markdown. */
@@ -79,8 +90,11 @@ export const GUIDE_COVER_RESOURCE_ID = 'guide-cover';
 
 /** How the Folio viewer shows the guide: a stapled booklet (its cover a
  *  sheet a little heavier than the pages) on thick gloss coated paper, on a
- *  blue felt mat in studio light. */
+ *  blue felt mat in studio light, seen from low over its foot and a little
+ *  to its left. */
 export const GUIDE_FOLIO: FolioConfig = {
+  tilt: 44,
+  yaw: -14,
   paper: { type: 'coatedGloss', grammage: 170 },
   binding: { type: 'saddleStitch', cover: 'pages' },
   surface: { type: 'felt', color: { hex: '#3a4a86', model: 'hex' } },
@@ -119,6 +133,9 @@ export interface TextOpts extends Common {
   upper?: boolean;
   overflow?: DesignTextElement['overflow'];
   hyphenate?: boolean;
+  /** Base direction, when it is not the document's (a Latin address on an
+   *  Arabic page). */
+  direction?: DesignTextElement['direction'];
 }
 export function text(id: string, content: string, o: TextOpts): DesignTextElement {
   return {
@@ -139,6 +156,7 @@ export function text(id: string, content: string, o: TextOpts): DesignTextElemen
     ...(o.tracking ? { letterSpacing: pt(o.tracking) } : {}),
     ...(o.upper ? { textTransform: 'uppercase' as const } : {}),
     ...(o.hyphenate ? { hyphenate: true } : {}),
+    ...(o.direction ? { direction: o.direction } : {}),
   };
 }
 export function box(id: string, fill: PaletteId, o: Common & { width?: number; height?: number }): DesignBoxElement {

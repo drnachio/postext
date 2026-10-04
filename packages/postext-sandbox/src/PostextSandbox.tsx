@@ -21,7 +21,8 @@ import { HtmlViewport } from './viewport/HtmlViewport';
 import { PdfViewport } from './viewport/PdfViewport';
 import { ChapterPaginator } from './viewport/ChapterPaginator';
 import { useChapterHashSync } from './viewport/useChapterHashSync';
-import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost } from './ui';
+import { DirectionProvider } from '@base-ui/react/direction-provider';
+import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost, uiDirectionOf, useUiRtl } from './ui';
 import { BundleReplaceDialog } from './BundleReplaceDialog';
 import { useCompactLayout } from './hooks/useCompactLayout';
 import { SandboxAnnouncer } from './ui/announcer';
@@ -32,6 +33,8 @@ import type { PanelId } from './types';
 
 // three.js loads with the Folio tab, not with the sandbox.
 const FolioViewport = lazy(() => import('./viewport/FolioViewport').then((m) => ({ default: m.FolioViewport })));
+// So does the EPUB writer with the EPUB tab.
+const EpubViewport = lazy(() => import('./viewport/EpubViewport').then((m) => ({ default: m.EpubViewport })));
 
 const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
@@ -88,6 +91,7 @@ function SandboxLayout({
     dispatch({ type: 'SET_PANEL', payload: null });
   }, [compact, dispatch]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const rtl = useUiRtl();
   const [fontsReady, setFontsReady] = useState(false);
   const configVersionRef = useRef(0);
 
@@ -127,10 +131,14 @@ function SandboxLayout({
         const rect = container.getBoundingClientRect();
         const sidebar = target.closest<HTMLElement>('[data-postext-sidebar]');
         if (!sidebar) return;
-        const sidebarLeft = sidebar.getBoundingClientRect().left;
+        // The sidebar grows away from its start edge: rightwards, or
+        // leftwards in a right-to-left interface (where it sits at the right).
+        const sidebarRect = sidebar.getBoundingClientRect();
         const minViewportWidth = 200;
-        const maxSidebarPx = rect.width - (sidebarLeft - rect.left) - minViewportWidth;
-        const sidebarPx = Math.max(0, Math.min(ev.clientX - sidebarLeft, maxSidebarPx));
+        const maxSidebarPx = rtl
+          ? sidebarRect.right - rect.left - minViewportWidth
+          : rect.right - sidebarRect.left - minViewportWidth;
+        const sidebarPx = Math.max(0, Math.min(rtl ? sidebarRect.right - ev.clientX : ev.clientX - sidebarRect.left, maxSidebarPx));
         const percent = Math.max(5, (sidebarPx / rect.width) * 100);
         dispatch({ type: 'SET_SIDEBAR_PERCENT', payload: Math.round(percent * 10) / 10 });
       };
@@ -147,7 +155,7 @@ function SandboxLayout({
       document.addEventListener('pointermove', onPointerMove);
       document.addEventListener('pointerup', onPointerUp);
     },
-    [dispatch],
+    [dispatch, rtl],
   );
 
   const renderPanel = () => {
@@ -175,16 +183,22 @@ function SandboxLayout({
     switch (activeViewport) {
       case 'canvas':
         return <CanvasViewport />;
-      case 'html':
-        return <HtmlViewport />;
+      case 'pdf':
+        return <PdfViewport />;
       case 'folio':
         return (
           <Suspense fallback={<div className="relative h-full w-full"><FolioLoading /></div>}>
             <FolioViewport />
           </Suspense>
         );
-      case 'pdf':
-        return <PdfViewport />;
+      case 'html':
+        return <HtmlViewport />;
+      case 'epub':
+        return (
+          <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
+            <EpubViewport />
+          </Suspense>
+        );
       default:
         return null;
     }
@@ -343,10 +357,12 @@ export function PostextSandbox({
   const isDark = typeof document !== 'undefined'
     ? document.documentElement.classList.contains('dark')
     : true;
+  const direction = uiDirectionOf(locale);
 
   return (
+    <DirectionProvider direction={direction}>
     <LargeTargetsProvider>
-    <SandboxRoot className={className}>
+    <SandboxRoot className={className} direction={direction}>
       <SandboxGlobalStyles />
       <LayoutServiceProvider>
       <SandboxProvider
@@ -374,16 +390,18 @@ export function PostextSandbox({
       </LayoutServiceProvider>
     </SandboxRoot>
     </LargeTargetsProvider>
+    </DirectionProvider>
   );
 }
 
 /** The root element. `data-pt-targets="large"` turns on the 44×44 sizes
- *  (`pt-large:` variant and the floor in `ui/styles.ts`); popups portal
- *  into a layer inside it, so they follow too. */
-function SandboxRoot({ className, children }: { className?: string; children: React.ReactNode }) {
+ *  (`pt-large:` variant and the floor in `ui/styles.ts`); `dir` is the
+ *  interface's direction (right to left in Arabic). Popups portal into a
+ *  layer inside it, so they follow both. */
+function SandboxRoot({ className, direction, children }: { className?: string; direction: 'ltr' | 'rtl'; children: React.ReactNode }) {
   const { large } = useLargeTargets();
   return (
-    <div className={className ?? 'h-full w-full'} data-postext-sandbox="" data-pt-targets={large ? 'large' : 'compact'}>
+    <div className={className ?? 'h-full w-full'} dir={direction} data-postext-sandbox="" data-pt-targets={large ? 'large' : 'compact'}>
       {children}
     </div>
   );

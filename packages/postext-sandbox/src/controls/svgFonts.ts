@@ -74,13 +74,26 @@ export function injectSvgStyle(svgText: string, css: string): string {
  *  the family as a custom font. */
 export type FaceLookup = (family: string) => Promise<InlineFace[] | null>;
 
+/** Families an export must not embed. */
+export interface InlineSvgFontsOptions {
+  /** Whether a family is to be left out: its `font-family` reference stays
+   *  and the reader falls back, as for the book's own font files. */
+  withhold?: (family: string) => boolean;
+  /** Told of each family left out (once per SVG). */
+  onWithheld?: (family: string) => void;
+}
+
 /** Inline the faces of every custom family the SVG names. Pure given the
  *  lookup, so it can be exercised without storage. */
-export async function inlineSvgFontsWith(svgText: string, lookup: FaceLookup): Promise<string> {
+export async function inlineSvgFontsWith(svgText: string, lookup: FaceLookup, options?: InlineSvgFontsOptions): Promise<string> {
   const families = svgFontFamilies(svgText);
   if (families.length === 0) return svgText;
   let css = '';
   for (const family of families) {
+    if (options?.withhold?.(family)) {
+      options.onWithheld?.(family);
+      continue;
+    }
     const faces = await lookup(family).catch(() => null);
     if (faces && faces.length > 0) css += fontFaceCss(family, faces);
   }
@@ -116,10 +129,17 @@ function facesOf(family: CustomFontFamily): Promise<InlineFace[]> {
   return faces;
 }
 
-/** Inline the sandbox's custom fonts into `svgText` (see the module comment). */
-export function inlineSvgFonts(svgText: string): Promise<string> {
+/** Inline the sandbox's custom fonts into `svgText` (see the module
+ *  comment). A file that leaves the Sandbox (`redistributableOnly`) keeps
+ *  out the families marked as not redistributable. */
+export function inlineSvgFonts(
+  svgText: string,
+  options?: { redistributableOnly?: boolean; onWithheld?: (family: string) => void },
+): Promise<string> {
   return inlineSvgFontsWith(svgText, async (family) => {
     const custom = getCustomFontFamily(family);
     return custom ? facesOf(custom) : null;
-  });
+  }, options?.redistributableOnly
+    ? { withhold: (family) => getCustomFontFamily(family)?.redistributable === false, onWithheld: options.onWithheld }
+    : undefined);
 }

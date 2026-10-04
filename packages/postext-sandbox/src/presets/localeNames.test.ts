@@ -25,4 +25,10 @@ describe('localeShortTag', () => {
     expect(localeShortTag('pt-BR', ['pt-BR', 'pt-PT'])).toEqual({ text: 'pt-BR' });
     expect(localeShortTag('en-GB', ['es', 'en-GB'])).toEqual({ text: 'en' });
   });
+
+  it('shows ع for the only Arabic edition, the tag when there are two', () => {
+    expect(localeShortTag('ar', ['es', 'en', 'ar'])).toEqual({ text: 'ع', lang: 'ar' });
+    expect(localeShortTag('ar-EG', ['ar-EG', 'en'])).toEqual({ text: 'ع', lang: 'ar' });
+    expect(localeShortTag('ar-EG', ['ar-EG', 'ar-MA'])).toEqual({ text: 'ar-EG' });
+  });
 });

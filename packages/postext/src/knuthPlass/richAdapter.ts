@@ -14,6 +14,7 @@ import { trimChipLineEdges } from '../measure/chipEdges';
 import { lineTracking, trackSegments } from './tracking';
 import { graphemeCount } from '../measure/graphemes';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate';
+import { joiningScriptIn } from '../measure/joining';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -42,6 +43,9 @@ interface RichToken {
   baselineShift?: number;
   /** An inline footnote marker's own font (see `measure/rich.ts`). */
   markerFont?: string;
+  /** The unslanted face of Arabic words in a slanted style (see
+   *  `measure/rich.ts`). */
+  faceFont?: string;
   /** One of a subscript and a superscript set over each other (see
    *  `stackedScriptPairs` in `measure/rich.ts`): the `first` has width 0,
    *  the `second` the pair's advance. */
@@ -77,6 +81,10 @@ interface RichToken {
    *  run (see `measure/rich.ts`). */
   tcy?: true;
   orientation?: 'upright' | 'sideways';
+  /** Styled runs of one word of a joining script (see `measure/rich.ts`). */
+  runs?: { text: string; bold?: boolean; italic?: boolean }[];
+  /** How far kashidas may widen this word, px (`measure/kashida.ts`). */
+  kashida?: number;
 }
 
 export function richTokensToItems(
@@ -113,11 +121,13 @@ export function richTokensToItems(
       continue;
     }
 
-    // Characters tracking spreads: none on a formula or a swatch; a chip
-    // paints its own runs, so its line takes no tracking at all.
+    // Characters tracking spreads: none on a formula or a swatch, nor on a
+    // word of a joining script (its letters connect; see
+    // `measure/joining.ts`); a chip paints its own runs, so its line takes
+    // no tracking at all.
     // Two stacked scripts advance as far as the wider one: the first
     // counts no character, the second the longer run's (see `trackSegments`).
-    const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined;
+    const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined || joiningScriptIn(token.text);
     const stackedChars = token.stacked === 'first'
       ? 0
       : token.stacked === 'second' ? Math.max(graphemeCount(token.text), graphemeCount(tokens[t - 1]?.text ?? '')) : undefined;
@@ -185,13 +195,15 @@ export function richTokensToItems(
         ...tracking(prevCharIndex, token.text.length),
       });
     } else {
-      // Simple text token without break points
+      // Simple text token without break points (an Arabic word has none:
+      // it may stretch by its kashidas instead, `KPBox.stretch`).
       items.push({
         type: 'box',
         width: token.width,
         sourceIndex: t,
         meta: { ...meta, subStart: 0, subEnd: token.text.length },
         ...tracking(0, token.text.length),
+        ...(token.kashida ? { stretch: token.kashida } : {}),
       });
     }
 
@@ -285,12 +297,14 @@ export function reconstructRichLines(
           ...(token.labelTab ? { labelTab: true as const } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
+          ...(token.faceFont && !token.script ? { fontString: token.faceFont } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
           ...(token.tcy ? { tcy: true as const } : {}),
           ...(token.orientation ? { orientation: token.orientation } : {}),
           ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
           ...(token.inserted ? { inserted: true } : {}),
+          ...(token.runs ? { runs: token.runs } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

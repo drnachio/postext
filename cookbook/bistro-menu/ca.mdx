@@ -1,0 +1,74 @@
+---
+title: "Carta de bistrot: preus alineats sense tabuladors"
+summary: "Una carta de bistrot impresa per les dues cares, amb els preus en taules sense filets i un filet de llautó ancorat a cada costat dels títols d'apartat."
+plain: "Una carta de dues cares per a un restaurant inventat de París. Ensenya a alinear els plats i els preus en files ordenades amb taules sense línies visibles."
+description: "Carta de tardor d'un bistrot parisenc imaginari, composta amb Postext en taules sense filets: plats i preus al recto, vins per regions al verso."
+question: "Com alineo a la dreta els preus d'una carta, amb fila de capçalera i cel·les combinades, sense tabuladors?"
+aliases: ["carta", "menú", "restaurant", "carta de vins", "llista de preus", "tabuladors", "preus alineats a la dreta", "taula sense vores", "taula sense filets", "distintius de dieta", "títol entre filets"]
+pageNotes: { "1": "El recto de la carta, sobre cartolina crema: un tendal a ratlles granat i palla penjat d'una barra de llautó, Les Tanneurs en Limelight granat i, a sota, Bistrot parisien depuis 1931 i Carte d’automne 2026. Tres títols centrats, Entrées, Plats i Desserts, cadascun entre dos filets de llautó que arriben als marges i sobre quatre plats: el nom francès en negreta i la guarnició, una línia en castellà en cursiva a sota i el preu en negreta enganxat al marge dret. Quatre plats porten un disc verd fosc amb una V i cinc una pastilla perfilada amb SG. Al peu, dues línies petites i centrades: la clau dels distintius i, a sota, l'origen de la carn de boví i l'avís que el servei és inclòs.", "2": "El verso: dues copes, quatre ampolles i una gerra sobre un prestatge de llautó, damunt de La Cave. Una carta de vins encapçalada per Appellation · cépage, 12 cl i 75 cl, amb les regions Bulles, Blancs i Rouges centrades sobre la llista; el Saint-Émilion porta un guió a la columna de la copa. A sota, Le Comptoir, entre dos filets de llautó, amb kir, pastís, cervesa de barril i cafè, i un colofó petit i centrat al peu." }
+---
+
+## Què compondràs
+
+La carta de tardor de Les Tanneurs, un bistrot parisenc imaginari: un sol full de 230 × 310 mm imprès per les dues cares. Al recto, un tendal a ratlles penja sobre el nom, compost en Limelight. Cada títol d'apartat va entre dos filets de llautó que arriben als marges, i a sota vénen quatre plats. Cada plat porta el nom francès en negreta amb la guarnició, la traducció en cursiva a sota i el preu en negreta, enganxat al marge dret. Un disc verd fosc amb una V marca els plats vegetarians, i una pastilla perfilada amb SG, els que no porten gluten. Al verso, la carta de vins va sota un prestatge d'ampolles, amb el preu de la copa i el de l'ampolla en columnes encapçalades per 12 cl i 75 cl. Postext no té tabuladors, així que cada columna de preus pertany a una taula sense filets ni peu.
+
+## Elaboració
+
+### 1 · Una taula on anirien els tabuladors
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Cada apartat és una taula de dues columnes. El plat, un salt de línia i la traducció en cursiva comparteixen la primera cel·la, i el preu va alineat a la dreta a la segona, sobre la primera línia de base del plat, perquè les dues cel·les comencen a dalt de la seva fila. `columnWidths` rep pesos, així que `[6, 1]` reserva per als preus 22,6 mm dels 158 mm de la mesura. `rules: 'none'` i `headerBackgroundEnabled: false` treuen la quadrícula i la fila de capçalera grisa que posa l'[estil de taules](/ca/docs/configuration#estil-de-taules) per defecte. `cellPadding: pt(LEAD / 4)` fa que cada plat ocupi dues línies i mitja de l'interlineat de 14,5 pt, de manera que un apartat de quatre plats acaba a la seva desena línia de la retícula de base. Amb el farciment per defecte, 0,375 em, cada apartat acaba 0,9 mm més avall, cada títol que ve darrere baixa una línia i la carta passa a quatre pàgines.
+
+### 2 · Un sol tipus de recurs, al seu lloc i sense número
+
+<Excerpt region="type" />
+
+Els tipus de figura i taula que porta el motor imprimeixen una línia de peu i fan flotar cada recurs al primer forat lliure després de la seva primera referència. El tipus `menu` no té prefix de peu i les seves peces no porten peu, així que sota un apartat no s'imprimeix res. Amb `captionPrefix: 'Menu'`, cada peça porta a sota una línia numerada, començant per «Menu 1.» sota el tendal, i la carta passa a quatre pàgines. `defaultPlacement` col·loca cada taula i cada dibuix a la seva línia `::resource` ([inserció en bloc](/ca/docs/document-format#inserció-en-bloc-opcional-collocació-en-línia-explícita)). Sense ell, els tres títols d'apartat queden l'un darrere l'altre a dalt del recto i les taules floten a sota, primer les postres. El tendal i les ampolles són recursos SVG del mateix tipus, dibuixats en codi i registrats amb la funció `loadSvg` del kit.
+
+### 3 · Combina les files de regió
+
+<Excerpt region="wines" />
+
+A la 1.4.1, `parseTSV` no marca cap fila com a capçalera, així que `wineList` fixa `headerRowCount: 1` a mà. Appellation · cépage, 12 cl i 75 cl surten llavors sobre les seves columnes en Josefin Sans, la lletra de les cel·les de capçalera. Una línia amb un sol camp anomena una regió. La seva cel·la passa a ser de capçalera, centrada, i `mergeCells` l'estén per les tres columnes i marca amb `hiddenBy` les dues que cobreix ([construir models de taula](/ca/docs/configuration#construir-models-de-taula)). Centrat només a la primera columna, BLANCS quedaria 22,6 mm a l'esquerra de l'eix de la carta, sobre el qual van La Cave i Le Comptoir. Una línia en blanc del TSV es converteix en una fila de cel·les buides, d'una línia i mitja d'alt, que deixa aire sobre Blancs i Rouges.
+
+### 4 · Penja un filet a cada costat del títol d'apartat
+
+<Excerpt region="heads" />
+
+Un títol d'apartat és un disseny dins de la columna. L'element `{titleText}` no té amplada, així que la seva caixa fa el que fan les seves majúscules, i l'àncora `'top'` el centra a la columna. Cada filet penja d'una vora del títol amb `'left-of'` o `'right-of'` i s'estira fins a la vora de la columna ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)), de manera que els filets al costat de PLATS fan 66,7 mm i els de LE COMPTOIR 56,2 mm, sempre a 4 mm de les lletres. El `lineHeight` del títol és un múltiple, 0,96, que deixa la seva caixa en 14,4 pt, dins d'una línia de 14,5 pt de la retícula. Amb 1, la caixa fa 15 pt, cada títol ocupa dues línies i la carta passa a quatre pàgines.
+
+### 5 · Distintius en xips, lletra petita en estils de paràgraf
+
+<Excerpt region="badges" />
+
+Un xip dibuixa una caixa al voltant d'un tros de text dins de la línia ([estils de xip](/ca/docs/configuration#estils-de-xip)), així que `:chip[V]{style="veg"}`, escrit després de la guarnició, posa el disc a la línia francesa del plat, igual en una cel·la de taula que en un paràgraf. Els estils de xip porten `bold: true` perquè un xip pren el pes del text que l'envolta, i després de la guarnició aquest text és de pes 400, que `FONTS` no carrega per a Josefin Sans. Les notes sota les postres i el colofó del verso són blocs `:::paragraphs` de 9 i 7,5 pt, i els dos estils porten un `marginTop` d'una línia ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)), perquè una taula col·locada amb `'here'` no deixa espai a sota. Sense aquest marge, les notes comencen a la línia que segueix la traducció dels formatges, com si formessin part del plat.
+
+### 6 · Centra la carta sobre un eix
+
+<Excerpt region="centred" />
+
+`headings.textAlign` i `bodyText.textAlign` porten a l'eix de la carta tot el que no és taula. `lineHeight: pt(3 * LEAD)` dona al nom de 48 pt tres línies de la retícula. Sense ell, el nom pren l'interlineat per defecte i ocupa quatre línies; la segona línia de notes passa llavors a una pàgina pròpia i la carta arriba a quatre pàgines. A la 1.4.1, qualsevol objecte `headings` anul·la el salt de l'H1, i tot i així el nivell 1 declara `breakBefore: { enabled: false }`, perquè el nom i La Cave van a la pàgina del dibuix que tenen a sobre. Si recuperes el valor per defecte, `{ enabled: true, parity: 'always-odd' }`, cada dibuix es queda sol a la seva pàgina i la carta arriba a set. La configuració no fixa cap `locale`, perquè la 1.4.1 només aplica la partició de mots al text justificat i en aquesta carta no hi ha res justificat.
+
+## Variants
+
+### Fixa la longitud dels filets
+
+Una amplada fixa en lloc de `'fill'` deixa cada filet en 20 mm, a 4 mm del títol, així que al costat de PLATS la parella queda més a prop del centre que al costat de LE COMPTOIR.
+
+```diff
+-    size: { width: 'fill' }, // to the column's edge
++    size: { width: mm(20) }, // 20 mm, wherever the title ends
+```
+
+### Ratlla les files com un llibre de comptes
+
+`rules: 'horizontal'` traça un filet de llautó de 0,5 pt a sobre i a sota de cada fila. Els filets no ocupen espai, així que les dues cares conserven la composició, i les files en blanc sobre Blancs i Rouges també porten el seu parell de filets.
+
+```diff
+-const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a dish: 2½ lines of LEAD
++const tableStyle = { rules: 'horizontal', borderColor: col('brass'),
++  borderWidth: pt(0.5), cellPadding: pt(LEAD / 4),
+```
+
+## Errors freqüents
+
+Dona a cada element `rule` el seu `thickness`. A la 1.4.1 un filet sense gruix no es dibuixa, encara que la referència de configuració dona 0,5 pt per defecte. Treu `thickness` de `rule()` i desapareixen els dos filets de cada títol d'apartat.

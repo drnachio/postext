@@ -15,7 +15,7 @@ import {
 import type { PostextConfig, VDTDocument, Resource, LayoutContinuation } from 'postext';
 import { clearMeasurementCache, stripConfigDefaults } from 'postext';
 import { PROJECT_RECORD_VERSION } from '../storage/projectMigration';
-import type { PanelId, ViewportTab, SandboxLabels } from '../types';
+import type { EpubLayout, PanelId, ViewportTab, SandboxLabels } from '../types';
 import type { HashBundleResolver } from '../types/props';
 import { DEFAULT_LABELS } from '../types';
 import {
@@ -29,7 +29,7 @@ import {
   type ViewHash,
   type ViewHashBook,
 } from '../storage/viewHash';
-import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale } from '../storage/persistence';
+import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, loadEpubLayout, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale, saveEpubLayout } from '../storage/persistence';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
@@ -180,6 +180,12 @@ export interface SandboxState {
    *  working copy and the project record); a preset's `view` seeds it. The
    *  HTML preview always lays out the active chapter. */
   canvasScope: LayoutScope;
+  /** The EPUB 3 rendition the EPUB tab builds: the printed pages as a
+   *  fixed layout, or a reflowable book (the EPUB default, and the
+   *  Sandbox's). The tab always takes the whole book, so it has no scope;
+   *  this choice stands in its place in the bar. A view preference, kept
+   *  in `localStorage` like the tab itself. */
+  epubLayout: EpubLayout;
   /** What the last layout of each chapter on its own recorded (page count
    *  and how its numbering ends), keyed by chapter id. Chapters are laid out
    *  one at a time; the layouts of the chapters before the active one give
@@ -299,6 +305,7 @@ export type SandboxAction =
   | { type: 'SET_ACTIVE_CHAPTER'; payload: string }
   | { type: 'SET_PDF_SCOPE'; payload: LayoutScope }
   | { type: 'SET_CANVAS_SCOPE'; payload: LayoutScope }
+  | { type: 'SET_EPUB_LAYOUT'; payload: EpubLayout }
   | { type: 'SPLIT_CHAPTER'; payload: { id: string; at: number; newId: string } }
   | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
   | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
@@ -427,6 +434,9 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       // the canvas is exported whole — until the PDF scope is picked by
       // hand, which holds until the canvas scope moves again.
       return { ...state, canvasScope: action.payload, pdfScope: action.payload };
+    case 'SET_EPUB_LAYOUT':
+      if (action.payload === state.epubLayout) return state;
+      return { ...state, epubLayout: action.payload };
     case 'SPLIT_CHAPTER':
       return withBook(state, splitChapterAt(bookOf(state), action.payload.id, action.payload.at, action.payload.newId));
     case 'SPLIT_CHAPTER_AT_HEADINGS': {
@@ -1219,6 +1229,7 @@ export function SandboxProvider({
       activeChapterId: book.activeChapterId,
       pdfScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
+      epubLayout: loadEpubLayout() ?? 'reflowable',
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config,
@@ -1581,6 +1592,11 @@ export function SandboxProvider({
         // preset applies below gets written (and stale records deleted).
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
+        // The stored book's resources are the state's from now on: a branch
+        // below that leaves the book as it is (a link to the book already on
+        // screen) must not leave it without them, or the next save writes
+        // the book back empty. A branch that opens another book sets its own.
+        if (stateRef.current.activeProjectId === null) dispatch({ type: 'SET_RESOURCES', payload: loaded });
 
         const before = stateRef.current;
         // The stored book is a preset with a draft: it was opened from (or
@@ -1966,6 +1982,11 @@ export function SandboxProvider({
 
   useEffect(() => {
     if (!hydratedRef.current) return;
+    saveEpubLayout(state.epubLayout);
+  }, [state.epubLayout]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
     savePanel(state.activePanel);
   }, [state.activePanel]);
 
@@ -2058,7 +2079,9 @@ export function SandboxProvider({
     // `book`) is read instead — or none, while it has not been laid out.
     // The HTML preview lays the whole book out as one document with book
     // offsets: its own composition is read then, and the other chapters'
-    // warnings dropped.
+    // warnings dropped. The EPUB tab reads like the PDF tab: both build the
+    // book's print chain on request and publish no preview document, so
+    // the warnings stay the active chapter's, from the last preview built.
     const stitched = s.canvasScope === 'book' && (s.activeViewport === 'canvas' || s.activeViewport === 'folio');
     const wholeSource = s.canvasScope === 'book' && s.activeViewport === 'html' ? docSourceRef.current : null;
     const whole = wholeSource !== null && wholeSource.scope === 'book' ? wholeSource : null;

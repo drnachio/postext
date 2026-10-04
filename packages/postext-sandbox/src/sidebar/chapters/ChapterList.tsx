@@ -166,6 +166,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
 
   const title = editing ? (
     <input
+      dir="auto"
       type="text"
       autoFocus
       value={draft}

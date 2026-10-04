@@ -1,0 +1,89 @@
+---
+title: "Una bibliografia des d'una exportació BibTeX de Zotero"
+summary: "Lectures d'un seminari amb l'exportació BibTeX de Zotero tal qual, citada en Chicago autor-any, i nocite per a les obres que el text no cita."
+plain: "La llista de lectures d'un seminari universitari. El professor enganxa el fitxer que exporta Zotero; Postext compon les cites i una llista que inclou també llibres que el text no esmenta."
+description: "Lectures d'un curs amb Postext: l'exportació BibTeX de Zotero sense retocar, cites en Chicago autor-any i nocite per a obres que el text no cita."
+question: "Com faig servir una exportació BibTeX de Zotero i llisto obres que el text no cita?"
+aliases: ["Zotero", "BibTeX", "nocite", "obres no citades", "llista de lectures", "programa de l'assignatura", "bibliografia complementària", "Chicago autor-any", "bibliografia"]
+pageNotes: { "1": "Pàgina 1: una banda verd fosc a la meitat superior amb l'avanttítol HPS 214 · Lecturas del seminario · Otoño de 2026, el títol La ciencia como práctica social en una serif lleugera de mida gran i una entradeta en cursiva; a sota, dues columnes amb la introducció i les setmanes 1 a 3, amb cites com Kuhn (1970) i (Shapin 1984).", "2": "Pàgina 2: les setmanes 4 a 6 i la secció Para seguir leyendo, i després la bibliografia en Chicago autor-any a dues columnes: tretze obres, cinc de les quals no se citen mai al text, entre elles Fleck, Merton i López Piñero." }
+---
+
+## Què compondràs
+
+La llista de lectures d'un seminari de sis setmanes sobre història i sociologia de la ciència, en una pàgina de 210 × 280 mm a dues columnes. Un camp verd fosc ocupa la meitat superior de la primera pàgina, amb el títol del curs en Spectral Light de 50 pt; a sota, la guia del professor per a cada setmana. Les referències són la col·lecció de Zotero del seminari, exportada en BibTeX i enganxada al document sense tocar-ne ni una línia: les claus de cita que genera Zotero, les claus que posa al voltant de les majúscules, els accents `{\"o}`, `month = dec` i els camps `file`, `keywords` i `urldate`. El text cita vuit de les obres. Les altres cinc, lectures de fons que el seminari no comenta, entren a la llista amb `nocite`.
+
+## Elaboració
+
+### 1 · L'estil s'anomena una vegada
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de cites es registra abans de la primera composició i l'estil és un sol ajust: Chicago autor-any escriu «(Shapin 1984)» per a `[@shapin_pump_1984]` i «Shapin y Schaffer (1985)» per a `@shapin_leviathan_1985` dins de la frase. Les claus són les que Zotero construeix amb el primer autor, la primera paraula amb pes del títol i l'any, així que `gieryn_boundary-work_1983` conserva el seu guionet; Postext llegeix un guionet o un guió baix dins d'una clau com a part de la clau.
+
+### 2 · L'exportació, tal com l'escriu Zotero
+
+L'últim bloc del document guarda l'exportació, una entrada per obra i sagnada amb tabuladors, com l'escriu Zotero:
+
+```bibtex
+@article{gieryn_boundary-work_1983,
+	title = {Boundary-{Work} and the {Demarcation} of {Science} from {Non}-{Science}: …},
+	url = {https://www.jstor.org/stable/2095325},
+	doi = {10.2307/2095325},
+	urldate = {2026-08-21},
+	journal = {American Sociological Review},
+	author = {Gieryn, Thomas F.},
+	month = dec,
+	year = {1983},
+	keywords = {demarcation, week 4},
+	pages = {781--795},
+	file = {JSTOR Full Text PDF:/Users/hps214/Zotero/storage/2HJ8M6PA/Gieryn - 1983 - ….pdf:application/pdf},
+}
+```
+
+El lector treu les claus que protegeixen les majúscules, compon `{\"o}` i `{\'e}` en ö i é, converteix `--` en guió mitjà i llegeix `month = dec` com un nom de mes sense claus. `urldate` passa a ser la data de consulta i `language` la llengua de l'obra; `file`, `keywords`, `abstract` i `shorttitle` se salten, així que res del teu disc no arriba a la pàgina.
+
+### 3 · Les obres que el text no cita
+
+El preàmbul les enumera per la seva clau:
+
+```yaml
+---
+title: "La ciencia como práctica social"
+nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, @rheinberger_toward_1997, @lopez_pinero_ciencia_1979"
+---
+```
+
+La llista recull totes les obres citades més aquestes cinc, ordenades juntes per autor com demana Chicago; cap marca no distingeix una entrada no citada. `nocite: "@*"` llista l'exportació sencera, i `bibliography.includeUncited: true` fa el mateix des de la configuració, per a un disseny que sempre imprimeix tota la biblioteca.
+
+### 4 · Un camp verd per a la targeta
+
+<Excerpt region="opener" />
+
+La banda és un requadre ancorat al tall, de 132 mm, i les dues columnes comencen 9 mm per sota. El títol, el filet i l'entradeta s'encadenen amb àncores `below`, de manera que un títol més llarg empeny l'entradeta cap avall en lloc de xocar-hi.
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Llista la col·lecció sencera de Zotero
+
+Quan l'exportació és la llista, les claus sobren: s'imprimeixen totes les entrades del bloc, citades o no.
+
+```diff
+-nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, …"
++nocite: "@*"
+```
+
+### Canvia l'estil
+
+Les mateixes claus donen una llista Harvard (Cite Them Right) sense cap altre canvi.
+
+```diff
+-  style: 'chicago-author-date', // '(Gieryn 1983)', 'Shapin and Schaffer (1985)'
++  style: 'harvard-cite-them-right',
+```
+
+## Errors freqüents
+
+- Una clau de `nocite` que no correspon a cap entrada desapareix sense avís. Copia les claus de l'exportació en comptes de teclejar-les i compta les entrades a la pàgina.
+- Zotero construeix les claus a partir de les dades: si corregeixes el nom d'un autor o un títol a Zotero, la propera exportació pot canviar la clau i trencar totes les seves cites. Fixa les claus abans d'escriure el text: Zotero llegeix una línia `Citation Key: …` al camp Extra de cada registre.
+- Zotero exporta en UTF-8 per defecte, amb els accents tal qual. El bloc d'aquesta recepta es va exportar amb la codificació Western, que escriu `{\"o}`; Postext llegeix totes dues.
+- La 18a edició de Chicago omet el lloc d'edició, així que el camp `address` no s'imprimeix, i un article amb DOI mostra el DOI i no l'`url` de JSTOR.

@@ -7,6 +7,8 @@ import {
   createVDTDocument,
   createVDTBlock,
   createBoundingBox,
+  pageIsMirrored,
+  pageIsVertical,
   type VDTDocument,
   type VDTBlock,
   type VDTColumn,
@@ -23,6 +25,7 @@ import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
 import {
   buildPageLabels,
   computeHeadingNumbering,
+  documentNumeralStyle,
   parseNumberFormat,
   type NumeralStyle,
   type PageNumberSegment,
@@ -34,8 +37,12 @@ import { getCjkLineBreak, setCjkLineBreak } from '../measure/cjkClasses';
 import { cjkCompositionOf, getCjkComposition, setCjkComposition } from '../measure/cjkPunctuation';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMeasureUprightDigits, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
+import { orientLinesToFrames } from './mirrorFrame';
+import { verseMarginTopPx } from './buildBlockKind';
 import type { MeasurementCache } from '../measure';
-import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
+import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
+import { asciiDigits } from '../arabicNumerals';
+import { getMeasureDirection, setMeasureDirection } from '../measure/bidiLines';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
@@ -45,6 +52,7 @@ import {
   headingIsNumbered,
   headingMarksFor,
   headingStyleOf,
+  numberTitlesFor,
   planHeadingSections,
 } from './headingStyles';
 import { locateAnchors } from './anchors';
@@ -64,6 +72,7 @@ import {
   listBulletPosition,
   listItemGapPx,
   listItemSpacingPx,
+  mirrorListMarker,
 } from './lists';
 import type { PlacementCursor } from './placement';
 import {
@@ -92,7 +101,7 @@ import { chooseParagraphSplit } from './orphanWidow';
 import {
   applyStyleAttrs,
   computePageMetrics,
-  pageMirrored,
+  flowPageMirrored,
   sheetRectToFlow,
   isMarkerBlock,
   nextNonMarkerBlock,
@@ -101,12 +110,13 @@ import {
   rollbackTrailingBlocks,
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
-import { planParagraphContainers } from './paragraphContainers';
+import { paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
   footnoteIdsOfLines,
   footnoteParagraphStyle,
   noteContentBlock,
+  noteNumberPositionOf,
   numberFootnotes,
   numberFootnotesByPlacement,
   sameFootnoteNumbers,
@@ -172,8 +182,12 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
+import { annotateArabicMarks } from '../arabicMarks';
+import { tashkilFor } from './tashkil';
+import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
 
@@ -300,6 +314,7 @@ function chapterNumbersOfContent(
   const next = chapterNumberCounter<{ unnumbered?: boolean; contentIndex: number; headingNumber?: number; numberPrefix?: string; styleId?: string }>(
     ordinalOffset,
     (b) => b.styleId !== undefined && numberless.has(b.styleId),
+    resolved.numerals,
   );
   let current = '';
   return blocks.map((b, i) => {
@@ -357,12 +372,16 @@ function measureLooseParagraph(
   // The breaker's optimum, before any runt fix (a looseness of 0 skips it).
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });
   const looseness = optimum ? target - optimum.measured.lines.length : extraLines;
+  // A paragraph mostly in a joining script (Arabic…) is not tracked: its
+  // words take no letter-spacing (`measure/joining.ts`), so only the first
+  // rung, word spacing alone, can gain it the line.
+  const ladder = trackingLadder.length > 1 && mostlyJoiningScript(rawBlock.text) ? trackingLadder.slice(0, 1) : trackingLadder;
   const maxWordSpacing = ctx.resolved.bodyText.maxWordSpacing + 1e-9;
   // A CJK line spread past its tracking cap (`cjkLoose`) is past the
   // limit too.
   const withinLimit = (lines: readonly VDTLine[]): boolean =>
     lines.every((l) => l.isLastLine || ((l.justifiedSpaceRatio === undefined || l.justifiedSpaceRatio <= maxWordSpacing) && !l.cjkLoose));
-  for (const tracking of trackingLadder) {
+  for (const tracking of ladder) {
     const loose = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, {
       styleOverride,
       looseness,
@@ -408,6 +427,7 @@ export function buildDocumentPass(
   const writingMode = getMeasureWritingMode();
   const region = getMeasureRegion();
   const uprightDigits = getMeasureUprightDigits();
+  const direction = getMeasureDirection();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
@@ -415,6 +435,7 @@ export function buildDocumentPass(
     setCjkComposition(composition);
     setMeasureWritingMode(writingMode, region);
     setMeasureUprightDigits(uprightDigits);
+    setMeasureDirection(direction);
   }
 }
 
@@ -469,6 +490,9 @@ function placeDocumentPass(
   setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);
   // Short numbers set in one upright cell (`cjk.uprightDigits`).
   setMeasureUprightDigits(resolved.cjk.uprightDigits);
+  // Paragraphs run in the document's direction unless they set their own
+  // (`{dir=…}`): an Arabic book's captions, cells and notes too.
+  setMeasureDirection(resolvedDirection(resolved));
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -508,8 +532,11 @@ function placeDocumentPass(
     bleed: sheetRectToFlow(pageMetrics.physical.bleedBox, pageWidthPx),
     upright: true,
   };
+  // A right-to-left page's flow is the sheet mirrored, and the trim and
+  // bleed boxes, centred on the sheet, are their own mirror images: the
+  // physical frames serve it unchanged.
   const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox; upright?: boolean } =>
-    (page?.flow ? verticalFrames : physicalFrames);
+    (page && pageIsVertical(page) ? verticalFrames : physicalFrames);
   doc.trimOffset = trimOffset;
   // A right-bound book (`page.binding`): hosts show its spreads mirrored.
   if (resolved.page.binding === 'right') doc.binding = 'right';
@@ -535,7 +562,9 @@ function placeDocumentPass(
   // Citations (#268): formatted against the book's references (or set as
   // notes under a note style) before the notes leave the flow; the
   // bibliography takes `:::bibliography`'s place or follows the text.
-  const parsedBody = headingMarksFor(parseMarkdownMemo(markdownBody), resolved);
+  // Arabic vowel marks out of the text when `bodyText.tashkil` says so
+  // (#376), for the outline and the layout alike.
+  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
   const citationsApplied = citationContext
@@ -552,11 +581,13 @@ function placeDocumentPass(
   // Numbered by page or column (`numbering: 'page'`), a note takes the
   // number the previous build gave it where it landed; the first build
   // numbers by chapter (see `buildDocumentNumbered`).
+  // A decimal note number is written in the document's digits.
   const footnoteNumbering = numberFootnotes(
     footnoteSplit.blocks,
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
-    resolved.footnotes.numberFormat,
+    documentNumeralStyle(resolved.footnotes.numberFormat, resolved.numerals),
+    resolved.footnotes.markerTemplate,
   );
   if (hints.footnoteNumbers) {
     for (const [id, number] of hints.footnoteNumbers) {
@@ -565,7 +596,7 @@ function placeDocumentPass(
   }
   const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
   const parsedBlocks = chapterEndNotes
-    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, resolved.footnotes.markerPosition)
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes))
     : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -613,6 +644,7 @@ function placeDocumentPass(
     resources,
     headingContext,
     continuation ? { counters: continuation.resourceCounters, numbered: continuation.resourceNumbers } : undefined,
+    resolved.numerals,
   );
 
   // Lookups threaded into block-kind resolution + measurement.
@@ -950,11 +982,18 @@ function placeDocumentPass(
    *  px: the upright frame is as long as the grid multiple within that
    *  room, less the float gap, so the band it takes is `avail` at most. */
   const rotationFor = (f: PlannedFloat, avail: number, page?: VDTPage): FloatRotation | undefined =>
-    page?.flow
+    page && pageIsVertical(page)
       ? uprightOn(page)
       : f.rotate
-        ? { direction: f.rotate, length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
+        ? { direction: flowRotation(f.rotate, page), length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
         : undefined;
+  /** `placement.rotate` keeps its meaning on the sheet: `'ccw'` turns the
+   *  picture's top to the sheet's left. A right-to-left page's flow is the
+   *  sheet mirrored, where the same turn on the sheet is the opposite one,
+   *  so the flow turns the block the other way (the renderers' frame and
+   *  their counter-flip of the picture compose back to the asked turn). */
+  const flowRotation = (rotate: ResourceRotation, page?: VDTPage): ResourceRotation =>
+    page && pageIsMirrored(page) ? (rotate === 'ccw' ? 'cw' : 'ccw') : rotate;
   /** A resource on a vertical page stands upright: its frame at most as
    *  wide as the page's flow is tall (the content area's width on the
    *  sheet), the float gap kept. */
@@ -1098,7 +1137,7 @@ function placeDocumentPass(
   /** Whether a rotated float on `page` sits flush to the band's right edge:
    *  with mirrored margins the spine of a page whose spine is on its right
    *  (a verso of a left-bound book, a recto of a right-bound one). */
-  const rotatedFlushEnd = (page: VDTPage): boolean => pageMirrored(resolved, page.index, pageIndexOffset);
+  const rotatedFlushEnd = (page: VDTPage): boolean => flowPageMirrored(resolved, page, pageIndexOffset);
 
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
@@ -1265,7 +1304,7 @@ function placeDocumentPass(
     const slice = sliceOf(f);
     // A side float never turns: it stacks upright in the side column (on a
     // vertical page it is counter-rotated to stand upright there too).
-    const rotated = side && !page.flow ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
+    const rotated = side && !pageIsVertical(page) ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
@@ -1871,6 +1910,9 @@ function placeDocumentPass(
   /** Boxes that left the flow this pass (side column, float band, fixed),
    *  by the content index of their opening marker (see `leftFlow`). */
   const calloutsOutOfFlow = new Set<number>();
+  /** Blocks whose style tracks text of a joining script, which is set
+   *  untracked (see `BlockMeasureContext.joiningLetterSpacing`). */
+  const joiningLetterSpacing = new Set<number>();
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
     resolved,
@@ -1894,6 +1936,7 @@ function placeDocumentPass(
     resourceNumbering,
     floatedIds,
     leftFlow: calloutsOutOfFlow,
+    joiningLetterSpacing,
     ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
     ...(anchorRefContext ? { anchorRefs: anchorRefContext } : {}),
   };
@@ -1924,7 +1967,7 @@ function placeDocumentPass(
     let m = noteMeasures.get(key);
     if (m === undefined) {
       const number = footnoteNumbering.numbers.get(id) ?? '?';
-      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, resolved.footnotes.markerPosition), 0, width, measureCtx, { styleOverride: noteStyle });
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes)), 0, width, measureCtx, { styleOverride: noteStyle });
       noteMeasures.set(key, m);
     }
     return m;
@@ -2133,6 +2176,7 @@ function placeDocumentPass(
           blk.lines = resetLinePositions(raggedLooseLines(m.measured.lines, noteStyle.textAlign), noteStyle.lineHeightPx).map((line) => ({
             ...line,
             bbox: createBoundingBox(line.bbox.x + x, line.bbox.y + y, line.bbox.width, line.bbox.height),
+            ...(line.measure ? { measure: { x: line.measure.x + x, width: line.measure.width } } : {}),
             baseline: line.baseline + y,
           }));
           const h = blk.lines.length * noteStyle.lineHeightPx;
@@ -2141,6 +2185,7 @@ function placeDocumentPass(
           blk.columnIndex = col.index;
           blk.contentIndex = noteAnchor.get(id) ?? 0;
           blk.footnoteNote = id;
+          if (m.contentBlock.direction !== undefined && m.contentBlock.direction !== resolvedDirection(resolved)) blk.direction = m.contentBlock.direction;
           blk.dirty = false;
           blk.snappedToGrid = false;
           if (blk.lines.length > 0) {
@@ -2215,6 +2260,16 @@ function placeDocumentPass(
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
     if (raw.bibEntry !== undefined) blk.bibEntry = raw.bibEntry;
+    // Metadata for other renditions: the paragraph style the text is set
+    // in, the level of an index entry.
+    const paragraphStyleId = paragraphStyleIdOf(raw, blk.contentIndex !== undefined ? paragraphContainers.byBlock[blk.contentIndex] : undefined, resolved);
+    if (paragraphStyleId !== undefined) blk.paragraphStyleId = paragraphStyleId;
+    if (raw.index) blk.indexLevel = raw.index.level;
+    // A text block whose direction opposes its page frame's, which runs in
+    // the document's direction (a right-to-left document's pages are
+    // mirrored, #370): an Arabic quotation in an English book, an English
+    // one in an Arabic book. Its lines carry their span (`VDTLine.measure`).
+    if (blk.type !== 'resource' && raw.direction !== undefined && raw.direction !== resolvedDirection(resolved)) blk.direction = raw.direction;
     if (raw.toc?.kind === 'entry') {
       blk.tocEntry = raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {};
     }
@@ -2839,6 +2894,7 @@ function placeDocumentPass(
       return layoutCallout({
         style,
         attrs: plan.attrs,
+        ...(contentBlocks[startIdx]?.direction ? { direction: contentBlocks[startIdx]!.direction } : {}),
         continuation,
         // Any range short of the box's end is a fragment that goes on.
         ...(to.child < children.length || to.line > 0 ? { continues: true } : {}),
@@ -2863,9 +2919,10 @@ function placeDocumentPass(
   /** Whether a page swaps its mirrored margins (a verso of a left-bound
    *  book, a recto of a right-bound one: an `'outer'` corner icon hangs on
    *  the left there). A vertical page has no outer side: a box's outer
-   *  corner stays where the style puts it. */
+   *  corner stays where the style puts it. A right-to-left page answers in
+   *  its flow (`flowPageMirrored`), where its spine side is turned over. */
   const mirroredOf = (page: VDTPage): boolean =>
-    !page.flow && pageMirrored(resolved, page.index, pageIndexOffset);
+    !pageIsVertical(page) && flowPageMirrored(resolved, page, pageIndexOffset);
   /** Where a block's paint ends: its last line's foot (a list tail's box
    *  bakes its bottom margin in and may reach past a cut with every line
    *  inside it), else its box's. */
@@ -3152,7 +3209,7 @@ function placeDocumentPass(
         const width = page.contentArea.width;
         const slice = sliceOf(f);
         // On a vertical page the figure stands upright.
-        const upright = page.flow ? uprightOn(page) : undefined;
+        const upright = pageIsVertical(page) ? uprightOn(page) : undefined;
         const measure = measureFloat(f.resourceId, width, slice, upright);
         if (!measure) { i++; continue; }
         const cutY = gridUp(page, bandUsedBottomWithSide(page, cols));
@@ -4062,7 +4119,10 @@ function placeDocumentPass(
     let idx = leadIdx + 1;
     while (idx < contentBlocks.length && isMarkerBlock(contentBlocks[idx]!)) idx++;
     const raw = contentBlocks[idx];
-    if (!raw || raw.type !== 'listItem') return true;
+    // A poem (#378) after its introducer: its first bayts, by the
+    // paragraph rules.
+    const verse = raw?.verse !== undefined;
+    if (!raw || (raw.type !== 'listItem' && !verse)) return true;
     const item = measureContentBlock(raw, idx, width, ctx);
     if (!item) return true;
     const lines = item.measured.lines.length;
@@ -4071,10 +4131,10 @@ function placeDocumentPass(
     if (fit < 1) return false;
     const body = resolved.bodyText;
     return chooseParagraphSplit(lines, fit, {
-      avoidOrphans: body.avoidOrphans && body.avoidOrphansInLists,
+      avoidOrphans: body.avoidOrphans && (verse || body.avoidOrphansInLists),
       orphanMinLines: body.orphanMinLines,
       orphanPenalty: body.orphanPenalty,
-      avoidWidows: body.avoidWidows && body.avoidWidowsInLists,
+      avoidWidows: body.avoidWidows && (verse || body.avoidWidowsInLists),
       widowMinLines: body.widowMinLines,
       widowPenalty: body.widowPenalty,
       slackWeight: body.slackWeight,
@@ -4157,7 +4217,7 @@ function placeDocumentPass(
         const fmt = parseNumberFormat(attrs.format, resolvedLocale(resolved));
         if (fmt) change.format = fmt;
         if (attrs.startAt !== undefined) {
-          const n = Number(attrs.startAt);
+          const n = Number(asciiDigits(attrs.startAt));
           if (Number.isInteger(n) && n >= 1) change.startAt = n;
         }
         if (Object.keys(change).length > 0) {
@@ -4406,7 +4466,7 @@ function placeDocumentPass(
     // A resource on a vertical page stands upright, its frame at most as
     // wide as the flow is tall (less the float gap it keeps).
     const blockPage = doc.pages[cursor.pageIndex]!;
-    const upright = blockPage.flow && rawBlock.type === 'resourceBlock'
+    const upright = pageIsVertical(blockPage) && rawBlock.type === 'resourceBlock'
       ? { uprightMaxLength: uprightOn(blockPage).length }
       : {};
     let measuredBlock = tryLoose
@@ -4544,6 +4604,9 @@ function placeDocumentPass(
           blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
         }
       }
+      // A list set against the document's direction: its marker on the
+      // other side, with its text (#371).
+      if (rawBlock.direction !== undefined && rawBlock.direction !== resolvedDirection(resolved)) mirrorListMarker(blk);
       if (strikethroughText) blk.strikethroughText = true;
       // Bullet Y = x-height midpoint of the item's first text line.
       // Pairs with `textBaseline='middle'` at render so the bullet stays
@@ -4587,6 +4650,9 @@ function placeDocumentPass(
         && (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
       (vdtType === 'paragraph' && isContainerTail && paragraphContainer?.snapToGrid !== false) ||
+      // A poem, like a container of one block: its own leading and the
+      // margins of its style are off the grid, the text after it is not.
+      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)) ||
       vdtType === 'mathDisplay'
     );
 
@@ -4646,6 +4712,10 @@ function placeDocumentPass(
       && resolved.bodyText.keepColonWithList
       && nextIsListItem
       && /[:：︰﹕]\s*$/.test(contentBlock.text);
+    // A poem (#378) after this paragraph, which introduces it («فأنشد
+    // يقول:»): see the lead-in rule below.
+    const nextIsVerse = vdtType === 'paragraph' && contentBlock.verse === undefined
+      && nextBlock?.type === 'paragraph' && nextBlock.verse !== undefined;
 
     while (remainingLines.length > 0) {
       enterBand(blockIdx, partIndex);
@@ -4746,6 +4816,9 @@ function placeDocumentPass(
               spacingBefore = top - usedHeight;
             }
           }
+        } else if (rawBlock.verse && partIndex === 0) {
+          // A poem: the top margin of the paragraph style its fence names.
+          spacingBefore = Math.max(spacingBefore, style.marginTopPx);
         } else if (rawBlock.toc || rawBlock.index) {
           // A part row or an unnumbered entry of the contents: its top
           // margin (`toc.parts.marginTop`, the level's `marginTop`) applies
@@ -4837,7 +4910,7 @@ function placeDocumentPass(
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
           const measureWidth = lvl.span === 'page' ? pageArea.width : curCol.bbox.width;
-          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
+          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
           const design = measureHeadingDesign(
             lvl,
             info,
@@ -4989,20 +5062,33 @@ function placeDocumentPass(
       // The lines left here keep the widow minimum; with fewer, a paragraph
       // that opens here moves on whole, and one already running on from
       // the column before stays (it cannot do better anywhere).
+      // A poem (#378) is kept with the paragraph that introduces it the
+      // same way: when its first bayts cannot start under the paragraph's
+      // last line (by the orphan and widow rules a poem is split by), that
+      // line goes on with them.
+      const nextIsFormula = resolved.math.keepWithLeadIn && contentBlocks[blockIdx + 1]?.type === 'mathDisplay';
       if (
-        resolved.math.keepWithLeadIn
+        (nextIsFormula || nextIsVerse)
         && vdtType === 'paragraph'
-        && contentBlocks[blockIdx + 1]?.type === 'mathDisplay'
         && totalRemainHeight <= effectiveAvailable + FIT_EPS
       ) {
-        const formula = measureContentBlock(contentBlocks[blockIdx + 1]!, blockIdx + 1, curCol.bbox.width, blockMeasureCtx);
-        const formulaHeight = formula ? (formula.measured.lines[0]?.bbox.height ?? formula.measured.totalHeight) : 0;
-        const gap = Math.max(style.marginBottomPx, formula?.kind.style.marginTopPx ?? 0);
         const usedHeight = (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
         // As the plain pass saw it: room balancing added above is not room
         // the formula lost.
         const availableAfter = curCol.bbox.height - (usedHeight + totalRemainHeight) + (balanceExtraInColumn.get(curCol) ?? 0);
-        if (formula && formulaHeight > 0 && availableAfter + FIT_EPS < gap + formulaHeight) {
+        let goesOn: boolean;
+        if (nextIsFormula) {
+          const formula = measureContentBlock(contentBlocks[blockIdx + 1]!, blockIdx + 1, curCol.bbox.width, blockMeasureCtx);
+          const formulaHeight = formula ? (formula.measured.lines[0]?.bbox.height ?? formula.measured.totalHeight) : 0;
+          const gap = Math.max(style.marginBottomPx, formula?.kind.style.marginTopPx ?? 0);
+          goesOn = !!formula && formulaHeight > 0 && availableAfter + FIT_EPS < gap + formulaHeight;
+        } else {
+          // The poem starts under the larger of this paragraph's bottom
+          // margin and its own style's top margin.
+          const poemGap = Math.max(style.marginBottomPx, verseMarginTopPx(nextBlock?.verse?.attrs.style, resolved));
+          goesOn = !firstListItemStarts(blockIdx, availableAfter - poemGap, curCol.bbox.width, blockMeasureCtx);
+        }
+        if (goesOn) {
           const minKeep = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
           const splitAt = remainingLines.length - 1;
           if (splitAt >= minKeep) {
@@ -5378,6 +5464,12 @@ function placeDocumentPass(
             continue;
           }
         }
+        // A poem's bayt set staggered over two lines (or more) stays in one
+        // column (#378): the cut goes before it — in an empty column, which
+        // the poem cannot leave, after its first line at least.
+        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameBayt(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
+          choice = { splitAt: choice.splitAt - 1, demerit: choice.demerit };
+        }
         if (choice.splitAt > 0) {
           // Consume spacing (negative: a container margin pulling the block up)
           if (spacingBefore !== 0) {
@@ -5607,7 +5699,7 @@ function placeDocumentPass(
   if (paperOfBlock.some((p) => p !== undefined)) stampPagePaper(doc.pages, paperOfBlock);
 
   // Stamp page-number info onto every page (including blank parity pages).
-  const labels = buildPageLabels(doc.pages.length, pageNumberSegments);
+  const labels = buildPageLabels(doc.pages.length, pageNumberSegments, resolved.numerals);
   for (let i = 0; i < doc.pages.length; i++) {
     const info = labels[i];
     if (!info) continue;
@@ -5638,10 +5730,14 @@ function placeDocumentPass(
   });
 
   // Vertical pages: the axis each font's upright characters turn about.
-  if (doc.pages.some((p) => p.flow)) stampCentralBaselines(doc);
+  if (doc.pages.some((p) => pageIsVertical(p))) stampCentralBaselines(doc);
+  // Right-to-left pages: lines advance through the mirrored flow in the
+  // reverse of their visual order.
+  if (doc.pages.some((p) => pageIsMirrored(p))) orientLinesToFrames(doc);
 
   doc.converged = true;
   doc.iterationCount = 1;
+  if (joiningLetterSpacing.size > 0) joiningSpacingWarnings.set(doc, joiningLetterSpacingWarnings(doc, joiningLetterSpacing));
 
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
@@ -5716,12 +5812,22 @@ export function* buildDocumentGen(
   const bookCitationKeys = content.citations ? new Set(content.citations.items.map((i) => i.id)) : undefined;
   const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys), ...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
-  // Justified CJK lines the composer could not fill within its tracking cap.
-  const loose = cjkLooseLineWarnings(doc);
+  // Justified CJK lines the composer could not fill within its tracking
+  // cap; words of a joining script that run past their line, and styles
+  // whose letter-spacing such words do not take.
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);
-  if (located.length > 0 || loose.length > 0 || annotations.length > 0) doc.contentWarnings = [...located, ...loose, ...annotations];
+  // Arabic vowel marks (#376): how far each vocalised line's ink reaches,
+  // for the column clip, and the paragraphs whose marks meet a
+  // neighbouring line.
+  const harakat = annotateArabicMarks(doc);
+  // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
+  overlineEmphasis(doc);
+  if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0) {
+    doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat];
+  }
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.
@@ -5733,6 +5839,9 @@ export function* buildDocumentGen(
 /** Warnings the last pass's `:::index` raised, per document (read with
  *  the content warnings once the build is done). */
 const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
+/** The `joiningScriptLetterSpacing` warnings of the last pass, per
+ *  document. */
+const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
@@ -5824,7 +5933,7 @@ function* buildDocumentNumbered(
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
     const used = printedFootnoteNumbers(doc);
     if (used.size === 0) break;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, f.numberFormat).numbers;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);
@@ -6248,4 +6357,17 @@ function* buildDocumentBalanced(
   best.doc.iterationCount = passCount;
   best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
   return best.doc;
+}
+
+/** Whether two lines set one bayt of a poem (`VDTLine.verse`), which a
+ *  column never cuts. */
+function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
+  return a?.verse !== undefined && b?.verse !== undefined && a.verse.bayt === b.verse.bayt;
+}
+
+/** Whether the text after a poem goes back to the baseline grid: unless
+ *  the paragraph style its fence names says `snapToGrid: false`. */
+function verseSnaps(styleId: string | undefined, resolved: ResolvedConfig): boolean {
+  const key = styleId?.trim();
+  return !key || resolved.paragraphStyles.find((s) => s.id === key)?.snapToGrid !== false;
 }

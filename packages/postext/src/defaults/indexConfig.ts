@@ -1,4 +1,5 @@
 import type { Dimension, IndexConfig, IndexGroupBy, ResolvedBodyTextConfig, ResolvedIndexConfig } from '../types';
+import { languageOf, localeScript, presentTag } from '../locale';
 
 const ONE_EM: Dimension = { value: 1, unit: 'em' };
 const TWO_EM: Dimension = { value: 2, unit: 'em' };
@@ -23,11 +24,30 @@ export const DEFAULT_INDEX_CONFIG = {
 
 const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke', 'none'];
 
+/** The defaults that follow the language the index sorts in: an index in
+ *  Arabic script separates with the Arabic comma `،` and sets its
+ *  cross-reference labels upright (Arabic fonts have no italics; a slanted
+ *  Arabic word is a distortion, not an emphasis); an Arabic one ignores the
+ *  article `ال`. Every other language takes the static defaults. */
+function languageDefaults(locale: string | undefined): { separator: string; italicSee: boolean; ignoreArticle: boolean } {
+  const arabicScript = locale !== undefined && localeScript(locale) === 'Arab';
+  return {
+    separator: arabicScript ? '، ' : DEFAULT_INDEX_CONFIG.separator,
+    italicSee: arabicScript ? false : DEFAULT_INDEX_CONFIG.see.italic,
+    ignoreArticle: languageOf(locale) === 'ar',
+  };
+}
+
+/** `documentLocale` is the document language (`resolvedLocale`): with the
+ *  index's own `locale`, it decides the defaults of an Arabic index (see
+ *  {@link languageDefaults}). */
 export function resolveIndexConfig(
   partial: IndexConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
+  documentLocale?: string,
 ): ResolvedIndexConfig {
   const d = DEFAULT_INDEX_CONFIG;
+  const byLanguage = languageDefaults(presentTag(partial?.locale) ?? presentTag(documentLocale));
   const fontFamily = partial?.fontFamily ?? bodyText.fontFamily;
   const fontSize = partial?.fontSize ?? bodyText.fontSize;
   const lineHeight = partial?.lineHeight ?? bodyText.lineHeight;
@@ -42,8 +62,8 @@ export function resolveIndexConfig(
     indent: partial?.indent ?? d.indent,
     turnoverIndent: partial?.turnoverIndent ?? d.turnoverIndent,
     entrySpacing: partial?.entrySpacing ?? d.entrySpacing,
-    separator: partial?.separator ?? d.separator,
-    locatorSeparator: partial?.locatorSeparator ?? d.locatorSeparator,
+    separator: partial?.separator ?? byLanguage.separator,
+    locatorSeparator: partial?.locatorSeparator ?? byLanguage.separator,
     rangeSeparator: partial?.rangeSeparator ?? d.rangeSeparator,
     mergeRanges: partial?.mergeRanges ?? d.mergeRanges,
     rangeFormat: partial?.rangeFormat === 'chicago' ? 'chicago' : d.rangeFormat,
@@ -51,10 +71,11 @@ export function resolveIndexConfig(
     see: {
       ...(partial?.see?.label !== undefined ? { label: partial.see.label } : {}),
       ...(partial?.see?.alsoLabel !== undefined ? { alsoLabel: partial.see.alsoLabel } : {}),
-      italic: partial?.see?.italic ?? d.see.italic,
+      italic: partial?.see?.italic ?? byLanguage.italicSee,
     },
     ...(partial?.locale ? { locale: partial.locale } : {}),
     groupBy: partial?.groupBy !== undefined && GROUP_BY.includes(partial.groupBy) ? partial.groupBy : d.groupBy,
+    ignoreArticle: typeof partial?.ignoreArticle === 'boolean' ? partial.ignoreArticle : byLanguage.ignoreArticle,
     groups: {
       enabled: g?.enabled ?? d.groups.enabled,
       fontFamily: g?.fontFamily ?? fontFamily,
@@ -78,7 +99,8 @@ function definedFields<T extends object>(obj: T | undefined): T | undefined {
 }
 
 /** Drop unset fields and the static defaults. Returns `undefined` when
- *  nothing remains. */
+ *  nothing remains. `ignoreArticle` is kept whenever it is set: its default
+ *  depends on the language. */
 export function stripIndexDefaults(index: IndexConfig | undefined): IndexConfig | undefined {
   if (!index) return undefined;
   const d = DEFAULT_INDEX_CONFIG;

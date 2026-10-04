@@ -260,6 +260,7 @@ Some places are never break opportunities, on either breaker:
 
 - **A no-break space.** U+00A0, the narrow no-break space U+202F and the figure space U+2007 glue the words on either side: a number and its unit, a page reference, a group of thousands. The same holds in captions, table cells, boxes and design text (running heads, openers). Each keeps its own width, as it is measured; justification stretches the word spaces only. A face with no glyph for U+202F or U+2007 gets the width browsers give them, half a word space and a digit, in every output, the PDF included; practically every face has U+00A0. A group glued this way that is wider than the whole line is the exception, with or without inline formatting: it breaks at its last no-break space, rather than being cut inside a word. The word joiner U+2060 glues without taking any room, in Chinese text too: a sense number `**①**` followed by one stays on the line of the character after it. So does U+FEFF, the zero-width no-break space, though the word joiner is the character meant for it.
 - **Text that touches.** A bold or italic word and the punctuation after it (`**osmosis**.`), the brackets around an inline reference (`(:ref{id="fig-3"})`), a word set in two runs: text with no space in between is one unit, as if it were one word. When such a unit does not fit what is left of a line, it goes down whole. When it opens a line and still does not fit, its last word is hyphenated at a syllable so the punctuation goes down with the word's tail; only a unit with no syllable to break at leaves its punctuation to open the next line.
+- **Inside a word of a joining script.** An Arabic word (or a Syriac, N'Ko or Mongolian one) is never hyphenated, not even at a soft hyphen typed in it, and never cut between its letters: its letters join, and a piece set alone would take other letter forms and another width. Arabic and the other right-to-left languages default to hyphenation off; with it on (for the Latin words of an Arabic book, or in an English book that quotes Arabic), the dictionary skips such words. A word set in two styles (`كتا**ب**`) stays one word, measured whole. One wider than the whole line runs past the measure, and the build reports an `unbreakableWordOverflow` content warning.
 
 Up to postext 1.4, a paragraph with inline formatting or a `:ref` could break at a no-break space, and a ragged line could end on the `(` before a reference or open with the full stop after a bold word.
 
@@ -314,7 +315,7 @@ To get fewer of these lines, in this order: check that hyphenation is on and set
 
 ### Tracking as a Last Resort
 
-`bodyText.maxJustifyTracking` lets such a line take a little tracking — letter spacing — instead of more word space, up to that many thousandths of an em a character (10 = 0.01 em, the InDesign unit). It works both ways: a line whose spaces would stretch past `maxWordSpacing` spreads its letters until its spaces are back at the bound, and a line that would fit only with its spaces below `minWordSpacing` tightens its letters instead of sending a word down. Knuth-Plass weighs it when it chooses the breaks: a tracked line costs a little more than one within the bounds and much less than one past them, so tracking is taken only where word spacing alone would fail. Lines within the bounds, a paragraph's last line (unless it runs over), a line of one word and a line holding a chip never take any. The line records it as `VDTLine.letterSpacing`, on top of its block's own tracking, and the canvas, HTML and PDF paint it.
+`bodyText.maxJustifyTracking` lets such a line take a little tracking — letter spacing — instead of more word space, up to that many thousandths of an em a character (10 = 0.01 em, the InDesign unit). It works both ways: a line whose spaces would stretch past `maxWordSpacing` spreads its letters until its spaces are back at the bound, and a line that would fit only with its spaces below `minWordSpacing` tightens its letters instead of sending a word down. Knuth-Plass weighs it when it chooses the breaks: a tracked line costs a little more than one within the bounds and much less than one past them, so tracking is taken only where word spacing alone would fail. Lines within the bounds, a paragraph's last line (unless it runs over), a line of one word and a line holding a chip never take any. The line records it as `VDTLine.letterSpacing`, on top of its block's own tracking, and the canvas, HTML and PDF paint it. Words of a joining script (Arabic…) never take tracking, this one or any other (a style's `letterSpacing`, column balancing, the runt fix): spacing their letters apart breaks the joins. A line counts none of their letters, and the renderers paint them untracked; a style that sets `letterSpacing` on such text gets a `joiningScriptLetterSpacing` content warning.
 
 ```ts
 bodyText: {
@@ -324,6 +325,24 @@ bodyText: {
 ```
 
 It is off by default, so documents keep their lines unless they ask for it. In the English chapter above, 10‰ brought the lines past `maxWordSpacing` down to one or none per face, and 20‰ to none in three faces out of four. Keep it small: past 20‰ or so the tracking starts to show as a lighter or darker line.
+
+### Kashida in Arabic Text
+
+A justified line of Arabic is not letter-spaced: its letters join, and spacing them apart breaks the joins. It is stretched in two places instead, its word spaces and its kashidas, the elongated joins a calligrapher draws between two connected letters (كتاب → كتـاب). Postext inserts them as tatweels (U+0640, ـ), whole ones, which the font draws as one stroke; Amiri turns a run of one to seven into a curved kashida.
+
+`bodyText.kashida` is `'auto'` by default in a document whose language is written in the Arabic script (`ar`, `fa`, `ur`…) and `'none'` in any other; set `'auto'` to elongate the Arabic words quoted in another language's book. Each line but a paragraph's last gets its word spaces opened up to a quarter of their width first, then kashidas for the rest of its slack, one tatweel at a time at the best places first and round after round, each word measured again whole with its tatweels; what is left, less than one tatweel, goes back to the spaces. Knuth-Plass counts each word's possible elongation as stretch, so it chooses the breaks knowing a line of Arabic words can widen there.
+
+Where a kashida may go comes from the rules of [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT): only between two letters that join, never after a letter that does not join onward (ا د ذ ر ز و ة), never at the end of a word, never inside lām-alif, after the marks of the letter before it. `kashidaPatterns: 'naskh'` follows the classical Naskh rules (Benatia's matrix with Afifi's prohibitions: nothing after kāf or lām, nothing before ṣād, ʿayn or wāw, a final pronoun hāʾ stretched just before it); `'simple'` the Microsoft priorities for simple modern faces; `'nastaliq'` the Naskh rules tailored for Nastaʿlīq. The default `'auto'` reads the body font: no kashida in a Ruqʿa or Dīwānī face such as Aref Ruqaa, Nastaʿlīq rules in a Nastaʿlīq face, Naskh otherwise. A word takes `kashidaPerWord` elongations (1 by default) at most `kashidaMaxLength` em long (0.6, three tatweels of Amiri). A word that holds a tatweel the author typed is elongated there. Latin words, digits, headings, ragged lines and a paragraph's last line never take any.
+
+```ts
+bodyText: {
+  kashida: 'auto',          // the default in an Arabic book
+  kashidaPatterns: 'naskh', // 'auto' picks it from the font
+  kashidaMaxLength: 0.6,    // em
+}
+```
+
+The tatweels are part of the painted text (each segment lists them in `VDTLineSegment.kashida`, and the line counts them in `VDTLine.kashida`); the plain text, the source map, links and the text copied from the PDF leave them out.
 
 ### The Final Line
 

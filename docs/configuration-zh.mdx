@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: '配置',
   description: 'Postext所有版面配置选项的完整参考',
   lang: 'zh',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30分钟',
   order: 3,
-  plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页和PDF文件。",
+  plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页、PDF文件和EPUB电子书。",
 };
 
 # 配置
@@ -39,7 +39,7 @@ const document = buildDocument(content, {
 - [版式](#版式)：栏数、栏间距、栏线、[竖排](#竖排)。
 - [页眉与页脚](#页眉与页脚)：每页的文字元素和线条元素，支持占位符、奇偶页和对齐方式。
 - [正文](#正文)：排印、断词、段首孤行与段末孤行。
-- [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签；另见Postext排版所支持的[语言与文字](#语言与文字)。
+- [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签，以及由它决定的[数字](#文档数字)（`numerals`）和[文本方向](#文本方向)（`direction`）；另见Postext排版所支持的[语言与文字](#语言与文字)。从右到左书籍的说明见[阿拉伯文排版](/zh/docs/arabic-layout)。
 - [东亚排版](#东亚排版)：`cjk`，涵盖中文、日文和韩文的地区惯例与断行、两端对齐时行内空白的分配、标点宽度与悬挂、汉字与拉丁字母之间的空白、字符网格、竖排中的直立数字，以及着重号、注音和割注。完整指南见[中文排版](/zh/docs/chinese-layout)。
 - [标题](#标题)：共享默认值以及H1–H6各自的覆盖设置。
 - [无序列表](#无序列表)与[有序列表](#有序列表)：项目符号、编号、嵌套。
@@ -62,6 +62,7 @@ const document = buildDocument(content, {
 - [以编程方式使用](#以编程方式使用)：`buildDocument`、它报告的警告、解析器、缓存。
 - [在Web Worker中运行排版](#在web-worker中运行排版)：在主线程之外构建，并可取消。
 - [集成HTML查看器](#集成html查看器)与[生成PDF](#生成pdf)：端到端的完整做法。
+- [EPUB电子书](#epub电子书postext-epub)：由同一份排版生成固定版式和流式版式的EPUB 3文件，并用EPUBCheck检查。
 
 
 ## 页面
@@ -130,7 +131,7 @@ const document = buildDocument(content, {
       <td><code>binding</code></td>
       <td><code>'auto' | 'left' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#binding">装订</a>。</td>
+      <td>书籍装订的一侧。<code>layout.writingMode</code>为<code>'vertical-rl'</code>或文档从右到左（<a href="#文本方向"><code>direction</code></a>）时，<code>'auto'</code>即<code>'right'</code>，否则为<code>'left'</code>。右侧装订的书从左页开始，页边距的镜像方向也相反。这是全书级设置：标题样式自己的<code>layout</code>不会改变它。见<a href="#binding">装订</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -165,6 +166,8 @@ const document = buildDocument(content, {
 - 无论是否带标签，PDF都写入`/ViewerPreferences << /Direction /R2L >>`和`/PageLayout /TwoPageRight`（第1页单独，之后两两成对）。Acrobat和Foxit会遵循这两项设置，Chrome内置的查看器则都忽略。
 
 页码和书眉不会自行移动：把页码印在外侧角的模板，需要为右侧装订分别设置奇数页和偶数页的元素（元素可以带`parity`）。
+
+从右到左书写的书（阿拉伯文、波斯文、希伯来文等）也在右侧装订：文档的[`direction`](#文本方向)解析为`'rtl'`时，`'auto'`给出右侧。这样的书还会把整个文字流镜像：第一栏在右边，缩进、列表标记、浮动体和脚注都在右侧；页眉和页脚的槽位保持物理方向。见[阿拉伯文排版](/zh/docs/arabic-layout#页序与右侧装订)。
 
 ### 页面尺寸预设
 
@@ -345,10 +348,18 @@ page: {
     <tr><td>地支</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>、<code>子</code></td></tr>
     <tr><td>带圈数字</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>、<code>①</code></td></tr>
     <tr><td>全角数字</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>、<code>１</code></td></tr>
+    <tr><td>阿拉伯-印度数字</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>、<code>١</code></td></tr>
+    <tr><td>波斯数字</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>、<code>urdu</code>、<code>۱</code></td></tr>
+    <tr><td>阿拉伯字母（阿布贾德顺序）</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>、<code>أبجد</code></td></tr>
+    <tr><td>阿拉伯字母（字母表顺序）</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>、<code>arabic-alpha</code>、<code>arabic-alphabetic</code>、<code>أبتث</code></td></tr>
+    <tr><td>阿布贾德数字</td><td>ا, ب … يا（11）, غتمو（1446）</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>阿布贾德数字（马格里布数值）</td><td>ص（60）, ض（90）, ش（1000）</td><td><code>arabic-abjad-maghrebi</code>、<code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 东亚样式在三处设置中都沿用[CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese)中的名称。中文小写数字在10到19之间写作十，前面不加一（十二，但一百一十）；数中连续的零只写一个零（一百零一、一千零五十）；万位用万或萬，亿位用亿或億（一万零一十）。只有`cjk-decimal`使用〇，逐位书写，与年份的写法相同（二〇二六，GB/T 15835—2011）。天干到10为止，地支到12，带圈数字到50；超出后以阿拉伯数字输出。`一`和`壹`跟随文档`locale`的字形：`zh-Hant`、`zh-TW`或`zh-HK`为繁体，其余为简体。有些较早的出版物把101写作一百一，不带零；Postext不输出这种形式。
+
+阿拉伯样式凡CSS已有名称的都沿用之（`arabic-indic`、`persian`；W3C《Ready-made Counter Styles》中的`urdu`和`maghrebi-abjad`分别读作`persian`和`arabic-abjad-maghrebi`）。`arabic`仍表示欧洲数字。`arabic-abjad`输出古典阿拉伯语和抄本页码所用的累加式阿布贾德数字，数值大的在前：11为يا，1446为غتمو，千位的倍数写在غ之前（2000为بغ，1002为غب）；超过999 999时以数字输出。W3C把这个名称用于一个28个字母的序列，其中11为ك；Postext把这个序列称为`abjad`，即按阿布贾德顺序给列表项编字母（أ، ب، ج، د، هـ），按字母表顺序的则是`hijai`（أ، ب، ت، ث）。两者都把第一个字母写成带hamza的أ，把单独出现的he写成带tatweel的هـ，以免被读作数字١和٥；超过28个后按`lower-alpha`的方式双写（أأ、أب）。马格里布数值依照口诀صعفض قرست ثخذ ظغش（ص为60，ض为90）；W3C的列表把ص与ض对调。单个أ无法区分两种字母序列，因此它们的记号是各自的前四个字母：`{1:أبجد}`、`{1:أبتث}`。文档本身的数字由[`numerals`](#文档数字)设定。
 
 其他写法是为不经类型检查的配置准备的，即JSON预设和纯JavaScript。TypeScript类型仍然只列出每处设置自己的写法，也就是沙盒写入、`resolveAllConfig`返回的那种（东亚名称也包括在内），所以有类型的`PostextConfig`要守住这种写法，用别的写法需要类型断言。
 
@@ -590,9 +601,15 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'center'</code></td>
-      <td>各行在元素方框内的水平对齐方式。<code>'justify'</code>会拉宽每一段中除最后一行以外所有折行的词间距，让行填满方框；首字下沉旁边的行填满它旁边的空间。开启<code>hyphenate</code>时，放不进两端对齐行剩余空间的词还会在音节处断开来填满这一行。段落的最后一行、没有可拉伸空格的行，以及不折行的文本都齐左排。两端对齐的文本按段落逐段排版，所以段落之间的多个空行算作一个。Canvas和PDF把每个词放在版面给定的位置；HTML则用<code>word-spacing</code>加宽空格。</td>
+      <td>各行在元素方框内的水平对齐方式。<code>'justify'</code>会拉宽每一段中除最后一行以外所有折行的词间距，让行填满方框；首字下沉旁边的行填满它旁边的空间。开启<code>hyphenate</code>时，放不进两端对齐行剩余空间的词还会在音节处断开来填满这一行。段落的最后一行、没有可拉伸空格的行，以及不折行的文本都齐左排。两端对齐的文本按段落逐段排版，所以段落之间的多个空行算作一个。Canvas和PDF把每个词放在版面给定的位置；HTML则用<code>word-spacing</code>加宽空格。<code>'start'</code>和<code>'end'</code>跟随文本的<code>direction</code>：对从右到左的文本即右边和左边。<code>'left'</code>和<code>'right'</code>是方框自身的两侧；在从右到左页面的文字流中排出的设计（章首区段、标题设计）里，文字流是镜像的，所以它们就是起始侧和结束侧，与正文相同。</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>文档的方向</td>
+      <td>文本的基本方向：决定中性字符的归属、一行中各段的顺序，以及<code>'start'</code>和<code>'end'</code>指哪一侧。<code>'auto'</code>读取解析后文本的第一个强方向字母，没有时取文档的<a href="#文本方向"><code>direction</code></a>。阿拉伯文和希伯来文的片段无论基本方向如何都从右到左读。含阿拉伯字母的文本从不加字距（整段文本的<code>letterSpacing</code>都被忽略），折行或截断时也从不切开其中的词；比方框还宽的词会溢出，并报告为<code>unbreakableWordOverflow</code>。</td>
     </tr>
     <tr>
       <td><code>parity</code></td>
@@ -1286,10 +1303,22 @@ interface ElementPlacement {
       <td>用斜体渲染行内<code>:ref</code>标签。</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>*…*</code>的排法：斜体；粗体并用<code>boldColor</code>；正体并用<code>italicColor</code>；或正体并在词上加线。<code>'auto'</code>在用阿拉伯字母书写的文档中为<code>'bold'</code>，其他文档中为<code>'italic'</code>。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>阿拉伯文元音符号：照原样排；全部去掉；或去掉但保留shadda。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify'</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'justify'</code></td>
-      <td>文字对齐方式。两端对齐会把间距分配到每一行，使左右边缘整齐。两端对齐段落的末行按自然宽度齐左排出；例外是Knuth-Plass接受了一个依靠胶料收缩的超长末行，这时词间距会压缩，使这一行正好填满行长（TeX的胶料设定语义，Canvas、HTML和PDF三种后端的处理完全一致）。</td>
+      <td>文字对齐方式。<code>'left'</code>（或<code>'start'</code>）是一行开始的一侧：从右到左的段落即右侧（见<a href="#文本方向">文本方向</a>）。两端对齐会把间距分配到每一行，使左右边缘整齐。两端对齐段落的末行按自然宽度齐左排出；例外是Knuth-Plass接受了一个依靠胶料收缩的超长末行，这时词间距会压缩，使这一行正好填满行长（TeX的胶料设定语义，Canvas、HTML和PDF三种后端的处理完全一致）。</td>
     </tr>
     <tr>
       <td><code>fontWeight</code></td>
@@ -1344,6 +1373,30 @@ interface ElementPlacement {
       <td><code>number</code></td>
       <td><code>0</code></td>
       <td>当一行两端对齐的文字只靠词间距会拉伸到超过<code>maxWordSpacing</code>，或压缩到低于<code>minWordSpacing</code>时，这一行最多可以使用的字距，单位为千分之一em，可正可负（InDesign的单位：10 = 每个字符0.01 em）。超出上下限的那部分调整量分配到字母之间，于是松散行的词间距回到<code>maxWordSpacing</code>，过紧的行则以<code>minWordSpacing</code>排进行长。Knuth-Plass在选择断点时会把它计入，但只用于单靠词间距会超出上下限的那些行：其他行、段落末行（除非它超长）、只有一个词的行以及含有行内标签的行都不加字距。该值作为<code>letterSpacing</code>记录在行上，Canvas、HTML和PDF都会按它绘制。需要开启<code>optimalLineBreaking</code>。设为<code>0</code>即关闭。见<a href="/en/docs/justification#tracking-as-a-last-resort">字距作为最后手段</a>。</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td>用阿拉伯字母书写的文档中为<code>'auto'</code>，否则为<code>'none'</code></td>
+      <td>卡希达两端对齐：两端对齐的阿拉伯字母文字行先把空白分给词间空格（最多其宽度的四分之一），再分给卡希达，即插入两个相连字母之间的整个延长符（U+0640），绝不用字距。Knuth-Plass把每个词可拉长的量算作伸展量。拉丁词、数字、标题、不对齐的行和段落最后一行一律不加。延长符会被绘制，但不进入纯文本和复制的文字。见<a href="/zh/docs/justification#阿拉伯文的卡希达">阿拉伯文的卡希达</a>。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>哪些连笔可加卡希达、按什么顺序：古典纳斯赫体规则、微软的优先级，或为波斯体调整过的纳斯赫规则（依据raqim-kashida）。<code>'auto'</code>看正文字体：鲁格阿体或迪瓦尼体（Aref Ruqaa）不加，波斯体字体用nastaliq规则，其他用naskh。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>一个词最多拉长几处。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>一处连笔最长拉多少em；按能放下的整个延长符计。</td>
     </tr>
     <tr>
       <td><code>optimalLineBreaking</code></td>
@@ -1561,12 +1614,13 @@ const config: PostextConfig = {
     <tr><td>荷兰语（<code>nl</code>）</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>简体中文（<code>zh-Hans</code>、<code>zh</code>、<code>zh-CN</code>）</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>繁体中文（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>阿拉伯文（<code>ar</code>、<code>ar-EG</code>、<code>ar-MA</code>等）</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。
+题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。阿拉伯文类型同样按`{h1}-{n}`编号（شكل 2-3），交叉引用写作الفصل 3、القسم 2-1和ص 12，参考文献标题为المراجع，索引使用انظر / انظر أيضًا、رموز和أرقام，并用阿拉伯文逗号和分号（، ؛）。
 
-中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。
+中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。从右向左书写的语言（阿拉伯文、波斯文、乌尔都文、希伯来文等）的文档同样声明语言：字体的语言字形（`locl`）和后备字体随之选择。
 
 ```ts
 const config: PostextConfig = {
@@ -1575,15 +1629,73 @@ const config: PostextConfig = {
 };
 ```
 
+#### 文档数字
+
+顶层的`numerals`决定引擎输出的所有数字所用的数字系统：页码，以及目录、索引和页码引用中的页码标签；有序列表和脚注的编号；标题和章的计数，`{chapterNumber}`；图号及其引用中的`{h1}`与`{n}`；`{totalPages}`、`{bookTotalPages}`和`{numberDecimal}`。`'latn'`输出0–9，`'arab'`输出阿拉伯-印度数字٠–٩，`'arabext'`输出波斯数字۰–۹。只有十进制格式受影响——`decimal`、列表的`arabic`或保持默认的设置——作者指定的格式照原样输出：`lower-roman`仍是i、ii、iii，拉丁文文档中的`arabic-indic`仍输出١、٢、٣。文档正文从不改写。
+
+默认值`'auto'`取`locale`的数字（`defaultNumeralsFor(tag)`）：不带地区或地区不在马格里布的阿拉伯语（`ar`、`ar-EG`、`ar-SA`、`ar-AE`……）为`'arab'`；`ar-MA`、`ar-DZ`、`ar-TN`、`ar-LY`、`ar-MR`和`ar-EH`为`'latn'`；波斯语（`fa`）、普什图语（`ps`）和印度乌尔都语（`ur-IN`）为`'arabext'`；其他语言，包括巴基斯坦乌尔都语，均为`'latn'`。CLDR对不带地区的`ar`和`ar-AE`给出`latn`；马什里克和海湾地区的阿拉伯文图书印的是٠–٩，Postext以图书为准。标签中注明数字系统的（`ar-MA-u-nu-arab`）照其所注。以文档数字编号的页面把`arabic-indic`或`persian`记为`pageNumberFormat`，PDF页码标签因此显示相同的数字。未知的值按语言处理，并报告为`unknownNumerals`。
+
+作者输入的数字三种数字系统都能读取：列表项`٣.`从3开始，`{startAt=٥}`、`:::numbering{startAt=٥}`、`:::space{lines=٢}`和`:::part{number="٣"}`（用于`{numberDecimal}`）都能读出其值。
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
+```
+
+#### 文本方向
+
+顶层的`direction`设定文档的基本方向：`'ltr'`、`'rtl'`或`'auto'`（默认值）。`'auto'`在`locale`的文字从右到左书写时（阿拉伯文、波斯文、乌尔都文、希伯来文、叙利亚文、塔纳文、恩科文、阿德拉姆文等，由`directionOf(tag)`判断）为`'rtl'`，否则为`'ltr'`。从右到左的文档在镜像的版框中排版：各行从右边开始，第一栏在右边，缩进、列表标记、浮动体、脚注和框都位于右侧，[`page.binding: 'auto'`](#装订)让它在右侧装订。只有这样的文档，解析后的配置才带有`direction: 'rtl'`，所以从左到右的文档解析结果与以前相同。未知的值按`'auto'`读取，并报告为`unknownConfigValue`。Unicode双向算法（UAX #9）在两种方向中都安排每行各段的顺序：英文书中的阿拉伯文引文在原位从右到左读。
+
+在文档内部，标题或`:::`容器可以带`{dir=ltr}`或`{dir=rtl}`，行内的`:ltr[…]`和`:rtl[…]`把一段文字隔离开（见[标记中的文本方向](/zh/docs/document-format#标记中的文本方向)）；表格资源可以设`table.direction`。与文档方向相反的块保留自己的起始侧：它的缩进、列表标记和末行的齐边都移到其文字开始的一侧。
+
+凡是指明某一侧的设置，指的都是文字或文字流的一侧，而不是纸面的一侧，所以为英文书做的设计在书改为阿拉伯文后照样可用。`'start'`和`'end'`可以作为明确的名称使用：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>设置</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>正文、标题、段落样式、部分、脚注和标注框正文的<code>textAlign</code>；题注及题注注释的<code>align</code></td><td>文字的两侧：<code>'left'</code>是一行开始的一侧，阿拉伯文段落即右侧，两端对齐段落的末行也排向这一侧。</td><td><code>'left'</code>和<code>'right'</code>的同义词。解析后的配置只带<code>'left'</code> / <code>'right'</code>；保存的配置保留原来写的值。</td></tr>
+    <tr><td>表格单元格的<code>align</code></td><td>单元格文字的两侧，按表格的方向（<code>table.direction</code>）读取。</td><td>同义词，按表格的方向读取。</td></tr>
+    <tr><td><code>placement.align</code>（浮动体、窄图）</td><td>文字流的两侧：在从右到左的书中<code>'left'</code>是纸面的右侧。</td><td>同义词。</td></tr>
+    <tr><td>标注框的<code>stripe.side</code>、<code>icon.cornerSide</code>、<code>labelTab.position</code>（<code>'top-start'</code>、<code>'top-end'</code>）</td><td>文字流的两侧，对页面上所有框都相同。</td><td>框自身的方向（阿拉伯文书中的<code>:::callout&#123;dir=ltr&#125;</code>从纸面左侧开始）。</td></tr>
+    <tr><td>页眉和页脚的槽位；锚定在纸面上的设计元素</td><td>纸面的两侧。</td><td>仅限文本元素：元素自身<code>direction</code>的起始和结束。</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate`在镜像页面上保持物理含义：顺时针旋转的图在纸面上也是顺时针旋转。读取版面的宿主程序可以在每页找到镜像版框（带`direction: 'rtl'`的`VDTPage.flow`，`pageIsMirrored(page)`），在`VDTLine.order`中找到每行各段的视觉顺序；`flowToPage`和`pageToFlow`在文字流与纸面之间换算。见[阿拉伯文排版](/zh/docs/arabic-layout#文字方向与双向算法)。
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // 从右到左，右侧装订
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // 强制设定；很少需要
+```
+
 ### 语言与文字
 
 Postext能排从左到右书写的拼音文字，以及横排和竖排的中文。[中文排版](/zh/docs/chinese-layout)介绍中文的排法和相关设置；对应的配置键位于[东亚排版](#东亚排版)、[竖排](#竖排)和[装订](#装订)。各种文字的支持情况如下：
 
 - **中文**：段落中的CJK字符多于词间空格时，由CJK排版器处理：行在字符之间断开，遵守`cjk.lineBreak`的避头尾规则（行首不出现。、」或ー，行尾不出现「或（），——和……不拆开，数字连同其符号、拉丁文单词都保持完整；两端对齐的行在字符之间均匀分配空白以填满行长。标点宽度、标点悬挂、汉字与拉丁文之间的间距、字符网格、着重号、专名号和书名号、注音以及割注，都按`locale`的地区处理，横排（沿行）和竖排（`layout.writingMode: 'vertical-rl'`）都一样。只引用少量CJK词语的拉丁文段落保持最优断行，并可以在这些词语旁边断行；拉丁文中引用的CJK括号、间隔号或全角符号（〈h〉、％）不影响任何处理。
 - **日文和韩文**：使用同一个排版器，不断词，但采用中国大陆中文的默认值：它们各自的规范（JLREQ、KLREQ）尚未实现。韩文除了在空格处断行，也在音节之间断行。
-- **从右到左的文字**（阿拉伯文、希伯来文、波斯文、乌尔都文……）目前还不支持。没有双向算法：各行按从左到右的方向断行并对齐到左边距，每行显示的效果取决于它的绘制方式。在Canvas和PDF输出中，没有行内格式的左对齐行作为一整段文字绘制，由浏览器或PDF的字体引擎自行转为从右到左，因此全部由同一种从右到左文字组成的行可以正确阅读，但混有不同方向、数字或标点的行则不行。HTML输出，两端对齐、居中和右对齐的行，以及带行内格式的行，都是从左到右逐词绘制的：每个词本身读起来正确，但词的顺序与阅读顺序相反。`page.binding: 'right'`可以为这类书排出右装订的跨页，但处理不了其中的行。
+- **阿拉伯文及其他从右到左的文字**（波斯文、乌尔都文、希伯来文等）从右到左排，具体做法见[阿拉伯文排版](/zh/docs/arabic-layout)。文档的[`direction`](#文本方向)由`locale`的文字决定，Unicode双向算法安排每行中拉丁词和数字的顺序，书在右侧装订、第一栏在右边，引擎生成的每个数字都采用该地区的[数字](#文档数字)。含阿拉伯字母的词从不断词、加字距或切开，两端对齐的阿拉伯文行在空格处和用卡希达（kashida）拉伸。元音符号、强调、脚注和阿拉伯文的内置文字见[阿拉伯文](#阿拉伯文)。波斯文、乌尔都文和希伯来文有方向、数字和整词规则，但没有自己的内置文字。
 
-断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文。中文、日文和韩文不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文和阿拉伯文。中文、日文、韩文和从右到左书写的语言不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+
+### 阿拉伯文
+
+以下设置服务于阿拉伯字母文本；对用其他文字书写的文档，它们都不起作用。[阿拉伯文排版](/zh/docs/arabic-layout)把它们与阿拉伯文书籍的其余部分（方向、装订、数字、诗体、目录和索引）放在一起说明。
+
+- **元音符号与行距。** 标注元音的文本中，元音符号（fatḥa、kasra、shadda、tanwīn、短竖alif、《古兰经》符号）叠在字母上下，位于行距之中，而行距不会为它们增高。每个带元音符号的行都会记下笔画伸到多远（`VDTLine.markInk`），渲染器的栏裁剪会把每栏首行和末行的符号包含在内。某个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，构建会报告该段落（`arabicMarksExceedLeading`，显示在沙盒的检查面板中）。只比较上下相叠的词。部分标注元音的文本宜用约1.7–1.85 em的`lineHeight`，全部标注元音的诗句宜用1.9–2.1 em。
+- **强调。** 阿拉伯文字体没有斜体，所以在`locale`用阿拉伯字母书写的文档中，`*…*`默认排成粗体（`bodyText.emphasis: 'auto'`）。`'color'`把它排成正体并用`italicColor`，`'overline'`在词上加一条线，即阿拉伯文书籍中的khaṭṭ fawqī。该设置作用于所有用正文字体排的文本：段落、列表、引用块、段落样式、提示框正文、注释和标题。图注、表格单元格、目录和索引保留各自的斜体设置。无论选哪种，引擎都不会把阿拉伯字母排斜：斜体片段中的阿拉伯文词排成正体，其中的拉丁文词保持斜体。在这类文档中，引用块默认为正体。
+- **Tashkīl。** `bodyText.tashkil: 'strip'`从排版文本中去掉元音符号和《古兰经》符号，用于由标注元音的底本制作不标元音的版本：fatḥa、ḍamma、kasra及其tanwīn、sukūn、shadda、短竖alif（هٰذا变成هذا），以及U+0656–U+065F和U+06D6–U+06ED的符号。`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留（أ إ آ是字母，用组合符号输入时也一样）。源文本保留其符号；行、标题和目录不带符号排出，每个排出的字符仍对应它在源文本中的位置。
+- **脚注。** `footnotes.markerTemplate: '({n})'`用文档数字写出注码「(١)」，`numbering: 'page'`让编号每页重新开始，`noteNumberPosition: 'inline'`把注文自己的编号排在行内。分隔线和注文编号位于栏的起始一侧，在从右到左的书中即右侧。
+- **整词。** 含阿拉伯字母的词从不断词、切开或加字距，无论是在阿拉伯文书中还是被其他语言的书引用。为阿拉伯文文本设置`letterSpacing`的样式会被报告（`joiningScriptLetterSpacing`），比所在行还宽的词会溢出该行并被报告（`unbreakableWordOverflow`）。见[阿拉伯文排版](/zh/docs/arabic-layout#连写成形与整词)。
+- **卡希达与诗体。** 两端对齐的阿拉伯文行除了在空格处，还用卡希达拉伸（`bodyText.kashida`，见[阿拉伯文的卡希达](/zh/docs/justification#阿拉伯文的卡希达)）；古典诗用`:::verse`排成每行一联、两个等宽的半行（见[`:::verse`](/zh/docs/document-format#verse)）。
+- **索引。** 阿拉伯文索引按字母顺序排序，并忽略冠词ال（`index.ignoreArticle`）、元音符号和hamza的承载字母；见[索引](#索引)。
 
 ### 段首孤行、段末孤行、孤字与不拆分规则
 
@@ -1765,7 +1877,7 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>所有标题级别的对齐方式（没有按级别设置的值）：齐左、两端对齐、居中或齐右。两端对齐的标题像段落一样把最后一行排成齐左，所以单行标题看起来与<code>'left'</code>相同。Canvas、HTML和PDF以同样方式放置各行，编号前缀也包括在内。没有高级设计的<code>span: 'page'</code>标题，其默认章首区段也遵循这一设置（两端对齐时排成齐左）；高级设计则用各文本元素自己的<code>align</code>对齐。</td>
     </tr>
@@ -2093,6 +2205,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td>编号与标题之间的内容，用于栏内、<code>span: 'page'</code>级别的默认章首区段、输出标题行的书眉，以及PDF书签。一级标题的分隔符还用于在默认的篇页和目录默认的篇条目中连接篇的编号和标题。中文章回标题用全角空格或不用分隔符（<code>'　'</code>：第一回　甄士隱夢幻識通靈）。目录保留自己的编号列（<code>toc.levels[].numberGap</code>）。<a href="#heading-styles">标题样式</a>可以设置自己的分隔符。像中文小说的对句回目那样用<code>{'\\\\'}</code>把标题分成两半时，单行形式（栏内、目录、书眉）在两侧都是中文或日文字符时用全角空格连接两半，否则用空格。</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>生成的编号放在哪里。<code>'before'</code>：放在标题前，用<code>numberSeparator</code>连接。<code>'replace'</code>：编号就是整个标题，源文本里写的标题不印出，所以在<code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code>下，<code># Night</code>印成الليلة الثانية。目录把编号列为该条目的标题（没有编号栏），页眉（<code>{chapterTitle}</code>、<code>{titleText}</code>）和PDF书签也读作编号；这样的标题<code>{number}</code>为空。只对有模板（级别的或其样式的）的编号标题生效，其他标题保留原标题。<a href="#heading-styles">标题样式</a>可以设置自己的值，设为<code>'before'</code>可保留其级别会替换掉的标题。</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1：<code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6：<code>&#123; enabled: false, parity: 'any' &#125;</code></td>
@@ -2370,7 +2488,9 @@ headings: {
   </tbody>
 </table>
 
-英文、西班牙文和中文会用文字书写；其他语言采用英文词，与内置的表格续表字符串相同。中文按`locale`的书写系统采用`simp-chinese-informal`或`trad-chinese-informal`的小写数字（一万 / 一萬），序数前加“第”；汉字没有大小写，所以同一后缀的三种写法输出相同。英文遵循美式用法（*one hundred five*，不加*and*）。西班牙文用阳性形式，与*capítulo*或*libro*的编号方式一致（*capítulo primero*、*tercero*、*veintiuno*），13到29的序数按RAE推荐的写法连写为一个词（*decimotercero*、*vigesimoprimero*）。基数最多拼写到999 999，西班牙文序数最多到999；更大的数字以阿拉伯数字输出。
+英文、西班牙文、中文和阿拉伯文会用文字书写；其他语言采用英文词，与内置的表格续表字符串相同。中文按`locale`的书写系统采用`simp-chinese-informal`或`trad-chinese-informal`的小写数字（一万 / 一萬），序数前加“第”；汉字没有大小写，所以同一后缀的三种写法输出相同。英文遵循美式用法（*one hundred five*，不加*and*）。西班牙文用阳性形式，与*capítulo*或*libro*的编号方式一致（*capítulo primero*、*tercero*、*veintiuno*），13到29的序数按RAE推荐的写法连写为一个词（*decimotercero*、*vigesimoprimero*）。基数最多拼写到999 999，西班牙文序数最多到999；更大的数字以阿拉伯数字输出。
+
+阿拉伯文数词与所计名词的性一致，因此后缀可加修饰：阴性名词用`-feminine`（或`-f`），阳性名词用`-masculine`（`-m`，默认）；`-classical`把百写作مائة（布拉格版和多数埃及版的写法），而不是现代的مئة。`{1:ordinal}`输出标题所用的带冠词主格序数词：`الفصل {1:ordinal}`输出*الفصل الأول*、*الفصل الحادي عشر*、*الفصل الحادي والعشرون*；`الليلة {1:ordinal-feminine}`输出*الليلة الأولى*、*الليلة الحادية عشرة*、*الليلة الحادية والعشرون*、*الليلة المئتان*，超过一百时采用古典的“在……之后”格式：*الليلة الخامسة والأربعون بعد الثلاثمئة*、*الليلة الحادية بعد الألف*。`{1:words}`输出基数词（واحد وعشرون；阴性为إحدى عشرة、واحدة وعشرون）。序数词拼写到9 999，基数词到99 999；修饰可以组合（`{1:ordinal-f-classical}`），其他语言忽略修饰。阿拉伯文没有大小写，因此后缀的大小写不起作用。设计占位符`{numberWords}`和`{numberOrdinalWords}`输出阳性形式；阴性的章首请把序数词放在该级的模板中，再用`{number}`输出。
 
 在标题设计中，`{numberWords}` / `{numberWordsLower}`和`{numberOrdinalWords}` / `{numberOrdinalWordsLower}`以同样方式拼写标题的计数，所以章首可以写*Chapter One*，而目录列出`1`。文本元素的`textTransform: 'uppercase'`可给出大写：
 
@@ -2980,6 +3100,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>行内注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>注释编号的写法，<code>{n}</code>代表按编号格式和文档数字写出的编号：<code>'({n})'</code>得到阿拉伯文书籍的带括号注码「(١)」。正文注码和注文开头的编号都按它写。不含<code>{n}</code>的模板按默认值处理。</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>注文开头编号的位置：上标，或以注文字号排在行内。<code>'auto'</code>跟随<code>markerPosition</code>。阿拉伯文书籍把正文注码排成上标，注文自己的编号排在行内。</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>
@@ -4073,7 +4205,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>题注各行的水平对齐。<code>'justify'</code>把除最后一行外的每一行撑满整个宽度。在色条上时，各行在其内边距以内对齐；侧边题注在自身宽度内对齐。</td>
     </tr>
@@ -4190,7 +4322,7 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>note.align</code></td>
-      <td><code>'left' | 'center' | 'right' | 'justify'</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>注释各行的水平对齐，与题注的<code>align</code>相同。</td>
     </tr>
@@ -4396,9 +4528,9 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
     </tr>
     <tr>
       <td><code>textAlign</code></td>
-      <td><code>'left' | 'justify' | 'center' | 'right'</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
       <td>正文对齐方式</td>
-      <td>水平对齐。<code>'center'</code>和<code>'right'</code>让每一行从另一侧参差排列，适合献辞、署名块。</td>
+      <td>水平对齐。<code>'center'</code>和<code>'right'</code>让每一行从另一侧参差排列，适合献辞、署名块。在从右到左的段落中，<code>'left'</code>是它的起始侧，即右侧。</td>
     </tr>
     <tr>
       <td><code>boldColor</code></td>
@@ -4824,7 +4956,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>stripe</code></td>
       <td><code>&#123; enabled, side, width, color &#125;</code></td>
       <td><code>false</code>、<code>'left'</code>、<code>1.5em</code>、主色</td>
-      <td>沿一条边的实色色条。<code>'left'</code> / <code>'right'</code>色条会缩窄内容；<code>'top'</code>色条把内容往下推。在设了<code>borderRadius</code>的框上，色条的外侧角随框形一起变圆（postext 1.4及以前它们保持直角，会伸出圆角之外）。</td>
+      <td>沿一条边的实色色条。<code>'left'</code> / <code>'right'</code>色条会缩窄内容；<code>'top'</code>色条把内容往下推。<code>'left'</code>和<code>'right'</code>指文字流的两侧（在从右到左的书中<code>'left'</code>是纸面的右侧）；<code>'start'</code>和<code>'end'</code>跟随框自身的方向，所以阿拉伯文书中的<code>:::callout&#123;dir=ltr&#125;</code>把<code>'start'</code>色条放在左侧。在设了<code>borderRadius</code>的框上，色条的外侧角随框形一起变圆（postext 1.4及以前它们保持直角，会伸出圆角之外）。</td>
     </tr>
     <tr>
       <td><code>icon</code></td>
@@ -5387,7 +5519,7 @@ const config: PostextConfig = {
       <td><code>levels</code></td>
       <td><code>TocLevelConfig[]</code></td>
       <td>一级</td>
-      <td>列出的标题级别，每级带有条目的字体样式：<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（默认为正文行距，使目录落在网格上）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（整个条目的缩进）、<code>numberWidth</code> / <code>numberGap</code>（编号栏的宽度和间隔，标题从编号栏之后开始；编号在栏内右对齐）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>。未设置的字段继承正文。无论编号用什么字体和字号，它都落在标题第一行的基线上，Canvas、HTML和PDF中都是如此（postext 1.4及以前，编号像列表项目符号那样以x字高居中，所以展示字体或较大的字号会浮在标题上方）。自己编写的渲染器可以从条目块的<code>bulletBaselineY</code>取得这条基线；<code>bulletY</code>仍是编号em框的中点，与1.4相同，所以早于这个新字段的渲染器会把编号画在一直以来的位置。</td>
+      <td>列出的标题级别，每级带有条目的字体样式：<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（默认为正文行距，使目录落在网格上）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（整个条目的缩进）、<code>numberWidth</code> / <code>numberGap</code>（编号栏的宽度和间隔，标题从编号栏之后开始；编号在栏内右对齐；某个编号比<code>numberWidth</code>宽时，如<code>الفصل الحادي عشر</code>或<code>第十二章</code>，该级的编号栏加宽到最宽的编号）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>。未设置的字段继承正文。无论编号用什么字体和字号，它都落在标题第一行的基线上，Canvas、HTML和PDF中都是如此（postext 1.4及以前，编号像列表项目符号那样以x字高居中，所以展示字体或较大的字号会浮在标题上方）。自己编写的渲染器可以从条目块的<code>bulletBaselineY</code>取得这条基线；<code>bulletY</code>仍是编号em框的中点，与1.4相同，所以早于这个新字段的渲染器会把编号画在一直以来的位置。</td>
     </tr>
     <tr>
       <td><code>unnumbered</code></td>
@@ -5498,7 +5630,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>separator</code>、<code>locatorSeparator</code>、<code>rangeSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>', '</code>、<code>', '</code>、<code>'–'</code></td>
+      <td><code>', '</code>、<code>', '</code>、<code>'–'</code>；阿拉伯文字中前两项为<code>'، '</code></td>
       <td>分别印在词条与第一个页码之间、两个页码之间，以及页码范围两端之间的内容。</td>
     </tr>
     <tr>
@@ -5522,7 +5654,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
-      <td>按语言，斜体</td>
+      <td>按语言，斜体（阿拉伯文字为正体）</td>
       <td>参见项前面的引导词。未设置时随文档语言而定：<em>See</em> / <em>See also</em>、<em>Véase</em> / <em>Véase también</em>、<em>Voir</em> / <em>Voir aussi</em>、见 / 另见（繁体中文为見 / 另見）等。中文索引把参见项放在句号之后，不加空格：<code>贾琏 12。见贾政</code>。</td>
     </tr>
     <tr>
@@ -5536,6 +5668,12 @@ const config: PostextConfig = {
       <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
       <td><code>'auto'</code></td>
       <td>组标题是什么。<code>'letter'</code>：排序键的首字母。<code>'pinyin'</code>：以汉字开头的条目归入其拼音读音的拉丁首字母之下（贾宝玉归入<code>J</code>），拉丁字母的排序键归入其字母，排在该字母的中文条目之后（排序器把拉丁字母排在汉字之后）：<code>sort="jia mu"</code>排在<code>J</code>组末尾。<code>'stroke'</code>：按第一个字的笔画数分组，<code>一畫</code>、<code>二畫</code>…（简体中文为<code>一画</code>…）。<code>'none'</code>：不设组标题；符号、数字和词语之间只用<code>groups.marginTop</code>隔开。<code>'auto'</code>让简体中文索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）按拼音分组，繁体中文索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）按笔画分组，其他语言按字母分组。条目按组标题所依据的排序规则排序：按拼音分组的<code>zh-Hant</code>索引按拼音排序。读音和笔画数来自排序器（CLDR）；遇到它读错的字（把重阳的重读作<em>zhòng</em>，把行业的行读作<em>xíng</em>），就给标记一个<code>sort</code>键，用只有你想要的读音的字来写，它会排在正确的位置：重阳用<code>sort="崇阳"</code>，行业用<code>sort="航业"</code>。没有中文排序数据的浏览器排出的拼音或笔画索引不带组标题。</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td>阿拉伯文为<code>true</code></td>
+      <td>阿拉伯文词条排序和分组时视同没有开头的冠词<code>ال</code>（<code>ٱل</code>）：البصرة归入ب，排在بدر和بغداد之间，印出时保持原样。<code>الله</code>保留冠词；自带<code>sort</code>键的词条按该键原样排序。无论此项如何，阿拉伯文索引都忽略元音符号和延长符（tatweel），把أ إ آ ٱ归入ا，并把ؤ按و、ئ和ى按ي、ة按ه排序。</td>
     </tr>
     <tr>
       <td><code>groups.enabled</code></td>
@@ -5952,7 +6090,8 @@ const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
 
 ```ts
 interface FolioConfig {
-  tilt?: number;                  // Degrees from straight above, 0–40.
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
   paper?: {
     type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
          | 'bible' | 'newsprint' | 'cardStock' | 'board';
@@ -5997,7 +6136,13 @@ interface FolioConfig {
       <td><code>tilt</code></td>
       <td><code>number</code></td>
       <td><code>22</code></td>
-      <td>视线偏离正上方的角度（度），限制在0–40。0度时从正上方俯视打开的书；角度越大，页面下端越靠近，书芯的厚度越明显。</td>
+      <td>视线偏离正上方的角度（度），限制在0–70。0度时从正上方俯视打开的书；角度越大，页面下端越靠近，书芯的厚度越明显。</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>视角绕书转动的角度（度），换算到−180–180。0度时从页面下端看书；正角度使视线转到书的右侧，负角度转到左侧。它与<code>tilt</code>一起决定查看器打开时的视角，也是<code>resetView()</code>恢复到的视角。</td>
     </tr>
     <tr>
       <td><code>paper.type</code></td>
@@ -6385,13 +6530,14 @@ debug: {
 
 ### 配置警告
 
-配置本身的四类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
+配置本身的六类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
 
 - **未知编号格式**：有序列表的`numberFormat`、`page.pageNumbering.format`或资源类型的`counterFormat`不属于任何一种[编号格式写法](#编号格式的写法)。此时按十进制编号。
 - **字体家族中写了字体栈**：`fontFamily`（或任何`…FontFamily`）中写了CSS字体栈。文字用字体栈中的第一个字体家族排（见[每个`fontFamily`只写一个字体家族](#每个fontfamily只写一个字体族)）。
 - **侧栏没有空间**：`'oneAndHalf'`版式的`sideColumnPercent`（文档的，或标题样式自己的`layout`中的）会使其中一栏不足内容宽度的1%，或者不是数字。各栏按两者都能接受的最接近的值截取，`used`给出该值（`sideColumnPercentClamped`；见[`'oneAndHalf'`版式](#版式类型)）。
 - **字符网格过大**：`cjk.grid`的每行字数或每页行数超出了页边距内能容纳的数量。网格按能容纳的最大数量排，`used`给出这个数（`cjkGridClamped`；见[字符网格](#字格)）。
 - **未知标题设置**：`headings`、`headings.balancing`、某个标题级别、标题样式或段落样式中没有的键：拼错的`letterSpacng`、从其他工具借来的`tracking`、标题样式上的`level`、段落样式上的`fontStyle: 'italic'`（段落样式要用`italic: true`）。引擎会忽略它（postext 1.4及以前是悄无声息地忽略）。`value`是这个键，`used`为空，如果某个设置与它只差一两个字母或只有大小写不同，`suggestion`会给出最接近的那个设置（`unknownConfigKey`）。
+- **未知设置值**：只能取几个固定词的设置写了别的值，例如`direction: 'right'`（可取`auto`、`ltr`或`rtl`）。引擎改用默认值，`used`给出实际结果：对`direction`而言，是文档语言的书写方向（`unknownConfigValue`）。
 
 沙盒在**检查**面板中列出这些警告，并附上设置的路径。在代码中，`buildDocument`把它们作为`configWarnings`放在文档上（配置没有问题时不存在该字段），`collectConfigWarnings(config)`则不做排版直接返回它们：
 
@@ -7259,8 +7405,8 @@ npm install postext postext-pdf
 
 - **`renderToPdf(doc, options): Promise<Uint8Array>`**：接收一个`VDTDocument`（或一本书各章组成的数组），返回原始的PDF字节。
 - **`PdfFontProvider`**：回调签名`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`，`renderToPdf`需要嵌入新的family/weight/style组合时，用它请求字体字节。`request.codePoints`包含页面中用该字体排出的字符；返回值是一个文件，或者合起来构成该字体的多个文件（见[中文、日文和韩文字体](#中文日文和韩文字体)）。
-- **`RenderToPdfOptions`**：`{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg? }`。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](#字格)）。
-- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
+- **`RenderToPdfOptions`**：`{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm? }`。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。
+- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
 - **`decompressWoff2(bytes): Uint8Array`**：辅助函数，把WOFF2文件转成TTF字节，`pdf-lib`可以直接嵌入这种格式。
 - **`createPdfWorker(options?)`**，来自`postext-pdf/worker`：在Web Worker上进行同样的渲染；见[在工作线程上渲染PDF](#在工作线程上渲染pdf)。
 
@@ -7622,7 +7768,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **外观由文档决定。** 纸张、装订、桌面和光照来自文档的[`folio`设置](#书页视图配置)（`doc.config.folio`）。排在`:::paper`段落中的页面带有自己的纸张（`VDTPage.paper`），这一叶按该纸张的颜色、表面、厚度和挺度绘制。设置`binding.cover: 'pages'`时，第一页是封面纸板，最后一页（落在左页时）是封底纸板（`covers`）。
 - **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）：书脊沿页面内侧边缘，书页绕着它翻动；朝书脊方向拖动向前翻，背离书脊滑动向后翻，轻点则翻页。
 - **指针做什么。** `interaction`（以及之后的`setInteraction`）决定鼠标左键、一根手指或一支笔在书上做什么：`'hand'`（默认）拿起书页翻动，`'orbit'`像右键拖动那样转动视角（适合触控板和平板），`'select'`把指针交给宿主程序，例如用来选择文字。`pageAt(event)`给出指针下的页面以及页面上的位置（`{ page, x, y }`，从页面左上角算起的宽高比例），按书本被看到的样子计算，倾斜或转动后也一样；`pointOnScreen(point)`反过来换算，用来在页面上画出光标或选区。`refreshPage(src)`重新显示宿主在原处重绘的页面画布。Sandbox用这些接口在3D书页上选择文字并跟随编辑器的光标。
-- **读者可以绕着书看。** 按住右键拖动可让视角绕书旋转（最低到偏离正上方70°），翻页过程中也可以；`resetView()`把视角平缓地恢复到设置中的`tilt`。沙盒把它做成了**重置视角**按钮。
+- **读者可以绕着书看。** 按住右键拖动可让视角绕书旋转（最低到偏离正上方70°），翻页过程中也可以；`resetView()`把视角平缓地恢复到设置中的`tilt`和`yaw`；`getView()`返回当前看到的视角（`{ tilt, yaw }`，单位为度），可以存为这两项设置。沙盒把它们做成了**重置视角**和**保存为默认视角**两个按钮。
 - **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。
 - **无障碍。** 查看器是可获得焦点的组，响应←/→（右侧装订的书方向相反）、Page Up/Down、Home和End；按钮和页码都有标签（用`labels`翻译），每个页面画布都带有替代文本（`alt: (index) => …`）。
 - **没有WebGL2**，或读者要求减少动画时，展开页直接切换。WebGL书本对手机来说负担很重（每个页面的每一面都要一张纹理）：沙盒只在支持WebGL2、且屏幕短边至少600像素的地方提供书页标签页。`canFlip()`表明此处书页能否以3D方式翻动：需要WebGL2，且没有要求减少动画。
@@ -7685,6 +7831,77 @@ book.resetView();
 用`createFolio`显示画布上绘制的页面、最后一页空白页和纸张颜色。
 
 <CodePenExample name="folio-images" title="Postext · 图片组成的3D书本" description="用postext-folio以3D方式翻动任意页面：图片URL、img或canvas元素。" height={600} />
+
+## EPUB电子书（`postext-epub`）
+
+`postext-epub`把排好的书写成EPUB 3.3文件，在浏览器或Node中运行，无需服务器。它读取的逐章文档与`renderToPdf`为整本书接收的相同，所以页码、注释、引用、交叉引用、目录和索引都已解析好；结果以字节返回。沙盒的**EPUB 3**标签页用的就是它。
+
+```bash
+npm install postext postext-epub
+```
+
+与`postext-pdf`一样，`postext`是对等依赖：两者要一起升级，从CDN引用时固定为同一版本。
+
+### 固定版式与流式版式
+
+EPUB 3定义了两种版式，由包文件的`rendition:layout`属性声明；`layout`选择其中一种：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>EPUB中的名称</td><td><code>pre-paginated</code>（固定版式，英文称fixed layout或FXL）</td><td><code>reflowable</code>（流式版式），EPUB的默认版式</td></tr>
+    <tr><td>内容文档</td><td>每个印刷页一个XHTML文档，尺寸为成品页面的CSS像素</td><td>每章一个XHTML文档（篇另起一个文档）</td></tr>
+    <tr><td>保留什么</td><td>页面：分栏、浮动体、书眉、章首页、断行和位置，使用嵌入的字体。文字仍是真正的文字：可以选择、搜索和朗读</td><td>文字及其结构：标题、由行重新拼合的段落、列表、作为旁注的标注框、跟在引用文字之后的图和表、注释、链接、印刷页的分页标记。还有一份由配置导出的样式表</td></tr>
+    <tr><td>放弃什么</td><td>读者对字体、字号和边距的选择；在小屏幕上页面会缩小显示</td><td>分栏、书眉、页面设计和确切的断行</td></tr>
+    <tr><td>跨页与方向</td><td>按奇偶页和装订方式标记<code>page-spread-left</code> / <code>page-spread-right</code>；右装订的书从右向左阅读</td><td>阅读方向取自装订方式；竖排中文保持<code>vertical-rl</code>，阿拉伯文带<code>dir="rtl"</code></td></tr>
+    <tr><td>适合</td><td>以页面为设计单位的书：图文书、教材、目录册、杂志；大屏幕</td><td>连续的正文：小说、随笔、报告；手机和电子墨水阅读器</td></tr>
+  </tbody>
+</table>
+
+两种版式的导航相同：由标题和篇页生成的目录、带印刷页码的页码列表、地标（封面、印刷目录、正文开始处），以及供旧阅读器使用的NCX。
+
+### 写出一本书
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // 每章一个VDTDocument，按书中顺序
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: '灯笼', creators: ['Ada Lovelace'], language: 'zh-Hans' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+单个文档就是只有一章的书：`renderToEpub([doc], options)`。
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`**写出文件。`options`为`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
+- **`metadata`**：`title`和`language`（BCP 47语言标签）必填；`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`和`modified`可选。不带前缀的ISBN会写成`urn:isbn:…`。没有`identifier`时，书会得到一个由书名、作者和语言派生的`urn:uuid:`，这样同一本书的新版本在读者书库中保持原位。再传入`modified`即可得到逐字节相同的输出。
+- **`fonts`**：要嵌入的字形，`{ family, weight, style, bytes, format, unicodeRange? }`，`format`为`woff2`、`woff`、`ttf`、`otf`之一。每个字形成为一个文件和一条`@font-face`规则；带各自`unicodeRange`的多个文件合成一个字形（Google Fonts的分片）。页面用到却没有嵌入字形的字体族、字重或字形会以`missingFont`提醒，阅读器会改用自己的字体。只嵌入许可证允许嵌入的字体。
+- **`resourceBytes(fileId)`**：页面放置的图片，同步或异步返回`{ bytes, mediaType }`；`mediaType`为空时从字节判断类型。位图按存储时的样子给出，SVG给出源代码，而不是PDF印刷母版（`svg.pdfFileId`）。每张图片只存一次。单色书（`diagramStyle.singleInk`）的SVG会在文件中重新着色。没有字节的图片以`missingImage`提醒，原处留下空框。
+- **`cover`**：`{ bytes, mediaType, alt? }`，JPEG、PNG、WebP或SVG图片。书会以包含它的封面文档开头，它也是包文件的`cover-image`（书库中的缩略图）。没有封面时，固定版式把第一页标为封面，流式版式的书没有封面图片。
+- **`onProgress({ phase, done, total })`**：依次为`resources`（字体和图片）、`documents`（固定版式为页，流式版式为章）、`package`。**`signal`**可在步骤之间中止。
+- **`readEpub(bytes)`**为查看器读回文件，不需要`DOMParser`：版式、元数据、阅读方向、按路径列出的所有文件、清单、spine、目录、页码列表、固定版式的视口和封面。沙盒的阅读器就建立在它之上。
+
+两种版式都带有EPUB Accessibility 1.1元数据（访问模式、目录和印刷页码等功能、危险性和摘要），默认不声明符合WCAG。完整的选项列表和局限见[软件包的README](https://www.npmjs.com/package/postext-epub)。
+
+### 用EPUBCheck检查文件
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/)是EPUB的参考校验工具；电子书商店用它检查收到的文件。安装后（`brew install epubcheck`，或Java版本），`epubcheck book.epub`会列出错误、警告和用法提示；Postext输出留下的用法提示（`CSS-028`、`OBS-001`、`HTM_062`）仅供参考。在Postext仓库中，`pnpm --filter postext-epub epubcheck`检查测试套件的示例书，`node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both`对一个`.postext`文件或预设文件夹排版并检查两种版式，`pnpm --filter postext-epub validate`跑完整套书目（指南、示例预设，以及中文、阿拉伯文和排版食谱中的书），全部没有错误或警告。
 
 ## 文件包（`.postext`文件）
 

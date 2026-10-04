@@ -8,8 +8,9 @@ import { flattenTitleBreaks, flattenTitleBreakSpans } from '../parse/inlineForma
 import type { ContentBlock, InlineSpan, ListKind } from '../parse';
 import type { Resource, ResourceType } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
+import { dimensionToPx } from '../units';
 import type { BlockStyle } from './styles';
-import { resolveHeadingStyle, resolveMathDisplayStyle } from './styles';
+import { resolveHeadingStyle, resolveMathDisplayStyle, resolveParagraphStyle } from './styles';
 import type { ListBulletStyle, ListItemResolved, OrderedListMetrics } from './lists';
 import type { HeadingLevelResolver } from './headingStyles';
 import {
@@ -142,6 +143,19 @@ export function resolveBlockKind(
         };
       }
       const numberSeparator = levelCfg?.numberSeparator ?? ' ';
+      // The number standing for the title (`numberPosition: 'replace'`): the
+      // heading's text, set like a title, not a prefix (#401).
+      if (numberPrefix && rawBlock.numberIsTitle) {
+        return {
+          style,
+          vdtType: 'heading',
+          headingLevel: rawBlock.level,
+          ...(headingNumber !== undefined ? { headingNumber } : {}),
+          contentBlock: { ...contentBlock, text: numberPrefix, spans: [{ text: numberPrefix, bold: false, italic: false }] },
+          bulletXOffsetInColumn: 0,
+          strikethroughText: false,
+        };
+      }
       if (numberPrefix) {
         const sep = `${numberPrefix}${numberSeparator}`;
         const firstSpan = contentBlock.spans[0];
@@ -213,7 +227,11 @@ export function resolveBlockKind(
       };
     }
     default: {
-      const style = rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle;
+      const base = rawBlock.type === 'paragraph' && paragraphStyleOverride ? paragraphStyleOverride : bodyStyle;
+      // A poem (#378): its fence's paragraph style (`{style=…}`) gives its
+      // face, size and leading; its lines are set by `pipeline/verse.ts`,
+      // flush left with final widths, never indented or hyphenated.
+      const style = rawBlock.verse ? verseBlockStyle(verseStyleOf(rawBlock.verse.attrs.style, resolved) ?? base) : base;
       // A paragraph style's `textTransform` (EF-173), length-preserving as
       // a heading's, so the source map stays 1:1. Maths is left alone; the
       // words of a chip are set in capitals too (a `:ref` label is, once
@@ -234,4 +252,52 @@ export function resolveBlockKind(
       };
     }
   }
+}
+
+/** Paragraph styles resolved for poems, by config (`{style=…}` on a
+ *  `:::verse` fence). */
+const verseStyles = new WeakMap<ResolvedConfig, Map<string, BlockStyle | null>>();
+
+/** The paragraph style a poem's fence names, or undefined when it names
+ *  none or one the config does not have (the poem keeps the text's). Its
+ *  `marginTop` and `marginBottom` are the space above and below the poem. */
+function verseStyleOf(id: string | undefined, resolved: ResolvedConfig): BlockStyle | undefined {
+  const key = id?.trim();
+  if (!key) return undefined;
+  let byId = verseStyles.get(resolved);
+  if (!byId) verseStyles.set(resolved, byId = new Map());
+  let style = byId.get(key);
+  if (style === undefined) {
+    const cfg = resolved.paragraphStyles.find((s) => s.id === key);
+    if (cfg) {
+      // A poem is one block: the style's container margins are its own,
+      // above and below (as a `:::paragraphs` group of one entry).
+      const base = resolveParagraphStyle(cfg, resolved);
+      const dpi = resolved.page.dpi;
+      const marginBottomPx = dimensionToPx(cfg.marginBottom, dpi, base.fontSizePx);
+      style = {
+        ...base,
+        marginTopPx: dimensionToPx(cfg.marginTop, dpi, base.fontSizePx),
+        marginBottomPx: marginBottomPx < 0 ? marginBottomPx : Math.max(base.marginBottomPx, marginBottomPx),
+      };
+    } else {
+      style = null;
+    }
+    byId.set(key, style);
+  }
+  return style ?? undefined;
+}
+
+/** The space a poem's paragraph style asks above it (0 without one). */
+export function verseMarginTopPx(styleId: string | undefined, resolved: ResolvedConfig): number {
+  return verseStyleOf(styleId, resolved)?.marginTopPx ?? 0;
+}
+
+/** A poem's block style: flush left (its lines carry their own geometry),
+ *  no indent, no hyphenation. */
+function verseBlockStyle(style: BlockStyle): BlockStyle {
+  const { hyphenationZonePx: _zone, indentPx: _indent, ...rest } = style;
+  void _zone;
+  void _indent;
+  return { ...rest, textAlign: 'left', hyphenate: false, firstLineIndentPx: 0, hangingIndent: false };
 }

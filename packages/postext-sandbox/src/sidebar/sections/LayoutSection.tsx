@@ -16,6 +16,7 @@ import {
 } from '../../controls';
 import { HighlightZone } from '../settings/previewHighlight';
 import { ColumnsPicture } from '../settings/pictures';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const D = DEFAULT_LAYOUT_CONFIG;
 
@@ -99,9 +100,10 @@ export const LayoutSection = memo(function LayoutSection() {
     { value: 'text', label: labels.sideColumnRoleText },
     { value: 'floats', label: labels.sideColumnRoleFloats },
   ];
+  const columnSide = flowSideLabels(useRightToLeftFlow(), labels.sideColumnSideLeft, labels.sideColumnSideRight);
   const SIDE_SIDE_OPTIONS = [
-    { value: 'right', label: labels.sideColumnSideRight },
-    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'right', label: columnSide.right },
+    { value: 'left', label: columnSide.left },
     { value: 'outer', label: labels.sideColumnSideOuter },
     { value: 'inner', label: labels.sideColumnSideInner },
   ];

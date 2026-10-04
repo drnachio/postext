@@ -236,7 +236,7 @@ function resolveCalloutStyleConfig(
       boldFontWeight: partial.body?.boldFontWeight ?? bodyText.boldFontWeight,
       italic: partial.body?.italic ?? false,
       smallCaps: partial.body?.smallCaps ?? false,
-      textAlign: partial.body?.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
+      textAlign: partial.body?.textAlign === 'start' ? 'left' : partial.body?.textAlign ?? (bodyText.textAlign === 'justify' ? 'justify' : 'left'),
       hyphenation: partial.body?.hyphenation ?? bodyText.hyphenation.enabled,
       paragraphSpacing: partial.body?.paragraphSpacing ?? bodyText.paragraphSpacing,
       firstLineIndent: partial.body?.firstLineIndent ?? bodyText.firstLineIndent,

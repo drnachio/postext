@@ -22,13 +22,15 @@ import {
   useSandboxResources,
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
-import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
+import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
 import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview';
+import { documentDigits, documentLanguage } from '../../context/documentDirection';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 function newTypeId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -45,6 +47,7 @@ function counterFormatOptions(labels: SandboxLabels): { value: ResourceCounterFo
     { value: 'alpha-lower', label: labels.counterFormatAlphaLower },
     { value: 'alpha-upper', label: labels.counterFormatAlphaUpper },
     ...eastAsianNumberFormatOptions(labels),
+    ...arabicNumberFormatOptions(labels),
   ];
 }
 
@@ -84,7 +87,10 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const config = useSandboxSelector((s) => s.config);
   const locale = useSandboxSelector((s) => s.locale);
   const resources = useSandboxResources();
+  const floatSide = flowSideLabels(useRightToLeftFlow(), labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
+  // The previews number in the document's digits, as the pages do.
+  const digits = documentDigits(config.numerals, documentLanguage(config, locale ?? 'en'));
   const isDefault = config.resourceTypes === undefined;
   // Per-type caption overrides are shown merged over the resolved global
   // caption style so every control displays the value that will render.
@@ -202,6 +208,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
             <div className="flex flex-col gap-2">
               <Field label={labels.idLabel} tooltip={labels.styleIdHelp}>
                 <input
+                  dir="ltr"
                   type="text"
                   value={type.id}
                   readOnly
@@ -213,6 +220,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNameLabel} tooltip={labels.resourceTypeNameTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.name}
                   onChange={(e) => updateType(type.id, { name: e.target.value })}
@@ -223,6 +231,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNamePluralLabel} tooltip={labels.resourceTypeNamePluralTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.namePlural ?? ''}
                   onChange={(e) => updateType(type.id, { namePlural: e.target.value })}
@@ -233,6 +242,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeShortLabelLabel} tooltip={labels.resourceTypeShortLabelTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.shortLabel}
                   onChange={(e) => updateType(type.id, { shortLabel: e.target.value })}
@@ -243,6 +253,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNumberingLabel} tooltip={labels.resourceTypeNumberingTooltip}>
                 <input
+                  dir="ltr"
                   type="text"
                   value={type.numberingTemplate}
                   onChange={(e) => updateType(type.id, { numberingTemplate: e.target.value })}
@@ -288,6 +299,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeCaptionPrefixLabel} tooltip={labels.resourceTypeCaptionPrefixTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.captionPrefix}
                   onChange={(e) => updateType(type.id, { captionPrefix: e.target.value })}
@@ -355,11 +367,11 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   />
                   <SelectInput
                     label={labels.resourceTypePlacementAlign}
-                    value={type.defaultPlacement?.align ?? 'left'}
+                    value={type.defaultPlacement?.align === 'start' ? 'left' : type.defaultPlacement?.align === 'end' ? 'right' : type.defaultPlacement?.align ?? 'left'}
                     options={[
-                      { value: 'left', label: labels.headerFooterElementAlignLeft },
+                      { value: 'left', label: floatSide.left },
                       { value: 'center', label: labels.headerFooterElementAlignCenter },
-                      { value: 'right', label: labels.headerFooterElementAlignRight },
+                      { value: 'right', label: floatSide.right },
                     ]}
                     onChange={(v) => updateTypePlacement(type, { align: v as ResourcePlacement['align'] })}
                     tooltip={labels.resourceTypePlacementAlignTooltip}
@@ -422,9 +434,10 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               <span style={labelStyle}>{labels.previewLabel}</span>
               <span
                 className="rounded px-1.5 py-0.5"
+                dir="auto"
                 style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
               >
-                {renderResourceTypePreview(type)}
+                {renderResourceTypePreview(type, digits)}
               </span>
             </div>
           </div>

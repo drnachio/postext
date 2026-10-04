@@ -16,6 +16,7 @@
  * ({@link noteMissingGlyphs}), for the `missingGlyph` warning.
  */
 import type { PDFFont } from 'pdf-lib';
+import { mirroredCodePoint } from 'postext';
 import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/fallbackSpaces';
 
 /** The fontkit face of an embedded font, as far as coverage needs it. */
@@ -116,26 +117,67 @@ export interface FileRun {
  * invisible one (a joiner, a variation selector), stays in the run before
  * it: it is drawn (or dropped) as that file's fallback, and a printing one
  * is reported as missing when shaped.
+ *
+ * With `rtl` (a run HarfBuzz shapes right to left) a mirrored character
+ * goes by the glyph that run will show: HarfBuzz sets `(` as `)` only when
+ * the file has a `)`, and keeps the `(` otherwise. Fontsource's `arabic`
+ * file of Amiri holds `(` and not `)`, so an opening bracket cut into it
+ * printed unmirrored in an Arabic line (#401). Such a character is set in
+ * the first file with its mirror (the `latin` one), or by its own glyph
+ * when no file has the mirror.
  */
-export function fileRuns(font: PDFFont, text: string): FileRun[] {
+export function fileRuns(font: PDFFont, text: string, rtl = false): FileRun[] {
   const list = faceFilesOf(font);
   if (!list) return [{ font, text }];
   const runs: FileRun[] = [];
   let current: FileRun | undefined;
+  // Joining controls waiting for the letter after them (see below).
+  let pending = '';
+  let previous = 0;
   for (const ch of text) {
     const cp = ch.codePointAt(0)!;
+    // A zero width joiner or non-joiner shapes with the letters it sits
+    // between (HarfBuzz reads it only inside one run): it stays with the
+    // letter before it, and one with no letter before it (opening the
+    // text, after a space) goes with the letter after it. Fontsource
+    // serves U+2000–206F from the `latin` file, so the file that covers it
+    // first is rarely the Arabic letters' one.
+    if (isJoiningControl(cp) && (!current || !joinsOnto(previous))) {
+      pending += ch;
+      continue;
+    }
+    const mirror = rtl ? mirroredCodePoint(cp) : cp;
+    const shown = mirror !== cp && list.fileFor(mirror) ? mirror : cp;
     let file = current?.font;
-    if (!file || (!list.covers(file, cp) && !isDefaultIgnorable(cp))) {
-      file = list.fileFor(cp) ?? current?.font ?? font;
+    if (!file || (!list.covers(file, shown) && !isDefaultIgnorable(cp))) {
+      file = list.fileFor(shown) ?? current?.font ?? font;
     }
     if (current && current.font === file) {
-      current.text += ch;
+      current.text += pending + ch;
     } else {
-      current = { font: file, text: ch };
+      current = { font: file, text: pending + ch };
       runs.push(current);
     }
+    pending = '';
+    previous = cp;
+  }
+  if (pending) {
+    if (current) current.text += pending;
+    else runs.push({ font, text: pending });
   }
   return runs.length > 0 ? runs : [{ font, text }];
+}
+
+/** ZWNJ (U+200C) and ZWJ (U+200D): they choose the joining form of the
+ *  letters either side of them. */
+function isJoiningControl(cp: number): boolean {
+  return cp === 0x200c || cp === 0x200d;
+}
+
+/** Whether a joining control after `cp` belongs with it: anything but a
+ *  space or a control (a letter, a mark, a digit, punctuation). */
+function joinsOnto(cp: number): boolean {
+  return cp > 0x20 && !(cp >= 0x7f && cp < 0xa0) && !/\s/u.test(String.fromCodePoint(cp)) && !isJoiningControl(cp);
 }
 
 /** `text`'s width at `size` (points), each run measured in its file. */

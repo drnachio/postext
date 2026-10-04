@@ -15,6 +15,16 @@ describe('createBlankBookConfig', () => {
     expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['图', '表']);
     expect(withDefaultResourceTypes(config, 'zh-Hans')).toBe(config);
   });
+
+  it('sets a new book up for Arabic in the Arabic interface', () => {
+    const config = createBlankBookConfig('ar');
+    expect(config.locale).toBe('ar');
+    expect(config.direction).toBeUndefined();
+    expect(config.bodyText?.fontFamily).toBe('Amiri');
+    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول']);
+    expect(config.headings?.levels?.find((l) => l.level === 1)?.numberingTemplate).toBe('الفصل {1:ordinal}');
+    expect(withDefaultResourceTypes(config, 'ar')).toBe(config);
+  });
 });
 
 describe('withDefaultResourceTypes', () => {

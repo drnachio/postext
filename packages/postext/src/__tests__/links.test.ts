@@ -225,7 +225,9 @@ describe('links in HTML (EF-36)', () => {
     expect(anchors).toHaveLength(1);
     expect(anchors[0]).toContain('color:inherit');
     const inner = /<a [^>]*href="https:\/\/postext\.dev[^"]*"[^>]*>([\s\S]*?)<\/a>/.exec(html)![1]!;
-    expect(inner.replace(/<[^>]+>/g, '')).toBe('thepostextdocs');
+    // The word spaces copy with the words (#403); the one after the link
+    // is outside it.
+    expect(inner.replace(/<[^>]+>/g, '')).toBe('the postext docs');
   });
 
   it('adds no anchors to text without links', () => {

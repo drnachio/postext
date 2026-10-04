@@ -1,0 +1,70 @@
+---
+title: "Portada de revista i sumari per seccions"
+summary: "Una portada amb les crides penjades del nom de la revista i un sumari generat amb una fila de color per secció. Cada secció és una part sense portadella."
+plain: "La portada i les primeres pàgines d'una revista de cuina i camp, amb foto a la portada i un sumari. Ensenya a donar a cada secció el seu color, que es manté a totes les seves pàgines."
+description: "Sis pàgines d'una revista amb Postext. La portada és una ranura sobre una foto, i el sumari agrupa els articles sota pestanyes del color de cada secció."
+question: "Com faig la portada i el colofó d'una revista, i què substitueix l'avantportada i la portada d'un llibre?"
+aliases: ["portada de revista", "coberta de revista", "crides de portada", "nom de la revista", "capçalera de la revista", "masthead", "sumari", "índex per seccions", "colors per secció", "número de la revista", "pestanya de foli", "carta de l'editor", "colofó"]
+pageNotes: { "1": "La portada: una vall toscana sota un cel pàl·lid, FALLOW en Bodoni negra de banda a banda, un plafó de paper amb tres crides amb els avantítols en oliva, teula i granat, i a la cantonada inferior dreta el preu amb un codi de barres inventat.", "2": "El sumari: un gran 14 de color terra, tres files de secció amb pestanyes de color, el títol, la pàgina i l'entradeta de cada article, una miniatura de la portada i, a la columna dreta, la carta de l'editora, els col·laboradors i un petit colofó.", "3": "Quadern de camp: matrassos amb brots verds a dalt de la pàgina i, muntat sobre el peu de la foto, un plafó teula amb el títol i l'entradeta; a sota, dues columnes justificades i la pestanya teula del foli.", "4": "L'obertura del reportatge: una foto aèria d'un mosaic de camps, un d'ells en guaret, amb un camí blanc al costat d'una masia, i un plafó oliva muntat sobre el peu.", "5": "El reportatge continua sota una foto d'una masia entre vinyes i xiprers, amb un requadre oliva que enumera la rotació de set anys i una cita destacada en oliva.", "6": "Cuina: blat madur i un plafó granat muntat sobre el peu; a sota, els ingredients i l'elaboració, amb ratlles i números en granat." }
+---
+
+## Què compondràs
+
+Sis pàgines de 230 × 300 mm d'un número de *FALLOW*, revista trimestral imaginària de cuina i terra. La portada és una vall toscana a sang sota FALLOW en Bodoni de 118 pt, amb tres crides sobre un plafó de paper, cada avantítol del color de la seva secció, i el preu i el codi de barres a la cantonada. `:::toc` compon el sumari de la pàgina 2: sota la pestanya de color de cada secció, el títol, la pàgina i l'entradeta de l'article; a la dreta, la carta de l'editora, els col·laboradors i el colofó. Segueixen tres seccions, en teula, oliva i granat, amb articles que s'obren amb una imatge a sang al capdamunt de la pàgina i un plafó del seu color muntat a sobre; folis, vinyetes i requadres porten aquest color. El posa la tanca `:::part` que precedeix cada article, sense obrir portadella.
+
+## Elaboració
+
+### 1 · Penja la portada del seu nom
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Només la foto, les dues línies de capçalera i el preu s'ancoren a la pàgina. Tota la resta s'ancora a un altre element ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)): el nom de la revista, sota la línia superior; el primer avantítol, 8 mm per sota del nom, i a partir d'aquí cada crida sota el seu avantítol i cada avantítol sota la crida anterior. Així, si una crida ocupa més línies o el nom creix, empeny el que té a sota en comptes de trepitjar-ho. Cada avantítol i cada crida porten la seva pròpia caixa de paper de 84 mm d'amplada, i les sis caixes apilades formen el plafó, que creix amb el text. Cada caixa, tret de la primera, se solapa 0,3 mm (`SEAM`) amb la de sobre, igual que el codi de barres amb el preu, perquè al canvas dos fons que només es toquen deixen veure entre ells una ratlla finíssima de la foto. Una revista no porta l'avantportada ni la portada d'un llibre; el nom va a la portada, i el número, la data i el colofó, al sumari. Els preliminars d'un llibre són a <RecipeLink slug="front-matter-roman-to-arabic">Preliminars amb folis romans i després la pàgina 1</RecipeLink>.
+
+### 2 · Fes de cada secció una part sense pàgina
+
+<Excerpt region="sections" />
+
+Amb `parts.page: false`, una tanca com `:::part{title="Reportajes" palette="band=#5d6a2b"}` no obre portadella i només fixa el títol i la paleta de la secció des del bloc següent ([el contenidor `:::part`](/ca/docs/configuration#el-contenidor-part)). L'H1 de cada article fa servir un [estil de títol](/ca/docs/configuration#estils-dencapçalament) amb `numbered: false`, de manera que el sumari el recull sense número. L'estil tria la imatge de l'obertura, i el color el posa la part.
+
+### 3 · Enllaça tots els colors de secció a una entrada
+
+<Excerpt region="palette" />
+
+Una part redefineix entrades de la paleta pel seu id, així que tot el que canvia amb la secció s'enllaça a `band`: el plafó de l'obertura, la pestanya del foli, les vinyetes i els números de les llistes, la cita destacada, i el filet i el títol del requadre de dades. En el text, la redefinició va per valor: qualsevol color amb un hex que coincideixi amb l'hex base de `band` (`#8b6a3e`) pren el de la secció, i per això cap altra entrada no fa servir aquest hex. En els elements de disseny és al revés. Postext 1.4.1 pinta l'hex escrit al costat del seu `paletteId` i no consulta `colorPalette`, però la redefinició d'una part els arriba pel `paletteId`; per això `col()` escriu tots dos.
+
+### 4 · Deixa que el sumari s'agrupi sol
+
+<Excerpt region="contents" />
+
+`:::toc` recull els articles i dona a cada `:::part` una fila composta amb `toc.parts.design` i la paleta d'aquella part ([índex de continguts](/ca/docs/configuration#índex-de-continguts)), de manera que un sol disseny de fila imprimeix tres pestanyes de tres colors. El filet i la pestanya pengen de `mid`, el centre de la fila pujat 1 mm perquè la pestanya no fregui el títol de sota. Sense línia de punts, entre cada títol i la seva pàgina (3, 4 i 6) només queda blanc, i `subtitle.attr` posa a sota, en cursiva, l'atribut `standfirst` de l'obertura. El colofó que tanca la columna dreta és un estil de paràgraf en Jost de 7 pt i color `muted` que el Markdown aplica amb `:::paragraphs{style="colophon"}`.
+
+### 5 · Dona a tots els articles la mateixa obertura
+
+<Excerpt region="opener" />
+
+La imatge, a sang, ocupa els 150 mm de dalt de la pàgina. Un plafó en `band` munta 34 mm sobre el seu peu: són tres caixes de text de 136 mm, cadascuna ancorada `below` (a sota) de l'anterior, amb el nom de la secció que dona `{partTitle}`, el títol i l'entradeta. La imatge no reserva alçada, així que el text comença sota l'element més baix que sí que en reserva, la signatura, amb un farciment inferior buit de 5 mm que el manté com a mínim a aquesta distància.
+
+### 6 · Anomena la secció al foli
+
+<Excerpt region="folios" />
+
+El número de pàgina va en un quadrat de `band` de 6,5 mm, al peu i pel costat exterior. El nom de la secció s'ancora al seu costat, cap al marge interior, i el títol de l'article al costat del nom; les tres caixes fan 6,5 mm d'alçada i porten el text centrat verticalment, així que comparteixen eix. Les revistes també folien les pàgines d'obertura, per això el peu no porta filtre `pages`. L'estil de la portada deixa el peu buit, i el del sumari hi posa el nom de la revista i la data del número (`{title}` i `{publishDate}`) on van la secció i l'article.
+
+## Variants
+
+### Posa el nom de la revista en el color de la casa
+
+El nom de la revista pren el color terra del gran 14 del sumari.
+
+```diff
+-    textTransform: 'uppercase', align: 'center', color: col('ink') },
++    textTransform: 'uppercase', align: 'center', color: col('band') },
+```
+
+### Obre cada secció amb una portadella
+
+Per a parts amb pàgina pròpia, i un número de pàgina a cada fila de part del sumari, mira <RecipeLink slug="parts-in-colour">Parts en color amb un sol atribut</RecipeLink>.
+
+## Errors freqüents
+
+- Un element d'imatge encaixa la imatge a la seva caixa i no la retalla mai. Retalla abans cada JPEG a la seva caixa, 23 : 30 per a la portada i 230 × 150 mm per a les obertures, o la imatge s'encongeix i deixa franges blanques a les vores.
+- En el text, una part canvia qualsevol color amb un hex que coincideixi amb l'hex base de `band`, tant si està enllaçat a `band` com si no. Reserva aquest hex per al que hagi de canviar amb la secció.
+- Els articles estan ajustats a les seves pàgines en les dues llengües: en castellà es van escurçar algunes frases del Quadern de camp perquè càpiga en una pàgina, i en anglès una frase del reportatge va perdre tres paraules perquè les dues columnes de la pàgina 4 acabin a la mateixa alçada. Si canvies el text, comprova que cap article no passi unes línies a una pàgina nova i que totes les pàgines, tret de l'última de cada article, acabin igualades.

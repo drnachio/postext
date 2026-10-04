@@ -165,7 +165,9 @@ export function LightTable({
   const go = useCallback((delta: number) => setCurrent((c) => Math.min(spreads.length - 1, Math.max(0, c + delta))), [spreads.length]);
   // Right to left: ← turns to the next spread, and so does a swipe to the right.
   const rtl = binding === "right";
-  const dir = rtl ? "rtl" : undefined;
+  // The book's own direction, explicit so a left-bound book still lies
+  // left to right on a right-to-left page.
+  const dir = rtl ? "rtl" : "ltr";
   const forward = rtl ? "ArrowLeft" : "ArrowRight";
   const back = rtl ? "ArrowRight" : "ArrowLeft";
   const spreadOf = useCallback((i: number) => Math.max(0, spreads.findIndex((s) => s.includes(i))), [spreads]);
@@ -472,7 +474,7 @@ export function LightTable({
             </button>
             {textHref && (
               <a className="cb-lt-link" href={textHref}>
-                {t("asText")} →
+                {t("asText")} <span className="inline-block rtl:-scale-x-100">→</span>
               </a>
             )}
           </div>

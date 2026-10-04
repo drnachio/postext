@@ -227,7 +227,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
               </label>
               <SearchIcon
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate"
+                className="pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 text-slate"
               />
               <input
                 ref={inputRef}
@@ -242,7 +242,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
                 autoComplete="off"
                 spellCheck={false}
                 enterKeyHint="search"
-                className="cb-search-input h-11 w-full rounded-md bg-surface pr-11 pl-9 font-sans text-[0.9rem] text-foreground placeholder:text-slate disabled:opacity-70 sm:h-10 sm:text-[0.85rem]"
+                className="cb-search-input h-11 w-full rounded-md bg-surface pe-11 ps-9 font-sans text-[0.9rem] text-foreground placeholder:text-slate disabled:opacity-70 sm:h-10 sm:text-[0.85rem]"
               />
               {draft && !failed ? (
                 <button
@@ -253,12 +253,12 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
                     writeQuery("");
                     inputRef.current?.focus();
                   }}
-                  className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-md text-slate hover:bg-surface-2 hover:text-foreground sm:right-0 sm:size-10"
+                  className="absolute top-1/2 end-0 grid size-11 -translate-y-1/2 place-items-center rounded-md text-slate hover:bg-surface-2 hover:text-foreground sm:end-0 sm:size-10"
                 >
                   <XIcon aria-hidden="true" className="size-4" />
                 </button>
               ) : (
-                <kbd aria-hidden="true" className="cb-kbd pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 sm:block">
+                <kbd aria-hidden="true" className="cb-kbd pointer-events-none absolute top-1/2 end-3 hidden -translate-y-1/2 sm:block">
                   /
                 </kbd>
               )}

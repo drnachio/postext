@@ -7,12 +7,15 @@ import { hasCJK } from './cjk';
 import { getCjkLineBreak } from './cjkClasses';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from './vertical';
 import { cjkCompositionKey, getCjkComposition } from './cjkPunctuation';
+import { getMeasureDirection } from './bidiLines';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
- *  overlong word is divided at) depend on it. */
+ *  overlong word is divided at) depend on it. So is a right-to-left base
+ *  direction (`MeasureBlockOptions.direction`, else the build's), which
+ *  joins the key only when set, so every left-to-right key is unchanged. */
 function optionsKey(options: MeasureBlockOptions | undefined): string {
-  return `${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.labelColumnPx !== undefined ? `\x00lc${options.labelColumnPx}` : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}`;
+  return `${(options?.direction ?? getMeasureDirection()) === 'rtl' ? 'rtl\x00' : ''}${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.labelColumnPx !== undefined ? `\x00lc${options.labelColumnPx}` : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}${options?.kashida ? `\x00k${options.kashida.patterns}:${options.kashida.perWord}:${options.kashida.maxLengthPx}` : ''}`;
 }
 
 /** The CJK line-break level and composition (punctuation widths, hanging,
@@ -56,10 +59,11 @@ function mathCacheKey(span: InlineSpan): string {
 }
 
 /** The Chinese annotations of a span (#193–#195): marks set on the same
- *  text change its segments, a reading or a note its measure. Empty for a
+ *  text change its segments, a reading or a note its measure. A
+ *  directional isolate (#367) changes the order of its line. Empty for a
  *  span without any, so its key is unchanged. */
 function annotationCacheKey(s: InlineSpan): string {
-  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted) return '';
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction) return '';
   let key = '';
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
@@ -67,6 +71,7 @@ function annotationCacheKey(s: InlineSpan): string {
   if (s.ruby) key += `|rb:${s.ruby.text}|${s.ruby.group ? 'g' : 'm'}|${s.ruby.position ?? ''}|${s.ruby.fontString ?? ''}|${s.ruby.color ?? ''}|${s.ruby.id}`;
   if (s.warichu) key += `|wc:${s.warichu.id}|${s.warichu.fontString ?? ''}|${s.warichu.open ?? ''}|${s.warichu.close ?? ''}|${s.warichu.color ?? ''}`;
   if (s.inserted) key += '|ins';
+  for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;
   return key;
 }
 

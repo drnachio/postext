@@ -201,7 +201,7 @@ html[data-cb-filtered] .cb-front-title br {
   pointer-events: none;
   position: absolute;
   top: 0;
-  left: 0.75rem;
+  inset-inline-start: 0.75rem;
   z-index: 2;
   padding: 0.2rem 0.45rem 0.25rem;
   border-radius: 0 0 3px 3px;
@@ -251,7 +251,7 @@ html[data-cb-filtered] .cb-front-title br {
 }
 .cb-ph-title {
   position: absolute;
-  left: 12%;
+  inset-inline-start: 12%;
   bottom: 22%;
   width: 52%;
   height: 11%;
@@ -261,7 +261,7 @@ html[data-cb-filtered] .cb-front-title br {
 .cb-ph-title::before {
   content: "";
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   bottom: 170%;
   width: 45%;
   height: 40%;
@@ -381,4 +381,31 @@ html:has(.cb-bar) {
 .docs-content .cb-answers ul:lang(zh),
 .docs-content .cb-excerpt-caption:lang(zh) {
   font-style: normal;
+}
+
+/* Arabic has no italic either, and no capitals: the same upright set, and
+   the tracked small labels lose their tracking (it pulls the joined letters
+   apart). */
+.italic:lang(ar),
+.cb-lt-empty:lang(ar),
+.docs-content .cb-answers ul:lang(ar),
+.docs-content .cb-excerpt-caption:lang(ar) {
+  font-style: normal;
+}
+:is(
+    .cb-plate-title,
+    .cb-draft,
+    .cb-badge,
+    .cb-draft-tab,
+    .cb-lt-count,
+    .cb-lt-link,
+    .cb-tombstone ul,
+    .cb-lb-hint,
+    .cb-facts dt,
+    .cb-credits dt,
+    .cb-pageref-mark,
+    .cb-prevnext-no
+  ):lang(ar) {
+  letter-spacing: normal;
+  text-transform: none;
 }

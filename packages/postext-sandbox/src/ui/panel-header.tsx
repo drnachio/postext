@@ -5,7 +5,7 @@ import { cn } from './cn';
 
 interface PanelHeaderProps {
   title: ReactNode;
-  /** Icon buttons or menus, right-aligned. */
+  /** Icon buttons or menus, at the end of the row. */
   actions?: ReactNode;
   /** Optional count shown next to the title (tabular numerals). */
   count?: number;
@@ -19,7 +19,7 @@ interface PanelHeaderProps {
 export function PanelHeader({ title, actions, count, className }: PanelHeaderProps) {
   return (
     <div
-      className={cn('flex h-9 pt-large:min-h-12 shrink-0 items-center justify-between gap-2 border-b px-3 pt-large:pr-1 pt-large:pl-3', className)}
+      className={cn('flex h-9 pt-large:min-h-12 shrink-0 items-center justify-between gap-2 border-b px-3 pt-large:pe-1 pt-large:ps-3', className)}
       style={{ borderColor: 'var(--rule)', backgroundColor: 'var(--background)' }}
     >
       <h2 className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
