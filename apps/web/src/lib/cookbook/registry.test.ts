@@ -11,18 +11,18 @@ import { validateRegistry } from "./validate.ts";
 
 // ─── In-memory fixture ──────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`) => ({ en, es, ca, zh });
-const HEADINGS: Record<SectionId, [string, string, string, string]> = {
-  build: ["What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs"],
-  short: ["The short answer", "La respuesta corta", "简短回答", "La resposta curta"],
-  ingredients: ["Ingredients", "Ingredientes", "用料", "Ingredients"],
-  method: ["Method", "Elaboración", "做法", "Elaboració"],
-  whole: ["The whole recipe", "La receta completa", "完整食谱", "La recepta completa"],
-  variations: ["Variations", "Variantes", "变化", "Variants"],
-  pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents"],
-  credits: ["Credits", "Créditos", "致谢", "Crèdits"],
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`) => ({ en, es, ca, zh, ar });
+const HEADINGS: Record<SectionId, [string, string, string, string, string]> = {
+  build: ["What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده"],
+  short: ["The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر"],
+  ingredients: ["Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات"],
+  method: ["Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير"],
+  whole: ["The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة"],
+  variations: ["Variations", "Variantes", "变化", "Variants", "تنويعات"],
+  pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة"],
+  credits: ["Credits", "Créditos", "致谢", "Crèdits", "الحقوق"],
 };
-const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式" } };
+const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول" } };
 
 function fixtureRegistry(): Registry {
   return {
@@ -57,7 +57,7 @@ function fixtureRegistry(): Registry {
     gaps: {
       footnotes: {
         label: L("Footnotes", "Notas al pie", "脚注", "Notes a peu de pàgina"),
-        aliases: { en: ["footnote"], es: ["nota al pie"], ca: ["nota a peu de pàgina"], zh: ["注脚"] },
+        aliases: { en: ["footnote"], es: ["nota al pie"], ca: ["nota a peu de pàgina"], zh: ["注脚"], ar: ["حاشية سفلية"] },
         explanation: L("Not parsed."),
       },
     },
@@ -133,6 +133,7 @@ describe("docLinks", () => {
     expect(docAnchor(ANCHOR, "en")).toBe("/en/docs/configuration#table-style");
     expect(docAnchorPath(ANCHOR, "es")).toBe("/docs/configuration#estilo-de-tablas");
     expect(docAnchorPath(ANCHOR, "ca")).toBe("/docs/configuration#estil-de-taules");
+    expect(docAnchorPath(ANCHOR, "ar")).toBe("/docs/configuration#نمط-الجداول");
     expect(resolveDocAnchor({ slug: "configuration", heading: L("No such heading") }, "en")).toBeNull();
     expect(resolveDocAnchor({ slug: "no-such-doc", heading: ANCHOR.heading }, "en")).toBeNull();
   });

@@ -400,7 +400,7 @@ export function DocsSearchPalette() {
                                 navigateTo(href);
                               }}
                               onMouseEnter={() => setSelected(i)}
-                              className={`flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors ${
+                              className={`flex w-full flex-col gap-1 px-4 py-2.5 text-start transition-colors ${
                                 isSel ? "bg-surface" : "hover:bg-surface/50"
                               }`}
                             >
@@ -543,7 +543,7 @@ export function DocsSearchTrigger({ variant = "full", className = "" }: TriggerP
     <button
       type="button"
       onClick={openPalette}
-      className={`group flex min-h-10 w-full items-center gap-2 rounded-md border border-rule bg-background/50 px-3 py-1.5 text-left font-body text-sm text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
+      className={`group flex min-h-10 w-full items-center gap-2 rounded-md border border-rule bg-background/50 px-3 py-1.5 text-start font-body text-sm text-slate transition-colors hover:border-foreground/30 hover:text-foreground ${className}`}
       aria-label={t("triggerAriaLabel")}
     >
       <svg

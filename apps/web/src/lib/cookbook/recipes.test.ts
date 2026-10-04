@@ -28,16 +28,16 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`) => ({ en, es, ca, zh });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`) => ({ en, es, ca, zh, ar });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs"),
-  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta"),
-  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients"),
-  method: L("Method", "Elaboración", "做法", "Elaboració"),
-  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa"),
-  variations: L("Variations", "Variantes", "变化", "Variants"),
-  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents"),
-  credits: L("Credits", "Créditos", "致谢", "Crèdits"),
+  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده"),
+  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر"),
+  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات"),
+  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة"),
+  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة"),
+  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق"),
 } satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */

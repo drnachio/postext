@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_ZH_HANS } from "postext-sandbox";
+import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR } from "postext-sandbox";
 import { useTranslations, useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
@@ -27,6 +27,7 @@ const GUIDE_MARKDOWN: Record<SiteLocale, string> = {
   es: DEFAULT_MARKDOWN_ES,
   ca: DEFAULT_MARKDOWN_CA,
   zh: DEFAULT_MARKDOWN_ZH_HANS,
+  ar: DEFAULT_MARKDOWN_AR,
 };
 
 /** Cookbook recipes open in the sandbox by link: `#recipe=<slug>&lang=es`

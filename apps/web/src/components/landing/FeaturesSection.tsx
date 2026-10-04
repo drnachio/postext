@@ -51,7 +51,7 @@ export async function FeaturesSection() {
               >
                 {/* A figure plate: the glyph numbered like a figure in the guide. */}
                 <div className="relative flex h-32 items-center justify-center border-b border-rule bg-tint/60 dark:bg-surface-2/60">
-                  <span className="absolute top-3 left-4 font-sans text-[0.7rem] font-bold tracking-[0.18em] text-gilt tabular-nums">
+                  <span className="absolute top-3 start-4 font-sans text-[0.7rem] font-bold tracking-[0.18em] text-gilt tabular-nums">
                     2.{i + 1}
                   </span>
                   <span className="text-gilt transition-transform duration-300 group-hover:scale-105 dark:text-gold [&_svg]:h-[4.5rem] [&_svg]:w-[7.75rem]">
@@ -69,7 +69,7 @@ export async function FeaturesSection() {
                     {t("docsLink")}{" "}
                     <span
                       aria-hidden
-                      className="inline-block transition-transform duration-300 group-hover:translate-x-1"
+                      className="inline-block transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1"
                     >
                       →
                     </span>

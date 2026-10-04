@@ -104,7 +104,7 @@ export default async function GlossaryPage({
                     <dt className="font-head text-lg font-bold text-foreground 2xl:text-xl">
                       {term.term}
                       {term.native && (
-                        <span lang="zh-Hans" className="ml-2 font-body font-normal text-slate">
+                        <span lang="zh-Hans" className="ms-2 font-body font-normal text-slate">
                           {term.native}
                         </span>
                       )}

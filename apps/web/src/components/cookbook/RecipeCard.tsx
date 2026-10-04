@@ -187,7 +187,7 @@ export function RecipeCard({
 
       {reason && (
         <p className="order-7 mt-1.5 truncate font-mono text-[0.68rem] text-slate">
-          <span aria-hidden="true">↳ </span>
+          <span aria-hidden="true"><span className="inline-block rtl:-scale-x-100">↳</span> </span>
           {reason}
         </p>
       )}

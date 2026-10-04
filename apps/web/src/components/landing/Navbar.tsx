@@ -30,7 +30,7 @@ export async function Navbar() {
         </HomeLink>
         {/* Wraps when text is enlarged (WCAG 1.4.4 / 1.4.8) instead of overflowing. */}
         <div className="hidden min-w-0 flex-wrap items-center justify-end gap-1.5 md:flex 2xl:gap-3 4xl:gap-4">
-          <DocsSearchTrigger variant="compact" className="mr-2" />
+          <DocsSearchTrigger variant="compact" className="me-2" />
           <NavLink href="/docs" className={NAV_LINK}>
             {t("docs")}
           </NavLink>
@@ -65,7 +65,7 @@ export async function Navbar() {
           <ReadingPreferences />
           <Link
             href="/sandbox"
-            className="ml-2 inline-flex min-h-10 items-center whitespace-nowrap rounded-md bg-brand px-3.5 py-1.5 font-sans text-[0.8rem] font-semibold text-brand-contrast shadow-[0_1px_0_rgba(0,0,0,0.2)] transition-colors hover:bg-brand-hover 2xl:text-sm 4xl:px-5 4xl:py-2 4xl:text-base"
+            className="ms-2 inline-flex min-h-10 items-center whitespace-nowrap rounded-md bg-brand px-3.5 py-1.5 font-sans text-[0.8rem] font-semibold text-brand-contrast shadow-[0_1px_0_rgba(0,0,0,0.2)] transition-colors hover:bg-brand-hover 2xl:text-sm 4xl:px-5 4xl:py-2 4xl:text-base"
           >
             {t("tryIt")}
           </Link>

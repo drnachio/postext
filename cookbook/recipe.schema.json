@@ -794,6 +794,10 @@
         "zh": {
           "type": "string",
           "minLength": 1
+        },
+        "ar": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

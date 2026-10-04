@@ -218,7 +218,7 @@ export default async function RecipePage({ params }: { params: Params }) {
                 id="in-short"
                 heading={tPlain("heading")}
                 ink="text-(--part-ink)"
-                rule="border-l-(--part)"
+                rule="border-s-(--part)"
                 className="mb-8"
               >
                 {plain}

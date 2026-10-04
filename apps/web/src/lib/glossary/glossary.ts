@@ -1,6 +1,7 @@
 /**
  * The glossary as one locale reads it: terms grouped by category and sorted
- * by the locale's collation (pinyin for Chinese), then the abbreviations.
+ * by the locale's collation (pinyin for Chinese, the letter after
+ * the article for Arabic), then the abbreviations.
  * Shared by the page and its Markdown rendition.
  */
 import { htmlLang, type SiteLocale } from "@/i18n/locales";
@@ -11,7 +12,7 @@ export interface GlossaryEntry {
   id: string;
   term: string;
   definition: string;
-  /** The Chinese name, outside Chinese pages. */
+  /** The Chinese or Arabic name, outside the pages written in it. */
   native?: string;
 }
 
@@ -19,6 +20,14 @@ export interface GlossarySections {
   categories: { category: GlossaryCategory; terms: GlossaryEntry[] }[];
   abbreviations: { id: string; abbr: string; title: string }[];
 }
+
+/** Whether a locale already writes a category's terms in their native script. */
+const writesNative = (locale: SiteLocale, category: GlossaryCategory) =>
+  (locale === "zh" && category === "cjk") || (locale === "ar" && category === "arabic");
+
+/** The sort key of a term: Arabic glossaries file a word under its first
+ *  letter after the definite article (الإحالة under ء, not ا). */
+export const sortKey = (locale: SiteLocale, term: string) => (locale === "ar" ? term.replace(/^ال(?=\p{L})/u, "") : term);
 
 export function glossarySections(locale: SiteLocale): GlossarySections {
   const collator = new Intl.Collator(htmlLang(locale), { sensitivity: "base" });
@@ -29,9 +38,9 @@ export function glossarySections(locale: SiteLocale): GlossarySections {
         id: t.id,
         term: t.text[locale][0],
         definition: t.text[locale][1],
-        ...(t.native && !(locale === "zh" && t.category === "cjk") ? { native: t.native } : {}),
+        ...(t.native && !writesNative(locale, t.category) ? { native: t.native } : {}),
       }))
-      .sort((a, b) => collator.compare(a.term, b.term)),
+      .sort((a, b) => collator.compare(sortKey(locale, a.term), sortKey(locale, b.term))),
   }));
   const abbreviations = ABBREVIATIONS.map((a) => ({
     id: a.id,

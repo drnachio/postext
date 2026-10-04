@@ -1,11 +1,13 @@
 /** Per-locale facts every surface agrees on: the switcher's names, the
- *  BCP 47 tag pages declare, Open Graph's locale and the edition the
- *  sandbox's guide opens in. Route segments stay the short codes. */
+ *  BCP 47 tag pages declare, their writing direction, Open Graph's locale
+ *  and the edition the sandbox's guide opens in. Route segments stay the
+ *  short codes. */
 export const LOCALE_INFO = {
-  en: { name: "English", code: "EN", htmlLang: "en", ogLocale: "en_US" },
-  es: { name: "Español", code: "ES", htmlLang: "es", ogLocale: "es_ES" },
-  ca: { name: "Català", code: "CA", htmlLang: "ca", ogLocale: "ca_ES" },
-  zh: { name: "简体中文", code: "中", htmlLang: "zh-Hans", ogLocale: "zh_CN" },
+  en: { name: "English", code: "EN", htmlLang: "en", dir: "ltr", ogLocale: "en_US" },
+  es: { name: "Español", code: "ES", htmlLang: "es", dir: "ltr", ogLocale: "es_ES" },
+  ca: { name: "Català", code: "CA", htmlLang: "ca", dir: "ltr", ogLocale: "ca_ES" },
+  zh: { name: "简体中文", code: "中", htmlLang: "zh-Hans", dir: "ltr", ogLocale: "zh_CN" },
+  ar: { name: "العربية", code: "ع", htmlLang: "ar", dir: "rtl", ogLocale: "ar_AR" },
 } as const;
 
 export type SiteLocale = keyof typeof LOCALE_INFO;
@@ -18,6 +20,8 @@ const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
   // No Catalan cut: the Spanish playlist is the nearest.
   ca: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
   zh: { video: "lFy_VLFuWqA", list: "PLIfpGQLFoR8k" },
+  // No Arabic cut: the English playlist, with Arabic transcripts on the site.
+  ar: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
 };
 
 /** The header's YouTube link for a route locale. */
@@ -39,4 +43,9 @@ export function siteLocale(value: string | null | undefined): SiteLocale {
 /** The `lang` attribute for a route locale ("zh" → "zh-Hans"). */
 export function htmlLang(locale: string): string {
   return isSiteLocale(locale) ? LOCALE_INFO[locale].htmlLang : locale;
+}
+
+/** The `dir` attribute for a route locale: "rtl" for Arabic, "ltr" otherwise. */
+export function htmlDir(locale: string): "ltr" | "rtl" {
+  return isSiteLocale(locale) ? LOCALE_INFO[locale].dir : "ltr";
 }

@@ -34,7 +34,7 @@ export async function ContentsStrip({ parts, locale }: { parts: GalleryPart[]; l
                     data-cb-cat={c.id}
                     className="group flex min-h-10 items-baseline gap-3 rounded-sm py-2"
                   >
-                    <span className="w-5 shrink-0 text-right font-sans text-sm font-bold text-(--part-ink) tabular-nums">
+                    <span className="w-5 shrink-0 text-end font-sans text-sm font-bold text-(--part-ink) tabular-nums">
                       {c.number}
                     </span>
                     <span className="font-display text-[1.05rem] font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink)">

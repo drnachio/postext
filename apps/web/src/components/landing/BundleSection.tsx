@@ -114,7 +114,7 @@ for (const doc of buildBundle(book))
               <Download className="size-4 shrink-0" aria-hidden="true" />
               <span className="flex flex-col">
                 <span className="text-sm font-semibold">{t("download")}</span>
-                <span className="font-mono text-xs text-slate">
+                <span dir="ltr" className="font-mono text-xs text-slate">
                   {GUIDE_BUNDLE_FILE} · {stats.kb} KB
                 </span>
               </span>

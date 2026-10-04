@@ -39,7 +39,7 @@ export function FrontispieceSearch({
         {label}
       </label>
       <div className="relative">
-        <SearchIcon aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-mist" />
+        <SearchIcon aria-hidden="true" className="pointer-events-none absolute top-1/2 start-3.5 size-4 -translate-y-1/2 text-mist" />
         <input
           id="cb-hero-search"
           name="q"
@@ -55,9 +55,9 @@ export function FrontispieceSearch({
             handOff(e.currentTarget);
           }}
           onCompositionEnd={(e) => handOff(e.currentTarget)}
-          className="cb-search-input h-12 w-full rounded-md bg-white/[0.07] pr-12 pl-10 font-sans text-[0.9rem] text-cream shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] outline-none placeholder:text-mist focus-visible:shadow-[inset_0_0_0_2px_var(--brand-gilt)] disabled:opacity-70"
+          className="cb-search-input h-12 w-full rounded-md bg-white/[0.07] pe-12 ps-10 font-sans text-[0.9rem] text-cream shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] outline-none placeholder:text-mist focus-visible:shadow-[inset_0_0_0_2px_var(--brand-gilt)] disabled:opacity-70"
         />
-        <kbd aria-hidden="true" className="cb-kbd pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 sm:block">
+        <kbd aria-hidden="true" className="cb-kbd pointer-events-none absolute top-1/2 end-3 hidden -translate-y-1/2 sm:block">
           /
         </kbd>
       </div>

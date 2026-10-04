@@ -100,7 +100,7 @@ export function retargetScript(script: string, slug: string, number: number): { 
   if (banner.test(out)) out = out.replace(banner, `$1${String(number).padStart(3, "0")}`);
   else notes.push("script.js has no `// ═══ Postext Cookbook · Nº …` banner line");
   // The page URL in the banner, whatever placeholder the template uses.
-  out = out.replace(/(postext\.dev\/(?:en|es|ca|zh)\/cookbook\/)[^\s'"`)]+/g, `$1${slug}`);
+  out = out.replace(/(postext\.dev\/(?:en|es|ca|zh|ar)\/cookbook\/)[^\s'"`)]+/g, `$1${slug}`);
   // Repository paths that still name the source recipe.
   if (oldSlug && oldSlug !== slug && SLUG_PATTERN.test(oldSlug)) {
     out = out.split(`cookbook/${oldSlug}/`).join(`cookbook/${slug}/`);
@@ -240,7 +240,7 @@ export async function runNew(argv: readonly string[]): Promise<number> {
   for (const note of notes) console.log(`  ${mark.warn()} ${note}`);
   console.log(`
   Next:
-    1. Design and content: ${rel}/script.js, content.*.md; the write-up in en.mdx, es.mdx, ca.mdx and zh.mdx
+    1. Design and content: ${rel}/script.js, content.*.md; the write-up in en.mdx, es.mdx, ca.mdx, zh.mdx and ar.mdx
     2. ${c.cyan(`pnpm cookbook dev ${slug}`)}        live preview while you edit
     3. ${c.cyan(`pnpm cookbook lint ${slug}`)}       static checks
     4. ${c.cyan(`pnpm cookbook capture ${slug}`)}    pages, card and verification`);

@@ -28,6 +28,9 @@ type Rule = { re: RegExp; label: string };
 
 const rule = (source: string, label = source): Rule => ({ re: new RegExp(source, "giu"), label });
 
+/** An Arabic phrase as a whole word or words: `\\b` only sees ASCII letters. */
+const arRule = (source: string, label = source): Rule => rule(`(?<!\\p{L})(?:${source})(?!\\p{L})`, label);
+
 const HARD: Record<Locale, Rule[]> = {
   en: [
     rule("\\bdelv(e|es|ed|ing)\\b", "delve"),
@@ -93,6 +96,20 @@ const HARD: Record<Locale, Rule[]> = {
   ],
   // HARD_ZH, below, checks Chinese prose in every locale.
   zh: [],
+  ar: [
+    arRule("في (?:عالم|عصر) [^.؟!،]{0,30}(?:المتسارع|المتغير|المتطور|الرقمي)", "في عالم … المتسارع"),
+    arRule("(?:انطلق|لننطلق|ننطلق) في رحلة", "انطلق في رحلة"),
+    arRule("(?:غني|غنيّ) عن (?:القول|البيان)", "غني عن القول"),
+    arRule("لا يخفى على (?:أحد|أحدٍ)", "لا يخفى على أحد"),
+    arRule("(?:تجدر|وتجدر) الإشارة (?:إلى|الى) أن", "تجدر الإشارة إلى أن"),
+    arRule("(?:في|وفي) (?:الختام|نهاية المطاف|خلاصة القول)", "في الختام"),
+    arRule("(?:يلعب|تلعب|يؤدي|تؤدي) دورًا (?:محوريًا|حاسمًا|حيويًا|جوهريًا)", "يلعب دورًا محوريًا"),
+    arRule("إطلاق العنان", "إطلاق العنان"),
+    arRule("نقلة نوعية", "نقلة نوعية"),
+    arRule("(?:ب|ب)كل سلاسة", "بكل سلاسة"),
+    arRule("(?:إلى|الى) (?:المستوى|مستوى) (?:التالي|آخر)", "إلى المستوى التالي"),
+    arRule("(?:عالم|عالمًا) من الإمكانيات", "عالم من الإمكانيات"),
+  ],
 };
 
 const SOFT: Record<Locale, Rule[]> = {
@@ -138,6 +155,15 @@ const SOFT: Record<Locale, Rule[]> = {
   ],
   // SOFT_ZH, below, checks Chinese prose in every locale.
   zh: [],
+  ar: [
+    arRule("(?:مذهل|مذهلة|رائع|رائعة|ساحر|ساحرة|مبهر|مبهرة|فريد من نوعه)", "مذهل/رائع/مبهر"),
+    arRule("(?:اكتشف|اكتشفوا) كيف", "اكتشف كيف"),
+    arRule("ليس (?:مجرد|فقط)[^.؟!]{1,80}بل", "ليس مجرد … بل"),
+    arRule("(?:في قلب|فن|سحر) (?:ال)", "في قلب / فن / سحر"),
+    arRule("(?:تخيّل|تخيل)", "تخيّل…"),
+    arRule("بلا شك|دون أدنى شك", "بلا شك"),
+    arRule("رحلة", "رحلة"),
+  ],
 };
 
 /** Stock phrases of Chinese prose written by machine, in Simplified and

@@ -17,27 +17,27 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
 const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
   justification: {
     slug: "justification",
-    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo", ca: "Knuth-Plass: veure el paràgraf sencer", zh: "Knuth-Plass：通观整个段落" },
+    heading: { en: "Knuth-Plass: Seeing the Whole Paragraph", es: "Knuth-Plass: ver el párrafo completo", ca: "Knuth-Plass: veure el paràgraf sencer", zh: "Knuth-Plass：通观整个段落", ar: "Knuth-Plass: النظر إلى الفقرة كاملة" },
   },
   resources: {
     slug: "document-format",
-    heading: { en: "Resources", es: "Recursos", ca: "Recursos", zh: "资源" },
+    heading: { en: "Resources", es: "Recursos", ca: "Recursos", zh: "资源", ar: "الموارد" },
   },
   tables: {
     slug: "configuration",
-    heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式" },
+    heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول" },
   },
   singleInk: {
     slug: "configuration",
-    heading: { en: "Diagram style", es: "Estilo de diagramas", ca: "Estil dels diagrames", zh: "图示样式" },
+    heading: { en: "Diagram style", es: "Estilo de diagramas", ca: "Estil dels diagrames", zh: "图示样式", ar: "نمط المخططات" },
   },
   math: {
     slug: "document-format",
-    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas", ca: "Fórmules matemàtiques", zh: "数学公式" },
+    heading: { en: "Mathematical formulas", es: "Fórmulas matemáticas", ca: "Fórmules matemàtiques", zh: "数学公式", ar: "الصيغ الرياضية" },
   },
   output: {
     slug: "architecture",
-    heading: { en: "Backend Interface", es: "Interfaz del backend", ca: "Interfície del backend", zh: "后端接口" },
+    heading: { en: "Backend Interface", es: "Interfaz del backend", ca: "Interfície del backend", zh: "后端接口", ar: "واجهة المُخرِجات" },
   },
 };
 

@@ -42,7 +42,9 @@ export const EXACT_IDENTIFIER_BONUS = 10;
 // ─── Tokenizer ──────────────────────────────────────────────────────────────
 
 /** Anything but ASCII letters, digits and Latin letters with diacritics. */
-const SEPARATOR = /[^0-9A-Za-zÀ-ÖØ-öø-ɏḀ-ỿ]+/;
+// Arabic letters, their marks, the tatweel and the Arabic-Indic digits are
+// word characters too (U+060C ، U+061B ؛ U+061F ؟ and U+066A–066D separate).
+const SEPARATOR = /[^0-9A-Za-zÀ-ÖØ-öø-ɏḀ-ỿ\u0620-\u0669\u066E-\u06D3\u06D5-\u06FF\u0750-\u077F]+/;
 
 /** A run of Chinese characters (Han script: the CJK blocks and their
  *  extensions, 〇 and 々). */
@@ -151,6 +153,15 @@ export const STOP_WORDS: Record<Locale, ReadonlySet<string>> = {
     "me", "mi", "mis", "muy", "no", "o", "para", "pero", "por", "que", "se", "si", "sin", "sobre",
     "su", "sus", "tu", "un", "una", "uno", "unos", "y", "yo",
   ]),
+  // Folded as the terms are (`foldArabic`).
+  ar: new Set([
+    ...EN_STOP_WORDS,
+    ...[
+      "في", "من", "إلى", "على", "عن", "مع", "أو", "و", "ثم", "أن", "إن", "لا", "ما", "ماذا", "كيف", "متى",
+      "أين", "هل", "هذا", "هذه", "ذلك", "تلك", "التي", "الذي", "كل", "بعض", "به", "بها", "له", "لها",
+      "هو", "هي", "أنا", "أنت", "عند", "بين", "حتى", "قد", "لم", "لن", "كان", "كانت", "أي", "غير",
+    ].map(foldArabic),
+  ]),
   ca: new Set([
     "a", "al", "als", "amb", "com", "de", "del", "dels", "el", "els", "en", "entre", "es", "esta",
     "aquest", "aquesta", "aixo", "hi", "ho", "i", "la", "les", "li", "lo", "ma", "mes", "meu", "molt",
@@ -164,6 +175,21 @@ export function foldText(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
+/** Arabic spellings a reader types interchangeably, folded alike: no
+ *  vowel marks or tatweel, hamza seats and alef forms as bare alef, ى as ي,
+ *  ة as ه, Arabic-Indic digits as 0–9, and the article (with a joined و,
+ *  ف, ب, ك or ل) dropped: «الجداول» and «جداول» are one term. */
+export function foldArabic(term: string): string {
+  let t = term
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/ؤ/g, "و").replace(/ئ/g, "ي")
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0));
+  const article = /^(?:[وف]?(?:[بكل])?ال|لل)(.{2,})$/.exec(t);
+  if (article && t !== "الله") t = article[1]!;
+  return t;
+}
+
 /** Naive plural folding, the same for the index and the query, so it only
  *  has to be consistent, not correct. */
 function singular(term: string, locale: Locale): string {
@@ -173,6 +199,13 @@ function singular(term: string, locale: Locale): string {
     if (term.length > 4 && /ces$/.test(term)) return term.slice(0, -3) + "z";
     if (term.length > 4 && /[^aeiou]es$/.test(term)) return term.slice(0, -2);
     if (/[aeiou]s$/.test(term)) return term.slice(0, -1);
+    return term;
+  }
+  if (/[\u0620-\u064A]/.test(term)) {
+    // Arabic in any locale: sound plurals and the dual (صفحات → صفح ← صفحه,
+    // مترجمون / مترجمين → مترجم); broken plurals stay apart.
+    if (term.length > 4 && /(ات|ون|ين|ان)$/.test(term)) return term.slice(0, -2);
+    if (term.length > 3 && /ه$/.test(term)) return term.slice(0, -1);
     return term;
   }
   if (locale === "ca") {
@@ -193,7 +226,7 @@ function singular(term: string, locale: Locale): string {
  *  (NFD), drops stop words and one-letter terms (not one Chinese character,
  *  which is a word), folds naive plurals. */
 export function processTerm(term: string, locale: Locale): string | null {
-  const folded = foldText(term);
+  const folded = foldArabic(foldText(term));
   if (folded.length < 2 && !/\d/.test(folded) && !HAN.test(folded)) return null;
   if (STOP_WORDS[locale].has(folded)) return null;
   return singular(folded, locale);
@@ -205,7 +238,7 @@ export function makeProcessTerm(locale: Locale): (term: string) => string | null
 
 /** The search locale of a site locale segment, English for anything else. */
 export function searchLocale(locale: string): Locale {
-  return locale === "es" || locale === "ca" || locale === "zh" ? locale : "en";
+  return locale === "es" || locale === "ca" || locale === "zh" || locale === "ar" ? locale : "en";
 }
 
 // ─── MiniSearch ─────────────────────────────────────────────────────────────
@@ -241,6 +274,7 @@ export const MINISEARCH_OPTIONS: Record<Locale, Options<SearchDocument>> = {
   es: miniSearchOptions("es"),
   ca: miniSearchOptions("ca"),
   zh: miniSearchOptions("zh"),
+  ar: miniSearchOptions("ar"),
 };
 
 type Facets = Catalog["facets"];

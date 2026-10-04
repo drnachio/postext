@@ -3,6 +3,7 @@ import { createTranslator } from "next-intl";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 import ca from "../../messages/ca.json";
+import ar from "../../messages/ar.json";
 import zh from "../../messages/zh.json";
 
 /** Namespaces that must say the same things in both languages. Keys that
@@ -20,7 +21,7 @@ function leafKeys(tree: Tree, prefix = ""): string[] {
   });
 }
 
-const TRANSLATIONS = { es, ca, zh } as const;
+const TRANSLATIONS = { es, ca, zh, ar } as const;
 
 describe("messages", () => {
   for (const [locale, messages] of Object.entries(TRANSLATIONS)) {
@@ -38,9 +39,10 @@ describe("messages", () => {
     }
   }
 
-  // ca.json and zh.json are translated whole: every string has a Catalan and
-  // a Chinese counterpart, so a missing key is a translation that never landed.
-  for (const [locale, messages] of Object.entries({ ca, zh })) {
+  // ca.json, zh.json and ar.json are translated whole: every string has a
+  // Catalan, a Chinese and an Arabic counterpart, so a missing key is a
+  // translation that never landed.
+  for (const [locale, messages] of Object.entries({ ca, zh, ar })) {
     it(`${locale} has every key of en`, () => {
       const enKeys = leafKeys(en as unknown as Tree);
       const keys = new Set(leafKeys(messages as unknown as Tree));
@@ -70,4 +72,5 @@ describe("messages parse as ICU", () => {
   it("es", () => expect(malformed(es as unknown as Tree, "es")).toEqual([]));
   it("ca", () => expect(malformed(ca as unknown as Tree, "ca")).toEqual([]));
   it("zh", () => expect(malformed(zh as unknown as Tree, "zh")).toEqual([]));
+  it("ar", () => expect(malformed(ar as unknown as Tree, "ar")).toEqual([]));
 });

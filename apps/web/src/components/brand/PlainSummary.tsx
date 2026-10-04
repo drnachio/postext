@@ -9,7 +9,7 @@ export function PlainSummary({
   children,
   className,
   ink = "text-brand",
-  rule = "border-l-brand",
+  rule = "border-s-brand",
 }: {
   /** The heading's id, which labels the region. */
   id: string;
@@ -18,13 +18,13 @@ export function PlainSummary({
   className?: string;
   /** Text colour class of the heading (a ≥7:1 token). */
   ink?: string;
-  /** Colour class of the left rule. */
+  /** Colour class of the rule at the start edge. */
   rule?: string;
 }) {
   return (
     <section
       aria-labelledby={id}
-      className={cn("rounded-sm border border-l-4 border-rule bg-surface px-5 py-4", rule, className)}
+      className={cn("rounded-sm border border-s-4 border-rule bg-surface px-5 py-4", rule, className)}
     >
       <h2 id={id} className={cn("kicker text-[0.75rem]", ink)}>
         {heading}

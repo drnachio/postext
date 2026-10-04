@@ -160,7 +160,7 @@ export default async function DocPage({
             </>
           )}
           {availableLocales.length > 1 && (
-            <span className="ml-auto flex gap-1">
+            <span className="ms-auto flex gap-1">
               {availableLocales.map((l) => (
                 <a
                   key={l}
@@ -184,7 +184,7 @@ export default async function DocPage({
             id="in-short"
             heading={tPlain("heading")}
             ink="text-(--part-ink)"
-            rule="border-l-(--part)"
+            rule="border-s-(--part)"
             className="mb-8"
           >
             {doc.meta.plainSummary}

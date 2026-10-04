@@ -55,7 +55,7 @@ export function RecipeBand({ view, t, actions }: { view: RecipeView; t: RecipeT;
         <p className="relative mt-3 max-w-2xl font-body text-base leading-relaxed md:text-lg">{view.summary}</p>
         {view.question && (
           <p className="cb-band-question relative mt-3 hidden max-w-2xl sm:block">
-            <span className="kicker mr-2 text-[0.6rem]">{t("answers")}</span>
+            <span className="kicker me-2 text-[0.6rem]">{t("answers")}</span>
             <span className="font-body italic">{view.question}</span>
           </p>
         )}

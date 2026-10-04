@@ -100,7 +100,7 @@ export async function WholeRecipe({ view, t, data }: { view: RecipeView; t: Reci
       <p className="cb-whole-note">
         {t("howToRun")}{" "}
         <a href={view.githubUrl} target="_blank" rel="noopener noreferrer">
-          {t("recipeFolder")} ↗
+          {t("recipeFolder")} <span className="inline-block rtl:-scale-x-100">↗</span>
           <NewTabNote />
         </a>
       </p>

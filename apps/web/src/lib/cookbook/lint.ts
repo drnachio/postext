@@ -253,7 +253,7 @@ export function lintPen(
   const title = /^\/\/ ═+ Postext Cookbook · Nº (\d{3,}) · (.+?) ═*\s*$/.exec(lines[0] ?? "");
   if (!title) fails.push(`script.js line 1: the banner starts "// ═══ Postext Cookbook · Nº ${number} · <title> ═══"`);
   else if (title[1] !== number) fails.push(`script.js line 1: the banner says Nº ${title[1]}; recipe.json says ${number}`);
-  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|ca|zh)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
+  const url = /^\/\/ https:\/\/postext\.dev\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)\s*$/.exec(lines[1] ?? "");
   if (!url || url[2] !== slug) fails.push(`script.js line 2: the banner links https://postext.dev/en/cookbook/${slug}`);
   if (!/^\/\/ Code: MIT\b/.test(lines[2] ?? "")) fails.push(`script.js line 3: the banner credits "// Code: MIT · Text: … · Photo: …"`);
   const needs = /^\/\/ Fonts: .+ · Needs postext ≥ (\d+\.\d+\.\d+)\s*$/.exec(lines[3] ?? "");
@@ -811,7 +811,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
   for (const locale of LOCALES) {
     const writeup = readWriteup(slug, locale, headings);
     if (!writeup) {
-      fails.push(`${locale}.mdx is missing (${locale === "zh" || locale === "ca" ? `the ${locale} page shows the English write-up meanwhile` : `the ${locale} page would 404`})`);
+      fails.push(`${locale}.mdx is missing (${locale === "zh" || locale === "ca" || locale === "ar" ? `the ${locale} page shows the English write-up meanwhile` : `the ${locale} page would 404`})`);
       continue;
     }
     fails.push(...writeup.issues);
@@ -833,8 +833,8 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     for (const link of refs.links) {
       if (!link.startsWith(`/${locale}/`)) fails.push(`${locale}.mdx: ${link} must use the /${locale}/ prefix`);
       else if (link.startsWith(`/${locale}/docs/`) && !docLinkExists(link)) fails.push(`${locale}.mdx: ${link} does not resolve`);
-      else if (/^\/(en|es|ca|zh)\/cookbook\/([a-z0-9-]+)/.test(link)) {
-        const target = /^\/(en|es|ca|zh)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
+      else if (/^\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)/.test(link)) {
+        const target = /^\/(en|es|ca|zh|ar)\/cookbook\/([a-z0-9-]+)/.exec(link)?.[2] ?? "";
         if (!knownSlugs.includes(target)) fails.push(`${locale}.mdx: ${link} names no recipe`);
       }
     }

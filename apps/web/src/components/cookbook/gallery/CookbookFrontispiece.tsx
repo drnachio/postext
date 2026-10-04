@@ -20,11 +20,11 @@ export async function CookbookFrontispiece({ data, locale }: { data: GalleryData
     <header className="cb-front on-night dark relative isolate overflow-hidden bg-night text-cream">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-48 -right-40 -z-10 size-[40rem] rounded-full bg-blue/25 blur-[140px]"
+        className="pointer-events-none absolute -top-48 -end-40 -z-10 size-[40rem] rounded-full bg-blue/25 blur-[140px]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-64 -left-48 -z-10 size-[32rem] rounded-full bg-gold/10 blur-[140px]"
+        className="pointer-events-none absolute -bottom-64 -start-48 -z-10 size-[32rem] rounded-full bg-gold/10 blur-[140px]"
       />
 
       <div className="cb-front-inner mx-auto grid max-w-6xl grid-cols-1 gap-x-10 px-4 pt-10 pb-10 sm:px-6 md:pt-12 lg:grid-cols-12 lg:pb-12 2xl:max-w-7xl 2xl:px-8">
@@ -83,7 +83,7 @@ export async function CookbookFrontispiece({ data, locale }: { data: GalleryData
                 <span aria-hidden="true" className="max-sm:hidden">·</span>
                 <span className="font-display text-[0.95rem] font-semibold tracking-normal text-cream normal-case group-hover:text-gold">
                   {featured.title}{" "}
-                  <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-0.5">
+                  <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5">
                     →
                   </span>
                 </span>

@@ -34,7 +34,7 @@ export async function CookbookColophon({ data }: { data: GalleryData }) {
           </a>
           <span aria-hidden="true" className="text-slate">·</span>
           <a href={WRITE_RECIPE_URL} target="_blank" rel="noopener noreferrer" className={LINK}>
-            {t("writeOne")} →
+            {t("writeOne")} <span className="inline-block rtl:-scale-x-100">→</span>
             <NewTabNote />
           </a>
         </span>

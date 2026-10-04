@@ -95,7 +95,7 @@ export default async function CookbookPage({ params }: { params: Promise<{ local
               rel="noopener noreferrer"
               className="font-sans text-base font-semibold text-(--brand) not-italic underline underline-offset-4"
             >
-              {t("askRecipe")} ↗
+              {t("askRecipe")} <span className="inline-block rtl:-scale-x-100">↗</span>
               <NewTabNote />
             </a>
           </p>

@@ -256,3 +256,22 @@ describe("processTerm in Catalan", () => {
     expect(ca("Índex")).toBe("index");
   });
 });
+
+describe("processTerm in Arabic", () => {
+  const ar = (term: string) => processTerm(term, "ar");
+  it("folds the article, the vowel marks and the sound plurals", () => {
+    expect(ar("الجداول")).toBe(ar("جداول"));
+    expect(ar("الصفحات")).toBe(ar("صفحة"));
+    expect(ar("بالخط")).toBe(ar("خط"));
+    expect(ar("مُتَرْجِمُونَ")).toBe(ar("مترجم"));
+    expect(ar("إطار")).toBe(ar("اطار"));
+  });
+  it("drops Arabic stop words and reads Arabic-Indic digits", () => {
+    expect(ar("التي")).toBeNull();
+    expect(ar("على")).toBeNull();
+    expect(ar("٢٠٢٦")).toBe("2026");
+  });
+  it("keeps Arabic words when tokenizing", () => {
+    expect(tokenize("كيف أضيف حاشية سفلية، في PDF؟")).toEqual(["كيف", "أضيف", "حاشية", "سفلية", "في", "PDF"]);
+  });
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 
 /** A page of the guide in miniature, set with CSS at the book's own
  *  proportions: every size is in container units of the 210 mm sheet
@@ -15,7 +15,10 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
  *  second. Both columns have the same measure, so the lines break the same
  *  way in both copies. After layout, the "Try it" box and the figure are
  *  padded to whole lines, and each column is cut after its last whole line,
- *  so the two columns end level on the same baseline grid. */
+ *  so the two columns end level on the same baseline grid. The text is
+ *  the page's language, so an Arabic page is set right to left: the
+ *  opener's numeral and the box's rule change sides and the first column
+ *  is the right-hand one (logical insets, the page's own direction). */
 export function PageMock({
   label,
   kicker,
@@ -110,9 +113,9 @@ export function PageMock({
       <div
         data-try=""
         className="bg-[#f7f1e3] font-sans"
-        style={{ margin: `${pt(6)} 0 ${pt(9)}`, padding: `${mm(3)} ${mm(3.5)} ${mm(2.6)} ${mm(4.5)}`, borderLeft: `${pt(3)} solid #2b4acb`, borderRadius: mm(1.2), fontSize: pt(8.3), lineHeight: pt(12), textAlign: "left" }}
+        style={{ margin: `${pt(6)} 0 ${pt(9)}`, paddingBlock: `${mm(3)} ${mm(2.6)}`, paddingInline: `${mm(4.5)} ${mm(3.5)}`, borderInlineStart: `${pt(3)} solid #2b4acb`, borderRadius: mm(1.2), fontSize: pt(8.3), lineHeight: pt(12), textAlign: "start" }}
       >
-        <div className="font-bold uppercase text-[#1f38a8]" style={{ fontSize: pt(7.5), letterSpacing: pt(1.6), marginBottom: mm(1.6) }}>
+        <div className="font-bold uppercase tracking-(--ls) text-[#1f38a8]" style={{ fontSize: pt(7.5), "--ls": pt(1.6), marginBottom: mm(1.6) } as CSSProperties}>
           {tryTitle}
         </div>
         {tryText}
@@ -133,11 +136,11 @@ export function PageMock({
       <div aria-hidden="true" className="absolute inset-0">
         {/* Opener band */}
         <div className="absolute inset-x-0 top-0 bg-[#2b4acb] text-white" style={{ height: mm(3 + 24 + 74 - 22) }}>
-          <div className="absolute font-display font-[800] leading-none" style={{ right: mm(20), top: mm(24 - 6), fontSize: pt(118) }}>
+          <div className="absolute font-display font-[800] leading-none" style={{ insetInlineEnd: mm(20), top: mm(24 - 6), fontSize: pt(118) }}>
             1
           </div>
-          <div className="absolute" style={{ left: mm(20), top: mm(24 + 4), width: mm(110) }}>
-            <div className="font-sans font-semibold uppercase" style={{ fontSize: pt(8.5), letterSpacing: pt(2.2) }}>
+          <div className="absolute" style={{ insetInlineStart: mm(20), top: mm(24 + 4), width: mm(110) }}>
+            <div className="font-sans font-semibold uppercase tracking-(--ls)" style={{ fontSize: pt(8.5), "--ls": pt(2.2) } as CSSProperties}>
               {kicker}
             </div>
             <div className="bg-white" style={{ marginTop: mm(3.5), width: mm(22), height: pt(1.5) }} />
@@ -178,7 +181,7 @@ export function PageMock({
                 ))}
                 <rect x={14} y={80} width={132} height={0.8} fill="#15171c" />
               </svg>
-              <div className="font-sans" style={{ marginTop: mm(1.8), marginBottom: pt(12), fontSize: pt(7.4), lineHeight: 1.3, textAlign: "left" }}>
+              <div className="font-sans" style={{ marginTop: mm(1.8), marginBottom: pt(12), fontSize: pt(7.4), lineHeight: 1.3, textAlign: "start" }}>
                 <b className="text-[#1f38a8]">{figureLabel}</b> {figureCaption}
               </div>
             </div>

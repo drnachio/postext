@@ -20,13 +20,14 @@ export async function FiguresSection() {
         </Kicker>
         <dl className="mt-6 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {KEYS.map((k, i) => (
-            <div key={k} className="lg:border-l lg:border-white/10 lg:pl-6 lg:first:border-l-0 lg:first:pl-0">
+            <div key={k} className="lg:border-s lg:border-white/10 lg:ps-6 lg:first:border-s-0 lg:first:ps-0">
               <dt className="sr-only">{t(`${k}Label`)}</dt>
               <dd>
                 <span
                   className={`display block text-4xl md:text-5xl ${i === 0 ? "text-gold" : "text-white"}`}
                 >
-                  {abbreviate(t(`${k}Value`), locale, ids, seen)}
+                  {/* Figures read left to right, also in an Arabic page. */}
+                  <bdi dir="ltr">{abbreviate(t(`${k}Value`), locale, ids, seen)}</bdi>
                 </span>
                 <span className="mt-3 block font-sans text-sm leading-relaxed text-mist">{abbreviate(t(`${k}Label`), locale, ids, seen)}</span>
               </dd>

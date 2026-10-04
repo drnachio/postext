@@ -71,14 +71,14 @@ export function DocsToc({ items }: DocsTocProps) {
   if (items.length === 0) return null;
 
   return (
-    <aside aria-label={a11y("docsOnThisPage")} className="sticky top-[var(--docs-nav-h)] hidden h-[calc(100vh-var(--docs-nav-h))] w-52 shrink-0 overflow-y-auto py-6 pl-4 xl:block 2xl:w-60">
+    <aside aria-label={a11y("docsOnThisPage")} className="sticky top-[var(--docs-nav-h)] hidden h-[calc(100vh-var(--docs-nav-h))] w-52 shrink-0 overflow-y-auto py-6 ps-4 xl:block 2xl:w-60">
       <h2 className="kicker mb-3 text-[0.6rem] text-slate">
         {t("onThisPage")}
       </h2>
       <nav ref={navRef} aria-label={t("onThisPage")} className="relative">
         {/* Animated indicator line */}
         <div
-          className="absolute left-0 w-[3px] bg-(--part,var(--brand)) transition-all duration-300 ease-in-out"
+          className="absolute start-0 w-[3px] bg-(--part,var(--brand)) transition-all duration-300 ease-in-out"
           style={
             indicator
               ? { top: indicator.top, height: indicator.height, opacity: 1 }
@@ -86,9 +86,9 @@ export function DocsToc({ items }: DocsTocProps) {
           }
         />
         {/* Subtle track line */}
-        <div className="absolute left-0 top-0 h-full w-[3px] bg-rule/60" />
+        <div className="absolute start-0 top-0 h-full w-[3px] bg-rule/60" />
 
-        <ul className="pl-3">
+        <ul className="ps-3">
           {items.map((item) => {
             const isActive = activeId === item.id;
             return (
@@ -107,10 +107,10 @@ export function DocsToc({ items }: DocsTocProps) {
                   }}
                   className={`flex min-h-10 items-center py-1 font-sans text-[0.72rem] leading-snug transition-colors duration-200 2xl:text-xs ${
                     item.level === 1
-                      ? "pl-0 font-semibold"
+                      ? "ps-0 font-semibold"
                       : item.level === 3
-                        ? "pl-3"
-                        : "pl-1.5"
+                        ? "ps-3"
+                        : "ps-1.5"
                   } ${
                     isActive
                       ? "font-semibold text-(--part-ink,var(--brand))"

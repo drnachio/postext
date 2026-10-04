@@ -74,7 +74,7 @@ export default async function AccessibilityPage({
             <section aria-labelledby="a11y-prefs">
               <h2 id="a11y-prefs" className={H2}>{t("prefsTitle")}</h2>
               <p className="mt-2">{t("prefsText")}</p>
-              <ul className="mt-3 list-disc space-y-1 pl-5">
+              <ul className="mt-3 list-disc space-y-1 ps-5">
                 {prefs.map((k) => (
                   <li key={k}>{t(k)}</li>
                 ))}
@@ -85,7 +85,7 @@ export default async function AccessibilityPage({
 
             <section aria-labelledby="a11y-keyboard">
               <h2 id="a11y-keyboard" className={H2}>{t("keyboardTitle")}</h2>
-              <ul className="mt-3 list-disc space-y-1 pl-5">
+              <ul className="mt-3 list-disc space-y-1 ps-5">
                 {keys.map((k) => (
                   <li key={k}>{t(k)}</li>
                 ))}
@@ -96,7 +96,7 @@ export default async function AccessibilityPage({
             <section aria-labelledby="a11y-limitations">
               <h2 id="a11y-limitations" className={H2}>{t("limitationsTitle")}</h2>
               <p className="mt-2">{t("limitationsIntro")}</p>
-              <ul className="mt-3 list-disc space-y-1 pl-5">
+              <ul className="mt-3 list-disc space-y-1 ps-5">
                 {limitations.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
@@ -123,7 +123,7 @@ export default async function AccessibilityPage({
             </section>
           </div>
           {/* The panel itself, beside the text on wide screens. */}
-          <aside aria-label={t("prefsTitle")} className="text-left lg:sticky lg:top-24 lg:self-start">
+          <aside aria-label={t("prefsTitle")} className="text-start lg:sticky lg:top-24 lg:self-start">
             <ReadingPreferences variant="panel" />
           </aside>
           </div>

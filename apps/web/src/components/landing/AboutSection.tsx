@@ -70,6 +70,22 @@ Postext是一个**开源排版引擎**，
 :::callout{type="try"}
 改一个词，页面就会重新排版。
 :::`,
+  ar: `:::part{number="I" title="الأسس"
+  palette="band=#2b4acb"}
+:::
+
+# لماذا Postext {lead="أمضت الطباعة
+خمسة قرون…"}
+
+Postext **محرّك إخراج مفتوح
+المصدر** ينقل صنعة الطباعة
+إلى الويب، كما يبيّن
+:ref{id="fig-flow"}.
+
+:::callout{type="try"}
+غيّر كلمة واحدة: تُنضَّد
+الصفحة من جديد.
+:::`,
 };
 
 export async function AboutSection() {
@@ -106,7 +122,8 @@ export async function AboutSection() {
               rel="noopener noreferrer"
               className="font-semibold text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
             >
-              {t("pretextLink")}
+              {/* A package name: left to right inside an Arabic sentence. */}
+              <bdi dir="ltr">{t("pretextLink")}</bdi>
               <NewTabNote />
             </a>
             {t("paragraph2suffix")}
@@ -125,7 +142,7 @@ export async function AboutSection() {
               </pre>
             </div>
             <div aria-hidden="true" className="hidden justify-center md:col-span-2 md:flex">
-              <svg viewBox="0 0 80 24" className="w-20 text-brand">
+              <svg viewBox="0 0 80 24" className="w-20 text-brand rtl:-scale-x-100">
                 <path d="M2 12 H70 M60 3 L72 12 L60 21" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>

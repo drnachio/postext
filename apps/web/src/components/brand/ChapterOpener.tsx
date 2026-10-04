@@ -28,7 +28,7 @@ export function ChapterOpener({
       <div className="relative mx-auto max-w-6xl px-6 pt-12 pb-10 md:pt-16 md:pb-12 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
         <span
           aria-hidden="true"
-          className="chapter-numeral display pointer-events-none absolute -top-2 right-4 select-none text-[6rem] leading-[0.8] sm:text-[8rem] md:right-8 md:text-[12rem] 2xl:text-[13rem]"
+          className="chapter-numeral display pointer-events-none absolute -top-2 end-4 select-none text-[6rem] leading-[0.8] sm:text-[8rem] md:end-8 md:text-[12rem] 2xl:text-[13rem]"
         >
           {number}
         </span>
@@ -37,7 +37,7 @@ export function ChapterOpener({
             in the numeral's own em, less the padding it overhangs. */}
         <span
           aria-hidden="true"
-          className="float-right h-[calc(0.95em-2.75rem)] w-[0.58em] text-[6rem] sm:text-[8rem] md:h-[calc(0.95em-3.75rem)] md:w-[calc(0.58em+1rem)] md:text-[12rem] 2xl:w-[calc(0.58em+0.5rem)] 2xl:text-[13rem]"
+          className="float-end h-[calc(0.95em-2.75rem)] w-[0.58em] text-[6rem] sm:text-[8rem] md:h-[calc(0.95em-3.75rem)] md:w-[calc(0.58em+1rem)] md:text-[12rem] 2xl:w-[calc(0.58em+0.5rem)] 2xl:text-[13rem]"
         />
         <Kicker className="relative max-w-[70%]">{kicker}</Kicker>
         <span aria-hidden="true" className="relative mt-3 block h-[3px] w-12 bg-current" />

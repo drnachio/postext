@@ -8,6 +8,7 @@
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 import ca from "../../messages/ca.json";
+import ar from "../../messages/ar.json";
 import zh from "../../messages/zh.json";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
@@ -27,7 +28,7 @@ import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registr
 import { localizedText } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
-const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages };
+const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages, ar: ar as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
@@ -314,6 +315,75 @@ const LABELS = {
     licenseOriginal: "原创",
     licensePD: "公有领域",
     licenseAuthorised: "经许可转载",
+  },
+  ar: {
+    docs: "التوثيق",
+    optional: "Optional",
+    lastUpdated: "آخر تحديث",
+    readingTime: "مدة القراءة",
+    canonical: "نسخة HTML",
+    otherLanguages: "لغات أخرى",
+    figure: "شكل",
+    example: "مثال قابل للتشغيل",
+    exampleSource: "الشيفرة",
+    home: "الرئيسية",
+    sandbox: "Sandbox",
+    sandboxDesc: "محرر تفاعلي في المتصفح: اكتب Markdown، واضبط الإعدادات، وصدّر ملف PDF جاهزًا للطباعة وكتابًا إلكترونيًا بصيغة EPUB 3.",
+    fullText: "النص الكامل لكل صفحات التوثيق في ملف واحد",
+    install: "التثبيت",
+    fullDocs: "التوثيق الكامل",
+    links: "روابط",
+    localeDocs: "التوثيق بالعربية",
+    cookbook: "دليل الوصفات",
+    cookbookTitle: "دليل وصفات Postext",
+    cookbookDesc: "أمثلة Postext جاهزة للنسخ، من صفحة افتتاح فصل إلى كتاب كامل، ومع كل منها الصفحات التي ينضّدها والشيفرة كاملة.",
+    cookbookIntro:
+      "كل وصفة مثال CodePen: وحدة JavaScript (ومعها صفحة HTML وأنماط CSS عند الحاجة) تستورد postext من esm.sh وتنضّد صفحتها بنفسها. كل رابط أدناه هو نسخة Markdown من وصفة، فيها الشرح والشيفرة كاملة.",
+    allRecipes: "كل الوصفات، مرتبة حسب الفصول",
+    noRecipes: "لا توجد وصفات بعد.",
+    part: "الجزء",
+    chapter: "الفصل",
+    recipe: "وصفة",
+    numberSign: "رقم",
+    level: "المستوى",
+    outputs: "المخرجات",
+    genres: "الأنواع",
+    draft: "مسودة",
+    requires: "تتطلب",
+    testedWith: "اختُبرت مع",
+    testedOn: "بتاريخ",
+    pages: "الصفحات",
+    pdf: "PDF",
+    openInSandbox: "افتح في Sandbox",
+    answers: "تجيب هذه الوصفة عن",
+    teaches: "تعلّم",
+    alsoUses: "تستخدم أيضًا",
+    configAtAGlance: "الإعدادات في لمحة",
+    apis: "واجهات API",
+    typefaces: "الخطوط",
+    lines: "سطرًا",
+    wholeRecipe:
+      "تُركَّب الملفات أدناه من مجلد الوصفة، ومعها نص المثال وأدوات دليل الوصفات المشتركة مضمّنة. لتشغيلها صفحةً واحدة، ضع HTML داخل `<body>`، وCSS داخل عنصر `<style>`، والسكربت داخل `<script type=\"module\">`؛ أو الصق كلًّا منها في اللوحة المقابلة من مثال CodePen جديد (مع ضبط JS وحدةً). يستورد السكربت postext من esm.sh، فلا حاجة إلى تثبيت أو بناء.",
+    wholeRecipeScript:
+      "ملف واحد، مركّب من مجلد الوصفة ومعه نص المثال وأدوات دليل الوصفات المشتركة مضمّنة؛ وهو ينشئ صفحته بنفسه. لتشغيله، ضعه داخل `<script type=\"module\">` في صفحة فارغة أو الصقه في لوحة JS في مثال CodePen جديد (وحدةً). يستورد postext من esm.sh، فلا حاجة إلى تثبيت أو بناء.",
+    externals: "الموارد التي تحمّلها الصفحة",
+    sourceFolder: "مجلد الوصفة",
+    notComposed: "تعذّر تركيب شيفرة هذه الوصفة",
+    pitfall: "خطأ شائع",
+    warning: "تحذير إخراج",
+    fix: "الحل",
+    fixedIn: "أُصلح في",
+    recipeBy: "الوصفة",
+    creditText: "النص",
+    creditImages: "الصور",
+    creditType: "الخطوط",
+    creditCode: "الشيفرة",
+    creditContent: "محتوى المثال",
+    source: "المصدر",
+    related: "وصفات ذات صلة",
+    licenseOriginal: "أصلي",
+    licensePD: "ملكية عامة",
+    licenseAuthorised: "منشور بإذن",
   },
 } as const;
 

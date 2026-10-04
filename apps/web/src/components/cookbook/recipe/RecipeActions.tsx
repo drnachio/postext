@@ -138,7 +138,7 @@ export function RecipeActions({ data, className }: { data: RecipeActionsData; cl
         title={t("githubTitle")}
       >
         {t("github")}
-        <ArrowUpRight aria-hidden="true" className="size-3.5" />
+        <ArrowUpRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
         <NewTabNote />
       </a>
     </div>

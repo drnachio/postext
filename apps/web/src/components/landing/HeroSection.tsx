@@ -19,11 +19,11 @@ export async function HeroSection() {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-40 -top-40 -z-10 size-[42rem] rounded-full bg-blue/12 blur-[140px] dark:bg-blue/25"
+        className="pointer-events-none absolute -end-40 -top-40 -z-10 size-[42rem] rounded-full bg-blue/12 blur-[140px] dark:bg-blue/25"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-56 left-[-12rem] -z-10 size-[34rem] rounded-full bg-gold/15 blur-[140px] dark:bg-gold/10"
+        className="pointer-events-none absolute -bottom-56 start-[-12rem] -z-10 size-[34rem] rounded-full bg-gold/15 blur-[140px] dark:bg-gold/10"
       />
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 pt-10 pb-14 md:pt-12 lg:grid-cols-12 lg:gap-8 lg:pb-16 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
@@ -50,7 +50,7 @@ export async function HeroSection() {
               className="group inline-flex items-center gap-2 rounded-md bg-brand px-5 py-2.5 font-sans text-sm font-semibold text-brand-contrast shadow-[0_10px_30px_-12px_var(--brand)] transition-all hover:-translate-y-0.5 hover:bg-brand-hover"
             >
               {t("openSandbox")}
-              <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+              <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5">→</span>
             </Link>
             <a
               href="#install"

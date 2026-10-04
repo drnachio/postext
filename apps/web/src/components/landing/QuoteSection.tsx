@@ -6,10 +6,10 @@ export async function QuoteSection() {
   const t = await getTranslations("Quote");
   return (
     <section className="mx-auto max-w-5xl px-6 pb-16 md:pb-20 2xl:max-w-6xl 2xl:px-8">
-      <figure className="reveal relative pl-12 md:pl-20">
+      <figure className="reveal relative ps-12 md:ps-20">
         <span
           aria-hidden="true"
-          className="display absolute -top-6 left-0 text-[6rem] leading-none text-gold-display md:-top-8 md:text-[8.5rem] dark:text-gold"
+          className="display absolute -top-6 start-0 text-[6rem] leading-none text-gold-display md:-top-8 md:text-[8.5rem] dark:text-gold"
         >
           “
         </span>

@@ -192,7 +192,7 @@ function Toggle({
       >
         <span
           className={`pointer-events-none block h-4 w-4 rounded-full shadow-sm transition-transform ${
-            checked ? "translate-x-5 bg-brand-contrast" : "translate-x-0.5 bg-slate"
+            checked ? "translate-x-5 rtl:-translate-x-5 bg-brand-contrast" : "translate-x-0.5 rtl:-translate-x-0.5 bg-slate"
           }`}
         />
       </span>

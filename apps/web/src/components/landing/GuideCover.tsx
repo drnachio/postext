@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { HeroArt } from "./HeroArt";
 
 /** The built-in guide's cover as HTML (the preset has no bundle
@@ -12,7 +13,7 @@ export function GuideCover({ kicker, title, subtitle, label }: { kicker: string;
         <HeroArt label={label} className="block h-auto w-full" />
       </div>
       <div className="absolute" style={{ left: mm(20), right: mm(20), top: mm(170) }}>
-        <div className="font-sans font-semibold text-gold uppercase" style={{ fontSize: pt(9), letterSpacing: pt(2.6) }}>
+        <div className="font-sans font-semibold text-gold uppercase tracking-(--ls)" style={{ fontSize: pt(9), "--ls": pt(2.6) } as CSSProperties}>
           {kicker}
         </div>
         <div className="font-display font-bold text-white" style={{ marginTop: mm(3), fontSize: pt(88), lineHeight: 0.95 }}>

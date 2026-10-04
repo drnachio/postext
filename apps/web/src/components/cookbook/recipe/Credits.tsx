@@ -83,11 +83,11 @@ export function Credits({ view, t }: { view: RecipeView; t: RecipeT }) {
       </dl>
       <p className="cb-credits-links">
         <a href={view.editUrl} target="_blank" rel="noopener noreferrer">
-          {t("editWriteup")} ↗
+          {t("editWriteup")} <span className="inline-block rtl:-scale-x-100">↗</span>
           <NewTabNote />
         </a>
         <a href={view.githubUrl} target="_blank" rel="noopener noreferrer">
-          {t("recipeFolder")} ↗
+          {t("recipeFolder")} <span className="inline-block rtl:-scale-x-100">↗</span>
           <NewTabNote />
         </a>
       </p>

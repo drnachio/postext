@@ -16,7 +16,7 @@ export function DocsSidebar({ docs }: DocsSidebarProps) {
   const locale = useLocale();
 
   return (
-    <aside aria-label={a11y("docsContents")} className="sticky top-[var(--docs-nav-h)] hidden h-[calc(100vh-var(--docs-nav-h))] w-56 shrink-0 overflow-y-auto border-r border-rule py-6 pr-4 pl-1 lg:block 2xl:w-64">
+    <aside aria-label={a11y("docsContents")} className="sticky top-[var(--docs-nav-h)] hidden h-[calc(100vh-var(--docs-nav-h))] w-56 shrink-0 overflow-y-auto border-e border-rule py-6 pe-4 ps-1 lg:block 2xl:w-64">
       <div className="mb-5">
         <DocsSearchTrigger />
       </div>

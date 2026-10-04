@@ -71,7 +71,7 @@ export default async function DocsIndexPage({
               {items.map((it) => (
                 <li key={it.slug}>
                   <Link href={`/docs/${it.slug}`} className="group flex gap-4 py-4 md:gap-5">
-                    <span className="w-7 shrink-0 pt-1 text-right font-sans text-sm font-bold text-(--part-ink) tabular-nums">
+                    <span className="w-7 shrink-0 pt-1 text-end font-sans text-sm font-bold text-(--part-ink) tabular-nums">
                       {it.n}
                     </span>
                     <span className="min-w-0 flex-1">

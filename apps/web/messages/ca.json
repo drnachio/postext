@@ -3077,7 +3077,7 @@
     "title": "Accessibilitat",
     "lastUpdated": "Última actualització: octubre de 2026",
     "targetTitle": "Nivell de conformitat",
-    "targetText": "Volem que aquest lloc web i el Sandbox compleixin les Pautes d'Accessibilitat per al Contingut Web (WCAG) 2.2 en el nivell AAA, en anglès, castellà, català i xinès, amb el tema clar i amb el fosc. Cada pàgina passa proves automàtiques (axe-core i comprovacions pròpies per als criteris AAA) i un recorregut amb el teclat.",
+    "targetText": "Volem que aquest lloc web i el Sandbox compleixin les Pautes d'Accessibilitat per al Contingut Web (WCAG) 2.2 en el nivell AAA, en anglès, castellà, català, xinès i àrab (de dreta a esquerra), amb el tema clar i amb el fosc. Cada pàgina passa proves automàtiques (axe-core i comprovacions pròpies per als criteris AAA) i un recorregut amb el teclat.",
     "prefsTitle": "Preferències de lectura",
     "prefsText": "El lloc compon els textos justificats i amb guionets, com els llibres que fa Postext. Si així et costa més llegir, la icona del llibre de la barra de menú obre les preferències de lectura. S'apliquen a totes les pàgines del lloc i es desen en aquest navegador.",
     "prefsTheme": "Tema: clar o fosc. És el mateix ajust que l'interruptor de la barra de menú; si no en tries cap, el lloc segueix el del teu sistema.",
@@ -3099,7 +3099,7 @@
     "limitations": [
       "Els dos vídeos narrats no tenen interpretació en llengua de signes (WCAG 1.2.6) ni audiodescripció ampliada (1.2.7). Cada vídeo té a sota una transcripció completa que descriu el que apareix a la pantalla a més de la narració.",
       "Les pistes de text dels vídeos només recullen la veu i estan marcades com a subtítols; encara no inclouen els sons ni la música.",
-      "No hi ha versió xinesa dels vídeos: les pàgines en xinès reprodueixen el vídeo en anglès amb una transcripció en xinès.",
+      "No hi ha versió xinesa ni àrab dels vídeos: les pàgines en xinès i en àrab reprodueixen el vídeo en anglès amb una transcripció en la seva llengua.",
       "La previsualització del Sandbox a la pestanya Canvas és una imatge de cada pàgina. El text és a la pestanya HTML i al tauler Text, on els lectors de pantalla el poden llegir.",
       "Els PDF que exportes des del Sandbox surten etiquetats per a l'accessibilitat, però la llegibilitat que tinguin depèn del contingut i del disseny que els donis."
     ],

@@ -6,7 +6,8 @@
       "en": "Page",
       "es": "Página",
       "ca": "Pàgina",
-      "zh": "页面"
+      "zh": "页面",
+      "ar": "الصفحة"
     }
   },
   "layout": {
@@ -15,7 +16,8 @@
       "en": "Layout",
       "es": "Disposición",
       "ca": "Disposició",
-      "zh": "版式"
+      "zh": "版式",
+      "ar": "التخطيط"
     }
   },
   "bodyText": {
@@ -24,7 +26,8 @@
       "en": "Body text",
       "es": "Texto de cuerpo",
       "ca": "Text de cos",
-      "zh": "正文"
+      "zh": "正文",
+      "ar": "نص المتن"
     }
   },
   "headings": {
@@ -33,7 +36,8 @@
       "en": "Headings",
       "es": "Encabezados",
       "ca": "Encapçalaments",
-      "zh": "标题"
+      "zh": "标题",
+      "ar": "العناوين"
     }
   },
   "tableStyle": {
@@ -42,7 +46,8 @@
       "en": "Table style",
       "es": "Estilo de tablas",
       "ca": "Estil de taules",
-      "zh": "表格样式"
+      "zh": "表格样式",
+      "ar": "نمط الجداول"
     }
   },
   "tableStyles": {
@@ -51,7 +56,8 @@
       "en": "Named table styles",
       "es": "Estilos de tabla con nombre",
       "ca": "Estils de taula amb nom",
-      "zh": "命名表格样式"
+      "zh": "命名表格样式",
+      "ar": "أنماط الجداول المسمّاة"
     }
   },
   "captionStyle": {
@@ -60,7 +66,8 @@
       "en": "Caption style",
       "es": "Estilo de pies de recurso",
       "ca": "Estil dels peus de recurs",
-      "zh": "题注样式"
+      "zh": "题注样式",
+      "ar": "نمط التعليقات"
     }
   },
   "diagramStyle": {
@@ -69,7 +76,8 @@
       "en": "Diagram style",
       "es": "Estilo de diagramas",
       "ca": "Estil dels diagrames",
-      "zh": "图示样式"
+      "zh": "图示样式",
+      "ar": "نمط المخططات"
     }
   },
   "paragraphStyles": {
@@ -78,7 +86,8 @@
       "en": "Paragraph styles",
       "es": "Estilos de párrafo",
       "ca": "Estils de paràgraf",
-      "zh": "段落样式"
+      "zh": "段落样式",
+      "ar": "أنماط الفقرات"
     }
   },
   "calloutStyles": {
@@ -87,7 +96,8 @@
       "en": "Callout styles",
       "es": "Estilos de aviso",
       "ca": "Estils d'avís",
-      "zh": "标注框样式"
+      "zh": "标注框样式",
+      "ar": "أنماط الإطارات"
     }
   },
   "chipStyles": {
@@ -96,7 +106,8 @@
       "en": "Chip styles",
       "es": "Estilos de chip",
       "ca": "Estils de xip",
-      "zh": "行内标签样式"
+      "zh": "行内标签样式",
+      "ar": "أنماط الشارات"
     }
   },
   "parts": {
@@ -105,7 +116,8 @@
       "en": "Parts",
       "es": "Partes",
       "ca": "Parts",
-      "zh": "篇"
+      "zh": "篇",
+      "ar": "الأجزاء"
     }
   },
   "headingStyles": {
@@ -114,7 +126,8 @@
       "en": "Heading styles",
       "es": "Estilos de encabezado",
       "ca": "Estils d'encapçalament",
-      "zh": "标题样式"
+      "zh": "标题样式",
+      "ar": "أنماط العناوين"
     }
   },
   "toc": {
@@ -123,7 +136,8 @@
       "en": "Table of contents",
       "es": "Índice de contenidos",
       "ca": "Índex de continguts",
-      "zh": "目录"
+      "zh": "目录",
+      "ar": "جدول المحتويات"
     }
   },
   "unorderedLists": {
@@ -132,7 +146,8 @@
       "en": "Unordered Lists",
       "es": "Listas no ordenadas",
       "ca": "Llistes no ordenades",
-      "zh": "无序列表"
+      "zh": "无序列表",
+      "ar": "القوائم غير المرقّمة"
     }
   },
   "orderedLists": {
@@ -141,7 +156,8 @@
       "en": "Ordered Lists",
       "es": "Listas ordenadas",
       "ca": "Llistes ordenades",
-      "zh": "有序列表"
+      "zh": "有序列表",
+      "ar": "القوائم المرقّمة"
     }
   },
   "math": {
@@ -150,7 +166,8 @@
       "en": "Math",
       "es": "Matemáticas",
       "ca": "Matemàtiques",
-      "zh": "数学公式"
+      "zh": "数学公式",
+      "ar": "الصيغ الرياضية"
     }
   },
   "cjk": {
@@ -159,7 +176,8 @@
       "en": "East Asian typography",
       "es": "Tipografía de Asia oriental",
       "ca": "Tipografia de l'Àsia oriental",
-      "zh": "东亚排版"
+      "zh": "东亚排版",
+      "ar": "تنضيد نصوص شرق آسيا"
     }
   },
   "header": {
@@ -168,7 +186,8 @@
       "en": "Headers & footers",
       "es": "Encabezados y pies",
       "ca": "Capçaleres i peus",
-      "zh": "页眉与页脚"
+      "zh": "页眉与页脚",
+      "ar": "رؤوس الصفحات وتذييلاتها"
     }
   },
   "footer": {
@@ -177,7 +196,8 @@
       "en": "Headers & footers",
       "es": "Encabezados y pies",
       "ca": "Capçaleres i peus",
-      "zh": "页眉与页脚"
+      "zh": "页眉与页脚",
+      "ar": "رؤوس الصفحات وتذييلاتها"
     }
   },
   "locale": {
@@ -186,7 +206,8 @@
       "en": "Hyphenation",
       "es": "Separación silábica",
       "ca": "Partició de mots",
-      "zh": "断词"
+      "zh": "断词",
+      "ar": "تقسيم الكلمات بالواصلة"
     }
   },
   "direction": {
@@ -195,7 +216,8 @@
       "en": "Languages and scripts",
       "es": "Idiomas y escrituras",
       "ca": "Llengües i escriptures",
-      "zh": "语言与文字"
+      "zh": "语言与文字",
+      "ar": "اللغات وأنظمة الكتابة"
     }
   },
   "numerals": {
@@ -204,7 +226,8 @@
       "en": "Document language",
       "es": "Idioma del documento",
       "ca": "Llengua del document",
-      "zh": "文档语言"
+      "zh": "文档语言",
+      "ar": "لغة المستند"
     }
   },
   "debug": {
@@ -213,7 +236,8 @@
       "en": "Debug",
       "es": "Depuración",
       "ca": "Depuració",
-      "zh": "调试"
+      "zh": "调试",
+      "ar": "التصحيح"
     }
   },
   "htmlViewer": {
@@ -222,7 +246,8 @@
       "en": "HTML Viewer",
       "es": "Visor HTML",
       "ca": "Visor HTML",
-      "zh": "HTML查看器"
+      "zh": "HTML查看器",
+      "ar": "عارض HTML"
     }
   },
   "pdfGeneration": {
@@ -231,7 +256,8 @@
       "en": "PDF generation (config)",
       "es": "Generación de PDF (configuración)",
       "ca": "Generació de PDF (configuració)",
-      "zh": "PDF生成（配置）"
+      "zh": "PDF生成（配置）",
+      "ar": "إنتاج PDF (الإعدادات)"
     }
   },
   "colorPalette": {
@@ -240,7 +266,8 @@
       "en": "Color Palette",
       "es": "Paleta de colores",
       "ca": "Paleta de colors",
-      "zh": "调色板"
+      "zh": "调色板",
+      "ar": "لوحة الألوان"
     }
   },
   "customFonts": {
@@ -249,7 +276,8 @@
       "en": "Custom fonts",
       "es": "Fuentes personalizadas",
       "ca": "Fonts personalitzades",
-      "zh": "自定义字体"
+      "zh": "自定义字体",
+      "ar": "الخطوط المخصّصة"
     }
   },
   "resourceTypes": {
@@ -258,7 +286,8 @@
       "en": "Resource types",
       "es": "Tipos de recurso",
       "ca": "Tipus de recurs",
-      "zh": "资源类型"
+      "zh": "资源类型",
+      "ar": "أنواع الموارد"
     }
   },
   "index": {
@@ -267,7 +296,8 @@
       "en": "Back-of-book index",
       "es": "Índice analítico",
       "ca": "Índex analític",
-      "zh": "索引"
+      "zh": "索引",
+      "ar": "الفهرس الأبجدي"
     }
   },
   "crossRefs": {
@@ -276,7 +306,8 @@
       "en": "Cross-references",
       "es": "Referencias cruzadas",
       "ca": "Referències creuades",
-      "zh": "交叉引用"
+      "zh": "交叉引用",
+      "ar": "الإحالات المرجعية"
     }
   },
   "citations": {
@@ -285,7 +316,8 @@
       "en": "Citations",
       "es": "Citas",
       "ca": "Cites",
-      "zh": "引用"
+      "zh": "引用",
+      "ar": "الاستشهادات"
     }
   }
 }
