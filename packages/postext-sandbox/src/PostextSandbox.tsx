@@ -32,6 +32,8 @@ import type { PanelId } from './types';
 
 // three.js loads with the Folio tab, not with the sandbox.
 const FolioViewport = lazy(() => import('./viewport/FolioViewport').then((m) => ({ default: m.FolioViewport })));
+// So does the EPUB writer with the EPUB tab.
+const EpubViewport = lazy(() => import('./viewport/EpubViewport').then((m) => ({ default: m.EpubViewport })));
 
 const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
@@ -175,16 +177,22 @@ function SandboxLayout({
     switch (activeViewport) {
       case 'canvas':
         return <CanvasViewport />;
-      case 'html':
-        return <HtmlViewport />;
+      case 'pdf':
+        return <PdfViewport />;
       case 'folio':
         return (
           <Suspense fallback={<div className="relative h-full w-full"><FolioLoading /></div>}>
             <FolioViewport />
           </Suspense>
         );
-      case 'pdf':
-        return <PdfViewport />;
+      case 'html':
+        return <HtmlViewport />;
+      case 'epub':
+        return (
+          <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
+            <EpubViewport />
+          </Suspense>
+        );
       default:
         return null;
     }

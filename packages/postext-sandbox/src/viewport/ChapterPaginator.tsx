@@ -62,8 +62,9 @@ export function ChapterPaginator() {
   // the same pages) when that is the tab shown:
   // it lays the chapter out at print geometry and records the layout on
   // every rebuild — and every chapter, when it shows the whole book. The
-  // HTML tab lays out for the screen and the PDF tab only on request, so
-  // under those the active chapter is handled here.
+  // HTML tab lays out for the screen, and the PDF and EPUB tabs only on
+  // request (their own print chain), so under those the active chapter is
+  // handled here.
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
   const printPreview = activeViewport === 'canvas' || activeViewport === 'folio';
   const wholeBookOnCanvas = printPreview && canvasScope === 'book';

@@ -30,6 +30,7 @@ export interface SandboxLabels {
   html: string;
   pdf: string;
   folio: string;
+  epub: string;
   folioRegion: string;
   folioPrev: string;
   folioNext: string;
@@ -1164,6 +1165,14 @@ export interface SandboxLabels {
   pdfScopeBook: string;
   canvasScope: string;
   canvasScopeBookTooLong: string;
+  /** The EPUB tab's rendition choice, in the place of a scope selector
+   *  (the tab always takes the whole book): a fixed layout or a
+   *  reflowable book, each with a one-sentence explanation. */
+  epubLayout: string;
+  epubLayoutFixed: string;
+  epubLayoutReflowable: string;
+  epubLayoutFixedHint: string;
+  epubLayoutReflowableHint: string;
   importFileChapter: string;
   exportFileChapter: string;
   warningsChapterLabel: string;
@@ -2405,6 +2414,7 @@ export interface SandboxLabels {
   colorHexInvalid: string;
   abbrHtml: string;
   abbrPdf: string;
+  abbrEpub: string;
   pdfReady: string;
   layoutDone: string;
   editorKeyboardHint: string;

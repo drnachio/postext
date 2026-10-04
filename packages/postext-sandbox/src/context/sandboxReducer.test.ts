@@ -15,6 +15,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     activeChapterId: 'a',
     pdfScope: 'chapter',
     canvasScope: 'chapter',
+    epubLayout: 'reflowable',
     chapterLayouts: {},
     hiddenPresetIds: [],
     config: {},
@@ -250,6 +251,19 @@ describe('book actions', () => {
     // …and gives way when the canvas scope moves again.
     expect(sandboxReducer(picked, { type: 'SET_CANVAS_SCOPE', payload: 'chapter' }).pdfScope).toBe('chapter');
     expect(sandboxReducer(whole, { type: 'SET_CANVAS_SCOPE', payload: 'chapter' }).pdfScope).toBe('chapter');
+  });
+  it('SET_EPUB_LAYOUT picks the EPUB rendition and leaves the scopes alone', () => {
+    const whole = sandboxReducer(baseState(), { type: 'SET_CANVAS_SCOPE', payload: 'book' });
+    const fixed = sandboxReducer(whole, { type: 'SET_EPUB_LAYOUT', payload: 'fixed' });
+    expect(fixed.epubLayout).toBe('fixed');
+    expect(fixed.canvasScope).toBe('book');
+    expect(fixed.pdfScope).toBe('book');
+    expect(sandboxReducer(fixed, { type: 'SET_EPUB_LAYOUT', payload: 'fixed' })).toBe(fixed);
+    expect(sandboxReducer(fixed, { type: 'SET_EPUB_LAYOUT', payload: 'reflowable' }).epubLayout).toBe('reflowable');
+    // The rendition stays through tab switches and another book.
+    const tab = sandboxReducer(fixed, { type: 'SET_VIEWPORT', payload: 'epub' });
+    expect(tab.activeViewport).toBe('epub');
+    expect(sandboxReducer(tab, { type: 'SET_BOOK', payload: { chapters: [ch('x', '# X')], activeChapterId: 'x' } }).epubLayout).toBe('fixed');
   });
   it('SET_CHAPTER_LAYOUT records a chapter layout and forgets it with the chapter', () => {
     const layout = { chapterId: 'b', markdown: '# B', configKey: 'c', resourcesKey: 'r', engine: 'e', continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal' as const, lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal' as const, outlinePages: [], outlineKey: '' };

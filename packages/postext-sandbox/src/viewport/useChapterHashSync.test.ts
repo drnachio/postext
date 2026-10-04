@@ -53,7 +53,7 @@ interface FakeState {
   activeChapterId: string;
   storeReady: boolean;
   bookVersion: number;
-  activeViewport: 'canvas' | 'html' | 'pdf';
+  activeViewport: 'canvas' | 'pdf' | 'folio' | 'html' | 'epub';
   canvasScope: 'chapter' | 'book';
   activeProjectId: string | null;
   activePresetId: string;
@@ -251,5 +251,29 @@ describe('useChapterHashSync — a link naming an edition by another tag', () =>
     commit({ storeReady: true });
     expect(store.state.activeChapterId).toBe('guide-1');
     expect(location.hash).toMatch(/^#preset=postext-guide&lang=es&view=canvas/);
+  });
+});
+
+describe('useChapterHashSync — the tabs that build the book as a file', () => {
+  const book = chapters(3, 'c');
+  const open = (activeViewport: FakeState['activeViewport']) => {
+    const location = installWindow('#preset=postext-guide&lang=es&chapter=1');
+    store.state = { ...store.state, chapters: book, activeChapterId: 'c1', activeViewport, canvasScope: 'book' };
+    render();
+    commit({ storeReady: true });
+    return location;
+  };
+
+  it.each(['pdf', 'epub'] as const)('writes a chapter switch under the %s tab, whatever the canvas scope', (view) => {
+    const location = open(view);
+    expect(location.hash).toBe(`#preset=postext-guide&lang=es&view=${view}&chapter=1`);
+    commit({ activeChapterId: 'c3' });
+    expect(location.hash).toBe(`#preset=postext-guide&lang=es&view=${view}&chapter=3`);
+  });
+
+  it('leaves the fragment to the canvas while it shows the whole book', () => {
+    const location = open('canvas');
+    commit({ activeChapterId: 'c3' });
+    expect(location.hash).toBe('#preset=postext-guide&lang=es&view=canvas&chapter=1');
   });
 });
