@@ -25,6 +25,7 @@ import { resolveDesignLineHeight } from '../defaults/headerFooter';
 import { createBoundingBox, pictureTraits, type BoundingBox } from '../vdt';
 import { buildFontString } from '../measure';
 import { graphemeCount } from '../measure/graphemes';
+import { joiningScriptIn } from '../measure/joining';
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
 import type { InlineSpan } from '../parse/types';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
@@ -1158,8 +1159,10 @@ function layoutTextElement(
   // exactly as canvas `letterSpacing` / CSS `letter-spacing` / PDF `Tc` do.
   // Negative tracking tightens a display title (EF-82); a width never drops
   // below zero, however tight.
+  // A text in a joining script (Arabic…) is set untracked: spacing its
+  // letters apart breaks the joins (`measure/joining.ts`).
   const trackingPx = dimPx(el.letterSpacing, dpi, fontSizePx);
-  const letterSpacingPx = Number.isFinite(trackingPx) ? trackingPx : 0;
+  const letterSpacingPx = Number.isFinite(trackingPx) && !joiningScriptIn(text) ? trackingPx : 0;
   const measure: TextMeasure = (t) => Math.max(0, flowTextWidth(t, fontString) + letterSpacingPx * graphemeCount(t));
   const box = resolveBox(el.box, dpi, fontSizePx);
   const padding: ResolvedPadding = box?.padding ?? { top: 0, right: 0, bottom: 0, left: 0 };

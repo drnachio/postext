@@ -22,6 +22,7 @@ import { tableCellFill, tableFrameOutline } from '../vdt';
 import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
+import { fillSegmentWord, type WordRun } from './wordRuns';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -352,6 +353,13 @@ function paintLineRuns(
     // Two marks that meet are painted apart where the line's measurer set
     // them apart (see `fillFlowText`).
     const cuts = lineMarkCuts(line);
+    const paint = cjk
+      ? (text: string, px: number, py: number): void => fillWordsText(ctx, text, px, py)
+      : (text: string, px: number, py: number): void => ctx.fillText(text, px, py);
+    const runStyle = (run: WordRun): { font: string; fill: string } => ({
+      font: pickFont(!!run.bold, !!run.italic, font, boldFont, italicFont, boldItalicFont),
+      fill: color,
+    });
     for (const seg of line.segments) {
       if (seg.kind === 'space') {
         x += seg.width;
@@ -374,8 +382,9 @@ function paintLineRuns(
           ? labelColor
           : color;
       if (!composed) {
-        if (cjk) fillWordsText(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0));
-        else ctx.fillText(seg.text, x, line.baseline + (seg.baselineShift ?? 0));
+        // A word of a joining script untracked, a word in several styles
+        // painted as one shaped word (`fillSegmentWord`).
+        fillSegmentWord(ctx, seg, x, line.baseline + (seg.baselineShift ?? 0), tracking, paint, runStyle);
         x += seg.width;
         continue;
       }

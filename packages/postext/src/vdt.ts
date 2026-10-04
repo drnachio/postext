@@ -529,6 +529,12 @@ export interface VDTLine {
    *  a `cjkLooseLine` content warning. Typically the line before a long
    *  Latin word or web address that cannot break. Absent otherwise. */
   cjkLoose?: boolean;
+  /** The line holds a word of a joining script (Arabic, Syriac, N'Ko…)
+   *  wider than its measure. Such a word is never cut between its letters
+   *  (its pieces would lose their joining forms), so it runs past the
+   *  measure, and the build reports an `unbreakableWordOverflow` content
+   *  warning. Absent otherwise. */
+  wordOverflow?: true;
   /** Set by the CJK composer (a paragraph set as Chinese, Japanese or
    *  Korean text, `composesAsCjk`): its characters were measured one by
    *  one, so a renderer paints two CJK marks that meet apart — the marks
@@ -1825,6 +1831,18 @@ export type ContentWarning = ContentWarningBase & (
    *  address that cannot break. `text` is the line's text. Found by the
    *  layout, so `collectContentWarnings` never returns it. */
   | { kind: 'cjkLooseLine'; text: string }
+  /** A word of a joining script (Arabic, Syriac, N'Ko…) wider than its
+   *  line: such a word is never divided (its letters connect, and a piece
+   *  would lose its joining forms), so it runs past the measure
+   *  (`VDTLine.wordOverflow`). `text` is the line's text. Found by the
+   *  layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'unbreakableWordOverflow'; text: string }
+  /** A paragraph or heading whose style sets letter-spacing
+   *  (`letterSpacing`) on words of a joining script: they are set without
+   *  it, since spacing their letters apart breaks the joins, and only the
+   *  other words and the spaces take it. `text` is the block's first
+   *  line. Found by the layout. */
+  | { kind: 'joiningScriptLetterSpacing'; text: string }
   /** A paragraph with Chinese marks (emphasis dots, proper-name or
    *  book-title lines, #193) whose line gap is narrower than the marks
    *  need: half an em for marks on one side of the text, five eighths for

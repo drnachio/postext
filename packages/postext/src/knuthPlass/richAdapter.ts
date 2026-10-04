@@ -14,6 +14,7 @@ import { trimChipLineEdges } from '../measure/chipEdges';
 import { lineTracking, trackSegments } from './tracking';
 import { graphemeCount } from '../measure/graphemes';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate';
+import { joiningScriptIn } from '../measure/joining';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -77,6 +78,8 @@ interface RichToken {
    *  run (see `measure/rich.ts`). */
   tcy?: true;
   orientation?: 'upright' | 'sideways';
+  /** Styled runs of one word of a joining script (see `measure/rich.ts`). */
+  runs?: { text: string; bold?: boolean; italic?: boolean }[];
 }
 
 export function richTokensToItems(
@@ -113,11 +116,13 @@ export function richTokensToItems(
       continue;
     }
 
-    // Characters tracking spreads: none on a formula or a swatch; a chip
-    // paints its own runs, so its line takes no tracking at all.
+    // Characters tracking spreads: none on a formula or a swatch, nor on a
+    // word of a joining script (its letters connect; see
+    // `measure/joining.ts`); a chip paints its own runs, so its line takes
+    // no tracking at all.
     // Two stacked scripts advance as far as the wider one: the first
     // counts no character, the second the longer run's (see `trackSegments`).
-    const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined;
+    const atomic = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined || joiningScriptIn(token.text);
     const stackedChars = token.stacked === 'first'
       ? 0
       : token.stacked === 'second' ? Math.max(graphemeCount(token.text), graphemeCount(tokens[t - 1]?.text ?? '')) : undefined;
@@ -291,6 +296,7 @@ export function reconstructRichLines(
           ...(token.orientation ? { orientation: token.orientation } : {}),
           ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
           ...(token.inserted ? { inserted: true } : {}),
+          ...(token.runs ? { runs: token.runs } : {}),
         });
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {

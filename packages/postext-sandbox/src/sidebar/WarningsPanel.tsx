@@ -29,6 +29,8 @@ function iconFor(kind: WarningPayload['kind']) {
       return Type;
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'unbreakableWordOverflow':
+    case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
       return FileWarning;
@@ -127,6 +129,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLooseLineTitle;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineTitle;
+    case 'unbreakableWordOverflow':
+      return labels.warningsUnbreakableWordOverflowTitle;
+    case 'joiningScriptLetterSpacing':
+      return labels.warningsJoiningScriptLetterSpacingTitle;
     case 'cjkMarksExceedLeading':
       return labels.warningsCjkMarksLeadingTitle;
     case 'rubyExceedsLeading':
@@ -306,6 +312,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.ratio.toFixed(2)}× · ${labels.warningsThresholdLabel} ${payload.threshold.toFixed(2)}×`;
     case 'cjkLooseLine':
       return labels.warningsCjkLooseLineDetail.replace('__text__', payload.text);
+    case 'unbreakableWordOverflow':
+      return labels.warningsUnbreakableWordOverflowDetail.replace('__text__', payload.text);
+    case 'joiningScriptLetterSpacing':
+      return labels.warningsJoiningScriptLetterSpacingDetail.replace('__text__', payload.text);
     case 'cjkMarksExceedLeading':
       return labels.warningsCjkMarksLeadingDetail
         .replace('__text__', payload.text)

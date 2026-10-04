@@ -156,6 +156,58 @@
       }
     }
   },
+  "unbreakableWordOverflow": {
+    "source": "engine",
+    "label": {
+      "en": "Word wider than its line",
+      "es": "Palabra más ancha que su línea",
+      "zh": "单词宽于行长"
+    },
+    "cause": {
+      "en": "A word in Arabic script (or another script whose letters join: Syriac, N'Ko…) is wider than its line. Such a word is never divided, not even at a soft hyphen, because its pieces would lose their joining forms, so it runs past the measure.",
+      "es": "Una palabra en escritura árabe (u otra cuyas letras van unidas: siríaca, n'ko…) es más ancha que su línea. Una palabra así nunca se divide, ni siquiera en un guion blando, porque sus trozos perderían las formas de unión, así que sobresale de la medida.",
+      "zh": "一个阿拉伯文字（或叙利亚文、N'Ko文等字母相连的文字）的单词比所在行还宽。这类单词从不拆开，软连字符处也不拆，否则拆开的部分会失去连写形式，所以它会超出行长。"
+    },
+    "fix": {
+      "en": "Widen the measure (a wider column or table cell), set the text smaller, or put a space between words written together.",
+      "es": "Ensancha la medida (una columna o una celda más ancha), reduce el cuerpo del texto o separa con un espacio las palabras escritas juntas.",
+      "zh": "加大行长（更宽的栏或表格单元格）、缩小字号，或在连写的词之间加空格。"
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Where a Line Never Breaks",
+        "es": "Dónde nunca se corta una línea",
+        "zh": "行从不断开的地方"
+      }
+    }
+  },
+  "joiningScriptLetterSpacing": {
+    "source": "engine",
+    "label": {
+      "en": "Letter-spacing on Arabic script",
+      "es": "Espaciado entre letras en escritura árabe",
+      "zh": "阿拉伯文字的字距"
+    },
+    "cause": {
+      "en": "A paragraph style or heading level sets `letterSpacing`, and its text holds words in Arabic script (or another script whose letters join). Spacing those letters apart breaks the joins, so such words are set without it.",
+      "es": "Un estilo de párrafo o un nivel de título define `letterSpacing`, y su texto tiene palabras en escritura árabe (u otra cuyas letras van unidas). Separar esas letras rompe las uniones, así que esas palabras se componen sin él.",
+      "zh": "某个段落样式或标题级别设置了`letterSpacing`，而其文字含有阿拉伯文字（或其他字母相连的文字）的单词。拉开这些字母会破坏连写，所以这些单词按无字距排版。"
+    },
+    "fix": {
+      "en": "Remove the letter-spacing from the style, or give the Arabic text a style of its own without it.",
+      "es": "Quita el espaciado entre letras del estilo, o da al texto árabe un estilo propio sin él.",
+      "zh": "去掉该样式的字距，或给阿拉伯文字单独设一个不加字距的样式。"
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Tracking as a Last Resort",
+        "es": "Tracking como último recurso",
+        "zh": "最后手段：字距"
+      }
+    }
+  },
   "cjkMarksExceedLeading": {
     "source": "engine",
     "label": {

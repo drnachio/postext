@@ -9,6 +9,8 @@ export type WarningKind =
   | 'duplicateFontVariant'
   | 'looseLine'
   | 'cjkLooseLine'
+  | 'unbreakableWordOverflow'
+  | 'joiningScriptLetterSpacing'
   | 'cjkMarksExceedLeading'
   | 'rubyExceedsLeading'
   | 'headingHierarchy'
@@ -96,6 +98,8 @@ export type WarningPayload =
     }
   | { kind: 'looseLine'; ratio: number; threshold: number }
   | { kind: 'cjkLooseLine'; text: string }
+  | { kind: 'unbreakableWordOverflow'; text: string }
+  | { kind: 'joiningScriptLetterSpacing'; text: string }
   | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'headingHierarchy'; from: number; to: number }

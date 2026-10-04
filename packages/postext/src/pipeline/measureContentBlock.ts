@@ -33,6 +33,7 @@ import { measureTocBlock } from './toc';
 import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
+import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -63,6 +64,11 @@ export interface BlockMeasureContext
   /** The anchors a `:ref` may name and the words it prints (#262); absent
    *  when no reference names anything but resources. */
   anchorRefs?: AnchorRefContext;
+  /** Filled by the measurement: the content indices of the blocks whose
+   *  style asks for letter-spacing (`letterSpacing`) on text of a joining
+   *  script (Arabic…), which is set without it. The build reports them
+   *  (`joiningScriptLetterSpacing`). */
+  joiningLetterSpacing?: Set<number>;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -343,6 +349,11 @@ export function measureContentBlock(
   const letterSpacingPx = hasRichFonts
     ? (style.letterSpacingPx ?? 0) + (opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0)
     : 0;
+  // The words of a joining script take none of the style's tracking (the
+  // measurer leaves them untracked, `measure/joining.ts`): say so.
+  if (ctx.joiningLetterSpacing && hasRichFonts && (style.letterSpacingPx ?? 0) !== 0 && joiningScriptIn(contentBlock.text)) {
+    ctx.joiningLetterSpacing.add(blockIdx);
+  }
   const measureOptions = {
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
@@ -423,7 +434,9 @@ export function measureContentBlock(
     const target = measured.lines.length - 1;
     const natural = wordSpacingProfile(measured.lines);
     const loosestAllowed = Math.max(resolved.bodyText.maxWordSpacing, natural.loosest) + 1e-9;
-    for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts)) {
+    // An Arabic paragraph takes no tracking: its words would stay untracked
+    // and only its spaces would tighten, which the first rung already tries.
+    for (const rung of runtTrackingLadder(resolved.bodyText.maxRuntTracking, hasRichFonts && !mostlyJoiningScript(contentBlock.text))) {
       const spacing = letterSpacingPx - (rung / 1000) * style.fontSizePx;
       const attempt = runMeasurement({
         vdtType, rawBlock, contentBlock, style, measureMaxWidth, mathEnabled, cache,

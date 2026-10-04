@@ -12,6 +12,8 @@ import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { fillSegmentWord, type WordRun } from './wordRuns';
+import { joiningScriptIn } from '../measure/joining';
 
 function pickSegmentFont(
   bold: boolean,
@@ -122,6 +124,9 @@ interface BlockTextStyle {
  * redundant state changes (segments overwhelmingly share styling). `cjk`:
  * the line may hold CJK text, whose marks that meet are painted apart
  * (`fillWordsText`); without it, each segment is one `fillText`.
+ * `tracking` is the context's `letterSpacing` on entry: a word of a joining
+ * script is painted without it, and a word set in several styles is painted
+ * as one shaped word (see `fillSegmentWord`).
  */
 function renderSegments(
   ctx: CanvasRenderingContext2D,
@@ -131,10 +136,18 @@ function renderSegments(
   style: BlockTextStyle,
   justifiedSpaceWidth: number | undefined,
   cjk: boolean,
+  tracking = 0,
 ): void {
   let x = startX;
   let currentFont = '';
   let currentFill = '';
+  const paint = cjk
+    ? (text: string, px: number, py: number): void => fillWordsText(ctx, text, px, py)
+    : (text: string, px: number, py: number): void => ctx.fillText(text, px, py);
+  const runStyle = (run: WordRun): { font: string; fill: string } => ({
+    font: pickSegmentFont(!!run.bold, !!run.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont),
+    fill: pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor),
+  });
   for (const seg of segments) {
     if (seg.kind === 'space') {
       x += justifiedSpaceWidth ?? seg.width;
@@ -176,8 +189,7 @@ function renderSegments(
       ctx.fillStyle = fill;
       currentFill = fill;
     }
-    if (cjk) fillWordsText(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0));
-    else ctx.fillText(seg.text, x, baseline + (seg.baselineShift ?? 0));
+    fillSegmentWord(ctx, seg, x, baseline + (seg.baselineShift ?? 0), tracking, paint, runStyle);
     x += seg.width;
   }
 }
@@ -188,7 +200,7 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined;
 }
 
 /**
@@ -339,7 +351,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, cjk);
+      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, cjk, tracking);
       return;
     }
   }
@@ -353,16 +365,17 @@ function renderLine(
     for (const seg of segments) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk, tracking);
     return;
   }
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref/own font or colour); otherwise one fillText
-  // paints the line.
-  if (segments && segments.some(segmentIsStyled)) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, cjk);
+  // block (bold/italic/math/ref/own font or colour), or when a tracked line
+  // holds a word of a joining script, which is painted untracked; otherwise
+  // one fillText paints the line.
+  if (segments && (segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
+    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, cjk, tracking);
     return;
   }
 

@@ -43,6 +43,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
       return 'design';
     case 'looseLine':
     case 'cjkLooseLine':
+    case 'unbreakableWordOverflow':
+    case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
     case 'calloutOverflow':

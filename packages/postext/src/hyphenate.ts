@@ -9,6 +9,7 @@ import ca from 'hyphenation.ca';
 import nl from 'hyphenation.nl';
 import type { HyphenationLocale, LocaleTag } from './types';
 import { hyphenationLocaleFor } from './locale';
+import { joiningScriptIn } from './measure/joining';
 
 export { HYPHENATION_LOCALES, matchHyphenationLocale, hyphenationLocaleFor } from './locale';
 
@@ -103,7 +104,9 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
       const word = text.slice(i, j);
       let hyphenated = memo.get(word);
       if (hyphenated === undefined) {
-        hyphenated = loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word);
+        // A word of a joining script (an Arabic word quoted in an English
+        // book) is never divided: its letters connect (`measure/joining.ts`).
+        hyphenated = joiningScriptIn(word) ? word : loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word);
         if (memo.size >= WORD_MEMO_SLOTS) memo.clear();
         memo.set(word, hyphenated);
       }

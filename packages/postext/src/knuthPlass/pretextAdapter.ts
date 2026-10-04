@@ -15,6 +15,13 @@ import { cleanSoftHyphens } from './utils';
 import { lineTracking, trackSegments } from './tracking';
 import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate';
+import { joiningScriptIn } from '../measure/joining';
+
+/** Characters tracking may spread over in a segment: none in a word of a
+ *  joining script, whose letters connect (`measure/joining.ts`). */
+function trackedChars(seg: string): number {
+  return joiningScriptIn(seg) ? 0 : graphemeCount(seg);
+}
 
 /** The break after a closed dash (`breakAfterDashes`): the line ends on the
  *  dash as it is, nothing is added and nothing is charged. */
@@ -100,7 +107,7 @@ export function pretextSegmentsToItems(
 
     switch (kind) {
       case 'text': {
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         const seg = segments[i]!;
         const last = seg[seg.length - 1];
         if (kinds[i + 1] !== 'text') break;
@@ -164,10 +171,10 @@ export function pretextSegmentsToItems(
         break;
       case 'preserved-space':
       case 'tab':
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: graphemeCount(segments[i]!) });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         break;
     }
   }

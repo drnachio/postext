@@ -483,6 +483,47 @@ export function cjkLooseLineWarnings(doc: VDTDocument): ContentWarning[] {
   return out;
 }
 
+/** An `unbreakableWordOverflow` warning for each line holding a word of a
+ *  joining script wider than the line (`VDTLine.wordOverflow`), on the page
+ *  it was placed on. */
+export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const block of doc.blocks) {
+    for (const line of block.lines) {
+      if (!line.wordOverflow) continue;
+      out.push({
+        kind: 'unbreakableWordOverflow',
+        text: line.text,
+        ...(line.sourceStart !== undefined ? { sourceStart: line.sourceStart } : {}),
+        ...(line.sourceEnd !== undefined ? { sourceEnd: line.sourceEnd } : {}),
+        ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+      });
+    }
+  }
+  return out;
+}
+
+/** A `joiningScriptLetterSpacing` warning for the first placed part of
+ *  each block (by content index, `blocks`) whose style tracks words of a
+ *  joining script, which are set untracked. */
+export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlySet<number>): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<number>();
+  for (const block of doc.blocks) {
+    const idx = block.contentIndex;
+    if (idx === undefined || !blocks.has(idx) || seen.has(idx)) continue;
+    seen.add(idx);
+    out.push({
+      kind: 'joiningScriptLetterSpacing',
+      text: block.lines[0]?.text ?? '',
+      ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : {}),
+      ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
+      ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+    });
+  }
+  return out;
+}
+
 /** Where a warning sits, for a message: `page 3` / `offset 120`. A
  *  configuration warning names its setting in the text instead. */
 function where(w: LayoutWarning | ContentWarning | ConfigWarning | RenderWarning | HeadingDesignCut): string {
@@ -586,6 +627,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
+      break;
+    case 'unbreakableWordOverflow':
+      text = `The line "${w.text}" holds an Arabic-script word wider than the line — such a word is never divided, so it runs past the measure`;
+      break;
+    case 'joiningScriptLetterSpacing':
+      text = `"${w.text}": its style sets letter-spacing, which Arabic-script words do not take (it breaks their joins) — they are set without it`;
       break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;

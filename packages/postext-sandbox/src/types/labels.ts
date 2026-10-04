@@ -185,6 +185,10 @@ export interface SandboxLabels {
   warningsLooseLineTitle: string;
   warningsCjkLooseLineTitle: string;
   warningsCjkLooseLineDetail: string;
+  warningsUnbreakableWordOverflowTitle: string;
+  warningsUnbreakableWordOverflowDetail: string;
+  warningsJoiningScriptLetterSpacingTitle: string;
+  warningsJoiningScriptLetterSpacingDetail: string;
   warningsCjkMarksLeadingTitle: string;
   warningsCjkMarksLeadingDetail: string;
   warningsRubyLeadingTitle: string;

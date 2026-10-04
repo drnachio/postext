@@ -73,6 +73,7 @@ import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlock
 import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
 import type { ParagraphContainerPlan } from './paragraphContainers';
+import { joiningScriptIn } from '../measure/joining';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -521,7 +522,9 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const titleLineHeight = titleLh.unit === 'em' || titleLh.unit === 'rem'
     ? titleFontPx * titleLh.value
     : dimensionToPx(titleLh, dpi, titleFontPx);
-  const titleTrackingPx = Math.max(0, dimensionToPx(style.titleStyle.letterSpacing, dpi, titleFontPx));
+  // A title in a joining script (Arabic…) is set untracked: spacing its
+  // letters apart breaks the joins (`measure/joining.ts`).
+  const titleTrackingPx = joiningScriptIn(titleText) ? 0 : Math.max(0, dimensionToPx(style.titleStyle.letterSpacing, dpi, titleFontPx));
   // A corner badge on the left hangs half over the title's side: the title
   // starts past it (its inner half plus the icon gap), at least — a
   // configured `indent` only adds beyond that room.

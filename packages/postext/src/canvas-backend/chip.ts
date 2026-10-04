@@ -1,4 +1,5 @@
 import type { VDTChip, VDTChipRun } from '../vdt';
+import { joiningScriptIn } from '../measure/joining';
 
 /** Trace a rounded rect (radius already clamped to half the box). */
 function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
@@ -47,10 +48,17 @@ export function paintChip(
   }
   ctx.textBaseline = 'alphabetic';
   let tx = bx + chip.borderWidth + chip.paddingX;
+  // The block's tracking, which a run of a joining script (measured
+  // untracked, `measure/joining.ts`) is painted without.
+  const spacing = 'letterSpacing' in ctx ? ctx.letterSpacing : undefined;
+  const tracked = spacing !== undefined && spacing !== '0px' && spacing !== 'normal';
   for (const run of chip.runs) {
     ctx.font = run.fontString;
     ctx.fillStyle = chip.color ?? inkFor(run);
+    const untracked = tracked && joiningScriptIn(run.text);
+    if (untracked) ctx.letterSpacing = '0px';
     ctx.fillText(run.text, tx, baseline + (run.baselineShift ?? 0));
+    if (untracked) ctx.letterSpacing = spacing!;
     tx += run.width;
   }
   ctx.restore();

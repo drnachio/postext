@@ -177,7 +177,8 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { cjkLooseLineWarnings, collectContentWarnings, locateContentWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
@@ -363,12 +364,16 @@ function measureLooseParagraph(
   // The breaker's optimum, before any runt fix (a looseness of 0 skips it).
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });
   const looseness = optimum ? target - optimum.measured.lines.length : extraLines;
+  // A paragraph mostly in a joining script (Arabic…) is not tracked: its
+  // words take no letter-spacing (`measure/joining.ts`), so only the first
+  // rung, word spacing alone, can gain it the line.
+  const ladder = trackingLadder.length > 1 && mostlyJoiningScript(rawBlock.text) ? trackingLadder.slice(0, 1) : trackingLadder;
   const maxWordSpacing = ctx.resolved.bodyText.maxWordSpacing + 1e-9;
   // A CJK line spread past its tracking cap (`cjkLoose`) is past the
   // limit too.
   const withinLimit = (lines: readonly VDTLine[]): boolean =>
     lines.every((l) => l.isLastLine || ((l.justifiedSpaceRatio === undefined || l.justifiedSpaceRatio <= maxWordSpacing) && !l.cjkLoose));
-  for (const tracking of trackingLadder) {
+  for (const tracking of ladder) {
     const loose = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, {
       styleOverride,
       looseness,
@@ -1889,6 +1894,9 @@ function placeDocumentPass(
   /** Boxes that left the flow this pass (side column, float band, fixed),
    *  by the content index of their opening marker (see `leftFlow`). */
   const calloutsOutOfFlow = new Set<number>();
+  /** Blocks whose style tracks text of a joining script, which is set
+   *  untracked (see `BlockMeasureContext.joiningLetterSpacing`). */
+  const joiningLetterSpacing = new Set<number>();
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
     resolved,
@@ -1912,6 +1920,7 @@ function placeDocumentPass(
     resourceNumbering,
     floatedIds,
     leftFlow: calloutsOutOfFlow,
+    joiningLetterSpacing,
     ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
     ...(anchorRefContext ? { anchorRefs: anchorRefContext } : {}),
   };
@@ -5664,6 +5673,7 @@ function placeDocumentPass(
 
   doc.converged = true;
   doc.iterationCount = 1;
+  if (joiningLetterSpacing.size > 0) joiningSpacingWarnings.set(doc, joiningLetterSpacingWarnings(doc, joiningLetterSpacing));
 
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
@@ -5738,8 +5748,10 @@ export function* buildDocumentGen(
   const bookCitationKeys = content.citations ? new Set(content.citations.items.map((i) => i.id)) : undefined;
   const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys), ...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
-  // Justified CJK lines the composer could not fill within its tracking cap.
-  const loose = cjkLooseLineWarnings(doc);
+  // Justified CJK lines the composer could not fill within its tracking
+  // cap; words of a joining script that run past their line, and styles
+  // whose letter-spacing such words do not take.
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);
@@ -5755,6 +5767,9 @@ export function* buildDocumentGen(
 /** Warnings the last pass's `:::index` raised, per document (read with
  *  the content warnings once the build is done). */
 const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
+/** The `joiningScriptLetterSpacing` warnings of the last pass, per
+ *  document. */
+const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
