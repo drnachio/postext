@@ -16,6 +16,7 @@ import { chipCompletionSource, type ChipStyleOption } from './chipSyntax';
 import { smallCapsCompletionSource } from './smallCapsSyntax';
 import { annotationCompletionSource } from './annotationSyntax';
 import { indexCompletionSource } from './indexSyntax';
+import { directionCompletionSource } from './directionSyntax';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
  *  resource types that name them (figure/table/…) in the document locale.
@@ -419,6 +420,7 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
         smallCapsCompletionSource,
         annotationCompletionSource,
         indexCompletionSource(() => getContext().indexTerms?.() ?? []),
+        directionCompletionSource,
       ],
       activateOnTyping: true,
       icons: false,
