@@ -29,7 +29,7 @@ import { fontAssets, imageAssets, pageProgressionOf } from '../shared/assets';
 import { decodeEntities, escapeAttr, escapeXml, htmlToXhtml, xhtmlDocument, xmlId } from '../shared/xml';
 import { navStrings } from '../package/strings';
 import { fontUses, missingFaces, type FontUse } from './fontUse';
-import { headingTitle, nestOutline, pageHeadings, partTitle, type OutlineEntry } from './outline';
+import { contentsRows, headingTitle, nestOutline, pageHeadings, partTitle, type OutlineEntry } from './outline';
 
 /** Directory of the page documents, relative to the package document. */
 const PAGES_DIR = 'pages/';
@@ -94,6 +94,12 @@ const pageDir = (doc: VDTDocument): 'ltr' | 'rtl' => (doc.config.direction === '
 
 const num = (v: number): string => String(Math.round(v * 10000) / 10000);
 
+/** A link over a row of the printed contents to the page it lists (the
+ *  row's text stays as the page prints it; the link is named after it). */
+const rowLink = (href: string, label: string, b: { x: number; y: number; width: number; height: number }): string =>
+  `<a class="pt-toc-link" href="${escapeAttr(href)}" aria-label="${escapeAttr(label)}" ` +
+  `style="position:absolute;left:${num(b.x)}px;top:${num(b.y)}px;width:${num(b.width)}px;height:${num(b.height)}px;z-index:1;"></a>`;
+
 /** A zero-size anchor at a point of the page (an outline target). */
 const anchorAt = (id: string, x: number, y: number): string =>
   `<span id="${escapeAttr(id)}" style="position:absolute;left:${num(x)}px;top:${num(y)}px;width:0;height:0;"></span>`;
@@ -140,6 +146,14 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
         const at = html.indexOf(wrapper);
         if (at >= 0) html = html.slice(0, at) + anchorAt(anchorId, block.bbox.x, block.bbox.y) + html.slice(at);
         outline.push({ title, level: block.headingLevel ?? 1, file, ...(at >= 0 ? { anchorId } : {}) });
+      }
+      // The rows of the printed contents link to their pages, as in the PDF.
+      for (const row of contentsRows(page)) {
+        const wrapper = `<div class="pt-block" data-block-id="${escapeAttr(row.block.id)}" style="display:contents;">`;
+        const at = html.indexOf(wrapper);
+        if (at < 0 || !row.label) continue;
+        const end = at + wrapper.length;
+        html = html.slice(0, end) + rowLink(`#pt-p-${row.pageIndex}`, row.label, row.block.bbox) + html.slice(end);
       }
       const pageId = `pt-p-${(doc.pageIndexOffset ?? 0) + page.index}`;
       const ids = [pageId, ...[...html.matchAll(/\sid="([^"]*)"/g)].map((m) => xmlId(decodeEntities(m[1]!)))];

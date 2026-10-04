@@ -184,6 +184,22 @@ describe('fixed layout from a real two-chapter book', () => {
     expect(pub.landmarks[0]).toEqual({ type: 'cover', label: 'Cover', href: 'pages/page-0001.xhtml' });
   });
 
+  it('links the rows of the printed contents to the pages they list', async () => {
+    const chapters = ['# Contents {toc="false"}\n\n:::toc\n:::', '# One\n\nText of the first chapter.', '# Two\n\nText of the second chapter.'];
+    const pub = await buildFixedPublication(layOutBook(chapters), { layout: 'fixed', metadata: { title: 'T', language: 'en' } });
+    const first = String(pub.items.find((i) => i.href === 'pages/page-0001.xhtml')!.data);
+    const links = [...first.matchAll(/<a class="pt-toc-link" href="([^"]*)" aria-label="([^"]*)"/g)].map((m) => [m[1], m[2]]);
+    expect(links.length).toBe(2);
+    expect(links[0]![1]).toContain('One');
+    expect(links[1]![1]).toContain('Two');
+    // Each goes to the page file its chapter opens on.
+    for (const [href] of links) {
+      const [file, id] = href!.split('#');
+      const target = String(pub.items.find((i) => i.href === `pages/${file}`)!.data);
+      expect(target).toContain(`id="${id}"`);
+    }
+  });
+
   it('runs right to left for a right-bound book', async () => {
     const rtl = docs.map((d) => ({ ...d, binding: 'right' as const }));
     const pub = await buildFixedPublication(rtl, { layout: 'fixed', metadata: { title: 'T', language: 'en' } });

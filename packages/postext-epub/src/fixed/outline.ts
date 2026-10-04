@@ -74,3 +74,33 @@ export function nestOutline(entries: readonly OutlineEntry[], dir: string): Epub
   }
   return roots;
 }
+
+/** A row of the printed contents and the book page it lists. */
+export interface ContentsRow {
+  block: VDTBlock;
+  /** Book page index the row points at (`pt-p-<index>`). */
+  pageIndex: number;
+  /** What the row reads: a part's number and title, an entry's lines. */
+  label: string;
+}
+
+/** Leader dots and runs of them between a title and its page number. */
+const LEADERS = /(?:\s*[.·…․‥⋯]){3,}\s*/gu;
+
+/** The rows of a page's printed contents that know their target page, as
+ *  the PDF backend links them (blockRender.ts). */
+export function contentsRows(page: VDTPage): ContentsRow[] {
+  const out: ContentsRow[] = [];
+  for (const col of page.columns) {
+    for (const block of col.blocks) {
+      if (block.hidden) continue;
+      const pageIndex = block.tocEntry?.pageIndex ?? block.tocPart?.pageIndex;
+      if (pageIndex === undefined) continue;
+      const label = block.tocPart
+        ? `${block.tocPart.number} ${plainTitleText(block.tocPart.title)}`
+        : `${block.numberPrefix ?? ''} ${block.lines.map((l) => l.text).join(' ')}`;
+      out.push({ block, pageIndex, label: label.replace(LEADERS, ' ').replace(SPACES, ' ').trim() });
+    }
+  }
+  return out;
+}
