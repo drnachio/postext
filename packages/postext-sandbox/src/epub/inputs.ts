@@ -40,14 +40,16 @@ export async function collectEpubFonts(
 
 /** The pictures' bytes from the blob store: bitmaps as stored, SVGs as
  *  their source with the Sandbox's custom fonts inlined (an image cannot
- *  see the book's fonts). Single ink is the writer's: it recolours the
- *  source. Never the PDF print master. */
-export function epubResourceBytes(): EpubResourceBytes {
+ *  see the book's fonts), except families marked as not redistributable,
+ *  which keep their reference and are told to `onWithheld`, as the font
+ *  files are. Single ink is the writer's: it recolours the source. Never
+ *  the PDF print master. */
+export function epubResourceBytes(onWithheld?: (family: string) => void): EpubResourceBytes {
   return async (fileId) => {
     const rec = await getBlob(fileId).catch(() => null);
     if (!rec) return undefined;
     if (rec.contentType !== 'image/svg+xml') return { bytes: new Uint8Array(rec.bytes), mediaType: rec.contentType };
-    const svg = await inlineSvgFonts(new TextDecoder().decode(rec.bytes));
+    const svg = await inlineSvgFonts(new TextDecoder().decode(rec.bytes), { redistributableOnly: true, onWithheld });
     return { bytes: new TextEncoder().encode(svg), mediaType: 'image/svg+xml' };
   };
 }

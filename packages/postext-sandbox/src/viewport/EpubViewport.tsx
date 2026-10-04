@@ -131,21 +131,22 @@ export function EpubViewport() {
           ? { kind: 'preset', id: preset.id, locale: state.presetApplied?.locale ?? state.locale, name: preset.name }
           : null;
       const metadata = epubMetadataOf(composeBookMemo(snapshot.chapters).metadata, snapshot.config, identity, locale);
+      const onWithheld = (family: string) => {
+        note({ kind: 'fontWithheld', family });
+        withheldFamilies.add(family);
+      };
       const [{ fonts, withheld }, cover] = await Promise.all([
         collectEpubFonts(snapshot.config, docs),
         epubCoverOf(docs[0]!, snapshot, metadata.title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
       ]);
-      for (const family of withheld) {
-        note({ kind: 'fontWithheld', family });
-        withheldFamilies.add(family);
-      }
+      for (const family of withheld) onWithheld(family);
       signal.throwIfAborted();
 
       const bytes = await renderToEpub(docs, {
         layout: snapshotLayout,
         metadata,
         fonts,
-        resourceBytes: epubResourceBytes(),
+        resourceBytes: epubResourceBytes(onWithheld),
         ...(cover ? { cover } : {}),
         onProgress: (p) => setProgress({ phase: p.phase, done: p.done, total: p.total }),
         onWarning: note,

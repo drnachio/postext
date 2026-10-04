@@ -34,4 +34,22 @@ describe('inlineSvgFontsWith', () => {
     expect(await inlineSvgFontsWith(named, async () => null)).toBe(named);
     expect(injectSvgStyle('<svg/>', fontFaceCss('X', []))).toBe('<svg/>');
   });
+
+  it('leaves a withheld family as a reference, never looked up, and says so', async () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="Closed">a</text><text font-family="Open">b</text></svg>';
+    const looked: string[] = [];
+    const withheld: string[] = [];
+    const out = await inlineSvgFontsWith(svg, async (family) => {
+      looked.push(family);
+      return [{ weight: 400, style: 'normal', format: 'ttf', base64: family === 'Open' ? 'OPEN' : 'CLOSED' }];
+    }, { withhold: (family) => family === 'Closed', onWithheld: (family) => withheld.push(family) });
+    expect(looked).toEqual(['Open']);
+    expect(withheld).toEqual(['Closed']);
+    expect(out).toContain('font-family:"Open"');
+    expect(out).not.toContain('CLOSED');
+    expect(out).toContain('<text font-family="Closed">a</text>');
+    // Nothing left to embed: the markup stays as it was.
+    const only = '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="Closed">a</text></svg>';
+    expect(await inlineSvgFontsWith(only, async () => [{ weight: 400, style: 'normal', format: 'ttf', base64: 'X' }], { withhold: () => true })).toBe(only);
+  });
 });
