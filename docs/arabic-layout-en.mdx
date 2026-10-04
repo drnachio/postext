@@ -80,7 +80,7 @@ A number reads from left to right in every digit system, its most significant di
 
 Parentheses, square brackets, braces and guillemets are mirrored in right-to-left runs: `(` typed before an Arabic word opens it on its right. Type them in logical order, the opening one first, as you would in English; the canvas, the HTML and the PDF draw the mirrored glyph (the font's `rtlm` feature, or the mirrored code point). « » open and close an Arabic quotation in the same way.
 
-The ornate parentheses of Qurʾān quotations, ﴿ (U+FD3F) and ﴾ (U+FD3E), are not mirrored: since Unicode 14 ﴿ is the opening one and ﴾ the closing one, and their glyphs are drawn for right-to-left text. Type ﴿ first: `﴿بسم الله الرحمن الرحيم﴾` prints with ﴿ on the right.
+The ornate parentheses of Qurʾān quotations, ﴿ (U+FD3F) and ﴾ (U+FD3E), are not mirrored: since Unicode 14 ﴿ is the opening one and ﴾ the closing one, and their glyphs are drawn for right-to-left text. Type ﴿ first: `﴿بسم الله الرحمن الرحيم﴾` prints with ﴿ on the right. They are not paired brackets either, so in a left-to-right paragraph (an Arabic verse quoted in an English book) the brackets next to a Latin word take the paragraph's direction: ﴿ lands on the left of the verse and the pair reads reversed, as it does in a browser. Set the quotation as a right-to-left isolate, `:rtl[﴿بسم الله الرحمن الرحيم﴾]`, and both brackets go with the verse, ﴿ on its right.
 
 ## Page order and right binding
 
