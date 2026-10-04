@@ -9,12 +9,10 @@
 
 import {
   anchoredResourceIds,
-  applySingleInkToSvg,
   canonicalLocaleTag,
   directionOf,
   HTML_TEXT_RESET,
   renderToHtmlIndexed,
-  resolveColorValue,
 } from 'postext';
 import type { VDTDocument, VDTPage } from 'postext';
 import type {
@@ -67,12 +65,6 @@ function docLanguage(doc: VDTDocument, fallback: string): string {
   return canonicalLocaleTag(c.locale) ?? canonicalLocaleTag(c.bodyText?.hyphenation?.tag) ?? fallback;
 }
 
-/** The ink SVG pictures are recoloured to, or null without single ink. */
-function inkOf(doc: VDTDocument): string | null {
-  const ds = doc.config.diagramStyle;
-  return ds?.singleInk ? resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex : null;
-}
-
 /** Whether any line of the documents sets a formula. */
 function hasMath(docs: readonly VDTDocument[]): boolean {
   return docs.some((d) => d.pages.some((p) => [...p.columns.flatMap((c) => c.blocks), ...(p.floats ?? [])]
@@ -108,13 +100,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
   const fonts = fontAssets(options.fonts ?? []);
   const images = await imageAssets(docs, options.resourceBytes, onWarning);
   signal?.throwIfAborted();
-  // Single-ink diagrams: the SVG files are recoloured once, as the PDF
-  // recolours their markup, rather than tinted by a CSS filter readers may
-  // not apply.
-  const ink = inkOf(docs[0]!);
-  const imageItems: EpubItem[] = images.items.map((item) => item.mediaType === 'image/svg+xml' && ink
-    ? { ...item, data: applySingleInkToSvg(new TextDecoder().decode(item.data as Uint8Array), ink) }
-    : item);
+  const imageItems = images.items;
   onProgress?.({ phase: 'resources', done: fonts.items.length + imageItems.length, total: fonts.items.length + imageItems.length });
 
   // Pass 1: render every page and learn where each id lives, so a link can

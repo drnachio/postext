@@ -23,7 +23,9 @@ export async function renderToEpub(docs: EpubSource, options: RenderToEpubOption
 }
 
 export { packEpub } from './package/pack';
-export { readEpub } from './package/read';
+export { readEpub, resolveHref, dirOf } from './package/read';
+export { bookIdentifier } from './shared/assets';
+export { uuidV5 } from './shared/uuid';
 export { buildFixedPublication } from './fixed';
 export { buildReflowablePublication } from './reflowable';
 export type {

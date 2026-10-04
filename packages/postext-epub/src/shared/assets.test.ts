@@ -101,6 +101,15 @@ describe('imageAssets', () => {
     expect(a.hrefOf('logo')).toBeUndefined();
     expect(warnings).toEqual([{ kind: 'missingImage', fileId: 'logo' }]);
   });
+
+  it('recolours SVG sources to the ink of a single-ink book', async () => {
+    const inked = { ...doc, config: { diagramStyle: { singleInk: true, inkColor: { hex: '#0000ff', model: 'hex' } } } } as unknown as VDTDocument;
+    const svg = new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#ff0000" width="1" height="1"/></svg>');
+    const a = await imageAssets([inked], (id) => (id === 'cell.svg' ? { bytes: svg, mediaType: 'image/svg+xml' } : undefined));
+    const data = a.items.find((i) => i.href === 'images/cell.svg')!.data;
+    expect(typeof data).toBe('string');
+    expect(data as string).not.toContain('#ff0000');
+  });
 });
 
 describe('pageProgressionOf', () => {

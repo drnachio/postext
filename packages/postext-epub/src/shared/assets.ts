@@ -1,6 +1,6 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import type { VDTDocument } from 'postext';
+import { applySingleInkToSvg, resolveColorValue, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubWarning } from '../types';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, sniffFontFormat, sniffImageType } from './media';
 import { uuidV5 } from './uuid';
@@ -112,6 +112,16 @@ export function placedFileIds(doc: VDTDocument): string[] {
   return [...out];
 }
 
+/** The ink SVG pictures are recoloured to, or null without single ink. */
+export function singleInkOf(doc: VDTDocument | undefined): string | null {
+  const ds = doc?.config?.diagramStyle;
+  return ds?.singleInk ? resolveColorValue(ds.inkColor, doc!.config.colorPalette, ds.inkColor).hex : null;
+}
+
+/** The pictures' files. Single-ink diagrams (`diagramStyle.singleInk`) are
+ *  recoloured once here, as the PDF recolours their markup, rather than
+ *  tinted by a CSS filter readers may not apply: the host hands over the
+ *  SVG source. */
 export async function imageAssets(
   docs: readonly VDTDocument[],
   resourceBytes: EpubResourceBytes | undefined,
@@ -122,6 +132,7 @@ export async function imageAssets(
   const items: EpubItem[] = [];
   const hrefs = new Map<string, string>();
   const names = new Set<string>();
+  const ink = singleInkOf(docs[0]);
   for (const { fileId, payload } of fetched) {
     const mediaType = payload && payload.bytes.length > 0
       ? sniffImageType(payload.bytes) ?? (payload.mediaType in IMAGE_EXTENSIONS ? payload.mediaType : undefined)
@@ -133,7 +144,10 @@ export async function imageAssets(
     const ext = IMAGE_EXTENSIONS[mediaType]!;
     const name = unique(slug(fileId.replace(/\.[a-z0-9]+$/i, '')), names);
     const href = `images/${name}.${ext}`;
-    items.push({ id: `img-${name}`, href, mediaType, data: payload.bytes });
+    const data = mediaType === 'image/svg+xml' && ink
+      ? applySingleInkToSvg(new TextDecoder().decode(payload.bytes), ink)
+      : payload.bytes;
+    items.push({ id: `img-${name}`, href, mediaType, data });
     hrefs.set(fileId, href);
   }
   return { items, hrefOf: (fileId) => hrefs.get(fileId) };
