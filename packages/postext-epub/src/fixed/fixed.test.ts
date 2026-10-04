@@ -195,6 +195,9 @@ describe('fixed layout of a right-to-left book', () => {
     expect(pub.spine[0]!.properties).toEqual(['page-spread-left']);
     const first = String(pub.items.find((i) => i.id === 'page-0001')!.data);
     expect(first).toContain('lang="ar" xml:lang="ar" dir="rtl"');
+    // The page box runs right to left, as the renderer's root does: a word
+    // box's comma or full stop stays at its left end.
+    expect(first).toMatch(/<div class="pt-page" id="pt-p-0" dir="rtl"/);
     expect(first).toMatch(/<head>[\s\S]*<style>\.pt-flow-mirrored[\s\S]*<\/head>/);
     expect(first).not.toMatch(/<body[\s\S]*<style>/);
     expect(pub.toc[0]!.label).toBe('الفصل الأول');

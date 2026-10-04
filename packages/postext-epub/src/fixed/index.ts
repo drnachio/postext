@@ -39,7 +39,8 @@ const STYLESHEET_HREF = 'styles/fixed.css';
 const CSS_DPI = 96;
 
 /** The engine's text reset without `direction`, which EPUB style sheets
- *  must not set (the page box takes `dir="ltr"` instead). */
+ *  must not set: the page box takes a `dir` attribute instead, the
+ *  document's direction (`pageDir`). */
 const TEXT_RESET = HTML_TEXT_RESET.replace(/(?:^|;)direction:[^;]*;?/, ';').replace(/^;/, '');
 
 /** One printed page on its way to a content document. */
@@ -84,6 +85,12 @@ function pageGeometry(doc: VDTDocument, page: VDTPage): { width: number; height:
   const height = Math.max(1, Math.round(trimH * scale));
   return { width, height, scale, offset };
 }
+
+/** The direction of a page box: the one the renderer's root declares
+ *  (#379). The word boxes of a right-to-left line resolve their neutrals —
+ *  a comma, a bracket, a full stop — in it, so the page must not run left
+ *  to right whatever its language. */
+const pageDir = (doc: VDTDocument): 'ltr' | 'rtl' => (doc.config.direction === 'rtl' ? 'rtl' : 'ltr');
 
 const num = (v: number): string => String(Math.round(v * 10000) / 10000);
 
@@ -190,7 +197,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
         `<link rel="stylesheet" type="text/css" href="../${STYLESHEET_HREF}"/>\n` +
         (styles.length ? `<style>${escapeXml(styles.join('\n'))}</style>\n` : ''),
       bodyAttrs: ` style="width:${geo.width}px;height:${geo.height}px;${bg}"`,
-      body: `<div class="pt-page" id="${escapeAttr(plan.ids[0]!)}" dir="ltr" style="${pageStyle}">${body}</div>`,
+      body: `<div class="pt-page" id="${escapeAttr(plan.ids[0]!)}" dir="${pageDir(doc)}" style="${pageStyle}">${body}</div>`,
     });
     const id = file.replace(/\.xhtml$/, '');
     pageItems.push({ id, href: `${PAGES_DIR}${file}`, mediaType: 'application/xhtml+xml', data: xhtml });
