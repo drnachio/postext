@@ -1819,5 +1819,31 @@
         "zh": "`:::paper`"
       }
     }
+  },
+  "unknownNumerals": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown digit system",
+      "es": "Sistema de cifras desconocido",
+      "zh": "未知的数字系统"
+    },
+    "cause": {
+      "en": "`numerals` holds a value other than `auto`, `latn`, `arab` or `arabext`, so the generated numbers take the digits of the document language instead.",
+      "es": "`numerals` lleva un valor distinto de `auto`, `latn`, `arab` o `arabext`, así que los números que genera el motor toman las cifras del idioma del documento.",
+      "zh": "`numerals`的值不是`auto`、`latn`、`arab`或`arabext`，引擎生成的数字改用文档语言的数字。"
+    },
+    "fix": {
+      "en": "Write `latn` (0–9), `arab` (٠–٩) or `arabext` (۰–۹), or remove the setting to follow the document language.",
+      "es": "Escribe `latn` (0–9), `arab` (٠–٩) o `arabext` (۰–۹), o quita el ajuste para seguir el idioma del documento.",
+      "zh": "改为`latn`（0–9）、`arab`（٠–٩）或`arabext`（۰–۹），或删掉该设置以跟随文档语言。"
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
+      }
+    }
   }
 }
