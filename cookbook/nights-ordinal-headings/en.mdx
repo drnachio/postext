@@ -10,15 +10,15 @@ pageNotes: { "2": "The opener of the Merchant and the Jinni: a pale band ruled i
 
 ## What you'll build
 
-Nine pages from the beginning of the *Thousand and One Nights*: a half-title, then the Merchant and the Jinni, the first tale Shahrazad tells, which runs over three nights. Each night opens with Hindawi’s formula فلما كانت in small Kufi over its number in green Ruqʿa, الليلة الأولى, الليلة الثانية, الليلة الثالثة, written out as the books print it. None of those numbers is in the Markdown: the heading level counts the nights and writes each count as a feminine ordinal, which agrees with ليلة. The tale opens under a gold-ruled headpiece, the three old men’s stories have their own small titles, and the running heads carry the book and the tale. The text is the Hindawi Foundation’s 2022 edition, under CC BY 4.0.
+Ten pages from the beginning of the *Thousand and One Nights*: a half-title, then the Merchant and the Jinni, the first tale Shahrazad tells, which runs over three nights. Each night opens with Hindawi’s formula فلما كانت in small Kufi over its number in green Ruqʿa, الليلة الأولى, الليلة الثانية, الليلة الثالثة, written out as the books print it. None of those numbers is in the Markdown: the heading level counts the nights and writes each count as a feminine ordinal, which agrees with ليلة. The tale opens under a gold-ruled headpiece, the three old men’s stories have their own small titles, and the running heads carry the book and the tale. The text is the Hindawi Foundation’s 2022 edition, under CC BY 4.0.
 
 ## Method
 
 ### 1 · Nights counted in words
 
-The code is [the short answer](#the-short-answer) above. A night is a level-2 heading, `## فلما كانت`, and the level’s `numberingTemplate` is `'الليلة {2:ordinal-feminine}'`: the `-feminine` modifier writes الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinal and cardinal words](/en/docs/arabic-layout#ordinal-and-cardinal-words), [Spelled-out numbers](/en/docs/configuration#spelled-out-numbers)). The design prints `{number}` large and the heading’s own text, Hindawi’s فلما كانت, small above it. The tale headings use a style with `numbered: false`: a numbered level 1 would restart the night count with every tale, while an unnumbered one leaves the deeper counters alone, so the nights run on through the book.
+The code is [the short answer](#the-short-answer) above. A night is a level-2 heading, `## الليلة`, and the level’s `numberingTemplate` is `'الليلة {2:ordinal-feminine}'`: the `-feminine` modifier writes الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinal and cardinal words](/en/docs/arabic-layout#ordinal-and-cardinal-words), [Spelled-out numbers](/en/docs/configuration#spelled-out-numbers)). With `numberPosition: 'replace'` the number is the heading’s whole title: whatever the Markdown says after `##` is dropped, and the heading, the PDF bookmarks and the alt text read الليلة الثانية. The design prints that title, `{titleText}`, large, and Hindawi’s formula فلما كانت, a fixed text, small above it. The tale headings use a style with `numbered: false`: a numbered level 1 would restart the night count with every tale, while an unnumbered one leaves the deeper counters alone, so the nights run on through the book.
 
-<PageShot page={4} crop="0,0.45,1,0.35" caption="Page 4: the second night opens mid-page, its number written out by the template." />
+<PageShot page={5} crop="0,0.15,1,0.35" caption="Page 5: the second night, its number written out by the template and printed as the whole heading." />
 
 ### 2 · A headpiece for each tale
 
@@ -45,8 +45,8 @@ The half-title is a heading style with `span: 'page'`, `numbered: false` and emp
 `{startAt=1001}` on a night heading sets its counter, and the template writes الليلة الحادية بعد الألف ([Heading attributes](/en/docs/document-format#heading-attributes)).
 
 ```diff
--## فلما كانت
-+## فلما كانت {startAt=1001}
+-## الليلة
++## الليلة {startAt=1001}
 ```
 
 ### Spell the hundreds the Bulaq way
@@ -54,8 +54,8 @@ The half-title is a heading style with `span: 'page'`, `numbered: false` and emp
 `-classical` writes مائة for مئة, so the two hundredth night reads الليلة المائتان.
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}', numberPosition: 'replace',
 ```
 
 ### Number chapters in the masculine
@@ -63,6 +63,6 @@ The half-title is a heading style with `span: 'page'`, `numbered: false` and emp
 Without a modifier the ordinal is masculine, for a noun such as الفصل: الفصل الأول، الفصل الثاني.
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الفصل {2:ordinal}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الفصل {2:ordinal}', numberPosition: 'replace',
 ```

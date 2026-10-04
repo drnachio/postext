@@ -10,15 +10,15 @@ pageNotes: { "2": "《商人与魔鬼》的首页：上下饰以金线的浅色�
 
 ## 成品一览
 
-《一千零一夜》开头的九页：一张扉页，然后是山鲁佐德讲的第一个故事《商人与魔鬼》，跨了三夜。每一夜开头都是Hindawi版的套语“فلما كانت”，用小号库法体，下面是绿色鲁格阿体的序号：الليلة الأولى、الليلة الثانية、الليلة الثالثة，像印本那样写成词。这些序号都不在Markdown里：标题级别为每夜计数，再把数写成与“ليلة”一致的阴性序数词。故事在金线题头下开始，三位老人的故事各有小标题，书眉印书名和故事名。正文是Hindawi基金会2022年版，采用CC BY 4.0许可。
+《一千零一夜》开头的十页：一张扉页，然后是山鲁佐德讲的第一个故事《商人与魔鬼》，跨了三夜。每一夜开头都是Hindawi版的套语“فلما كانت”，用小号库法体，下面是绿色鲁格阿体的序号：الليلة الأولى、الليلة الثانية、الليلة الثالثة，像印本那样写成词。这些序号都不在Markdown里：标题级别为每夜计数，再把数写成与“ليلة”一致的阴性序数词。故事在金线题头下开始，三位老人的故事各有小标题，书眉印书名和故事名。正文是Hindawi基金会2022年版，采用CC BY 4.0许可。
 
 ## 做法
 
 ### 1 · 用文字给夜计数
 
-代码见上文的[简短回答](#简短回答)。每一夜是一个二级标题`## فلما كانت`，该级别的`numberingTemplate`是`'الليلة {2:ordinal-feminine}'`：`-feminine`修饰符写出الأولى、الثانية、الحادية عشرة、الحادية بعد الألف（[序数词与基数词](/zh/docs/arabic-layout#序数词与基数词)、[以文字书写的编号](/zh/docs/configuration#以文字书写的编号)）。版面设计把`{number}`排得很大，把标题自己的文字，也就是Hindawi的套语فلما كانت，小字排在上面。故事标题使用一个`numbered: false`的样式：带编号的一级标题会在每个故事开头把夜的计数清零，而不编号的标题不动更低级别的计数器，夜数就能贯穿全书。
+代码见上文的[简短回答](#简短回答)。每一夜是一个二级标题`## الليلة`，该级别的`numberingTemplate`是`'الليلة {2:ordinal-feminine}'`：`-feminine`修饰符写出الأولى、الثانية、الحادية عشرة、الحادية بعد الألف（[序数词与基数词](/zh/docs/arabic-layout#序数词与基数词)、[以文字书写的编号](/zh/docs/configuration#以文字书写的编号)）。`numberPosition: 'replace'`让序号成为整个标题：Markdown里`##`后面写的文字被舍弃，标题、PDF书签和替代文字都读作الليلة الثانية。版面设计把这个标题`{titleText}`排得很大，把Hindawi的套语فلما كانت作为固定文字，小字排在上面。故事标题使用一个`numbered: false`的样式：带编号的一级标题会在每个故事开头把夜的计数清零，而不编号的标题不动更低级别的计数器，夜数就能贯穿全书。
 
-<PageShot page={4} crop="0,0.45,1,0.35" caption="第4页：第二夜在页中开始，序号由模板写成文字。" />
+<PageShot page={5} crop="0,0.15,1,0.35" caption="第5页：第二夜，序号由模板写成文字，并作为整个标题印出。" />
 
 ### 2 · 每个故事的题头
 
@@ -45,8 +45,8 @@ pageNotes: { "2": "《商人与魔鬼》的首页：上下饰以金线的浅色�
 在夜标题上加`{startAt=1001}`设定它的计数，模板就写出الليلة الحادية بعد الألف（[标题属性](/zh/docs/document-format#标题属性)）。
 
 ```diff
--## فلما كانت
-+## فلما كانت {startAt=1001}
+-## الليلة
++## الليلة {startAt=1001}
 ```
 
 ### 按布拉克的写法拼百位数
@@ -54,8 +54,8 @@ pageNotes: { "2": "《商人与魔鬼》的首页：上下饰以金线的浅色�
 `-classical`把مئة写成مائة，第二百夜就成了الليلة المائتان。
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}', numberPosition: 'replace',
 ```
 
 ### 用阳性给章节编号
@@ -63,6 +63,6 @@ pageNotes: { "2": "《商人与魔鬼》的首页：上下饰以金线的浅色�
 不加修饰符时序数词是阳性，配الفصل这样的名词：الفصل الأول、الفصل الثاني。
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الفصل {2:ordinal}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الفصل {2:ordinal}', numberPosition: 'replace',
 ```

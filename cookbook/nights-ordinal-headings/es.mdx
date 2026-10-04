@@ -10,15 +10,15 @@ pageNotes: { "2": "La apertura de El mercader y el genio: una banda pálida entr
 
 ## Lo que vas a componer
 
-Nueve páginas del comienzo de las *Mil y una noches*: una portadilla y El mercader y el genio, el primer cuento que narra Sherezade, que ocupa tres noches. Cada noche se abre con la fórmula de Hindawi, فلما كانت, en cúfica pequeña sobre su número en ruqʿa verde, الليلة الأولى, الليلة الثانية, الليلة الثالثة, escrito con letras como lo imprimen los libros. Ninguno de esos números está en el Markdown: el nivel de título cuenta las noches y escribe cada número como ordinal femenino, que concuerda con ليلة. El cuento se abre bajo una cabecera entre filetes dorados, los relatos de los tres ancianos llevan sus propios títulos pequeños, y las cabeceras de página llevan el libro y el cuento. El texto es la edición de 2022 de la Fundación Hindawi, con licencia CC BY 4.0.
+Diez páginas del comienzo de las *Mil y una noches*: una portadilla y El mercader y el genio, el primer cuento que narra Sherezade, que ocupa tres noches. Cada noche se abre con la fórmula de Hindawi, فلما كانت, en cúfica pequeña sobre su número en ruqʿa verde, الليلة الأولى, الليلة الثانية, الليلة الثالثة, escrito con letras como lo imprimen los libros. Ninguno de esos números está en el Markdown: el nivel de título cuenta las noches y escribe cada número como ordinal femenino, que concuerda con ليلة. El cuento se abre bajo una cabecera entre filetes dorados, los relatos de los tres ancianos llevan sus propios títulos pequeños, y las cabeceras de página llevan el libro y el cuento. El texto es la edición de 2022 de la Fundación Hindawi, con licencia CC BY 4.0.
 
 ## Elaboración
 
 ### 1 · Noches contadas con letras
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Una noche es un título de nivel 2, `## فلما كانت`, y el `numberingTemplate` del nivel es `'الليلة {2:ordinal-feminine}'`: el modificador `-feminine` escribe الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinales y cardinales con letras](/es/docs/arabic-layout#ordinales-y-cardinales-con-letras), [Números con letras](/es/docs/configuration#números-con-letras)). El diseño imprime `{number}` en grande y, encima y en pequeño, el texto del propio título, la fórmula فلما كانت de Hindawi. Los títulos de los cuentos usan un estilo con `numbered: false`: un nivel 1 numerado reiniciaría la cuenta de noches con cada cuento, mientras que uno sin número deja en paz los contadores inferiores, y las noches siguen corriendo por todo el libro.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Una noche es un título de nivel 2, `## الليلة`, y el `numberingTemplate` del nivel es `'الليلة {2:ordinal-feminine}'`: el modificador `-feminine` escribe الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinales y cardinales con letras](/es/docs/arabic-layout#ordinales-y-cardinales-con-letras), [Números con letras](/es/docs/configuration#números-con-letras)). Con `numberPosition: 'replace'` el número es el título entero: lo que el Markdown escriba tras `##` se descarta, y el título, los marcadores del PDF y el texto alternativo dicen الليلة الثانية. El diseño imprime ese título, `{titleText}`, en grande y, encima y en pequeño, la fórmula فلما كانت de Hindawi, un texto fijo. Los títulos de los cuentos usan un estilo con `numbered: false`: un nivel 1 numerado reiniciaría la cuenta de noches con cada cuento, mientras que uno sin número deja en paz los contadores inferiores, y las noches siguen corriendo por todo el libro.
 
-<PageShot page={4} crop="0,0.45,1,0.35" caption="Página 4: la segunda noche empieza a media página, con su número escrito por la plantilla." />
+<PageShot page={5} crop="0,0.15,1,0.35" caption="Página 5: la segunda noche, con su número escrito por la plantilla e impreso como título entero." />
 
 ### 2 · Una cabecera para cada cuento
 
@@ -45,8 +45,8 @@ La portadilla es un estilo de título con `span: 'page'`, `numbered: false` y ca
 `{startAt=1001}` en un título de noche fija su contador, y la plantilla escribe الليلة الحادية بعد الألف ([Atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)).
 
 ```diff
--## فلما كانت
-+## فلما كانت {startAt=1001}
+-## الليلة
++## الليلة {startAt=1001}
 ```
 
 ### Escribe las centenas a la manera de Bulaq
@@ -54,8 +54,8 @@ La portadilla es un estilo de título con `span: 'page'`, `numbered: false` y ca
 `-classical` escribe مائة en lugar de مئة, y la noche doscientos se lee الليلة المائتان.
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}', numberPosition: 'replace',
 ```
 
 ### Numera capítulos en masculino
@@ -63,6 +63,6 @@ La portadilla es un estilo de título con `span: 'page'`, `numbered: false` y ca
 Sin modificador el ordinal es masculino, para un sustantivo como الفصل: الفصل الأول، الفصل الثاني.
 
 ```diff
--  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
-+  level: 2, numberingTemplate: 'الفصل {2:ordinal}',
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الفصل {2:ordinal}', numberPosition: 'replace',
 ```

@@ -26,22 +26,23 @@ const colorPalette = [
 const NASKH = 'Amiri'; // the text and the sub-tale titles
 const RUQAA = 'Aref Ruqaa'; // display: the book, the tale, the nights
 const KUFI = 'Noto Kufi Arabic'; // labels: kickers, running heads, folios
-const [SIZE, LEAD] = [13, 21]; // pt: lightly vocalised prose at 1.6 × the size
+const [SIZE, LEAD] = [13, 26]; // pt: 2 × the size: a ḍamma over a hamza clears the line above
 const [OUTER, TOP] = [18, 22]; // mm: a 17 × 24 cm book
 const top = (y) => ({ anchor: { to: 'container', edge: 'top' }, offset: { y: mm(y) } });
 
 // #region answer: the night's number in feminine ordinal words, from a level template
-// In the Markdown a night is a level-2 heading with no number: ## فلما كانت
+// In the Markdown a night is a level-2 heading with no number: ## الليلة
 // The level's template writes الليلة and the counter as a feminine ordinal, which agrees
 // with the noun: الليلة الأولى، الليلة الثانية، الليلة الثالثة … الليلة الحادية بعد الألف.
-// The design prints Hindawi's formula above it, from the heading's own text.
+// numberPosition 'replace' makes that number the whole title, so the heading, the PDF
+// bookmarks and the alt text read الليلة الثانية. Hindawi's formula is a fixed design text.
 const nights = {
-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}',
+  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
   marginTop: pt(LEAD), marginBottom: pt(LEAD / 2),
   advancedDesign: { enabled: true, minHeight: mm(18), slot: { elements: [
-    { kind: 'text', id: 'formula', content: '{titleText}', fontFamily: KUFI, fontWeight: 500,
+    { kind: 'text', id: 'formula', content: 'فلما كانت', fontFamily: KUFI, fontWeight: 500,
       fontSize: pt(8), align: 'center', color: col('muted'), placement: top(0) },
-    { kind: 'text', id: 'night', content: '{number}', fontFamily: RUQAA, fontWeight: 700,
+    { kind: 'text', id: 'night', content: '{titleText}', fontFamily: RUQAA, fontWeight: 700,
       fontSize: pt(21), lineHeight: 1.2, align: 'center', color: col('accent'),
       placement: top(4.5) },
     { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(0.6), color: col('gold'),

@@ -101,7 +101,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     backgroundColor: col('paper'), margins: { top: mm(M.top), bottom: mm(M.bottom),
       left: mm(M.inner), right: mm(M.outer), mirror: true } },
   layout,
-  bodyText: { fontFamily: NASKH, fontSize: pt(12.5), lineHeight: pt(20.5), color: col('ink'),
+  bodyText: { fontFamily: NASKH, fontSize: pt(12.5), lineHeight: pt(22), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.2), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true },

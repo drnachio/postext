@@ -25,9 +25,9 @@ const colorPalette = [
 const NASKH = 'Amiri'; // text, notes, headings in bold, running heads, index
 const RUQAA = 'Aref Ruqaa'; // display: the title on the title page
 const [W, H] = [170, 240]; // mm: 17 × 24 cm, the size of most Cairo and Beirut editions
-const [TOP, INNER, OUTER] = [24, 20, 16]; // mm; `left` is the inner margin on both pages
+const [TOP, INNER, OUTER] = [22, 20, 16]; // mm; `left` is the inner margin on both pages
 const MEASURE = W - INNER - OUTER; // 134 mm
-const [SIZE, LEAD] = [13, 21.5]; // pt: unvocalised prose at 1.65 × the size
+const [SIZE, LEAD] = [13, 22.5]; // pt: 1.73 ×, so the few vowels marked clear the line above
 
 // #region answer: abjad folios for the front matter, Arabic-Indic from the text, notes (١)
 // The page counter starts in abjad letters: the title page is أ, its back ب, the editor's
@@ -42,7 +42,7 @@ const pageNumbering = { format: 'abjad', startAt: 1 }; // أ ب ج د هـ و ز
 // number stand on the start side, the right, because the page runs right to left.
 const footnotes = {
   numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline',
-  fontSize: pt(10.5), lineHeight: pt(16.5), color: col('ink'), textAlign: 'justify',
+  fontSize: pt(10.5), lineHeight: pt(18.5), color: col('ink'), textAlign: 'justify',
   spaceAbove: pt(14), spaceBelowRule: pt(6),
   separator: { width: 0.28, lineWidth: pt(0.6), color: col('rule') },
 };
@@ -139,7 +139,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   locale: 'ar', // right to left, bound on the right, digits ٠–٩ (gotcha: arabic-locale-tag)
   colorPalette,
   page: { width: mm(W), height: mm(H), dpi: 150, backgroundColor: col('paper'), pageNumbering,
-    margins: { top: mm(TOP), bottom: mm(22), left: mm(INNER), right: mm(OUTER), mirror: true } },
+    margins: { top: mm(TOP), bottom: mm(20), left: mm(INNER), right: mm(OUTER), mirror: true } },
   layout: { layoutType: 'single' },
   bodyText: { fontFamily: NASKH, fontSize: pt(SIZE), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
