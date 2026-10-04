@@ -1,0 +1,56 @@
+---
+title: "Un artículo académico árabe con notas, citas e índice"
+summary: "Artículo de revista árabe: notas «(١)» por página, citas CSL entre ellas con la configuración regional árabe y un índice que ordena sin el artículo ال."
+plain: "Cinco páginas de una revista académica árabe: el artículo, sus notas al pie, la lista de referencias y un índice. El índice pone الكشيدة bajo ك, como los índices árabes, y no bajo el artículo ال."
+description: "Un artículo de revista árabe en Postext: notas «(١)» por página, notas Chicago con la configuración regional ar, bibliografía e índice con index.ignoreArticle."
+question: "¿Cómo cito las fuentes en un artículo árabe, con notas al pie y bibliografía?"
+aliases: ["artículo árabe", "revista árabe", "notas al pie en árabe", "citas en árabe", "CSL árabe", "índice árabe", "ignoreArticle", "artículo al-", "ال", "orden hiyaí", "Amiri", "فهرس", "حواشي", "المراجع"]
+pageNotes: { "1": "La primera página del artículo: el nombre de la revista en rojo oscuro y el número, un filete fino, el título en dos líneas centradas de Amiri negrita, la autora y su universidad, un recuadro rosa con el resumen bajo ملخص y después el título de sección ١- المقدمة y las primeras líneas.", "5": "El índice en su propia página: el título فهرس الأعلام والموضوعات a toda página y dos columnas de entradas que empiezan por la derecha, agrupadas bajo letras rojas ا, ب, ت, ج…; الكشيدة está bajo ك con su página en negrita y una remisión." }
+---
+
+## Lo que vas a componer
+
+Cinco páginas de un número de una revista árabe imaginaria, en 17 × 24 cm y a partir de la página 87: un artículo sobre si la justificación con cachida hace más lenta la lectura, compuesto en Amiri de 12 pt con los títulos de sección en Noto Kufi Arabic. Las notas van al pie de cada página y se numeran «(١)», «(٢)» desde uno en cada página, como las numeran las revistas árabes; las citas, escritas `[@ayalon2016]` en el Markdown, también son notas, con el estilo de notas de Chicago y la configuración regional árabe de CSL. Sigue la lista de referencias, primero las obras árabes, y cierra un índice a dos columnas. El índice pone الكشيدة bajo ك y الصحف اليومية bajo ص: el artículo ال no cuenta. <RecipeLink slug="history-essay-chicago-notes">El ensayo de historia con notas de Chicago</RecipeLink> hace lo mismo en inglés.
+
+## Elaboración
+
+### 1 · Notas, citas e índice en un mismo sitio
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Los ajustes de las notas son los tres que piden los libros árabes: `markerTemplate: '({n})'` para los paréntesis, `numbering: 'page'` para volver a empezar en cada página y `noteNumberPosition: 'inline'` para que la nota empiece con «(١)» en su línea; las cifras son las del documento y el filete queda a la derecha ([Notas al pie](/es/docs/arabic-layout#notas-al-pie)). Las citas comparten la numeración de las notas. `citations.locale: 'ar'` da los términos de CSL en árabe, como عدد para el número de una revista. `index.ignoreArticle` ordena cada entrada por la palabra que sigue a ال y unifica las formas de la hamza, así que أميري y الأعمدة van las dos bajo ا ([Índice general e índice analítico](/es/docs/arabic-layout#índice-general-e-índice-analítico)); viene activado para un índice árabe y aquí se escribe para que se vea.
+
+<PageShot page={5} crop="0,0.12,1,0.6" caption="El índice: dos columnas desde la derecha, letras en rojo y الكشيدة bajo ك con una remisión." />
+
+### 2 · Una cabecera de artículo sin franja
+
+<Excerpt region="masthead" />
+
+El título del artículo es el título de primer nivel, dibujado por un diseño: el nombre y el número de la revista, un filete fino, el título en dos líneas centradas y la autora. La línea del número está tecleada con cifras arábigo-índicas, porque el atributo de un diseño es texto del autor y el motor no lo reescribe. La numeración empieza en la 87 (`page.pageNumbering.startAt`), así que los folios dicen dónde está el artículo dentro del número.
+
+### 3 · Cabeceras desde la esquina exterior
+
+<Excerpt region="heads" />
+
+Las páginas derechas llevan el nombre de la revista y las izquierdas la autora y un título abreviado, cada una con su folio en la esquina exterior. Los elementos de la cabecera conservan sus lados físicos, así que la página par, que en esta encuadernación queda a la derecha, se ancla a `top-right`.
+
+## Variantes
+
+### Numera las notas a lo largo del artículo
+
+Muchas revistas árabes modernas numeran las notas por artículo en lugar de por página.
+
+```diff
+-  numbering: 'page', // from (١) again on every page, as Arabic journals number them
++  numbering: 'chapter',
+```
+
+### Cita con autor y año
+
+```diff
+-  style: 'chicago-notes-bibliography', notes: 'footnote', locale: 'ar',
++  style: 'apa', locale: 'ar',
+```
+
+## Errores frecuentes
+
+- La puntuación que escribe un estilo CSL es la del estilo: las comas, los puntos y coma y las comillas entre las partes de una nota son latinos, como en الهاشمي, الحرف العربي. Las fechas y los números salen de los datos, así que las obras árabes llevan `issued: {literal: "٢٠١٩"}` y localizadores como `[@hashimi2019, ٧٧]`; las obras latinas conservan 0–9.
+- Una nota o una referencia a una obra latina va en la dirección de la página árabe: su punto final queda en el extremo izquierdo de la línea.
