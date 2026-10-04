@@ -6160,7 +6160,7 @@ stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
 // => { paper: { type: 'bible' } }
 ```
 
-在沙盒中，这些设置位于 **导出 → 书页视图（3D）**。视图本身见[3D书本](#3d书本postext-folio)。
+在沙盒中，这些设置是版面设计面板中的**Folio**组（**版面设计 → Folio → 书页视图（3D）**）。修改时书页标签页会随即显示效果，不必重新排版。查看器本身见[3D书本](#3d书本postext-folio)；要让一段页面换用另一种纸，见[文档格式 › `:::paper`](/zh/docs/document-format#paper)。
 
 
 ## 调试
@@ -7598,7 +7598,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 
 ## 3D书本（`postext-folio`）
 
-`postext-folio`把排好的文档以书本的形式呈现在屏幕上：按右页规则成对展开，读者可以用‹ ›按钮、方向键、滑动、点击页面，或抓住页边拖过去来翻页。每一页都在three.js中卷曲，并在下方页面上投下真实的阴影。WebGL画布在静止和翻页时都绘制书本，所以页面落下时外观不会变化。它是食谱页面和沙盒**书页**标签页使用的查看器。
+`postext-folio`把排好的文档呈现为一本印好的书，摊开放在桌面上：按右页规则成对展开，读者可以用‹ ›按钮、方向键、滑动、点击页面，或抓住页边拖过去来翻页。每一页都在three.js中按其纸张卷曲，并在下方页面上投下真实的阴影。WebGL画布在静止和翻页时都绘制书本，所以页面落下时外观不会变化。它是食谱页面和沙盒**书页**标签页使用的查看器。
 
 ```bash
 npm install postext postext-folio three
@@ -7617,14 +7617,61 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面所在位置的设备像素精确绘制每一页（WebGL因此逐像素显示，与画布预览一样清晰），而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。
-- **书本由文档决定。** 第一页是右页（`pageIndexOffset`为偶数）时单独显示在右侧；右侧装订的书（`page.binding: 'right'`，或竖排文档）呈镜像，向左翻页；空白页使用页面的背景色。
-- **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）。
+- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面所在位置的设备像素精确绘制每一页（WebGL因此逐像素显示，与画布预览一样清晰），而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。`setDocument`会保留新版面中内容不变的每一页的绘制结果（图片载入之后，用`{ repaint: true }`全部重新绘制）。
+- **书本由文档决定。** 第一页是右页（`pageIndexOffset`为偶数）时单独显示在右侧；右侧装订的书（`page.binding: 'right'`，或竖排文档）呈镜像，向左翻页；空白页使用页面的背景色；页面的成品宽度（`pageWidthMm`）决定纸张厚度和封面纸板的比例。用`continuation`排出的一章，会把书中其余的页（它之前的`pageIndexOffset`页，之后到`bookPageCount`为止的页）计入两侧书芯的厚度，但不绘制它们（`extraPages`）。
+- **外观由文档决定。** 纸张、装订、桌面和光照来自文档的[`folio`设置](#书页视图配置)（`doc.config.folio`）。排在`:::paper`段落中的页面带有自己的纸张（`VDTPage.paper`），这一叶按该纸张的颜色、表面、厚度和挺度绘制。设置`binding.cover: 'pages'`时，第一页是封面纸板，最后一页（落在左页时）是封底纸板（`covers`）。
+- **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）：书脊沿页面内侧边缘，书页绕着它翻动；朝书脊方向拖动向前翻，背离书脊滑动向后翻，轻点则翻页。
+- **读者可以绕着书看。** 按住右键拖动可让视角绕书旋转（最低到偏离正上方70°），翻页过程中也可以；`resetView()`把视角平缓地恢复到设置中的`tilt`。沙盒把它做成了**重置视角**按钮。
 - **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。
 - **无障碍。** 查看器是可获得焦点的组，响应←/→（右侧装订的书方向相反）、Page Up/Down、Home和End；按钮和页码都有标签（用`labels`翻译），每个页面画布都带有替代文本（`alt: (index) => …`）。
-- **没有WebGL2**，或读者要求减少动画时，展开页直接切换。
+- **没有WebGL2**，或读者要求减少动画时，展开页直接切换。WebGL书本对手机来说负担很重（每个页面的每一面都要一张纹理）：沙盒只在支持WebGL2、且屏幕短边至少600像素的地方提供书页标签页。`canFlip()`表明此处书页能否以3D方式翻动：需要WebGL2，且没有要求减少动画。
 
-`createFolio(container, { pages })`是同一个查看器，可用于任意页面：图片URL、`<img>`或`<canvas>`元素，以及表示空白页的`""`。`PageFlipper`是单独的three.js引擎，供自己排布展开页DOM的宿主使用，食谱页面就是这样做的。
+### 外观
+
+`appearance`选项，以及之后调用的`setAppearance`，会覆盖文档中的设置。没有给出的部分沿用文档的设置：
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  appearance: {
+    folio: {
+      tilt: 22,
+      paper: { type: 'bookWove', texture: 'laid' },
+      binding: { type: 'hardcover', coverColor: { hex: '#5a1f1f', model: 'hex' } },
+      surface: { type: 'walnut' },
+      lighting: { environment: 'lamp' },
+    },
+    // 实拍桌面：目录结构与postext.dev的/folio/textures/相同
+    //（manifest.json，每种桌面一个文件夹）。不设置时使用程序生成的贴图。
+    textureBaseUrl: '/folio/textures',
+    // `folio.binding.spineImage`所指的图片：资源的URL，
+    // 或已绘制的画布或图片。
+    spineImage: spineUrl,
+  },
+});
+
+// 设置面板：书本就地重绘，页面不重新绘制。
+book.setAppearance({ folio: { ...folio, lighting: { environment: 'daylight' } } });
+book.resetView();
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>字段</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>folio</code></td><td><a href="#书页视图配置"><code>folio</code>设置</a>：倾斜角、纸张、装订、台面、光照。给出时取代文档的设置。</td></tr>
+    <tr><td><code>pageWidthMm</code></td><td>页面的成品宽度（毫米），纸张厚度和封面纸板按它缩放。取自文档时，是按其dpi换算的裁切后页面宽度。<code>createFolio</code>默认为150。</td></tr>
+    <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>：给定页面之外的书页数，计入书芯的厚度，从不绘制。</td></tr>
+    <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>：给定的第一页是封面，最后一页（落在左页时）是封底。它们像纸板一样翻动，不绘制书壳。取自文档时：书从第一页开始、到最后一页结束，且设置了<code>binding.cover: 'pages'</code>。</td></tr>
+    <tr><td><code>spineImage</code></td><td>印在书脊上的图片，可以是URL、画布或图片。<code>createFolioFromDocument</code>不查找资源：请传入<code>folio.binding.spineImage</code>所指资源的图片。骑马钉时忽略。</td></tr>
+    <tr><td><code>textureBaseUrl</code></td><td>实拍桌面纹理的提供位置。纹理载入之前，或不设置时，桌面用程序生成的贴图绘制。</td></tr>
+  </tbody>
+</table>
+
+`createFolio(container, { pages })`是同一个查看器，可用于任意页面：图片URL、`<img>`或`<canvas>`元素，以及表示空白页的`""`；页面也可以写成`{ src, alt, paper }`，其中`paper`是这一叶所用的纸张，写法同`:::paper`。`PageFlipper`是单独的three.js引擎，供自己排布展开页DOM的宿主使用；`FlatPageFlipper`是3D书本出现之前的平面翻页效果，保留给食谱页面的看片台使用。完整的选项列表见[软件包README](https://www.npmjs.com/package/postext-folio)。
 
 ### 在线示例：3D书本
 

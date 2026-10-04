@@ -221,6 +221,15 @@ per-resource `placement`:
 Floats of one numbering sequence never overtake each other. Resources are
 numbered by their first mention.
 
+## 7a. The printed object
+
+For the Folio viewer (`config.folio`, playbooks A11), note from the
+colophon, the spec sheet or the book in hand: the paper (stock, g/m², shade:
+cream or white), the binding (case, glued, sewn, stapled), the cover
+(material and colour, or the cover pages themselves), the spine (an image
+to cut, its thickness in mm) and any inserts on another paper (which pages).
+None of it changes the layout.
+
 ## 8. Write it down
 
 Spec sheet skeleton (keep it as comments and constants in `build_preset.py`):
@@ -234,4 +243,5 @@ BODY = ("Minion Pro", 9.5, 11.5)       # face, size pt, leading pt; justified, i
 H1 = ("Myriad Pro", 24, "band")        # opener: band 0-45 mm bleed, number 60 pt white at x=20 y=18
 H2 = ("Myriad Pro Bold", 11, "main-color")  # 2 lines above, 1 below (grid)
 # Palette sampled on p. 35 (tab) and pp. 36, 112, 260, 410 (part colours)
+# Object: 80 g/m2 cream book wove (colophon p. 4), sewn softcover, spine 22 mm (measured): folio below
 ```

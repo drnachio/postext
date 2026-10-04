@@ -231,6 +231,51 @@ the text and never copies the printed numbers (document-format.md §10.5).
   after a colon or in captions, an index never printed), then render and
   compare a few entries with the printed index.
 
+### A11. The printed object (Folio 3D viewer)
+
+The Sandbox's Folio tab and `postext-folio` show the port as a bound book
+on a desk. Its look is `config.folio` (configuration.md §21); layout never
+reads it, so set it from facts, not taste.
+
+- **Paper.** Read the colophon or imprint page ("printed on 80 g/m² Munken
+  Premium Cream", "papel estucado mate de 115 g"), the publisher's spec
+  sheet, or the source PDF's metadata. Map it to the nearest stock and set
+  `grammage` when the sheet gives one: cream/natural book paper →
+  `bookWove`; white offset → `uncoated`; art books and catalogues →
+  `coatedMatte`/`coatedSilk` (130–170 g/m²); magazines → `coatedGloss`
+  (70–100 g/m²); pocket classics and dictionaries → `bible`; board books →
+  `board`. With a measured book: `bulk` = spine thickness (µm) ÷ leaves ÷
+  grammage, so the page block in the viewer is as thick as the real one.
+- **Binding.** Case-bound with boards → `hardcover`; glued softcover →
+  `paperback`; sewn softcover (opens flat-ish) → `sewn`; spiral/lay-flat →
+  `layflat`; stapled through the fold (magazines, booklets, programmes) →
+  `saddleStitch` (no spine image then).
+- **Covers.** When the port includes the cover as its first page (A1) and,
+  for an even page count, the back cover as the last, set
+  `binding.cover: "pages"`: the book lies closed on it and opens as the
+  reader turns it. Otherwise keep `"case"` and set `coverColor` (and
+  `coverMaterial`) from the real case.
+- **Spine.** Cut or draw the spine as its own resource (`::resource` is not
+  needed: a resource listed in the manifest is enough) and name it in
+  `binding.spineImage`: the spine as seen with the book standing, head up,
+  front cover to the right. Proportions: spine thickness × page height.
+- **Plate sections.** Pages printed on another stock in the source (a
+  gloss insert in a matte book, card dividers) → `:::paper{type=coatedGloss
+  grammage=130}` around their content (document-format.md §7.5). The run
+  starts and ends on a page break, as a real insert does.
+- **Desk and light** are presentation: a neutral `oak`/`studio` default is
+  fine; match the book's mood only when the user asks.
+- **Check:** `lint_project.py` validates every key, enum, range and the
+  spine resource; then open the Folio tab: orbit with a right-drag to see
+  the spine and the block, turn the cover, and check the thickness against
+  the real book.
+
+All seven public presets set `folio` (section H): `deep-sky` and
+`bioquimica-feduchi` are saddle-stitched on gloss/silk, `don-quijote` a
+hardcover on laid book wove with its own covers and a spine image,
+`hongloumeng` sewn on bible paper, `pintura-espanola` lay-flat on 170 g
+matte, `openstax-fisica` and `senales` paperbacks.
+
 ---
 
 ## B. Text

@@ -233,12 +233,18 @@ embeds them with `::resource{id="…"}` (placement `here`).
 ## 6. Rendering headlessly
 
 `scripts/render.mjs` lays the project out in Node with the real engine and the
-bundle's own fonts, prints warnings and writes a PDF (+ page PNGs):
+bundle's own fonts, prints warnings, and writes chosen pages as JPEGs
+(painted by the engine's canvas renderer) and/or a PDF:
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
-node render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/my-book-pages --dpi 60
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
+node render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15     # the pages that print 12–15 → /tmp/pages/page-NNN.jpg
+node render.mjs book.postext --jpeg /tmp/pages --pages '#1'            # a packed bundle works too; '#n' = n-th page of the layout
+node render.mjs my-book --lang es --out /tmp/my-book.pdf               # the PDF, for print checks
 ```
+
+The JPEGs are the way to look at pages while iterating (verification.md §2);
+`--png` rasterises the PDF instead and needs poppler.
 
 It mirrors the sandbox loader (defaults ← config ← localized config; chapters
 joined like the book view). A manifest without `configVersion` is read as the

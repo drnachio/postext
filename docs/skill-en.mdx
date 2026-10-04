@@ -71,7 +71,10 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
     what to ask in the brief (script, region, direction, binding), how to
     measure a grid of characters, how to read vertical PDFs, InDesign ruby
     and warichu, Word's East Asian layout and right-to-left EPUBs, and how to
-    cut CJK fonts to the book (see [Chinese layout](/en/docs/chinese-layout)).
+    cut CJK fonts to the book (see [Chinese layout](/en/docs/chinese-layout));
+  - the printed object: how to read the paper, binding, covers and spine of
+    the source and set them as the `folio` settings that the [Folio viewer](/en/docs/sandbox#folio-tab)
+    shows, checked by the linter.
 - **Scripts** (Python and Node), described in the next section.
 
 ## Scripts
@@ -95,8 +98,8 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts (a Chinese face cut to the book's characters keeps its vertical forms and metrics); convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
     <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set</td></tr>
-    <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, prints warnings and writes the PDF</td></tr>
-    <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, and prints warnings. With <code>--jpeg</code> it paints the pages you ask for (<code>--pages 12-15</code>) as JPEG files with the engine's own canvas renderer, in a second or two, so the agent looks at its pages without building a PDF; <code>--out</code> writes the PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side, from the render's PDF or its folder of JPEGs</td></tr>
   </tbody>
 </table>
 
@@ -162,12 +165,13 @@ brew install pandoc poppler
 ```
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
 ```
 
 Pandoc is needed for Word, PowerPoint, EPUB and HTML sources, and poppler for
-page images. The Node packages power the headless renderer (Node 22.15 or
-newer). Optional tools: `ocrmypdf` for scans, ImageMagick, and veraPDF for
+the source's page images. The Node packages power the headless renderer (Node 22.15 or
+newer); `@napi-rs/canvas` is a prebuilt canvas that lets it paint the book's
+pages straight to JPEG. Optional tools: `ocrmypdf` for scans, ImageMagick, and veraPDF for
 PDF/UA checks.
 
 ## Using it
@@ -197,10 +201,12 @@ The agent follows the workflow:
    curates them into Postext Markdown: callouts, paragraph styles, parts,
    heading attributes for openers, `:ref` citations, table and figure
    resources.
-5. **Verification.** It lints the project, lays it out headlessly and
-   compares it with the source page by page until page breaks, figures and
-   boxes match.
-6. **Delivery.** It packs `my-book.postext`.
+5. **Verification.** It lints the project, lays it out headlessly, renders
+   the pages it is working on as JPEGs and looks at them, and compares them
+   with the source page by page until page breaks, figures and boxes match.
+   The PDF is built for the print checks, not for every look.
+6. **Delivery.** It sets the book's paper, binding and covers for the Folio
+   viewer and packs `my-book.postext`.
 
 Open the result in the [Sandbox](/en/sandbox): **Books → New → Open a .postext file…**.
 The import takes the chapters and wording of the sandbox's language. To work

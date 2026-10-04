@@ -35,8 +35,51 @@ Read every WARN:
 ## 2. Headless layout
 
 ```bash
-node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/pages --dpi 50
+node scripts/render.mjs my-book --lang es                                   # layout + diagnostics only
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15   # + those pages as JPEGs
+node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf            # + the PDF (print checks)
 ```
+
+### Page JPEGs (the inner loop)
+
+`--jpeg DIR` paints pages with the engine's own canvas renderer
+(`renderPageToCanvas` on `@napi-rs/canvas`, the Sandbox Canvas tab's
+painter) and writes `DIR/page-NNN.jpg`, NNN the page's position in the
+layout. Open the files to look at them. Options:
+
+- `--pages 12-15,20`: pages by the number they print; `--pages '#3'` or
+  `'#3-6'`: by position in the layout (front matter in roman numerals and
+  restarted numbering repeat printed numbers; the log line of each file
+  gives both). Without `--pages`, every page.
+- `--dpi 100` (default): body text readable; 150–200 to check hairlines,
+  kerning or a formula; 50 for a contact look at a whole chapter.
+- `--quality 85` (default): JPEG quality.
+- `--chapters 0,3`: lay out those chapter files only (indexes into the
+  manifest's list), joined into one flow numbered from 1.
+
+Requires `npm i @napi-rs/canvas` in the tools folder (the script says so if
+it is missing). Images are decoded by Skia: bitmaps and SVGs both paint;
+`JPEG-WARN … does not decode` names a file to convert. Use the JPEGs for
+every look while iterating; the PDF (`--out`, `--png`) is for the print
+checks in §5 and the final hand-off. `--png` rasterises the PDF with
+pdftoppm and is slower.
+
+In your own Node code the same takes a few lines (after `render.mjs`'s
+resolve hook, fonts measured as it does):
+
+```js
+import { createCanvas, GlobalFonts, loadImage } from '@napi-rs/canvas';
+import { renderPageToCanvas, registerResourceImage } from 'postext';
+
+GlobalFonts.register(fontBytes, 'EB Garamond');            // every bundled face, under its family
+registerResourceImage('resources/fig.svg', await loadImage(svgBytes), { vector: true });
+globalThis.OffscreenCanvas = class { constructor(w, h) { return createCanvas(w, h); } };
+const canvas = createCanvas(1, 1);
+renderPageToCanvas(doc.pages[11], doc, canvas, { scale: 100 / doc.config.page.dpi });
+writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
+```
+
+### What the log says
 
 - `layout: N pages, converged=true`: `converged=false` means the TOC or page
   labels did not settle. Look for a heading design that changes height with
@@ -74,6 +117,9 @@ node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf --png /tmp/page
 
 ## 3. Compare with the source, page by page
 
+`compare_pages.py` takes the render as a PDF or as the `--jpeg` folder
+(`--render-pages` then counts layout positions, as the file names do).
+
 ```bash
 python3 scripts/compare_pages.py source.pdf /tmp/my-book.pdf \
     --source-pages 23-40 --render-pages 1-18 --out /tmp/cmp --sheet
@@ -105,8 +151,9 @@ Chinese books, page by page:
 ## 4. The real viewer
 
 Open the project in the sandbox: import the `.postext` (`preset_kit.py pack`),
-or serve the presets folder. Check the canvas, the HTML viewer and the PDF
-tab. The sandbox shows its own warnings panel: loose lines, heading
+or serve the presets folder. Check the canvas, the HTML viewer, the Folio
+tab (the book bound, on its `config.folio` paper: cover, spine image,
+`:::paper` plate sections, thickness) and the PDF tab. The sandbox shows its own warnings panel: loose lines, heading
 hierarchy, design anchors and placeholders, parity issues. The PDF tab's
 output is the reference; headless metrics can differ slightly.
 

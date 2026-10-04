@@ -107,7 +107,7 @@ Conversion at `page.dpi` (default 300):
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
-| `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, paper stock, binding, surface, lighting |
+| `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, paper stock, binding (type, covers, spine image), surface, lighting |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
@@ -1084,10 +1084,64 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 `{ parts: { page: false }, headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: {…screen opener…} } }] } }`.
 The HTML viewer also turns on `layout.fitFiguresToPage` itself.
 
-`folio` (the Folio 3D viewer, `postext-folio`; canvas, PDF and HTML ignore it):
-`{ tilt = 22 (degrees, 0–40), paper: { type = 'uncoated'|'bookWove'|'coatedMatte'|'coatedSilk'|'coatedGloss'|'bible'|'newsprint'|'cardStock'|'board', grammage (g/m²), bulk (cm³/g), finish = 'auto'|'uncoated'|'matte'|'silk'|'gloss', texture = 'auto'|'smooth'|'vellum'|'wove'|'laid'|'linen'|'felt', textureStrength = 1 (0–2), shade: ColorValue, showThrough = true }, binding: { type = 'hardcover'|'paperback'|'sewn'|'layflat', coverMaterial = 'auto'|'cloth'|'paper'|'leather', coverColor }, surface: { type = 'oak'|'walnut'|'linen'|'felt'|'leather'|'marble'|'plain'|'none', color? }, lighting: { environment = 'studio'|'daylight'|'lamp'|'overcast'|'night', intensity = 1 (0.25–2), shadows = true } }`.
-Unset paper fields follow the stock (`FOLIO_PAPER_STOCKS`; caliper µm = grammage × bulk); `coverMaterial: 'auto'` is cloth on a hardcover, card otherwise.
-Match the printed book: a novel on cream book wove → `{ paper: { type: 'bookWove' }, binding: { type: 'paperback' } }`.
+`folio` (the Folio 3D viewer, `postext-folio` and the Sandbox's Folio tab; layout, canvas, PDF and HTML ignore it, so it never changes a page or the layout hash):
+
+```jsonc
+"folio": {
+  "tilt": 22,                         // degrees from overhead, 0–40 (clamped)
+  "paper": {
+    "type": "uncoated",               // uncoated | bookWove | coatedMatte | coatedSilk | coatedGloss | bible | newsprint | cardStock | board
+    "grammage": 90,                   // g/m², 20–2500; default: the stock's
+    "bulk": 1.25,                     // cm³/g, 0.5–3; caliper µm = grammage × bulk
+    "finish": "auto",                 // auto | uncoated | matte | silk | gloss
+    "texture": "auto",                // auto | smooth | vellum | wove | laid | linen | felt
+    "textureStrength": 1,             // 0–2
+    "shade": { "hex": "#fcfbf8", "model": "hex" },
+    "showThrough": true
+  },
+  "binding": {
+    "type": "hardcover",              // hardcover | paperback | sewn | layflat | saddleStitch
+    "cover": "case",                  // case (drawn round the pages) | pages (first page = front board, last verso = back board)
+    "coverMaterial": "auto",          // auto (cloth on hardcover, card otherwise) | cloth | paper | leather
+    "coverColor": { "hex": "#2c3e57", "model": "hex" },
+    "spineImage": "spine"             // a bitmap/SVG resource id; ignored on saddleStitch
+  },
+  "surface": { "type": "oak", "color": null },   // oak | walnut | linen | felt | leather | marble | plain | none; color tints (plain: is the colour)
+  "lighting": { "environment": "studio", "intensity": 1, "shadows": true }  // studio | daylight | lamp | overcast | night; intensity 0.25–2
+}
+```
+
+Stock defaults (`FOLIO_PAPER_STOCKS`; unset paper fields follow the chosen stock):
+
+| type | g/m² | bulk | caliper | finish | texture | shade |
+|---|---|---|---|---|---|---|
+| uncoated | 90 | 1.25 | 113 µm | uncoated | wove | #fcfbf8 |
+| bookWove | 80 | 1.6 | 128 µm | uncoated | wove | #f6efdc |
+| coatedMatte | 115 | 1.0 | 115 µm | matte | smooth | #fdfdfc |
+| coatedSilk | 115 | 0.9 | 104 µm | silk | smooth | #ffffff |
+| coatedGloss | 115 | 0.8 | 92 µm | gloss | smooth | #ffffff |
+| bible | 40 | 1.1 | 44 µm | uncoated | vellum | #f9f6ee |
+| newsprint | 48 | 1.5 | 72 µm | uncoated | wove | #ebe7dc |
+| cardStock | 250 | 1.2 | 300 µm | uncoated | vellum | #fbfaf6 |
+| board | 1250 | 1.6 | 2000 µm | silk | smooth | #ffffff |
+
+How the viewer reads it:
+- Thickness of the page blocks = leaves × caliper, the whole book counted (a chapter shown alone counts the
+  others). A 600-page novel on `bookWove` is ~38 mm thick; on `bible` ~13 mm: set the real stock.
+- `cover: "pages"`: the book lies closed on its first page until it is turned; that page and the last one (when
+  the page count is even) turn as rigid boards and no case is drawn. Use it only when chapter 1 really starts
+  with the front cover (a full-page design or image) and the last chapter ends on the back cover.
+- `spineImage`: the spine as seen with the book standing, head up, front cover to the right; scaled to cover
+  the spine and centred: make it spine-thickness × page-height in proportion, with room at the edges.
+- `:::paper{type=coatedGloss grammage=130}` in the text prints a run of pages on another stock (plate
+  sections, card inserts); its attributes are the `paper` fields above (document-format.md §7.5).
+- Colours: `{hex, model}` objects, palette links (`paletteId`) followed like any other colour.
+- The Sandbox edits it under Design → Folio (View, Paper, Binding, Surface, Lighting); changes redraw the
+  book without a relayout. `lint_project.py` checks every key, enum, range and the spine resource.
+
+Match the printed book: a novel on cream book wove → `{ "paper": { "type": "bookWove" }, "binding": { "type": "paperback" } }`;
+an art book → `coatedSilk` 150 g/m², hardcover, cloth `coverColor`; a magazine → `coatedGloss` 90 g/m², `saddleStitch`,
+`cover: "pages"` when the cover is page 1; a board book for children → `board`, hardcover.
 
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,

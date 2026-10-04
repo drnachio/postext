@@ -50,7 +50,8 @@ YouTube上也有：[在那里观看](https://youtu.be/iiqeWdm9sQE)，或者看[P
   - 每种源格式各一份操作手册；
   - 一套版面设计分析方法；
   - 一份已解决的版面案例目录：各有配色的篇、章首页、诗歌、边注、脚注、索引、浮动/拆分/嵌套的标注框、矢量印刷原稿、保留真实文字的图、表格单元格中的图片、横排表、双语版本等；
-  - 中文书籍，横排或竖排、右侧装订：在需求中要问什么（文字、地区、方向、装订），如何测量字符网格，如何读取竖排PDF，InDesign的注音和割注，Word的东亚版式和从右到左的EPUB，以及如何按书中用字裁剪CJK字体（见[中文排版](/zh/docs/chinese-layout)）。
+  - 中文书籍，横排或竖排、右侧装订：在需求中要问什么（文字、地区、方向、装订），如何测量字符网格，如何读取竖排PDF，InDesign的注音和割注，Word的东亚版式和从右到左的EPUB，以及如何按书中用字裁剪CJK字体（见[中文排版](/zh/docs/chinese-layout)）；
+  - 印刷实物：如何读出源书的纸张、装订、封面和书脊，并把它们设为[书页视图](/zh/docs/sandbox#书页标签页)所显示的`folio`设置，由lint脚本检查。
 - **脚本**（Python和Node），在下一节介绍。
 
 ## 脚本
@@ -74,8 +75,8 @@ YouTube上也有：[在那里观看](https://youtu.be/iiqeWdm9sQE)，或者看[P
     <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文字体保留其竖排字形和度量）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>搭建项目及其生成脚本，构建<code>preset.json</code>，打包<code>.postext</code>文件</td></tr>
     <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符</td></tr>
-    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，输出警告并写出PDF</td></tr>
-    <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置</td></tr>
+    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，代理不必生成PDF就能查看页面；<code>--out</code>写出PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置，Postext页面取自渲染出的PDF或JPEG文件夹</td></tr>
   </tbody>
 </table>
 
@@ -135,10 +136,10 @@ brew install pandoc poppler
 ```
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
 ```
 
-Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。
+Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成源文件的页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）；`@napi-rs/canvas`是预编译的画布，渲染器借助它直接把书页画成JPEG。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。
 
 ## 使用
 
@@ -155,8 +156,8 @@ Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成页面图像需要p
 2. **清点与测量。**它读取源文件，写出一份实测数据的规格表：成品尺寸、页边距、栏、行距、字体角色、调色板、章首页、书眉、标注框类别和排放习惯。
 3. **项目。**它搭建`my-book/`，其中有一个`build_preset.py`生成器，把规格作为常量保存，并生成`preset.json`。
 4. **内容。**它用合适的提取器提取章节草稿，再整理成Postext Markdown：标注框、段落样式、篇、用于章首页的标题属性、`:ref`引用、表和图资源。
-5. **核对。**它对项目做lint检查，在无浏览器环境中排版，并与源文件逐页比较，直到分页、图和标注框都对上。
-6. **交付。**它打包出`my-book.postext`。
+5. **核对。**它对项目做lint检查，在无浏览器环境中排版，把正在处理的页面渲染成JPEG查看，并与源文件逐页比较，直到分页、图和标注框都对上。PDF用于印刷检查，不是每次查看都要生成。
+6. **交付。**它为书页视图设置书的纸张、装订和封面，然后打包出`my-book.postext`。
 
 在[沙盒](/zh/sandbox)中打开结果：**书 → 新建 → 打开.postext文件…**。导入时采用沙盒当前语言的章节和文字。要在Postext的本地副本中处理存放多个项目的文件夹，请设置`POSTEXT_PRIVATE_PRESETS_DIR`（见[沙盒](/zh/docs/sandbox)）。
 
