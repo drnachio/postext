@@ -8300,6 +8300,62 @@
     },
     "since": "1.15.0"
   },
+  "kashida": {
+    "label": {
+      "en": "Kashida justification",
+      "es": "Justificación con cachida",
+      "zh": "卡希达两端对齐"
+    },
+    "definition": {
+      "en": "A justified Arabic line takes its slack in its word spaces and in kashidas, whole tatweels inserted between two joined letters at the places the Naskh rules rank best (never after ا د ر و, never inside lām-alif), instead of letter-spacing; on by default in Arabic-script books, off in Ruqʿa faces.",
+      "es": "Una línea árabe justificada reparte su holgura entre los espacios y las cachidas, tatweels enteros insertados entre dos letras enlazadas en los sitios que mejor puntúan las reglas del naskh (nunca tras ا د ر و, nunca dentro del lām-alif), en lugar de espaciar las letras; activa por defecto en libros en alfabeto árabe, desactivada en tipos ruqʿa.",
+      "zh": "两端对齐的阿拉伯文行把空白分给词间空格和卡希达，即按纳斯赫体规则排在最好位置、插入两个相连字母之间的整个延长符（绝不在ا د ر و之后，绝不在lām-alif之内），而不是加字距；用阿拉伯字母书写的书默认开启，鲁格阿体字体中关闭。"
+    },
+    "aliases": {
+      "en": [
+        "kashida",
+        "tatweel",
+        "elongation",
+        "Arabic justification",
+        "keshideh",
+        "كشيدة"
+      ],
+      "es": [
+        "cachida",
+        "kashida",
+        "tatweel",
+        "alargamiento",
+        "justificación árabe",
+        "كشيدة"
+      ],
+      "zh": [
+        "卡希达",
+        "延长符",
+        "阿拉伯文两端对齐",
+        "kashida",
+        "tatweel",
+        "كشيدة"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Kashida in Arabic Text",
+        "es": "Cachida en el texto árabe",
+        "zh": "阿拉伯文的卡希达"
+      }
+    },
+    "detect": {
+      "config": [
+        "bodyText.kashida",
+        "bodyText.kashidaPatterns",
+        "bodyText.kashidaPerWord",
+        "bodyText.kashidaMaxLength"
+      ]
+    },
+    "since": "1.15.0"
+  },
   "citation-styles": {
     "label": {
       "en": "Citations in a citation style",

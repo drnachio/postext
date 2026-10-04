@@ -326,6 +326,24 @@ bodyText: {
 
 It is off by default, so documents keep their lines unless they ask for it. In the English chapter above, 10‰ brought the lines past `maxWordSpacing` down to one or none per face, and 20‰ to none in three faces out of four. Keep it small: past 20‰ or so the tracking starts to show as a lighter or darker line.
 
+### Kashida in Arabic Text
+
+A justified line of Arabic is not letter-spaced: its letters join, and spacing them apart breaks the joins. It is stretched in two places instead, its word spaces and its kashidas, the elongated joins a calligrapher draws between two connected letters (كتاب → كتـاب). Postext inserts them as tatweels (U+0640, ـ), whole ones, which the font draws as one stroke; Amiri turns a run of one to seven into a curved kashida.
+
+`bodyText.kashida` is `'auto'` by default in a document whose language is written in the Arabic script (`ar`, `fa`, `ur`…) and `'none'` in any other; set `'auto'` to elongate the Arabic words quoted in another language's book. Each line but a paragraph's last gets its word spaces opened up to a quarter of their width first, then kashidas for the rest of its slack, one tatweel at a time at the best places first and round after round, each word measured again whole with its tatweels; what is left, less than one tatweel, goes back to the spaces. Knuth-Plass counts each word's possible elongation as stretch, so it chooses the breaks knowing a line of Arabic words can widen there.
+
+Where a kashida may go comes from the rules of [raqim-kashida](https://github.com/aliftype/raqim-kashida) (MIT): only between two letters that join, never after a letter that does not join onward (ا د ذ ر ز و ة), never at the end of a word, never inside lām-alif, after the marks of the letter before it. `kashidaPatterns: 'naskh'` follows the classical Naskh rules (Benatia's matrix with Afifi's prohibitions: nothing after kāf or lām, nothing before ṣād, ʿayn or wāw, a final pronoun hāʾ stretched just before it); `'simple'` the Microsoft priorities for simple modern faces; `'nastaliq'` the Naskh rules tailored for Nastaʿlīq. The default `'auto'` reads the body font: no kashida in a Ruqʿa or Dīwānī face such as Aref Ruqaa, Nastaʿlīq rules in a Nastaʿlīq face, Naskh otherwise. A word takes `kashidaPerWord` elongations (1 by default) at most `kashidaMaxLength` em long (0.6, three tatweels of Amiri). A word that holds a tatweel the author typed is elongated there. Latin words, digits, headings, ragged lines and a paragraph's last line never take any.
+
+```ts
+bodyText: {
+  kashida: 'auto',          // the default in an Arabic book
+  kashidaPatterns: 'naskh', // 'auto' picks it from the font
+  kashidaMaxLength: 0.6,    // em
+}
+```
+
+The tatweels are part of the painted text (each segment lists them in `VDTLineSegment.kashida`, and the line counts them in `VDTLine.kashida`); the plain text, the source map, links and the text copied from the PDF leave them out.
+
 ### The Final Line
 
 In the box-glue-penalty model, every paragraph ends with a width-0, infinitely stretchable glue followed by a forced break. That trailing glue absorbs whatever space remains on the last line at zero cost, so last lines come out naturally ragged: they are rendered at their natural width, and `justifiedSpaceRatio` is only computed for non-last lines.

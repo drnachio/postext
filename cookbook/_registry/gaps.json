@@ -652,10 +652,10 @@
   },
   "rtl-cjk": {
     "label": {
-      "en": "Kashida, Arabic verse and right-to-left HTML",
-      "es": "Cachida, verso árabe y HTML de derecha a izquierda",
+      "en": "Arabic verse and right-to-left HTML",
+      "es": "Verso árabe y HTML de derecha a izquierda",
       "ca": "Cassida, vers àrab i HTML de dreta a esquerra",
-      "zh": "卡希达、阿拉伯诗体与从右向左的HTML"
+      "zh": "阿拉伯诗体与从右向左的HTML"
     },
     "aliases": {
       "en": [
@@ -716,10 +716,10 @@
       ]
     },
     "explanation": {
-      "en": "Arabic, Persian and Hebrew are set right to left (direction, taken from locale), ordered by the bidirectional algorithm, shaped with HarfBuzz in the PDF and bound on the right. Three pieces are not there yet: kashida justification (a justified Arabic line is stretched at its spaces only), classical verse with each bayt in two hemistichs (set the two halves as a two-column table without rules), and the HTML output, which does not set right-to-left lines correctly yet (use the canvas or the PDF).",
-      "es": "El árabe, el persa y el hebreo se componen de derecha a izquierda (direction, tomada del locale), ordenados por el algoritmo bidireccional, modelados con HarfBuzz en el PDF y encuadernados por la derecha. Faltan tres piezas: la justificación con cachida (una línea árabe justificada se estira solo en sus espacios), el verso clásico con cada bayt en dos hemistiquios (compón las dos mitades como una tabla de dos columnas sin filetes) y la salida HTML, que aún no compone bien las líneas de derecha a izquierda (usa el canvas o el PDF).",
+      "en": "Arabic, Persian and Hebrew are set right to left (direction, taken from locale), ordered by the bidirectional algorithm, shaped with HarfBuzz in the PDF and bound on the right. Justified lines are stretched with kashidas as well as at their spaces. Two pieces are not there yet: classical verse with each bayt in two hemistichs (set the two halves as a two-column table without rules), and the HTML output, which does not set right-to-left lines correctly yet (use the canvas or the PDF).",
+      "es": "El árabe, el persa y el hebreo se componen de derecha a izquierda (direction, tomada del locale), ordenados por el algoritmo bidireccional, modelados con HarfBuzz en el PDF y encuadernados por la derecha. Las líneas justificadas se estiran con cachidas además de en sus espacios. Faltan dos piezas: el verso clásico con cada bayt en dos hemistiquios (compón las dos mitades como una tabla de dos columnas sin filetes) y la salida HTML, que aún no compone bien las líneas de derecha a izquierda (usa el canvas o el PDF).",
       "ca": "L'àrab, el persa i l'hebreu es componen de dreta a esquerra (direction, presa del locale), ordenats per l'algorisme bidireccional, modelats amb HarfBuzz al PDF i enquadernats per la dreta. Hi falten tres peces: la justificació amb caixida (una línia àrab justificada s'estira només en els espais), el vers clàssic amb cada bayt en dos hemistiquis (compon les dues meitats com una taula de dues columnes sense filets) i la sortida HTML, que encara no compon bé les línies de dreta a esquerra (fes servir el canvas o el PDF).",
-      "zh": "阿拉伯文、波斯文和希伯来文从右向左排（direction，按locale决定），由双向算法排序，PDF中用HarfBuzz成形，书改为右翻。还缺三项：卡希达（kashida）两端对齐（两端对齐的阿拉伯文行只在空格处拉伸）、每联（bayt）分两个半行的古典诗体（把两半排成无线的两栏表格），以及HTML输出：它还不能正确排出从右向左的行（请用Canvas或PDF）。"
+      "zh": "阿拉伯文、波斯文和希伯来文从右向左排（direction，按locale决定），由双向算法排序，PDF中用HarfBuzz成形，书改为右翻。两端对齐的行除了空格，还用卡希达拉伸。还缺两项：每联（bayt）分两个半行的古典诗体（把两半排成无线的两栏表格），以及HTML输出：它还不能正确排出从右向左的行（请用Canvas或PDF）。"
     },
     "docs": {
       "slug": "document-format",

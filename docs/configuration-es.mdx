@@ -1369,6 +1369,30 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Tracking máximo que puede tomar una línea justificada, en milésimas de eme en uno u otro sentido (la unidad de InDesign: 10 = 0,01 em por carácter), cuando con solo sus espacios entre palabras se estiraría más allá de <code>maxWordSpacing</code> o se comprimiría por debajo de <code>minWordSpacing</code>. La parte del ajuste que pasa del límite va a las letras, así que los espacios de una línea floja vuelven a <code>maxWordSpacing</code> y una línea apretada cabe con <code>minWordSpacing</code>. Knuth-Plass lo tiene en cuenta al elegir los cortes, y solo en las líneas que el espaciado entre palabras llevaría más allá de los límites: las demás, la última línea de un párrafo (salvo que se desborde), una línea de una sola palabra y una línea con un chip no lo usan. La línea lo guarda como <code>letterSpacing</code>, y canvas, HTML y PDF lo pintan. Requiere <code>optimalLineBreaking</code>. Con <code>0</code> queda desactivado. Ver <a href="/es/docs/justification#tracking-como-último-recurso">Tracking como último recurso</a>.</td>
     </tr>
     <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td><code>'auto'</code> en un documento en alfabeto árabe; si no, <code>'none'</code></td>
+      <td>Justificación con cachida: una línea justificada de texto en alfabeto árabe toma su holgura en los espacios entre palabras (hasta una cuarta parte de su anchura) y después en cachidas, tatweels enteros (U+0640) insertados entre dos letras enlazadas, nunca como espaciado entre letras. Knuth-Plass cuenta el alargamiento de cada palabra como estiramiento. Nunca en palabras latinas, cifras, títulos, líneas en bandera ni en la última línea de un párrafo. Los tatweels se pintan pero quedan fuera del texto plano y del copiado. Ver <a href="/es/docs/justification#cachida-en-el-texto-árabe">Cachida en el texto árabe</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué enlaces toman cachida y en qué orden: las reglas clásicas del naskh, las prioridades de Microsoft o las reglas del naskh adaptadas al nastaʿlīq (según raqim-kashida). <code>'auto'</code> mira la fuente del texto: ninguna en un tipo ruqʿa o dīwānī (Aref Ruqaa), reglas de nastaʿlīq en un tipo nastaʿlīq, naskh en los demás.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Máximo de alargamientos en una palabra.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>Alargamiento máximo en un enlace, en em; toma tantos tatweels enteros como quepan.</td>
+    </tr>
+    <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

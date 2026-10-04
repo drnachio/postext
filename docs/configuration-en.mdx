@@ -1369,6 +1369,30 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Most tracking a justified line may take, in thousandths of an em either way (the InDesign unit: 10 = 0.01 em per character), when its word spaces alone would stretch past <code>maxWordSpacing</code> or shrink past <code>minWordSpacing</code>. The part of the adjustment beyond the limit goes into the letters, so a loose line's spaces come back to <code>maxWordSpacing</code> and a tight one fits at <code>minWordSpacing</code>. Knuth-Plass weighs it when it chooses the breaks, and only for the lines word spacing alone would take past the limits: the others, a paragraph's last line (unless it runs over), a line of one word and a line holding a chip take none. The line records it as <code>letterSpacing</code>, and the canvas, HTML and PDF paint it. Needs <code>optimalLineBreaking</code>. <code>0</code> turns it off. See <a href="/en/docs/justification#tracking-as-a-last-resort">Tracking as a last resort</a>.</td>
     </tr>
     <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td><code>'auto'</code> in an Arabic-script document, else <code>'none'</code></td>
+      <td>Kashida justification: a justified line of Arabic-script text takes its slack in its word spaces (up to a quarter of their width) and then in kashidas, whole tatweels (U+0640) inserted between two joined letters, never as letter-spacing. Knuth-Plass counts each word's elongation as stretch. Never in Latin words, digits, headings, ragged lines or a paragraph's last line. The tatweels are painted but left out of plain and copied text. See <a href="/en/docs/justification#kashida-in-arabic-text">Kashida in Arabic text</a>.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Which joins take a kashida, and in what order: the classical Naskh rules, the Microsoft priorities, or the Naskh rules tailored for Nastaʿlīq (after raqim-kashida). <code>'auto'</code> reads the body font: none in a Ruqʿa or Dīwānī face (Aref Ruqaa), Nastaʿlīq rules in a Nastaʿlīq face, Naskh otherwise.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Most elongations in one word.</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>Longest elongation at one join, in ems; it takes as many whole tatweels as fit.</td>
+    </tr>
+    <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

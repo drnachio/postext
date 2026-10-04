@@ -1366,6 +1366,30 @@ interface ElementPlacement {
       <td>当一行两端对齐的文字只靠词间距会拉伸到超过<code>maxWordSpacing</code>，或压缩到低于<code>minWordSpacing</code>时，这一行最多可以使用的字距，单位为千分之一em，可正可负（InDesign的单位：10 = 每个字符0.01 em）。超出上下限的那部分调整量分配到字母之间，于是松散行的词间距回到<code>maxWordSpacing</code>，过紧的行则以<code>minWordSpacing</code>排进行长。Knuth-Plass在选择断点时会把它计入，但只用于单靠词间距会超出上下限的那些行：其他行、段落末行（除非它超长）、只有一个词的行以及含有行内标签的行都不加字距。该值作为<code>letterSpacing</code>记录在行上，Canvas、HTML和PDF都会按它绘制。需要开启<code>optimalLineBreaking</code>。设为<code>0</code>即关闭。见<a href="/en/docs/justification#tracking-as-a-last-resort">字距作为最后手段</a>。</td>
     </tr>
     <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td>用阿拉伯字母书写的文档中为<code>'auto'</code>，否则为<code>'none'</code></td>
+      <td>卡希达两端对齐：两端对齐的阿拉伯字母文字行先把空白分给词间空格（最多其宽度的四分之一），再分给卡希达，即插入两个相连字母之间的整个延长符（U+0640），绝不用字距。Knuth-Plass把每个词可拉长的量算作伸展量。拉丁词、数字、标题、不对齐的行和段落最后一行一律不加。延长符会被绘制，但不进入纯文本和复制的文字。见<a href="/zh/docs/justification#阿拉伯文的卡希达">阿拉伯文的卡希达</a>。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>哪些连笔可加卡希达、按什么顺序：古典纳斯赫体规则、微软的优先级，或为波斯体调整过的纳斯赫规则（依据raqim-kashida）。<code>'auto'</code>看正文字体：鲁格阿体或迪瓦尼体（Aref Ruqaa）不加，波斯体字体用nastaliq规则，其他用naskh。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>一个词最多拉长几处。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>一处连笔最长拉多少em；按能放下的整个延长符计。</td>
+    </tr>
+    <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
