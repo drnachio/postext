@@ -176,6 +176,15 @@ The patterns encode a set of numbered rules that, when overlaid on a word, indic
 
 Each locale loads its own pattern set. Hypher instances are lazily created and cached — the first call for a given locale pays the initialization cost; subsequent calls are instant. A region-tagged locale uses its language's patterns (`'es-ES'` hyphenates with `'es'`, `'en-GB'` with `'en-us'`). A language with no patterns here falls back to `en-us`, and the engine warns once on the console (see [Hyphenation](/en/docs/configuration#hyphenation) in the configuration reference). Chinese, Japanese and Korean are the exception: they are set without hyphenation and without the warning, and their lines break between characters (see [Chinese, Japanese and Korean](#chinese-japanese-and-korean) below).
 
+**Catalan** follows the rules of the Institut d'Estudis Catalans (*Llibre d'estil*, chapter VI). This applies since postext 1.14:
+
+- A break leaves at least two letters on each side (`ter-ra`, `cai-xa`, `plu-ja`).
+- The *ela geminada* breaks between its two *l*, and the hyphen takes the place of the middle dot: *il·lusió* becomes `il-` | `lusió`. The line is measured without the dot, so justification and Knuth–Plass see its real width.
+- Two vowels in hiatus stay together (`cièn-cia`, `ca-mions`). An *i* or *u* between vowels counts as a consonant and opens its syllable (`fe-ia`, `ve-ient`).
+- No break follows an apostrophe (`s'ha-via`, never `s'-havia`).
+- Common prefixed words break at the prefix (`vos-altres`, `cel-obert`, `ben-estar`).
+- To keep words with enclitic pronouns whole except at their own hyphen (`portar-` | `lo`), as the IEC prefers, set [`hyphenation.compounds`](/en/docs/configuration#hyphenation) to `false`.
+
 ### Why Hypher (and Not a Custom Algorithm)
 
 The original Postext hyphenation system used a **custom vowel-based heuristic**: it detected syllable boundaries by finding vowel clusters, common prefixes (`over-`, `under-`, `inter-`), and common suffixes (`-tion`, `-ment`, `-sion`). It was simple and fast, but fundamentally limited:

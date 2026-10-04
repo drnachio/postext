@@ -24,6 +24,7 @@ import { sliceSpan } from '../parse/links';
 import type { CjkRegion } from '../types';
 import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isBreakingSpaceRun } from './spaces';
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
+import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
 
 export interface RichBreakPoint {
   charIndex: number;
@@ -46,6 +47,10 @@ export interface RichBreakPoint {
   /** A `free` break next to a CJK character: the line it ends is not
    *  `hyphenated`, so the column-end hyphen rules leave it alone. */
   cjk?: boolean;
+  /** A syllable break inside a Catalan `l·l`: the hyphen takes the place of
+   *  the middle dot (`il-` | `lusió`), whose width, here, the line ending
+   *  at this break gives back. */
+  replacesWidth?: number;
 }
 
 export interface RichToken {
@@ -630,7 +635,12 @@ function wordBreakPoints(
     if (i === 0 || !breaksAfterHardHyphen(clean[i - 1], clean[i + 1])) continue;
     add(ch === '-' ? { charIndex: i + 1, bare: true } : { charIndex: i + 1, free: true, greedyOnly: true });
   }
-  for (const s of soft) add(s.author ? { charIndex: s.index, author: true } : { charIndex: s.index });
+  for (const s of soft) {
+    const geminate = endsInsideGeminate(clean.slice(0, s.index))
+      ? { replacesWidth: textWidth(GEMINATE_DOT, font, smallCaps) + letterSpacingPx }
+      : {};
+    add(s.author ? { charIndex: s.index, author: true, ...geminate } : { charIndex: s.index, ...geminate });
+  }
   if (cjk) for (const idx of cjk.breaks) add({ charIndex: idx, free: true, cjk: true });
   return [...byIndex.values()].sort((a, b) => a.charIndex - b.charIndex);
 }
@@ -711,8 +721,12 @@ export function emergencySplit(
   }
   if (at === 0) return null;
   const mark = markW(at) > 0 ? '-' : '';
+  // A syllable inside an `l·l`: the hyphen takes the dot's place.
+  const geminate = mark !== '' && endsInsideGeminate(text.slice(0, at));
   return {
-    head: { ...flags, text: text.slice(0, at) + mark, kind: 'text', width: widthBefore(at) + markW(at) },
+    head: geminate
+      ? { ...flags, text: withLineEndHyphen(text.slice(0, at)), kind: 'text', width: widthBefore(at - 1) + markW(at) }
+      : { ...flags, text: text.slice(0, at) + mark, kind: 'text', width: widthBefore(at) + markW(at) },
     tail: { ...tailAfter(token, at, widthBefore(at)), ...flags },
     ...(afterHyphen(at) ? { hard: true } : {}),
   };
@@ -1223,15 +1237,17 @@ function isDivisible(token: RichToken): boolean {
 }
 
 /** Cut a word at one of its break points: the head ends the line (with
- *  `mark`, `markWidth` px wide, appended), the tail keeps the break points
- *  after the cut. */
+ *  `mark`, `markWidth` px wide, appended — or in place of the middle dot of
+ *  an `l·l`), the tail keeps the break points after the cut. */
 function splitToken(token: RichToken, bp: RichBreakPoint, mark: string, markWidth: number): { head: RichToken; tail: RichToken } {
   const flags = { bold: token.bold, italic: token.italic, captionLabel: token.captionLabel, ...scriptOf(token) };
   const residual = (token.breakPoints ?? [])
     .filter((b) => b.charIndex > bp.charIndex)
     .map((b) => ({ ...b, charIndex: b.charIndex - bp.charIndex, widthBefore: b.widthBefore - bp.widthBefore }));
   return {
-    head: { ...flags, text: token.text.slice(0, bp.charIndex) + mark, kind: 'text', width: bp.widthBefore + markWidth },
+    head: mark !== '' && bp.replacesWidth !== undefined
+      ? { ...flags, text: withLineEndHyphen(token.text.slice(0, bp.charIndex)), kind: 'text', width: bp.widthBefore - bp.replacesWidth + markWidth }
+      : { ...flags, text: token.text.slice(0, bp.charIndex) + mark, kind: 'text', width: bp.widthBefore + markWidth },
     tail: {
       ...flags,
       text: token.text.slice(bp.charIndex),
@@ -1298,7 +1314,7 @@ function lastSyllableInGroup(lineTokens: RichToken[], glued: number, lineMaxWidt
     for (let k = points.length - 1; k >= 0; k--) {
       const bp = points[k]!;
       if (bp.bare || bp.free || bp.greedyOnly) continue;
-      if (widthsBefore[at]! + bp.widthBefore + (token.hyphenWidth ?? 0) <= lineMaxWidth) return { at, token, bp };
+      if (widthsBefore[at]! + bp.widthBefore + (token.hyphenWidth ?? 0) - (bp.replacesWidth ?? 0) <= lineMaxWidth) return { at, token, bp };
     }
   }
   return null;
@@ -1536,7 +1552,7 @@ function measureRichText(
         let chosen: RichBreakPoint | null = null;
         for (const bp of token.breakPoints) {
           if (!syllables && !plainBreak(bp) && !bp.author) continue;
-          if (bp.widthBefore + markW(bp) <= remaining) chosen = bp;
+          if (bp.widthBefore + markW(bp) - (plainBreak(bp) ? 0 : bp.replacesWidth ?? 0) <= remaining) chosen = bp;
           else break;
         }
         if (chosen) {

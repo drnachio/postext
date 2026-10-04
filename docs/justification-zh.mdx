@@ -176,6 +176,15 @@ Postext用**Hypher**（`hypher` v0.2.5）断词，背后是**TeX/Liang断词模�
 
 每个语言区域加载各自的模式集。Hypher实例按需创建并缓存：某个语言区域的第一次调用承担初始化开销，之后的调用即刻返回。带地区标记的语言区域使用其语言的模式（`'es-ES'`按`'es'`断词，`'en-GB'`按`'en-us'`）。这里没有模式的语言回退到`en-us`，引擎会在控制台警告一次（见配置参考中的[断词](/zh/docs/configuration#断词)）。中文、日文和韩文例外：它们不断词，也不发出警告，行在字与字之间断开（见下文[中文、日文和韩文](#中文日文和韩文)）。
 
+**加泰罗尼亚语**遵循加泰罗尼亚研究院（IEC）《Llibre d'estil》第六章的规则，自postext 1.14起生效：
+
+- 断点两侧至少各留两个字母（`ter-ra`、`cai-xa`、`plu-ja`）。
+- 双写的*ela geminada*在两个*l*之间断开，连字符取代中间的间隔点：*il·lusió*断为`il-` | `lusió`。该行按去掉间隔点后的宽度测量，两端对齐和Knuth–Plass算法看到的是实际宽度。
+- 构成元音分立（hiatus）的两个元音不拆开（`cièn-cia`、`ca-mions`）。夹在元音之间的*i*或*u*视为辅音，归入下一个音节（`fe-ia`、`ve-ient`）。
+- 撇号之后不立即断开（`s'ha-via`，而不是`s'-havia`）。
+- 常见的带前缀词在前缀处断开（`vos-altres`、`cel-obert`、`ben-estar`）。
+- 若要让带后附代词的词只在自身的连字符处断开（`portar-` | `lo`），符合IEC的推荐，可把[`hyphenation.compounds`](/zh/docs/configuration#断词)设为`false`。
+
 ### 为什么选Hypher（而不是自定义算法）
 
 Postext最初的断词系统用的是一种**基于元音的自定义启发式方法**：通过查找元音组合、常见前缀（`over-`、`under-`、`inter-`）和常见后缀（`-tion`、`-ment`、`-sion`）来判断音节边界。它简单、快速，但有根本局限：

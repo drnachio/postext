@@ -11,6 +11,8 @@ export interface SandboxSyncFlowLabels {
   vdtSubtitle: string;
   canvasLabel: string;
   htmlLabel: string;
+  /** The Folio tab (the book in 3D), drawn between HTML and PDF when given. */
+  folioLabel?: string;
   pdfLabel: string;
   singleSource: string;
 }
@@ -38,25 +40,25 @@ function DocGlyph({ cy }: { cy: number }) {
 
 export function SandboxSyncFlow({ labels }: { labels: SandboxSyncFlowLabels }) {
   // Geometry: two inputs merge at a junction, feed ONE central VDT,
-  // a single stem leaves it and fans out to three identical output tabs.
+  // a single stem leaves it and fans out to identical output tabs.
+  const outputs = [labels.canvasLabel, labels.htmlLabel, ...(labels.folioLabel ? [labels.folioLabel] : []), labels.pdfLabel];
+  // Box centres: three outputs at 58 / 130 / 202, four spread over a
+  // slightly taller figure.
+  const centres = outputs.length === 4 ? [36, 98, 160, 222] : [58, 130, 202];
   const inPaths = [
     "M190 79 C 232 79, 234 130, 256 130",
     "M190 181 C 232 181, 234 130, 256 130",
   ];
   const inStem = "M264 130 L297 130";
   const outStem = "M500 130 L536 130";
-  const outPaths = [
-    "M544 130 C 578 130, 572 58, 616 58",
-    "M544 130 L616 130",
-    "M544 130 C 578 130, 572 202, 616 202",
-  ];
+  const outPaths = centres.map((cy) => (cy === 130 ? "M544 130 L616 130" : `M544 130 C 578 130, 572 ${cy}, 616 ${cy}`));
 
   return (
     <Figure
       title={labels.title}
       desc={labels.desc}
       caption={labels.caption}
-      viewBox="0 0 790 248"
+      viewBox={`0 0 790 ${outputs.length === 4 ? 258 : 248}`}
       maxWidth={790}
     >
       <defs>
@@ -104,25 +106,21 @@ export function SandboxSyncFlow({ labels }: { labels: SandboxSyncFlowLabels }) {
       <rect x={326} y={192} width={148} height={20} rx={10} fill="var(--svg-legend-fill)" stroke="var(--svg-legend-stroke)" strokeWidth={1} />
       <Label x={400} y={205} anchor="middle" size={9} color="green">{labels.singleSource}</Label>
 
-      {/* ── Fan-out: ONE stem leaves the VDT, then splits to the three tabs ── */}
+      {/* ── Fan-out: ONE stem leaves the VDT, then splits to the tabs ── */}
       <path d={outStem} fill="none" stroke="var(--svg-stroke)" strokeWidth={1.5} />
       <circle cx={540} cy={130} r={3.5} fill="var(--svg-stroke)" />
       {outPaths.map((d) => (
         <path key={d} d={d} fill="none" stroke="var(--svg-stroke)" strokeWidth={1.5} markerEnd="url(#ssfArrow)" />
       ))}
 
-      {/* ── Outputs (teal, all three identical on purpose): same VDT, same result ── */}
-      <Box x={620} y={36} width={140} height={44} color="teal" strokeWidth={1.5} />
-      <DocGlyph cy={58} />
-      <Label x={666} y={62} size={11} bold color="teal">{labels.canvasLabel}</Label>
-
-      <Box x={620} y={108} width={140} height={44} color="teal" strokeWidth={1.5} />
-      <DocGlyph cy={130} />
-      <Label x={666} y={134} size={11} bold color="teal">{labels.htmlLabel}</Label>
-
-      <Box x={620} y={180} width={140} height={44} color="teal" strokeWidth={1.5} />
-      <DocGlyph cy={202} />
-      <Label x={666} y={206} size={11} bold color="teal">{labels.pdfLabel}</Label>
+      {/* ── Outputs (teal, all identical on purpose): same VDT, same result ── */}
+      {outputs.map((label, i) => (
+        <g key={label}>
+          <Box x={620} y={centres[i]! - 22} width={140} height={44} color="teal" strokeWidth={1.5} />
+          <DocGlyph cy={centres[i]!} />
+          <Label x={666} y={centres[i]! + 4} size={11} bold color="teal">{label}</Label>
+        </g>
+      ))}
 
       {/* ── Animated flow overlays (hidden for reduced motion) ── */}
       <g fill="none" strokeWidth={2} strokeLinecap="round">

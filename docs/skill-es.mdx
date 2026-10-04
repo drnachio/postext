@@ -76,7 +76,10 @@ También en YouTube: [míralo allí](https://youtu.be/6lXSY7A72VA) o en la
     encuadernación), cómo medir una retícula de caracteres, cómo leer PDF
     verticales, el ruby y el warichu de InDesign, la maquetación de Asia
     oriental de Word y los EPUB de derecha a izquierda, y cómo recortar las
-    fuentes CJK al libro (ver [Composición china](/es/docs/chinese-layout)).
+    fuentes CJK al libro (ver [Composición china](/es/docs/chinese-layout));
+  - el objeto impreso: cómo leer el papel, la encuadernación, las cubiertas
+    y el lomo de la fuente y fijarlos como los ajustes `folio` que muestra el
+    [visor Folio](/es/docs/sandbox#pestaña-folio), comprobados por el linter.
 - **Scripts** (Python y Node), descritos en la sección siguiente.
 
 ## Scripts
@@ -100,8 +103,8 @@ También en YouTube: [míralo allí](https://youtu.be/6lXSY7A72VA) o en la
     <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, subconjuntar, escalar y separar fuentes (una fuente china recortada a los caracteres del libro conserva sus formas y métricas verticales); pasar imágenes a sRGB, recortarlas y unirlas; convertir ilustraciones <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el proyecto y su script generador, construye <code>preset.json</code> y empaqueta el <code>.postext</code></td></tr>
     <tr><td><code>lint_project.py</code></td><td>Detecta todo lo que el parser y el cargador hacen mal en silencio y, en texto chino, japonés o coreano, los caracteres que las fuentes del proyecto no pueden componer</td></tr>
-    <tr><td><code>render.mjs</code></td><td>Compone el proyecto (una carpeta o un archivo <code>.postext</code>) sin navegador con el motor real, leyendo su configuración igual que el Sandbox, muestra los avisos y escribe el PDF</td></tr>
-    <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado</td></tr>
+    <tr><td><code>render.mjs</code></td><td>Compone el proyecto (una carpeta o un archivo <code>.postext</code>) sin navegador con el motor real, leyendo su configuración igual que el Sandbox, y muestra los avisos. Con <code>--jpeg</code> pinta las páginas que le pidas (<code>--pages 12-15</code>) como archivos JPEG con el renderizador de canvas del propio motor, en uno o dos segundos, así que el agente mira sus páginas sin generar un PDF; <code>--out</code> escribe el PDF</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>Pone las páginas de la fuente y de Postext lado a lado, a partir del PDF de la composición o de su carpeta de JPEG</td></tr>
   </tbody>
 </table>
 
@@ -167,12 +170,14 @@ brew install pandoc poppler
 ```
 
 ```bash
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
 ```
 
 Pandoc hace falta para fuentes en Word, PowerPoint, EPUB y HTML, y poppler
-para las imágenes de página. Los paquetes de Node mueven el renderizador sin
-navegador (Node 22.15 o posterior). Herramientas opcionales: `ocrmypdf` para
+para las imágenes de página de la fuente. Los paquetes de Node mueven el
+renderizador sin navegador (Node 22.15 o posterior); `@napi-rs/canvas` es un
+canvas precompilado con el que pinta las páginas del libro directamente en
+JPEG. Herramientas opcionales: `ocrmypdf` para
 escaneos, ImageMagick, y veraPDF para comprobar PDF/UA.
 
 ## Cómo usarla
@@ -204,10 +209,13 @@ El agente sigue el flujo de trabajo:
    los cura como Markdown de Postext: recuadros, estilos de párrafo, partes,
    atributos de encabezado para las aperturas, citas `:ref`, recursos de
    tablas y figuras.
-5. **Verificación.** Pasa el linter, compone el proyecto sin navegador y lo
+5. **Verificación.** Pasa el linter, compone el proyecto sin navegador,
+   pinta como JPEG las páginas en las que está trabajando y las mira, y las
    compara con la fuente página a página hasta que coinciden los saltos de
-   página, las figuras y los recuadros.
-6. **Entrega.** Empaqueta `mi-libro.postext`.
+   página, las figuras y los recuadros. El PDF se genera para las
+   comprobaciones de imprenta, no para cada revisión.
+6. **Entrega.** Fija el papel, la encuadernación y las cubiertas del libro
+   para el visor Folio y empaqueta `mi-libro.postext`.
 
 Abre el resultado en el [Sandbox](/es/sandbox): **Libros → Nuevo → Abrir
 un archivo .postext…**. La importación toma los capítulos y textos del idioma del

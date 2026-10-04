@@ -112,6 +112,27 @@
       ]
     },
     {
+      "id": "paradise-lost",
+      "dir": "paradise-lost",
+      "name": "Paradise Lost · Gustave Doré",
+      "description": "Edición anotada en verso: las notas de Verity al pie de página y las cincuenta láminas de Doré · An annotated verse edition: Verity's notes at the foot of the page and Doré's fifty plates",
+      "locale": "en",
+      "locales": [
+        "en"
+      ],
+      "openLocale": "en",
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · OFL fonts",
+      "credits": "Milton · Verity · Doré · Project Gutenberg · Wikisource · Wikimedia Commons",
+      "tags": [
+        "book",
+        "poetry",
+        "footnotes",
+        "plates",
+        "front-matter"
+      ]
+    },
+    {
       "id": "pintura-espanola",
       "dir": "pintura-espanola",
       "name": "Pintura española · Spanish Painting",

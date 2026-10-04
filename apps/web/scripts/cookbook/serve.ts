@@ -126,7 +126,7 @@ function errorPage(message: string): string {
  *  `packages/postext/dist` (tsc keeps the imports extensionless, so the
  *  server tries `.js` and `/index.js`). */
 function localModule(rel: string): { file: string; path: string } | null {
-  const match = /^(postext|postext-pdf|postext-citeproc)\/(.+)$/.exec(rel);
+  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio)\/(.+)$/.exec(rel);
   if (!match) return null;
   const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
   const asked = match[2]!;

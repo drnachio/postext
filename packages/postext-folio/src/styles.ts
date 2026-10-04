@@ -42,6 +42,27 @@ export const FOLIO_CSS = `
 .postext-folio-spread.is-held > .postext-folio-page {
   cursor: grabbing !important;
 }
+/* Orbit and select modes: one finger drags the view or the selection,
+   never the page; the cursor says which. */
+.postext-folio.is-orbit,
+.postext-folio.is-select {
+  touch-action: none;
+}
+.postext-folio.is-orbit .postext-folio-spread > .postext-folio-page:not(.is-empty),
+.postext-folio.is-orbit {
+  cursor: move;
+}
+.postext-folio.is-orbiting,
+.postext-folio.is-orbiting * {
+  cursor: grabbing !important;
+}
+.postext-folio.is-select .postext-folio-spread > .postext-folio-page:not(.is-empty) {
+  cursor: default;
+}
+.postext-folio.is-select.is-over-page,
+.postext-folio.is-select.is-over-page .postext-folio-spread > .postext-folio-page {
+  cursor: text;
+}
 .postext-folio-spread,
 .postext-folio-page {
   user-select: none;

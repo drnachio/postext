@@ -13,6 +13,7 @@ import { cleanSoftHyphens } from './utils';
 import { trimChipLineEdges } from '../measure/chipEdges';
 import { lineTracking, trackSegments } from './tracking';
 import { graphemeCount } from '../measure/graphemes';
+import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -28,6 +29,8 @@ interface RichBreakPoint {
   author?: boolean;
   /** A free break next to a CJK character: the line is not hyphenated. */
   cjk?: boolean;
+  /** Inside a Catalan `l·l`: the hyphen replaces the middle dot, this wide. */
+  replacesWidth?: number;
 }
 
 interface RichToken {
@@ -150,11 +153,15 @@ export function richTokensToItems(
           ? { type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true, ...(breakPoint.cjk ? { cjk: true } : {}) } }
           : {
             type: 'penalty',
-            width: breakPoint.bare ? 0 : hyphenW,
+            width: breakPoint.bare ? 0 : hyphenW - (token.bareBreaks ? 0 : breakPoint.replacesWidth ?? 0),
             penalty: HYPHEN_PENALTY,
             flagged: true,
             sourceIndex: t,
-            meta: { ...meta, ...(breakPoint.bare ? { bare: true } : {}) },
+            meta: {
+              ...meta,
+              ...(breakPoint.bare ? { bare: true } : {}),
+              ...(breakPoint.replacesWidth !== undefined ? { replacesWidth: breakPoint.replacesWidth } : {}),
+            },
             // The hyphen a syllable break adds (a URL joint adds none).
             ...(breakPoint.bare || token.bareBreaks ? {} : { chars: 1 }),
             // A dictionary syllable: the hyphenation zone of ragged text
@@ -320,12 +327,14 @@ export function reconstructRichLines(
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
       if (last.kind === 'text' && last.refResourceId === undefined && last.footnoteId === undefined) {
+        const geminate = breakMeta?.replacesWidth !== undefined && endsInsideGeminate(last.text);
+        const text = geminate ? withLineEndHyphen(last.text) : last.text + '-';
         lineSegments[lastIdx] = {
           ...last,
-          text: last.text + '-',
-          width: last.width + hyphenW,
+          text,
+          width: last.width + hyphenW - (geminate ? breakMeta!.replacesWidth! : 0),
         };
-        textParts[textParts.length - 1] = last.text + '-';
+        textParts[textParts.length - 1] = text;
       }
     }
 

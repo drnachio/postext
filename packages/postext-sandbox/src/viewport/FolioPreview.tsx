@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { createFolioFromDocument, type FolioDocumentViewer, type FolioLabels } from 'postext-folio';
+import { createFolioFromDocument, type FolioDocumentViewer, type FolioInteraction, type FolioLabels } from 'postext-folio';
 import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, type PostextConfig, type VDTDocument } from 'postext';
 import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
@@ -17,8 +17,11 @@ import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
 import type { BookPageMap } from './usePageHashSync';
 import { FolioLoading } from './FolioLoading';
+import { useFolioSelection } from './useFolioSelection';
 
 interface FolioPreviewProps {
+  /** What the left button does on the book. */
+  interaction?: FolioInteraction;
   onGeneratingChange?: (generating: boolean) => void;
   /** After every layout: the page count, the first page with content, the
    *  book page number of every page and, for the whole book, the chapter
@@ -34,8 +37,8 @@ interface FolioPreviewProps {
 
 export interface FolioPreviewHandle {
   jumpToPage: (pageIndex: number) => void;
-  /** Opens the spread holding page `pageIndex`: the leaves turn to a near
-   *  one, a far one (more than `FAR_SPREADS` away) opens at once. */
+  /** Turns the book to the spread holding page `pageIndex`: leaf by leaf
+   *  to a near one, the whole block of leaves in one move to a far one. */
   turnToPage: (pageIndex: number) => void;
   prev: () => void;
   next: () => void;
@@ -43,10 +46,6 @@ export interface FolioPreviewHandle {
   resetView: () => void;
   regenerate: () => void;
 }
-
-/** Spreads beyond which a page typed in opens at once rather than turning
- *  every leaf in between. */
-const FAR_SPREADS = 10;
 
 /** A laid-out document with what tells its pages apart across layouts:
  *  the chapter (position in the book) of every page of a whole-book
@@ -83,7 +82,7 @@ const fill = (template: string, values: Record<string, string | number>) =>
  * spreads, its leaves turned by hand. Pages are painted at the size they
  * are shown, only around the open spread.
  */
-export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
+export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ interaction = 'hand', onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxSelector((s) => s.labels);
   const sharedDocRef = useSandboxDocRef();
@@ -165,6 +164,22 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const pendingJumpRef = useRef<number | null>(null);
   const paintedKeyRef = useRef(paintKey);
   const [opened, setOpened] = useState(false);
+  const interactionRef = useRef(interaction);
+  interactionRef.current = interaction;
+  // The document the viewer shows, for the page interaction.
+  const viewerVdtRef = useRef<VDTDocument | null>(null);
+  viewerVdtRef.current = shownDoc?.doc ?? null;
+  const selection = useFolioSelection({
+    viewerRef,
+    docRef: viewerVdtRef,
+    stitchedRef,
+    chapterDocsRef,
+    sourceRef: sharedDocSourceRef,
+    interactionRef,
+    docKey: shownDoc,
+  });
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
   const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange });
   callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange };
 
@@ -180,10 +195,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         pendingJumpRef.current = pageIndex;
         return;
       }
-      const open = viewer.state.pages[0] ?? 0;
-      const perSpread = viewer.element.classList.contains('is-single') ? 1 : 2;
-      const far = Math.abs(pageIndex - open) / perSpread > FAR_SPREADS;
-      viewer.goToPage(pageIndex, far ? { instant: true } : undefined);
+      viewer.goToPage(pageIndex);
     },
     prev: () => viewerRef.current?.prev(),
     next: () => viewerRef.current?.next(),
@@ -353,16 +365,23 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         // The tab's own bar turns the pages (and takes a page number).
         controls: false,
         labels: folioLabelsRef.current,
+        interaction: interactionRef.current,
         appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
-        onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
+        decorate: (index, ctx) => selectionRef.current.decorate(index, ctx),
+        onTarget: (state) => {
+          callbacksRef.current.onSpreadChange?.(state.pages);
+          selectionRef.current.onSpread();
+        },
         onChange: (state) => {
           callbacksRef.current.onSpreadChange?.(state.pages);
+          selectionRef.current.onSpread();
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
         },
       });
       viewerRef.current = viewer;
+      selectionRef.current.attach(viewer);
       callbacksRef.current.onSpreadChange?.(viewer.state.pages);
       paintedKeyRef.current = paintKey;
       setOpened(true);
@@ -407,6 +426,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     viewerRef.current = null;
     setPaintKey((k) => k + 1);
   }, [modeKey]);
+
+  useEffect(() => {
+    viewerRef.current?.setInteraction(interaction);
+  }, [interaction]);
 
   useEffect(() => {
     viewerRef.current?.setLabels(folioLabels);

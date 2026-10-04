@@ -98,9 +98,13 @@ function SandboxLayout({
     [config],
   );
 
+  // Only the first load waits behind the boot screen. A later change of
+  // families (a book's own config arriving, a preset switch) keeps the app
+  // mounted: every viewer awaits its config's fonts before laying out, and
+  // dropping back to the boot screen remounted the viewers and their bars,
+  // which bounced in and out while a book was opening.
   useEffect(() => {
     const version = ++configVersionRef.current;
-    setFontsReady(false);
 
     preloadConfigFonts(config).then(() => {
       if (configVersionRef.current === version) setFontsReady(true);

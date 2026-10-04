@@ -1,0 +1,46 @@
+---
+title: "Un banco de pruebas para los ajustes de Folio"
+summary: "Un formulario con cada ajuste de config.folio maneja un visor postext-folio con setAppearance: papel, encuadernación, tapas, mesa y luz cambian al vuelo."
+plain: "Un librito de bolsillo en 3D junto a un panel de controles. Cambia el papel, la encuadernación, la mesa o la luz y el libro cambia en el acto, sin componerse otra vez."
+description: "Tipo de papel, gramaje, textura, encuadernación, tapas, mesa, luz e inclinación: cada uno un campo que cambia un libro de postext-folio con setAppearance."
+question: "¿Cómo veo la encuadernación, la cubierta, el papel y la luz de un libro antes de mandarlo a imprenta?"
+aliases: ["ajustes de Folio", "setAppearance", "vista previa de encuadernación", "vista previa del papel", "maqueta de libro", "color de la tapa", "iluminación", "textura de la mesa"]
+pageNotes: { "1": "La cubierta: un campo rojo ladrillo hasta todos los bordes, el título Six Knots en una palo seco geométrica crema, una entradilla en cursiva y el nombre de la autora al pie.", "3": "Una página de nudo: un antetítulo rojo pequeño, el nombre del nudo en un título de palo seco y dos párrafos cortos justificados.", "10": "La contracubierta: el campo rojo ladrillo con una línea en cursiva centrada." }
+---
+
+## Lo que vas a componer
+
+*Six Knots*, un libro de bolsillo de diez páginas a 110 × 160 mm, abierto en Folio junto a un panel con todos los ajustes de `config.folio`. Elige un papel y las hojas cambian de color, superficie y rigidez; pasa de rústica a tapa dura y aparece una caja alrededor del bloque; elige la caja en lugar de las cubiertas impresas, tela o piel, una mesa, una luz, una inclinación. El libro se compone una vez. Cada cambio llega al visor con `setAppearance`, así que no se mueve ninguna línea ni se vuelve a pintar ninguna página, y bajo el formulario aparecen los ajustes como el código que se pega en `config.folio`.
+
+## Elaboración
+
+### 1 · Nombra los campos como la configuración
+
+<Excerpt region="form" />
+
+Cada campo del formulario se llama como su ruta en `config.folio` (`paper.grammage`, `binding.cover`, `lighting.environment`), de modo que un solo bucle convierte el formulario en el objeto que recibe el visor: números de los deslizadores, booleanos de las casillas y un color `{ hex, model }` del selector. Ese mismo objeto es el `config.folio` del documento cuando el pen lo compone, así que el Sandbox abre el libro tal como empieza el formulario.
+
+### 2 · Cubiertas que el visor pasa como tapas
+
+<Excerpt region="covers" />
+
+Con `binding.cover: 'pages'` la primera página es la tapa delantera y la última la trasera, si cae en un verso. El estilo de la contracubierta salta a página par, así que el libro acaba siempre en un verso y giran las dos tapas. Cambia el formulario a *A case round the pages* y esas dos páginas giran como hojas corrientes dentro de una caja de tela.
+
+### 3 · Cambia el libro sin rehacerlo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `setAppearance({ folio })` sustituye los ajustes del documento y vuelve a dibujar la escena: grosor y rigidez del papel, la caja, los mapas de la mesa y la luz. Las páginas conservan su pintura, así que el cambio aparece en el fotograma siguiente. Cada tipo de papel trae su gramaje, por eso al elegir uno se mueve el deslizador del peso; `resetView()` devuelve la cámara a su sitio después de que el lector gire el libro arrastrando con el botón derecho.
+
+## Variantes
+
+### Empieza en tapa dura con caja de tela
+
+Cambia los valores iniciales del formulario en `index.html`; el documento y el Sandbox los siguen.
+
+```diff
+-        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
++        <option value="hardcover" selected>Hardcover</option><option value="paperback">Paperback</option>
+```
+
+### Un libro con su aspecto en la configuración
+
+<RecipeLink slug="folio-book-on-a-desk">Un libro sobre la mesa</RecipeLink> escribe los mismos ajustes una vez en `config.folio`, sin formulario, y <RecipeLink slug="paper-swatch-book">el muestrario</RecipeLink> pone un papel distinto en cada hoja.

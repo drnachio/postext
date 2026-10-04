@@ -1,0 +1,46 @@
+---
+title: "Folio查看器设置工作台"
+summary: "一个包含config.folio全部设置的表单，通过setAppearance驱动一个postext-folio查看器：纸张、装订、封面、桌面、光照和倾角当场改变。"
+plain: "一本3D口袋书，旁边是一块控制面板。换纸张、装订、桌面或光照，书马上跟着变，不用重新排版。"
+description: "纸张种类、克重、纹理、装订、封面、桌面、光照和倾角，每一项都是一个表单字段，用setAppearance改变postext-folio书本的外观，一个pen。"
+question: "付印前怎样预览书的装订、封面、纸张和光照效果？"
+aliases: ["Folio设置", "setAppearance", "装订预览", "纸张预览", "图书样机", "封面颜色", "光照", "桌面纹理"]
+pageNotes: { "1": "封面：砖红色色块铺满到每条边，米色几何无衬线字体的标题Six Knots，一行斜体导语，页脚是作者名。", "3": "一页绳结：红色小眉题，无衬线标题写着绳结名称，以及两段简短的两端对齐文字。", "10": "封底：砖红色色块上居中一行斜体字。" }
+---
+
+## 成品一览
+
+*Six Knots*，一本十页的口袋书，成品尺寸110 × 160毫米，在Folio里打开，旁边是一个包含`config.folio`全部设置的面板。选一种纸，书页的颜色、表面和挺度随之改变；把装订从平装换成精装，书芯外面就多了一个书壳；还可以选书壳而不用印刷的封面，选布面或皮面、桌面、光照和倾角。书只排一次。每次改动都用`setAppearance`交给查看器，所以没有一行移动，也没有一页重新绘制；表单下方显示这些设置对应的代码，可以直接粘贴到`config.folio`里。
+
+## 做法
+
+### 1 · 按配置路径给字段命名
+
+<Excerpt region="form" />
+
+表单的每个字段都以它在`config.folio`中的路径命名（`paper.grammage`、`binding.cover`、`lighting.environment`），所以一个循环就能把表单变成查看器需要的对象：滑块给出数字，复选框给出布尔值，取色器给出`{ hex, model }`颜色。pen排版时，这个对象也就是文档自己的`config.folio`，因此沙盒打开这本书时，外观和表单的初始状态一致。
+
+### 2 · 查看器可以当作封板翻动的封面
+
+<Excerpt region="covers" />
+
+`binding.cover: 'pages'`时，第一页是封面，最后一页如果落在左页上就是封底。封底的标题样式分页到偶数页，所以书总是在左页结束，两块封面都能翻动。把表单改成*A case round the pages*，这两页就在布面书壳里作为普通书页翻动。
+
+### 3 · 原地改变书的外观
+
+代码就是上面的[简短回答](#简短回答)。`setAppearance({ folio })`替换文档的设置并重绘场景：纸张的厚度和挺度、书壳、桌面贴图和光照。书页保留已经画好的内容，所以改动在下一帧就能看到。每种纸都有自己的克重，所以选纸时克重滑块会跟着移动；读者按住右键拖动转过书之后，`resetView()`把镜头还原。
+
+## 变化
+
+### 从布面精装开始
+
+在`index.html`里改表单的默认值；文档和沙盒都会跟着改。
+
+```diff
+-        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
++        <option value="hardcover" selected>Hardcover</option><option value="paperback">Paperback</option>
+```
+
+### 外观写在配置里的书
+
+<RecipeLink slug="folio-book-on-a-desk">桌上的书</RecipeLink>把同样的设置在`config.folio`里写一次，不用表单；<RecipeLink slug="paper-swatch-book">纸样册</RecipeLink>给每张纸配不同的纸张。

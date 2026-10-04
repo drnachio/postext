@@ -1,0 +1,314 @@
+[
+  {
+    "first": 2,
+    "last": 2,
+    "lemma": "So charming",
+    "gloss": "in the strong sense ‘laying under a spell, enchanting.’"
+  },
+  {
+    "first": 3,
+    "last": 3,
+    "lemma": "still stood fixed to hear",
+    "gloss": "*stood*, perhaps = ‘remained, continued.’ It is not Adam’s attitude that is emphasised, but his great attention; probably he sat (Richardson)."
+  },
+  {
+    "first": 15,
+    "last": 15,
+    "lemma": "this goodly frame",
+    "gloss": "M. recollected *Hamlet*, II. 2. 310, “this goodly frame, the earth.”"
+  },
+  {
+    "first": 19,
+    "last": 19,
+    "lemma": "her numbered stars",
+    "gloss": "*numbered*, apparently = ‘numerous,’ unless M. has in mind passages like Psalm cxlvii. 4, “He telleth the number of the stars.”"
+  },
+  {
+    "first": 23,
+    "last": 23,
+    "lemma": "this opacous earth",
+    "gloss": "*opacous*, dark, yielding no light; cf. 93 (“nor glistering”). *punctual*, small, no bigger than a point (Lat. *punctum*)."
+  },
+  {
+    "first": 32,
+    "last": 32,
+    "lemma": "the sedentary earth",
+    "gloss": "*sedentary*, stationary (from Lat. *sedere*, ‘to sit’); cf. 89, “Earth sitting still.”"
+  },
+  {
+    "first": 46,
+    "last": 46,
+    "lemma": "Her nursery",
+    "gloss": "things tended by her: an abstract expression for a concrete. We speak of a ‘nursery-garden.’"
+  },
+  {
+    "first": 70,
+    "last": 71,
+    "lemma": "This to attain",
+    "gloss": "‘To attain this knowledge, viz. of the seasons, hours etc., it makes no difference whether the heaven or the Earth moves. Such knowledge is within our comprehension; but “the rest,” viz. more abstruse points, God has concealed’ (Newton)."
+  },
+  {
+    "first": 78,
+    "last": 78,
+    "lemma": "quaint opinions wide",
+    "gloss": "*wide*, i.e. of the mark; ‘erroneous’; cf. the adverb in *Much Ado About Nothing*, IV. 1. 63, “Is my lord well, that he doth speak so wide?”"
+  },
+  {
+    "first": 80,
+    "last": 84,
+    "lemma": "And calculate the stars",
+    "gloss": "the object of the devices which M. ridicules in these lines was to support the Ptolemaic theory of the circular motion of the heavenly bodies by accounting for difficulties which seemed to conflict with that theory."
+  },
+  {
+    "first": 84,
+    "last": 84,
+    "lemma": "Cycle and epicycle, orb in orb",
+    "gloss": "*epicycle*. “A small circle, having its centre on the circumference of a greater circle… In the Ptolemaic system of astronomy each of the ‘seven planets’ was supposed to revolve in an epicycle, the centre of which moved along a greater circle called a deferent.”—New English Dict. *orb in orb*, sphere within sphere."
+  },
+  {
+    "first": 93,
+    "last": 93,
+    "lemma": "Nor glistering",
+    "gloss": "i.e. “opacous” (23). *glistering*; cf. *The Merchant of Venice*, II. 7. 65, “All that glisters is not gold.”"
+  },
+  {
+    "first": 99,
+    "last": 99,
+    "lemma": "Officious",
+    "gloss": "ministering = Lat. *officiosus*, ‘ready to serve by doing *officia*, i.e. kind acts.’ This use of *officious* in a good sense occurs in *Titus Andronicus*, V. 2. 202."
+  },
+  {
+    "first": 102,
+    "last": 102,
+    "lemma": "his line stretched out so far",
+    "gloss": "“Who hath laid the measures thereof, if thou knowest? or who hath stretched the line upon it?” Job xxxviii. 5, where “it” refers to the Earth."
+  },
+  {
+    "first": 124,
+    "last": 124,
+    "lemma": "attractive virtue",
+    "gloss": "as we say, ‘power of attraction.’ So in III. 582, 583 he speaks of the constellations being “turned” by the Sun’s “magnetic beam.”"
+  },
+  {
+    "first": 128,
+    "last": 129,
+    "lemma": "In six thou seest",
+    "gloss": "*six*, i.e. the six planets or ‘wanderers.’ The six meant are the Moon, Mercury, Venus, Mars, Jupiter and Saturn. The “seventh” planet is the Sun, according to the Ptolemaic system; but the Earth (129), according to the Copernican."
+  },
+  {
+    "first": 130,
+    "last": 130,
+    "lemma": "three different motions",
+    "gloss": "“The three different motions which the Copernicans attribute to the Earth are (1) the diurnal round her own axis; (2) the annual round the Sun; and (3) the libration, as it is call’d, whereby the Earth so proceeds in her orbit, as that her axis is parallel to the axis of the World” (Newton)."
+  },
+  {
+    "first": 133,
+    "last": 136,
+    "lemma": "Or save the sun his labour",
+    "gloss": "‘you save the Sun his labour, i.e. of revolving round the Earth; and you also get rid of (“save”) that wheel or “rhomb” called the *Primum Mobile*, the motion of which is supposed to cause the revolution of the nine inner spheres round the Earth in twenty-four hours.’"
+  },
+  {
+    "first": 140,
+    "last": 145,
+    "lemma": "What if that light",
+    "gloss": "cf. Burton, “If the Earth move, it is a Planet, and shines to them in the Moon, and to the other Planetary inhabitants, as the Moon and they do to us upon the Earth” (*Anatomy of Melancholy*)."
+  },
+  {
+    "first": 148,
+    "last": 149,
+    "lemma": "other suns",
+    "gloss": "“He seems to mean Jupiter and Saturn, whose satellites had been discovered by Galileo” (Keightley). But Burton says: “why may we not suppose a plurality of worlds, those infinite stars visible in the Firmament to be so many Suns, to have likewise their subordinate planets?” That appears to me to be the theory to which M. alludes."
+  },
+  {
+    "first": 153,
+    "last": 158,
+    "lemma": "For such vast room",
+    "gloss": "‘That there should be such a vast unpeopled space, only made for the purpose of shining, and from each of its orbs only contributing (so great is the distance) a mere glimpse of light to this Earth which itself sends back light: this notion is open to dispute.’"
+  },
+  {
+    "first": 163,
+    "last": 166,
+    "lemma": "her silent course",
+    "gloss": "it was objected to the Copernican theory “that if the Earth mov’d round on her axle in twenty-four hours, we should be sensible of the rapidity and violence of the motion.” M. has this objection in mind when he suggests that if the Earth does revolve, her motion may be smooth and even (Newton)."
+  },
+  {
+    "first": 181,
+    "last": 181,
+    "lemma": "Intelligence of Heaven",
+    "gloss": "*Intelligence*; in Spenser “a frequent term for the celestial beings” (Todd). It is really a Dante word."
+  },
+  {
+    "first": 183,
+    "last": 197,
+    "lemma": "",
+    "gloss": "Some editors regard these lines as an objection against study of the difficult problems of physical science. I think rather that Milton protested against barren speculation of all sorts, and a spirit of excessive enquiry in general."
+  },
+  {
+    "first": 194,
+    "last": 195,
+    "lemma": "what is more, is fume",
+    "gloss": "*what is more*, i.e. anything beyond that. *fume*, vanity; literally ‘smoke’ (Lat. *fumus*). *fond*, foolish. *impertinence*, irrelevance, that which does not belong to or concern us."
+  },
+  {
+    "first": 225,
+    "last": 225,
+    "lemma": "fellow-servant",
+    "gloss": "so the Angel described himself to St John, Revelation xxii. 9, “I am thy fellow-servant, and of thy brethren the prophets.”"
+  },
+  {
+    "first": 241,
+    "last": 241,
+    "lemma": "barricadoed",
+    "gloss": "fortified. Sin, who kept the gates of Hell, afterwards opened them “with ease” to let Satan out, but was unable to close them again (II. 871–89)."
+  },
+  {
+    "first": 243,
+    "last": 244,
+    "lemma": "Noise",
+    "gloss": "i.e. of the outcast Angels, who for nine days after their fall from Heaven lay prostrate on the lake of fire in Hell. Those were the sounds of “furious rage” heard by Raphael."
+  },
+  {
+    "first": 246,
+    "last": 246,
+    "lemma": "Sabbath-evening",
+    "gloss": "the evening before the Sabbath or seventh day on which the Almighty rested from all His work."
+  },
+  {
+    "first": 266,
+    "last": 266,
+    "lemma": "With fragrance and with joy",
+    "gloss": "*fragrance*, perhaps used figuratively to express an intense sweetness of feeling. But I think that it refers literally to the sweet-scented air, and is combined by a sort of zeugma with *joy*."
+  },
+  {
+    "first": 303,
+    "last": 304,
+    "lemma": "whose high top was plain",
+    "gloss": "M. always describes the “garden of bliss,” i.e. Paradise, as situate on the level summit of a lofty hill, the steep slopes of which are covered with trees and shrubs. It is a plateau or table-land of circular shape (304). *plain*, flat (Fr. *plain*, ‘level,’ Lat. *planus*)."
+  },
+  {
+    "first": 331,
+    "last": 331,
+    "lemma": "From that day mortal",
+    "gloss": "many of the Fathers of the Church taught the doctrine that Adam, if he had not sinned, would not have died but been translated to Heaven. M. speaks doubtfully on the subject."
+  },
+  {
+    "first": 352,
+    "last": 354,
+    "lemma": "I named them",
+    "gloss": "M. says in *The Christian Doctrine*, I. 7: “Certainly without extraordinary wisdom he could not have given names to the whole animal creation with such sudden intelligence.” *apprehension*, perception."
+  },
+  {
+    "first": 372,
+    "last": 373,
+    "lemma": "Knowest thou not",
+    "gloss": "the magic ring mentioned in the story of Cambuscan (*Il Penseroso*, 109–15) enabled its owner to understand the language of birds. Clouston says, “many Asiatic tales turn upon a knowledge of the language of birds and beasts.”"
+  },
+  {
+    "first": 387,
+    "last": 387,
+    "lemma": "The one intense",
+    "gloss": "Hume explains: “the one intense; man high, wound up, and strain’d to nobler understanding, and of more lofty faculty, the other still remiss; the animal let down, and slacker, grovelling in more low and mean perceptions.” Lat. *remissus* = ‘slack, relaxed.’"
+  },
+  {
+    "first": 399,
+    "last": 399,
+    "lemma": "A nice and subtle happiness",
+    "gloss": "*nice*, dainty; said with a touch of reproof to Adam for being fastidious and “subtle” in his tastes."
+  },
+  {
+    "first": 405,
+    "last": 407,
+    "lemma": "who am alone",
+    "gloss": "passages like this, and III. 383, 384, V. 603–606, reveal the Arianism of Milton’s theology."
+  },
+  {
+    "first": 421,
+    "last": 421,
+    "lemma": "through all numbers absolute",
+    "gloss": "Newton noted that this is a Latin turn of phrase = ‘perfect in every respect’; from Lat. *numerus* in the sense ‘a part of a whole, detail.’ Here M. uses the Latinism with a kind of quibble, *numbers* being in antithesis to *one*."
+  },
+  {
+    "first": 433,
+    "last": 433,
+    "lemma": "From prone",
+    "gloss": "from being prone, i.e. not upright. M. uses this classical idiom several times in prose and verse, but commonly with the preposition *of*."
+  },
+  {
+    "first": 440,
+    "last": 440,
+    "lemma": "the spirit within thee free",
+    "gloss": "“Milton is, upon all occasions, a strenuous advocate for the freedom of the human mind, against the narrow and rigid notions of the Calvinists of that age” (Thyer)."
+  },
+  {
+    "first": 465,
+    "last": 466,
+    "lemma": "my left side",
+    "gloss": "“The Scripture says only ‘one of his ribs,’ but Milton follows those interpreters who suppose this rib was taken from the left side, as being nearer to the heart” (Newton). Cf. *cordial*, ‘belonging to the heart’ (Lat. *cor*), in 466."
+  },
+  {
+    "first": 502,
+    "last": 502,
+    "lemma": "the conscience of her worth",
+    "gloss": "*conscience*, consciousness = Lat. *conscientia*; cf. Hebrews x. 2, “should have had no more conscience of sins.”"
+  },
+  {
+    "first": 515,
+    "last": 517,
+    "lemma": "fresh gales and gentle airs",
+    "gloss": "Tennyson justly remarked: “undoubtedly commonplace now, but M. introduced the style”: which the 18th century poets did to death."
+  },
+  {
+    "first": 519,
+    "last": 520,
+    "lemma": "the Evening-star",
+    "gloss": "the evening-star Hesperus was also called *stella Veneris*."
+  },
+  {
+    "first": 540,
+    "last": 542,
+    "lemma": "For well I understand",
+    "gloss": "here in 540–42 we have Milton’s own opinion as to the relative character and intellectual capacity of man and woman. “Not equal” is his view (IV. 296); contrast Tennyson’s—“diverse” (*The Princess*)."
+  },
+  {
+    "first": 561,
+    "last": 578,
+    "lemma": "Accuse not Nature",
+    "gloss": "cf. the very similar passage in bk. X. (145–56), where, after the Fall, Adam is rebuked by God for having yielded to Eve and eaten the forbidden fruit. Raphael’s warning prepares us for Adam’s weakness in book IX."
+  },
+  {
+    "first": 591,
+    "last": 591,
+    "lemma": "the scale",
+    "gloss": "ladder (Lat. *scala*); cf. Sir Thomas Browne, *Religio Medici*, I. xxxiii., “there is in this universe a stair, or manifest scale, of creatures.” This idea of ascent is essentially Platonic and Spenserian."
+  },
+  {
+    "first": 592,
+    "last": 592,
+    "lemma": "to heavenly love thou mayest ascend",
+    "gloss": "we find this idea of Heavenly love in *Comus*, 1003–11 (the allegory of Cupid and Psyche). No doubt, the idea was suggested by Plato’s discourse in the *Symposium* (180 et seq.) on the two types of love."
+  },
+  {
+    "first": 598,
+    "last": 598,
+    "lemma": "the genial bed",
+    "gloss": "*genial*, nuptial; cf. Lat. *genialis lectus*; *genialis* is connected with *gignere*, ‘to beget, to produce, bring forth.’"
+  },
+  {
+    "first": 631,
+    "last": 631,
+    "lemma": "Green Cape and Verdant Isles",
+    "gloss": "*Green Cape*, Cape Verd (= ‘green’), on the west coast of Africa. *Verdant Isles*, the Cape Verd islands; commonly identified with the classical *Hesperidum Insulae*, in which were the “Hesperian Gardens” where grew the golden apples guarded by the daughters of Hesperus and the dragon Ladon."
+  },
+  {
+    "first": 633,
+    "last": 643,
+    "lemma": "Be strong, live happy, and love",
+    "gloss": "Raphael “very properly closes his discourse with those moral instructions which should make the most lasting impression on the mind of Adam” (Newton)."
+  },
+  {
+    "first": 651,
+    "last": 651,
+    "lemma": "Be good and friendly still",
+    "gloss": "*good*, propitious, gracious: *sis bonus, o, felixque tuis*, Vergil, *Eclogue* V. 65. *oft return*. Raphael does not appear again in the poem; after the Temptation and Fall, a sterner Archangel is sent from Heaven to lead Adam forth from Paradise."
+  }
+]

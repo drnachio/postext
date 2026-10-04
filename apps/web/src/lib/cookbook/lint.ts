@@ -15,6 +15,7 @@ import {
   POSTEXT_BUNDLE_URL,
   POSTEXT_PDF_URL,
   POSTEXT_CITEPROC_URL,
+  POSTEXT_FOLIO_URL,
   POSTEXT_URL,
   POSTEXT_WORKER_URL,
   configKeys,
@@ -60,7 +61,7 @@ export const LIMITS = {
    *  hard cap for all. */
   ownLines: 300,
   ownLinesWarn: { 1: 120, 2: 180, 3: 250 } as Record<1 | 2 | 3, number>,
-  scriptBytes: 60 * 1024,
+  scriptBytes: 72 * 1024,
   contentWords: 2500,
   prefillBytes: 96 * 1024,
   assetBytes: 400 * 1024,
@@ -73,7 +74,7 @@ export const LIMITS = {
 } as const;
 
 /** The only module URLs a pen imports (unpinned: the capture pins them). */
-export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL];
+export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL];
 
 /** Hosts (and path prefixes) a pen may fetch from. Nothing else: no hotlinking. */
 export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [
@@ -471,7 +472,7 @@ export function lintPen(
     warns.push(`script.js: ${composed.ownLines} lines of recipe code (aim for ≤ ${LIMITS.ownLinesWarn[meta.level]} at level ${meta.level})`);
   }
   const scriptBytes = bytes(js);
-  if (scriptBytes > LIMITS.scriptBytes) fails.push(`the composed script weighs ${Math.round(scriptBytes / 1024)} KB (at most 60 KB)`);
+  if (scriptBytes > LIMITS.scriptBytes) fails.push(`the composed script weighs ${Math.round(scriptBytes / 1024)} KB (at most ${LIMITS.scriptBytes / 1024} KB)`);
   const prefill = bytes(defineData(composed, { title: "x".repeat(80), description: "x".repeat(320), tags: ["postext"] }));
   if (prefill > LIMITS.prefillBytes) fails.push(`the CodePen prefill weighs ${Math.round(prefill / 1024)} KB (at most 96 KB)`);
   const long = lines.map((line, i) => (!folded.has(i + 1) && [...line].length > LIMITS.lineLength ? i + 1 : 0)).filter(Boolean);

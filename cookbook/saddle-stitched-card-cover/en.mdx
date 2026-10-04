@@ -1,0 +1,58 @@
+---
+title: "A stapled zine with a card cover sheet"
+summary: "Two :::paper fences put a salmon card on the outer sheet of an eight-page zine, and postext-folio shows it saddle-stitched round newsprint pages."
+plain: "A small folded magazine about a river, with a thick coloured cover and thin newsprint inside. In the 3D viewer it lies closed on the desk and opens like the real thing."
+description: "An eight-page zine whose cover sheet is card and inner sheet newsprint: two :::paper fences, a saddle stitch and cover: 'pages' in config.folio, in one pen."
+question: "How do I print a cover, an insert or a plate section on a different paper from the rest of the book?"
+aliases: ["zine", "booklet", "saddle stitch", "stapled", "card cover", "newsprint", "cover sheet", "riso"]
+pageNotes: { "1": "The cover on white: the issue line, Low Tide in large blue grotesque, an italic strap and eleven blue tide lines of different lengths across the foot.", "3": "The dunlin feature: a blue kicker, a black title, a short blue rule and justified text.", "8": "The back cover: Low Tide in blue and a small line of capitals, centred." }
+---
+
+## What you'll build
+
+Issue 3 of *Low Tide*, a free zine about an estuary: eight pages of 140 × 200 mm, two sheets folded and stapled through the fold. The outer sheet, pages 1–2 and 7–8, is a salmon card; the inner sheet, pages 3–6, is cheap newsprint. The cover is printed in one riso blue on the bare card, with no colour field of its own, so on the flat pages below it prints on white, and in Folio it lies closed on the desk in its card colour until you turn it. The two papers are two fences in the Markdown, and the binding is three settings in `config.folio`.
+
+## Method
+
+### 1 · Fence the outer sheet
+
+<Excerpt region="cover-sheet" />
+
+A saddle-stitched booklet is a stack of folded sheets, so the cover sheet holds the first two and the last two pages. One fence holds pages 1–2, another pages 7–8, and the pages between them fall outside both, on the book's own paper. Each fence starts and ends on a new page, which here is the page the cover and the welcome need anyway.
+
+### 2 · Newsprint, stapled, covers from the pages
+
+<Excerpt region="folio" />
+
+`folio.paper` is the newsprint of every page outside a fence. `saddleStitch` folds the sheets round staples with no flat spine, and `cover: 'pages'` turns page 1 and page 8 as the covers. On a saddle stitch the cover turns like the other sheets, only stiffer, and a cover leaf that names its own stock (the card) is drawn on that stock.
+
+### 3 · A cover in one ink
+
+<Excerpt region="covers" />
+
+The cover is a heading style with zero margins and a full-page design: the issue line, the title in Bricolage Grotesque at 70 pt, the strap in Newsreader italic, and eleven tide lines whose lengths come from a seeded generator, so every run draws the same ones. Nothing paints the page's ground: the card does.
+
+### 4 · One opener for every piece
+
+<Excerpt region="features" />
+
+Each feature is a first-level heading in the `feature` style: a new page, a kicker from its attributes, the title and a short blue rule. Running the five pieces through one style keeps the inside of the zine to two typefaces and one accent.
+
+### 5 · Open it stapled
+
+The code is [the short answer](#the-short-answer) above. `createFolioFromDocument` reads the binding and the covers from `doc.config.folio` and each leaf's paper from `page.paper`. The pen warns when the page count is odd, because page 8 can be the back cover only when it falls on a verso.
+
+## Variations
+
+### A heavier, white cover
+
+Change both fences and the cover sheet is a 300 g white card; the inner pages stay on newsprint.
+
+```diff
+-:::paper{type=cardStock grammage=250 shade=#f2c9b4}
++:::paper{type=cardStock grammage=300 shade=#fbfaf6}
+```
+
+### A plain booklet
+
+Leave the fences out and the cover is a sheet of the pages' newsprint, a little heavier. <RecipeLink slug="paper-swatch-book">The swatch book</RecipeLink> goes the other way and gives every leaf its own stock.

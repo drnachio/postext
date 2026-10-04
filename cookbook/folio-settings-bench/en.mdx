@@ -1,0 +1,46 @@
+---
+title: "A bench for the Folio viewer's settings"
+summary: "A form of every config.folio setting drives one postext-folio viewer through setAppearance: paper, binding, covers, desk, light and tilt change in place."
+plain: "A small pocket book shown in 3D next to a panel of controls. Change the paper, the binding, the desk or the light and the book changes at once, without being set again."
+description: "Paper stock, weight, texture, binding, covers, desk, light and tilt, each a form field that restyles a postext-folio book with setAppearance, in one pen."
+question: "How do I preview a book's binding, cover, paper and lighting before it goes to print?"
+aliases: ["Folio settings", "setAppearance", "binding preview", "paper preview", "book mockup", "cover colour", "lighting", "desk texture"]
+pageNotes: { "1": "The front cover: a brick-red field to every edge, the title Six Knots in a cream geometric sans, an italic strap and the author's name at the foot.", "3": "A knot page: a small red kicker, the knot's name in a sans heading and two short justified paragraphs.", "10": "The back cover: the brick-red field with a centred italic line." }
+---
+
+## What you'll build
+
+*Six Knots*, a ten-page pocket book on a 110 × 160 mm trim, opened in Folio next to a panel with every setting of `config.folio`. Pick a stock and the leaves change colour, surface and stiffness; switch the binding from paperback to hardcover and a case grows round the block; choose the case instead of the printed covers, a cloth or leather material, a desk, a light, a tilt. The book is laid out once. Every change goes to the viewer with `setAppearance`, so no line moves and no page is painted again, and the settings appear under the form as the code to paste into `config.folio`.
+
+## Method
+
+### 1 · Name the fields after the config
+
+<Excerpt region="form" />
+
+Each field of the form is named by its path in `config.folio` (`paper.grammage`, `binding.cover`, `lighting.environment`), so one loop turns the form into the object the viewer takes: numbers from the sliders, booleans from the checkboxes, a `{ hex, model }` colour from the picker. The same object is the document's own `config.folio` when the pen builds it, so the Sandbox opens the book as the form starts.
+
+### 2 · Covers the viewer can turn as boards
+
+<Excerpt region="covers" />
+
+With `binding.cover: 'pages'` the first page is the front board and the last the back, when it falls on a verso. The back cover's heading style breaks to an even page, so the book always ends on a verso and both covers turn. Switch the form to *A case round the pages* and the same two pages turn as ordinary leaves inside a cloth case.
+
+### 3 · Restyle the book in place
+
+The code is [the short answer](#the-short-answer) above. `setAppearance({ folio })` replaces the document's settings and redraws the scene: paper thickness and stiffness, the case, the desk maps and the light. The pages keep their paintings, so a change lands in the next frame. A stock sets its own weight, which is why picking one moves the weight slider; `resetView()` brings the camera back after the reader orbits the book with a right-drag.
+
+## Variations
+
+### Start from a hardcover in a cloth case
+
+Change the form's defaults in `index.html`; the document and the Sandbox follow them.
+
+```diff
+-        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
++        <option value="hardcover" selected>Hardcover</option><option value="paperback">Paperback</option>
+```
+
+### One book, its look in the config
+
+<RecipeLink slug="folio-book-on-a-desk">A book on the desk</RecipeLink> writes the same settings once in `config.folio`, with no form, and <RecipeLink slug="paper-swatch-book">the swatch book</RecipeLink> sets a different paper on each leaf.

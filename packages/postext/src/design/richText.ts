@@ -13,6 +13,7 @@ import { buildFontString } from '../measure';
 import { scriptMetrics, stackedScriptPairs } from '../measure/rich';
 import { graphemeCount } from '../measure/graphemes';
 import { hyphenateText } from '../hyphenate';
+import { endsInsideGeminate } from '../measure/geminate';
 import { NO_BREAK_SPACES, isBreakingSpace } from '../measure/spaces';
 import type { TextOverflow } from '../types';
 
@@ -272,13 +273,20 @@ export class RichMeasurer {
   }
 
   rangeLine(a: number, b: number, hyphen = false): RichLine {
-    const pieces = this.pieces(a, b);
+    // The hyphen of a break inside an `l·l` takes the middle dot's place.
+    const pieces = this.pieces(a, hyphen && endsInsideGeminate(this.rt.text.slice(a, b)) ? b - 1 : b);
     if (hyphen) pieces.push({ text: '-', style: this.styleNear(b - 1) });
     return this.line(pieces);
   }
 }
 
 const SOFT_HYPHEN = '­';
+
+/** Where the text of a line ending at the syllable break `k` stops: before
+ *  the middle dot of an `l·l`, whose place the hyphen takes. */
+function hyphenEnd(text: string, k: number): number {
+  return endsInsideGeminate(text.slice(Math.max(0, k - 2), k)) ? k - 1 : k;
+}
 /** A space the line may break at: a no-break space glues (EF-66). */
 const isSpace = isBreakingSpace;
 
@@ -305,7 +313,7 @@ function breakWord(m: RichMeasurer, a: number, b: number, maxWidth: number, hyph
       let k = 0;
       for (const part of hy.split(SOFT_HYPHEN).slice(0, -1)) {
         k += part.length;
-        if (m.measure(a, a + k, { text: '-', style: m.styleNear(a + k - 1) }) > maxWidth) break;
+        if (m.measure(a, hyphenEnd(text, a + k), { text: '-', style: m.styleNear(a + k - 1) }) > maxWidth) break;
         if (!pairAround(a + k)) best = k;
       }
       if (best > 0) return { end: a + best, hyphen: true };
@@ -336,7 +344,7 @@ function syllableFill(m: RichMeasurer, lineStart: number, a: number, b: number, 
   let k = 0;
   for (const part of hy.split(SOFT_HYPHEN).slice(0, -1)) {
     k += part.length;
-    if (m.measure(lineStart, a + k, { text: '-', style: m.styleNear(a + k - 1) }) > maxWidth) break;
+    if (m.measure(lineStart, hyphenEnd(m.rt.text, a + k), { text: '-', style: m.styleNear(a + k - 1) }) > maxWidth) break;
     if (!pairs.some(([s, e]) => a + k > s && a + k < e)) best = k;
   }
   return best;

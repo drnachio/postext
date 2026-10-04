@@ -176,6 +176,15 @@ Los patrones codifican un conjunto de reglas numeradas que, al superponerse sobr
 
 Cada idioma carga su propio conjunto de patrones. Las instancias de Hypher se crean de forma perezosa y se cachean — la primera llamada para un idioma paga el coste de inicialización; las llamadas siguientes son instantáneas. Un idioma con etiqueta de región usa los patrones de su lengua (`'es-ES'` se divide con `'es'`, `'en-GB'` con `'en-us'`). Un idioma sin patrones incluidos recurre a `en-us`, y el motor lo avisa una vez en la consola (ver [Separación silábica](/es/docs/configuration#separación-silábica) en la referencia de configuración). El chino, el japonés y el coreano son la excepción: se componen sin separación silábica y sin el aviso, y sus líneas se cortan entre caracteres (ver [Chino, japonés y coreano](#chino-japonés-y-coreano) más abajo).
 
+**El catalán** sigue las normas del Institut d'Estudis Catalans (*Llibre d'estil*, capítulo VI). Se aplican desde postext 1.14:
+
+- Cada corte deja al menos dos letras a cada lado (`ter-ra`, `cai-xa`, `plu-ja`).
+- La *ela geminada* se corta entre sus dos *l*, y el guion ocupa el lugar del punto volado: *il·lusió* queda `il-` | `lusió`. La línea se mide sin el punto, así que la justificación y Knuth–Plass ven su anchura real.
+- Dos vocales en hiato no se separan (`cièn-cia`, `ca-mions`). Una *i* o una *u* entre vocales cuenta como consonante y abre su sílaba (`fe-ia`, `ve-ient`).
+- No se corta justo después de un apóstrofo (`s'ha-via`, nunca `s'-havia`).
+- Las palabras con prefijo más comunes se cortan por el prefijo (`vos-altres`, `cel-obert`, `ben-estar`).
+- Para que las palabras con pronombres enclíticos solo se corten por su propio guion (`portar-` | `lo`), como prefiere el IEC, pon [`hyphenation.compounds`](/es/docs/configuration#separación-silábica) a `false`.
+
 ### Por qué Hypher (y no un algoritmo propio)
 
 El sistema original de separación silábica de Postext usaba una **heurística propia basada en vocales**: detectaba límites silábicos encontrando grupos de vocales, prefijos comunes (`over-`, `under-`, `inter-`) y sufijos comunes (`-tion`, `-ment`, `-sion`). Era simple y rápida, pero fundamentalmente limitada:

@@ -6165,7 +6165,7 @@ stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
 // => { paper: { type: 'bible' } }
 ```
 
-In the sandbox these settings are under **Export → Folio viewer (3D)**. See [A 3D book](#a-3d-book-postext-folio) for the viewer itself.
+In the sandbox these settings are the **Folio** group of the Design panel (**Design → Folio → Folio viewer (3D)**), and the Folio tab shows them as you change them, without laying the book out again. See [A 3D book](#a-3d-book-postext-folio) for the viewer itself, and [Document format › `:::paper`](/en/docs/document-format#paper) for a run of pages on another stock.
 
 
 ## Debug
@@ -7603,7 +7603,7 @@ The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/Pd
 
 ## A 3D book (`postext-folio`)
 
-`postext-folio` sets a laid-out document on the screen as a book: spreads by the recto rule, and leaves the reader turns with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in three.js and casts a real shadow on the pages under it. The WebGL canvas draws the book still and turning alike, so a page never changes look when it lands. It is the viewer of the Cookbook's recipes and of the sandbox's **Folio** tab.
+`postext-folio` sets a laid-out document on the screen as a printed book lying open on a desk: spreads by the recto rule, and leaves the reader turns with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in three.js according to its paper and casts a real shadow on the pages under it. The WebGL canvas draws the book still and turning alike, so a page never changes look when it lands. It is the viewer of the Cookbook's recipes and of the sandbox's **Folio** tab.
 
 ```bash
 npm install postext postext-folio three
@@ -7622,14 +7622,62 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-- **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at exactly the device pixels of a page slot (WebGL then shows it texel for pixel, as sharp as the canvas preview), and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first; the leaves a long turn sweeps past show as blank paper while they are in the air.
-- **The document sets the book.** Its first page opens alone on the right when it is a recto (`pageIndexOffset` even), a right-bound book (`page.binding: 'right'`, or a vertical document) lies mirrored and turns leftward, and blank pages take the page's background colour.
-- **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either).
+- **Pages are painted as they are needed.** `createFolioFromDocument` paints each page with `renderPageToCanvas` at exactly the device pixels of a page slot (WebGL then shows it texel for pixel, as sharp as the canvas preview), and only the spreads around the open one (`window`, three either side by default). Pages that fall out of that window are freed, so a book of a thousand pages costs the memory of a few. A jump to a far page paints that spread first. Up to ten pages away the leaves turn one by one; farther, the block of pages in between lifts as one slab, as thick as those pages (their calipers summed), and lands on the other side. `setDocument` keeps the painting of every page that reads the same in the new layout (`{ repaint: true }` paints them all again, after an image came in).
+- **The document sets the book.** Its first page opens alone on the right when it is a recto (`pageIndexOffset` even), a right-bound book (`page.binding: 'right'`, or a vertical document) lies mirrored and turns leftward, blank pages take the page's background colour, and the page's trim width (`pageWidthMm`) scales the paper's caliper and the boards. A chapter laid out with a `continuation` counts the book's other pages (`pageIndexOffset` before it, `bookPageCount` after it) into the thickness of the two page blocks without drawing them (`extraPages`).
+- **The document sets the look.** The paper, the binding, the desk and the light are the document's [`folio` settings](#folio-viewer-config) (`doc.config.folio`). A page set inside a `:::paper` run carries its own stock (`VDTPage.paper`), and its leaf is drawn with that paper's colour, surface, thickness and stiffness. With `binding.cover: 'pages'` the first page is the front board and the last, when it is a verso, the back board (`covers`).
+- **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either): the spine runs along the page's inner edge and the leaf turns over it, a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.
+- **What the pointer does.** `interaction` (and `setInteraction` later) sets what the left button, one finger or a pen does on the book: `'hand'` (the default) takes and turns the pages, `'orbit'` turns the view as a right-drag does (for trackpads and tablets), `'select'` leaves the pointer to the host, to select text, say. `pageAt(event)` gives the page under a pointer and where on it (`{ page, x, y }`, fractions of the page from its top left corner), on the book as it is seen, tilted or orbited; `pointOnScreen(point)` goes the other way, for drawing a caret or a selection over the page. `refreshPage(src)` shows again a page canvas the host drew anew in place. The sandbox uses all of them to select text and follow the editor's caret on the 3D pages.
+- **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt`. The sandbox puts that on a **Reset view** button.
 - **Fonts and images first.** As for `renderPage`, the faces the document uses must be loaded in `document.fonts` and its resource images registered with `registerResourceImage` before pages are painted.
 - **Accessible.** The viewer is a focusable group that takes ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End; its buttons and page count are labelled (`labels` translates them), and each page canvas carries `alt` text (`alt: (index) => …`).
-- **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change.
+- **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change. WebGL books are heavy for a phone (a texture per page side): the sandbox offers its Folio tab only where WebGL2 is available and the screen's short side is at least 600 px. `canFlip()` says whether the leaves will turn in 3D here: WebGL2, and no reduced motion.
 
-`createFolio(container, { pages })` is the same viewer over any pages: image URLs, `<img>` or `<canvas>` elements, and `""` for a blank page. `PageFlipper` is the three.js engine alone, for a host that lays out its own spread DOM, as the Cookbook does.
+### Appearance
+
+The `appearance` option, and `setAppearance` later, override what the document says. Anything left out keeps the document's:
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  appearance: {
+    folio: {
+      tilt: 22,
+      paper: { type: 'bookWove', texture: 'laid' },
+      binding: { type: 'hardcover', coverColor: { hex: '#5a1f1f', model: 'hex' } },
+      surface: { type: 'walnut' },
+      lighting: { environment: 'lamp' },
+    },
+    // Photographed desks: a folder laid out as postext.dev's /folio/textures/
+    // (manifest.json and one folder per desk). Without it, procedural maps.
+    textureBaseUrl: '/folio/textures',
+    // The picture for `folio.binding.spineImage`: the resource's URL,
+    // or a drawn canvas or image.
+    spineImage: spineUrl,
+  },
+});
+
+// A settings panel: the book redrawn in place, nothing painted again.
+book.setAppearance({ folio: { ...folio, lighting: { environment: 'daylight' } } });
+book.resetView();
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Field</th>
+      <th>What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>folio</code></td><td>The <a href="#folio-viewer-config"><code>folio</code> settings</a>: tilt, paper, binding, surface, lighting. Replaces the document's when given.</td></tr>
+    <tr><td><code>pageWidthMm</code></td><td>The trim width of a page in mm, against which the caliper and the boards are scaled. From the document: the trimmed page at its dpi. Default 150 for <code>createFolio</code>.</td></tr>
+    <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>: pages of the book outside the ones given, counted for the thickness of the page blocks and never drawn.</td></tr>
+    <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>: the first page given is the front cover, the last the back cover (when it falls on a verso). They turn as boards and no case is drawn. From the document: <code>binding.cover: 'pages'</code> on a book that starts at its first page and ends at its last.</td></tr>
+    <tr><td><code>spineImage</code></td><td>The picture printed on the spine, as a URL, a canvas or an image. <code>createFolioFromDocument</code> does not look resources up: pass the picture of the resource <code>folio.binding.spineImage</code> names. Ignored on a saddle stitch.</td></tr>
+    <tr><td><code>textureBaseUrl</code></td><td>Where the photographed desk textures are served. Until they load, or without it, the desk is drawn with procedural maps.</td></tr>
+  </tbody>
+</table>
+
+`createFolio(container, { pages })` is the same viewer over any pages: image URLs, `<img>` or `<canvas>` elements, and `""` for a blank page; a page can be `{ src, alt, paper }`, with `paper` a `:::paper`-style stock for that leaf. `PageFlipper` is the three.js engine alone, for a host that lays out its own spread DOM; `FlatPageFlipper` is the flat page-turn that predates the 3D book, kept for the Cookbook's light table. The full option list is in the [package README](https://www.npmjs.com/package/postext-folio).
 
 ### Live example: a book in 3D
 

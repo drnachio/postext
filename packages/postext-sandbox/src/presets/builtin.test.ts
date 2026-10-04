@@ -48,7 +48,7 @@ describe('the built-in guide in three languages', () => {
 
   it('cuts every edition into the same chapters', async () => {
     const counts = await Promise.all(['en', 'es', 'zh-Hans'].map(async (l) => (await preset().load(l)).chapters.length));
-    expect(counts).toEqual([13, 13, 13]);
+    expect(counts).toEqual([14, 14, 14]);
   });
 
   it('follows the language asked for when the host passes one of the samples', async () => {

@@ -24,7 +24,7 @@ import {
   WebGLRenderTarget,
 } from "three";
 
-import type { PageSource, SpreadSrc } from "./pageFlip";
+import { BLOCK_PAGES, type PageSource, type SpreadSrc } from "./pageFlip";
 
 // The flat flipper: the page-turn of postext-folio before the 3D book, for
 // a host whose own DOM spread shows the pages at rest (the canvas is
@@ -688,6 +688,12 @@ export class FlatPageFlipper {
     const lo = Math.min(this.target, this.settledAt());
     const hi = Math.max(this.target, this.settledAt());
     if (lo === hi) return this.onSettle(this.target);
+    // A long jump: the leaves in between are laid over at once and only
+    // the last one turns (each leaf carries two pages).
+    if ((hi - lo) * 2 > BLOCK_PAGES) {
+      const forward = this.target > this.settledAt();
+      for (let k = lo; k < hi; k++) this.turned[k] = forward ? k < hi - 1 : k <= lo;
+    }
     // The first leaves' pages are warm; wait a moment for cold ones.
     this.starting = true;
     const wanted: Drawn[] = [];

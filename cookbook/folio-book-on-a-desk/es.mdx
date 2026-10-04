@@ -1,0 +1,54 @@
+---
+title: "Un libro compuesto sobre la mesa, en 3D"
+summary: "createFolioFromDocument, del paquete postext-folio, abre un capítulo compuesto como un libro en tela sobre una mesa de nogal, con el aspecto de config.folio."
+plain: "El primer capítulo de una novela corta, mostrado como un libro de verdad abierto sobre una mesa. Pasas las páginas con el ratón, y el papel, la tapa y la mesa se eligen en la configuración."
+description: "Un capítulo de novela compuesto con postext y abierto en 3D con postext-folio: papel, encuadernación, mesa y luz en config.folio, en un CodePen mínimo."
+question: "¿Cómo muestro mi documento compuesto como un libro en 3D que el lector hojea con la mano?"
+aliases: ["Folio", "postext-folio", "libro animado", "pasar página", "libro en 3D", "vista previa del libro", "hojear"]
+pageNotes: { "1": "La apertura del capítulo: un antetítulo verde pequeño, el título The Last Crossing y un filete corto; debajo, la primera página de texto justificado.", "2": "Un verso con el nombre de la autora y el folio en la cabecera, y un intertítulo verde en cursiva." }
+---
+
+## Lo que vas a componer
+
+El primer capítulo de *The Ferryman’s Ledger*, una novela corta en página de 129 × 198 mm, abierto como un libro sobre una mesa de nogal. La tapa es de tela verde botella, las páginas son un papel ahuecado color crema de los que se usan en novela, y el lector toma la página derecha por el borde y la pasa: la hoja se curva y proyecta su sombra sobre la de abajo. El texto se compone una vez con `buildDocument`, y una llamada al paquete `postext-folio` convierte esa composición en el libro. Todo aquello de lo que está hecho el libro (papel, encuadernación, mesa, luz, el ángulo de la vista) va en la configuración, de modo que el mismo documento lleva su aspecto a la pestaña Folio del Sandbox.
+
+## Elaboración
+
+### 1 · Di de qué está hecho el libro
+
+<Excerpt region="folio" />
+
+`config.folio` lo lee el visor 3D y nada más: la composición, el canvas, el PDF y el HTML lo ignoran, así que cambiar el papel no mueve ni una línea. `bookWove` es un papel ahuecado para novela, y con 70 g/m² a su mano da una hoja de unas 112 µm; el visor la multiplica por el número de páginas para el grosor del bloque. El color de la tela está enlazado con el acento de la paleta, el mismo verde del antetítulo y los folios.
+
+### 2 · Una apertura tranquila y las cabeceras
+
+<Excerpt region="opener" />
+
+El capítulo empieza a un tercio de la altura de una página impar, bajo un antetítulo que sale de los atributos del título. En 3D una apertura hundida se lee como en una novela impresa: el blanco de la cabeza de la página es lo primero que ve el lector al abrir las tapas.
+
+<Excerpt region="running-heads" />
+
+### 3 · Abre el documento como un libro
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `createFolioFromDocument` recibe un contenedor y el documento compuesto: pinta cada página con `renderPageToCanvas` al tamaño exacto del hueco de página, solo alrededor del pliego abierto, y encaja el libro en el contenedor. El contenedor necesita una altura propia o el libro no tiene sitio. `textureBaseUrl` apunta a las mesas fotografiadas de postext.dev; sin él, el nogal se dibuja con mapas procedurales.
+
+## Variantes
+
+### Una rústica sobre roble, con luz de día
+
+Cambia tres ajustes y el mismo capítulo es una tapa blanda sobre una mesa clara; no se vuelve a componer nada.
+
+```diff
+-  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
+-    coverColor: col('accent') }, // the case wraps the pages; boards a little larger
+-  surface: { type: 'walnut' },
+-  lighting: { environment: 'studio', intensity: 1, shadows: true },
++  binding: { type: 'paperback', cover: 'case', coverMaterial: 'paper',
++    coverColor: col('accent') },
++  surface: { type: 'oak' },
++  lighting: { environment: 'daylight', intensity: 1, shadows: true },
+```
+
+### Cada hoja en otro papel
+
+<RecipeLink slug="paper-swatch-book">Un muestrario de papeles</RecipeLink> imprime cada hoja en su propio papel con `:::paper`, y <RecipeLink slug="folio-settings-bench">el banco de ajustes</RecipeLink> cambia todos los ajustes en vivo con `setAppearance`.

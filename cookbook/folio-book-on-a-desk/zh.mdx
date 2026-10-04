@@ -1,0 +1,54 @@
+---
+title: "把排好的书放到桌上，以3D呈现"
+summary: "postext-folio包的createFolioFromDocument把排好的一章打开成胡桃木桌上的布面精装书，外观由config.folio决定。"
+plain: "一本短篇小说的第一章，显示成一本摊开在桌上的真书。用鼠标翻页，纸张、封面和桌面都在配置里选。"
+description: "用postext排一章小说，再用postext-folio以3D打开：纸张、装订、桌面和光照写在config.folio里，一个最小的CodePen。"
+question: "怎样把排好的文档显示成读者用手翻页的3D书本？"
+aliases: ["Folio", "postext-folio", "翻页书", "翻页效果", "3D书本", "图书预览", "翻书"]
+pageNotes: { "1": "章首页：一行绿色小眉题、标题The Last Crossing和一条短线，下面是第一页两端对齐的正文。", "2": "左页：书眉是作者名和页码，还有一个绿色斜体小标题。" }
+---
+
+## 成品一览
+
+短篇小说*The Ferryman’s Ledger*的第一章，页面129 × 198毫米，摊开在一张胡桃木桌上。书壳是瓶绿色的布面，书页是小说常用的松厚米色纸。读者捏住右页的边缘翻过去，纸页弯曲，在下面一页投下影子。正文用`buildDocument`排一次，再调用一次`postext-folio`包，就把这个版面变成一本书。书的材质（纸张、装订、桌面、光照、视角）都写在配置里，所以同一个文档在沙盒的Folio标签页里也是这个样子。
+
+## 做法
+
+### 1 · 说明书是用什么做的
+
+<Excerpt region="folio" />
+
+`config.folio`只有3D查看器读取：排版、Canvas、PDF和HTML输出都忽略它，所以换纸不会挪动任何一行。`bookWove`是松厚的小说纸，70 g/m²按它的松厚度算，一张纸约112微米厚；查看器再乘以页数，得出书芯的厚度。布面颜色链接到调色板的强调色，与眉题和页码同一种绿。
+
+### 2 · 安静的章首页和书眉
+
+<Excerpt region="opener" />
+
+章节从奇数页三分之一高处开始，眉题取自标题的属性。在3D里，下沉的章首页和印刷的小说一样：打开封面时，读者先看到页面顶部的留白。
+
+<Excerpt region="running-heads" />
+
+### 3 · 把文档打开成书
+
+代码就是上面的[简短回答](#简短回答)。`createFolioFromDocument`接收一个容器和排好的文档：它用`renderPageToCanvas`按页位的确切尺寸绘制每一页，只画打开的跨页附近几页，并把书放进容器。容器必须有自己的高度，否则书没有空间。`textureBaseUrl`指向postext.dev上拍摄的桌面；不设它，胡桃木就用程序生成的贴图来画。
+
+## 变化
+
+### 白天光线下橡木桌上的平装书
+
+改三个设置，同一章就成了浅色桌面上的软皮书；不需要重新排版。
+
+```diff
+-  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
+-    coverColor: col('accent') }, // the case wraps the pages; boards a little larger
+-  surface: { type: 'walnut' },
+-  lighting: { environment: 'studio', intensity: 1, shadows: true },
++  binding: { type: 'paperback', cover: 'case', coverMaterial: 'paper',
++    coverColor: col('accent') },
++  surface: { type: 'oak' },
++  lighting: { environment: 'daylight', intensity: 1, shadows: true },
+```
+
+### 每张纸用不同的纸张
+
+<RecipeLink slug="paper-swatch-book">纸样册</RecipeLink>用`:::paper`让每张纸印在自己的纸上，<RecipeLink slug="folio-settings-bench">设置工作台</RecipeLink>用`setAppearance`实时更改每一项设置。

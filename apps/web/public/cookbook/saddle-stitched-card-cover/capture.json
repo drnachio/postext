@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "slug": "saddle-stitched-card-cover",
+  "sourceHash": "130f9022c6517bd614c1824c5b3b890f17b33d5d50a61001add9921b5243a76c",
+  "engine": {
+    "postext": "1.13.4",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T10:06:58.538Z",
+  "variants": {
+    "en": {
+      "hash8": "2d808220",
+      "vdtHash": "b81ea95ce3d428a6c883d46948d8fa5a9a059b5b",
+      "timings": {
+        "importMs": 199,
+        "fontsMs": 31,
+        "buildMs": 24,
+        "totalMs": 1032,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          200
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Newsreader",
+          "sizePt": 10,
+          "leadingPt": 13.600000000000001
+        },
+        "families": [
+          "Bricolage Grotesque",
+          "Newsreader"
+        ],
+        "pages": 8,
+        "ownLines": 160
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 20282,
+          "alt": "Opening page 1: Low Tide."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 56876,
+          "alt": "Opening page 2: In this issue."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 116226,
+          "alt": "Opening page 3: The dunlin come back."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1429,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 30692,
+          "alt": "Page 4: How to see them."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 88980,
+          "alt": "Opening page 5: The last boatbuilder."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 60310,
+          "alt": "Opening page 6: Tide table."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 45432,
+          "alt": "Opening page 7: Join us."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1429,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 7530,
+          "alt": "Opening page 8: Low Tide."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "saddle-stitched-card-cover.postext",
+        "bytes": 10962,
+        "folio": "0753e69b"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "createFolioFromDocument",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.color",
+          "folio.surface.type",
+          "folio.tilt",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 401,
+        "designElements": 23,
+        "directives": [
+          ":::paper",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Bricolage Grotesque",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Bricolage Grotesque",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Bricolage Grotesque",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Newsreader",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "paper-runs",
+          "paragraph-styles",
+          "section-geometry",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.84
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 8.2 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    }
+  }
+}

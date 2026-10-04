@@ -15,6 +15,7 @@ import {
 import type { BlockStyle } from './styles';
 import type { MeasuredBlock } from '../measure';
 import { NO_BREAK_SPACES } from '../measure/spaces';
+import { GEMINATE_DOT, endsInsideGeminate } from '../measure/geminate';
 import { renderMath, isMathReady, noteMathWithoutEngine } from '../math';
 
 // ---------------------------------------------------------------------------
@@ -368,7 +369,12 @@ export function stampSourceRanges(
       // (a break opportunity a measurer inserted) is no source character.
       if (isUnprinted(c ?? undefined) && c !== plain[i]) continue;
       while (isUnprinted(plain[i]) && c !== plain[i]) i++;
-      if (u === units.length - 1 && line.hyphenated && c === '-' && plain[i] !== '-') break;
+      if (u === units.length - 1 && line.hyphenated && c === '-' && plain[i] !== '-') {
+        // The hyphen of a break inside an `l·l` stands for the middle dot
+        // the line drops: the dot is this line's.
+        if (plain[i] === GEMINATE_DOT && endsInsideGeminate(plain.slice(i - 1, i + 1))) i++;
+        break;
+      }
       i++;
     }
     line.plainStart = cumPlain;

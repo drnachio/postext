@@ -144,10 +144,10 @@ Full references (load the one you need):
   back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
-  horizontally and vertically, CJK fonts…) and which public preset shows
-  each.
+  horizontally and vertically, CJK fonts, the printed object for the Folio
+  3D viewer…) and which public preset shows each.
 - [references/verification.md](references/verification.md): lint, headless
-  render, page-by-page comparison, and a symptom → lever table.
+  render, page JPEGs, page-by-page comparison, and a symptom → lever table.
 
 ## Setup (once)
 
@@ -155,8 +155,12 @@ Full references (load the one you need):
 python3 -m pip install pymupdf pillow fonttools brotli     # PDF, images, fonts
 brew install pandoc poppler                                  # or apt: pandoc poppler-utils (DOCX/PPTX/EPUB/HTML, page images)
 mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
-  && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit   # headless render (Node >= 22.15)
+  && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas   # headless render + page JPEGs (Node >= 22.15)
 ```
+
+`@napi-rs/canvas` (prebuilt, no system libraries) lets `render.mjs --jpeg`
+paint pages with the engine's own canvas renderer. Add it to an existing
+tools folder with `npm i @napi-rs/canvas`.
 
 Optional: `ocrmypdf` (scans), `magick` (SVG fallback rasters, contact sheets),
 `verapdf` (PDF/UA).
@@ -173,6 +177,10 @@ Ask only what you cannot infer:
 - Which part: the whole book, or a sample chapter first (recommended)?
 - Languages.
 - Print (PDF) and/or screen.
+- The printed object, for the Folio 3D viewer: paper stock and weight,
+  binding, cover (a case, or the book's own first and last pages). Read it
+  from the source's colophon or the publisher's spec; ask only when it is
+  nowhere and the user cares (playbooks A11).
 - For Chinese (or Japanese, Korean) sources: the script and region (简体
   mainland; 繁體 Taiwan or Hong Kong), the writing direction (horizontal or
   vertical) and the binding edge (a vertical book is bound on the right).
@@ -285,15 +293,34 @@ list deliberate deviations.
 Then `python3 build_preset.py`.
 
 ### 7. Verify and iterate
-Follow [verification.md](references/verification.md):
+Follow [verification.md](references/verification.md).
+
+**Look at pages as JPEGs.** Inside the loop (change the config or a chapter,
+look, change again) render only the pages you need, straight from the
+layout, and open the files:
 
 ```bash
 python3 scripts/lint_project.py my-book --quiet
-node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf
-python3 scripts/compare_pages.py source.pdf /tmp/my-book.pdf --source-pages 23-40 --render-pages 1-18 --out /tmp/cmp --sheet
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15               # printed page numbers
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages '#40' --dpi 150      # 40th page of the layout, sharper
 ```
 
-Look at the comparison images and fix the config or the Markdown. Aim for:
+Each page is `/tmp/pages/page-NNN.jpg` (NNN = position in the layout; the
+log line gives the number it prints). They are painted by the engine's
+canvas renderer, the painter of the Sandbox's Canvas tab, in about a second
+for a chapter: no PDF to build, no images to extract from it, no browser.
+`--dpi` defaults to 100 (enough to read body text); 150–200 for fine
+detail. `--chapters 2` lays out that chapter file alone (faster on a long
+book; its pages then number from its own first page). Compare with the source from the same folder:
+
+```bash
+python3 scripts/compare_pages.py source.pdf /tmp/pages --source-pages 23-26 --render-pages 1-4 --out /tmp/cmp --sheet
+```
+
+Build the PDF (`--out`) for the print checks and once at the end, not on
+every iteration.
+
+Fix the config or the Markdown until you reach:
 
 - zero lint errors;
 - `converged=true`;
@@ -314,8 +341,10 @@ serve a presets folder to a local sandbox (`preset_kit.py index <root>` +
 program through the `postext` npm package (`openBundle` → `buildBundle` →
 canvas, HTML or `postext-pdf`); see
 [project-format.md §7](references/project-format.md#7-bundles-from-code).
-Report what matches, the known gaps, and anything that needs a human
-decision (rights, design choices).
+In the Sandbox, open the **Folio** tab to see the book bound, on the
+paper and binding of `config.folio` (Design → Folio). Report what matches,
+the known gaps, and anything that needs a human decision (rights, design
+choices).
 
 ## Bundles from code
 
@@ -348,6 +377,12 @@ Use it when:
   extractor over curated chapters.
 - **Semantic ids and styles.** Name things by role (`keypoints`, `band`,
   `fig-cohort-study`), never by number or position.
+- **Look at JPEGs, not PDFs, while iterating.** `render.mjs --jpeg` with
+  `--pages`; never build a PDF and rasterise it, or screenshot a browser,
+  just to see a page.
+- **The book is an object too.** Set `config.folio` (paper, binding,
+  covers) from the source's specification; layout ignores it, so it costs
+  nothing to get right (playbooks A11).
 - **Fidelity where it matters.** Match the grid, type, openers, boxes, figure
   placement and page breaks. Don't chase individual line breaks.
 - **Bilingual**: one design, per-language wording (`localized`); the same

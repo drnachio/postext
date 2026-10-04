@@ -223,6 +223,20 @@ describe("the page flipper", () => {
     expect(t2).toBeGreaterThan(t1 + 50 * 0.1);
   });
 
+  it("prints a stapled cover on its own stock when the leaf names one", () => {
+    const card = { type: "cardStock" as const, grammage: 250, shade: { hex: "#f2c9b4", model: "hex" as const } };
+    const folio = { tilt: 0, paper: { type: "newsprint" as const }, binding: { type: "saddleStitch" as const, cover: "pages" as const } };
+    const own = flipper("left", 1, { folio, coverLeaves: { front: 0 }, leafPapers: [card, undefined] });
+    const plain = flipper("left", 1, { folio, coverLeaves: { front: 0 }, leafPapers: [undefined, undefined] });
+    const spec = (f: typeof own.f) => (inside(f) as unknown as { specOf(k: number): { paper: { type: string; grammage: number; shade: { hex: string } } } }).specOf(0);
+    expect(spec(own.f).paper.type).toBe("cardStock");
+    expect(spec(own.f).paper.grammage).toBe(250);
+    expect(spec(own.f).paper.shade.hex).toBe("#f2c9b4");
+    // Without a stock of its own: the pages' paper, a little heavier.
+    expect(spec(plain.f).paper.type).toBe("newsprint");
+    expect(spec(plain.f).paper.grammage).toBeGreaterThan(48);
+  });
+
   it("turns a board leaf as a rigid plate", () => {
     const board = flipper("left", 1, { folio: { tilt: 0 }, leafPapers: [undefined, { type: "board" }, undefined] });
     board.f.grab(onPage("right"));
@@ -277,4 +291,73 @@ describe("the page flipper", () => {
     // to dip into the gutter, creased where it passed over the spine.
     expect(worst).toBeLessThan(0.1);
   });
+
+  it("finds the printed point under the pointer on either open page, and back", () => {
+    for (const binding of ["left", "right"] as const) {
+      const { f } = flipper(binding, 1, { folio: { tilt: 30 } });
+      f.redraw();
+      tick(16);
+      for (const side of [0, 1] as const) {
+        for (const [x, y] of [[0.3, 0.2], [0.8, 0.7]]) {
+          const screen = f.screenPoint(side, x, y)!;
+          const back = f.pagePoint({ clientX: screen.x, clientY: screen.y })!;
+          expect(back.side).toBe(side);
+          expect(back.x).toBeCloseTo(x, 2);
+          expect(back.y).toBeCloseTo(y, 2);
+        }
+      }
+      // The recto lies on the right of a left-bound book, on the left of a
+      // right-bound one; its top left corner is towards the spine on the
+      // first, towards the fore-edge on the other.
+      const recto = f.screenPoint(1, 0.5, 0.5)!;
+      expect(binding === "left" ? recto.x > CX : recto.x < CX).toBe(true);
+      const tl = f.screenPoint(1, 0, 0)!;
+      const tr = f.screenPoint(1, 1, 0)!;
+      expect(tl.x < tr.x).toBe(true);
+      expect(tl.y).toBeLessThan(f.screenPoint(1, 0, 1)!.y);
+    }
+  });
+
+  it("finds no page off the book", () => {
+    const { f } = flipper("left");
+    expect(f.pagePoint({ clientX: CX + 3 * W, clientY: CY })).toBeNull();
+  });
+
+  it("carries a long jump over as one block of leaves, a short one leaf by leaf", async () => {
+    const started = () => new Promise((r) => setTimeout(r, 0));
+    const long: [string | null, string | null][] = [[null, ""], ...Array.from({ length: 40 }, () => ["", ""] as [string, string])];
+    const settled: number[] = [];
+    const f = new PageFlipper(canvas, spread, long, 1, (i) => settled.push(i), () => {}, "left", { appearance: { folio: { tilt: 0 } } });
+    type Block = { block: { lo: number; hi: number } | null; turns: Map<number, unknown> };
+    const peek = () => f as unknown as Block;
+    // 30 spreads on (60 pages): one block, no leaf of its own in the air.
+    f.go(31);
+    await started();
+    let most = 0;
+    let sawBlock = false;
+    for (let i = 0; i < 200 && settled.length === 0; i++) {
+      tick(100);
+      const b = peek().block;
+      if (b) {
+        sawBlock = true;
+        expect(b).toMatchObject({ lo: 1, hi: 31 });
+      }
+      most = Math.max(most, peek().turns.size);
+    }
+    expect(sawBlock).toBe(true);
+    expect(most).toBe(0);
+    expect(settled).toEqual([31]);
+    // 4 spreads back (8 pages): leaf by leaf.
+    settled.length = 0;
+    f.go(27);
+    await started();
+    most = 0;
+    for (let i = 0; i < 400 && settled.length === 0; i++) {
+      tick(50);
+      expect(peek().block).toBeNull();
+      most = Math.max(most, peek().turns.size);
+    }
+    expect(most).toBeGreaterThan(0);
+    expect(settled).toEqual([27]);
+  }, 30_000); // a 40-leaf book flipped tick by tick: 5.8 s on the CI runner
 });

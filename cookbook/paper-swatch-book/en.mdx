@@ -1,0 +1,63 @@
+---
+title: "A swatch book, every leaf on its own paper"
+summary: "Each leaf of a paper merchant's stock book sits in a :::paper fence, and postext-folio draws it with that stock's shade, weight, surface and stiffness."
+plain: "A small sample book from a paper shop. Every page says which paper it is printed on, and in the 3D viewer each page really looks and turns like that paper."
+description: "A :::paper fence per leaf gives each page its own stock in the layout; postext-folio turns gloss, laid, wove and bible paper differently, in a minimal pen."
+question: "How do I print a cover, an insert or a plate section on a different paper from the rest of the book?"
+aliases: ["paper stock", "swatch book", "paper samples", ":::paper", "plate section", "insert", "bible paper", "show-through"]
+pageNotes: { "1": "The front cover: an oxblood field to every edge, a small tracked kicker, the title The Stock Book in a large Caslon display face and an italic subtitle.", "3": "The card for Book Wove, Natural: a kicker, the stock's name over a hairline, five specification lines with bold labels and two paragraphs on the paper.", "11": "The bible paper's specimen: six glossary entries with hanging indents." }
+---
+
+## What you'll build
+
+*The Stock Book* of Harwell & Daughters, a fictional Bristol paper merchant: twelve pages on a 120 × 176 mm trim, a card cover, and four leaves that each describe the paper they are printed on. The front of a leaf is the stock's card, with weight, bulk, finish, shade and opacity; the back is a page of type set the way that paper is used: a novel, a letter, a gallery caption, a glossary. Flat on the screen the twelve pages print alike. In Folio each leaf has its paper: the cream wove, the ribbed laid sheet, the gloss that turns flat and stiff, and the 40 g bible paper that falls over at once and shows its back through.
+
+## Method
+
+### 1 · One fence per leaf
+
+<Excerpt region="paper-runs" />
+
+A `:::paper` fence starts on a new page and the text after it does too, so each run here fills one leaf: the card on the recto, a `:::pagebreak`, the specimen on the verso. A leaf has one paper for both its sides, and it takes its recto's: a run that started on a verso would print that page on the stock of the leaf it shares (see Pitfalls).
+
+### 2 · The book's own paper and its covers
+
+<Excerpt region="folio" />
+
+`folio.paper` is the paper of every page outside a fence; a fence's attributes override it field by field, and the stock's defaults fill in the rest. `cover: 'pages'` makes page 1 the front board and page 12 the back, so the book lies closed until you open it; that needs an even page count, which the back cover's `parity: 'even'` break guarantees.
+
+### 3 · Covers to the bleed
+
+<Excerpt region="covers" />
+
+Each cover is a heading style whose design holds a colour field as large as the trim. The style sets its margins to zero for the length of its section, the cover page alone, so the field reaches every edge and the pages after it keep their margins.
+
+### 4 · The stock card
+
+<Excerpt region="stock-card" />
+
+Every leaf opens with a first-level heading drawn from a slot: the kicker from the heading's attributes, the stock's name and a hairline. The specification lines are a paragraph style in the condensed label face, with their bold labels in the accent.
+
+### 5 · Read the paper back from the layout
+
+The code is [the short answer](#the-short-answer) above. Every page laid out inside a fence carries the fence's attributes in `page.paper`, as written: `{ type: 'bible', grammage: 40 }`. `createFolioFromDocument` passes them to the viewer, which draws each leaf with its stock; the pen also reads them for the status line and for each page's text alternative.
+
+## Variations
+
+### Add a plate section on heavier gloss
+
+A fence inside the text of any book prints those pages on their own stock; the figures cited inside it are placed before it closes.
+
+```diff
++:::paper{type=coatedGloss grammage=170 showThrough=false}
++
++# Plates {kicker="Between pages 64 and 65"}
++
++::resource{id="plate-1"}
++
++:::
+```
+
+### A stapled booklet with a card cover
+
+<RecipeLink slug="saddle-stitched-card-cover">The zine recipe</RecipeLink> wraps newsprint pages in a card cover sheet with two fences and a saddle stitch.

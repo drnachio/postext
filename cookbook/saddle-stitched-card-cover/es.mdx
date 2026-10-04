@@ -1,0 +1,58 @@
+---
+title: "Un fanzine grapado con pliego de cubierta de cartulina"
+summary: "Dos bloques :::paper ponen una cartulina salmón en el pliego exterior de un fanzine de ocho páginas, y postext-folio lo grapa a caballete con papel prensa."
+plain: "Una revista pequeña y doblada sobre un río, con una cubierta gruesa de color y papel prensa fino dentro. En el visor 3D está cerrada sobre la mesa y se abre como la de verdad."
+description: "Un fanzine de ocho páginas con pliego de cubierta de cartulina y pliego interior de papel prensa: dos bloques :::paper, grapado y cover: 'pages', en un pen."
+question: "¿Cómo imprimo una cubierta, un encarte o un pliego de láminas en un papel distinto del resto del libro?"
+aliases: ["fanzine", "cuadernillo", "grapado a caballete", "grapado", "cubierta de cartulina", "papel prensa", "pliego de cubierta", "riso"]
+pageNotes: { "1": "La cubierta sobre blanco: la línea del número, Low Tide en una grotesca azul grande, una entradilla en cursiva y once líneas de marea azules de distinta longitud al pie.", "3": "El reportaje de los correlimos: antetítulo azul, título negro, un filete azul corto y texto justificado.", "8": "La contracubierta: Low Tide en azul y una línea pequeña en versales, centradas." }
+---
+
+## Lo que vas a componer
+
+El número 3 de *Low Tide*, un fanzine gratuito sobre un estuario: ocho páginas de 140 × 200 mm, dos pliegos doblados y grapados por el lomo. El pliego exterior, páginas 1–2 y 7–8, es una cartulina salmón; el interior, páginas 3–6, papel prensa barato. La cubierta se imprime en un solo azul de risografía sobre la cartulina desnuda, sin campo de color propio, así que en las páginas planas de abajo sale sobre blanco, y en Folio descansa cerrada sobre la mesa con el color de su cartulina hasta que la pasas. Los dos papeles son dos bloques del Markdown, y la encuadernación, tres ajustes de `config.folio`.
+
+## Elaboración
+
+### 1 · Encierra el pliego exterior
+
+<Excerpt region="cover-sheet" />
+
+Un cuadernillo grapado es una pila de pliegos doblados, así que el pliego de cubierta lleva las dos primeras páginas y las dos últimas. Un bloque encierra las páginas 1–2, otro las 7–8, y las de en medio quedan fuera de los dos, en el papel del propio libro. Cada bloque empieza y acaba en página nueva, que aquí es justo la página que necesitan la cubierta y la bienvenida.
+
+### 2 · Papel prensa, grapado, tapas de las páginas
+
+<Excerpt region="folio" />
+
+`folio.paper` es el papel prensa de toda página fuera de un bloque. `saddleStitch` dobla los pliegos alrededor de las grapas, sin lomo plano, y `cover: 'pages'` hace girar las páginas 1 y 8 como cubiertas. En un grapado la cubierta gira como los demás pliegos, solo que más rígida, y una hoja de cubierta que nombra su propio papel (la cartulina) se dibuja con ese papel.
+
+### 3 · Una cubierta a una tinta
+
+<Excerpt region="covers" />
+
+La cubierta es un estilo de título con márgenes cero y un diseño de página entera: la línea del número, el título en Bricolage Grotesque a 70 pt, la entradilla en Newsreader cursiva y once líneas de marea cuyas longitudes salen de un generador con semilla, de modo que cada ejecución dibuja las mismas. Nada pinta el fondo de la página: lo pone la cartulina.
+
+### 4 · Una apertura para cada pieza
+
+<Excerpt region="features" />
+
+Cada reportaje es un título de primer nivel con el estilo `feature`: página nueva, un antetítulo tomado de sus atributos, el título y un filete azul corto. Pasar las cinco piezas por un solo estilo deja el interior del fanzine en dos familias y un acento.
+
+### 5 · Ábrelo grapado
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `createFolioFromDocument` lee la encuadernación y las cubiertas de `doc.config.folio`, y el papel de cada hoja de `page.paper`. El pen avisa cuando el número de páginas es impar, porque la página 8 solo puede ser la contracubierta si cae en un verso.
+
+## Variantes
+
+### Una cubierta más gruesa y blanca
+
+Cambia los dos bloques y el pliego de cubierta es una cartulina blanca de 300 g; las páginas interiores siguen en papel prensa.
+
+```diff
+-:::paper{type=cardStock grammage=250 shade=#f2c9b4}
++:::paper{type=cardStock grammage=300 shade=#fbfaf6}
+```
+
+### Un cuadernillo sencillo
+
+Quita los bloques y la cubierta es un pliego del mismo papel prensa, algo más grueso. <RecipeLink slug="paper-swatch-book">El muestrario</RecipeLink> va en sentido contrario y da a cada hoja su propio papel.

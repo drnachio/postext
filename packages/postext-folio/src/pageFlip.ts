@@ -96,6 +96,13 @@ const FOV = 24;
 const ROLL = 0.11;
 /** Milliseconds one leaf takes to turn. */
 const DURATION = 1000;
+/** A jump of more pages than this is made in one move: the block of
+ *  leaves in between is lifted together and laid over on the other side,
+ *  instead of every leaf turning on its own. */
+export const BLOCK_PAGES = 10;
+/** How long a block of leaves takes to go over (ms), a little longer for
+ *  a thicker one. */
+const BLOCK_DURATION = 1150;
 /** A leaf follows the one before it once that one is this far through its turn. */
 const GAP = 0.14;
 
@@ -402,18 +409,88 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
   return m;
 }
 
+/** The uniforms every page block's edge material shares: book units per
+ *  mm, and how strongly the cut face is relieved (uncoated stock shows
+ *  its fibres; a coated sheet is cut cleaner). */
+const edgeUniforms = {
+  uEdgeK: { value: 1 },
+  uEdgeRelief: { value: 1 },
+};
+
+// The cut face of a page block, as a height field in mm over (leaf, mm
+// along the cut): every leaf a rounded ridge standing a hair proud of or
+// behind its neighbours (sheets are never quite in line), the sections
+// and the bundles the knife took together a little out of line with the
+// next, and the faint streaks the guillotine drags across the block. Each
+// scale fades out where it is finer than a pixel, so the face never
+// shimmers. The relief bends the normal (bump mapping from the screen-
+// space derivatives of the field), so the face catches a grazing light.
+const EDGE_RELIEF = /* glsl */ `
+  uniform float uEdgeK;
+  uniform float uEdgeRelief;
+  varying float vRun;
+  float eHash(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+  float eHash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float eNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(eHash2(i), eHash2(i + vec2(1.0, 0.0)), u.x), mix(eHash2(i + vec2(0.0, 1.0)), eHash2(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+  // fade: x = the leaves, y = the bundles, z = the fine knife marks.
+  float edgeHeight(vec2 lv, vec3 fade) {
+    float id = floor(lv.x);
+    float ridge = sin(fract(lv.x) * PI);
+    float proud = eHash(id) - 0.5 + 0.8 * (eNoise(vec2(id * 0.37, lv.y * 0.12)) - 0.5);
+    float leaf = (0.45 * ridge + proud) * 0.04 * fade.x;
+    float bundle = (eNoise(vec2(lv.x / 5.0, lv.y * 0.03)) - 0.5) * 0.12 * fade.y
+      + (eNoise(vec2(lv.x / 24.0 + 7.0, lv.y * 0.02)) - 0.5) * 0.18;
+    float knife = (eNoise(vec2(lv.y * 0.7, lv.x / 90.0)) - 0.5) * 0.035
+      + (eNoise(vec2(lv.y * 3.0, lv.x / 40.0)) - 0.5) * 0.006 * fade.z;
+    return leaf + bundle + knife;
+  }
+  vec3 edgeNormal(vec3 surfPos, vec3 n, vec2 dH, float faceDir) {
+    vec3 sx = dFdx(surfPos);
+    vec3 sy = dFdy(surfPos);
+    vec3 r1 = cross(sy, n);
+    vec3 r2 = cross(n, sx);
+    float det = dot(sx, r1) * faceDir;
+    vec3 grad = sign(det) * (dH.x * r1 + dH.y * r2);
+    return normalize(abs(det) * n - grad);
+  }
+`;
+
 /** The page block's edges: paper with a fine line between leaves (fading
- *  to their average where the lines are finer than a pixel). */
-function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Color }): MeshStandardMaterial {
+ *  to their average where the lines are finer than a pixel), its cut face
+ *  in relief. */
+function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Color }, paper?: Color): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ side: DoubleSide, roughness: 0.92 });
+  if (paper) m.color.copy(paper);
   const band = { uBoardLo: { value: bands?.lo ?? -1 }, uBoardHi: { value: bands?.hi ?? 2 }, uBoardColor: { value: bands?.color ?? new Color(0, 0, 0) } };
   m.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, occlusionUniforms, band, { uSign: { value: sign } });
+    Object.assign(shader.uniforms, occlusionUniforms, edgeUniforms, band, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nvarying float vLayer;\nvarying float vLambda;\n${BOOK_POS_PARS}`)
-      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\n${BOOK_POS}`);
+      .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nattribute float run;\nvarying float vLayer;\nvarying float vLambda;\nvarying float vRun;\n${BOOK_POS_PARS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\nvRun = run;\n${BOOK_POS}`);
     shader.fragmentShader = keyShadowed(shader.fragmentShader)
-      .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
+      .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}\n${EDGE_RELIEF}`)
+      .replace(
+        "#include <normal_fragment_maps>",
+        `{
+          vec2 lv = vec2(vLayer, vRun / uEdgeK);
+          vec2 dx = dFdx(lv);
+          vec2 dy = dFdy(lv);
+          float wl = fwidth(vLayer);
+          vec3 fade = vec3(
+            1.0 - smoothstep(0.3, 0.8, wl),
+            1.0 - smoothstep(2.0, 5.0, wl),
+            1.0 - smoothstep(0.05, 0.15, fwidth(lv.y))
+          );
+          float h0 = edgeHeight(lv, fade);
+          vec2 dH = vec2(edgeHeight(lv + dx, fade) - h0, edgeHeight(lv + dy, fade) - h0) * uEdgeK * uEdgeRelief;
+          if (vLambda >= uBoardLo && vLambda <= uBoardHi) normal = edgeNormal(-vViewPosition, normal, dH, faceDirection);
+        }`,
+      )
       .replace(
         "#include <map_fragment>",
         `{
@@ -422,6 +499,8 @@ function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Col
           float line = smoothstep(0.55 - w, 0.95 + w, d);
           float fine = clamp(w * 1.5, 0.0, 1.0);
           diffuseColor.rgb *= 1.0 - mix(0.22 * line, 0.08, fine);
+          // The bundles' sheets are never quite one shade.
+          diffuseColor.rgb *= 1.0 + 0.06 * uEdgeRelief * (eNoise(vec2(vLayer / 9.0, 3.0)) - 0.5);
           // A board lying in the block (the book's own cover) shows its
           // own edge, not paper.
           if (vLambda < uBoardLo || vLambda > uBoardHi) diffuseColor.rgb = uBoardColor;
@@ -826,6 +905,10 @@ export class PageFlipper {
   /** Leaf k lies on the left. */
   private turned: boolean[];
   private turns = new Map<number, Turn>();
+  /** A long jump in progress: leaves lo … hi − 1 turning over as one
+   *  block (a rigid slab as thick as they are together). */
+  private block: { lo: number; hi: number; turn: Turn } | null = null;
+  private blockMesh: PageMesh | null = null;
   private target: number;
   private raf = 0;
   private lastFrame = 0;
@@ -970,9 +1053,10 @@ export class PageFlipper {
           paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
         : {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
-            // The book's own printed covers: a laminated card board, thinner
-            // than a case's.
-            caliperMm: Math.min(0.45, BINDINGS[r.binding.type].boardMm || 0.45),
+            // The book's own printed covers: in a case binding a printed
+            // (litho-laminated) case, on the case's 2–3 mm board; on a
+            // paperback a laminated cover card, about 0.3 mm.
+            caliperMm: BINDINGS[r.binding.type].boardMm || 0.45,
             // Board does not bend: it turns on its joint as a plate.
             rigidity: 1,
             roughness: 0.45,
@@ -1045,6 +1129,7 @@ export class PageFlipper {
     this.key.shadow.intensity = 0.55 + 0.25 * (1 - env.softness);
     this.renderer.toneMappingExposure = env.exposure * r.lighting.intensity;
     this.edges.color.set(r.paper.shade.hex);
+    edgeUniforms.uEdgeRelief.value = r.paper.finish === "uncoated" ? 1 : r.paper.finish === "matte" ? 0.7 : 0.5;
     this.surfaceKey = "";
     for (const mesh of [this.left, this.right, ...this.leaves.values()]) mesh.material.userData.spec = null;
     this.redraw();
@@ -1110,7 +1195,13 @@ export class PageFlipper {
   /** The paper of leaf k (outside the pages shown: the book's). */
   private specOf(k: number): PaperSpec {
     const covers = this.appearance.coverLeaves;
-    if (this.coverSpec && (k === covers?.front || k === covers?.back)) return this.coverSpec;
+    if (this.coverSpec && (k === covers?.front || k === covers?.back)) {
+      // A stapled cover printed on a stock of its own (a `:::paper` card
+      // round newsprint pages) is that sheet; a board is a board whatever
+      // is printed on it.
+      const own = this.resolved.binding.type === "saddleStitch" && this.appearance.leafPapers?.[k];
+      return own ? this.leafSpecs[k]! : this.coverSpec;
+    }
     return this.leafSpecs[k] ?? this.bookSpec;
   }
 
@@ -1149,9 +1240,20 @@ export class PageFlipper {
     const left: number[] = [];
     const right: number[] = [];
     this.turned.forEach((t, k) => {
-      if (!this.turns.has(k)) (t ? left : right).push(k);
+      if (!this.turns.has(k) && !this.inBlock(k)) (t ? left : right).push(k);
     });
     return { left, right };
+  }
+
+  /** Leaf k is part of the block in the air. */
+  private inBlock(k: number): boolean {
+    return !!this.block && k >= this.block.lo && k < this.block.hi;
+  }
+
+  /** Pages a leaf carries: two, or one when the book shows a page at a
+   *  time (each sheet's back is blank). */
+  private pagesPerLeaf(): number {
+    return this.appearance.singlePage ? 1 : 2;
   }
 
   /** Loads the spine picture, then rebuilds the book to print it. */
@@ -1245,6 +1347,7 @@ export class PageFlipper {
     if (key === this.surfaceKey && this.surfaces) return;
     this.surfaceKey = key;
     const k = this.pxPerMm();
+    edgeUniforms.uEdgeK.value = k;
     const half = this.appearance.singlePage ? 0.5 : 1;
     const thick = (leaves: number[], more: number) =>
       (leaves.reduce((s, i) => s + this.specOf(i).caliperMm, 0) * half + more * this.bookSpec.caliperMm) * k;
@@ -1311,7 +1414,7 @@ export class PageFlipper {
             color: this.boardColor(),
           }
         : undefined;
-      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands) : this.edges);
+      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands, this.edges.color) : this.edges);
       mesh.castShadow = mesh.receiveShadow = true;
       this.stacks.push(mesh);
       this.stage.add(mesh);
@@ -1569,6 +1672,16 @@ export class PageFlipper {
     this.redraw();
   }
 
+  /** A page source drawn again in place (a canvas repainted): its
+   *  texture is uploaded again and the book redrawn. */
+  touch(src: PageSource) {
+    if (!src || typeof src === "string") return;
+    const tex = this.ready.get(src);
+    if (!tex) return;
+    tex.needsUpdate = true;
+    this.redraw();
+  }
+
   /** Starts loading the pages of these spreads as textures. */
   preload(indexes: number[]) {
     for (const i of indexes) for (const src of this.book[i] ?? []) if (src) void this.texture(src);
@@ -1618,6 +1731,7 @@ export class PageFlipper {
         cancelAnimationFrame(this.raf);
         this.raf = 0;
         this.turns.clear();
+        this.block = null;
         for (const mesh of this.leaves.values()) {
           mesh.removeFromParent();
           (mesh.userData.caster as Mesh).removeFromParent();
@@ -1669,23 +1783,48 @@ export class PageFlipper {
   private leaf(k: number): PageMesh {
     let mesh = this.leaves.get(k);
     if (!mesh) {
-      const geometry = new PlaneGeometry(1, 1, NX, NY);
-      spreadColumns(geometry, NX);
-      geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
-      mesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
-      mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
-      mesh.castShadow = mesh.receiveShadow = true;
-      mesh.frustumCulled = false;
-      const caster = new Mesh(mesh.geometry, this.leafCaster);
-      caster.frustumCulled = false;
-      this.shadowScene.add(caster);
-      mesh.userData.caster = caster;
+      mesh = this.leafMesh();
       this.assign(mesh, "Front", this.book[k]?.[1] ?? null);
       this.assign(mesh, "Back", this.book[k + 1]?.[0] ?? null);
       this.leaves.set(k, mesh);
     }
     this.dressPage(mesh, this.specOf(k));
     return mesh;
+  }
+
+  /** A leaf's mesh, its pages not yet assigned. */
+  private leafMesh(): PageMesh {
+    const geometry = new PlaneGeometry(1, 1, NX, NY);
+    spreadColumns(geometry, NX);
+    geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
+    const mesh: PageMesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
+    mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
+    mesh.castShadow = mesh.receiveShadow = true;
+    mesh.frustumCulled = false;
+    const caster = new Mesh(mesh.geometry, this.leafCaster);
+    caster.frustumCulled = false;
+    caster.visible = false;
+    this.shadowScene.add(caster);
+    mesh.userData.caster = caster;
+    return mesh;
+  }
+
+  /** The block in the air: its top page (the first leaf's front) and its
+   *  bottom one (the last leaf's back), and the stock of its first leaf. */
+  private blockLeaf(lo: number, hi: number): PageMesh {
+    this.blockMesh ??= this.leafMesh();
+    const mesh = this.blockMesh;
+    this.assign(mesh, "Front", this.book[lo]?.[1] ?? null);
+    this.assign(mesh, "Back", this.book[hi]?.[0] ?? null);
+    this.dressPage(mesh, this.specOf(lo));
+    return mesh;
+  }
+
+  /** How thick the leaves lo … hi − 1 are together (book units). */
+  private blockThickness(lo: number, hi: number): number {
+    let mm = 0;
+    for (let k = lo; k < hi; k++) mm += this.specOf(k).caliperMm;
+    return Math.max(0.5, mm * (this.appearance.singlePage ? 0.5 : 1) * this.pxPerMm());
   }
 
   /** A board leaf's other face and edges, carried with its mesh. */
@@ -1717,8 +1856,12 @@ export class PageFlipper {
     // The first leaves' pages are warm; wait a moment for cold ones.
     this.starting = true;
     const wanted: Drawn[] = [];
-    for (let i = lo; i <= Math.min(hi, lo + 2); i++) for (const src of this.book[i]) if (src) wanted.push(src);
-    this.preload(Array.from({ length: hi - lo + 1 }, (_, i) => lo + i));
+    // A long jump goes over in one block: only the pages it lands on (and
+    // the block's two faces) show, not the ones in between.
+    const blockwise = (hi - lo) * this.pagesPerLeaf() > BLOCK_PAGES;
+    const ends = blockwise ? [lo, hi] : Array.from({ length: Math.min(hi, lo + 2) - lo + 1 }, (_, i) => lo + i);
+    for (const i of ends) for (const src of this.book[i] ?? []) if (src) wanted.push(src);
+    this.preload(blockwise ? [lo, hi] : Array.from({ length: hi - lo + 1 }, (_, i) => lo + i));
     void Promise.race([Promise.all(wanted.map((s) => this.texture(s))), new Promise((r) => setTimeout(r, 700))]).then(() => {
       this.starting = false;
       if (this.disposed) return;
@@ -1785,6 +1928,30 @@ export class PageFlipper {
         }
       }
     }
+    // The block in the air: carried over, and laid down once it lands.
+    if (this.block) {
+      const { turn, lo, hi } = this.block;
+      const anim = turn.anim!;
+      const t = Math.min(1, (now - anim.start) / anim.duration);
+      turn.P = { u: anim.from.u + (anim.to.u - anim.from.u) * ease(t), v: anim.from.v };
+      if (t >= 1) {
+        for (let k = lo; k < hi; k++) this.turned[k] = turn.forward;
+        this.block = null;
+      }
+    }
+    // A long way to go with no leaf in the air: the leaves in between go
+    // over in one block. (Leaves already turning land first: a run of
+    // clicks that has grown long carries on as a block.)
+    const at = this.settledAt();
+    const away = Math.abs(this.target - at);
+    if (!this.block && this.turns.size === 0 && away > 1 && away * this.pagesPerLeaf() > BLOCK_PAGES) {
+      const forward = this.target > at;
+      const lo = forward ? at : this.target;
+      const hi = forward ? this.target : at;
+      const G = { u: this.W, v: 0 };
+      const duration = BLOCK_DURATION * (1 + 0.25 * smooth(BLOCK_PAGES, 400, away * this.pagesPerLeaf()));
+      this.block = { lo, hi, turn: { forward, rigid: true, G, P: { ...G }, anim: { start: now, duration, from: G, to: { u: -G.u, v: 0 }, arc: 0, lands: true } } };
+    }
     // Lift the next ones: each follows its neighbour a little behind, so a
     // jump of several spreads turns every page in between.
     const pending = Math.abs(this.target - this.settledAt()) || 1;
@@ -1794,12 +1961,12 @@ export class PageFlipper {
       if (!turn) return forward ? this.turned[k] : !this.turned[k];
       return turn.forward === forward && !turn.held && progress(turn) >= gap;
     };
-    for (let k = 0; k < this.target && k < n; k++) {
+    for (let k = 0; k < this.target && k < n && !this.block; k++) {
       if (this.turned[k] || this.turns.has(k)) continue;
       if (k > 0 && !follows(k - 1, true)) break;
       this.turns.set(k, { ...this.lift(true, now), rigid: this.rigidOf(k) });
     }
-    for (let k = n - 1; k >= this.target; k--) {
+    for (let k = n - 1; k >= this.target && !this.block; k--) {
       if (!this.turned[k] || this.turns.has(k)) continue;
       if (k < n - 1 && !follows(k + 1, false)) break;
       this.turns.set(k, { ...this.lift(false, now), rigid: this.rigidOf(k) });
@@ -1807,7 +1974,7 @@ export class PageFlipper {
 
     this.draw();
     this.spread.classList.add("is-turning");
-    if (this.turns.size > 0 || this.settledAt() !== this.target) this.raf = requestAnimationFrame(this.frame);
+    if (this.turns.size > 0 || this.block || this.settledAt() !== this.target) this.raf = requestAnimationFrame(this.frame);
     else this.settle();
   };
 
@@ -1839,6 +2006,67 @@ export class PageFlipper {
     if (p) p = at(p.x * this.sign > 0 ? zr : zl) ?? p;
     if (!p) return { x: 0, y: 1e9 };
     return { x: this.sign * p.x, y: p.y };
+  }
+
+  /** The pointer's ray, from the eye through the pointer. */
+  private rayAt(event: { clientX: number; clientY: number }) {
+    const rect = this.canvas.getBoundingClientRect();
+    const ndc = new Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -(((event.clientY - rect.top) / rect.height) * 2 - 1));
+    this.scene.updateMatrixWorld();
+    this.camera.updateMatrixWorld();
+    this.raycaster.setFromCamera(ndc, this.camera);
+  }
+
+  /**
+   * The open page under the pointer, as the book is seen (tilted, orbited,
+   * curving into the gutter): its slot in the spread (0 the verso, 1 the
+   * recto) and where on the printed page, as fractions of its width and
+   * height from the top left. Null off the open pages, or where a leaf in
+   * the air hides them.
+   */
+  pagePoint(event: { clientX: number; clientY: number }): { side: 0 | 1; x: number; y: number } | null {
+    if (!this.surfaces) this.layout();
+    this.rayAt(event);
+    const open = [this.left, this.right].filter((m) => m.visible);
+    const air = [...this.leaves.values(), ...(this.blockMesh ? [this.blockMesh] : [])].filter((m) => m.visible);
+    for (const m of air) m.geometry.computeBoundingSphere();
+    const hit = this.raycaster.intersectObjects([...open, ...air], false)[0];
+    if (!hit || !hit.uv || (hit.object !== this.left && hit.object !== this.right)) return null;
+    // uv.x runs from the spine (the shader mirrors it for a right-bound
+    // book); the recto shows its front, the verso its back (mirrored).
+    const u = this.sign < 0 ? 1 - hit.uv.x : hit.uv.x;
+    const recto = hit.object === this.right;
+    return { side: recto ? 1 : 0, x: recto ? u : 1 - u, y: 1 - hit.uv.y };
+  }
+
+  /** Where a point of an open page (`pagePoint`'s terms) lies on screen. */
+  screenPoint(side: 0 | 1, x: number, y: number): { x: number; y: number } | null {
+    if (!this.surfaces) this.layout();
+    const mesh = side === 1 ? this.right : this.left;
+    if (!mesh.visible) return null;
+    const u0 = side === 1 ? x : 1 - x;
+    const t = Math.min(1, Math.max(0, this.sign < 0 ? 1 - u0 : u0));
+    // The column the point falls in (the columns are closer near the spine).
+    const pos = mesh.geometry.attributes.position;
+    const uv = mesh.geometry.attributes.uv;
+    const cols = NX_OPEN + 1;
+    let ix = 0;
+    while (ix < NX_OPEN - 1 && uv.getX(ix + 1) < t) ix++;
+    const a = uv.getX(ix);
+    const b = uv.getX(ix + 1);
+    const f = b > a ? Math.min(1, Math.max(0, (t - a) / (b - a))) : 0;
+    const lerp = (i: number, j: number, k: number) => {
+      const p = new Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+      return p.lerp(new Vector3(pos.getX(j), pos.getY(j), pos.getZ(j)), k);
+    };
+    const top = lerp(ix, ix + 1, f);
+    const bottom = lerp(cols + ix, cols + ix + 1, f);
+    const p = top.lerp(bottom, y);
+    this.scene.updateMatrixWorld();
+    this.camera.updateMatrixWorld();
+    mesh.localToWorld(p).project(this.camera);
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
   }
 
   /** A board turns on the joint at the top of the spine; other leaves on
@@ -2033,11 +2261,38 @@ export class PageFlipper {
       if (!mesh.parent) this.stage.add(mesh);
     });
 
+    // The block in the air: a slab as thick as its leaves, turning on the
+    // joint at the top of the spine like a board, its first page on top
+    // and its last underneath.
+    if (this.blockMesh) {
+      const caster = this.blockMesh.userData.caster as Mesh;
+      this.blockMesh.visible = caster.visible = false;
+      const parts = this.blockMesh.userData.board as BoardParts | undefined;
+      if (parts) parts.back.visible = parts.slab.visible = false;
+    }
+    if (this.block) {
+      const { lo, hi, turn } = this.block;
+      const mesh = this.blockLeaf(lo, hi);
+      const q = progressFrom(turn.G, turn.P);
+      const thick = this.blockThickness(lo, hi);
+      const parts = this.boardParts(mesh);
+      const lay = (geometry: BufferGeometry, face: number) => layLeaf(geometry, null, turn.forward, W, H, 0.5, book, 1, q, 0, 0, { thick, face });
+      const { phi, pivot } = lay(mesh.geometry, 1);
+      lay(parts.back.geometry, -1);
+      parts.slab.position.set((W / 2) * Math.cos(phi), 0, pivot + (W / 2) * Math.sin(phi));
+      parts.slab.rotation.set(0, -phi, 0);
+      parts.slab.scale.set(W, H, thick * 0.97);
+      const spec = this.specOf(lo);
+      parts.slab.material.color.copy(spec === this.coverSpec ? this.boardColor() : new Color(spec.paper.shade.hex));
+      mesh.visible = parts.back.visible = parts.slab.visible = (mesh.userData.caster as Mesh).visible = true;
+      if (!mesh.parent) this.stage.add(mesh);
+    }
+
     // The pages lying open: the top leaf of each stack.
     let l = -1;
-    for (let j = 0; j < n; j++) if (this.turned[j] && !this.turns.has(j)) l = j;
+    for (let j = 0; j < n; j++) if (this.turned[j] && !this.turns.has(j) && !this.inBlock(j)) l = j;
     let r = n;
-    for (let j = n - 1; j >= 0; j--) if (!this.turned[j] && !this.turns.has(j)) r = j;
+    for (let j = n - 1; j >= 0; j--) if (!this.turned[j] && !this.turns.has(j) && !this.inBlock(j)) r = j;
     const leftSrc = this.book[l + 1]?.[0] ?? null;
     const rightSrc = this.book[r]?.[1] ?? null;
     this.assign(this.left, "Back", leftSrc);
@@ -2098,6 +2353,7 @@ export class PageFlipper {
     this.scene.environment?.dispose();
     this.pmrem?.dispose();
     for (const mesh of this.leaves.values()) disposeLeaf(mesh);
+    if (this.blockMesh) disposeLeaf(this.blockMesh);
     for (const mesh of [this.left, this.right, this.desk, ...this.stacks]) {
       mesh.geometry.dispose();
       (mesh.material as Material).dispose();

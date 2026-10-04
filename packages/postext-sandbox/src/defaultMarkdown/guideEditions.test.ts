@@ -20,7 +20,7 @@ describe('the three editions of the guide', () => {
       maths: (md.match(/\$\$/g) ?? []).length,
     });
     const en = shape(DEFAULT_MARKDOWN_EN);
-    expect(en.chapters).toBe(13);
+    expect(en.chapters).toBe(14);
     expect(shape(DEFAULT_MARKDOWN_ES)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
   });
@@ -38,7 +38,7 @@ describe('the three editions of the guide', () => {
       const titles = h1s(md);
       const listed = [...md.matchAll(/^:::part\{[^}]*\}\n([\s\S]*?)\n:::$/gm)]
         .flatMap((m) => m[1]!.split('\n').map((l) => l.replace(/^\d+\.\s+/, '').trim()));
-      expect(listed.length).toBe(10);
+      expect(listed.length).toBe(11);
       for (const title of listed) expect(titles).toContain(title);
     }
   });

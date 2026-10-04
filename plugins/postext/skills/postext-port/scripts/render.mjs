@@ -3,11 +3,20 @@
 // bundle's own fonts), engine warnings, parse issues, optional PDF + page PNGs.
 //
 //   node render.mjs <project | book.postext> [--lang es] [--chapters all|0,2] [--out book.pdf]
+//        [--jpeg out-dir --pages 3,7-9 --dpi 100 --quality 85]
 //        [--png out-dir --dpi 60 --pages 1-8] [--tools DIR | --repo /path/to/postext]
+//
+// --jpeg paints the pages straight from the layout with the engine's own
+// canvas renderer (`renderPageToCanvas` on @napi-rs/canvas), the painter the
+// Sandbox's Canvas tab uses: no PDF, no pdftoppm. Pages are book page numbers
+// as printed (`--pages 12` is the page that prints 12; `--pages #3` is the
+// third page of the layout). Files: <out-dir>/page-<NNN>.jpg, NNN the
+// position in the layout (the log line gives the number each page prints). This is the
+// quick look for an agent loop; --png goes through the PDF (the print check).
 //
 // One-time setup (Node >= 22.15; any folder, default ~/.cache/postext-tools):
 //   mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && \
-//   npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit
+//   npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
 // --repo uses a Postext monorepo checkout's built dists instead (and then also
 // runs the sandbox's own warning panel logic).
 //
@@ -52,6 +61,8 @@ if (!args[0] || args[0].startsWith('--')) {
 let BUNDLE = resolve(args[0]);
 const OUT = opt('out', null);
 const PNG = opt('png', null);
+const JPEG = opt('jpeg', null);
+const TOOL_DIRS = [opt('tools', null), process.env.POSTEXT_TOOLS, join(homedir(), '.cache/postext-tools'), process.cwd()].filter(Boolean).map((d) => resolve(d));
 
 // ---- load the engine --------------------------------------------------------
 // `bundleApi` is the `postext/bundle` subpath (postext >= 1.3), for
@@ -69,10 +80,9 @@ if (REPO) {
   // Citations (postext >= 1.12): the CSL engine, when built.
   try { await imp('packages/postext-citeproc/dist/register.js'); } catch { /* not built */ }
 } else {
-  const candidates = [opt('tools', null), process.env.POSTEXT_TOOLS, join(homedir(), '.cache/postext-tools'), process.cwd()].filter(Boolean);
-  const dir = candidates.find((d) => existsSync(join(d, 'node_modules/postext/package.json')));
+  const dir = TOOL_DIRS.find((d) => existsSync(join(d, 'node_modules/postext/package.json')));
   if (!dir) {
-    console.error('postext is not installed. Run:\n  mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit');
+    console.error('postext is not installed. Run:\n  mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas');
     process.exit(2);
   }
   const req = createRequire(join(dir, 'package.json'));
@@ -321,6 +331,73 @@ if (computeWarnings) {
 }
 if (unknownFamilies.size) problems.push(`font families used but not bundled (measured with a stand-in face; the browser would try Google Fonts): ${[...unknownFamilies].join(', ')}`);
 for (const p of problems) console.log('PROBLEM', p);
+
+// ---- page JPEGs, painted by the engine's canvas renderer -------------------------
+// Which pages: book page numbers as printed ("3,7-9"), or "#n" for the n-th
+// page of the layout. Default: every page.
+function pickPages(spec) {
+  const all = doc.pages.map((_, i) => i);
+  if (!spec) return all;
+  const printed = (p, i) => p.pageNumberValue ?? (doc.pageIndexOffset ?? 0) + i + 1;
+  const out = new Set();
+  for (const part of String(spec).split(',')) {
+    const byIndex = part.startsWith('#');
+    const [a, b] = part.replace('#', '').split('-').map(Number);
+    for (const [i, p] of doc.pages.entries()) {
+      const n = byIndex ? i + 1 : printed(p, i);
+      if (n >= a && n <= (b || a)) out.add(i);
+    }
+  }
+  return [...out].sort((x, y) => x - y);
+}
+if (JPEG) {
+  let napi = null;
+  for (const d of [REPO, ...TOOL_DIRS].filter(Boolean)) {
+    try { napi = await import(pathToFileURL(createRequire(join(resolve(d), 'package.json')).resolve('@napi-rs/canvas')).href); break; } catch { /* next */ }
+  }
+  napi = napi?.default ?? napi;
+  if (!napi?.createCanvas) {
+    console.error('--jpeg needs @napi-rs/canvas next to postext:\n  cd ~/.cache/postext-tools && npm i @napi-rs/canvas');
+    process.exit(2);
+  }
+  // Layout is done: from here on the engine's scratch canvases (rasterised
+  // SVGs, maths) are real ones.
+  globalThis.OffscreenCanvas = class { constructor(w, h) { return napi.createCanvas(Math.max(1, w), Math.max(1, h)); } };
+  globalThis.Path2D ??= napi.Path2D;
+  globalThis.DOMMatrix ??= napi.DOMMatrix;
+  // Every bundled face under its family name (Skia picks weight and style
+  // from the file itself, as the browser does from @font-face).
+  for (const vs of families.values()) for (const v of vs) {
+    const { bytes } = await loadFace(v.file);
+    napi.GlobalFonts.register(Buffer.from(bytes), [...families.entries()].find(([, x]) => x === vs)[0]);
+  }
+  for (const r of resources) {
+    const fileId = r.svg?.fileId ?? r.bitmap?.fileId;
+    if (!fileId || !blobs.has(fileId)) continue;
+    try {
+      postext.registerResourceImage(fileId, await napi.loadImage(Buffer.from(blobs.get(fileId))), { vector: !!r.svg });
+    } catch (e) { console.log(`JPEG-WARN image ${fileId} does not decode: ${e.message}`); }
+  }
+  mkdirSync(JPEG, { recursive: true });
+  const dpi = Number(opt('dpi', '100'));
+  const scale = dpi / (doc.config.page.dpi || 300);
+  const quality = Number(opt('quality', '85'));
+  const wanted = pickPages(opt('pages', null));
+  for (const i of wanted) {
+    const page = doc.pages[i];
+    const canvas = napi.createCanvas(1, 1);
+    postext.renderPageToCanvas(page, doc, canvas, {
+      scale,
+      onWarning: (w) => console.log(`JPEG-WARN page ${i + 1} ${w.kind} ${w.fileId ?? ''}`),
+    });
+    // Named by position in the layout (printed numbers can repeat: roman
+    // front matter, a restart); the log gives the number the page prints.
+    const file = join(JPEG, `page-${String(i + 1).padStart(3, '0')}.jpg`);
+    writeFileSync(file, await canvas.encode('jpeg', quality));
+    console.log(`wrote ${file} (#${i + 1}, prints ${page.pageLabel ?? page.pageNumberValue}, ${canvas.width}×${canvas.height})`);
+  }
+  if (!wanted.length) console.log(`JPEG: no page matches --pages ${opt('pages', '')}`);
+}
 
 // ---- PDF and page images --------------------------------------------------------------
 if (OUT || PNG) {

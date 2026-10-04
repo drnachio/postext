@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "slug": "folio-book-on-a-desk",
+  "sourceHash": "c5232cf0bac96fff4c782b3d6deabfbf5da1eb76af4121167f37131c8b1b6253",
+  "engine": {
+    "postext": "1.13.4",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T10:07:34.270Z",
+  "variants": {
+    "en": {
+      "hash8": "21cd9974",
+      "vdtHash": "2890142d818eab48c2a1bfe9536b661ee3937bb0",
+      "timings": {
+        "importMs": 329,
+        "fontsMs": 25,
+        "buildMs": 12,
+        "totalMs": 1185,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          129,
+          198
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Literata",
+          "sizePt": 9.8,
+          "leadingPt": 14
+        },
+        "families": [
+          "Fraunces",
+          "Literata",
+          "Work Sans"
+        ],
+        "pages": 4,
+        "ownLines": 120
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1535,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 111608,
+          "alt": "Opening page 1: The Last Crossing."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1535,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 151116,
+          "alt": "Page 2: Six o’clock."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1535,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 149828,
+          "alt": "Page 3: The other ledger."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1535,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 141232,
+          "alt": "Page 4: After."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "folio-book-on-a-desk.postext",
+        "bytes": 24283,
+        "folio": "ae4134af"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "createFolioFromDocument",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverColor",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.lighting.shadows",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 191,
+        "designElements": 8,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Fraunces",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Fraunces",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Literata",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Literata",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Work Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Work Sans",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Work Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.97
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 7.6 % colour, pictures or display type (aim for 25 %+)"
+          }
+        ]
+      }
+    }
+  }
+}

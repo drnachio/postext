@@ -1,0 +1,121 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 101,
+  "status": "published",
+  "chapter": "output",
+  "order": 130,
+  "level": 2,
+  "genres": [
+    "catalogue"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "paper-runs",
+      "folio-viewer"
+    ],
+    "also": [
+      "folio-appearance",
+      "heading-styles",
+      "opener-design",
+      "heading-attributes",
+      "paragraph-styles",
+      "swatches",
+      "page-role-filters",
+      "color-palette",
+      "mirrored-margins",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q117",
+    "Q116"
+  ],
+  "gotchas": [
+    "paper-run-whole-leaves",
+    "folio-cover-pages-even",
+    "folio-container-height",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "related": [
+    "saddle-stitched-card-cover",
+    "folio-book-on-a-desk",
+    "folio-settings-bench"
+  ],
+  "engine": {
+    "postext": "1.13.4"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "folio": {
+    "tilt": 24,
+    "paper": {
+      "type": "uncoated"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "pages",
+      "coverMaterial": "paper"
+    },
+    "surface": {
+      "type": "linen"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Caslon Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04"
+}

@@ -188,6 +188,77 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
                             "the PDF and headless renders need the files)")
 
 
+FOLIO_ENUMS = {
+    "paper.type": {"uncoated", "bookWove", "coatedMatte", "coatedSilk", "coatedGloss", "bible", "newsprint", "cardStock", "board"},
+    "paper.finish": {"auto", "uncoated", "matte", "silk", "gloss"},
+    "paper.texture": {"auto", "smooth", "vellum", "wove", "laid", "linen", "felt"},
+    "binding.type": {"hardcover", "paperback", "sewn", "layflat", "saddleStitch"},
+    "binding.cover": {"case", "pages"},
+    "binding.coverMaterial": {"auto", "cloth", "paper", "leather"},
+    "surface.type": {"oak", "walnut", "linen", "felt", "leather", "marble", "plain", "none"},
+    "lighting.environment": {"studio", "daylight", "lamp", "overcast", "night"},
+}
+# (lo, hi) the resolver clamps to; a value outside is silently clamped.
+FOLIO_RANGES = {"tilt": (0, 40), "paper.grammage": (20, 2500), "paper.bulk": (0.5, 3),
+                "paper.textureStrength": (0, 2), "lighting.intensity": (0.25, 2)}
+FOLIO_KEYS = {
+    "": {"tilt", "paper", "binding", "surface", "lighting"},
+    "paper": {"type", "grammage", "bulk", "finish", "texture", "textureStrength", "shade", "showThrough"},
+    "binding": {"type", "cover", "coverMaterial", "coverColor", "spineImage"},
+    "surface": {"type", "color"},
+    "lighting": {"environment", "intensity", "shadows"},
+}
+FOLIO_COLORS = {"paper.shade", "binding.coverColor", "surface.color"}
+
+
+def check_folio(cfg: dict, where: str, resources: list[dict], rep: Report) -> None:
+    """`config.folio`: the Folio 3D viewer's settings (layout ignores them,
+    so a mistake never shows on the canvas or in the PDF)."""
+    folio = cfg.get("folio")
+    if folio is None:
+        return
+    w = f"{where}.folio"
+    if not isinstance(folio, dict):
+        rep.error(w, "must be an object")
+        return
+    for group, keys in FOLIO_KEYS.items():
+        node = folio if not group else folio.get(group)
+        if node is None:
+            continue
+        if not isinstance(node, dict):
+            rep.error(f"{w}.{group}", "must be an object")
+            continue
+        for k, v in node.items():
+            path = f"{group}.{k}" if group else k
+            if k not in keys:
+                rep.warn(f"{w}.{path}", f"unknown key (ignored); {group or 'folio'} takes {sorted(keys)}")
+            elif path in FOLIO_ENUMS and v not in FOLIO_ENUMS[path]:
+                rep.error(f"{w}.{path}", f"{v!r} is not one of {sorted(FOLIO_ENUMS[path])}")
+            elif path in FOLIO_RANGES:
+                lo, hi = FOLIO_RANGES[path]
+                if not isinstance(v, (int, float)) or isinstance(v, bool):
+                    rep.error(f"{w}.{path}", "must be a number")
+                elif not lo <= v <= hi:
+                    rep.warn(f"{w}.{path}", f"{v} is clamped to {lo}–{hi}")
+            elif path in FOLIO_COLORS and not (isinstance(v, dict) and isinstance(v.get("hex"), str)):
+                rep.error(f"{w}.{path}", 'a colour is {"hex": "#rrggbb", "model": "hex"} (or with "paletteId")')
+            elif k in ("showThrough", "shadows") and not isinstance(v, bool):
+                rep.error(f"{w}.{path}", "must be true or false")
+    binding = folio.get("binding") if isinstance(folio.get("binding"), dict) else {}
+    spine = binding.get("spineImage")
+    if spine is not None:
+        kinds = {r.get("id"): r.get("kind") for r in resources}
+        if binding.get("type") == "saddleStitch":
+            rep.warn(f"{w}.binding.spineImage", "ignored: a saddle-stitched book has no flat spine")
+        elif spine not in kinds:
+            rep.error(f"{w}.binding.spineImage", f"{spine!r} is not a resource id")
+        elif kinds[spine] not in ("bitmap", "svg", None):
+            rep.error(f"{w}.binding.spineImage", f"{spine!r} is a {kinds[spine]}: the spine takes a bitmap or SVG")
+    paper = folio.get("paper") if isinstance(folio.get("paper"), dict) else {}
+    if paper.get("type") == "board" and binding.get("type") not in (None, "hardcover"):
+        rep.info(f"{w}.paper.type", "board leaves turn as rigid plates: a board book is usually bound as a hardcover")
+
+
 def design_elements(node, path=""):
     """Every design element (a dict with a `kind`) inside an `elements` list."""
     if isinstance(node, dict):
@@ -912,6 +983,7 @@ def main() -> None:
         check_snippet(where + " note", r.get("note", ""), res_ids | {x.get('id') for x in resources}, rep)
         if "source" in r:
             rep.info(where, "`source` is extraction metadata: drop it from the final manifest")
+    check_folio(shared, "preset.json config", resources, rep)
 
     coverage = ...  # loaded on the first locale with CJK text
     font_files_checked = False
@@ -921,6 +993,7 @@ def main() -> None:
         cfg = {**shared, **(loc.get("config") or {})}
         if loc.get("config"):
             check_config(loc["config"], f"localized.{lang}.config", fonts, rep, partial=True)
+            check_folio(loc["config"], f"localized.{lang}.config", resources, rep)
             for k, v in loc["config"].items():
                 if isinstance(v, dict) and isinstance(shared.get(k), dict) and set(shared[k]) - set(v):
                     rep.warn(f"localized.{lang}.config.{k}", f"replaces the shared `{k}` wholesale; missing keys {sorted(set(shared[k]) - set(v))[:6]} fall back to defaults")
@@ -963,6 +1036,9 @@ def main() -> None:
         # placement sanity
         types = {t.get("id"): t for t in cfg.get("resourceTypes", []) if isinstance(t, dict)} if isinstance(cfg.get("resourceTypes"), list) else {}
         design_refs = set(re.findall(r'"resourceId":\s*"([^"]+)"', json.dumps(cfg)))
+        spine = ((cfg.get("folio") or {}).get("binding") or {}).get("spineImage") if isinstance(cfg.get("folio"), dict) else None
+        if isinstance(spine, str):
+            design_refs.add(spine)  # printed on the Folio viewer's spine
         for r in resources:
             rid = r.get("id")
             pos = (r.get("placement") or {}).get("position") or ((types.get(r.get("typeId")) or {}).get("defaultPlacement") or {}).get("position") or "auto"

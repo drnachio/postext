@@ -1,0 +1,39 @@
+/* The bench: the book on the left, the settings on the right, the flat pages below. */
+#bench {
+  display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px;
+  max-width: 1320px; margin: 0 auto; padding: 16px; box-sizing: border-box;
+  color: #c9ccd3; font: 13px/1.4 system-ui, sans-serif;
+}
+#folio { height: min(80vh, 760px); min-height: 420px; }
+#controls { display: grid; gap: 12px; align-content: start; }
+#controls fieldset {
+  display: grid; gap: 8px; margin: 0; padding: 10px 12px 12px;
+  border: 1px solid #2a2e36; border-radius: 6px;
+}
+#controls legend {
+  padding: 0 4px; color: #f0b35a; font-weight: 600; font-size: 11px;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+#controls label { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; }
+#controls label > select, #controls label > input[type="range"] { grid-column: 1 / -1; }
+#controls label.check { display: flex; gap: 8px; }
+#controls select, #controls button {
+  min-height: 32px; padding: 4px 8px; border: 1px solid #3a3f49; border-radius: 4px;
+  background: #1a1d23; color: #eceef2; font: inherit;
+}
+#controls input[type="color"] {
+  width: 44px; height: 32px; padding: 0; border: 1px solid #3a3f49; border-radius: 4px;
+  background: none;
+}
+#controls input[type="range"] { accent-color: #f0b35a; }
+#controls output { color: #8d9199; font-variant-numeric: tabular-nums; }
+#controls button { cursor: pointer; }
+#controls button:hover, #controls button:focus-visible { border-color: #f0b35a; }
+#folio-json {
+  margin: 0; padding: 10px 12px; max-height: 220px; overflow: auto; border-radius: 6px;
+  background: #15171c; color: #aeb3bd; font: 11.5px/1.45 ui-monospace, Menlo, monospace;
+}
+@media (max-width: 860px) {
+  #bench { grid-template-columns: minmax(0, 1fr); }
+  #folio { height: 70vh; }
+}

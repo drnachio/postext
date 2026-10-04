@@ -1,0 +1,63 @@
+---
+title: "Un muestrario con cada hoja en su papel"
+summary: "Cada hoja del muestrario de un almacén de papel va en un bloque :::paper, y postext-folio la dibuja con el tono, el gramaje y la rigidez de ese papel."
+plain: "Un pequeño libro de muestras de una tienda de papel. Cada página dice en qué papel está impresa, y en el visor 3D cada página se ve y se pasa como ese papel."
+description: "Un bloque :::paper por hoja da a cada página su papel en la composición; postext-folio pasa distinto el estucado, el verjurado y el biblia, en un pen mínimo."
+question: "¿Cómo imprimo una cubierta, un encarte o un pliego de láminas en un papel distinto del resto del libro?"
+aliases: ["tipo de papel", "muestrario", "muestras de papel", ":::paper", "pliego de láminas", "encarte", "papel biblia", "transparencia"]
+pageNotes: { "1": "La cubierta: un campo granate hasta todos los bordes, un antetítulo pequeño espaciado, el título The Stock Book en una Caslon de rótulo grande y un subtítulo en cursiva.", "3": "La ficha de Book Wove, Natural: antetítulo, el nombre del papel sobre un filete fino, cinco líneas de especificaciones con etiquetas en negrita y dos párrafos sobre el papel.", "11": "La muestra del papel biblia: seis entradas de glosario con sangría francesa." }
+---
+
+## Lo que vas a componer
+
+*The Stock Book* de Harwell & Daughters, un almacén de papel ficticio de Bristol: doce páginas de 120 × 176 mm, cubierta de cartulina y cuatro hojas que describen cada una el papel en el que están impresas. El anverso de cada hoja es la ficha del papel, con gramaje, mano, acabado, tono y opacidad; el reverso, una página de texto compuesta como se usa ese papel: una novela, una carta, un pie de lámina, un glosario. Planas en la pantalla, las doce páginas se imprimen igual. En Folio cada hoja tiene su papel: el ahuecado crema, el verjurado con sus corondeles, el estucado brillo que gira plano y rígido y el biblia de 40 g que cae enseguida y deja ver el reverso.
+
+## Elaboración
+
+### 1 · Un bloque por hoja
+
+<Excerpt region="paper-runs" />
+
+Un bloque `:::paper` empieza en página nueva y el texto que lo sigue también, así que aquí cada tanda llena una hoja: la ficha en el recto, un `:::pagebreak` y la muestra en el verso. Una hoja tiene un solo papel para sus dos caras, el de su recto: una tanda que empezara en un verso imprimiría esa página en el papel de la hoja que comparte (mira Errores frecuentes).
+
+### 2 · El papel del libro y sus tapas
+
+<Excerpt region="folio" />
+
+`folio.paper` es el papel de toda página fuera de un bloque; los atributos de un bloque lo sustituyen campo a campo, y lo demás sale de los valores del tipo de papel. `cover: 'pages'` hace de la página 1 la tapa delantera y de la 12 la trasera, de modo que el libro está cerrado hasta que lo abres; para eso el número de páginas tiene que ser par, y el salto `parity: 'even'` de la contracubierta lo garantiza.
+
+### 3 · Cubiertas a sangre
+
+<Excerpt region="covers" />
+
+Cada cubierta es un estilo de título cuyo diseño lleva un campo de color tan grande como el corte. El estilo pone sus márgenes a cero mientras dura su sección, que es solo la página de cubierta, así que el campo llega a todos los bordes y las páginas siguientes conservan sus márgenes.
+
+### 4 · La ficha del papel
+
+<Excerpt region="stock-card" />
+
+Cada hoja abre con un título de primer nivel dibujado desde un hueco de diseño: el antetítulo sale de los atributos del título, luego el nombre del papel y un filete fino. Las líneas de especificaciones son un estilo de párrafo en la letra estrecha de las etiquetas, con las etiquetas en negrita y en el color de acento.
+
+### 5 · Lee el papel en la composición
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada página compuesta dentro de un bloque lleva los atributos del bloque en `page.paper`, tal como se escribieron: `{ type: 'bible', grammage: 40 }`. `createFolioFromDocument` se los pasa al visor, que dibuja cada hoja con su papel; el pen también los lee para la línea de estado y para el texto alternativo de cada página.
+
+## Variantes
+
+### Añade un pliego de láminas en estucado más grueso
+
+Un bloque dentro del texto de cualquier libro imprime esas páginas en su propio papel; las figuras citadas dentro se colocan antes de que se cierre.
+
+```diff
++:::paper{type=coatedGloss grammage=170 showThrough=false}
++
++# Plates {kicker="Between pages 64 and 65"}
++
++::resource{id="plate-1"}
++
++:::
+```
+
+### Un cuadernillo grapado con cubierta de cartulina
+
+<RecipeLink slug="saddle-stitched-card-cover">La receta del fanzine</RecipeLink> envuelve páginas de papel prensa en un pliego de cubierta de cartulina con dos bloques y un grapado a caballete.

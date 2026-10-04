@@ -4,7 +4,7 @@ export type { PageSource, SpreadSrc } from "./pageFlip";
 export { spreadsOf, spreadOfPage } from "./spreads";
 export type { Spread } from "./spreads";
 export { createFolio } from "./viewer";
-export type { FolioAppearance, FolioLabels, FolioOptions, FolioPage, FolioState, FolioViewer } from "./viewer";
+export type { FolioAppearance, FolioInteraction, FolioLabels, FolioOptions, FolioPage, FolioPagePoint, FolioState, FolioViewer } from "./viewer";
 export type { FlipAppearance } from "./pageFlip";
 export { paperSpec, type PaperSpec } from "./paper";
 export { loadDeskMaps, type DeskMaps } from "./deskTextures";

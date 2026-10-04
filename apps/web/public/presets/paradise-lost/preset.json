@@ -1,0 +1,2805 @@
+{
+ "version": 2,
+ "configVersion": 8,
+ "id": "paradise-lost",
+ "name": "Paradise Lost · Gustave Doré",
+ "description": "Edición anotada en verso: las notas de Verity al pie de página y las cincuenta láminas de Doré · An annotated verse edition: Verity's notes at the foot of the page and Doré's fifty plates",
+ "locale": "en",
+ "locales": [
+  "en"
+ ],
+ "openLocale": "en",
+ "thumbnail": "thumbnail.jpg",
+ "license": "Public domain · OFL fonts",
+ "credits": "Milton · Verity · Doré · Project Gutenberg · Wikisource · Wikimedia Commons",
+ "tags": [
+  "book",
+  "poetry",
+  "footnotes",
+  "plates",
+  "front-matter"
+ ],
+ "view": {
+  "canvasScope": "book"
+ },
+ "chapters": [
+  {
+   "title": "Paradise Lost",
+   "file": "chapters/00-cover.md"
+  },
+  {
+   "title": "Contents",
+   "file": "chapters/01-contents.md"
+  },
+  {
+   "title": "The Verse",
+   "file": "chapters/02-the-verse.md"
+  },
+  {
+   "title": "Book I",
+   "file": "chapters/03-book-01.md"
+  },
+  {
+   "title": "Book II",
+   "file": "chapters/04-book-02.md"
+  },
+  {
+   "title": "Book III",
+   "file": "chapters/05-book-03.md"
+  },
+  {
+   "title": "Book IV",
+   "file": "chapters/06-book-04.md"
+  },
+  {
+   "title": "Book V",
+   "file": "chapters/07-book-05.md"
+  },
+  {
+   "title": "Book VI",
+   "file": "chapters/08-book-06.md"
+  },
+  {
+   "title": "Book VII",
+   "file": "chapters/09-book-07.md"
+  },
+  {
+   "title": "Book VIII",
+   "file": "chapters/10-book-08.md"
+  },
+  {
+   "title": "Book IX",
+   "file": "chapters/11-book-09.md"
+  },
+  {
+   "title": "Book X",
+   "file": "chapters/12-book-10.md"
+  },
+  {
+   "title": "Book XI",
+   "file": "chapters/13-book-11.md"
+  },
+  {
+   "title": "Book XII",
+   "file": "chapters/14-book-12.md"
+  },
+  {
+   "title": "Credits",
+   "file": "chapters/15-credits.md"
+  },
+  {
+   "title": "Back cover",
+   "file": "chapters/16-back-cover.md"
+  }
+ ],
+ "config": {
+  "locale": "en-gb",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 156.0,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 234.0,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 22.0,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 25.0,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 21.0,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 25.0,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "baselineGrid": {
+    "enabled": false
+   },
+   "pageNumbering": {
+    "format": "decimal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "single"
+  },
+  "bodyText": {
+   "fontFamily": "EB Garamond",
+   "fontSize": {
+    "value": 11.0,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 14.0,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 5,
+    "unit": "mm"
+   },
+   "indentAfterHeading": false,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "boldColor": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "italicColor": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceColor": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "referenceBold": false,
+   "referenceItalic": true,
+   "hyphenation": {
+    "enabled": true,
+    "locale": "en-gb"
+   },
+   "avoidWidows": true,
+   "avoidOrphans": true,
+   "optimalLineBreaking": true
+  },
+  "headings": {
+   "fontFamily": "IM Fell English",
+   "color": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "keepWithNext": true,
+   "levels": [
+    {
+     "level": 1,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 24,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 28,
+      "unit": "pt"
+     },
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 47,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "rule",
+         "id": "bookRuleTop",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 44.0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 8,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 22,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#8a2222",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "thickness": {
+          "value": 0.6,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "bookTitle",
+         "placement": {
+          "anchor": {
+           "to": "#bookRuleTop",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": -44.0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 6,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 110.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "IM Fell English",
+         "fontSize": {
+          "value": 27,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.1,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#1d1a17",
+          "model": "hex",
+          "paletteId": "ink"
+         },
+         "letterSpacing": {
+          "value": 1.5,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "rule",
+         "id": "bookRuleBottom",
+         "direction": "horizontal",
+         "placement": {
+          "anchor": {
+           "to": "#bookTitle",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": 44.0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 7,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 22,
+            "unit": "mm"
+           }
+          }
+         },
+         "color": {
+          "hex": "#8a2222",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "thickness": {
+          "value": 0.6,
+          "unit": "pt"
+         }
+        },
+        {
+         "kind": "text",
+         "id": "argumentLabel",
+         "placement": {
+          "anchor": {
+           "to": "#bookRuleBottom",
+           "edge": "below"
+          },
+          "offset": {
+           "x": {
+            "value": -44.0,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 10,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 110.0,
+            "unit": "mm"
+           },
+           "height": "auto"
+          }
+         },
+         "content": "The Argument",
+         "fontFamily": "IM Fell English SC",
+         "fontSize": {
+          "value": 10,
+          "unit": "pt"
+         },
+         "fontWeight": 400,
+         "italic": false,
+         "align": "center",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "wrap",
+         "color": {
+          "hex": "#8a2222",
+          "model": "hex",
+          "paletteId": "accent"
+         },
+         "letterSpacing": {
+          "value": 1.4,
+          "unit": "pt"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "cover",
+    "name": "Cover",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 234.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "coverBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#17151a",
+          "model": "hex",
+          "paletteId": "night"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "coverFrame",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 27.8,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 21.8,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 100.4,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 125.5,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#c9a96a",
+          "model": "hex",
+          "paletteId": "gold"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "coverPlate",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 30.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 24.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 96.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 121.1,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "plate-01-cover"
+       },
+       {
+        "kind": "text",
+        "id": "coverTitle",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 21.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 157.1,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 110.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{title}",
+        "fontFamily": "IM Fell English",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.05,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#efe6d2",
+         "model": "hex",
+         "paletteId": "cream"
+        },
+        "letterSpacing": {
+         "value": 1.5,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverAuthor",
+        "placement": {
+         "anchor": {
+          "to": "#coverTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 110.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{author}",
+        "fontFamily": "IM Fell English SC",
+        "fontSize": {
+         "value": 12.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#c9a96a",
+         "model": "hex",
+         "paletteId": "gold"
+        },
+        "letterSpacing": {
+         "value": 2,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "coverEdition",
+        "placement": {
+         "anchor": {
+          "to": "#coverAuthor",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 110.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.edition}",
+        "fontFamily": "EB Garamond",
+        "fontSize": {
+         "value": 9,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.35,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#efe6d2",
+         "model": "hex",
+         "paletteId": "cream"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "margins": {
+     "top": {
+      "value": 156.0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 25.0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 51.0,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 25.0,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "back-cover",
+    "name": "Back cover",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 234.0,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "backBg",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#17151a",
+          "model": "hex",
+          "paletteId": "night"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "backFrame",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 28.4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 67.2,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 82.6,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#c9a96a",
+          "model": "hex",
+          "paletteId": "gold"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "backPlate",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 30,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 64.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 79.4,
+           "unit": "mm"
+          }
+         }
+        },
+        "resourceId": "plate-50-cover"
+       },
+       {
+        "kind": "text",
+        "id": "backQuote",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 122.4,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 104.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.quote}",
+        "fontFamily": "IM Fell English",
+        "fontSize": {
+         "value": 11.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.4,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#efe6d2",
+         "model": "hex",
+         "paletteId": "cream"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "backRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#backQuote",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 41.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 7,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 22,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#c9a96a",
+         "model": "hex",
+         "paletteId": "gold"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "backBlurb",
+        "placement": {
+         "anchor": {
+          "to": "#backRule",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": -41.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 7,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 104.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{attr.blurb}",
+        "fontFamily": "EB Garamond",
+        "fontSize": {
+         "value": 9.2,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.45,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#efe6d2",
+         "model": "hex",
+         "paletteId": "cream"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "backImprint",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "bottom"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": -27.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 104.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "Postext · postext.dev",
+        "fontFamily": "IM Fell English SC",
+        "fontSize": {
+         "value": 9,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#c9a96a",
+         "model": "hex",
+         "paletteId": "gold"
+        },
+        "letterSpacing": {
+         "value": 1.2,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    }
+   },
+   {
+    "id": "book",
+    "name": "Book",
+    "numbered": false
+   },
+   {
+    "id": "front",
+    "name": "Front matter",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 40,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 8,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 110.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "IM Fell English",
+        "fontSize": {
+         "value": 22,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.15,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1d1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 1,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 44.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 22,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#8a2222",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "contents",
+    "name": "Contents",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 40,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 8,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 110.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "IM Fell English",
+        "fontSize": {
+         "value": 22,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.15,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1d1a17",
+         "model": "hex",
+         "paletteId": "ink"
+        },
+        "letterSpacing": {
+         "value": 1,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 44.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 22,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#8a2222",
+         "model": "hex",
+         "paletteId": "accent"
+        },
+        "thickness": {
+         "value": 0.6,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "verse",
+    "name": "Verse",
+    "fontSize": {
+     "value": 11.0,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.0,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "hangingIndent": {
+     "value": 7.0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "verse-open",
+    "name": "Verse paragraph opening",
+    "fontSize": {
+     "value": 11.0,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.0,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "hangingIndent": {
+     "value": 7.0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "firstLineIndent": {
+     "value": 7.0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "argument",
+    "name": "Argument",
+    "fontSize": {
+     "value": 9.8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "italic": true,
+    "textAlign": "justify",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "hyphenation": true
+   },
+   {
+    "id": "prose",
+    "name": "Prose note",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "textAlign": "justify",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "colophon",
+    "name": "Colophon",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b6259",
+     "model": "hex",
+     "paletteId": "muted"
+    }
+   },
+   {
+    "id": "credits",
+    "name": "Credits",
+    "fontSize": {
+     "value": 8.6,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.6,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 5,
+     "unit": "pt"
+    }
+   }
+  ],
+  "footnotes": {
+   "placement": "column",
+   "numbering": "page",
+   "numberFormat": "lower-alpha",
+   "markerPosition": "superscript",
+   "fontSize": {
+    "value": 8.3,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 10.4,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "textAlign": "justify",
+   "hangingIndent": {
+    "value": 0,
+    "unit": "mm"
+   },
+   "spaceBetween": {
+    "value": 1.2,
+    "unit": "pt"
+   },
+   "spaceAbove": {
+    "value": 9,
+    "unit": "pt"
+   },
+   "spaceBelowRule": {
+    "value": 5,
+    "unit": "pt"
+   },
+   "separator": {
+    "enabled": true,
+    "width": 0.22,
+    "lineWidth": {
+     "value": 0.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#9c8f7d",
+     "model": "hex",
+     "paletteId": "rule"
+    }
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "EB Garamond",
+     "fontSize": {
+      "value": 11,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1d1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "marginTop": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   ],
+   "unnumbered": {
+    "italic": false,
+    "color": {
+     "hex": "#1d1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "width": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": ".",
+    "gap": {
+     "value": 1.2,
+     "unit": "mm"
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "titleEven",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 90,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "Paradise Lost",
+     "fontFamily": "IM Fell English SC",
+     "fontSize": {
+      "value": 9.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1d1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "even",
+     "pages": "body",
+     "letterSpacing": {
+      "value": 0.8,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "bookOdd",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "top"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 12.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 90,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{chapterTitle}",
+     "fontFamily": "IM Fell English SC",
+     "fontSize": {
+      "value": 9.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1d1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "parity": "odd",
+     "pages": "body",
+     "letterSpacing": {
+      "value": 0.8,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "footer": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "folioBody",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "IM Fell English SC",
+     "fontSize": {
+      "value": 9.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1d1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "body"
+    },
+    {
+     "kind": "text",
+     "id": "folioOpener",
+     "placement": {
+      "anchor": {
+       "to": "page",
+       "edge": "bottom"
+      },
+      "offset": {
+       "x": {
+        "value": 0,
+        "unit": "mm"
+       },
+       "y": {
+        "value": -14.0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": {
+        "value": 30,
+        "unit": "mm"
+       },
+       "height": "auto"
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "IM Fell English SC",
+     "fontSize": {
+      "value": 9.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "center",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#1d1a17",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "pages": "opener"
+    }
+   ]
+  },
+  "captionStyle": {
+   "fontFamily": "EB Garamond",
+   "fontSize": {
+    "value": 9,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#1d1a17",
+    "model": "hex",
+    "paletteId": "ink"
+   },
+   "align": "center",
+   "gap": {
+    "value": 2.2,
+    "unit": "mm"
+   },
+   "labelBold": false,
+   "labelColor": {
+    "hex": "#8a2222",
+    "model": "hex",
+    "paletteId": "accent"
+   },
+   "descriptionItalic": true,
+   "note": {
+    "fontSize": {
+     "value": 7.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b6259",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "italic": false,
+    "gap": {
+     "value": 0.6,
+     "unit": "mm"
+    },
+    "align": "center"
+   }
+  },
+  "colorPalette": [
+   {
+    "id": "ink",
+    "name": "Ink",
+    "value": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "accent",
+    "name": "Rubric red",
+    "value": {
+     "hex": "#8a2222",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "night",
+    "name": "Night of the boards",
+    "value": {
+     "hex": "#17151a",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "cream",
+    "name": "Cream lettering",
+    "value": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "gold",
+    "name": "Gold tooling",
+    "value": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "rule",
+    "name": "Rules",
+    "value": {
+     "hex": "#9c8f7d",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "Notes grey",
+    "value": {
+     "hex": "#6b6259",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "plate",
+    "name": "Plate",
+    "namePlural": "Plates",
+    "shortLabel": "Plate",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "top",
+     "span": "page",
+     "width": 1,
+     "align": "center"
+    }
+   },
+   {
+    "id": "ornament",
+    "name": "Ornament",
+    "namePlural": "Ornaments",
+    "shortLabel": "",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "here",
+     "span": "column",
+     "width": 0.5,
+     "align": "center"
+    }
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  },
+  "folio": {
+   "tilt": 20,
+   "paper": {
+    "type": "bookWove",
+    "grammage": 80,
+    "bulk": 1.5,
+    "texture": "laid",
+    "textureStrength": 0.5,
+    "shade": {
+     "hex": "#f5eedc",
+     "model": "hex"
+    }
+   },
+   "binding": {
+    "type": "hardcover",
+    "cover": "pages",
+    "coverMaterial": "cloth",
+    "coverColor": {
+     "hex": "#17151a",
+     "model": "hex",
+     "paletteId": "night"
+    },
+    "spineImage": "spine"
+   },
+   "surface": {
+    "type": "walnut"
+   },
+   "lighting": {
+    "environment": "overcast",
+    "intensity": 1.0,
+    "shadows": true
+   }
+  }
+ },
+ "resources": [
+  {
+   "id": "plate-01",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-01.jpg",
+   "width": 959,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.85,
+    "align": "center"
+   },
+   "caption": "Him the almighty Power / Hurled headlong flaming from the ethereal sky",
+   "note": "Book I, lines 44–45",
+   "altText": "The fall of the rebel angels, by Gustave Doré"
+  },
+  {
+   "id": "plate-02",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-02.jpg",
+   "width": 965,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.856,
+    "align": "center"
+   },
+   "caption": "Forthwith upright he rears from off the pool / His mighty stature",
+   "note": "Book I, lines 221–222",
+   "altText": "Satan rises from the burning lake, by Gustave Doré"
+  },
+  {
+   "id": "plate-03",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-03.jpg",
+   "width": 961,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.852,
+    "align": "center"
+   },
+   "caption": "They heard, and were abashed, and up they sprung",
+   "note": "Book I, line 331",
+   "altText": "Satan rouses his legions, by Gustave Doré"
+  },
+  {
+   "id": "plate-04",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-04.jpg",
+   "width": 959,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.85,
+    "align": "center"
+   },
+   "caption": "So numberless were those bad Angels seen / Hovering on wing under the cope of Hell",
+   "note": "Book I, lines 344–345",
+   "altText": "The fallen angels on the wing, by Gustave Doré"
+  },
+  {
+   "id": "plate-05",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-05.jpg",
+   "width": 966,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.856,
+    "align": "center"
+   },
+   "caption": "Their summons called, / From every band and squared regiment, / By place or choice the worthiest",
+   "note": "Book I, lines 757–759",
+   "altText": "The council summoned to Pandemonium, by Gustave Doré"
+  },
+  {
+   "id": "plate-06",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-06.jpg",
+   "width": 975,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "High on a throne of royal state, which far / Outshone the wealth of Ormus and of Ind",
+   "note": "Book II, lines 1–2",
+   "altText": "Satan enthroned, by Gustave Doré"
+  },
+  {
+   "id": "plate-07",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-07.jpg",
+   "width": 959,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.85,
+    "align": "center"
+   },
+   "caption": "Gorgons, and Hydras, and Chimeras dire",
+   "note": "Book II, line 628",
+   "altText": "The fallen angels explore Hell, by Gustave Doré"
+  },
+  {
+   "id": "plate-08",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-08.jpg",
+   "width": 975,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "Before the gates there sat / On either side a formidable Shape",
+   "note": "Book II, lines 648–649",
+   "altText": "Satan meets Sin and Death, by Gustave Doré"
+  },
+  {
+   "id": "plate-09",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-09.jpg",
+   "width": 984,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.872,
+    "align": "center"
+   },
+   "caption": "With head, hands, wings, or feet, pursues his way, / And swims, or sinks, or wades, or creeps, or flies",
+   "note": "Book II, lines 949–950",
+   "altText": "Satan’s journey through Chaos, by Gustave Doré"
+  },
+  {
+   "id": "plate-10",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-10.jpg",
+   "width": 976,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.865,
+    "align": "center"
+   },
+   "caption": "Heaven rung / With jubilee, and loud Hosannas filled / The eternal regions",
+   "note": "Book III, lines 347–349",
+   "altText": "The Son and the hosts of Heaven, by Gustave Doré"
+  },
+  {
+   "id": "plate-11",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-11.jpg",
+   "width": 974,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "And many more too long, / Embryos and idiots, eremites and friars",
+   "note": "Book III, lines 473–474",
+   "altText": "The Paradise of Fools, by Gustave Doré"
+  },
+  {
+   "id": "plate-12",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-12.jpg",
+   "width": 1205,
+   "height": 1500,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.862,
+    "align": "center"
+   },
+   "caption": "Toward the coast of Earth beneath, / Down from the ecliptic, sped with hoped success, / Throws his steep flight in many an aery wheel",
+   "note": "Book III, lines 739–741",
+   "altText": "Satan flies down to the Earth, by Gustave Doré"
+  },
+  {
+   "id": "plate-13",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-13.jpg",
+   "width": 975,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "Me miserable! which way shall I fly / Infinite wrath and infinite despair?",
+   "note": "Book IV, lines 73–74",
+   "altText": "Satan’s despair, by Gustave Doré"
+  },
+  {
+   "id": "plate-14",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-14.jpg",
+   "width": 980,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.869,
+    "align": "center"
+   },
+   "caption": "Now to the ascent of that steep savage hill / Satan had journeyed on, pensive and slow",
+   "note": "Book IV, lines 172–173",
+   "altText": "Satan above Eden, by Gustave Doré"
+  },
+  {
+   "id": "plate-15",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-15.jpg",
+   "width": 977,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.866,
+    "align": "center"
+   },
+   "caption": "A happy rural seat of various view",
+   "note": "Book IV, line 247",
+   "altText": "Satan surveys the Garden, by Gustave Doré"
+  },
+  {
+   "id": "plate-16",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-16.jpg",
+   "width": 981,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.87,
+    "align": "center"
+   },
+   "caption": "The savoury pulp they chew, and in the rind, / Still as they thirsted, scoop the brimming stream",
+   "note": "Book IV, lines 335–336",
+   "altText": "Adam and Eve in the Garden, by Gustave Doré"
+  },
+  {
+   "id": "plate-17",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-17.jpg",
+   "width": 975,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "So promised he; and Uriel to his charge / Returned",
+   "note": "Book IV, lines 589–590",
+   "altText": "Gabriel at the gate of Eden, by Gustave Doré"
+  },
+  {
+   "id": "plate-18",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-18.jpg",
+   "width": 973,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.863,
+    "align": "center"
+   },
+   "caption": "These to the bower direct / In search of whom they sought",
+   "note": "Book IV, lines 798–799",
+   "altText": "Ithuriel and Zephon, by Gustave Doré"
+  },
+  {
+   "id": "plate-19",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-19.jpg",
+   "width": 964,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.855,
+    "align": "center"
+   },
+   "caption": "Nor more; but fled / Murmuring, and with him fled the shades of night",
+   "note": "Book IV, lines 1014–1015",
+   "altText": "Satan flees Gabriel, by Gustave Doré"
+  },
+  {
+   "id": "plate-20",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-20.jpg",
+   "width": 962,
+   "height": 1210,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.853,
+    "align": "center"
+   },
+   "caption": "Leaning half-raised, with looks of cordial love / Hung over her enamoured",
+   "note": "Book V, lines 12–13",
+   "altText": "Adam wakes Eve, by Gustave Doré"
+  },
+  {
+   "id": "plate-21",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-21.jpg",
+   "width": 1023,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.857,
+    "align": "center"
+   },
+   "caption": "Eastward among those trees, what glorious shape / Comes this way moving",
+   "note": "Book V, lines 309–310",
+   "altText": "Raphael comes to the Garden, by Gustave Doré"
+  },
+  {
+   "id": "plate-22",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-22.jpg",
+   "width": 1222,
+   "height": 1500,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.874,
+    "align": "center"
+   },
+   "caption": "To whom the winged Hierarch replied: / O Adam, one Almighty is, from whom / All things proceed",
+   "note": "Book V, lines 468–470",
+   "altText": "Raphael instructs Adam and Eve, by Gustave Doré"
+  },
+  {
+   "id": "plate-23",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-23.jpg",
+   "width": 1205,
+   "height": 1500,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.862,
+    "align": "center"
+   },
+   "caption": "This greeting on thy impious crest receive",
+   "note": "Book VI, line 188",
+   "altText": "Abdiel strikes Satan, by Gustave Doré"
+  },
+  {
+   "id": "plate-24",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-24.jpg",
+   "width": 1196,
+   "height": 1500,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.855,
+    "align": "center"
+   },
+   "caption": "Now storming fury rose, / And clamour such as heard in Heaven till now / Was never",
+   "note": "Book VI, lines 207–209",
+   "altText": "The war in Heaven, by Gustave Doré"
+  },
+  {
+   "id": "plate-25",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-25.jpg",
+   "width": 1046,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.877,
+    "align": "center"
+   },
+   "caption": "Then Satan first knew pain, / And writhed him to and fro",
+   "note": "Book VI, lines 327–328",
+   "altText": "Satan wounded, by Gustave Doré"
+  },
+  {
+   "id": "plate-26",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-26.jpg",
+   "width": 1216,
+   "height": 1500,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.87,
+    "align": "center"
+   },
+   "caption": "Now Night her course began",
+   "note": "Book VI, line 406",
+   "altText": "Night on the field of battle, by Gustave Doré"
+  },
+  {
+   "id": "plate-27",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-27.jpg",
+   "width": 1025,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.859,
+    "align": "center"
+   },
+   "caption": "On the foughten field / Michaël and his Angels, prevalent / Encamping, placed in guard their watches round",
+   "note": "Book VI, lines 410–412",
+   "altText": "Michael’s angels keep watch, by Gustave Doré"
+  },
+  {
+   "id": "plate-28",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-28.jpg",
+   "width": 1041,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.872,
+    "align": "center"
+   },
+   "caption": "Nine days they fell",
+   "note": "Book VI, line 871",
+   "altText": "The rebel angels cast out, by Gustave Doré"
+  },
+  {
+   "id": "plate-29",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-29.jpg",
+   "width": 1025,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.859,
+    "align": "center"
+   },
+   "caption": "Hell at last, / Yawning, received them whole",
+   "note": "Book VI, lines 874–875",
+   "altText": "The fall into Hell, by Gustave Doré"
+  },
+  {
+   "id": "plate-30",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-30.jpg",
+   "width": 1050,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.88,
+    "align": "center"
+   },
+   "caption": "Wave rolling after wave, where way they found, / If steep, with torrent rapture",
+   "note": "Book VII, lines 298–299",
+   "altText": "The waters gathered, by Gustave Doré"
+  },
+  {
+   "id": "plate-31",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-31.jpg",
+   "width": 1021,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.856,
+    "align": "center"
+   },
+   "caption": "And God said, Let the waters generate / Reptile with spawn abundant, living soul; / And let fowl fly above the earth",
+   "note": "Book VII, lines 387–389",
+   "altText": "The creation of the fish and the fowl, by Gustave Doré"
+  },
+  {
+   "id": "plate-32",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-32.jpg",
+   "width": 1018,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.853,
+    "align": "center"
+   },
+   "caption": "And seems a moving land, and at his gills / Draws in, and at his trunk spouts out, a sea",
+   "note": "Book VII, lines 415–416",
+   "altText": "Leviathan, by Gustave Doré"
+  },
+  {
+   "id": "plate-33",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-33.jpg",
+   "width": 1007,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.844,
+    "align": "center"
+   },
+   "caption": "Meanwhile the tepid caves, and fens, and shores, / Their brood as numerous hatch",
+   "note": "Book VII, lines 417–418",
+   "altText": "The birds hatched, by Gustave Doré"
+  },
+  {
+   "id": "plate-34",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-34.jpg",
+   "width": 1046,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.877,
+    "align": "center"
+   },
+   "caption": "And now on Earth the seventh / Evening arose in Eden",
+   "note": "Book VII, lines 581–582",
+   "altText": "The evening of the seventh day, by Gustave Doré"
+  },
+  {
+   "id": "plate-35",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-35.jpg",
+   "width": 1020,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.855,
+    "align": "center"
+   },
+   "caption": "So parted they, the Angel up to Heaven / From the thick shade, and Adam to his bower",
+   "note": "Book VIII, lines 652–653",
+   "altText": "Raphael takes his leave, by Gustave Doré"
+  },
+  {
+   "id": "plate-36",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-36.jpg",
+   "width": 1024,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.858,
+    "align": "center"
+   },
+   "caption": "In with the river sunk, and with it rose / Satan",
+   "note": "Book IX, lines 74–75",
+   "altText": "Satan returns with the river, by Gustave Doré"
+  },
+  {
+   "id": "plate-37",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-37.jpg",
+   "width": 1039,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.871,
+    "align": "center"
+   },
+   "caption": "O Earth, how like to Heaven, if not preferred / More justly",
+   "note": "Book IX, lines 99–100",
+   "altText": "Satan’s soliloquy, by Gustave Doré"
+  },
+  {
+   "id": "plate-38",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-38.jpg",
+   "width": 1030,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.863,
+    "align": "center"
+   },
+   "caption": "Him fast sleeping soon he found, / In labyrinth of many a round self-rolled",
+   "note": "Book IX, lines 182–183",
+   "altText": "Satan finds the serpent, by Gustave Doré"
+  },
+  {
+   "id": "plate-39",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-39.jpg",
+   "width": 1031,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.864,
+    "align": "center"
+   },
+   "caption": "Nearer he drew, and many a walk traversed / Of stateliest covert, cedar, pine, or palm",
+   "note": "Book IX, lines 434–435",
+   "altText": "The serpent draws near Eve, by Gustave Doré"
+  },
+  {
+   "id": "plate-40",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-40.jpg",
+   "width": 1036,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.868,
+    "align": "center"
+   },
+   "caption": "Back to the thicket slunk / The guilty Serpent",
+   "note": "Book IX, lines 784–785",
+   "altText": "Eve eats the fruit, by Gustave Doré"
+  },
+  {
+   "id": "plate-41",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-41.jpg",
+   "width": 1026,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.86,
+    "align": "center"
+   },
+   "caption": "Nor only tears / Rained at their eyes, but high winds worse within / Began to rise",
+   "note": "Book IX, lines 1121–1123",
+   "altText": "Adam and Eve after the Fall, by Gustave Doré"
+  },
+  {
+   "id": "plate-42",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-42.jpg",
+   "width": 1025,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.859,
+    "align": "center"
+   },
+   "caption": "They heard, / And from his presence hid themselves among / The thickest trees",
+   "note": "Book X, lines 99–101",
+   "altText": "Adam and Eve hide, by Gustave Doré"
+  },
+  {
+   "id": "plate-43",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-43.jpg",
+   "width": 1025,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.859,
+    "align": "center"
+   },
+   "caption": "And now expecting / Each hour their great Adventurer from the search / Of foreign worlds",
+   "note": "Book X, lines 439–441",
+   "altText": "The fallen angels await Satan, by Gustave Doré"
+  },
+  {
+   "id": "plate-44",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-44.jpg",
+   "width": 1033,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.866,
+    "align": "center"
+   },
+   "caption": "Dreadful was the din / Of hissing through the hall, thick-swarming now / With complicated monsters",
+   "note": "Book X, lines 521–523",
+   "altText": "The fallen angels turned to serpents, by Gustave Doré"
+  },
+  {
+   "id": "plate-45",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-45.jpg",
+   "width": 1034,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.867,
+    "align": "center"
+   },
+   "caption": "This said, they both betook them several ways",
+   "note": "Book X, line 610",
+   "altText": "Sin and Death set out, by Gustave Doré"
+  },
+  {
+   "id": "plate-46",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-46.jpg",
+   "width": 1041,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.872,
+    "align": "center"
+   },
+   "caption": "The heavenly bands / Down from a sky of jasper lighted now / In Paradise",
+   "note": "Book XI, lines 208–210",
+   "altText": "Michael’s band descends, by Gustave Doré"
+  },
+  {
+   "id": "plate-47",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-47.jpg",
+   "width": 1022,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.857,
+    "align": "center"
+   },
+   "caption": "Began to build a vessel of huge bulk",
+   "note": "Book XI, line 729",
+   "altText": "The building of the Ark, by Gustave Doré"
+  },
+  {
+   "id": "plate-48",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-48.jpg",
+   "width": 1043,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.874,
+    "align": "center"
+   },
+   "caption": "All dwellings else / Flood overwhelmed, and them with all their pomp / Deep under water rolled",
+   "note": "Book XI, lines 747–749",
+   "altText": "The Flood, by Gustave Doré"
+  },
+  {
+   "id": "plate-49",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-49.jpg",
+   "width": 1038,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.87,
+    "align": "center"
+   },
+   "caption": "They beseech / That Moses might report to them his will, / And terror cease",
+   "note": "Book XII, lines 236–238",
+   "altText": "Moses with the tables of the Law, by Gustave Doré"
+  },
+  {
+   "id": "plate-50",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/plate-50.jpg",
+   "width": 1032,
+   "height": 1280,
+   "placement": {
+    "position": "top",
+    "span": "page",
+    "width": 0.865,
+    "align": "center"
+   },
+   "caption": "Some natural tears they dropped, but wiped them soon",
+   "note": "Book XII, line 645",
+   "altText": "The expulsion from Eden, by Gustave Doré"
+  },
+  {
+   "id": "plate-01-cover",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/plate-01-cover.jpg",
+   "width": 959,
+   "height": 1210,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.5,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "The fall of the rebel angels, by Gustave Doré"
+  },
+  {
+   "id": "plate-50-cover",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/plate-50-cover.jpg",
+   "width": 1032,
+   "height": 1280,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.5,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": "The expulsion from Eden, by Gustave Doré"
+  },
+  {
+   "id": "spine",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/spine-en.jpg",
+   "width": 410,
+   "height": 3276,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.2,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": ""
+  }
+ ],
+ "fonts": [
+  {
+   "name": "EB Garamond",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Regular.ttf"
+    },
+    {
+     "weight": 500,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Medium.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/EBGaramond-Bold.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/EBGaramond-Italic.ttf"
+    },
+    {
+     "weight": 700,
+     "style": "italic",
+     "file": "fonts/EBGaramond-BoldItalic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "IM Fell English",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/IMFellEnglish-Regular.ttf"
+    },
+    {
+     "weight": 400,
+     "style": "italic",
+     "file": "fonts/IMFellEnglish-Italic.ttf"
+    }
+   ]
+  },
+  {
+   "name": "IM Fell English SC",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/IMFellEnglishSC-Regular.ttf"
+    }
+   ]
+  }
+ ]
+}

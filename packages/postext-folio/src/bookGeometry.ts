@@ -199,7 +199,8 @@ export function gutterOcclusion(own: Profile, other: Profile, W: number, n = 64)
  * The page block's visible sides for one stack: the head and tail (the
  * fan of leaves between the cover and the top leaf) and the fore-edge.
  * Each vertex carries `layer`: the leaf it lies on, counted up from the
- * cover, so the shader draws the edges of the leaves.
+ * cover, so the shader draws the edges of the leaves, and `run`: how far
+ * along the cut face it lies.
  */
 export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, leaves: number): BufferGeometry {
   const NS = 48;
@@ -208,13 +209,15 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
   const nrm: number[] = [];
   const layer: number[] = [];
   const lam: number[] = [];
+  const run: number[] = [];
   const idx: number[] = [];
-  const quadGrid = (cols: number, rows: number, at: (c: number, r: number) => [number, number, number, number], normal: [number, number, number], flip: boolean) => {
+  const quadGrid = (cols: number, rows: number, at: (c: number, r: number) => [number, number, number, number, number], normal: [number, number, number], flip: boolean) => {
     const base = pos.length / 3;
     for (let r = 0; r <= rows; r++)
       for (let c = 0; c <= cols; c++) {
-        const [x, y, z, l] = at(c, r);
+        const [x, y, z, l, a] = at(c, r);
         pos.push(x, y, z);
+        run.push(a);
         nrm.push(...normal);
         layer.push(l);
         lam.push(leaves > 0 ? l / leaves : r / Math.max(1, rows));
@@ -237,7 +240,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
       (c, r) => {
         const lambda = r / (NL - 1);
         const [x, z] = alongLayer(p, (c / NS) * W, lambda);
-        return [side * x, (end * H) / 2, z, lambda * leaves];
+        return [side * x, (end * H) / 2, z, lambda * leaves, x];
       },
       [0, end, 0],
       (end > 0) !== (side > 0),
@@ -250,7 +253,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
     (c, r) => {
       const lambda = r / (NL - 1);
       const [x, z] = alongLayer(p, W, lambda);
-      return [side * x, (c ? -1 : 1) * (H / 2), z, lambda * leaves];
+      return [side * x, (c ? -1 : 1) * (H / 2), z, lambda * leaves, W + (c ? H : 0)];
     },
     [side, 0, 0],
     side < 0,
@@ -262,6 +265,9 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
   // How far up the block (0 at its base, 1 at its top), for the bands a
   // board takes in it.
   g.setAttribute("lambda", new BufferAttribute(new Float32Array(lam), 1));
+  // How far along the cut face (book units, from the spine round the
+  // head or tail to the fore-edge), for the relief the guillotine leaves.
+  g.setAttribute("run", new BufferAttribute(new Float32Array(run), 1));
   g.setIndex(idx);
   return g;
 }

@@ -154,4 +154,7 @@ export interface RichTokenMeta {
   /** On a free penalty: the break is next to a CJK character, so the line
    *  it ends is not `hyphenated`. */
   cjk?: boolean;
+  /** On a penalty inside a Catalan `l·l`: the hyphen the line ends on takes
+   *  the place of the middle dot, this many px wide. */
+  replacesWidth?: number;
 }

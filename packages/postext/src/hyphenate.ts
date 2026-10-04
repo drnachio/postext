@@ -12,6 +12,17 @@ import { hyphenationLocaleFor } from './locale';
 
 export { HYPHENATION_LOCALES, matchHyphenationLocale, hyphenationLocaleFor } from './locale';
 
+/** Catalan words the IEC divides at their prefix rather than by syllable
+ *  (*Llibre d'estil*, VI § 2.7): `vos-altres`, not `vo-saltres`. */
+const CATALAN_EXCEPTIONS = [
+  'nos‧al‧tres', 'vos‧al‧tres', 'ben‧es‧tar', 'mal‧es‧tar', 'mal‧en‧tès', 'mal‧en‧te‧sa', 'mal‧en‧te‧sos',
+  'mal‧en‧te‧ses', 'mal‧au‧rat', 'mal‧au‧ra‧da', 'mal‧au‧rats', 'mal‧au‧ra‧des', 'des‧en‧gany',
+  'des‧en‧ga‧nys', 'des‧en‧ga‧nyar', 'des‧en‧ga‧nyat', 'des‧en‧ga‧nya‧da', 'des‧i‧gual', 'des‧i‧guals',
+  'des‧i‧gual‧tat', 'cel‧o‧bert', 'cel‧o‧berts', 'bes‧a‧vi', 'bes‧a‧via', 'bes‧a‧vis', 'bes‧a‧vies',
+  'trans‧at‧làn‧tic', 'trans‧at‧làn‧ti‧ca', 'trans‧at‧làn‧tics', 'trans‧at‧làn‧ti‧ques', 'sub‧rat‧llar',
+  'sub‧rat‧lla‧da', 'sub‧rat‧llat',
+].join(', ');
+
 const PATTERNS: Record<HyphenationLocale, HyphenationLanguage> = {
   'en-us': enUs,
   'es': es,
@@ -19,7 +30,10 @@ const PATTERNS: Record<HyphenationLocale, HyphenationLanguage> = {
   'de': de,
   'it': it,
   'pt': pt,
-  'ca': ca,
+  // The IEC leaves at least two letters on either side of the break (VI
+  // § 1.6), as TeX does with these same patterns: `ter-ra`, `cai-xa`. The
+  // package ships three.
+  'ca': { ...ca, leftmin: 2, rightmin: 2, exceptions: CATALAN_EXCEPTIONS },
   'nl': nl,
 };
 
@@ -89,7 +103,7 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
       const word = text.slice(i, j);
       let hyphenated = memo.get(word);
       if (hyphenated === undefined) {
-        hyphenated = hyphenator.hyphenateText(word);
+        hyphenated = loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word);
         if (memo.size >= WORD_MEMO_SLOTS) memo.clear();
         memo.set(word, hyphenated);
       }
@@ -99,6 +113,40 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
   }
   return out;
 }
+
+/** A Catalan word run: letters and apostrophes, with the middle dot of an
+ *  ela geminada (`l·l`) kept inside the word. hypher's own word class stops
+ *  at the dot, so `il·lusió` would reach the patterns as `il` and `lusió`. */
+const CATALAN_WORD_RE = /(?:[\p{L}\p{M}'’]|(?<=[lL])·(?=[lL]))+/gu;
+const CATALAN_VOWELS = 'aeiouàèéíïòóúüAEIOUÀÈÉÍÏÒÓÚÜ';
+/** hypher's default: shorter words are left whole. */
+const MIN_WORD_LENGTH = 4;
+
+/** `word` (one whitespace-free token) with soft hyphens at the Catalan
+ *  syllable breaks the IEC accepts at a line end. Two vowels in hiatus stay
+ *  together (`cièn-cia`, `ca-mions`, VI § 2.4), but an intervocalic `i` or
+ *  `u` is a consonant and opens its syllable (`fe-ia`, `ve-ient`). No
+ *  break follows an apostrophe (`s'ha-via`). The
+ *  break inside `l·l` is kept: the line breakers print it `l-` | `l`. */
+function hyphenateCatalan(hyphenator: Hypher, word: string): string {
+  return word.replace(CATALAN_WORD_RE, (run) => {
+    if (run.length < MIN_WORD_LENGTH) return run;
+    const parts = hyphenator.hyphenate(run);
+    let out = parts[0] ?? '';
+    for (let i = 1; i < parts.length; i++) {
+      const prev = parts[i - 1]!;
+      const next = parts[i]!;
+      // Never right after an apostrophe (`l'al-ba`, not `l'-alba`, VI § 1.7).
+      const apostrophe = "'’".includes(prev[prev.length - 1]!);
+      const hiatus = CATALAN_VOWELS.includes(prev[prev.length - 1]!) && CATALAN_VOWELS.includes(next[0]!)
+        && !('iuIU'.includes(next[0]!) && next.length > 1 && CATALAN_VOWELS.includes(next[1]!));
+      out += (hiatus || apostrophe ? '' : SOFT_HYPHEN) + next;
+    }
+    return out;
+  });
+}
+
+const SOFT_HYPHEN = '­';
 
 /** A hyphen between two letters: the word is a compound. */
 const COMPOUND_RE = /\p{L}-\p{L}/u;

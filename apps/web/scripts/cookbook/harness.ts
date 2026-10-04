@@ -426,9 +426,14 @@ async function screenshotOf(page: Page, selector: string): Promise<string> {
   )) as { x: number; y: number; width: number; height: number } | null;
   if (!box || box.width < 1 || box.height < 1) throw new Error(`capture.selector matches nothing visible: ${selector}`);
   const height = Math.min(box.height, (box.width * 3) / 4);
+  // Capturing beyond the viewport resizes it for the shot, and a page that
+  // relayouts on resize (a WebGL viewer repainting its pages) is caught
+  // half-drawn: only when the crop does not fit the viewport.
+  const viewport = page.viewport();
+  const fits = !!viewport && box.y + height <= viewport.height && box.x + box.width <= viewport.width;
   const base64 = await page.screenshot({
     clip: { x: box.x, y: box.y, width: box.width, height },
-    captureBeyondViewport: true,
+    captureBeyondViewport: !fits,
     encoding: "base64",
     type: "png",
   });

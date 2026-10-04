@@ -10,6 +10,54 @@ const HOVER_STRIP_WIDTH_PX = 32;
 // Short grace window between leaving the strip or the toolbar before we
 // actually hide — lets the cursor cross the gap between them without blinking.
 const HIDE_DELAY_MS = 180;
+// How long a viewer must stay idle before a busy-forced toolbar slides away.
+// A load flips the busy flag many times (plan settling, chapter stitching,
+// regenerations); without this grace the bar bounced in and out on each flip.
+export const BUSY_RELEASE_MS = 1800;
+
+/**
+ * Busy flag with a release grace: it turns on at once and turns off only
+ * after `set(false)` has held for `graceMs`. A new busy pulse inside the
+ * grace cancels the pending release.
+ */
+export function createBusyLatch(graceMs: number, onChange: (busy: boolean) => void) {
+  let busy = false;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const clear = () => {
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+  };
+  return {
+    set(next: boolean) {
+      if (next) {
+        clear();
+        if (!busy) {
+          busy = true;
+          onChange(true);
+        }
+      } else if (busy && timer === null) {
+        timer = setTimeout(() => {
+          timer = null;
+          busy = false;
+          onChange(false);
+        }, graceMs);
+      }
+    },
+    dispose: clear,
+  };
+}
+
+/** `value`, held true for `graceMs` after it last was. */
+function useBusyLatch(value: boolean, graceMs: number): boolean {
+  const [busy, setBusy] = useState(value);
+  const latchRef = useRef<ReturnType<typeof createBusyLatch> | null>(null);
+  if (latchRef.current === null) latchRef.current = createBusyLatch(graceMs, setBusy);
+  useEffect(() => {
+    latchRef.current?.set(value);
+  }, [value]);
+  useEffect(() => () => latchRef.current?.dispose(), []);
+  return busy || value;
+}
 
 export interface FloatingToolbarShell {
   pinned: boolean;
@@ -54,6 +102,7 @@ export function useFloatingToolbarShell(
   const [focusWithin, setFocusWithin] = useState(false);
   const hydratedRef = useRef(false);
   const hideTimerRef = useRef<number | null>(null);
+  const busy = useBusyLatch(forceVisible, BUSY_RELEASE_MS);
 
   useEffect(() => {
     const saved = loadToolbarPinned(storageId);
@@ -121,7 +170,7 @@ export function useFloatingToolbarShell(
 
   // The phone layout docks the toolbar for good: there is no hover to
   // bring it back.
-  const hidden = !compact && !pinned && !hovered && !focusWithin && !forceVisible;
+  const hidden = !compact && !pinned && !hovered && !focusWithin && !busy;
 
   return {
     pinned,

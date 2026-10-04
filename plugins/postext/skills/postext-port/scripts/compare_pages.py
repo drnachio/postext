@@ -3,6 +3,11 @@
 
     compare_pages.py source.pdf render.pdf --source-pages 23-30 --render-pages 1-8
         --out compare/ [--dpi 45] [--sheet]
+    compare_pages.py source.pdf /tmp/pages --source-pages 23-30 --render-pages 1-8 --out compare/
+
+The render is a PDF, or the folder `render.mjs --jpeg` wrote (page-NNN.jpg,
+NNN the page's position in the layout; --render-pages counts the same way),
+so a look at the pages never needs a PDF.
 
 Writes compare/pair-NN.png (source left, render right) for each page pair and,
 with --sheet, compare/sheet.png (all pairs in a grid) to eyeball a whole
@@ -42,6 +47,23 @@ def render(doc, pno: int, dpi: int, height: int | None = None) -> Image.Image:
     return im
 
 
+class JpegPages:
+    """The pages `render.mjs --jpeg DIR` wrote, read like a document."""
+
+    def __init__(self, folder: Path) -> None:
+        self.files = {int(f.stem.split("-")[1]): f for f in folder.glob("page-*.jpg") if f.stem.split("-")[1].isdigit()}
+        self.page_count = max(self.files, default=0)
+
+    def image(self, pno: int, height: int | None) -> Image.Image | None:
+        f = self.files.get(pno + 1)
+        if not f:
+            return None
+        im = Image.open(f).convert("RGB")
+        if height and im.height != height:
+            im = im.resize((round(im.width * height / im.height), height))
+        return im
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("source")
@@ -52,7 +74,8 @@ def main() -> None:
     ap.add_argument("--dpi", type=int, default=45)
     ap.add_argument("--sheet", action="store_true")
     args = ap.parse_args()
-    src, ren = fitz.open(args.source), fitz.open(args.render)
+    src = fitz.open(args.source)
+    ren = JpegPages(Path(args.render)) if Path(args.render).is_dir() else fitz.open(args.render)
     sp, rp = pages(args.source_pages, src.page_count), pages(args.render_pages, ren.page_count)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -60,7 +83,16 @@ def main() -> None:
     for n in range(max(len(sp), len(rp))):
         a = render(src, sp[n], args.dpi) if n < len(sp) else None
         h = a.height if a else None
-        b = render(ren, rp[n], args.dpi, h) if n < len(rp) else None
+        if n >= len(rp):
+            b = None
+        elif isinstance(ren, JpegPages):
+            b = ren.image(rp[n], h)
+            if b is None:
+                print(f"no page-{rp[n] + 1:03d}.jpg in {args.render}: render it with --jpeg --pages '#{rp[n] + 1}'")
+        else:
+            b = render(ren, rp[n], args.dpi, h)
+        if a is None and b is None:
+            continue
         h = h or b.height
         w = (a.width if a else b.width) + (b.width if b else a.width) + 12
         pair = Image.new("RGB", (w, h + 16), (235, 235, 235))

@@ -489,7 +489,7 @@ const SANDBOX_UI = byLang(
 );
 
 /** The Sandbox interface: activity bar with its seven panels, the text
- *  editor with the chapter switcher, and the viewport with its three tabs
+ *  editor with the chapter switcher, and the viewport with its four tabs
  *  showing a spread. */
 export function sandboxUiSvg(lang: GuideLang): string {
   const { aria: ariaLabel, chapter, scope, panels } = SANDBOX_UI[lang];
@@ -509,9 +509,9 @@ export function sandboxUiSvg(lang: GuideLang): string {
     + editorWidths.map((w, i) => bar(edX + 16, 76 + i * 19, w, i === 0 ? P.blue : i === 5 ? '#e7b54a' : P.barSoft, 7)).join('');
   const vx = 284;
   const vw = 332;
-  const tabs = ['Canvas', 'HTML', 'PDF'];
+  const tabs = ['Canvas', 'HTML', lang === 'zh-Hans' ? '书页' : 'Folio', 'PDF'];
   const viewport = card(vx, 30, vw, 272, P.paper, P.hair)
-    + tabs.map((t, i) => text(vx + 40 + i * 70, 50, t, { size: FS.label, color: i === 0 ? P.blueDark : P.muted, weight: i === 0 ? 600 : 400 })).join('')
+    + tabs.map((t, i) => text(vx + 40 + i * 54, 50, t, { size: FS.label, color: i === 0 ? P.blueDark : P.muted, weight: i === 0 ? 600 : 400 })).join('')
     + `<rect x="${vx + 18}" y="58" width="44" height="3.5" rx="1.75" fill="${P.blue}" />`
     + `<rect x="${vx + vw - 104}" y="37" width="90" height="20" rx="10" fill="${P.blueTint}" stroke="${P.blueMid}" />`
     + text(vx + vw - 59, 51, scope, { size: FS.small, color: P.blueDark, weight: 600 })

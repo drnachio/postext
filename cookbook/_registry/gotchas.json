@@ -1549,5 +1549,44 @@
       "zh": "对图或表的第一次:ref或@fig:引用决定它的编号和位置，所以前面章节里的引用会把它拉到那里。向后引用时指向包含它的节，等图已经排出之后再直接引用图本身。"
     },
     "feature": "cross-references"
+  },
+  "folio-container-height": {
+    "title": {
+      "en": "The Folio viewer takes the size of its container",
+      "es": "El visor Folio toma el tamaño de su contenedor",
+      "zh": "Folio查看器取其容器的尺寸"
+    },
+    "body": {
+      "en": "createFolioFromDocument fits the book into the element you give it, with the buttons and the page count in its margins. An element with no height (an empty div in normal flow) shows nothing: give it a height in CSS.",
+      "es": "createFolioFromDocument encaja el libro en el elemento que le das, con los botones y el contador de páginas en sus márgenes. Un elemento sin altura (un div vacío en el flujo normal) no muestra nada: dale una altura en CSS.",
+      "zh": "createFolioFromDocument把书本放进你给它的元素中，按钮和页码显示在元素的边距里。没有高度的元素（正常文档流中的空div）什么也显示不出：要用CSS给它设定高度。"
+    },
+    "feature": "folio-viewer"
+  },
+  "folio-cover-pages-even": {
+    "title": {
+      "en": "cover: 'pages' needs an even page count for the back board",
+      "es": "cover: 'pages' necesita un número par de páginas para la tapa trasera",
+      "zh": "cover: 'pages'需要偶数页才有封底"
+    },
+    "body": {
+      "en": "With binding.cover set to 'pages' the first page turns as the front board and the last page as the back board only when it falls on a verso. An odd page count leaves the book with a front cover and no back: pad it to an even count or keep the case.",
+      "es": "Con binding.cover en 'pages' la primera página gira como tapa delantera, y la última como tapa trasera solo si cae en un verso. Con un número impar de páginas el libro tiene tapa delantera y no trasera: complétalo hasta un número par o deja la caja.",
+      "zh": "binding.cover设为'pages'时，第一页作为封面翻动，最后一页只有落在左页时才作为封底。页数为奇数时书只有封面没有封底：把页数补成偶数，或保留书壳。"
+    },
+    "feature": "folio-appearance"
+  },
+  "paper-run-whole-leaves": {
+    "title": {
+      "en": "A paper run starts and ends on a new page, and a leaf takes its recto's paper",
+      "es": "Una tanda de papel empieza y acaba en página nueva, y la hoja toma el papel de su recto",
+      "zh": "换纸段从新页开始、在新页结束，一张纸取其右页的纸张"
+    },
+    "body": {
+      "en": "Text inside :::paper starts on a new page and the text after it does too. A leaf has two pages and one paper, its recto's, so a run that starts on a verso prints that page on the paper of the leaf it shares. Put a page break where a run should start on a recto.",
+      "es": "El texto dentro de :::paper empieza en página nueva, y el que le sigue también. Una hoja tiene dos páginas y un solo papel, el de su recto, así que una tanda que empieza en un verso imprime esa página en el papel de la hoja que comparte. Pon un salto de página donde una tanda deba empezar en recto.",
+      "zh": ":::paper中的文字从新页开始，其后的文字也从新页开始。一张纸有两页而只有一种纸张，即其右页的纸张，所以从左页开始的换纸段，这一页会印在它所在那张纸的纸张上。需要从右页开始的地方，加一个分页。"
+    },
+    "feature": "paper-runs"
   }
 }

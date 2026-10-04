@@ -134,3 +134,39 @@ describe("postext-port command lines", () => {
     expect(seen).toBeGreaterThan(1);
   });
 });
+
+describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("checks keys, values, ranges and colours of config.folio", () => {
+    const { out } = lint(project({
+      ...fonts,
+      folio: {
+        tilt: 60,
+        camera: 1,
+        paper: { type: "glossy", shade: "#fff" },
+        binding: { type: "saddleStitch", spineImage: "spine" },
+        lighting: { shadows: "yes" },
+      },
+    }));
+    expect(out).toContain("config.folio.paper.type: 'glossy' is not one of");
+    expect(out).toContain('config.folio.paper.shade: a colour is {"hex": "#rrggbb", "model": "hex"}');
+    expect(out).toContain("config.folio.lighting.shadows: must be true or false");
+    expect(out).toContain("config.folio.tilt: 60 is clamped to 0–40");
+    expect(out).toContain("config.folio.camera: unknown key (ignored)");
+    expect(out).toContain("config.folio.binding.spineImage: ignored: a saddle-stitched book has no flat spine");
+  });
+
+  it("asks for the spine image to be a resource", () => {
+    const { out } = lint(project({ ...fonts, folio: { binding: { type: "hardcover", spineImage: "spine" } } }));
+    expect(out).toContain("config.folio.binding.spineImage: 'spine' is not a resource id");
+  });
+
+  it("passes a well-formed folio", () => {
+    const { out } = lint(project({
+      ...fonts,
+      folio: { paper: { type: "bible", grammage: 40, shade: { hex: "#f2e9d4", model: "hex" } }, binding: { type: "sewn", cover: "pages" }, surface: { type: "walnut" } },
+    }));
+    expect(out).not.toContain("config.folio");
+  });
+});

@@ -1,0 +1,116 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 103,
+  "status": "published",
+  "chapter": "output",
+  "order": 150,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "folio-appearance",
+      "folio-viewer"
+    ],
+    "also": [
+      "heading-styles",
+      "opener-design",
+      "heading-attributes",
+      "paragraph-styles",
+      "page-role-filters",
+      "color-palette",
+      "mirrored-margins",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q118",
+    "Q116"
+  ],
+  "gotchas": [
+    "folio-container-height",
+    "folio-cover-pages-even",
+    "fonts-first",
+    "config-cache-identity",
+    "headings-drop-h1-break"
+  ],
+  "related": [
+    "folio-book-on-a-desk",
+    "paper-swatch-book",
+    "saddle-stitched-card-cover"
+  ],
+  "engine": {
+    "postext": "1.13.4"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#bench",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "folio": {
+    "tilt": 22,
+    "paper": {
+      "type": "bookWove",
+      "grammage": 80
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "pages",
+      "coverColor": "#9a3b2e"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Outfit",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04"
+}

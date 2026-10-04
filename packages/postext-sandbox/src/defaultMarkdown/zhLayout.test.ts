@@ -58,7 +58,7 @@ describe('the Chinese guide laid out as a book', () => {
   }, 120_000);
 
   it('sets every chapter, each with pages', () => {
-    expect(docs.length).toBe(13);
+    expect(docs.length).toBe(14);
     for (const doc of docs) expect(doc.pages.length).toBeGreaterThan(0);
   });
 
@@ -103,9 +103,9 @@ describe('the Chinese guide laid out as a book', () => {
     expect(composed).toBeGreaterThan(500);
   });
 
-  it('numbers chapters 第一章 … 第十章 and figures by chapter, 图3-1', () => {
+  it('numbers chapters 第一章 … 第十一章 and figures by chapter, 图3-1', () => {
     const numbered = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 1 && b.numberPrefix)).map((b) => b.numberPrefix);
-    expect(numbered).toEqual(['第一章', '第二章', '第三章', '第四章', '第五章', '第六章', '第七章', '第八章', '第九章', '第十章']);
+    expect(numbered).toEqual(['第一章', '第二章', '第三章', '第四章', '第五章', '第六章', '第七章', '第八章', '第九章', '第十章', '第十一章']);
     const captions = JSON.stringify(docs[4]!.pages);
     expect(captions).toContain('图3-1');
     expect(captions).toContain('图3-2');
