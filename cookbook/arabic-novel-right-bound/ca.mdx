@@ -1,0 +1,63 @@
+---
+title: "Una novel·la àrab composta de dreta a esquerra"
+summary: "Una novel·la àrab en 14 × 21 cm: amb locale 'ar' el text va de dreta a esquerra, el llibre s'enquaderna per la dreta i els folis diuen ١٢."
+plain: "Les primeres pàgines d'una novel·la en àrab, tal com les imprimiria una editorial àrab: les línies van de dreta a esquerra, el llibre s'obre pel que un lector occidental anomena el final i els números de pàgina fan servir xifres àrabs."
+description: "Novel·la àrab amb Postext: locale 'ar' dona text de dreta a esquerra, enquadernació per la dreta i folis arabicoíndics; caixida i capítols en lletres."
+question: "Com componc un llibre àrab de dreta a esquerra i l'enquaderno per la dreta?"
+aliases: ["novel·la àrab", "dreta a esquerra", "RTL", "enquadernació per la dreta", "xifres arabicoíndiques", "caixida", "kashida", "tatweel", "Markazi Text", "رواية", "الفصل الأول", "14 × 21 cm"]
+pageNotes: { "1": "Una pàgina dreta en blau fosc, a sang, sota una gelosia d'estrelles de vuit puntes en línies d'un blau més clar. Una gran estrella perfilada en llautó tanca el rètol de la part, القسم الأول, la paraula الدرب en lletres cúfiques blanques i una cita en blanc.", "2": "La pàgina esquerra, al davant: una petita estrella de llautó, el número del capítol en lletres, الفصل الأول, el títol الباب الأزرق en lletra cúfica i a sota text àrab justificat des del marge dret, amb el foli ١١ centrat al peu." }
+---
+
+## Què compondràs
+
+El començament de *حروف من رصاص* (Lletres de plom), una novel·la sobre un nét que torna a obrir la impremta del seu avi en un carreró del Caire, composta com una edició àrab en rústica: 14 × 21 cm, Markazi Text de 13,5 pt sobre 22 pt d'interlineat, justificat, amb el sagnat a la dreta. El fragment comença a la pàgina 10 amb una portadella de part en el blau de la porta de la impremta, una gelosia d'estrelles de vuit puntes dibuixada amb codi i el nom de la part en Reem Kufi de 64 pt. Al davant, a la pàgina esquerra, s'obre el capítol, numerat en lletres: الفصل الأول. Els folis diuen ١٠, ١١, ١٢; el títol del llibre va sobre les pàgines dretes i el del capítol sobre les esquerres. <RecipeLink slug="trade-paperback-novel">Una novel·la en rústica</RecipeLink> compon el mateix tipus de llibre d'esquerra a dreta.
+
+## Elaboració
+
+### 1 · Un idioma, tres decisions
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. La configuració només diu `locale: 'ar'`, i el motor en treu tres coses: el text va de dreta a esquerra (`direction: 'auto'`), el llibre s'enquaderna per la dreta (`page.binding: 'auto'`) i tots els números que escriu el motor, folis inclosos, fan servir les xifres arabicoíndiques (`numerals: 'auto'`) ([Xifres del document](/ca/docs/configuration#llengua-del-document)). Marges i alineacions continuen dient `left` i `right`, però en un llibre de dreta a esquerra anomenen els costats del flux: `margins.left` és el costat del llom i el sagnat queda a la dreta. Les línies justificades obren primer els espais i després allarguen les lletres enllaçades amb el tatweel, la caixida dels llibres àrabs; el text no es divideix mai amb guionets ([Text àrab](/ca/docs/configuration#text-àrab)).
+
+<PageShot page={3} crop="0.1,0.12,0.8,0.3" caption="Pàgina 12: línies justificades amb caixida, el sagnat a la dreta i el foli ١٢ a la vora exterior." />
+
+### 2 · El número del capítol en lletres
+
+<Excerpt region="opener" />
+
+El `numberingTemplate` del nivell escriu الفصل i el número com a ordinal masculí, de manera que el segon capítol és الفصل الثاني sense tocar el Markdown; `{1:ordinal-feminine}` dona الأولى, الثانية per a un nom femení com الليلة ([Nombres en lletres](/ca/docs/configuration#nombres-en-lletres)). L'obertura l'imprimeix amb `{number}` sobre el títol. Les obertures àrabs solen anar centrades, i amb `align: 'center'` no cal pensar per quin costat comença el disseny.
+
+### 3 · Les capçaleres es queden a la seva pàgina
+
+<Excerpt region="heads" />
+
+El text segueix el flux, però les capçaleres i els folis conserven els costats físics. La pàgina 12 és parella i, en aquest llibre, pàgina dreta: el seu foli va a dalt a la dreta i el títol del llibre al costat; la 13 queda a l'esquerra i porta el capítol. Si llegeixes el plec des de la dreta, com un lector àrab, el títol del llibre arriba primer. `showBook` col·loca les pàgines en mirall, l'11 a l'esquerra de la 10, i la pantalla mostra els plecs tal com s'obre el llibre.
+
+### 4 · Una portadella dibuixada amb codi
+
+<Excerpt region="plate" />
+
+La portadella és un títol de primer nivell, `# الدرب {style="plate" …}`, l'estil del qual pinta tot el full i li treu capçalera i foli. La gelosia és un SVG generat al mateix script amb dos quadrats girats 45°, l'estrella *khatam* de l'ornamentació geomètrica islàmica, en el blau i el llautó de la paleta, i el PDF la conserva com a traçats vectorials. `numbered: false` deixa la portadella fora del compte de capítols, i l'obertura que segueix és الفصل الأول.
+
+## Variants
+
+### Imprimeix xifres europees
+
+Una edició magribina imprimeix 1, 2, 3; `locale: 'ar-MA'` ho fa tot sol, i <RecipeLink slug="maghreb-edition-european-digits">l'edició magribina</RecipeLink> mostra el llibre sencer.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'ar', numerals: 'latn',
+```
+
+### Justifica només amb els espais
+
+Algunes editorials no posen tatweel al text corregut: els espais absorbeixen tota la diferència.
+
+```diff
+   textAlign: 'justify', optimalLineBreaking: true,
++  kashida: 'none',
+```
+
+## Errors freqüents
+
+- Un colofó en anglès o en castellà al final d'un llibre àrab necessita `{dir=ltr}` al seu bloc: sense, la línia llatina s'alinea i es puntua com un paràgraf de dreta a esquerra, amb el punt final a l'esquerra.
