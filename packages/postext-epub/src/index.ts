@@ -16,7 +16,10 @@ export async function renderToEpub(docs: EpubSource, options: RenderToEpubOption
     ? await buildFixedPublication(docs, options)
     : await buildReflowablePublication(docs, options);
   options.signal?.throwIfAborted();
-  return packEpub(publication);
+  options.onProgress?.({ phase: 'package', done: 0, total: 1 });
+  const bytes = packEpub(publication);
+  options.onProgress?.({ phase: 'package', done: 1, total: 1 });
+  return bytes;
 }
 
 export { packEpub } from './package/pack';
