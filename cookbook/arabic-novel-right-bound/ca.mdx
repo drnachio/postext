@@ -16,7 +16,7 @@ El començament de *حروف من رصاص* (Lletres de plom), una novel·la sob
 
 ### 1 · Un idioma, tres decisions
 
-El codi és a [la resposta curta](#la-resposta-curta), més amunt. La configuració només diu `locale: 'ar'`, i el motor en treu tres coses: el text va de dreta a esquerra (`direction: 'auto'`), el llibre s'enquaderna per la dreta (`page.binding: 'auto'`) i tots els números que escriu el motor, folis inclosos, fan servir les xifres arabicoíndiques (`numerals: 'auto'`) ([Xifres del document](/ca/docs/configuration#llengua-del-document)). Marges i alineacions continuen dient `left` i `right`, però en un llibre de dreta a esquerra anomenen els costats del flux: `margins.left` és el costat del llom i el sagnat queda a la dreta. Les línies justificades obren primer els espais i després allarguen les lletres enllaçades amb el tatweel, la caixida dels llibres àrabs; el text no es divideix mai amb guionets ([Text àrab](/ca/docs/configuration#text-àrab)).
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. La configuració només diu `locale: 'ar'`, i el motor en treu tres coses: el text va de dreta a esquerra (`direction: 'auto'`), el llibre s'enquaderna per la dreta (`page.binding: 'auto'`) i tots els números que escriu el motor, folis inclosos, fan servir les xifres arabicoíndiques (`numerals: 'auto'`) ([Començar un llibre en àrab](/ca/docs/arabic-layout#començar-un-llibre-en-àrab)). Marges i alineacions continuen dient `left` i `right`, però en un llibre de dreta a esquerra anomenen els costats del flux: `margins.left` és el costat del llom i el sagnat queda a la dreta. Les línies justificades obren primer els espais i després allarguen les lletres enllaçades amb el tatweel, la caixida dels llibres àrabs; el text no es divideix mai amb guionets ([Justificació i caixida](/ca/docs/arabic-layout#justificació-i-caixida)).
 
 <PageShot page={3} crop="0.1,0.12,0.8,0.3" caption="Pàgina 12: línies justificades amb caixida, el sagnat a la dreta i el foli ١٢ a la vora exterior." />
 
@@ -24,7 +24,7 @@ El codi és a [la resposta curta](#la-resposta-curta), més amunt. La configurac
 
 <Excerpt region="opener" />
 
-El `numberingTemplate` del nivell escriu الفصل i el número com a ordinal masculí, de manera que el segon capítol és الفصل الثاني sense tocar el Markdown; `{1:ordinal-feminine}` dona الأولى, الثانية per a un nom femení com الليلة ([Nombres en lletres](/ca/docs/configuration#nombres-en-lletres)). L'obertura l'imprimeix amb `{number}` sobre el títol. Les obertures àrabs solen anar centrades, i amb `align: 'center'` no cal pensar per quin costat comença el disseny.
+El `numberingTemplate` del nivell escriu الفصل i el número com a ordinal masculí, de manera que el segon capítol és الفصل الثاني sense tocar el Markdown; `{1:ordinal-feminine}` dona الأولى, الثانية per a un nom femení com الليلة ([Ordinals i cardinals en lletres](/ca/docs/arabic-layout#ordinals-i-cardinals-en-lletres)). L'obertura l'imprimeix amb `{number}` sobre el títol. Les obertures àrabs solen anar centrades, i amb `align: 'center'` no cal pensar per quin costat comença el disseny.
 
 ### 3 · Les capçaleres es queden a la seva pàgina
 
