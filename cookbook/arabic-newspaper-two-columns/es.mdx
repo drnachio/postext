@@ -1,0 +1,59 @@
+---
+title: "Una página de periódico árabe a dos columnas"
+summary: "Un diario árabe con locale 'ar': la primera columna es la derecha, los titulares ocupan las dos y los breves van en tres columnas de derecha a izquierda."
+plain: "La portada y una página interior de un periódico árabe. La noticia empieza en la columna de la derecha y sigue en la de la izquierda, como leen la página los lectores árabes."
+description: "Periódico árabe en Postext: dos columnas de derecha a izquierda, titulares a toda página, breves a tres columnas y una tabla de horarios de oración."
+question: "¿Qué columna va primero en una página árabe y cómo compongo un periódico a dos columnas?"
+aliases: ["periódico árabe", "columnas de periódico", "columnas de derecha a izquierda", "orden de las columnas", "cabecera del periódico", "mancheta", "Aref Ruqaa", "horarios de oración", "صحيفة", "عمود", "مواقيت الصلاة"]
+pageNotes: { "1": "La portada: el nombre الساحل en grandes letras ruqʿa azules entre dos orejas pequeñas, debajo un filete grueso y otro fino, el antetítulo النقل, un titular de dos líneas en cúfica negra a toda página, una entradilla, un mapa de una línea de tranvía junto a la costa, la noticia en dos columnas empezando por la derecha y, al pie, un recuadro color arena con tres breves.", "2": "La página interior: una pestaña azul محليات sobre un filete grueso, un titular a toda página, cuatro noticias en dos columnas desde la derecha y, al pie, una tabla de horarios de oración con su primera columna, الفجر, a la derecha." }
+---
+
+## Lo que vas a componer
+
+Dos páginas de *الساحل*, un diario imaginario de una ciudad portuaria imaginaria, en un formato compacto de 246 × 328 mm. La portada lleva el nombre del periódico en Aref Ruqaa de 84 pt, la noticia principal sobre el nuevo tranvía con un titular a toda página y un mapa dibujado con código, y al pie una franja de tres breves. La página 2 abre la sección local bajo una pestaña azul, con cuatro noticias y los horarios de oración del día. Todo se lee desde la derecha: la primera columna de texto, los breves, las columnas de la tabla, las orejas de la cabecera. <RecipeLink slug="newspaper-front-page">La portada inglesa</RecipeLink> compone los mismos elementos de izquierda a derecha.
+
+## Elaboración
+
+### 1 · Dos columnas, la primera a la derecha
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `layoutType: 'double'` y el filete de columna son los mismos ajustes que en un periódico inglés; `locale: 'ar'` da la vuelta a la página, así que la noticia llena primero la columna de la derecha y sigue arriba en la de la izquierda ([Orden de las páginas y encuadernación por la derecha](/es/docs/arabic-layout#orden-de-las-páginas-y-encuadernación-por-la-derecha)). Un titular sobre las dos columnas es un recuadro a toda página sin marco, y las columnas que quedan debajo empiezan a la misma altura. La franja de breves es un recuadro a toda página flotado al pie con `:::columns{count=3}` dentro, y sus columnas también van de derecha a izquierda, igual que la tabla de horarios de la página 2: una tabla en la dirección del documento pone su primera columna a la derecha.
+
+### 2 · Una cabecera entre dos orejas
+
+<Excerpt region="nameplate" />
+
+El título de primer nivel de la portada es el nombre del periódico, pintado por un estilo de título. Su diseño se dibuja en la página en espejo, así que `top-right` es el principio de la línea: el número y la fecha van ahí, y la ciudad y el precio en el otro extremo ([Qué significan izquierda, derecha, principio y final](/es/docs/arabic-layout#qué-significan-izquierda-derecha-principio-y-final)). La ruqʿa es una letra de rótulo para pocas palabras en cuerpo grande; no admite cachida y el texto nunca la usa.
+
+### 3 · Pestañas de sección y líneas de folio
+
+<Excerpt region="inside" />
+
+Una página interior se abre con un título de primer nivel dibujado como pestaña sobre un filete grueso. La línea de folio es una cabecera, así que conserva sus lados físicos: la página 2, par, lleva el número en la esquina derecha, la exterior en un periódico que se abre por la derecha. La portada vacía la cabecera en su estilo de título.
+
+### 4 · Un mapa dibujado con código
+
+<Excerpt region="art" />
+
+El mapa del tranvía es un SVG de trazados y círculos en los colores de la paleta, sin texto: las palabras de un dibujo saldrían en una fuente del sistema, así que los nombres de lugar se quedan en el pie. El tipo de imagen no tiene contador ni etiqueta, porque los periódicos no numeran sus fotos.
+
+## Variantes
+
+### Tres columnas en los breves, cuatro en una página más ancha
+
+La franja es un recuadro con sus propias columnas, así que puede tener más que las dos del texto.
+
+```diff
+-:::columns{count=3 breaks="2,3"}
++:::columns{count=4 breaks="2,3,4"}
+```
+
+### Cifras europeas para un periódico magrebí
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag): rtl, digits ٠–٩
++  locale: 'ar-MA', // rtl, digits 0–9
+```
+
+## Errores frecuentes
+
+- Los horarios de oración están tecleados con cifras arábigo-índicas en las celdas de la tabla: `locale` solo cambia los números que escribe el motor, así que una edición magrebí tiene que volver a teclearlos.
