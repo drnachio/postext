@@ -9,6 +9,7 @@
 
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import type { InlineSpan } from '../parse';
+import { writtenText } from './kashida';
 import { SOFT_HYPHEN } from './types';
 import { GEMINATE_DOT, endsInsideGeminate } from './geminate';
 import { BREAKING_SPACE_RE } from './spaces';
@@ -110,9 +111,11 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
         segments.push(seg);
         continue;
       }
-      const skip = lead && seg.text.startsWith('-') ? 1 : 0;
+      // A word's text as written: without the tatweels kashida inserted.
+      const written = writtenText(seg);
+      const skip = lead && written.startsWith('-') ? 1 : 0;
       lead = false;
-      const href = consume(seg.text.slice(skip));
+      const href = consume(written.slice(skip));
       if (href === null) return lines;
       if (href === undefined) {
         segments.push(seg);

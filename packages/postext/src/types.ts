@@ -856,6 +856,19 @@ export interface ResolvedHyphenationConfig {
   compounds: boolean;
 }
 
+/** `BodyTextConfig.kashida`. */
+export type KashidaSetting = 'auto' | 'none';
+/** `BodyTextConfig.kashidaPatterns`. */
+export type KashidaPatterns = 'auto' | 'naskh' | 'simple' | 'nastaliq';
+
+/** Kashida justification as resolved (see `BodyTextConfig.kashida`). */
+export interface ResolvedKashidaConfig {
+  patterns: KashidaPatterns;
+  perWord: number;
+  /** Longest elongation at one join, em. */
+  maxLength: number;
+}
+
 export interface BodyTextConfig {
   /** One family, as every `fontFamily` field: a CSS font stack is set in
    *  its first family (see `primaryFontFamily`) and reported by
@@ -907,6 +920,39 @@ export interface BodyTextConfig {
    *  is taken only where word spacing alone would pass its limits), so it
    *  needs `optimalLineBreaking`. 0 (the default) turns it off. */
   maxJustifyTracking?: number;
+  /** Kashida justification (#375): a justified line of Arabic-script text
+   *  takes part of its slack by elongating letter joins with tatweels
+   *  (U+0640), the rest in its word spaces. Each word gets at most
+   *  {@link kashidaPerWord} elongations, at the joins the pattern set
+   *  ({@link kashidaPatterns}) ranks best, never after a letter that does
+   *  not join onward (ا د ذ ر ز و ة), never at the end of a word, never
+   *  inside lām-alif; a word that holds a tatweel the author typed is
+   *  lengthened there. Never in Latin text, digits, a heading, a ragged
+   *  line or a paragraph's last line, and never as letter-spacing.
+   *  Knuth–Plass counts each word's elongation as stretch, so lines with
+   *  Arabic words choose their breaks knowing they can stretch there.
+   *  The tatweels are painted as text; copied and extracted text leaves
+   *  them out (see `VDTLineSegment.kashida`).
+   *  `'auto'` elongates; `'none'` justifies with the spaces alone. Unset:
+   *  `'auto'` in a document whose language is written in the Arabic
+   *  script (`ar`, `fa`, `ur`…), `'none'` otherwise. */
+  kashida?: KashidaSetting;
+  /** Which joins take a kashida, and in what order (#375): `'naskh'`, the
+   *  classical Naskh rules (Benatia's matrix with Afifi's prohibitions, as
+   *  in raqim-kashida), for Amiri, Noto Naskh, Scheherazade and their
+   *  kind; `'simple'`, the Microsoft priorities, for simple modern faces;
+   *  `'nastaliq'`, the Naskh rules tailored for Nastaʿlīq. `'auto'` (the
+   *  default) reads the body font's family: no kashida at all in a Ruqʿa
+   *  or Dīwānī face (`Aref Ruqaa`), whose letters do not elongate,
+   *  `'nastaliq'` in a Nastaʿlīq one, else `'naskh'`. */
+  kashidaPatterns?: KashidaPatterns;
+  /** Most elongations in one word (#375). Default 1, the rule of book
+   *  typography; a classical verse line (`:::verse`) may take more. */
+  kashidaPerWord?: number;
+  /** Longest elongation at one join, in ems (#375): the tatweels inserted
+   *  there are whole ones, as many as fit in this. Default 0.6 (three
+   *  tatweels of Amiri, two of Noto Naskh Arabic). */
+  kashidaMaxLength?: number;
   /** Use Knuth-Plass optimal line breaking instead of greedy first-fit. Default true. */
   optimalLineBreaking?: boolean;
   /** Break ragged paragraphs with Knuth–Plass too: body text, blockquotes
@@ -1202,6 +1248,14 @@ export interface ResolvedBodyTextConfig {
   maxWordSpacing: number;
   minWordSpacing: number;
   maxJustifyTracking: number;
+  /** Kashida justification (see `BodyTextConfig.kashida`): `'auto'` and
+   *  its three details, all resolved, when it is on; all four absent when
+   *  it is off, so a document that does not use it resolves as it did
+   *  before kashidas existed. Read them with `resolvedKashida`. */
+  kashida?: 'auto';
+  kashidaPatterns?: KashidaPatterns;
+  kashidaPerWord?: number;
+  kashidaMaxLength?: number;
   optimalLineBreaking: boolean;
   optimalRagged: boolean;
   breakAfterDashes: boolean;

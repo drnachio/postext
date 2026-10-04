@@ -13,6 +13,10 @@ export interface KPBox {
   /** A box tracking must not reach (a chip paints its own runs): a line
    *  that holds one takes no tracking. */
   noTracking?: boolean;
+  /** How much the box itself may widen (px), counted with its line's glue
+   *  stretch: an Arabic word's kashida capacity (`measure/kashida.ts`).
+   *  Absent: rigid. */
+  stretch?: number;
 }
 
 export interface KPGlue {

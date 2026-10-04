@@ -1,4 +1,4 @@
-import type { BlockquoteConfig, BodyTextConfig, EmphasisStyle, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag, TashkilMode } from '../types';
+import type { BlockquoteConfig, BodyTextConfig, EmphasisStyle, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, ResolvedKashidaConfig, HyphenationConfig, KashidaPatterns, LocaleTag, TashkilMode } from '../types';
 import { hyphenationLocaleFor, isUnhyphenatedLanguage, localeScript, presentTag } from '../locale';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
 
@@ -174,6 +174,56 @@ function emphasisAndTashkil(partial: BodyTextConfig | undefined, locale: unknown
   };
 }
 
+/** The defaults of kashida justification once it is on (see
+ *  `BodyTextConfig.kashida`). */
+export const DEFAULT_KASHIDA_CONFIG: ResolvedKashidaConfig = {
+  patterns: 'auto',
+  perWord: 1,
+  maxLength: 0.6,
+};
+
+/** Whether `tag` names a language written in the Arabic script (`ar`,
+ *  `fa`, `ur`, `ps`, `ks-Arab`…): its justified text takes kashidas unless
+ *  the config says `kashida: 'none'`. */
+export function isArabicScriptLanguage(tag: unknown): boolean {
+  const script = localeScript(tag);
+  return script === 'Arab' || script === 'Aran';
+}
+
+const KASHIDA_PATTERNS: readonly KashidaPatterns[] = ['auto', 'naskh', 'simple', 'nastaliq'];
+
+/** Kashida justification as resolved: `undefined` when it is off — unset
+ *  outside an Arabic-script document, `'none'` — so a document without it
+ *  resolves as before (#375). An unknown `kashida` value reads as unset (and
+ *  `collectConfigWarnings` reports it); unknown or out-of-range details
+ *  read as their defaults. */
+function resolveKashida(partial: BodyTextConfig | undefined, documentLocale: LocaleTag | undefined): Pick<ResolvedBodyTextConfig, 'kashida' | 'kashidaPatterns' | 'kashidaPerWord' | 'kashidaMaxLength'> {
+  const setting: unknown = partial?.kashida;
+  const on = setting === 'auto' || (setting !== 'none' && isArabicScriptLanguage(documentLocale));
+  if (!on) return {};
+  const D = DEFAULT_KASHIDA_CONFIG;
+  const perWord = partial?.kashidaPerWord;
+  const maxLength = partial?.kashidaMaxLength;
+  return {
+    kashida: 'auto',
+    kashidaPatterns: KASHIDA_PATTERNS.includes(partial?.kashidaPatterns as KashidaPatterns) ? partial!.kashidaPatterns! : D.patterns,
+    kashidaPerWord: typeof perWord === 'number' && perWord >= 1 ? Math.floor(perWord) : D.perWord,
+    kashidaMaxLength: typeof maxLength === 'number' && maxLength >= 0 ? maxLength : D.maxLength,
+  };
+}
+
+/** Kashida justification of a resolved body text, or `undefined` when it
+ *  is off. */
+export function resolvedKashida(bodyText: Pick<ResolvedBodyTextConfig, 'kashida' | 'kashidaPatterns' | 'kashidaPerWord' | 'kashidaMaxLength'>): ResolvedKashidaConfig | undefined {
+  if (bodyText.kashida !== 'auto') return undefined;
+  const D = DEFAULT_KASHIDA_CONFIG;
+  return {
+    patterns: bodyText.kashidaPatterns ?? D.patterns,
+    perWord: bodyText.kashidaPerWord ?? D.perWord,
+    maxLength: bodyText.kashidaMaxLength ?? D.maxLength,
+  };
+}
+
 /** A blockquote style in full: unset fields keep postext 1.4's look (see
  *  {@link DEFAULT_BLOCKQUOTE_CONFIG}); an unset `firstLineIndent` stays
  *  unset, the body's then applying. In a document written in Arabic
@@ -209,8 +259,10 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
       hyphenation: resolveHyphenation(undefined, documentLocale),
       ...(arabicScript(documentLocale) ? { blockquote: resolveBlockquoteConfig(undefined, documentLocale) } : {}),
       ...emphasisAndTashkil(undefined, documentLocale),
+      ...resolveKashida(undefined, documentLocale),
     };
   }
+  const kashida = resolveKashida(partial, documentLocale);
 
   return {
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
@@ -238,6 +290,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     maxWordSpacing: partial.maxWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.maxWordSpacing,
     minWordSpacing: partial.minWordSpacing ?? DEFAULT_BODY_TEXT_CONFIG.minWordSpacing,
     maxJustifyTracking: partial.maxJustifyTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxJustifyTracking,
+    ...kashida,
     optimalLineBreaking: partial.optimalLineBreaking ?? DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking,
     optimalRagged: partial.optimalRagged ?? DEFAULT_BODY_TEXT_CONFIG.optimalRagged,
     breakAfterDashes: partial.breakAfterDashes ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes,
@@ -362,6 +415,24 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   }
   if (bodyText.maxJustifyTracking !== undefined && bodyText.maxJustifyTracking !== DEFAULT_BODY_TEXT_CONFIG.maxJustifyTracking) {
     result.maxJustifyTracking = bodyText.maxJustifyTracking;
+    hasOverride = true;
+  }
+  // Kashida is on by default in an Arabic-script document only, so the
+  // setting that matches the document's default is the one dropped.
+  if (bodyText.kashida !== undefined && bodyText.kashida !== (isArabicScriptLanguage(documentLocale) ? 'auto' : 'none')) {
+    result.kashida = bodyText.kashida;
+    hasOverride = true;
+  }
+  if (bodyText.kashidaPatterns !== undefined && bodyText.kashidaPatterns !== DEFAULT_KASHIDA_CONFIG.patterns) {
+    result.kashidaPatterns = bodyText.kashidaPatterns;
+    hasOverride = true;
+  }
+  if (bodyText.kashidaPerWord !== undefined && bodyText.kashidaPerWord !== DEFAULT_KASHIDA_CONFIG.perWord) {
+    result.kashidaPerWord = bodyText.kashidaPerWord;
+    hasOverride = true;
+  }
+  if (bodyText.kashidaMaxLength !== undefined && bodyText.kashidaMaxLength !== DEFAULT_KASHIDA_CONFIG.maxLength) {
+    result.kashidaMaxLength = bodyText.kashidaMaxLength;
     hasOverride = true;
   }
   if (bodyText.optimalLineBreaking !== undefined && bodyText.optimalLineBreaking !== DEFAULT_BODY_TEXT_CONFIG.optimalLineBreaking) {

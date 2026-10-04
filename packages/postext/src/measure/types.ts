@@ -123,6 +123,12 @@ export interface MeasureBlockOptions {
    *  `maxJustifyTracking` at the text size. The line records it as
    *  `VDTLine.letterSpacing`. Unset or 0: off. */
   justifyTrackingPx?: number;
+  /** Kashida justification (`bodyText.kashida`, #375; `measure/kashida.ts`):
+   *  a justified paragraph's Arabic words count their elongation as stretch
+   *  in Knuth–Plass, and its lines but the last fill their slack with
+   *  tatweels before their spaces. Rich path only (a paragraph with
+   *  right-to-left text always takes it). Unset: off. */
+  kashida?: import('./kashida').KashidaOptions;
   /** Let a line end after an em or en dash set closed between words ("say—
    *  that’s", "riddles.—I"; see `breaksAfterDash`), on the Knuth–Plass path
    *  as well as line by line (`BodyTextConfig.breakAfterDashes`). Unset:

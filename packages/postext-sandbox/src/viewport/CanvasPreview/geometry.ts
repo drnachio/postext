@@ -15,7 +15,7 @@ type VDTSegment = NonNullable<VDTLine['segments']>[number];
  * the end of a hyphenated line's last segment has no source char either
  * (see {@link addsHyphen}), nor the hyphen a line opens with when it repeats
  * the one of the compound the line before broke at (`dropLeadingHyphen`,
- * see {@link opensWithRepeatedHyphen}).
+ * see {@link opensWithRepeatedHyphen}), nor the tatweels of a kashida.
  */
 export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean, dropLeadingHyphen = false): number {
   // Brackets the layout added (a book title's 《》, a warichu note's) are
@@ -23,7 +23,9 @@ export function segmentPlainLength(seg: VDTSegment, dropTrailingHyphen: boolean,
   if (seg.refContinues || seg.inserted) return 0;
   if (seg.refResourceId !== undefined) return 1;
   if (seg.kind === 'swatch') return 1;
-  let len = seg.text.length;
+  // The tatweels kashida justification inserted are painted, not plain
+  // text (#375).
+  let len = seg.text.length - (seg.kashida?.length ?? 0);
   if (dropLeadingHyphen && seg.text.startsWith('-')) len--;
   if (dropTrailingHyphen && seg.text.endsWith('-') && len > 0) len--;
   return Math.max(0, len);

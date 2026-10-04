@@ -367,6 +367,14 @@ export interface VDTLineSegment {
    *  take each sub-run's style; the runs' texts concatenate to `text`.
    *  Absent on a segment set in one style. */
   runs?: { text: string; bold?: boolean; italic?: boolean; color?: string }[];
+  /** The tatweels (U+0640) kashida justification inserted into this word
+   *  (`bodyText.kashida`, #375), as offsets into `text`, ascending: they
+   *  are painted with the word (the font joins them into its elongation)
+   *  and counted in `width`, but they are no character of the source, so
+   *  plain text, source maps, links and copied or extracted text leave
+   *  them out (`writtenText` in `measure/kashida.ts`). A tatweel the author
+   *  typed is not listed. Absent when none was inserted. */
+  kashida?: number[];
 }
 
 /** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */
@@ -612,8 +620,10 @@ export interface VDTLine {
   measure?: { x: number; width: number };
   /** How many kashidas (tatweels, U+0640) justification inserted into the
    *  line's words, for warnings and overlays. The tatweels themselves are in
-   *  the segments' text; copied and extracted text leaves them out. Absent
-   *  when there are none. */
+   *  the segments' text, and each segment lists where
+   *  ({@link VDTLineSegment.kashida}); copied and extracted text leaves them
+   *  out. The line's `bbox.width` counts them, and its spaces take only
+   *  what they leave of the slack. Absent when there are none. */
   kashida?: number;
 }
 

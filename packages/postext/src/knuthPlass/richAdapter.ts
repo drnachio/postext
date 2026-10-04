@@ -80,6 +80,8 @@ interface RichToken {
   orientation?: 'upright' | 'sideways';
   /** Styled runs of one word of a joining script (see `measure/rich.ts`). */
   runs?: { text: string; bold?: boolean; italic?: boolean }[];
+  /** How far kashidas may widen this word, px (`measure/kashida.ts`). */
+  kashida?: number;
 }
 
 export function richTokensToItems(
@@ -190,13 +192,15 @@ export function richTokensToItems(
         ...tracking(prevCharIndex, token.text.length),
       });
     } else {
-      // Simple text token without break points
+      // Simple text token without break points (an Arabic word has none:
+      // it may stretch by its kashidas instead, `KPBox.stretch`).
       items.push({
         type: 'box',
         width: token.width,
         sourceIndex: t,
         meta: { ...meta, subStart: 0, subEnd: token.text.length },
         ...tracking(0, token.text.length),
+        ...(token.kashida ? { stretch: token.kashida } : {}),
       });
     }
 

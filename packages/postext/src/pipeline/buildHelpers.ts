@@ -6,6 +6,7 @@
 import type { ContentBlock } from '../parse';
 import { spaceDirectiveLines } from '../parse/attrs';
 import { dimensionToPx } from '../units';
+import { writtenText } from '../measure/kashida';
 import {
   createBoundingBox,
   pageIsMirrored,
@@ -402,7 +403,11 @@ export function stampSourceRanges(
         // are no plain text.
         if (seg.refContinues || seg.inserted) continue;
         if (seg.refResourceId !== undefined) units.push(null);
-        else for (let k = 0; k < seg.text.length; k++) units.push(seg.text[k]!);
+        else {
+          // Tatweels kashida justification inserted are no plain text.
+          const text = writtenText(seg);
+          for (let k = 0; k < text.length; k++) units.push(text[k]!);
+        }
       }
     } else {
       for (let k = 0; k < line.text.length; k++) units.push(line.text[k]!);

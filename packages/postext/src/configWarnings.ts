@@ -87,6 +87,15 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   if (tashkil !== undefined && !isTashkilMode(tashkil)) {
     out.push({ kind: 'unknownConfigValue', path: 'bodyText.tashkil', value: String(tashkil), used: 'keep' });
   }
+  const kashida = config.bodyText?.kashida as unknown;
+  if (kashida !== undefined && kashida !== 'auto' && kashida !== 'none') {
+    const used = resolveAllConfig(config).bodyText.kashida ?? 'none';
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.kashida', value: String(kashida), used });
+  }
+  const patterns = config.bodyText?.kashidaPatterns as unknown;
+  if (patterns !== undefined && patterns !== 'auto' && patterns !== 'naskh' && patterns !== 'simple' && patterns !== 'nastaliq') {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.kashidaPatterns', value: String(patterns), used: 'auto' });
+  }
   return out;
 }
 

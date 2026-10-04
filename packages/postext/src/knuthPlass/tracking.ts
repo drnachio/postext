@@ -28,6 +28,7 @@ export function lineTracking(items: readonly KPItem[], lineStart: number, breakA
     const it = items[j]!;
     if (it.type === 'box') {
       width += it.width;
+      stretch += it.stretch ?? 0;
       chars += it.chars ?? 0;
       if (it.noTracking) noTracking = true;
     } else if (it.type === 'glue') {

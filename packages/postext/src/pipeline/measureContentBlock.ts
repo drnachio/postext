@@ -23,6 +23,7 @@ import {
 import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind';
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
+import { kashidaMeasureOptions } from '../measure/kashida';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
@@ -394,6 +395,11 @@ export function measureContentBlock(
     // common-case cache keys stay unchanged.
     justifyTrackingPx: resolved.bodyText.maxJustifyTracking > 0 && style.textAlign === 'justify' && vdtType !== 'heading'
       ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
+      : undefined,
+    // Kashida justification (#375): undefined when off (every document
+    // not in an Arabic-script language), so those cache keys are unchanged.
+    kashida: style.textAlign === 'justify' && vdtType !== 'heading'
+      ? kashidaMeasureOptions(resolved.bodyText, style.fontString, style.fontSizePx)
       : undefined,
     // Breaks after a closed dash (EF-141) and Knuth–Plass on ragged running
     // text (EF-147): left undefined when off, the 1.4 breaks.

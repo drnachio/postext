@@ -29,6 +29,7 @@ import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStre
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
 import { insideJoiningWord, joiningScriptIn, wordLetterSpacing } from './joining';
 import { applyLineDirections, applySegmentLanguages, getMeasureDirection, spanLanguages } from './bidiLines';
+import { TATWEEL, justifyLinesWithKashida, kashidaCapacity } from './kashida';
 import { needsBidi, resolveParagraph, spanIsolates, type BidiParagraph } from '../bidi';
 
 export interface RichBreakPoint {
@@ -137,6 +138,9 @@ export interface RichToken {
    *  `italic`), and becomes one segment painted as one shaped word
    *  (`VDTLineSegment.runs`). */
   runs?: { text: string; bold?: boolean; italic?: boolean }[];
+  /** How far kashidas may widen this word, px: its box's stretch in
+   *  Knuth–Plass (`measure/kashida.ts`). Absent on any other token. */
+  kashida?: number;
 }
 
 /** Whether a resolved swatch colour can fill the square: a six- or
@@ -1575,6 +1579,18 @@ function measureRichText(
     return { lines: [], totalHeight: 0 };
   }
 
+  // Kashida justification (#375): a justified paragraph with Arabic words.
+  const kashida = textAlign === 'justify' && options?.kashida && bidi ? options.kashida : undefined;
+  if (kashida) markKashidaCapacity(tokens, kashida, normalFont, boldFont, italicFont, boldItalicFont);
+  const fontOf = (seg: VDTLineSegment) => seg.fontString ?? pickSpanFont(!!seg.bold, !!seg.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  const withKashida = (lines: VDTLine[]) => {
+    if (!kashida) return;
+    justifyLinesWithKashida(lines, (li) => {
+      const indent = indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? indentPx : 0)) : 0;
+      return lineMeasure(maxWidthPx, options?.restWidths, li) - indent;
+    }, normalSpaceWidth, kashida, (seg, text) => textWidth(text, fontOf(seg), false));
+  };
+
   // Knuth-Plass optimal line breaking path. A Latin paragraph quoting CJK
   // words takes it too: the breaks next to their characters are free
   // penalties, as a hyphenation point that adds nothing. Ragged text takes
@@ -1631,6 +1647,7 @@ function measureRichText(
         if (hasSmallCaps) expandSmallCaps(kpLines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
         if (bidi) withDirections(kpLines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
         if (languages.length > 0) applySegmentLanguages(kpLines, plainText, languages);
+        withKashida(kpLines);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -1901,7 +1918,29 @@ function measureRichText(
   if (hasSmallCaps) expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
   if (bidi) withDirections(lines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
   if (languages.length > 0) applySegmentLanguages(lines, plainText, languages);
+  withKashida(lines);
   return { lines, totalHeight: y };
+}
+
+/** Give each Arabic word of a justified paragraph its kashida capacity
+ *  (`RichToken.kashida`), which Knuth–Plass counts as the stretch of its
+ *  box. A word in pieces (styled runs of a Latin word, a reference label, a
+ *  footnote marker) takes none. */
+function markKashidaCapacity(
+  tokens: RichToken[],
+  options: NonNullable<MeasureBlockOptions['kashida']>,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): void {
+  for (const t of tokens) {
+    if (t.kind !== 'text' || t.inserted || t.mathRender || t.swatch || t.chip || t.refResourceId !== undefined || t.footnoteId !== undefined || t.script) continue;
+    if (!joiningScriptIn(t.text)) continue;
+    const font = tokenFont(t, normalFont, boldFont, italicFont, boldItalicFont);
+    const capacity = kashidaCapacity(t.text, options, measureTextWidth(TATWEEL, font));
+    if (capacity > 0) t.kashida = capacity;
+  }
 }
 
 /** A paragraph's bidi levels (UAX #9, with its inline `:rtl[…]` /
