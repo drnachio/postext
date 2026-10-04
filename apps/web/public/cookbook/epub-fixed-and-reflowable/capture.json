@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 1,
+  "slug": "epub-fixed-and-reflowable",
+  "sourceHash": "3ba13491c74a13f1ee6084eb82b61f16889ed73d8e1abf19995c5676ea7e5fa1",
+  "engine": {
+    "postext": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:45:30.005Z",
+  "variants": {
+    "en": {
+      "hash8": "3670184b",
+      "vdtHash": "c96216bea05311b078948a2306d76538cec6bd71",
+      "timings": {
+        "importMs": 2582,
+        "fontsMs": 3746,
+        "buildMs": 26,
+        "totalMs": 7019,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          190
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Jost",
+          "Libre Caslon Display",
+          "Libre Caslon Text"
+        ],
+        "pages": 14,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 13618,
+          "alt": "Opening page 1: Fables of Aesop."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 41388,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 79232,
+          "alt": "Opening page 3: The Lion’s Court."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 146056,
+          "alt": "Page 4: The Lion in Love."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 146962,
+          "alt": "Page 5: The Lion, the Fox, and the Ass."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 66846,
+          "alt": "Page 6: The Old Lion."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "epub-fixed-and-reflowable.postext",
+        "bytes": 21839
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "readEpub",
+          "renderPageToCanvas",
+          "renderToEpub"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].keepWithNext",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 272,
+        "designElements": 12,
+        "directives": [
+          ":::pagebreak",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Jost",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "epub-export",
+          "heading-attributes",
+          "heading-styles",
+          "multi-chapter-books",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.93
+        },
+        "findings": [
+          {
+            "check": "C3",
+            "severity": "warn",
+            "detail": "HTTP 404: https://cdn.jsdelivr.net/npm/@fontsource/libre-caslon-text@5/files/libre-caslon-text-latin-700-italic.woff2"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "3e78fe7f",
+      "vdtHash": "c8c457410ceb3f9647d1d1ca3698831678e7f732",
+      "timings": {
+        "importMs": 2490,
+        "fontsMs": 29,
+        "buildMs": 329,
+        "totalMs": 5635,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          190
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 9.600000000000001,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Jost",
+          "Libre Caslon Display",
+          "Libre Caslon Text"
+        ],
+        "pages": 17,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 14890,
+          "alt": "Página de apertura 1: ¡Adiós, Cordera!."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 47004,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 101446,
+          "alt": "Página de apertura 3: I."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 166084,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 158876,
+          "alt": "Página 5."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 165298,
+          "alt": "Página 6."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "epub-fixed-and-reflowable.postext",
+        "bytes": 26870
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "clearMeasurementCache",
+          "readEpub",
+          "renderPageToCanvas",
+          "renderToEpub"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].keepWithNext",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 272,
+        "designElements": 12,
+        "directives": [
+          ":::pagebreak",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Jost",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "epub-export",
+          "heading-attributes",
+          "heading-styles",
+          "multi-chapter-books",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
+        },
+        "findings": [
+          {
+            "check": "C3",
+            "severity": "warn",
+            "detail": "HTTP 404: https://cdn.jsdelivr.net/npm/@fontsource/libre-caslon-text@5/files/libre-caslon-text-latin-700-italic.woff2"
+          }
+        ]
+      }
+    }
+  }
+}
