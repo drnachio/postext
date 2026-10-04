@@ -1,0 +1,53 @@
+---
+title: "Fully vocalised classical prose with Qur'anic brackets"
+summary: "A maqāma with a vowel on every letter, set at twice its size in leading so the marks of one line never meet those of the next."
+plain: "An old Arabic story printed with all its small vowel signs above and below the letters. The lines are spaced wide enough that the signs of one line do not run into the line below."
+description: "A fully vocalised Arabic maqāma in Postext: Amiri at 14 pt on 28 pt, kashida justification, Qurʾān quotations in ﴿ ﴾ and the leading warning explained."
+question: "How much leading does fully vocalised Arabic need?"
+aliases: ["vocalised Arabic", "tashkīl", "harakat", "vowel marks", "shadda", "kasra", "line spacing Arabic", "leading", "maqāma", "maqamat", "al-Hamadhānī", "Qurʾān brackets", "ornate parentheses", "مقامات", "تشكيل", "حركات"]
+pageNotes: { "2": "The first page of the maqāma: the title المقامة المارستانية in red Ruqʿa, the author’s name in bold Naskh, a small grey Latin line, then justified Arabic with a vowel sign on every letter, a Qurʾān quotation between ornate brackets ﴿ ﴾ near the foot." }
+---
+
+## What you'll build
+
+Four pages of a classical Arabic book in which every letter carries its vowel: al-Hamadhānī’s *Maqāma of the Madhouse*, in which a madman in the asylum of Basra routs a theologian and then names himself in verse. Fully vocalised text stacks fatḥa and shadda over the letters and kasra under them, and the marks live in the space between lines. So the page is set in Amiri at 14 pt on 28 pt, twice the size, and nothing else: the leading is the design. The text is justified with kashidas, opens with a 1.5 em indent on the right, and sets its three Qurʾān quotations between the ornate brackets ﴿ ﴾ of the printed muṣḥaf. Only the Latin title line and the note on the text change with the edition.
+
+## Method
+
+### 1 · A leading of twice the size
+
+The code is [the short answer](#the-short-answer) above. Leading never grows to make room for the marks: a kasra under one line and a shadda on top of the next share the same gap, so the gap is chosen for the most vocalised line of the book ([Vowel marks](/en/docs/arabic-layout#vowel-marks)). On this text, a leading of 1.6 × the size leaves six paragraphs whose marks collide and 1.9 × still leaves one; at 2 × none do. The build tells you: when two lines collide it reports `arabicMarksExceedLeading` for the paragraph, with the leading it would need ([Arabic text](/en/docs/configuration#arabic-text)).
+
+<PageShot page={2} crop="0,0.3,1,0.45" caption="Page 2: a vowel on every letter, and 28 pt between baselines, so the kasras of one line clear the shaddas of the next." />
+
+### 2 · A small page with a wide measure
+
+<Excerpt region="page" />
+
+A 14 × 21 cm page with 16 and 18 mm side margins leaves a 106 mm measure, about twelve vocalised words, and seventeen lines on the 28 pt pitch. The marks make the lines look grey, so the page stays plain: no running heads, a cream paper, one red title. `mirror: true` puts the wider margin at the spine, which in a book bound on the right is the right edge of an odd page ([Page order and right binding](/en/docs/arabic-layout#page-order-and-right-binding)).
+
+### 3 · Titles that keep the grid
+
+<Excerpt region="titles" />
+
+The headings have no design: the Ruqʿa title sits in a line box three lines of the grid deep, and the author and the Latin line each take one line of 28 pt, so the first line of text falls on the grid. The Latin line is `{dir=ltr}`, a left-to-right heading in a right-to-left book ([Document, block and inline direction](/en/docs/arabic-layout#document-block-and-inline-direction)).
+
+## Variations
+
+### Strip the vowels for a reading edition
+
+`tashkil: 'strip'` removes the short vowels and the shadda from the layout, so the same text can be set at 1.6 × the size; `'strip-vowels'` keeps the shadda.
+
+```diff
+-  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh',
++  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh', tashkil: 'strip',
+```
+
+### See the warning
+
+Set the leading to 1.6 × the size and the build reports six paragraphs with `arabicMarksExceedLeading`, each with the leading it needs, up to 1.89 em on this text.
+
+```diff
+-const LEAD = 2 * SIZE; // pt: 28
++const LEAD = 1.6 * SIZE; // pt: 22.4
+```

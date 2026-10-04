@@ -1,0 +1,53 @@
+---
+title: "Prosa clàssica vocalitzada i els parèntesis alcorànics"
+summary: "Una maqāma amb vocal a cada lletra, composta amb un interlineat del doble del cos perquè els signes d'una línia no toquin els de la següent."
+plain: "Un relat àrab antic imprès amb tots els seus petits signes de vocal damunt i sota les lletres. Les línies van prou separades perquè els signes d'una no xoquin amb la de sota."
+description: "Una maqāma àrab amb totes les vocals amb Postext: Amiri a 14 pt sobre 28 pt, justificació amb caixida, cites de l'Alcorà entre ﴿ ﴾ i l'avís d'interlineat."
+question: "Quant interlineat necessita l'àrab amb totes les vocals?"
+aliases: ["àrab vocalitzat", "tashkīl", "harakat", "signes vocàlics", "xadda", "kasra", "interlineat àrab", "interlineat", "maqāma", "al-Hamadhānī", "parèntesis alcorànics", "parèntesis ornamentals", "مقامات", "تشكيل", "حركات"]
+pageNotes: { "2": "La primera pàgina de la maqāma: el títol المقامة المارستانية en ruqʿa vermell, el nom de l'autor en nasquí negreta, una línia llatina petita en gris i després l'àrab justificat amb un signe vocàlic a cada lletra, amb una cita de l'Alcorà entre parèntesis ornamentals ﴿ ﴾ a prop del peu." }
+---
+
+## Què compondràs
+
+Quatre pàgines d'un llibre àrab clàssic en què cada lletra porta la seva vocal: la *Maqāma del manicomi* d'al-Hamadhānī, en què un boig del manicomi de Bàssora deixa sense resposta un teòleg i després diu el seu nom en vers. El text amb totes les vocals apila fatḥa i xadda damunt les lletres i kasra a sota, i aquests signes viuen a l'espai entre línies. Per això la pàgina es compon en Amiri a 14 pt sobre 28 pt, el doble del cos, i res més: l'interlineat és el disseny. El text va justificat amb caixides, amb un sagnat d'1,5 em a la dreta, i les seves tres cites de l'Alcorà van entre els parèntesis ornamentals ﴿ ﴾ del muṣḥaf imprès. Només la línia llatina del títol i la nota sobre el text canvien amb l'edició.
+
+## Elaboració
+
+### 1 · Un interlineat del doble del cos
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. L'interlineat no creix mai per fer lloc als signes: la kasra d'una línia i la xadda de la següent comparteixen el mateix buit, així que el buit es tria per a la línia més vocalitzada del llibre ([Signes vocàlics](/ca/docs/arabic-layout#signes-vocàlics)). Amb aquest text, un interlineat d'1,6 vegades el cos deixa sis paràgrafs amb signes que xoquen, i 1,9 encara en deixa un; amb 2 no en queda cap. La composició ho avisa: quan dues línies xoquen, assenyala el paràgraf amb `arabicMarksExceedLeading` i l'interlineat que necessitaria ([Text àrab](/ca/docs/configuration#text-àrab)).
+
+<PageShot page={2} crop="0,0.3,1,0.45" caption="Pàgina 2: una vocal a cada lletra i 28 pt entre línies de base, de manera que les kasres d'una línia no toquen les xaddes de la següent." />
+
+### 2 · Una pàgina petita amb una mesura ampla
+
+<Excerpt region="page" />
+
+Una pàgina de 14 × 21 cm amb marges laterals de 16 i 18 mm deixa una mesura de 106 mm, unes dotze paraules vocalitzades, i disset línies amb el pas de 28 pt. Els signes engrisen les línies, així que la pàgina queda sòbria: sense capçaleres, paper crema i un sol títol en vermell. `mirror: true` posa el marge més ample al llom, que en un llibre enquadernat per la dreta és la vora dreta de la pàgina senar ([Ordre de les pàgines i enquadernació per la dreta](/ca/docs/arabic-layout#ordre-de-les-pàgines-i-enquadernació-per-la-dreta)).
+
+### 3 · Títols que respecten la retícula
+
+<Excerpt region="titles" />
+
+Els títols no porten disseny: el títol en ruqʿa ocupa una caixa de línia de tres línies de la retícula, i l'autor i la línia llatina n'ocupen una de 28 pt cadascun, així que la primera línia de text cau a la retícula. La línia llatina porta `{dir=ltr}`: un títol d'esquerra a dreta en un llibre de dreta a esquerra ([Direcció del document, del bloc i del text en línia](/ca/docs/arabic-layout#direcció-del-document-del-bloc-i-del-text-en-línia)).
+
+## Variants
+
+### Treu les vocals per a una edició de lectura
+
+`tashkil: 'strip'` treu les vocals breus i la xadda de la composició, de manera que el mateix text pot anar a 1,6 vegades el cos; `'strip-vowels'` conserva la xadda.
+
+```diff
+-  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh',
++  textAlign: 'justify', kashida: 'auto', kashidaPatterns: 'naskh', tashkil: 'strip',
+```
+
+### Mira l'avís
+
+Amb un interlineat d'1,6 vegades el cos, la composició assenyala sis paràgrafs amb `arabicMarksExceedLeading`, cadascun amb l'interlineat que necessita, fins a 1,89 em en aquest text.
+
+```diff
+-const LEAD = 2 * SIZE; // pt: 28
++const LEAD = 1.6 * SIZE; // pt: 22.4
+```
