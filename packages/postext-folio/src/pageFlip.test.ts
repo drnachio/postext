@@ -322,4 +322,42 @@ describe("the page flipper", () => {
     const { f } = flipper("left");
     expect(f.pagePoint({ clientX: CX + 3 * W, clientY: CY })).toBeNull();
   });
+
+  it("carries a long jump over as one block of leaves, a short one leaf by leaf", async () => {
+    const started = () => new Promise((r) => setTimeout(r, 0));
+    const long: [string | null, string | null][] = [[null, ""], ...Array.from({ length: 40 }, () => ["", ""] as [string, string])];
+    const settled: number[] = [];
+    const f = new PageFlipper(canvas, spread, long, 1, (i) => settled.push(i), () => {}, "left", { appearance: { folio: { tilt: 0 } } });
+    type Block = { block: { lo: number; hi: number } | null; turns: Map<number, unknown> };
+    const peek = () => f as unknown as Block;
+    // 30 spreads on (60 pages): one block, no leaf of its own in the air.
+    f.go(31);
+    await started();
+    let most = 0;
+    let sawBlock = false;
+    for (let i = 0; i < 200 && settled.length === 0; i++) {
+      tick(100);
+      const b = peek().block;
+      if (b) {
+        sawBlock = true;
+        expect(b).toMatchObject({ lo: 1, hi: 31 });
+      }
+      most = Math.max(most, peek().turns.size);
+    }
+    expect(sawBlock).toBe(true);
+    expect(most).toBe(0);
+    expect(settled).toEqual([31]);
+    // 4 spreads back (8 pages): leaf by leaf.
+    settled.length = 0;
+    f.go(27);
+    await started();
+    most = 0;
+    for (let i = 0; i < 400 && settled.length === 0; i++) {
+      tick(50);
+      expect(peek().block).toBeNull();
+      most = Math.max(most, peek().turns.size);
+    }
+    expect(most).toBeGreaterThan(0);
+    expect(settled).toEqual([27]);
+  });
 });

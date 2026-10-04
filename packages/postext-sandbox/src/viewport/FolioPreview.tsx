@@ -36,8 +36,8 @@ interface FolioPreviewProps {
 
 export interface FolioPreviewHandle {
   jumpToPage: (pageIndex: number) => void;
-  /** Opens the spread holding page `pageIndex`: the leaves turn to a near
-   *  one, a far one (more than `FAR_SPREADS` away) opens at once. */
+  /** Turns the book to the spread holding page `pageIndex`: leaf by leaf
+   *  to a near one, the whole block of leaves in one move to a far one. */
   turnToPage: (pageIndex: number) => void;
   prev: () => void;
   next: () => void;
@@ -45,10 +45,6 @@ export interface FolioPreviewHandle {
   resetView: () => void;
   regenerate: () => void;
 }
-
-/** Spreads beyond which a page typed in opens at once rather than turning
- *  every leaf in between. */
-const FAR_SPREADS = 10;
 
 /** A laid-out document with what tells its pages apart across layouts:
  *  the chapter (position in the book) of every page of a whole-book
@@ -184,10 +180,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         pendingJumpRef.current = pageIndex;
         return;
       }
-      const open = viewer.state.pages[0] ?? 0;
-      const perSpread = viewer.element.classList.contains('is-single') ? 1 : 2;
-      const far = Math.abs(pageIndex - open) / perSpread > FAR_SPREADS;
-      viewer.goToPage(pageIndex, far ? { instant: true } : undefined);
+      viewer.goToPage(pageIndex);
     },
     prev: () => viewerRef.current?.prev(),
     next: () => viewerRef.current?.next(),

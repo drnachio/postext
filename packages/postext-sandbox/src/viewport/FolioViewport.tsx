@@ -45,8 +45,11 @@ export function FolioViewport() {
   }, [handleSetInteraction]);
   const compact = useCompactLayout();
   const { large } = useLargeTargets();
-  const handleJumpToPage = useCallback((pageIndex: number) => {
-    previewRef.current?.jumpToPage(pageIndex);
+  // A restore opens the page at once; a page the reader asked for (a
+  // fragment edited, a chapter picked) is turned to.
+  const handleJumpToPage = useCallback((pageIndex: number, options?: { animate?: boolean }) => {
+    if (options?.animate) previewRef.current?.turnToPage(pageIndex);
+    else previewRef.current?.jumpToPage(pageIndex);
   }, []);
   const handlePageCountChange = useCallback((count: number, firstPage: number, pageNumbers: readonly number[], book?: BookPageMap) => {
     setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1, ...(book ? { book } : {}) }));

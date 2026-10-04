@@ -75,7 +75,9 @@ const RESTORE_WAIT_MS = 4000;
 
 export function usePageHashSync(
   layout: ViewerLayout,
-  jumpToPage: (pageIndex: number) => void,
+  /** `animate`: the reader asked to go there (a fragment edited by hand,
+   *  a chapter picked in the whole book), not a restore on load. */
+  jumpToPage: (pageIndex: number, options?: { animate?: boolean }) => void,
 ): (pageIndex: number) => void {
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
   const bookVersion = useSandboxSelector((s) => s.bookVersion);
@@ -170,7 +172,7 @@ export function usePageHashSync(
     if (hash.chapter === chapter && hash.page !== null) {
       const index = pageIndexOf(current, hash.page);
       if (index >= 0) {
-        jumpRef.current(index);
+        jumpRef.current(index, { animate: true });
         return;
       }
     }
@@ -180,7 +182,7 @@ export function usePageHashSync(
       return;
     }
     const first = chapterFirstPage(current, chapter);
-    jumpRef.current(first);
+    jumpRef.current(first, { animate: true });
     writeViewHash({ chapter, page: pageNumberAt(current, first) });
   }, [activeChapterId]);
 
@@ -195,7 +197,7 @@ export function usePageHashSync(
       if (hash.chapter !== null && hash.chapter !== chapterIndexRef.current && !layoutRef.current.book) return;
       if (hash.page === null) return;
       const index = pageIndexOf(layoutRef.current, hash.page);
-      if (index >= 0) jumpRef.current(index);
+      if (index >= 0) jumpRef.current(index, { animate: true });
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);

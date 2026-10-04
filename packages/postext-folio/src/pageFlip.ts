@@ -96,6 +96,13 @@ const FOV = 24;
 const ROLL = 0.11;
 /** Milliseconds one leaf takes to turn. */
 const DURATION = 1000;
+/** A jump of more pages than this is made in one move: the block of
+ *  leaves in between is lifted together and laid over on the other side,
+ *  instead of every leaf turning on its own. */
+export const BLOCK_PAGES = 10;
+/** How long a block of leaves takes to go over (ms), a little longer for
+ *  a thicker one. */
+const BLOCK_DURATION = 1150;
 /** A leaf follows the one before it once that one is this far through its turn. */
 const GAP = 0.14;
 
@@ -898,6 +905,10 @@ export class PageFlipper {
   /** Leaf k lies on the left. */
   private turned: boolean[];
   private turns = new Map<number, Turn>();
+  /** A long jump in progress: leaves lo … hi − 1 turning over as one
+   *  block (a rigid slab as thick as they are together). */
+  private block: { lo: number; hi: number; turn: Turn } | null = null;
+  private blockMesh: PageMesh | null = null;
   private target: number;
   private raf = 0;
   private lastFrame = 0;
@@ -1229,9 +1240,20 @@ export class PageFlipper {
     const left: number[] = [];
     const right: number[] = [];
     this.turned.forEach((t, k) => {
-      if (!this.turns.has(k)) (t ? left : right).push(k);
+      if (!this.turns.has(k) && !this.inBlock(k)) (t ? left : right).push(k);
     });
     return { left, right };
+  }
+
+  /** Leaf k is part of the block in the air. */
+  private inBlock(k: number): boolean {
+    return !!this.block && k >= this.block.lo && k < this.block.hi;
+  }
+
+  /** Pages a leaf carries: two, or one when the book shows a page at a
+   *  time (each sheet's back is blank). */
+  private pagesPerLeaf(): number {
+    return this.appearance.singlePage ? 1 : 2;
   }
 
   /** Loads the spine picture, then rebuilds the book to print it. */
@@ -1699,6 +1721,7 @@ export class PageFlipper {
         cancelAnimationFrame(this.raf);
         this.raf = 0;
         this.turns.clear();
+        this.block = null;
         for (const mesh of this.leaves.values()) {
           mesh.removeFromParent();
           (mesh.userData.caster as Mesh).removeFromParent();
@@ -1750,23 +1773,48 @@ export class PageFlipper {
   private leaf(k: number): PageMesh {
     let mesh = this.leaves.get(k);
     if (!mesh) {
-      const geometry = new PlaneGeometry(1, 1, NX, NY);
-      spreadColumns(geometry, NX);
-      geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
-      mesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
-      mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
-      mesh.castShadow = mesh.receiveShadow = true;
-      mesh.frustumCulled = false;
-      const caster = new Mesh(mesh.geometry, this.leafCaster);
-      caster.frustumCulled = false;
-      this.shadowScene.add(caster);
-      mesh.userData.caster = caster;
+      mesh = this.leafMesh();
       this.assign(mesh, "Front", this.book[k]?.[1] ?? null);
       this.assign(mesh, "Back", this.book[k + 1]?.[0] ?? null);
       this.leaves.set(k, mesh);
     }
     this.dressPage(mesh, this.specOf(k));
     return mesh;
+  }
+
+  /** A leaf's mesh, its pages not yet assigned. */
+  private leafMesh(): PageMesh {
+    const geometry = new PlaneGeometry(1, 1, NX, NY);
+    spreadColumns(geometry, NX);
+    geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
+    const mesh: PageMesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
+    mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
+    mesh.castShadow = mesh.receiveShadow = true;
+    mesh.frustumCulled = false;
+    const caster = new Mesh(mesh.geometry, this.leafCaster);
+    caster.frustumCulled = false;
+    caster.visible = false;
+    this.shadowScene.add(caster);
+    mesh.userData.caster = caster;
+    return mesh;
+  }
+
+  /** The block in the air: its top page (the first leaf's front) and its
+   *  bottom one (the last leaf's back), and the stock of its first leaf. */
+  private blockLeaf(lo: number, hi: number): PageMesh {
+    this.blockMesh ??= this.leafMesh();
+    const mesh = this.blockMesh;
+    this.assign(mesh, "Front", this.book[lo]?.[1] ?? null);
+    this.assign(mesh, "Back", this.book[hi]?.[0] ?? null);
+    this.dressPage(mesh, this.specOf(lo));
+    return mesh;
+  }
+
+  /** How thick the leaves lo … hi − 1 are together (book units). */
+  private blockThickness(lo: number, hi: number): number {
+    let mm = 0;
+    for (let k = lo; k < hi; k++) mm += this.specOf(k).caliperMm;
+    return Math.max(0.5, mm * (this.appearance.singlePage ? 0.5 : 1) * this.pxPerMm());
   }
 
   /** A board leaf's other face and edges, carried with its mesh. */
@@ -1798,8 +1846,12 @@ export class PageFlipper {
     // The first leaves' pages are warm; wait a moment for cold ones.
     this.starting = true;
     const wanted: Drawn[] = [];
-    for (let i = lo; i <= Math.min(hi, lo + 2); i++) for (const src of this.book[i]) if (src) wanted.push(src);
-    this.preload(Array.from({ length: hi - lo + 1 }, (_, i) => lo + i));
+    // A long jump goes over in one block: only the pages it lands on (and
+    // the block's two faces) show, not the ones in between.
+    const blockwise = (hi - lo) * this.pagesPerLeaf() > BLOCK_PAGES;
+    const ends = blockwise ? [lo, hi] : Array.from({ length: Math.min(hi, lo + 2) - lo + 1 }, (_, i) => lo + i);
+    for (const i of ends) for (const src of this.book[i] ?? []) if (src) wanted.push(src);
+    this.preload(blockwise ? [lo, hi] : Array.from({ length: hi - lo + 1 }, (_, i) => lo + i));
     void Promise.race([Promise.all(wanted.map((s) => this.texture(s))), new Promise((r) => setTimeout(r, 700))]).then(() => {
       this.starting = false;
       if (this.disposed) return;
@@ -1866,6 +1918,30 @@ export class PageFlipper {
         }
       }
     }
+    // The block in the air: carried over, and laid down once it lands.
+    if (this.block) {
+      const { turn, lo, hi } = this.block;
+      const anim = turn.anim!;
+      const t = Math.min(1, (now - anim.start) / anim.duration);
+      turn.P = { u: anim.from.u + (anim.to.u - anim.from.u) * ease(t), v: anim.from.v };
+      if (t >= 1) {
+        for (let k = lo; k < hi; k++) this.turned[k] = turn.forward;
+        this.block = null;
+      }
+    }
+    // A long way to go with no leaf in the air: the leaves in between go
+    // over in one block. (Leaves already turning land first: a run of
+    // clicks that has grown long carries on as a block.)
+    const at = this.settledAt();
+    const away = Math.abs(this.target - at);
+    if (!this.block && this.turns.size === 0 && away > 1 && away * this.pagesPerLeaf() > BLOCK_PAGES) {
+      const forward = this.target > at;
+      const lo = forward ? at : this.target;
+      const hi = forward ? this.target : at;
+      const G = { u: this.W, v: 0 };
+      const duration = BLOCK_DURATION * (1 + 0.25 * smooth(BLOCK_PAGES, 400, away * this.pagesPerLeaf()));
+      this.block = { lo, hi, turn: { forward, rigid: true, G, P: { ...G }, anim: { start: now, duration, from: G, to: { u: -G.u, v: 0 }, arc: 0, lands: true } } };
+    }
     // Lift the next ones: each follows its neighbour a little behind, so a
     // jump of several spreads turns every page in between.
     const pending = Math.abs(this.target - this.settledAt()) || 1;
@@ -1875,12 +1951,12 @@ export class PageFlipper {
       if (!turn) return forward ? this.turned[k] : !this.turned[k];
       return turn.forward === forward && !turn.held && progress(turn) >= gap;
     };
-    for (let k = 0; k < this.target && k < n; k++) {
+    for (let k = 0; k < this.target && k < n && !this.block; k++) {
       if (this.turned[k] || this.turns.has(k)) continue;
       if (k > 0 && !follows(k - 1, true)) break;
       this.turns.set(k, { ...this.lift(true, now), rigid: this.rigidOf(k) });
     }
-    for (let k = n - 1; k >= this.target; k--) {
+    for (let k = n - 1; k >= this.target && !this.block; k--) {
       if (!this.turned[k] || this.turns.has(k)) continue;
       if (k < n - 1 && !follows(k + 1, false)) break;
       this.turns.set(k, { ...this.lift(false, now), rigid: this.rigidOf(k) });
@@ -1888,7 +1964,7 @@ export class PageFlipper {
 
     this.draw();
     this.spread.classList.add("is-turning");
-    if (this.turns.size > 0 || this.settledAt() !== this.target) this.raf = requestAnimationFrame(this.frame);
+    if (this.turns.size > 0 || this.block || this.settledAt() !== this.target) this.raf = requestAnimationFrame(this.frame);
     else this.settle();
   };
 
@@ -1942,7 +2018,7 @@ export class PageFlipper {
     if (!this.surfaces) this.layout();
     this.rayAt(event);
     const open = [this.left, this.right].filter((m) => m.visible);
-    const air = [...this.leaves.values()].filter((m) => m.visible);
+    const air = [...this.leaves.values(), ...(this.blockMesh ? [this.blockMesh] : [])].filter((m) => m.visible);
     for (const m of air) m.geometry.computeBoundingSphere();
     const hit = this.raycaster.intersectObjects([...open, ...air], false)[0];
     if (!hit || !hit.uv || (hit.object !== this.left && hit.object !== this.right)) return null;
@@ -2175,11 +2251,38 @@ export class PageFlipper {
       if (!mesh.parent) this.stage.add(mesh);
     });
 
+    // The block in the air: a slab as thick as its leaves, turning on the
+    // joint at the top of the spine like a board, its first page on top
+    // and its last underneath.
+    if (this.blockMesh) {
+      const caster = this.blockMesh.userData.caster as Mesh;
+      this.blockMesh.visible = caster.visible = false;
+      const parts = this.blockMesh.userData.board as BoardParts | undefined;
+      if (parts) parts.back.visible = parts.slab.visible = false;
+    }
+    if (this.block) {
+      const { lo, hi, turn } = this.block;
+      const mesh = this.blockLeaf(lo, hi);
+      const q = progressFrom(turn.G, turn.P);
+      const thick = this.blockThickness(lo, hi);
+      const parts = this.boardParts(mesh);
+      const lay = (geometry: BufferGeometry, face: number) => layLeaf(geometry, null, turn.forward, W, H, 0.5, book, 1, q, 0, 0, { thick, face });
+      const { phi, pivot } = lay(mesh.geometry, 1);
+      lay(parts.back.geometry, -1);
+      parts.slab.position.set((W / 2) * Math.cos(phi), 0, pivot + (W / 2) * Math.sin(phi));
+      parts.slab.rotation.set(0, -phi, 0);
+      parts.slab.scale.set(W, H, thick * 0.97);
+      const spec = this.specOf(lo);
+      parts.slab.material.color.copy(spec === this.coverSpec ? this.boardColor() : new Color(spec.paper.shade.hex));
+      mesh.visible = parts.back.visible = parts.slab.visible = (mesh.userData.caster as Mesh).visible = true;
+      if (!mesh.parent) this.stage.add(mesh);
+    }
+
     // The pages lying open: the top leaf of each stack.
     let l = -1;
-    for (let j = 0; j < n; j++) if (this.turned[j] && !this.turns.has(j)) l = j;
+    for (let j = 0; j < n; j++) if (this.turned[j] && !this.turns.has(j) && !this.inBlock(j)) l = j;
     let r = n;
-    for (let j = n - 1; j >= 0; j--) if (!this.turned[j] && !this.turns.has(j)) r = j;
+    for (let j = n - 1; j >= 0; j--) if (!this.turned[j] && !this.turns.has(j) && !this.inBlock(j)) r = j;
     const leftSrc = this.book[l + 1]?.[0] ?? null;
     const rightSrc = this.book[r]?.[1] ?? null;
     this.assign(this.left, "Back", leftSrc);
@@ -2240,6 +2343,7 @@ export class PageFlipper {
     this.scene.environment?.dispose();
     this.pmrem?.dispose();
     for (const mesh of this.leaves.values()) disposeLeaf(mesh);
+    if (this.blockMesh) disposeLeaf(this.blockMesh);
     for (const mesh of [this.left, this.right, this.desk, ...this.stacks]) {
       mesh.geometry.dispose();
       (mesh.material as Material).dispose();

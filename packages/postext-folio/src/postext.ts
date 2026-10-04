@@ -1,5 +1,6 @@
 import { renderPageToCanvas, type VDTDocument, type VDTPage } from "postext";
 import { resolveFolioConfig, type FolioPaperConfig } from "postext";
+import { BLOCK_PAGES } from "./pageFlip";
 import { createFolio, type FolioAppearance, type FolioOptions, type FolioPageSize, type FolioState, type FolioViewer } from "./viewer";
 
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
@@ -114,8 +115,7 @@ export function carriedPaintings(
   return carried;
 }
 
-/** Pages a long turn paints for its leaves, at most (a farther jump opens
- *  there at once from the host's page field). */
+/** Pages a turn paints for its leaves, at most. */
 const MAX_SWEEP = 160;
 /** Painting time per frame while leaves are in the air. */
 const SWEEP_BUDGET_MS = 8;
@@ -150,6 +150,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
    *  lift (from the spread at rest towards the target). */
   let sweep: number[] = [];
   let sweepFrame = 0;
+  /** Leaves are in the air (sent to a spread that has not landed yet). */
+  let turning = false;
   let resizeTimer = 0;
   let ready = false;
   let hostAppearance: FolioAppearance | undefined = options.appearance;
@@ -221,6 +223,13 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
    *  goes over blank. */
   function startSweep(target: number[]) {
     const from = settled.length ? settled : [0];
+    // A long jump goes over as one block: only its two faces show, the
+    // pages on show now (kept until it lands) and the ones it lands on
+    // (painted with the target).
+    if (Math.abs((target[0] ?? 0) - (from[0] ?? 0)) > BLOCK_PAGES) {
+      sweep = [...from];
+      return;
+    }
     const lo = Math.max(0, Math.min(...from, ...target) - 1);
     const hi = Math.min(current.pages.length - 1, Math.max(...from, ...target) + 1);
     const pages: number[] = [];
@@ -280,13 +289,16 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     paper: options.paper ?? paperOf(doc),
     onTarget: (state) => {
       focus = state.pages;
-      refresh(around(state));
+      turning = true;
+      // The sweep first: the pages it keeps are not let go by the refresh.
       startSweep(state.pages);
+      refresh(around(state));
       options.onTarget?.(state);
     },
     onChange: (state) => {
       focus = state.pages;
       settled = state.pages;
+      turning = false;
       // At rest: the pages the turn carried past are let go.
       sweep = [];
       cancelAnimationFrame(sweepFrame);
@@ -364,8 +376,12 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
         at,
       });
       focus = viewer.state.pages;
-      settled = viewer.state.pages;
-      sweep = [];
+      // A relayout while leaves are in the air (the chapter the book was
+      // sent to becoming the active one) keeps the pages they carry.
+      if (!turning) {
+        settled = viewer.state.pages;
+        sweep = [];
+      }
       refresh(around(viewer.state));
     },
     dispose() {
