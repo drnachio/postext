@@ -26,6 +26,8 @@ import { NO_BREAK_SPACES, WORDS_AND_SPACES_RE, isBlankText, isBreakingSpace, isB
 import { breaksAfterDash, breaksAfterHardHyphen, hasCompound, isDash, raggedStretchPx } from './breakRules';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
 import { insideJoiningWord, joiningScriptIn, wordLetterSpacing } from './joining';
+import { applyLineDirections, getMeasureDirection } from './bidiLines';
+import { needsBidi, resolveParagraph, spanIsolates, type BidiParagraph } from '../bidi';
 
 export interface RichBreakPoint {
   charIndex: number;
@@ -1051,6 +1053,11 @@ function tokenizeSpans(
   /** Whether the spans hold CJK characters (`hasCJK` of their text): only
    *  then is each word looked into. */
   cjkText = true,
+  /** The paragraph's bidi levels (`measure/bidiLines.ts`), when it has
+   *  right-to-left text: a word whose level changes inside it (`ABC،`,
+   *  `و١٤٤٥`, `(API)` in Arabic) is cut there into words that touch, each
+   *  measured as it is painted, as a run of its own direction. */
+  bidi?: BidiParagraph,
 ): RichToken[] {
   const tokens: RichToken[] = [];
   // Which characters of the joined text sit in a compound, a word (across
@@ -1105,8 +1112,9 @@ function tokenizeSpans(
     // its soft hyphens can be told apart from the ones the source carries.
     // A no-break space is no boundary: it stays inside the word it glues
     // ("37 °C"), which the line then never breaks at (EF-66).
-    const parts = span.text.match(WORDS_AND_SPACES_RE);
-    if (!parts) continue;
+    const matched = span.text.match(WORDS_AND_SPACES_RE);
+    if (!matched) continue;
+    const parts = bidi ? cutAtLevels(matched, spanBase, bidi) : matched;
 
     let partStart = spanBase;
     for (const part of parts) {
@@ -1253,6 +1261,32 @@ function joinStyledRuns(
     };
     tokens.splice(i, j - i, merged);
   }
+}
+
+/** The words of a span (`parts`, starting at `from` in the paragraph) cut
+ *  where their bidi level changes, never between two letters of a joining
+ *  script. Spaces are left whole. */
+function cutAtLevels(parts: readonly string[], from: number, bidi: BidiParagraph): string[] {
+  const out: string[] = [];
+  let at = from;
+  for (const part of parts) {
+    const start = at;
+    at += part.length;
+    if (isBreakingSpaceRun(part)) {
+      out.push(part);
+      continue;
+    }
+    let piece = 0;
+    for (let k = 1; k < part.length; k++) {
+      if (bidi.levels[start + k] === bidi.levels[start + k - 1] || insideJoiningWord(part, k)) continue;
+      const c = part.charCodeAt(k);
+      if (c >= 0xDC00 && c <= 0xDFFF) continue;
+      out.push(part.slice(piece, k));
+      piece = k;
+    }
+    out.push(part.slice(piece));
+  }
+  return out;
 }
 
 /** A run of words a dash break may read across: not a formula, a swatch,
@@ -1510,7 +1544,10 @@ function measureRichText(
   const textAlign = options?.textAlign ?? 'left';
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const hyphenationZonePx = shouldHyphenate ? options?.hyphenationZonePx : undefined;
-  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText);
+  // A paragraph with right-to-left text: its levels, read once, cut its
+  // words where they change direction and give its lines their order.
+  const bidi = paragraphBidi(spans, plainText, options);
+  const tokens = tokenizeSpans(spans, normalFont, boldFont, italicFont, boldItalicFont, shouldHyphenate, letterSpacingPx, options?.breakAfterDashes === true, options?.hyphenateCompounds === false, cjkText, bidi);
   if (options?.labelColumnPx !== undefined) setLabelTabs(tokens, (t) => t.labelTab, options.labelColumnPx, (t, w) => { t.width = w; });
   const repeatHyphen = options?.repeatHyphen === true;
   const hasSmallCaps = tokens.some((t) => t.smallCaps);
@@ -1574,6 +1611,7 @@ function measureRichText(
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         if (hasSmallCaps) expandSmallCaps(kpLines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
+        if (bidi) withDirections(kpLines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -1842,5 +1880,31 @@ function measureRichText(
   }
 
   if (hasSmallCaps) expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
+  if (bidi) withDirections(lines, bidi, normalFont, boldFont, italicFont, boldItalicFont);
   return { lines, totalHeight: y };
+}
+
+/** A paragraph's bidi levels (UAX #9, with its inline `:rtl[…]` /
+ *  `:ltr[…]` isolates), when it is set right to left, holds a
+ *  right-to-left letter or sets a right-to-left isolate; undefined for any
+ *  other, which is measured as it always was. */
+function paragraphBidi(spans: readonly InlineSpan[], plainText: string, options: MeasureBlockOptions | undefined): BidiParagraph | undefined {
+  const base = options?.direction ?? getMeasureDirection();
+  const isolated = spans.some((s) => s.direction?.dir === 'rtl');
+  if (base !== 'rtl' && !isolated && !needsBidi(plainText)) return undefined;
+  return resolveParagraph(plainText, base, spans.some((s) => s.direction) ? spanIsolates(spans) : undefined);
+}
+
+/** The directions of a paragraph's lines (`measure/bidiLines.ts`). A piece
+ *  of a segment is measured in its font. */
+function withDirections(
+  lines: VDTLine[],
+  bidi: BidiParagraph,
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+): void {
+  applyLineDirections(lines, bidi, (seg, piece) =>
+    textWidth(piece, seg.fontString ?? pickSpanFont(!!seg.bold, !!seg.italic, normalFont, boldFont, italicFont, boldItalicFont), false));
 }

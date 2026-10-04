@@ -34,6 +34,7 @@ import { measureIndexBlock } from './indexDirective';
 import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
+import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -276,6 +277,8 @@ export function measureContentBlock(
   const vertical = measuringVertically();
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
+    || s.direction !== undefined
     || (vertical && (s.combineUpright || s.orientation)));
 
   // List items reserve horizontal space for indent + bullet + gap.
@@ -354,7 +357,11 @@ export function measureContentBlock(
   if (ctx.joiningLetterSpacing && hasRichFonts && (style.letterSpacingPx ?? 0) !== 0 && joiningScriptIn(contentBlock.text)) {
     ctx.joiningLetterSpacing.add(blockIdx);
   }
+  // The paragraph's base direction: its own (`{dir=…}`), else the
+  // document's (`setMeasureDirection`). Passed only when the block sets
+  // one, so the measurements of every other block keep their cache keys.
   const measureOptions = {
+    ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
     firstLineIndentPx: effectiveFirstLineIndent,
@@ -459,9 +466,17 @@ export function measureContentBlock(
 
   if (measured.lines.length === 0) return null;
 
+  // A paragraph whose direction opposes its frame's (the document's: a
+  // right-to-left document's pages are mirrored, #370), such as an Arabic
+  // quotation in an English book: its lines start on the frame's far side,
+  // their indent too (`VDTLine.measure`).
+  if (contentBlock.direction !== undefined && contentBlock.direction !== getMeasureDirection()) {
+    mirrorLineSpans(measured.lines, measureMaxWidth, measureOptions.restWidths);
+  }
+
   if (lineXShift > 0) {
     for (const line of measured.lines) {
-      line.bbox.x += lineXShift;
+      shiftLineX(line, lineXShift);
     }
   }
 

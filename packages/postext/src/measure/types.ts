@@ -175,6 +175,14 @@ export interface MeasureBlockOptions {
    *  (`setCjkComposition`); outside a build, none (every mark at its full
    *  advance). Only CJK text reads it. */
   cjkComposition?: CjkComposition;
+  /** The paragraph's base direction (its embedding level, UAX #9): `rtl`
+   *  for an Arabic paragraph, `ltr` for an English one, whatever letter it
+   *  opens with. Its lines get their segments' directions and order
+   *  (`VDTLine.order`, `VDTLineSegment.rtl`; see `measure/bidiLines.ts`).
+   *  Unset: the build's (`setMeasureDirection`, the document's direction),
+   *  left to right outside a build. A paragraph set left to right that
+   *  holds no right-to-left letter is measured as it always was. */
+  direction?: 'ltr' | 'rtl';
 }
 
 export const SOFT_HYPHEN = '\u00AD';

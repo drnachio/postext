@@ -39,8 +39,9 @@ import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMe
 import { stampCentralBaselines } from './verticalMetrics';
 import { orientLinesToFrames } from './mirrorFrame';
 import type { MeasurementCache } from '../measure';
-import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
+import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
+import { getMeasureDirection, setMeasureDirection } from '../measure/bidiLines';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
@@ -419,6 +420,7 @@ export function buildDocumentPass(
   const writingMode = getMeasureWritingMode();
   const region = getMeasureRegion();
   const uprightDigits = getMeasureUprightDigits();
+  const direction = getMeasureDirection();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
@@ -426,6 +428,7 @@ export function buildDocumentPass(
     setCjkComposition(composition);
     setMeasureWritingMode(writingMode, region);
     setMeasureUprightDigits(uprightDigits);
+    setMeasureDirection(direction);
   }
 }
 
@@ -480,6 +483,9 @@ function placeDocumentPass(
   setMeasureWritingMode(resolved.layout.writingMode, resolved.cjk.region);
   // Short numbers set in one upright cell (`cjk.uprightDigits`).
   setMeasureUprightDigits(resolved.cjk.uprightDigits);
+  // Paragraphs run in the document's direction unless they set their own
+  // (`{dir=…}`): an Arabic book's captions, cells and notes too.
+  setMeasureDirection(resolvedDirection(resolved));
 
   // Compute baseline grid
   const baselineGrid = computeBaselineGrid(resolved);
@@ -2160,6 +2166,7 @@ function placeDocumentPass(
           blk.lines = resetLinePositions(raggedLooseLines(m.measured.lines, noteStyle.textAlign), noteStyle.lineHeightPx).map((line) => ({
             ...line,
             bbox: createBoundingBox(line.bbox.x + x, line.bbox.y + y, line.bbox.width, line.bbox.height),
+            ...(line.measure ? { measure: { x: line.measure.x + x, width: line.measure.width } } : {}),
             baseline: line.baseline + y,
           }));
           const h = blk.lines.length * noteStyle.lineHeightPx;
@@ -2242,6 +2249,11 @@ function placeDocumentPass(
     }
     if (raw.footnoteNote !== undefined) blk.footnoteNote = raw.footnoteNote;
     if (raw.bibEntry !== undefined) blk.bibEntry = raw.bibEntry;
+    // A text block whose direction opposes its page frame's, which runs in
+    // the document's direction (a right-to-left document's pages are
+    // mirrored, #370): an Arabic quotation in an English book, an English
+    // one in an Arabic book. Its lines carry their span (`VDTLine.measure`).
+    if (blk.type !== 'resource' && raw.direction !== undefined && raw.direction !== resolvedDirection(resolved)) blk.direction = raw.direction;
     if (raw.toc?.kind === 'entry') {
       blk.tocEntry = raw.toc.pageIndex !== undefined ? { pageIndex: raw.toc.pageIndex } : {};
     }

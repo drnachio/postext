@@ -17,6 +17,7 @@ import { computeColumnBboxes, hasFloatSideColumn } from './config';
 import { contentAreaForPage, flowPageMirrored, mirrorContentArea, pageMirrored, sheetRectToFlow, type PageMetrics } from './buildHelpers';
 import { dimensionToPx } from '../units';
 import { measuringVertically } from '../measure/vertical';
+import { shiftLineX } from '../measure/bidiLines';
 
 export interface PlacementCursor {
   pageIndex: number;
@@ -500,7 +501,7 @@ export function placeBlockInColumn(
 
   // Offset all line bboxes to absolute page coordinates
   for (const line of block.lines) {
-    line.bbox.x += col.bbox.x;
+    shiftLineX(line, col.bbox.x);
     line.bbox.y += y;
     line.baseline += y;
   }

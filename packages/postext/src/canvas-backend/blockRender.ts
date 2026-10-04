@@ -126,7 +126,10 @@ interface BlockTextStyle {
  * (`fillWordsText`); without it, each segment is one `fillText`.
  * `tracking` is the context's `letterSpacing` on entry: a word of a joining
  * script is painted without it, and a word set in several styles is painted
- * as one shaped word (see `fillSegmentWord`).
+ * as one shaped word (see `fillSegmentWord`). `order`: the order to advance
+ * through the segments in (`VDTLine.order`, a line holding right-to-left
+ * text), each right-to-left one painted as a right-to-left run; the spaces
+ * go with their words, so justification is unchanged.
  */
 function renderSegments(
   ctx: CanvasRenderingContext2D,
@@ -137,6 +140,7 @@ function renderSegments(
   justifiedSpaceWidth: number | undefined,
   cjk: boolean,
   tracking = 0,
+  order?: readonly number[],
 ): void {
   let x = startX;
   let currentFont = '';
@@ -148,7 +152,8 @@ function renderSegments(
     font: pickSegmentFont(!!run.bold, !!run.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont),
     fill: pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor),
   });
-  for (const seg of segments) {
+  for (let k = 0; k < segments.length; k++) {
+    const seg = segments[order ? order[k]! : k]!;
     if (seg.kind === 'space') {
       x += justifiedSpaceWidth ?? seg.width;
       continue;
@@ -330,10 +335,19 @@ function renderLine(
   const cjk = tocEntry || hasCJK(line.text);
   ctx.textBaseline = 'alphabetic';
 
+  // A line whose block runs against its frame (a right-to-left paragraph on
+  // a left-to-right page) carries its span (`measure`): it is justified
+  // across it and set ragged from its start side, the right.
+  const span = line.measure;
+  const lineX = span ? span.x : line.bbox.x;
+  const align = span ? startSideAlign(textAlign) : textAlign;
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
-  const lineIndent = line.bbox.x - columnX;
-  const effectiveWidth = columnWidth - lineIndent;
+  const lineIndent = lineX - columnX;
+  const effectiveWidth = span ? span.width : columnWidth - lineIndent;
   const segments = line.segments;
+  // Right-to-left runs on the line: painted in `order`, never as one text.
+  const order = segments && line.order?.length === segments.length ? line.order : undefined;
+  const directed = order !== undefined || (segments?.some((s) => s.rtl) ?? false);
 
   // Justified rendering with per-segment spacing. Last lines render ragged at
   // natural width — except when overfull: Knuth-Plass may accept a final line
@@ -351,7 +365,7 @@ function renderLine(
     }
     if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, line.bbox.x, line.baseline, style, justifiedSpaceWidth, cjk, tracking);
+      renderSegments(ctx, segments, lineX, line.baseline, style, justifiedSpaceWidth, cjk, tracking, order);
       return;
     }
   }
@@ -360,12 +374,12 @@ function renderLine(
   // set ragged from the left. Distribute the remaining space. The tracking
   // after the last glyph (`trailing`) is advance, not ink: left out, so the
   // letters are centred or end on the edge (EF-153).
-  if ((textAlign === 'center' || textAlign === 'right') && segments) {
+  if ((align === 'center' || align === 'right') && segments) {
     let contentWidth = 0;
     for (const seg of segments) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
-    const startX = line.bbox.x + (textAlign === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk, tracking);
+    const startX = lineX + (align === 'center' ? slack / 2 : slack);
+    renderSegments(ctx, segments, startX, line.baseline, style, undefined, cjk, tracking, order);
     return;
   }
 
@@ -374,17 +388,25 @@ function renderLine(
   // block (bold/italic/math/ref/own font or colour), or when a tracked line
   // holds a word of a joining script, which is painted untracked; otherwise
   // one fillText paints the line.
-  if (segments && (segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
-    renderSegments(ctx, segments, line.bbox.x, line.baseline, style, undefined, cjk, tracking);
+  if (segments && (directed || segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
+    renderSegments(ctx, segments, lineX, line.baseline, style, undefined, cjk, tracking, order);
     return;
   }
 
   ctx.font = style.font;
   ctx.fillStyle = style.color;
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
-  const plainX = line.bbox.x + (textAlign === 'right' ? plainSlack : textAlign === 'center' ? plainSlack / 2 : 0);
+  const plainX = lineX + (align === 'right' ? plainSlack : align === 'center' ? plainSlack / 2 : 0);
   if (cjk) fillWordsText(ctx, line.text, plainX, line.baseline);
   else ctx.fillText(line.text, plainX, line.baseline);
+}
+
+/** The physical alignment of a line set from the right, its start side (a
+ *  right-to-left paragraph on a left-to-right page): `left` (and the last
+ *  line of a justified paragraph) reads as start, flush right; `right` as
+ *  end, flush left; a centred line stays centred. */
+function startSideAlign(textAlign: TextAlign): TextAlign {
+  return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
 }
 
 /** {@link renderLine} for a line of the CJK composer or any line down a

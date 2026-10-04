@@ -27,6 +27,8 @@ import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
 import { joiningScriptIn } from './joining';
+import { getMeasureDirection } from './bidiLines';
+import { needsBidi } from '../bidi';
 
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 const FIGURE_SPACE = '\u2007';
@@ -238,6 +240,15 @@ export function measureBlock(
   // trimming, where the renderers paint such marks apart (`markCuts`).
   // Each of the three CJK tests needs CJK text (`hasCJK`), looked for once.
   if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits()))) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
+  // A paragraph set right to left, or holding right-to-left text: the
+  // word-by-word breaker, which cuts its words where their direction
+  // changes (`ABC،`, `(API)` in Arabic), measuring each piece as it is
+  // painted (pretext measures `(API)` whole, its brackets kerned to letters
+  // they end up on the far side of), and gives its lines their order
+  // (`measure/bidiLines.ts`).
+  if ((options?.direction ?? getMeasureDirection()) === 'rtl' || needsBidi(text)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;

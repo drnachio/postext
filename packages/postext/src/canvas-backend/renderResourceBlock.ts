@@ -360,7 +360,11 @@ function paintLineRuns(
       font: pickFont(!!run.bold, !!run.italic, font, boldFont, italicFont, boldItalicFont),
       fill: color,
     });
-    for (const seg of line.segments) {
+    // A line holding right-to-left text is painted in its `order`, each
+    // right-to-left segment as a right-to-left run (`fillSegmentWord`).
+    const order = !composed && line.order?.length === line.segments.length ? line.order : undefined;
+    for (let k = 0; k < line.segments.length; k++) {
+      const seg = line.segments[order ? order[k]! : k]!;
       if (seg.kind === 'space') {
         x += seg.width;
         continue;

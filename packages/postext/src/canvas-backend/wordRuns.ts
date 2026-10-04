@@ -12,8 +12,12 @@ const MARK_RE = /\p{M}/u;
 
 /**
  * Paint the text of a segment set word by word with `paint` (the caller's
- * `fillText`), as the canvas paints any segment, with two rules for words
- * of a joining script (Arabic…):
+ * `fillText`), as the canvas paints any segment. A right-to-left segment
+ * (`rtl`, bidi level odd) is painted as a right-to-left run: the context's
+ * `direction` is `rtl` for it, so the browser shapes it right to left and
+ * mirrors its brackets, and its `textAlign` is `left`, so the run's left
+ * edge is at `x` (the page paints with `ltr`, which every other run
+ * keeps). And two rules for words of a joining script (Arabic…):
  * - no letter-spacing: the line's or the block's `tracking` (the context's
  *   `letterSpacing` on entry) is lifted while the word is painted, since
  *   spacing its letters apart breaks the joins (the measurer left such a
@@ -33,8 +37,19 @@ export function fillSegmentWord(
 ): void {
   const untracked = tracking !== 0 && joiningScriptIn(seg.text);
   if (untracked) ctx.letterSpacing = '0px';
+  const rtl = seg.rtl === true && 'direction' in ctx;
+  const direction = rtl ? ctx.direction : undefined;
+  const textAlign = rtl ? ctx.textAlign : undefined;
+  if (rtl) {
+    ctx.direction = 'rtl';
+    ctx.textAlign = 'left';
+  }
   paint(seg.text, x, y);
   if (seg.runs) paintWordRuns(ctx, seg, x, y, paint, runStyle);
+  if (rtl) {
+    ctx.direction = direction!;
+    ctx.textAlign = textAlign!;
+  }
   if (untracked) ctx.letterSpacing = `${tracking}px`;
 }
 

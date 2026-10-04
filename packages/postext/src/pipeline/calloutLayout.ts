@@ -74,6 +74,7 @@ import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
 import type { ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
+import { shiftLineX } from '../measure/bidiLines';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -390,7 +391,7 @@ function offsetBlock(blk: VDTBlock, ox: number, oy: number): void {
   blk.bbox.x += ox;
   blk.bbox.y += oy;
   for (const line of blk.lines) {
-    line.bbox.x += ox;
+    shiftLineX(line, ox);
     line.bbox.y += oy;
     line.baseline += oy;
   }
@@ -813,7 +814,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     // Relocate to the inner rect (box-relative).
     blk.bbox = createBoundingBox(x, st.cursorY, width, height);
     for (const line of blk.lines) {
-      line.bbox.x += x;
+      shiftLineX(line, x);
       line.bbox.y += st.cursorY;
       line.baseline += st.cursorY;
     }
