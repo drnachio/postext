@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: 'Arquitectura tècnica del motor de composició tipogràfica Postext',
   lang: 'ca',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '38 min',
   order: 2,
   plainSummary: "Aquesta pàgina explica com funciona Postext per dins, i està escrita per a programadors. Primer, Postext mesura cada paraula sense dibuixar res a la pantalla, i per això és molt ràpid. Després calcula on va cada línia, cada imatge i cada columna, i desa aquest pla a la memòria. Repeteix el càlcul fins que res no es mou. Al final dibuixa les pàgines acabades com a pàgina web, com a imatge en un canvas o com a fitxer PDF. Si canvies una paraula, només es torna a calcular el que ha canviat.",
@@ -95,7 +95,7 @@ desdibuixat.
     </tr>
     <tr>
       <td><strong>Backend</strong></td>
-      <td>Destinació de renderitzat que consumeix el VDT convergit. Avui se'n distribueixen tres: <strong>canvas</strong> (previsualització bitmap), <strong>HTML</strong> (lectura en pantalla basada en DOM) i <strong>PDF</strong> (sortida a punt per imprimir a través de <code>postext-pdf</code>). Tots tres comparteixen la mateixa mesura (el mòdul de mesura sobre Pretext).</td>
+      <td>Destinació de renderitzat que consumeix el VDT convergit. Avui se'n distribueixen tres: <strong>canvas</strong> (previsualització bitmap), <strong>HTML</strong> (lectura en pantalla basada en DOM) i <strong>PDF</strong> (sortida a punt per imprimir a través de <code>postext-pdf</code>). Tots tres comparteixen la mateixa mesura (el mòdul de mesura sobre Pretext). Un quart, <strong>EPUB</strong> (<code>postext-epub</code>), escriu el llibre com a llibre electrònic a partir dels mateixos documents.</td>
     </tr>
     <tr>
       <td><strong>Pass</strong></td>
@@ -638,9 +638,12 @@ renderToHtmlIndexed(doc, options?): HtmlRenderIndex;    // desglossament per pà
 
 // PDF (des de 'postext-pdf')
 renderToPdf(doc, options): Promise<Uint8Array>;
+
+// EPUB (des de 'postext-epub'), els capítols d'un llibre en ordre
+renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-Com que els payloads binaris dels recursos viuen fora de banda, cada backend resol els `fileId` a la seva manera. El backend de canvas manté un registre de `CanvasImageSource` descodificats — l'aplicació amfitriona registra cada bitmap o SVG una vegada amb `registerResourceImage(fileId, image)` i el renderitzador el consulta en dibuixar. El backend HTML accepta un resolutor `resourceImageUrl(fileId)` a les seves opcions i emet etiquetes `<img>` que apunten a les URL (object URLs, data URIs, rutes de CDN) que retorni l'amfitrió. El backend PDF rep un proveïdor `resourceBytes` i incrusta els bytes reals. Els recursos de taula no necessiten res d'això — el seu model viatja en línia, i tots els backends dibuixen les cel·les a partir de la geometria de taula del VDT.
+Com que els payloads binaris dels recursos viuen fora de banda, cada backend resol els `fileId` a la seva manera. El backend de canvas manté un registre de `CanvasImageSource` descodificats — l'aplicació amfitriona registra cada bitmap o SVG una vegada amb `registerResourceImage(fileId, image)` i el renderitzador el consulta en dibuixar. El backend HTML accepta un resolutor `resourceImageUrl(fileId)` a les seves opcions i emet etiquetes `<img>` que apunten a les URL (object URLs, data URIs, rutes de CDN) que retorni l'amfitrió. El backend PDF rep un proveïdor `resourceBytes` i incrusta els bytes reals; l'escriptor EPUB també en rep un i desa cada imatge una sola vegada com a fitxer del llibre. Els recursos de taula no necessiten res d'això — el seu model viatja en línia, i tots els backends dibuixen les cel·les a partir de la geometria de taula del VDT.
 
 `renderToHtmlIndexed` mereix una nota: a més de la cadena HTML completa, retorna un desglossament per pàgina i per bloc (`HtmlRenderIndex`) perquè qui el crida pugui comparar-lo amb un render anterior i apedaçar només els subarbres del DOM l'HTML dels quals ha canviat de debò — la ruta de previsualització en viu del sandbox.
 
@@ -675,6 +678,12 @@ Com que els payloads binaris dels recursos viuen fora de banda, cada backend res
       <td><strong>Disponible</strong></td>
     </tr>
     <tr>
+      <td><strong>EPUB</strong></td>
+      <td>Consumeix el VDT ja mesurat amb Pretext</td>
+      <td>Fitxer EPUB 3: un document XHTML per pàgina impresa (maquetació fixa) o per capítol (maquetació fluida), amb les fonts incrustades (<code>renderToEpub</code> a <code>postext-epub</code>)</td>
+      <td><strong>Disponible</strong></td>
+    </tr>
+    <tr>
       <td><strong>Server-side</strong></td>
       <td>Pretext + node-canvas</td>
       <td>Renderitzat headless per a SSR / generació per lots</td>
@@ -683,7 +692,7 @@ Com que els payloads binaris dels recursos viuen fora de banda, cada backend res
   </tbody>
 </table>
 
-Els tres backends disponibles consumeixen el mateix `VDTDocument`. La divisió entre `postext` (que exporta els backends de canvas i HTML) i `postext-pdf` (que exporta el backend de PDF) és purament una qüestió de dependències: el camí PDF arrossega `pdf-lib` i `@pdf-lib/fontkit`, i la majoria d'integracions web no els necessiten. Instal·la `postext-pdf` només quan de debò vulguis emetre bytes PDF.
+Els quatre backends disponibles consumeixen el mateix `VDTDocument`. La divisió entre `postext` (que exporta els backends de canvas i HTML) i `postext-pdf` (que exporta el backend de PDF) és purament una qüestió de dependències: el camí PDF arrossega `pdf-lib` i `@pdf-lib/fontkit`, i la majoria d'integracions web no els necessiten. Instal·la `postext-pdf` només quan de debò vulguis emetre bytes PDF. `postext-epub` és un paquet a part per la mateixa raó, i només cal per a llibres electrònics.
 
 **Restricció de només navegador:** A la Fase 1, tota la computació de composició passa al costat del client, al navegador. El pipeline es pot executar tant al fil principal (`buildDocument`) com dins d'un Web Worker dedicat (`createLayoutWorker` des de `postext/worker`) — la ruta del worker és la integració recomanada per a aplicacions orientades a UI perquè manté la mesura i el bucle de convergència fora del fil principal, admet cancel·lació *last-wins* mitjançant `AbortSignal`, i té la seva pròpia memòria cau de mesura i memòria cau de rasterització de matemàtiques perquè les reconstruccions successives continuïn sent barates. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration#executar-la-composició-en-un-web-worker) per al patró d'integració complet. El renderitzat al servidor continua sent una decisió d'abast deliberada per a més endavant — primer clavar l'experiència al navegador, després estendre's a altres destinacions.
 

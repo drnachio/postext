@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Configuration',
   description: 'Complete reference for all Postext layout configuration options',
   lang: 'en',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30 min',
   order: 3,
-  plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages and PDF files from code.",
+  plainSummary: "This page lists every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The page is a reference, so jump to the part you need. The last sections show programmers how to make web pages, PDF files and EPUB e-books from code.",
 };
 
 # Configuration
@@ -62,6 +62,7 @@ This reference is long. These are the main blocks:
 - [Programmatic use](#programmatic-usage) — `buildDocument`, the warnings it reports, resolvers, caches.
 - [Running layout in a Web Worker](#running-layout-in-a-web-worker) — off-main-thread builds with cancellation.
 - [Integrating the HTML viewer](#integrating-the-html-viewer) and [Generating PDFs](#generating-pdfs) — end-to-end recipes.
+- [EPUB books](#epub-books-postext-epub) — fixed-layout and reflowable EPUB 3 files from the same layout, and checking them with EPUBCheck.
 
 
 ## Page
@@ -7829,6 +7830,77 @@ The pen imports `postext` and `postext-folio` from a CDN, lays a short document 
 `createFolio` with pages drawn on canvases, a blank last page and the paper colour.
 
 <CodePenExample name="folio-images" title="Postext · a 3D book of images" description="Turn any pages in 3D with postext-folio: image URLs, img or canvas elements." height={600} />
+
+## EPUB books (`postext-epub`)
+
+`postext-epub` writes a laid-out book as an EPUB 3.3 file, in the browser or in Node, with no server. It reads the same chapter documents `renderToPdf` takes for a book, so page numbers, notes, citations, cross-references, the contents and the index arrive resolved, and it returns the file as bytes. It is the writer behind the sandbox's **EPUB 3** tab.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` is a peer dependency, as for `postext-pdf`: upgrade the two together, and on a CDN pin them to the same version.
+
+### Fixed layout and reflowable
+
+EPUB 3 defines two renditions, set by the package's `rendition:layout` property; `layout` picks one:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>EPUB name</td><td><code>pre-paginated</code> (fixed layout, FXL)</td><td><code>reflowable</code>, the EPUB default</td></tr>
+    <tr><td>Content documents</td><td>One XHTML document per printed page, at the trimmed page size in CSS px</td><td>One XHTML document per chapter (a part opens one of its own)</td></tr>
+    <tr><td>What it keeps</td><td>The page: columns, floats, running heads, openers, line breaks and positions, in the embedded fonts. Text stays real text: selectable, searchable, read aloud</td><td>The text and its structure: headings, paragraphs rebuilt from the lines, lists, boxes as asides, figures and tables after the text that cites them, notes, links, print page markers. A style sheet derived from the configuration</td></tr>
+    <tr><td>What it gives up</td><td>The reader's choice of typeface, size and margins; on a small screen the page is scaled down</td><td>Columns, running heads, page design and the exact line breaks</td></tr>
+    <tr><td>Spreads and direction</td><td><code>page-spread-left</code> / <code>page-spread-right</code> from parity and binding; a right-bound book reads right to left</td><td>Reading direction from the binding; vertical Chinese keeps <code>vertical-rl</code>, Arabic is <code>dir="rtl"</code></td></tr>
+    <tr><td>Suited to</td><td>Designed pages: illustrated books, textbooks, catalogues, magazines; large screens</td><td>Running text: novels, essays, reports; phones and e-ink readers</td></tr>
+  </tbody>
+</table>
+
+Both renditions carry the same navigation: a table of contents from the headings and part pages, a page list with the printed page labels, landmarks (cover, printed contents, start of the body) and an NCX for older reading systems.
+
+### Writing a book
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // one VDTDocument per chapter, in book order
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Lantern', creators: ['Ada Lovelace'], language: 'en' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+A single document is a book of one chapter: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` and `language` (a BCP 47 tag) are required; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` and `modified` are optional. A bare ISBN becomes `urn:isbn:…`. Without an `identifier` the book gets a `urn:uuid:` derived from its title, creators and language, so a new version of the same book keeps its place in a reader's library. Pass `modified` too for byte-identical output.
+- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it.
+- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. A picture with no bytes is reported as `missingImage` and left as an empty frame.
+- **`cover`**: `{ bytes, mediaType, alt? }`, a JPEG, PNG, WebP or SVG picture. The book then opens on a cover document holding it, and it is the package's `cover-image` (the thumbnail in a library). Without one, the fixed layout names its first page as the cover and the reflowable book has no cover picture.
+- **`onProgress({ phase, done, total })`**: `resources` (fonts and pictures), `documents` (pages for a fixed layout, chapters for a reflowable one), then `package`. **`signal`** aborts between steps.
+- **`readEpub(bytes)`** reads a file back for a viewer, without `DOMParser`: layout, metadata, reading direction, every file by path, the manifest, the spine, the table of contents, the page list, the fixed-layout viewport and the cover. The sandbox's reader is built on it.
+
+Both renditions carry EPUB Accessibility 1.1 metadata (access modes, features such as the table of contents and print page numbers, hazards and a summary) and make no WCAG conformance claim by default. The full option list and the limitations are in the [package README](https://www.npmjs.com/package/postext-epub).
+
+### Checking a file with EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) is the reference validator for EPUB; ebook stores check the files they receive with it. With it installed (`brew install epubcheck`, or the Java release), `epubcheck book.epub` lists errors, warnings and usage notes; the usage notes Postext output leaves (`CSS-028`, `OBS-001`, `HTM_062`) are informational. In the Postext repository, `pnpm --filter postext-epub epubcheck` checks the test suite's sample books, `node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both` lays out one `.postext` file or preset folder and checks both renditions, and `pnpm --filter postext-epub validate` runs the whole matrix of books (the guide, the showcase presets, Chinese, Arabic and Cookbook books), each of which passes with no errors or warnings.
 
 ## Bundles (`.postext` files)
 

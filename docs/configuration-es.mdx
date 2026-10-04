@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Configuración',
   description: 'Referencia completa de todas las opciones de configuración de composición de Postext',
   lang: 'es',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30 min',
   order: 3,
-  plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web y archivos PDF desde el código.",
+  plainSummary: "Esta página reúne todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. Es una página de consulta, así que puedes ir directamente a la parte que necesitas. Las últimas secciones enseñan a los programadores a crear páginas web, archivos PDF y libros electrónicos EPUB desde el código.",
 };
 
 # Configuración
@@ -62,6 +62,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Uso programático](#uso-programático) — `buildDocument`, los avisos que registra, resolvers, cachés.
 - [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker) — builds fuera del hilo principal con cancelación.
 - [Integrar el visor HTML](#integrar-el-visor-html) y [Generación de PDF](#generación-de-pdf) — recetas completas.
+- [Libros EPUB](#libros-epub-postext-epub) — archivos EPUB 3 de maquetación fija y fluida a partir de la misma maquetación, y cómo comprobarlos con EPUBCheck.
 
 
 ## Página
@@ -7831,6 +7832,77 @@ El pen importa `postext` y `postext-folio` desde un CDN, compone un documento br
 `createFolio` con páginas dibujadas en lienzos, una última página en blanco y el color del papel.
 
 <CodePenExample name="folio-images" title="Postext · un libro de imágenes en 3D" description="Pasa en 3D cualquier página con postext-folio: URL de imágenes, elementos img o canvas." height={600} />
+
+## Libros EPUB (`postext-epub`)
+
+`postext-epub` escribe un libro maquetado como un archivo EPUB 3.3, en el navegador o en Node, sin servidor. Lee los mismos documentos por capítulo que `renderToPdf` recibe para un libro, así que los números de página, las notas, las citas, las referencias cruzadas, el índice general y el alfabético llegan resueltos, y devuelve el archivo como bytes. Es el escritor que usa la pestaña **EPUB 3** del Sandbox.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` es una dependencia *peer*, como en `postext-pdf`: actualiza los dos a la vez y, desde un CDN, fíjalos en la misma versión.
+
+### Maquetación fija y maquetación fluida
+
+EPUB 3 define dos maquetaciones, que el paquete declara con la propiedad `rendition:layout`; `layout` elige una:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Nombre en EPUB</td><td><code>pre-paginated</code> (maquetación fija, en inglés <em>fixed layout</em> o FXL)</td><td><code>reflowable</code> (maquetación fluida), la de EPUB por omisión</td></tr>
+    <tr><td>Documentos de contenido</td><td>Un documento XHTML por página impresa, con el tamaño de la página refilada en px CSS</td><td>Un documento XHTML por capítulo (una parte abre uno propio)</td></tr>
+    <tr><td>Qué conserva</td><td>La página: columnas, flotantes, cabeceras, aperturas, cortes de línea y posiciones, con las letras incrustadas. El texto sigue siendo texto: se selecciona, se busca y se lee en voz alta</td><td>El texto y su estructura: títulos, párrafos reconstruidos a partir de las líneas, listas, recuadros como apartes, figuras y tablas tras el texto que las cita, notas, enlaces y marcas de las páginas impresas. Una hoja de estilo derivada de la configuración</td></tr>
+    <tr><td>Qué pierde</td><td>La elección de letra, tamaño y márgenes de quien lee; en una pantalla pequeña la página se ve reducida</td><td>Las columnas, las cabeceras, el diseño de página y los cortes de línea exactos</td></tr>
+    <tr><td>Doble página y sentido</td><td><code>page-spread-left</code> / <code>page-spread-right</code> según la paridad y la encuadernación; un libro encuadernado por la derecha se lee de derecha a izquierda</td><td>El sentido de lectura sale de la encuadernación; el chino vertical conserva <code>vertical-rl</code> y el árabe lleva <code>dir="rtl"</code></td></tr>
+    <tr><td>Indicada para</td><td>Páginas diseñadas: libros ilustrados, libros de texto, catálogos, revistas; pantallas grandes</td><td>Texto corrido: novelas, ensayos, informes; móviles y lectores de tinta electrónica</td></tr>
+  </tbody>
+</table>
+
+Las dos maquetaciones llevan la misma navegación: un índice a partir de los títulos y las páginas de parte, una lista de páginas con los números impresos, puntos de referencia (cubierta, índice impreso, comienzo del cuerpo) y un NCX para lectores antiguos.
+
+### Escribir un libro
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // un VDTDocument por capítulo, en el orden del libro
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Linterna', creators: ['Ada Lovelace'], language: 'es' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+Un documento suelto es un libro de un capítulo: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escribe el archivo. `options` es `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` y `language` (una etiqueta BCP 47) son obligatorios; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` y `modified` son opcionales. Un ISBN sin prefijo pasa a `urn:isbn:…`. Sin `identifier`, el libro recibe un `urn:uuid:` derivado del título, los autores y el idioma, de modo que una versión nueva del mismo libro conserva su sitio en la biblioteca del lector. Pasa también `modified` para obtener un archivo idéntico byte a byte.
+- **`fonts`**: las variantes que se incrustan, `{ family, weight, style, bytes, format, unicodeRange? }`, con `format` uno de `woff2`, `woff`, `ttf`, `otf`. Cada variante pasa a ser un archivo y una regla `@font-face`; varios archivos con su `unicodeRange` forman una sola variante (los tramos de Google Fonts). Una familia, un peso o un estilo que las páginas usan sin variante incrustada se avisa como `missingFont`, y los lectores ponen una suya. Incrusta solo las letras cuya licencia lo permita.
+- **`resourceBytes(fileId)`**: las imágenes que colocan las páginas, de forma síncrona o asíncrona, como `{ bytes, mediaType }`; un `mediaType` vacío se lee de los bytes. Da los mapas de bits tal como están guardados y los SVG como su código fuente, no el máster PDF de imprenta (`svg.pdfFileId`). Cada imagen se guarda una vez. En un libro a una tinta (`diagramStyle.singleInk`) los SVG se recolorean en el archivo. Una imagen sin bytes se avisa como `missingImage` y queda como un marco vacío.
+- **`cover`**: `{ bytes, mediaType, alt? }`, una imagen JPEG, PNG, WebP o SVG. El libro se abre entonces con un documento de cubierta que la contiene, y es la `cover-image` del paquete (la miniatura en una biblioteca). Sin ella, la maquetación fija nombra cubierta a su primera página y el libro fluido no tiene imagen de cubierta.
+- **`onProgress({ phase, done, total })`**: `resources` (letras e imágenes), `documents` (páginas en la maquetación fija, capítulos en la fluida) y después `package`. **`signal`** interrumpe entre pasos.
+- **`readEpub(bytes)`** lee un archivo para un visor, sin `DOMParser`: maquetación, metadatos, sentido de lectura, cada archivo por su ruta, el manifiesto, el spine, el índice, la lista de páginas, el viewport de la maquetación fija y la cubierta. El lector del Sandbox se apoya en ella.
+
+Las dos maquetaciones llevan los metadatos de EPUB Accessibility 1.1 (modos de acceso, prestaciones como el índice y los números de página impresos, riesgos y un resumen) y no declaran conformidad con WCAG por omisión. La lista completa de opciones y las limitaciones están en el [README del paquete](https://www.npmjs.com/package/postext-epub).
+
+### Comprobar un archivo con EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) es el validador de referencia de EPUB; las tiendas de libros electrónicos comprueban con él los archivos que reciben. Con él instalado (`brew install epubcheck`, o la versión Java), `epubcheck libro.epub` enumera errores, avisos y notas de uso; las notas de uso que deja la salida de Postext (`CSS-028`, `OBS-001`, `HTM_062`) son informativas. En el repositorio de Postext, `pnpm --filter postext-epub epubcheck` comprueba los libros de muestra de las pruebas, `node packages/postext-epub/scripts/epubcheck.mjs libro.postext --layout both` maqueta un archivo `.postext` o una carpeta de preset y comprueba las dos maquetaciones, y `pnpm --filter postext-epub validate` recorre toda la matriz de libros (la guía, los presets de muestra y libros en chino, en árabe y del Recetario), que pasan todos sin errores ni avisos.
 
 ## Paquetes (archivos `.postext`)
 

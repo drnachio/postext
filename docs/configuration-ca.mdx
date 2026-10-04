@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Configuració',
   description: 'Referència completa de totes les opcions de configuració de composició de Postext',
   lang: 'ca',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30 min',
   order: 3,
-  plainSummary: "Aquesta pàgina reuneix tots els paràmetres que decideixen l'aspecte de les teves pàgines. Un sol grup de paràmetres desa totes les decisions: mida de pàgina, nombre de columnes, tipografies, cos del text, títols, requadres, colors i molt més. Només escrius els paràmetres que vols canviar, perquè cadascun parteix d'un valor raonable. És una pàgina de consulta, així que pots anar directament a la part que necessites. Les últimes seccions ensenyen als programadors a crear pàgines web i fitxers PDF des del codi.",
+  plainSummary: "Aquesta pàgina reuneix tots els paràmetres que decideixen l'aspecte de les teves pàgines. Un sol grup de paràmetres desa totes les decisions: mida de pàgina, nombre de columnes, tipografies, cos del text, títols, requadres, colors i molt més. Només escrius els paràmetres que vols canviar, perquè cadascun parteix d'un valor raonable. És una pàgina de consulta, així que pots anar directament a la part que necessites. Les últimes seccions ensenyen als programadors a crear pàgines web, fitxers PDF i llibres electrònics EPUB des del codi.",
 };
 
 # Configuració
@@ -62,6 +62,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Ús programàtic](#ús-programàtic) — `buildDocument`, els avisos que registra, resolvers, memòries cau.
 - [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker) — builds fora del fil principal amb cancel·lació.
 - [Integrar el visor HTML](#integrar-el-visor-html) i [Generació de PDF](#generació-de-pdf) — receptes completes.
+- [Llibres EPUB](#llibres-epub-postext-epub) — fitxers EPUB 3 de maquetació fixa i fluida a partir de la mateixa maquetació, i com comprovar-los amb EPUBCheck.
 
 
 ## Pàgina
@@ -7808,6 +7809,77 @@ El pen importa `postext` i `postext-folio` des d'un CDN, compon un document breu
 `createFolio` amb pàgines dibuixades en llenços, una última pàgina en blanc i el color del paper.
 
 <CodePenExample name="folio-images" title="Postext · un llibre d'imatges en 3D" description="Passa en 3D qualsevol pàgina amb postext-folio: URL d'imatges, elements img o canvas." height={600} />
+
+## Llibres EPUB (`postext-epub`)
+
+`postext-epub` escriu un llibre maquetat com un fitxer EPUB 3.3, al navegador o a Node, sense servidor. Llegeix els mateixos documents per capítol que `renderToPdf` rep per a un llibre, de manera que els números de pàgina, les notes, les citacions, les referències creuades, el sumari i l'índex alfabètic arriben resolts, i retorna el fitxer com a bytes. És l'escriptor que fa servir la pestanya **EPUB 3** del Sandbox.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` és una dependència *peer*, com a `postext-pdf`: actualitza tots dos alhora i, des d'un CDN, fixa'ls a la mateixa versió.
+
+### Maquetació fixa i maquetació fluida
+
+EPUB 3 defineix dues maquetacions, que el paquet declara amb la propietat `rendition:layout`; `layout` en tria una:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Nom a EPUB</td><td><code>pre-paginated</code> (maquetació fixa, en anglès <em>fixed layout</em> o FXL)</td><td><code>reflowable</code> (maquetació fluida), la de l'EPUB per defecte</td></tr>
+    <tr><td>Documents de contingut</td><td>Un document XHTML per pàgina impresa, amb la mida de la pàgina refilada en px CSS</td><td>Un document XHTML per capítol (una part n'obre un de propi)</td></tr>
+    <tr><td>Què conserva</td><td>La pàgina: columnes, flotants, capçaleres, obertures, talls de línia i posicions, amb les lletres incrustades. El text continua sent text: se selecciona, es cerca i es llegeix en veu alta</td><td>El text i la seva estructura: títols, paràgrafs reconstruïts a partir de les línies, llistes, requadres com a apartats, figures i taules després del text que les cita, notes, enllaços i marques de les pàgines impreses. Un full d'estil derivat de la configuració</td></tr>
+    <tr><td>Què perd</td><td>L'elecció de lletra, mida i marges de qui llegeix; en una pantalla petita la pàgina es veu reduïda</td><td>Les columnes, les capçaleres, el disseny de pàgina i els talls de línia exactes</td></tr>
+    <tr><td>Plec i sentit</td><td><code>page-spread-left</code> / <code>page-spread-right</code> segons la paritat i l'enquadernació; un llibre enquadernat per la dreta es llegeix de dreta a esquerra</td><td>El sentit de lectura surt de l'enquadernació; el xinès vertical conserva <code>vertical-rl</code> i l'àrab porta <code>dir="rtl"</code></td></tr>
+    <tr><td>Indicada per a</td><td>Pàgines dissenyades: llibres il·lustrats, llibres de text, catàlegs, revistes; pantalles grans</td><td>Text seguit: novel·les, assajos, informes; mòbils i lectors de tinta electrònica</td></tr>
+  </tbody>
+</table>
+
+Les dues maquetacions porten la mateixa navegació: un sumari a partir dels títols i les pàgines de part, una llista de pàgines amb els números impresos, punts de referència (coberta, sumari imprès, començament del cos) i un NCX per a lectors antics.
+
+### Escriure un llibre
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // un VDTDocument per capítol, en l'ordre del llibre
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Llanterna', creators: ['Ada Lovelace'], language: 'ca' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+Un document sol és un llibre d'un capítol: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` i `language` (una etiqueta BCP 47) són obligatoris; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` i `modified` són opcionals. Un ISBN sense prefix passa a `urn:isbn:…`. Sense `identifier`, el llibre rep un `urn:uuid:` derivat del títol, els autors i l'idioma, de manera que una versió nova del mateix llibre conserva el seu lloc a la biblioteca del lector. Passa també `modified` per obtenir un fitxer idèntic byte a byte.
+- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti.
+- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
+- **`cover`**: `{ bytes, mediaType, alt? }`, una imatge JPEG, PNG, WebP o SVG. Aleshores el llibre s'obre amb un document de coberta que la conté, i és la `cover-image` del paquet (la miniatura en una biblioteca). Sense coberta, la maquetació fixa anomena coberta la seva primera pàgina i el llibre fluid no té imatge de coberta.
+- **`onProgress({ phase, done, total })`**: `resources` (lletres i imatges), `documents` (pàgines en la maquetació fixa, capítols en la fluida) i després `package`. **`signal`** interromp entre passos.
+- **`readEpub(bytes)`** llegeix un fitxer per a un visor, sense `DOMParser`: maquetació, metadades, sentit de lectura, cada fitxer pel seu camí, el manifest, l'spine, el sumari, la llista de pàgines, el viewport de la maquetació fixa i la coberta. El lector del Sandbox s'hi basa.
+
+Les dues maquetacions porten les metadades d'EPUB Accessibility 1.1 (modes d'accés, prestacions com el sumari i els números de pàgina impresos, riscos i un resum) i no declaren conformitat amb WCAG per defecte. La llista completa d'opcions i les limitacions són al [README del paquet](https://www.npmjs.com/package/postext-epub).
+
+### Comprovar un fitxer amb EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) és el validador de referència d'EPUB; les botigues de llibres electrònics hi comproven els fitxers que reben. Amb l'eina instal·lada (`brew install epubcheck`, o la versió Java), `epubcheck llibre.epub` enumera errors, avisos i notes d'ús; les notes d'ús que deixa la sortida de Postext (`CSS-028`, `OBS-001`, `HTM_062`) són informatives. Al repositori de Postext, `pnpm --filter postext-epub epubcheck` comprova els llibres de mostra de les proves, `node packages/postext-epub/scripts/epubcheck.mjs llibre.postext --layout both` maqueta un fitxer `.postext` o una carpeta de preset i comprova les dues maquetacions, i `pnpm --filter postext-epub validate` recorre tota la matriu de llibres (la guia, els presets de mostra i llibres en xinès, en àrab i del Receptari), que passen tots sense errors ni avisos.
 
 ## Paquets (fitxers `.postext`)
 

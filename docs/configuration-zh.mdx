@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: '配置',
   description: 'Postext所有版面配置选项的完整参考',
   lang: 'zh',
-  lastUpdated: '2026-10-02',
+  lastUpdated: '2026-10-04',
   readingTime: '30分钟',
   order: 3,
-  plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页和PDF文件。",
+  plainSummary: "本页列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。本页是参考资料，可以直接跳到需要的部分。最后几节告诉程序员怎样用代码生成网页、PDF文件和EPUB电子书。",
 };
 
 # 配置
@@ -62,6 +62,7 @@ const document = buildDocument(content, {
 - [以编程方式使用](#以编程方式使用)：`buildDocument`、它报告的警告、解析器、缓存。
 - [在Web Worker中运行排版](#在web-worker中运行排版)：在主线程之外构建，并可取消。
 - [集成HTML查看器](#集成html查看器)与[生成PDF](#生成pdf)：端到端的完整做法。
+- [EPUB电子书](#epub电子书postext-epub)：由同一份排版生成固定版式和流式版式的EPUB 3文件，并用EPUBCheck检查。
 
 
 ## 页面
@@ -7824,6 +7825,77 @@ book.resetView();
 用`createFolio`显示画布上绘制的页面、最后一页空白页和纸张颜色。
 
 <CodePenExample name="folio-images" title="Postext · 图片组成的3D书本" description="用postext-folio以3D方式翻动任意页面：图片URL、img或canvas元素。" height={600} />
+
+## EPUB电子书（`postext-epub`）
+
+`postext-epub`把排好的书写成EPUB 3.3文件，在浏览器或Node中运行，无需服务器。它读取的逐章文档与`renderToPdf`为整本书接收的相同，所以页码、注释、引用、交叉引用、目录和索引都已解析好；结果以字节返回。沙盒的**EPUB 3**标签页用的就是它。
+
+```bash
+npm install postext postext-epub
+```
+
+与`postext-pdf`一样，`postext`是对等依赖：两者要一起升级，从CDN引用时固定为同一版本。
+
+### 固定版式与流式版式
+
+EPUB 3定义了两种版式，由包文件的`rendition:layout`属性声明；`layout`选择其中一种：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>EPUB中的名称</td><td><code>pre-paginated</code>（固定版式，英文称fixed layout或FXL）</td><td><code>reflowable</code>（流式版式），EPUB的默认版式</td></tr>
+    <tr><td>内容文档</td><td>每个印刷页一个XHTML文档，尺寸为成品页面的CSS像素</td><td>每章一个XHTML文档（篇另起一个文档）</td></tr>
+    <tr><td>保留什么</td><td>页面：分栏、浮动体、书眉、章首页、断行和位置，使用嵌入的字体。文字仍是真正的文字：可以选择、搜索和朗读</td><td>文字及其结构：标题、由行重新拼合的段落、列表、作为旁注的标注框、跟在引用文字之后的图和表、注释、链接、印刷页的分页标记。还有一份由配置导出的样式表</td></tr>
+    <tr><td>放弃什么</td><td>读者对字体、字号和边距的选择；在小屏幕上页面会缩小显示</td><td>分栏、书眉、页面设计和确切的断行</td></tr>
+    <tr><td>跨页与方向</td><td>按奇偶页和装订方式标记<code>page-spread-left</code> / <code>page-spread-right</code>；右装订的书从右向左阅读</td><td>阅读方向取自装订方式；竖排中文保持<code>vertical-rl</code>，阿拉伯文带<code>dir="rtl"</code></td></tr>
+    <tr><td>适合</td><td>以页面为设计单位的书：图文书、教材、目录册、杂志；大屏幕</td><td>连续的正文：小说、随笔、报告；手机和电子墨水阅读器</td></tr>
+  </tbody>
+</table>
+
+两种版式的导航相同：由标题和篇页生成的目录、带印刷页码的页码列表、地标（封面、印刷目录、正文开始处），以及供旧阅读器使用的NCX。
+
+### 写出一本书
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // 每章一个VDTDocument，按书中顺序
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: '灯笼', creators: ['Ada Lovelace'], language: 'zh-Hans' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+单个文档就是只有一章的书：`renderToEpub([doc], options)`。
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`**写出文件。`options`为`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
+- **`metadata`**：`title`和`language`（BCP 47语言标签）必填；`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`和`modified`可选。不带前缀的ISBN会写成`urn:isbn:…`。没有`identifier`时，书会得到一个由书名、作者和语言派生的`urn:uuid:`，这样同一本书的新版本在读者书库中保持原位。再传入`modified`即可得到逐字节相同的输出。
+- **`fonts`**：要嵌入的字形，`{ family, weight, style, bytes, format, unicodeRange? }`，`format`为`woff2`、`woff`、`ttf`、`otf`之一。每个字形成为一个文件和一条`@font-face`规则；带各自`unicodeRange`的多个文件合成一个字形（Google Fonts的分片）。页面用到却没有嵌入字形的字体族、字重或字形会以`missingFont`提醒，阅读器会改用自己的字体。只嵌入许可证允许嵌入的字体。
+- **`resourceBytes(fileId)`**：页面放置的图片，同步或异步返回`{ bytes, mediaType }`；`mediaType`为空时从字节判断类型。位图按存储时的样子给出，SVG给出源代码，而不是PDF印刷母版（`svg.pdfFileId`）。每张图片只存一次。单色书（`diagramStyle.singleInk`）的SVG会在文件中重新着色。没有字节的图片以`missingImage`提醒，原处留下空框。
+- **`cover`**：`{ bytes, mediaType, alt? }`，JPEG、PNG、WebP或SVG图片。书会以包含它的封面文档开头，它也是包文件的`cover-image`（书库中的缩略图）。没有封面时，固定版式把第一页标为封面，流式版式的书没有封面图片。
+- **`onProgress({ phase, done, total })`**：依次为`resources`（字体和图片）、`documents`（固定版式为页，流式版式为章）、`package`。**`signal`**可在步骤之间中止。
+- **`readEpub(bytes)`**为查看器读回文件，不需要`DOMParser`：版式、元数据、阅读方向、按路径列出的所有文件、清单、spine、目录、页码列表、固定版式的视口和封面。沙盒的阅读器就建立在它之上。
+
+两种版式都带有EPUB Accessibility 1.1元数据（访问模式、目录和印刷页码等功能、危险性和摘要），默认不声明符合WCAG。完整的选项列表和局限见[软件包的README](https://www.npmjs.com/package/postext-epub)。
+
+### 用EPUBCheck检查文件
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/)是EPUB的参考校验工具；电子书商店用它检查收到的文件。安装后（`brew install epubcheck`，或Java版本），`epubcheck book.epub`会列出错误、警告和用法提示；Postext输出留下的用法提示（`CSS-028`、`OBS-001`、`HTM_062`）仅供参考。在Postext仓库中，`pnpm --filter postext-epub epubcheck`检查测试套件的示例书，`node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both`对一个`.postext`文件或预设文件夹排版并检查两种版式，`pnpm --filter postext-epub validate`跑完整套书目（指南、示例预设，以及中文、阿拉伯文和排版食谱中的书），全部没有错误或警告。
 
 ## 文件包（`.postext`文件）
 

@@ -5,10 +5,10 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Interactive playground for experimenting with the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '15 min',
   order: 9,
-  plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. You can choose fonts, page sizes, columns and colours, and add pictures. You can organise your work as a book with chapters and download it as a PDF. Your work is saved in your own browser as you go.",
+  plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. You can choose fonts, page sizes, columns and colours, and add pictures. You can organise your work as a book with chapters and download it as a PDF or as an EPUB e-book. Your work is saved in your own browser as you go.",
 };
 
 # Sandbox
@@ -470,12 +470,23 @@ Column geometry is driven by the **Web reader (HTML)** section of the Design pan
 
 #### EPUB 3 tab
 
-Builds the whole book as an EPUB 3 file with the `postext-epub` package, from the same chapter-by-chapter layout the PDF tab uses for **Whole book**. The tab has no **Current chapter / Whole book** selector, since an EPUB always holds the whole book. In its place, at the left of the tab bar, it offers the rendition (as icons on a phone):
+Writes the whole book as an EPUB 3 file with the `postext-epub` package, shows it in a reader inside the tab and downloads it. The file is built in the browser from the same chapter-by-chapter layout the PDF tab uses for **Whole book**, so its page numbers, notes, cross-references, contents and index are the ones the PDF prints. The tab has no **Current chapter / Whole book** selector, since an EPUB always holds the whole book. In its place, at the left of the tab bar, it offers the rendition (as icons on a phone).
 
-- **Fixed layout**: every page as it is printed, for reading systems that show whole pages.
-- **Reflowable** (the default): the text, figures and tables in reading order, set again by the reading system to fit its screen, typeface and type size.
+EPUB 3 has two renditions, named by the package's `rendition:layout` property:
 
-The choice is remembered between visits. For now the tab shows which rendition is picked; the preview of the file and its download come with the EPUB viewer.
+- **Fixed layout** (`pre-paginated`, often called FXL): every page as it is printed. Each page is a document of its own with the page's size, and the text sits where the PDF puts it, in the book's fonts, but stays real text that can be selected, searched and read aloud. Spreads pair as in print, and a right-bound book (Arabic, vertical Chinese) turns right to left. It keeps the design: columns, floats, running heads, openers, the exact line breaks. Choose it for books whose pages are designed as pages, such as illustrated books, textbooks, catalogues and magazines, and for reading systems with a large screen. On a small screen the page is scaled down, and the reader zooms in to read it.
+- **Reflowable** (the default, and the EPUB default): the text, figures and tables in reading order, set again by the reading system for its screen and for the typeface, type size and margins the reader picks. Paragraphs are rebuilt from the laid-out lines (the hyphens added at line ends are removed), figures and tables follow the text that cites them, boxes become asides, footnotes link to the notes at the end of each chapter and back, and the printed page numbers are kept as page markers. A style sheet derived from the design gives the headings, boxes, tables and captions their look, but the page geometry is gone: no columns, no running heads, no fixed line breaks. Choose it for running text, such as novels, essays and reports, and for phones and e-ink readers.
+
+The choice is remembered between visits (`postext-sandbox-epub-layout`), and switching it writes the file again at once.
+
+- **Generation.** The EPUB is written the first time the tab opens and again when **Recalculate** is pressed. A progress bar counts the chapters being laid out, then the writer's steps (fonts, pictures and the cover; the pages or chapters; the package), and screen readers hear when the file is ready or failed. After an edit, an arrow next to **Recalculate** shows that the file no longer matches the text, as on the PDF tab. Leaving the tab or switching the rendition stops a generation under way. A long book takes a few seconds, during which the page does not respond.
+- **What goes into the file.** The metadata come from the first chapter's front matter: `title`, `subtitle`, `author` (one name or a list), `publishDate` or `date`, `isbn` or `identifier`, `publisher`, `rights` and `description`; the language comes from the configuration's `locale`. A book without an identifier gets one derived from the project (or from the sample book and its language), so every EPUB of the same book keeps one identity in a reader's library. Every font family the design names is embedded: Google Fonts slices only where the book prints characters they hold, custom families unless they are marked as not redistributable. Pictures go in as stored, SVGs as their source with their fonts inlined, never as the PDF print master. The cover is the book's own picture when it is a bitmap at least 600 px wide, otherwise the first page rendered 1,600 px wide without its crop-mark margin.
+- **The reader.** The tab opens the file it has just written, the bytes you download, not a separate preview. The fixed layout shows one page, or a spread when the pane is wide enough, scaled to fit; the reflowable book is paged one screen at a time (top to bottom for vertical Chinese), and its pages carry on from one chapter to the next. Links in the book move the reader; web and mail links open in a new browser tab. ← / →, Page Up / Page Down, Home and End turn the pages, and in a right-to-left book ← goes forward.
+- **The toolbar.** A floating bar like the PDF tab's: **Recalculate**, the pin, **Download EPUB** with the file's size (the file is named after the book's title), a warnings button when the writer reported anything, **Contents** (a jump list from the book's table of contents), **Increase font size** and **Decrease font size** (reflowable only, keeping your place), ‹ › and, in a fixed layout, the page field. The page field counts pages in the file's reading order, the cover being 1; the frames name each page with its printed number.
+- **Warnings.** The warnings button lists what the file could not carry as the book has it: a picture with no stored file (an empty frame takes its place), a family, weight or style with no embedded face (reading systems substitute one), a family left out because it may not be redistributed, and anything the rendition cannot express. The same messages go to the browser console.
+- **Checking the file.** Both renditions of the guide and of the sample books pass [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 with no errors or warnings. To check your own book, download it and run `epubcheck book.epub`, or read it in Apple Books, Thorium Reader or Calibre.
+
+See [EPUB books](/en/docs/configuration#epub-books-postext-epub) for writing the same files from your own code.
 
 ### Phones and small screens
 
