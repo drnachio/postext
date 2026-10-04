@@ -1561,12 +1561,13 @@ const config: PostextConfig = {
     <tr><td>荷兰语（<code>nl</code>）</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>简体中文（<code>zh-Hans</code>、<code>zh</code>、<code>zh-CN</code>）</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>繁体中文（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>阿拉伯文（<code>ar</code>、<code>ar-EG</code>、<code>ar-MA</code>等）</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。
+题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。阿拉伯文类型同样按`{h1}-{n}`编号（شكل 2-3），交叉引用写作الفصل 3、القسم 2-1和ص 12，参考文献标题为المراجع，索引使用انظر / انظر أيضًا、رموز和أرقام，并用阿拉伯文逗号和分号（، ؛）。
 
-中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。
+中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。从右向左书写的语言（阿拉伯文、波斯文、乌尔都文、希伯来文等）的文档同样声明语言：字体的语言字形（`locl`）和后备字体随之选择。
 
 ```ts
 const config: PostextConfig = {
@@ -5498,7 +5499,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>separator</code>、<code>locatorSeparator</code>、<code>rangeSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>', '</code>、<code>', '</code>、<code>'–'</code></td>
+      <td><code>', '</code>、<code>', '</code>、<code>'–'</code>；阿拉伯文字中前两项为<code>'، '</code></td>
       <td>分别印在词条与第一个页码之间、两个页码之间，以及页码范围两端之间的内容。</td>
     </tr>
     <tr>
@@ -5522,7 +5523,7 @@ const config: PostextConfig = {
     <tr>
       <td><code>see</code></td>
       <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
-      <td>按语言，斜体</td>
+      <td>按语言，斜体（阿拉伯文字为正体）</td>
       <td>参见项前面的引导词。未设置时随文档语言而定：<em>See</em> / <em>See also</em>、<em>Véase</em> / <em>Véase también</em>、<em>Voir</em> / <em>Voir aussi</em>、见 / 另见（繁体中文为見 / 另見）等。中文索引把参见项放在句号之后，不加空格：<code>贾琏 12。见贾政</code>。</td>
     </tr>
     <tr>
@@ -5536,6 +5537,12 @@ const config: PostextConfig = {
       <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
       <td><code>'auto'</code></td>
       <td>组标题是什么。<code>'letter'</code>：排序键的首字母。<code>'pinyin'</code>：以汉字开头的条目归入其拼音读音的拉丁首字母之下（贾宝玉归入<code>J</code>），拉丁字母的排序键归入其字母，排在该字母的中文条目之后（排序器把拉丁字母排在汉字之后）：<code>sort="jia mu"</code>排在<code>J</code>组末尾。<code>'stroke'</code>：按第一个字的笔画数分组，<code>一畫</code>、<code>二畫</code>…（简体中文为<code>一画</code>…）。<code>'none'</code>：不设组标题；符号、数字和词语之间只用<code>groups.marginTop</code>隔开。<code>'auto'</code>让简体中文索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）按拼音分组，繁体中文索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）按笔画分组，其他语言按字母分组。条目按组标题所依据的排序规则排序：按拼音分组的<code>zh-Hant</code>索引按拼音排序。读音和笔画数来自排序器（CLDR）；遇到它读错的字（把重阳的重读作<em>zhòng</em>，把行业的行读作<em>xíng</em>），就给标记一个<code>sort</code>键，用只有你想要的读音的字来写，它会排在正确的位置：重阳用<code>sort="崇阳"</code>，行业用<code>sort="航业"</code>。没有中文排序数据的浏览器排出的拼音或笔画索引不带组标题。</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td>阿拉伯文为<code>true</code></td>
+      <td>阿拉伯文词条排序和分组时视同没有开头的冠词<code>ال</code>（<code>ٱل</code>）：البصرة归入ب，排在بدر和بغداد之间，印出时保持原样。<code>الله</code>保留冠词；自带<code>sort</code>键的词条按该键原样排序。无论此项如何，阿拉伯文索引都忽略元音符号和延长符（tatweel），把أ إ آ ٱ归入ا，并把ؤ按و、ئ和ى按ي、ة按ه排序。</td>
     </tr>
     <tr>
       <td><code>groups.enabled</code></td>
