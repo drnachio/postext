@@ -1,0 +1,78 @@
+---
+title: "A Catalan novella, hyphenated by the IEC rules"
+summary: "Narcís Oller’s El transplantat, complete, as a 32-page pocket book: Catalan syllables by the IEC rules, l·l broken as il- | lusió, and an engraving per chapter."
+plain: "A whole short novel in Catalan, set as a small paperback. Words are split at the line end the way Catalan style guides ask, including the double l with a dot."
+description: "Oller’s El transplantat (1928 text) in a 12 × 18.5 cm pocket edition: locale 'ca', IEC hyphenation, l·l breaking as il- | lusió, openers with an engraving."
+question: "How do I hyphenate Catalan correctly, with l·l, apostrophes and pronouns joined by a hyphen?"
+aliases: ["Catalan", "català", "Catalan hyphenation", "ela geminada", "l·l", "punt volat", "middle dot", "IEC", "Institut d’Estudis Catalans", "enclitic pronouns", "Narcís Oller", "pocket book", "complete novella", "frontispiece", "engraving"]
+pageNotes: { "2": "The frontispiece: an engraving of a stout baker in a white apron at the door of his village bakery, the oven’s fire behind him; under it, EL FORNER DE LES MONGES in small capitals.", "3": "The title page: NARCÍS OLLER in small capitals, El transplantat in large red italics, De «Croquis del natural» under it and a short red rule.", "27": "A text page of chapter IV. Halfway down, a line ends on titil- and the next one opens with laven: the middle dot of titil·laven gives way to the hyphen." }
+---
+
+## What you'll build
+
+Narcís Oller’s *El transplantat* in full, in the text of his *Obres completes* (Barcelona, 1928), as a 12 × 18.5 cm pocket book of 32 pages. A half-title, a frontispiece of the baker at his oven, a title page in red italic Cormorant Garamond and a note on the edition come before the four chapters. Each chapter opens under an engraving twelve lines deep, with its Roman numeral in red. The text, Crimson Pro at 10.4 pt, breaks at Catalan syllables as the Institut d’Estudis Catalans asks: two letters at least on each side, no split between vowels in hiatus, none right after an apostrophe, and *titil·laven* breaks as *titil-* | *laven*, the hyphen taking the place of the middle dot. Dialogue is set with em dashes and quotations in «cometes baixes».
+
+## Method
+
+### 1 · Catalan by its code
+
+The code is [the short answer](#the-short-answer) above. `locale: 'ca'` selects the Catalan patterns, and since postext 1.14 they follow the IEC’s *Llibre d’estil* ([supported locales](/en/docs/justification#supported-locales)). The patterns are the ones TeX uses, with two letters at least on each side of a break instead of the three the npm package ships, so *ter-ra*, *cai-xa* and *plu-ja* can break. Vowels in hiatus stay together (*cièn-cia*, *ca-mions*), but an *i* between vowels opens its syllable (*fe-ia*). The *ela geminada* breaks between its two *l*: the line ends *titil-* and the next opens *laven*, with no middle dot on either side, and Knuth–Plass measures the line without the dot.
+
+<PageShot page={27} crop="0.06,0.495,0.88,0.085" caption="Page 27: titil·laven at a line end, set titil- | laven. It is the one l·l that falls at a line end in these 32 pages." />
+
+`compounds: false` keeps a verb and its pronoun whole but for their own hyphen (*arrossegar-* | *se*), which the IEC prefers ([hyphenation](/en/docs/configuration#hyphenation)). It costs one loose line: on page 7, the line before *d’inaugurar-se* opens its spaces to 1.94×, even with `maxJustifyTracking: 10` taking the excess on the other lines.
+
+### 2 · A pocket page of whole lines
+
+<Excerpt region="page" />
+
+The bottom margin comes from the trim, the top margin and `LINES`, so the text block holds 29 lines of 14 pt and every full page ends on the same baseline. The 89 mm measure holds about 64 characters of Crimson Pro. `mirror: true` keeps the 16 mm margin at the spine on both pages of a spread ([mirrored margins](/en/docs/configuration#mirrored-margins)).
+
+### 3 · One opener for four chapters
+
+<Excerpt region="opener" />
+
+`resourceId: '{attr.art}'` draws the picture the heading names, so `# II {style="capitol" art="cap2"}` opens chapter II under its own engraving with the same style as the others ([heading attributes](/en/docs/document-format#heading-attributes)). Images reserve no height in an opener, so `minHeight` holds sixteen lines: twelve for the picture, then the numeral and its rule, and the text starts on the seventeenth line of the page, the same in every chapter.
+
+### 4 · Four pages before chapter I
+
+<Excerpt region="front" />
+
+Each piece of front matter is a level-one heading with a style of its own: `# El transplantat {style="portada"}` prints the author and the subtitle from the frontmatter and the heading as the title. Every style restates its page break, since a style inherits its level’s, and empties the header and footer, so these pages carry no running heads or folios. The frontispiece falls on page 2, a verso, so it faces the title page across the spread.
+
+### 5 · The author on the verso, the title on the recto
+
+<Excerpt region="heads" />
+
+`parity` puts the author on versos and the title on rectos; `pages: 'body'` keeps both off the openers, where a drop folio with `pages: 'opener'` takes their place. `SHIFT` moves each head onto the centre of the text block, half a millimetre off the page’s centre because the two margins differ.
+
+### 6 · Five engravings, no labels
+
+<Excerpt region="pictures" />
+
+The pictures belong to a resource type with an empty `captionPrefix`, so nothing numbers or labels them. Each is declared at its pixel size and loaded under its file id before the build. Their white was mapped to the page’s cream and their black to its ink before they were saved, so they print as part of the page and not as photographs pasted on it.
+
+## Variations
+
+### Let pronouns divide too
+
+With the default `compounds: true`, *d’inaugurar-se* can break as *d’inau-gurar-se* and page 7 loses its loose line. On these pages the `titil-` | `laven` break moves off the line end in exchange.
+
+```diff
+-  hyphenation: { compounds: false },
++  hyphenation: { compounds: true },
+```
+
+### Open every chapter on a recto
+
+`parity: 'odd'` adds a blank page before a chapter that would start on a verso, as in a roomier edition. Chapter IV, which opens on page 26, moves to page 27 behind a blank page.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' }, // a chapter opens on the next page, either side
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+## Pitfalls
+
+- Copy the text from Viquitexts with its italics: Oller marks *tentu*, *Ensanxe* and *palacio* as colloquial or Spanish, and a plain-text export drops them. Check doubtful words against the scan of the 1928 volume: six times the transcription has *tom-* where the verb is *tornar* (*tomà*, *tomaré*, *tomar*), and once *jom* for *jorn*.
+- With 6,800 words, the five content files and the kit make the composed script about 69 KB. A whole book is the largest sample a pen can carry; a longer work belongs in a `.postext` bundle.
