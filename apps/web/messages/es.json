@@ -2534,6 +2534,8 @@
     "indexSeeItalic": "Textos en cursiva",
     "indexLocale": "Idioma de ordenación",
     "indexLocaleTooltip": "Una etiqueta de idioma (es, en-GB…) cuyo orden alfabético ordena las entradas. Vacío: el idioma del documento",
+    "indexIgnoreArticle": "Ignorar el artículo ال",
+    "indexIgnoreArticleTooltip": "Ordena y agrupa las entradas árabes sin el ال inicial: البصرة va bajo ب. Activado por defecto en un índice en árabe",
     "indexGroupBy": "Agrupar por",
     "indexGroupByTooltip": "Automático agrupa un índice en chino simplificado por la inicial del pinyin, uno en chino tradicional por el número de trazos y cualquier otro por la primera letra",
     "indexGroupByAuto": "Automático",

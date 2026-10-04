@@ -40,7 +40,10 @@ export const IndexSection = memo(function IndexSection() {
   const raw = useSandboxSelector((s) => s.config.index);
   const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
-  const resolved = resolveIndexConfig(raw, resolveBodyTextConfig(bodyTextRaw, documentLocale));
+  const bodyText = resolveBodyTextConfig(bodyTextRaw, documentLocale);
+  // The language decides some defaults (an Arabic index: Arabic commas,
+  // upright labels, the article ignored), as the engine resolves them.
+  const resolved = resolveIndexConfig(raw, bodyText, documentLocale ?? bodyText.hyphenation.tag ?? bodyText.hyphenation.locale);
 
   const commit = (next: IndexConfig | undefined) => {
     dispatch({ type: 'UPDATE_CONFIG', payload: { index: next && Object.keys(next).length > 0 ? next : undefined } });
@@ -284,6 +287,14 @@ export const IndexSection = memo(function IndexSection() {
           isDefault={unset('locale')}
           onReset={() => resetField('locale')}
           widthCh={8}
+        />
+        <ToggleSwitch
+          label={labels.indexIgnoreArticle}
+          checked={resolved.ignoreArticle}
+          onChange={(v) => update({ ignoreArticle: v })}
+          tooltip={labels.indexIgnoreArticleTooltip}
+          isDefault={unset('ignoreArticle')}
+          onReset={() => resetField('ignoreArticle')}
         />
       </CollapsibleSection>
 

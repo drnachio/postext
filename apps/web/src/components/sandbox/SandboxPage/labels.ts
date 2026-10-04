@@ -1926,6 +1926,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     indexSeeItalic: t("indexSeeItalic"),
     indexLocale: t("indexLocale"),
     indexLocaleTooltip: t("indexLocaleTooltip"),
+    indexIgnoreArticle: t("indexIgnoreArticle"),
+    indexIgnoreArticleTooltip: t("indexIgnoreArticleTooltip"),
     indexGroupBy: t("indexGroupBy"),
     indexGroupByTooltip: t("indexGroupByTooltip"),
     indexGroupByAuto: t("indexGroupByAuto"),

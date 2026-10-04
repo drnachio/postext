@@ -2105,6 +2105,8 @@ export interface SandboxLabels {
   indexSeeItalic: string;
   indexLocale: string;
   indexLocaleTooltip: string;
+  indexIgnoreArticle: string;
+  indexIgnoreArticleTooltip: string;
   indexGroupBy: string;
   indexGroupByTooltip: string;
   indexGroupByAuto: string;

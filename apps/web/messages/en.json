@@ -2534,6 +2534,8 @@
     "indexSeeItalic": "Labels in italics",
     "indexLocale": "Sorting language",
     "indexLocaleTooltip": "A language tag (es, en-GB…) whose alphabetical order sorts the entries. Empty: the document language",
+    "indexIgnoreArticle": "Ignore the article ال",
+    "indexIgnoreArticleTooltip": "Sort and group Arabic entries without a leading ال: البصرة files under ب. On by default in an Arabic index",
     "indexGroupBy": "Group by",
     "indexGroupByTooltip": "Automatic groups a Simplified Chinese index by pinyin initial, a Traditional Chinese one by stroke count and any other by first letter",
     "indexGroupByAuto": "Automatic",

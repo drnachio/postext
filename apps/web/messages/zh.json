@@ -2534,6 +2534,8 @@
     "indexSeeItalic": "标签用斜体",
     "indexLocale": "排序语言",
     "indexLocaleTooltip": "语言标记（es、en-GB……），按该语言的字母顺序给词条排序。留空：使用文档语言",
+    "indexIgnoreArticle": "忽略冠词 ال",
+    "indexIgnoreArticleTooltip": "阿拉伯文词条排序和分组时不计开头的 ال：البصرة 归入 ب。阿拉伯文索引默认开启",
     "indexGroupBy": "分组方式",
     "indexGroupByTooltip": "“自动”时，简体中文索引按拼音首字母分组，繁体中文索引按笔画数分组，其他语言按首字母分组",
     "indexGroupByAuto": "自动",
