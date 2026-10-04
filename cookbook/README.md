@@ -305,7 +305,7 @@ whole Cookbook is verified again.
 | Item | Limit |
 |---|---|
 | Recipe code (lines outside the content, the kit and `#region art…` artwork) | ≤ 300; aim for ≤ 120 (level 1), ≤ 180 (level 2), ≤ 250 (level 3) |
-| Composed script / CodePen prefill | ≤ 60 KB / ≤ 96 KB |
+| Composed script / CodePen prefill | ≤ 72 KB / ≤ 96 KB |
 | Each content file | ≤ 2,500 words; Chinese and Japanese characters count 1.7 to the word (about 4,250 characters of Chinese); Korean counts its spaced words, fullwidth Ａ１ counts as A1 |
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
