@@ -227,5 +227,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.index;
   }
+  // `'auto'` is the default direction.
+  if (result.direction === 'auto') delete result.direction;
   return result;
 }

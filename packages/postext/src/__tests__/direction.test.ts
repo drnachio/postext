@@ -4,6 +4,8 @@ import { resolveAllConfig, resolvedDirection } from '../pipeline/config';
 import { resolvePageBinding, resolvePageConfig } from '../defaults/page';
 import { collectConfigWarnings } from '../configWarnings';
 import { parseMarkdown } from '../parse';
+import { stripConfigDefaults } from '../defaults';
+import { createBundle, migrateConfig, openBundle } from '../bundle';
 import type { PostextConfig } from '../types';
 
 describe('directionOf', () => {
@@ -58,6 +60,21 @@ describe('PostextConfig.direction', () => {
     expect(resolvedDirection(resolveAllConfig(config))).toBe('rtl');
     expect(collectConfigWarnings({ direction: 'rtl' }).filter((w) => w.kind === 'unknownConfigValue')).toEqual([]);
     expect(collectConfigWarnings({ direction: 'auto' }).filter((w) => w.kind === 'unknownConfigValue')).toEqual([]);
+  });
+});
+
+describe('saving the direction', () => {
+  it('strips the default and keeps a set one', () => {
+    expect('direction' in stripConfigDefaults({ locale: 'ar', direction: 'auto' })).toBe(false);
+    expect(stripConfigDefaults({ locale: 'en', direction: 'rtl' }).direction).toBe('rtl');
+    expect(migrateConfig({ direction: 'ltr' } as PostextConfig, undefined).direction).toBe('ltr');
+  });
+
+  it('travels in a bundle', async () => {
+    const { bytes } = await createBundle({ name: 'Kitab', locale: 'ar', markdown: '# باب\n\nنص.', config: { locale: 'ar', direction: 'rtl' } });
+    const read = await openBundle(bytes);
+    expect(read.config.direction).toBe('rtl');
+    expect(resolvedDirection(resolveAllConfig(read.config))).toBe('rtl');
   });
 });
 
