@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import { pageToFlow, resourceBlockToLocal } from 'postext';
+import { lineTextAlign, pageIsMirrored, pageToFlow, resourceBlockToLocal } from 'postext';
 import { bandCharAtX, bandLineBoxes, bandPlainToSource, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 
 type VDTBlock = VDTDocument['blocks'][number];
@@ -177,7 +177,8 @@ export function findResourceLocation(
 }
 
 /** Walk already-positioned resource lines (caption / table cells): segments
- *  paint sequentially from the line origin at natural widths. */
+ *  paint one after another from the line origin at natural widths, in
+ *  `line.order` when the line holds right-to-left runs. */
 function segmentInResourceLines(
   lines: VDTLine[],
   xPage: number,
@@ -185,9 +186,11 @@ function segmentInResourceLines(
 ): VDTSegment | null {
   for (const line of lines) {
     if (yPage < line.bbox.y || yPage > line.bbox.y + line.bbox.height) continue;
-    if (!line.segments) continue;
+    const segs = line.segments;
+    if (!segs) continue;
     let x = line.bbox.x;
-    for (const seg of line.segments) {
+    for (const i of paintOrder(line, segs.length)) {
+      const seg = segs[i]!;
       if (xPage >= x && xPage <= x + seg.width) {
         return seg;
       }
@@ -197,37 +200,121 @@ function segmentInResourceLines(
   return null;
 }
 
-/** Walk a body-text line mirroring the renderers' justify-fill math. */
+/** The segment of a body-text line under `xPage` (flow frame), placed
+ *  where the renderers paint it (see {@link placeLineSegments}). */
 function segmentInBlockLine(
   block: VDTBlock,
   line: VDTLine,
   xPage: number,
 ): VDTSegment | null {
+  for (const p of placeLineSegments(block, line, false, false) ?? []) {
+    if (xPage >= p.x && xPage <= p.x + p.width) return p.seg;
+  }
+  return null;
+}
+
+/** The indices of `n` segments in the order the renderers advance through
+ *  them: `line.order` when it lists them all, else logical order. */
+function paintOrder(line: Pick<VDTLine, 'order'>, n: number): readonly number[] {
+  if (line.order && line.order.length === n) return line.order;
+  return Array.from({ length: n }, (_, i) => i);
+}
+
+/**
+ * A segment of a line where the renderers paint it, in the page's flow
+ * frame: `x` and the advance it gets (`width`, a justified space's share of
+ * the slack included), and the plain characters it stands for
+ * (`plainStart` is relative to the line). `reversed` says its characters
+ * run from its right edge to its left in the flow frame: a right-to-left
+ * run on a left-to-right page, or a left-to-right run on a mirrored page,
+ * whose flow is the sheet turned about its vertical axis.
+ */
+export interface PlacedSegment {
+  seg: VDTSegment;
+  x: number;
+  width: number;
+  plainStart: number;
+  plainLen: number;
+  reversed: boolean;
+}
+
+/**
+ * Where each segment of a body-text line is painted, in logical order,
+ * following the canvas line painter: from the line's start (its `measure`
+ * span on a block set against its frame), justified lines filling their
+ * span, centred and right-aligned lines shifted by their slack (as
+ * {@link lineTextAlign} reads the block's alignment), and the segments
+ * advancing in `line.order` when the line has one — a line holding
+ * right-to-left runs, or any line of a mirrored page. A caret or a click
+ * inside a bidi line then lands on the character painted there, not on the
+ * one at the same distance from the line's logical start. With `fold`, the
+ * runs of one `:ref` painted in pieces are one segment (see
+ * {@link foldRefRuns}) spanning all of them. `mirrored`: the line is on a
+ * right-to-left page (`pageIsMirrored`). Null for a line without segments.
+ */
+export function placeLineSegments(block: VDTBlock, line: VDTLine, mirrored: boolean, fold = true): PlacedSegment[] | null {
   const segs = line.segments;
   if (!segs || segs.length === 0) return null;
-  const blockRight = block.bbox.x + block.bbox.width;
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
+  const span = line.measure;
+  const lineX = span ? span.x : line.bbox.x;
+  const effectiveWidth = span ? span.width : block.bbox.x + block.bbox.width - lineX;
   let naturalWidth = 0;
+  let wordWidth = 0;
   let spaceCount = 0;
   for (const seg of segs) {
     naturalWidth += seg.width;
     if (seg.kind === 'space') spaceCount++;
+    else wordWidth += seg.width;
   }
-  const renderedWidth = justifyFill
-    ? Math.max(naturalWidth, blockRight - line.bbox.x)
-    : naturalWidth;
-  const extraPerSpace = justifyFill && spaceCount > 0
-    ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
-    : 0;
-  let x = line.bbox.x;
-  for (const seg of segs) {
-    const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
-    if (xPage >= x && xPage <= x + segRendered) {
-      return seg;
+  // A line set ragged inside a justified paragraph (a loose CJK line, a
+  // line a URL left unfillable) is painted at its natural width; an
+  // overfull last line has its spaces compressed to the measure.
+  const justify = block.textAlign === 'justify' && spaceCount > 0
+    && ((line.isLastLine === false && !line.ragged) || naturalWidth > effectiveWidth);
+  const spaceWidth = justify ? (effectiveWidth - wordWidth) / spaceCount : undefined;
+  const align = lineTextAlign(line, block.textAlign);
+  const slack = Math.max(0, effectiveWidth - naturalWidth);
+  const start = lineX + (justify ? 0 : align === 'center' ? slack / 2 : align === 'right' ? slack : 0);
+
+  const xs = new Array<number>(segs.length).fill(start);
+  const widths = segs.map((seg) => (seg.kind === 'space' && spaceWidth !== undefined ? spaceWidth : seg.width));
+  let x = start;
+  for (const i of paintOrder(line, segs.length)) {
+    xs[i] = x;
+    x += widths[i]!;
+  }
+
+  const out: PlacedSegment[] = [];
+  const lastIdx = segs.length - 1;
+  let cum = 0;
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i]!;
+    const plainLen = segmentPlainLength(seg, i === lastIdx && addsHyphen(line), opensWithRepeatedHyphen(line, i));
+    const last = out[out.length - 1];
+    if (fold && seg.refContinues && last && last.seg.refResourceId === seg.refResourceId) {
+      // One reference painted in pieces: one box over all of them.
+      const left = Math.min(last.x, xs[i]!);
+      const right = Math.max(last.x + last.width, xs[i]! + widths[i]!);
+      out[out.length - 1] = { ...last, seg: { ...last.seg, text: last.seg.text + seg.text, width: last.seg.width + seg.width }, x: left, width: right - left };
+    } else {
+      out.push({ seg, x: xs[i]!, width: widths[i]!, plainStart: cum, plainLen, reversed: (seg.rtl === true) !== mirrored });
     }
-    x += segRendered;
+    cum += plainLen;
   }
-  return null;
+  return out;
+}
+
+/** The x (flow frame) of plain offset `within` of a placed segment. */
+function xInPlaced(p: PlacedSegment, within: number): number {
+  const dx = xWithinSegment(p.seg, within, p.plainLen, p.width);
+  return p.reversed ? p.x + p.width - dx : p.x + dx;
+}
+
+/** Whether page `pageIndex` of `doc` is set right to left in a mirrored
+ *  flow frame. */
+export function isMirroredPage(doc: VDTDocument, pageIndex: number): boolean {
+  const page = doc.pages[pageIndex];
+  return page ? pageIsMirrored(page) : false;
 }
 
 /**
@@ -438,57 +525,78 @@ export function sourceToPlainIndex(
 
 /**
  * Given a line and an in-line plain-char offset, compute the exact x
- * coordinate (in page-space px) using per-segment widths and, for justified
- * non-last lines, distributing the slack over space segments.
+ * coordinate (in the page's flow frame, px) where the renderers paint that
+ * character boundary (see {@link placeLineSegments}): per-segment widths,
+ * justified slack over the spaces, the line's alignment and its bidi
+ * order. `mirrored`: the line is on a right-to-left page.
  */
 export function xForPlainInLine(
   block: VDTDocument['blocks'][number],
   line: VDTDocument['blocks'][number]['lines'][number],
   inLineOffset: number,
+  mirrored = false,
 ): number {
-  const blockRight = block.bbox.x + block.bbox.width;
-  const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
-  // A line set ragged inside a justified paragraph (a loose CJK line, a
-  // line a URL left unfillable) is painted at its natural width.
-  const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
-  const segs = line.segments && foldRefRuns(line.segments);
-
-  if (!segs || segs.length === 0) {
+  const placed = placeLineSegments(block, line, mirrored);
+  if (!placed) {
+    const blockRight = block.bbox.x + block.bbox.width;
+    const lineLen = Math.max(0, (line.plainEnd ?? 0) - (line.plainStart ?? 0));
+    const justifyFill = block.textAlign === 'justify' && line.isLastLine === false && !line.ragged;
     const renderedWidth = justifyFill
       ? Math.max(line.bbox.width, blockRight - line.bbox.x)
       : line.bbox.width;
     const ratio = lineLen > 0 ? inLineOffset / lineLen : 0;
-    return line.bbox.x + ratio * renderedWidth;
+    // A plain line is one left-to-right text: on a mirrored page it runs
+    // from the right of its box in the flow frame.
+    return mirrored ? line.bbox.x + (1 - ratio) * renderedWidth : line.bbox.x + ratio * renderedWidth;
   }
+  // The caret stands before the character at the offset, where that
+  // character is painted; past the line's last one, after it. In a bidi
+  // line the end of one segment and the start of the next can be far apart.
+  for (const p of placed) {
+    if (inLineOffset >= p.plainStart && inLineOffset < p.plainStart + p.plainLen) return xInPlaced(p, inLineOffset - p.plainStart);
+  }
+  let end = placed[placed.length - 1]!;
+  for (const p of placed) if (p.plainLen > 0 && p.plainStart + p.plainLen <= inLineOffset) end = p;
+  return xInPlaced(end, end.plainLen);
+}
 
-  let naturalWidth = 0;
-  let spaceCount = 0;
-  for (const seg of segs) {
-    naturalWidth += seg.width;
-    if (seg.kind === 'space') spaceCount++;
+/**
+ * The x extents (flow frame, left to right) that a plain range
+ * `[from, to)` of a line covers: one per run of segments painted side by
+ * side, so a selection across a bidi line shows as the pieces the
+ * characters are painted in rather than one bar from the range's first x
+ * to its last.
+ */
+export function plainRangeInLine(
+  block: VDTDocument['blocks'][number],
+  line: VDTDocument['blocks'][number]['lines'][number],
+  from: number,
+  to: number,
+  mirrored = false,
+): { x1: number; x2: number }[] {
+  const placed = placeLineSegments(block, line, mirrored);
+  if (!placed) {
+    const a = xForPlainInLine(block, line, from, mirrored);
+    const b = xForPlainInLine(block, line, to, mirrored);
+    return [{ x1: Math.min(a, b), x2: Math.max(a, b) }];
   }
-  const renderedWidth = justifyFill
-    ? Math.max(naturalWidth, blockRight - line.bbox.x)
-    : naturalWidth;
-  const extraPerSpace = justifyFill && spaceCount > 0
-    ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
-    : 0;
-
-  const lastIdx = segs.length - 1;
-  let x = line.bbox.x;
-  let cum = 0;
-  for (let i = 0; i < segs.length; i++) {
-    const seg = segs[i]!;
-    const isLastSeg = i === lastIdx;
-    const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(line), opensWithRepeatedHyphen(line, i));
-    const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
-    if (inLineOffset <= cum + segPlainLen) {
-      return x + xWithinSegment(seg, inLineOffset - cum, segPlainLen, segRendered);
-    }
-    x += segRendered;
-    cum += segPlainLen;
+  const pieces: { x1: number; x2: number }[] = [];
+  for (const p of placed) {
+    const lo = Math.max(from, p.plainStart);
+    const hi = Math.min(to, p.plainStart + p.plainLen);
+    if (hi <= lo) continue;
+    const a = xInPlaced(p, lo - p.plainStart);
+    const b = xInPlaced(p, hi - p.plainStart);
+    pieces.push({ x1: Math.min(a, b), x2: Math.max(a, b) });
   }
-  return x;
+  pieces.sort((u, v) => u.x1 - v.x1);
+  const merged: { x1: number; x2: number }[] = [];
+  for (const piece of pieces) {
+    const last = merged[merged.length - 1];
+    if (last && piece.x1 <= last.x2 + 0.5) last.x2 = Math.max(last.x2, piece.x2);
+    else merged.push({ ...piece });
+  }
+  return merged;
 }
 
 /**
@@ -565,58 +673,45 @@ export function pixelToSourceOffset(
     return hitBlock.sourceStart ?? null;
   }
 
-  // 3. Walk segments to find the plain-char offset within the line. Mirror the
-  //    justify-fill math from xForPlainInLine.
-  const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
-  const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false && !hitLine.ragged;
-  const segs = hitLine.segments && foldRefRuns(hitLine.segments);
+  // 3. Find the segment painted under the click (see placeLineSegments,
+  //    which xForPlainInLine reads too) and the plain-char offset in it.
+  const mirrored = isMirroredPage(doc, pageIndex);
+  const placed = placeLineSegments(hitBlock, hitLine, mirrored);
   const lineLen = Math.max(0, hitLine.plainEnd - hitLine.plainStart);
   let inLineOffset: number;
 
-  if (!segs || segs.length === 0) {
+  if (!placed) {
+    const blockRight = hitBlock.bbox.x + hitBlock.bbox.width;
+    const justifyFill = hitBlock.textAlign === 'justify' && hitLine.isLastLine === false && !hitLine.ragged;
     const renderedWidth = justifyFill
       ? Math.max(hitLine.bbox.width, blockRight - hitLine.bbox.x)
       : hitLine.bbox.width;
     const rel = Math.max(0, Math.min(renderedWidth, xPage - hitLine.bbox.x));
     const ratio = renderedWidth > 0 ? rel / renderedWidth : 0;
-    inLineOffset = Math.round(ratio * lineLen);
+    inLineOffset = Math.round((mirrored ? 1 - ratio : ratio) * lineLen);
   } else {
-    let naturalWidth = 0;
-    let spaceCount = 0;
-    for (const seg of segs) {
-      naturalWidth += seg.width;
-      if (seg.kind === 'space') spaceCount++;
+    // Clamp the click to the line's painted extent, then take the segment
+    // it falls in, by x: in a bidi line that is not the logical order.
+    let left = Infinity;
+    let right = -Infinity;
+    for (const p of placed) {
+      left = Math.min(left, p.x);
+      right = Math.max(right, p.x + p.width);
     }
-    const renderedWidth = justifyFill
-      ? Math.max(naturalWidth, blockRight - hitLine.bbox.x)
-      : naturalWidth;
-    const extraPerSpace = justifyFill && spaceCount > 0
-      ? Math.max(0, (renderedWidth - naturalWidth) / spaceCount)
-      : 0;
-
-    const lastIdx = segs.length - 1;
-    let x = hitLine.bbox.x;
-    let cum = 0;
-    // Clamp click to the line's rendered horizontal extent.
-    const clampedX = Math.max(hitLine.bbox.x, Math.min(xPage, hitLine.bbox.x + renderedWidth));
-    let resolved = false;
-    let result = 0;
-    for (let i = 0; i < segs.length; i++) {
-      const seg = segs[i]!;
-      const isLastSeg = i === lastIdx;
-      const segPlainLen = segmentPlainLength(seg, isLastSeg && addsHyphen(hitLine), opensWithRepeatedHyphen(hitLine, i));
-      const segRendered = seg.width + (seg.kind === 'space' ? extraPerSpace : 0);
-      if (clampedX <= x + segRendered) {
-        result = cum + (seg.warichu
-          ? Math.min(segPlainLen, warichuOffset(seg, clampedX - x, yPage - hitLine.baseline))
-          : offsetWithinSegment(seg, clampedX - x, segPlainLen, segRendered));
-        resolved = true;
-        break;
-      }
-      x += segRendered;
-      cum += segPlainLen;
+    const clampedX = Math.max(left, Math.min(xPage, right));
+    let hit = placed[0]!;
+    let best = Infinity;
+    for (const p of placed) {
+      const d = clampedX < p.x ? p.x - clampedX : clampedX > p.x + p.width ? clampedX - p.x - p.width : 0;
+      if (d < best) { best = d; hit = p; }
+      if (d === 0) break;
     }
-    inLineOffset = resolved ? result : cum;
+    const dx = Math.max(0, Math.min(hit.width, clampedX - hit.x));
+    const along = hit.reversed ? hit.width - dx : dx;
+    inLineOffset = hit.plainStart + (hit.seg.warichu
+      ? Math.min(hit.plainLen, warichuOffset(hit.seg, along, yPage - hitLine.baseline))
+      : offsetWithinSegment(hit.seg, along, hit.plainLen, hit.width));
+    inLineOffset = Math.min(inLineOffset, lineLen);
   }
 
   const plainCharIndex = hitLine.plainStart + inLineOffset;

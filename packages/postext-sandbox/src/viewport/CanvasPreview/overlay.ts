@@ -4,7 +4,7 @@ import type { ResourceSelection } from '../../context/SandboxContext';
 import { getSvgTextIndex } from '../../controls/svgTextIndex';
 import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../controls/svgSource';
 import { SVG_NS } from './dom';
-import { sourceToPlainIndex, xForPlainInLine } from './geometry';
+import { plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry';
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, isHiddenUnderBand } from './bandTitle';
 import {
   contentOffsetToPlain,
@@ -248,6 +248,7 @@ export function drawOverlay(
     : flow.writingMode === 'vertical-rl'
       ? `matrix(0 1 -1 0 ${flow.rotation.originX} ${flow.rotation.originY})`
       : `matrix(-1 0 0 1 ${flow.mirror.originX} 0)`;
+  const mirrored = flow?.writingMode === 'horizontal-tb';
   for (const g of [selectionGroup, cursorGroup, looseLineGroup]) {
     if (!g) continue;
     if (frame) g.setAttribute('transform', frame);
@@ -317,7 +318,7 @@ export function drawOverlay(
       const lineEnd = line.plainEnd;
       if (lineStart === undefined || lineEnd === undefined) continue;
       if (plainCaret < lineStart || plainCaret > lineEnd) continue;
-      const x = xForPlainInLine(caretBlock, line, plainCaret - lineStart);
+      const x = xForPlainInLine(caretBlock, line, plainCaret - lineStart, mirrored);
       cursorRect.setAttribute('x', String(x - 1.5));
       cursorRect.setAttribute('y', String(line.bbox.y));
       cursorRect.setAttribute('width', '3');
@@ -385,16 +386,16 @@ export function drawOverlay(
         const lo = Math.max(plainFrom, lineStart);
         const hi = Math.min(plainTo, lineEnd);
         if (hi <= lo) continue;
-        const x1 = xForPlainInLine(block, line, lo - lineStart);
-        const x2 = xForPlainInLine(block, line, hi - lineStart);
-        const w = Math.max(1, x2 - x1);
-        const rect = document.createElementNS(SVG_NS, 'rect');
-        rect.setAttribute('x', String(x1));
-        rect.setAttribute('y', String(line.bbox.y));
-        rect.setAttribute('width', String(w));
-        rect.setAttribute('height', String(line.bbox.height));
-        rect.setAttribute('fill', debug.selectionSync.color.hex);
-        selectionGroup.appendChild(rect);
+        // A bidi line shows the range as the pieces it is painted in.
+        for (const { x1, x2 } of plainRangeInLine(block, line, lo - lineStart, hi - lineStart, mirrored)) {
+          const rect = document.createElementNS(SVG_NS, 'rect');
+          rect.setAttribute('x', String(x1));
+          rect.setAttribute('y', String(line.bbox.y));
+          rect.setAttribute('width', String(Math.max(1, x2 - x1)));
+          rect.setAttribute('height', String(line.bbox.height));
+          rect.setAttribute('fill', debug.selectionSync.color.hex);
+          selectionGroup.appendChild(rect);
+        }
       }
     }
   }
