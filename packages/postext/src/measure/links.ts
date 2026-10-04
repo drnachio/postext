@@ -10,6 +10,7 @@
 import type { VDTLine, VDTLineSegment } from '../vdt';
 import type { InlineSpan } from '../parse';
 import { SOFT_HYPHEN } from './types';
+import { GEMINATE_DOT, endsInsideGeminate } from './geminate';
 import { BREAKING_SPACE_RE } from './spaces';
 
 /** Whitespace between words: the measurers split words at breaking
@@ -75,7 +76,12 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       // A break opportunity the measurer inserted (a zero-width space
       // inside a URL), or the hyphen a break (dictionary or emergency
       // split) adds.
-      if (INVISIBLE.test(c) || (c === '-' && i === chunk.length - 1)) continue;
+      if (INVISIBLE.test(c)) continue;
+      if (c === '-' && i === chunk.length - 1) {
+        // The hyphen of a break inside an `l·l` stands for the middle dot.
+        if (text[p] === GEMINATE_DOT && endsInsideGeminate(text.slice(p - 1, p + 1))) p++;
+        continue;
+      }
       return null;
     }
     return href;

@@ -14,6 +14,7 @@ import {
   reconstructPretextLines,
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
+import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
 import { lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
@@ -130,6 +131,12 @@ function extractSegments(
   }
 
   return { segments: result, hyphenated };
+}
+
+/** The middle dot's width when `text` has a Catalan `l·l` (see
+ *  `pretextSegmentsToItems`), else 0. */
+function geminateDotWidth(text: string, font: string): number {
+  return text.includes(GEMINATE_DOT) ? measureTextWidth(GEMINATE_DOT, font) : 0;
 }
 
 function findLastTextSegmentIndex(segments: VDTLineSegment[]): number {
@@ -275,7 +282,8 @@ export function measureBlock(
     // on each side, so no line ends on "e-"), and wherever the dictionary
     // leaves compounds whole, whose one break it is.
     const hardHyphens = ragged || options.breakAfterHyphens === true || keepCompounds;
-    const items = pretextSegmentsToItems(prepared, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2);
+    const dotWidth = geminateDotWidth(text, font);
+    const items = pretextSegmentsToItems(prepared, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth);
     const lineWidthFn = (li: number) => {
       const isFirst = li === 0;
       const indent = indentPx > 0
@@ -313,7 +321,7 @@ export function measureBlock(
       const kpLines = reconstructPretextLines(
         items, breaks, prepared, lineHeightPx,
         lineWidthFn, lineIndentFn, normalSpaceWidth, textAlign,
-        trackingPerChar, lineBaselineOffset(lineHeightPx, font),
+        trackingPerChar, lineBaselineOffset(lineHeightPx, font), dotWidth,
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
         return {
@@ -355,8 +363,9 @@ export function measureBlock(
         const lastSeg = segments[lastTextIdx]!;
         segments[lastTextIdx] = {
           kind: 'text',
-          text: lastSeg.text + '-',
-          width: lastSeg.width + getHyphenWidth(prepared, font),
+          text: withLineEndHyphen(lastSeg.text),
+          width: lastSeg.width + getHyphenWidth(prepared, font)
+            - (endsInsideGeminate(lastSeg.text) ? measureTextWidth(GEMINATE_DOT, font) : 0),
         };
       }
     }
@@ -375,10 +384,16 @@ export function measureBlock(
     // Pretext's line text already ends with the hyphen of a soft-hyphen
     // break; add it only when it does not. It also carries the zero-width
     // breaks the segments leave out.
-    const lineText = cleanSoftHyphens(line.text).replace(/\u200B/g, '');
+    let lineText = cleanSoftHyphens(line.text).replace(/\u200B/g, '');
+    let lineWidth = line.width;
+    if (hyphenated) {
+      const body = lineText.endsWith('-') ? lineText.slice(0, -1) : lineText;
+      if (endsInsideGeminate(body)) lineWidth -= measureTextWidth(GEMINATE_DOT, font);
+      lineText = withLineEndHyphen(body);
+    }
     lines.push({
-      text: hyphenated && !lineText.endsWith('-') ? lineText + '-' : lineText,
-      bbox: createBoundingBox(lineIndent, y, line.width, lineHeightPx),
+      text: lineText,
+      bbox: createBoundingBox(lineIndent, y, lineWidth, lineHeightPx),
       baseline: y + baselineOffset,
       hyphenated,
       segments,

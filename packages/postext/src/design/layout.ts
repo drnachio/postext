@@ -28,6 +28,7 @@ import { graphemeCount } from '../measure/graphemes';
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
 import type { InlineSpan } from '../parse/types';
 import { hyphenateText, withoutSlashJoints } from '../hyphenate';
+import { withLineEndHyphen } from '../measure/geminate';
 import { BREAKING_SPACE_RUNS_SPLIT_RE, NO_BREAK_SPACES, isBreakingSpaceRun } from '../measure/spaces';
 import {
   resolveDesignResourceId,
@@ -596,7 +597,7 @@ function breakWordWithHyphenation(
       for (let i = 1; i < parts.length; i++) {
         const headRaw = parts.slice(0, i).join('');
         const tailRaw = parts.slice(i).join('');
-        const headWithHyphen = headRaw + '-';
+        const headWithHyphen = withLineEndHyphen(headRaw);
         if (measure(headWithHyphen) <= maxWidth) {
           best = { head: headWithHyphen, tail: tailRaw };
         } else {
@@ -1001,7 +1002,7 @@ function syllableFill(line: string, word: string, measure: TextMeasure, maxWidth
   const parts = hy.split(SOFT_HYPHEN);
   let best: { head: string; tail: string } | undefined;
   for (let k = 1; k < parts.length; k++) {
-    const head = `${parts.slice(0, k).join('')}-`;
+    const head = withLineEndHyphen(parts.slice(0, k).join(''));
     if (measure(line + head) > maxWidth) break;
     best = { head, tail: parts.slice(k).join('') };
   }

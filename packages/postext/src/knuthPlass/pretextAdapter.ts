@@ -14,6 +14,7 @@ import { HYPHEN_PENALTY, KP_INFINITY, MAX_STRETCH, SOFT_HYPHEN } from './constan
 import { cleanSoftHyphens } from './utils';
 import { lineTracking, trackSegments } from './tracking';
 import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules';
+import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate';
 
 /** The break after a closed dash (`breakAfterDashes`): the line ends on the
  *  dash as it is, nothing is added and nothing is charged. */
@@ -78,6 +79,10 @@ export function pretextSegmentsToItems(
    *  text, which pretext's line-by-line breaker gave every such break, and
    *  compounds the dictionary leaves whole take 1. */
   hardHyphenMinLetters = 1,
+  /** Width of the middle dot in the text's font: a break inside a Catalan
+   *  `l·l` prints the hyphen in its place (`il-` | `lusió`), so the line
+   *  ending there is that much narrower. */
+  geminateDotWidth = 0,
 ): KPItem[] {
   const items: KPItem[] = [];
   const segments = prepared.segments;
@@ -132,7 +137,7 @@ export function pretextSegmentsToItems(
       case 'soft-hyphen':
         items.push({
           type: 'penalty',
-          width: discretionaryHyphenWidth,
+          width: discretionaryHyphenWidth - (i > 0 && endsInsideGeminate(segments[i - 1]!) ? geminateDotWidth : 0),
           penalty: HYPHEN_PENALTY,
           flagged: true,
           sourceIndex: i,
@@ -201,6 +206,8 @@ export function reconstructPretextLines(
   /** How far below its top each line has its baseline
    *  (`lineBaselineOffset`); 0.8 of the line height by default. */
   baselineOffsetPx = lineHeightPx * 0.8,
+  /** See `pretextSegmentsToItems`. */
+  geminateDotWidth = 0,
 ): VDTLine[] {
   const segments = prepared.segments;
   const widths = (prepared as unknown as { widths: number[] }).widths;
@@ -264,12 +271,13 @@ export function reconstructPretextLines(
       const lastIdx = lineSegments.length - 1;
       const last = lineSegments[lastIdx]!;
       if (last.kind === 'text') {
+        const text = withLineEndHyphen(last.text);
         lineSegments[lastIdx] = {
           kind: 'text',
-          text: last.text + '-',
-          width: last.width + discretionaryHyphenWidth,
+          text,
+          width: last.width + discretionaryHyphenWidth - (endsInsideGeminate(last.text) ? geminateDotWidth : 0),
         };
-        textParts[textParts.length - 1] = last.text + '-';
+        textParts[textParts.length - 1] = text;
       }
     }
 

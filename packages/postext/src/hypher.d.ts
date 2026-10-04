@@ -3,7 +3,8 @@ declare module 'hypher' {
     patterns: Record<string, string>;
     leftmin: number;
     rightmin: number;
-    exceptions?: string[];
+    /** Comma-separated words with U+2027 at their breaks. */
+    exceptions?: string;
   }
 
   export default class Hypher {
