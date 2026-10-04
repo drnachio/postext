@@ -401,7 +401,7 @@
   "Showcase": {
     "eyebrow": "Escaparate",
     "title": "Libros de verdad, compuestos en tu navegador",
-    "lead": "Un libro de texto, una revista, una edición literaria, un catálogo de exposición, un clásico chino en 120 capítulos. Ábrelos en el Sandbox, cambia una regla y mira cómo se recompone cada página.",
+    "lead": "Un libro de texto, una revista, un poema épico anotado, un catálogo de exposición, un clásico chino en 120 capítulos. Ábrelos en el Sandbox, cambia una regla y mira cómo se recompone cada página.",
     "open": "Abrir en el Sandbox",
     "guideName": "Guía de Postext",
     "guideDescription": "La guía incluida: 12 capítulos, tres partes y cubierta",
@@ -412,6 +412,7 @@
       "don-quijote": "Don Quijote · Gustave Doré",
       "hongloumeng": "Sueño en el pabellón rojo · 紅樓夢",
       "openstax-fisica": "Física universitaria (OpenStax)",
+      "paradise-lost": "El paraíso perdido · Gustave Doré",
       "pintura-espanola": "Pintura española",
       "senales": "Señales 2020"
     },
@@ -421,6 +422,7 @@
       "don-quijote": "Edición literaria a columna y media con glosas al margen y láminas de Doré",
       "hongloumeng": "Novela clásica china en 120 capítulos, con las láminas de 1884: el texto de 1792 en chino tradicional, compuesto en vertical y con el lomo a la derecha, el mismo texto en chino simplificado y la traducción inglesa de Joly de los 56 primeros capítulos",
       "openstax-fisica": "Libro de texto a columna y media con ejemplos resueltos, comprobaciones, tablas y fórmulas",
+      "paradise-lost": "Edición anotada del poema de Milton en doce libros: las notas de Verity al pie de página y las cincuenta láminas de Doré. Solo en inglés",
       "pintura-espanola": "Catálogo de exposición a una columna: ficha y comentario frente a la lámina a página",
       "senales": "Revista de la Agencia Europea de Medio Ambiente a dos columnas con aperturas fotográficas, recuadros, citas y paneles de datos"
     }
