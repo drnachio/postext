@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DocumentMetadata, PostextConfig, VDTDocument } from 'postext';
 import { documentCodePoints, facesForText, fontFormatOf, parseUnicodeRange } from './fontSubsets';
 import { bookLanguageOf, epubFileName, epubMetadataOf, isoDateOf, sandboxBookIdentifier } from './metadata';
-import { dockedToolbarReserve, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf } from './viewer';
+import { createSwipeTracker, dockedToolbarReserve, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf, SWIPE_MAX_DURATION, type SwipePoint } from './viewer';
 
 describe('font subsets', () => {
   it('reads unicode-range values, wildcards included', () => {
@@ -168,5 +168,54 @@ describe('docked toolbar reserve', () => {
   it('falls back to one row, or two with large targets, before measuring', () => {
     expect(dockedToolbarReserve(null, false)).toBe(64);
     expect(dockedToolbarReserve(0, true)).toBe(120);
+  });
+});
+
+describe('swipe paging', () => {
+  const at = (x: number, y: number, t = 0, pointerId = 1, pointerType = 'touch'): SwipePoint => ({ pointerId, pointerType, x, y, t });
+  const swipe = (from: [number, number], to: [number, number], rtl = false, t = 200) => {
+    const tracker = createSwipeTracker();
+    tracker.down(at(...from));
+    return tracker.up(at(to[0], to[1], t), rtl);
+  };
+
+  it('turns forward on a swipe to the left, back on one to the right', () => {
+    expect(swipe([300, 400], [180, 410])).toBe('next');
+    expect(swipe([100, 400], [220, 390])).toBe('previous');
+  });
+
+  it('follows a right-to-left progression', () => {
+    expect(swipe([100, 400], [220, 390], true)).toBe('next');
+    expect(swipe([300, 400], [180, 410], true)).toBe('previous');
+  });
+
+  it('leaves taps, vertical moves and slow drags alone', () => {
+    expect(swipe([300, 400], [290, 402])).toBeNull();
+    expect(swipe([300, 400], [250, 520])).toBeNull();
+    expect(swipe([300, 400], [100, 400], false, SWIPE_MAX_DURATION + 1)).toBeNull();
+  });
+
+  it('ignores mouse and pen pointers', () => {
+    const tracker = createSwipeTracker();
+    tracker.down(at(300, 400, 0, 1, 'mouse'));
+    expect(tracker.up(at(100, 400, 100, 1, 'mouse'), false)).toBeNull();
+  });
+
+  it('turns nothing for a pinch, until every finger has lifted', () => {
+    const tracker = createSwipeTracker();
+    tracker.down(at(300, 400, 0, 1));
+    tracker.down(at(320, 500, 10, 2));
+    expect(tracker.up(at(100, 400, 100, 1), false)).toBeNull();
+    expect(tracker.up(at(500, 500, 110, 2), false)).toBeNull();
+    // A fresh one-finger swipe works again.
+    tracker.down(at(300, 400, 200, 3));
+    expect(tracker.up(at(100, 400, 300, 3), false)).toBe('next');
+  });
+
+  it('drops a gesture the browser took over', () => {
+    const tracker = createSwipeTracker();
+    tracker.down(at(300, 400));
+    tracker.cancel(1);
+    expect(tracker.up(at(100, 400, 100), false)).toBeNull();
   });
 });

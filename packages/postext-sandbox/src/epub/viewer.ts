@@ -188,3 +188,68 @@ export function dockedToolbarReserve(height: number | null, large: boolean): num
 }
 const DOCK_OFFSET = 8;
 const DOCK_GAP = 12;
+
+/** A pointer event as the swipe tracker reads it: coordinates in the
+ *  reader's document (a touch inside a scaled page frame mapped out of
+ *  it), so distances are what the finger moved. */
+export interface SwipePoint {
+  pointerId: number;
+  pointerType: string;
+  x: number;
+  y: number;
+  /** Milliseconds, on one clock. */
+  t: number;
+}
+
+/** Shortest swipe that turns a page, in px. */
+export const SWIPE_MIN_DISTANCE = 40;
+/** Longest a swipe may take, in ms: a slower drag is not a flick. */
+export const SWIPE_MAX_DURATION = 800;
+/** How much more the finger must move across than up or down. */
+const SWIPE_DOMINANCE = 1.5;
+
+/** Turns touch swipes into page turns. One finger moved across the
+ *  screen, quickly and further across than up or down, turns a page: to
+ *  the left for the next page, or to the right in a right-to-left book.
+ *  Vertical moves are left to scrolling, and a gesture that ever had two
+ *  fingers down (a pinch) turns nothing. Mouse and pen pointers are
+ *  ignored: they have the buttons and keys. */
+export interface SwipeTracker {
+  down(p: SwipePoint): void;
+  /** The page turn the lifted finger asks for, if any. */
+  up(p: SwipePoint, rightToLeft: boolean): 'previous' | 'next' | null;
+  /** The browser took the gesture over (a scroll or a zoom). */
+  cancel(pointerId: number): void;
+}
+
+export function createSwipeTracker(): SwipeTracker {
+  const down = new Map<number, SwipePoint>();
+  // Set once a second finger lands; cleared when the last one lifts.
+  let multi = false;
+  const release = (pointerId: number) => {
+    down.delete(pointerId);
+    if (down.size === 0) multi = false;
+  };
+  return {
+    down(p) {
+      if (p.pointerType !== 'touch') return;
+      down.set(p.pointerId, p);
+      if (down.size > 1) multi = true;
+    },
+    up(p, rightToLeft) {
+      const start = down.get(p.pointerId);
+      const pinch = multi;
+      release(p.pointerId);
+      if (!start || pinch) return null;
+      const dx = p.x - start.x;
+      const dy = p.y - start.y;
+      if (Math.abs(dx) < SWIPE_MIN_DISTANCE || Math.abs(dx) < SWIPE_DOMINANCE * Math.abs(dy)) return null;
+      if (p.t - start.t > SWIPE_MAX_DURATION) return null;
+      const forward = rightToLeft ? dx > 0 : dx < 0;
+      return forward ? 'next' : 'previous';
+    },
+    cancel(pointerId) {
+      release(pointerId);
+    },
+  };
+}

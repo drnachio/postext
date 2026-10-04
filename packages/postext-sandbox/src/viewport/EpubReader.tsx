@@ -4,7 +4,7 @@ import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, 
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook';
-import { firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf } from '../epub/viewer';
+import { createSwipeTracker, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer';
 
 /** What the toolbar shows of the reader: where it is and where it can go. */
 export interface EpubReaderPosition {
@@ -76,6 +76,52 @@ function useSize(ref: MutableRefObject<HTMLElement | null>): { width: number; he
   return size;
 }
 
+/** Pointer handlers that turn touch swipes into page turns (see
+ *  `createSwipeTracker`), for the reader and for the documents of its
+ *  frames: a touch inside a frame goes to the frame's document. */
+type AnyPointerEvent = PointerEvent | React.PointerEvent;
+
+interface SwipeHandlers {
+  /** `frame`: the frame whose document the event comes from. */
+  down(e: AnyPointerEvent, frame?: HTMLIFrameElement): void;
+  up(e: AnyPointerEvent, frame?: HTMLIFrameElement): void;
+  cancel(e: AnyPointerEvent): void;
+}
+
+/** Where a pointer event happened in the reader's own document: a frame
+ *  reports its own coordinates, and a page frame is scaled. */
+function swipePoint(e: AnyPointerEvent, frame?: HTMLIFrameElement): SwipePoint {
+  let x = e.clientX;
+  let y = e.clientY;
+  if (frame) {
+    const box = frame.getBoundingClientRect();
+    x = box.left + x * (frame.offsetWidth > 0 ? box.width / frame.offsetWidth : 1);
+    y = box.top + y * (frame.offsetHeight > 0 ? box.height / frame.offsetHeight : 1);
+  }
+  // One clock for every document (a frame's time stamps have their own origin).
+  return { pointerId: e.pointerId, pointerType: e.pointerType, x, y, t: performance.now() };
+}
+
+function useSwipePaging(rightToLeft: boolean, turn: (action: 'previous' | 'next') => void): SwipeHandlers {
+  const latest = useRef({ rightToLeft, turn });
+  latest.current = { rightToLeft, turn };
+  return useMemo(() => {
+    const tracker = createSwipeTracker();
+    return {
+      down: (e, frame) => tracker.down(swipePoint(e, frame)),
+      up: (e, frame) => {
+        const action = tracker.up(swipePoint(e, frame), latest.current.rightToLeft);
+        if (action) latest.current.turn(action);
+      },
+      cancel: (e) => tracker.cancel(e.pointerId),
+    };
+  }, []);
+}
+
+/** The browser keeps vertical scrolling and pinch zoom; sideways moves
+ *  come to the swipe tracker instead of starting a pan it would cancel. */
+const SWIPE_TOUCH_ACTION = 'pan-y pinch-zoom';
+
 /** Arrow keys and page keys turn pages; in a right-to-left book the left
  *  arrow goes forward. */
 function pageKey(e: KeyboardEvent | React.KeyboardEvent, rtl: boolean): 'previous' | 'next' | 'first' | 'last' | null {
@@ -91,15 +137,21 @@ function pageKey(e: KeyboardEvent | React.KeyboardEvent, rtl: boolean): 'previou
   }
 }
 
-/** Follow links inside a frame's document and pass page keys on. */
+/** Follow links inside a frame's document and pass page keys and swipes
+ *  on. */
 function wireFrame(
   frame: HTMLIFrameElement,
   docPath: string,
   onInternal: (path: string, fragment: string) => void,
   onKey: (e: KeyboardEvent) => void,
+  swipe: SwipeHandlers,
 ): void {
   const doc = frame.contentDocument;
   if (!doc) return;
+  doc.documentElement?.style.setProperty('touch-action', SWIPE_TOUCH_ACTION);
+  doc.addEventListener('pointerdown', (e) => swipe.down(e, frame));
+  doc.addEventListener('pointerup', (e) => swipe.up(e, frame));
+  doc.addEventListener('pointercancel', (e) => swipe.cancel(e));
   doc.addEventListener('click', (e) => {
     const target = e.target as Element | null;
     const a = target?.closest?.('a[href]');
@@ -185,6 +237,7 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
   }, [rtl, previous, next, goToScreen, screens.length]);
   const onKeyRef = useRef(onKey);
   onKeyRef.current = onKey;
+  const swipe = useSwipePaging(rtl, (action) => (action === 'next' ? next() : previous()));
 
   const perRow = spreads ? 2 : 1;
   const scale = Math.max(0.05, Math.min(room.width / (viewport.width * perRow), room.height / viewport.height));
@@ -199,8 +252,11 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
       aria-label={labels.epubReader}
       tabIndex={0}
       onKeyDown={onKey}
+      onPointerDown={(e) => swipe.down(e)}
+      onPointerUp={(e) => swipe.up(e)}
+      onPointerCancel={(e) => swipe.cancel(e)}
       className="absolute inset-0 flex items-center justify-center outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
-      style={{ paddingBottom: reserve, paddingRight: side, outlineColor: 'var(--brand)' }}
+      style={{ paddingBottom: reserve, paddingRight: side, outlineColor: 'var(--brand)', touchAction: SWIPE_TOUCH_ACTION }}
     >
       {area.width > 0 && slots.map((i, slot) => (
         <div
@@ -220,7 +276,7 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
               src={book.documentUrl(epub.spine[i]!.path)}
               sandbox={SANDBOX}
               title={labels.epubPageFrame.replace('__page__', printedLabel.get(epub.spine[i]!.path) ?? String(i + 1))}
-              onLoad={(e) => wireFrame(e.currentTarget, epub.spine[i]!.path, (path) => goToPath(path), (ev) => onKeyRef.current(ev))}
+              onLoad={(e) => wireFrame(e.currentTarget, epub.spine[i]!.path, (path) => goToPath(path), (ev) => onKeyRef.current(ev), swipe)}
               style={{
                 width: viewport.width,
                 height: viewport.height,
@@ -412,10 +468,11 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
   onKeyRef.current = onKey;
   const goToRef = useRef(goTo);
   goToRef.current = goTo;
+  const swipe = useSwipePaging(rtl, (action) => (action === 'next' ? next() : previous()));
 
   const onLoad = useCallback((e: React.SyntheticEvent<HTMLIFrameElement>) => {
     const frame = e.currentTarget;
-    wireFrame(frame, path, (p, fragment) => goToRef.current(fragment ? `${p}#${encodeURIComponent(fragment)}` : p), (ev) => onKeyRef.current(ev));
+    wireFrame(frame, path, (p, fragment) => goToRef.current(fragment ? `${p}#${encodeURIComponent(fragment)}` : p), (ev) => onKeyRef.current(ev), swipe);
     layOutRef.current();
     // Faces arrive after the load event: paginate again once they are in.
     const fonts = frame.contentDocument?.fonts;
@@ -423,7 +480,7 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
       void fonts.ready.then(() => layOutRef.current());
       fonts.addEventListener('loadingdone', () => layOutRef.current());
     }
-  }, [path]);
+  }, [path, swipe]);
 
   return (
     <div
@@ -432,8 +489,11 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
       aria-label={labels.epubReader}
       tabIndex={0}
       onKeyDown={onKey}
+      onPointerDown={(e) => swipe.down(e)}
+      onPointerUp={(e) => swipe.up(e)}
+      onPointerCancel={(e) => swipe.cancel(e)}
       className="absolute inset-0 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
-      style={{ outlineColor: 'var(--brand)' }}
+      style={{ outlineColor: 'var(--brand)', touchAction: SWIPE_TOUCH_ACTION }}
     >
       {width > 0 && height > 0 && (
         <iframe
