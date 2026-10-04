@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CslItem } from 'postext';
 import { type BibtexIssue, createCiteprocEngine, LOCALES, parseBibtex, pickLocale, STYLES, STYLE_CATALOG } from '../index';
+import { LOCALE_TAGS } from '../catalog';
 
 const engine = createCiteprocEngine({ styles: STYLES, locales: LOCALES });
 
@@ -17,6 +18,31 @@ describe('the bundled catalog', () => {
     expect(pickLocale(LOCALES, 'es')).toBe('es-ES');
     expect(pickLocale(LOCALES, 'zh-Hant')).toBe('zh-TW');
     expect(pickLocale(LOCALES, 'zz')).toBe('en-US');
+  });
+
+  it('ships one Arabic locale for every Arabic tag', () => {
+    expect(LOCALES.ar).toContain('xml:lang="ar"');
+    expect(LOCALE_TAGS).toContain('ar');
+    for (const tag of ['ar', 'ar-EG', 'ar_MA', 'ar-u-nu-arab']) expect(pickLocale(LOCALES, tag), tag).toBe('ar');
+  });
+});
+
+describe('Arabic', () => {
+  const arabic: CslItem[] = [
+    { id: 'jahiz', type: 'book', language: 'ar', author: [{ family: 'الجاحظ', given: 'عمرو' }], title: 'البيان والتبيين', issued: { 'date-parts': [[1998]] }, publisher: 'مكتبة الخانجي', 'publisher-place': 'القاهرة', edition: '7' },
+    { id: 'hilal', type: 'article-journal', language: 'ar', author: [{ family: 'حسين', given: 'طه' }, { family: 'أمين', given: 'أحمد' }, { family: 'زكي', given: 'محمد' }], title: 'في الأدب', 'container-title': 'الهلال', volume: '3', page: '10-20', issued: { 'date-parts': [[1926, 5]] } },
+  ];
+
+  it('writes the terms of the Arabic locale: ص, وآخرون, و, ط, month names', () => {
+    const apa = engine.createProcessor({ style: 'apa', locale: 'ar', items: arabic });
+    expect(apa.cite([{ mode: 'parenthetical', items: [{ id: 'jahiz', locator: '12', label: 'page' }, { id: 'hilal' }] }])[0])
+      .toMatch(/^\(الجاحظ, 1998, ص\s12; حسين وآخرون, 1926\)$/u);
+    expect(apa.bibliography().entries[0]!.html).toBe('الجاحظ, ع. (1998). <i>البيان والتبيين</i> (7 ط). مكتبة الخانجي.');
+    const chicago = engine.createProcessor({ style: 'chicago-notes-bibliography', locale: 'ar-EG', items: arabic });
+    chicago.cite([{ mode: 'parenthetical', noteIndex: 1, items: [{ id: 'jahiz' }, { id: 'hilal' }] }]);
+    const bib = chicago.bibliography().entries.map((e) => e.html);
+    expect(bib[1]).toContain('و محمد زكي');
+    expect(bib[1]).toContain('(مايو، 1926)');
   });
 });
 
