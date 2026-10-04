@@ -1,0 +1,118 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 100,
+  "status": "draft",
+  "chapter": "output",
+  "order": 120,
+  "level": 1,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "folio-viewer",
+      "folio-appearance"
+    ],
+    "also": [
+      "canvas-rendering",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "widows-orphans-runts",
+      "paragraph-styles",
+      "color-palette",
+      "font-loading"
+    ]
+  },
+  "answers": [
+    "Q116",
+    "Q118"
+  ],
+  "gotchas": [
+    "folio-container-height",
+    "fonts-first",
+    "headings-drop-h1-break",
+    "config-cache-identity"
+  ],
+  "related": [
+    "paper-swatch-book",
+    "saddle-stitched-card-cover",
+    "folio-settings-bench"
+  ],
+  "engine": {
+    "postext": "1.13.4"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page"
+  },
+  "folio": {
+    "tilt": 26,
+    "paper": {
+      "type": "bookWove",
+      "grammage": 70,
+      "shade": "#f4ecd8"
+    },
+    "binding": {
+      "type": "hardcover",
+      "cover": "case",
+      "coverMaterial": "cloth",
+      "coverColor": "#2f5d50"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp",
+      "intensity": 1.1,
+      "shadows": true
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Literata",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fraunces",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Work Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04"
+}

@@ -1,0 +1,72 @@
+---
+# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
+# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
+title: "A book page with running heads"
+summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
+description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
+# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
+# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
+# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
+aliases: ["book page", "running heads", "chapter opener"]
+---
+
+## What you'll build
+
+{/*
+  60–150 words, in an art director's voice: the publication, the design idea, and why it is
+  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
+  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
+  "This recipe answers" list (from answers) under this section by itself.
+*/}
+
+The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+
+## Method
+
+{/*
+  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
+  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
+  what: the reader can see what. The short answer already shows #region answer: a step about
+  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
+  regions in the same order.
+  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
+*/}
+
+### 1 · The opener is a design, not a heading
+
+The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+
+### 2 · Running heads know which page they are on
+
+<Excerpt region="running-heads" />
+
+Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+
+### 3 · One accent, linked everywhere
+
+<Excerpt region="palette" />
+
+Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+
+## Variations
+
+{/*
+  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
+  or a link to a sibling recipe.
+*/}
+
+### Set the text in two columns
+
+A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+
+```diff
+-  layout: { layoutType: 'single' },
++  layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+## Pitfalls
+
+{/*
+  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
+  line only for a pitfall that belongs to this recipe alone.
+*/}

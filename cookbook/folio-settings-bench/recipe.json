@@ -1,0 +1,40 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 103,
+  "status": "draft",
+  "chapter": "output",
+  "order": 150,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["mirrored-margins", "running-heads"],
+    "also": [
+      "opener-design",
+      "heading-attributes",
+      "page-role-filters",
+      "widows-orphans-runts",
+      "paragraph-styles",
+      "callout-styles"
+    ]
+  },
+  "answers": ["Q16", "Q30"],
+  "gotchas": ["headings-drop-h1-break", "fonts-first"],
+  "engine": { "postext": "1.4.1" },
+  "kit": ["core", "fonts", "viewer"],
+  "sample": { "locales": ["en"] },
+  "capture": { "hero": 1, "card": "page" },
+  "credits": {
+    "authors": [{ "name": "Your Name", "github": "your-github" }],
+    "text": [],
+    "images": [],
+    "fonts": [
+      { "family": "Source Serif 4", "license": "OFL-1.1" },
+      { "family": "Source Sans 3", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-04",
+  "updated": "2026-10-04"
+}
