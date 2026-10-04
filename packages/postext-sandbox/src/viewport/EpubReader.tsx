@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
-import { useLargeTargets } from '../ui/largeTargets';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook';
 import { firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf } from '../epub/viewer';
 
@@ -35,6 +34,9 @@ export interface EpubReaderHandle {
 interface EpubReaderProps {
   bytes: Uint8Array;
   fontScale: number;
+  /** Room kept clear at the bottom for the toolbar docked there on a
+   *  phone (measured by the tab), 0 on a desktop. */
+  reserve: number;
   handleRef: MutableRefObject<EpubReaderHandle | null>;
   onPosition: (position: EpubReaderPosition | null) => void;
 }
@@ -42,7 +44,7 @@ interface EpubReaderProps {
 /** The reader of the EPUB tab: the generated file opened in memory, its
  *  content documents shown in sandboxed frames (no script runs in them;
  *  the reader follows their links itself). */
-export function EpubReader({ bytes, fontScale, handleRef, onPosition }: EpubReaderProps) {
+export function EpubReader({ bytes, fontScale, reserve, handleRef, onPosition }: EpubReaderProps) {
   const [book, setBook] = useState<ViewerBook | null>(null);
   useEffect(() => {
     const opened = openViewerBook(bytes);
@@ -55,8 +57,8 @@ export function EpubReader({ bytes, fontScale, handleRef, onPosition }: EpubRead
   useEffect(() => () => onPosition(null), [onPosition]);
   if (!book) return null;
   return book.epub.layout === 'fixed'
-    ? <FixedReader book={book} handleRef={handleRef} onPosition={onPosition} />
-    : <ReflowReader book={book} fontScale={fontScale} handleRef={handleRef} onPosition={onPosition} />;
+    ? <FixedReader book={book} reserve={reserve} handleRef={handleRef} onPosition={onPosition} />
+    : <ReflowReader book={book} fontScale={fontScale} reserve={reserve} handleRef={handleRef} onPosition={onPosition} />;
 }
 
 /** The size of an element, kept up to date. */
@@ -72,13 +74,6 @@ function useSize(ref: MutableRefObject<HTMLElement | null>): { width: number; he
     return () => ro.disconnect();
   }, [ref]);
   return size;
-}
-
-/** Room the docked phone toolbar takes at the bottom of the reader. */
-function useToolbarReserve(): number {
-  const compact = useCompactLayout();
-  const { large } = useLargeTargets();
-  return compact ? (large ? 120 : 64) : 0;
 }
 
 /** Arrow keys and page keys turn pages; in a right-to-left book the left
@@ -128,10 +123,9 @@ const TOOLBAR_ROOM = 72;
 // Fixed layout: one page or a spread, scaled to fit.
 // ---------------------------------------------------------------------------
 
-function FixedReader({ book, handleRef, onPosition }: { book: ViewerBook; handleRef: MutableRefObject<EpubReaderHandle | null>; onPosition: (p: EpubReaderPosition | null) => void }) {
+function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBook; reserve: number; handleRef: MutableRefObject<EpubReaderHandle | null>; onPosition: (p: EpubReaderPosition | null) => void }) {
   const labels = useSandboxLabels();
   const compact = useCompactLayout();
-  const reserve = useToolbarReserve();
   const areaRef = useRef<HTMLDivElement | null>(null);
   const area = useSize(areaRef);
   const { epub } = book;
@@ -270,10 +264,9 @@ img, svg, video { max-width: ${width - 2 * ph}px !important; max-height: ${heigh
 figure, img, svg { break-inside: avoid; }`;
 }
 
-function ReflowReader({ book, fontScale, handleRef, onPosition }: { book: ViewerBook; fontScale: number; handleRef: MutableRefObject<EpubReaderHandle | null>; onPosition: (p: EpubReaderPosition | null) => void }) {
+function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { book: ViewerBook; fontScale: number; reserve: number; handleRef: MutableRefObject<EpubReaderHandle | null>; onPosition: (p: EpubReaderPosition | null) => void }) {
   const labels = useSandboxLabels();
   const compact = useCompactLayout();
-  const reserve = useToolbarReserve();
   const areaRef = useRef<HTMLDivElement | null>(null);
   const area = useSize(areaRef);
   const frameRef = useRef<HTMLIFrameElement | null>(null);

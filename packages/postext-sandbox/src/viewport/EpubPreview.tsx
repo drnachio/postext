@@ -19,11 +19,13 @@ interface EpubPreviewProps {
   progress: EpubGenerationProgress | null;
   error: string | null;
   fontScale: number;
+  /** Room for the toolbar docked under the reader on a phone. */
+  reserve: number;
   readerRef: MutableRefObject<EpubReaderHandle | null>;
   onPosition: (position: EpubReaderPosition | null) => void;
 }
 
-export const EpubPreview = memo(function EpubPreview({ bytes, generating, progress, error, fontScale, readerRef, onPosition }: EpubPreviewProps) {
+export const EpubPreview = memo(function EpubPreview({ bytes, generating, progress, error, fontScale, reserve, readerRef, onPosition }: EpubPreviewProps) {
   const labels = useSandboxLabels();
 
   if (error && !generating) {
@@ -39,7 +41,7 @@ export const EpubPreview = memo(function EpubPreview({ bytes, generating, progre
 
   return (
     <div className="relative h-full w-full" style={{ backgroundColor: 'var(--surface)' }}>
-      {bytes && <EpubReader bytes={bytes} fontScale={fontScale} handleRef={readerRef} onPosition={onPosition} />}
+      {bytes && <EpubReader bytes={bytes} fontScale={fontScale} reserve={reserve} handleRef={readerRef} onPosition={onPosition} />}
       {generating && (
         <div
           className="absolute inset-0 flex flex-col items-center justify-center"

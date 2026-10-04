@@ -177,3 +177,14 @@ export function formatBytes(n: number): string {
 export function keepReaderFocus(target: Node | null, area: Pick<HTMLElement, 'ownerDocument' | 'focus'> | null): void {
   if (area && target && target.ownerDocument !== area.ownerDocument) area.focus({ preventScroll: true });
 }
+
+/** Room kept under the reader for the toolbar docked along the bottom of
+ *  the phone layout: its measured height, the 8 px it floats above the
+ *  edge and a gap. Before it is measured, room for one row of buttons, or
+ *  two with large targets (which may wrap). */
+export function dockedToolbarReserve(height: number | null, large: boolean): number {
+  if (height === null || height <= 0) return large ? 120 : 64;
+  return Math.ceil(height) + DOCK_OFFSET + DOCK_GAP;
+}
+const DOCK_OFFSET = 8;
+const DOCK_GAP = 12;

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DocumentMetadata, PostextConfig, VDTDocument } from 'postext';
 import { documentCodePoints, facesForText, fontFormatOf, parseUnicodeRange } from './fontSubsets';
 import { bookLanguageOf, epubFileName, epubMetadataOf, isoDateOf, sandboxBookIdentifier } from './metadata';
-import { firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf } from './viewer';
+import { dockedToolbarReserve, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf } from './viewer';
 
 describe('font subsets', () => {
   it('reads unicode-range values, wildcards included', () => {
@@ -155,5 +155,18 @@ describe('reader focus', () => {
     area.focus.mockClear();
     keepReaderFocus({ ownerDocument: host } as Node, area);
     expect(area.focus).not.toHaveBeenCalled();
+  });
+});
+
+describe('docked toolbar reserve', () => {
+  it('keeps the measured toolbar, its offset and a gap clear', () => {
+    expect(dockedToolbarReserve(42, false)).toBe(62);
+    expect(dockedToolbarReserve(53.2, true)).toBe(74);
+    expect(dockedToolbarReserve(101, true)).toBe(121);
+  });
+
+  it('falls back to one row, or two with large targets, before measuring', () => {
+    expect(dockedToolbarReserve(null, false)).toBe(64);
+    expect(dockedToolbarReserve(0, true)).toBe(120);
   });
 });

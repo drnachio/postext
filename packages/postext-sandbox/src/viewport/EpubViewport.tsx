@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { resolveColorValue, resolveDiagramStyleConfig, type PostextConfig, type Resource, type VDTDocument } from 'postext';
 import { renderToEpub, type EpubCover, type EpubLayout, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
 import { createEpubWorker, EpubWorkerError, type EpubWorkerHandle } from 'postext-epub/worker';
@@ -15,6 +15,9 @@ import { renderCoverImage } from '../covers/useAutoCover';
 import { bookCoverPicture, collectEpubFonts, epubResourceBytes, RENDERED_COVER_WIDTH, usableCover } from '../epub/inputs';
 import { epubFileName, epubMetadataOf, type EpubBookIdentity } from '../epub/metadata';
 import { downloadBytes } from '../storage/persistence';
+import { dockedToolbarReserve } from '../epub/viewer';
+import { useCompactLayout } from '../hooks/useCompactLayout';
+import { useLargeTargets } from '../ui/largeTargets';
 import { useLayoutWorker } from '../worker/useLayoutWorker';
 import { perfSpan } from '../perf/marks';
 import { announce } from '../ui/announcer';
@@ -256,6 +259,13 @@ export function EpubViewport() {
 
   const shell = useFloatingToolbarShell('epub', generating || dirty);
   const reflowable = generated?.layout === 'reflowable';
+  // On a phone the toolbar docks along the bottom, one row or, with large
+  // targets, as many as it wraps to: the reader keeps clear of its height.
+  const compact = useCompactLayout();
+  const { large } = useLargeTargets();
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const toolbarHeight = useHeight(toolbarRef, compact);
+  const reserve = compact ? dockedToolbarReserve(toolbarHeight, large) : 0;
 
   return (
     <div className="relative h-full w-full" {...shell.containerProps}>
@@ -265,6 +275,7 @@ export function EpubViewport() {
         progress={progress}
         error={error}
         fontScale={fontScale}
+        reserve={reserve}
         readerRef={readerRef}
         onPosition={setPosition}
       />
@@ -287,10 +298,30 @@ export function EpubViewport() {
         onGoToPosition={(n) => readerRef.current?.goToPosition(n)}
         onGoTo={(href) => readerRef.current?.goTo(href)}
         onFontScale={setFontScale}
+        rootRef={toolbarRef}
         {...shell.toolbarHoverProps}
       />
     </div>
   );
+}
+
+/** The border-box height of an element while `active`, kept up to date;
+ *  null when inactive or not yet measured. */
+function useHeight(ref: MutableRefObject<HTMLElement | null>, active: boolean): number | null {
+  const [height, setHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!active || !el) {
+      setHeight(null);
+      return;
+    }
+    const read = () => setHeight(el.getBoundingClientRect().height);
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el, { box: 'border-box' });
+    return () => ro.disconnect();
+  }, [ref, active]);
+  return height;
 }
 
 /** The cover: the book's own picture when it is a bitmap large enough,

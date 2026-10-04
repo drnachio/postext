@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useRef, useState, type FocusEventHandler } from 'react';
+import { memo, useRef, useState, type FocusEventHandler, type Ref } from 'react';
 import { AArrowDown, AArrowUp, ArrowRight, ChevronLeft, ChevronRight, Download, ListTree, RefreshCw, TriangleAlert } from 'lucide-react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
@@ -36,6 +36,8 @@ interface EpubToolbarProps {
   onGoToPosition: (position: number) => void;
   onGoTo: (href: string) => void;
   onFontScale: (scale: number) => void;
+  /** The toolbar's root, measured by the tab where it docks on a phone. */
+  rootRef?: Ref<HTMLDivElement>;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onFocus?: FocusEventHandler<HTMLDivElement>;
@@ -73,6 +75,7 @@ export const EpubToolbar = memo(function EpubToolbar({
   onGoToPosition,
   onGoTo,
   onFontScale,
+  rootRef,
   onMouseEnter,
   onMouseLeave,
   onFocus,
@@ -87,6 +90,7 @@ export const EpubToolbar = memo(function EpubToolbar({
   const toc = position?.toc ?? [];
   return (
     <div
+      ref={rootRef}
       role="toolbar"
       aria-label={labels.epubToolbar}
       {...rootProps}
