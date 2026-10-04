@@ -44,7 +44,7 @@ const footnotes = {
   markerTemplate: '({n})', // «(١)», in the document's digits
   numbering: 'page', // from (١) again on every page, as Arabic journals number them
   noteNumberPosition: 'inline', // the note opens with (١) on the line, not raised
-  fontSize: pt(10), lineHeight: pt(15), spaceBetween: pt(2),
+  fontSize: pt(10), lineHeight: pt(18), spaceBetween: pt(2), // 1.8 ×: tanwīn clears the line
   textAlign: 'start', // ragged from the right: a Latin title would open wide gaps
   separator: { width: 0.3, lineWidth: pt(0.5), color: col('red') }, // on the start side
 };
