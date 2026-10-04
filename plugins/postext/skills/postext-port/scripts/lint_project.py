@@ -28,6 +28,14 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
+# The page numbering styles `:::numbering{format=…}` takes (packages/postext
+# src/numbering.ts NumeralStyle): Latin, East Asian and Arabic-script.
+NUMBERING_FORMATS = {
+    "decimal", "decimal-02", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha",
+    "simp-chinese-informal", "trad-chinese-informal", "simp-chinese-formal", "trad-chinese-formal",
+    "cjk-decimal", "cjk-heavenly-stem", "cjk-earthly-branch", "circled-decimal", "fullwidth-decimal",
+    "arabic-indic", "persian", "abjad", "hijai", "arabic-abjad", "arabic-abjad-maghrebi",
+}
 KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
@@ -880,7 +888,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 if fname == "verse":
                     # A poem: one bayt a line up to the closing ::: (postext >= 1.15).
                     in_refs = True
-                if fname == "numbering" and "format" in attrs and attrs["format"] not in ("decimal", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha"):
+                if fname == "numbering" and "format" in attrs and attrs["format"] not in NUMBERING_FORMATS:
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
             else:
                 rep.error(where, f":::{fname} is not a Postext container or directive (prints literally). "
