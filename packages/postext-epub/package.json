@@ -1,0 +1,57 @@
+{
+  "name": "postext-epub",
+  "version": "0.1.0",
+  "description": "Browser-native EPUB 3 writer for Postext documents: fixed-layout (pre-paginated) books that reproduce every printed page with real text, and reflowable books in semantic XHTML styled from the same configuration.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://postext.dev/",
+  "keywords": [
+    "postext",
+    "epub",
+    "epub3",
+    "ebook",
+    "fixed-layout",
+    "reflowable",
+    "typesetting",
+    "typography"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drnachio/postext.git",
+    "directory": "packages/postext-epub"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "postext": "workspace:^"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@postext/typescript-config": "workspace:*",
+    "@types/node": "^26.5.0",
+    "eslint": "^9.39.4",
+    "postext": "workspace:*",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
+  }
+}
