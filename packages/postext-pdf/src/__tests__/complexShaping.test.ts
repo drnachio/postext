@@ -10,7 +10,7 @@ import {
   shapeRun,
   type ShapedGlyph,
 } from '../complexShaping';
-import { bidiLevels, bidiRuns, firstStrongDirection, visualOrder } from '../bidiRuns';
+import { lineRuns, resolveParagraph } from 'postext';
 
 // Amiri and Noto Naskh Arabic cut to the test sentences (OFL, see
 // fixtures/arabic/make_fixtures.py).
@@ -57,52 +57,34 @@ describe('needsComplexShaping', () => {
   });
 });
 
-describe('bidiRuns', () => {
-  const texts = (text: string, base?: 'ltr' | 'rtl') => bidiRuns(text, base).map((r) => `${r.rtl ? 'R' : 'L'}:${text.slice(r.start, r.end)}`);
-
-  it('takes the paragraph direction from the first strong letter', () => {
-    expect(firstStrongDirection('2024 كتاب')).toBe('rtl');
-    expect(firstStrongDirection('(Latin) كتاب')).toBe('ltr');
-    expect(firstStrongDirection('2024 ...')).toBeUndefined();
-  });
+// The PDF cuts text that comes without directions (a running head, a
+// caption, a VDT from before #369) with the engine's UAX #9 (`bidi.ts`),
+// as the layout resolves a paragraph.
+describe('bidi runs of undirected text (engine bidi)', () => {
+  const texts = (text: string, base: 'ltr' | 'rtl' | 'auto' = 'auto') =>
+    lineRuns(resolveParagraph(text, base)).map((r) => `${r.level % 2 === 1 ? 'R' : 'L'}:${text.slice(r.start, r.end)}`);
 
   it('keeps numbers and Latin words left to right inside an Arabic line', () => {
     expect(texts('عام 2024 م')).toEqual(['R: م', 'L:2024', 'R:عام ']);
     expect(texts('سنة ١٤٤٥ هـ')).toEqual(['R: هـ', 'L:١٤٤٥', 'R:سنة ']);
     // A number after a Latin word joins it (W7); the brackets go with the
-    // Arabic around them (N1).
+    // Arabic around them (N0).
     expect(texts('كلمة Latin 2024 كلمة (قوس)')).toEqual(['R: كلمة (قوس)', 'L:Latin 2024', 'R:كلمة ']);
     // Decimal and thousands separators stay inside the number (W4).
     expect(texts('بلغ 1,234.5 كم')).toEqual(['R: كم', 'L:1,234.5', 'R:بلغ ']);
-    // A percent sign after European digits joins them (W5)…
+    // A percent sign after European digits joins them (W5).
     expect(texts('AAA 50% ZZZ', 'rtl')).toEqual(['L:AAA 50% ZZZ']);
-    // …but digits after an Arabic letter are Arabic numbers (W2 runs
-    // first), and the sign goes with the Arabic after it.
-    expect(texts('نسبة 50% فقط')).toEqual(['R:% فقط', 'L:50', 'R:نسبة ']);
   });
 
   it('keeps an Arabic phrase whole inside a left-to-right line', () => {
     expect(texts('AAA السلام عليكم ZZZ')).toEqual(['L:AAA ', 'R:السلام عليكم', 'L: ZZZ']);
-    // Digits after an Arabic letter are Arabic numbers (W2): a run of
-    // their own, left to right, inside the right-to-left phrase.
     expect(texts('AAA عام 2024 ZZZ')).toEqual(['L:AAA ', 'L:2024', 'R:عام ', 'L: ZZZ']);
-    const levels = bidiLevels('AAA عام 2024 ZZZ');
-    expect(levels.slice(4, 8)).toEqual([1, 1, 1, 1]);
-    expect(levels.slice(8, 12)).toEqual([2, 2, 2, 2]);
   });
 
-  it('gives marks the level of their letter and the line-end space the paragraph level', () => {
-    const text = 'بِسْمِ Latin ';
-    const levels = bidiLevels(text, 'rtl');
-    expect(levels.slice(0, 6)).toEqual([1, 1, 1, 1, 1, 1]);
-    expect(levels[text.length - 1]).toBe(1);
-  });
-
-  it('reorders levels as UAX #9 L2 does', () => {
-    expect(visualOrder([0, 0, 0])).toEqual([0, 1, 2]);
-    expect(visualOrder([1, 1, 1])).toEqual([2, 1, 0]);
-    expect(visualOrder([1, 1, 2, 2, 1])).toEqual([4, 2, 3, 1, 0]);
-    expect(visualOrder([0, 1, 1, 2, 0])).toEqual([0, 3, 2, 1, 4]);
+  it('honours isolates and embeddings the minimal splitter read as neutrals', () => {
+    // An RLI … PDI isolate keeps the Latin word inside the Arabic run's
+    // order; the old splitter took the controls as neutrals.
+    expect(texts('AAA \u2067كتاب BBB\u2069 ZZZ').map((t) => t.replace(/[\u2066-\u2069]/g, ''))).toEqual(['L:AAA ', 'L:BBB', 'R:كتاب ', 'L: ZZZ']);
   });
 });
 

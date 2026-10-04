@@ -9,7 +9,7 @@ import type { PostextConfig } from 'postext';
 import { renderToPdf } from '../pdf-backend';
 import { parseFontString } from '../fontString';
 import { complexShaperReady, shapeRun } from '../complexShaping';
-import { firstStrongDirection } from '../bidiRuns';
+import { resolveParagraph } from 'postext';
 
 // Issue #377: a running head and a chip of a right-to-left document are
 // painted run by run in the order the engine gives (`order`, `rtl`), the
@@ -23,7 +23,7 @@ class HarfBuzzCtx {
   font = '';
   measureText(s: string): { width: number } {
     const sizePx = parseFontString(this.font)?.sizePx ?? 16;
-    const run = complexShaperReady() ? shapeRun(AMIRI, s, { direction: firstStrongDirection(s) ?? 'ltr' }) : undefined;
+    const run = complexShaperReady() ? shapeRun(AMIRI, s, { direction: (resolveParagraph(s).paragraphLevel === 1 ? 'rtl' : 'ltr') }) : undefined;
     if (!run) return { width: s.length * sizePx * 0.5 };
     return { width: (run.glyphs.reduce((sum, g) => sum + g.xAdvance, 0) / run.upem) * sizePx };
   }

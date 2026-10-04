@@ -5,12 +5,11 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import fontkit from '@pdf-lib/fontkit';
 import { PDFArray, PDFDocument, PDFHexString, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
-import { buildDocument } from 'postext';
+import { buildDocument, lineLevels, resolveParagraph, visualOrder } from 'postext';
 import type { PostextConfig, VDTDocument, VDTLine } from 'postext';
 import { renderToPdf } from '../pdf-backend';
 import { parseFontString } from '../fontString';
 import { complexShaperReady, shapeRun } from '../complexShaping';
-import { bidiLevels, firstStrongDirection, visualOrder } from '../bidiRuns';
 
 // Issue #380: Arabic in the PDF is shaped by HarfBuzz (marks raised and
 // lowered with the text rise, numbers and Latin kept left to right) and
@@ -28,7 +27,7 @@ class HarfBuzzCtx {
   font = '';
   measureText(s: string): { width: number } {
     const sizePx = parseFontString(this.font)?.sizePx ?? 16;
-    const run = complexShaperReady() ? shapeRun(AMIRI, s, { direction: firstStrongDirection(s) ?? 'ltr' }) : undefined;
+    const run = complexShaperReady() ? shapeRun(AMIRI, s, { direction: resolveParagraph(s).paragraphLevel === 1 ? 'rtl' : 'ltr' }) : undefined;
     const advance = run ? run.glyphs.reduce((sum, g) => sum + g.xAdvance, 0) / run.upem : face.layout(s).advanceWidth / face.unitsPerEm;
     return { width: advance * sizePx };
   }
@@ -88,7 +87,7 @@ function directed(doc: VDTDocument): VDTDocument {
   for (const line of lines(doc)) {
     const segments = line.segments ?? [];
     const text = segments.map((s) => s.text).join('');
-    const levels = bidiLevels(text, 'rtl');
+    const levels = lineLevels(resolveParagraph(text, 'rtl'));
     const segLevels: number[] = [];
     let at = 0;
     for (const seg of segments) {
@@ -185,7 +184,7 @@ describe('Arabic in the PDF (HarfBuzz)', () => {
     expect(rises).toContain(0);
   });
 
-  it('paints a line with directions segment by segment, left to right on the sheet', async () => {
+  it('lays a line with directions out in its order and paints it in logical order', async () => {
     const doc = directed(buildDocument({ markdown: PARAGRAPHS.join('\n\n') }, config({ textAlign: 'right' })));
     const mixed = lines(doc).find((l) => l.text.startsWith('كلمة'))!;
     // The segments' visual order: هـ, ١٤٤٥, سنة, (قوس), كلمة, Latin 2024, كلمة.
@@ -194,10 +193,17 @@ describe('Arabic in the PDF (HarfBuzz)', () => {
     const bytes = await renderToPdf(doc, { fontProvider });
     keep(bytes, 'directed');
     const content = pageContent(await PDFDocument.load(bytes));
-    // Every text object of a line starts right of the one before.
-    for (const xs of textOrigins(content).values()) {
-      for (let i = 1; i < xs.length; i++) expect(xs[i]!).toBeGreaterThan(xs[i - 1]!);
-    }
+    // The words are laid out left to right in `order` and painted in
+    // logical order: the first word written is the rightmost one, the
+    // text objects read هـ … كلمة from right to left, Latin and 2024 left
+    // to right between them.
+    const xs = textOrigins(content).get(Math.round(260 - mixed.baseline))!;
+    // (A tagged render paints the word spaces too.)
+    const words = mixed.segments!.filter((s) => s.text !== '').map((s) => s.text);
+    expect(xs).toHaveLength(words.length);
+    const byX = words.map((w, i) => ({ w, x: xs[i]! })).sort((p, q) => p.x - q.x).map((p) => p.w).filter((w) => w.trim() !== '');
+    expect(byX).toEqual(visual);
+    expect(xs[0]!).toBeGreaterThan(xs[xs.length - 1]!);
     // Glyphs read back through the ToUnicode map; a vocalised letter (its
     // marks raised and lowered) reads through a span of its own, in
     // logical order.

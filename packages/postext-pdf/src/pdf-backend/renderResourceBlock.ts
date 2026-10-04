@@ -75,6 +75,9 @@ import {
   type VectorFontResolver,
 } from './svgVector';
 import { inkScaleOperators } from './inkScale';
+import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
+import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
+import { loadComplexShaper, needsComplexShaping } from '../complexShaping';
 
 /** Raw bytes of a resource binary, keyed by `fileId`. */
 export type ResourceBytesProvider = (fileId: string) => Uint8Array | undefined;
@@ -434,6 +437,9 @@ export async function preloadResourceImages(
           }
           fonts = fontResolverFor(fontCache);
         }
+        // Right-to-left or joining text in the drawing is shaped by HarfBuzz
+        // (loaded here when the document's own text did not need it).
+        if (fonts && needsComplexShaping(svgText)) await loadComplexShaper();
         const drawing = svgToVectorDrawing(svgText, { fonts });
         if (drawing) {
           // Pictures inside the drawing become image XObjects.
@@ -610,12 +616,25 @@ function paintLineRuns(
       };
       beginActualTextSpan(ctx, actualLine, lineState);
     }
+    // A line with right-to-left runs is laid out in `order` and painted
+    // in logical order, each right-to-left segment shaped as one run (see
+    // `renderSegments` in blockRender.ts).
+    const directed = line.order !== undefined || segs.some((s) => s.rtl);
+    const order = directed && line.order?.length === segs.length ? line.order : undefined;
+    const xs = order ? segmentOffsets(segs, order, line.bbox.x, (s) => s.width) : undefined;
+    const langs = elem && directed ? segmentLanguages(segs, elem.tree.options.lang) : undefined;
+    let langSpan: { lang: string; elem: StructElem } | undefined;
     for (let i = 0; i < segs.length; i++) {
       const seg = segs[i]!;
+      if (xs) x = xs[i]!;
+      const lang = langs?.[i];
+      if (lang && langSpan?.lang !== lang) langSpan = { lang, elem: elem!.child('Span', { lang }) };
+      else if (!lang) langSpan = undefined;
+      const textElem = langSpan?.elem ?? elem;
       if (seg.kind === 'space') {
         const inLink = uris.space(seg.text);
         if (ctx.tags && seg.text) {
-          tagContent(ctx, inLink ?? elem);
+          tagContent(ctx, inLink ?? textElem);
           drawTextPx(ctx, seg.text, x, line.baseline, baseFont, baseSize, color);
         }
         x += seg.width;
@@ -642,10 +661,16 @@ function paintLineRuns(
       // A `:ref` links to its resource — a ref painted as several runs
       // (small capitals) is one link —, a Markdown link's words to its URL.
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
-      const link = refId !== undefined ? refRun.enter(seg, x, elem, refId) : undefined;
-      tagContent(ctx, link ?? uriElem ?? elem);
-      if (!composed) {
-        drawTextPx(ctx, seg.text, x, line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
+      const link = refId !== undefined ? refRun.enter(seg, x, textElem, refId, seg.width) : undefined;
+      tagContent(ctx, link ?? uriElem ?? textElem);
+      const baseline = line.baseline + (seg.baselineShift ?? 0);
+      const direction = seg.rtl ? 'rtl' : 'ltr';
+      if (seg.runs && drawStyledWordPx(ctx, seg.text, x, baseline, font, size, segColor, wordParts(seg, font, segColor, ctx, (bold, italic) => ({ font: fontCache.get(pickFont(bold, italic, fonts)) ?? undefined, color: segColor })), { direction })) {
+        // A word set in several styles, shaped whole.
+      } else if (directed && (seg.rtl || needsComplexShaping(seg.text)) && drawShapedTextPx(ctx, seg.text, x, baseline, font, size, segColor, { direction })) {
+        // One run in its direction, shaped by HarfBuzz.
+      } else if (!composed) {
+        drawTextPx(ctx, seg.text, x, baseline, font, size, segColor);
       } else {
         // A justified CJK line spreads its characters per segment.
         // A compressed CJK mark advances to its box's end (see blockRender).
@@ -661,10 +686,10 @@ function paintLineRuns(
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
         const { scale, pageHeightPt } = ctx;
-        const x1 = ref.startX * scale;
+        const x1 = ref.left * scale;
         const y2 = pageHeightPt - (line.bbox.y) * scale;
         const y1 = pageHeightPt - (line.bbox.y + line.bbox.height) * scale;
-        const x2 = (x + seg.width) * scale;
+        const x2 = Math.max(ref.right, x + seg.width) * scale;
         const rect: [number, number, number, number] = [x1, y1, x2, y2];
         linkRegistry.addLink(ctx.page, ctx.mapRectPt ? ctx.mapRectPt(rect) : rect, ref.resourceId, link ? { elem: link, contents: ref.text } : undefined);
       }

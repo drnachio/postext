@@ -122,20 +122,51 @@ export function fileRuns(font: PDFFont, text: string): FileRun[] {
   if (!list) return [{ font, text }];
   const runs: FileRun[] = [];
   let current: FileRun | undefined;
+  // Joining controls waiting for the letter after them (see below).
+  let pending = '';
+  let previous = 0;
   for (const ch of text) {
     const cp = ch.codePointAt(0)!;
+    // A zero width joiner or non-joiner shapes with the letters it sits
+    // between (HarfBuzz reads it only inside one run): it stays with the
+    // letter before it, and one with no letter before it (opening the
+    // text, after a space) goes with the letter after it. Fontsource
+    // serves U+2000–206F from the `latin` file, so the file that covers it
+    // first is rarely the Arabic letters' one.
+    if (isJoiningControl(cp) && (!current || !joinsOnto(previous))) {
+      pending += ch;
+      continue;
+    }
     let file = current?.font;
     if (!file || (!list.covers(file, cp) && !isDefaultIgnorable(cp))) {
       file = list.fileFor(cp) ?? current?.font ?? font;
     }
     if (current && current.font === file) {
-      current.text += ch;
+      current.text += pending + ch;
     } else {
-      current = { font: file, text: ch };
+      current = { font: file, text: pending + ch };
       runs.push(current);
     }
+    pending = '';
+    previous = cp;
+  }
+  if (pending) {
+    if (current) current.text += pending;
+    else runs.push({ font, text: pending });
   }
   return runs.length > 0 ? runs : [{ font, text }];
+}
+
+/** ZWNJ (U+200C) and ZWJ (U+200D): they choose the joining form of the
+ *  letters either side of them. */
+function isJoiningControl(cp: number): boolean {
+  return cp === 0x200c || cp === 0x200d;
+}
+
+/** Whether a joining control after `cp` belongs with it: anything but a
+ *  space or a control (a letter, a mark, a digit, punctuation). */
+function joinsOnto(cp: number): boolean {
+  return cp > 0x20 && !(cp >= 0x7f && cp < 0xa0) && !/\s/u.test(String.fromCodePoint(cp)) && !isJoiningControl(cp);
 }
 
 /** `text`'s width at `size` (points), each run measured in its file. */

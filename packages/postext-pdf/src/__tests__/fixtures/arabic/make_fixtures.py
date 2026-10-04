@@ -7,9 +7,14 @@ OpenType layout feature kept (joining forms, lam-alef, the vocalised-Allah
 lookups, mark-to-base and mark-to-mark positioning, `rtlm`). Noto Naskh is a variable font; it is pinned to its
 default instance (wght 400), the one pdf-lib embeds.
 
-    python3 make_fixtures.py <Amiri-Regular.ttf> <NotoNaskhArabic[wght].ttf>
+    python3 make_fixtures.py <Amiri-Regular.ttf> <NotoNaskhArabic[wght].ttf> [<Amiri-Bold.ttf>]
 
-Writes `amiri-subset.ttf` and `noto-naskh-subset.ttf`.
+Writes `amiri-subset.ttf` and `noto-naskh-subset.ttf`. With Amiri Bold
+(1.003) it also writes the fonts of the styled-word and font-slice tests
+(#380 part 2): `amiri-bold-subset.ttf`, Amiri Bold cut to TEXT and
+BOLD_TEXT, and `amiri-latin-slice.ttf`, Amiri Regular cut to Basic Latin
+and the joining controls, the way Fontsource's `latin` file serves
+U+2000–206F.
 """
 import os
 import sys
@@ -22,8 +27,11 @@ TEXT = ('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيم
         'عام 2024 م سنة ١٤٤٥ هـ كلمة Latin كلمة (قوس) ﴿ ﴾ « » ، ؛ ؟ AAA ZZZ '
         '0123456789 ٠١٢٣٤٥٦٧٨٩ .,:-')
 
+BOLD_TEXT = 'كتاب بَيت \u200c\u200d'
+LATIN_SLICE = [*range(0x20, 0x7f), 0x200c, 0x200d]
 
-def build(src, dst):
+
+def build(src, dst, text=TEXT, unicodes=None):
     opts = subset.Options()
     opts.layout_features = ['*']
     opts.drop_tables += ['DSIG']
@@ -34,7 +42,10 @@ def build(src, dst):
     if 'fvar' in font:
         font = instancer.instantiateVariableFont(font, {'wght': 400})
     sub = subset.Subsetter(opts)
-    sub.populate(text=TEXT)
+    if unicodes is not None:
+        sub.populate(unicodes=unicodes)
+    else:
+        sub.populate(text=text)
     sub.subset(font)
     font.flavor = None
     subset.save_font(font, dst, opts)
@@ -43,3 +54,6 @@ def build(src, dst):
 if __name__ == '__main__':
     build(sys.argv[1], os.path.join(HERE, 'amiri-subset.ttf'))
     build(sys.argv[2], os.path.join(HERE, 'noto-naskh-subset.ttf'))
+    if len(sys.argv) > 3:
+        build(sys.argv[3], os.path.join(HERE, 'amiri-bold-subset.ttf'), text=TEXT + BOLD_TEXT)
+        build(sys.argv[1], os.path.join(HERE, 'amiri-latin-slice.ttf'), unicodes=LATIN_SLICE)
