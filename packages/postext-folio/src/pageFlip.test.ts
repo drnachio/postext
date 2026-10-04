@@ -223,6 +223,20 @@ describe("the page flipper", () => {
     expect(t2).toBeGreaterThan(t1 + 50 * 0.1);
   });
 
+  it("prints a stapled cover on its own stock when the leaf names one", () => {
+    const card = { type: "cardStock" as const, grammage: 250, shade: { hex: "#f2c9b4", model: "hex" as const } };
+    const folio = { tilt: 0, paper: { type: "newsprint" as const }, binding: { type: "saddleStitch" as const, cover: "pages" as const } };
+    const own = flipper("left", 1, { folio, coverLeaves: { front: 0 }, leafPapers: [card, undefined] });
+    const plain = flipper("left", 1, { folio, coverLeaves: { front: 0 }, leafPapers: [undefined, undefined] });
+    const spec = (f: typeof own.f) => (inside(f) as unknown as { specOf(k: number): { paper: { type: string; grammage: number; shade: { hex: string } } } }).specOf(0);
+    expect(spec(own.f).paper.type).toBe("cardStock");
+    expect(spec(own.f).paper.grammage).toBe(250);
+    expect(spec(own.f).paper.shade.hex).toBe("#f2c9b4");
+    // Without a stock of its own: the pages' paper, a little heavier.
+    expect(spec(plain.f).paper.type).toBe("newsprint");
+    expect(spec(plain.f).paper.grammage).toBeGreaterThan(48);
+  });
+
   it("turns a board leaf as a rigid plate", () => {
     const board = flipper("left", 1, { folio: { tilt: 0 }, leafPapers: [undefined, { type: "board" }, undefined] });
     board.f.grab(onPage("right"));

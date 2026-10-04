@@ -1184,7 +1184,13 @@ export class PageFlipper {
   /** The paper of leaf k (outside the pages shown: the book's). */
   private specOf(k: number): PaperSpec {
     const covers = this.appearance.coverLeaves;
-    if (this.coverSpec && (k === covers?.front || k === covers?.back)) return this.coverSpec;
+    if (this.coverSpec && (k === covers?.front || k === covers?.back)) {
+      // A stapled cover printed on a stock of its own (a `:::paper` card
+      // round newsprint pages) is that sheet; a board is a board whatever
+      // is printed on it.
+      const own = this.resolved.binding.type === "saddleStitch" && this.appearance.leafPapers?.[k];
+      return own ? this.leafSpecs[k]! : this.coverSpec;
+    }
     return this.leafSpecs[k] ?? this.bookSpec;
   }
 
