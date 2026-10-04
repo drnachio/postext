@@ -1,0 +1,46 @@
+---
+title: "Un informe bilingüe àrab-anglès"
+summary: "Una memòria anual en àrab amb la traducció al costat: {dir=ltr} a cada bloc i títol traduït, :ltr[…] per als noms llatins i una taula d'esquerra a dreta."
+plain: "La memòria anual d'una fundació escrita en àrab, amb cada paràgraf seguit de la seva versió en castellà. La pàgina barreja les dues direccions sense que es desordenin les paraules, els números ni les taules."
+description: "Un informe bilingüe àrab-anglès amb Postext: blocs marcats {dir=ltr}, aïllaments :ltr[…] en línia, text en bandera alineat a l'inici i dues taules."
+question: "Com barrejo paràgrafs, números i taules en àrab i en anglès en una mateixa pàgina?"
+aliases: ["informe bilingüe", "àrab i castellà", "àrab i anglès", "direcció mixta", "bidi", "bidireccional", "dir=ltr", "aïllament", "bloc LTR en RTL", "direcció de la taula", "memòria anual", "IBM Plex Sans Arabic", "تقرير سنوي"]
+pageNotes: { "1": "La portada: una franja verd blavós a dalt amb el nom de la fundació i el títol التقرير السنوي ٢٠٢٥ en blanc, en àrab, a la dreta, i el títol en castellà, alineat a l'esquerra, a sota. Més avall, la carta de la directora: un títol àrab a la dreta, el seu rètol en castellà a l'esquerra, i paràgrafs àrabs alineats a la dreta, cadascun seguit d'un paràgraf en castellà més petit i gris, alineat a l'esquerra." }
+---
+
+## Què compondràs
+
+La memòria del 2025 d'una fundació de traducció imaginària, Dar al-Dad, en una pàgina de 210 × 280 mm amb IBM Plex Sans Arabic i IBM Plex Sans, les dues meitats d'una mateixa família. La memòria és àrab: va de dreta a esquerra i numera les pàgines ٢, ٣. Cada paràgraf àrab va seguit de la seva versió en castellà, més petita i en gris pissarra, composta d'esquerra a dreta i en bandera per la dreta; cada títol àrab porta un rètol en castellà a l'altre marge. Els noms llatins dins de les frases àrabs conserven el seu ordre, i les xifres de l'any apareixen dues vegades, en una taula àrab que es llegeix des de la dreta i en una altra que es llegeix des de l'esquerra. A l'edició anglesa, la segona llengua és l'anglès.
+
+## Elaboració
+
+### 1 · La segona llengua, en blocs marcats
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. El document és àrab, així que tots els blocs van de dreta a esquerra mentre el Markdown no digui una altra cosa: `{dir=ltr}` en una tanca `:::paragraphs` o en un títol gira aquell bloc, i `textAlign: 'start'` porta cada bloc al costat pel qual comença, la dreta en àrab i l'esquerra en castellà ([Direcció del document, del bloc i del text en línia](/ca/docs/arabic-layout#direcció-del-document-del-bloc-i-del-text-en-línia)). Un nom llatí dins d'una línia àrab, :ltr[Harbour Modern Classics], és un aïllament: l'algorisme bidireccional el tracta com una sola peça neutra, i les paraules àrabs i la coma que l'envolten no es mouen ([Aïllaments](/ca/docs/arabic-layout#aïllaments)). `emphasis: 'italic'` deixa *Middlemarch* en cursiva al text castellà; el motor no inclina mai una lletra àrab, sigui quin sigui l'ajust.
+
+### 2 · Una taula per a cada direcció
+
+<Excerpt region="tables" />
+
+La taula àrab va amb el document: la primera columna, el programa, queda a la dreta, i `align: 'end'` enganxa els números a la vora esquerra de les cel·les. La taula en castellà declara `direction: 'ltr'`, així que la primera columna queda a l'esquerra i `'end'` és la vora dreta ([Què volen dir esquerra, dreta, inici i final](/ca/docs/arabic-layout#què-volen-dir-esquerra-dreta-inici-i-final)). Les xifres àrabs estan teclejades en ٠–٩ i les castellanes en 0–9: les xifres del document només s'apliquen als números que escriu el motor, com el número de la taula al seu peu, جدول ١-١. Per això la segona taula té un tipus propi sense comptador: un número allà sortiria com ٢.
+
+### 3 · Dos títols en una franja
+
+<Excerpt region="cover" />
+
+La portada és el disseny del títol de primer nivell. El text de disseny pren la direcció del document, així que el nom i el títol àrabs no necessiten res; el títol en castellà declara `direction: 'ltr'` i s'ancora a la vora esquerra de la pàgina. La franja és una caixa ancorada al sang, de 86 mm, i el `minHeight` de l'obertura deixa la carta de la directora just a sota.
+
+## Variants
+
+### Posa primer l'altra llengua
+
+Una memòria per a un patronat que no llegeix àrab intercanvia els papers: un document en castellà, els seus blocs sense marcar, i els àrabs marcats `{dir=rtl}`.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'es', // Arabic blocks then carry {dir=rtl}
+```
+
+## Errors freqüents
+
+- Un número que escriu el motor dins d'un bloc en castellà, un número de llista o l'etiqueta d'un peu, continua prenent les xifres del document (٢ en una memòria àrab). Dona a aquestes taules un tipus de recurs sense comptador, o escriu tu els números.

@@ -1,0 +1,133 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 106,
+  "status": "draft",
+  "chapter": "type",
+  "order": 170,
+  "level": 2,
+  "genres": [
+    "report"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "block-direction",
+      "inline-direction"
+    ],
+    "also": [
+      "text-direction",
+      "arabic-fonts",
+      "arabic-language",
+      "document-digits",
+      "table-model",
+      "table-style",
+      "table-styles",
+      "captions",
+      "resource-types",
+      "opener-design",
+      "heading-styles",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q120"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The annual report of an invented translation foundation, written in Arabic, English and Spanish for the recipe",
+          "es": "La memoria anual de una fundación de traducción inventada, escrita en árabe, inglés y español para la receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "IBM Plex Sans Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "bilingual-facing-verse",
+    "arabic-novel-right-bound",
+    "annual-report-flush-columns",
+    "arabic-newspaper-two-columns"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 120,
+      "shade": "#ffffff"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#0e5a5c"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "studio"
+    }
+  }
+}
