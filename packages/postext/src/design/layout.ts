@@ -73,6 +73,9 @@ export interface WrappedLine {
   /** The order to paint `runs` in, when it is not their own (see
    *  `VDTDesignTextLine.order`). */
   order?: number[];
+  /** A word of a joining script wider than the room runs past it (see
+   *  `VDTDesignTextLine.wordOverflow`). */
+  wordOverflow?: true;
 }
 
 export interface ResolvedPadding {
@@ -1341,6 +1344,9 @@ function layoutTextElement(
     // changes, flagged and ordered for the frame the slot is painted in.
     // A justified run keeps its spaces' share of the stretch.
     for (const line of m.lines) {
+      // An Arabic word wider than a wrapping line's room is left whole and
+      // runs past it: flagged for a warning.
+      if (wraps && contentMax !== undefined && line.width > contentMax - (line.xOffset ?? 0) + 0.5 && joiningScriptIn(line.text)) line.wordOverflow = true;
       const runs: DesignTextRun[] = line.runs ?? [{ text: line.text, fontString, width: line.width }];
       const spacing = line.wordSpacingPx ?? 0;
       const directed = directRuns(runs, base, mirrored, (r, t) => measureIn(t, r.fontString) + spacing * stretchableSpaces(t));

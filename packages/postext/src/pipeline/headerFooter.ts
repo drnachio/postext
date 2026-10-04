@@ -136,6 +136,7 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
     ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
     ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
     ...(l.order ? { order: [...l.order] } : {}),
+    ...(l.wordOverflow ? { wordOverflow: true as const } : {}),
   }));
 
   return {

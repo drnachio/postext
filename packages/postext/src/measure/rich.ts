@@ -450,7 +450,7 @@ export function chipToken(
   }
   // Right-to-left runs cut where the direction changes, and their order
   // (`VDTChip.order`).
-  const directed = directChipRuns(runs, (t, f) => measureTextWidth(t, f) + letterSpacingPx * graphemeCount(t));
+  const directed = directChipRuns(runs, (t, f) => measureTextWidth(t, f) + wordLetterSpacing(t, letterSpacingPx) * graphemeCount(t));
   const textWidth = runs.reduce((sum, r) => sum + r.width, 0);
   const paddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;

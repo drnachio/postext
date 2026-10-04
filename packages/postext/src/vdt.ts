@@ -1469,6 +1469,11 @@ export interface VDTDesignTextLine {
    *  always set in `runs`, cut where the direction changes. Absent on a
    *  line with no right-to-left run. */
   order?: number[];
+  /** The line of a wrapping text holds a word of a joining script (Arabic)
+   *  wider than the room: such a word is never cut, so it runs past the
+   *  box, and the build reports an `unbreakableWordOverflow` warning, as
+   *  for {@link VDTLine.wordOverflow}. Absent otherwise. */
+  wordOverflow?: true;
 }
 
 /** Outline of the glyphs of a design text block, resolved to px / hex. */

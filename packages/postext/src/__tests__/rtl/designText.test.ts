@@ -207,6 +207,27 @@ describe('design text in a right-to-left document', () => {
     expect(primitive('Supercalifragilistic', {}, {}, 30).lines.length).toBeGreaterThan(1);
   });
 
+  it('flags an Arabic word that runs past a wrapping line', () => {
+    const long = 'استخراجاتهم';
+    const p = primitive(`${long} Alpha`, {}, { direction: 'rtl' }, 30);
+    expect(p.lines.find((l) => l.text === long)!.wordOverflow).toBe(true);
+    expect(p.lines.find((l) => l.text === 'Alpha')?.wordOverflow).toBeUndefined();
+    expect(slotText(long, {}, { direction: 'rtl' }, 30).lines[0]!.wordOverflow).toBe(true);
+    // Truncated text never overflows.
+    expect(primitive(long, { overflow: 'ellipsis-end' }, { direction: 'rtl' }, 30).lines[0]!.wordOverflow).toBeUndefined();
+  });
+
+  it('reports the overflow of a running head once', () => {
+    const long = 'استخراجاتهمواستخراجاتهم';
+    const doc = buildDocument({ markdown: `# ${long}\n\nنص.\n\n:::pagebreak\n:::\n\nنص آخر.` }, {
+      direction: 'rtl', locale: 'ar',
+      header: { elements: [{ kind: 'text', id: 'rh', content: '{chapterTitle}', fontSize: pt(10), overflow: 'wrap', placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: pt(10) } } }] },
+    } as PostextConfig);
+    const ws = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unbreakableWordOverflow' && w.text === long ? [w] : []));
+    expect(ws.length).toBeGreaterThanOrEqual(1);
+    expect(new Set(ws.map((w) => w.text)).size).toBe(ws.length);
+  });
+
   it('truncates at Arabic word boundaries, whatever is lost', () => {
     const text = `${AR1} ${AR2}`;
     // Room for "الفصل الأول الب…": the cut goes back before the word.

@@ -20,7 +20,7 @@ import { parsePaperAttrs } from './paper';
 import { extractFrontmatter } from '../frontmatter';
 import { tableGridIssues } from '../table/model';
 import type { PostextConfig, Resource } from '../types';
-import type { ConfigWarning, ContentWarning, LayoutWarning, RenderWarning, VDTDocument } from '../vdt';
+import type { ConfigWarning, ContentWarning, LayoutWarning, RenderWarning, VDTDesignSlot, VDTDocument } from '../vdt';
 import type { HeadingDesignCut } from './headingDesignCuts';
 import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
@@ -485,9 +485,35 @@ export function cjkLooseLineWarnings(doc: VDTDocument): ContentWarning[] {
 
 /** An `unbreakableWordOverflow` warning for each line holding a word of a
  *  joining script wider than the line (`VDTLine.wordOverflow`), on the page
- *  it was placed on. */
+ *  it was placed on; and once per text for a design text line that does
+ *  (`VDTDesignTextLine.wordOverflow`: a running head repeats it on every
+ *  page), on the first page that shows it. */
 export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
   const out: ContentWarning[] = [];
+  const seen = new Set<string>();
+  const slot = (s: VDTDesignSlot | undefined, pageIndex: number): void => {
+    for (const b of s?.blocks ?? []) {
+      if (b.kind !== 'text') continue;
+      for (const line of b.lines) {
+        if (!line.wordOverflow || seen.has(line.text)) continue;
+        seen.add(line.text);
+        out.push({
+          kind: 'unbreakableWordOverflow',
+          text: line.text,
+          ...(b.sourceStart !== undefined ? { sourceStart: b.sourceStart } : {}),
+          ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+          pageIndex,
+        });
+      }
+    }
+  };
+  doc.pages.forEach((page, i) => {
+    slot(page.header, i);
+    slot(page.openerBand, i);
+    for (const col of page.columns) for (const block of col.blocks) slot(block.designOverlay, i);
+    for (const block of page.floats ?? []) slot(block.designOverlay, i);
+    slot(page.footer, i);
+  });
   for (const block of doc.blocks) {
     for (const line of block.lines) {
       if (!line.wordOverflow) continue;
