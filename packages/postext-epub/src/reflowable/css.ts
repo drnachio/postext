@@ -206,10 +206,11 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-note', [
     `font-size: ${em(note.fontSize)}`,
     color(note.color),
-    note.italic && 'font-style: italic',
+    `font-style: ${note.italic ? 'italic' : 'normal'}`,
     `text-align: ${ALIGN[note.align] ?? 'start'}`,
     'text-indent: 0',
   ]));
+  out.push(rule('figcaption .pt-note', ['display: block', `margin-block-start: ${em(note.gap, px(cap.fontSize))}`]));
   out.push(rule('.pt-missing', ['border: 1px dashed currentColor', 'padding: 1em', 'font-style: italic']));
 
   const ts = config.tableStyle;

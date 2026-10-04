@@ -41,6 +41,8 @@ function locHref(loc: Loc, from: FileModel): string {
 }
 
 class Writer {
+  private svgCount = 0;
+
   constructor(
     private readonly ctx: SerializeContext,
     private readonly file: FileModel,
@@ -84,6 +86,18 @@ class Writer {
     }
   }
 
+  /** An SVG with ids of its own: formulas reuse MathJax's glyph ids
+   *  (`MJX-…`), and a content document may hold each id once. */
+  private uniqueIds(markup: string): string {
+    if (!markup.includes('<svg') || !/\sid="/.test(markup)) return markup;
+    const suffix = `-s${++this.svgCount}`;
+    const ids = new Set([...markup.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!));
+    return markup
+      .replace(/(\sid=")([^"]+)"/g, (_, a: string, id: string) => `${a}${id}${suffix}"`)
+      .replace(/((?:xlink:)?href="#)([^"]+)"/g, (whole, a: string, id: string) => (ids.has(id) ? `${a}${id}${suffix}"` : whole))
+      .replace(/url\(#([^)]+)\)/g, (whole, id: string) => (ids.has(id) ? `url(#${id}${suffix})` : whole));
+  }
+
   private pageMark(bookIndex: number): string {
     const page = this.ctx.book.pages.get(bookIndex);
     if (!page) return '';
@@ -114,7 +128,7 @@ class Writer {
         const it = inl[j]!;
         if (it.t === 'page' || it.t === 'anchor' || linkKey(it.link) !== key) break;
         if (it.t === 'raw') {
-          body += it.xhtml;
+          body += this.uniqueIds(it.xhtml);
           j++;
           continue;
         }
@@ -172,7 +186,7 @@ class Writer {
       case 'math': {
         const pre = this.inline(node.pre);
         if (!node.svg) return `${pre ? `<div>${pre}</div>\n` : ''}<p class="pt-math-display"><code>${xmlText(node.tex)}</code></p>`;
-        return `<div class="pt-math-display" role="math" aria-label="${xmlAttr(node.tex)}">${pre}${node.svg}</div>`;
+        return `<div class="pt-math-display" role="math" aria-label="${xmlAttr(node.tex)}">${pre}${this.uniqueIds(node.svg)}</div>`;
       }
       case 'toc':
         return this.toc(node);
@@ -201,11 +215,19 @@ class Writer {
     const body = href
       ? `<img src="${xmlAttr(relativeHref(this.file.href, href))}" alt="${xmlAttr(node.alt)}"/>`
       : `<div class="pt-missing" role="img" aria-label="${xmlAttr(node.alt || '?')}">${xmlText(node.alt)}</div>`;
-    const caption = node.caption.length > 0 ? `<figcaption>${this.caption(node.caption)}</figcaption>` : '';
-    const note = node.note.length > 0 ? `<p class="pt-note">${this.inline(node.note)}</p>` : '';
     const pre = this.inline(node.pre);
-    const parts = node.captionAbove ? [pre, caption, body, note] : [pre, body, caption, note];
-    return `<figure id="${node.id}">${parts.filter(Boolean).join('\n')}</figure>`;
+    const note = node.note.length > 0 ? this.inline(node.note) : '';
+    // A figcaption is the figure's first or last child: page starts go
+    // before the picture, a note under the caption goes inside it (or after
+    // the picture when there is no caption).
+    if (node.caption.length === 0) {
+      return `<figure id="${node.id}">${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+    }
+    if (node.captionAbove) {
+      return `<figure id="${node.id}"><figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+    }
+    const caption = `<figcaption>${this.caption(node.caption)}${note ? `<span class="pt-note">${note}</span>` : ''}</figcaption>`;
+    return `<figure id="${node.id}">${pre}${body}\n${caption}</figure>`;
   }
 
   private cell(cell: TableCellNode, scope: string): string {

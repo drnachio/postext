@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { initMathEngine } from 'postext';
 import type { Resource, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
 import { PNG, baseConfig, layOut, layOutBook, pt } from './__tests__/vdt';
 import { checkXml } from './__tests__/xml';
@@ -10,7 +11,7 @@ const para = 'Body text that runs on for a while so the page fills and the parag
 
 const resources: Resource[] = [
   {
-    id: 'f1', typeId: 'figure', kind: 'bitmap', caption: 'A square.', altText: 'A red square on white',
+    id: 'f1', typeId: 'figure', kind: 'bitmap', caption: 'A square.', note: 'Drawn for the test.', altText: 'A red square on white',
     createdAt: 0, updatedAt: 0, bitmap: { fileId: 'f1.png', format: 'png', width: 400, height: 300 },
   },
   {
@@ -171,7 +172,8 @@ describe('buildReflowablePublication', () => {
     const { pub, files, all } = await render([layOut(`See :ref{id=f1} and :ref{id=t1}.\n\n${para}`, baseConfig, resources)]);
     expectSound(pub, files);
     expect(all).toMatch(/<figure id="res-f1"><img src="\.\.\/images\/[\w-]+\.png" alt="A red square on white"\/>/);
-    expect(all).toMatch(/<figcaption>.*<span class="pt-label">Figure\s1\.<\/span>.*A square\.<\/figcaption>/);
+    // A figcaption is the first or last child: the note goes inside it.
+    expect(all).toMatch(/<figcaption>.*<span class="pt-label">Figure\s1\.<\/span>.*A square\.<span class="pt-note">Drawn for the test\.<\/span><\/figcaption><\/figure>/);
     expect(all).toMatch(/<table id="res-t1">\n<caption[^>]*>.*Sizes\.<\/caption>/);
     expect(all).toContain('<thead>\n<tr><th scope="col">Size</th><th scope="col">Width</th><th scope="col">Note</th></tr>\n</thead>');
     expect(all).toContain('<td><strong>tight</strong></td>');
@@ -209,6 +211,17 @@ describe('buildReflowablePublication', () => {
     expect(all).toMatch(/<aside epub:type="footnote" role="doc-footnote" id="fn-n" class="pt-footnote"><p>.*The <em>note<\/em> itself\. <a href="#fnref-n" role="doc-backlink"/);
     // The note left the flow: its text is read once, in the notes.
     expect(all.match(/itself/g)).toHaveLength(1);
+  });
+
+  it('sets formulas as labelled SVG, each with ids of its own', async () => {
+    await initMathEngine();
+    const md = ['Inline $\\vec{F}=m\\vec{a}$ and again $\\vec{F}=m\\vec{a}$.', '', '$$\\vec{F}=m\\vec{a}$$'].join('\n');
+    const { pub, files, all } = await render([layOut(md)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<span class="pt-math" role="math" aria-label="\\vec\{F\}=m\\vec\{a\}"><svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"[^>]* width="[\d.]+em"/);
+    expect(all).toMatch(/<div class="pt-math-display" role="math" aria-label="\\vec\{F\}=m\\vec\{a\}"><svg /);
+    expect(all).not.toContain('data-mml-node');
+    expect(pub.accessibility.features).toContain('describedMath');
   });
 
   it('links the rows of a printed contents to their headings, without page numbers', async () => {
