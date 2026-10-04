@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { sampleChapterTexts } from '../book/chapterOps';
 import { DEFAULT_RESOURCE_IDS } from '../defaultResources';
 
-const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS } as const;
+const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR } as const;
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
 const h1s = (md: string): string[] => [...md.matchAll(/^# (.+?)(?:\s*\{.*\})?$/gm)].map((m) => m[1]!.trim());
 const HAN = /[㐀-鿿　-〿＀-￯]/;
 
-describe('the four editions of the guide', () => {
+describe('the five editions of the guide', () => {
   it('have the same chapters, headings levels and figure references', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
@@ -24,6 +24,7 @@ describe('the four editions of the guide', () => {
     expect(shape(DEFAULT_MARKDOWN_ES)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_CA)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
+    expect(shape(DEFAULT_MARKDOWN_AR)).toEqual(en);
   });
 
   it('mention only resources the guide ships, the Chinese composition figure among them', () => {
@@ -52,10 +53,24 @@ describe('the four editions of the guide', () => {
     }
   });
 
-  it('set no Chinese in the Latin editions, whose faces have no glyphs for it', () => {
+  it('set no Chinese in the Latin and Arabic editions, whose faces have no glyphs for it', () => {
     expect(DEFAULT_MARKDOWN_EN).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_ES).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_CA).not.toMatch(HAN);
+    expect(DEFAULT_MARKDOWN_AR).not.toMatch(HAN);
+  });
+
+  it('write the Arabic edition in Arabic, its title the Latin brand its cover sets in Fraunces', () => {
+    const md = DEFAULT_MARKDOWN_AR;
+    expect(md).toMatch(/^title: "Postext"$/m);
+    // Every chapter title but the cover's (the brand), part title and the
+    // subtitle are Arabic.
+    const arabic = /\p{Script=Arabic}/u;
+    for (const title of h1s(md).slice(1)) expect(title, title).toMatch(arabic);
+    for (const [, title] of md.matchAll(/^:::part\{[^}]*title="([^"]*)"/gm)) expect(title, title).toMatch(arabic);
+    expect(md.match(/^subtitle: "(.*)"$/m)?.[1]).toMatch(arabic);
+    // No tatweel typed by hand: the engine draws the kashidas itself.
+    expect(md).not.toContain('\u0640');
   });
 
   it('write the Chinese edition without spaces between Han and Latin and without underscore emphasis', () => {

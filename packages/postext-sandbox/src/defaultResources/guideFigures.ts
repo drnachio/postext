@@ -2,12 +2,15 @@
 // lands, the balancing levers, the anatomy of a book and the Sandbox
 // interface. Same kit and unit system as the figures in `index.ts`.
 
-import { FS, P, PAGE_VW, SERIF_ZH, bar, edge, text } from './svgKit';
+import { FS, P, PAGE_VW, SERIF_ZH, arabicDigits, bar, edge, text } from './svgKit';
 import { byLang, type GuideLang } from './lang';
 
 const NIGHT = '#15171c';
 const GILT = '#d8a21a';
 const VERMILION = '#c0452f';
+
+/** A number as an edition prints it: Arabic-Indic digits in the Arabic one. */
+const num = (lang: GuideLang, n: string | number): string => (lang === 'ar' ? arabicDigits(String(n)) : String(n));
 
 /** A page card. */
 function card(x: number, y: number, w: number, h: number, fill: string = P.paper, stroke: string = P.edgeSoft): string {
@@ -40,6 +43,7 @@ const COLUMN_LAYOUTS = byLang(
   { aria: 'estructuras de columnas disponibles', labels: ['Una columna', 'Dos columnas', 'Columna y media', 'Lateral de flotantes'] },
   { aria: '可用的分栏结构', labels: ['单栏', '双栏', '一栏半', '浮动体边栏'] },
   { aria: 'estructures de columnes disponibles', labels: ['Una columna', 'Dues columnes', 'Columna i mitja', 'Lateral de flotants'] },
+  { aria: 'بنى الأعمدة المتاحة', labels: ['عمود واحد', 'عمودان', 'عمود ونصف', 'عمود جانبي للعوائم'] },
 );
 
 export function columnLayoutsSvg(lang: GuideLang): string {
@@ -77,6 +81,7 @@ const FLOAT_SLOTS = byLang(
   { aria: 'orden de los huecos que se ofrecen a un flotante tras su referencia', ref: 'referencia', taken: 'ocupa el primer hueco libre', full: 'sin sitio', next: 'página siguiente' },
   { aria: '引用之后依次提供给浮动体的空位', ref: '引用处', taken: '占用第一个空位', full: '放不下', next: '下一页' },
   { aria: 'ordre dels espais que s\'ofereixen a un flotant després de la seva referència', ref: 'referència', taken: 'ocupa el primer espai lliure', full: 'no hi cap', next: 'pàgina següent' },
+  { aria: 'ترتيب الأماكن التي تُعرض على العنصر العائم بعد الإحالة إليه', ref: 'الإحالة', taken: 'يشغل أول مكان شاغر', full: 'لا يتسع', next: 'الصفحة التالية' },
 );
 
 export function floatSlotsSvg(lang: GuideLang): string {
@@ -97,7 +102,7 @@ export function floatSlotsSvg(lang: GuideLang): string {
     const dash = state === 'yes' ? '' : ' stroke-dasharray="4 3"';
     const cx = note ? x + 16 : x + w / 2;
     return `<rect x="${x}" y="${sy}" width="${w}" height="${h}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="1.3"${dash} />`
-      + disc(cx, sy + h / 2, n, state === 'yes' ? '#ffffff' : state === 'no' ? '#c5cfdb' : P.blueMid, state === 'yes' ? P.blueDark : '#ffffff')
+      + disc(cx, sy + h / 2, num(lang, n), state === 'yes' ? '#ffffff' : state === 'no' ? '#c5cfdb' : P.blueMid, state === 'yes' ? P.blueDark : '#ffffff')
       + (note ? text(cx + 14, sy + h / 2 + 3.6, note, { size: FS.small, color: P.muted, italic: true, anchor: 'start' }) : '');
   };
   // Page A: column 1 full down to the reference line, too little room under
@@ -134,6 +139,7 @@ const BALANCING = byLang(
   { aria: 'palancas del equilibrado de columnas', before: 'Antes', after: 'Después', legend: ['Espacio sobre el título', 'Línea tras la lista', 'Párrafo más suelto'] },
   { aria: '平衡分栏的调节手段', before: '平衡前', after: '平衡后', legend: ['标题上方加空', '列表后加一行', '段落排松一行'] },
   { aria: 'palanques de l\'equilibri de columnes', before: 'Abans', after: 'Després', legend: ['Espai sobre el títol', 'Línia després de la llista', 'Paràgraf més solt'] },
+  { aria: 'روافع موازنة الأعمدة', before: 'قبل', after: 'بعد', legend: ['مسافة فوق العنوان', 'سطر بعد القائمة', 'فقرة أرحب بسطر'] },
 );
 
 export function balancingSvg(lang: GuideLang): string {
@@ -179,9 +185,9 @@ export function balancingSvg(lang: GuideLang): string {
   const bx = 250;
   const legendX = 438;
   const items = [
-    `<rect x="${legendX}" y="54" width="18" height="10" rx="2" fill="${GILT}" opacity="0.28" />${text(legendX + 26, 63, `1 · ${legend[0]}`, { size: FS.small, anchor: 'start' })}`,
-    `<rect x="${legendX}" y="80" width="18" height="10" rx="2" fill="${GILT}" opacity="0.28" />${text(legendX + 26, 89, `2 · ${legend[1]}`, { size: FS.small, anchor: 'start' })}`,
-    `<rect x="${legendX}" y="106" width="18" height="10" rx="2" fill="none" stroke="${P.blue}" stroke-width="1.2" stroke-dasharray="3 2" />${text(legendX + 26, 115, `3 · ${legend[2]}`, { size: FS.small, anchor: 'start' })}`,
+    `<rect x="${legendX}" y="54" width="18" height="10" rx="2" fill="${GILT}" opacity="0.28" />${text(legendX + 26, 63, `${num(lang, 1)} · ${legend[0]}`, { size: FS.small, anchor: 'start' })}`,
+    `<rect x="${legendX}" y="80" width="18" height="10" rx="2" fill="${GILT}" opacity="0.28" />${text(legendX + 26, 89, `${num(lang, 2)} · ${legend[1]}`, { size: FS.small, anchor: 'start' })}`,
+    `<rect x="${legendX}" y="106" width="18" height="10" rx="2" fill="none" stroke="${P.blue}" stroke-width="1.2" stroke-dasharray="3 2" />${text(legendX + 26, 115, `${num(lang, 3)} · ${legend[2]}`, { size: FS.small, anchor: 'start' })}`,
   ].join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PAGE_VW} 200" role="img" aria-label="${ariaLabel}">
   ${pair(ax, false)}${pair(bx, true)}
@@ -203,6 +209,7 @@ const BOOK_ANATOMY = byLang(
   { aria: 'anatomía de un libro compuesto con Postext', names: ['Cubierta', 'Índice', 'Parte', 'Apertura', 'Cuerpo', 'Cuerpo'] },
   { aria: '用Postext排出的一本竖排书的构成，从右向左读', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
   { aria: 'anatomia d\'un llibre compost amb Postext', names: ['Coberta', 'Índex', 'Part', 'Obertura', 'Cos', 'Cos'] },
+  { aria: 'بنية كتاب منضّد بـPostext، يُقرأ من اليمين إلى اليسار', names: ['الغلاف', 'المحتويات', 'الجزء', 'الافتتاحية', 'المتن', 'المتن'] },
 );
 
 /** Vertical text-line bars: columns from `right` leftward to `left`, each
@@ -321,7 +328,7 @@ export function bookAnatomySvg(lang: GuideLang): string {
   out.push(bar(x + 8, y + 9, 24, '#ffffff', 2.4), bar(x + 8, y + 16, 44, '#ffffff', 6), bar(x + 8, y + 27, 58, '#fbe9bd', 2.4));
   out.push(`<path d="M${x + 66},${y + 8} L${x + 74},${y + 8} L${x + 74},${y + 32} L${x + 66},${y + 32} Z" fill="#ffffff" />`);
   out.push(lines(x + 8, y + 50, y + H - 14, 31, 6, '#c8d3e0', 6, 2.6), lines(x + 45, y + 50, y + H - 14, 31, 6, '#c8d3e0', 6, 2.6));
-  out.push(text(x + W / 2, y + H - 4, '7', { size: 7, color: '#8a6308', weight: 700 }));
+  out.push(text(x + W / 2, y + H - 4, num(lang, 7), { size: 7, color: '#8a6308', weight: 700 }));
   // Body with a figure.
   x = xs[4]!;
   out.push(card(x, y, W, H), bar(x + 8, y + 7, 30, '#9aa7b6', 2.2), `<path d="M${x + 8},${y + 12} L${x + W - 8},${y + 12}" stroke="#dde4ec" stroke-width="0.8" />`);
@@ -381,6 +388,12 @@ const CJK_COMPOSITION = byLang(
     full: 'Amplada completa: cada signe ocupa un quadratí', kaiming: 'Kaiming (Xina continental): parèntesis, signes de títol i punt final, mig quadratí',
     vertical: 'En vertical', ems: (n: number) => `${String(n).replace('.', ',')} quadratins`,
     legend: ['la meitat en blanc d\'un signe d\'amplada completa', 'un signe compost en mig quadratí'],
+  },
+  {
+    aria: 'سطر صيني واحد بالعرض الكامل، وبأسلوب كايمينغ، ومنضّدًا عموديًا',
+    full: 'العرض الكامل: لكل علامة مربع كامل', kaiming: 'كايمينغ (البر الصيني): الأقواس وعلامات العناوين والنقطة الأخيرة نصف مربع',
+    vertical: 'عموديًا', ems: (n: number) => `${arabicDigits(String(n).replace('.', '٫'))} مربعًا`,
+    legend: ['النصف الفارغ من علامة بالعرض الكامل', 'علامة منضّدة في نصف مربع'],
   },
 );
 
@@ -500,6 +513,12 @@ const SANDBOX_UI = byLang(
     aria: 'disposició de la interfície del Sandbox', chapter: '3 · Compondre la línia', scope: 'Llibre complet',
     panels: ['Llibres', 'Capítols', 'Text', 'Recursos', 'Fonts', 'Disseny', 'Revisió'],
   },
+  {
+    // The Arabic interface's own words (messages/ar.json); the figure is
+    // mirrored, as the interface is in Arabic.
+    aria: 'تخطيط واجهة Sandbox', chapter: '٣ · تنضيد السطر', scope: 'الكتاب كاملًا',
+    panels: ['الكتب', 'الفصول', 'النص', 'الموارد', 'الخطوط', 'التصميم', 'الفحوص'],
+  },
 );
 
 /** The Sandbox interface: activity bar with its seven panels, the text
@@ -511,7 +530,7 @@ export function sandboxUiSvg(lang: GuideLang): string {
   const CHECKS_PANEL = panels.length - 1;
   const iconY = (i: number) => 44 + i * 36;
   const icons = panels.map((_, i) => `<rect x="31" y="${iconY(i)}" width="24" height="24" rx="6" fill="${i === TEXT_PANEL ? P.blue : '#c9d4df'}" />`).join('');
-  const badge = `<circle cx="55" cy="${iconY(CHECKS_PANEL) + 2}" r="6" fill="${VERMILION}" />${text(55, iconY(CHECKS_PANEL) + 5.4, '3', { size: 8.5, color: '#ffffff', weight: 700 })}`;
+  const badge = `<circle cx="55" cy="${iconY(CHECKS_PANEL) + 2}" r="6" fill="${VERMILION}" />${text(55, iconY(CHECKS_PANEL) + 5.4, num(lang, 3), { size: 8.5, color: '#ffffff', weight: 700 })}`;
   const tipW = 48;
   const tooltip = `<rect x="62" y="${iconY(TEXT_PANEL) + 2}" width="${tipW}" height="20" rx="4" fill="${NIGHT}" />${text(62 + tipW / 2, iconY(TEXT_PANEL) + 15.5, panels[TEXT_PANEL]!, { size: FS.small, color: '#ffffff' })}`;
   const edX = 80;
@@ -572,6 +591,7 @@ const ROSETTE = byLang(
   { aria: 'roseta vectorial de pétalos, anillos y microtexto', micro: 'Postext · vector · zoom · ' },
   { aria: '由花瓣、圆环和微缩文字组成的矢量玫瑰花饰', micro: 'Postext · 矢量 · 缩放 · ' },
   { aria: 'roseta vectorial de pètals, anells i microtext', micro: 'Postext · vector · zoom · ' },
+  { aria: 'وردة متجهية من بتلات وحلقات ونص مجهري', micro: 'Postext · متجهي · تكبير · ' },
 );
 
 export function vectorRosetteSvg(lang: GuideLang): string {
@@ -602,6 +622,7 @@ const CHART = byLang(
   { aria: 'gráfico vectorial de área y línea con ejes y etiquetas', months: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago'], pages: 'páginas por segundo', chapters: 'capítulos' },
   { aria: '带坐标轴和标签的矢量面积图与折线图', months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'], pages: '每秒页数', chapters: '章数' },
   { aria: 'gràfic vectorial d\'àrea i línia amb eixos i etiquetes', months: ['gen.', 'febr.', 'març', 'abr.', 'maig', 'juny', 'jul.', 'ag.'], pages: 'pàgines per segon', chapters: 'capítols' },
+  { aria: 'رسم بياني متجهي بمساحة وخط، بمحورين وتسميات', months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس'], pages: 'صفحة في الثانية', chapters: 'فصول' },
 );
 
 export function vectorChartSvg(lang: GuideLang): string {
@@ -614,7 +635,7 @@ export function vectorChartSvg(lang: GuideLang): string {
   const y1 = 22;
   const X = (i: number) => x0 + (i / (a.length - 1)) * (x1 - x0);
   const Y = (v: number) => y0 - (v / 50) * (y0 - y1);
-  const grid = [0, 10, 20, 30, 40, 50].map((v) => `<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${x1}" y2="${Y(v).toFixed(1)}" stroke="${P.hair}" stroke-width="0.6" />${text(x0 - 6, Y(v) + 3.2, String(v), { size: 8.5, color: P.muted, anchor: 'end' })}`).join('');
+  const grid = [0, 10, 20, 30, 40, 50].map((v) => `<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${x1}" y2="${Y(v).toFixed(1)}" stroke="${P.hair}" stroke-width="0.6" />${text(x0 - 6, Y(v) + 3.2, num(lang, v), { size: 8.5, color: P.muted, anchor: 'end' })}`).join('');
   const line = (vals: number[]) => vals.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
   const area = `${line(a)} L${X(a.length - 1).toFixed(1)},${y0} L${x0},${y0} Z`;
   const dots = a.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="#ffffff" stroke="${P.blue}" stroke-width="1.4" />`).join('');
@@ -638,6 +659,7 @@ const CLIP = byLang(
   { aria: 'composición vectorial con recortes, elementos reutilizados y transparencias', clip: 'recorte', opacity: 'opacidad' },
   { aria: '带剪切路径、重复使用的元素和透明度的矢量构图', clip: '剪切路径', opacity: '不透明度' },
   { aria: 'composició vectorial amb retalls, elements reutilitzats i transparències', clip: 'retall', opacity: 'opacitat' },
+  { aria: 'تركيب متجهي بمسار قص وعناصر معاد استخدامها وشفافية', clip: 'مسار القص', opacity: 'العتامة' },
 );
 
 export function vectorClipSvg(lang: GuideLang): string {

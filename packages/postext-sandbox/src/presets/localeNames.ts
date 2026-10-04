@@ -1,7 +1,7 @@
 // How a book's content locales are named in the interface: the language
 // name in the reader's language for tooltips and choices ("Traditional
 // Chinese", "chino tradicional"), and a short tag for the library rows
-// (繁 / 简 for the two Chinese scripts, EN / ES otherwise). Pure.
+// (繁 / 简 for the two Chinese scripts, ع for Arabic, EN / ES otherwise). Pure.
 
 import { canonicalLocaleTag, chineseScriptOf } from 'postext';
 
@@ -26,12 +26,13 @@ function chineseScript(tag: string): 'Hans' | 'Hant' | null {
 export interface LocaleShortTag {
   /** What the tag shows (upper-cased by the row style). */
   text: string;
-  /** The `lang` to set it in, for the Chinese characters. */
+  /** The `lang` to set it in, for the Chinese or Arabic characters. */
   lang?: string;
 }
 
 /** The short tag of `tag` among a book's locales `all`: 繁 or 简 for a
- *  Chinese edition in a script no other locale shares, the bare language
+ *  Chinese edition in a script no other locale shares, ع (its first letter,
+ *  as 简 is the script's) for the only Arabic edition, the bare language
  *  (`en`) when no other locale is in the same language, else the tag. */
 export function localeShortTag(tag: string, all: readonly string[]): LocaleShortTag {
   const script = chineseScript(tag);
@@ -42,5 +43,6 @@ export function localeShortTag(tag: string, all: readonly string[]): LocaleShort
   }
   const language = (canonicalLocaleTag(tag) ?? tag).split('-')[0]!;
   const shared = all.some((l) => l !== tag && (canonicalLocaleTag(l) ?? l).split('-')[0]!.toLowerCase() === language.toLowerCase());
+  if (!shared && language.toLowerCase() === 'ar') return { text: 'ع', lang: 'ar' };
   return { text: shared ? tag : language };
 }

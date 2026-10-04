@@ -1,6 +1,8 @@
 // Shared drawing kit of the guide's example figures (see `index.ts` for the
 // unit system and the design rules the figures follow).
 
+import type { GuideLang } from './lang';
+
 /** Canvas width (in SVG user units) for figures placed at column span. */
 export const COLUMN_VW = 300;
 /** Canvas width for figures placed at page span: COLUMN_VW × the default
@@ -26,13 +28,68 @@ export const FONT_ZH = "'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Micr
 /** Chinese sample text inside a figure: the guide's Chinese body face. */
 export const SERIF_ZH = "'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'Source Han Serif SC', serif";
 
-/** A figure drawn with the kit, relabelled for the Chinese edition: its
- *  labels set in {@link FONT_ZH} and upright (Chinese has no italic; a
- *  slanted Han character is a browser's fake). Latin editions are returned
- *  as drawn. */
-export function localizeFigureFonts(svg: string, zh: boolean): string {
-  if (!zh) return svg;
-  return svg.split(`font-family="${FONT}"`).join(`font-family="${FONT_ZH}"`).split(' font-style="italic"').join('');
+/** The labels' typeface in the Arabic edition: the guide's small face, IBM
+ *  Plex Sans Arabic, which sets the Latin words of a label too (the PDF sets
+ *  a whole run in the first family of the list it can provide, and shapes
+ *  its Arabic with HarfBuzz, so the figure stays vector). The system faces
+ *  after it are what the previews fall back on. */
+export const FONT_AR = "'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Geeza Pro', 'Segoe UI', Tahoma, sans-serif";
+
+/** `text` with its European digits written as Arabic-Indic ones (١٢٣), the
+ *  digits the Arabic edition prints. */
+export function arabicDigits(text: string): string {
+  return text.replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
+}
+
+/** A kit label: a `<text>` element in {@link FONT}, as {@link text} writes it. */
+const KIT_TEXT_RE = new RegExp(`<text x="(-?[\\d.]+)"([^>]*?) font-family="${FONT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g');
+
+/** `fragment` (SVG markup on a canvas `width` units wide) seen in a mirror,
+ *  as a right-to-left book lays out what a left-to-right one does: shapes,
+ *  arrows and the order of things turn about the canvas's centre line,
+ *  while every kit label is turned back about its own anchor, so it reads
+ *  the right way round at the mirrored place. Set the labels right to left
+ *  afterwards (see {@link localizeFigure}): `text-anchor: start` then names
+ *  the right end of a label, the mirror of the left end it named. */
+export function mirrorFragment(fragment: string, width: number): string {
+  const turned = fragment.replace(KIT_TEXT_RE, (_m, x: string, rest: string) =>
+    `<text x="${x}" transform="matrix(-1 0 0 1 ${+(2 * Number(x)).toFixed(2)} 0)"${rest} font-family="${FONT}"`);
+  return `<g transform="matrix(-1 0 0 1 ${width} 0)">${turned}</g>`;
+}
+
+/** A whole figure seen in a mirror (see {@link mirrorFragment}): the
+ *  content of its root `<svg>`, on the width its `viewBox` gives. */
+export function mirrorSvg(svg: string): string {
+  const open = /<svg\b[^>]*>/.exec(svg);
+  const close = svg.lastIndexOf('</svg>');
+  if (!open || close < 0) return svg;
+  const width = Number(/viewBox="\s*-?[\d.]+\s+-?[\d.]+\s+([\d.]+)/.exec(open[0])?.[1]);
+  if (!Number.isFinite(width)) return svg;
+  const at = open.index + open[0].length;
+  return `${svg.slice(0, at)}${mirrorFragment(svg.slice(at, close), width)}${svg.slice(close)}`;
+}
+
+/** A figure drawn with the kit, relabelled for its edition. The Chinese
+ *  edition sets its labels in {@link FONT_ZH}, upright (Chinese has no
+ *  italic; a slanted Han character is a browser's fake). The Arabic edition
+ *  sets them in {@link FONT_AR}, upright, right to left (`direction="rtl"`):
+ *  a label turned back by {@link mirrorFragment} keeps its anchor, which now
+ *  names its mirrored end; any other keeps the place it had, its `start`
+ *  and `end` swapped. Latin editions are returned as drawn. */
+export function localizeFigure(svg: string, lang: GuideLang): string {
+  if (lang === 'zh-Hans') {
+    return svg.split(`font-family="${FONT}"`).join(`font-family="${FONT_ZH}"`).split(' font-style="italic"').join('');
+  }
+  if (lang !== 'ar') return svg;
+  const labelled = svg.replace(/<text\b[^>]*>/g, (tag) => {
+    if (!tag.includes(`font-family="${FONT}"`)) return tag;
+    let out = tag.replace(` font-family="${FONT}"`, ` font-family="${FONT_AR}" direction="rtl"`).replace(' font-style="italic"', '');
+    if (!out.includes(' transform="')) {
+      out = out.replace(/ text-anchor="(start|end)"/, (_m, a: string) => ` text-anchor="${a === 'start' ? 'end' : 'start'}"`);
+    }
+    return out;
+  });
+  return labelled;
 }
 
 /** Shared diagram palette. */

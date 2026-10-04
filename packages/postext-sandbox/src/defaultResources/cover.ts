@@ -166,14 +166,29 @@ function numeralOne(x: number, y: number, h: number, fill: string): string {
   return `<path d="${d} Z" fill="${fill}"/>`;
 }
 
+/** The Arabic-Indic numeral "١" as a single path, `h` units tall, in a box
+ *  as wide as {@link numeralOne}'s: a stroke heavier at its head, leaning a
+ *  little, as Kufi and Naskh faces draw it. */
+function numeralArabicOne(x: number, y: number, h: number, fill: string): string {
+  const u = h / 10;
+  const p = (px: number, py: number) => `${r1(x + px * u)},${r1(y + py * u)}`;
+  return `<path d="M${p(2.5, 0.7)} C${p(3.2, 0)} ${p(4.5, -0.1)} ${p(5.1, 0.5)} L${p(6.3, 9.7)} C${p(5.9, 10.1)} ${p(5.2, 10.1)} ${p(4.9, 9.8)} L${p(2.6, 1.7)} C${p(2.4, 1.3)} ${p(2.3, 1)} ${p(2.5, 0.7)} Z" fill="${fill}"/>`;
+}
+
 const COVER_ARIA = byLang(
   'An open spread drawn the way the engine sees it: justified lines of word boxes on a baseline grid, a chapter band, a floated figure and one line opened into boxes, glue and a penalty',
   'Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra sobre una rejilla de línea base, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización',
   '按引擎眼中的样子画出的一个跨页：基线网格上由词块组成的两端对齐的行、一条章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行',
   'Un plec obert dibuixat tal com el veu el motor: línies justificades de caixes de paraula sobre una retícula de línia de base, una banda de capítol, una figura flotant i una línia oberta en caixes, gomes i una penalització',
+  'صفحتان متقابلتان مرسومتان كما يراهما المحرّك، تُقرآن من اليمين إلى اليسار: أسطر مضبوطة من صناديق الكلمات على شبكة خطوط القاعدة، وشريط فصل، وشكل عائم، وسطر مفتوح على صناديق ومسافات مرنة وجزاء',
 );
 
+/** The cover art of an edition. The Arabic edition's spread is the mirror
+ *  image of the others', as a right-bound book opens: the chapter opener on
+ *  the right-hand page, its columns and the model line read from the right,
+ *  and its numeral an Arabic-Indic ١. */
 export function coverArtSvg(lang: GuideLang): string {
+  const rtl = lang === 'ar';
   const rand = prng(1983);
   const ariaLabel = COVER_ARIA[lang];
 
@@ -203,7 +218,8 @@ export function coverArtSvg(lang: GuideLang): string {
   pages += rect(vx, sy + 74, 150, 16, C.white, 2);
   pages += rect(vx, sy + 104, 250, 5, C.blueSoft, 1);
   pages += rect(vx, sy + 115, 210, 5, C.blueSoft, 1);
-  pages += numeralOne(sx + pw - margin.inner - 80, sy + 22, 96, C.white);
+  const numeralX = sx + pw - margin.inner - 80;
+  if (!rtl) pages += numeralOne(numeralX, sy + 22, 96, C.white);
   pages += rect(sx, sy + bandH, pw, 4, C.night);
   const vTop = sy + bandH + 24;
   pages += column(rand, { x: vx, top: vTop, bottom: sy + ph - margin.bottom, width: colW, pitch }, C.word);
@@ -238,12 +254,17 @@ export function coverArtSvg(lang: GuideLang): string {
   const my = sy + ph - 190;
   const model = `<rect x="${mx - 26}" y="${my - 66}" width="${mw + 52}" height="136" rx="8" fill="${C.night}" stroke="${C.gilt}" stroke-width="2.4"/>${modelLine(mx, my, mw)}`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COVER_VW} ${COVER_VH}" role="img" aria-label="${ariaLabel}">
-  <rect width="${COVER_VW}" height="${COVER_VH}" fill="${C.night}"/>
-  ${grid}
+  const art = `${grid}
   ${pages}
   ${cropMarks(sx, sy, 2 * pw, ph)}
-  ${model}
+  ${model}`;
+  // Mirrored, the numeral is drawn upright at its mirrored place.
+  const body = rtl
+    ? `<g transform="matrix(-1 0 0 1 ${COVER_VW} 0)">${art}</g>${numeralArabicOne(COVER_VW - numeralX - 7.4 * 9.6, sy + 22, 96, C.white)}`
+    : art;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COVER_VW} ${COVER_VH}" role="img" aria-label="${ariaLabel}">
+  <rect width="${COVER_VW}" height="${COVER_VH}" fill="${C.night}"/>
+  ${body}
 </svg>`;
 }
 
