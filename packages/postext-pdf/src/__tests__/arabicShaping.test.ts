@@ -69,7 +69,22 @@ function lines(doc: VDTDocument): VDTLine[] {
 /** Give a VDT the directions the engine will (SPEC D9): each segment's
  *  level from the paragraph's (right to left), `rtl` on the odd ones, and
  *  the line's visual order. */
+/** `doc` as a VDT from before the engine resolved directions (#369):
+ *  its lines with no `order`, no `rtl`, no `level`. */
+function legacy(doc: VDTDocument): VDTDocument {
+  for (const line of lines(doc)) {
+    delete line.order;
+    for (const seg of line.segments ?? []) {
+      delete seg.rtl;
+      delete seg.level;
+    }
+  }
+  return doc;
+}
+
 function directed(doc: VDTDocument): VDTDocument {
+  // The engine's own directions (#369) are replaced by these.
+  legacy(doc);
   for (const line of lines(doc)) {
     const segments = line.segments ?? [];
     const text = segments.map((s) => s.text).join('');
@@ -219,7 +234,7 @@ describe('Arabic in the PDF (HarfBuzz)', () => {
 
   it.skipIf(!hasPdftotext)('reads back in logical order (pdftotext)', async () => {
     for (const [name, doc] of [
-      ['legacy', buildDocument({ markdown: PARAGRAPHS.join('\n\n') }, config())],
+      ['legacy', legacy(buildDocument({ markdown: PARAGRAPHS.join('\n\n') }, config()))],
       ['directed', directed(buildDocument({ markdown: PARAGRAPHS.join('\n\n') }, config({ textAlign: 'justify' })))],
     ] as const) {
       const rows = extract(await renderToPdf(doc, { fontProvider }), name);

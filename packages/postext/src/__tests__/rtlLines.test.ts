@@ -110,6 +110,12 @@ describe('segment directions and order', () => {
     }
   });
 
+  it('an English sentence in a right-to-left paragraph has its full stop on the left', () => {
+    const [line] = measureBlock('Latin words.', FONT, 1000, 20, { direction: 'rtl' }).lines;
+    expect(visual(line!)).toEqual(['.', 'Latin', ' ', 'words']);
+    expect(line!.segments!.find((s) => s.text === '.')!.rtl).toBe(true);
+  });
+
   it('an English paragraph set right to left keeps its order', () => {
     const [line] = measureBlock('All Latin words', FONT, 1000, 20, { direction: 'rtl' }).lines;
     expect(line!.order).toBeUndefined();

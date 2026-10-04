@@ -346,8 +346,10 @@ function renderLine(
   const effectiveWidth = span ? span.width : columnWidth - lineIndent;
   const segments = line.segments;
   // Right-to-left runs on the line: painted in `order`, never as one text.
+  // A line with none (a Latin line of a mirrored page, whose `order` only
+  // turns the flow around) reads the same painted as one text.
   const order = segments && line.order?.length === segments.length ? line.order : undefined;
-  const directed = order !== undefined || (segments?.some((s) => s.rtl) ?? false);
+  const directed = segments?.some((s) => s.rtl) ?? false;
 
   // Justified rendering with per-segment spacing. Last lines render ragged at
   // natural width — except when overfull: Knuth-Plass may accept a final line

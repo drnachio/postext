@@ -1,5 +1,6 @@
 import type { VDTLineSegment } from '../vdt';
 import { joiningScriptIn } from '../measure/joining';
+import { mirroredPaintActive } from './mirrorFrame';
 
 /** One styled run of a word set as one shaped run (`VDTLineSegment.runs`). */
 export type WordRun = NonNullable<VDTLineSegment['runs']>[number];
@@ -68,7 +69,10 @@ export function fillSegmentWord(
  * then cuts a letter in two colours. A run of vowel signs alone (a
  * coloured fatha) advances nothing: it is widened to its letter, which
  * takes the run's colour with it. A run in another weight is painted
- * scaled to the word's width, so its letters stay over the others. The
+ * scaled to the word's width, so its letters stay over the others. On a
+ * mirrored page (`mirrorFrame.ts`) each run is turned back about the
+ * word's box as it is painted, so the letters of a stretch land at the
+ * other end of the box: the clip is turned with them. The
  * PDF shapes the word with HarfBuzz and colours exact clusters.
  */
 export function paintWordRuns(
@@ -95,8 +99,9 @@ export function paintWordRuns(
     while (to < text.length && MARK_RE.test(text[to]!)) to++;
     const before = whole - ctx.measureText(text.slice(from)).width;
     const after = whole - ctx.measureText(text.slice(0, to)).width;
-    const left = x + Math.max(0, rtl ? after : before);
-    const right = x + whole - Math.max(0, rtl ? before : after);
+    let left = x + Math.max(0, rtl ? after : before);
+    let right = x + whole - Math.max(0, rtl ? before : after);
+    if (mirroredPaintActive()) [left, right] = [2 * x + whole - right, 2 * x + whole - left];
     if (right <= left) continue;
     const { font, fill } = runStyle(run);
     ctx.save();

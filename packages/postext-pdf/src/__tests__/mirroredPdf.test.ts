@@ -36,7 +36,10 @@ class StubCtx {
 };
 
 const pt = (value: number) => ({ value, unit: 'pt' as const });
-const MD = ['# Heading', 'First paragraph alpha beta gamma delta epsilon zeta eta theta.', 'Second paragraph iota kappa lambda mu nu xi omicron pi rho sigma.'].join('\n\n');
+// No full stops: in a right-to-left paragraph a final stop after Latin
+// words is a neutral at the paragraph's level and stands at the line's
+// left end (UAX #9); these tests look at the frame.
+const MD = ['# Heading', 'First paragraph alpha beta gamma delta epsilon zeta eta theta', 'Second paragraph iota kappa lambda mu nu xi omicron pi rho sigma'].join('\n\n');
 
 function config(direction: 'ltr' | 'rtl'): PostextConfig {
   return {

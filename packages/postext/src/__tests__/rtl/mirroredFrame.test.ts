@@ -37,7 +37,10 @@ const pt = (value: number) => ({ value, unit: 'pt' as const });
 
 // Latin placeholder text with marker words, so line order is checkable
 // whatever the measurer does with Arabic.
-const para = (i: number) => `Paragraph ${i} alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho.`;
+// No full stop: in a right-to-left paragraph a final stop after Latin
+// words is a neutral at the paragraph's level and stands at the line's
+// left end (UAX #9, see rtlLines.test.ts); these tests look at the frame.
+const para = (i: number) => `Paragraph ${i} alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho`;
 const filler = (n: number, from = 0) => Array.from({ length: n }, (_, i) => para(from + i)).join('\n\n');
 
 const svgFigure: Resource = {

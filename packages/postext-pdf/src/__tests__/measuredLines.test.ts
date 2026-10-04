@@ -208,6 +208,9 @@ describe('a line with right-to-left letters', () => {
     // (#380), here one.
     const doc = buildDocument({ markdown: 'שלום עולם' }, config);
     const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
+    // As a VDT from before the engine resolved directions (#369).
+    delete line.order;
+    for (const seg of line.segments ?? []) delete seg.rtl;
     expect(line.segments!.length).toBeGreaterThan(1);
     const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: false }));
     const page = pdf.getPage(0);

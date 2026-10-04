@@ -61,7 +61,10 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; painted: Painted[] } {
 }
 
 const pt = (value: number) => ({ value, unit: 'pt' as const });
-const para = (i: number) => `Paragraph ${i} alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu.`;
+// No full stop: in a right-to-left paragraph a final stop after Latin
+// words is a neutral at the paragraph's level and stands at the line's
+// left end (UAX #9, see rtlLines.test.ts); these tests look at the frame.
+const para = (i: number) => `Paragraph ${i} alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu`;
 const MD = ['# Heading', '', ...Array.from({ length: 8 }, (_, i) => para(i))].join('\n\n');
 
 function config(direction: 'ltr' | 'rtl'): PostextConfig {

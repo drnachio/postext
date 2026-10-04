@@ -8,6 +8,8 @@ import { resolveBodyTextConfig } from '../defaults/bodyText';
 import { buildDocument } from '../pipeline';
 import { formatWarning } from '../pipeline/contentWarnings';
 import { renderBlock } from '../canvas-backend/blockRender';
+import { paintWordRuns } from '../canvas-backend/wordRuns';
+import { beginMirroredFlow } from '../canvas-backend/mirrorFrame';
 import type { InlineSpan } from '../parse';
 import type { PostextConfig } from '../types';
 import type { VDTBlock, VDTLine } from '../vdt';
@@ -248,6 +250,30 @@ describe('the canvas', () => {
     expect(painted).toHaveLength(2);
     expect(painted[0]).toMatchObject({ clipped: false, font: FONT });
     expect(painted[1]).toMatchObject({ clipped: true, font: BOLD });
+  });
+
+  it('turns a run\'s clip over with the word on a mirrored page', () => {
+    const rects: number[][] = [];
+    const ctx = {
+      font: FONT, fillStyle: '', direction: 'ltr', textAlign: 'start',
+      measureText: (t: string) => ({ width: stubWidth(t) }),
+      fillText() {}, save() {}, restore() {}, beginPath() {}, clip() {}, translate() {}, scale() {}, transform() {},
+      rect(x: number, _y: number, w: number) { rects.push([x, x + w]); },
+    } as unknown as CanvasRenderingContext2D;
+    const seg = { kind: 'text' as const, text: 'كتاب', width: stubWidth('كتاب'), rtl: true as const, runs: [{ text: 'كتا' }, { text: 'ب', bold: true }] };
+    const style = () => ({ font: BOLD, fill: '#f00' });
+    const paint = (t: string, x: number, y: number) => ctx.fillText(t, x, y);
+    paintWordRuns(ctx, seg, 100, 50, paint, style);
+    const end = beginMirroredFlow(ctx, 400);
+    paintWordRuns(ctx, seg, 100, 50, paint, style);
+    end();
+    const [plain, mirrored] = rects;
+    // The last letter of a right-to-left word is at its left end, and at
+    // its right end once the word is turned back on a mirrored page.
+    const w = seg.width;
+    expect(plain![0]).toBeCloseTo(100, 6);
+    expect(mirrored![0]).toBeCloseTo(2 * 100 + w - plain![1]!, 6);
+    expect(mirrored![1]).toBeCloseTo(100 + w, 6);
   });
 });
 
