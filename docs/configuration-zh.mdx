@@ -7617,10 +7617,11 @@ const book = createFolioFromDocument(document.getElementById('book')!, doc, {
 book.setDocument(buildDocument({ markdown: edited }, config));
 ```
 
-- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面所在位置的设备像素精确绘制每一页（WebGL因此逐像素显示，与画布预览一样清晰），而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页；长距离翻页途中掠过的页面在空中显示为空白纸张。`setDocument`会保留新版面中内容不变的每一页的绘制结果（图片载入之后，用`{ repaint: true }`全部重新绘制）。
+- **页面按需绘制。** `createFolioFromDocument`用`renderPageToCanvas`按页面所在位置的设备像素精确绘制每一页（WebGL因此逐像素显示，与画布预览一样清晰），而且只绘制当前展开页附近的展开页（`window`，默认前后各三个）。移出这个范围的页面会被释放，所以一千页的书也只占几页的内存。跳到很远的页面时，先绘制那个展开页。十页以内，书页一张一张地翻；更远时，中间的整叠书页作为一块整体抬起，厚度就是这些书页的厚度（各张厚度之和），落到另一侧。`setDocument`会保留新版面中内容不变的每一页的绘制结果（图片载入之后，用`{ repaint: true }`全部重新绘制）。
 - **书本由文档决定。** 第一页是右页（`pageIndexOffset`为偶数）时单独显示在右侧；右侧装订的书（`page.binding: 'right'`，或竖排文档）呈镜像，向左翻页；空白页使用页面的背景色；页面的成品宽度（`pageWidthMm`）决定纸张厚度和封面纸板的比例。用`continuation`排出的一章，会把书中其余的页（它之前的`pageIndexOffset`页，之后到`bookPageCount`为止的页）计入两侧书芯的厚度，但不绘制它们（`extraPages`）。
 - **外观由文档决定。** 纸张、装订、桌面和光照来自文档的[`folio`设置](#书页视图配置)（`doc.config.folio`）。排在`:::paper`段落中的页面带有自己的纸张（`VDTPage.paper`），这一叶按该纸张的颜色、表面、厚度和挺度绘制。设置`binding.cover: 'pages'`时，第一页是封面纸板，最后一页（落在左页时）是封底纸板（`covers`）。
 - **尺寸由容器决定。** 书本占满容器，按钮和页码位于边距中，所以要给容器设定高度；尺寸改变时会按新尺寸重新绘制页面。宽度小于560像素时一次显示一页（`mode: 'auto'`；`'single'`和`'double'`可强制其中一种）：书脊沿页面内侧边缘，书页绕着它翻动；朝书脊方向拖动向前翻，背离书脊滑动向后翻，轻点则翻页。
+- **指针做什么。** `interaction`（以及之后的`setInteraction`）决定鼠标左键、一根手指或一支笔在书上做什么：`'hand'`（默认）拿起书页翻动，`'orbit'`像右键拖动那样转动视角（适合触控板和平板），`'select'`把指针交给宿主程序，例如用来选择文字。`pageAt(event)`给出指针下的页面以及页面上的位置（`{ page, x, y }`，从页面左上角算起的宽高比例），按书本被看到的样子计算，倾斜或转动后也一样；`pointOnScreen(point)`反过来换算，用来在页面上画出光标或选区。`refreshPage(src)`重新显示宿主在原处重绘的页面画布。Sandbox用这些接口在3D书页上选择文字并跟随编辑器的光标。
 - **读者可以绕着书看。** 按住右键拖动可让视角绕书旋转（最低到偏离正上方70°），翻页过程中也可以；`resetView()`把视角平缓地恢复到设置中的`tilt`。沙盒把它做成了**重置视角**按钮。
 - **先加载字体和图片。** 与`renderPage`一样，绘制页面之前，文档用到的字体必须已在`document.fonts`中加载，资源图片必须已通过`registerResourceImage`注册。
 - **无障碍。** 查看器是可获得焦点的组，响应←/→（右侧装订的书方向相反）、Page Up/Down、Home和End；按钮和页码都有标签（用`labels`翻译），每个页面画布都带有替代文本（`alt: (index) => …`）。
