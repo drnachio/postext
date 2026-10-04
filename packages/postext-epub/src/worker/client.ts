@@ -139,7 +139,12 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
   const current = (): Worker => {
     if (disposed) throw new Error('EPUB worker has been disposed');
     if (!worker) {
-      worker = make!();
+      try {
+        worker = make!();
+      } catch (err) {
+        // No module workers here, or a policy forbids the script.
+        throw new EpubWorkerError(err instanceof Error ? err.message : String(err));
+      }
       listen(worker);
     }
     return worker;

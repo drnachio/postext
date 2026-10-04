@@ -173,6 +173,12 @@ describe('createEpubWorker', () => {
     await expect(pending).rejects.toBeInstanceOf(EpubWorkerError);
   });
 
+  it('reports a worker that cannot be made as an EpubWorkerError', async () => {
+    const handle = createEpubWorker({ worker: () => { throw new Error('Module scripts are not supported'); } });
+    handles.push(handle);
+    await expect(handle.render(book(), { layout: 'fixed', metadata })).rejects.toBeInstanceOf(EpubWorkerError);
+  });
+
   it('refuses work once disposed', async () => {
     const handle = createEpubWorker({ worker: asWorker(new ChannelWorker()) });
     handle.dispose();

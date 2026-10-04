@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveColorValue, resolveDiagramStyleConfig, type PostextConfig, type Resource, type VDTDocument } from 'postext';
-import { renderToEpub, type EpubCover, type EpubLayout, type EpubWarning } from 'postext-epub';
+import { renderToEpub, type EpubCover, type EpubLayout, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
+import { createEpubWorker, EpubWorkerError, type EpubWorkerHandle } from 'postext-epub/worker';
 import { useBookPlan, useSandboxSelector, useSandboxStateGetter } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
 import { layOutBookPrint } from '../book/printChain';
@@ -56,6 +57,14 @@ export function EpubViewport() {
   const labels = useSandboxSelector((s) => s.labels);
   const getState = useSandboxStateGetter();
   const layoutWorker = useLayoutWorker('pdf');
+  // The file is written on a worker of this tab's own, so the page keeps
+  // answering while a long book is packed; the main thread writes it when
+  // workers are unavailable or this one fails to start.
+  const epubWorkerRef = useRef<EpubWorkerHandle | null>(null);
+  useEffect(() => () => {
+    epubWorkerRef.current?.dispose();
+    epubWorkerRef.current = null;
+  }, []);
 
   const [generated, setGenerated] = useState<Generated | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -142,7 +151,7 @@ export function EpubViewport() {
       for (const family of withheld) onWithheld(family);
       signal.throwIfAborted();
 
-      const bytes = await renderToEpub(docs, {
+      const options: RenderToEpubOptions = {
         layout: snapshotLayout,
         metadata,
         fonts,
@@ -151,7 +160,28 @@ export function EpubViewport() {
         onProgress: (p) => setProgress({ phase: p.phase, done: p.done, total: p.total }),
         onWarning: note,
         signal,
-      });
+      };
+      const write = perfSpan('epub.write', { layout: snapshotLayout });
+      let bytes: Uint8Array | null = null;
+      if (typeof Worker !== 'undefined') {
+        try {
+          epubWorkerRef.current ??= createEpubWorker();
+          // The worker takes the buffers: the cover's copy keeps ours for
+          // the fallback below.
+          bytes = await epubWorkerRef.current.render(docs, { ...options, ...(cover ? { cover: { ...cover, bytes: cover.bytes.slice() } } : {}) });
+        } catch (err) {
+          if (!(err instanceof EpubWorkerError)) throw err;
+          console.warn('[EpubViewport] EPUB worker unavailable, writing on the main thread:', err.message);
+          epubWorkerRef.current?.dispose();
+          epubWorkerRef.current = null;
+        }
+      }
+      if (!bytes) {
+        // The font buffers went to the worker if it was tried: fetch them again.
+        const again = typeof Worker !== 'undefined' ? (await collectEpubFonts(snapshot.config, docs)).fonts : fonts;
+        bytes = await renderToEpub(docs, { ...options, fonts: again });
+      }
+      write.end({ kb: Math.round(bytes.byteLength / 1024) });
       signal.throwIfAborted();
       total.end({ kb: Math.round(bytes.byteLength / 1024), chapters: docs.length });
       setGenerated({ bytes, layout: snapshotLayout, title: metadata.title });
