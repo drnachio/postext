@@ -1,8 +1,8 @@
-// What the three editions of the guide say about the book and the Sandbox,
+// What the four editions of the guide say about the book and the Sandbox,
 // held to the code that makes it true: each edition's body size and
-// leading, the groups of the Design panel, the regions whose punctuation
-// keeps a full square, what the Chinese edition itself sets, and the length
-// of a vertical book's lines in the HTML view.
+// leading, the groups of the Design panel, the viewer's tabs, the regions
+// whose punctuation keeps a full square, what the Chinese edition itself
+// sets, and the length of a vertical book's lines in the HTML view.
 
 import { describe, expect, it } from 'vitest';
 import { buildDocument, resolveCjkConfig, type CjkRegion, type PostextConfig } from 'postext';
@@ -11,12 +11,16 @@ import { createPostextGuideConfig } from '../context/guideConfig';
 import { GUIDE_FOLIO } from '../context/guideKit';
 import { SETTINGS_GROUPS, type SettingsGroupId } from '../sidebar/sections/registry';
 import { DEFAULT_LABELS } from '../types/defaultLabels';
+import { VIEWPORT_TABS } from '../storage/viewHash';
 import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
 
 const spanish = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/es.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
 };
 const catalan = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ca.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
+const chinese = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/zh.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
 };
 
@@ -90,6 +94,35 @@ describe('what the guide says about itself and the Sandbox', () => {
         expect(at, `${edition}: “${name}” after “${list.slice(0, from)}”`).toBeGreaterThanOrEqual(0);
         from = at + name.length;
       }
+    }
+  });
+
+  it('names the viewer’s tabs, how many and in the order the tab bar shows them', () => {
+    const labels: Record<Edition, Record<string, string>> = {
+      en: DEFAULT_LABELS as unknown as Record<string, string>,
+      es: spanish.default.Sandbox,
+      ca: catalan.default.Sandbox,
+      'zh-Hans': chinese.default.Sandbox,
+    };
+    const COUNT: Record<Edition, string[]> = {
+      en: ['four', 'five', 'six'],
+      es: ['cuatro', 'cinco', 'seis'],
+      ca: ['quatre', 'cinc', 'sis'],
+      'zh-Hans': ['四', '五', '六'],
+    };
+    const said: Record<Edition, [RegExp, RegExp, RegExp]> = {
+      en: [/shows the same layout in (\w+) tabs: ([^.]*)\./, /, | and /, /^## The (\w+) views$/m],
+      es: [/muestra la misma maquetación en (\w+) pestañas: ([^.]*)\./, /, | y /, /^## Las (\w+) vistas$/m],
+      ca: [/mostra la mateixa maquetació en (\w+) pestanyes: ([^.]*)\./, /, | i /, /^## Les (\w+) vistes$/m],
+      'zh-Hans': [/用(.)个标签页显示同一个版面：([^。]*)。/, /、|和/, /^## (.)种视图$/m],
+    };
+    const count = (edition: Edition, word: string) => COUNT[edition].indexOf(word) + 4;
+    for (const edition of Object.keys(said) as Edition[]) {
+      const [sentence, separator, heading] = said[edition];
+      const [, n, list] = claim(edition, sentence);
+      expect(list!.split(separator), edition).toEqual(VIEWPORT_TABS.map((tab) => labels[edition][tab]));
+      expect(count(edition, n!), edition).toBe(VIEWPORT_TABS.length);
+      expect(count(edition, claim(edition, heading)[1]!), edition).toBe(VIEWPORT_TABS.length);
     }
   });
 

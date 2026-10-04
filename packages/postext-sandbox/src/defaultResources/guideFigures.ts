@@ -503,8 +503,8 @@ const SANDBOX_UI = byLang(
 );
 
 /** The Sandbox interface: activity bar with its seven panels, the text
- *  editor with the chapter switcher, and the viewport with its four tabs
- *  showing a spread. */
+ *  editor with the chapter switcher, and the viewport with its scope choice
+ *  and five tabs showing a spread. */
 export function sandboxUiSvg(lang: GuideLang): string {
   const { aria: ariaLabel, chapter, scope, panels } = SANDBOX_UI[lang];
   const TEXT_PANEL = 2;
@@ -523,12 +523,22 @@ export function sandboxUiSvg(lang: GuideLang): string {
     + editorWidths.map((w, i) => bar(edX + 16, 76 + i * 19, w, i === 0 ? P.blue : i === 5 ? '#e7b54a' : P.barSoft, 7)).join('');
   const vx = 284;
   const vw = 332;
-  const tabs = ['Canvas', 'HTML', lang === 'zh-Hans' ? '书页' : 'Folio', 'PDF'];
+  // The bar as the Sandbox draws it: the scope choice at the left, the
+  // five tabs at the right, Canvas open. Tab widths are Geist's at FS.small.
+  const tabs: [string, number][] = [['Canvas', 35.5], ['PDF', 19.2], [lang === 'zh-Hans' ? '书页' : 'Folio', lang === 'zh-Hans' ? 20 : 21.9], ['HTML', 26.5], ['EPUB 3', 34.9]];
+  const tabGap = 16;
+  const tabsX = vx + vw - 14 - tabs.reduce((w, [, tw]) => w + tw, 0) - tabGap * (tabs.length - 1);
+  let tabX = tabsX;
+  const tabLabels = tabs.map(([t, tw], i) => {
+    const label = text(tabX, 50, t, { size: FS.small, color: i === 0 ? P.blueDark : P.muted, weight: i === 0 ? 600 : 400, anchor: 'start' });
+    tabX += tw + tabGap;
+    return label;
+  }).join('');
   const viewport = card(vx, 30, vw, 272, P.paper, P.hair)
-    + tabs.map((t, i) => text(vx + 40 + i * 54, 50, t, { size: FS.label, color: i === 0 ? P.blueDark : P.muted, weight: i === 0 ? 600 : 400 })).join('')
-    + `<rect x="${vx + 18}" y="58" width="44" height="3.5" rx="1.75" fill="${P.blue}" />`
-    + `<rect x="${vx + vw - 104}" y="37" width="90" height="20" rx="10" fill="${P.blueTint}" stroke="${P.blueMid}" />`
-    + text(vx + vw - 59, 51, scope, { size: FS.small, color: P.blueDark, weight: 600 })
+    + tabLabels
+    + `<rect x="${tabsX - 3}" y="58" width="${tabs[0]![1] + 6}" height="3.5" rx="1.75" fill="${P.blue}" />`
+    + `<rect x="${vx + 14}" y="37" width="88" height="20" rx="10" fill="${P.blueTint}" stroke="${P.blueMid}" />`
+    + text(vx + 58, 51, scope, { size: FS.small, color: P.blueDark, weight: 600 })
     + `<line x1="${vx}" y1="66" x2="${vx + vw}" y2="66" stroke="${P.hair}" />`;
   // A spread in the viewport: opener verso, body recto.
   const sx = vx + 44;

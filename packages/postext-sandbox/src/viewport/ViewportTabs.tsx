@@ -7,9 +7,8 @@ import type { LayoutScope } from '../book/types';
 import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
 import type { EpubLayout, SandboxLabels, ViewportTab } from '../types';
 import { SegmentedControl, cn } from '../ui';
+import { VIEWPORT_TABS as ALL_TABS } from '../storage/viewHash';
 import { folioSupported } from './folioSupport';
-
-const ALL_TABS: ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub'];
 
 /** The expansion of each tab label that is an abbreviation. */
 const TAB_ABBR: Partial<Record<ViewportTab, keyof SandboxLabels>> = { pdf: 'abbrPdf', html: 'abbrHtml', epub: 'abbrEpub' };

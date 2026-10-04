@@ -44,11 +44,12 @@ export interface ViewHash {
 
 export const EMPTY_VIEW_HASH: ViewHash = { preset: null, project: null, lang: null, view: null, chapter: null, page: null };
 
-const VIEWS: readonly ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub'];
+/** The viewers, in the order of the tab bar (the guide names them so). */
+export const VIEWPORT_TABS: readonly ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub'];
 
 /** Whether a stored or linked value names one of the viewers. */
 export function isViewportTab(value: unknown): value is ViewportTab {
-  return VIEWS.includes(value as ViewportTab);
+  return VIEWPORT_TABS.includes(value as ViewportTab);
 }
 /** A BCP 47-ish tag: `es`, `en-US`, `pt-BR`, `zh-Hant`. */
 const LANG_RE = /^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$/;

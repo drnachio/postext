@@ -771,7 +771,7 @@ function phasesTableModel(lang: GuideLang): TableModel {
         ['1 · 基础', '数据模型、解析器、不借助DOM的测量、文档格式', '确定配置格式'],
         ['2 · 出版排版', '分栏、平衡分栏、浮动体、可拆分或旋转的表、书与篇', '文字绕排'],
         ['3 · 专业排版', 'Knuth–Plass断行、8种语言的断词、段首孤行、段末孤行与孤字、数学公式、脚注和章末注、中文横排与竖排', '边注'],
-        ['4 · 输出', 'Canvas、HTML、带标签的PDF、worker、带预设的Sandbox', '**已完成**'],
+        ['4 · 输出', 'Canvas、HTML、带标签的PDF、EPUB 3、worker、带预设的Sandbox', '**已完成**'],
       ],
     );
   }
@@ -783,7 +783,7 @@ function phasesTableModel(lang: GuideLang): TableModel {
         ['1 · Fonaments', 'Model de dades, parser, mesura sense DOM, format del document', open + ': tancar el format de configuració'],
         ['2 · Maquetació editorial', 'Columnes, equilibri, flotants, taules que es parteixen o giren, llibres i parts', open + ': text que envolta obstacles'],
         ['3 · Tipografia professional', 'Knuth-Plass, partició de mots en 8 llengües, òrfenes, vídues i línies curtes, matemàtiques, notes a peu de pàgina i notes de final de capítol, xinès en horitzontal i en vertical', open + ': notes al marge'],
-        ['4 · Sortida', 'Canvas, HTML, PDF etiquetat, worker, Sandbox amb presets', '**Fet**'],
+        ['4 · Sortida', 'Canvas, HTML, PDF etiquetat, EPUB 3, worker, Sandbox amb presets', '**Fet**'],
       ],
     );
   }
@@ -797,7 +797,7 @@ function phasesTableModel(lang: GuideLang): TableModel {
           ['1 · Fundamentos', 'Modelo de datos, parser, medición sin DOM, formato del documento', open + ': cerrar el formato de configuración'],
           ['2 · Maquetación editorial', 'Columnas, equilibrado, flotantes, tablas que se parten o giran, libros y partes', open + ': texto que rodea obstáculos'],
           ['3 · Tipografía profesional', 'Knuth-Plass, separación silábica en 8 idiomas, huérfanas, viudas y líneas cortas, matemáticas, notas al pie y notas de final de capítulo, chino en horizontal y en vertical', open + ': notas al margen'],
-          ['4 · Salida', 'Canvas, HTML, PDF etiquetado, worker, Sandbox con presets', done],
+          ['4 · Salida', 'Canvas, HTML, PDF etiquetado, EPUB 3, worker, Sandbox con presets', done],
         ],
       )
     : table(
@@ -806,7 +806,7 @@ function phasesTableModel(lang: GuideLang): TableModel {
           ['1 · Foundation', 'Data model, parser, DOM-free measurement, document format', open + ': finalise the configuration format'],
           ['2 · Editorial layout', 'Columns, balancing, floats, tables that split or rotate, books and parts', open + ': text flowing around obstacles'],
           ['3 · Professional typography', 'Knuth-Plass, hyphenation in 8 languages, orphans, widows and runts, mathematics, footnotes and chapter-end notes, Chinese set horizontally and vertically', open + ': margin notes'],
-          ['4 · Output', 'Canvas, HTML, tagged PDF, worker, Sandbox with presets', done],
+          ['4 · Output', 'Canvas, HTML, tagged PDF, EPUB 3, worker, Sandbox with presets', done],
         ],
       );
 }
@@ -1038,10 +1038,10 @@ const FIGURE_SPECS: FigureSpec[] = [
     fileId: 'default-sandbox-ui',
     placement: { position: 'auto', span: 'page' },
     caption: byLang(
-      'The Sandbox: the activity bar with its seven panels, the text editor with the chapter switcher, and the viewport with its Canvas, HTML and PDF tabs.',
-      'El Sandbox: la barra de actividad con sus siete paneles, el editor de texto con el selector de capítulos y el visor con sus pestañas Canvas, HTML y PDF.',
-      'Sandbox：带七个面板的活动栏、带章节切换器的文字编辑器，以及带Canvas、HTML和PDF三个标签页的视图区。',
-      'El Sandbox: la barra d\'activitat amb els seus set taulers, l\'editor de text amb el selector de capítols i el visor amb les pestanyes Canvas, HTML i PDF.',
+      'The Sandbox: the activity bar with its seven panels, the text editor with the chapter switcher, and the viewport with its five tabs, from Canvas to EPUB 3.',
+      'El Sandbox: la barra de actividad con sus siete paneles, el editor de texto con el selector de capítulos y el visor con sus cinco pestañas, de Canvas a EPUB 3.',
+      'Sandbox：带七个面板的活动栏、带章节切换器的文字编辑器，以及带Canvas、PDF、书页、HTML和EPUB 3五个标签页的视图区。',
+      'El Sandbox: la barra d\'activitat amb els seus set taulers, l\'editor de text amb el selector de capítols i el visor amb les seves cinc pestanyes, de Canvas a EPUB 3.',
     ),
     altText: byLang(
       'Interface sketch: a column of seven icons, an editor panel with a chapter title, and a viewport showing a two-page spread.',
