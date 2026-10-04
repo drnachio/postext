@@ -1581,6 +1581,11 @@ export function SandboxProvider({
         // preset applies below gets written (and stale records deleted).
         prevResourcesRef.current = loaded;
         resourcesLoadedRef.current = true;
+        // The stored book's resources are the state's from now on: a branch
+        // below that leaves the book as it is (a link to the book already on
+        // screen) must not leave it without them, or the next save writes
+        // the book back empty. A branch that opens another book sets its own.
+        if (stateRef.current.activeProjectId === null) dispatch({ type: 'SET_RESOURCES', payload: loaded });
 
         const before = stateRef.current;
         // The stored book is a preset with a draft: it was opened from (or

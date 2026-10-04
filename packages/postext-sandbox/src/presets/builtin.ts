@@ -43,7 +43,8 @@ export function isPristineChineseGuide(book: BookContent): boolean {
  *  interface, which stays. The Chinese interface's own guide (the last
  *  visit was in Chinese) follows the next interface like the others. */
 export function pristineGuideFollowsViewer(book: BookContent, viewerMarkdown: string, previousViewer: string | null): boolean {
-  if (!isPristineBook(book, GUIDE_SAMPLE_DOCUMENTS) || book.chapters[0]!.markdown === viewerMarkdown) return false;
+  // The viewer's own edition, whole or cut into its chapters, stays.
+  if (!isPristineBook(book, GUIDE_SAMPLE_DOCUMENTS) || isPristineBook(book, [viewerMarkdown])) return false;
   return !isPristineChineseGuide(book) || (previousViewer !== null && guideLang(previousViewer) === 'zh-Hans');
 }
 

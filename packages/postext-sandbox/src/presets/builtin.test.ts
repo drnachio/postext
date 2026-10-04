@@ -107,6 +107,10 @@ describe('pristine guide detection with three languages', () => {
     // The interface's own edition, or an edited book, stays.
     expect(pristineGuideFollowsViewer(zh, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
     expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_ES, 'en')).toBe(true);
+    // The interface's own edition cut into its chapters stays too (it was
+    // reopened on every visit, leaving its resources out of the state).
+    expect(pristineGuideFollowsViewer(es, DEFAULT_MARKDOWN_ES, 'es')).toBe(false);
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_EN, 'en')).toBe(false);
     const edited = { ...en, chapters: en.chapters.map((c, i) => (i === 3 ? { ...c, markdown: `${c.markdown}\n\nEdited.` } : c)) };
     expect(pristineGuideFollowsViewer(edited, DEFAULT_MARKDOWN_ZH_HANS, 'en')).toBe(false);
   });
