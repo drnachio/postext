@@ -7,14 +7,19 @@
 // the letters with HarfBuzz from the same bytes.
 
 /** The code points of Fontsource's `arabic` subset, as its stylesheets
- *  declare them (the same unicode-range the browser picks the file by). */
-const ARABIC_RANGE = 'U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,'
-  + 'U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,'
-  + 'U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EEFF';
+ *  declare them (the same unicode-range the browser picks the file by). A
+ *  function, not a const: the kit is inlined after the recipe's top-level
+ *  awaits, and a const read before its line throws, where a function
+ *  declaration is hoisted. */
+function arabicRange() {
+  return 'U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,'
+    + 'U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,'
+    + 'U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EEFF';
+}
 
 /** Whether code point `cp` is in the arabic file. */
 function inArabicRange(cp) {
-  inArabicRange.ranges ??= ARABIC_RANGE.split(',').map((part) => {
+  inArabicRange.ranges ??= arabicRange().split(',').map((part) => {
     const [lo, hi = lo] = part.slice(2).split('-');
     return [parseInt(lo, 16), parseInt(hi, 16)];
   });
@@ -56,7 +61,7 @@ async function loadArabicFonts(faces, text = '') {
         const weight = parseInt(spec, 10);
         const style = spec.endsWith('i') ? 'italic' : 'normal';
         const face = new FontFace(family, `url(${arabicFileUrl(family, weight, style)}) format('woff2')`,
-          { weight: String(weight), style, unicodeRange: ARABIC_RANGE });
+          { weight: String(weight), style, unicodeRange: arabicRange() });
         document.fonts.add(await face.load().catch(() => {
           throw new Error(`Fontsource has no arabic file for ${family} ${weight} ${style}`);
         }));
