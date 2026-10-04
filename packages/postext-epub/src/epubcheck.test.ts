@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { renderToEpub } from './index';
 import type { RenderToEpubOptions } from './types';
-import { LORA, PNG, sampleBook } from './__tests__/sampleBook';
+import { AMIRI, LORA, PNG, arabicSampleBook, sampleBook } from './__tests__/sampleBook';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -42,11 +42,21 @@ const base = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
   resourceBytes: (fileId) => fileId === 'f1.png' ? { bytes: PNG, mediaType: 'image/png' } : undefined,
 });
 
-const samples: { name: string; options: RenderToEpubOptions }[] = [
+/** The right-to-left sample (#402), in Arabic. */
+const arabic = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
+  layout,
+  metadata: { title: 'كتاب تجريبي', creators: ['المؤلف'], language: 'ar', modified: new Date(Date.UTC(2026, 9, 4)) },
+  fonts: [{ family: 'Amiri', weight: 400, style: 'normal', bytes: AMIRI, format: 'ttf' }],
+  cover: { bytes: PNG, mediaType: 'image/png', alt: 'غلاف الكتاب' },
+});
+
+const samples: { name: string; options: RenderToEpubOptions; book?: () => ReturnType<typeof sampleBook> }[] = [
   { name: 'fixed', options: base('fixed') },
   { name: 'fixed-cover', options: { ...base('fixed'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
   { name: 'reflowable', options: base('reflowable') },
   { name: 'reflowable-cover', options: { ...base('reflowable'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
+  { name: 'arabic-fixed', options: arabic('fixed'), book: arabicSampleBook },
+  { name: 'arabic-reflowable', options: arabic('reflowable'), book: arabicSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {
@@ -57,7 +67,7 @@ describe.skipIf(!available)('EPUBCheck', () => {
     it(`${sample.name}: 0 errors, 0 warnings`, async () => {
       let bytes: Uint8Array;
       try {
-        bytes = await renderToEpub(sampleBook(), sample.options);
+        bytes = await renderToEpub((sample.book ?? sampleBook)(), sample.options);
       } catch (e) {
         // A rendition still being written is not checked yet.
         if (/not implemented/.test(String(e))) return;

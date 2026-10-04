@@ -71,3 +71,45 @@ export function sampleBook(): VDTDocument[] {
 export function layOutBook(chapters: string[], overrides: PostextConfig = {}): VDTDocument[] {
   return buildBundle({ chapters: chapters.map((markdown) => ({ markdown })), config: { ...config, ...overrides } });
 }
+
+/** Amiri (OFL), the subset the PDF backend's Arabic tests embed. */
+export const AMIRI = new Uint8Array(fs.readFileSync(new URL('../../../postext-pdf/src/__tests__/fixtures/arabic/amiri-subset.ttf', import.meta.url)));
+
+/** A right-to-left book (#402): Arabic chapters, right-bound, with Latin
+ *  and digit runs, an English isolate naming its language, «(١)» notes,
+ *  justified text stretched with kashidas, a `:::verse` poem and an
+ *  English block. */
+export const ARABIC_CHAPTERS = [
+  [
+    '# الفصل الأول',
+    '',
+    `قال الراوي إن الملك AAA كان يحكم سنة ١٤٤٥ هـ (2024 م)[^a]. ${'قال الراوي إن الملك شهريار كان يحكم بلاد الهند والصين، وكان له أخ اسمه شاه زمان. '.repeat(4)}`,
+    '',
+    'وقال الشيخ :ltr[the old man]{lang=en} ثم سكت وكتب جمـيل.',
+    '',
+    ':::verse{ornament="٭"}',
+    'يا حرقة الدهر كفي || إن لم تكفي فعفي',
+    'فلا بحظي أعطي || ولا بصنعة كفي',
+    ':::',
+    '',
+    ':::paragraphs{dir=ltr}',
+    'An English paragraph with the word كتاب in it.',
+    ':::',
+    '',
+    '[^a]: حاشية NOTE-A.',
+  ].join('\n'),
+  ['# الفصل الثاني', '', 'قال الراوي إن الملك شهريار كان يحكم بلاد الهند والصين. '.repeat(10)].join('\n'),
+];
+
+export function arabicSampleBook(): VDTDocument[] {
+  return buildBundle({
+    chapters: ARABIC_CHAPTERS.map((markdown) => ({ markdown })),
+    config: {
+      ...config,
+      locale: 'ar',
+      bodyText: { fontFamily: 'Amiri', textAlign: 'justify' },
+      headings: { fontFamily: 'Amiri' },
+      footnotes: { markerTemplate: '({n})', numbering: 'page' },
+    },
+  });
+}

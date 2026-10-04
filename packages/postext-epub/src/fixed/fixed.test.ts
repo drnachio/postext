@@ -230,4 +230,20 @@ describe('fixed layout of a right-to-left book', () => {
     expect(first).not.toMatch(/<body[\s\S]*<style>/);
     expect(pub.toc[0]!.label).toBe('الفصل الأول');
   });
+
+  it('paints the tatweels of justification but keeps them out of copied text (#402)', async () => {
+    const docs = layOutBook(['قال AAA إن الملك شهريار كان يحكم بلاد الهند والصين، وكتب المؤلف جمـيل. '.repeat(12)], {
+      locale: 'ar',
+      bodyText: { textAlign: 'justify' },
+    });
+    const segments = docs[0]!.pages[0]!.columns[0]!.blocks.flatMap((b) => b.lines.flatMap((l) => l.segments ?? []));
+    expect(segments.some((s) => s.kashida && s.kashida.length > 0)).toBe(true);
+    const pub = await buildFixedPublication(docs, { layout: 'fixed', metadata: { title: 'كتاب', language: 'ar' } });
+    const first = String(pub.items.find((i) => i.id === 'page-0001')!.data);
+    // Inserted tatweels sit in spans no selection reaches; the one the
+    // author typed (جمـيل) is plain text.
+    expect(first).toMatch(/<span style="-webkit-user-select:none;user-select:none;">ـ+<\/span>/);
+    expect(first).toContain('جمـيل.');
+    expect(first).toMatch(/<span dir="ltr" style="[^"]*">AAA<\/span>/);
+  });
 });
