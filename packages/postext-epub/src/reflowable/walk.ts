@@ -254,6 +254,7 @@ class DocWalker {
     // Page starts with no text after them: at the end of the last file.
     this.flushPages();
     this.finishNotes();
+    this.markPullQuotes();
     // Anchors no line holds: at the start of their page.
     for (const a of this.doc.anchors ?? []) {
       if (this.book.anchors.has(a.id)) continue;
@@ -1000,6 +1001,66 @@ class DocWalker {
   }
 
 
+  // --- pull quotes ---------------------------------------------------------
+
+  /**
+   * Pull quotes: a box of text alone (untitled, or titled with marks
+   * alone) whose words (twenty letters or more)
+   * the chapter's running text also reads (letters and digits compared,
+   * case aside; an ellipsis in the box may stand for words left out) is
+   * marked `'echo'`, and the
+   * serializer hides it from assistive technology, so its words are read
+   * once, where the text has them. A box whose style id names it a pull
+   * quote (`pullquote`, `pull-quote`…) but whose words are its own stays
+   * readable (`'own'`).
+   */
+  private markPullQuotes(): void {
+    const files = this.book.files.filter((f) => f.doc === this.index);
+    const text: string[] = [];
+    const boxes: CalloutNode[] = [];
+    const collect = (nodes: readonly Node[]): void => {
+      for (const n of nodes) {
+        switch (n.k) {
+          case 'callout':
+            boxes.push(n);
+            break;
+          case 'p':
+          case 'h':
+            text.push(plainText(n.inl));
+            break;
+          case 'quote':
+            collect(n.children);
+            break;
+          case 'list': {
+            const items = (list: ListNode): void => {
+              for (const item of list.items) {
+                text.push(plainText(item.inl));
+                collect(item.children);
+              }
+            };
+            items(n);
+            break;
+          }
+          case 'verse':
+            for (const b of n.bayts) text.push(plainText(b.sadr), plainText(b.ajuz));
+            break;
+          default:
+            break;
+        }
+      }
+    };
+    for (const f of files) collect(f.nodes);
+    if (boxes.length === 0) return;
+    const body = letters(text.join(' '));
+    for (const box of boxes) {
+      const named = /pull[\s_-]?quote/i.test(box.styleId ?? '');
+      // A title of marks alone (a hanging quotation mark) is decoration.
+      const echoed = letters(box.title ?? '') === '' && box.children.length > 0 && box.children.every((c) => c.k === 'p' || c.k === 'quote') && echoes(box, body);
+      if (echoed) box.pullQuote = 'echo';
+      else if (named) box.pullQuote = 'own';
+    }
+  }
+
   // --- notes ---------------------------------------------------------------
 
   private note(block: VDTBlock): void {
@@ -1029,6 +1090,32 @@ class DocWalker {
       file.notes.push({ doc: note.doc, id: note.id, inl: note.inl, ...(note.dir ? { dir: note.dir } : {}) });
     }
   }
+}
+
+/** The letters and digits of a text, lower case: what two settings of
+ *  the same words share whatever their quotation marks, dashes and
+ *  spacing. */
+function letters(text: string): string {
+  return text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+/** Whether the words of a box are read in `body` (see `letters`): each run
+ *  between the ellipses that mark words left out, in order. */
+function echoes(box: CalloutNode, body: string): boolean {
+  const words = box.children
+    .flatMap((c) => (c.k === 'p' ? [c] : c.k === 'quote' ? c.children : []))
+    .map((p) => plainText(p.inl))
+    .join(' ');
+  const runs = words.split(/\[?(?:…|\.\.\.)\]?/).map(letters).filter((r) => r.length > 0);
+  // A few words can repeat the text by chance: a pull quote is a sentence.
+  if (runs.reduce((n, r) => n + r.length, 0) < 20) return false;
+  let at = 0;
+  for (const run of runs) {
+    const found = body.indexOf(run, at);
+    if (found < 0) return false;
+    at = found + run.length;
+  }
+  return true;
 }
 
 function escapeText(text: string): string {

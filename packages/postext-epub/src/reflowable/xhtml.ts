@@ -300,7 +300,13 @@ class Writer {
         return this.list(node);
       case 'callout': {
         const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
-        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId)])}>\n${title}${this.nodes(node.children)}\n</aside>`;
+        // A pull quote keeps its box on the page; one that repeats the
+        // text is hidden from assistive technology (`doc-pullquote`, a
+        // presentational role), so its words are read once.
+        const pull = node.pullQuote
+          ? ` epub:type="pullquote"${node.pullQuote === 'echo' ? ' role="doc-pullquote" aria-hidden="true"' : ''}`
+          : '';
+        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), node.pullQuote && 'pt-pullquote'])}${pull}>\n${title}${this.nodes(node.children)}\n</aside>`;
       }
       case 'figure':
         return this.figure(node);

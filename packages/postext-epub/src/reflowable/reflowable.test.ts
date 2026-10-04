@@ -431,3 +431,23 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     expect(old.all).toMatch(/<p class="pt-index-entry">mitral, /);
   });
 });
+
+describe('reflowable rendition: pull quotes', () => {
+  const config = { ...baseConfig, calloutStyles: [{ id: 'pullquote', title: '“' }, { id: 'note' }] };
+
+  it('hides a pull quote that repeats the text from assistive technology', async () => {
+    const md = [
+      'She put it plainly. “A person stood on the same jetty and looked at the same water,” she says.',
+      '', ':::callout{type="pullquote"}', '*A person stood on the same jetty … the same water.*', ':::', '',
+      ':::callout{type="pullquote"}', 'Words of its own, printed nowhere else.', ':::', '',
+      ':::callout{type="note"}', 'She put it plainly.', ':::',
+    ].join('\n');
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<aside class="pt-callout pt-callout-pullquote pt-pullquote" epub:type="pullquote" role="doc-pullquote" aria-hidden="true">\n(?:<p class="pt-callout-title">“<\/p>\n)<p><em>A person stood/);
+    // A pull quote with words of its own is read.
+    expect(all).toMatch(/<aside class="pt-callout pt-callout-pullquote pt-pullquote" epub:type="pullquote">\n(?:<p class="pt-callout-title">“<\/p>\n)<p>Words of its own/);
+    // Too short to be told from a coincidence: a box like any other.
+    expect(all).toMatch(/<aside class="pt-callout pt-callout-note">\n<p>She put it plainly\.<\/p>/);
+  });
+});

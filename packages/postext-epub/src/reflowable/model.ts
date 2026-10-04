@@ -102,6 +102,11 @@ export interface CalloutNode {
   styleId?: string;
   title?: string;
   children: Node[];
+  /** A pull quote: `'echo'` when its words are read in the chapter's
+   *  text as well (the box is then hidden from assistive technology, so
+   *  the words are read once), `'own'` when only its style names it one
+   *  (walk.ts `markPullQuotes`). */
+  pullQuote?: 'echo' | 'own';
 }
 
 export interface FigureNode {
