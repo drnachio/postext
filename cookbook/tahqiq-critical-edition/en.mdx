@@ -1,0 +1,59 @@
+---
+title: "A taḥqīq: notes per page and abjad front matter"
+summary: "Front matter folioed أ ب ج د, the text from ١, the editor’s notes numbered (١) again on every page, and an index that sorts names without their article ال."
+plain: "The opening of Ibn Khaldūn’s Muqaddima as a modern Arabic scholarly edition: introduction pages numbered with letters, the text with digits, and footnotes that count from one again on every page."
+description: "An Arabic critical edition in Postext: abjad page numbers, :::numbering for the text, footnotes per page as (١), and an index with ignoreArticle."
+question: "How do I number the front matter of an Arabic book in abjad letters (أ، ب، ج)?"
+aliases: ["taḥqīq", "tahqiq", "critical edition", "Arabic scholarly edition", "abjad", "abjad numerals", "أبجد", "front matter numbering", "footnotes per page", "(١)", "Arabic footnotes", "Ibn Khaldūn", "Muqaddima", "مقدمة ابن خلدون", "index of names", "فهرس الأعلام", "تحقيق"]
+pageNotes: { "4": "The last page of the editor’s introduction, folio د at its foot.", "5": "The opening page of the text, folio ١: the section title in bold Naskh, its long subtitle under a short rule, the text with raised note numbers in parentheses, and three notes at the foot under a rule on the right, each opening with its number (١), (٢), (٣)." }
+---
+
+## What you'll build
+
+Eleven pages of a modern Arabic critical edition, a taḥqīq, of the first section of Ibn Khaldūn’s *Muqaddima*, on the excellence of history. The front matter is folioed in abjad letters, as Cairo and Beirut editions do: a title page أ, its imprint ب, then the editor’s introduction ج and د. The text starts again at ١ on the next recto. The editor’s notes stand at the foot of each page, numbered (١), (٢), (٣) and starting again on every page, under a short rule on the right; they gloss rare words, identify the people and places Ibn Khaldūn names and give the sūra and verse of each Qurʾān quotation. An index of names closes the book, sorted as Arabic indexes are, without the article ال. The notes and the introduction are written for this recipe.
+
+## Method
+
+### 1 · Two runs of folios and notes per page
+
+The code is [the short answer](#the-short-answer) above. `page.pageNumbering` starts the book in `'abjad'`, the letters in abjad order, with هـ for five. Before the text two directives start the count again on the next odd page in the document’s digits ([`:::numbering`](/en/docs/document-format#numbering), [Digits and numeral styles](/en/docs/arabic-layout#digits-and-numeral-styles)). The notes take `numbering: 'page'`, a `markerTemplate` of `'({n})'` and `noteNumberPosition: 'inline'`, so the marker is raised in the text and the note opens with its number on the line ([Footnotes](/en/docs/arabic-layout#footnotes)).
+
+<PageShot page={5} crop="0,0.62,1,0.33" caption="Page ١: the notes start at (١) again, under a rule on the start side of the page." />
+
+### 2 · An index that skips the article
+
+<Excerpt region="index" />
+
+Names are marked in the text, `:index[المسعودي]`, and `:::index` prints them at the end. With `ignoreArticle`, المسعودي files under م and الطبري under ط, while ابن إسحاق stays under ا; a see-reference sends إسرائيل to يعقوب ([Contents and index](/en/docs/arabic-layout#contents-and-index)). The page numbers in the index are the labels of the pages, so a name from the introduction reads ج.
+
+### 3 · Running heads over a rule
+
+<Excerpt region="furniture" />
+
+The verso carries the book’s title and the recto the section, over a hairline the width of the text block, with the folio at the outer end. In a book bound on the right the verso is the right-hand page, so its folio goes to the top right ([Page order and right binding](/en/docs/arabic-layout#page-order-and-right-binding)). Openers and the front matter take a folio centred at the foot instead.
+
+### 4 · A title page and its imprint
+
+<Excerpt region="title" />
+
+The title page and the imprint on its back are heading styles with nothing in the flow: their lines come from heading attributes, so the imprint’s Latin lines, which change with the edition, are one attribute in the Markdown.
+
+## Variations
+
+### Use the abjad numerals
+
+`'arabic-abjad'` writes the additive abjad numerals instead of the plain letter series: the eleventh page is يا, not ك.
+
+```diff
+-const pageNumbering = { format: 'abjad', startAt: 1 }; // أ ب ج د هـ و ز ح…
++const pageNumbering = { format: 'arabic-abjad', startAt: 1 }; // … ط ي يا يب
+```
+
+### Number the notes through the section
+
+`numbering: 'chapter'` counts the notes on from page to page, as some older editions do.
+
+```diff
+-  numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline',
++  numbering: 'chapter', markerTemplate: '({n})', noteNumberPosition: 'inline',
+```
