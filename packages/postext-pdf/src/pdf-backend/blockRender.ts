@@ -225,7 +225,9 @@ function renderSegments(
       const inLink = uris.space(seg.text);
       if (ctx.tags && seg.text) {
         tagContent(ctx, inLink ?? textElem);
-        drawTextPx(ctx, seg.text, x, baseline, blockFont, blockSize, blockColor);
+        // The gap of a poem's bayt holds the tab of its plain text (#378),
+        // which no face draws: it reads as a space.
+        drawTextPx(ctx, seg.text.replace(/\t/g, ' '), x, baseline, blockFont, blockSize, blockColor);
       }
       // A Han–Latin space keeps the width the composer set.
       x += composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
