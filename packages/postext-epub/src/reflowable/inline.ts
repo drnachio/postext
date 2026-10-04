@@ -75,11 +75,12 @@ function linkOf(seg: VDTLineSegment, ctx: InlineContext): LinkTarget | undefined
   return undefined;
 }
 
-function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegment): Format {
+function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegment, lang?: string): Format {
   const fmt: Format = {};
   if (seg.bold) fmt.bold = true;
   if (seg.italic) fmt.italic = true;
   if (!full) return fmt;
+  if (full.lang !== undefined && full.lang !== lang) fmt.lang = full.lang;
   if (full.script) fmt.script = full.script;
   if (full.fontString?.includes('small-caps')) fmt.smallCaps = true;
   if (full.captionLabel) fmt.label = true;
@@ -154,39 +155,73 @@ export function wrapFormat(inner: string, fmt: Format): string {
   if (fmt.script) out = `<${fmt.script}>${out}</${fmt.script}>`;
   if (fmt.italic) out = `<em>${out}</em>`;
   if (fmt.bold) out = `<strong>${out}</strong>`;
+  if (fmt.lang) out = `<span lang="${xmlAttr(fmt.lang)}" xml:lang="${xmlAttr(fmt.lang)}">${out}</span>`;
   return out;
+}
+
+/** `text` (which starts at `start` in its segment's text) without the
+ *  characters at `offsets` (into the segment's text, ascending). */
+function dropOffsets(text: string, offsets: readonly number[], start: number): string {
+  let out = '';
+  let last = 0;
+  for (const offset of offsets) {
+    const i = offset - start;
+    if (i < last || i >= text.length) continue;
+    out += text.slice(last, i);
+    last = i + 1;
+  }
+  return out + text.slice(last);
 }
 
 /** The text items of one line, in logical order. */
 export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.segments): InlineItem[] {
   const out: InlineItem[] = [];
   const segs = segments ?? (line.text ? [{ kind: 'text', text: line.text, width: 0 } as VDTLineSegment] : []);
+  // A line the engine read for directions (#369) gives each segment its
+  // embedding level: odd when `rtl`, `level` when past 1, else 0. Lines
+  // with no right-to-left run carry none, and their items none either.
+  const bidi = (line.segments ?? segs).some((s) => s.rtl || s.level !== undefined);
+  const lvlOf = (seg: VDTLineSegment): { lvl?: number } => (bidi ? { lvl: seg.level ?? (seg.rtl ? 1 : 0) } : {});
+  // The tatweels kashida justification inserted (#375) are print
+  // justification: a reading system justifies the text itself. A tatweel
+  // the author typed is not among a segment's `kashida` offsets and stays.
+  // A line counted as stretched with no offsets on its segments comes from
+  // a layout older than the offsets: every tatweel on it goes. (The whole
+  // line decides: `segments` may be a part of it, a poem's hemistich.)
+  const offsets = (line.segments ?? segs).some((s) => s.kashida !== undefined && s.kashida.length > 0);
   let first = true;
   for (const seg of segs) {
     const link = linkOf(seg, ctx);
     const raw = rawOf(seg, ctx);
     if (raw !== undefined) {
-      out.push({ t: 'raw', xhtml: raw, ...(link ? { link } : {}) });
+      out.push({ t: 'raw', xhtml: raw, ...(link ? { link } : {}), ...lvlOf(seg) });
       first = false;
       continue;
     }
     if (seg.kind === 'space') {
       const text = seg.labelTab ? ' ' : seg.text.length > 0 ? seg.text : seg.autospace ? '' : ' ';
-      if (text) out.push({ t: 'text', text, fmt: {}, ...(link ? { link } : {}) });
+      if (text) out.push({ t: 'text', text, fmt: {}, ...(link ? { link } : {}), ...lvlOf(seg) });
       continue;
     }
     if (seg.kind !== 'text') continue;
     const runs = seg.runs && seg.runs.length > 0 ? seg.runs : [{ text: seg.text, bold: seg.bold, italic: seg.italic }];
+    // Where each run starts in the segment's text (kashida offsets).
+    let at = 0;
     for (const run of runs) {
       let text = run.text;
+      const start = at;
+      at += run.text.length;
+      if (offsets) {
+        if (seg.kashida) text = dropOffsets(text, seg.kashida, start);
+      } else if (line.kashida) {
+        text = text.replace(/ـ/g, '');
+      }
       // The repeated hyphen of a compound broken at its hyphen
       // ("vencer-" | "-se") is not in the text.
       if (first && line.repeatedHyphen) text = text.replace(/^-/, '');
-      // Kashidas justification stretched the words with.
-      if (line.kashida) text = text.replace(/ـ/g, '');
       first = false;
       if (!text) continue;
-      out.push({ t: 'text', text, fmt: formatOf(run, seg), ...(link ? { link } : {}) });
+      out.push({ t: 'text', text, fmt: formatOf(run, seg, ctx.lang), ...(link ? { link } : {}), ...lvlOf(seg) });
     }
   }
   return out;
@@ -301,6 +336,6 @@ export function formatKey(fmt: Format): string {
   return [
     fmt.bold ? 'b' : '', fmt.italic ? 'i' : '', fmt.script ?? '', fmt.smallCaps ? 'c' : '', fmt.label ? 'l' : '',
     fmt.dots ? 'd' : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
-    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '',
+    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '',
   ].join('|');
 }

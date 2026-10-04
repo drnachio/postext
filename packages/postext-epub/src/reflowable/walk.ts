@@ -37,6 +37,7 @@ import type {
   TableNode,
   TocNode,
   TocRowNode,
+  VerseNode,
 } from './model';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, type InlineContext, type TextSink } from './inline';
 
@@ -62,6 +63,8 @@ export interface BookModel {
   altText: boolean;
   missingAlt: boolean;
   maths: boolean;
+  /** Whether a `:::verse` poem was read. */
+  verse: boolean;
   /** First entry of a back-of-book index, of a bibliography, and the
    *  contents a `:::toc` prints. */
   index?: Loc;
@@ -114,6 +117,17 @@ interface Sink extends TextSink {
   file: FileModel;
 }
 
+/** A poem being read, across the fragments of its block. */
+interface OpenVerse {
+  node: VerseNode;
+  top: Node;
+  /** The bayt and hemistich the last line set, and where its text goes:
+   *  a hemistich wider than the measure runs on over several lines. */
+  bayt?: number;
+  part?: string;
+  sink?: TextSink;
+}
+
 export function walkBook(docs: readonly VDTDocument[], options: WalkOptions): BookModel {
   const book: BookModel = {
     files: [],
@@ -126,6 +140,7 @@ export function walkBook(docs: readonly VDTDocument[], options: WalkOptions): Bo
     altText: false,
     missingAlt: false,
     maths: false,
+    verse: false,
   };
   const counters = { heading: 0, block: 0 };
   docs.forEach((doc, i) => new DocWalker(book, doc, i, options, counters).walk());
@@ -153,6 +168,7 @@ class DocWalker {
   private lastContainer?: Container;
   private callouts = new Map<number, { node: CalloutNode; state: Container }>();
   private readonly sinks = new Map<string, Sink>();
+  private readonly verses = new Map<string, OpenVerse>();
   private readonly tables = new Map<string, TableNode>();
   private readonly figures = new Set<string>();
   /** Text blocks read so far, with their content index: where floats go. */
@@ -409,6 +425,13 @@ class DocWalker {
       return;
     }
     const key = this.textKey(block);
+    const verse = this.verses.get(key);
+    if (verse) {
+      this.enter(block, root);
+      this.verseLines(verse, block);
+      this.record(block, verse.top);
+      return;
+    }
     const sink = this.sinks.get(key);
     if (sink) {
       this.enter(block, root);
@@ -543,6 +566,10 @@ class DocWalker {
       this.indexEntries(block, state, key);
       return;
     }
+    if (block.lines.some((l) => l.verse !== undefined)) {
+      this.verse(block, state, key);
+      return;
+    }
     const node: ParagraphNode = { k: 'p', inl: [], ...(block.direction ? { dir: block.direction } : {}) };
     const cls: string[] = [];
     if (block.bibEntry !== undefined) {
@@ -563,6 +590,60 @@ class DocWalker {
     this.appendBlockLines(sink, block, block.lines, this.takePages());
     this.record(block, top);
     if (!this.floating && block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };
+  }
+
+  /** A `:::verse` poem (#378): its lines back to bayts. */
+  private verse(block: VDTBlock, state: Container, key: string): void {
+    const node: VerseNode = { k: 'verse', pre: this.takePages(), bayts: [], ...(block.direction ? { dir: block.direction } : {}) };
+    state.nodes.push(node);
+    this.book.verse = true;
+    const open: OpenVerse = { node, top: this.topOf(state, node) };
+    this.verses.set(key, open);
+    this.verseLines(open, block);
+    this.record(block, open.top);
+  }
+
+  /**
+   * The lines of a poem's fragment, bayt by bayt (`VDTLine.verse`). A
+   * whole bayt's line is cut at its gap (the `labelTab` space; with an
+   * ornament, the inserted mark and an empty space follow it); a
+   * staggered bayt comes as a ṣadr line and an ʿajuz line; a hemistich
+   * broken over lines is joined again. Page starts waiting for text open
+   * the next bayt.
+   */
+  private verseLines(open: OpenVerse, block: VDTBlock): void {
+    const ctx = this.ctx(block);
+    const bayts = open.node.bayts;
+    for (const line of block.lines) {
+      const before = [...this.takePages(), ...this.anchorsAt(block, line)];
+      const v = line.verse ?? { bayt: -1, part: 'single' as const };
+      const segs = line.segments ?? [];
+      if (v.part === 'bayt') {
+        const gap = segs.findIndex((g) => g.kind === 'space' && g.labelTab);
+        const sadr = gap >= 0 ? segs.slice(0, gap) : segs;
+        const rest = gap >= 0 ? segs.slice(gap + 1) : [];
+        const ornament = rest.find((g) => g.kind === 'text' && g.inserted)?.text;
+        const ajuz = rest.filter((g) => !g.inserted && !(g.kind === 'space' && g.labelTab));
+        while (ajuz[0]?.kind === 'space') ajuz.shift();
+        const bayt = { sadr: [] as InlineItem[], ajuz: [] as InlineItem[], ...(ornament ? { ornament } : {}) };
+        bayts.push(bayt);
+        appendLine({ inl: bayt.sadr }, line, ctx, before, sadr);
+        open.sink = { inl: bayt.ajuz };
+        appendLine(open.sink, line, ctx, [], ajuz);
+      } else if (open.sink && v.bayt === open.bayt && v.part === open.part) {
+        appendLine(open.sink, line, ctx, before, segs);
+      } else {
+        let bayt = bayts[bayts.length - 1];
+        if (!(v.part === 'ajuz' && bayt && v.bayt === open.bayt && open.part === 'sadr')) {
+          bayt = { sadr: [], ajuz: [], ...(v.part === 'single' ? { single: true } : {}) };
+          bayts.push(bayt);
+        }
+        open.sink = { inl: v.part === 'ajuz' ? bayt.ajuz : bayt.sadr };
+        appendLine(open.sink, line, ctx, before, segs);
+      }
+      open.bayt = v.bayt;
+      open.part = v.part;
+    }
   }
 
   /**
@@ -874,7 +955,7 @@ class DocWalker {
     const id = block.footnoteNote!;
     let note = this.notes.get(id);
     if (!note) {
-      note = { doc: this.index, id, inl: [], sink: { inl: [] } };
+      note = { doc: this.index, id, inl: [], sink: { inl: [] }, ...(block.direction ? { dir: block.direction } : {}) };
       note.inl = note.sink.inl;
       this.notes.set(id, note);
     }
@@ -894,7 +975,7 @@ class DocWalker {
       const loc = this.book.notes.get(`${this.index}:${note.id}`);
       const file = loc?.file ?? this.file!;
       if (!loc) this.book.notes.set(`${this.index}:${note.id}`, { file, id: idOf('fn-', note.id) });
-      file.notes.push({ doc: note.doc, id: note.id, inl: note.inl });
+      file.notes.push({ doc: note.doc, id: note.id, inl: note.inl, ...(note.dir ? { dir: note.dir } : {}) });
     }
   }
 }

@@ -24,6 +24,7 @@ import { xmlAttr, xmlText } from './inline';
 import type { FileModel, HeadingEntry } from './model';
 import { docLanguage, walkBook } from './walk';
 import { relativeHref, writeContentDocument } from './xhtml';
+import { isRtlLanguage, navStrings } from '../package/strings';
 
 export const STYLESHEET_HREF = 'styles/book.css';
 const TEXT_DIR = 'text/';
@@ -137,7 +138,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   signal?.throwIfAborted();
 
   const vertical = first.config.layout.writingMode === 'vertical-rl';
-  const sheet = bookStylesheet(first.config, fonts.css, { vertical });
+  const sheet = bookStylesheet(first.config, fonts.css, { vertical, ...(book.verse ? { verse: true } : {}) });
   for (const family of sheet.families) {
     if (!fonts.families.has(family)) warn({ kind: 'missingFont', family });
   }
@@ -148,6 +149,17 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   items.push(...images.items.filter((i) => usedImages.has(i.href)));
   const spine: EpubSpineEntry[] = [];
   const landmarks: EpubLandmark[] = [];
+  // Landmark names: in the book's language for a right-to-left book,
+  // whose navigation document is set right to left in that language
+  // (#402); in English otherwise, as they have always been written.
+  const named = isRtlLanguage(metadata.language) ? navStrings(metadata.language) : undefined;
+  const names = {
+    cover: named?.cover ?? 'Cover',
+    toc: named?.contents ?? 'Table of contents',
+    bodymatter: named?.bodymatter ?? 'Start of content',
+    bibliography: named?.bibliography ?? 'Bibliography',
+    index: named?.index ?? 'Index',
+  };
 
   // Cover.
   if (options.cover) {
@@ -162,7 +174,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
       data: coverDocument(href, options.cover.alt ?? metadata.title, metadata.title, lang, book.files[0]?.dir),
     });
     spine.push({ idref: 'cover' });
-    landmarks.push({ type: 'cover', label: 'Cover', href: `${TEXT_DIR}cover.xhtml` });
+    landmarks.push({ type: 'cover', label: names.cover, href: `${TEXT_DIR}cover.xhtml` });
   }
 
   // Content documents.
@@ -192,11 +204,11 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   const at = (loc: { file: FileModel; id: string }) => `${loc.file.href}#${loc.id}`;
   // The navigation document is no spine item: the landmark names the
   // contents the book prints, when it prints them.
-  if (book.contents) landmarks.push({ type: 'toc', label: 'Table of contents', href: at(book.contents) });
+  if (book.contents) landmarks.push({ type: 'toc', label: names.toc, href: at(book.contents) });
   const body = book.files.find((f) => f.kind === 'chapter') ?? book.files[0];
-  if (body) landmarks.push({ type: 'bodymatter', label: 'Start of content', href: body.href });
-  if (book.bibliography) landmarks.push({ type: 'bibliography', label: 'Bibliography', href: at(book.bibliography) });
-  if (book.index) landmarks.push({ type: 'index', label: 'Index', href: at(book.index) });
+  if (body) landmarks.push({ type: 'bodymatter', label: names.bodymatter, href: body.href });
+  if (book.bibliography) landmarks.push({ type: 'bibliography', label: names.bibliography, href: at(book.bibliography) });
+  if (book.index) landmarks.push({ type: 'index', label: names.index, href: at(book.index) });
 
   const features = ['structuralNavigation', 'tableOfContents', 'readingOrder', 'displayTransformability'];
   if (book.altText || options.cover) features.push('alternativeText');

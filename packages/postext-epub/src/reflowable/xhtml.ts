@@ -1,6 +1,7 @@
 // The semantic model to EPUB 3 XHTML content documents: one per chapter
 // (or part opener), with its footnotes after the text.
 
+import { bidiClassOf } from 'postext';
 import type {
   FileModel,
   InlineItem,
@@ -10,6 +11,7 @@ import type {
   TableCellNode,
   TableNode,
   TocNode,
+  VerseNode,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
 import type { BookModel, Loc } from './walk';
@@ -36,17 +38,97 @@ export function relativeHref(from: string, to: string): string {
   return [...a.slice(i).map(() => '..'), ...b.slice(i)].join('/');
 }
 
+/** Cell alignments of a right-to-left book as logical values. */
+const CELL_ALIGN_RTL: Readonly<Record<string, string>> = { right: 'end' };
+
 function locHref(loc: Loc, from: FileModel): string {
   return loc.file === from ? `#${loc.id}` : `${relativeHref(from.href, loc.file.href)}#${loc.id}`;
 }
 
+/** The level the first strong letter of `text` asks for over a paragraph
+ *  at level `base`: the lowest odd level from `base` for a right-to-left
+ *  letter (UAX #9 classes R, AL), the lowest even one for a left-to-right
+ *  letter (L); undefined when it has none (spaces, digits, punctuation). */
+function strongLevel(text: string, base: number): number | undefined {
+  for (const ch of text) {
+    const cls = bidiClassOf(ch.codePointAt(0)!);
+    if (cls === 'L') return base % 2 === 0 ? base : base + 1;
+    if (cls === 'R' || cls === 'AL') return base % 2 === 1 ? base : base + 1;
+  }
+  return undefined;
+}
+
+/** Whether `items` hold a letter of either direction. */
+function hasStrong(items: readonly InlineItem[]): boolean {
+  return items.some((i) => i.t === 'raw' || (i.t === 'text' && strongLevel(i.text, 0) !== undefined));
+}
+
+/**
+ * The embedding level of every item of a paragraph whose own level is
+ * `base` (0 left to right, 1 right to left), or undefined when none rises
+ * above it (every left-to-right paragraph of a left-to-right book, every
+ * Arabic one with no Latin or digit run). The levels are the engine's
+ * (`InlineItem.lvl`), as it resolved the paragraph with the author's
+ * isolates (`:ltr[…]`, `:rtl[…]`). An item without one — a line with no
+ * right-to-left run, a heading set from its source title, the space
+ * that joins two lines — takes the level its first strong letter asks
+ * for, and a neutral one (a space, a page start, an anchor, digits) the
+ * lower of its neighbours' when both rise above `base`, else `base`: as
+ * UAX #9 resolves a neutral between two runs of one direction (N1).
+ */
+export function bidiLevels(items: readonly InlineItem[], base: number): number[] | undefined {
+  const known: (number | undefined)[] = items.map((item) => {
+    const lvl = item.t === 'text' || item.t === 'raw' ? item.lvl : undefined;
+    // Below the paragraph's level: a segment the engine gave no level of
+    // its own (a verse gap, an inserted mark).
+    if (lvl !== undefined && lvl >= base) return lvl;
+    return item.t === 'text' ? strongLevel(item.text, base) : undefined;
+  });
+  if (!known.some((l) => l !== undefined && l > base)) return undefined;
+  // The nearest known level after each item.
+  const after = new Array<number | undefined>(items.length);
+  for (let i = items.length - 1, next: number | undefined; i >= 0; i--) {
+    after[i] = next;
+    if (known[i] !== undefined) next = known[i];
+  }
+  const out = new Array<number>(items.length);
+  let prev: number | undefined;
+  for (let i = 0; i < items.length; i++) {
+    const own = known[i];
+    if (own !== undefined) {
+      out[i] = prev = own;
+      continue;
+    }
+    const next = after[i];
+    out[i] = prev !== undefined && next !== undefined ? Math.max(base, Math.min(prev, next)) : base;
+  }
+  return out;
+}
+
 class Writer {
   private svgCount = 0;
+  /** The direction the inline content written now is set in: the
+   *  document's, or a block's that differs from it. */
+  private dir: 'ltr' | 'rtl';
 
   constructor(
     private readonly ctx: SerializeContext,
     private readonly file: FileModel,
-  ) {}
+  ) {
+    this.dir = file.dir ?? 'ltr';
+  }
+
+  /** `write()` with the inline content in `dir` (when given). */
+  private within<T>(dir: 'ltr' | 'rtl' | undefined, write: () => T): T {
+    if (!dir || dir === this.dir) return write();
+    const saved = this.dir;
+    this.dir = dir;
+    try {
+      return write();
+    } finally {
+      this.dir = saved;
+    }
+  }
 
   private target(link: LinkTarget): string | undefined {
     const { book } = this.ctx;
@@ -104,7 +186,48 @@ class Writer {
     return `<span epub:type="pagebreak" role="doc-pagebreak" id="page-${bookIndex + 1}" aria-label="${xmlAttr(page.label)}"></span>`;
   }
 
+  /** Inline items as markup. Runs set in the other direction than their
+   *  paragraph (a Latin name in Arabic text, an Arabic quotation in
+   *  English) are bidi isolates, `<span dir>`, nested as
+   *  deep as their levels go, so a reading system orders them as the
+   *  printed line did whatever its neighbours (#402). Runs with no letter
+   *  in them (digits, punctuation) resolve the same without one and are
+   *  left bare. */
   inline(items: InlineItem[]): string {
+    const base = this.dir === 'rtl' ? 1 : 0;
+    const levels = bidiLevels(items, base);
+    return levels ? this.nested(items, levels, base) : this.flat(items);
+  }
+
+  private nested(items: InlineItem[], levels: readonly number[], base: number): string {
+    // A run above `base` with no letter in it (the digits of `١٤٤٥` or of
+    // a caption label) reads the same without an isolate: it stays with
+    // its neighbours, whose formats and links then make one element.
+    const lv = [...levels];
+    for (let i = 0; i < lv.length;) {
+      let j = i + 1;
+      if (lv[i]! > base) {
+        while (j < lv.length && lv[j]! > base) j++;
+        if (!hasStrong(items.slice(i, j))) lv.fill(base, i, j);
+      }
+      i = j;
+    }
+    let out = '';
+    let i = 0;
+    while (i < items.length) {
+      const above = lv[i]! > base;
+      let j = i + 1;
+      while (j < items.length && lv[j]! > base === above) j++;
+      const run = items.slice(i, j);
+      out += above
+        ? `<span dir="${base % 2 === 0 ? 'rtl' : 'ltr'}">${this.nested(run, lv.slice(i, j), base + 1)}</span>`
+        : this.flat(run);
+      i = j;
+    }
+    return out;
+  }
+
+  private flat(items: InlineItem[]): string {
     const inl = bridgeLinks([...items]);
     let out = '';
     let i = 0;
@@ -168,9 +291,9 @@ class Writer {
   private node(node: Node): string {
     switch (node.k) {
       case 'p':
-        return `<p${node.id ? ` id="${node.id}"` : ''}${this.classAttr(node.cls)}${this.dirAttr(node.dir)}>${this.inline(node.inl)}</p>`;
+        return `<p${node.id ? ` id="${node.id}"` : ''}${this.classAttr(node.cls)}${this.dirAttr(node.dir)}>${this.within(node.dir, () => this.inline(node.inl))}</p>`;
       case 'h':
-        return `<h${node.level} id="${node.id}"${this.classAttr(node.cls)}${this.dirAttr(node.dir)}>${this.inline(node.inl)}</h${node.level}>`;
+        return `<h${node.level} id="${node.id}"${this.classAttr(node.cls)}${this.dirAttr(node.dir)}>${this.within(node.dir, () => this.inline(node.inl))}</h${node.level}>`;
       case 'quote':
         return `<blockquote>\n${this.nodes(node.children)}\n</blockquote>`;
       case 'list':
@@ -188,6 +311,8 @@ class Writer {
         if (!node.svg) return `${pre ? `<div>${pre}</div>\n` : ''}<p class="pt-math-display"><code>${xmlText(node.tex)}</code></p>`;
         return `<div class="pt-math-display" role="math" aria-label="${xmlAttr(node.tex)}">${pre}${this.uniqueIds(node.svg)}</div>`;
       }
+      case 'verse':
+        return this.verse(node);
       case 'toc':
         return this.toc(node);
       case 'marker':
@@ -195,11 +320,30 @@ class Writer {
     }
   }
 
+  /**
+   * A `:::verse` poem (#378): one element per bayt, its ṣadr and its ʿajuz
+   * as two cells of a grid (the style sheet's `.pt-bayt`): the ṣadr on the
+   * start side, the ʿajuz on the end side, the rhymes aligned down the end
+   * edge, as the printed poem sets them; a lone hemistich across both,
+   * centred. The two halves are a space apart in the text, so a reading
+   * system without grids, or a voice, reads the bayt as one line. The gap's
+   * ornament is decoration (`aria-hidden`).
+   */
+  private verse(node: VerseNode): string {
+    const pre = this.inline(node.pre);
+    const bayts = this.within(node.dir, () => node.bayts.map((b) => {
+      if (b.single) return `<p class="pt-bayt pt-bayt-single"><span class="pt-sadr">${this.inline(b.sadr)}</span></p>`;
+      const ornament = b.ornament ? ` <span class="pt-verse-ornament" aria-hidden="true">${xmlText(b.ornament)}</span>` : '';
+      return `<p class="pt-bayt"><span class="pt-sadr">${this.inline(b.sadr)}</span>${ornament} <span class="pt-ajuz">${this.inline(b.ajuz)}</span></p>`;
+    }));
+    return `<div class="pt-verse"${this.dirAttr(node.dir)}>${pre}\n${bayts.join('\n')}\n</div>`;
+  }
+
   private list(node: ListNode): string {
     const tag = node.ordered ? 'ol' : 'ul';
     const items = node.items.map((item) => {
       const marker = item.marker ? `<span class="pt-lbl">${xmlText(item.marker)}</span> ` : '';
-      const body = this.inline(item.done ? item.inl.map((i) => (i.t === 'text' ? { ...i, fmt: { ...i.fmt, done: true } } : i)) : item.inl);
+      const body = this.within(item.dir, () => this.inline(item.done ? item.inl.map((i) => (i.t === 'text' ? { ...i, fmt: { ...i.fmt, done: true } } : i)) : item.inl));
       const nested = item.children.length > 0 ? `\n${this.nodes(item.children)}\n` : '';
       return `<li${this.dirAttr(item.dir)}>${marker}${body}${nested}</li>`;
     });
@@ -239,8 +383,11 @@ class Writer {
       cell.rowSpan > 1 ? ` rowspan="${cell.rowSpan}"` : '',
       cell.header && scope ? ` scope="${scope}"` : '',
     ].join('');
+    // In a right-to-left book a cell's `left` and `right` are its text's
+    // start and end (#371).
+    const align = this.dir === 'rtl' ? CELL_ALIGN_RTL[cell.align] ?? cell.align : cell.align;
     const style = [
-      cell.align && cell.align !== 'left' ? `text-align:${cell.align}` : '',
+      cell.align && cell.align !== 'left' ? `text-align:${align}` : '',
       cell.verticalAlign && cell.verticalAlign !== 'top' ? `vertical-align:${cell.verticalAlign === 'middle' ? 'middle' : cell.verticalAlign}` : '',
       cell.background ? `background-color:${cell.background}` : '',
     ].filter(Boolean).join(';');
@@ -318,7 +465,7 @@ class Writer {
       const backLink = ref && ref.file === this.file
         ? ` <a href="#${idOf('fnref-', note.id)}" role="doc-backlink" aria-label="${xmlAttr(back)}">↩︎</a>`
         : '';
-      return `<aside epub:type="footnote" role="doc-footnote" id="${id}" class="pt-footnote"><p>${this.inline(note.inl)}${backLink}</p></aside>`;
+      return `<aside epub:type="footnote" role="doc-footnote" id="${id}" class="pt-footnote"><p${this.dirAttr(note.dir)}>${this.within(note.dir, () => this.inline(note.inl))}${backLink}</p></aside>`;
     });
     return `<section class="pt-footnotes">\n${asides.join('\n')}\n</section>`;
   }

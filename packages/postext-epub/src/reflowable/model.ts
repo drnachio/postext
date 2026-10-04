@@ -37,12 +37,23 @@ export interface Format {
   warichu?: boolean;
   /** A completed task's text. */
   done?: boolean;
+  /** The language of the run when it differs from its document's: the
+   *  one the author named on an inline isolate (`:ltr[…]{lang=en}`,
+   *  `VDTLineSegment.lang`). */
+  lang?: string;
 }
 
+/** `lvl` on a text or raw item: the UAX #9 embedding level the engine
+ *  resolved for the segment it comes from (#367/#369: odd for
+ *  `VDTLineSegment.rtl`, `level` past 1), on lines that carry levels. The
+ *  serializer nests the runs that rise above their paragraph's level in
+ *  `dir` isolates (xhtml.ts `bidiLevels`), so a reading system orders them
+ *  as the print did; items without one take their level from their
+ *  letters or their neighbours. */
 export type InlineItem =
-  | { t: 'text'; text: string; fmt: Format; link?: LinkTarget }
+  | { t: 'text'; text: string; fmt: Format; link?: LinkTarget; lvl?: number }
   /** Markup written as is (maths, ruby, chips, swatches). */
-  | { t: 'raw'; xhtml: string; link?: LinkTarget }
+  | { t: 'raw'; xhtml: string; link?: LinkTarget; lvl?: number }
   /** The start of a printed page (`epub:type="pagebreak"`). */
   | { t: 'page'; bookIndex: number }
   /** An anchor set in the text (an empty element carrying its id). */
@@ -131,6 +142,25 @@ export interface TableNode {
   cells: Map<string, TableCellNode>;
 }
 
+/** One bayt of a `:::verse` poem (#378): its ṣadr and ʿajuz, or a lone
+ *  hemistich (`single`, set centred on the poem). */
+export interface BaytNode {
+  sadr: InlineItem[];
+  ajuz: InlineItem[];
+  single?: boolean;
+  /** The ornament printed in the gap (`ornament="٭"`), not text. */
+  ornament?: string;
+}
+
+/** A `:::verse` poem: bayts in two hemistichs. */
+export interface VerseNode {
+  k: 'verse';
+  /** Page starts and anchors that come before its first bayt. */
+  pre: InlineItem[];
+  bayts: BaytNode[];
+  dir?: 'ltr' | 'rtl';
+}
+
 export interface MathNode {
   k: 'math';
   pre: InlineItem[];
@@ -172,6 +202,7 @@ export type Node =
   | FigureNode
   | TableNode
   | MathNode
+  | VerseNode
   | TocNode
   | MarkerNode;
 
@@ -180,6 +211,8 @@ export interface NoteModel {
   doc: number;
   id: string;
   inl: InlineItem[];
+  /** The note's direction when it differs from the document's. */
+  dir?: 'ltr' | 'rtl';
 }
 
 /** One XHTML content document of the spine. */

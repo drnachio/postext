@@ -12,6 +12,8 @@ import { idOf, round } from './inline';
 export interface StylesheetOptions {
   /** Vertical Chinese / Japanese (`layout.writingMode: 'vertical-rl'`). */
   vertical: boolean;
+  /** The book sets a `:::verse` poem (its rules are written only then). */
+  verse?: boolean;
 }
 
 const SANS = /\b(sans|grotesk|grotesque|gothic|helvetica|arial|inter|roboto|lato|montserrat|open sans|source sans|fira sans|heiti|hei\b|黑)/i;
@@ -56,6 +58,11 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   };
   const color = (c: ColorValue | undefined, prop = 'color') => (c?.hex && c.hex !== 'transparent' ? `${prop}: ${c.hex}` : undefined);
   const px = (d: Dimension, basePx = bodyPx) => dimensionToPx(d, dpi, basePx);
+  // Right to left (#402): the content documents declare it (`dir` on the
+  // root, as EPUB asks, rather than the CSS `direction`); the rules use
+  // logical sides (`margin-inline-start`, `text-align: start`), so they
+  // hold in both directions.
+  const rtl = config.direction === 'rtl';
   const out: string[] = [];
 
   out.push('@charset "UTF-8";\n');
@@ -260,12 +267,15 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     const pad = s.padding;
     const stripe = s.stripe.enabled && px(s.stripe.width) > 0 ? `${round(px(s.stripe.width) * (96 / dpi))}px solid ${s.stripe.color.hex}` : undefined;
     const side = s.stripe.side === 'top' ? 'border-block-start' : s.stripe.side === 'right' ? 'border-inline-end' : 'border-inline-start';
+    // A box's sides are the body flow's (#371): in a right-to-left book,
+    // whose flow is mirrored, its left padding is on the page's right.
+    const [padRight, padLeft] = rtl ? [pad.left, pad.right] : [pad.right, pad.left];
     out.push(rule(sel, [
       s.backgroundEnabled && color(s.background, 'background-color'),
       s.border.enabled && px(s.border.width) > 0 && `border: ${round(px(s.border.width) * (96 / dpi))}px solid ${s.border.color.hex}`,
       stripe && `${side}: ${stripe}`,
       px(s.borderRadius) > 0 && `border-radius: ${em(s.borderRadius)}`,
-      `padding: ${em(pad.top)} ${em(pad.right)} ${em(pad.bottom)} ${em(pad.left)}`,
+      `padding: ${em(pad.top)} ${em(padRight)} ${em(pad.bottom)} ${em(padLeft)}`,
       `margin: ${em(s.marginTop)} 0 ${em(s.marginBottom)}`,
       fam(s.body.fontFamily),
       `font-size: ${round(bPx / bodyPx)}em`,
@@ -385,5 +395,37 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('ruby.pt-ruby-under', ['ruby-position: under', '-epub-ruby-position: under', '-webkit-ruby-position: after']));
   out.push(rule('ruby.pt-ruby-right', ['ruby-position: inter-character']));
   out.push(rule('.pt-marker', ['height: 0']));
+
+  // --- classical verse -----------------------------------------------------
+  // A bayt is a row of two equal hemistich columns (and the ornament's,
+  // empty without one): the ṣadr from the start side, the ʿajuz flush
+  // with the end side, so the rhymes stand in one column as in print. On
+  // a narrow screen the two halves stagger, the ʿajuz on its own line
+  // flush with the end, as the print does when they do not fit.
+  if (options.verse) {
+    // The poem as wide as its widest bayt, centred: its hemistichs share
+    // one width, as in print, instead of drifting to the screen's edges.
+    out.push(rule('.pt-verse', ['width: fit-content', 'max-width: 100%', 'margin: 0.5em auto', 'text-indent: 0']));
+    out.push(rule('.pt-bayt', [
+      'display: grid',
+      'grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)',
+      'column-gap: 1em',
+      'margin: 0',
+      'text-indent: 0',
+      'text-align: start',
+      'hyphens: manual',
+      'page-break-inside: avoid',
+      'break-inside: avoid',
+    ]));
+    out.push(rule('.pt-sadr', ['grid-column: 1', 'text-align: start']));
+    out.push(rule('.pt-verse-ornament', ['grid-column: 2', 'text-align: center']));
+    out.push(rule('.pt-ajuz', ['grid-column: 3', 'text-align: end']));
+    out.push(rule('.pt-bayt-single .pt-sadr', ['grid-column: 1 / -1', 'text-align: center']));
+    out.push('@media (max-width: 30em) {\n' +
+      '  .pt-bayt { display: block; }\n' +
+      '  .pt-sadr, .pt-ajuz { display: block; }\n' +
+      '  .pt-verse-ornament { display: none; }\n' +
+      '}\n');
+  }
   return { css: out.filter(Boolean).join('\n'), families };
 }

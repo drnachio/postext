@@ -119,7 +119,11 @@ console.log(`${basename(source)} (${bundle.locale}): ${docs.length} chapter(s), 
 function vdtLetters(docs) {
   const counts = new Map();
   const add = (s) => { for (const ch of s.normalize('NFC').toLowerCase()) if (/[\p{L}\p{N}]/u.test(ch)) counts.set(ch, (counts.get(ch) ?? 0) + 1); };
-  const lineText = (l) => (l.segments ? l.segments.filter((s) => s.kind !== 'math').map((s) => s.text).join('') : l.text);
+  // A segment's text as written: without the tatweels kashida
+  // justification inserted (VDTLineSegment.kashida), which the reflowable
+  // book leaves out.
+  const written = (s) => (s.kashida?.length ? s.text.split('').filter((_, i) => !s.kashida.includes(i)).join('') : s.text);
+  const lineText = (l) => (l.segments ? l.segments.filter((s) => s.kind !== 'math').map(written).join('') : l.text);
   const walkRes = (x) => {
     if (Array.isArray(x)) return x.forEach(walkRes);
     if (!x || typeof x !== 'object') return;

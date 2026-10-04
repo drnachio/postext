@@ -9,6 +9,8 @@ A book comes out in one of the two renditions EPUB 3 defines (the `rendition:lay
 - **Fixed layout** (`layout: 'fixed'`, EPUB `pre-paginated`): every printed page as it is, one XHTML document per page, with real, selectable text placed where the PDF places it.
 - **Reflowable** (`layout: 'reflowable'`, the EPUB default): the text, figures and tables in reading order, as semantic XHTML that the reading system sets again for its screen, typeface and type size.
 
+Right-to-left books (Arabic, Persian, Hebrew…) declare their language and direction on every document and on the navigation, and a right-bound book turns its pages to the left (`page-progression-direction="rtl"`). In the reflowable rendition a run set against its paragraph (a Latin name in Arabic, an Arabic quotation in English) is a `dir` isolate, a language named on `:ltr[…]{lang=en}` is declared, a `:::verse` poem sets each bayt as two hemistichs side by side, and the tatweels kashida justification inserted are left out (the reading system justifies; tatweels the author typed stay). The fixed layout paints them as printed, out of reach of a text selection.
+
 **Website:** [postext.dev](https://postext.dev/) · **Docs:** [EPUB books](https://postext.dev/en/docs/configuration#epub-books-postext-epub)
 
 ## Install

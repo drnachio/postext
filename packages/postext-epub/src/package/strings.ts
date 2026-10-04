@@ -9,18 +9,21 @@ export interface NavStrings {
   bodymatter: string;
   /** Prefix of a page-list entry (`Page 12`) where a label needs one. */
   page: string;
+  /** Landmarks of a book's back matter. */
+  index: string;
+  bibliography: string;
 }
 
 const STRINGS: Readonly<Record<string, NavStrings>> = {
-  en: { contents: 'Contents', landmarks: 'Landmarks', pages: 'Pages', cover: 'Cover', bodymatter: 'Start of content', page: 'Page' },
-  es: { contents: 'Índice', landmarks: 'Puntos de referencia', pages: 'Páginas', cover: 'Cubierta', bodymatter: 'Inicio del contenido', page: 'Página' },
-  ca: { contents: 'Índex', landmarks: 'Punts de referència', pages: 'Pàgines', cover: 'Coberta', bodymatter: 'Inici del contingut', page: 'Pàgina' },
-  fr: { contents: 'Table des matières', landmarks: 'Repères', pages: 'Pages', cover: 'Couverture', bodymatter: 'Début du contenu', page: 'Page' },
-  pt: { contents: 'Sumário', landmarks: 'Pontos de referência', pages: 'Páginas', cover: 'Capa', bodymatter: 'Início do conteúdo', page: 'Página' },
-  it: { contents: 'Indice', landmarks: 'Punti di riferimento', pages: 'Pagine', cover: 'Copertina', bodymatter: 'Inizio del contenuto', page: 'Pagina' },
-  de: { contents: 'Inhalt', landmarks: 'Orientierungspunkte', pages: 'Seiten', cover: 'Umschlag', bodymatter: 'Beginn des Inhalts', page: 'Seite' },
-  zh: { contents: '目录', landmarks: '导航', pages: '页码', cover: '封面', bodymatter: '正文', page: '第' },
-  ar: { contents: 'المحتويات', landmarks: 'معالم الكتاب', pages: 'الصفحات', cover: 'الغلاف', bodymatter: 'بداية المحتوى', page: 'صفحة' },
+  en: { contents: 'Contents', landmarks: 'Landmarks', pages: 'Pages', cover: 'Cover', bodymatter: 'Start of content', page: 'Page', index: 'Index', bibliography: 'Bibliography' },
+  es: { contents: 'Índice', landmarks: 'Puntos de referencia', pages: 'Páginas', cover: 'Cubierta', bodymatter: 'Inicio del contenido', page: 'Página', index: 'Índice alfabético', bibliography: 'Bibliografía' },
+  ca: { contents: 'Índex', landmarks: 'Punts de referència', pages: 'Pàgines', cover: 'Coberta', bodymatter: 'Inici del contingut', page: 'Pàgina', index: 'Índex alfabètic', bibliography: 'Bibliografia' },
+  fr: { contents: 'Table des matières', landmarks: 'Repères', pages: 'Pages', cover: 'Couverture', bodymatter: 'Début du contenu', page: 'Page', index: 'Index', bibliography: 'Bibliographie' },
+  pt: { contents: 'Sumário', landmarks: 'Pontos de referência', pages: 'Páginas', cover: 'Capa', bodymatter: 'Início do conteúdo', page: 'Página', index: 'Índice remissivo', bibliography: 'Bibliografia' },
+  it: { contents: 'Indice', landmarks: 'Punti di riferimento', pages: 'Pagine', cover: 'Copertina', bodymatter: 'Inizio del contenuto', page: 'Pagina', index: 'Indice analitico', bibliography: 'Bibliografia' },
+  de: { contents: 'Inhalt', landmarks: 'Orientierungspunkte', pages: 'Seiten', cover: 'Umschlag', bodymatter: 'Beginn des Inhalts', page: 'Seite', index: 'Register', bibliography: 'Literaturverzeichnis' },
+  zh: { contents: '目录', landmarks: '导航', pages: '页码', cover: '封面', bodymatter: '正文', page: '第', index: '索引', bibliography: '参考文献' },
+  ar: { contents: 'المحتويات', landmarks: 'معالم الكتاب', pages: 'الصفحات', cover: 'الغلاف', bodymatter: 'بداية المحتوى', page: 'صفحة', index: 'الفهرس الأبجدي', bibliography: 'المراجع' },
 };
 
 /** The navigation strings of a BCP 47 language tag. */
