@@ -137,7 +137,10 @@ function localModule(rel: string): { file: string; path: string } | null {
   const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
   const asked = match[2]!;
   const base = asked.replace(/\.js$/, "");
-  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : [`${base}.js`, `${base}/index.js`];
+  // A file the package ships beside its modules (postext-pdf's
+  // harfbuzz.wasm, fetched from `new URL('./harfbuzz.wasm', import.meta.url)`)
+  // is served as it is.
+  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : /\.wasm$/.test(asked) ? [asked] : [`${base}.js`, `${base}/index.js`];
   for (const candidate of candidates) {
     const file = safeFile(dist, candidate);
     if (file) return { file, path: `${match[1]}/${candidate}` };
