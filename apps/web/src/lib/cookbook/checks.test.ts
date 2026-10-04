@@ -90,7 +90,7 @@ describe("C25: characters the PDF cannot set", () => {
   });
 });
 
-describe("C12: CJK files loaded after the layout", () => {
+describe("C12: CJK and Arabic files loaded after the layout", () => {
   it("fails a face that set characters it had not loaded", () => {
     const late = [{ family: "Noto Sans TC", weight: 700, style: "normal" as const, where: "p3 heading", chars: "章回" }];
     const faces = { used: [], loaded: [], missing: [], late };
@@ -100,6 +100,14 @@ describe("C12: CJK files loaded after the layout", () => {
       detail: "Noto Sans TC 700 sets 章 回 (p3 heading) from files not loaded when the layout ran: give loadCjkFonts the text this face sets, and list the weight in FONTS",
     }]);
     expect(of("C12", runChecks(input({ facts: facts({ faces: { used: [], loaded: [], missing: [] } }) })))).toEqual([]);
+  });
+
+  it("names loadArabicFonts for an Arabic weight that had only its latin file", () => {
+    const late = [{ family: "Amiri", weight: 700, style: "normal" as const, where: "p2 heading", chars: "اللي" }];
+    const faces = { used: [], loaded: [], missing: [], late };
+    expect(of("C12", runChecks(input({ facts: facts({ faces }) })))[0].detail).toBe(
+      "Amiri 700 sets ا ل ل ي (p2 heading) from files not loaded when the layout ran: list the weight in FONTS and load it with loadArabicFonts(FONTS, markdown) before the build",
+    );
   });
 });
 
@@ -149,5 +157,15 @@ describe("right-binding detection", () => {
     const userConfig = { layout: { writingMode: "vertical-rl" } };
     expect(detect(meta(), facts({ userConfig, binding: "right" }), pen, registry).features).toContain("right-binding");
     expect(detect(meta(), facts({ userConfig }), pen, registry).features).not.toContain("right-binding");
+  });
+
+  it("follows the document when an Arabic locale sets the text right to left", () => {
+    // locale 'ar' alone: the engine resolves direction 'rtl' and binds the
+    // book on the right; the probe reads both off the document.
+    const pen = { js: "" } as ComposedPen;
+    const userConfig = { locale: "ar" };
+    const arabic = detect(meta(), facts({ userConfig, binding: "right", direction: "rtl" }), pen, registry).features;
+    expect(arabic).toEqual(expect.arrayContaining(["right-binding", "text-direction"]));
+    expect(detect(meta(), facts({ userConfig: { locale: "en" } }), pen, registry).features).not.toContain("text-direction");
   });
 });

@@ -186,9 +186,11 @@ function rangesOf(unicodeRange) {
 }
 
 /** Families served by unicode-range slices that reach the Han ideographs
- *  (the cjk kit block adds every file of such a face, loaded or not), with
- *  the code points their files cover: the PDF's cjkPdfProvider hands over
- *  whichever of those files the pages need. */
+ *  (the cjk kit block adds every file of such a face, loaded or not) or the
+ *  Arabic letters (the arabic block adds each face's arabic file next to
+ *  the latin ones loadFonts adds), with the code points their files cover:
+ *  the PDF's cjkPdfProvider and arabicPdfProvider hand over whichever of
+ *  those files the pages need. */
 function slicedFamilies() {
   const out = new Map();
   for (const face of document.fonts) {
@@ -199,7 +201,8 @@ function slicedFamilies() {
     out.set(family, list);
   }
   for (const [family, ranges] of out) {
-    if (!ranges.some(([lo, hi]) => lo <= 0x4e00 && hi >= 0x4e00) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+    const reaches = (cp) => ranges.some(([lo, hi]) => lo <= cp && hi >= cp);
+    if (!(reaches(0x4e00) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
       out.delete(family);
     }
   }
@@ -557,9 +560,10 @@ export function facts({ select = 'last', hero = [] } = {}) {
   const used = new Map();
   const garbage = [];
   const outside = new Map();
-  // C12: a character set in a CJK face from a file that was not loaded when
-  // the layout ran was measured in a fallback face (loadCjkFonts was not
-  // given it). The shim notes the faces loaded as each build starts.
+  // C12: a character set in a CJK or Arabic face from a file that was not
+  // loaded when the layout ran was measured in a fallback face (loadCjkFonts
+  // was not given it, or loadArabicFonts not the weight). The shim notes the
+  // faces loaded as each build starts.
   const atLayout = new Map();
   for (const [family, weight, style, range] of build.fonts ?? []) {
     if (!sliced.has(family)) continue;
@@ -582,7 +586,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (placeholders.has(ch)) continue;
       const cp = ch.codePointAt(0);
       if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
-      // A CJK face loaded by slices takes the character from its own files.
+      // A CJK or Arabic face loaded by slices takes the character from its own files.
       if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
       outside.set(ch, where);
     }
@@ -704,6 +708,9 @@ export function facts({ select = 'last', hero = [] } = {}) {
       worst: round(cjkWorst, 0.01), threshold: trackingCap(docs[0]), lines: cjkShort.slice(0, 5) };
   }
   if (docs[0].binding === 'right') out.binding = 'right';
+  // A right-to-left document (direction 'rtl', or 'auto' in an Arabic,
+  // Hebrew or Persian locale): the resolved config says so only then.
+  if (docs[0].config?.direction === 'rtl') out.direction = 'rtl';
 
   // Pages: roles, emptiness, coverage, hero legibility, alt-text material.
   const heroSet = new Set(hero);

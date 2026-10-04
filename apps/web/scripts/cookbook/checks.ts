@@ -77,7 +77,7 @@ export interface ProbeFacts {
     used: ProbeFace[];
     loaded: { family: string; weight: string; style: string }[];
     missing: ProbeFace[];
-    /** Characters a CJK face set from files not loaded when the layout ran. */
+    /** Characters a CJK or Arabic face set from files not loaded when the layout ran. */
     late?: (ProbeFace & { chars: string })[];
   };
   garbage?: { text: string; where: string }[];
@@ -122,6 +122,9 @@ export interface ProbeFacts {
   };
   /** `"right"` when the document is bound on its right edge (`doc.binding`). */
   binding?: "right";
+  /** `"rtl"` when the document's text runs right to left (the resolved
+   *  `config.direction`, also when the locale implied it). */
+  direction?: "rtl";
   pages?: ProbePage[];
   specimen?: {
     trimMm: [number, number];
@@ -259,9 +262,13 @@ export function detect(meta: RecipeMeta, facts: ProbeFacts, pen: ComposedPen, re
   const resources = { svg: 0, bitmap: 0, table: 0 };
   for (const r of facts.resources ?? []) if (r.kind in resources) resources[r.kind as keyof typeof resources]++;
   const fonts = (facts.faces?.used ?? []).map(({ family, weight, style }) => ({ family, weight, style }));
-  // Vertical text binds a book on the right without saying page.binding:
-  // the document's binding counts as the key.
-  const paths = facts.binding === "right" && !stats.paths.includes("page.binding") ? [...stats.paths, "page.binding"] : stats.paths;
+  // Vertical and right-to-left text bind a book on the right without
+  // saying page.binding, and an Arabic locale sets the text right to left
+  // without saying direction: the document's binding and direction count
+  // as the keys.
+  const paths = [...stats.paths];
+  if (facts.binding === "right" && !paths.includes("page.binding")) paths.push("page.binding");
+  if (facts.direction === "rtl" && !paths.includes("direction")) paths.push("direction");
   const { detected } = detectFeatures(registry, { paths, markdown: (facts.markdowns ?? []).join("\n"), apis });
   const directives = new Set<string>();
   const inline = new Set<string>();
@@ -459,14 +466,17 @@ function collect(input: CheckInput): Finding[] {
   }
 
   // C12: faces the pages use that no FontFace covers, and characters a CJK
-  // face set from files that loaded after the layout (measured in another face).
+  // or Arabic face set from files that loaded after the layout (measured in
+  // another face).
   const faceName = (face: ProbeFace) => `${face.family} ${face.weight}${face.style === "italic" ? " italic" : ""}`;
   for (const face of facts.faces?.missing ?? []) {
     add("C12", "fail", `${faceName(face)} is used (${face.where}) but not loaded`);
   }
   for (const face of facts.faces?.late ?? []) {
     add("C12", "fail", `${faceName(face)} sets ${[...face.chars].join(" ")} (${face.where}) from files not loaded when the layout ran: ` +
-      `give loadCjkFonts the text this face sets, and list the weight in FONTS`);
+      (/\p{Script=Arabic}/u.test(face.chars)
+        ? "list the weight in FONTS and load it with loadArabicFonts(FONTS, markdown) before the build"
+        : "give loadCjkFonts the text this face sets, and list the weight in FONTS"));
   }
 
   // C14: the PDF.
@@ -607,7 +617,8 @@ function collect(input: CheckInput): Finding[] {
 
   // C25: characters a PDF recipe's fonts cannot set: those outside
   // Fontsource's latin subset that no loaded face covers (a CJK face the
-  // cjk block loads by slices covers its own), and what postext-pdf drew
+  // cjk block loads by slices covers its own, an Arabic face the arabic
+  // block completes covers the Arabic letters), and what postext-pdf drew
   // with no glyph (its missingGlyph warning, printed to the console).
   const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
   if (pdfRecipe && facts.nonLatin?.length) {
