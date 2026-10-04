@@ -14,6 +14,7 @@ import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
+import { bidiLines } from './bidiLines';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
@@ -84,6 +85,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       annotationHighlight,
       indexTheme,
       indexHighlight,
+      bidiLines,
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),
