@@ -344,10 +344,15 @@ export { flowToPage, pageToFlow, flowRectToPage, pageRectToFlow, pageIsVertical,
 export { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell, verticalCellEms, CORNER_OFFSET_EM, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from './writingMode';
 export { graphemesOf } from './measure/graphemes';
 export type { VerticalGlyph, VerticalOrientationKind, VerticalRun, UaxVerticalOrientation, UprightDigits, ForcedOrientation } from './writingMode';
+export {
+  bidiClassOf, isRtlScriptChar, needsBidi, mirroredChar, mirroredCodePoint, joiningTypeOf, hasJoiningScript, joinsWithNext,
+  joinsLetters, resolveParagraph, resolveSpans, spanIsolates, lineLevels, visualOrder, lineVisualOrder, lineRuns, BIDI_CLASS_NAMES,
+} from './bidi';
+export type { BidiClass, BaseDirection, BidiParagraph, BidiIsolate, BidiRun, JoiningType } from './bidi';
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export { findAnnotations } from './parse/annotations';
 export type { FoundAnnotation, AnnotationName } from './parse/annotations';
-export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu } from './parse';
+export type { ContentBlock, ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
 export type { OrientationMark } from './parse';

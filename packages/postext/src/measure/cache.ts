@@ -56,10 +56,11 @@ function mathCacheKey(span: InlineSpan): string {
 }
 
 /** The Chinese annotations of a span (#193–#195): marks set on the same
- *  text change its segments, a reading or a note its measure. Empty for a
+ *  text change its segments, a reading or a note its measure. A
+ *  directional isolate (#367) changes the order of its line. Empty for a
  *  span without any, so its key is unchanged. */
 function annotationCacheKey(s: InlineSpan): string {
-  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted) return '';
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction) return '';
   let key = '';
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
@@ -67,6 +68,7 @@ function annotationCacheKey(s: InlineSpan): string {
   if (s.ruby) key += `|rb:${s.ruby.text}|${s.ruby.group ? 'g' : 'm'}|${s.ruby.position ?? ''}|${s.ruby.fontString ?? ''}|${s.ruby.color ?? ''}|${s.ruby.id}`;
   if (s.warichu) key += `|wc:${s.warichu.id}|${s.warichu.fontString ?? ''}|${s.warichu.open ?? ''}|${s.warichu.close ?? ''}|${s.warichu.color ?? ''}`;
   if (s.inserted) key += '|ins';
+  for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;
   return key;
 }
 

@@ -188,11 +188,35 @@ export interface InlineSpan {
    *  of a two-row note set inside the line at a smaller size. Every span of
    *  one note shares the object. */
   warichu?: InlineWarichu;
+  /** A directional isolate (`:rtl[…]` / `:ltr[…]`, #367): the span is
+   *  part of a run set in its own direction, isolated from the text around
+   *  it (UAX #9 RLI/LRI … PDI), so an English title inside Arabic, or an
+   *  Arabic name inside English, keeps its own order and never reorders
+   *  its neighbours. Every span of one isolate shares the object; an
+   *  isolate inside another names it as `outer`. `bidi.ts`
+   *  (`resolveSpans`) reads it when a line's order is resolved. */
+  direction?: InlineDirection;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never
    *  take a character of the plain text or the source map. */
   inserted?: boolean;
+}
+
+/** The directional isolate a span belongs to (see
+ *  {@link InlineSpan.direction}). */
+export interface InlineDirection {
+  /** The isolate's direction: `rtl` from `:rtl[…]`, `ltr` from `:ltr[…]`. */
+  dir: 'ltr' | 'rtl';
+  /** Tells isolates apart: two isolates side by side are two runs. Ids
+   *  count from 1 in each parse of a text. */
+  id: number;
+  /** The language of the isolate's text as written (`{lang=en}`), a BCP 47
+   *  tag; unset when the directive names none. Renderers may declare it
+   *  (HTML `lang`, PDF `/Lang`). */
+  lang?: string;
+  /** The isolate this one is nested in. */
+  outer?: InlineDirection;
 }
 
 /** An emphasis-dot mark: its shape, whether it is filled, and its side. */
