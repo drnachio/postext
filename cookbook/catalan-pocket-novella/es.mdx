@@ -1,0 +1,78 @@
+---
+title: "Una novela corta en catalán, con la división del IEC"
+summary: "El transplantat de Oller, completo, en un bolsillo de 32 páginas: sílabas catalanas según el IEC, l·l cortada como il- | lusió y un grabado por capítulo."
+plain: "Una novela corta entera en catalán, compuesta como un libro de bolsillo. Las palabras se cortan a final de línea como piden las normas catalanas, también la ele doble con punto."
+description: "El transplantat de Oller (1928) en bolsillo de 12 × 18,5 cm: locale 'ca', separación silábica del IEC, l·l cortada como il- | lusió y aperturas con grabado."
+question: "¿Cómo divido bien el catalán a final de línea, con la l·l, los apóstrofos y los pronombres unidos con guion?"
+aliases: ["catalán", "català", "separación silábica catalana", "ela geminada", "l·l", "punt volat", "punto volado", "IEC", "Institut d’Estudis Catalans", "pronombres enclíticos", "Narcís Oller", "libro de bolsillo", "novela corta completa", "frontispicio", "grabado"]
+pageNotes: { "2": "El frontispicio: un grabado de un panadero grueso, con delantal blanco, a la puerta de su horno de pueblo, con el fuego detrás; debajo, EL FORNER DE LES MONGES en versalitas.", "3": "La portada: NARCÍS OLLER en versalitas, El transplantat en cursiva roja grande, De «Croquis del natural» debajo y un filete rojo corto.", "27": "Una página de texto del capítulo IV. A media altura, una línea acaba en titil- y la siguiente empieza por laven: el punto volado de titil·laven deja su sitio al guion." }
+---
+
+## Lo que vas a componer
+
+*El transplantat* de Narcís Oller entero, con el texto de sus *Obres completes* (Barcelona, 1928), en un libro de bolsillo de 12 × 18,5 cm y 32 páginas. Antes de los cuatro capítulos van una anteportada, un frontispicio con el panadero ante su horno, la portada en Cormorant Garamond cursiva y roja, y una nota sobre la edición. Cada capítulo se abre bajo un grabado de doce líneas de alto, con su número romano en rojo. El texto, en Crimson Pro de 10,4 pt, se divide por sílabas catalanas como pide el Institut d’Estudis Catalans: al menos dos letras a cada lado, ningún corte entre vocales en hiato ni justo después de un apóstrofo, y *titil·laven* se corta *titil-* | *laven*, con el guion en el lugar del punto volado. Los diálogos llevan raya y las citas, «cometes baixes».
+
+## Elaboración
+
+### 1 · El catalán por su código
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `locale: 'ca'` elige los patrones catalanes, que desde postext 1.14 siguen el *Llibre d’estil* del IEC ([idiomas soportados](/es/docs/justification#idiomas-soportados)). Son los mismos patrones que usa TeX, con al menos dos letras a cada lado del corte en lugar de las tres del paquete de npm, así que *ter-ra*, *cai-xa* y *plu-ja* pueden cortarse. Las vocales en hiato no se separan (*cièn-cia*, *ca-mions*), pero una *i* entre vocales abre su sílaba (*fe-ia*). La *ela geminada* se corta entre sus dos *l*: la línea acaba en *titil-* y la siguiente empieza por *laven*, sin punto volado en ninguna de las dos, y Knuth–Plass mide la línea sin el punto.
+
+<PageShot page={27} crop="0.06,0.495,0.88,0.085" caption="Página 27: titil·laven a final de línea, compuesta titil- | laven. Es la única l·l que cae a final de línea en estas 32 páginas." />
+
+`compounds: false` deja enteros el verbo y su pronombre salvo por su propio guion (*arrossegar-* | *se*), que es el corte que prefiere el IEC ([separación silábica](/es/docs/configuration#separación-silábica)). Cuesta una línea floja: en la página 7, la línea anterior a *d’inaugurar-se* abre sus espacios hasta 1,94 veces, aunque `maxJustifyTracking: 10` absorbe el exceso en las demás.
+
+### 2 · Una página de bolsillo de líneas enteras
+
+<Excerpt region="page" />
+
+El margen inferior sale del formato, el margen superior y `LINES`, así que la caja admite 29 líneas de 14 pt y toda página llena acaba en la misma línea base. La medida de 89 mm da unos 64 caracteres de Crimson Pro. `mirror: true` mantiene el margen de 16 mm en el lomo en las dos páginas del pliego ([márgenes simétricos](/es/docs/configuration#márgenes-simétricos-espejo)).
+
+### 3 · Una apertura para los cuatro capítulos
+
+<Excerpt region="opener" />
+
+`resourceId: '{attr.art}'` dibuja la imagen que nombra el título, así que `# II {style="capitol" art="cap2"}` abre el capítulo II bajo su propio grabado con el mismo estilo que los demás ([atributos de título](/es/docs/document-format#atributos-de-encabezado)). Las imágenes no reservan altura en una apertura, así que `minHeight` guarda dieciséis líneas: doce para el grabado, luego el número y su filete, y el texto empieza en la línea diecisiete de la página, igual en todos los capítulos.
+
+### 4 · Cuatro páginas antes del capítulo I
+
+<Excerpt region="front" />
+
+Cada pieza de los preliminares es un título de primer nivel con estilo propio: `# El transplantat {style="portada"}` imprime el autor y el subtítulo del frontmatter y el título como título. Cada estilo repite su salto de página, porque un estilo hereda el de su nivel, y vacía la cabecera y el pie, así que estas páginas no llevan cabeceras ni folios. El frontispicio cae en la página 2, par, y queda enfrente de la portada.
+
+### 5 · El autor en la par, el título en la impar
+
+<Excerpt region="heads" />
+
+`parity` pone el autor en las páginas pares y el título en las impares; `pages: 'body'` las saca de las aperturas, donde va un folio al pie con `pages: 'opener'`. `SHIFT` centra cada cabecera sobre la caja, que está medio milímetro desplazada del centro de la página porque los dos márgenes no miden lo mismo.
+
+### 6 · Cinco grabados, sin pie
+
+<Excerpt region="pictures" />
+
+Las imágenes son de un tipo de recurso con `captionPrefix` vacío, así que nada las numera ni las rotula. Cada una se declara con su tamaño en píxeles y se carga con su identificador de archivo antes de componer. Antes de guardarlas se llevó su blanco al crema de la página y su negro a la tinta del texto, así que se imprimen como parte de la página y no como fotos pegadas encima.
+
+## Variantes
+
+### Que los pronombres también se corten
+
+Con el `compounds: true` por defecto, *d’inaugurar-se* puede cortarse *d’inau-gurar-se* y la página 7 pierde su línea floja. A cambio, en estas páginas el corte `titil-` | `laven` deja de caer a final de línea.
+
+```diff
+-  hyphenation: { compounds: false },
++  hyphenation: { compounds: true },
+```
+
+### Abrir cada capítulo en página impar
+
+`parity: 'odd'` añade una página en blanco antes de un capítulo que empezaría en par, como en una edición más holgada. El capítulo IV, que se abre en la página 26, pasa a la 27 tras una página en blanco.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' }, // a chapter opens on the next page, either side
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+## Errores frecuentes
+
+- Copia el texto de Viquitexts con sus cursivas: Oller marca *tentu*, *Ensanxe* y *palacio* como coloquiales o castellanas, y una exportación en texto plano las pierde. Coteja las palabras dudosas con el facsímil del volumen de 1928: seis veces la transcripción trae *tom-* donde el verbo es *tornar* (*tomà*, *tomaré*, *tomar*), y una vez *jom* por *jorn*.
+- Con 6800 palabras, los cinco archivos de contenido y el kit dejan el script compuesto en unos 69 KB. Un libro entero es la muestra más larga que cabe en un pen; una obra más larga va en un paquete `.postext`.

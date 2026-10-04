@@ -1,0 +1,219 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 104,
+  "status": "published",
+  "chapter": "type",
+  "order": 150,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "hyphenation-languages",
+      "knuth-plass",
+      "covers"
+    ],
+    "also": [
+      "opener-design",
+      "design-images",
+      "heading-styles",
+      "heading-attributes",
+      "design-elements",
+      "chapter-breaks",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "page-background",
+      "paragraph-styles",
+      "resource-types",
+      "widows-orphans-runts",
+      "frontmatter",
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q20",
+    "Q29",
+    "Q73",
+    "Q54"
+  ],
+  "gaps": [],
+  "gotchas": [
+    "hyphenation-locales",
+    "opener-image-no-reserve",
+    "style-inherits-break",
+    "headings-drop-h1-break",
+    "palette-skips-designs",
+    "overflow-ellipsis-default",
+    "attr-values",
+    "quote-frontmatter",
+    "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": [
+    "spanish-pocket-novel",
+    "storybook-chapter-vignettes",
+    "justification-lab",
+    "novel-footnotes-column-foot"
+  ],
+  "workarounds": [],
+  "engine": {
+    "postext": "1.14.0",
+    "postextPdf": "1.14.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      26,
+      27,
+      32
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "El transplantat, complete, from the Obres completes, vol. VI (Barcelona, 1928), with misprints corrected, no opening ¿ ¡ and today’s dialogue dashes",
+          "es": "El transplantat, completo, de las Obres completes, vol. VI (Barcelona, 1928), con las erratas corregidas, sin ¿ ¡ iniciales y con los diálogos marcados con raya como hoy"
+        },
+        "who": "Narcís Oller",
+        "source": "https://ca.wikisource.org/wiki/El_transplantat",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The note to the edition",
+          "es": "La nota a la edición"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Engraving, frontispiece: the baker at his oven's door",
+          "es": "Grabado, frontispicio: el panadero a la puerta del horno"
+        },
+        "file": "frontis-1000.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Engraving, chapter I: the night train into Barcelona",
+          "es": "Grabado, capítulo I: el tren nocturno llega a Barcelona"
+        },
+        "file": "cap1-1200.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Engraving, chapter II: the village street in autumn",
+          "es": "Grabado, capítulo II: la calle del pueblo en otoño"
+        },
+        "file": "cap2-1200.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Engraving, chapter III: the Rambla at dawn",
+          "es": "Grabado, capítulo III: la Rambla al amanecer"
+        },
+        "file": "cap3-1200.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Engraving, chapter IV: the old man by the railway",
+          "es": "Grabado, capítulo IV: el viejo junto a la vía"
+        },
+        "file": "cap4-1200.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant SC",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 70,
+      "texture": "vellum",
+      "shade": "#fbf9f3"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#953222"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp"
+    }
+  },
+  "downloads": {
+    "pdf": true
+  }
+}

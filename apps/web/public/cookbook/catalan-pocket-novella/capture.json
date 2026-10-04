@@ -1,0 +1,746 @@
+{
+  "schemaVersion": 1,
+  "slug": "catalan-pocket-novella",
+  "sourceHash": "e6e66d7fd6f1419d89d2f86a7161b1090c20efd65443304826412cea37e18688",
+  "engine": {
+    "postext": "1.14.0",
+    "postextPdf": "1.14.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T12:44:49.101Z",
+  "variants": {
+    "en": {
+      "hash8": "0d3b4499",
+      "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
+      "timings": {
+        "importMs": 445,
+        "fontsMs": 3528,
+        "buildMs": 899,
+        "totalMs": 6496,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          185
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 10.4,
+          "leadingPt": 14
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Cormorant SC",
+          "Crimson Pro"
+        ],
+        "pages": 32,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 204482,
+          "alt": "Opening page 2: El Forner de les Monges."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 14350,
+          "alt": "Opening page 3: El transplantat."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 38462,
+          "alt": "Opening page 4: Nota a aquesta edició."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 151468,
+          "alt": "Opening page 5: I."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 140930,
+          "alt": "Page 6."
+        },
+        {
+          "n": 26,
+          "label": "26",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p26.webp",
+          "strip": "p26.s.webp",
+          "bytes": 168502,
+          "alt": "Opening page 26: IV."
+        },
+        {
+          "n": 27,
+          "label": "27",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p27.webp",
+          "strip": "p27.s.webp",
+          "bytes": 146938,
+          "alt": "Page 27."
+        },
+        {
+          "n": 32,
+          "label": "32",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p32.webp",
+          "strip": "p32.s.webp",
+          "bytes": 38382,
+          "alt": "Page 32."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "catalan-pocket-novella.pdf",
+        "bytes": 1777441,
+        "pages": 32
+      },
+      "sandbox": {
+        "file": "catalan-pocket-novella.postext",
+        "bytes": 1492592,
+        "folio": "8e6f438d"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.compounds",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].minHeight",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 332,
+        "designElements": 17,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 4,
+          "share": 0.0071,
+          "worst": 1.94
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.01 MB (warning at 0.9 MB for 8 pages)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "348f4303",
+      "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
+      "timings": {
+        "importMs": 184,
+        "fontsMs": 87,
+        "buildMs": 931,
+        "totalMs": 2912,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          185
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 10.4,
+          "leadingPt": 14
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Cormorant SC",
+          "Crimson Pro"
+        ],
+        "pages": 32,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 204482,
+          "alt": "Página de apertura 2: El Forner de les Monges."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 14350,
+          "alt": "Página de apertura 3: El transplantat."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 38462,
+          "alt": "Página de apertura 4: Nota a aquesta edició."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 151468,
+          "alt": "Página de apertura 5: I."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 140930,
+          "alt": "Página 6."
+        },
+        {
+          "n": 26,
+          "label": "26",
+          "role": "opener",
+          "w": 1000,
+          "h": 1542,
+          "file": "p26.webp",
+          "strip": "p26.s.webp",
+          "bytes": 168502,
+          "alt": "Página de apertura 26: IV."
+        },
+        {
+          "n": 27,
+          "label": "27",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p27.webp",
+          "strip": "p27.s.webp",
+          "bytes": 146938,
+          "alt": "Página 27."
+        },
+        {
+          "n": 32,
+          "label": "32",
+          "role": "body",
+          "w": 1000,
+          "h": 1542,
+          "file": "p32.webp",
+          "strip": "p32.s.webp",
+          "bytes": 38382,
+          "alt": "Página 32."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "catalan-pocket-novella.pdf",
+        "bytes": 1777441,
+        "pages": 32
+      },
+      "sandbox": {
+        "file": "catalan-pocket-novella.postext",
+        "bytes": 1492607,
+        "folio": "8e6f438d"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.compounds",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxJustifyTracking",
+          "bodyText.maxWordSpacing",
+          "bodyText.referenceColor",
+          "bodyText.runtMinCharacters",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].minHeight",
+          "headings",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 332,
+        "designElements": 17,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 4,
+          "share": 0.0071,
+          "worst": 1.94
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.01 MB (warning at 0.9 MB for 8 pages)"
+          }
+        ]
+      }
+    }
+  }
+}

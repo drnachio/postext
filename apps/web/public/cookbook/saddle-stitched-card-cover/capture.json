@@ -3,20 +3,20 @@
   "slug": "saddle-stitched-card-cover",
   "sourceHash": "130f9022c6517bd614c1824c5b3b890f17b33d5d50a61001add9921b5243a76c",
   "engine": {
-    "postext": "1.13.4",
+    "postext": "1.14.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T10:06:58.538Z",
+  "capturedAt": "2026-10-04T12:44:44.616Z",
   "variants": {
     "en": {
-      "hash8": "2d808220",
+      "hash8": "1319adb0",
       "vdtHash": "b81ea95ce3d428a6c883d46948d8fa5a9a059b5b",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 31,
-        "buildMs": 24,
-        "totalMs": 1032,
+        "importMs": 2771,
+        "fontsMs": 7316,
+        "buildMs": 27,
+        "totalMs": 10749,
         "builds": 2
       },
       "specimen": {
@@ -165,7 +165,7 @@
       },
       "sandbox": {
         "file": "saddle-stitched-card-cover.postext",
-        "bytes": 10962,
+        "bytes": 11106,
         "folio": "0753e69b"
       },
       "detected": {

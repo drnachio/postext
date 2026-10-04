@@ -1,0 +1,78 @@
+---
+title: "按IEC规则断词的加泰罗尼亚语中篇小说"
+summary: "把Narcís Oller的《El transplantat》全文排成32页口袋本：按IEC规则划分加泰罗尼亚语音节，l·l断为il- | lusió，每章一幅版画。"
+plain: "一部完整的加泰罗尼亚语中篇小说，排成小开本平装书。行末断词遵照加泰罗尼亚语的规范，带间隔点的双写l也不例外。"
+description: "Oller《El transplantat》（1928年文本）12 × 18.5 cm口袋本：locale 'ca'、IEC断词、l·l断为il- | lusió、带版画的章首页。"
+question: "怎样正确地给加泰罗尼亚语断词，包括l·l、撇号和用连字符连接的代词？"
+aliases: ["加泰罗尼亚语", "català", "Catalan", "加泰罗尼亚语断词", "ela geminada", "l·l", "间隔点", "punt volat", "IEC", "后附代词", "Narcís Oller", "口袋本", "完整中篇小说", "卷首插图", "版画"]
+pageNotes: { "2": "卷首插图：一幅版画，一个系白围裙的胖面包师站在村里面包房门口，身后是炉火；下面是小型大写字母EL FORNER DE LES MONGES。", "3": "书名页：小型大写字母NARCÍS OLLER，大号红色斜体El transplantat，下面是De «Croquis del natural»和一条红色短线。", "27": "第四章的一页正文。页面中部，一行以titil-结束，下一行以laven开始：titil·laven的间隔点让位给连字符。" }
+---
+
+## 成品一览
+
+Narcís Oller的《El transplantat》全文，依据他的《Obres completes》（巴塞罗那，1928年）文本，排成12 × 18.5 cm、32页的口袋本。四章之前依次是半书名页、面包师站在炉前的卷首插图、红色斜体Cormorant Garamond的书名页，以及一篇版本说明。每章在一幅十二行高的版画下开始，章号是红色罗马数字。正文为10.4 pt的Crimson Pro，按加泰罗尼亚研究院（IEC）的要求在音节处断开：断点两侧至少各留两个字母，元音分立处不拆，撇号之后不断，*titil·laven*断为*titil-* | *laven*，连字符取代中间的间隔点。对白用破折号，引文用«cometes baixes»。
+
+## 做法
+
+### 1 · 用语言代码指定加泰罗尼亚语
+
+代码见上面的[简短回答](#简短回答)。`locale: 'ca'`选用加泰罗尼亚语的断词模式，自postext 1.14起，这些模式遵循IEC的《Llibre d’estil》（[支持的语言区域](/zh/docs/justification#支持的语言区域)）。模式与TeX所用的相同，但断点两侧最少各留两个字母，而不是npm包里的三个，因此*ter-ra*、*cai-xa*和*plu-ja*都能断开。元音分立处保持在一起（*cièn-cia*、*ca-mions*），夹在元音之间的*i*则开始新的音节（*fe-ia*）。*ela geminada*在两个*l*之间断开：一行以*titil-*结束，下一行以*laven*开始，两边都没有间隔点，Knuth–Plass也按去掉间隔点后的宽度测量这一行。
+
+<PageShot page={27} crop="0.06,0.495,0.88,0.085" caption="第27页：行末的titil·laven排为titil- | laven。这32页中只有这一处l·l落在行末。" />
+
+`compounds: false`让动词和它的代词只在自身的连字符处断开（*arrossegar-* | *se*），这是IEC推荐的断法（[断词](/zh/docs/configuration#断词)）。代价是一行偏松：第7页*d’inaugurar-se*前面的那一行，词间距放宽到1.94倍，尽管`maxJustifyTracking: 10`已经让其他行用字距吸收了多出的部分。
+
+### 2 · 由整行构成的口袋本页面
+
+<Excerpt region="page" />
+
+下页边距由成品尺寸、上页边距和`LINES`算出，所以版心恰好容纳29行14 pt，每个满页都止于同一条基线。89 mm的行长约容纳64个Crimson Pro字符。`mirror: true`让16 mm的页边距在跨页两面都留在书脊一侧（[镜像页边距](/zh/docs/configuration#镜像页边距)）。
+
+### 3 · 四章共用一个章首设计
+
+<Excerpt region="opener" />
+
+`resourceId: '{attr.art}'`绘出标题指名的图片，所以`# II {style="capitol" art="cap2"}`用同一个样式让第二章在自己的版画下开始（[标题属性](/zh/docs/document-format#标题属性)）。章首设计中的图片不占用保留高度，因此由`minHeight`留出十六行：十二行给版画，然后是章号和短线，正文从页面第十七行开始，每章都一样。
+
+### 4 · 第一章之前的四页
+
+<Excerpt region="front" />
+
+前置部分的每一页都是一个带自有样式的一级标题：`# El transplantat {style="portada"}`印出frontmatter中的作者和副标题，并把标题本身作为书名。每个样式都重申自己的分页，因为样式会继承所在级别的分页设置；每个样式也清空页眉和页脚，所以这些页没有书眉和页码。卷首插图落在第2页（左页），与书名页隔着书脊相对。
+
+### 5 · 左页印作者，右页印书名
+
+<Excerpt region="heads" />
+
+`parity`把作者放在左页、书名放在右页；`pages: 'body'`让两者都不出现在章首页，章首页改用`pages: 'opener'`的页脚页码。`SHIFT`把每个书眉移到版心的中线上；由于内外页边距不同，版心中线偏离页面中线半毫米。
+
+### 6 · 五幅版画，不加图注
+
+<Excerpt region="pictures" />
+
+这些图片属于一个`captionPrefix`为空的资源类型，因此不编号也不加标签。每幅都按像素尺寸声明，并在排版前以其文件id加载。保存之前，图中的白色已映射为页面的米色，黑色映射为正文油墨色，所以它们印出来像页面的一部分，而不是贴上去的照片。
+
+## 变化
+
+### 让代词也能断开
+
+改用默认的`compounds: true`后，*d’inaugurar-se*可以断为*d’inau-gurar-se*，第7页的松行随之消失。代价是在这几页里，`titil-` | `laven`这个断点不再落在行末。
+
+```diff
+-  hyphenation: { compounds: false },
++  hyphenation: { compounds: true },
+```
+
+### 每章从右页开始
+
+`parity: 'odd'`会在原本从左页开始的章前插入一张空白页，就像版式更宽松的版本那样。原在第26页开始的第四章，会移到空白页之后的第27页。
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' }, // a chapter opens on the next page, either side
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+## 常见问题
+
+- 从Viquitexts复制文本时要保留斜体：Oller用斜体标出*tentu*、*Ensanxe*和*palacio*这些口语词或西班牙语词，导出纯文本会丢掉它们。可疑的词要对照1928年版的扫描件核对：转录本有六处把动词*tornar*写成了*tom-*（*tomà*、*tomaré*、*tomar*），还有一处把*jorn*写成了*jom*。
+- 6800个词的正文分在五个内容文件里，加上工具包，合成后的脚本约69 KB。整本书已是一个pen能容纳的最长样例；更长的作品应放进`.postext`包。
