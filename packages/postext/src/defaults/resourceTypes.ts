@@ -12,7 +12,7 @@ interface ResourceTypeStrings {
 }
 
 /** Per-language strings for the two built-in types, one per bundled
- *  hyphenation language plus Chinese in each script (keyed by
+ *  hyphenation language plus Chinese in each script and Arabic (keyed by
  *  `stringsKeyOf`). English is the fallback for any locale not listed here.
  *  Add a language by adding a key. A language may also number its figures
  *  its own way (`numberingTemplate`, the house style being `{h1}.{n}`). */
@@ -60,6 +60,14 @@ const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table:
     table: { name: '表', namePlural: '表', shortLabel: '表', captionPrefix: '表' },
     numberingTemplate: '{h1}-{n}',
   },
+  // Arabic numbers by chapter with a hyphen too (شكل ٢-٣, «الجدول ١-٢»):
+  // a full stop between two Arabic-Indic digits reads as the decimal
+  // separator ٫ at a glance.
+  ar: {
+    figure: { name: 'شكل', namePlural: 'أشكال', shortLabel: 'شكل', captionPrefix: 'شكل' },
+    table: { name: 'جدول', namePlural: 'جداول', shortLabel: 'جدول', captionPrefix: 'جدول' },
+    numberingTemplate: '{h1}-{n}',
+  },
 };
 
 /** Resolve a (possibly regional) locale tag like `es-ES` or `pt_BR` to a
@@ -78,7 +86,7 @@ export function documentLocale(config: PostextConfig | undefined): string {
 /** Built-in resource types provided when a config does not define its own,
  *  localised to `locale` (defaults to English). Both reset their counter on
  *  every `h1` and number as `{h1}.{n}` (e.g. "Figure 2.3"), or `{h1}-{n}` in
- *  Chinese ("图 2-3"), using decimal counters. New objects are returned on
+ *  Chinese ("图 2-3") and Arabic ("شكل 2-3"), using decimal counters. New objects are returned on
  *  every call so callers may freely mutate the result. */
 export function defaultResourceTypes(locale = 'en'): ResourceType[] {
   const s = stringsForLocale(locale);

@@ -113,8 +113,8 @@ describe('Chinese locale tags', () => {
   });
 
   it('lists the document languages with built-in strings', () => {
-    expect(DOCUMENT_LANGUAGES.map((l) => l.tag)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK']);
-    expect(DOCUMENT_LANGUAGES.slice(-3).map((l) => l.name)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）']);
+    expect(DOCUMENT_LANGUAGES.map((l) => l.tag)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK', 'ar', 'ar-EG', 'ar-MA']);
+    expect(DOCUMENT_LANGUAGES.slice(8, 11).map((l) => l.name)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）']);
   });
 });
 

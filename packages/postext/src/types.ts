@@ -4237,9 +4237,11 @@ export interface IndexConfig {
   turnoverIndent?: Dimension;
   /** Space above each main entry. Default `0`. */
   entrySpacing?: Dimension;
-  /** Between the term and its first page number. Default `', '`. */
+  /** Between the term and its first page number. Default `', '` (the
+   *  Arabic comma `'، '` in an index sorted in a language written in
+   *  Arabic script). */
   separator?: string;
-  /** Between two page numbers. Default `', '`. */
+  /** Between two page numbers. Default `', '` (`'، '` in Arabic script). */
   locatorSeparator?: string;
   /** Between the ends of a page range. Default `'–'` (en dash). */
   rangeSeparator?: string;
@@ -4254,7 +4256,8 @@ export interface IndexConfig {
    *  bold. */
   main?: { bold?: boolean; italic?: boolean };
   /** Cross-references. The labels default to `See` / `See also` (Spanish
-   *  `Véase` / `Véase también`), in italics. */
+   *  `Véase` / `Véase también`, Arabic `انظر` / `انظر أيضًا`), in italics
+   *  — upright in an Arabic-script index, whose fonts have no italics. */
   see?: { label?: string; alsoLabel?: string; italic?: boolean };
   /** Language whose alphabetical order sorts the entries (a BCP 47 tag).
    *  Default: the document language. */
@@ -4280,6 +4283,14 @@ export interface IndexConfig {
    *  Chinese collation data sets a pinyin or stroke index with no heads. */
   groupBy?: IndexGroupBy;
   groups?: IndexGroupsConfig;
+  /** Sort and group Arabic entries as if a leading article `ال` (`ٱل`)
+   *  were not there: البصرة files under ب, between بدر and بغداد, and
+   *  prints as written. The article is the definite `al-` only — `ابن`,
+   *  `أبو`, `وال`… are kept — and an entry with its own `sort` key is
+   *  sorted by that key as given. Default: `true` when the index sorts in
+   *  Arabic (`locale`, else the document language, is `ar` or `ar-…`),
+   *  else `false`. */
+  ignoreArticle?: boolean;
 }
 
 /** See {@link IndexConfig.groupBy}. */
@@ -4304,6 +4315,7 @@ export interface ResolvedIndexConfig {
   see: { label?: string; alsoLabel?: string; italic: boolean };
   locale?: string;
   groupBy: IndexGroupBy;
+  ignoreArticle: boolean;
   groups: {
     enabled: boolean;
     fontFamily: string;

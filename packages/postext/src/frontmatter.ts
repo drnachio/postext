@@ -1,5 +1,6 @@
 import matter from 'gray-matter';
 import type { DocumentMetadata } from './types';
+import { languageOf, localeScript } from './locale';
 
 export interface ParsedFrontmatter {
   metadata: DocumentMetadata;
@@ -46,6 +47,41 @@ export function frontmatterFieldSources(markdown: string): Record<string, { star
  *  `{author}`, `{publishDate}`; the PDF title and author). */
 const METADATA_TEXT_FIELDS = ['title', 'subtitle', 'author', 'publishDate'] as const;
 
+/**
+ * The locale a date is written in for a document in `locale`: the tag
+ * itself, with two Unicode extensions added where it names none.
+ * - Arabic is pinned to the Gregorian calendar (`-u-ca-gregory`): a runtime
+ *   may default a region to the Hijri one (`ar-SA` to Umm al-Qura in some
+ *   ICU versions), and a book prints the date its front matter gives. A tag
+ *   that names a calendar keeps it: `ar-u-ca-islamic` writes
+ *   `23 ربيع الآخر 1448 هـ`.
+ * - `numberingSystem` (`'arab'`, `'latn'`…), when given, sets the digits —
+ *   the hook for the document's digit system, so a date's digits follow the
+ *   page numbers' (`٤ أكتوبر ٢٠٢٦` where those are Arabic-Indic). A tag
+ *   that names its digits (`ar-EG-u-nu-latn`) keeps them; with neither, the
+ *   runtime's default for the tag applies (bare `ar`: 0–9; `ar-EG`: ٠–٩).
+ * A tag the runtime rejects is returned as given.
+ */
+export function dateLocaleOf(locale: string, numberingSystem?: string): string {
+  const arabic = languageOf(locale) === 'ar';
+  if (!arabic && !numberingSystem) return locale;
+  try {
+    const tag = new Intl.Locale(locale.trim().replace(/_/g, '-'));
+    const options: Intl.LocaleOptions = {};
+    if (arabic && !tag.calendar) options.calendar = 'gregory';
+    if (numberingSystem && !tag.numberingSystem) options.numberingSystem = numberingSystem;
+    return Object.keys(options).length > 0 ? new Intl.Locale(tag, options).toString() : locale;
+  } catch {
+    return locale;
+  }
+}
+
+/** The separator of a list value (`author: [A, B]`): the Arabic comma in a
+ *  language written in Arabic script, a comma elsewhere. */
+function listSeparator(locale: string | undefined): string {
+  return locale && localeScript(locale) === 'Arab' ? '، ' : ', ';
+}
+
 /** `YYYY-MM-DD` of a date's UTC calendar day. */
 function isoDay(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -56,11 +92,13 @@ function isoDay(date: Date): string {
  * `title: 1984` parses as a number, `publishDate: 2026-09-24` as a `Date`,
  * `author: [Ana, Luis]` as a list — so a value is coerced rather than
  * dropped: strings as they are, numbers and booleans as written, a date as
- * its calendar day (long form in `locale`, ISO `YYYY-MM-DD` without one),
- * a list as its items joined by `, `. `undefined` for anything else (an
- * object, `null`, an invalid date).
+ * its calendar day (long form in `locale` — see {@link dateLocaleOf} for
+ * the calendar and the digits, which `numberingSystem` may set — ISO
+ * `YYYY-MM-DD` without one), a list as its items joined by `, ` (`، ` in
+ * an Arabic-script language). `undefined` for anything else (an object,
+ * `null`, an invalid date).
  */
-export function metadataText(value: unknown, locale?: string): string | undefined {
+export function metadataText(value: unknown, locale?: string, numberingSystem?: string): string | undefined {
   if (typeof value === 'string') return value;
   if (typeof value === 'number') return Number.isFinite(value) ? String(value) : undefined;
   if (typeof value === 'boolean' || typeof value === 'bigint') return String(value);
@@ -70,28 +108,29 @@ export function metadataText(value: unknown, locale?: string): string | undefine
     // YAML dates are UTC midnights: format in UTC so the day never shifts
     // with the reader's time zone.
     try {
-      return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(value);
+      return new Intl.DateTimeFormat(dateLocaleOf(locale, numberingSystem), { dateStyle: 'long', timeZone: 'UTC' }).format(value);
     } catch {
       return isoDay(value);
     }
   }
   if (Array.isArray(value)) {
-    const items = value.map((v) => metadataText(v, locale)).filter((v): v is string => v !== undefined && v !== '');
-    return items.length > 0 ? items.join(', ') : undefined;
+    const items = value.map((v) => metadataText(v, locale, numberingSystem)).filter((v): v is string => v !== undefined && v !== '');
+    return items.length > 0 ? items.join(listSeparator(locale)) : undefined;
   }
   return undefined;
 }
 
 /** `metadata` with the printed fields (`title`, `subtitle`, `author`,
  *  `publishDate`) coerced to text by {@link metadataText}; a field that has
- *  no text form is dropped. Other keys are kept as parsed. */
-export function normalizeMetadata(metadata: DocumentMetadata, locale?: string): DocumentMetadata {
+ *  no text form is dropped. Other keys are kept as parsed. `numberingSystem`
+ *  sets the digits of a date (see {@link dateLocaleOf}). */
+export function normalizeMetadata(metadata: DocumentMetadata, locale?: string, numberingSystem?: string): DocumentMetadata {
   let out: DocumentMetadata | undefined;
   for (const key of METADATA_TEXT_FIELDS) {
     const value: unknown = metadata[key];
     if (value === undefined || typeof value === 'string') continue;
     out ??= { ...metadata };
-    const text = metadataText(value, locale);
+    const text = metadataText(value, locale, numberingSystem);
     if (text === undefined) delete out[key];
     else out[key] = text;
   }

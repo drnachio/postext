@@ -122,6 +122,7 @@ describe("package exports", () => {
       "matchHyphenationLocale",
       "DOCUMENT_LANGUAGES",
       "isCjkLanguage",
+      "isUnhyphenatedLanguage",
       "localeScript",
       "chineseScriptOf",
       "cjkRegionOf",

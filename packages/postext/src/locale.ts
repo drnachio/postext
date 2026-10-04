@@ -37,6 +37,32 @@ export function isCjkLanguage(tag: unknown): boolean {
   return isTag(tag) && CJK_LANGUAGES.has(languageOf(tag));
 }
 
+/** Scripts written from right to left: Arabic (Arabic, Persian, Urdu,
+ *  Pashto, Sorani…), Hebrew (Hebrew, Yiddish), Syriac, Thaana, N'Ko and
+ *  Adlam. */
+const RIGHT_TO_LEFT_SCRIPTS = new Set(['Arab', 'Hebr', 'Syrc', 'Thaa', 'Nkoo', 'Adlm']);
+
+/** Whether `tag` names a language written in a right-to-left script once
+ *  maximised (`'ar'`, `'fa-IR'`, `'ur'`, `'he'`, `'yi'`, `'ks-Arab'`); not
+ *  `'ks-Deva'` or `'az'` (Latin). */
+function isRightToLeftLanguage(tag: unknown): boolean {
+  const script = localeScript(tag);
+  return script !== undefined && RIGHT_TO_LEFT_SCRIPTS.has(script);
+}
+
+/**
+ * Whether `tag` names a language set without hyphenation: Chinese,
+ * Japanese and Korean ({@link isCjkLanguage}), and the languages written in
+ * a right-to-left script — Arabic, Persian, Urdu, Hebrew, Yiddish… An
+ * Arabic word is never divided at a line end: its letters join, and the
+ * line is justified with the spaces and kashida instead (arabic-typography
+ * §5); Hebrew books do not divide words either. No patterns ship for any
+ * of them, and asking for none is not a fallback worth reporting.
+ */
+export function isUnhyphenatedLanguage(tag: unknown): boolean {
+  return isCjkLanguage(tag) || isRightToLeftLanguage(tag);
+}
+
 /** `Intl.Locale(tag).maximize()`, memoised; `undefined` for a tag the
  *  runtime rejects (or a runtime without `Intl.Locale`). */
 const maximized = new Map<string, Intl.Locale | null>();
@@ -110,19 +136,24 @@ export function canonicalLocaleTag(tag: unknown): string | undefined {
 }
 
 /** The `lang` a renderer declares for a resolved document (the HTML root,
- *  the canvas context): its language in canonical form (`zh-Hant-TW`),
- *  from `locale`, else the hyphenation tag. Only Chinese, Japanese and
- *  Korean documents declare one — there the browser picks regional glyph
- *  forms from it (Han characters unified in Unicode, punctuation set in the
- *  corner or the centre of the em box) — so the output of every other
- *  document is unchanged. */
+ *  the canvas context): its language in canonical form (`zh-Hant-TW`,
+ *  `ar-EG`), from `locale`, else the hyphenation tag. Only two kinds of
+ *  document declare one, so the output of every other document is
+ *  unchanged:
+ *  - Chinese, Japanese and Korean: the browser picks regional glyph forms
+ *    from it (Han characters unified in Unicode, punctuation set in the
+ *    corner or the centre of the em box);
+ *  - languages written right to left (Arabic, Persian, Urdu, Hebrew…): the
+ *    font's language-specific forms (`locl`: the Urdu and Persian digits
+ *    and letter shapes of a shared Arabic font) and the fallback font
+ *    follow it, and assistive technology reads the text in its language. */
 export function renderLangOf(config: {
   locale?: string;
   bodyText?: { hyphenation?: { tag?: string; locale?: string } };
 } | undefined): string | undefined {
   const h = config?.bodyText?.hyphenation;
   const tag = presentTag(config?.locale) ?? presentTag(h?.tag) ?? presentTag(h?.locale);
-  return isCjkLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
+  return isCjkLanguage(tag) || isRightToLeftLanguage(tag) ? canonicalLocaleTag(tag) : undefined;
 }
 
 /**
@@ -147,7 +178,11 @@ export interface DocumentLanguage {
 /** The document languages with built-in strings, in the order a language
  *  picker lists them: the eight hyphenation languages, then Chinese in
  *  Simplified characters, in Traditional characters (Taiwan) and in
- *  Traditional characters as set in Hong Kong. */
+ *  Traditional characters as set in Hong Kong, then Arabic — bare, as set
+ *  in Egypt and as set in Morocco. The strings are the same in the three
+ *  Arabic entries; the region decides what a regional default reads from
+ *  the tag (digits: Arabic-Indic ٠–٩ in the Mashriq, European 0–9 in the
+ *  Maghreb; month names in dates). */
 export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'en-us', name: 'English' },
   { tag: 'es', name: 'Español' },
@@ -160,6 +195,9 @@ export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'zh-Hans', name: '中文（简体）' },
   { tag: 'zh-Hant', name: '中文（繁體）' },
   { tag: 'zh-Hant-HK', name: '中文（香港）' },
+  { tag: 'ar', name: 'العربية' },
+  { tag: 'ar-EG', name: 'العربية (مصر)' },
+  { tag: 'ar-MA', name: 'العربية (المغرب)' },
 ].map((l) => Object.freeze(l)));
 
 /**
@@ -186,7 +224,8 @@ const warnedTags = new Set<string>();
  * {@link matchHyphenationLocale}, falling back to `'en-us'` for a language
  * with no bundled patterns. The fallback is reported once per tag on the
  * console, since the text is then hyphenated with another language's rules
- * (Chinese, Japanese and Korean excepted: they are set without hyphenation);
+ * (Chinese, Japanese, Korean and the right-to-left languages excepted: they
+ * are set without hyphenation, see {@link isUnhyphenatedLanguage});
  * `warn: false` skips the report (hyphenation is off, so no text uses the
  * patterns). A missing or blank tag gives `'en-us'` silently.
  */
@@ -194,9 +233,9 @@ export function hyphenationLocaleFor(tag: LocaleTag, warn = true): HyphenationLo
   if (!isTag(tag)) return 'en-us';
   const match = matchHyphenationLocale(tag);
   if (match) return match;
-  // Chinese, Japanese and Korean need no patterns: nothing to report. The
-  // body text resolves hyphenation off for them (see `resolveHyphenation`).
-  if (isCjkLanguage(tag)) return 'en-us';
+  // Chinese, Japanese, Korean, Arabic, Hebrew… need no patterns: nothing
+  // to report (the body text resolves hyphenation off for them).
+  if (isUnhyphenatedLanguage(tag)) return 'en-us';
   if (warn && !warnedTags.has(tag)) {
     warnedTags.add(tag);
     console.warn(

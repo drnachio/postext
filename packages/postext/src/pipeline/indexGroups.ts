@@ -1,5 +1,8 @@
 /**
- * Group heads of a Chinese back-of-book index (#182): the Latin initial of
+ * Group heads and sort keys of a back-of-book index in Chinese and in
+ * Arabic.
+ *
+ * Chinese (#182): the Latin initial of
  * the pinyin reading (A–Z) or the stroke count (一畫, 二畫 …) of an entry's
  * first character.
  *
@@ -14,6 +17,11 @@
  * generated from ICU 78's markers and checked by `indexChinese.test.ts`.
  * A collator that does not sort by reading or by strokes at all gives no
  * groups: the index then has no heads.
+ *
+ * Arabic (#372): entries sort and group by a key that drops what an Arabic
+ * index ignores (see {@link arabicSortKey}), in the `ar` collation, whose
+ * order is the hijāʾī one (ا ب ت ث … ن ه و ي); the head of a group is the
+ * key's first letter.
  */
 
 import { chineseScriptOf } from '../locale';
@@ -154,4 +162,49 @@ export function sortLocaleFor(locale: string, grouping: IndexGrouping): string {
     }
   }
   return grouping === 'pinyin' ? 'zh-u-co-pinyin' : 'zh-Hant-u-co-stroke';
+}
+
+/** Harakat and the other vowel and reading signs written over or under an
+ *  Arabic letter (tanwīn, shadda, sukūn, the dagger alif, Qurʾānic
+ *  annotation marks), and the tatweel that stretches a joint: none of them
+ *  changes where a word files. The hamza signs U+0654/U+0655 are not
+ *  among them here: before the article is looked for, a hamza on an alif
+ *  still tells أل (ألف) from the article ال. */
+const ARABIC_VOWEL_SIGNS = /[\u0610-\u061a\u064b-\u0653\u0656-\u065f\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7\u06e8\u06ea-\u06ed\u08d3-\u08e1\u08e3-\u08ff\u0640]/gu;
+
+/** The definite article at the head of a word: alif (or alif waṣla) and
+ *  lām, followed by at least two letters, so a short word that merely
+ *  starts with those letters (الا) keeps them. */
+const ARABIC_ARTICLE = /^[\u0627\u0671]\u0644(?=\p{L}{2})/u;
+
+/** `الله` is filed as written, under ا: the article is part of the name. */
+const ALLAH = /^[\u0627\u0671]\u0644\u0644\u0647(?!\p{L})/u;
+
+/** Letters folded to the one an Arabic index files them with (arabic
+ *  typography §9.4): alif waṣla and the wavy-hamza alifs to alif, a lone
+ *  hamza to alif, alif maqṣūra to yāʾ, tāʾ marbūṭa to hāʾ. The hamza seats
+ *  (أ إ آ ؤ ئ) fold by decomposition, their sign being dropped. */
+const ARABIC_FOLDS: Readonly<Record<string, string>> = {
+  '\u0671': '\u0627', '\u0672': '\u0627', '\u0673': '\u0627', '\u0621': '\u0627',
+  '\u0649': '\u064a', '\u0629': '\u0647',
+};
+
+/**
+ * The key an Arabic index entry sorts and groups by, from its text as
+ * written:
+ * 1. the vowel signs and tatweel go (ٱلْكِتَابُ reads as الكتاب);
+ * 2. with `ignoreArticle`, a leading article goes (البصرة → بصرة, between
+ *    بدر and بغداد); الله keeps it;
+ * 3. presentation forms and ligatures are decomposed (ﻻ → لا), and the
+ *    signs left on Arabic letters dropped, which takes the hamza off its
+ *    seat (أحمد, إبراهيم, آدم → ا; مؤمن → مومن);
+ * 4. ٱ, ء → ا; ى → ي; ة → ه.
+ * Only Arabic letters change: a Latin word keeps its accents (the collator
+ * weighs them as it always does).
+ */
+export function arabicSortKey(text: string, ignoreArticle: boolean): string {
+  let key = text.normalize('NFC').replace(ARABIC_VOWEL_SIGNS, '').trim();
+  if (ignoreArticle && !ALLAH.test(key)) key = key.replace(ARABIC_ARTICLE, '');
+  key = key.normalize('NFKD').replace(/(\p{sc=Arabic})\p{M}+/gu, '$1');
+  return key.replace(/[\u0671-\u0673\u0621\u0649\u0629]/gu, (ch) => ARABIC_FOLDS[ch] ?? ch).normalize('NFC');
 }

@@ -21,9 +21,9 @@ import type { BlockMeasureContext, MeasuredContentBlock } from './measureContent
 import { stampSourceRanges } from './buildHelpers';
 import { bookTitlesAsConfigured } from './annotations';
 import { resolvedLocale } from './config';
-import { chineseScriptOf, stringsFor } from '../locale';
+import { chineseScriptOf, localeScript, stringsFor } from '../locale';
 import type { IndexGrouping } from './indexGroups';
-import { canGroupBy, indexGrouping, pinyinInitial, sortLocaleFor, strokeGroup, strokeLabel } from './indexGroups';
+import { arabicSortKey, canGroupBy, indexGrouping, pinyinInitial, sortLocaleFor, strokeGroup, strokeLabel } from './indexGroups';
 
 /** A page number's link target, carried as a Markdown link while the entry
  *  is measured and turned into `VDTLineSegment.pageLink` after. */
@@ -75,6 +75,10 @@ interface IndexLabels {
 /** Chinese cross-references: 贾琏 12。见贾政；王熙凤 */
 const CHINESE_REF_PUNCTUATION = { lead: '。', gap: '', join: '；' };
 
+/** Arabic cross-references: the Arabic semicolon between two targets
+ *  (الجاحظ ١٢. انظر أيضًا البصرة؛ الكوفة). */
+const ARABIC_REF_PUNCTUATION = { lead: '. ', gap: ' ', join: '؛ ' };
+
 /** Labels in the document language (English otherwise), keyed by
  *  `stringsKeyOf`. */
 const LABELS: Record<string, IndexLabels> = {
@@ -88,6 +92,7 @@ const LABELS: Record<string, IndexLabels> = {
   de: { see: 'Siehe', seeAlso: 'Siehe auch', symbols: 'Symbole' },
   'zh-hans': { see: '见', seeAlso: '另见', symbols: '符号', numbers: '数字', refPunctuation: CHINESE_REF_PUNCTUATION },
   'zh-hant': { see: '見', seeAlso: '另見', symbols: '符號', numbers: '數字', refPunctuation: CHINESE_REF_PUNCTUATION },
+  ar: { see: 'انظر', seeAlso: 'انظر أيضًا', symbols: 'رموز', numbers: 'أرقام', refPunctuation: ARABIC_REF_PUNCTUATION },
 };
 
 function labelsFor(locale: string): IndexLabels {
@@ -258,13 +263,13 @@ interface EntryGroup {
 const LATIN_INITIALS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function groupOf(
-  node: IndexNode,
+  sortKey: string,
   locale: string,
   base: Intl.Collator,
   labels: { symbols: string; numbers: string },
   grouping: IndexGrouping,
 ): EntryGroup {
-  const lead = [...node.sort.trim()][0] ?? '';
+  const lead = [...sortKey.trim()][0] ?? '';
   // A fullwidth letter or digit files with its ASCII form (`Ｑ版` under Q).
   const first = /[\uff01-\uffee]/.test(lead) ? lead.normalize('NFKC') : lead;
   // A Han numeral (〇, read líng) files with the characters, not the digits.
@@ -320,10 +325,27 @@ function indexBlocksFor(
     numbers: cfg.groups.numbersLabel ?? localized.numbers ?? '0–9',
     ...(localized.refPunctuation ? { refPunctuation: localized.refPunctuation } : {}),
   };
-  const bySort = (a: IndexNode, b: IndexNode): number =>
-    base.compare(a.sort, b.sort) || fine.compare(a.sort, b.sort) || fine.compare(a.text, b.text);
+  // Arabic (#372): entries sort and file by a key without vowel signs,
+  // hamza seats or (with `ignoreArticle`) the article; an entry's own
+  // `sort` key keeps its article. Any other index sorts by the text.
+  const arabicKeys = localeScript(locale) === 'Arab' || cfg.ignoreArticle;
+  const keys = new Map<IndexNode, string>();
+  const keyOf = (node: IndexNode): string => {
+    if (!arabicKeys) return node.sort;
+    let key = keys.get(node);
+    if (key === undefined) {
+      key = arabicSortKey(node.sort, cfg.ignoreArticle && !node.sortSet);
+      keys.set(node, key);
+    }
+    return key;
+  };
+  const bySort = (a: IndexNode, b: IndexNode): number => {
+    const ka = keyOf(a);
+    const kb = keyOf(b);
+    return base.compare(ka, kb) || fine.compare(ka, kb) || fine.compare(a.text, b.text);
+  };
   const sortedRoots = roots
-    .map((node) => ({ node, group: groupOf(node, locale, base, labels, grouping) }))
+    .map((node) => ({ node, group: groupOf(keyOf(node), locale, base, labels, grouping) }))
     .sort((a, b) => a.group.rank - b.group.rank || (a.group.order ?? 0) - (b.group.order ?? 0) || bySort(a.node, b.node));
 
   const out: ContentBlock[] = [];
