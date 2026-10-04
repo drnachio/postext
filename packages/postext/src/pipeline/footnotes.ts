@@ -238,6 +238,9 @@ export function noteContentBlock(
     sourceStart,
     sourceEnd: def?.sourceEnd ?? sourceStart,
     sourceMap: [...new Array<number>(prefix.length).fill(sourceStart), ...(def?.sourceMap ?? [])],
+    // A note written in a block of its own direction (`[^id]: …` inside
+    // `:::paragraphs{dir=rtl}`) is set in it (#371).
+    ...(def?.direction ? { direction: def.direction } : {}),
   };
 }
 

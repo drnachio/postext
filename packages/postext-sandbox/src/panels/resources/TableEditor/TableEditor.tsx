@@ -494,7 +494,9 @@ export function TableEditor({
         canSplit={canSplit}
         headerRowActive={headerRowActive}
         headerColumnActive={headerColumnActive}
-        activeAlign={activeCell?.align}
+        // The toolbar shows a logical `start` / `end` as the side it is
+        // for a table running with the document.
+        activeAlign={activeCell?.align === 'start' ? 'left' : activeCell?.align === 'end' ? 'right' : activeCell?.align}
         activeVerticalAlign={activeCell?.verticalAlign}
         onAddRow={handleAddRow}
         onRemoveRow={handleRemoveRow}

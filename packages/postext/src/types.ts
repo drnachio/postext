@@ -87,8 +87,10 @@ export interface ResourcePlacement {
    *  shrank — whose caption and note keep the slot's measure. A turned
    *  figure and one with its caption beside it stay flush left. Default
    *  `'left'` (up to postext 1.4 a narrower picture was always set flush
-   *  left). */
-  align?: 'left' | 'center' | 'right';
+   *  left). Sides of the body flow, so on a right-to-left document's
+   *  mirrored pages `'left'` is the sheet's right; `'start'` / `'end'`
+   *  (#371) are the same sides by their logical names. */
+  align?: 'left' | 'center' | 'right' | 'start' | 'end';
   /** Set the caption beside the figure, in the float-only side column of
    *  a `oneAndHalf` layout (`layout.sideColumnRole: 'floats'`): the body
    *  keeps its column, the caption goes to the margin level with the
@@ -140,6 +142,13 @@ export type ResourceKind = 'bitmap' | 'svg' | 'table';
 /** Horizontal alignment of a table cell's content. */
 export type TableCellAlign = 'left' | 'center' | 'right';
 
+/** A cell's alignment as a table model writes it: a {@link TableCellAlign},
+ *  or the logical `'start'` / `'end'` (#371), the side the cell's text
+ *  starts or ends on. Cell text reads like body text: `'left'` is the
+ *  start side too, the right in a right-to-left table (see
+ *  {@link TextAlignKeyword}); the layout keeps only the physical values. */
+export type TableCellAlignKeyword = TableCellAlign | 'start' | 'end';
+
 /** Vertical alignment of a table cell's content. */
 export type TableCellVerticalAlign = 'top' | 'middle' | 'bottom';
 
@@ -177,7 +186,7 @@ export interface TableCell {
   rowSpan?: number;
   /** When true, render as a header cell (`<th>`). */
   isHeader?: boolean;
-  align?: TableCellAlign;
+  align?: TableCellAlignKeyword;
   verticalAlign?: TableCellVerticalAlign;
   /** Fill colour of this cell, painted instead of the table style's header
    *  / body background. A palette-linked value (`paletteId`) follows the
@@ -259,6 +268,15 @@ export interface Resource {
      *  set in. Unset, or an id no style declares, falls back to the
      *  document's `tableStyle`. */
     styleId?: string;
+    /** The direction the table runs in (#371), when it is not the
+     *  document's: `'ltr'` for an English data table in an Arabic book,
+     *  `'rtl'` for an Arabic one in an English book. Its first column then
+     *  sits on the side its text starts on, its cells are read in that
+     *  direction and align from that side (`'left'` / `'start'` being the
+     *  start). Unset, the table runs with the document (in a right-to-left
+     *  document, first column on the right). Its caption and note follow
+     *  the document. */
+    direction?: 'ltr' | 'rtl';
   };
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
@@ -744,6 +762,19 @@ export interface ResolvedLayoutConfig {
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
+/**
+ * A text alignment as a config writes it (#371): a {@link TextAlign}, or the
+ * logical `'start'` / `'end'`. Running text reads its alignment in its own
+ * direction: `'left'` and `'start'` are the side a line starts on, `'right'`
+ * and `'end'` the side it ends on — the left and the right of an English
+ * paragraph, the right and the left of an Arabic one, on a page of either
+ * direction (a right-to-left document's pages are mirrored, so its body
+ * flow's left is the sheet's right). The last line of a justified paragraph
+ * goes to the start side. `'start'` / `'end'` say so explicitly; a resolved
+ * config carries `'left'` / `'right'` only.
+ */
+export type TextAlignKeyword = TextAlign | 'start' | 'end';
+
 export type HyphenationLocale =
   | 'en-us'
   | 'es'
@@ -843,7 +874,7 @@ export interface BodyTextConfig {
   referenceBold?: boolean;
   /** Whether reference labels are rendered italic. Default `false`. */
   referenceItalic?: boolean;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   fontWeight?: number;
   boldFontWeight?: number;
   hyphenation?: HyphenationConfig;
@@ -1369,7 +1400,7 @@ export interface CaptionNoteStyleConfig {
   /** Gap between the note and what precedes it (body or caption). Default `0.35em`. */
   gap?: Dimension;
   /** Horizontal alignment of the note. Default `'left'`. */
-  align?: TextAlign;
+  align?: TextAlignKeyword;
 }
 
 export interface ResolvedCaptionNoteStyleConfig {
@@ -1393,7 +1424,7 @@ export interface CaptionStyleConfig {
   /** Description text colour. Defaults to the body-text colour. */
   color?: ColorValue;
   /** Horizontal alignment of caption text. Default `'left'`. */
-  align?: TextAlign;
+  align?: TextAlignKeyword;
   /** Gap between the figure body and the caption. Default `0.75em`. */
   gap?: Dimension;
   /** Render the numbered label bold. Default `true`. */
@@ -1483,7 +1514,7 @@ export interface ParagraphStyleConfig {
   color?: ColorValue;
   /** Defaults to the body alignment. `'center'` and `'right'` set every
    *  line ragged from the other side (a dedication, a signature block). */
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Colour of bold runs. Defaults to `bodyText.boldColor`. */
   boldColor?: ColorValue;
   /** Colour of italic (`*…*`) runs — in an {@link italic} style, the runs
@@ -1607,7 +1638,13 @@ export interface CalloutFixedConfig {
 /** `'fill'` spans the available width; `'auto'` shrink-wraps the title
  *  (badge use — children are ignored). */
 export type CalloutWidth = 'fill' | 'auto';
-export type CalloutStripeSide = 'left' | 'right' | 'top';
+/** The edge a callout's stripe runs along. `'left'` / `'right'` are sides
+ *  of the body flow (on a right-to-left document's mirrored pages, its left
+ *  is the sheet's right); `'start'` / `'end'` (#371) are the box's own: the
+ *  side its text starts or ends on, which differs from the flow's in a box
+ *  set against the document's direction (`:::callout{dir=ltr}` in an
+ *  Arabic book). */
+export type CalloutStripeSide = 'left' | 'right' | 'top' | 'start' | 'end';
 export type CalloutIconKind = 'none' | 'glyph' | 'resource';
 export type CalloutIconAlign = 'top' | 'center';
 /** Where the in-box icon sits: `'inline'` (the default) in a column of its
@@ -1616,10 +1653,17 @@ export type CalloutIconAlign = 'top' | 'center';
  *  border, taking no room from the content (the icon of a marginal box). */
 export type CalloutIconPosition = 'inline' | 'corner';
 /** Which corner a `position: 'corner'` icon hangs on: `'right'` (the
- *  default) / `'left'` are fixed; `'outer'` / `'inner'` follow the page
- *  parity when the margins are mirrored (outer = right on a recto, left on
- *  a verso), like the side column of a `oneAndHalf` layout. */
-export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner';
+ *  default) / `'left'` are fixed sides of the body flow; `'outer'` /
+ *  `'inner'` follow the page parity when the margins are mirrored (outer =
+ *  right on a recto, left on a verso), like the side column of a
+ *  `oneAndHalf` layout; `'start'` / `'end'` (#371) the box's own direction
+ *  (see {@link CalloutStripeSide}). */
+export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner' | 'start' | 'end';
+
+/** The top corner a callout's label tab hugs: `'top-right'` / `'top-left'`
+ *  in the body flow's terms, `'top-start'` / `'top-end'` (#371) in the box's
+ *  own direction (see {@link CalloutStripeSide}). */
+export type CalloutLabelPosition = 'top-right' | 'top-left' | 'top-start' | 'top-end';
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 export interface CalloutBorderConfig {
@@ -1687,7 +1731,7 @@ export interface CalloutLabelConfig {
   /** Tab fill. Default: the main colour. */
   background?: ColorValue;
   /** Default `'top-right'`. */
-  position?: 'top-right' | 'top-left';
+  position?: CalloutLabelPosition;
   /** Tab height. Default `1.4em` of the label size. */
   height?: Dimension;
   /** Horizontal padding on each side of the text. Default `0.6em`. */
@@ -1778,7 +1822,8 @@ export interface CalloutBodyStyleConfig {
   /** Set the box's paragraphs and list items in small capitals (see
    *  `ParagraphStyleConfig.smallCaps`). Default `false`. */
   smallCaps?: boolean;
-  textAlign?: 'left' | 'justify';
+  /** `'start'` is `'left'` (see {@link TextAlignKeyword}). */
+  textAlign?: 'left' | 'justify' | 'start';
   /** Hyphenate when justified — and, when `bodyText.hyphenation.ragged` is
    *  on, when ragged too. Defaults to the body hyphenation setting. */
   hyphenation?: boolean;
@@ -1965,7 +2010,7 @@ export interface ResolvedCalloutStyleConfig {
     fontWeight: number;
     color: ColorValue;
     background: ColorValue;
-    position: 'top-right' | 'top-left';
+    position: CalloutLabelPosition;
     height: Dimension;
     paddingX: Dimension;
     offset: Dimension;
@@ -2298,7 +2343,7 @@ export interface HeadingsConfig {
   fontFamily?: string;
   lineHeight?: Dimension;
   color?: ColorValue;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   fontWeight?: number;
   marginTop?: Dimension;
   marginBottom?: Dimension;
@@ -3183,7 +3228,7 @@ export interface FootnotesConfig {
   /** Note text colour. Defaults to the body colour. */
   color?: ColorValue;
   /** Alignment of the note text. Defaults to the body alignment. */
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Indent of the turnover lines of a note, so they align past its
    *  number. Default `0` (the lines run flush under the number). */
   hangingIndent?: Dimension;
@@ -3948,7 +3993,7 @@ export interface PartsBodyStyleConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   color?: ColorValue;
-  textAlign?: TextAlign;
+  textAlign?: TextAlignKeyword;
   /** Bullet colour of unordered lists inside the part. */
   bulletColor?: ColorValue;
   /** Number colour of ordered lists inside the part (numbers are set bold). */

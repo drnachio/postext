@@ -1,6 +1,6 @@
 import type { BlockquoteConfig, BodyTextConfig, EmphasisStyle, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag, TashkilMode } from '../types';
 import { hyphenationLocaleFor, isUnhyphenatedLanguage, localeScript, presentTag } from '../locale';
-import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
@@ -228,7 +228,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
       ?? DEFAULT_BODY_TEXT_CONFIG.referenceColor,
     referenceBold: partial.referenceBold ?? DEFAULT_BODY_TEXT_CONFIG.referenceBold,
     referenceItalic: partial.referenceItalic ?? DEFAULT_BODY_TEXT_CONFIG.referenceItalic,
-    textAlign: partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign,
+    textAlign: startEndAsLeftRight(partial.textAlign ?? DEFAULT_BODY_TEXT_CONFIG.textAlign),
     fontWeight: partial.fontWeight ?? DEFAULT_BODY_TEXT_CONFIG.fontWeight,
     boldFontWeight: partial.boldFontWeight ?? DEFAULT_BODY_TEXT_CONFIG.boldFontWeight,
     hyphenation: resolveHyphenation(partial.hyphenation, documentLocale),

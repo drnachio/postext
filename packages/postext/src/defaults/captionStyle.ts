@@ -7,7 +7,7 @@ import type {
   ResolvedCaptionNoteStyleConfig,
   ResolvedBodyTextConfig,
 } from '../types';
-import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor } from './shared';
+import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor, startEndAsLeftRight } from './shared';
 
 /** Ratio of the note size to the caption size when `note.fontSize` is unset. */
 const NOTE_SIZE_RATIO = 0.85;
@@ -51,7 +51,7 @@ function resolveNote(
     color: n.color ?? captionColor,
     italic: n.italic ?? NOTE_STATIC_DEFAULTS.italic,
     gap: n.gap ?? NOTE_STATIC_DEFAULTS.gap,
-    align: n.align ?? NOTE_STATIC_DEFAULTS.align,
+    align: startEndAsLeftRight(n.align ?? NOTE_STATIC_DEFAULTS.align),
   };
 }
 
@@ -69,7 +69,7 @@ export function resolveCaptionStyleConfig(
     fontFamily: p.fontFamily ?? bodyText.fontFamily,
     fontSize,
     color,
-    align: p.align ?? STATIC_DEFAULTS.align,
+    align: startEndAsLeftRight(p.align ?? STATIC_DEFAULTS.align),
     gap: p.gap ?? STATIC_DEFAULTS.gap,
     labelBold: p.labelBold ?? STATIC_DEFAULTS.labelBold,
     labelItalic: p.labelItalic ?? STATIC_DEFAULTS.labelItalic,
@@ -112,7 +112,7 @@ export function mergeCaptionStyle(
     fontFamily: o.fontFamily ?? base.fontFamily,
     fontSize,
     color,
-    align: o.align ?? base.align,
+    align: startEndAsLeftRight(o.align ?? base.align),
     gap: o.gap ?? base.gap,
     labelBold: o.labelBold ?? base.labelBold,
     labelItalic: o.labelItalic ?? base.labelItalic,
@@ -127,7 +127,7 @@ export function mergeCaptionStyle(
       color: resolveColor(n.color, palette) ?? (noteColorFollows ? color : base.note.color),
       italic: n.italic ?? base.note.italic,
       gap: n.gap ?? base.note.gap,
-      align: n.align ?? base.note.align,
+      align: startEndAsLeftRight(n.align ?? base.note.align),
     },
     labelNumberGap: typeof o.labelNumberGap === 'string' ? o.labelNumberGap : base.labelNumberGap,
     labelSeparator: typeof o.labelSeparator === 'string' ? o.labelSeparator : base.labelSeparator,

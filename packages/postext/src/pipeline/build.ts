@@ -70,6 +70,7 @@ import {
   listBulletPosition,
   listItemGapPx,
   listItemSpacingPx,
+  mirrorListMarker,
 } from './lists';
 import type { PlacementCursor } from './placement';
 import {
@@ -2182,6 +2183,7 @@ function placeDocumentPass(
           blk.columnIndex = col.index;
           blk.contentIndex = noteAnchor.get(id) ?? 0;
           blk.footnoteNote = id;
+          if (m.contentBlock.direction !== undefined && m.contentBlock.direction !== resolvedDirection(resolved)) blk.direction = m.contentBlock.direction;
           blk.dirty = false;
           blk.snappedToGrid = false;
           if (blk.lines.length > 0) {
@@ -2885,6 +2887,7 @@ function placeDocumentPass(
       return layoutCallout({
         style,
         attrs: plan.attrs,
+        ...(contentBlocks[startIdx]?.direction ? { direction: contentBlocks[startIdx]!.direction } : {}),
         continuation,
         // Any range short of the box's end is a fragment that goes on.
         ...(to.child < children.length || to.line > 0 ? { continues: true } : {}),
@@ -4591,6 +4594,9 @@ function placeDocumentPass(
           blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
         }
       }
+      // A list set against the document's direction: its marker on the
+      // other side, with its text (#371).
+      if (rawBlock.direction !== undefined && rawBlock.direction !== resolvedDirection(resolved)) mirrorListMarker(blk);
       if (strikethroughText) blk.strikethroughText = true;
       // Bullet Y = x-height midpoint of the item's first text line.
       // Pairs with `textBaseline='middle'` at render so the bullet stays

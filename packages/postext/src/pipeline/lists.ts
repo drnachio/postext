@@ -2,7 +2,7 @@ import { flowTextWidth } from '../measure/vertical';
 import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension, DigitSystem } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
-import type { ResolvedConfig } from '../vdt';
+import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildFontString } from '../measure';
 import { formatNumeral, parseNumberFormat } from '../numbering';
 import { withDigits } from '../arabicNumerals';
@@ -544,4 +544,30 @@ export function resolveOrderedListItemStyle(
     bulletXOffsetInColumn: indentPx + prefixWidthPx + rightAlignOffsetPx,
     strikethroughText: false,
   };
+}
+
+/**
+ * The marker of a list item set against its frame's direction (#371): an
+ * English list in an Arabic book, an Arabic one in an English book. Its text
+ * runs from the block's left edge (`measureContentBlock` mirrors the lines),
+ * and each run of its marker — the prefix, the number or bullet, the
+ * separator — moves to the mirror place in the block's width, so the marker
+ * stands on the text's start side, its pieces in that side's reading order:
+ * `(1)` keeps its brackets, and right-aligned numbers end up aligned on the
+ * edge that faces the text. Call it once the marker positions are set.
+ */
+export function mirrorListMarker(blk: VDTBlock): void {
+  if (blk.bulletOffsetX === undefined || !blk.bulletText) return;
+  const left = blk.bbox.x;
+  const right = blk.bbox.x + blk.bbox.width;
+  const flip = (x: number, w: number): number => left + right - x - w;
+  const bulletFont = blk.bulletFontString ?? blk.fontString;
+  const markFont = blk.separatorFontString ?? bulletFont;
+  if (blk.separatorText !== undefined && blk.separatorX !== undefined) {
+    blk.separatorX = flip(blk.separatorX, flowTextWidth(blk.separatorText, markFont));
+  }
+  if (blk.prefixText !== undefined && blk.prefixX !== undefined) {
+    blk.prefixX = flip(blk.prefixX, flowTextWidth(blk.prefixText, markFont));
+  }
+  blk.bulletOffsetX = flip(blk.bulletOffsetX, flowTextWidth(blk.bulletText, bulletFont));
 }

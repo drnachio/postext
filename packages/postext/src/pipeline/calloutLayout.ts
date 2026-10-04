@@ -68,14 +68,14 @@ import { applyStyleAttrs, isMarkerBlock } from './buildHelpers';
 import { resetLinePositions } from './placement';
 import { raggedLooseLines } from './raggedLines';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
-import { computeLevelIndentsPx, computeOrderedLevelIndentsPx, listBulletPosition, listItemGapPx } from './lists';
+import { computeLevelIndentsPx, computeOrderedLevelIndentsPx, listBulletPosition, listItemGapPx, mirrorListMarker } from './lists';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions } from './measureContentBlock';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
 import { directDesignTextBlock } from '../design/bidiText';
 import type { ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
-import { shiftLineX } from '../measure/bidiLines';
+import { getMeasureDirection, shiftLineX } from '../measure/bidiLines';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -285,6 +285,11 @@ export interface CalloutLayoutInput {
   /** The box lands on a verso of mirrored margins: an `'outer'` corner icon
    *  hangs on the left corner there. */
   mirrored?: boolean;
+  /** The box's own direction (its fence's `{dir}`, or one it sits in:
+   *  `ContentBlock.direction` of the opening marker). Against the
+   *  document's, its `'start'` / `'end'` stripe, corner and label tab
+   *  turn to the other side (#371). */
+  direction?: 'ltr' | 'rtl';
   /** Nested boxes a continuation fragment opens inside, outermost first:
    *  their opening markers are not among `children`, which start inside
    *  the innermost one. Each is redrawn as a continuation box around the
@@ -436,6 +441,20 @@ export function offsetCalloutToAbsolute(result: CalloutLayoutResult, x: number, 
 }
 
 /**
+ * Reads a box's `'start'` / `'end'` sides (#371) as flow sides: `'left'` /
+ * `'right'` for a box that runs with the document, the other way round for
+ * one set against it (`direction`, the box's own). Any other side is kept.
+ */
+function logicalSides(direction: 'ltr' | 'rtl' | undefined): <T extends string>(side: T | 'start' | 'end') => Exclude<T, 'start' | 'end'> | 'left' | 'right' {
+  const turned = direction !== undefined && direction !== getMeasureDirection();
+  return <T extends string>(side: T | 'start' | 'end') => {
+    if (side === 'start') return turned ? 'right' : 'left';
+    if (side === 'end') return turned ? 'left' : 'right';
+    return side as Exclude<T, 'start' | 'end'>;
+  };
+}
+
+/**
  * Lay out one callout at `width`. Everything is frame-relative; see
  * {@link offsetCalloutToAbsolute}.
  */
@@ -474,12 +493,16 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const padR = px(style.padding.right);
   const padB = px(style.padding.bottom);
   const padL = px(style.padding.left);
+  // `'start'` / `'end'` sides are the box's own (#371): the flow's left
+  // and right, turned over in a box set against the document's direction.
+  const boxSide = logicalSides(input.direction);
+  const stripeSide = boxSide(style.stripe.side);
   const stripeOn = style.stripe.enabled;
   const stripeW = stripeOn ? px(style.stripe.width) : 0;
-  const sideStripe = stripeOn && style.stripe.side !== 'top';
-  const stripeLeft = sideStripe && style.stripe.side === 'left';
-  const stripeRight = sideStripe && style.stripe.side === 'right';
-  const topStripe = stripeOn && style.stripe.side === 'top';
+  const sideStripe = stripeOn && stripeSide !== 'top';
+  const stripeLeft = sideStripe && stripeSide === 'left';
+  const stripeRight = sideStripe && stripeSide === 'right';
+  const topStripe = stripeOn && stripeSide === 'top';
 
   // The icon is drawn on the head only (`hasIcon`), but its geometry is
   // the box's on every fragment.
@@ -498,9 +521,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const cornerIcon = style.icon.position === 'corner';
   // A corner badge hangs on the top-right corner — or the left one, for an
   // `'outer'` badge on a verso of mirrored margins (`'inner'` on a recto).
-  const cornerRight = style.icon.cornerSide === 'right'
-    || (style.icon.cornerSide === 'outer' && !input.mirrored)
-    || (style.icon.cornerSide === 'inner' && !!input.mirrored);
+  const cornerSide = boxSide(style.icon.cornerSide);
+  const cornerRight = cornerSide === 'right'
+    || (cornerSide === 'outer' && !input.mirrored)
+    || (cornerSide === 'inner' && !!input.mirrored);
   const iconColumnKept = iconOn && !sideStripe && !cornerIcon;
   const iconColumn = iconColumnKept ? iconBoxW + gapPx : 0;
   // A corner badge is centred on its corner by the width it is drawn at: a
@@ -847,6 +871,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
           blk.prefixX = blk.bulletOffsetX + (listBullet.prefixOffsetPx ?? 0);
         }
       }
+      // A list set against the document's direction (#371).
+      if (raw.direction !== undefined && raw.direction !== getMeasureDirection()) mirrorListMarker(blk);
       if (strikethroughText) blk.strikethroughText = true;
       const firstLine = blk.lines[0];
       if (firstLine) {
@@ -928,6 +954,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const nested = layoutCallout({
       style: nestedStyle,
       attrs: open.containerAttrs ?? {},
+      ...(open.direction ? { direction: open.direction } : {}),
       children: children.slice(k0, k1),
       childStartIdx: childStartIdx + k0,
       width,
@@ -1298,7 +1325,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const inset = px(lb.inset);
     const textW = flowTextWidth(labelText, lbFont);
     const tabW = textW + 2 * padX;
-    const onRight = lb.position === 'top-right';
+    const tabSide = lb.position === 'top-start' ? boxSide('start')
+      : lb.position === 'top-end' ? boxSide('end')
+        : lb.position === 'top-right' ? 'right' : 'left';
+    const onRight = tabSide === 'right';
     const tabX = onRight ? boxWidth - inset - tabW : inset;
     const tabY = -rise;
     labelRisePx = Math.max(0, rise);

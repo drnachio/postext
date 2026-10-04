@@ -1,6 +1,6 @@
 import type { FootnotesConfig, ResolvedFootnotesConfig } from '../types';
 import { parseNumberFormat } from '../numbering';
-import { dimensionsEqual, colorsEqual } from './shared';
+import { dimensionsEqual, colorsEqual, startEndAsLeftRight } from './shared';
 
 export const DEFAULT_FOOTNOTES_CONFIG: ResolvedFootnotesConfig = {
   placement: 'column',
@@ -51,7 +51,7 @@ export function resolveFootnotesConfig(partial?: FootnotesConfig, locale?: strin
     fontSize: partial.fontSize ?? d.fontSize,
     lineHeight: partial.lineHeight ?? d.lineHeight,
     ...(partial.color ? { color: partial.color } : {}),
-    ...(partial.textAlign ? { textAlign: partial.textAlign } : {}),
+    ...(partial.textAlign ? { textAlign: startEndAsLeftRight(partial.textAlign) } : {}),
     hangingIndent: partial.hangingIndent ?? d.hangingIndent,
     spaceBetween: partial.spaceBetween ?? d.spaceBetween,
     spaceAbove: partial.spaceAbove ?? d.spaceAbove,

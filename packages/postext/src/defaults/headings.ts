@@ -1,5 +1,5 @@
 import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ClosingBoxLever, KeepWithNextSplit, ColorValue, Dimension } from '../types';
-import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
+import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
 import { resolveDesignSlot } from './headerFooter';
 
 const DEFAULT_BREAK_BEFORE: ResolvedHeadingBreakBeforeConfig = { enabled: false, parity: 'any' };
@@ -96,7 +96,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalFont = partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
   const generalLineHeight = partial.lineHeight ?? DEFAULT_HEADINGS_CONFIG.lineHeight;
   const generalColor = partial.color ?? DEFAULT_HEADINGS_CONFIG.color;
-  const generalTextAlign = partial.textAlign ?? DEFAULT_HEADINGS_CONFIG.textAlign;
+  const generalTextAlign = startEndAsLeftRight(partial.textAlign ?? DEFAULT_HEADINGS_CONFIG.textAlign);
   const generalFontWeight = partial.fontWeight ?? DEFAULT_HEADINGS_CONFIG.fontWeight;
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;

@@ -4,7 +4,7 @@ import type {
   ResolvedParagraphStyleConfig,
   ResolvedBodyTextConfig,
 } from '../types';
-import { dimensionsEqual } from './shared';
+import { dimensionsEqual, startEndAsLeftRight } from './shared';
 
 /** No paragraph styles ship by default — a document declares its own. */
 export const DEFAULT_PARAGRAPH_STYLES: ParagraphStyleConfig[] = [];
@@ -25,7 +25,7 @@ function resolveParagraphStyleConfig(
     fontSize: partial.fontSize ?? bodyText.fontSize,
     lineHeight: partial.lineHeight ?? bodyText.lineHeight,
     color: partial.color ?? bodyText.color,
-    textAlign: partial.textAlign ?? bodyText.textAlign,
+    textAlign: startEndAsLeftRight(partial.textAlign ?? bodyText.textAlign),
     ...(partial.boldColor ? { boldColor: partial.boldColor } : {}),
     ...(partial.italicColor ? { italicColor: partial.italicColor } : {}),
     fontWeight: partial.fontWeight ?? bodyText.fontWeight,

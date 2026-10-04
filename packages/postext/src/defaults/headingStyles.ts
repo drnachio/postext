@@ -11,6 +11,7 @@ import type {
 import { resolveDesignSlot, stripDesignSlotDefaults } from './headerFooter';
 import { resolveLayoutConfig } from './layout';
 import { resolveHeadingLevelOverrides } from './headings';
+import { startEndAsLeftRight } from './shared';
 
 /** No heading styles ship by default — a document declares its own. */
 export const DEFAULT_HEADING_STYLES: HeadingStyleConfig[] = [];
@@ -78,7 +79,7 @@ function resolveHeadingStyleConfig(
       fontSize: b.fontSize ?? bodyText.fontSize,
       lineHeight: b.lineHeight ?? bodyText.lineHeight,
       color: b.color ?? bodyText.color,
-      textAlign: b.textAlign ?? bodyText.textAlign,
+      textAlign: startEndAsLeftRight(b.textAlign ?? bodyText.textAlign),
       bulletColor: b.bulletColor ?? unorderedLists.color,
       numberColor: b.numberColor ?? orderedLists.color,
       ...(b.unorderedLists ? { unorderedLists: b.unorderedLists } : {}),

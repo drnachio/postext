@@ -35,6 +35,7 @@ import { LINE_MAX_SPACE_RATIO } from './raggedLines';
 import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
+import { startEndAsLeftRight } from '../defaults/shared';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -168,7 +169,7 @@ export function measureContentBlock(
     // per `placement.align`.
     const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
     const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left';
+    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
     const { resourceBlock, measured } = runMeasurement({
       vdtType,
@@ -470,13 +471,18 @@ export function measureContentBlock(
   // right-to-left document's pages are mirrored, #370), such as an Arabic
   // quotation in an English book: its lines start on the frame's far side,
   // their indent too (`VDTLine.measure`).
-  if (contentBlock.direction !== undefined && contentBlock.direction !== getMeasureDirection()) {
+  // A paragraph style's indent and a list item's marker column go to that
+  // side too: the lines take the measure from the block's left edge, the
+  // marker the room on its right (`mirrorListMarker`).
+  const opposite = contentBlock.direction !== undefined && contentBlock.direction !== getMeasureDirection();
+  if (opposite) {
     mirrorLineSpans(measured.lines, measureMaxWidth, measureOptions.restWidths);
   }
 
-  if (lineXShift > 0) {
+  const xShift = opposite ? Math.max(0, columnWidth - lineXShift - measureMaxWidth) : lineXShift;
+  if (xShift > 0) {
     for (const line of measured.lines) {
-      shiftLineX(line, lineXShift);
+      shiftLineX(line, xShift);
     }
   }
 

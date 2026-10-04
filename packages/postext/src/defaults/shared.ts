@@ -488,3 +488,17 @@ function applyPaletteToListedColors(config: PostextConfig, palette: ColorPalette
 
   return next;
 }
+
+/**
+ * A config's logical alignment keyword read as the side it names (#371):
+ * `'start'` is `'left'` and `'end'` is `'right'`, every other value is kept.
+ * Body-flow sides already read in the text's own direction (see
+ * `TextAlignKeyword`), so the two names agree wherever this applies; what
+ * reads `'start'` against a box's own direction resolves it itself
+ * (callout stripes, corners and label tabs, table cells).
+ */
+export function startEndAsLeftRight<T extends string>(value: T | 'start' | 'end'): Exclude<T, 'start' | 'end'> | 'left' | 'right' {
+  if (value === 'start') return 'left';
+  if (value === 'end') return 'right';
+  return value as Exclude<T, 'start' | 'end'>;
+}
