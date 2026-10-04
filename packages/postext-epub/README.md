@@ -132,7 +132,7 @@ epubWorker.dispose(); // when the page no longer needs it
 
 Progress and warnings are forwarded as they happen. Aborting the signal rejects at once with an `AbortError` and stops the worker, and the next render starts a fresh one.
 
-The worker script is `new URL('./epub.worker.js', import.meta.url)`, which webpack, Vite and esbuild bundle. A host that builds its own worker passes it as `createEpubWorker({ worker })`, a `Worker` or a function that makes one. Its script imports `postext-epub/worker/entry`. A worker that fails to load rejects with an `EpubWorkerError`, and the host can then call `renderToEpub` on its own thread.
+The worker script is `new URL('./epub.worker.js', import.meta.url)`, which webpack, Vite and esbuild bundle. Loaded from esm.sh (`import { createEpubWorker } from 'https://esm.sh/postext-epub/worker'`), the client starts the CDN's `postext-epub@<version>/worker/entry` itself, through a same-origin blob module, since a worker script must come from the page's origin. `createEpubWorker({ url })` names another entry: a copy on your server, or a CDN URL. A host that builds its own worker passes it as `createEpubWorker({ worker })`, a `Worker` or a function that makes one. Its script imports `postext-epub/worker/entry`. A worker that fails to load rejects with an `EpubWorkerError`, and the host can then call `renderToEpub` on its own thread.
 
 ### `readEpub(bytes): ReadEpubResult`
 

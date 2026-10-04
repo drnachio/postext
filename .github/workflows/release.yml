@@ -8,14 +8,15 @@
 #    publish = the token does not cover that package, E404 = the token
 #    expired). A package's first publish needs a token allowed to create
 #    packages: one scoped to existing packages only cannot publish a new name.
-#    postext-epub is such a new name: before the first release that carries
-#    it, either give the token permission to create packages, or publish it
-#    once by hand (`cd packages/postext-epub && pnpm publish --access public`
-#    after `pnpm turbo run build --filter=postext-epub`), then add it to the
-#    token. It is published last: a refused first publish fails the run
-#    after the other packages are out and before the version commit, and a
-#    re-run then releases every package at the next version
-#    (release-version.sh syncs to npm, then bumps).
+#    For a new package, before the first release that carries it, either
+#    give the token permission to create packages, or publish it once by
+#    hand (`cd packages/<name> && pnpm publish --access public` after
+#    `pnpm turbo run build --filter=<name>`), then add it to the token
+#    (postext-epub went out this way as 0.1.0 with v1.15.0). Publish a new
+#    package last: a refused first publish fails the run after the other
+#    packages are out and before the version commit, and a re-run then
+#    releases every package at the next version (release-version.sh syncs
+#    to npm, then bumps).
 # 2. Go to https://github.com/drnachio/postext/settings/secrets/actions
 #    Click "New repository secret"
 #    Name:  NPM_TOKEN
@@ -154,8 +155,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Last: its first publish needs a token allowed to create packages
-      # (see the header)
+      # Last, the newest package (see the header)
       - name: Publish postext-epub to npm
         working-directory: packages/postext-epub
         run: pnpm publish --access public --no-git-checks
