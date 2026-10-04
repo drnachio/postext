@@ -130,7 +130,9 @@ function rawOf(seg: VDTLineSegment, ctx: InlineContext): string | undefined {
   }
   if (seg.ruby) {
     const pos = seg.ruby.position === 'under' ? ' class="pt-ruby-under"' : seg.ruby.position === 'right' ? ' class="pt-ruby-right"' : '';
-    return `<ruby${pos}>${wrapFormat(xmlText(seg.text), formatOf(seg, seg))}<rp>(</rp><rt>${xmlText(seg.ruby.text)}</rt><rp>)</rp></ruby>`;
+    // No <rp> fallback brackets: EPUB 3.3 discourages them (EPUBCheck
+    // HTM_055), every EPUB 3 reading system lays ruby out.
+    return `<ruby${pos}>${wrapFormat(xmlText(seg.text), formatOf(seg, seg))}<rt>${xmlText(seg.ruby.text)}</rt></ruby>`;
   }
   return undefined;
 }

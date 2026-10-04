@@ -139,6 +139,13 @@ describe('joining lines', () => {
     expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets');
   });
 
+  it('sets ruby without the <rp> brackets EPUB discourages', () => {
+    const sink: TextSink = { inl: [] };
+    appendLine(sink, line([seg('漢', { ruby: { text: 'ㄏㄢˋ', position: 'right' } as VDTLineSegment['ruby'] })]), ctx('zh-Hant'));
+    const xhtml = sink.inl.map((i) => (i.t === 'raw' ? i.xhtml : i.t === 'text' ? i.text : '')).join('');
+    expect(xhtml).toBe('<ruby class="pt-ruby-right">漢<rt>ㄏㄢˋ</rt></ruby>');
+  });
+
   it('leaves out the kashidas justification stretched a line with', () => {
     expect(joined([line([seg('كتـــاب')], { kashida: 3 })])).toBe('كتاب');
   });
@@ -315,7 +322,7 @@ describe('buildReflowablePublication', () => {
     const { pub, files } = await render([layOut('# Title\n\nText.')], { cover: { bytes: PNG, mediaType: 'image/png', alt: 'The cover' } });
     expectSound(pub, files);
     expect(pub.spine[0]!.idref).toBe('cover');
-    expect(files.get('text/cover.xhtml')).toContain('<img src="../images/cover.png" alt="The cover"/>');
+    expect(files.get('text/cover.xhtml')).toContain('<img role="doc-cover" src="../images/cover.png" alt="The cover"/>');
     expect(pub.items.find((i) => i.id === 'cover-image')?.properties).toEqual(['cover-image']);
     expect(pub.landmarks[0]).toEqual({ type: 'cover', label: 'Cover', href: 'text/cover.xhtml' });
   });
