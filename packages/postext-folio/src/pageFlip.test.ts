@@ -291,4 +291,35 @@ describe("the page flipper", () => {
     // to dip into the gutter, creased where it passed over the spine.
     expect(worst).toBeLessThan(0.1);
   });
+
+  it("finds the printed point under the pointer on either open page, and back", () => {
+    for (const binding of ["left", "right"] as const) {
+      const { f } = flipper(binding, 1, { folio: { tilt: 30 } });
+      f.redraw();
+      tick(16);
+      for (const side of [0, 1] as const) {
+        for (const [x, y] of [[0.3, 0.2], [0.8, 0.7]]) {
+          const screen = f.screenPoint(side, x, y)!;
+          const back = f.pagePoint({ clientX: screen.x, clientY: screen.y })!;
+          expect(back.side).toBe(side);
+          expect(back.x).toBeCloseTo(x, 2);
+          expect(back.y).toBeCloseTo(y, 2);
+        }
+      }
+      // The recto lies on the right of a left-bound book, on the left of a
+      // right-bound one; its top left corner is towards the spine on the
+      // first, towards the fore-edge on the other.
+      const recto = f.screenPoint(1, 0.5, 0.5)!;
+      expect(binding === "left" ? recto.x > CX : recto.x < CX).toBe(true);
+      const tl = f.screenPoint(1, 0, 0)!;
+      const tr = f.screenPoint(1, 1, 0)!;
+      expect(tl.x < tr.x).toBe(true);
+      expect(tl.y).toBeLessThan(f.screenPoint(1, 0, 1)!.y);
+    }
+  });
+
+  it("finds no page off the book", () => {
+    const { f } = flipper("left");
+    expect(f.pagePoint({ clientX: CX + 3 * W, clientY: CY })).toBeNull();
+  });
 });

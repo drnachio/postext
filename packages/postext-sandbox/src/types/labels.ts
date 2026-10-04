@@ -39,6 +39,11 @@ export interface SandboxLabels {
   folioLoading: string;
   folioToolbar: string;
   folioResetView: string;
+  /** The Folio bar's interaction modes: what the left button does. */
+  folioModes: string;
+  folioModeHand: string;
+  folioModeOrbit: string;
+  folioModeSelect: string;
 
   // Shared toolbar pin + dirty indicator
   toolbarPin: string;

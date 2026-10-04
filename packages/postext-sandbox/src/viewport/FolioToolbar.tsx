@@ -1,7 +1,8 @@
 'use client';
 
 import type { FocusEventHandler } from 'react';
-import { ChevronLeft, ChevronRight, RefreshCw, Rotate3d } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, TextCursor } from 'lucide-react';
+import type { FolioInteraction } from 'postext-folio';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
   PageNumberInput,
@@ -25,6 +26,9 @@ interface FolioToolbarProps {
   canNext: boolean;
   /** A right-bound book turns its leaves leftward: the left arrow goes on. */
   rightToLeft?: boolean;
+  /** What the left button does on the book. */
+  interaction: FolioInteraction;
+  onSetInteraction: (mode: FolioInteraction) => void;
   onRegenerate: () => void;
   /** Back to the view the settings give, after the reader orbited it. */
   onResetView: () => void;
@@ -51,6 +55,8 @@ export function FolioToolbar({
   canPrev,
   canNext,
   rightToLeft = false,
+  interaction,
+  onSetInteraction,
   onRegenerate,
   onResetView,
   onTogglePin,
@@ -89,6 +95,27 @@ export function FolioToolbar({
         label={labels.folioResetView}
         onClick={onResetView}
       />
+      <ToolbarSeparator />
+      <div role="group" aria-label={labels.folioModes} className="contents">
+        <ToolbarButton
+          icon={<Hand size={16} aria-hidden="true" />}
+          label={labels.folioModeHand}
+          onClick={() => onSetInteraction('hand')}
+          active={interaction === 'hand'}
+        />
+        <ToolbarButton
+          icon={<Orbit size={16} aria-hidden="true" />}
+          label={labels.folioModeOrbit}
+          onClick={() => onSetInteraction('orbit')}
+          active={interaction === 'orbit'}
+        />
+        <ToolbarButton
+          icon={<TextCursor size={16} aria-hidden="true" />}
+          label={labels.folioModeSelect}
+          onClick={() => onSetInteraction('select')}
+          active={interaction === 'select'}
+        />
+      </div>
       <ToolbarSeparator />
       <PinToolbarButton
         pinned={pinned}

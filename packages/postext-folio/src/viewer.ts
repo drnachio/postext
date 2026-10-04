@@ -32,6 +32,20 @@ export interface FolioAppearance {
   spineImage?: PageSource;
 }
 
+/** What the left button (or one finger) does on the book: `hand` takes
+ *  and turns the pages, `orbit` turns the view round the book (what the
+ *  right button always does), `select` leaves the pointer to the host (to
+ *  select text: `pageAt` says where on which page it is). */
+export type FolioInteraction = "hand" | "orbit" | "select";
+
+/** A point on a page as printed: the page index and where on it, as
+ *  fractions of its width and height from its top left corner. */
+export interface FolioPagePoint {
+  page: number;
+  x: number;
+  y: number;
+}
+
 export interface FolioLabels {
   /** The viewer's accessible name. */
   region: string;
@@ -71,6 +85,9 @@ export interface FolioOptions {
   labels?: Partial<FolioLabels>;
   /** How the 3D book is presented (see {@link FolioAppearance}). */
   appearance?: FolioAppearance;
+  /** What the left button does (see {@link FolioInteraction}). Default
+   *  `hand`. */
+  interaction?: FolioInteraction;
   /** Told of every spread that settles: its index and the pages on show. */
   onChange?: (state: FolioState) => void;
   /** Told as soon as the book is sent to another spread (a button, a key,
@@ -119,6 +136,14 @@ export interface FolioViewer {
   /** Eases the view back to the one the settings give (after the reader
    *  orbited it with a right-drag). */
   resetView(): void;
+  /** Changes what the left button does. */
+  setInteraction(mode: FolioInteraction): void;
+  /** The page under a pointer and where on it, as the book is seen (the
+   *  tilted, orbited 3D book included); null off the open pages. */
+  pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null;
+  /** Where a point of a page lies on screen (client px), when the page
+   *  lies open; null otherwise. */
+  pointOnScreen(point: FolioPagePoint): { x: number; y: number } | null;
   readonly state: FolioState;
   dispose(): void;
 }
@@ -197,6 +222,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   const animate = options.animate ?? true;
   const controls = options.controls ?? true;
   const showCount = options.showCount ?? true;
+  let interaction: FolioInteraction = options.interaction ?? "hand";
 
   const root = document.createElement("div");
   root.className = "postext-folio";
@@ -531,14 +557,19 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     if (flipper) event.preventDefault();
   });
   root.addEventListener("pointerdown", (event) => {
-    if (event.button !== 2 || !flipper) return;
+    // In orbit mode the left button (one finger, a pen) orbits too.
+    const orbits = event.button === 2 || (event.button === 0 && interaction === "orbit");
+    if (!orbits || !flipper || holding) return;
+    if ((event.target as Element).closest(".postext-folio-nav")) return;
     event.preventDefault();
+    const mask = event.button === 2 ? 2 : 1;
     const id = event.pointerId;
+    root.classList.add("is-orbiting");
     let x = event.clientX;
     let y = event.clientY;
     const move = (e: PointerEvent) => {
       if (e.pointerId !== id) return;
-      if ((e.buttons & 2) === 0) return end();
+      if ((e.buttons & mask) === 0) return end();
       flipper?.orbitBy(e.clientX - x, e.clientY - y);
       x = e.clientX;
       y = e.clientY;
@@ -547,15 +578,25 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       if (e.pointerId === id) end();
     };
     const end = () => {
+      root.classList.remove("is-orbiting");
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
       window.removeEventListener("blur", end);
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
     window.addEventListener("blur", end);
   });
+  // Select mode: a text cursor over the pages as the book is seen.
+  root.addEventListener("pointermove", (event) => {
+    if (interaction !== "select" || event.buttons) return;
+    root.classList.toggle("is-over-page", !!pageAt(event));
+  });
   root.addEventListener("pointerdown", (event) => {
+    // Only the hand takes pages, swipes and clicks them over.
+    if (interaction !== "hand") return;
     if (onPage(event)) return;
     if (event.pointerType !== "mouse") swipe = { x: event.clientX, y: event.clientY };
   });
@@ -674,7 +715,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     }
   }
   root.addEventListener("pointerup", (event) => {
-    if (holding || singleGl()) return;
+    if (holding || singleGl() || interaction !== "hand") return;
     const start = press;
     press = null;
     const click = !!start && Math.hypot(event.clientX - start.x, event.clientY - start.y) < CLICK_SLOP;
@@ -694,6 +735,55 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     else go(current + ((event.clientX > rect.left + rect.width / 2) !== rtl() ? 1 : -1));
   });
 
+  /** The page index in slot `side` (0 the verso, 1 the recto) of the
+   *  spread on show. */
+  const pageInSlot = (side: 0 | 1): number | null => {
+    const s = spreads[shown];
+    if (!s) return null;
+    return single && !singleGl() ? (s[0] ?? s[1]) : s[side];
+  };
+
+  function pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null {
+    if (flipper) {
+      const hit = flipper.pagePoint(event);
+      if (!hit) return null;
+      const page = pageInSlot(hit.side);
+      return page === null || page === undefined ? null : { page, x: hit.x, y: hit.y };
+    }
+    // The DOM spread: its pages, as laid out (a right-bound book's in
+    // reverse order).
+    const els = [...spreadEl.children] as HTMLElement[];
+    for (let k = 0; k < els.length; k++) {
+      const r = els[k].getBoundingClientRect();
+      if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) continue;
+      const side = (els.length === 1 ? 1 : rtl() ? 1 - k : k) as 0 | 1;
+      const page = els.length === 1 ? pageInSlot(0) : pageInSlot(side);
+      if (page === null || page === undefined) return null;
+      return { page, x: (event.clientX - r.left) / r.width, y: (event.clientY - r.top) / r.height };
+    }
+    return null;
+  }
+
+  function pointOnScreen(point: FolioPagePoint): { x: number; y: number } | null {
+    const s = spreads[shown];
+    if (!s) return null;
+    const found = pageInSlot(1) === point.page ? 1 : pageInSlot(0) === point.page ? 0 : -1;
+    if (found < 0) return null;
+    const side = found as 0 | 1;
+    if (flipper) return flipper.screenPoint(side, point.x, point.y);
+    const els = [...spreadEl.children] as HTMLElement[];
+    const el = els.length === 1 ? els[0] : els[rtl() ? 1 - side : side];
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left + point.x * r.width, y: r.top + point.y * r.height };
+  }
+
+  function applyInteraction() {
+    root.classList.toggle("is-orbit", interaction === "orbit");
+    root.classList.toggle("is-select", interaction === "select");
+    if (interaction !== "select") root.classList.remove("is-over-page");
+  }
+
   let lastWidth = -1;
   const observer = new ResizeObserver(() => {
     if (disposed) return;
@@ -707,6 +797,7 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   observer.observe(root);
 
   applyLabels();
+  applyInteraction();
   rebuild(options.at ?? 0);
 
   return {
@@ -726,6 +817,13 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     resetView() {
       flipper?.resetOrbit();
     },
+    setInteraction(next) {
+      if (next === interaction) return;
+      interaction = next;
+      applyInteraction();
+    },
+    pageAt,
+    pointOnScreen,
     setAppearance(next) {
       appearance = { ...appearance, ...next };
       const flip = flipAppearance();

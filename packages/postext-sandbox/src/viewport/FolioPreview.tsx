@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { createFolioFromDocument, type FolioDocumentViewer, type FolioLabels } from 'postext-folio';
+import { createFolioFromDocument, type FolioDocumentViewer, type FolioInteraction, type FolioLabels } from 'postext-folio';
 import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, type PostextConfig, type VDTDocument } from 'postext';
 import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
@@ -19,6 +19,8 @@ import type { BookPageMap } from './usePageHashSync';
 import { FolioLoading } from './FolioLoading';
 
 interface FolioPreviewProps {
+  /** What the left button does on the book. */
+  interaction?: FolioInteraction;
   onGeneratingChange?: (generating: boolean) => void;
   /** After every layout: the page count, the first page with content, the
    *  book page number of every page and, for the whole book, the chapter
@@ -83,7 +85,7 @@ const fill = (template: string, values: Record<string, string | number>) =>
  * spreads, its leaves turned by hand. Pages are painted at the size they
  * are shown, only around the open spread.
  */
-export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
+export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(function FolioPreview({ interaction = 'hand', onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange }, ref) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxSelector((s) => s.labels);
   const sharedDocRef = useSandboxDocRef();
@@ -165,6 +167,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const pendingJumpRef = useRef<number | null>(null);
   const paintedKeyRef = useRef(paintKey);
   const [opened, setOpened] = useState(false);
+  const interactionRef = useRef(interaction);
+  interactionRef.current = interaction;
   const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange });
   callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange };
 
@@ -353,6 +357,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         // The tab's own bar turns the pages (and takes a page number).
         controls: false,
         labels: folioLabelsRef.current,
+        interaction: interactionRef.current,
         appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
@@ -407,6 +412,10 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     viewerRef.current = null;
     setPaintKey((k) => k + 1);
   }, [modeKey]);
+
+  useEffect(() => {
+    viewerRef.current?.setInteraction(interaction);
+  }, [interaction]);
 
   useEffect(() => {
     viewerRef.current?.setLabels(folioLabels);

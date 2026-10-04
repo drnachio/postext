@@ -346,6 +346,16 @@ export function loadColorMode(fieldId: string): string | null {
   }
 }
 
+const FOLIO_INTERACTION_KEY = 'postext-sandbox-folio-interaction';
+
+export function saveFolioInteraction(mode: string): void {
+  getStorage()?.setItem(FOLIO_INTERACTION_KEY, mode);
+}
+
+export function loadFolioInteraction(): string | null {
+  return getStorage()?.getItem(FOLIO_INTERACTION_KEY) ?? null;
+}
+
 export function saveCanvasViewMode(mode: string): void {
   getStorage()?.setItem(CANVAS_VIEW_MODE_KEY, mode);
 }
@@ -419,6 +429,7 @@ export function clearStorage(): void {
   storage?.removeItem(SECTIONS_KEY);
   storage?.removeItem(COLOR_MODES_KEY);
   storage?.removeItem(CANVAS_VIEW_MODE_KEY);
+  storage?.removeItem(FOLIO_INTERACTION_KEY);
   storage?.removeItem(CANVAS_FIT_MODE_KEY);
   storage?.removeItem(CANVAS_ZOOM_KEY);
   storage?.removeItem(HTML_FONT_SCALE_KEY);

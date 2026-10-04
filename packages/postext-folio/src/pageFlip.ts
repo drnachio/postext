@@ -1922,6 +1922,67 @@ export class PageFlipper {
     return { x: this.sign * p.x, y: p.y };
   }
 
+  /** The pointer's ray, from the eye through the pointer. */
+  private rayAt(event: { clientX: number; clientY: number }) {
+    const rect = this.canvas.getBoundingClientRect();
+    const ndc = new Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -(((event.clientY - rect.top) / rect.height) * 2 - 1));
+    this.scene.updateMatrixWorld();
+    this.camera.updateMatrixWorld();
+    this.raycaster.setFromCamera(ndc, this.camera);
+  }
+
+  /**
+   * The open page under the pointer, as the book is seen (tilted, orbited,
+   * curving into the gutter): its slot in the spread (0 the verso, 1 the
+   * recto) and where on the printed page, as fractions of its width and
+   * height from the top left. Null off the open pages, or where a leaf in
+   * the air hides them.
+   */
+  pagePoint(event: { clientX: number; clientY: number }): { side: 0 | 1; x: number; y: number } | null {
+    if (!this.surfaces) this.layout();
+    this.rayAt(event);
+    const open = [this.left, this.right].filter((m) => m.visible);
+    const air = [...this.leaves.values()].filter((m) => m.visible);
+    for (const m of air) m.geometry.computeBoundingSphere();
+    const hit = this.raycaster.intersectObjects([...open, ...air], false)[0];
+    if (!hit || !hit.uv || (hit.object !== this.left && hit.object !== this.right)) return null;
+    // uv.x runs from the spine (the shader mirrors it for a right-bound
+    // book); the recto shows its front, the verso its back (mirrored).
+    const u = this.sign < 0 ? 1 - hit.uv.x : hit.uv.x;
+    const recto = hit.object === this.right;
+    return { side: recto ? 1 : 0, x: recto ? u : 1 - u, y: 1 - hit.uv.y };
+  }
+
+  /** Where a point of an open page (`pagePoint`'s terms) lies on screen. */
+  screenPoint(side: 0 | 1, x: number, y: number): { x: number; y: number } | null {
+    if (!this.surfaces) this.layout();
+    const mesh = side === 1 ? this.right : this.left;
+    if (!mesh.visible) return null;
+    const u0 = side === 1 ? x : 1 - x;
+    const t = Math.min(1, Math.max(0, this.sign < 0 ? 1 - u0 : u0));
+    // The column the point falls in (the columns are closer near the spine).
+    const pos = mesh.geometry.attributes.position;
+    const uv = mesh.geometry.attributes.uv;
+    const cols = NX_OPEN + 1;
+    let ix = 0;
+    while (ix < NX_OPEN - 1 && uv.getX(ix + 1) < t) ix++;
+    const a = uv.getX(ix);
+    const b = uv.getX(ix + 1);
+    const f = b > a ? Math.min(1, Math.max(0, (t - a) / (b - a))) : 0;
+    const lerp = (i: number, j: number, k: number) => {
+      const p = new Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+      return p.lerp(new Vector3(pos.getX(j), pos.getY(j), pos.getZ(j)), k);
+    };
+    const top = lerp(ix, ix + 1, f);
+    const bottom = lerp(cols + ix, cols + ix + 1, f);
+    const p = top.lerp(bottom, y);
+    this.scene.updateMatrixWorld();
+    this.camera.updateMatrixWorld();
+    mesh.localToWorld(p).project(this.camera);
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
+  }
+
   /** A board turns on the joint at the top of the spine; other leaves on
    *  the gutter. */
   private rigidOf(k: number): boolean {
