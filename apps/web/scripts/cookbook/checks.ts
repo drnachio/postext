@@ -630,6 +630,12 @@ function collect(input: CheckInput): Finding[] {
       const hit = MISSING.exec(m.text);
       if (hit) add("C25", "warn", `the PDF has no glyph for "${hit[1]}" ${hit[2]}: ${hit[3]}`);
     }
+    // HarfBuzz not loaded: the PDF still builds, its Arabic shaped by
+    // fontkit with every mark misplaced, which no page count shows.
+    // postext-pdf says so on the console (its complexShapingUnavailable
+    // warning; the shim prints it even when the pen passes onWarning).
+    const noShaper = input.console.find((m) => /^postext-pdf: HarfBuzz did not load/.test(m.text));
+    if (noShaper) add("C14", "fail", `the PDF's right-to-left text was shaped without HarfBuzz: ${firstLines(noShaper.text, 1)}`);
   }
 
   // C26: hero legibility.

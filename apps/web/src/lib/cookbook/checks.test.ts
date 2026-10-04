@@ -90,6 +90,21 @@ describe("C25: characters the PDF cannot set", () => {
   });
 });
 
+describe("C14: a PDF shaped without HarfBuzz", () => {
+  it("fails a capture whose PDF set Arabic without HarfBuzz", () => {
+    const console = [{ type: "warn", text: "postext-pdf: HarfBuzz did not load, so right-to-left and joining text is shaped with fontkit and its marks are misplaced (https://esm.sh/x/harfbuzz.wasm: HTTP 404)" }];
+    const found = of("C14", runChecks(input({ console })));
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ severity: "fail" });
+    expect(found[0].detail).toMatch(/shaped without HarfBuzz: postext-pdf: HarfBuzz did not load/);
+  });
+
+  it("also knows the older releases' message", () => {
+    const console = [{ type: "warn", text: "postext-pdf: HarfBuzz did not load; complex scripts are shaped with fontkit ([unenv] module.require is not implemented yet!)" }];
+    expect(of("C14", runChecks(input({ console })))).toHaveLength(1);
+  });
+});
+
 describe("C12: CJK and Arabic files loaded after the layout", () => {
   it("fails a face that set characters it had not loaded", () => {
     const late = [{ family: "Noto Sans TC", weight: 700, style: "normal" as const, where: "p3 heading", chars: "章回" }];

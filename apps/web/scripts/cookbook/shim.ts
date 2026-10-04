@@ -266,9 +266,15 @@ export async function renderToPdf(input, options = {}) {
       throw error;
     }
   });
+  // A PDF shaped without HarfBuzz reaches the console (check C14) even
+  // when the pen keeps its warnings to itself.
+  const onWarning = options.onWarning && ((w) => {
+    if (w.kind === 'complexShapingUnavailable') console.warn(w.message);
+    options.onWarning(w);
+  });
   const t0 = performance.now();
   try {
-    const bytes = await real.renderToPdf(input, { ...options, fontProvider });
+    const bytes = await real.renderToPdf(input, { ...options, fontProvider, ...(onWarning ? { onWarning } : {}) });
     cb.pdf = bytes;
     cb.pdfMs = performance.now() - t0;
     return bytes;
