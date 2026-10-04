@@ -113,6 +113,7 @@ import {
   footnoteIdsOfLines,
   footnoteParagraphStyle,
   noteContentBlock,
+  noteNumberPositionOf,
   numberFootnotes,
   numberFootnotesByPlacement,
   sameFootnoteNumbers,
@@ -182,6 +183,8 @@ import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarni
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
 import { annotateArabicMarks } from '../arabicMarks';
+import { tashkilFor } from './tashkil';
+import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
 
@@ -556,7 +559,9 @@ function placeDocumentPass(
   // Citations (#268): formatted against the book's references (or set as
   // notes under a note style) before the notes leave the flow; the
   // bibliography takes `:::bibliography`'s place or follows the text.
-  const parsedBody = headingMarksFor(parseMarkdownMemo(markdownBody), resolved);
+  // Arabic vowel marks out of the text when `bodyText.tashkil` says so
+  // (#376), for the outline and the layout alike.
+  const parsedBody = headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
   const citationsApplied = citationContext
@@ -579,6 +584,7 @@ function placeDocumentPass(
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
     documentNumeralStyle(resolved.footnotes.numberFormat, resolved.numerals),
+    resolved.footnotes.markerTemplate,
   );
   if (hints.footnoteNumbers) {
     for (const [id, number] of hints.footnoteNumbers) {
@@ -587,7 +593,7 @@ function placeDocumentPass(
   }
   const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
   const parsedBlocks = chapterEndNotes
-    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, resolved.footnotes.markerPosition)
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes))
     : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -1958,7 +1964,7 @@ function placeDocumentPass(
     let m = noteMeasures.get(key);
     if (m === undefined) {
       const number = footnoteNumbering.numbers.get(id) ?? '?';
-      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, resolved.footnotes.markerPosition), 0, width, measureCtx, { styleOverride: noteStyle });
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes)), 0, width, measureCtx, { styleOverride: noteStyle });
       noteMeasures.set(key, m);
     }
     return m;
@@ -5772,6 +5778,8 @@ export function* buildDocumentGen(
   // for the column clip, and the paragraphs whose marks meet a
   // neighbouring line.
   const harakat = annotateArabicMarks(doc);
+  // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
+  overlineEmphasis(doc);
   if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0) {
     doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat];
   }
@@ -5880,7 +5888,7 @@ function* buildDocumentNumbered(
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
     const used = printedFootnoteNumbers(doc);
     if (used.size === 0) break;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals)).numbers;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);

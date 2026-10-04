@@ -244,6 +244,7 @@ export function applyStyleAttrs(blk: VDTBlock, style: BlockStyle): void {
   if (style.boldColor) blk.boldColor = style.boldColor;
   if (style.italicColor) blk.italicColor = style.italicColor;
   if (style.referenceColor) blk.refColor = style.referenceColor;
+  if (style.emphasis === 'overline') blk.emphasis = 'overline';
 }
 
 // ---------------------------------------------------------------------------

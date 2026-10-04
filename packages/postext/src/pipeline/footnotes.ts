@@ -56,10 +56,19 @@ export interface FootnoteNumbering {
   chapters: { ids: string[]; lastBlock: number }[];
 }
 
-/** A note's count as printed in `format`. Formats with no symbol for a
- *  count (`circled-decimal` past 50 does write decimal) fall back to it. */
-export function formatFootnoteNumber(n: number, format: NumberFormatStyle = 'decimal'): string {
-  return formatNumeral(n, format) || String(n);
+/** A note's count as printed in `format`, inside `template`
+ *  (`footnotes.markerTemplate`, `{n}` standing for the number). Formats
+ *  with no symbol for a count (`circled-decimal` past 50 does write
+ *  decimal) fall back to it. */
+export function formatFootnoteNumber(n: number, format: NumberFormatStyle = 'decimal', template?: string): string {
+  const number = formatNumeral(n, format) || String(n);
+  return template ? template.split('{n}').join(number) : number;
+}
+
+/** Where a note's own number stands: `footnotes.noteNumberPosition`, else
+ *  as the marker in the text. */
+export function noteNumberPositionOf(f: { markerPosition: 'superscript' | 'inline'; noteNumberPosition?: 'superscript' | 'inline' }): 'superscript' | 'inline' {
+  return f.noteNumberPosition ?? f.markerPosition;
 }
 
 /** Number the notes in order of first citation, starting again at each
@@ -73,6 +82,7 @@ export function numberFootnotes(
   numbering: FootnoteNumberingMode,
   startAt = 0,
   format: NumberFormatStyle = 'decimal',
+  template?: string,
 ): FootnoteNumbering {
   const numbers = new Map<string, string>();
   const counts = new Map<string, number>();
@@ -82,7 +92,7 @@ export function numberFootnotes(
     for (const s of spans) {
       if (s.footnote && !numbers.has(s.footnote.id)) {
         counts.set(s.footnote.id, ++n);
-        numbers.set(s.footnote.id, formatFootnoteNumber(n, format));
+        numbers.set(s.footnote.id, formatFootnoteNumber(n, format, template));
         chapters[chapters.length - 1]!.ids.push(s.footnote.id);
       }
       if (s.chip) visit(s.chip.spans);
@@ -111,6 +121,7 @@ export function numberFootnotesByPlacement(
   pages: readonly { footnoteAreas?: readonly { columnIndex: number; noteIds: readonly string[] }[] }[],
   numbering: 'page' | 'column',
   format: NumberFormatStyle = 'decimal',
+  template?: string,
 ): { numbers: Map<string, string>; counts: Map<string, number> } {
   const numbers = new Map<string, string>();
   const counts = new Map<string, number>();
@@ -124,7 +135,7 @@ export function numberFootnotesByPlacement(
       for (const id of area.noteIds) {
         if (counts.has(id)) continue;
         counts.set(id, ++n);
-        numbers.set(id, formatFootnoteNumber(n, format));
+        numbers.set(id, formatFootnoteNumber(n, format, template));
       }
     }
   }

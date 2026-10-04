@@ -1,5 +1,5 @@
-import type { BlockquoteConfig, BodyTextConfig, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag } from '../types';
-import { hyphenationLocaleFor, isUnhyphenatedLanguage, presentTag } from '../locale';
+import type { BlockquoteConfig, BodyTextConfig, EmphasisStyle, ResolvedBlockquoteConfig, ResolvedBodyTextConfig, HyphenationConfig, LocaleTag, TashkilMode } from '../types';
+import { hyphenationLocaleFor, isUnhyphenatedLanguage, localeScript, presentTag } from '../locale';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR } from './shared';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
@@ -131,34 +131,86 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
   };
 }
 
+/** Whether a document in `locale` is written in Arabic script (`ar`,
+ *  `fa`, `ur`…): its type has no italics. */
+function arabicScript(locale: unknown): boolean {
+  return localeScript(locale) === 'Arab';
+}
+
+const EMPHASES: readonly EmphasisStyle[] = ['italic', 'bold', 'color', 'overline'];
+const TASHKIL_MODES: readonly TashkilMode[] = ['keep', 'strip', 'strip-vowels'];
+
+/** Whether `value` names an emphasis style. */
+export function isEmphasisStyle(value: unknown): value is EmphasisStyle {
+  return EMPHASES.includes(value as EmphasisStyle);
+}
+
+/** Whether `value` names a tashkīl mode. */
+export function isTashkilMode(value: unknown): value is TashkilMode {
+  return TASHKIL_MODES.includes(value as TashkilMode);
+}
+
+/** How `*…*` is set by default in a document in `locale`: in bold when
+ *  it is written in Arabic script, in italics otherwise (#376). */
+export function defaultEmphasisFor(locale: unknown): EmphasisStyle {
+  return arabicScript(locale) ? 'bold' : 'italic';
+}
+
+/** `bodyText.emphasis` resolved: `'auto'`, unset or an unknown value
+ *  follow the language. */
+export function resolveEmphasis(value: unknown, locale: unknown): EmphasisStyle {
+  return isEmphasisStyle(value) ? value : defaultEmphasisFor(locale);
+}
+
+/** The fields `emphasis` and `tashkil` add to a resolved body config:
+ *  each only when it is not the plain default (italics, marks kept), so a
+ *  document that uses neither resolves exactly as before. */
+function emphasisAndTashkil(partial: BodyTextConfig | undefined, locale: unknown): Pick<ResolvedBodyTextConfig, 'emphasis' | 'tashkil'> {
+  const emphasis = resolveEmphasis(partial?.emphasis, locale);
+  const tashkil = partial?.tashkil;
+  return {
+    ...(emphasis !== 'italic' ? { emphasis } : {}),
+    ...(tashkil === 'strip' || tashkil === 'strip-vowels' ? { tashkil } : {}),
+  };
+}
+
 /** A blockquote style in full: unset fields keep postext 1.4's look (see
  *  {@link DEFAULT_BLOCKQUOTE_CONFIG}); an unset `firstLineIndent` stays
- *  unset, the body's then applying. */
-export function resolveBlockquoteConfig(partial?: BlockquoteConfig): ResolvedBlockquoteConfig {
+ *  unset, the body's then applying. In a document written in Arabic
+ *  script (`locale`) a quotation is upright by default: its type has no
+ *  italics (#376). */
+export function resolveBlockquoteConfig(partial?: BlockquoteConfig, locale?: unknown): ResolvedBlockquoteConfig {
   const D = DEFAULT_BLOCKQUOTE_CONFIG;
   return {
     color: partial?.color ?? D.color,
-    italic: partial?.italic ?? D.italic,
+    italic: partial?.italic ?? (arabicScript(locale) ? false : D.italic),
     indent: partial?.indent ?? D.indent,
     ...(partial?.firstLineIndent ? { firstLineIndent: partial.firstLineIndent } : {}),
   };
 }
 
-/** `blockquote` without the fields that hold their default; undefined when
- *  none is left. */
-export function stripBlockquoteDefaults(blockquote?: BlockquoteConfig): BlockquoteConfig | undefined {
+/** `blockquote` without the fields that hold their default (in a document
+ *  in `locale`); undefined when none is left. */
+export function stripBlockquoteDefaults(blockquote?: BlockquoteConfig, locale?: unknown): BlockquoteConfig | undefined {
   if (!blockquote) return undefined;
   const D = DEFAULT_BLOCKQUOTE_CONFIG;
   const out: BlockquoteConfig = {};
   if (blockquote.color !== undefined && !colorsEqual(blockquote.color, D.color)) out.color = blockquote.color;
-  if (blockquote.italic !== undefined && blockquote.italic !== D.italic) out.italic = blockquote.italic;
+  if (blockquote.italic !== undefined && blockquote.italic !== (arabicScript(locale) ? false : D.italic)) out.italic = blockquote.italic;
   if (blockquote.indent !== undefined && !dimensionsEqual(blockquote.indent, D.indent)) out.indent = blockquote.indent;
   if (blockquote.firstLineIndent !== undefined) out.firstLineIndent = blockquote.firstLineIndent;
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
 export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?: LocaleTag): ResolvedBodyTextConfig {
-  if (!partial) return { ...DEFAULT_BODY_TEXT_CONFIG, hyphenation: resolveHyphenation(undefined, documentLocale) };
+  if (!partial) {
+    return {
+      ...DEFAULT_BODY_TEXT_CONFIG,
+      hyphenation: resolveHyphenation(undefined, documentLocale),
+      ...(arabicScript(documentLocale) ? { blockquote: resolveBlockquoteConfig(undefined, documentLocale) } : {}),
+      ...emphasisAndTashkil(undefined, documentLocale),
+    };
+  }
 
   return {
     fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
@@ -191,7 +243,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     breakAfterDashes: partial.breakAfterDashes ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterDashes,
     breakAfterHyphens: partial.breakAfterHyphens ?? DEFAULT_BODY_TEXT_CONFIG.breakAfterHyphens,
     repeatHyphen: partial.repeatHyphen ?? DEFAULT_BODY_TEXT_CONFIG.repeatHyphen,
-    blockquote: resolveBlockquoteConfig(partial.blockquote),
+    blockquote: resolveBlockquoteConfig(partial.blockquote, documentLocale),
     avoidOrphans: partial.avoidOrphans ?? DEFAULT_BODY_TEXT_CONFIG.avoidOrphans,
     orphanMinLines: partial.orphanMinLines ?? DEFAULT_BODY_TEXT_CONFIG.orphanMinLines,
     orphanPenalty: partial.orphanPenalty ?? DEFAULT_BODY_TEXT_CONFIG.orphanPenalty,
@@ -216,6 +268,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     paragraphContainerSpacing: partial.paragraphContainerSpacing === 'add' || partial.paragraphContainerSpacing === 'collapse'
       ? partial.paragraphContainerSpacing
       : DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing,
+    ...emphasisAndTashkil(partial, documentLocale),
   };
 }
 
@@ -331,7 +384,7 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
     result.repeatHyphen = bodyText.repeatHyphen;
     hasOverride = true;
   }
-  const blockquote = stripBlockquoteDefaults(bodyText.blockquote);
+  const blockquote = stripBlockquoteDefaults(bodyText.blockquote, documentLocale);
   if (blockquote) {
     result.blockquote = blockquote;
     hasOverride = true;
@@ -414,6 +467,16 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   }
   if (bodyText.paragraphContainerSpacing !== undefined && bodyText.paragraphContainerSpacing !== DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing) {
     result.paragraphContainerSpacing = bodyText.paragraphContainerSpacing;
+    hasOverride = true;
+  }
+  // Its default follows the language: a set value other than `'auto'` is
+  // kept, so the document reads the same in any language.
+  if (bodyText.emphasis !== undefined && bodyText.emphasis !== 'auto') {
+    result.emphasis = bodyText.emphasis;
+    hasOverride = true;
+  }
+  if (bodyText.tashkil !== undefined && bodyText.tashkil !== 'keep') {
+    result.tashkil = bodyText.tashkil;
     hasOverride = true;
   }
 

@@ -1188,6 +1188,11 @@ export interface VDTBlock {
   color: string;
   boldColor?: string;
   italicColor?: string;
+  /** Set when the block's `*…*` runs (its segments flagged `italic`) are
+   *  set upright with a rule over them (`bodyText.emphasis: 'overline'`,
+   *  #376): the layout draws the rules as `VDTLine.marks`. Absent
+   *  otherwise. */
+  emphasis?: 'overline';
   /** Colour for inline `:ref` segments (`refResourceId` set). */
   refColor?: string;
   textAlign: TextAlign;
@@ -1722,7 +1727,8 @@ export interface ConfigWarning {
    *  `unknownConfigValue`: a setting that takes one of a few words holding
    *  another (`direction: 'right'`); the engine reads its default, and
    *  `used` is what that came to (`direction`: `ltr` or `rtl`, from the
-   *  document language).
+   *  document language; `bodyText.emphasis`: `italic` or `bold`, from it
+   *  too; `bodyText.tashkil`: `keep`).
    *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
    *  language, and `used` is the digit system that gives. */

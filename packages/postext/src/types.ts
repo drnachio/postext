@@ -1070,7 +1070,46 @@ export interface BodyTextConfig {
    *  container that closes on a list is set as in 1.4 under both rules: the
    *  list keeps its own space in its snap, and `marginBottom` follows. */
   paragraphContainerSpacing?: ParagraphContainerSpacing;
+  /** How Markdown emphasis (`*…*`) is set (see {@link EmphasisStyle}).
+   *  `'auto'` (the default): `'bold'` in a document whose language is
+   *  written in Arabic script (`ar`, `fa`, `ur`…), whose type has no
+   *  italics, and `'italic'` in any other. Whatever is chosen, the engine
+   *  never slants Arabic letters: an italic run sets its Arabic words
+   *  upright (#376). */
+  emphasis?: 'auto' | EmphasisStyle;
+  /** Arabic vowel marks (tashkīl) in the text (see {@link TashkilMode}).
+   *  Default `'keep'`. */
+  tashkil?: TashkilMode;
 }
+
+/** How `*…*` is set (`BodyTextConfig.emphasis`):
+ *  - `'italic'`: in the italic face, as postext always did;
+ *  - `'bold'`: in the bold face and `boldColor`, as `**…**` is (bold
+ *    and italic together stay bold);
+ *  - `'color'`: upright, in `italicColor`;
+ *  - `'overline'`: upright, in `italicColor`, with a rule over the words
+ *    (the Arabic khaṭṭ fawqī).
+ *  It applies to the body text and to what is set in its faces: lists,
+ *  blockquotes, paragraph styles, callout bodies, notes and headings.
+ *  Captions, table cells, the contents and the index keep their own
+ *  italic settings. */
+export type EmphasisStyle = 'italic' | 'bold' | 'color' | 'overline';
+
+/** What becomes of the Arabic vowel marks of the text
+ *  (`BodyTextConfig.tashkil`), for an edition without them made from a
+ *  vocalised source:
+ *  - `'keep'`: set as written;
+ *  - `'strip'`: every vowel and Qurʾānic mark is dropped: fatḥa, ḍamma,
+ *    kasra, their tanwīn, sukūn, shadda, the superscript (dagger) alef
+ *    U+0670 (هٰذا is set هذا) and the other marks U+0656–U+065F, and the
+ *    Qurʾānic annotation signs U+06D6–U+06ED;
+ *  - `'strip-vowels'`: as `'strip'`, but the shadda stays, as most modern
+ *    books print it.
+ *  Hamza and madda are kept in both: أ إ آ ؤ ئ are letters, also when
+ *  written with the combining U+0653–U+0655. The marks leave the text the
+ *  layout sets (body, headings, notes, the contents); the source keeps
+ *  them, and every character set still maps to its place in it. */
+export type TashkilMode = 'keep' | 'strip' | 'strip-vowels';
 
 /** The room kept for a list under the colon line that introduces it
  *  (`BodyTextConfig.colonListRoom`). */
@@ -1158,6 +1197,10 @@ export interface ResolvedBodyTextConfig {
   colonListRoom: ColonListRoom;
   hyphenateAcrossColumns: boolean;
   paragraphContainerSpacing: ParagraphContainerSpacing;
+  /** `emphasis` resolved; absent when `*…*` is set in italics. */
+  emphasis?: Exclude<EmphasisStyle, 'italic'>;
+  /** `tashkil`; absent when the marks are kept. */
+  tashkil?: Exclude<TashkilMode, 'keep'>;
   /** Set only in the derived config a callout lays its children out with
    *  (a style's `body.italic` / `body.smallCaps`): the running text of a
    *  document is always upright, in lowercase. */
@@ -3113,6 +3156,18 @@ export interface FootnotesConfig {
   /** Size of an inline marker in the text, `em` of the text around it.
    *  Default `1em`. No effect on a superscript marker. */
   markerSize?: Dimension;
+  /** How a note's number is written, `{n}` standing for it in its number
+   *  format and the document's digits: `'({n})'` sets the parentheses of
+   *  Arabic books, «(١)» (#376). It writes the marker in the text and the
+   *  number that opens the note alike. Default `'{n}'`; a template
+   *  without `{n}` is read as the default. */
+  markerTemplate?: string;
+  /** Where the number that opens the note itself stands: raised
+   *  (`'superscript'`) or on the baseline at the note's size
+   *  (`'inline'`). Default `'auto'`: as the marker in the text
+   *  ({@link markerPosition}). Arabic books raise the marker in the text
+   *  and set the note's own «(١)» on the line. */
+  noteNumberPosition?: FootnoteMarkerPosition;
   /** `'chapterEnd'` placement: where the notes stand in the columns that
    *  close the chapter. `'foot'` sets them at the foot of the column, the
    *  room left over staying between the text and them (as notes at the
@@ -3150,6 +3205,11 @@ export interface ResolvedFootnotesConfig {
   /** `'auto'` resolved against the number format. */
   markerPosition: 'superscript' | 'inline';
   markerSize: Dimension;
+  /** Set when it is not `'{n}'` (and holds `{n}`). */
+  markerTemplate?: string;
+  /** Set when it is not `'auto'`: the note's own number then stands so,
+   *  whatever {@link markerPosition} is. */
+  noteNumberPosition?: 'superscript' | 'inline';
   chapterEndAlign: 'foot' | 'text';
   fontSize: Dimension;
   lineHeight: Dimension;

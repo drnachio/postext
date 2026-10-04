@@ -15,6 +15,7 @@ import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { documentNumerals, resolvedLocale, resolveAllConfig } from './config';
 import { withDigits } from '../arabicNumerals';
 import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
+import { tashkilFor } from './tashkil';
 import { partMarkPages, planParts } from './parts';
 import { withBookTitleBrackets } from './annotations';
 
@@ -131,7 +132,9 @@ export function computeOutline(
   before?: HeadingCounters,
 ): OutlineEntry[] {
   // Headings whose marks the configuration leaves off list plain (EF-122).
-  blocks = headingMarksFor(blocks as ContentBlock[], resolved);
+  // Arabic vowel marks out under `bodyText.tashkil` (#376), as in the
+  // layout.
+  blocks = headingMarksFor(tashkilFor(blocks as ContentBlock[], resolved.bodyText.tashkil), resolved);
   const isNumbered = (b: ContentBlock) => headingIsNumbered(b, resolved);
   const { prefixes, values } = computeHeadingNumbering(
     [...blocks],

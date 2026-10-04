@@ -112,6 +112,8 @@ export type {
   KeepWithNextSplit,
   ColonListRoom,
   ParagraphContainerSpacing,
+  EmphasisStyle,
+  TashkilMode,
   LayoutConfig,
   ResolvedLayoutConfig,
   InlineResourceGap,

@@ -26,6 +26,7 @@ import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
 import { isDigitSystem } from './locale';
+import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -76,6 +77,15 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   if (direction !== undefined && direction !== 'auto' && direction !== 'ltr' && direction !== 'rtl') {
     const used = resolveDirection(undefined, resolvedLocale(resolveAllConfig(config)));
     out.push({ kind: 'unknownConfigValue', path: 'direction', value: String(direction), used });
+  }
+  // `*…*` and the Arabic vowel marks (#376).
+  const emphasis = config.bodyText?.emphasis as unknown;
+  if (emphasis !== undefined && emphasis !== 'auto' && !isEmphasisStyle(emphasis)) {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.emphasis', value: String(emphasis), used: defaultEmphasisFor(config.locale) });
+  }
+  const tashkil = config.bodyText?.tashkil as unknown;
+  if (tashkil !== undefined && !isTashkilMode(tashkil)) {
+    out.push({ kind: 'unknownConfigValue', path: 'bodyText.tashkil', value: String(tashkil), used: 'keep' });
   }
   return out;
 }

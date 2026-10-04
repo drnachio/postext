@@ -1,4 +1,4 @@
-import type { ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
+import type { EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -46,25 +46,56 @@ export interface BlockStyle {
    *  tightens) — a heading level's `letterSpacing`. Measured on the rich
    *  path and stamped on the block (`VDTBlock.letterSpacing`). Unset: none. */
   letterSpacingPx?: number;
+  /** How the style sets `*…*` when not in italics (`bodyText.emphasis`,
+   *  #376): its italic faces are then upright (`'color'`, `'overline'`)
+   *  or bold (`'bold'`), and `'overline'` draws a rule over the runs.
+   *  Unset: in italics. */
+  emphasis?: Exclude<EmphasisStyle, 'italic'>;
 }
 
 /** The four faces of a text style: `italic` sets the regular text in
- *  italics and flips `*…*` runs back to upright (the blockquote rule). */
+ *  italics and flips `*…*` runs back to upright (the blockquote rule).
+ *  `emphasis` (`bodyText.emphasis` other than italics) gives the faces
+ *  `*…*` runs are set in instead of the flipped ones: the bold faces
+ *  (`'bold'`), or the regular ones (`'color'`, `'overline'`, which mark
+ *  the run otherwise), in the style's own slant. */
 function textFaces(
   family: string,
   sizePx: number,
   weight: number,
   boldWeight: number,
   italic: boolean,
+  emphasis?: Exclude<EmphasisStyle, 'italic'>,
 ): Pick<BlockStyle, 'fontString' | 'boldFontString' | 'italicFontString' | 'boldItalicFontString'> {
   const base = italic ? 'italic' : 'normal';
   const flip = italic ? 'normal' : 'italic';
+  const fontString = buildFontString(family, sizePx, weight.toString(), base);
+  const boldFontString = buildFontString(family, sizePx, boldWeight.toString(), base);
+  if (emphasis) {
+    return {
+      fontString,
+      boldFontString,
+      italicFontString: emphasis === 'bold' ? boldFontString : fontString,
+      boldItalicFontString: boldFontString,
+    };
+  }
   return {
-    fontString: buildFontString(family, sizePx, weight.toString(), base),
-    boldFontString: buildFontString(family, sizePx, boldWeight.toString(), base),
+    fontString,
+    boldFontString,
     italicFontString: buildFontString(family, sizePx, weight.toString(), flip),
     boldItalicFontString: buildFontString(family, sizePx, boldWeight.toString(), flip),
   };
+}
+
+/** What `emphasis` adds to a style beside its faces: the mode itself
+ *  (for the overline pass and the renderers), and, set in bold, the bold
+ *  colour for the runs, as `**…**` takes it. */
+function emphasisFields(
+  emphasis: Exclude<EmphasisStyle, 'italic'> | undefined,
+  colors: { boldColor?: string; italicColor?: string },
+): Pick<BlockStyle, 'emphasis' | 'italicColor'> {
+  if (!emphasis) return { italicColor: colors.italicColor };
+  return { emphasis, italicColor: emphasis === 'bold' ? colors.boldColor : colors.italicColor };
 }
 
 /** Whether a block with this alignment hyphenates, and its hyphenation zone
@@ -89,13 +120,13 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const lineHeightPx = computeBaselineGrid(resolved);
   const body = resolved.bodyText;
   // `italic` / `smallCaps` are set only in a callout's derived config.
-  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, !!body.italic);
+  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, !!body.italic, body.emphasis);
   const textAlign = body.textAlign;
   const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
   const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = body.hangingIndent;
   const marginBottomPx = body.paragraphSpacing ? lineHeightPx : 0;
-  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}) };
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}) };
 }
 
 export function resolveHeadingStyle(
@@ -127,14 +158,20 @@ export function resolveHeadingStyle(
   const baseItalic = headingConfig.italic ? 'italic' : 'normal';
   const flipItalic = headingConfig.italic ? 'normal' : 'italic';
   const fontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, baseItalic);
-  const italicFontString = buildFontString(headingConfig.fontFamily, fontSizePx, weight, flipItalic);
-  const boldWeight = hasBold ? Math.max(headingConfig.fontWeight, resolved.bodyText.boldFontWeight) : headingConfig.fontWeight;
+  // `bodyText.emphasis` (#376): `*…*` in a heading is set as in the text,
+  // its bold a weight above the level's own.
+  const emphasis = resolved.bodyText.emphasis;
+  const boldWeight = hasBold || emphasis === 'bold' ? Math.max(headingConfig.fontWeight, resolved.bodyText.boldFontWeight) : headingConfig.fontWeight;
   const boldFontString = boldWeight === headingConfig.fontWeight
     ? fontString
     : buildFontString(headingConfig.fontFamily, fontSizePx, boldWeight.toString(), baseItalic);
-  const boldItalicFontString = boldWeight === headingConfig.fontWeight
-    ? italicFontString
-    : buildFontString(headingConfig.fontFamily, fontSizePx, boldWeight.toString(), flipItalic);
+  const italicFontString = emphasis === 'bold' ? boldFontString
+    : emphasis ? fontString
+      : buildFontString(headingConfig.fontFamily, fontSizePx, weight, flipItalic);
+  const boldItalicFontString = emphasis ? boldFontString
+    : boldWeight === headingConfig.fontWeight
+      ? italicFontString
+      : buildFontString(headingConfig.fontFamily, fontSizePx, boldWeight.toString(), flipItalic);
   const textAlign = resolved.headings.textAlign;
   const marginTopPx = dimensionToPx(headingConfig.marginTop, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(headingConfig.marginBottom, dpi, fontSizePx);
@@ -142,7 +179,7 @@ export function resolveHeadingStyle(
   // cache) exactly as before.
   const trackingPx = headingConfig.letterSpacing ? dimensionToPx(headingConfig.letterSpacing, dpi, fontSizePx) : 0;
   const letterSpacingPx = Number.isFinite(trackingPx) && trackingPx !== 0 ? trackingPx : undefined;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}) };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}), ...(emphasis ? { emphasis } : {}) };
 }
 
 export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
@@ -182,7 +219,7 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   const quote = body.blockquote ?? DEFAULT_BLOCKQUOTE_CONFIG;
   const fontSizePx = dimensionToPx(body.fontSize, dpi);
   const lineHeightPx = computeBaselineGrid(resolved);
-  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, quote.italic);
+  const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, quote.italic, body.emphasis);
   const textAlign = body.textAlign;
   const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
   const firstLineIndentPx = dimensionToPx(quote.firstLineIndent ?? body.firstLineIndent, dpi, fontSizePx);
@@ -201,6 +238,7 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
     hangingIndent,
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(body.smallCaps ? { smallCaps: true } : {}),
+    ...(body.emphasis ? { emphasis: body.emphasis } : {}),
   };
 }
 
@@ -224,7 +262,7 @@ export function resolveParagraphStyle(
   const lineHeightPx = lh.unit === 'em' || lh.unit === 'rem'
     ? fontSizePx * lh.value
     : dimensionToPx(lh, dpi, fontSizePx);
-  const faces = textFaces(style.fontFamily, fontSizePx, style.fontWeight, style.boldFontWeight, style.italic);
+  const faces = textFaces(style.fontFamily, fontSizePx, style.fontWeight, style.boldFontWeight, style.italic, body.emphasis);
   const textAlign = style.textAlign;
   const hyphenation = hyphenationFor(style.hyphenation, textAlign, resolved, fontSizePx);
   const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
@@ -241,6 +279,7 @@ export function resolveParagraphStyle(
     color: style.color.hex,
     boldColor: style.boldColor?.hex ?? body.boldColor?.hex,
     italicColor: style.italicColor?.hex ?? body.italicColor?.hex,
+    ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: style.boldColor?.hex ?? body.boldColor?.hex, italicColor: style.italicColor?.hex ?? body.italicColor?.hex }) : {}),
     referenceColor: body.referenceColor.hex,
     referenceBold: body.referenceBold,
     referenceItalic: body.referenceItalic,

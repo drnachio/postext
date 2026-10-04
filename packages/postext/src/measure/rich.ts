@@ -1,4 +1,5 @@
 import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
+import { uprightArabicSpans } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
 import type { InlineSpan } from '../parse';
@@ -1524,6 +1525,8 @@ function measureRichText(
   // Vertical text: a short number inside a Latin sentence runs sideways
   // with it, read against the whole paragraph (#222).
   if (measuringVertically()) spans = sidewaysNumberSpans(spans, getMeasureUprightDigits(), getMeasureRegion());
+  // Arabic letters are never slanted (#376, `uprightArabic.ts`).
+  spans = uprightArabicSpans(spans, italicFont, boldItalicFont);
   // Chinese, Japanese or Korean text: its own composer, which breaks
   // between characters under the document's line-break rules and spreads
   // justified lines between them — also text with no two CJK letters in a

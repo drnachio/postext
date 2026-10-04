@@ -87,12 +87,15 @@ interface Ink {
 /** Ink boxes measured, per font and text (cleared with each document's
  *  annotation pass: fonts may have changed between builds). */
 let inkCache = new Map<string, Ink>();
+const MAX_INK_ENTRIES = 50_000;
 
-/** The ink box of `text` set in `font`: measured, else estimated. */
-function wordInk(text: string, font: string): Ink {
+/** The ink box of `text` set in `font`, px above and below the baseline:
+ *  measured, else estimated (see `ESTIMATE`). */
+export function inkBoxOf(text: string, font: string): Ink {
   const key = `${font}\u0000${text}`;
   const cached = inkCache.get(key);
   if (cached) return cached;
+  if (inkCache.size >= MAX_INK_ENTRIES) inkCache = new Map();
   let ink: Ink | null = measureInkBox(text, font);
   if (!ink) {
     const em = fontEm(font);
@@ -135,7 +138,7 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
   const segments = line.segments;
   if (!segments || segments.length === 0) {
     if (!line.text.trim()) return [];
-    const ink = wordInk(line.text, block.fontString);
+    const ink = inkBoxOf(line.text, block.fontString);
     return [{ x0: line.bbox.x, x1: line.bbox.x + line.bbox.width, ...ink, marked: hasArabicMarks(line.text) }];
   }
   const { xs, widths } = segmentPositions(line, block);
@@ -150,7 +153,7 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
   const out: WordInk[] = [];
   segments.forEach((seg, i) => {
     if (seg.kind !== 'text' || !seg.text.trim()) return;
-    const ink = wordInk(seg.text, segmentFont(seg, block));
+    const ink = inkBoxOf(seg.text, segmentFont(seg, block));
     const shift = seg.baselineShift ?? 0;
     out.push({
       x0: at[i]!,
