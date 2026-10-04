@@ -1,0 +1,51 @@
+---
+title: "A Maghreb edition of an Arabic text, with European digits"
+summary: "An Arabic chapter printed for Morocco: locale 'ar-MA' keeps the text right to left and bound on the right, and writes every generated number as 1, 2, 3."
+plain: "In Morocco, Algeria and Tunisia, books in Arabic print their numbers with the digits Europe uses, 1, 2, 3, not with ١، ٢، ٣. One setting, the language and country of the document, gives the whole book those digits."
+description: "An Arabic chapter for a Moroccan edition in Postext: ar-MA gives European digits to folios, headings, lists, notes and figures, and keeps the right binding."
+question: "How do I print European digits (1, 2, 3) in an Arabic book for a Maghreb edition?"
+aliases: ["Maghreb", "Morocco", "ar-MA", "European digits", "Western Arabic numerals", "Arabic digits", "numerals", "latn", "Fes", "zellige", "أرقام", "المغرب"]
+pageNotes: { "1": "The chapter opener, page 41: الفصل 3: أبواب فاس in green Kufi letters, two justified paragraphs of Arabic with the years 789 and 809 in European digits, and a band of zellige under them, cobalt eight-pointed stars on green with ochre squares, captioned شكل 3-1." }
+---
+
+## What you'll build
+
+A chapter from a guide to the old cities of Morocco, on the gates of Fes, as a Moroccan publisher would print it: 13.5 × 21 cm, Noto Naskh Arabic at 12.5 pt, headings in Noto Kufi Arabic in the green of Fes tilework. The text runs right to left and the book is bound on the right, like any Arabic book, but every number on the page is written 1, 2, 3: the folios 41 to 44, الفصل 3, the section numbers 3-1 and 3-2, the list of gates 1- to 5-, the note markers (1) and the figure number شكل 3-1. That is the usage of the Maghreb, from Morocco to Tunisia, and the page shows it with one setting. <RecipeLink slug="arabic-novel-right-bound">An Arabic novel bound on the right</RecipeLink> shows the same book with the Mashriq's ١٢.
+
+## Method
+
+### 1 · The country picks the digits
+
+The code is [the short answer](#the-short-answer) above. `numerals` is left at `'auto'`, and the engine reads the digits from the tag: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` and `ar-EH` give European digits, `ar` alone and the Mashriq regions give ١٢٣ ([Digits and numeral styles](/en/docs/arabic-layout#digits-and-numeral-styles)). Only the numbers the engine writes change: the folio, the heading counters, the list numbers, the note markers, the figure numbers. The years in the text, 789 and 1913, are the author's, typed in the digits of the edition, and the engine never rewrites them. The heading's `{startAt=3}` reads ٣ as well as 3, so the same Markdown serves both editions.
+
+### 2 · Marks around the numbers
+
+<Excerpt region="marks" />
+
+Arabic books write a list number with a hyphen after it, 1-, and a note marker in parentheses, (1); both templates take the document's digits, so the Mashriq edition prints ١- and (١) from the same settings ([Footnotes](/en/docs/arabic-layout#footnotes)). The caption's label ends in a colon, شكل 3-1:, because a full stop after a number reads as a decimal point. Notes start again at (1) on every page, as most Arabic books number them.
+
+### 3 · A tile band drawn in code
+
+<Excerpt region="art" />
+
+The figure is an SVG generated in the pen: eight-pointed stars made of two squares turned 45°, small squares between them, in the palette's green, cobalt and ochre. Its caption is Arabic in both editions, numbered by the chapter, `{h1}-{n}`, as the Arabic resource types number their figures.
+
+## Variations
+
+### Print the Mashriq digits
+
+The Egyptian or Levantine edition of the same chapter: the tag changes, the Markdown does not.
+
+```diff
+-  locale: 'ar-MA',
++  locale: 'ar-EG',
+```
+
+### Keep a Moroccan locale, print ١٢٣
+
+A setting written out wins over the region's default.
+
+```diff
+   locale: 'ar-MA',
++  numerals: 'arab',
+```

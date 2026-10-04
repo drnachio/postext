@@ -1,0 +1,130 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 109,
+  "status": "draft",
+  "chapter": "type",
+  "order": 180,
+  "level": 1,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "document-digits"
+    ],
+    "also": [
+      "text-direction",
+      "arabic-language",
+      "right-binding",
+      "arabic-fonts",
+      "body-typography",
+      "heading-numbering",
+      "footnotes",
+      "numbered-lists",
+      "captions",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q124"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "digit-period-list",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "“The gates of Fes”, a chapter written in Arabic for the recipe, from an invented book on the old cities of Morocco",
+          "es": "«Las puertas de Fez», capítulo escrito en árabe para la receta, de un libro inventado sobre las ciudades antiguas de Marruecos"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Noto Naskh Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "arabic-novel-right-bound",
+    "arabic-research-article",
+    "chinese-dates-upright",
+    "front-matter-roman-to-arabic"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 80,
+      "shade": "#ffffff"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#1d6650"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  }
+}
