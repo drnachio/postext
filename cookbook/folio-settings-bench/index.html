@@ -1,0 +1,62 @@
+<section id="bench">
+  <div id="folio" role="region" aria-label="The book in 3D"></div>
+  <form id="controls" aria-label="Folio settings">
+    <fieldset>
+      <legend>Paper</legend>
+      <label>Stock <select name="paper.type">
+        <option value="uncoated">Uncoated</option><option value="bookWove" selected>Book wove</option>
+        <option value="coatedMatte">Coated matte</option><option value="coatedSilk">Coated silk</option>
+        <option value="coatedGloss">Coated gloss</option><option value="bible">Bible</option>
+        <option value="newsprint">Newsprint</option><option value="cardStock">Card</option>
+      </select></label>
+      <label>Weight <output name="grammage-out">80 g/m²</output>
+        <input type="range" name="paper.grammage" min="30" max="300" step="5" value="80"></label>
+      <label>Texture <select name="paper.texture">
+        <option value="auto" selected>The stock’s</option><option value="smooth">Smooth</option>
+        <option value="vellum">Vellum</option><option value="wove">Wove</option>
+        <option value="laid">Laid</option><option value="linen">Linen</option>
+        <option value="felt">Felt</option>
+      </select></label>
+      <label class="check"><input type="checkbox" name="paper.showThrough" checked> Show-through</label>
+    </fieldset>
+    <fieldset>
+      <legend>Binding</legend>
+      <label>Type <select name="binding.type">
+        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
+        <option value="sewn">Sewn softcover</option><option value="layflat">Lay-flat</option>
+        <option value="saddleStitch">Saddle stitch</option>
+      </select></label>
+      <label>Covers <select name="binding.cover">
+        <option value="pages" selected>The first and last pages</option>
+        <option value="case">A case round the pages</option>
+      </select></label>
+      <label>Material <select name="binding.coverMaterial">
+        <option value="auto" selected>The binding’s</option><option value="cloth">Cloth</option>
+        <option value="paper">Paper</option><option value="leather">Leather</option>
+      </select></label>
+      <label>Colour <input type="color" name="binding.coverColor" value="#9a3b2e"></label>
+    </fieldset>
+    <fieldset>
+      <legend>Desk and light</legend>
+      <label>Surface <select name="surface.type">
+        <option value="oak" selected>Oak</option><option value="walnut">Walnut</option>
+        <option value="linen">Linen</option><option value="felt">Felt</option>
+        <option value="leather">Leather</option><option value="marble">Marble</option>
+        <option value="plain">Plain</option><option value="none">None</option>
+      </select></label>
+      <label>Light <select name="lighting.environment">
+        <option value="studio">Studio</option><option value="daylight" selected>Daylight</option>
+        <option value="lamp">Lamp</option><option value="overcast">Overcast</option>
+        <option value="night">Night</option>
+      </select></label>
+      <label>Intensity <output name="intensity-out">1.0</output>
+        <input type="range" name="lighting.intensity" min="0.25" max="2" step="0.05" value="1"></label>
+      <label class="check"><input type="checkbox" name="lighting.shadows" checked> Shadows</label>
+      <label>Tilt <output name="tilt-out">22°</output>
+        <input type="range" name="tilt" min="0" max="40" step="1" value="22"></label>
+      <button type="button" id="reset-view">Reset view</button>
+    </fieldset>
+    <pre id="folio-json" aria-label="The folio settings as code"></pre>
+  </form>
+</section>
+<main id="pages"></main>

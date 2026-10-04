@@ -6712,5 +6712,182 @@
         "crossRefs"
       ]
     }
+  },
+  "folio-viewer": {
+    "label": {
+      "en": "3D book viewer (Folio)",
+      "es": "Visor de libro en 3D (Folio)",
+      "zh": "3D书本查看器（Folio）"
+    },
+    "definition": {
+      "en": "postext-folio opens a laid-out document as a printed book on a desk: spreads by the recto rule and leaves the reader turns by hand.",
+      "es": "postext-folio abre un documento compuesto como un libro impreso sobre una mesa: pliegos según la regla del recto y hojas que el lector pasa con la mano.",
+      "zh": "postext-folio把排好的文档呈现为放在桌上的印刷书：按右页规则排成对开页，读者可以用手翻页。"
+    },
+    "aliases": {
+      "en": [
+        "Folio",
+        "postext-folio",
+        "flipbook",
+        "page flip",
+        "page curl",
+        "3D book",
+        "createFolioFromDocument",
+        "WebGL"
+      ],
+      "es": [
+        "Folio",
+        "postext-folio",
+        "libro animado",
+        "pasar página",
+        "hoja que se curva",
+        "libro en 3D",
+        "createFolioFromDocument",
+        "WebGL"
+      ],
+      "zh": [
+        "Folio",
+        "翻页书",
+        "翻页效果",
+        "3D书本",
+        "书页卷曲",
+        "postext-folio",
+        "createFolioFromDocument",
+        "WebGL"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "A 3D book (`postext-folio`)",
+        "es": "Un libro en 3D (`postext-folio`)",
+        "zh": "3D书本（`postext-folio`）"
+      }
+    },
+    "detect": {
+      "api": [
+        "createFolioFromDocument",
+        "createFolio"
+      ]
+    }
+  },
+  "folio-appearance": {
+    "label": {
+      "en": "Paper, binding, desk and light (Folio)",
+      "es": "Papel, encuadernación, mesa y luz (Folio)",
+      "zh": "纸张、装订、台面与光照（Folio）"
+    },
+    "definition": {
+      "en": "config.folio says how the 3D book is made and lit: paper stock and weight, binding and covers, the surface under it and the light.",
+      "es": "config.folio dice cómo está hecho e iluminado el libro en 3D: el papel y su gramaje, la encuadernación y las tapas, la superficie y la luz.",
+      "zh": "config.folio规定3D书本的材质与照明：纸张种类和克重、装订方式与封面、书下面的台面以及光照。"
+    },
+    "aliases": {
+      "en": [
+        "folio config",
+        "paper stock",
+        "grammage",
+        "hardcover",
+        "paperback",
+        "saddle stitch",
+        "cover boards",
+        "desk",
+        "lighting",
+        "tilt"
+      ],
+      "es": [
+        "configuración folio",
+        "tipo de papel",
+        "gramaje",
+        "tapa dura",
+        "rústica",
+        "grapado",
+        "tapas",
+        "mesa",
+        "iluminación",
+        "inclinación"
+      ],
+      "zh": [
+        "folio配置",
+        "纸张种类",
+        "克重",
+        "精装",
+        "平装",
+        "骑马钉",
+        "封面",
+        "台面",
+        "光照",
+        "倾角"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Folio viewer (config)",
+        "es": "Visor Folio (configuración)",
+        "zh": "书页视图（配置）"
+      }
+    },
+    "detect": {
+      "config": [
+        "folio"
+      ]
+    }
+  },
+  "paper-runs": {
+    "label": {
+      "en": "A different paper for a run of pages",
+      "es": "Otro papel para una tanda de páginas",
+      "zh": "为一组页面换用纸张"
+    },
+    "definition": {
+      "en": "A :::paper container prints the pages it holds on their own stock: a gloss plate section, a card cover, a few tinted leaves.",
+      "es": "Un contenedor :::paper imprime sus páginas en un papel propio: un pliego de láminas en estucado brillo, una cubierta en cartulina, unas hojas de color.",
+      "zh": ":::paper容器让其中的页面使用自己的纸张：铜版纸图版、卡纸封面或几页色纸。"
+    },
+    "aliases": {
+      "en": [
+        ":::paper",
+        "paper stock",
+        "plate section",
+        "insert",
+        "tipped-in plates",
+        "coated paper",
+        "card cover"
+      ],
+      "es": [
+        ":::paper",
+        "tipo de papel",
+        "pliego de láminas",
+        "encarte",
+        "láminas",
+        "papel estucado",
+        "cubierta de cartulina"
+      ],
+      "zh": [
+        ":::paper",
+        "纸张",
+        "图版",
+        "插页",
+        "铜版纸",
+        "卡纸封面"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::paper`",
+        "es": "`:::paper`",
+        "zh": "`:::paper`"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::\\s*paper\\b"
+      ]
+    }
   }
 }

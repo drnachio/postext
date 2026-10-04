@@ -2,39 +2,126 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 102,
-  "status": "draft",
+  "status": "published",
   "chapter": "output",
   "order": 140,
   "level": 2,
-  "genres": ["novel"],
-  "outputs": ["canvas"],
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas",
+    "live"
+  ],
   "features": {
-    "primary": ["mirrored-margins", "running-heads"],
+    "primary": [
+      "paper-runs",
+      "folio-appearance"
+    ],
     "also": [
+      "folio-viewer",
+      "heading-styles",
       "opener-design",
       "heading-attributes",
-      "page-role-filters",
-      "widows-orphans-runts",
+      "design-elements",
       "paragraph-styles",
-      "callout-styles"
+      "page-role-filters",
+      "color-palette",
+      "mirrored-margins",
+      "canvas-rendering"
     ]
   },
-  "answers": ["Q16", "Q30"],
-  "gotchas": ["headings-drop-h1-break", "fonts-first"],
-  "engine": { "postext": "1.4.1" },
-  "kit": ["core", "fonts", "viewer"],
-  "sample": { "locales": ["en"] },
-  "capture": { "hero": 1, "card": "page" },
+  "answers": [
+    "Q117",
+    "Q118"
+  ],
+  "gotchas": [
+    "folio-cover-pages-even",
+    "paper-run-whole-leaves",
+    "folio-container-height",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "related": [
+    "paper-swatch-book",
+    "folio-book-on-a-desk",
+    "riso-zine-single-ink"
+  ],
+  "engine": {
+    "postext": "1.13.4"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "folio": {
+    "tilt": 20,
+    "paper": {
+      "type": "newsprint",
+      "grammage": 52
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#1f2124"
+    },
+    "lighting": {
+      "environment": "overcast",
+      "intensity": 1.1
+    }
+  },
   "credits": {
-    "authors": [{ "name": "Your Name", "github": "your-github" }],
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
     "text": [],
-    "images": [],
+    "images": [
+      {
+        "what": {
+          "en": "The tide lines on the cover, drawn in code",
+          "es": "Las líneas de marea de la cubierta, dibujadas con código"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
     "fonts": [
-      { "family": "Source Serif 4", "license": "OFL-1.1" },
-      { "family": "Source Sans 3", "license": "OFL-1.1" }
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Bricolage Grotesque",
+        "license": "OFL-1.1"
+      }
     ]
   },
-  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
   "created": "2026-10-04",
   "updated": "2026-10-04"
 }

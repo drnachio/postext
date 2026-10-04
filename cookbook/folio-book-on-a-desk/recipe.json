@@ -2,10 +2,10 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 100,
-  "status": "draft",
+  "status": "published",
   "chapter": "output",
   "order": 120,
-  "level": 1,
+  "level": 2,
   "genres": [
     "novel"
   ],
@@ -61,14 +61,20 @@
   },
   "capture": {
     "hero": 1,
-    "card": "page"
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
   },
   "folio": {
     "tilt": 26,
     "paper": {
       "type": "bookWove",
       "grammage": 70,
-      "shade": "#f4ecd8"
+      "shade": "#f7f0e1"
     },
     "binding": {
       "type": "hardcover",
@@ -80,8 +86,8 @@
       "type": "walnut"
     },
     "lighting": {
-      "environment": "lamp",
-      "intensity": 1.1,
+      "environment": "studio",
+      "intensity": 1,
       "shadows": true
     }
   },

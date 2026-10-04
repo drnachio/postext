@@ -2,40 +2,53 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 101,
-  "status": "draft",
+  "status": "published",
   "chapter": "output",
   "order": 130,
   "level": 2,
   "genres": [
-    "novel"
+    "catalogue"
   ],
   "outputs": [
-    "canvas"
+    "canvas",
+    "live"
   ],
   "features": {
     "primary": [
-      "mirrored-margins",
-      "running-heads"
+      "paper-runs",
+      "folio-viewer"
     ],
     "also": [
+      "folio-appearance",
+      "heading-styles",
       "opener-design",
       "heading-attributes",
-      "page-role-filters",
-      "widows-orphans-runts",
       "paragraph-styles",
-      "callout-styles"
+      "swatches",
+      "page-role-filters",
+      "color-palette",
+      "mirrored-margins",
+      "canvas-rendering"
     ]
   },
   "answers": [
-    "Q16",
-    "Q30"
+    "Q117",
+    "Q116"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
-    "fonts-first"
+    "paper-run-whole-leaves",
+    "folio-cover-pages-even",
+    "folio-container-height",
+    "fonts-first",
+    "config-cache-identity"
+  ],
+  "related": [
+    "saddle-stitched-card-cover",
+    "folio-book-on-a-desk",
+    "folio-settings-bench"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.13.4"
   },
   "kit": [
     "core",
@@ -57,22 +70,44 @@
     },
     "pages": "all"
   },
+  "folio": {
+    "tilt": 24,
+    "paper": {
+      "type": "uncoated"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "pages",
+      "coverMaterial": "paper"
+    },
+    "surface": {
+      "type": "linen"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1
+    }
+  },
   "credits": {
     "authors": [
       {
-        "name": "Your Name",
-        "github": "your-github"
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
       }
     ],
     "text": [],
     "images": [],
     "fonts": [
       {
-        "family": "Source Serif 4",
+        "family": "Crimson Pro",
         "license": "OFL-1.1"
       },
       {
-        "family": "Source Sans 3",
+        "family": "Libre Caslon Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
         "license": "OFL-1.1"
       }
     ]

@@ -169,8 +169,8 @@ maths, workers or interactive rebuilds.
    signal the capture waits for. Interactive recipes paint their first state at top level and
    attach listeners afterwards.
 3. **One engine entry.** Named imports come from `https://esm.sh/postext` (plus
-   `https://esm.sh/postext-pdf` for PDFs), never pinned: the capture pins the released version
-   for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
+   `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book), never
+   pinned: the capture pins the released version for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
 4. **Design first.** The file reads top to bottom: design, content, fonts, build. The answer
    sits at the top of CodePen's JS panel; the long sample and the kit are folded away.
 5. **Never the default skin** (§7).
@@ -248,6 +248,15 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
 - **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` rebuilds
   with `config()` and calls `showPages`. Add `"live"` to `outputs`.
 - **Workers.** Follow the docs' "Running layout in a Web Worker" and set `engine.worker: true`.
+- **Folio (3D book).** Import `createFolioFromDocument` from `https://esm.sh/postext-folio` (the
+  capture pins `packages/postext-folio`'s version) and mount it in a container with a height:
+  ```js
+  createFolioFromDocument(stage, doc, { appearance: { textureBaseUrl: 'https://postext.dev/folio/textures' } });
+  ```
+  The look comes from `config.folio` (keep it equal to `recipe.json` `folio`) and each page's
+  `:::paper`. Call `showPages` as well, so the flat pages follow under the book, and use
+  `capture.card: "screenshot"` with `"selector": "#folio"`: the capture's Chrome draws WebGL.
+  Nº 100–103 are the models.
 
 ### 5.4 The kit
 

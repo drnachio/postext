@@ -1614,5 +1614,47 @@
       "zh": "法律引用（OSCOLA）"
     },
     "theme": "structure"
+  },
+  "Q116": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show my document as a 3D book whose pages the reader turns by hand?",
+      "es": "¿Cómo muestro mi documento como un libro en 3D cuyas páginas el lector pasa con la mano?",
+      "zh": "怎样把文档显示成读者可以用手翻页的3D书本？"
+    },
+    "index": {
+      "en": "3D book viewer (Folio)",
+      "es": "Visor de libro en 3D (Folio)",
+      "zh": "3D书本查看器（Folio）"
+    },
+    "theme": "output"
+  },
+  "Q117": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a cover, an insert or a plate section on a different paper from the rest of the book?",
+      "es": "¿Cómo imprimo una cubierta, un encarte o un pliego de láminas en un papel distinto del resto del libro?",
+      "zh": "怎样让封面、插页或图版使用与全书不同的纸张？"
+    },
+    "index": {
+      "en": "Paper, changing it for some pages",
+      "es": "Papel, cambiarlo en algunas páginas",
+      "zh": "纸张，部分页面换用"
+    },
+    "theme": "page"
+  },
+  "Q118": {
+    "kind": "how",
+    "text": {
+      "en": "How do I preview a book's binding, cover, paper and lighting before it goes to print?",
+      "es": "¿Cómo veo la encuadernación, la cubierta, el papel y la luz de un libro antes de mandarlo a imprenta?",
+      "zh": "付印前怎样预览书的装订、封面、纸张和光照效果？"
+    },
+    "index": {
+      "en": "Binding and paper, previewing",
+      "es": "Encuadernación y papel, vista previa",
+      "zh": "装订与纸张，预览"
+    },
+    "theme": "output"
   }
 }

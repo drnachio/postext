@@ -19,7 +19,7 @@ const palette = {
   accent: '#2f5d50', // bottle green: kicker, rule, folios, and the cloth of the case
   rule: '#c9bfae', // the colophon's hairline
   muted: '#6d655c', // running heads and the colophon
-  cream: '#f4ecd8', // the book wove the pages are printed on (the 3D paper only)
+  cream: '#f7f0e1', // the book wove the pages are printed on (the 3D paper only)
 };
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
@@ -37,7 +37,7 @@ const folio = {
   binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
     coverColor: col('accent') }, // the case wraps the pages; boards a little larger
   surface: { type: 'walnut' },
-  lighting: { environment: 'lamp', intensity: 1.1, shadows: true },
+  lighting: { environment: 'studio', intensity: 1, shadows: true },
 };
 // #endregion
 
@@ -107,7 +107,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const FONTS = {
   Literata: ['400', '400i', '700'],
   Fraunces: ['400i', '600'],
-  'Work Sans': ['500', '600'],
+  'Work Sans': ['400', '500', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────

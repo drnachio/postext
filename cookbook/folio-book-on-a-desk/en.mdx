@@ -1,72 +1,54 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "A laid-out book on the desk, in 3D"
+summary: "createFolioFromDocument from the postext-folio package opens a laid-out chapter as a cloth-bound book on a walnut desk, styled by config.folio."
+plain: "The first chapter of a short novel, shown as a real book lying open on a desk. You turn its pages with the mouse, and the paper, cover and desk are chosen in the settings."
+description: "A trade-book chapter laid out with postext and opened in 3D with postext-folio: paper, binding, desk and light set in config.folio, in a minimal CodePen."
+question: "How do I show my laid-out document as a 3D book the reader turns by hand?"
+aliases: ["Folio", "postext-folio", "flipbook", "page flip", "3D book", "book preview", "turn the pages"]
+pageNotes: { "1": "The chapter opener: a small green kicker, the title The Last Crossing and a short rule, then the first page of justified text.", "2": "A verso with the author's name and the folio in the running head and an italic green subhead." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+The first chapter of *The Ferryman’s Ledger*, a short novel on a 129 × 198 mm page, opened as a book on a walnut desk. The case is bottle-green cloth, the pages are a bulky cream novel paper, and the reader takes the right-hand page by its edge and turns it, the leaf curling and casting its shadow on the page below. The text is set once with `buildDocument`; one call to the `postext-folio` package turns that layout into the book. Everything the book is made of (paper, binding, desk, light, the angle of the view) is part of the config, so the same document carries its look into the Sandbox’s Folio tab.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Say what the book is made of
 
-### 1 · The opener is a design, not a heading
+<Excerpt region="folio" />
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+`config.folio` is read by the 3D viewer and by nothing else: the layout, the canvas, the PDF and the HTML output ignore it, so changing the paper never moves a line. `bookWove` is a bulky novel paper, and 70 g/m² at its bulk makes a sheet about 112 µm thick; the viewer multiplies that by the page count for the depth of the page block. The cloth colour links to the palette's accent, the same green as the kicker and the folios.
 
-### 2 · Running heads know which page they are on
+### 2 · A quiet opener and running heads
+
+<Excerpt region="opener" />
+
+The chapter opens a third of the way down a recto, under a kicker taken from the heading's attributes. In 3D a sunk opener reads as it does in a printed novel: the white space at the head of the page is the first thing the reader sees when the case is opened.
 
 <Excerpt region="running-heads" />
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+### 3 · Open the document as a book
 
-### 3 · One accent, linked everywhere
-
-<Excerpt region="palette" />
-
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+The code is [the short answer](#the-short-answer) above. `createFolioFromDocument` takes a container and the laid-out document: it paints each page with `renderPageToCanvas` at the exact size of a page slot, only around the open spread, and fits the book into the container. The container needs a height of its own, or the book has no room. `textureBaseUrl` points at the photographed desks on postext.dev; without it the walnut is drawn with procedural maps.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### A paperback on oak in daylight
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+Change three settings and the same chapter is a softcover on a pale desk; nothing is laid out again.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
+-    coverColor: col('accent') }, // the case wraps the pages; boards a little larger
+-  surface: { type: 'walnut' },
+-  lighting: { environment: 'studio', intensity: 1, shadows: true },
++  binding: { type: 'paperback', cover: 'case', coverMaterial: 'paper',
++    coverColor: col('accent') },
++  surface: { type: 'oak' },
++  lighting: { environment: 'daylight', intensity: 1, shadows: true },
 ```
 
-## Pitfalls
+### Every leaf on another paper
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+<RecipeLink slug="paper-swatch-book">A swatch book</RecipeLink> prints each leaf on its own stock with `:::paper`, and <RecipeLink slug="folio-settings-bench">the settings bench</RecipeLink> changes every setting live with `setAppearance`.

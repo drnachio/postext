@@ -1,8 +1,7 @@
 // ═══ Postext Cookbook · Nº 101 · A swatch book, every leaf on its own paper ═══════════
 // https://postext.dev/en/cookbook/paper-swatch-book
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Crimson Pro, Libre Caslon Display, IBM Plex Sans Condensed (SIL OFL 1.1) ·
-// Needs postext ≥ 1.13.4
+// Fonts: Crimson Pro, Libre Caslon Display, IBM Plex Sans Cond. (OFL) · Needs postext ≥ 1.13.4
 //
 // A paper merchant's stock book: each leaf sits inside a :::paper fence that names its stock,
 // and postext-folio draws that leaf with the stock's shade, surface, stiffness and opacity.

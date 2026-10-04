@@ -1,37 +1,65 @@
 ---
-title: "Notes for a Cookbook Recipe"
-author: "The Postext contributors"
+title: "Six Knots"
+subtitle: "A pocket book for the boat and the garden"
+author: "Ellen Marsh"
 ---
 
-# A Page Worth Printing {kicker="Chapter one"}
+# Six Knots {style="cover" strap="A pocket book for the boat and the garden"}
 
-Every recipe in this cookbook starts from a page like this one. It is set in Source Serif 4 on a trade-book trim, with mirrored margins, running heads that know which side of the spread they are on, and a chapter opener that sinks the text a little below the head of the page. None of it is the engine's default look, and none of it should survive in your recipe unless it serves the publication you are building.
+# Before you tie {kicker="Introduction"}
 
-Replace this text with the real thing. A recipe is judged by its pages before anyone reads its code, so the sample document has to read like a publication: a named magazine, a chapter of a manual, a poem with its source, a report with real numbers in its tables. Write it yourself, or take it from the public domain and credit the edition you used.
+A knot is a way of making a rope hold onto something: another rope, a post, a ring, itself. There are thousands of them, and most of us need six. The six in this book will moor a boat, hang a hammock, tie down a load, join two lines and make a loop that will not slip, and every one of them can be untied again, which is half the point of a good knot.
 
-## What the sample must do
+Learn them with a piece of soft rope about an arm's length long, and tie each one ten times before you move on. Then tie it with your eyes shut. A knot you have to think about will fail you on a cold, wet evening, when the boat is moving and the rope is stiff.
 
-The sample exists to show one technique at its best. Give that technique room to work: if the recipe is about margin notes, write paragraphs that need glossing; if it is about tables that split, make the table long enough to split. Everything else on the page stays quiet and correct.
+Each knot has a standing part, the long end that takes the load, and a working end, the short end you tie with. When the instructions say *over* and *under*, they mean the working end passing over or under the standing part.
 
-- Write coherent prose with real headings, never repeated paragraphs or placeholder Latin.
-- Keep the sample under two and a half thousand words, and two to twelve pages long.
-- Quote every value in the frontmatter, even the numbers.
-- End each chapter on a paragraph, so the columns can close level.
+# The reef knot {kicker="Knot 1 · Joining"}
 
-:::callout{type="note" title="The card is the first impression"}
-The gallery shows one page or one spread of your recipe at the size of a playing card. Put the signature of the recipe on that page: a colour field, a picture, a large title. Text alone turns to grey at that size.
-:::
+The reef knot joins two ends of the same rope around a bundle: a parcel, a sail rolled on its boom, a bandage. Left over right and under, then right over left and under. If the two ends lie on the same side of the knot, you have tied it correctly; if they lie on opposite sides, you have a granny knot, which jams or slips.
 
-## Two languages, one design
+Never use a reef knot to join two different ropes that will take a load. It is a binding knot, not a bend, and under strain it can capsize into two loops that slide apart.
 
-The site speaks English and Spanish, and so should most recipes. Add a Spanish edition of the sample as its own file and the same script sets both: the language constant at the top of the script switches hyphenation, the names of figures and tables, and any label you pass through the translation helper.
+# The bowline {kicker="Knot 2 · Loops"}
 
-A recipe that only makes sense in one language can stay in that language. Say so in the write-up, and let the other edition of the page show the same document.
+The bowline makes a loop at the end of a rope that will neither slip nor jam. Make a small loop in the standing part, with the working end on top. Bring the end up through the loop, round behind the standing part, and back down through the loop. The old way to remember it: the rabbit comes out of the hole, goes round the tree, and goes back down the hole.
 
-## Before you ask for a review
+A bowline holds a mooring line on a post, a rope round a person's chest in a rescue, and the corner of a tarpaulin in a gale. However hard it has been pulled, you can break it open again by pushing the collar forward.
 
-Run the lint until it is silent, capture the pages, and look at them the way a reader would: at full size for the rhythm of the text, and at card size for the first impression. If a line is loose, rewrite it or let hyphenation help. If a page is nearly empty, the layout is telling you something about the length of the sample.
+# The clove hitch {kicker="Knot 3 · Hitches"}
+
+The clove hitch ties a rope to a post or a rail in a moment. Take two turns round the post, crossing the second over the first, and tuck the end under the second turn. It is quick to tie and quick to adjust, which makes it the knot for fenders on a boat and for the first turn of a lashing.
+
+It can work loose when the pull comes and goes, so on anything that matters add two half hitches round the standing part, or use a round turn instead.
+
+# The figure-eight {kicker="Knot 4 · Stoppers"}
+
+The figure-eight is a stopper: it sits at the end of a rope and stops it running out through a block, a cleat or a hole. Make a loop, pass the end round behind the standing part and down through the loop, and pull it snug. It looks like the number it is named after.
+
+Climbers tie it doubled, as a loop, and every sailor ties it in the ends of the sheets. Unlike a simple overhand knot, it can always be untied, even after a long day under strain.
+
+# The sheet bend {kicker="Knot 5 · Joining"}
+
+The sheet bend joins two ropes, even ropes of different thickness. Make a bight in the thicker rope. Pass the thinner end up through the bight, round behind both its parts, and under itself. For a wet or slippery line, take the end round twice: that is a double sheet bend, and it will not shake loose.
+
+It is the knot for lengthening a line that turned out too short, and for mending a net, where it is tied thousands of times.
+
+# The round turn {kicker="Knot 6 · Hitches"}
+
+A round turn and two half hitches will hold almost anything to a ring or a post, and it can be untied while the rope is under load. Take the working end twice round the post, then make two half hitches round the standing part, each one the same way.
+
+The round turn takes the strain, and the hitches only keep it in place. That is why it is the safest knot for tying a boat to a ring on the quay at the end of the day, and the last one in this book.
+
+# Looking after rope {kicker="Afterword"}
+
+Rope lasts for years if you treat it well. Rinse salt out of it in fresh water after a season on the boat, and dry it loosely coiled in the shade, never in a tight hank in the sun. Sunlight weakens synthetic fibre faster than any load.
+
+Seal the ends before they fray: whip them with waxed twine, or melt a synthetic end in a flame and roll it smooth between wet fingers. A rope that has been crushed, cut or burned along its length belongs in the garden, tying up beans, and no longer on the boat.
+
+Coil it the same way every time, and it will come off the coil without kinks when you need it in a hurry.
 
 :::paragraphs{style="colophon"}
-Set in Source Serif 4 and Source Sans 3 (SIL Open Font License) · Text: original, CC BY 4.0.
+Set in Source Serif 4 and Outfit (SIL Open Font License) · Text: original, CC BY 4.0.
 :::
+
+# Six Knots {style="back" strap="Tie them ten times each, then once more in the dark."}

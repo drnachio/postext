@@ -1,5 +1,5 @@
 {
-  "$comment": "Exported symbols recipes import (from postext, postext/worker and postext-pdf) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
+  "$comment": "Exported symbols recipes import (from postext, postext/worker, postext-pdf, postext-citeproc and postext-folio) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
   "buildDocument": {
     "slug": "configuration",
     "heading": {
@@ -414,6 +414,22 @@
       "en": "Citations and bibliography",
       "es": "Citas y bibliografía",
       "zh": "引用与参考文献"
+    }
+  },
+  "createFolioFromDocument": {
+    "slug": "configuration",
+    "heading": {
+      "en": "A 3D book (`postext-folio`)",
+      "es": "Un libro en 3D (`postext-folio`)",
+      "zh": "3D书本（`postext-folio`）"
+    }
+  },
+  "createFolio": {
+    "slug": "configuration",
+    "heading": {
+      "en": "A 3D book (`postext-folio`)",
+      "es": "Un libro en 3D (`postext-folio`)",
+      "zh": "3D书本（`postext-folio`）"
     }
   }
 }

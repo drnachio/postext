@@ -1,72 +1,58 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "A stapled zine with a card cover sheet"
+summary: "Two :::paper fences put a salmon card on the outer sheet of an eight-page zine, and postext-folio shows it saddle-stitched round newsprint pages."
+plain: "A small folded magazine about a river, with a thick coloured cover and thin newsprint inside. In the 3D viewer it lies closed on the desk and opens like the real thing."
+description: "An eight-page zine whose cover sheet is card and inner sheet newsprint: two :::paper fences, a saddle stitch and cover: 'pages' in config.folio, in one pen."
+question: "How do I print a cover, an insert or a plate section on a different paper from the rest of the book?"
+aliases: ["zine", "booklet", "saddle stitch", "stapled", "card cover", "newsprint", "cover sheet", "riso"]
+pageNotes: { "1": "The cover on white: the issue line, Low Tide in large blue grotesque, an italic strap and eleven blue tide lines of different lengths across the foot.", "3": "The dunlin feature: a blue kicker, a black title, a short blue rule and justified text.", "8": "The back cover: Low Tide in blue and a small line of capitals, centred." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+Issue 3 of *Low Tide*, a free zine about an estuary: eight pages of 140 × 200 mm, two sheets folded and stapled through the fold. The outer sheet, pages 1–2 and 7–8, is a salmon card; the inner sheet, pages 3–6, is cheap newsprint. The cover is printed in one riso blue on the bare card, with no colour field of its own, so on the flat pages below it prints on white, and in Folio it lies closed on the desk in its card colour until you turn it. The two papers are two fences in the Markdown, and the binding is three settings in `config.folio`.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Fence the outer sheet
 
-### 1 · The opener is a design, not a heading
+<Excerpt region="cover-sheet" />
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+A saddle-stitched booklet is a stack of folded sheets, so the cover sheet holds the first two and the last two pages. One fence holds pages 1–2, another pages 7–8, and the pages between them fall outside both, on the book's own paper. Each fence starts and ends on a new page, which here is the page the cover and the welcome need anyway.
 
-### 2 · Running heads know which page they are on
+### 2 · Newsprint, stapled, covers from the pages
 
-<Excerpt region="running-heads" />
+<Excerpt region="folio" />
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+`folio.paper` is the newsprint of every page outside a fence. `saddleStitch` folds the sheets round staples with no flat spine, and `cover: 'pages'` turns page 1 and page 8 as the covers. On a saddle stitch the cover turns like the other sheets, only stiffer, and a cover leaf that names its own stock (the card) is drawn on that stock.
 
-### 3 · One accent, linked everywhere
+### 3 · A cover in one ink
 
-<Excerpt region="palette" />
+<Excerpt region="covers" />
 
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+The cover is a heading style with zero margins and a full-page design: the issue line, the title in Bricolage Grotesque at 70 pt, the strap in Newsreader italic, and eleven tide lines whose lengths come from a seeded generator, so every run draws the same ones. Nothing paints the page's ground: the card does.
+
+### 4 · One opener for every piece
+
+<Excerpt region="features" />
+
+Each feature is a first-level heading in the `feature` style: a new page, a kicker from its attributes, the title and a short blue rule. Running the five pieces through one style keeps the inside of the zine to two typefaces and one accent.
+
+### 5 · Open it stapled
+
+The code is [the short answer](#the-short-answer) above. `createFolioFromDocument` reads the binding and the covers from `doc.config.folio` and each leaf's paper from `page.paper`. The pen warns when the page count is odd, because page 8 can be the back cover only when it falls on a verso.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### A heavier, white cover
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+Change both fences and the cover sheet is a 300 g white card; the inner pages stay on newsprint.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-:::paper{type=cardStock grammage=250 shade=#f2c9b4}
++:::paper{type=cardStock grammage=300 shade=#fbfaf6}
 ```
 
-## Pitfalls
+### A plain booklet
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+Leave the fences out and the cover is a sheet of the pages' newsprint, a little heavier. <RecipeLink slug="paper-swatch-book">The swatch book</RecipeLink> goes the other way and gives every leaf its own stock.

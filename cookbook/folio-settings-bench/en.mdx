@@ -1,72 +1,46 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "A bench for the Folio viewer's settings"
+summary: "A form of every config.folio setting drives one postext-folio viewer through setAppearance: paper, binding, covers, desk, light and tilt change in place."
+plain: "A small pocket book shown in 3D next to a panel of controls. Change the paper, the binding, the desk or the light and the book changes at once, without being set again."
+description: "Paper stock, weight, texture, binding, covers, desk, light and tilt, each a form field that restyles a postext-folio book with setAppearance, in one pen."
+question: "How do I preview a book's binding, cover, paper and lighting before it goes to print?"
+aliases: ["Folio settings", "setAppearance", "binding preview", "paper preview", "book mockup", "cover colour", "lighting", "desk texture"]
+pageNotes: { "1": "The front cover: a brick-red field to every edge, the title Six Knots in a cream geometric sans, an italic strap and the author's name at the foot.", "3": "A knot page: a small red kicker, the knot's name in a sans heading and two short justified paragraphs.", "10": "The back cover: the brick-red field with a centred italic line." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+*Six Knots*, a ten-page pocket book on a 110 × 160 mm trim, opened in Folio next to a panel with every setting of `config.folio`. Pick a stock and the leaves change colour, surface and stiffness; switch the binding from paperback to hardcover and a case grows round the block; choose the case instead of the printed covers, a cloth or leather material, a desk, a light, a tilt. The book is laid out once. Every change goes to the viewer with `setAppearance`, so no line moves and no page is painted again, and the settings appear under the form as the code to paste into `config.folio`.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Name the fields after the config
 
-### 1 · The opener is a design, not a heading
+<Excerpt region="form" />
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+Each field of the form is named by its path in `config.folio` (`paper.grammage`, `binding.cover`, `lighting.environment`), so one loop turns the form into the object the viewer takes: numbers from the sliders, booleans from the checkboxes, a `{ hex, model }` colour from the picker. The same object is the document's own `config.folio` when the pen builds it, so the Sandbox opens the book as the form starts.
 
-### 2 · Running heads know which page they are on
+### 2 · Covers the viewer can turn as boards
 
-<Excerpt region="running-heads" />
+<Excerpt region="covers" />
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+With `binding.cover: 'pages'` the first page is the front board and the last the back, when it falls on a verso. The back cover's heading style breaks to an even page, so the book always ends on a verso and both covers turn. Switch the form to *A case round the pages* and the same two pages turn as ordinary leaves inside a cloth case.
 
-### 3 · One accent, linked everywhere
+### 3 · Restyle the book in place
 
-<Excerpt region="palette" />
-
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+The code is [the short answer](#the-short-answer) above. `setAppearance({ folio })` replaces the document's settings and redraws the scene: paper thickness and stiffness, the case, the desk maps and the light. The pages keep their paintings, so a change lands in the next frame. A stock sets its own weight, which is why picking one moves the weight slider; `resetView()` brings the camera back after the reader orbits the book with a right-drag.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### Start from a hardcover in a cloth case
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+Change the form's defaults in `index.html`; the document and the Sandbox follow them.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
++        <option value="hardcover" selected>Hardcover</option><option value="paperback">Paperback</option>
 ```
 
-## Pitfalls
+### One book, its look in the config
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+<RecipeLink slug="folio-book-on-a-desk">A book on the desk</RecipeLink> writes the same settings once in `config.folio`, with no form, and <RecipeLink slug="paper-swatch-book">the swatch book</RecipeLink> sets a different paper on each leaf.
