@@ -1294,6 +1294,18 @@ interface ElementPlacement {
       <td>用斜体渲染行内<code>:ref</code>标签。</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>*…*</code>的排法：斜体；粗体并用<code>boldColor</code>；正体并用<code>italicColor</code>；或正体并在词上加线。<code>'auto'</code>在用阿拉伯字母书写的文档中为<code>'bold'</code>，其他文档中为<code>'italic'</code>。见<a href="#arabic-text">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>阿拉伯文元音符号：照原样排；全部去掉；或去掉但保留shadda。见<a href="#arabic-text">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -1607,6 +1619,15 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
 - **从右到左的文字**（阿拉伯文、希伯来文、波斯文、乌尔都文……）目前还不支持。没有双向算法：各行按从左到右的方向断行并对齐到左边距，每行显示的效果取决于它的绘制方式。在Canvas和PDF输出中，没有行内格式的左对齐行作为一整段文字绘制，由浏览器或PDF的字体引擎自行转为从右到左，因此全部由同一种从右到左文字组成的行可以正确阅读，但混有不同方向、数字或标点的行则不行。HTML输出，两端对齐、居中和右对齐的行，以及带行内格式的行，都是从左到右逐词绘制的：每个词本身读起来正确，但词的顺序与阅读顺序相反。`page.binding: 'right'`可以为这类书排出右装订的跨页，但处理不了其中的行。
 
 断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文。中文、日文和韩文不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+
+### 阿拉伯文
+
+以下四项设置服务于阿拉伯字母文本。对用其他文字书写的文档，它们都不起作用。
+
+- **元音符号与行距。** 标注元音的文本中，元音符号（fatḥa、kasra、shadda、tanwīn、短竖alif、《古兰经》符号）叠在字母上下，位于行距之中，而行距不会为它们增高。每个带元音符号的行都会记下笔画伸到多远（`VDTLine.markInk`），渲染器的栏裁剪会把每栏首行和末行的符号包含在内。某个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，构建会报告该段落（`arabicMarksExceedLeading`，显示在沙盒的检查面板中）。只比较上下相叠的词。部分标注元音的文本宜用约1.7–1.85 em的`lineHeight`，全部标注元音的诗句宜用1.9–2.1 em。
+- **强调。** 阿拉伯文字体没有斜体，所以在`locale`用阿拉伯字母书写的文档中，`*…*`默认排成粗体（`bodyText.emphasis: 'auto'`）。`'color'`把它排成正体并用`italicColor`，`'overline'`在词上加一条线，即阿拉伯文书籍中的khaṭṭ fawqī。该设置作用于所有用正文字体排的文本：段落、列表、引用块、段落样式、提示框正文、注释和标题。图注、表格单元格、目录和索引保留各自的斜体设置。无论选哪种，引擎都不会把阿拉伯字母排斜：斜体片段中的阿拉伯文词排成正体，其中的拉丁文词保持斜体。在这类文档中，引用块默认为正体。
+- **Tashkīl。** `bodyText.tashkil: 'strip'`从排版文本中去掉元音符号和《古兰经》符号，用于由标注元音的底本制作不标元音的版本：fatḥa、ḍamma、kasra及其tanwīn、sukūn、shadda、短竖alif（هٰذا变成هذا），以及U+0656–U+065F和U+06D6–U+06ED的符号。`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留（أ إ آ是字母，用组合符号输入时也一样）。源文本保留其符号；行、标题和目录不带符号排出，每个排出的字符仍对应它在源文本中的位置。
+- **脚注。** `footnotes.markerTemplate: '({n})'`用文档数字写出注码「(١)」，`numbering: 'page'`让编号每页重新开始，`noteNumberPosition: 'inline'`把注文自己的编号排在行内。分隔线和注文编号位于栏的起始一侧，在从右到左的书中即右侧。
 
 ### 段首孤行、段末孤行、孤字与不拆分规则
 
@@ -3005,6 +3026,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>行内注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>注释编号的写法，<code>{n}</code>代表按编号格式和文档数字写出的编号：<code>'({n})'</code>得到阿拉伯文书籍的带括号注码「(١)」。正文注码和注文开头的编号都按它写。不含<code>{n}</code>的模板按默认值处理。</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>注文开头编号的位置：上标，或以注文字号排在行内。<code>'auto'</code>跟随<code>markerPosition</code>。阿拉伯文书籍把正文注码排成上标，注文自己的编号排在行内。</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>

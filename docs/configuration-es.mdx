@@ -1297,6 +1297,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de párrafo.
       <td>Renderizar las etiquetas de <code>:ref</code> en línea en cursiva.</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Cómo se compone <code>*…*</code>: en cursiva, en la negrita y <code>boldColor</code>, en redonda con <code>italicColor</code>, o en redonda con una raya encima de las palabras. <code>'auto'</code> es <code>'bold'</code> en un documento escrito en alfabeto árabe e <code>'italic'</code> en cualquier otro. Véase <a href="#texto-árabe">Texto árabe</a>.</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>Signos vocálicos del árabe: como están escritos, quitados todos, o quitados salvo la shadda. Véase <a href="#texto-árabe">Texto árabe</a>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -1610,6 +1622,15 @@ Postext compone escrituras alfabéticas que se escriben de izquierda a derecha, 
 - **Las escrituras de derecha a izquierda** (árabe, hebreo, persa, urdu…) todavía no están soportadas. No hay algoritmo bidireccional: las líneas se cortan y se alinean como si el texto corriera de izquierda a derecha, contra el margen izquierdo, y lo que muestra cada línea depende de cómo se pinta. En la salida canvas y PDF, una línea alineada a la izquierda y sin formato en línea se dibuja como un solo tramo de texto, que el navegador o el motor tipográfico del PDF vuelven de derecha a izquierda por su cuenta, así que ahí una línea toda en una escritura de derecha a izquierda puede leerse bien, pero no una que mezcle direcciones, cifras o puntuación. La salida HTML, las líneas justificadas, centradas o alineadas a la derecha y las que llevan formato en línea se dibujan palabra a palabra de izquierda a derecha: cada palabra se lee bien, pero las palabras salen en orden de lectura invertido. `page.binding: 'right'` compone los pliegos de un libro así encuadernado por la derecha, pero no sus líneas.
 
 Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho y en chino. El chino, el japonés y el coreano se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
+
+### Texto árabe
+
+Cuatro ajustes sirven al texto en alfabeto árabe. Ninguno cambia un documento escrito en otra escritura.
+
+- **Signos vocálicos e interlineado.** Los signos vocálicos de un texto vocalizado (fatḥa, kasra, shadda, tanwīn, el alif volado, los signos coránicos) se apilan sobre y bajo las letras, en el interlineado, que no crece por ellos. Cada línea con signos anota hasta dónde llega su tinta (`VDTLine.markInk`), y el recorte de columna de los renderizadores incluye los signos de la primera y la última línea de cada columna. Cuando un signo sobre una palabra toca las letras o los signos que cuelgan bajo la palabra de encima, la composición avisa del párrafo (`arabicMarksExceedLeading`, en el panel Revisión del Sandbox). Solo se comparan palabras que están una sobre otra. El texto vocalizado en parte pide unos 1,7–1,85 em de `lineHeight`, y el verso vocalizado del todo 1,9–2,1 em.
+- **Énfasis.** La letra árabe no tiene cursiva, así que en un documento cuyo `locale` se escribe en alfabeto árabe `*…*` se compone por defecto en negrita (`bodyText.emphasis: 'auto'`). `'color'` lo compone en redonda con `italicColor`, y `'overline'` traza una raya encima de las palabras, el khaṭṭ fawqī de los libros árabes. El ajuste alcanza todo texto compuesto con las fuentes del cuerpo: párrafos, listas, citas, estilos de párrafo, cuerpo de los recuadros, notas y encabezados. Los pies, las celdas de tabla, el índice general y el índice analítico conservan sus propios ajustes de cursiva. Se elija lo que se elija, el motor nunca inclina letras árabes: las palabras árabes de un tramo en cursiva van en redonda y sus palabras latinas conservan la cursiva. En un documento así, las citas van en redonda por defecto.
+- **Tashkīl.** `bodyText.tashkil: 'strip'` quita los signos vocálicos y coránicos del texto que se compone, para una edición sin vocales hecha a partir de una fuente vocalizada: fatḥa, ḍamma, kasra y sus tanwīn, sukūn, shadda, el alif volado (هٰذا pasa a هذا) y los signos U+0656–U+065F y U+06D6–U+06ED. `'strip-vowels'` conserva la shadda, como la imprimen la mayoría de los libros modernos. La hamza y la madda se quedan (أ إ آ son letras, también tecleadas con signos combinantes). La fuente conserva sus signos; las líneas, los encabezados y el índice general se componen sin ellos, y cada carácter compuesto sigue apuntando a su lugar en la fuente.
+- **Notas al pie.** `footnotes.markerTemplate: '({n})'` escribe las llamadas «(١)» con las cifras del documento, `numbering: 'page'` las reinicia en cada página y `noteNumberPosition: 'inline'` pone sobre la línea el número de la nota. El filete separador y los números de nota quedan al principio de la columna, a la derecha en un libro de derecha a izquierda.
 
 ### Huérfanas, viudas, *runts* y reglas de cohesión
 
@@ -3008,6 +3029,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>Tamaño de una llamada en línea; <code>em</code> es el tamaño del texto que la rodea (<code>0.75em</code> es una reducción habitual). No afecta a una llamada volada.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>Cómo se escribe el número de una nota; <code>{n}</code> lo representa en el formato de numeración y las cifras del documento: <code>'({n})'</code> da las llamadas entre paréntesis de los libros árabes, «(١)». Escribe igual la llamada del texto y el número que abre la nota. Una plantilla sin <code>{n}</code> se lee como el valor por defecto.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Dónde va el número que abre la nota: volado, o sobre la línea al tamaño de la nota. <code>'auto'</code> sigue a <code>markerPosition</code>. Los libros árabes ponen volada la llamada del texto y sobre la línea el número de la nota.</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>

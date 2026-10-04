@@ -260,6 +260,32 @@
       }
     }
   },
+  "arabicMarksExceedLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Vowel marks crowd the next line",
+      "es": "Signos vocálicos pegados a la línea vecina",
+      "zh": "元音符号挤到相邻行"
+    },
+    "cause": {
+      "en": "A paragraph of vocalised Arabic sets its vowel marks (fatḥa, kasra, shadda, tanwīn…) in the leading, which never grows for them: where a mark over a word of one line reaches the letters or marks hanging under the word above it, the two lines touch.",
+      "es": "Un párrafo de árabe vocalizado pone sus signos vocálicos (fatḥa, kasra, shadda, tanwīn…) en el interlineado, que no crece por ellos: donde un signo sobre una palabra de una línea alcanza las letras o los signos que cuelgan bajo la palabra de encima, las dos líneas se tocan.",
+      "zh": "带元音符号的阿拉伯文段落把元音符号（fatḥa、kasra、shadda、tanwīn等）放在行距之中，而行距不会为它们增高：某行一个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，两行就挨在一起了。"
+    },
+    "fix": {
+      "en": "Raise `bodyText.lineHeight` (1.7–1.85 em for partly vocalised text, 1.9–2.1 em for fully vocalised verse), give the paragraph a paragraph style with more leading, or set `bodyText.tashkil: 'strip-vowels'` for an edition without vowels.",
+      "es": "Sube `bodyText.lineHeight` (1,7–1,85 em para texto vocalizado en parte, 1,9–2,1 em para verso vocalizado del todo), dale al párrafo un estilo de párrafo con más interlineado, o pon `bodyText.tashkil: 'strip-vowels'` para una edición sin vocales.",
+      "zh": "调大`bodyText.lineHeight`（部分标注元音的文本用1.7–1.85 em，全部标注元音的诗句用1.9–2.1 em），给该段落设一个行距更大的段落样式，或设`bodyText.tashkil: 'strip-vowels'`得到不标元音的版本。"
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Arabic text",
+        "es": "Texto árabe",
+        "zh": "阿拉伯文"
+      }
+    }
+  },
   "headingHierarchy": {
     "source": "sandbox",
     "label": {

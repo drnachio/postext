@@ -239,6 +239,8 @@ bodyText
 ├─ referenceColor    ColorValue      = boldColor     colour of inline :ref labels ("Fig. 1.7")
 ├─ referenceBold     boolean         true
 ├─ referenceItalic   boolean         false
+├─ emphasis          'auto'|'italic'|'bold'|'color'|'overline'   'auto'   how *…* is set; auto = bold for Arabic-script locales, else italic; Arabic letters are never slanted
+├─ tashkil           'keep'|'strip'|'strip-vowels'   'keep'      Arabic vowel marks out of the set text (strip-vowels keeps shadda)
 ├─ textAlign         'left'|'justify'|'center'|'right'   'justify'
 ├─ paragraphSpacing  boolean         false           true = one full grid line between paragraphs (no fractional option)
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
@@ -899,6 +901,8 @@ Notes cited with `[^id]` (document-format.md §10.4).
 | `numberFormat` | `'decimal'` | ≥ 1.11; any number-format spelling: `'lower-roman'`, `'circled-decimal'` / `'①'`, `'cjk-decimal'`, `'一'`…; circled past 50 → decimal |
 | `markerPosition` | `'auto'` | ≥ 1.11; `'superscript'` / `'inline'` (on the baseline, upright cell in vertical text); `'auto'` = inline for `circled-decimal`, else superscript. The note's own number follows |
 | `markerSize` | `1em` | ≥ 1.11; inline marker size, em = surrounding text (`0.75em` common) |
+| `markerTemplate` | `'{n}'` | `{n}` = the number in its format and the document digits; `'({n})'` → «(١)» for Arabic books; marker and note number alike |
+| `noteNumberPosition` | `'auto'` | `'superscript'` / `'inline'` for the note's own number; `'auto'` follows `markerPosition` |
 | `chapterEndAlign` | `'foot'` | `chapterEnd` only: `'foot'` = the notes that close a column sit at its foot; `'text'` = right under the text |
 | `fontSize` | `0.8em` | em/rem = body size; body family and weights |
 | `lineHeight` | `1.25em` | em = note size; notes are **off the baseline grid** (stack up from the column foot) |
@@ -1014,7 +1018,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
-give annotated text more leading), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
+give annotated text more leading), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json

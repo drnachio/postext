@@ -1297,6 +1297,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Render inline <code>:ref</code> labels in italics.</td>
     </tr>
     <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How <code>*…*</code> is set: in italics, in the bold face and <code>boldColor</code>, upright in <code>italicColor</code>, or upright with a rule over the words. <code>'auto'</code> is <code>'bold'</code> in a document written in Arabic script and <code>'italic'</code> in any other. See <a href="#arabic-text">Arabic text</a>.</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>Arabic vowel marks: set as written, all taken out, or taken out except the shadda. See <a href="#arabic-text">Arabic text</a>.</td>
+    </tr>
+    <tr>
       <td><code>textAlign</code></td>
       <td><code>'left' | 'justify'</code></td>
       <td><code>'justify'</code></td>
@@ -1610,6 +1622,15 @@ Postext sets alphabetic scripts written left to right, and Chinese across the pa
 - **Right-to-left scripts** (Arabic, Hebrew, Persian, Urdu…) are not supported yet. There is no bidirectional algorithm: lines are broken and aligned as if the text ran left to right, against the left margin, and what each line shows depends on how it is painted. In the canvas and PDF output a left-aligned line without inline formatting is drawn as one run of text, which the browser or the PDF's font engine turns right to left by itself, so there a line all in one right-to-left script can read correctly, but one that mixes directions, numbers or punctuation does not. The HTML output, justified, centred and right-aligned lines, and lines with inline formatting are drawn word by word from left to right: each word reads correctly, but the words come out in reverse reading order. `page.binding: 'right'` lays out right-bound spreads for such a book, but not its lines.
 
 Hyphenation patterns ship for eight languages (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); the built-in resource types and continuation strings exist in those eight and in Chinese. Chinese, Japanese and Korean are set without hyphenation. Any other language is hyphenated with the US English patterns, with a console warning, and gets the English strings. For such a document, set `hyphenation.enabled: false` and pass `resourceTypes` and the `tableStyle` continuation strings in its language.
+
+### Arabic text
+
+Four settings serve text in Arabic script. None changes a document written in another script.
+
+- **Vowel marks and leading.** The vowel marks of a vocalised text (fatḥa, kasra, shadda, tanwīn, the dagger alef, the Qurʾānic signs) stack over and under the letters, in the leading, which never grows for them. Each line that holds marks records how far their ink reaches (`VDTLine.markInk`), and the renderers' column clip takes in the marks of a column's first and last lines. When a mark over a word meets the letters or marks hanging under the word above it, the build reports the paragraph (`arabicMarksExceedLeading`, in the Sandbox's Checks panel). Only words standing over each other are compared. Partly vocalised text wants about 1.7–1.85 em of `lineHeight`, fully vocalised verse 1.9–2.1 em.
+- **Emphasis.** Arabic type has no italics, so in a document whose `locale` is written in Arabic script `*…*` is set in bold by default (`bodyText.emphasis: 'auto'`). `'color'` sets it upright in `italicColor`, and `'overline'` draws a rule over the words, the khaṭṭ fawqī of Arabic books. The setting reaches every text set in the body's faces: paragraphs, lists, blockquotes, paragraph styles, callout bodies, notes and headings. Captions, table cells, the contents and the index keep their own italic settings. Whatever is chosen, the engine never slants Arabic letters: the Arabic words of a run set in italics stand upright and its Latin words keep their italics. A blockquote is upright by default in such a document.
+- **Tashkīl.** `bodyText.tashkil: 'strip'` takes the vowel and Qurʾānic marks out of the text the layout sets, for an unvocalised edition made from a vocalised source: fatḥa, ḍamma, kasra and their tanwīn, sukūn, shadda, the dagger alef (هٰذا becomes هذا) and the marks U+0656–U+065F and U+06D6–U+06ED. `'strip-vowels'` keeps the shadda, as most modern books print it. Hamza and madda stay (أ إ آ are letters, also when typed with combining marks). The source keeps its marks; the lines, the headings and the contents are set without them, and every character set still maps to its place in the source.
+- **Footnotes.** `footnotes.markerTemplate: '({n})'` writes the markers «(١)» in the document digits, `numbering: 'page'` starts them again on every page, and `noteNumberPosition: 'inline'` sets the note's own number on the line. The separator rule and the note numbers stand at the start of the column, on the right in a right-to-left book.
 
 ### Orphans, widows, runts, and keep-together rules
 
@@ -3008,6 +3029,18 @@ interface FootnotesConfig {
       <td><code>Dimension</code></td>
       <td><code>1em</code></td>
       <td>Size of an inline marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'{n}'</code></td>
+      <td>How a note's number is written, <code>{n}</code> standing for it in the number format and the document's digits: <code>'({n})'</code> gives the parenthesised markers of Arabic books, «(١)». It writes the marker in the text and the number that opens the note alike. A template without <code>{n}</code> is read as the default.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Where the number that opens the note stands, raised or on the line at the note size. <code>'auto'</code> follows <code>markerPosition</code>. Arabic books raise the marker in the text and set the note's own number on the line.</td>
     </tr>
     <tr>
       <td><code>chapterEndAlign</code></td>
