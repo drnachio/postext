@@ -70,6 +70,11 @@ export interface InlineSpan {
    *  reduced size (see `SMALL_CAPS_SIZE_RATIO`), capitals keep the full
    *  size. */
   smallCaps?: boolean;
+  /** Set by the measurer on the Arabic words of a run whose face is
+   *  slanted even when not italic (a style whose base face is italic):
+   *  measured and painted in that face with the slant taken off
+   *  (`uprightArabic.ts`). */
+  upright?: true;
   /** Tate-chu-yoko (`:tcy[12]`): in vertical text
    *  (`layout.writingMode: 'vertical-rl'`) the span's characters are set
    *  side by side in one upright cell of one em, squeezed across when

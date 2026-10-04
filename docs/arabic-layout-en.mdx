@@ -167,7 +167,7 @@ Each line that holds marks records how far their ink reaches above and below the
 
 ## Emphasis
 
-Arabic type has no italics, and a slanted Arabic face is a distortion. In an Arabic-script document `*…*` is set in the bold face by default (`bodyText.emphasis: 'auto'`); `'color'` sets it upright in `italicColor`, and `'overline'` draws a rule over the words, the overline of older Arabic books. Whatever is chosen, the engine never slants Arabic letters: in a run set in italics the Arabic words stand upright and the Latin words keep their italics, so `*Kitāb al-ʿIbar كتاب العبر*` prints the transliteration in italics and the Arabic title upright. Blockquotes are upright by default in an Arabic book. Captions, table cells, the contents and the index keep their own italic settings.
+Arabic type has no italics, and a slanted Arabic face is a distortion. In an Arabic-script document `*…*` is set in the bold face by default (`bodyText.emphasis: 'auto'`); `'color'` sets it upright in `italicColor`, and `'overline'` draws a rule over the words, the overline of older Arabic books. Whatever is chosen, the engine never slants Arabic letters: in a run set in italics the Arabic words stand upright and the Latin words keep their italics, so `*Kitāb al-ʿIbar كتاب العبر*` prints the transliteration in italics and the Arabic title upright. Blockquotes are upright by default in an Arabic book; a style whose own face is italic (`blockquote.italic: true`, a heading level set in italics) sets its Arabic words upright too, in its face without the slant, and its Latin words in italics. Captions, table cells, the contents and the index keep their own italic settings.
 
 ```ts
 bodyText: { emphasis: 'overline', italicColor: { hex: '#8a1c1c', model: 'hex' } }
@@ -440,7 +440,7 @@ The chapters start with `:::numbering{format="abjad" startAt=1}` before the intr
 - **Block direction** is set on headings and containers; a plain paragraph needs a `:::paragraphs{dir=…}` around it, and there is no `{dir=auto}`.
 - **Opposite-direction islands.** In a block set against the book's direction, captions, contents and index lines follow the document's direction, and a box's icon, marker column and title stay on the flow's start side.
 - **Design text** (running heads, openers, box titles) resolves the bidirectional order line by line, and a text that holds an Arabic letter loses its letter-spacing whole, its Latin words included.
-- **Italic styles.** A style whose own face is italic (`blockquote.italic: true`, a heading level set in italics) still slants Arabic letters; only `*…*` emphasis is turned upright.
+- **Italic design text.** A running head or an opener text set in italics still slants Arabic letters.
 - **Vowel marks** may reach past the edge of a box or a table cell, whose clip does not grow for them; `tashkil` leaves the marks of captions, table cells and design text.
 - **Numbers.** Citation numbers print in European digits; ordinal words are written in the nominative, definite form that headings use.
 - **Index**: ة is filed under ه, and names are not sorted past ابن or أبو; there are no rhyme or root indexes.

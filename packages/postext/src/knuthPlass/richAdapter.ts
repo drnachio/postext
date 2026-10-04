@@ -43,6 +43,9 @@ interface RichToken {
   baselineShift?: number;
   /** An inline footnote marker's own font (see `measure/rich.ts`). */
   markerFont?: string;
+  /** The unslanted face of Arabic words in a slanted style (see
+   *  `measure/rich.ts`). */
+  faceFont?: string;
   /** One of a subscript and a superscript set over each other (see
    *  `stackedScriptPairs` in `measure/rich.ts`): the `first` has width 0,
    *  the `second` the pair's advance. */
@@ -294,6 +297,7 @@ export function reconstructRichLines(
           ...(token.labelTab ? { labelTab: true as const } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
+          ...(token.faceFont && !token.script ? { fontString: token.faceFont } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),
           ...(token.tcy ? { tcy: true as const } : {}),

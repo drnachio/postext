@@ -167,7 +167,7 @@ Cada línia amb signes anota fins on arriba la seva tinta per damunt i per daval
 
 ## Èmfasi
 
-La lletra àrab no té cursiva, i un tipus àrab inclinat és una deformació. En un document escrit en alfabet àrab, `*…*` es compon per defecte en negreta (`bodyText.emphasis: 'auto'`); `'color'` el compon en rodona amb `italicColor`, i `'overline'` traça una ratlla damunt de les paraules, el sobreratllat dels llibres àrabs antics. Es triï el que es triï, el motor no inclina mai lletres àrabs: en un tram en cursiva les paraules àrabs van en rodona i les llatines conserven la cursiva, de manera que `*Kitāb al-ʿIbar كتاب العبر*` imprimeix la transliteració en cursiva i el títol àrab en rodona. En un llibre àrab, les cites van en rodona per defecte. Els peus, les cel·les de taula, l'índex general i l'índex analític conserven els seus propis ajustos de cursiva.
+La lletra àrab no té cursiva, i un tipus àrab inclinat és una deformació. En un document escrit en alfabet àrab, `*…*` es compon per defecte en negreta (`bodyText.emphasis: 'auto'`); `'color'` el compon en rodona amb `italicColor`, i `'overline'` traça una ratlla damunt de les paraules, el sobreratllat dels llibres àrabs antics. Es triï el que es triï, el motor no inclina mai lletres àrabs: en un tram en cursiva les paraules àrabs van en rodona i les llatines conserven la cursiva, de manera que `*Kitāb al-ʿIbar كتاب العبر*` imprimeix la transliteració en cursiva i el títol àrab en rodona. En un llibre àrab, les cites van en rodona per defecte; un estil la font del qual ja és cursiva (`blockquote.italic: true`, un nivell de títol en cursiva) compon també en rodona les seves paraules àrabs, en la seva font sense la inclinació, i en cursiva les llatines. Els peus, les cel·les de taula, l'índex general i l'índex analític conserven els seus propis ajustos de cursiva.
 
 ```ts
 bodyText: { emphasis: 'overline', italicColor: { hex: '#8a1c1c', model: 'hex' } }
@@ -440,7 +440,7 @@ Els capítols comencen amb `:::numbering{format="abjad" startAt=1}` abans de la 
 - **La direcció de bloc** es fixa en títols i contenidors; un paràgraf solt necessita un `:::paragraphs{dir=…}` al voltant, i no hi ha `{dir=auto}`.
 - **Illes de direcció contrària.** En un bloc compost en direcció contrària a la del llibre, els peus i les línies de l'índex general i de l'índex analític segueixen la direcció del document, i la icona, la columna de marca i el títol d'un requadre es queden al costat d'inici del flux.
 - **El text dels dissenys** (capçaleres, obertures, títols de requadre) resol l'ordre bidireccional línia a línia, i un text que conté una lletra àrab perd sencer el seu espaiat entre lletres, també a les paraules llatines.
-- **Estils en cursiva.** Un estil la font del qual ja és cursiva (`blockquote.italic: true`, un nivell de títol compost en cursiva) continua inclinant les lletres àrabs; només l'èmfasi `*…*` passa a rodona.
+- **Textos de disseny en cursiva.** Una capçalera o un text de portadella compostos en cursiva continuen inclinant les lletres àrabs.
 - **Els signes vocàlics** poden sobresortir de la vora d'un requadre o d'una cel·la de taula, el retall dels quals no creix per ells; `tashkil` deixa els signes dels peus, les cel·les de taula i el text dels dissenys.
 - **Números.** Els números de cita s'imprimeixen en xifres europees; els ordinals en lletres s'escriuen en la forma determinada i en nominatiu que fan servir els títols.
 - **Índex analític**: ة s'ordena sota ه, i els noms no s'ordenen saltant ابن o أبو; no hi ha índexs de rimes ni d'arrels.

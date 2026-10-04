@@ -1,5 +1,5 @@
 import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
-import { uprightArabicSpans } from '../uprightArabic';
+import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
 import type { InlineSpan } from '../parse';
@@ -69,6 +69,10 @@ export interface RichToken {
   script?: 'sup' | 'sub';
   scriptFont?: string;
   baselineShift?: number;
+  /** The Arabic words of a slanted style set upright (`InlineSpan.upright`):
+   *  the face they are measured and painted in, the span's with its slant
+   *  taken off. */
+  faceFont?: string;
   /** An inline footnote marker at a size of its own
    *  (`footnotes.markerSize`): the font it is measured and painted with,
    *  on the baseline. */
@@ -238,20 +242,21 @@ export function stackedScriptPairs(scripts: readonly ('sup' | 'sub' | undefined)
 /** Font a token is measured with: its span font, or the script font of a
  *  superscript / subscript. */
 function tokenFont(
-  t: { bold: boolean; italic: boolean; scriptFont?: string },
+  t: { bold: boolean; italic: boolean; scriptFont?: string; faceFont?: string },
   normalFont: string,
   boldFont: string,
   italicFont: string,
   boldItalicFont: string,
 ): string {
-  return t.scriptFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  return t.scriptFont ?? t.faceFont ?? pickSpanFont(t.bold, t.italic, normalFont, boldFont, italicFont, boldItalicFont);
 }
 
 /** The script, small-caps and Chinese-mark fields a token derived from
  *  another (a split, a hyphenated head) carries on. */
-function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'smallCaps' | 'cjkMarks' | 'inserted'> {
+function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'inserted'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
+    ...(t.faceFont ? { faceFont: t.faceFont } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
     ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
     ...(t.inserted ? { inserted: true } : {}),
@@ -1011,6 +1016,7 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.labelTab ? { labelTab: true as const } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
+    ...(t.faceFont && !t.script ? { fontString: t.faceFont } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
   } as PendingSegment;
@@ -1080,14 +1086,18 @@ function tokenizeSpans(
   // a joining script takes none: the renderers paint it untracked too.
   const track = (text: string): number => (letterSpacingPx === 0 ? 0 : wordLetterSpacing(text, letterSpacingPx) * graphemeCount(text));
   /** The script fields of a span's tokens (font at the script size, shift). */
-  const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift'> => {
-    if (!span.script) return {};
-    const base = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
-    const m = scriptMetrics(base, span.script);
+  // The span's own face: its style's, unslanted for the Arabic words of a
+  // slanted style (`uprightArabic.ts`).
+  const faceOf = (span: InlineSpan): string => {
+    const face = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    return span.upright ? uprightFace(face) : face;
+  };
+  const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont'> => {
+    if (!span.script) return span.upright ? { faceFont: faceOf(span) } : {};
+    const m = scriptMetrics(faceOf(span), span.script);
     return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
   };
-  const spanFont = (span: InlineSpan): string =>
-    scriptFieldsOf(span).scriptFont ?? pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
+  const spanFont = (span: InlineSpan): string => scriptFieldsOf(span).scriptFont ?? faceOf(span);
 
   for (const span of spans) {
     const spanBase = spanStart;
@@ -1272,7 +1282,8 @@ function joinStyledRuns(
       italic: dominant.italic,
       ...(parts[0]!.captionLabel ? { captionLabel: true } : {}),
       kind: 'text',
-      width: textWidth(text, pickSpanFont(dominant.bold, dominant.italic, normalFont, boldFont, italicFont, boldItalicFont), false),
+      width: textWidth(text, tokenFont(dominant, normalFont, boldFont, italicFont, boldItalicFont), false),
+      ...(dominant.faceFont ? { faceFont: dominant.faceFont } : {}),
       ...(runs.length > 1 ? { runs } : {}),
       ...(parts[parts.length - 1]!.dashJoin ? { dashJoin: true } : {}),
     };
@@ -1542,7 +1553,7 @@ function measureRichText(
   // with it, read against the whole paragraph (#222).
   if (measuringVertically()) spans = sidewaysNumberSpans(spans, getMeasureUprightDigits(), getMeasureRegion());
   // Arabic letters are never slanted (#376, `uprightArabic.ts`).
-  spans = uprightArabicSpans(spans, italicFont, boldItalicFont);
+  spans = uprightArabicSpans(spans, italicFont, boldItalicFont, normalFont, boldFont);
   // Chinese, Japanese or Korean text: its own composer, which breaks
   // between characters under the document's line-break rules and spreads
   // justified lines between them — also text with no two CJK letters in a

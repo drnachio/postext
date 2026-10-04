@@ -4,7 +4,7 @@ import { resolveAllConfig } from '../../pipeline/config';
 import { collectConfigWarnings } from '../../configWarnings';
 import { stripConfigDefaults } from '../../defaults';
 import { resolveBodyTextConfig } from '../../defaults/bodyText';
-import { uprightArabicSpans } from '../../uprightArabic';
+import { uprightArabicSpans, uprightFace } from '../../uprightArabic';
 import type { InlineSpan } from '../../parse';
 import type { PostextConfig } from '../../types';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../vdt';
@@ -178,5 +178,58 @@ describe('Arabic letters are never slanted', () => {
     const p = paragraphs(doc)[0]!;
     expect(p.italicFontString).toMatch(/italic/);
     expect(italicText(p)).toBe('BETA');
+  });
+
+  // #401: a style whose base face is italic slants its plain runs too.
+  it('marks the Arabic words of a run whose plain face is slanted upright', () => {
+    const NORMAL = 'italic 400 16px Amiri';
+    const BOLD = 'italic 700 16px Amiri';
+    const plain = (text: string): InlineSpan => ({ text, bold: false, italic: false });
+    // The flipped faces of an italic blockquote: `*…*` is upright already.
+    const out = uprightArabicSpans([plain('ALPHA كتاب BETA'), span('قول')], '400 16px Amiri', '700 16px Amiri', NORMAL, BOLD);
+    expect(out.map((s) => [s.text, s.italic, s.upright ?? false])).toEqual([
+      ['ALPHA ', false, false],
+      ['كتاب ', false, true],
+      ['BETA', false, false],
+      ['قول', true, false],
+    ]);
+    // Emphasis in colour in an italic style: every face slanted, the italic
+    // run keeps its flag and is marked too.
+    const colour = uprightArabicSpans([span('كتاب X')], NORMAL, BOLD, NORMAL, BOLD);
+    expect(colour.map((s) => [s.text, s.italic, s.upright ?? false])).toEqual([['كتاب ', true, true], ['X', true, false]]);
+    expect(uprightFace('italic 700 16px "Noto Naskh Arabic"')).toBe('700 16px "Noto Naskh Arabic"');
+    expect(uprightFace('700 16px Amiri')).toBe('700 16px Amiri');
+  });
+
+  it('sets Arabic upright in an italic blockquote and an italic heading', () => {
+    const doc = buildDocument(
+      { markdown: '# عنوان Title\n\n> قال ALPHA إن *كتاب BETA* جميل' },
+      config('ar', { headings: { levels: [{ level: 1, italic: true }] } }, { blockquote: { italic: true } }),
+    );
+    const quote = doc.blocks.find((b) => b.type === 'blockquote')!;
+    expect(quote.fontString).toMatch(/^italic/);
+    const segs = segmentsOf(quote).filter((s) => s.kind === 'text');
+    const face = (t: string) => { const seg = segs.find((s) => s.text === t)!; return seg.fontString ?? (seg.italic ? quote.italicFontString : quote.fontString); };
+    // Arabic words in the quote's face, unslanted; the Latin word keeps
+    // the quote's italics. `*…*` is bold (the Arabic default) and slanted
+    // with the quote: its Arabic word is bold and upright.
+    expect(face('قال')).toBe(uprightFace(quote.fontString!));
+    expect(face('قال')).not.toMatch(/italic/);
+    expect(face('ALPHA')).toMatch(/^italic/);
+    expect(face('كتاب')).toBe(uprightFace(quote.italicFontString!));
+    expect(face('كتاب')).toMatch(/^700/);
+    expect(face('BETA')).toBe(quote.italicFontString);
+    const heading = doc.blocks.find((b) => b.type === 'heading')!;
+    const hsegs = segmentsOf(heading).filter((s) => s.kind === 'text');
+    const arabic = hsegs.find((s) => s.text.includes('عنوان'))!;
+    expect(heading.fontString).toMatch(/^italic/);
+    expect(arabic.fontString).toBe(uprightFace(heading.fontString!));
+    expect(hsegs.find((s) => s.text.includes('Title'))!.fontString).toBeUndefined();
+  });
+
+  it('leaves an italic quote with no Arabic as it was', () => {
+    const doc = buildDocument({ markdown: '> ALPHA BETA' }, config('en', {}, { blockquote: { italic: true } }));
+    const quote = doc.blocks.find((b) => b.type === 'blockquote')!;
+    expect(segmentsOf(quote).some((s) => s.fontString !== undefined)).toBe(false);
   });
 });
