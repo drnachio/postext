@@ -4112,7 +4112,10 @@ function placeDocumentPass(
     let idx = leadIdx + 1;
     while (idx < contentBlocks.length && isMarkerBlock(contentBlocks[idx]!)) idx++;
     const raw = contentBlocks[idx];
-    if (!raw || raw.type !== 'listItem') return true;
+    // A poem (#378) after its introducer: its first bayts, by the
+    // paragraph rules.
+    const verse = raw?.verse !== undefined;
+    if (!raw || (raw.type !== 'listItem' && !verse)) return true;
     const item = measureContentBlock(raw, idx, width, ctx);
     if (!item) return true;
     const lines = item.measured.lines.length;
@@ -4121,10 +4124,10 @@ function placeDocumentPass(
     if (fit < 1) return false;
     const body = resolved.bodyText;
     return chooseParagraphSplit(lines, fit, {
-      avoidOrphans: body.avoidOrphans && body.avoidOrphansInLists,
+      avoidOrphans: body.avoidOrphans && (verse || body.avoidOrphansInLists),
       orphanMinLines: body.orphanMinLines,
       orphanPenalty: body.orphanPenalty,
-      avoidWidows: body.avoidWidows && body.avoidWidowsInLists,
+      avoidWidows: body.avoidWidows && (verse || body.avoidWidowsInLists),
       widowMinLines: body.widowMinLines,
       widowPenalty: body.widowPenalty,
       slackWeight: body.slackWeight,
@@ -4699,6 +4702,10 @@ function placeDocumentPass(
       && resolved.bodyText.keepColonWithList
       && nextIsListItem
       && /[:：︰﹕]\s*$/.test(contentBlock.text);
+    // A poem (#378) after this paragraph, which introduces it («فأنشد
+    // يقول:»): see the lead-in rule below.
+    const nextIsVerse = vdtType === 'paragraph' && contentBlock.verse === undefined
+      && nextBlock?.type === 'paragraph' && nextBlock.verse !== undefined;
 
     while (remainingLines.length > 0) {
       enterBand(blockIdx, partIndex);
@@ -5042,20 +5049,30 @@ function placeDocumentPass(
       // The lines left here keep the widow minimum; with fewer, a paragraph
       // that opens here moves on whole, and one already running on from
       // the column before stays (it cannot do better anywhere).
+      // A poem (#378) is kept with the paragraph that introduces it the
+      // same way: when its first bayts cannot start under the paragraph's
+      // last line (by the orphan and widow rules a poem is split by), that
+      // line goes on with them.
+      const nextIsFormula = resolved.math.keepWithLeadIn && contentBlocks[blockIdx + 1]?.type === 'mathDisplay';
       if (
-        resolved.math.keepWithLeadIn
+        (nextIsFormula || nextIsVerse)
         && vdtType === 'paragraph'
-        && contentBlocks[blockIdx + 1]?.type === 'mathDisplay'
         && totalRemainHeight <= effectiveAvailable + FIT_EPS
       ) {
-        const formula = measureContentBlock(contentBlocks[blockIdx + 1]!, blockIdx + 1, curCol.bbox.width, blockMeasureCtx);
-        const formulaHeight = formula ? (formula.measured.lines[0]?.bbox.height ?? formula.measured.totalHeight) : 0;
-        const gap = Math.max(style.marginBottomPx, formula?.kind.style.marginTopPx ?? 0);
         const usedHeight = (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
         // As the plain pass saw it: room balancing added above is not room
         // the formula lost.
         const availableAfter = curCol.bbox.height - (usedHeight + totalRemainHeight) + (balanceExtraInColumn.get(curCol) ?? 0);
-        if (formula && formulaHeight > 0 && availableAfter + FIT_EPS < gap + formulaHeight) {
+        let goesOn: boolean;
+        if (nextIsFormula) {
+          const formula = measureContentBlock(contentBlocks[blockIdx + 1]!, blockIdx + 1, curCol.bbox.width, blockMeasureCtx);
+          const formulaHeight = formula ? (formula.measured.lines[0]?.bbox.height ?? formula.measured.totalHeight) : 0;
+          const gap = Math.max(style.marginBottomPx, formula?.kind.style.marginTopPx ?? 0);
+          goesOn = !!formula && formulaHeight > 0 && availableAfter + FIT_EPS < gap + formulaHeight;
+        } else {
+          goesOn = !firstListItemStarts(blockIdx, availableAfter - style.marginBottomPx, curCol.bbox.width, blockMeasureCtx);
+        }
+        if (goesOn) {
           const minKeep = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
           const splitAt = remainingLines.length - 1;
           if (splitAt >= minKeep) {
@@ -5430,6 +5447,12 @@ function placeDocumentPass(
             }
             continue;
           }
+        }
+        // A poem's bayt set staggered over two lines (or more) stays in one
+        // column (#378): the cut goes before it — in an empty column, which
+        // the poem cannot leave, after its first line at least.
+        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameBayt(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
+          choice = { splitAt: choice.splitAt - 1, demerit: choice.demerit };
         }
         if (choice.splitAt > 0) {
           // Consume spacing (negative: a container margin pulling the block up)
@@ -6318,4 +6341,10 @@ function* buildDocumentBalanced(
   best.doc.iterationCount = passCount;
   best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
   return best.doc;
+}
+
+/** Whether two lines set one bayt of a poem (`VDTLine.verse`), which a
+ *  column never cuts. */
+function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
+  return a?.verse !== undefined && b?.verse !== undefined && a.verse.bayt === b.verse.bayt;
 }

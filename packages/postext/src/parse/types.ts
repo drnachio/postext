@@ -14,9 +14,18 @@ export type ContentBlockType =
  *  `flag` becomes `{ flag: '' }`. */
 export type DirectiveAttrs = Record<string, string>;
 
+/** A `:::verse` poem (#378): one bayt per source line, its hemistichs (the
+ *  ṣadr, then the ʿajuz) split at `||` (or a spaced `\\`, the Wikisource
+ *  convention); a line without one is a single hemistich, centred. */
+export interface VerseInfo {
+  /** The fence's attributes as written (`gap`, `width`, `align`,
+   *  `ornament`, `style`, `dir`); `pipeline/verse.ts` reads them. */
+  attrs: DirectiveAttrs;
+}
+
 /** Recognized directive names. Unknown names are not parsed as directives —
  *  they fall through to the paragraph branch and surface via warnings. */
-export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references';
+export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' | 'toc' | 'index' | 'bibliography' | 'references' | 'verse';
 
 /** Recognized fenced-container names. A container opens with a
  *  `:::name{attrs}` line and closes with a bare `:::` line; the blocks in
@@ -460,6 +469,12 @@ export interface ContentBlock {
   directiveName?: DirectiveName;
   /** For `directive` blocks: parsed attributes. */
   directiveAttrs?: DirectiveAttrs;
+  /** For a `:::verse` block (#378): the poem's fence attributes. The
+   *  block's `type` is `'paragraph'`; its text holds the hemistichs, a tab
+   *  (`\t`) where a bayt's two hemistichs meet (the source's `||`) and a
+   *  line feed (`\n`) between bayts, so the plain text and the source map
+   *  read the poem as written (see `pipeline/verse.ts`). */
+  verse?: VerseInfo;
   /** For a `:::references` block (#268): its body as written — BibTeX,
    *  CSL-JSON or CSL-YAML — up to the closing `:::`, not parsed as
    *  Markdown. */

@@ -2,6 +2,7 @@ export type {
   ContentBlockType,
   DirectiveName,
   DirectiveAttrs,
+  VerseInfo,
   ContainerName,
   RefCase,
   RefStyle,

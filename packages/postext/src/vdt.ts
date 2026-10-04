@@ -625,6 +625,18 @@ export interface VDTLine {
    *  out. The line's `bbox.width` counts them, and its spaces take only
    *  what they leave of the slack. Absent when there are none. */
   kashida?: number;
+  /** A line of a `:::verse` poem (#378): which bayt of the poem it sets
+   *  (0-based) and what of it: `'bayt'`, the whole bayt, its ṣadr on the
+   *  start side and its ʿajuz on the end side with the gap between them
+   *  (a `space` segment flagged `labelTab`, whose `text` is the tab the
+   *  plain text has there), each hemistich set to the poem's common width;
+   *  `'sadr'` and `'ajuz'`, a bayt too wide for that set staggered on two
+   *  lines or more, the ṣadr flush with the start side and the ʿajuz with
+   *  the end; `'single'`, a line of one hemistich, centred. The widths of
+   *  the line's segments are final (the block is set flush left): renderers
+   *  paint them as they are. A column or page never breaks between two
+   *  lines of one bayt. Absent on any other line. */
+  verse?: { bayt: number; part: 'bayt' | 'sadr' | 'ajuz' | 'single' };
 }
 
 // ---------------------------------------------------------------------------

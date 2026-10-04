@@ -24,6 +24,7 @@ import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type Block
 import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
 import { kashidaMeasureOptions } from '../measure/kashida';
+import { measureVerse } from './verse';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
@@ -290,6 +291,28 @@ export function measureContentBlock(
     measureFirstLineIndent,
     measureHangingIndent,
   } = computeMeasureViewport(columnWidth, style, listBullet);
+
+  // A poem (#378): its bayts are laid out by `pipeline/verse.ts`, each
+  // hemistich measured on its own; none of the paragraph's levers apply.
+  if (contentBlock.verse) {
+    const direction = contentBlock.direction ?? getMeasureDirection();
+    const measured = measureVerse({
+      contentBlock,
+      style,
+      measureMaxWidth,
+      dpi: resolved.page.dpi,
+      minWordSpacing: resolved.bodyText.minWordSpacing,
+      kashida: kashidaMeasureOptions(resolved.bodyText, style.fontString, style.fontSizePx),
+      direction,
+      frameDirection: getMeasureDirection(),
+      ...(cache ? { cache } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    if (lineXShift > 0) for (const line of measured.lines) shiftLineX(line, lineXShift);
+    const linked = { ...measured, lines: linkSegments(measured.lines, contentBlock.spans) };
+    const { prefixLen, absoluteSourceMap } = stampSourceRanges(linked, rawBlock, contentBlock, bodyOffset, ctx.source);
+    return { kind, contentBlock, measured: linked, prefixLen, absoluteSourceMap };
+  }
 
   // First-paragraph-after-heading: typographic convention used in many
   // scientific publications and book styles where the paragraph that

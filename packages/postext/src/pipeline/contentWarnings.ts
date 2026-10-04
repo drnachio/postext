@@ -264,6 +264,13 @@ export function collectContentWarnings(
         break;
       }
       case 'paragraph': {
+        // A poem's `{style=…}` names a paragraph style (#378): its fence
+        // line is the range.
+        const verseStyle = b.verse?.attrs.style;
+        if (verseStyle !== undefined && !paragraphStyles.has(verseStyle)) {
+          const fenceEnd = body.indexOf('\n', b.sourceStart);
+          out.push({ kind: 'unknownParagraphStyle', style: verseStyle, ...abs({ start: b.sourceStart, end: fenceEnd < 0 ? b.sourceEnd : fenceEnd }) });
+        }
         if (b.footnoteDef !== undefined && !footnoteDefs.has(b.footnoteDef)) {
           // The definition's `[^id]:` sits before its text, on its line.
           const lineStart = body.lastIndexOf('\n', b.sourceStart - 1) + 1;
