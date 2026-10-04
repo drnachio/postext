@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Install the postext-port skill in Claude Code, Codex or any agent and let it turn a PDF, Word, PowerPoint, EPUB, InDesign or HTML source into a Postext project that follows the original layout',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-04',
   readingTime: '8 min',
   order: 10,
   plainSummary: "This page is for people who already have a book or document in another format, such as PDF, Word or InDesign, and want to move it into Postext. An AI helper, called an agent, can do most of the work if you give it a small add-on called a skill. The skill teaches the agent how to copy the text and rebuild the design of the original. The page explains how to install it, what to ask for and how to check the result. A video of about five minutes shows every step.",
@@ -72,6 +72,12 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
     measure a grid of characters, how to read vertical PDFs, InDesign ruby
     and warichu, Word's East Asian layout and right-to-left EPUBs, and how to
     cut CJK fonts to the book (see [Chinese layout](/en/docs/chinese-layout));
+  - Arabic books, modern or classical and vocalised, set right to left and
+    bound on the right: the locale that turns the book, what to ask (region
+    and digits, vocalisation, verse, contents at the end), how to measure a
+    mirrored page, how to read Arabic from PDFs, Word and Wikisource, poems
+    as `:::verse`, notes «(١)» per page, and Arabic fonts cut with their
+    joining tables (see [Arabic layout](/en/docs/arabic-layout));
   - the printed object: how to read the paper, binding, covers and spine of
     the source and set them as the `folio` settings that the [Folio viewer](/en/docs/sandbox#folio-tab)
     shows, checked by the linter.
@@ -95,9 +101,9 @@ Also on YouTube: [watch it there](https://youtu.be/iiqeWdm9sQE) or in the
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → draft chapters, with Word styles mapped to callouts and paragraph styles</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → draft chapters by paragraph style, tables and anchored images; ruby, tate-chu-yoko, emphasis marks and warichu become <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> and <code>:warichu</code>, and vertical stories and a right-to-left binding are reported</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Rebuilds a printed back-of-book index as <code>:index</code> marks: reads the index pages of the PDF, finds each term on its page and marks the same words in the chapters</td></tr>
-    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts (a Chinese face cut to the book's characters keeps its vertical forms and metrics); convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instance, subset, scale and split fonts (a Chinese face cut to the book's characters keeps its vertical forms and metrics, an Arabic one its joining forms and tatweel); convert images to sRGB, trim and join them; turn <code>.ai</code>/<code>.pdf</code> artwork into SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Scaffolds the project and its generator script, builds <code>preset.json</code>, packs the <code>.postext</code> file</td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Catches everything the parser and loader silently get wrong, and, for Chinese, Japanese and Korean text, the characters the bundled fonts cannot set; for Arabic text, a missing Arabic locale, Latin-only or unjoined faces, letter-spacing, forced hyphenation and italic emphasis</td></tr>
     <tr><td><code>render.mjs</code></td><td>Lays the project (a folder or a <code>.postext</code> file) out headlessly with the real engine, reading its configuration as the Sandbox does, and prints warnings. With <code>--jpeg</code> it paints the pages you ask for (<code>--pages 12-15</code>) as JPEG files with the engine's own canvas renderer, in a second or two, so the agent looks at its pages without building a PDF; <code>--out</code> writes the PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Places source and Postext pages side by side, from the render's PDF or its folder of JPEGs</td></tr>
   </tbody>

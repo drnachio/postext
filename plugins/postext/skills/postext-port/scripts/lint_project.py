@@ -11,7 +11,10 @@ keys that crash or silently reset (em units, H1 page breaks, `main-color`),
 missing files and bitmap sizes; for Chinese, Japanese and Korean text, the
 document language, markup typed with an input method, and whether the bundled
 fonts have a glyph for every character the chapters set (with fontTools
-installed; without it that check is skipped). Pure Python otherwise.
+installed; without it that check is skipped); for Arabic text, the document
+language and direction, the fonts that set it (and their glyphs and shaping
+tables), letter-spacing on its styles, forced hyphenation and italic
+emphasis. Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -289,6 +292,12 @@ FULLWIDTH_MARKUP = [
     (re.compile(r"［＾[^］]*］"), "［＾…］", "[^…]"),
     (re.compile(r"＊＊[^＊]+＊＊"), "＊＊…＊＊", "**…**"),
 ]
+# Arabic-script letters, marks and presentation forms (Arabic, Supplement,
+# Extended-A/B, presentation forms A and B). Digits and punctuation of the
+# block count too: a Latin face has none of them.
+ARABIC_RE = re.compile("[\u0600-\u06ff\u0750-\u077f\u0870-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
+ARABIC_LETTER_RE = re.compile("[\u0620-\u064a\u066e-\u06d3\u06d5\u06fa-\u06fc\u06ff\u0750-\u077f\u08a0-\u08c9]")
+RTL_LANGS = {"ar", "fa", "ur", "ps", "sd", "ckb", "ug", "he", "yi", "dv", "syr"}
 LATIN_ONLY_FAMILIES = {"EB Garamond", "Open Sans", "Lora", "Geist", "Fraunces", "Newsreader", "Source Serif 4",
                        "Alegreya", "Playfair Display", "Merriweather", "Inter", "Roboto"}
 
@@ -406,7 +415,13 @@ def _styles_by_id(cfg: dict, key: str) -> dict[str, dict]:
 
 
 def cjk_chars_by_family(texts: list[tuple[str, str]], cfg: dict) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
-    """The CJK characters each family sets, and the settings that set them
+    """The CJK characters each family sets (see `script_chars_by_family`)."""
+    return script_chars_by_family(texts, cfg, CJK_RE, ignore="　")
+
+
+def script_chars_by_family(texts: list[tuple[str, str]], cfg: dict, rx: re.Pattern,
+                           ignore: str = "") -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    """The characters of a script (`rx`) each family sets, and the settings that set them
     there: a heading in its heading style's family, else its level's, else
     the headings family; a `:::paragraphs{style}` run in its paragraph
     style's family; a callout's body in its style's `body.fontFamily` and
@@ -427,7 +442,7 @@ def cjk_chars_by_family(texts: list[tuple[str, str]], cfg: dict) -> tuple[dict[s
     roles: dict[str, set[str]] = defaultdict(set)
 
     def add(fam: str, role: str, text: str) -> None:
-        chars = {c for c in CJK_RE.findall(text) if c != "　"}
+        chars = {c for c in rx.findall(text) if c not in ignore}
         if chars:
             out[fam].update(chars)
             roles[fam].add(role)
@@ -509,6 +524,115 @@ def check_cjk_locale(where: str, texts: list[tuple[str, str]], cfg: dict, rep: R
         if han > 4 * latin:
             rep.warn(where, f"the chapters are mostly Chinese ({han} characters) but config.locale is {loc!r}: the "
                             "Chinese defaults (region, emphasis dots, strings, index groups) follow a zh locale")
+
+
+def is_rtl_locale(tag: str | None) -> bool:
+    return bool(tag) and re.split(r"[-_]", tag)[0].lower() in RTL_LANGS
+
+
+def check_arabic_config(where: str, texts: list[tuple[str, str]], cfg: dict, rep: Report) -> None:
+    """The document language and direction of a book with Arabic text, and the
+    settings Arabic text ignores or that hide its emphasis."""
+    arabic = sum(len(ARABIC_LETTER_RE.findall(t)) for _, t in texts)
+    if not arabic:
+        return
+    latin = sum(len(re.findall(r"[A-Za-z]", t)) for _, t in texts)
+    body = cfg.get("bodyText") or {}
+    hyph = body.get("hyphenation") or {}
+    loc = cfg.get("locale") or hyph.get("locale")
+    mostly = arabic > latin
+    direction = cfg.get("direction")
+    if mostly and not is_rtl_locale(loc):
+        rep.error(where, f"the chapters are mostly Arabic ({arabic} letters) but config.locale is "
+                         f"{repr(loc) if loc else 'not set'}: set 'ar' (or 'ar-EG', 'ar-MA'…). Without it the book is laid "
+                         "out left to right, bound on the left, with European digits and italic emphasis")
+    if is_rtl_locale(loc) and direction == "ltr":
+        rep.warn(where, "config.direction 'ltr' in an Arabic-script book: lines, columns and the binding run left to "
+                        "right; remove it (auto reads the locale)")
+    if not mostly and direction == "rtl" and not is_rtl_locale(loc):
+        rep.warn(where, f"config.direction 'rtl' with locale {loc!r}: mark the Arabic passages with "
+                        ":::paragraphs{dir=rtl} or :rtl[…] instead of turning the whole book")
+    if hyph.get("enabled") is True and (not hyph.get("locale") or is_rtl_locale(hyph.get("locale"))):
+        rep.warn(where, "bodyText.hyphenation.enabled is on in an Arabic book: Arabic is never hyphenated, so it "
+                        "does nothing; remove it (name a Latin pattern locale only to hyphenate the Latin words)")
+    if body.get("emphasis") == "italic" and (mostly or is_rtl_locale(loc)):
+        rep.warn(where, "bodyText.emphasis 'italic': Arabic letters are never slanted, so *…* on Arabic words shows "
+                        "nothing; leave it 'auto' (bold) or use 'color' / 'overline'")
+    spaced = []
+    def tracked(node, path):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k == "letterSpacing" and isinstance(v, dict) and v.get("value"):
+                    spaced.append(path)
+                else:
+                    tracked(v, f"{path}.{k}" if path else k)
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                tracked(v, f"{path}[{(v.get('id') or v.get('level') or i) if isinstance(v, dict) else i}]")
+    for key in ("bodyText", "headings", "headingStyles", "paragraphStyles", "calloutStyles"):
+        tracked(cfg.get(key), key)
+    if spaced:
+        rep.warn(where, f"letterSpacing on {', '.join(spaced[:6])}: Arabic words are never letter-spaced (the build "
+                        "reports joiningScriptLetterSpacing); drop it for the styles that set Arabic")
+
+
+def check_arabic_coverage(where: str, chars: dict[str, set[str]], coverage: dict | None, fonts: set[str],
+                          rep: Report, roles: dict[str, set[str]] | None = None) -> None:
+    """Every Arabic character a family sets must be in its bundled files."""
+    for family, used in chars.items():
+        if not used:
+            continue
+        sample = "".join(sorted(used)[:12])
+        if family in LATIN_ONLY_FAMILIES:
+            by = ", ".join(sorted((roles or {}).get(family, ()))) or "bodyText/headings fontFamily"
+            rep.error(where, f"{len(used)} Arabic characters ({sample}…) are set in {family}, which has none: "
+                             f"set {by} to an Arabic face (Amiri, Noto Naskh Arabic, Scheherazade New; Noto Kufi Arabic "
+                             "for headings)")
+            continue
+        if family not in fonts:
+            rep.warn(where, f"{family} sets {len(used)} Arabic characters but is not bundled: its coverage cannot be "
+                            "checked, and the PDF and headless renders need its arabic subset file")
+            continue
+        if coverage is None:
+            rep.info(where, "install fontTools to check that the bundled fonts cover the Arabic text")
+            return
+        for label, cmap in coverage.get(family, []):
+            if "italic" in label:
+                continue
+            missing = sorted(c for c in used if ord(c) not in cmap)
+            if missing:
+                rep.error(where, f"{family} {label} has no glyph for {len(missing)} of the {len(used)} Arabic characters "
+                                 f"it sets: {''.join(missing[:20])}{'…' if len(missing) > 20 else ''} (they print as empty "
+                                 "boxes; subset from the full face: fonts.py subset FONT --ranges latin,punct,arabic)")
+
+
+def check_arabic_font_files(root: Path, fonts: list[dict], families: set[str], rep: Report) -> None:
+    """An Arabic face without joining tables prints isolated letters."""
+    try:
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return
+    for f in fonts:
+        if f.get("name") not in families:
+            continue
+        for v in f.get("variants", []):
+            path = root / v.get("file", "")
+            if not path.exists():
+                continue
+            try:
+                font = TTFont(str(path), lazy=True, fontNumber=0)
+            except Exception:  # noqa: BLE001
+                continue
+            feats = set()
+            if "GSUB" in font and font["GSUB"].table.FeatureList:
+                feats = {r.FeatureTag for r in font["GSUB"].table.FeatureList.FeatureRecord}
+            if not feats & {"init", "medi", "fina"}:
+                rep.error(f"font {v.get('file')}", "an Arabic face with no joining features (init/medi/fina): its "
+                                                   "letters print isolated; subset with layout features kept "
+                                                   "(fonts.py subset keeps them)")
+            elif 0x0640 not in (font.getBestCmap() or {}):
+                rep.warn(f"font {v.get('file')}", "no tatweel (U+0640): kashida justification cannot elongate in "
+                                                  "this face; keep the whole Arabic block when subsetting")
 
 
 def style_ids(cfg: dict) -> dict[str, set[str]]:
@@ -990,6 +1114,7 @@ def main() -> None:
 
     coverage = ...  # loaded on the first locale with CJK text
     font_files_checked = False
+    arabic_files_checked = False
     for lang in langs:
         specs = chapters.get(lang) or []
         loc = (m.get("localized") or {}).get(lang, {})
@@ -1036,6 +1161,15 @@ def main() -> None:
                                for cf in [shared] + [(x.get("config") or {}) for x in (m.get("localized") or {}).values()])
                 check_font_files(root, m.get("fonts", []), vertical, rep)
                 font_files_checked = True
+        if any(ARABIC_LETTER_RE.search(t) for _, t in texts):
+            check_arabic_config(f"config ({lang})", texts, cfg, rep)
+            if coverage is ...:
+                coverage = font_coverage(root, m.get("fonts", []))
+            achars, aroles = script_chars_by_family(texts, cfg, ARABIC_RE)
+            check_arabic_coverage(f"fonts ({lang})", achars, coverage, fonts, rep, aroles)
+            if not arabic_files_checked:
+                check_arabic_font_files(root, m.get("fonts", []), {f for f, u in achars.items() if u}, rep)
+                arabic_files_checked = True
         # placement sanity
         types = {t.get("id"): t for t in cfg.get("resourceTypes", []) if isinstance(t, dict)} if isinstance(cfg.get("resourceTypes"), list) else {}
         design_refs = set(re.findall(r'"resourceId":\s*"([^"]+)"', json.dumps(cfg)))

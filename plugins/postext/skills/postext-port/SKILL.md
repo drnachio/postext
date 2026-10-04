@@ -1,6 +1,6 @@
 ---
 name: postext-port
-description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically included; when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
+description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically and Arabic books set right to left (Modern Standard or classical, vocalised verse included); when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
 license: MIT
 metadata:
   homepage: https://postext.dev/en/docs/skill
@@ -128,6 +128,38 @@ Chinese, Japanese and Korean traps (postext ≥ 1.9; playbooks F5–F6):
   right by default (`page.binding: 'auto'`); page 1 is the recto and sits on
   the left of its spread. `page.margins` keep their names on the sheet.
 
+Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configuration.md §19d):
+
+- **`config.locale: 'ar'`** (or the region, `ar-EG` ٠–٩, `ar-MA` 0–9) is what
+  turns the book: right to left, right binding, a mirrored page (first column
+  on the right), the region's digits, no hyphenation, kashida, bold emphasis,
+  شكل/جدول. Without it an Arabic book is laid out left to right. Do not set
+  `direction` by hand; never mirror margins or swap `left`/`right` in the
+  config yourself: body-flow sides are flow-relative, so a preset converted
+  from an LTR book keeps working. Header/footer slots stay physical.
+- **Words are never cut, hyphenated or letter-spaced.** No `letterSpacing` on
+  Arabic styles (`joiningScriptLetterSpacing`); a word wider than a narrow
+  cell overflows (`unbreakableWordOverflow`): widen the cell.
+- **Emphasis**: keep `*…*`; it prints bold (Arabic is never slanted). Do not
+  set `emphasis: 'italic'`.
+- **Notes «(١)»**: `[^id]` markers before the following punctuation, and
+  `footnotes: {markerTemplate: '({n})', numbering: 'page',
+  noteNumberPosition: 'inline'}`. Never type the brackets or digits.
+- **Mixed direction**: English paragraphs in `:::paragraphs{dir=ltr}`, a
+  Latin title inside Arabic as `:ltr[…]{lang=en}` (else its final stop or
+  bracket lands on the wrong side). Headings take `{dir=…}`.
+- **Keep the text as typed**: the author's digits, ، ؛ ؟ « », the edition's
+  orthography (فى، مائة), the harakat. Quranic ﴿…﴾ typed U+FD3F first.
+  Strip only justification tatweels a PDF extraction brings in.
+- **Verse**: a classical poem is `:::verse`, one bayt a line `ṣadr || ʿajuz`;
+  give vocalised verse a paragraph style with 1.9–2.1 em leading.
+- **Fonts**: one family per style, no fallback: Amiri, Noto Naskh Arabic,
+  Scheherazade New (Noto Kufi Arabic, Reem Kufi, Aref Ruqaa for headings);
+  subset with `--ranges latin,punct,arabic` keeping GSUB/GPOS (`lint_project.py`
+  checks glyphs and joining tables). Body 13–15 pt; leading 1.6–1.85 em.
+- **Contents at the end** (فهرس): `:::toc` in the last chapter, under a
+  heading with `{toc="false"}`.
+
 Full references (load the one you need):
 
 - [references/document-format.md](references/document-format.md): every
@@ -146,7 +178,8 @@ Full references (load the one you need):
   back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
-  horizontally and vertically, CJK fonts, the printed object for the Folio
+  horizontally and vertically, CJK fonts, Arabic books (modern and classical
+  vocalised editions) and Arabic fonts, the printed object for the Folio
   3D viewer…) and which public preset shows each.
 - [references/verification.md](references/verification.md): lint, headless
   render, page JPEGs, page-by-page comparison, and a symptom → lever table.
@@ -188,6 +221,10 @@ Ask only what you cannot infer:
   vertical) and the binding edge (a vertical book is bound on the right).
   Keep the source's; a redesign may change the direction, never the script
   without being asked.
+- For Arabic sources: Modern Standard or classical, the region's digits
+  (٠–٩ or 0–9), how much of the text is vocalised (sets the leading),
+  whether the poems are set as two-hemistich bayts, and where the contents
+  go (front or back).
 - Rights, asked once: "Is this your own title (publisher, author or
   licensee)?" Yes → port everything as is. Then only ask about third-party
   pieces they do not control: licensed fonts get `redistributable: false`
@@ -221,6 +258,10 @@ as its 号 in pt, the line gap as a fraction of the size, the tiers of a
 vertical page, and where the punctuation sits (in the corner or centred,
 full width or Kaiming). Then set `cjk.grid` (design-analysis.md §2a).
 
+Arabic books: measure inner/outer margins, not left/right; column 1 is the
+right one; note the folio position, the kashida (long elongated joins or
+none), the verse hemistich width and gap (design-analysis.md §2b).
+
 ### 3. Scaffold the project
 ```bash
 python3 scripts/preset_kit.py init my-book --id my-book --name "My Book" --lang es [--lang en]
@@ -251,6 +292,9 @@ Pick the path per [sources.md](references/sources.md):
   Japanese and Korean sources". `idml_extract.py` turns InDesign ruby,
   tate-chu-yoko, kenten and warichu into `:ruby`, `:tcy`, `:dots` and
   `:warichu`, and reports vertical stories and a right-to-left binding.
+- **Arabic sources**: see sources.md, "Arabic sources" (visual-order PDF
+  text, presentation forms, Word `w:bidi`/`w:cs` runs, Wikisource `{{أبيات}}`
+  poems → `:::verse`).
 - **Other XML or plain text**: a small script of your own, following
   sources.md; reuse `scripts/postext_md.py` to write safe Markdown
   (`render_runs`, `escape`, `heading`, `fence`, `attr_value`,
@@ -288,6 +332,9 @@ list deliberate deviations.
   (`fonts.py subset NotoSerifTC[wght].ttf --out work/ --text-from chapters/ --ranges latin,punct,cjk-punct`),
   then cut static weights (`fonts.py instance`). Layout features (`vert`)
   and vertical metrics survive (playbooks E6).
+- Arabic faces: `fonts.py subset Amiri-Regular.ttf --out fonts/ --text-from . --ranges latin,punct,arabic`
+  (keeps the joining tables and the tatweel); cut static weights of variable
+  faces such as Noto Naskh Arabic (playbooks E7).
 - Images: `scripts/images.py prep|join|size`.
 - Vector artwork: `scripts/convert_assets.py` (`.ai`/`.pdf` → SVG) and
   `scripts/pdf_figures.py crop … .pdf` (print masters).

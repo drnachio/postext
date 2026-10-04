@@ -282,6 +282,7 @@ paper, `pintura-espanola` lay-flat on 170 g matte, `openstax-fisica` and
 ## B. Text
 
 ### B1. Verse, poems, song lyrics
+(Classical Arabic poems, a bayt in two hemistichs, are `:::verse`: F8.)
 Use one paragraph per line, blank lines between, inside a paragraph style
 with no indent, no hyphenation, left alignment, a hanging indent for wrapped
 lines and `spaceBetween: 0`. Put stanza gaps between separate containers. A
@@ -597,6 +598,21 @@ A Chinese family is tens of MB and thousands of glyphs; ship it cut to the book.
   quotations, verse and prefaces (LXGW WenKai / WenKai TC), Fangsong for official documents. No italics: a
   Chinese face has none. Use the face of the book's region (SC mainland, TC Taiwan, HK Hong Kong).
 
+### E7. Arabic faces
+- Book faces (OFL, Google Fonts/Fontsource, each with an `arabic` subset file): **Amiri** (Būlāq Naskh,
+  curved kashida, vocalisation; classical editions, verse; 400/700), **Noto Naskh Arabic** (modern prose;
+  variable: cut static weights with `fonts.py instance`), **Scheherazade New** (fully vocalised text),
+  **Markazi Text** (modern; explicit leading), **Noto Kufi Arabic** / **Reem Kufi** (headings), **Aref Ruqaa**
+  (display; Ruqʿa takes no kashida, the engine knows).
+- Subset with layout features kept: `fonts.py subset Amiri-Regular.ttf --out fonts/ --text-from . --ranges
+  latin,punct,arabic`. GSUB/GPOS hold the joining forms, lām-alif, mark positions and `rtlm` mirrored
+  brackets; a subset without them prints isolated letters. The tatweel U+0640 must stay (kashida inserts it).
+- One family per style, no fallback: the face must hold every Arabic letter, mark and digit (٠–٩), and the
+  Latin of the book (Amiri has its own). Headings default to Open Sans, the body to EB Garamond: neither has
+  Arabic — `lint_project.py` flags it.
+- In the browser, the `arabic` subset file loads only when a character needs it; the Sandbox and the kit's
+  `loadArabicFonts` load it before layout, a host checks `document.fonts.load('16px Amiri', 'ب')`.
+
 ---
 
 ## F. Languages
@@ -673,6 +689,38 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   `cjkMarksExceedLeading` / `rubyExceedsLeading` say when it is short.
 - Fonts need `vert` (E6); the canvas loads a `vert` twin itself in the Sandbox, and the PDF shapes with it.
 - Compare pages right to left: the source's page 1 is the left page of the first spread.
+
+### F7. Arabic, modern (MSA novel, report, textbook)
+- `locale: 'ar'` (or the region: `ar-EG` ٠–٩, `ar-MA` 0–9). That alone gives right to left, right binding, a
+  mirrored frame (first column right), the region's digits, no hyphenation, kashida, bold emphasis, شكل/جدول.
+  Never set `direction` by hand unless the source is an LTR book quoting Arabic.
+- Body Noto Naskh Arabic or Markazi Text 13–15 pt, leading 1.6–1.75 em; headings Noto Kufi Arabic.
+  `captionStyle.labelSeparator: ': '` (شكل ١-٢: …); chapters `numberingTemplate: 'الفصل {1:ordinal}'`;
+  lists `arabic` + `-` (١-), `abjad` + `-` (أ-).
+- Notes «(١)»: `[^id]` markers + `footnotes: {markerTemplate: '({n})', numbering: 'page', noteNumberPosition:
+  'inline'}`; never type the brackets or the digits.
+- English passages: `:::paragraphs{dir=ltr}`; English titles inside Arabic text: `:ltr[…]{lang=en}`.
+- Running heads/folios are physical: chapter title on odd (left) pages, book title on even (right) pages,
+  folio outer corner (left of odd pages) or centred.
+- Keep the author's typed digits and punctuation (، ؛ ؟ «»); generated numbers follow `numerals`.
+- Watch in the render: `unbreakableWordOverflow` (a word wider than a narrow cell/column: widen it),
+  `joiningScriptLetterSpacing` (a style tracks Arabic: remove `letterSpacing`).
+
+### F8. Arabic, classical vocalised edition (turāth, tahqīq, Nights)
+- `locale: 'ar'`; Amiri 14 pt; leading 1.85 em for lightly vocalised prose, a `verse` paragraph style at
+  2.1 em for fully vocalised poems; `arabicMarksExceedLeading` says where it is short.
+- Poems → `:::verse{style="verse"}`, one bayt a line `ṣadr || ʿajuz` (Wikisource `{{أبيات|… \\ …}}` maps
+  line by line; spaced `\\` also works); keep the introducer («فأنشد يقول:») as the paragraph before it.
+- Night/chapter words: `'الليلة {1:ordinal-feminine}'` (الليلة الأولى … الحادية بعد الألف), `-classical`
+  for مائة; a run-in night heading stays a heading (set `breakBefore.enabled: false`).
+- Front matter folios in abjad letters: `:::numbering{format="abjad" startAt=1}` before the introduction,
+  `:::numbering{format="decimal" startAt=1}` before the text. Folio top centre between dashes: `'– {pageNumber} –'`.
+- Contents at the end: last chapter `# فهرس المحتويات {toc="false"}` + `:::toc`. Index ignores ال by default.
+- Apparatus: variant readings as per-page notes «(١)» (F7); editorial additions in `[…]` as typed; Qurʾān
+  quotations in ﴿…﴾ (U+FD3F first). An unvocalised reading edition from the same source: `bodyText.tashkil:
+  'strip'` (or `'strip-vowels'` to keep shadda).
+- Keep the edition's orthography (فى, الامر, مائة); the engine never corrects it.
+- Compare pages right to left: page 1 is the left page; columns read right first.
 
 ---
 

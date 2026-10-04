@@ -575,6 +575,17 @@ Heart failure:index{term="Heart!failure" range="start"} … :index{term="Heart!f
 - **Engine:** `import 'postext-citeproc/register'` before building (render.mjs and Node scripts too); the Sandbox loads it itself. Without it citations print as written (`citationsUnavailable`).
 - **Porting:** LaTeX `\cite{a,b}` → `[@a; @b]`, `\cite[p.~33]{a}` → `[@a, p. 33]`, `\textcite{a}` → `@a`, `\parencite[see][12]{a}` → `[see @a, p. 12]`, `\nocite{*}` → `nocite: "@*"`; keep the `.bib` as a `:::references{format=bibtex}` block (or convert to front matter). Word/Zotero field citations: export the library as CSL-JSON or BibTeX and rewrite each field as `[@key]`. A printed book's hand-made bibliography can stay as text under `:::paragraphs{style=…}` when its sources are not worth re-keying.
 
+### 10.8 Text direction: `{dir}`, `:ltr[…]`, `:rtl[…]` (postext ≥ 1.15)
+
+- **Document:** config `direction` (`auto` from the `locale` script; `ar` → right to left). Nothing in the Markdown.
+- **Block:** `{dir=ltr}` / `{dir=rtl}` on a heading's trailing attributes or a `:::` fence (`paragraphs`, `callout`, `columns`, `part`, `paper`, `verse`). Every block inside a container inherits it, down to a nested one that sets another. A plain paragraph, list item or `> quote` has **no attribute syntax**: wrap it in `:::paragraphs{dir=ltr}`. Other values are silently ignored; there is no `dir=auto`; `:::toc{dir}` does nothing.
+- **Inline:** `:ltr[…]` / `:rtl[…]` with optional `{lang=en}`: a bidi isolate (LRI/RLI…PDI). Use it for a Latin title ending in a neutral (`.` `)` `?`) inside Arabic, or a run starting with a digit. Notes, `:ref`, maths inside belong to it; isolates nest. Bare Unicode controls U+2066–2069, U+202A–202E, LRM/RLM, ALM U+061C also work.
+- **Trap:** an English paragraph in an Arabic book without `{dir=ltr}` prints its final full stop on the left (the stop is a neutral of the RTL paragraph). Wrap quoted English in `:::paragraphs{dir=ltr}`.
+- **Brackets:** type `(…)`, `«…»` in logical order (opening first); renderers mirror them. Quranic ﴿…﴾: type U+FD3F ﴿ first, U+FD3E ﴾ last; never mirrored. Use ؟ ، ؛ (U+061F, U+060C, U+061B), not ASCII `?` `,` `;`, in Arabic text.
+- **Digits:** keep the source's typed digits (the engine never rewrites them); a list item `٣.` starts at 3; `{startAt=٥}` reads 5. Generated numbers follow config `numerals`.
+- **Notes:** write `[^id]` markers before a following punctuation mark (`الكتاب[^1]،`); never type «(١)» — `footnotes.markerTemplate: '({n})'` prints it.
+- **Verse:** classical poems → `:::verse` (§12); Wikisource `{{أبيات|ṣadr \\ ʿajuz …}}` maps line by line.
+
 ## 11. Math (MathJax TeX, `AllPackages`, so amsmath, mhchem etc.; )
 
 - **Inline `$…$`**:
@@ -693,7 +704,8 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Title with a manual break | `\\` in the heading. |
 | Paragraph | Lines separated by blank lines. Watch §3.2 line-start traps (`- ` dialogue, `1998.` openings). |
 | Dialogue dash | `—` (U+2014), never `- `. |
-| Verse / poetry / address / signature | `:::paragraphs{style="verse"}`, one paragraph per line with blank lines between. Stanza gaps come from the style's margins, or from separate containers. |
+| Verse / poetry / address / signature | `:::paragraphs{style="verse"}`, one paragraph per line with blank lines between. Stanza gaps come from the style's margins, or from separate containers. A classical Arabic poem (two hemistichs a line) is `:::verse` with `ṣadr || ʿajuz` per line. |
+| Arabic text in a Latin book, Latin in an Arabic one | Block: `:::paragraphs{dir=ltr}` / `{dir=rtl}`; phrase: `:ltr[…]{lang=en}` / `:rtl[…]{lang=ar}` (§10.8). |
 | Epigraph, dedication, colophon, lead-in | `:::paragraphs{style="…"}`, with the style defined in config. |
 | Block quotation | `> …` (single block), or `:::paragraphs{style="quote"}` for multiple paragraphs. |
 | Bulleted/numbered list | One line per item. 2 spaces per nesting level. Type the real numbers. Letter or roman item labels are set by the config `numberFormat`, not the source. |

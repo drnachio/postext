@@ -104,6 +104,7 @@ Conversion at `page.dpi` (default 300):
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9) |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off |
+| `direction` | `'auto'`\|`'ltr'`\|`'rtl'` | `'auto'` | base direction (postext ≥ 1.15): `auto` = `rtl` when the `locale` script is written right to left (ar, fa, ur, he…). An RTL document is laid out in a **mirrored frame**: first column on the right, indents/list markers/floats/notes on the right, `page.binding: 'auto'` → right. Body-flow `left`/`right` keywords are flow-relative (a preset converted LTR→RTL keeps working); header/footer slots stay physical. Blocks: `{dir=ltr\|rtl}` on headings and `:::` containers; inline `:ltr[…]`/`:rtl[…]` isolates. Never set `'rtl'` with a non-RTL locale |
 | `numerals` | `'auto'`\|`'latn'`\|`'arab'`\|`'arabext'` | `'auto'` | digits of every engine-generated decimal number (pages, lists, notes, counters, `{h1}`/`{n}`, `{totalPages}`): `auto` = `arab` ٠–٩ for `ar` (Maghreb `ar-MA/DZ/TN/LY/MR/EH` → `latn`), `arabext` ۰–۹ for `fa`/`ps`/`ur-IN`, else `latn`; named formats print as named |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
@@ -140,11 +141,11 @@ page
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
-└─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl')   postext ≥ 1.9
+└─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl' or the document is right to left)   postext ≥ 1.9
 ```
 Gotchas
 - Page 1 is odd (recto). With `mirror: true`, `left` is the spine margin on every page.
-- `binding: 'right'` (vertical Chinese books, by default): page 1 is still the recto but sits on the
+- `binding: 'right'` (vertical Chinese books and Arabic/RTL books, by default): page 1 is still the recto but sits on the
   LEFT of its spread; with `mirror: true` the odd pages carry the inner (`left`) margin on their right.
   The Sandbox shows spreads `[3 | 2]`, the PDF asks viewers for `/Direction /R2L`. Folio templates do not
   swap sides by themselves: set odd/even elements for the right edge.
@@ -241,7 +242,7 @@ bodyText
 ├─ referenceItalic   boolean         false
 ├─ emphasis          'auto'|'italic'|'bold'|'color'|'overline'   'auto'   how *…* is set; auto = bold for Arabic-script locales, else italic; Arabic letters are never slanted
 ├─ tashkil           'keep'|'strip'|'strip-vowels'   'keep'      Arabic vowel marks out of the set text (strip-vowels keeps shadda)
-├─ textAlign         'left'|'justify'|'center'|'right'   'justify'
+├─ textAlign         'left'|'justify'|'center'|'right'|'start'|'end'   'justify'   left = the side a line STARTS on (the right of an Arabic paragraph); start/end are synonyms
 ├─ paragraphSpacing  boolean         false           true = one full grid line between paragraphs (no fractional option)
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
@@ -269,6 +270,10 @@ H&J / Knuth–Plass
 ├─ gradedRuntPenalty    false  true = a runt costs runtPenalty × (1 − width/threshold): a two-word ending costs less than one word
 ├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking; refused if a justified line passes max(maxWordSpacing, the paragraph's loosest justified line) or more lines go ragged)
 ├─ maxRuntTracking      10     thousandths of an em (10 = 0.01em), applied negatively
+├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
+├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
+├─ kashidaPerWord     1       elongations per word
+├─ kashidaMaxLength   0.6     em per join (whole tatweels)
 ├─ maxJustifyTracking   0      thousandths of an em, either way: a justified line past maxWordSpacing (or under minWordSpacing) takes letter spacing instead (0 = off; 10 is plenty; needs optimalLineBreaking)
 ├─ avoidOrphans         true;  orphanMinLines 2;  orphanPenalty 1000;  avoidOrphansInLists true
 ├─ avoidWidows          true;  widowMinLines 2;   widowPenalty 1000;   avoidWidowsInLists true
@@ -902,7 +907,7 @@ Notes cited with `[^id]` (document-format.md §10.4).
 | `markerPosition` | `'auto'` | ≥ 1.11; `'superscript'` / `'inline'` (on the baseline, upright cell in vertical text); `'auto'` = inline for `circled-decimal`, else superscript. The note's own number follows |
 | `markerSize` | `1em` | ≥ 1.11; inline marker size, em = surrounding text (`0.75em` common) |
 | `markerTemplate` | `'{n}'` | `{n}` = the number in its format and the document digits; `'({n})'` → «(١)» for Arabic books; marker and note number alike |
-| `noteNumberPosition` | `'auto'` | `'superscript'` / `'inline'` for the note's own number; `'auto'` follows `markerPosition` |
+| `noteNumberPosition` | `'auto'` | `'superscript'` / `'inline'` for the note's own number; `'auto'` follows `markerPosition`. Arabic books: `{markerTemplate:'({n})', numbering:'page', noteNumberPosition:'inline'}`; the rule and numbers go to the right by themselves in an RTL book |
 | `chapterEndAlign` | `'foot'` | `chapterEnd` only: `'foot'` = the notes that close a column sit at its foot; `'text'` = right under the text |
 | `fontSize` | `0.8em` | em/rem = body size; body family and weights |
 | `lineHeight` | `1.25em` | em = note size; notes are **off the baseline grid** (stack up from the column foot) |
@@ -973,6 +978,7 @@ What `:::index` prints from the `:index` marks (document-format.md §10.5). An e
 | `main` | `{bold:true}` | `{bold?, italic?}` for `main` pages |
 | `see` | by language, italic | `{label?, alsoLabel?, italic?}`: "See"/"See also", "Véase"/"Véase también"… |
 | `locale` | the document's | collation (Intl.Collator) |
+| `ignoreArticle` | `true` for an Arabic index | sort/group Arabic entries ignoring a leading ال (البصرة under ب); vowel marks, tatweel and hamza seats are always ignored (أ إ آ ٱ → ا, ة → ه, ى → ي); separators become `، ` |
 | `groupBy` | `'auto'` | `'letter'` \| `'pinyin'` (Han under the pinyin initial, 贾宝玉 → J) \| `'stroke'` (一畫, 二畫…; 一画… in zh-Hans) \| `'none'` (no heads); `auto` = pinyin for zh / zh-Hans / zh-CN, stroke for zh-Hant / zh-TW / zh-HK, letter otherwise (since 1.9). A polyphonic character read wrongly takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳); a pinyin key sorts after its letter's Han entries |
 | `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols; 数字 / 數字 and 符号 / 符號 in Chinese) |
 | `groups.fontFamily/fontSize/fontWeight/italic/color` | entries', 700 | set on the entries' pitch |
@@ -1035,6 +1041,45 @@ warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInsta
 Fore-edge running heads for a vertical book (the Sandbox's **Header › Fore-edge heads (vertical)**): two text
 elements with `writingMode: 'vertical-rl'`, anchored `{to: 'outer', edge: 'top'}` (offset y 4 em, `{chapterTitle}`)
 and `{to: 'outer', edge: 'bottom'}` (offset y −5 em, `{pageNumber}`), at 80 % of the body size.
+
+## 19d. Arabic and right-to-left books (postext ≥ 1.15)
+
+Guide: https://postext.dev/en/docs/arabic-layout. Everything follows from `locale: 'ar'` (or `ar-EG`,
+`ar-MA`…); set only what differs.
+
+| What | Key / markup | Arabic default |
+|---|---|---|
+| direction, mirrored frame, right binding | `direction`, `page.binding` | `rtl`, right |
+| digits of generated numbers | `numerals` | ٠–٩ (Maghreb tags 0–9) |
+| hyphenation | `bodyText.hyphenation` | off (Arabic words never hyphenated, cut or tracked) |
+| kashida | `bodyText.kashida`… | `auto`, Naskh rules |
+| emphasis | `bodyText.emphasis` | bold (never slanted) |
+| vowel marks out | `bodyText.tashkil` | `keep` |
+| notes «(١)» per page | `footnotes.markerTemplate/numbering/noteNumberPosition` | not set: write `'({n})'`, `'page'`, `'inline'` |
+| chapter words | `numberingTemplate: 'الفصل {1:ordinal}'`, `'الليلة {1:ordinal-feminine}'` | — |
+| caption | `captionStyle.labelSeparator: ': '` (a `.` after ١-٢ reads as a decimal point) | `'. '` |
+| lists | `numberFormat: 'arabic'` + `separator: '-'` (١-), `'abjad'` (أ-) | — |
+| front matter folios | `:::numbering{format="abjad"}` … `:::numbering{format="decimal" startAt=1}` | — |
+| index | `index.ignoreArticle` | `true` |
+| table direction | `resource.table.direction: 'ltr'\|'rtl'` | the document's |
+| text element direction | `direction: 'ltr'\|'rtl'\|'auto'`, `align: 'start'\|'end'` | the document's |
+
+Sides: `textAlign`/caption `align`/cell `align` `left` = the side the text starts on; `placement.align`,
+callout `stripe.side`, `icon.cornerSide`, `labelTab.position` = body-flow sides (flow-relative in RTL);
+`start`/`end` accepted everywhere (for callout sides they follow the box's own `{dir}`); header/footer
+slots and sheet-anchored design elements are physical. `placement.rotate` stays physical.
+Leading: unvocalised 1.55–1.7 em, partly vocalised 1.7–1.85 em, fully vocalised verse 1.9–2.1 em
+(`arabicMarksExceedLeading` says when it is too tight). Body size 13–15 pt (Naskh looks small).
+
+```json
+"locale": "ar-EG",
+"bodyText": { "fontFamily": "Noto Naskh Arabic", "fontSize": {"value": 13, "unit": "pt"},
+  "lineHeight": {"value": 1.7, "unit": "em"}, "textAlign": "justify" },
+"headings": { "fontFamily": "Noto Kufi Arabic",
+  "levels": [{ "level": 1, "numberingTemplate": "الفصل {1:ordinal}", "numberSeparator": ": " }] },
+"captionStyle": { "labelSeparator": ": " },
+"footnotes": { "markerTemplate": "({n})", "numbering": "page", "noteNumberPosition": "inline" }
+```
 
 ## 20. Fonts — `customFonts` and what goes in preset.json
 

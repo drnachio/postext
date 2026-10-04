@@ -170,3 +170,78 @@ describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
     expect(out).not.toContain("config.folio");
   });
 });
+
+/** An Arabic chapter with a Latin marker word, in a one-locale project. */
+function arabicProject(config: object, text?: string, fonts: object[] = []): string {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));
+  mkdirSync(path.join(dir, "chapters/ar"), { recursive: true });
+  writeFileSync(path.join(dir, "chapters/ar/01.md"), text ?? [
+    "# الفصل الأول",
+    "",
+    "كان في قديم الزمان ملك من ملوك ساسان، وكان له ولدان. قرأ الكتاب CHECK سنة ١٨٣٥ في بولاق.",
+    "",
+  ].join("\n"));
+  const manifest = {
+    version: 2, configVersion: 8, id: "t", name: "T", locale: "ar",
+    chapters: { ar: [{ title: "الفصل الأول", file: "chapters/ar/01.md" }] },
+    config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
+    resources: [], fonts,
+  };
+  writeFileSync(path.join(dir, "preset.json"), JSON.stringify(manifest));
+  return dir;
+}
+
+describe.skipIf(!python)("postext-port lint on Arabic text", () => {
+  const faces = { bodyText: { fontFamily: "Amiri" }, headings: { fontFamily: "Amiri" } };
+
+  it("asks for an Arabic locale on a mostly Arabic book", () => {
+    const { out, status } = lint(arabicProject({ locale: "en", ...faces }));
+    expect(out).toMatch(/ERROR config \(ar\): the chapters are mostly Arabic \(\d+ letters\) but config.locale is 'en'/);
+    expect(status).toBe(1);
+    expect(lint(arabicProject({ locale: "ar-EG", ...faces })).out).not.toContain("mostly Arabic");
+  });
+
+  it("flags Arabic set in the default Latin faces, by the setting that sets it", () => {
+    const { out } = lint(arabicProject({ locale: "ar" }));
+    expect(out).toMatch(/ERROR fonts \(ar\): \d+ Arabic characters .* set in EB Garamond, which has none: set bodyText.fontFamily to an Arabic face/);
+    expect(out).toMatch(/set in Open Sans, which has none: set headings.fontFamily/);
+  });
+
+  it("warns on a left-to-right direction, forced hyphenation, italic emphasis and tracked styles", () => {
+    const { out } = lint(arabicProject({
+      locale: "ar", direction: "ltr",
+      bodyText: { fontFamily: "Amiri", emphasis: "italic", hyphenation: { enabled: true } },
+      headings: { fontFamily: "Amiri", levels: [{ level: 1, letterSpacing: { value: 0.1, unit: "em" } }] },
+    }));
+    expect(out).toContain("config.direction 'ltr' in an Arabic-script book");
+    expect(out).toContain("bodyText.hyphenation.enabled is on in an Arabic book");
+    expect(out).toContain("bodyText.emphasis 'italic': Arabic letters are never slanted");
+    expect(out).toContain("letterSpacing on headings.levels[1]");
+  });
+
+  it("leaves a Latin book quoting Arabic, with Latin hyphenation, alone", () => {
+    const text = "# Notes\n\nThe word كتاب means book, and the Nights call it ألف ليلة وليلة in a longer English paragraph about it.\n";
+    const { out } = lint(arabicProject({ locale: "en", ...faces, bodyText: { fontFamily: "Amiri", hyphenation: { enabled: true, locale: "en-us" } } }, text));
+    expect(out).not.toContain("mostly Arabic");
+    expect(out).not.toContain("hyphenation.enabled is on");
+  });
+
+  it("knows the :::verse block and the {dir} attribute", () => {
+    const text = [
+      "# الفصل الأول",
+      "",
+      "فأنشد يقول:",
+      "",
+      ":::verse{gap=2em}",
+      "يا حرقة الدهر كفي || إن لم تكفي فعفي",
+      ":::",
+      "",
+      ":::paragraphs{dir=ltr}",
+      "An English quotation, set left to right.",
+      ":::",
+      "",
+    ].join("\n");
+    const { out } = lint(arabicProject({ locale: "ar", ...faces }, text));
+    expect(out).not.toMatch(/unknown directive|unknownDirective|verse/i);
+  });
+});

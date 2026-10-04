@@ -245,6 +245,35 @@ about it:
 - **Script**: never convert Simplified ↔ Traditional unless asked; when asked, use OpenCC (`t2s`, `s2t`,
   `s2twp` for Taiwan phrasing) and switch the quotes (「」 ↔ “”) with the region.
 
+## Arabic sources
+
+Postext sets Arabic right to left with a mirrored page (postext ≥ 1.15; playbooks F7–F8). What each source
+says about it:
+
+- **PDF**: PyMuPDF returns Arabic in *logical* order for most InDesign/Word PDFs, but some (older Quark,
+  certain LaTeX/XeTeX, scanned-and-OCRed files) store glyphs visually: words come out reversed and joined
+  forms as presentation forms (U+FB50–FEFF). Check a known word; repair visual lines by reversing each run of
+  Arabic and normalising with NFKC (presentation forms → letters), then put back the harakat order (NFKC can
+  reorder shadda + vowel: keep the source's order, UTR #53). Kashidas typed or drawn as U+0640 in the PDF are
+  justification, not text: strip every tatweel that is not a stylistic one the author meant.
+- **Scans**: `ocrmypdf --language ara` (Tesseract `ara`), then as above. Vocalised text OCRs poorly: compare the
+  marks by hand or take the text from an edition already transcribed (Wikisource, Hindawi, Shamela).
+- **Word (.docx)**: `w:bidi` on paragraphs and `w:rtl` on runs mark right-to-left text; `w:cs` fonts are the
+  Arabic faces (`w:rFonts w:cs="…"`), `w:szCs` their size — read those, not `w:ascii`. A Latin paragraph inside
+  an Arabic document (no `w:bidi`) becomes `:::paragraphs{dir=ltr}`.
+- **InDesign (IDML)**: Middle East builds carry `ParagraphDirection="RightToLeftDirection"`,
+  `CharacterDirection`, `Kashidas` (`DefaultKashidas` / `KashidasOff` → `bodyText.kashida`) and
+  `DigitsType` (`ArabicDigits` = 0–9, `HindiDigits` = ٠–٩, `FarsiDigits` = ۰–۹ → `numerals`); check them
+  against the PDF, as they are not always set. `DocumentPreference@PageBinding="RightToLeft"` → right binding (the
+  default for an Arabic locale anyway). `idml_extract.py` reports the binding; directions it leaves as text.
+- **EPUB / HTML**: `dir="rtl"` on `<html>` or blocks, `lang="ar"`, `page-progression-direction="rtl"`.
+  `<bdi>`, `<span dir="ltr">` → `:ltr[…]`; a block with `dir="ltr"` → `:::paragraphs{dir=ltr}`.
+- **Wikisource / Hindawi / Shamela**: poems are `{{أبيات|ṣadr \\ ʿajuz …}}` (one bayt a line) → `:::verse`
+  with `||`; centred headings `{{وسط|…}}` → headings; page headers `–٥–` are folios (drop them). Hindawi
+  editions are CC BY 4.0 (design) over a public-domain text.
+- **Orthography**: keep the edition's spelling (فى, الامر, مائة, missing hamzas) and its digits; type Arabic
+  punctuation (، ؛ ؟) where the source has it. Never run NFC/NFD over vocalised text you keep.
+
 ## Content you must not copy blindly
 
 - **Rights**: when the user owns the title (publisher, author, licensee;
