@@ -328,6 +328,24 @@ export interface VDTLineSegment {
    *  'brackets'`, the brackets of a warichu note): painted, and read in
    *  copied text, but no character of the plain text or the source. */
   inserted?: boolean;
+  /** Paint this run right to left: its bidi embedding level (UAX #9) is
+   *  odd. The segment's `text` stays in logical order; a renderer shapes it
+   *  as one right-to-left run, which reverses it and mirrors its brackets
+   *  (HarfBuzz applies `rtlm` and the Unicode mirroring pairs). The engine
+   *  cuts segments at level boundaries, so a segment never mixes
+   *  directions. Absent on left-to-right runs. */
+  rtl?: true;
+  /** The run's UAX #9 embedding level, when it is more than 1 (a number or
+   *  a Latin word inside an Arabic phrase inside an English paragraph) or a
+   *  renderer needs it for tagging and `/ActualText`. Absent otherwise:
+   *  `rtl` gives level 1, its absence level 0. */
+  level?: number;
+  /** Styled sub-runs of one atomic word: a style change inside an Arabic
+   *  word (`كتا**ب**`) must not cut the word, or its letters lose their
+   *  joining forms. The segment is painted as one shaped run whose clusters
+   *  take each sub-run's style; the runs' texts concatenate to `text`.
+   *  Absent on a segment set in one style. */
+  runs?: { text: string; bold?: boolean; italic?: boolean; color?: string }[];
 }
 
 /** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */
@@ -542,6 +560,26 @@ export interface VDTLine {
    *  the widths of its text segments; renderers paint the line with the sum
    *  of both. Absent when the line takes none. */
   letterSpacing?: number;
+  /** The order in which renderers advance along the line through
+   *  `segments` (indices into it), when it is not 0, 1, … n − 1. The
+   *  engine computes it from the paragraph's bidi levels (UAX #9 L1/L2):
+   *  the visual order, left to right on the sheet, in a left-to-right
+   *  frame; its reverse in a mirrored (right-to-left) frame, which turns
+   *  the whole flow. Segments stay in logical order, so copied text, links
+   *  and tagging read them as written. Absent on a line with no
+   *  right-to-left run. */
+  order?: number[];
+  /** The span the line's text fills and aligns in, when it is not
+   *  `[bbox.x, right edge of the block]`: set on the lines of a block whose
+   *  direction opposes its frame's (an English quotation in an Arabic book),
+   *  whose indent and ragged edge fall on the other side. Absent
+   *  otherwise. */
+  measure?: { x: number; width: number };
+  /** How many kashidas (tatweels, U+0640) justification inserted into the
+   *  line's words, for warnings and overlays. The tatweels themselves are in
+   *  the segments' text; copied and extracted text leaves them out. Absent
+   *  when there are none. */
+  kashida?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -1171,6 +1209,11 @@ export interface VDTBlock {
    *  outermost first — the top-level box stays `containerId`. A nested
    *  frame's own id is the last entry of its path. Absent at top level. */
   calloutPath?: number[];
+  /** Base direction of the block's text (its paragraph embedding level),
+   *  when it differs from its page frame's: a left-to-right island in a
+   *  right-to-left book, an Arabic quotation in a left-to-right one.
+   *  Absent when the block runs as its frame does. */
+  direction?: 'ltr' | 'rtl';
 }
 
 /** Resolved geometry of a `:::callout` frame block (see `VDTBlock.callout`). */
