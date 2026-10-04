@@ -38,8 +38,10 @@ describe('arabicDefaults', () => {
       ['abjad', '', '-'],
       ['arabic', '(', ')'],
     ]);
-    expect(c.footnotes).toEqual({ numbering: 'page' });
+    expect(c.footnotes).toEqual({ numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline' });
     expect(resolveFootnotesConfig(c.footnotes, c.locale).markerPosition).toBe('superscript');
+    // Emphasis is already bold in an Arabic book: no row.
+    expect(c.bodyText?.emphasis).toBeUndefined();
     // Nothing else moves: the language, the direction, the palette.
     expect(c.locale).toBe('ar');
     expect(c.direction).toBeUndefined();
@@ -57,8 +59,9 @@ describe('arabicDefaults', () => {
     expect(change(r, 'listNumbers')).toMatchObject({ from: { kind: 'text', text: '١. ١. ١.' }, to: { kind: 'text', text: '١- أ- (١)' } });
     expect(change(r, 'footnotes')).toMatchObject({
       from: { kind: 'footnotes', marker: '١', position: 'superscript', numbering: 'chapter' },
-      to: { kind: 'footnotes', marker: '١', position: 'superscript', numbering: 'page' },
+      to: { kind: 'footnotes', marker: '(١)', position: 'superscript', numbering: 'page', noteNumber: 'inline' },
     });
+    expect(change(r, 'footnotes')?.from).not.toHaveProperty('noteNumber');
     // The Maghreb prints European digits.
     const ma = arabicDefaults(arabicBook('ar-MA'), { locale: 'ar-MA' });
     expect(change(ma, 'captionLabel')?.to).toEqual({ kind: 'text', text: 'شكل 1-1: …' });
@@ -209,5 +212,40 @@ describe('document direction and digits', () => {
     expect(isArabicScriptLanguage('he')).toBe(false);
     expect(isArabicScriptLanguage('en')).toBe(false);
     expect(isArabicScriptLanguage(undefined)).toBe(false);
+  });
+
+  it('returns an emphasis the author set to Auto, which is bold in Arabic', () => {
+    for (const emphasis of ['italic', 'color', 'overline'] as const) {
+      const base: PostextConfig = { ...arabicBook(), bodyText: { emphasis, lineHeight: { value: 1.75, unit: 'em' } } };
+      const r = arabicDefaults(base, { locale: 'ar' });
+      expect(change(r, 'emphasis'), emphasis).toMatchObject({
+        from: { kind: 'emphasis', value: emphasis },
+        to: { kind: 'emphasis', value: 'bold', auto: true },
+        customised: true,
+        applied: false,
+      });
+      expect(r.config.bodyText?.emphasis).toBe(emphasis);
+      const ticked = arabicDefaults(base, { locale: 'ar', include: ['emphasis'] }).config;
+      expect(ticked.bodyText).toEqual({ lineHeight: { value: 1.75, unit: 'em' } });
+    }
+    // An explicit bold, or Auto, needs no row.
+    expect(ids(arabicDefaults({ ...arabicBook(), bodyText: { emphasis: 'bold' } }, { locale: 'ar' }))).not.toContain('emphasis');
+    expect(ids(arabicDefaults({ ...arabicBook(), bodyText: { emphasis: 'auto' } }, { locale: 'ar' }))).not.toContain('emphasis');
+  });
+
+  it('sets notes in parentheses with the note\'s number on the line, keeping a template of the author\'s own', () => {
+    // Per-page notes already: the row still brings the parentheses.
+    const paged = arabicDefaults({ ...arabicBook(), footnotes: { numbering: 'page' } }, { locale: 'ar' });
+    expect(change(paged, 'footnotes')).toMatchObject({ customised: false, applied: true });
+    expect(paged.config.footnotes).toEqual({ numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline' });
+    // Applied once, nothing is left to do.
+    expect(ids(arabicDefaults(paged.config, { locale: 'ar' }))).not.toContain('footnotes');
+    // A template of the author's own («[١]») is theirs.
+    const own = arabicDefaults({ ...arabicBook(), footnotes: { markerTemplate: '[{n}]' } }, { locale: 'ar' });
+    expect(change(own, 'footnotes')).toMatchObject({
+      from: { kind: 'footnotes', marker: '[١]' },
+      customised: true,
+      applied: false,
+    });
   });
 });

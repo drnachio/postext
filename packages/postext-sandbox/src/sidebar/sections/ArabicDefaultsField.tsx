@@ -32,6 +32,7 @@ const ITEM_LABELS: Record<ArabicDefaultId, keyof SandboxLabels> = {
   lineHeight: 'bodyLineHeight',
   textAlign: 'bodyTextAlign',
   hyphenation: 'bodyHyphenation',
+  emphasis: 'bodyEmphasis',
   numerals: 'numerals',
   resourceTypes: 'chineseDefaultsResourceTypes',
   captionLabel: 'chineseDefaultsCaptionLabel',
@@ -50,6 +51,17 @@ export function arabicValueText(v: ArabicDefaultValue, labels: SandboxLabels, ui
       return auto(v.value === 'arab' ? labels.numeralsArab : v.value === 'arabext' ? labels.numeralsArabext : labels.numeralsLatn, v.auto);
     case 'dimension':
       return `${formatNumber(v.value.value, uiLocale)} ${v.value.unit}`;
+    case 'emphasis':
+      return auto(
+        v.value === 'bold' ? labels.bodyEmphasisBold : v.value === 'color' ? labels.bodyEmphasisColor : v.value === 'overline' ? labels.bodyEmphasisOverline : labels.bodyEmphasisItalic,
+        v.auto,
+      );
+    case 'footnotes': {
+      const text = chineseValueText({ kind: 'footnotes', marker: v.marker, position: v.position, numbering: v.numbering }, labels, uiLocale);
+      if (!v.noteNumber) return text;
+      const note = v.noteNumber === 'inline' ? labels.footnotesMarkerPositionInline : labels.footnotesMarkerPositionSuperscript;
+      return `${text}; ${labels.footnotesNoteNumberPosition}: ${note}`;
+    }
     default:
       return chineseValueText(v, labels, uiLocale);
   }

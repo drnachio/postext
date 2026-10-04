@@ -4,13 +4,13 @@
 // ticks and unticks rows, and dispatches `config` as one step;
 // `undoArabicDefaults` takes that step back.
 //
-// Only settings the engine has today are listed. Kashida justification,
-// the parenthesised note marker «(١)» and the emphasis Arabic sets in bold
-// rather than italics join the list when the engine gains them.
+// Only settings the engine has today are listed. Kashida justification
+// joins the list when the engine gains it.
 
 import type {
   DigitSystem,
   Dimension,
+  EmphasisStyle,
   FootnoteNumbering,
   FootnotesConfig,
   HeadingLevelConfig,
@@ -59,6 +59,7 @@ export type ArabicDefaultId =
   | 'lineHeight'
   | 'textAlign'
   | 'hyphenation'
+  | 'emphasis'
   | 'numerals'
   | 'resourceTypes'
   | 'captionLabel'
@@ -82,7 +83,16 @@ export type ArabicDefaultValue =
   | { kind: 'direction'; value: 'ltr' | 'rtl'; auto?: boolean }
   | { kind: 'binding'; value: 'left' | 'right'; auto?: boolean }
   | { kind: 'digits'; value: DigitSystem; auto?: boolean }
-  | { kind: 'footnotes'; marker: string; position: 'superscript' | 'inline'; numbering: FootnoteNumbering }
+  | { kind: 'emphasis'; value: EmphasisStyle; auto?: boolean }
+  | {
+    kind: 'footnotes';
+    /** The marker as the text shows it, its template applied: «(١)». */
+    marker: string;
+    position: 'superscript' | 'inline';
+    numbering: FootnoteNumbering;
+    /** Where the note's own number stands, when not as the marker. */
+    noteNumber?: 'superscript' | 'inline';
+  }
   | { kind: 'none' };
 
 export interface ArabicDefaultChange {
@@ -150,8 +160,14 @@ const CHAPTER_SAMPLE = 'الفصل الأول';
 const CHAPTER_SEPARATOR = ': ';
 const DEFAULT_NUMBER_SEPARATOR = ' ';
 /** Notes numbered again on every page, as critical editions and most
- *  Arabic books number them; the numbers take the document's digits. */
-const ARABIC_FOOTNOTES: Pick<FootnotesConfig, 'numbering'> = { numbering: 'page' };
+ *  Arabic books number them, in parentheses: the marker raised in the text
+ *  «(١)», the note opening with its «(١)» on the line (#376). The numbers
+ *  take the document's digits. */
+const ARABIC_FOOTNOTES: Pick<FootnotesConfig, 'numbering' | 'markerTemplate' | 'noteNumberPosition'> = {
+  numbering: 'page',
+  markerTemplate: '({n})',
+  noteNumberPosition: 'inline',
+};
 
 /** Arabic list numbers: ١- then أ- (abjad letters) then (١). The hyphen
  *  after the number is the usual Arabic mark; decimal levels take the
@@ -314,6 +330,21 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
     });
   }
 
+  // Emphasis: in bold, Arabic type having no italics. Auto already sets it
+  // so in an Arabic book; the row returns an emphasis the author chose
+  // (italics, which leave Arabic words upright and unmarked, a colour, a
+  // line over the words) to Auto.
+  const rawEmphasis = body?.emphasis;
+  if (rawEmphasis === 'italic' || rawEmphasis === 'color' || rawEmphasis === 'overline') {
+    rows.push({
+      id: 'emphasis',
+      from: { kind: 'emphasis', value: rawEmphasis },
+      to: { kind: 'emphasis', value: 'bold', auto: true },
+      customised: true,
+      apply: (c) => set(c, 'bodyText', without(c.bodyText, 'emphasis')),
+    });
+  }
+
   // Digits: those of the region (٠١٢ in the Mashriq, 012 in the Maghreb).
   const regionDigits = defaultNumeralsFor(locale);
   if (config.numerals !== undefined && config.numerals !== 'auto' && digits !== regionDigits) {
@@ -414,22 +445,30 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
     });
   }
 
-  // Footnotes: numbered again on every page.
+  // Footnotes: numbered again on every page, in parentheses, the note's
+  // own number on the line.
   const fromNotes = resolveFootnotesConfig(config.footnotes, locale);
   const toNotes = resolveFootnotesConfig({ ...config.footnotes, ...ARABIC_FOOTNOTES }, locale);
   const notesValue = (f: typeof fromNotes, d: DigitSystem): ArabicDefaultValue => ({
     kind: 'footnotes',
-    marker: formatNumeral(1, documentNumeralStyle(f.numberFormat, d)),
+    marker: (f.markerTemplate ?? '{n}').replace('{n}', formatNumeral(1, documentNumeralStyle(f.numberFormat, d))),
     position: f.markerPosition,
     numbering: f.numbering,
+    ...(f.noteNumberPosition && f.noteNumberPosition !== f.markerPosition ? { noteNumber: f.noteNumberPosition } : {}),
   });
-  if (fromNotes.numbering !== toNotes.numbering) {
-    const raw = config.footnotes?.numbering;
+  const notesKey = (f: typeof fromNotes) => `${f.numbering} ${f.markerTemplate ?? '{n}'} ${f.noteNumberPosition ?? f.markerPosition}`;
+  if (notesKey(fromNotes) !== notesKey(toNotes)) {
+    const raw = config.footnotes;
+    // The author's own: a value that is neither the engine's default nor
+    // the Arabic one.
+    const own = (raw?.numbering !== undefined && raw.numbering !== 'chapter' && raw.numbering !== ARABIC_FOOTNOTES.numbering)
+      || (raw?.markerTemplate !== undefined && raw.markerTemplate !== '{n}' && raw.markerTemplate !== ARABIC_FOOTNOTES.markerTemplate)
+      || (raw?.noteNumberPosition !== undefined && raw.noteNumberPosition !== 'auto' && raw.noteNumberPosition !== ARABIC_FOOTNOTES.noteNumberPosition);
     rows.push({
       id: 'footnotes',
       from: notesValue(fromNotes, digits),
       to: notesValue(toNotes, toDigits),
-      customised: raw !== undefined && raw !== 'chapter',
+      customised: own,
       apply: (c) => ({ ...c, footnotes: { ...c.footnotes, ...ARABIC_FOOTNOTES } }),
     });
   }
