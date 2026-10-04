@@ -38,6 +38,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "epubcheck": "EPUBCHECK=1 vitest run src/epubcheck.test.ts",
+    "validate": "tsc && node scripts/validate.mjs",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
