@@ -15,6 +15,13 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
   pageNegative?: boolean;
   /** A page's text alternative. Default `Page n`. */
   alt?: (index: number) => string;
+  /**
+   * Draws over a painted page (a selection, a caret): `ctx` is set to the
+   * page's own pixels (the untrimmed sheet, as the document's coordinates
+   * are), over the page as painted. Returns whether it drew anything. Run
+   * when a page is painted and on `redecorate`.
+   */
+  decorate?: (index: number, ctx: CanvasRenderingContext2D) => boolean;
 }
 
 export interface FolioDocumentViewer extends FolioViewer {
@@ -23,6 +30,9 @@ export interface FolioDocumentViewer extends FolioViewer {
    *  keeps its painting; `repaint` paints every page again (an image that
    *  came in after the pages were painted). */
   setDocument(doc: VDTDocument, options?: { at?: number; repaint?: boolean }): void;
+  /** Draws the decorations (`decorate`) again on these pages, or on every
+   *  painted page; the book shows them at once, on a turning leaf too. */
+  redecorate(pages?: Iterable<number>): void;
 }
 
 /** Whether the document's first page is a recto: page 1, or a chapter
@@ -140,6 +150,9 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const reach = options.window ?? 3;
   let current = doc;
   let canvases: (HTMLCanvasElement | null)[] = [];
+  /** A decorated page's canvas: its painting with the decorations over
+   *  it, kept (and drawn again in place) once a page has been decorated. */
+  let decorated: (HTMLCanvasElement | null)[] = [];
   /** Page → the slot width (device px) it was painted for. */
   let painted = new Map<number, number>();
   let focus: number[] = [options.at ?? 0];
@@ -162,7 +175,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     current.pages.map((_, i) => {
       const canvas = canvases[i];
       const paper = pagePaperOf(current.pages[i]);
-      if (painted.has(i) && canvas) return { src: canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
+      if (painted.has(i) && canvas) return { src: decorated[i] ?? canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
       return paper ? { src: "" as const, paper } : "";
     });
 
@@ -192,6 +205,47 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     if (old) old.width = old.height = 0;
     canvases[i] = canvas;
     painted.set(i, width);
+    // A new painting: decorated afresh, on a canvas of its own (its
+    // texture follows the element).
+    free(decorated[i]);
+    decorated[i] = null;
+    decorate(i);
+  }
+
+  const free = (canvas: HTMLCanvasElement | null | undefined) => {
+    if (canvas) canvas.width = canvas.height = 0;
+  };
+
+  /** Draws page `i`'s decorations over its painting. True when the page
+   *  shows another canvas than before (it was not decorated). */
+  function decorate(i: number): boolean {
+    const draw = options.decorate;
+    const base = canvases[i];
+    const page = current.pages[i];
+    if (!draw || !base || !page) return false;
+    let target = decorated[i];
+    const fresh = !target;
+    target ??= document.createElement("canvas");
+    if (target.width !== base.width || target.height !== base.height) {
+      target.width = base.width;
+      target.height = base.height;
+    }
+    const ctx = target.getContext("2d");
+    if (!ctx) return false;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+    ctx.drawImage(base, 0, 0);
+    // The page's own pixels: the canvas shows the trimmed page at its size.
+    const inset = Math.max(0, current.trimOffset);
+    const scale = base.width / trimmedSize(page, current).width;
+    ctx.setTransform(scale, 0, 0, scale, -inset * scale, -inset * scale);
+    ctx.save();
+    const drew = draw(i, ctx);
+    ctx.restore();
+    if (!drew && fresh) return false;
+    decorated[i] = target;
+    return fresh;
   }
 
   /** Paints what the open spread needs now and lets go of the far pages;
@@ -211,6 +265,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       const canvas = canvases[i];
       if (canvas) canvas.width = canvas.height = 0;
       canvases[i] = null;
+      free(decorated[i]);
+      decorated[i] = null;
       painted.delete(i);
       changed = true;
     }
@@ -326,6 +382,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     next: viewer.next,
     prev: viewer.prev,
     setPages: viewer.setPages,
+    refreshPage: viewer.refreshPage,
     setLabels: viewer.setLabels,
     resetView: viewer.resetView,
     setInteraction: viewer.setInteraction,
@@ -345,9 +402,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       const at = Math.max(0, Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0));
       const before = current;
       const oldCanvases = canvases;
+      const oldDecorated = decorated;
       const oldPainted = painted;
       current = next;
       canvases = [];
+      decorated = [];
       painted = new Map();
       focus = [at];
       // A page that reads the same keeps its painting (and its texture):
@@ -361,6 +420,10 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
           canvases[i] = canvas;
           painted.set(i, oldPainted.get(k)!);
           oldCanvases[k] = null;
+          // Its decorated canvas too (drawn again below, for the new
+          // document's selection).
+          decorated[i] = oldDecorated[k] ?? null;
+          oldDecorated[k] = null;
         }
       }
       // The open pages painted before the swap, so no frame shows them
@@ -368,6 +431,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       const width = slotWidth();
       for (let i = at - 2; i <= at + 3; i++) if (i >= 0 && i < next.pages.length && painted.get(i) !== width) paint(i, width);
       for (const canvas of oldCanvases) if (canvas) canvas.width = canvas.height = 0;
+      for (const canvas of oldDecorated) free(canvas);
+      for (const i of painted.keys()) decorate(i);
       viewer.setAppearance(appearanceOf(next, hostAppearance));
       viewer.setPages(sources(), {
         firstPageRecto: firstPageIsRecto(next),
@@ -384,13 +449,25 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       }
       refresh(around(viewer.state));
     },
+    redecorate(pages?: Iterable<number>) {
+      let swapped = false;
+      for (const i of pages ?? [...painted.keys()]) {
+        if (!painted.has(i)) continue;
+        const had = decorated[i];
+        if (decorate(i)) swapped = true;
+        else if (had) viewer.refreshPage(had);
+      }
+      if (swapped) viewer.setPages(sources());
+    },
     dispose() {
       cancelIdle(idle);
       cancelAnimationFrame(sweepFrame);
       clearTimeout(resizeTimer);
       viewer.dispose();
       for (const canvas of canvases) if (canvas) canvas.width = canvas.height = 0;
+      for (const canvas of decorated) free(canvas);
       canvases = [];
+      decorated = [];
       painted.clear();
     },
   };

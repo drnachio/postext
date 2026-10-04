@@ -138,6 +138,8 @@ export interface FolioViewer {
   resetView(): void;
   /** Changes what the left button does. */
   setInteraction(mode: FolioInteraction): void;
+  /** A page's canvas was drawn again in place: shows it again. */
+  refreshPage(src: PageSource): void;
   /** The page under a pointer and where on it, as the book is seen (the
    *  tilted, orbited 3D book included); null off the open pages. */
   pageAt(event: { clientX: number; clientY: number }): FolioPagePoint | null;
@@ -824,6 +826,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     },
     pageAt,
     pointOnScreen,
+    refreshPage(src) {
+      flipper?.touch(src);
+    },
     setAppearance(next) {
       appearance = { ...appearance, ...next };
       const flip = flipAppearance();

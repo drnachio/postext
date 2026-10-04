@@ -17,6 +17,7 @@ import { useCompactLayout } from '../hooks/useCompactLayout';
 import { defaultDocumentLocale } from './CanvasPreview/layoutUtils';
 import type { BookPageMap } from './usePageHashSync';
 import { FolioLoading } from './FolioLoading';
+import { useFolioSelection } from './useFolioSelection';
 
 interface FolioPreviewProps {
   /** What the left button does on the book. */
@@ -165,6 +166,20 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const [opened, setOpened] = useState(false);
   const interactionRef = useRef(interaction);
   interactionRef.current = interaction;
+  // The document the viewer shows, for the page interaction.
+  const viewerVdtRef = useRef<VDTDocument | null>(null);
+  viewerVdtRef.current = shownDoc?.doc ?? null;
+  const selection = useFolioSelection({
+    viewerRef,
+    docRef: viewerVdtRef,
+    stitchedRef,
+    chapterDocsRef,
+    sourceRef: sharedDocSourceRef,
+    interactionRef,
+    docKey: shownDoc,
+  });
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
   const callbacksRef = useRef({ onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange });
   callbacksRef.current = { onGeneratingChange, onPageCountChange, onCurrentPageChange, onSpreadChange, onBindingChange };
 
@@ -353,14 +368,20 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         interaction: interactionRef.current,
         appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
-        onTarget: (state) => callbacksRef.current.onSpreadChange?.(state.pages),
+        decorate: (index, ctx) => selectionRef.current.decorate(index, ctx),
+        onTarget: (state) => {
+          callbacksRef.current.onSpreadChange?.(state.pages);
+          selectionRef.current.onSpread();
+        },
         onChange: (state) => {
           callbacksRef.current.onSpreadChange?.(state.pages);
+          selectionRef.current.onSpread();
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
         },
       });
       viewerRef.current = viewer;
+      selectionRef.current.attach(viewer);
       callbacksRef.current.onSpreadChange?.(viewer.state.pages);
       paintedKeyRef.current = paintKey;
       setOpened(true);

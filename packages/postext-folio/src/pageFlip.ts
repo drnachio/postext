@@ -1672,6 +1672,16 @@ export class PageFlipper {
     this.redraw();
   }
 
+  /** A page source drawn again in place (a canvas repainted): its
+   *  texture is uploaded again and the book redrawn. */
+  touch(src: PageSource) {
+    if (!src || typeof src === "string") return;
+    const tex = this.ready.get(src);
+    if (!tex) return;
+    tex.needsUpdate = true;
+    this.redraw();
+  }
+
   /** Starts loading the pages of these spreads as textures. */
   preload(indexes: number[]) {
     for (const i of indexes) for (const src of this.book[i] ?? []) if (src) void this.texture(src);

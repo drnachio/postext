@@ -129,27 +129,86 @@ export function attachSlotClickHandler(
   pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>,
 ): void {
   slot.style.cursor = 'text';
-  const sourceOfPage = (): ComposedBook | null =>
-    pageSourceRef?.current ? pageSourceRef.current(pageIndex) : sourceRef.current;
+  attachPageInteraction(slot, {
+    // Read the current slot size instead of the creation-time displayWidth/Height:
+    // applyDisplaySize mutates the canvas/overlay CSS dims on resize, so a cached
+    // scale factor goes stale and clicks land on the wrong offset.
+    locate: (ev) => {
+      const rect = slot.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return null;
+      return {
+        pageIndex,
+        x: (ev.clientX - rect.left) * (pageWidthPx / rect.width),
+        y: (ev.clientY - rect.top) * (pageHeightPx / rect.height),
+      };
+    },
+    docRef,
+    dispatchRef,
+    activePanelRef,
+    sourceRef,
+    navigateRef,
+    resourcesRef,
+    pageSourceRef,
+    showLocation: (doc, loc) => scrollToResourceLocation(slot, doc, loc),
+    setCursor: (cursor) => {
+      slot.style.cursor = cursor;
+    },
+  });
+}
 
-  // Read the current slot size instead of the creation-time displayWidth/Height:
-  // applyDisplaySize mutates the canvas/overlay CSS dims on resize, so a cached
-  // scale factor goes stale and clicks land on the wrong offset.
-  const resolveSheetPoint = (ev: MouseEvent): { x: number; y: number } | null => {
-    const rect = slot.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return null;
-    return {
-      x: (ev.clientX - rect.left) * (pageWidthPx / rect.width),
-      y: (ev.clientY - rect.top) * (pageHeightPx / rect.height),
-    };
-  };
+/** A point on a page of the document, in sheet pixels (the page's own
+ *  coordinates, before any flow rotation). */
+export interface PagePointer {
+  pageIndex: number;
+  x: number;
+  y: number;
+}
+
+export interface PageInteractionOptions {
+  /** The page and point under a pointer, or null off the pages. */
+  locate: (ev: MouseEvent) => PagePointer | null;
+  docRef: MutableRefObject<VDTDocument | null>;
+  dispatchRef: MutableRefObject<Dispatch<SandboxAction>>;
+  activePanelRef: MutableRefObject<PanelId | null>;
+  sourceRef: MutableRefObject<ComposedBook | null>;
+  navigateRef?: MutableRefObject<PageNavigator | null>;
+  resourcesRef?: MutableRefObject<Resource[] | null>;
+  pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>;
+  /** Brings a resource or anchor of the document into view. */
+  showLocation: (doc: VDTDocument, loc: ResourceLocation) => void;
+  /** The cursor over the pages: `text`, or `pointer` over a link. */
+  setCursor: (cursor: 'text' | 'pointer') => void;
+  /** Whether the pointer is the reader's to select with now (the Folio's
+   *  select mode); always, when left out. */
+  enabled?: () => boolean;
+  /** A finger drags a selection too (the Folio, where it never scrolls);
+   *  otherwise a touch drag scrolls and a tap only follows links. */
+  touchSelects?: boolean;
+}
+
+/**
+ * The page interaction of the viewers that show the document's pages: a
+ * click puts the caret in the source, a drag selects, a double click a
+ * word, a click on a link follows it, on editable resource text opens its
+ * resource. `locate` says which page and point an event falls on, so a
+ * single element can carry several pages (the Folio's spread).
+ */
+export function attachPageInteraction(target: HTMLElement, opts: PageInteractionOptions): void {
+  const { locate, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef } = opts;
+  const on = () => opts.enabled?.() ?? true;
+  // The page the drag (or the click) started on: its book maps the offsets.
+  let pageIndex = -1;
+  const sourceOfPage = (page = pageIndex): ComposedBook | null =>
+    pageSourceRef?.current ? pageSourceRef.current(page) : sourceRef.current;
+
+  const resolveSheetPoint = (ev: MouseEvent): PagePointer | null => locate(ev);
   // The point in the page's flow frame, where the text, the floats and
   // the opener live: a vertical page's flow is the sheet turned a quarter
   // turn (`VDTPage.flow`), the identity elsewhere.
-  const resolvePagePoint = (ev: MouseEvent): { x: number; y: number } | null => {
+  const resolvePagePoint = (ev: MouseEvent): PagePointer | null => {
     const pt = resolveSheetPoint(ev);
-    const page = docRef.current?.pages[pageIndex];
-    return pt && page ? pageToFlow(page, pt.x, pt.y) : pt;
+    const page = pt ? docRef.current?.pages[pt.pageIndex] : undefined;
+    return pt && page ? { pageIndex: pt.pageIndex, ...pageToFlow(page, pt.x, pt.y) } : pt;
   };
 
   const resolveOffset = (ev: MouseEvent): number | null => {
@@ -157,7 +216,7 @@ export function attachSlotClickHandler(
     if (!doc) return null;
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
-    return pixelToSourceOffset(doc, pageIndex, pt.x, pt.y);
+    return pixelToSourceOffset(doc, pt.pageIndex, pt.x, pt.y);
   };
 
   const resolveLink = (ev: MouseEvent): LinkTarget | null => {
@@ -165,7 +224,7 @@ export function attachSlotClickHandler(
     if (!doc) return null;
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
-    return linkTargetAtPixel(doc, pageIndex, pt.x, pt.y);
+    return linkTargetAtPixel(doc, pt.pageIndex, pt.x, pt.y);
   };
 
   /** Whether a click here follows a link: an internal one always, a URL
@@ -191,7 +250,7 @@ export function attachSlotClickHandler(
     }
     const loc = findLinkLocation(doc, link);
     if (loc) {
-      scrollToResourceLocation(slot, doc, loc);
+      opts.showLocation(doc, loc);
       return true;
     }
     if (link.kind === 'anchor' && link.pageIndex !== undefined && navigateRef?.current) {
@@ -206,7 +265,7 @@ export function attachSlotClickHandler(
     if (!doc || !navigateRef?.current) return null;
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
-    return pageTargetAtPixel(doc, pageIndex, pt.x, pt.y);
+    return pageTargetAtPixel(doc, pt.pageIndex, pt.x, pt.y);
   };
 
   // The resource behind an image drawn by a design slot under the pointer.
@@ -216,7 +275,7 @@ export function attachSlotClickHandler(
     if (!doc || !resources) return null;
     const pt = resolveSheetPoint(ev);
     if (!pt) return null;
-    const fileId = designImageFileIdAtPixel(doc, pageIndex, pt.x, pt.y);
+    const fileId = designImageFileIdAtPixel(doc, pt.pageIndex, pt.x, pt.y);
     if (fileId === null) return null;
     return resources.find((r) => r.bitmap?.fileId === fileId || r.svg?.fileId === fileId)?.id ?? null;
   };
@@ -229,7 +288,7 @@ export function attachSlotClickHandler(
     if (!doc) return null;
     const pt = resolvePagePoint(ev);
     if (!pt) return null;
-    return resourceTextAtPixel(doc, pageIndex, pt.x, pt.y, getSvgTextIndex);
+    return resourceTextAtPixel(doc, pt.pageIndex, pt.x, pt.y, getSvgTextIndex);
   };
 
   const focusEditor = (anchor: number, head: number, selectWord: boolean): void => {
@@ -280,9 +339,13 @@ export function attachSlotClickHandler(
   // double tap goes to the source.
   let touchTap = false;
 
-  slot.addEventListener('pointerdown', (ev) => {
-    touchTap = ev.pointerType === 'touch';
+  target.addEventListener('pointerdown', (ev) => {
+    if (!on()) return;
+    touchTap = ev.pointerType === 'touch' && !opts.touchSelects;
     if (ev.button !== 0 || touchTap) return;
+    const at = locate(ev);
+    if (!at) return;
+    pageIndex = at.pageIndex;
     const resourceHit = resolveResourceHit(ev);
     const offset = resourceHit ? resourceHit.offset : resolveOffset(ev);
     if (offset === null) return;
@@ -292,13 +355,14 @@ export function attachSlotClickHandler(
     dragPointerId = ev.pointerId;
     dragging = false;
     lastHead = null;
-    try { slot.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
+    try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
   });
 
-  slot.addEventListener('pointermove', (ev) => {
+  target.addEventListener('pointermove', (ev) => {
     if (dragPointerId === null) {
+      if (!on()) return;
       // Hover feedback: refs, contents rows and design images read as links.
-      slot.style.cursor = isFollowable(resolveLink(ev), ev) || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text';
+      opts.setCursor(isFollowable(resolveLink(ev), ev) || resolvePageTarget(ev) !== null || resolveDesignImage(ev) !== null ? 'pointer' : 'text');
       return;
     }
     if (ev.pointerId !== dragPointerId) return;
@@ -328,7 +392,7 @@ export function attachSlotClickHandler(
   const endDrag = (ev: PointerEvent): void => {
     if (dragPointerId === null || ev.pointerId !== dragPointerId) return;
     const wasDragging = dragging;
-    try { slot.releasePointerCapture(ev.pointerId); } catch { /* ignore */ }
+    try { target.releasePointerCapture(ev.pointerId); } catch { /* ignore */ }
     dragPointerId = null;
     dragAnchorOffset = null;
     dragAnchorClient = null;
@@ -341,17 +405,20 @@ export function attachSlotClickHandler(
     }
   };
 
-  slot.addEventListener('pointerup', endDrag);
-  slot.addEventListener('pointercancel', endDrag);
+  target.addEventListener('pointerup', endDrag);
+  target.addEventListener('pointercancel', endDrag);
 
-  slot.addEventListener('click', (ev) => {
+  target.addEventListener('click', (ev) => {
     if (suppressNextClick) {
       suppressNextClick = false;
       ev.preventDefault();
       ev.stopPropagation();
       return;
     }
-    if (ev.detail === 0) return;
+    if (ev.detail === 0 || !on()) return;
+    const at = locate(ev);
+    if (!at) return;
+    pageIndex = at.pageIndex;
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed && sel.toString().length > 0) return;
     // A click on a link — a `:ref` to a resource or an anchor, a footnote
@@ -391,7 +458,11 @@ export function attachSlotClickHandler(
     focusEditor(offset, offset, false);
   });
 
-  slot.addEventListener('dblclick', (ev) => {
+  target.addEventListener('dblclick', (ev) => {
+    if (!on()) return;
+    const at = locate(ev);
+    if (!at) return;
+    pageIndex = at.pageIndex;
     const designImageId = touchTap ? resolveDesignImage(ev) : null;
     if (designImageId !== null) {
       ev.preventDefault();
