@@ -60,6 +60,7 @@ import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CONTAINER_EDGES } from './HeaderFooterSection/placementAdapter';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -156,6 +157,7 @@ interface IconFieldsProps {
  *  icon and the marker (the same `CalloutIconConfig` shape). */
 function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset, fieldId, iconResources, withPosition }: IconFieldsProps) {
   const labels = useSandboxLabels();
+  const side = flowSideLabels(useRightToLeftFlow(), labels.sideColumnSideLeft, labels.sideColumnSideRight);
   const kindOptions = [
     { value: 'none', label: labels.calloutStyleIconKindNone },
     { value: 'glyph', label: labels.calloutStyleIconKindGlyph },
@@ -169,11 +171,15 @@ function IconFields({ value, kindLabel, kindTooltip, update, isDefault, onReset,
     { value: 'inline', label: labels.calloutStyleIconPositionInline },
     { value: 'corner', label: labels.calloutStyleIconPositionCorner },
   ];
+  // Left and right are the body flow's sides; start and end the box's own
+  // (an English box in an Arabic book has its start on the left).
   const cornerSideOptions = [
-    { value: 'right', label: labels.sideColumnSideRight },
-    { value: 'left', label: labels.sideColumnSideLeft },
+    { value: 'right', label: side.right },
+    { value: 'left', label: side.left },
     { value: 'outer', label: labels.sideColumnSideOuter },
     { value: 'inner', label: labels.sideColumnSideInner },
+    { value: 'start', label: labels.sideTextStart },
+    { value: 'end', label: labels.sideTextEnd },
   ];
   const resourceOptions = [
     { value: '', label: labels.calloutStyleIconResourceNone },
@@ -341,6 +347,11 @@ function CalloutStyleCard({
   onRemove,
 }: CalloutStyleCardProps) {
   const labels = useSandboxLabels();
+  const rtl = useRightToLeftFlow();
+  const stripeSide = flowSideLabels(rtl, labels.calloutStyleStripeSideLeft, labels.calloutStyleStripeSideRight);
+  const labelSide = flowSideLabels(rtl, labels.calloutStyleLabelPositionTopLeft, labels.calloutStyleLabelPositionTopRight);
+  const textSide = flowSideLabels(rtl, labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
+  const markerSide = flowSideLabels(rtl, labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   // Ragged bodies hyphenate too once the body text turns ragged hyphenation on.
   const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
   const [idDraft, setIdDraft] = useState(style.id);
@@ -423,8 +434,10 @@ function CalloutStyleCard({
     labelResourceOptions.push({ value: resolved.label.icon.resourceId, label: resolved.label.icon.resourceId });
   }
   const labelPositionOptions = [
-    { value: 'top-right', label: labels.calloutStyleLabelPositionTopRight },
-    { value: 'top-left', label: labels.calloutStyleLabelPositionTopLeft },
+    { value: 'top-right', label: labelSide.right },
+    { value: 'top-left', label: labelSide.left },
+    { value: 'top-start', label: labels.calloutStyleLabelPositionTopStart },
+    { value: 'top-end', label: labels.calloutStyleLabelPositionTopEnd },
   ];
   const title = (partial: Partial<CalloutTitleStyleConfig>) => updateGroup('titleStyle', partial);
   const body = (partial: Partial<CalloutBodyStyleConfig>) => updateGroup('body', partial);
@@ -486,8 +499,10 @@ function CalloutStyleCard({
     { value: 'auto', label: labels.calloutStyleWidthAuto },
   ];
   const stripeSideOptions = [
-    { value: 'left', label: labels.calloutStyleStripeSideLeft },
-    { value: 'right', label: labels.calloutStyleStripeSideRight },
+    { value: 'left', label: stripeSide.left },
+    { value: 'right', label: stripeSide.right },
+    { value: 'start', label: labels.sideTextStart },
+    { value: 'end', label: labels.sideTextEnd },
     { value: 'top', label: labels.calloutStyleStripeSideTop },
   ];
   const transformOptions = [
@@ -495,13 +510,13 @@ function CalloutStyleCard({
     { value: 'uppercase', label: labels.calloutStyleTitleTransformUppercase },
   ];
   const bodyAlignOptions = [
-    { value: 'left', label: labels.bodyTextAlignLeft },
+    { value: 'left', label: textSide.left },
     { value: 'justify', label: labels.bodyTextAlignJustify },
   ];
   const markerAlignOptions = [
-    { value: 'left', label: labels.headerFooterElementAlignLeft },
+    { value: 'left', label: markerSide.left },
     { value: 'center', label: labels.headerFooterElementAlignCenter },
-    { value: 'right', label: labels.headerFooterElementAlignRight },
+    { value: 'right', label: markerSide.right },
   ];
 
   return (

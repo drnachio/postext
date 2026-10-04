@@ -29,6 +29,7 @@ import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview';
+import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 function newTypeId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -85,6 +86,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const config = useSandboxSelector((s) => s.config);
   const locale = useSandboxSelector((s) => s.locale);
   const resources = useSandboxResources();
+  const floatSide = flowSideLabels(useRightToLeftFlow(), labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
   const isDefault = config.resourceTypes === undefined;
   // Per-type caption overrides are shown merged over the resolved global
@@ -356,11 +358,11 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   />
                   <SelectInput
                     label={labels.resourceTypePlacementAlign}
-                    value={type.defaultPlacement?.align ?? 'left'}
+                    value={type.defaultPlacement?.align === 'start' ? 'left' : type.defaultPlacement?.align === 'end' ? 'right' : type.defaultPlacement?.align ?? 'left'}
                     options={[
-                      { value: 'left', label: labels.headerFooterElementAlignLeft },
+                      { value: 'left', label: floatSide.left },
                       { value: 'center', label: labels.headerFooterElementAlignCenter },
-                      { value: 'right', label: labels.headerFooterElementAlignRight },
+                      { value: 'right', label: floatSide.right },
                     ]}
                     onChange={(v) => updateTypePlacement(type, { align: v as ResourcePlacement['align'] })}
                     tooltip={labels.resourceTypePlacementAlignTooltip}

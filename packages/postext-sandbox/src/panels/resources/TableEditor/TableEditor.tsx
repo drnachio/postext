@@ -51,6 +51,10 @@ interface TableEditorProps {
   onFocusConsumed?: () => void;
   /** Selection inside the focused cell (`null` when it loses focus). */
   onCellSelectionChange?: (pos: TableCellPos, selection: InlineSelection | null) => void;
+  /** The direction the table runs (`table.direction`, else the
+   *  document's): a right-to-left table shows its first column on the
+   *  right, and its cells' `left` (their start) flush right. */
+  direction?: 'ltr' | 'rtl';
 }
 
 const columnCount = (m: TableModel): number =>
@@ -162,6 +166,7 @@ export function TableEditor({
   focusRequest = null,
   onFocusConsumed,
   onCellSelectionChange,
+  direction,
 }: TableEditorProps) {
   const labels = useSandboxLabels();
   // Bitmap / SVG resources a cell may embed (`TableCell.image`), by id.
@@ -507,6 +512,7 @@ export function TableEditor({
         onToggleHeaderRow={handleToggleHeaderRow}
         onToggleHeaderColumn={handleToggleHeaderColumn}
         onSetAlign={handleSetAlign}
+        rtl={direction === 'rtl'}
         onSetVerticalAlign={handleSetVerticalAlign}
         onPasteTsv={handlePasteTsv}
         imageOptions={imageOptions}
@@ -541,7 +547,7 @@ export function TableEditor({
       )}
 
       <div className="overflow-x-auto">
-        <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
+        <table dir={direction} style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
           <tbody>
             {model.rows.map((row, r) => (
               <tr key={r}>

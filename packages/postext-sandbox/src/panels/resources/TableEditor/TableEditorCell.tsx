@@ -130,7 +130,9 @@ export function TableEditorCell({
         onFocusCapture={() => onFocus(pos)}
         onPasteCapture={handlePaste}
         style={{
-          textAlign: cell.align ?? 'left',
+          // `left` / `right` are the cell's start and end (#371): flush
+          // right in a right-to-left table.
+          textAlign: cell.align === 'center' ? 'center' : cell.align === 'right' || cell.align === 'end' ? 'end' : 'start',
           fontWeight: cell.isHeader ? 600 : 400,
         }}
       >
