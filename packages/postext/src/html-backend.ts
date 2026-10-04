@@ -600,11 +600,16 @@ function renderRefRuns(
 
 /** Wraps each run of segments of one link (`VDTLineSegment.href`) in an
  *  `<a>`: `at` returns the markup to emit before a segment with that link
- *  (closing the previous anchor, opening its own), `end` the markup that
- *  closes the line. The segments stay absolutely positioned inside it; the
+ *  (closing the previous anchor, opening its own), `space` the markup to
+ *  emit before a word space, `end` the markup that closes the line. The segments stay absolutely positioned inside it; the
  *  anchor takes the text colour, so a link reads as the surrounding text. */
-function linkRuns(): { at: (href: string | undefined) => string; end: () => string } {
+function linkRuns(): { at: (href: string | undefined) => string; space: (next: string | undefined) => string; end: () => string } {
   let open: string | undefined;
+  const end = (): string => {
+    const close = open !== undefined ? '</a>' : '';
+    open = undefined;
+    return close;
+  };
   return {
     at(href) {
       if (href === open) return '';
@@ -614,11 +619,11 @@ function linkRuns(): { at: (href: string | undefined) => string; end: () => stri
         ? `<a href="${esc(href)}" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">`
         : '');
     },
-    end() {
-      const close = open !== undefined ? '</a>' : '';
-      open = undefined;
-      return close;
-    },
+    /** Before a word space: closes the open anchor unless the word after
+     *  the space (`next`) is part of the same link, so a link's text never
+     *  ends on a space (#403). */
+    space: (next) => (next === open ? '' : end()),
+    end,
   };
 }
 
@@ -634,6 +639,59 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
 }
 
 /**
+ * A word space of a line, or what separates it from the next, as text a
+ * selection copies (#403). Every word sits in its own absolutely positioned
+ * box, so without these the browser copies a line's words run together. The
+ * box is placed where the space falls (`x`) and paints nothing: the layout
+ * is unchanged. A space stretched by justification takes the stretch as
+ * `word-spacing`, so a selection's highlight spans the gap the reader sees.
+ * The markup is in logical order like the words', so a right-to-left line
+ * copies as written. Empty `text` (a gap the composer added, see
+ * `VDTLineSegment.autospace`) emits nothing.
+ */
+function copyTextHtml(text: string, x: number, stretch = 0): string {
+  if (!text) return '';
+  const spacing = Math.abs(stretch) >= 0.0005 ? `word-spacing:${stretch.toFixed(3)}px;` : '';
+  return `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${spacing}">${esc(text)}</span>`;
+}
+
+/** {@link copyTextHtml} for what follows a line (see {@link lineEndText}):
+ *  transparent, so a selection's highlight never runs past the line's end.
+ *  The text still copies; clipped (`overflow:hidden` on a box of no width)
+ *  it would not, Chrome leaves clipped text out of a selection's string. */
+const LINE_END_DECL = 'opacity:0;';
+function lineEndHtml(text: string, x: number): string {
+  if (!text) return '';
+  return `<span style="position:absolute;left:${x.toFixed(3)}px;top:0;${LINE_END_DECL}white-space:pre;">${esc(text)}</span>`;
+}
+
+/**
+ * What a copy puts between a line and the one after it in the same block
+ * (`next`), or after a block's last line (#403): nothing after a line that
+ * ends inside a word or on a hyphen or dash (`VDTLine.hyphenated`); a
+ * newline after a line of verse and after the last line of a paragraph (or
+ * of a heading, a caption, a cell); between two lines of a block, a space
+ * where the break consumed one — the plain text skips a character between
+ * them (`plainEnd` / `plainStart`) — and nothing where it did not (between
+ * two ideographs). Lines without those offsets, and a block's last line
+ * whose paragraph goes on in the next column or page (`isLastLine:
+ * false`), take a space unless the break has a CJK character on either
+ * side.
+ */
+function lineEndText(line: VDTLine, next: VDTLine | undefined): string {
+  if (line.hyphenated) return '';
+  if (line.verse || (!next && line.isLastLine !== false)) return '\n';
+  if (next && line.plainEnd !== undefined && next.plainStart !== undefined) return next.plainStart > line.plainEnd ? ' ' : '';
+  return cjkAt(Array.from(line.text.trimEnd()).pop()) || cjkAt(next && Array.from(next.text.trimStart())[0]) ? '' : ' ';
+}
+
+/** Whether `char` is CJK; no CJK character sits below U+1100, so a Latin
+ *  page never gets as far as the test. */
+function cjkAt(char: string | undefined): boolean {
+  return char !== undefined && char.codePointAt(0)! >= 0x1100 && hasCJK(char);
+}
+
+/**
  * The segments of a horizontal line. A line of the CJK composer goes to
  * {@link renderComposedSegments}. Any other line was set word by word and
  * carries none of the composer's fields (a segment's `tracking`,
@@ -644,8 +702,16 @@ function segmentHref(seg: VDTLineSegment): string | undefined {
  * line's `text` holds the text of every segment, except the leader of a
  * contents entry (`tocEntry`).
  */
-function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr', rootLang?: string): string {
-  if (line.cjkComposed) return renderComposedSegments(line, block, targets, rootDir);
+function renderSegments(
+  line: VDTLine,
+  block: VDTBlock,
+  targets?: ReadonlySet<string>,
+  rootDir: TextDirection = 'ltr',
+  rootLang?: string,
+  /** What a copy puts after the line (see {@link lineEndText}). */
+  end = '',
+): string {
+  if (line.cjkComposed) return renderComposedSegments(line, block, targets, rootDir, end);
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
   const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
@@ -666,7 +732,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
         ? Math.max(0, (room - plainWidth) / 2)
         : 0);
     const plainDir = dirAttr(block.direction ?? rootDir, rootDir);
-    return `<span${plainDir} style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
+    return `<span${plainDir} style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>` + lineEndHtml(end, plainLeft + plainWidth);
   }
 
   // Match canvas justification: stretch inter-word spaces to fill effective width.
@@ -719,6 +785,9 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
     const seg = segs[i]!;
     if (at) x = at[i]!;
     if (seg.kind === 'space') {
+      // The space as text, for copying (#403).
+      parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
+      parts.push(copyTextHtml(seg.text, x, useJustify ? justifiedSpaceWidth - seg.width : 0));
       x += useJustify ? justifiedSpaceWidth : seg.width;
       continue;
     }
@@ -750,6 +819,7 @@ function renderSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<st
     x += seg.width;
   }
   parts.push(links.end());
+  parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
@@ -773,7 +843,7 @@ function orderedOffsets(segs: readonly VDTLineSegment[], order: readonly number[
 /** {@link renderSegments} for a line of the CJK composer: hung marks and
  *  Han–Latin spaces kept out of the justification, each segment with its
  *  own tracking, ink offset and scale, warichu notes and ruby readings. */
-function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr'): string {
+function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr', end = ''): string {
   // The tracking after the last glyph is advance, not ink: centring and
   // right alignment leave it out (EF-153), as the canvas does.
   const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
@@ -786,7 +856,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       : block.textAlign === 'center'
         ? Math.max(0, (block.bbox.width - plainIndent - plainWidth) / 2)
         : 0;
-    return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>`;
+    return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>` + lineEndHtml(end, plainLeft + plainWidth);
   }
 
   // Match canvas justification: stretch inter-word spaces to fill effective width.
@@ -839,7 +909,12 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
     if (seg.kind === 'space') {
-      x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
+      // The space as text, for copying (#403): a Han–Latin gap only where
+      // the author typed one (its `text`).
+      const gap = useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
+      parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
+      parts.push(copyTextHtml(seg.text, x, gap - seg.width));
+      x += gap;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -878,6 +953,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     x += seg.width;
   }
   parts.push(links.end());
+  parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
@@ -1000,7 +1076,15 @@ function renderBullet(block: VDTBlock, rootDir: TextDirection = 'ltr'): string {
   return html;
 }
 
-function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string>, rootDir: TextDirection = 'ltr', rootLang?: string): string {
+function renderLine(
+  line: VDTLine,
+  block: VDTBlock,
+  targets?: ReadonlySet<string>,
+  rootDir: TextDirection = 'ltr',
+  rootLang?: string,
+  /** The block's line after this one (see {@link lineEndText}). */
+  next?: VDTLine,
+): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
   // Tracking — the block's (column balancing, a runt set short) and the
@@ -1019,7 +1103,7 @@ function renderLine(line: VDTLine, block: VDTBlock, targets?: ReadonlySet<string
     strikethroughDecl +
     trackingDecl +
     (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
-    `">${renderSegments(line, block, targets, rootDir, rootLang)}</div>`
+    `">${renderSegments(line, block, targets, rootDir, rootLang, lineEndText(line, next))}</div>`
   );
 }
 
@@ -1142,7 +1226,7 @@ function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, co
 /** A body line of a vertical page: its text segments down an upright box,
  *  its formulas, swatches and chips sideways where the canvas paints them
  *  (see the section comment). */
-function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, targets?: ReadonlySet<string>): string {
+function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, targets?: ReadonlySet<string>, next?: VDTLine): string {
   const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
   const trailing = lineTrailingTracking(line, lineTracking);
   const lineIndent = line.bbox.x - block.bbox.x;
@@ -1168,8 +1252,11 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   const justifiedSpaceWidth = useJustify ? (effectiveWidth - wordWidth) / spaceCount : 0;
   const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
+  const spaceAxis = axisOf(block.fontString);
   for (const seg of segs) {
     if (seg.kind === 'space') {
+      // The space as text, for copying (#403).
+      if (seg.text) inner.push(verticalSpan(x, spaceAxis, esc(seg.text)));
       x += useJustify && !seg.autospace ? justifiedSpaceWidth : seg.width;
       continue;
     }
@@ -1225,6 +1312,8 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   // Emphasis dots, proper-name and book-title lines (#193), in the turned
   // flow with the line's box.
   if (line.marks) sideways.push(verticalLineMarksHtml(line, block.color));
+  const end = lineEndText(line, next);
+  if (end) inner.push(verticalSpan(x, spaceAxis, esc(end), LINE_END_DECL));
   const width = Math.max(line.bbox.width, effectiveWidth);
   const decl = `font:${blockFont};color:${block.color};`
     + (block.strikethroughText ? 'text-decoration:line-through;' : '')
@@ -1334,6 +1423,8 @@ function renderResourceLine(
   rootDir: TextDirection = 'ltr',
   /** The language the document's root declares. */
   rootLang?: string,
+  /** What a copy puts after the line (see {@link lineEndText}). */
+  end = '',
 ): string {
   const baseFont = quoteFontString(fonts.normal);
   const parts: string[] = [];
@@ -1371,6 +1462,9 @@ function renderResourceLine(
       const seg = segs[i]!;
       if (at) x = at[i]!;
       if (seg.kind === 'space') {
+        // The space as text, for copying (#403).
+        parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
+        parts.push(copyTextHtml(seg.text, x));
         x += seg.width;
         continue;
       }
@@ -1396,8 +1490,10 @@ function renderResourceLine(
       x += seg.width;
     }
     parts.push(links.end());
+    parts.push(lineEndHtml(end, x));
   } else {
     parts.push(`<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`);
+    parts.push(lineEndHtml(end, line.bbox.width));
   }
   return (
     `<div class="pt-line" style="` +
@@ -1545,9 +1641,9 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;
     const color = cell.isHeader ? t.headerColor : t.color;
-    for (const line of cell.lines) {
-      parts.push(renderResourceLine(line, fonts, color, rb.linkColor, color, options.linkTargets, options.dir, options.rootLang));
-    }
+    cell.lines.forEach((line, i) => {
+      parts.push(renderResourceLine(line, fonts, color, rb.linkColor, color, options.linkTargets, options.dir, options.rootLang, lineEndText(line, cell.lines[i + 1])));
+    });
   }
   return parts.join('');
 }
@@ -1598,18 +1694,19 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
     italic: rb.captionItalicFontString,
     boldItalic: rb.captionBoldItalicFontString,
   };
-  for (const line of rb.captionLines) {
-    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor, options.linkTargets, options.dir, options.rootLang));
-  }
+  rb.captionLines.forEach((line, i) => {
+    parts.push(renderResourceLine(line, captionFonts, rb.captionColor, rb.linkColor, rb.captionLabelColor, options.linkTargets, options.dir, options.rootLang, lineEndText(line, rb.captionLines[i + 1])));
+  });
   const noteFonts: ResourceLineFonts = {
     normal: rb.noteFontString,
     bold: rb.noteBoldFontString,
     italic: rb.noteItalicFontString,
     boldItalic: rb.noteBoldItalicFontString,
   };
-  for (const line of [...rb.noteLines, ...(rb.continuesLines ?? [])]) {
-    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor, rb.noteColor, options.linkTargets, options.dir, options.rootLang));
-  }
+  const noteLines = [...rb.noteLines, ...(rb.continuesLines ?? [])];
+  noteLines.forEach((line, i) => {
+    parts.push(renderResourceLine(line, noteFonts, rb.noteColor, rb.linkColor, rb.noteColor, options.linkTargets, options.dir, options.rootLang, lineEndText(line, noteLines[i + 1])));
+  });
   if (!rot) return anchor + parts.join('');
   return (
     anchor +
@@ -1840,9 +1937,10 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   const parts: string[] = [];
   const v = options.vertical;
   parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block, options.dir));
-  for (const line of block.lines) {
-    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang));
-  }
+  block.lines.forEach((line, i) => {
+    const next = block.lines[i + 1];
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next));
+  });
   return parts.join('');
 }
 
