@@ -337,6 +337,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-toc-part', ['font-weight: bold', 'margin-block-start: 0.8em']));
   out.push(rule('.pt-toc-subtitle', ['font-style: italic', 'font-size: 0.9em']));
   out.push(rule('p.pt-bib', ['padding-inline-start: 2em', 'text-indent: -2em', 'margin-block-end: 0.3em']));
+  out.push(rule('p.pt-index-group', ['font-weight: bold', 'text-indent: 0', 'margin-block-start: 1em', 'page-break-after: avoid', 'break-after: avoid']));
   out.push(rule('p.pt-index-entry', ['text-indent: 0', 'text-align: start', 'hyphens: manual']));
 
   // --- maths, chips, swatches, Chinese marks ------------------------------

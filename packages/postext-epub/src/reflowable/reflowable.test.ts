@@ -4,7 +4,7 @@ import type { Resource, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
 import { PNG, baseConfig, layOut, layOutBook, pt } from './__tests__/vdt';
 import { checkXml } from './__tests__/xml';
 import { buildReflowablePublication } from '.';
-import { appendLine, type InlineContext, type TextSink } from './inline';
+import { appendLine, appendLines, type InlineContext, type TextSink } from './inline';
 import type { EpubPublication, RenderToEpubOptions } from '../types';
 
 const para = 'Body text that runs on for a while so the page fills and the paragraph wraps over several lines. ';
@@ -131,6 +131,12 @@ describe('joining lines', () => {
   it('joins Chinese lines with nothing between them', () => {
     expect(joined([line([seg('天地玄黄')]), line([seg('宇宙洪荒')])])).toBe('天地玄黄宇宙洪荒');
     expect(joined([line([seg('我用')]), line([seg('Python')])])).toBe('我用Python');
+  });
+
+  it('keeps a line break inside a paragraph (a line marked its last with more after it)', () => {
+    const sink: TextSink = { inl: [] };
+    appendLines(sink, [line([seg('Roses'), space(), seg('red,')], { isLastLine: true }), line([seg('violets')], { isLastLine: true })], ctx());
+    expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets');
   });
 
   it('leaves out the kashidas justification stretched a line with', () => {

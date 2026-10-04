@@ -214,12 +214,15 @@ function firstChar(items: InlineItem[]): string {
   return '';
 }
 
-/** Append a line to `sink`, joined to the line before it. `before` (page
- *  starts, anchors) goes right before the line's text. */
-export function appendLine(sink: TextSink, line: VDTLine, ctx: InlineContext, before: InlineItem[] = [], segments?: VDTLineSegment[]): void {
+/** Append a line to `sink`, joined to the line before it (or after a line
+ *  break, `hardBreak`: a line the author ended). `before` (page starts,
+ *  anchors) goes right before the line's text. */
+export function appendLine(sink: TextSink, line: VDTLine, ctx: InlineContext, before: InlineItem[] = [], segments?: VDTLineSegment[], hardBreak = false): void {
   const items = lineItems(line, ctx, segments);
   const prev = sink.prev;
-  if (prev && sink.inl.length > 0) {
+  if (hardBreak && sink.inl.length > 0) {
+    sink.inl.push({ t: 'raw', xhtml: '<br/>' });
+  } else if (prev && sink.inl.length > 0) {
     const last = lastText(sink.inl);
     const tail = last ? [...last.text].pop() ?? '' : '';
     if (prev.hyphenated) {
@@ -243,8 +246,11 @@ export function appendLine(sink: TextSink, line: VDTLine, ctx: InlineContext, be
 }
 
 /** Append every line of a block. */
+/** Append every line of a block (or of a fragment of one). A line marked
+ *  the paragraph's last with more lines after it in the same fragment
+ *  ended at a line break the author typed. */
 export function appendLines(sink: TextSink, lines: readonly VDTLine[], ctx: InlineContext, beforeLine?: (line: VDTLine, i: number) => InlineItem[]): void {
-  lines.forEach((line, i) => appendLine(sink, line, ctx, beforeLine?.(line, i) ?? []));
+  lines.forEach((line, i) => appendLine(sink, line, ctx, beforeLine?.(line, i) ?? [], undefined, i > 0 && lines[i - 1]!.isLastLine === true));
 }
 
 /** The plain text of inline items (labels, titles, alt text). */

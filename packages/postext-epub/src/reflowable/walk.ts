@@ -535,16 +535,29 @@ class DocWalker {
         node.id = idOf('a-', anchor);
         this.book.anchors.set(anchor, { file: this.file!, id: node.id });
       }
-    } else if (block.containerId !== undefined && !this.calloutIds.has(block.containerId)) {
+    } else if (block.containerId === undefined || !this.calloutIds.has(block.containerId)) {
       const style = paragraphStyleOf(block, this.config, this.bodyPx);
       if (style) cls.push(idOf('ps-', style));
     }
-    if (block.lines.some((l) => l.segments?.some((s) => s.pageLink !== undefined))) cls.push('pt-index-entry');
+    let lines = block.lines;
+    if (lines.some((l) => l.segments?.some((s) => s.pageLink !== undefined))) {
+      cls.push('pt-index-entry');
+      // A group letter of the index, set as the first line of its first
+      // entry in a face of its own: a paragraph of its own.
+      const head = lines[0]!.segments ?? [];
+      const letter = lines.length > 1 && head.some((g) => g.kind === 'text') && head.every((g) => g.kind === 'space' || (g.fontString !== undefined && g.pageLink === undefined));
+      if (letter) {
+        const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
+        state.nodes.push(group);
+        this.appendBlockLines({ inl: group.inl }, block, lines.slice(0, 1), this.takePages());
+        lines = lines.slice(1);
+      }
+    }
     if (cls.length) node.cls = cls;
     state.nodes.push(node);
     const top = this.topOf(state, node);
     const sink = this.newSink(key, node.inl, top);
-    this.appendBlockLines(sink, block, block.lines, this.takePages());
+    this.appendBlockLines(sink, block, lines, this.takePages());
     this.record(block, top);
     if (!this.floating) {
       if (cls.includes('pt-index-entry') && !this.book.index) this.book.index = { file: this.file!, id: (node.id ??= `b-${++this.counters.block}`) };
@@ -845,15 +858,19 @@ function plainCaption(caption: string | undefined): string {
 }
 
 /** The paragraph style a block of a `:::paragraphs` container was set in,
- *  told by its font (the block keeps no style id): family, size and
- *  slant must match one style alone. */
+ *  told by its type (the block keeps no style id): a block set otherwise
+ *  than the body text whose family, size, slant and alignment match one
+ *  style alone. */
 function paragraphStyleOf(block: VDTBlock, config: ResolvedConfig, bodyPx: number): string | undefined {
   const px = fontPx(block.fontString);
   const italic = /\bitalic\b/.test(block.fontString);
+  const familyOf = (f: string) => primaryFontFamily(f).replace(/^['"]|['"]$/g, '');
+  const body = config.bodyText;
+  const asBody = Math.abs(px - bodyPx) < 0.01 && !italic && block.textAlign === body.textAlign && block.fontString.includes(familyOf(body.fontFamily));
+  if (asBody) return undefined;
   const matches = config.paragraphStyles.filter((s) => {
     const size = dimensionToPx(s.fontSize, config.page.dpi, bodyPx);
-    const family = primaryFontFamily(s.fontFamily).replace(/^['"]|['"]$/g, '');
-    return Math.abs(size - px) < 0.01 && s.italic === italic && block.fontString.includes(family);
+    return Math.abs(size - px) < 0.01 && s.italic === italic && s.textAlign === block.textAlign && block.fontString.includes(familyOf(s.fontFamily));
   });
   return matches.length === 1 ? matches[0]!.id : undefined;
 }
