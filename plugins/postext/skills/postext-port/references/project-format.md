@@ -228,7 +228,7 @@ embeds them with `::resource{id="…"}` (placement `here`).
   `apps/web/.env.local` and restart `pnpm dev`; the presets appear under
   *Sample books* in the Books panel (dev only). Allowed file extensions: json md svg png jpg jpeg
   webp gif pdf otf ttf woff2.
-- **Permalink**: `/<ui-locale>/sandbox#preset=<id>&lang=<content locale>&view=canvas|html|pdf&chapter=<1-based>&page=<printed page number>`.
+- **Permalink**: `/<ui-locale>/sandbox#preset=<id>&lang=<content locale>&view=canvas|pdf|folio|html|epub&chapter=<1-based>&page=<printed page number>`.
 
 ## 6. Rendering headlessly
 
