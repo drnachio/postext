@@ -100,6 +100,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownNumberFormat':
       return List;
     case 'unknownConfigKey':
+    case 'unknownConfigValue':
       return FileWarning;
     case 'unsupportedHyphenationLocale':
     case 'missingGlyph':
@@ -238,6 +239,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownNumberFormatTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
+    case 'unknownConfigValue':
+      return labels.warningsUnknownConfigValueTitle;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleTitle;
     case 'missingGlyph':
@@ -441,6 +444,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumberFormatDetail.replace('__used__', payload.used)}`;
     case 'unknownConfigKey':
       return `${payload.path} — ${labels.warningsUnknownConfigKeyDetail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
+    case 'unknownConfigValue':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownConfigValueDetail.replace('__used__', payload.used)}`;
     case 'unsupportedHyphenationLocale':
       return labels.warningsUnsupportedHyphenationLocaleDetail
         .replace('__locale__', payload.locale)

@@ -132,6 +132,7 @@ describe("package exports", () => {
       "canonicalLocaleTag",
       "renderLangOf",
       "stringsFor",
+      "directionOf",
       "parseMarkdown",
       "addRow",
       "addColumn",

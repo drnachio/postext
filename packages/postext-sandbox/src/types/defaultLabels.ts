@@ -1126,6 +1126,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsUnknownConfigKeyTitle: 'Unknown setting',
   warningsUnknownConfigKeyDetail: 'The engine has no such setting and ignores it.',
   warningsUnknownConfigKeySuggestion: 'Did you mean __suggestion__?',
+  warningsUnknownConfigValueTitle: 'Unknown setting value',
+  warningsUnknownConfigValueDetail: 'Not one of the values this setting takes: the engine uses __used__.',
   colorPalette: 'Palette',
   colorPaletteTooltip: 'Named colors reusable across all color fields. Changing an entry updates every reference.',
   colorPaletteEntryName: 'Name',

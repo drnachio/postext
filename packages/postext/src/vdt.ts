@@ -98,6 +98,11 @@ export interface ResolvedConfig {
    *  one; `resolvedLocale()` falls back to the hyphenation locale. Spelled-
    *  out heading numbers follow it. */
   locale?: PostextConfig['locale'];
+  /** The document's base direction, `PostextConfig.direction` resolved
+   *  (`'auto'` from the document language): present only when it is
+   *  `'rtl'`, so a left-to-right document resolves as it always has. Read
+   *  it with `resolvedDirection()`. */
+  direction?: 'rtl';
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
@@ -1590,8 +1595,12 @@ export interface ConfigWarning {
    *  style, a paragraph style — and the same under
    *  `htmlViewer.overrides`), such as a misspelt `letterSpacng`; the
    *  engine ignores it. `value` is the key, `used` is empty, and
-   *  `suggestion` names the key it is closest to, when one is close. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped';
+   *  `suggestion` names the key it is closest to, when one is close.
+   *  `unknownConfigValue`: a setting that takes one of a few words holding
+   *  another (`direction: 'right'`); the engine reads its default, and
+   *  `used` is what that came to (`direction`: `ltr` or `rtl`, from the
+   *  document language). */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */

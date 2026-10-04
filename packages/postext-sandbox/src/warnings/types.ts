@@ -66,6 +66,7 @@ export type WarningKind =
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
   | 'unknownConfigKey'
+  | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
   | 'missingGlyph'
   | 'variableFontDefaultInstance'
@@ -271,6 +272,9 @@ export type WarningPayload =
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */
   | { kind: 'unknownConfigKey'; path: string; value: string; used: string; suggestion?: string }
+  /** A setting that takes one of a few words holding another
+   *  (`direction: 'right'`): the engine reads its default, `used`. */
+  | { kind: 'unknownConfigValue'; path: string; value: string; used: string }
   /** The document's language (its hyphenation locale, else `locale`) has
    *  no bundled hyphenation patterns: the engine hyphenates it with en-us. */
   | { kind: 'unsupportedHyphenationLocale'; locale: string }

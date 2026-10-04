@@ -1112,6 +1112,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsUnknownConfigKeyTitle: t("warningsUnknownConfigKeyTitle"),
     warningsUnknownConfigKeyDetail: t("warningsUnknownConfigKeyDetail"),
     warningsUnknownConfigKeySuggestion: t("warningsUnknownConfigKeySuggestion"),
+    warningsUnknownConfigValueTitle: t("warningsUnknownConfigValueTitle"),
+    warningsUnknownConfigValueDetail: t("warningsUnknownConfigValueDetail"),
     colorPalette: t("colorPalette"),
     colorPaletteTooltip: t("colorPaletteTooltip"),
     colorPaletteEntryName: t("colorPaletteEntryName"),

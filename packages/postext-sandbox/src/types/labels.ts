@@ -1215,6 +1215,8 @@ export interface SandboxLabels {
   warningsUnknownConfigKeyTitle: string;
   warningsUnknownConfigKeyDetail: string;
   warningsUnknownConfigKeySuggestion: string;
+  warningsUnknownConfigValueTitle: string;
+  warningsUnknownConfigValueDetail: string;
 
   // Color palette section
   colorPalette: string;

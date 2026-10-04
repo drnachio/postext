@@ -592,12 +592,14 @@ export interface PageConfig {
   pageNumbering?: PageNumberingConfig;
   /** The edge the book is bound on. `'left'`: pages turn right to left, as
    *  in any Western book. `'right'`: the book is bound on its right edge,
-   *  as vertical Chinese and Japanese books are (clreq §7.1.1.1): page 1 is
+   *  as vertical Chinese and Japanese books and Arabic and Hebrew books
+   *  are (clreq §7.1.1.1): page 1 is
    *  still the recto (odd), but it is the LEFT page of a spread, its inner
    *  margin is on its right, and viewers show the pairs `[3 | 2]`. With
    *  mirrored margins the recto therefore swaps `left` and `right`: `left`
    *  stays the inner margin. `'auto'` (the default) is `'right'` when
-   *  `layout.writingMode` is `'vertical-rl'`, else `'left'`. Book-level:
+   *  `layout.writingMode` is `'vertical-rl'` or the document runs right to
+   *  left (`PostextConfig.direction`), else `'left'`. Book-level:
    *  a heading style's own `layout` never changes it. */
   binding?: PageBinding;
 }
@@ -758,6 +760,11 @@ export type HyphenationLocale =
  * console. The tag itself is kept as the PDF's document language.
  */
 export type LocaleTag = HyphenationLocale | (string & {});
+
+/** The direction a document's text runs (`PostextConfig.direction`):
+ *  `'ltr'` left to right, `'rtl'` right to left (Arabic, Hebrew), `'auto'`
+ *  from the script of the document language. */
+export type DocumentDirection = 'auto' | 'ltr' | 'rtl';
 
 export interface HyphenationConfig {
   enabled?: boolean;
@@ -4390,6 +4397,20 @@ export interface PostextConfig {
    *  bundled hyphenation languages; any other language gets the English
    *  ones. Defaults to `'en-us'`. */
   locale?: LocaleTag;
+
+  /** The base direction of the document's text. `'rtl'` sets paragraphs
+   *  right to left (Arabic, Hebrew, Persian, Urdu), `'ltr'` left to right;
+   *  `'auto'` (the default) takes it from the script of the document
+   *  language ({@link locale}, else the hyphenation locale): right to left
+   *  for a language written in Arabic, Hebrew, Syriac, Thaana, N'Ko, Adlam
+   *  or another right-to-left script (`directionOf`), else left to right.
+   *  A right-to-left document is bound on the right when `page.binding` is
+   *  `'auto'`. A block sets its own with `{dir=ltr}` / `{dir=rtl}` (a
+   *  heading, a `:::` container), a run of text with `:ltr[…]` /
+   *  `:rtl[…]`; inside a paragraph the order of mixed text follows the
+   *  Unicode Bidirectional Algorithm (`bidi.ts`). Any other value counts
+   *  as `'auto'` and is reported (`unknownConfigValue`). */
+  direction?: DocumentDirection;
 
   debug?: DebugConfig;
 

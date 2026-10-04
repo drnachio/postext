@@ -21,7 +21,7 @@ import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
 import { isFontStack, primaryFontFamily } from './measure/font';
 import { dimensionToPx } from './units';
-import { resolveAllConfig, sideColumnPercentUsed } from './pipeline/config';
+import { resolveAllConfig, resolveDirection, resolvedLocale, sideColumnPercentUsed } from './pipeline/config';
 import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
@@ -55,11 +55,27 @@ function percentText(n: number): string {
  * `htmlViewer.overrides`, design elements). Also a key the heading
  * settings or a paragraph style do not have (`unknownConfigKey`:
  * `headings`, its `balancing` and `levels`, `headingStyles`,
- * `paragraphStyles`). Pure.
+ * `paragraphStyles`). And a setting with a value outside its choices
+ * (`unknownConfigValue`: `direction`). Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
   if (!config) return [];
-  return [...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config), ...collectCjkGridWarnings(config)];
+  return [
+    ...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config),
+    ...collectCjkGridWarnings(config), ...collectChoiceWarnings(config),
+  ];
+}
+
+/** Settings whose value is one of a few words: one written otherwise is
+ *  read as the default, and `used` names what that default came to. */
+function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  const direction = config.direction as unknown;
+  if (direction !== undefined && direction !== 'auto' && direction !== 'ltr' && direction !== 'rtl') {
+    const used = resolveDirection(undefined, resolvedLocale(resolveAllConfig(config)));
+    out.push({ kind: 'unknownConfigValue', path: 'direction', value: String(direction), used });
+  }
+  return out;
 }
 
 // The keys of the heading settings, checked against their types: a key

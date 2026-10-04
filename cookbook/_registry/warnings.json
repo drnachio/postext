@@ -1560,6 +1560,32 @@
       }
     }
   },
+  "unknownConfigValue": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown setting value",
+      "es": "Valor de ajuste desconocido",
+      "zh": "未知的设置值"
+    },
+    "cause": {
+      "en": "A setting that takes one of a few words, such as `direction` (`auto`, `ltr` or `rtl`), holds another one, and the engine reads its default instead.",
+      "es": "Un ajuste que admite unas pocas palabras, como `direction` (`auto`, `ltr` o `rtl`), lleva otra, y el motor lee en su lugar el valor por defecto.",
+      "zh": "某个只能取几个固定词的设置（例如`direction`，可取`auto`、`ltr`或`rtl`）写了别的值，引擎改用默认值。"
+    },
+    "fix": {
+      "en": "Write one of the values the setting takes, or remove it to keep the default.",
+      "es": "Escribe uno de los valores que admite el ajuste, o quítalo para quedarte con el valor por defecto.",
+      "zh": "改成该设置可取的值之一，或删掉它以使用默认值。"
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "zh": "配置警告"
+      }
+    }
+  },
   "unsupportedHyphenationLocale": {
     "source": "engine",
     "label": {

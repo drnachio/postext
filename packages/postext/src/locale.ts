@@ -37,17 +37,11 @@ export function isCjkLanguage(tag: unknown): boolean {
   return isTag(tag) && CJK_LANGUAGES.has(languageOf(tag));
 }
 
-/** Scripts written from right to left: Arabic (Arabic, Persian, Urdu,
- *  Pashto, Sorani…), Hebrew (Hebrew, Yiddish), Syriac, Thaana, N'Ko and
- *  Adlam. */
-const RIGHT_TO_LEFT_SCRIPTS = new Set(['Arab', 'Hebr', 'Syrc', 'Thaa', 'Nkoo', 'Adlm']);
-
 /** Whether `tag` names a language written in a right-to-left script once
  *  maximised (`'ar'`, `'fa-IR'`, `'ur'`, `'he'`, `'yi'`, `'ks-Arab'`); not
- *  `'ks-Deva'` or `'az'` (Latin). */
+ *  `'ks-Deva'` or `'az'` (Latin). See {@link directionOf}. */
 function isRightToLeftLanguage(tag: unknown): boolean {
-  const script = localeScript(tag);
-  return script !== undefined && RIGHT_TO_LEFT_SCRIPTS.has(script);
+  return directionOf(tag) === 'rtl';
 }
 
 /**
@@ -85,6 +79,30 @@ function maximize(tag: string): Intl.Locale | undefined {
  *  `zh-Hant`; `'Latn'` for `en`. `undefined` for a missing or invalid tag. */
 export function localeScript(tag: unknown): string | undefined {
   return isTag(tag) ? maximize(tag)?.script : undefined;
+}
+
+/** Scripts written from right to left (ISO 15924 codes): Arabic (and its
+ *  Nastaliq variant), Hebrew, Syriac, Thaana, N'Ko, Adlam, Hanifi Rohingya,
+ *  Mandaic, Samaritan, Mende Kikakui, Garay, and the historic ones
+ *  (Imperial Aramaic, Avestan, Chorasmian, Cypriot, Elymaic, Hatran, Old
+ *  Hungarian, Kharoshthi, Lydian, Manichaean, Old North and South Arabian,
+ *  Nabataean, Old Turkic, Old Uyghur, Palmyrene, Inscriptional and Psalter
+ *  Pahlavi, Phoenician, Parthian, Sogdian and Old Sogdian, Yezidi). */
+const RTL_SCRIPTS = new Set([
+  'Arab', 'Aran', 'Hebr', 'Syrc', 'Thaa', 'Nkoo', 'Adlm', 'Rohg', 'Mand', 'Samr', 'Mend', 'Gara',
+  'Armi', 'Avst', 'Chrs', 'Cprt', 'Elym', 'Hatr', 'Hung', 'Khar', 'Lydi', 'Mani', 'Narb', 'Sarb',
+  'Nbat', 'Orkh', 'Ougr', 'Palm', 'Phli', 'Phlp', 'Phnx', 'Prti', 'Sogd', 'Sogo', 'Yezi',
+]);
+
+/** The direction text in `tag`'s language runs, from the script the tag
+ *  names or implies once maximised (`localeScript`): `'rtl'` for Arabic
+ *  (`ar`, `fa`, `ur`, `ps`, `ug`, `az-Arab`), Hebrew (`he`, `yi`), Syriac,
+ *  Thaana (`dv`), N'Ko, Adlam (`ff-Adlm`) and the other right-to-left
+ *  scripts; `'ltr'` for every other tag, and for a missing or invalid
+ *  one. */
+export function directionOf(tag: unknown): 'ltr' | 'rtl' {
+  const script = localeScript(tag);
+  return script !== undefined && RTL_SCRIPTS.has(script) ? 'rtl' : 'ltr';
 }
 
 /** The typographic region of a Chinese tag, which decides its typographic

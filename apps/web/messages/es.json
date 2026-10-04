@@ -2184,6 +2184,8 @@
     "warningsUnknownConfigKeyTitle": "Ajuste desconocido",
     "warningsUnknownConfigKeyDetail": "El motor no tiene ese ajuste y lo ignora.",
     "warningsUnknownConfigKeySuggestion": "¿Querías decir __suggestion__?",
+    "warningsUnknownConfigValueTitle": "Valor de ajuste desconocido",
+    "warningsUnknownConfigValueDetail": "No es ninguno de los valores que admite este ajuste: el motor usa __used__.",
     "colorPalette": "Paleta",
     "colorPaletteTooltip": "Colores con nombre reutilizables en todos los campos de color. Al cambiar una entrada se actualizan todas las referencias.",
     "colorPaletteEntryName": "Nombre",

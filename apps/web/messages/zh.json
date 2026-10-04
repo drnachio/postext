@@ -1721,6 +1721,8 @@
     "warningsUnknownConfigKeyTitle": "未知设置",
     "warningsUnknownConfigKeyDetail": "引擎没有这项设置，已忽略。",
     "warningsUnknownConfigKeySuggestion": "你是不是想用__suggestion__？",
+    "warningsUnknownConfigValueTitle": "未知的设置值",
+    "warningsUnknownConfigValueDetail": "不是该设置可取的值：引擎改用__used__。",
     "colorPalette": "调色板",
     "colorPaletteTooltip": "可在所有颜色字段中复用的命名颜色。修改某一项会更新所有引用它的地方。",
     "colorPaletteEntryName": "名称",

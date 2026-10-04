@@ -6404,13 +6404,14 @@ Además de estos, el panel muestra siempre los avisos que emite la propia maquet
 
 ### Avisos de configuración
 
-Cuatro errores de la propia configuración nunca pasan en silencio, y ningún interruptor los oculta. El motor no falla por ninguno de ellos: sustituye el valor, o prescinde del ajuste, y lo dice.
+Seis errores de la propia configuración nunca pasan en silencio, y ningún interruptor los oculta. El motor no falla por ninguno de ellos: sustituye el valor, o prescinde del ajuste, y lo dice.
 
 - **Formato de numeración desconocido**: un `numberFormat` de lista numerada, un `page.pageNumbering.format` o el `counterFormat` de un tipo de recurso que no es ninguna de las [grafías de los formatos de numeración](#grafías-de-los-formatos-de-numeración). Numera en decimal.
 - **Lista de fuentes en una familia**: un `fontFamily` (o cualquier `…FontFamily`) que contiene una lista de fuentes CSS. El texto se compone en la primera familia de la lista (ver [Una sola familia por `fontFamily`](#una-sola-familia-por-fontfamily)).
 - **Columna lateral sin sitio**: un `sideColumnPercent` de una disposición `'oneAndHalf'` (la del documento, o el `layout` propio de un estilo de encabezado) que dejaría alguna de las columnas por debajo del 1% del ancho del área de contenido, o que no es un número. Las columnas se cortan en el valor más cercano que admiten las dos, y `used` lo indica (`sideColumnPercentClamped`; ver la [disposición `'oneAndHalf'`](#tipos-de-disposición)).
 - **Retícula de caracteres demasiado grande**: un `cjk.grid` con más caracteres por línea o más líneas por página de los que caben entre los márgenes. La retícula se compone con los que caben, y `used` indica el número (`cjkGridClamped`; ver [Retícula de caracteres](#retícula-de-caracteres)).
 - **Ajuste de encabezado desconocido**: una clave que no existe en `headings`, `headings.balancing`, un nivel de encabezado, un estilo de encabezado o un estilo de párrafo: un `letterSpacng` mal escrito, un `tracking` tomado de otra herramienta, un `level` en un estilo de encabezado, un `fontStyle: 'italic'` en un estilo de párrafo (que lleva `italic: true`). El motor la ignora (hasta postext 1.4 lo hacía sin decir nada). `value` es la clave, `used` va vacío y `suggestion` nombra el ajuste al que más se parece, cuando dista una o dos letras o solo cambia en mayúsculas (`unknownConfigKey`).
+- **Valor de ajuste desconocido**: un ajuste que admite unas pocas palabras lleva otra, como `direction: 'right'` (admite `auto`, `ltr` o `rtl`). El motor lee en su lugar el valor por defecto, y `used` dice en qué quedó: para `direction`, la dirección del idioma del documento (`unknownConfigValue`).
 
 El Sandbox los muestra en el panel **Revisión** con la ruta del ajuste. En código, `buildDocument` los deja en el documento como `configWarnings` (ausente cuando la configuración está limpia), y `collectConfigWarnings(config)` los devuelve sin componer nada:
 

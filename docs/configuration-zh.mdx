@@ -6399,13 +6399,14 @@ debug: {
 
 ### 配置警告
 
-配置本身的四类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
+配置本身的六类错误从不静默，也没有开关能隐藏它们。引擎不会因此失败：它会替换一个值，或略去该设置，并给出说明：
 
 - **未知编号格式**：有序列表的`numberFormat`、`page.pageNumbering.format`或资源类型的`counterFormat`不属于任何一种[编号格式写法](#编号格式的写法)。此时按十进制编号。
 - **字体家族中写了字体栈**：`fontFamily`（或任何`…FontFamily`）中写了CSS字体栈。文字用字体栈中的第一个字体家族排（见[每个`fontFamily`只写一个字体家族](#每个fontfamily只写一个字体族)）。
 - **侧栏没有空间**：`'oneAndHalf'`版式的`sideColumnPercent`（文档的，或标题样式自己的`layout`中的）会使其中一栏不足内容宽度的1%，或者不是数字。各栏按两者都能接受的最接近的值截取，`used`给出该值（`sideColumnPercentClamped`；见[`'oneAndHalf'`版式](#版式类型)）。
 - **字符网格过大**：`cjk.grid`的每行字数或每页行数超出了页边距内能容纳的数量。网格按能容纳的最大数量排，`used`给出这个数（`cjkGridClamped`；见[字符网格](#字格)）。
 - **未知标题设置**：`headings`、`headings.balancing`、某个标题级别、标题样式或段落样式中没有的键：拼错的`letterSpacng`、从其他工具借来的`tracking`、标题样式上的`level`、段落样式上的`fontStyle: 'italic'`（段落样式要用`italic: true`）。引擎会忽略它（postext 1.4及以前是悄无声息地忽略）。`value`是这个键，`used`为空，如果某个设置与它只差一两个字母或只有大小写不同，`suggestion`会给出最接近的那个设置（`unknownConfigKey`）。
+- **未知设置值**：只能取几个固定词的设置写了别的值，例如`direction: 'right'`（可取`auto`、`ltr`或`rtl`）。引擎改用默认值，`used`给出实际结果：对`direction`而言，是文档语言的书写方向（`unknownConfigValue`）。
 
 沙盒在**检查**面板中列出这些警告，并附上设置的路径。在代码中，`buildDocument`把它们作为`configWarnings`放在文档上（配置没有问题时不存在该字段），`collectConfigWarnings(config)`则不做排版直接返回它们：
 
