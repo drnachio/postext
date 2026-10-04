@@ -6,6 +6,7 @@
 //
 
 import type {
+  DesignTextElement,
   DigitSystem,
   Dimension,
   EmphasisStyle,
@@ -18,7 +19,10 @@ import type {
 } from 'postext';
 import {
   DEFAULT_BODY_TEXT_CONFIG,
+  DEFAULT_FOOTER_SLOT,
+  DEFAULT_HEADER_SLOT,
   DEFAULT_HEADINGS_CONFIG,
+  DEFAULT_TEXT_ELEMENT,
   defaultNumeralsFor,
   defaultResourceTypes,
   dimensionsEqual,
@@ -54,6 +58,7 @@ export type ArabicDefaultId =
   | 'binding'
   | 'bodyFont'
   | 'headingFont'
+  | 'designFonts'
   | 'lineHeight'
   | 'textAlign'
   | 'hyphenation'
@@ -117,6 +122,12 @@ export interface ArabicDefaultsOptions {
   /** The optional rows to apply. Unset: every row the author has not
    *  customised. Required rows apply whatever it says. */
   include?: Iterable<ArabicDefaultId>;
+  /** The Fontsource subsets of a family (`arabic`, `latin`…), as the font
+   *  picker lists them; undefined for a family it does not know (an
+   *  uploaded face). Decides which design texts are set in a face with no
+   *  Arabic letters. Without it only the engine's own design faces (Open
+   *  Sans, EB Garamond) count as lacking them. */
+  fontSubsets?: (family: string) => readonly string[] | undefined;
 }
 
 export interface ArabicDefaultsResult {
@@ -141,6 +152,66 @@ const ARABIC_HEADING_FONTS = new Set<string>(Object.values(FONTS).map((f) => f.h
 /** The typefaces of a set (see {@link ArabicFaces}). */
 export function arabicFontsFor(faces: ArabicFaces): { body: string; headings: string } {
   return { ...FONTS[faces] };
+}
+
+/** The faces the engine itself gives a design text (the running heads and
+ *  folio of the built-in header and footer, an element with no typeface):
+ *  Latin only. */
+const ENGINE_DESIGN_FACES = new Set<string>(['Open Sans', 'EB Garamond']);
+
+/** Design-text placeholders that print a number in the document digits,
+ *  and the ones that print Latin letters (Roman numerals, a b c). Any other
+ *  prints text of the document (a title, a mark, a number in words). */
+const DIGIT_PLACEHOLDERS = new Set(['pageNumber', 'totalPages', 'bookTotalPages', 'number', 'numberDecimal', 'chapterNumber', 'partNumber']);
+const LATIN_PLACEHOLDERS = new Set(['numberRoman', 'numberRomanLower', 'numberAlpha', 'numberAlphaLower']);
+
+/** Whether a design text with this template prints Arabic-script
+ *  characters in a book whose numbers take `digits`: Arabic letters
+ *  written in it, a placeholder that copies the book's text, or a number
+ *  in Arabic-Indic digits. `{{`/`}}` are literal braces. */
+export function designTextNeedsArabic(content: string, digits: DigitSystem): boolean {
+  const template = content.replace(/\{\{|\}\}/g, '');
+  if (/\p{Script=Arabic}/u.test(template)) return true;
+  for (const m of template.matchAll(/\{([^{}]+)\}/g)) {
+    const name = m[1]!.trim();
+    if (LATIN_PLACEHOLDERS.has(name)) continue;
+    if (DIGIT_PLACEHOLDERS.has(name)) {
+      if (digits !== 'latn') return true;
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
+/** A design text element of the configuration (a header, footer, opener
+ *  or heading design's): `kind: 'text'` with a template and a placement. */
+function isDesignText(v: unknown): v is DesignTextElement {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as Record<string, unknown>;
+  return o.kind === 'text' && typeof o.content === 'string' && typeof o.placement === 'object' && o.placement !== null;
+}
+
+/** `value` with every design text element `fn` changes replaced (the same
+ *  objects where nothing changes). */
+function mapDesignTexts<T>(value: T, fn: (el: DesignTextElement) => DesignTextElement): T {
+  if (Array.isArray(value)) {
+    let changed = false;
+    const out = value.map((v) => {
+      const next = mapDesignTexts(v, fn);
+      if (next !== v) changed = true;
+      return next;
+    });
+    return (changed ? out : value) as T;
+  }
+  if (typeof value !== 'object' || value === null) return value;
+  if (isDesignText(value)) return fn(value) as T;
+  let out: Record<string, unknown> | undefined;
+  for (const [key, v] of Object.entries(value)) {
+    const next = mapDesignTexts(v, fn);
+    if (next !== v) (out ??= { ...(value as Record<string, unknown>) })[key] = next;
+  }
+  return (out ?? value) as T;
 }
 
 /** Naskh sits low on the line and stacks its vowel marks above and below
@@ -284,6 +355,52 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
         const next: PostextConfig = { ...c, headings };
         if (c.headingStyles?.some(moves)) next.headingStyles = c.headingStyles.map(retarget);
         return next;
+      },
+    });
+  }
+
+  // Design texts (running heads, folios, opener and heading designs) set in
+  // a face with no Arabic letters, whose text is Arabic: the PDF prints
+  // their letters and Arabic-Indic digits as empty boxes (the canvas falls
+  // back to another face). They take the headings' Arabic face. The
+  // built-in header and footer (Open Sans) are written out to do so. Never
+  // the author's own choice in the sense of the other rows: a face that
+  // cannot set the text is a fault, so the row comes ticked.
+  const lacksArabic = (family: string): boolean => {
+    if (ARABIC_BODY_FONTS.has(family) || ARABIC_HEADING_FONTS.has(family)) return false;
+    const subsets = options.fontSubsets?.(family);
+    return subsets ? !subsets.includes('arabic') : ENGINE_DESIGN_FACES.has(family);
+  };
+  const movedFaces = new Set<string>();
+  const moveDesignText = (el: DesignTextElement): DesignTextElement => {
+    const face = el.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily;
+    if (!lacksArabic(face) || !designTextNeedsArabic(el.content, digits)) return el;
+    movedFaces.add(face);
+    const next: DesignTextElement = { ...el, fontFamily: fonts.headings };
+    if (el.dropCap?.fontFamily !== undefined && lacksArabic(el.dropCap.fontFamily)) next.dropCap = { ...el.dropCap, fontFamily: fonts.headings };
+    return next;
+  };
+  const designed = mapDesignTexts(
+    {
+      ...config,
+      header: config.header ?? (DEFAULT_HEADER_SLOT as PostextConfig['header']),
+      footer: config.footer ?? (DEFAULT_FOOTER_SLOT as PostextConfig['footer']),
+    },
+    moveDesignText,
+  );
+  if (movedFaces.size > 0) {
+    rows.push({
+      id: 'designFonts',
+      from: { kind: 'text', text: [...movedFaces].sort().join(', ') },
+      to: { kind: 'text', text: fonts.headings },
+      customised: false,
+      apply: (c) => {
+        const next = mapDesignTexts(c, moveDesignText);
+        const out: PostextConfig = { ...next };
+        // The built-in slots, written out only when they move.
+        if (c.header === undefined && designed.header !== DEFAULT_HEADER_SLOT) out.header = designed.header;
+        if (c.footer === undefined && designed.footer !== DEFAULT_FOOTER_SLOT) out.footer = designed.footer;
+        return out;
       },
     });
   }

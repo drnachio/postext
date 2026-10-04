@@ -85,7 +85,9 @@ FALLBACK_FONTS.push(...ARABIC_FONTS.map((family) => ({ family, subsets: ['arabic
 let cachedFonts: FontEntry[] | null = null;
 let fetchPromise: Promise<FontEntry[]> | null = null;
 
-async function fetchGoogleFonts(): Promise<FontEntry[]> {
+/** The Google families and their subsets, from Fontsource (once per
+ *  session; the built-in list when the API does not answer). */
+export async function fetchGoogleFonts(): Promise<FontEntry[]> {
   if (cachedFonts) return cachedFonts;
   if (fetchPromise) return fetchPromise;
 

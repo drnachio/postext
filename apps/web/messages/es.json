@@ -1530,6 +1530,7 @@
     "arabicDefaults": "Ajustes para árabe",
     "arabicDefaultsTooltip": "Prepara un libro en árabe de una vez: de derecha a izquierda, encuadernado por la derecha, Amiri (o Noto Naskh Arabic con títulos en Noto Kufi Arabic), interlineado de 1,75, texto justificado sin separación silábica, las cifras de la región, شكل y جدول numerados por capítulo, pies como شكل ١-١: العنوان, capítulos numerados الفصل الأول, listas numeradas ١- أ- (١) notas al pie numeradas (١) de nuevo en cada página, con su propio número en la línea, el énfasis en negrita donde se había puesto de otro modo y la kashida de nuevo activada donde se había desactivado. Primero se ve la lista de cambios, y los ajustes que cambiaste tú se quedan como están salvo que los marques.",
     "arabicDefaultsFaces": "Tipos",
+    "arabicDefaultsDesignFonts": "Tipos de los textos de diseño",
     "arabicDefaultsClassical": "Clásico (Amiri)",
     "arabicDefaultsModern": "Moderno (Noto Naskh)",
     "arabicDefaultsNothing": "El libro ya tiene todos los ajustes para árabe.",

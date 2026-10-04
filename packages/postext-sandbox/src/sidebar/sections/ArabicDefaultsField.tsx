@@ -18,6 +18,7 @@ import {
 import type { DefaultsFocus, DefaultsMemory } from '../../context/defaultsReview';
 import { FieldRow } from '../../controls';
 import { formatNumber } from '../../controls/units';
+import { fetchGoogleFonts, type FontEntry } from '../../controls/FontPicker';
 import { Button, SegmentedControl } from '../../ui';
 import type { SandboxLabels } from '../../types/labels';
 import { Choice, bookKeyOf, valueText as chineseValueText } from './ChineseDefaultsField';
@@ -29,6 +30,7 @@ const ITEM_LABELS: Record<ArabicDefaultId, keyof SandboxLabels> = {
   binding: 'binding',
   bodyFont: 'chineseDefaultsBodyFont',
   headingFont: 'chineseDefaultsHeadingFont',
+  designFonts: 'arabicDefaultsDesignFonts',
   lineHeight: 'bodyLineHeight',
   textAlign: 'bodyTextAlign',
   hyphenation: 'bodyHyphenation',
@@ -111,14 +113,29 @@ export function ArabicDefaultsField({ locale }: { locale: string }) {
   const reviewRef = useRef<HTMLButtonElement>(null);
   const firstControlRef = useRef<HTMLDivElement>(null);
 
+  // Which design faces have Arabic letters: the font picker's list of
+  // Fontsource families and their subsets, fetched when the list opens.
+  const [fontList, setFontList] = useState<readonly FontEntry[] | null>(null);
+  useEffect(() => {
+    if (!open || fontList) return;
+    let live = true;
+    void fetchGoogleFonts().then((list) => { if (live) setFontList(list); });
+    return () => { live = false; };
+  }, [open, fontList]);
+  const fontSubsets = useMemo(() => {
+    if (!fontList) return undefined;
+    const byFamily = new Map(fontList.map((f) => [f.family, f.subsets]));
+    return (family: string) => byFamily.get(family);
+  }, [fontList]);
+
   const preview = useMemo(() => {
     if (!open) return null;
-    const base = arabicDefaults(config, { locale, faces });
+    const base = arabicDefaults(config, { locale, faces, fontSubsets });
     const include = base.changes
       .filter((c) => !c.required && (ticks.get(c.id) ?? !c.customised))
       .map((c) => c.id);
-    return arabicDefaults(config, { locale, faces, include });
-  }, [open, config, locale, faces, ticks]);
+    return arabicDefaults(config, { locale, faces, include, fontSubsets });
+  }, [open, config, locale, faces, ticks, fontSubsets]);
 
   const undone = useMemo(
     () => (undoable ? undoArabicDefaults(config, undoable.before, undoable.after) : null),

@@ -450,6 +450,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     arabicDefaults: t("arabicDefaults"),
     arabicDefaultsTooltip: t("arabicDefaultsTooltip"),
     arabicDefaultsFaces: t("arabicDefaultsFaces"),
+    arabicDefaultsDesignFonts: t("arabicDefaultsDesignFonts"),
     arabicDefaultsClassical: t("arabicDefaultsClassical"),
     arabicDefaultsModern: t("arabicDefaultsModern"),
     arabicDefaultsNothing: t("arabicDefaultsNothing"),

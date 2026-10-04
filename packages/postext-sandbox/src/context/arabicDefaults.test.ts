@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { PostextConfig } from 'postext';
+import type { DesignElement, DesignTextElement, PostextConfig } from 'postext';
 import { defaultResourceTypes, resolveBodyTextConfig, resolveFootnotesConfig, resolveOrderedListsConfig, resolvePageConfig } from 'postext';
 import { createDefaultConfig } from './defaultConfig';
 import {
-  arabicDefaults, arabicFontsFor, forgetArabicDefaults, isArabicScriptLanguage, recallArabicDefaults, rememberArabicDefaults,
+  arabicDefaults, arabicFontsFor, designTextNeedsArabic, forgetArabicDefaults, isArabicScriptLanguage, recallArabicDefaults, rememberArabicDefaults,
   takeArabicDefaultsFocus, undoArabicDefaults,
   type ArabicDefaultId,
 } from './arabicDefaults';
@@ -23,7 +23,7 @@ describe('arabicDefaults', () => {
     // Right to left and the right binding come with the language already,
     // and so does hyphenation off (#368); justified text is the engine's
     // default; the names are Arabic.
-    expect(ids(r)).toEqual(['bodyFont', 'headingFont', 'lineHeight', 'captionLabel', 'chapterNumbering', 'listNumbers', 'footnotes']);
+    expect(ids(r)).toEqual(['bodyFont', 'headingFont', 'designFonts', 'lineHeight', 'captionLabel', 'chapterNumbering', 'listNumbers', 'footnotes']);
     expect(r.changes.every((c) => c.applied && !c.customised && !c.required)).toBe(true);
     const c = r.config;
     expect(c.bodyText?.fontFamily).toBe('Amiri');
@@ -48,6 +48,10 @@ describe('arabicDefaults', () => {
     expect(c.numerals).toBeUndefined();
     expect(c.colorPalette).toBe(before.colorPalette);
     expect(c.resourceTypes).toBe(before.resourceTypes);
+    // The built-in running heads and folio (Open Sans) are written out in
+    // the Arabic heading face.
+    expect(c.header?.elements.filter((e) => e.kind === 'text').map((e) => e.kind === 'text' && e.fontFamily)).toEqual(['Amiri', 'Amiri']);
+    expect(c.footer?.elements.map((e) => e.kind === 'text' && e.fontFamily)).toEqual(['Amiri']);
     expect(resolvePageConfig(c.page, 'ar', undefined, documentDirection(c.direction, 'ar')).binding).toBe('right');
   });
 
@@ -258,5 +262,58 @@ describe('document direction and digits', () => {
     expect(resolveBodyTextConfig(ticked.bodyText, 'ar').kashida).toBe('auto');
     // Unset or 'auto' is already on in an Arabic book.
     expect(ids(arabicDefaults(arabicBook(), { locale: 'ar' }))).not.toContain('kashida');
+  });
+});
+
+describe('design text typefaces (#401)', () => {
+  const text = (id: string, content: string, fontFamily?: string): DesignTextElement => ({
+    kind: 'text', id, content, fontSize: { value: 9, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'top' } },
+    ...(fontFamily ? { fontFamily } : {}),
+  } as DesignTextElement);
+  const fontSubsets = (family: string) => ({
+    'Open Sans': ['latin', 'latin-ext'], Inter: ['latin'], 'IBM Plex Sans Arabic': ['arabic', 'latin'],
+  } as Record<string, string[]>)[family];
+
+  it('moves design texts whose text is Arabic out of faces with no Arabic letters', () => {
+    const config: PostextConfig = {
+      ...arabicBook(),
+      header: { elements: [text('title', '{title}', 'Inter'), text('issn', 'ISSN 1234-5678', 'Inter'), text('plex', '{chapterTitle}', 'IBM Plex Sans Arabic')] },
+      footer: { elements: [text('folio', '{pageNumber}', 'Open Sans'), text('upload', '{title}', 'My Upload')] },
+      headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: { elements: [text('label', 'الفصل {numberOrdinalWords}'), text('roman', '{numberRoman}', 'Inter')] } } }] },
+    } as PostextConfig;
+    const r = arabicDefaults(config, { locale: 'ar', fontSubsets });
+    expect(change(r, 'designFonts')).toMatchObject({ from: { kind: 'text', text: 'EB Garamond, Inter, Open Sans' }, to: { kind: 'text', text: 'Amiri' }, customised: false, applied: true });
+    const c = r.config;
+    const faces = (els: readonly DesignElement[] | undefined) => els?.map((e) => (e.kind === 'text' ? e.fontFamily ?? null : null));
+    // Arabic text and placeholders move; a Latin literal, an Arabic face, an
+    // uploaded face the list does not know and Roman numerals stay.
+    expect(faces(c.header?.elements)).toEqual(['Amiri', 'Inter', 'IBM Plex Sans Arabic']);
+    expect(faces(c.footer?.elements)).toEqual(['Amiri', 'My Upload']);
+    // An element with no typeface prints in EB Garamond: it moves too.
+    expect(faces(c.headings?.levels?.[0]?.advancedDesign?.slot.elements)).toEqual(['Amiri', 'Inter']);
+    // Unticked, nothing moves.
+    const kept = arabicDefaults(config, { locale: 'ar', fontSubsets, include: [] }).config;
+    expect(kept.header).toBe(config.header);
+  });
+
+  it('leaves a Maghreb folio in European digits alone', () => {
+    const footer = { elements: [text('folio', '{pageNumber}', 'Open Sans')] };
+    expect(designTextNeedsArabic('{pageNumber}', 'latn')).toBe(false);
+    expect(designTextNeedsArabic('{pageNumber}', 'arab')).toBe(true);
+    expect(designTextNeedsArabic('{{title}} p. {numberRoman}', 'arab')).toBe(false);
+    expect(designTextNeedsArabic('صفحة', 'latn')).toBe(true);
+    const r = arabicDefaults({ ...arabicBook('ar-MA'), header: { elements: [] }, footer }, { locale: 'ar-MA', fontSubsets });
+    expect(change(r, 'designFonts')).toBeUndefined();
+    expect(r.config.footer).toBe(footer);
+  });
+
+  it('writes the built-in header and footer out only when they move, and undoes it', () => {
+    const before = { ...arabicBook(), header: { elements: [] } } as PostextConfig;
+    const r = arabicDefaults(before, { locale: 'ar' });
+    expect(r.config.header).toBe(before.header);
+    expect(r.config.footer?.elements.map((e) => e.kind === 'text' && e.fontFamily)).toEqual(['Amiri']);
+    const undone = undoArabicDefaults(r.config, before, r.config);
+    expect(undone.config.footer).toBeUndefined();
   });
 });

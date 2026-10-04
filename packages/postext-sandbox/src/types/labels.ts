@@ -519,6 +519,7 @@ export interface SandboxLabels {
   arabicDefaults: string;
   arabicDefaultsTooltip: string;
   arabicDefaultsFaces: string;
+  arabicDefaultsDesignFonts: string;
   arabicDefaultsClassical: string;
   arabicDefaultsModern: string;
   arabicDefaultsNothing: string;

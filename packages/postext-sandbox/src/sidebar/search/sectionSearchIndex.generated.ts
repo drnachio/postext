@@ -161,6 +161,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'arabicDefaultsApplied',
       'arabicDefaultsAppliedOne',
       'arabicDefaultsClassical',
+      'arabicDefaultsDesignFonts',
       'arabicDefaultsFaces',
       'arabicDefaultsModern',
       'arabicDefaultsNothing',

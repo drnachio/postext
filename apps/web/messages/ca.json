@@ -1062,6 +1062,7 @@
     "arabicDefaults": "Configuració per a l'àrab",
     "arabicDefaultsTooltip": "Prepara un llibre en àrab d'una vegada: de dreta a esquerra, enquadernat per la dreta, Amiri (o Noto Naskh Arabic amb títols en Noto Kufi Arabic), interlineat d'1,75, text justificat sense partició de mots, les xifres de la regió, شكل i جدول numerats per capítol, peus com شكل ١-١: العنوان, capítols numerats الفصل الأول, llistes numerades ١- أ- (١), notes a peu de pàgina numerades (١) de nou a cada pàgina amb el seu número a la línia, l'èmfasi en negreta on s'havia posat d'una altra manera i la kashida activada de nou on s'havia desactivat. Primer es veu la llista de canvis, i els paràmetres que vas canviar tu queden com estan tret que els marquis.",
     "arabicDefaultsFaces": "Tipus",
+    "arabicDefaultsDesignFonts": "Tipus dels textos de disseny",
     "arabicDefaultsClassical": "Clàssic (Amiri)",
     "arabicDefaultsModern": "Modern (Noto Naskh)",
     "arabicDefaultsNothing": "El llibre ja té tota la configuració per a l'àrab.",

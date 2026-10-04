@@ -1062,6 +1062,7 @@
     "arabicDefaults": "阿拉伯语默认设置",
     "arabicDefaultsTooltip": "一步把书设成阿拉伯语排版：从右到左，右侧装订，Amiri 字体（或 Noto Naskh Arabic 正文配 Noto Kufi Arabic 标题），1.75 倍行距，两端对齐且不断词，采用所在地区的数字，شكل 和 جدول 按章编号，题注排成“شكل ١-١: العنوان”，章编号为“الفصل الأول”，列表编号为 ١- أ- (١)，脚注编号写作 (١) 并每页重新编号，注释自身的编号排在行内，强调改用粗体（如原先另有设定），并重新开启被关闭的卡希达延长。应用前会先列出所有改动；你自己改过的设置保持不变，除非勾选它们。",
     "arabicDefaultsFaces": "字体",
+    "arabicDefaultsDesignFonts": "设计文本字体",
     "arabicDefaultsClassical": "古典（Amiri）",
     "arabicDefaultsModern": "现代（Noto Naskh）",
     "arabicDefaultsNothing": "这本书已经采用了全部阿拉伯语默认设置。",
