@@ -297,9 +297,10 @@ export function arabicDefaults(config: PostextConfig, options: ArabicDefaultsOpt
     });
   }
 
-  // Hyphenation: Arabic words are never divided at the end of a line. Off,
-  // unless the author turned it on for a Latin language they named (the
-  // quoted words of that language in the text).
+  // Hyphenation: Arabic words are never divided at the end of a line. The
+  // engine sets an Arabic book without it (#368); it runs only when the
+  // author turned it on for a Latin language they named (the quoted words
+  // of that language in the text), which this row offers to turn off.
   if (fromBody.hyphenation.enabled) {
     const explicit = body?.hyphenation?.enabled === true;
     const named = body?.hyphenation?.locale;

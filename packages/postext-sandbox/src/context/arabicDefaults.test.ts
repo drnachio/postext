@@ -20,9 +20,10 @@ describe('arabicDefaults', () => {
   it('sets up a pristine Arabic book in the classical faces', () => {
     const before = arabicBook();
     const r = arabicDefaults(before, { locale: 'ar' });
-    // Right to left and the right binding come with the language already;
-    // justified text is the engine's default; the names are Arabic.
-    expect(ids(r)).toEqual(['bodyFont', 'headingFont', 'lineHeight', 'hyphenation', 'captionLabel', 'chapterNumbering', 'listNumbers', 'footnotes']);
+    // Right to left and the right binding come with the language already,
+    // and so does hyphenation off (#368); justified text is the engine's
+    // default; the names are Arabic.
+    expect(ids(r)).toEqual(['bodyFont', 'headingFont', 'lineHeight', 'captionLabel', 'chapterNumbering', 'listNumbers', 'footnotes']);
     expect(r.changes.every((c) => c.applied && !c.customised && !c.required)).toBe(true);
     const c = r.config;
     expect(c.bodyText?.fontFamily).toBe('Amiri');
@@ -131,10 +132,12 @@ describe('arabicDefaults', () => {
   it('keeps hyphenation the author turned on for a Latin language they named', () => {
     const base: PostextConfig = { ...arabicBook(), bodyText: { hyphenation: { enabled: true, locale: 'en-us' } } };
     expect(change(arabicDefaults(base, { locale: 'ar' }), 'hyphenation')).toMatchObject({ customised: true, applied: false });
+    // Turned on with no language named, the engine keeps it off for an
+    // Arabic book (#368): nothing to offer.
     const plain: PostextConfig = { ...arabicBook(), bodyText: { hyphenation: { enabled: true } } };
     const r = arabicDefaults(plain, { locale: 'ar' });
-    expect(change(r, 'hyphenation')).toMatchObject({ customised: false, applied: true });
-    expect(r.config.bodyText?.hyphenation).toEqual({ enabled: false });
+    expect(change(r, 'hyphenation')).toBeUndefined();
+    expect(resolveBodyTextConfig(r.config.bodyText, r.config.locale).hyphenation.enabled).toBe(false);
   });
 
   it('moves heading faces of levels and styles to the chosen set', () => {
