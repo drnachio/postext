@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { DocumentMetadata, PostextConfig, VDTDocument } from 'postext';
 import { documentCodePoints, facesForText, fontFormatOf, parseUnicodeRange } from './fontSubsets';
 import { bookLanguageOf, epubFileName, epubMetadataOf, isoDateOf, sandboxBookIdentifier } from './metadata';
-import { firstIndexOf, fixedScreens, flattenToc, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf } from './viewer';
+import { firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf } from './viewer';
 
 describe('font subsets', () => {
   it('reads unicode-range values, wildcards included', () => {
@@ -142,5 +142,18 @@ describe('reader helpers', () => {
   it('flattens the table of contents with depths', () => {
     expect(flattenToc([{ label: 'I', href: 'a', children: [{ label: '1', href: 'b' }] }, { label: 'II', href: 'c' }]))
       .toEqual([{ label: 'I', href: 'a', depth: 0 }, { label: '1', href: 'b', depth: 1 }, { label: 'II', href: 'c', depth: 0 }]);
+  });
+});
+
+describe('reader focus', () => {
+  it('takes the focus back from a page frame after a page key, and only then', () => {
+    const page = {} as Document;
+    const host = {} as Document;
+    const area = { ownerDocument: host, focus: vi.fn() };
+    keepReaderFocus({ ownerDocument: page } as Node, area);
+    expect(area.focus).toHaveBeenCalledWith({ preventScroll: true });
+    area.focus.mockClear();
+    keepReaderFocus({ ownerDocument: host } as Node, area);
+    expect(area.focus).not.toHaveBeenCalled();
   });
 });

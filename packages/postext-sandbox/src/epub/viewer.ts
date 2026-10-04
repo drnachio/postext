@@ -169,3 +169,11 @@ export function formatBytes(n: number): string {
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(n < 10 * 1024 ? 1 : 0)} kB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/** After a page key pressed inside a content document (`target`): the
+ *  frame goes with the page it turns, and the focus with it, so the
+ *  reader (`area`) takes the focus to receive the next key. A key pressed
+ *  on the reader itself leaves the focus where it is. */
+export function keepReaderFocus(target: Node | null, area: Pick<HTMLElement, 'ownerDocument' | 'focus'> | null): void {
+  if (area && target && target.ownerDocument !== area.ownerDocument) area.focus({ preventScroll: true });
+}

@@ -5,7 +5,7 @@ import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { useLargeTargets } from '../ui/largeTargets';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook';
-import { firstIndexOf, fixedScreens, flattenToc, linkTarget, prefersSpreads, screenOf } from '../epub/viewer';
+import { firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf } from '../epub/viewer';
 
 /** What the toolbar shows of the reader: where it is and where it can go. */
 export interface EpubReaderPosition {
@@ -183,6 +183,7 @@ function FixedReader({ book, handleRef, onPosition }: { book: ViewerBook; handle
     const action = pageKey(e, rtl);
     if (!action) return;
     e.preventDefault();
+    keepReaderFocus(e.target as Node | null, areaRef.current);
     if (action === 'previous') previous();
     else if (action === 'next') next();
     else goToScreen(action === 'first' ? 0 : screens.length - 1);
@@ -270,6 +271,7 @@ figure, img, svg { break-inside: avoid; }`;
 
 function ReflowReader({ book, fontScale, handleRef, onPosition }: { book: ViewerBook; fontScale: number; handleRef: MutableRefObject<EpubReaderHandle | null>; onPosition: (p: EpubReaderPosition | null) => void }) {
   const labels = useSandboxLabels();
+  const compact = useCompactLayout();
   const reserve = useToolbarReserve();
   const areaRef = useRef<HTMLDivElement | null>(null);
   const area = useSize(areaRef);
@@ -277,7 +279,9 @@ function ReflowReader({ book, fontScale, handleRef, onPosition }: { book: Viewer
   const { epub } = book;
   const rtl = epub.pageProgression === 'rtl';
   const toc = useMemo(() => flattenToc(epub.toc), [epub]);
-  const width = Math.max(0, area.width);
+  // The pages stop short of the floating toolbar at the right of the
+  // desktop layout, as the docked one on a phone is kept below them.
+  const width = Math.max(0, area.width - (compact ? 0 : TOOLBAR_ROOM));
   const height = Math.max(0, area.height - reserve);
 
   const [docIndex, setDocIndex] = useState(0);
@@ -405,6 +409,7 @@ function ReflowReader({ book, fontScale, handleRef, onPosition }: { book: Viewer
     const action = pageKey(e, rtl);
     if (!action) return;
     e.preventDefault();
+    keepReaderFocus(e.target as Node | null, areaRef.current);
     if (action === 'previous') previous();
     else if (action === 'next') next();
     else openDocument(action === 'first' ? 0 : epub.spine.length - 1, { page: action === 'first' ? 0 : 'last' });
