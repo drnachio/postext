@@ -24,6 +24,7 @@ const fixture = (name: string) => new Uint8Array(fs.readFileSync(new URL(`./fixt
 const AMIRI = fixture('amiri-subset.ttf');
 const AMIRI_BOLD = fixture('amiri-bold-subset.ttf');
 const LATIN_SLICE = fixture('amiri-latin-slice.ttf');
+const ARABIC_SLICE = fixture('amiri-arabic-slice.ttf');
 const fontProvider = async (_family: string, weight: number) => (weight >= 600 ? AMIRI_BOLD : AMIRI);
 
 /** Measures like Chrome once HarfBuzz is loaded: each piece in the
@@ -249,6 +250,41 @@ describe('face slices', () => {
     const alone = shapeRun(AMIRI, 'ب', { direction: 'rtl' })!.glyphs.map((g) => g.gid);
     const joined = shapeRun(AMIRI, '‍ب', { direction: 'rtl' })!.glyphs.map((g) => g.gid);
     expect(joined).not.toEqual(alone);
+  });
+});
+
+describe('brackets in a right-to-left run of a sliced face (#401)', () => {
+  // Fontsource's `arabic` file of Amiri has `(` and no `)`. HarfBuzz mirrors
+  // a bracket of a right-to-left run only when the file it shapes in has
+  // the mirror, so an opening bracket cut into that file printed as `(`:
+  // «(١)» came out «(١(».
+  async function slices() {
+    const pdf = await PDFDocument.create();
+    pdf.registerFontkit(fontkit);
+    const arabic: PDFFont = await pdf.embedFont(ARABIC_SLICE, { subset: true });
+    const latin: PDFFont = await pdf.embedFont(LATIN_SLICE, { subset: true });
+    registerFaceFiles(arabic, [latin]);
+    return (text: string, rtl: boolean) => fileRuns(arabic, text, rtl).map((r) => [r.font === latin ? 'latin' : 'arabic', r.text]);
+  }
+
+  it('sets a mirrored character in a file that has the glyph the run shows', async () => {
+    const runs = await slices();
+    // Right to left: `(` shows as `)`, which only the Latin file has; `)`
+    // shows as `(`, which the Arabic file has.
+    expect(runs('(١)', true)).toEqual([['latin', '('], ['arabic', '١)']]);
+    expect(runs('(', true)).toEqual([['latin', '(']]);
+    expect(runs(')', true)).toEqual([['arabic', ')']]);
+    expect(runs('(قوس', true)).toEqual([['latin', '('], ['arabic', 'قوس']]);
+    // Left to right, and characters with no mirror, as before.
+    expect(runs('(١)', false)).toEqual([['arabic', '(١'], ['latin', ')']]);
+    expect(runs('كتاب ١٤٤٥', true)).toEqual([['arabic', 'كتاب ١٤٤٥']]);
+  });
+
+  it('so the bracket is shaped mirrored', async () => {
+    const mirrored = shapeRun(LATIN_SLICE, '(', { direction: 'rtl' })!.glyphs[0]!.gid;
+    expect(mirrored).toBe(shapeRun(LATIN_SLICE, ')', { direction: 'ltr' })!.glyphs[0]!.gid);
+    // In the Arabic file the same run keeps the unmirrored glyph: the bug.
+    expect(shapeRun(ARABIC_SLICE, '(', { direction: 'rtl' })!.glyphs[0]!.gid).toBe(shapeRun(ARABIC_SLICE, '(', { direction: 'ltr' })!.glyphs[0]!.gid);
   });
 });
 

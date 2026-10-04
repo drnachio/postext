@@ -562,7 +562,7 @@ function layoutShapedText(
   let advance = 0;
   let glyphs = 0;
   for (const run of runsOf(text, options)) {
-    const files = fileRuns(font, text.slice(run.start, run.end));
+    const files = fileRuns(font, text.slice(run.start, run.end), run.rtl);
     // The files of a right-to-left run follow each other leftwards.
     if (run.rtl) files.reverse();
     for (const { font: file, text: part } of files) {
@@ -645,8 +645,8 @@ export interface StyledWordPart {
 }
 
 /** The one file of `font`'s face that sets all of `text`, if there is one. */
-function singleFile(font: PDFFont, text: string): PDFFont | undefined {
-  const files = fileRuns(font, text);
+function singleFile(font: PDFFont, text: string, rtl = false): PDFFont | undefined {
+  const files = fileRuns(font, text, rtl);
   return files.length === 1 ? files[0]!.font : undefined;
 }
 
@@ -691,9 +691,9 @@ export function drawStyledWordPx(
 ): boolean {
   if (!text) return true;
   if (!complexShaperReady() || !(sizePx > 0)) return false;
-  const file = singleFile(font, text);
-  if (!file) return false;
   const direction = options.direction ?? 'ltr';
+  const file = singleFile(font, text, direction === 'rtl');
+  if (!file) return false;
   const base = shapingOf(file, text, direction, options.language);
   if (!base) return false;
   const hide = tatweelsToHide(options.hideTatweel);
@@ -714,7 +714,7 @@ export function drawStyledWordPx(
     let showFile = file;
     let shown: ShapedShow | null = null;
     let scale = 1;
-    const other = part && part.font !== font ? singleFile(part.font, text) : undefined;
+    const other = part && part.font !== font ? singleFile(part.font, text, direction === 'rtl') : undefined;
     const width = base.pen[b]! - base.pen[a]!;
     if (other && other !== file && width > 0) {
       // The other face's glyphs of the same characters, in its own shaping

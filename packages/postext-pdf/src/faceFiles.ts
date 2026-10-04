@@ -16,6 +16,7 @@
  * ({@link noteMissingGlyphs}), for the `missingGlyph` warning.
  */
 import type { PDFFont } from 'pdf-lib';
+import { mirroredCodePoint } from 'postext';
 import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/fallbackSpaces';
 
 /** The fontkit face of an embedded font, as far as coverage needs it. */
@@ -116,8 +117,16 @@ export interface FileRun {
  * invisible one (a joiner, a variation selector), stays in the run before
  * it: it is drawn (or dropped) as that file's fallback, and a printing one
  * is reported as missing when shaped.
+ *
+ * With `rtl` (a run HarfBuzz shapes right to left) a mirrored character
+ * goes by the glyph that run will show: HarfBuzz sets `(` as `)` only when
+ * the file has a `)`, and keeps the `(` otherwise. Fontsource's `arabic`
+ * file of Amiri holds `(` and not `)`, so an opening bracket cut into it
+ * printed unmirrored in an Arabic line (#401). Such a character is set in
+ * the first file with its mirror (the `latin` one), or by its own glyph
+ * when no file has the mirror.
  */
-export function fileRuns(font: PDFFont, text: string): FileRun[] {
+export function fileRuns(font: PDFFont, text: string, rtl = false): FileRun[] {
   const list = faceFilesOf(font);
   if (!list) return [{ font, text }];
   const runs: FileRun[] = [];
@@ -137,9 +146,11 @@ export function fileRuns(font: PDFFont, text: string): FileRun[] {
       pending += ch;
       continue;
     }
+    const mirror = rtl ? mirroredCodePoint(cp) : cp;
+    const shown = mirror !== cp && list.fileFor(mirror) ? mirror : cp;
     let file = current?.font;
-    if (!file || (!list.covers(file, cp) && !isDefaultIgnorable(cp))) {
-      file = list.fileFor(cp) ?? current?.font ?? font;
+    if (!file || (!list.covers(file, shown) && !isDefaultIgnorable(cp))) {
+      file = list.fileFor(shown) ?? current?.font ?? font;
     }
     if (current && current.font === file) {
       current.text += pending + ch;

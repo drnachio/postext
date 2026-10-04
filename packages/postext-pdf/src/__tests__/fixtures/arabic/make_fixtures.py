@@ -14,7 +14,9 @@ Writes `amiri-subset.ttf` and `noto-naskh-subset.ttf`. With Amiri Bold
 (#380 part 2): `amiri-bold-subset.ttf`, Amiri Bold cut to TEXT and
 BOLD_TEXT, and `amiri-latin-slice.ttf`, Amiri Regular cut to Basic Latin
 and the joining controls, the way Fontsource's `latin` file serves
-U+2000–206F.
+U+2000–206F, and `amiri-arabic-slice.ttf`, Amiri Regular cut to the Arabic
+characters of TEXT, the space and `(` alone, the way Fontsource's `arabic`
+file of Amiri holds an opening bracket and no closing one (#401).
 """
 import os
 import sys
@@ -31,7 +33,7 @@ BOLD_TEXT = 'كتاب بَيت \u200c\u200d'
 LATIN_SLICE = [*range(0x20, 0x7f), 0x200c, 0x200d]
 
 
-def build(src, dst, text=TEXT, unicodes=None):
+def build(src, dst, text=TEXT, unicodes=None, drop=()):
     opts = subset.Options()
     opts.layout_features = ['*']
     opts.drop_tables += ['DSIG']
@@ -47,6 +49,11 @@ def build(src, dst, text=TEXT, unicodes=None):
     else:
         sub.populate(text=text)
     sub.subset(font)
+    # The subsetter keeps the code points of a glyph another one is built
+    # from; a slice that lacks a character in its source has it removed.
+    for table in font['cmap'].tables:
+        for cp in drop:
+            table.cmap.pop(cp, None)
     font.flavor = None
     subset.save_font(font, dst, opts)
 
@@ -57,3 +64,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         build(sys.argv[3], os.path.join(HERE, 'amiri-bold-subset.ttf'), text=TEXT + BOLD_TEXT)
         build(sys.argv[1], os.path.join(HERE, 'amiri-latin-slice.ttf'), unicodes=LATIN_SLICE)
+        arabic = sorted({ord(c) for c in TEXT if 0x0600 <= ord(c) <= 0x06ff} | {0x20, 0x28})
+        build(sys.argv[1], os.path.join(HERE, 'amiri-arabic-slice.ttf'), unicodes=arabic, drop=(0x29,))
