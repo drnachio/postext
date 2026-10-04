@@ -2,6 +2,31 @@
   "version": 1,
   "presets": [
     {
+      "id": "alf-layla",
+      "dir": "alf-layla",
+      "name": "ألف ليلة وليلة · One Thousand and One Nights",
+      "description": "Las mil y una noches completas en árabe, en el texto de Bulaq: un libro clásico egipcio encuadernado a la derecha, con marco de doble filete, las noches en palabras y las acuarelas de Sani ol-Molk · The complete Thousand and One Nights in Arabic, the Bulaq text: a classical Egyptian book bound on the right, with a double-ruled frame, the nights in words and Sani ol-Molk’s watercolours",
+      "locale": "ar",
+      "locales": [
+        "ar"
+      ],
+      "openLocale": "ar",
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · CC BY 4.0 · OFL fonts",
+      "credits": "مؤسسة هنداوي · Bulaq 1835 · صنيع الملك · William Harvey · Wikimedia Commons",
+      "tags": [
+        "book",
+        "arabic",
+        "right-to-left",
+        "right-bound",
+        "verse",
+        "plates",
+        "parts"
+      ],
+      "binding": "right",
+      "shelfOrder": 1
+    },
+    {
       "id": "bioquimica-feduchi",
       "dir": "bioquimica-feduchi",
       "name": "Bioquímica Feduchi Capítulo 1",
@@ -88,7 +113,7 @@
       ],
       "openLocale": "zh-Hant",
       "binding": "right",
-      "shelfOrder": 1
+      "shelfOrder": 2
     },
     {
       "id": "openstax-fisica",

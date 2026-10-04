@@ -295,7 +295,12 @@ def night_heading(b: dict, level: int, mode: str) -> str:
 
 
 def chapter_markdown(ch: dict, *, night_level: int = 6, night_title: str = "hindawi", parts: bool = True) -> str:
+    """`night_level` 0: a night is a heading one level below the tale it
+    falls in (so the outline never skips a level)."""
     lines: list[str] = []
+    auto_nights = night_level == 0
+    tale_cap = 5 if auto_nights else night_level - 1
+    current = 1
     if parts and ch.get("part"):
         n = ch["part"]
         lines += [f':::part{{number={attr(arabic_digits(n))} title={attr("الجزء " + ordinal_ar(n, feminine=False))}}}', ":::", ""]
@@ -313,19 +318,20 @@ def chapter_markdown(ch: dict, *, night_level: int = 6, night_title: str = "hind
         if t == "basmala":
             continue
         if t == "night":
-            lines += [night_heading(b, night_level, night_title), ""]
+            lines += [night_heading(b, min(6, current + 1) if auto_nights else night_level, night_title), ""]
         elif t == "tale":
             if first_level is None:
                 first_level = b["level"]
                 level = 1
             else:
-                level = 1 if ch["continued"] and b["level"] <= first_level else max(2, min(night_level - 1, b["level"] - first_level + 1))
+                level = 1 if ch["continued"] and b["level"] <= first_level else max(2, min(tale_cap, b["level"] - first_level + 1))
             a = [f"tale={attr(b['id'])}"]
             if level == 1:
                 if ch.get("cycleTitle") and ch["cycleTitle"] != b["title"]:
                     a.append(f"cycle={attr(ch['cycleTitle'])}")
                 if b.get("group"):
                     a.append('group="true"')
+            current = level
             lines += ["#" * level + f" {b['title']} {{{' '.join(a)}}}", ""]
         elif t == "p":
             lines += [paragraph(b["runs"]), ""]
@@ -336,6 +342,9 @@ def chapter_markdown(ch: dict, *, night_level: int = 6, night_title: str = "hind
             lines += [":::", ""]
         elif t == "heading":
             lines += [f"## {b['text']}", ""]
+        elif t == "resource":
+            # A plate build.py places after a paragraph (`::resource`).
+            lines += [f'::resource{{id="{b["id"]}"}}', ""]
     md = "\n".join(lines).rstrip() + "\n"
     check_markdown(md, ch["file"] if "file" in ch else ch["slug"])
     return md
@@ -365,7 +374,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=DRAFT)
     ap.add_argument("--night-title", choices=["hindawi", "ordinal"], default="hindawi")
-    ap.add_argument("--night-level", type=int, default=6)
+    ap.add_argument("--night-level", type=int, default=6, help="0: one below the tale it falls in")
     ap.add_argument("--max-words", type=int, default=None)
     ap.add_argument("--no-parts", action="store_true")
     args = ap.parse_args()

@@ -27,6 +27,7 @@
     0.3536
    ],
    "tale": "fisherman-jinni",
+   "find": "فوجد فيها أربع سمكات",
    "captionFa": "ماهی‌گیر ماهی‌ها را نزد سلطان آورده",
    "caption": "الصياد يحمل السمك الملوَّن إلى الملك",
    "confidence": "caption read"
@@ -60,6 +61,7 @@
     0.9514
    ],
    "tale": "fisherman-jinni",
+   "find": "لا بد أن أنظر بعيني",
    "captionFa": "کنیز در حضور سلطان ماهی را سرخ می‌کند",
    "caption": "السمك في المقلاة بين يدي الملك والوزير",
    "confidence": "caption read"
@@ -76,6 +78,7 @@
     0.2714
    ],
    "tale": "ensorcelled-prince",
+   "find": "نصفك حجرا",
    "captionFa": "دختر عموی [او] را … می‌زند",
    "caption": "بنت العم تضرب زوجها المسحور، ونصفه حجر",
    "confidence": "caption partly read; scene certain"
@@ -92,6 +95,7 @@
     0.52
    ],
    "tale": "ensorcelled-prince",
+   "find": "فسحرتهم سمكا",
    "captionFa": "دختر … را به صورت … کرد",
    "caption": "الساحرة تسحر المدينة بحيرةً وأهلها سمكًا",
    "confidence": "caption partly read"
@@ -108,6 +112,7 @@
     0.9536
    ],
    "tale": "ensorcelled-prince",
+   "find": "فتزوج الملك بإحدى بنتيه",
    "captionFa": "عروسی دختران … سلطان",
    "caption": "الملك والشاب يتزوجان ابنتَي الصياد",
    "confidence": "caption partly read"
@@ -124,6 +129,7 @@
     0.3
    ],
    "tale": "third-qalandar",
+   "find": "ونزلت من فوق الشجرة",
    "captionFa": "ملک‌زاده بالای درخت است و غلامان سیاه …",
    "caption": "ابن الملك فوق الشجرة والعبيد يقبلون من البحر",
    "confidence": "caption read"
@@ -140,6 +146,7 @@
     0.5914
    ],
    "tale": "third-qalandar",
+   "find": "فطار بي",
    "captionFa": "ملک‌زاده سوار اسب … به هوا می‌رود",
    "caption": "الفرس الطائر يحمل ابن الملك",
    "confidence": "caption read"
@@ -156,6 +163,7 @@
     0.9536
    ],
    "tale": "porter-ladies",
+   "find": "هاتين الكلبتين",
    "captionFa": "خلیفه نشسته … کور و دختر و سگ حاضرند",
    "caption": "الخليفة والبنات والكلبتان في الديوان",
    "confidence": "caption partly read"
@@ -172,6 +180,7 @@
     0.325
    ],
    "tale": "zubayda",
+   "find": "ثم حملتني أنا والكلبتين",
    "captionFa": "عفریت در مجلس خلیفه حاضر شدن",
    "caption": "العفريتة تحضر مجلس الخليفة وتفكّ سحر الكلبتين",
    "confidence": "caption read"
@@ -188,6 +197,7 @@
     0.6286
    ],
    "tale": "porter-ladies",
+   "find": "وزوج الثلاث للثلاثة الصعاليك",
    "captionFa": "عروسی سه دختر با ملک‌زادگان",
    "caption": "زفاف البنات الثلاث",
    "confidence": "caption read"
@@ -221,6 +231,7 @@
     0.3179
    ],
    "tale": "three-apples",
+   "find": "لأجل الصلب",
    "captionFa": "جعفر را پای دار آوردن",
    "caption": "جعفر يُساق إلى المشنقة",
    "confidence": "caption read"
@@ -237,6 +248,7 @@
     0.6286
    ],
    "tale": "three-apples",
+   "find": "وأنا الذي قتلتها",
    "captionFa": "پیر و جوان نزد خلیفه ایستاده‌اند",
    "caption": "الشيخ والشاب واقفان بين يدي الخليفة",
    "confidence": "caption read"
@@ -253,6 +265,7 @@
     0.3143
    ],
    "tale": "nur-al-din-shams-al-din",
+   "find": "فنزل في بعض الخانات",
    "captionFa": "بدرالدین داخل کاروانسرا شده",
    "caption": "بدر الدين حسن عند الخان",
    "confidence": "caption partly read"
@@ -269,6 +282,7 @@
     0.6321
    ],
    "tale": "nur-al-din-shams-al-din",
+   "find": "أقبح من هذا الأحدب",
    "captionFa": "عروسی … بدرالدین",
    "caption": "ليلة العرس: بدر الدين حسن مكان الأحدب",
    "confidence": "caption partly read"
@@ -285,6 +299,7 @@
     0.9571
    ],
    "tale": "nur-al-din-shams-al-din",
+   "find": "فنام عند قبر أبيه",
    "captionFa": "… بدرالدین … خوابیده",
    "caption": "بدر الدين حسن نائم",
    "confidence": "caption partly read"
@@ -301,6 +316,7 @@
     0.33
    ],
    "tale": "anis-al-jalis",
+   "find": "ثم أدخلها الحمام",
    "captionFa": "کنیزکان در حمام …",
    "caption": "الجواري في الحمّام",
    "confidence": "caption partly read"
@@ -317,6 +333,7 @@
     0.6321
    ],
    "tale": "anis-al-jalis",
+   "find": "وإذا بابن الوزير الذي اسمه علي نور الدين",
    "captionFa": "علی نورالدین … انیس الجلیس …",
    "caption": "علي نور الدين وأنيس الجليس",
    "confidence": "caption read"
@@ -333,6 +350,7 @@
     0.325
    ],
    "tale": "jewish-doctor",
+   "find": "آدمي مريض",
    "captionFa": "طبیب یهودی به عیادت جوان آمده است",
    "caption": "الطبيب اليهودي يعود الشاب المريض",
    "confidence": "caption read"
@@ -349,6 +367,7 @@
     0.6321
    ],
    "tale": "jewish-doctor",
+   "find": "فسقوني الشراب",
    "captionFa": "جوان با دختر … می‌خورند",
    "caption": "الشاب والصبية في مجلس الشراب",
    "confidence": "caption read"
@@ -365,6 +384,7 @@
     0.3214
    ],
    "tale": "lame-young-man",
+   "find": "ثم مضت العجوز",
    "captionFa": "مکالمهٔ عجوز با دختر قاضی",
    "caption": "العجوز تحدِّث بنت القاضي",
    "confidence": "caption read"
@@ -381,6 +401,7 @@
     0.9536
    ],
    "tale": "lame-young-man",
+   "find": "فأخذت الأصطرلاب",
    "captionFa": "اضطراب … دلاک",
    "caption": "المزيِّن يأخذ ارتفاع الشمس بالأسطرلاب",
    "confidence": "caption read"
@@ -397,6 +418,7 @@
     0.2929
    ],
    "tale": "barber-brother-1",
+   "find": "بت الليلة في الطاحون",
    "captionFa": "مرد خیاط را آسیابان تازیانه می‌زند",
    "caption": "الطحّان يضرب الخياط بالسوط وهو يدير الطاحون",
    "confidence": "caption read"
@@ -413,6 +435,7 @@
     0.5679
    ],
    "tale": "barber-brother-1",
+   "find": "في روشن الدار",
    "captionFa": "صحبت داشتن خانم … با مرد خیاط",
    "caption": "المرأة تكلِّم الخياط من الطاقة",
    "confidence": "caption read"
@@ -429,6 +452,7 @@
     0.325
    ],
    "tale": "steward",
+   "find": "ووضعتني في صندوق",
    "captionFa": "در مسجد جوان و دختر … نشسته‌اند",
    "caption": "الشاب والصبية والصندوق",
    "confidence": "caption partly read"
@@ -445,6 +469,7 @@
     0.6321
    ],
    "tale": "steward",
+   "find": "ربتها السيدة زبيدة",
    "captionFa": "سیده زبیده با کنیزکان به دیدن جوان آمده",
    "caption": "السيدة زبيدة وجواريها يرين الشاب",
    "confidence": "caption read"
@@ -461,6 +486,7 @@
     0.3179
    ],
    "tale": "aziz",
+   "find": "فأخذت لقمة",
    "captionFa": "عزیزه لقمه به دهن عزیز گذاردن",
    "caption": "عزيزة تطعم عزيزًا",
    "confidence": "caption partly read"
@@ -477,6 +503,7 @@
     0.9536
    ],
    "tale": "aziz",
+   "find": "عزيز على عزيزة",
    "captionFa": "مهر کردن عزیز از عزیزه",
    "caption": "عزيز وعزيزة",
    "confidence": "caption partly read"
@@ -493,6 +520,7 @@
     0.6271
    ],
    "tale": "dunya-taj-al-muluk",
+   "find": "كتبت هذه الأبيات",
    "captionFa": "نامه نوشتن سیدهٔ دنیا",
    "caption": "السيدة دنيا تكتب الرسالة",
    "confidence": "caption read"
@@ -509,6 +537,7 @@
     0.9536
    ],
    "tale": "dunya-taj-al-muluk",
+   "find": "ثم إن العجوز قالت لتاج الملوك",
    "captionFa": "تکلم کردن پیرزن با تاج‌الملوک در بازار",
    "caption": "العجوز تكلِّم تاج الملوك في السوق",
    "confidence": "caption read"
@@ -525,6 +554,7 @@
     0.3214
    ],
    "tale": "dunya-taj-al-muluk",
+   "find": "وإذا قعدت في تلك الدكان",
    "captionFa": "تاج‌الملوک و وزیر و عزیز در … سوق نشسته",
    "caption": "تاج الملوك والوزير وعزيز في دكان السوق",
    "confidence": "caption read"
@@ -541,6 +571,7 @@
     0.6393
    ],
    "tale": "dunya-taj-al-muluk",
+   "find": "ودخل بهما الحمام",
    "captionFa": "به حمام رفتن تاج‌الملوک با وزیر و عزیز",
    "caption": "تاج الملوك والوزير وعزيز في الحمّام",
    "confidence": "caption read"
@@ -557,6 +588,7 @@
     0.325
    ],
    "tale": "umar-numan",
+   "find": "فسار وحده",
    "captionFa": "ملک شرکان یکه‌سوار … می‌رود",
    "caption": "الملك شركان يسير وحده",
    "confidence": "caption read"
@@ -573,6 +605,7 @@
     0.6143
    ],
    "tale": "umar-numan",
+   "find": "والتحم القتال",
    "captionFa": "جنگ ملک شرکان با … نصرانی",
    "caption": "قتال الملك شركان",
    "confidence": "caption read"
@@ -606,6 +639,7 @@
     0.9536
    ],
    "tale": "umar-numan",
+   "find": "حتى أصارعكم قبل أن يغيب القمر",
    "captionFa": "ملک شرکان و ملکه ابریزه حرف می‌زنند",
    "caption": "شركان وإبريزة في ضوء القمر",
    "confidence": "caption read"
@@ -639,6 +673,7 @@
     0.6107
    ],
    "tale": "nuzhat-wedding",
+   "find": "أوقدوا الشموع",
    "captionFa": "چراغانی شهر است",
    "caption": "زينة المدينة بالمصابيح",
    "confidence": "caption read"
@@ -655,6 +690,7 @@
     0.9536
    ],
    "tale": "nuzhat-wedding",
+   "find": "ودخل عليها شركان",
    "captionFa": "نزهة‌الزمان و ملک شرکان در حجله نشسته‌اند",
    "caption": "نزهة الزمان والملك شركان في ليلة الزفاف",
    "confidence": "caption read"
@@ -704,6 +740,7 @@
     0.6393
    ],
    "tale": "kan-ma-kan",
+   "find": "لملاقاته",
    "captionFa": "اهل بغداد به پیشواز ملک ضوء‌المکان آمده‌اند",
    "caption": "أهل بغداد يستقبلون الملك ضوء المكان",
    "confidence": "caption read"
@@ -736,6 +773,7 @@
     0.6393
    ],
    "tale": "ghanim-slave-of-love",
+   "find": "الحاملين الصندوق",
    "captionFa": "غانم بر درخت رفته، سه نفر غلام صندوقی می‌آورند",
    "caption": "غانم فوق الشجرة والعبيد الثلاثة يحملون الصندوق",
    "confidence": "caption read"
@@ -752,6 +790,7 @@
     0.9536
    ],
    "tale": "ghanim-slave-of-love",
+   "find": "العبيد الثلاثة قالوا",
    "captionFa": "سه غلام نشسته با یکدیگر حرف می‌زنند",
    "caption": "العبيد الثلاثة يتحادثون",
    "confidence": "caption read"
@@ -768,6 +807,7 @@
     0.3057
    ],
    "tale": "ghanim",
+   "find": "وهما أمه وأخته",
    "captionFa": "مادر و خواهر غانم با قوت‌القلوب بر بستر غانم نشسته",
    "caption": "أم غانم وأخته وقوت القلوب عند فراشه",
    "confidence": "caption read"
@@ -778,6 +818,7 @@
    "file": "harvey-23.jpg",
    "commons": "File:Harvey W, 1001 nights (23).jpg",
    "tale": "merchant-jinni",
+   "find": "قم حتى أقتلك",
    "kind": "plate",
    "caption": "العفريت يرفع سيفه على التاجر",
    "confidence": "subject identified from the picture"
@@ -799,6 +840,7 @@
    "file": "harvey-08.jpg",
    "commons": "File:Harvey W, 1001 nights (8).jpg",
    "tale": "qamar-zaman-budur",
+   "find": "واسم تلك الجنية ميمونة",
    "kind": "plate",
    "caption": "قمر الزمان",
    "confidence": "Commons description: Kamar ez-Zeman"
@@ -809,6 +851,7 @@
    "file": "harvey-10.jpg",
    "commons": "File:Harvey W, 1001 nights (10).jpg",
    "tale": "uns-al-wujud",
+   "find": "فلما سمع الأسد مقالته",
    "kind": "plate",
    "caption": "أنس الوجود",
    "confidence": "Commons description: Uns el-Wujood"
@@ -819,6 +862,7 @@
    "file": "harvey-21.jpg",
    "commons": "File:Harvey W, 1001 nights (21).jpg",
    "tale": "abdallah-sea",
+   "find": "رأى فيها آدميا",
    "kind": "plate",
    "caption": "عبد الله البرّي وعبد الله البحري",
    "confidence": "subject identified from the picture (a man of the sea)"
@@ -829,6 +873,7 @@
    "file": "harvey-03.jpg",
    "commons": "File:Harvey W, 1001 nights (3).jpg",
    "tale": "fisherman-jinni",
+   "find": "خرج من ذلك القمقم دخان",
    "kind": "plate",
    "caption": "الدخان يخرج من القمقم ويصير عفريتًا",
    "confidence": "subject identified from the picture"
