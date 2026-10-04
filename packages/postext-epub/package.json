@@ -37,6 +37,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "epubcheck": "EPUBCHECK=1 vitest run src/epubcheck.test.ts",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
