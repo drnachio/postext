@@ -1,0 +1,59 @@
+---
+title: "Una cassida en una pàgina de diwan, en dos hemistiquis"
+summary: "Un bloc :::verse compon els quaranta-sis versos d'al-Mutanabbī en dues columnes d'hemistiquis, cada meitat estirada amb caixides fins a una mateixa amplada."
+plain: "Un poema àrab clàssic imprès com l'imprimeixen els llibres de poesia antics: cada vers partit en dues meitats, l'una al costat de l'altra, estirades fins a la mateixa amplada perquè els finals quedin alineats al llarg de la pàgina."
+description: "El Diwan d'al-Mutanabbī amb Postext: :::verse per a versos en dos hemistiquis, caixides, una capçalera en ruqʿa i enquadernació per la dreta."
+question: "Com componc vers àrab clàssic amb cada bayt en dos hemistiquis?"
+aliases: ["cassida", "qaṣīda", "diwan", "dīwān", "bayt", "hemistiqui", "ṣadr", "ʿajuz", "poesia àrab", "vers àrab clàssic", "al-Mutanabbī", "Sayf al-Dawla", "caixida", "tatweel", "قصيدة", "ديوان", "شطر"]
+pageNotes: { "2": "La pàgina que obre la cassida: a dalt, una banda pàl·lida amb filets vermells porta el títol على قدر أهل العزم en ruqʿa vermell, a sota el metre من البحر الطويل en cúfica grisa petita, dues línies de prosa que expliquen l'ocasió i després els versos en dues columnes: la meitat dreta i l'esquerra de cada vers estirades fins a la mateixa amplada." }
+---
+
+## Què compondràs
+
+Quatre pàgines d'un diwan, la poesia aplegada d'al-Mutanabbī, com les componien els impressors del Caire fa un segle: una portadella amb ديوان en ruqʿa vermell i, sota una capçalera amb filets vermells, la cassida que va recitar davant de Sayf al-Dawla l'any 954. Cadascun dels seus quaranta-sis bayts ocupa una línia amb dos hemistiquis, el ṣadr a la dreta i el ʿajuz a l'esquerra, estirats amb caixides fins a una mateixa amplada, de manera que les rimes en ‑mu baixen en línia recta per la vora esquerra. El llibre s'enquaderna per la dreta i els folis compten amb xifres aràbigues orientals. Només la nota sobre el text, al final, canvia amb l'edició. <RecipeLink slug="tang-poems-facing-english">Poemes Tang davant de la versió anglesa</RecipeLink> compon vers xinès clàssic sobre la seva pròpia retícula.
+
+## Elaboració
+
+### 1 · Un bayt per línia i les dues meitats a la mateixa amplada
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Dins de `:::verse` cada línia és un bayt i `||` separa els dos hemistiquis, de manera que el Markdown es llegeix com el text de Wikisource d'on ve. El poema mesura cada hemistiqui, pren la meitat més ampla com a amplada de les dues columnes (fins a la meitat de la mesura menys el buit central) i omple cada meitat fins a aquesta amplada, primer amb caixides i després amb els espais entre paraules. L'estil `bayt` va a 14 pt amb un interlineat de 26,6 pt, 1,9 vegades el cos, perquè les xaddes i les kasres de dues línies seguides no es toquin. El format és de 17 × 24 cm: a 14 × 21 cm un terç dels versos no cabia a la seva meitat dels 104 mm de la mesura i passava a la composició esglaonada, amb el ṣadr i el ʿajuz en línies pròpies.
+
+<PageShot page={2} crop="0,0.45,1,0.55" caption="Pàgina 2: cada hemistiqui s'estira fins a l'amplada del més llarg. Una meitat curta rep més caixides, i totes les rimes acaben a la mateixa vora esquerra." />
+
+### 2 · Una banda de capçalera en ruqʿa
+
+<Excerpt region="opener" />
+
+El títol de nivell 1 el dibuixa el seu disseny: una caixa tenyida amb un filet vermell a dalt i un altre a baix, el títol centrat al damunt en Aref Ruqaa i, a sota, el metre pres d'un atribut del títol, `{metre="من البحر الطويل"}`. La tipografia d'exhibició en ruqʿa no porta caixida, així que el títol conserva la seva amplada natural.
+
+### 3 · Capçaleres als costats del full
+
+<Excerpt region="heads" />
+
+El text corre de dreta a esquerra, i en ell esquerra i dreta volen dir principi i final. Les capçaleres, en canvi, són físiques. En un llibre enquadernat per la dreta la pàgina parella queda a la dreta del plec, així que el seu foli va a dalt a la dreta i el de la senar a dalt a l'esquerra: tots dos a la vora exterior. L'etiqueta `locale: 'ar'` n'hi ha prou per fixar la direcció, l'enquadernació i les xifres aràbigues orientals.
+
+### 4 · Una portadella sense res al flux
+
+<Excerpt region="title" />
+
+La portadella és un estil de títol amb `span: 'page'` i una capçalera i un peu buits. El seu text és el nom del poeta, de manera que la paraula ديوان és text del disseny, a 64 pt al damunt, i la línia llatina sota la rima surt de l'atribut `latin`, que cada edició escriu en la seva llengua.
+
+## Variants
+
+### Marca el buit amb un ornament
+
+Alguns diwans imprimeixen una estrella petita entre els hemistiquis. `ornament` posa una marca al centre del buit sense afegir-la al text.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" ornament="٭"}
+```
+
+### Dona a tots els hemistiquis la mateixa amplada
+
+Un `width` fix dona a les dues columnes la mateixa mesura a totes les pàgines del diwan, sigui quina sigui la meitat més ampla de cada poema.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" width=58mm}
+```

@@ -1,0 +1,59 @@
+---
+title: "A qasida on a diwan page, each line in two hemistichs"
+summary: "One :::verse block sets al-Mutanabbī’s forty-six bayts in two columns of hemistichs, each half stretched with kashidas to one width."
+plain: "A classical Arabic poem printed the way old poetry books print it: every line split into two halves that stand side by side, both halves stretched to the same width so their ends line up down the page."
+description: "A page of al-Mutanabbī’s Dīwān set in Postext: :::verse for bayts in two hemistichs, kashida justification, a Ruqʿa headpiece and a book bound on the right."
+question: "How do I set classical Arabic verse with each bayt in two hemistichs?"
+aliases: ["qasida", "qaṣīda", "diwan", "dīwān", "bayt", "hemistich", "ṣadr", "ʿajuz", "Arabic poetry", "classical Arabic verse", "al-Mutanabbī", "Sayf al-Dawla", "kashida", "tatweel", "قصيدة", "ديوان", "شطر"]
+pageNotes: { "2": "The opening page of the qaṣīda: a pale band ruled in red at the top holds the title على قدر أهل العزم in a red Ruqʿa hand, the metre من البحر الطويل in small grey Kufi under it, two lines of prose that give the occasion, then the bayts in two columns, the right half of each line and the left half both stretched to the same width." }
+---
+
+## What you'll build
+
+Four pages of a diwan, the collected poems of al-Mutanabbī, as Cairo printers set them a century ago: a half-title with ديوان in red Ruqʿa, then the qaṣīda he recited before Sayf al-Dawla in 954, under a red-ruled headpiece. Each of the forty-six bayts is one line of two hemistichs, the ṣadr on the right and the ʿajuz on the left, both stretched with kashidas to one width, so the rhymes in ‑mu run down the left edge in a straight line. The book is bound on the right and the folios count in Arabic-Indic digits. Only the note on the text, at the end, changes with the edition. <RecipeLink slug="tang-poems-facing-english">Tang poems facing their English verse</RecipeLink> sets classical Chinese verse on its own grid.
+
+## Method
+
+### 1 · One bayt a line, both halves to one width
+
+The code is [the short answer](#the-short-answer) above. Inside `:::verse` each line is a bayt, and `||` parts the two hemistichs, so the Markdown reads like the Wikisource text it came from ([:::verse](/en/docs/document-format#verse)). The poem measures every hemistich, takes the widest half as the width of both columns (up to half the measure less the gap) and fills each half to that width, with kashidas first and the word spaces after ([Classical verse](/en/docs/arabic-layout#classical-verse)). The `bayt` style is set at 14 pt on a 26.6 pt pitch, 1.9 × the size, so the shaddas and kasras of adjacent lines do not meet ([Vowel marks](/en/docs/arabic-layout#vowel-marks)). The trim is 17 × 24 cm: at 14 × 21 cm a third of the bayts did not fit their half of the 104 mm measure and fell back to a staggered layout, ṣadr and ʿajuz on lines of their own.
+
+<PageShot page={2} crop="0,0.45,1,0.55" caption="Page 2: each hemistich stretched to the width of the widest one. A short half takes more kashidas, so every rhyme ends on the same left edge." />
+
+### 2 · A headpiece band in Ruqʿa
+
+<Excerpt region="opener" />
+
+The level-1 heading is drawn by its design: a tinted box ruled in red above and below, the title centred over it in Aref Ruqaa, and the metre under it from a heading attribute, `{metre="من البحر الطويل"}`. Display type in Ruqʿa takes no kashida, so the title keeps its natural width ([Justification and kashida](/en/docs/arabic-layout#justification-and-kashida)).
+
+### 3 · Running heads on the sheet’s sides
+
+<Excerpt region="heads" />
+
+The body text runs right to left, and its left and right mean start and end. Running heads stay physical. In a book bound on the right the verso, an even page, lies on the right of the spread, so its folio goes to the top right and the recto’s to the top left: both sit on the outer edge ([Page order and right binding](/en/docs/arabic-layout#page-order-and-right-binding)). The `locale: 'ar'` tag alone sets the direction, the binding and the Arabic-Indic digits.
+
+### 4 · A half-title with nothing in the flow
+
+<Excerpt region="title" />
+
+The half-title is a heading style with `span: 'page'` and its own empty header and footer. Its heading text is the poet’s name, so the word ديوان is design text, set at 64 pt above it, and the Latin line under the rhyme comes from the `latin` attribute, which each edition writes in its language.
+
+## Variations
+
+### Mark the gap with an ornament
+
+Some diwans print a small star between the hemistichs. `ornament` puts a mark in the middle of the gap without adding it to the text.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" ornament="٭"}
+```
+
+### Give every hemistich the same width
+
+A fixed `width` sets both columns to one measure on every page of the diwan, whatever the widest half of a given poem is.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" width=58mm}
+```
