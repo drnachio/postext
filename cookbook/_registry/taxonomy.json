@@ -146,6 +146,7 @@
     { "id": "canvas", "title": { "en": "Canvas", "es": "Canvas", "ca": "Canvas", "zh": "Canvas" } },
     { "id": "html", "title": { "en": "HTML", "es": "HTML", "ca": "HTML", "zh": "HTML" } },
     { "id": "pdf", "title": { "en": "PDF", "es": "PDF", "ca": "PDF", "zh": "PDF" } },
+    { "id": "epub", "title": { "en": "EPUB", "es": "EPUB", "ca": "EPUB", "zh": "EPUB" } },
     { "id": "bundle", "title": { "en": ".postext bundle", "es": "Paquete .postext", "ca": "Paquet .postext", "zh": ".postext文件包" } },
     { "id": "live", "title": { "en": "Live controls", "es": "Controles en vivo", "ca": "Controls en viu", "zh": "实时控件" } }
   ],
@@ -164,10 +165,10 @@
       "id": 2,
       "title": { "en": "Intermediate", "es": "Intermedio", "ca": "Intermedi", "zh": "中级" },
       "criteria": {
-        "en": "Design slots (openers, running heads), resources with placement, named styles or a PDF export.",
-        "es": "Ranuras de diseño (aperturas, cabeceras), recursos con colocación, estilos con nombre o exportación a PDF.",
-        "ca": "Ranures de disseny (obertures, capçaleres), recursos amb col·locació, estils amb nom o exportació a PDF.",
-        "zh": "版面设计（章首页、书眉）、带放置方式的资源、命名样式或PDF导出。"
+        "en": "Design slots (openers, running heads), resources with placement, named styles or a PDF or EPUB export.",
+        "es": "Ranuras de diseño (aperturas, cabeceras), recursos con colocación, estilos con nombre o exportación a PDF o EPUB.",
+        "ca": "Ranures de disseny (obertures, capçaleres), recursos amb col·locació, estils amb nom o exportació a PDF o EPUB.",
+        "zh": "版面设计（章首页、书眉）、带放置方式的资源、命名样式或PDF、EPUB导出。"
       }
     },
     {

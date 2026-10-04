@@ -36,6 +36,8 @@ export const POSTEXT_PDF_URL = "https://esm.sh/postext-pdf";
 export const POSTEXT_CITEPROC_URL = "https://esm.sh/postext-citeproc";
 /** The 3D book viewer (Folio recipes). */
 export const POSTEXT_FOLIO_URL = "https://esm.sh/postext-folio";
+/** The EPUB 3 writer (EPUB recipes). */
+export const POSTEXT_EPUB_URL = "https://esm.sh/postext-epub";
 /** The layout worker's client (worker recipes, `engine.worker`). */
 export const POSTEXT_WORKER_URL = "https://esm.sh/postext/worker";
 
@@ -303,7 +305,7 @@ export function parseImports(js: string, scan: JsScan = scanJs(js)): PenImport[]
 /** True for the engine's module URLs (any version or query: the lint
  *  decides which forms are allowed). */
 export function isEngineUrl(url: string): boolean {
-  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
+  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio|-epub)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
 }
 
 /** True when `name` appears in `code` as an identifier of its own: not part

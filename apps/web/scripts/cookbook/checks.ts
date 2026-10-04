@@ -254,7 +254,7 @@ export function suggestLevel(
   const config = facts.userConfig ?? {};
   const named = NAMED_STYLES.some((key) => Array.isArray(config[key]) && (config[key] as unknown[]).length > 0);
   const intermediate =
-    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || stats.leaves >= 60 ||
+    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || meta.outputs.includes("epub") || stats.leaves >= 60 ||
     (facts.resources?.length ?? 0) > 1 || apis.length > 4;
   return intermediate ? 2 : 1;
 }
@@ -331,6 +331,23 @@ export function pdfPageCount(bytes: Buffer): number {
 
 // ─── The checks ─────────────────────────────────────────────────────────────
 
+/** An EPUB the pen wrote, as the postext-epub shim recorded it and read it
+ *  back with readEpub (check C30). */
+export interface EpubRecord {
+  layout: string | null;
+  bytes: number;
+  ms: number;
+  /** Spine items, page-list entries and top-level contents entries readEpub found. */
+  documents: number;
+  pages: number;
+  toc: number;
+  /** The layout readEpub read from the package document. */
+  readLayout: string | null;
+  /** onWarning reports: `missingFont: Literata`, `missingImage: map.svg`. */
+  warnings: string[];
+  error: string | null;
+}
+
 export interface CheckInput {
   meta: RecipeMeta;
   facts: ProbeFacts | null;
@@ -353,6 +370,8 @@ export interface CheckInput {
   timeoutMs: number;
   totalMs: number;
   pdf: { button: boolean; timedOut: boolean; error: string | null; fontFailures: string[]; bytes: number; pages: number | null } | null;
+  /** The EPUBs the pen wrote with postext-epub (C30). */
+  epubs?: EpubRecord[];
   published: number[];
   publishError: string | null;
   cardErrors: string[];
@@ -508,6 +527,21 @@ function collect(input: CheckInput): Finding[] {
       }
       if (pdf.bytes > 2 * MB) add("C20", "fail", `the PDF weighs ${(pdf.bytes / MB).toFixed(2)} MB (limit 2 MB)`);
     }
+  }
+
+  // C30: the EPUBs. A recipe with an "epub" output writes at least one
+  // while its module runs, and every file reads back in its own layout.
+  const epubs = input.epubs ?? [];
+  if (meta.outputs.includes("epub") && !epubs.length) {
+    add("C30", "fail", "outputs include \"epub\" but the pen wrote no EPUB before it settled (call renderToEpub at top level)");
+  }
+  for (const epub of epubs) {
+    const name = `the ${epub.layout ?? "?"} EPUB`;
+    if (epub.error) add("C30", "fail", `${name}: ${firstLines(epub.error, 1)}`);
+    else if (!epub.bytes || !epub.documents) add("C30", "fail", `${name} has no content documents`);
+    else if (epub.readLayout !== epub.layout) add("C30", "fail", `${name} reads back as ${epub.readLayout ?? "no layout"}`);
+    for (const warning of epub.warnings) add("C30", "warn", `${name}: ${warning}`);
+    if (epub.bytes > 2 * MB) add("C20", "warn", `${name} weighs ${(epub.bytes / MB).toFixed(2)} MB`);
   }
 
   // C15 and the pictures.

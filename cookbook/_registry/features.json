@@ -8945,5 +8945,82 @@
         "^:::\\s*paper\\b"
       ]
     }
+  },
+  "epub-export": {
+    "label": {
+      "en": "EPUB export",
+      "es": "Exportación a EPUB",
+      "ca": "Exportació a EPUB",
+      "zh": "导出EPUB"
+    },
+    "definition": {
+      "en": "renderToEpub from postext-epub writes the laid-out chapters as an EPUB 3 file in the browser: a fixed layout that keeps every printed page, or reflowable text styled from the same configuration.",
+      "es": "renderToEpub, de postext-epub, escribe los capítulos compuestos como un archivo EPUB 3 en el navegador: una maquetación fija que conserva cada página impresa o un texto fluido con estilos sacados de la misma configuración.",
+      "ca": "renderToEpub, de postext-epub, escriu els capítols compostos com un fitxer EPUB 3 al navegador: una maquetació fixa que conserva cada pàgina impresa o un text fluid amb estils extrets de la mateixa configuració.",
+      "zh": "postext-epub的renderToEpub在浏览器中把排好的各章写成EPUB 3文件：固定版式保留每一页印刷页面，流式版式的样式来自同一份配置。"
+    },
+    "aliases": {
+      "en": [
+        "EPUB",
+        "EPUB 3",
+        "ebook",
+        "e-book",
+        "fixed layout",
+        "FXL",
+        "reflowable",
+        "renderToEpub",
+        "readEpub",
+        "postext-epub"
+      ],
+      "es": [
+        "EPUB",
+        "EPUB 3",
+        "libro electrónico",
+        "ebook",
+        "maquetación fija",
+        "maquetación fluida",
+        "texto fluido",
+        "renderToEpub",
+        "readEpub",
+        "postext-epub"
+      ],
+      "ca": [
+        "EPUB",
+        "EPUB 3",
+        "llibre electrònic",
+        "ebook",
+        "maquetació fixa",
+        "maquetació fluida",
+        "text fluid",
+        "renderToEpub",
+        "readEpub",
+        "postext-epub"
+      ],
+      "zh": [
+        "EPUB",
+        "EPUB 3",
+        "电子书",
+        "固定版式",
+        "流式版式",
+        "renderToEpub",
+        "readEpub",
+        "postext-epub"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "EPUB books (`postext-epub`)",
+        "es": "Libros EPUB (`postext-epub`)",
+        "ca": "Llibres EPUB (`postext-epub`)",
+        "zh": "EPUB电子书（`postext-epub`）"
+      }
+    },
+    "detect": {
+      "api": [
+        "renderToEpub"
+      ]
+    }
   }
 }

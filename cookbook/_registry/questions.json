@@ -2084,5 +2084,21 @@
       "zh": "布拉克版式，注释环绕正文"
     },
     "theme": "page"
+  },
+  "Q131": {
+    "kind": "how",
+    "text": {
+      "en": "How do I export my book as an EPUB, with fixed pages or with reflowable text?",
+      "es": "¿Cómo exporto mi libro a EPUB, con páginas fijas o con texto fluido?",
+      "ca": "Com exporto el meu llibre a EPUB, amb pàgines fixes o amb text fluid?",
+      "zh": "怎样把书导出为EPUB，用固定页面还是流式文本？"
+    },
+    "index": {
+      "en": "EPUB, fixed layout and reflowable",
+      "es": "EPUB, maquetación fija y fluida",
+      "ca": "EPUB, maquetació fixa i fluida",
+      "zh": "EPUB，固定版式与流式版式"
+    },
+    "theme": "output"
   }
 }

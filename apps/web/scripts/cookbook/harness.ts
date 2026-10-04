@@ -20,7 +20,7 @@ import puppeteer from "puppeteer-core";
 import type { Browser, Page } from "puppeteer-core";
 import type { CaptureBuild, SampleLocale, RecipeMeta } from "../../src/lib/cookbook/types.ts";
 import { cardProblems, heroPages, publishedPages } from "./cards.ts";
-import type { ProbeFacts } from "./checks.ts";
+import type { EpubRecord, ProbeFacts } from "./checks.ts";
 import type { NetIssue } from "./net.ts";
 import { interceptor, routeFor } from "./net.ts";
 import type { PenServer } from "./serve.ts";
@@ -130,6 +130,8 @@ export interface VariantRun {
   /** Pages whose painting taints the canvas (C15). */
   tainted: number[];
   pdf: { wanted: boolean; button: boolean; timedOut: boolean; error: string | null; fontFailures: string[]; ms: number; bytes: Buffer | null } | null;
+  /** The EPUBs the pen wrote while it ran (C30). */
+  epubs: EpubRecord[];
   published: number[];
   publishError: string | null;
   cardErrors: string[];
@@ -228,6 +230,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     facts: null,
     tainted: [],
     pdf: null,
+    epubs: [],
     published: [],
     publishError: null,
     cardErrors: [],
@@ -296,6 +299,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     await probe(page, "frames", 2);
     run.timings.runMs = Date.now() - t0;
     run.kit = await probe(page, "kitState");
+    run.epubs = await probe<EpubRecord[]>(page, "epubState");
 
     if (meta.downloads?.pdf && !opts.sandboxOnly) {
       const button = await page.$("[data-postext-pdf]");

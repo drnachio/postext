@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cardProblems, sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
 import { detect, detectFeatures, runChecks } from "../../../scripts/cookbook/checks.ts";
-import type { CheckInput, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
+import type { CheckInput, EpubRecord, ProbeFacts } from "../../../scripts/cookbook/checks.ts";
 import { loadRegistry } from "./registry.ts";
 import type { ComposedPen, RecipeMeta } from "./types.ts";
 
@@ -214,5 +214,35 @@ describe("right-binding detection", () => {
     expect(digits("arab")).toContain("document-digits");
     expect(digits("latn")).toContain("document-digits");
     expect(detect(meta(), facts({ userConfig: { locale: "en" } }), pen, registry).features).not.toContain("text-direction");
+  });
+});
+
+describe("C30: the EPUBs a pen writes (#404)", () => {
+  const epub = (extra: Partial<EpubRecord> = {}): EpubRecord => ({
+    layout: "fixed", bytes: 120_000, ms: 300, documents: 4, pages: 4, toc: 1, readLayout: "fixed", warnings: [], error: null, ...extra,
+  });
+  const epubMeta = meta({ outputs: ["canvas", "pdf", "epub"] });
+
+  it("fails an epub recipe that wrote none, or a file that does not read back", () => {
+    expect(of("C30", runChecks(input({ meta: epubMeta, epubs: [] }))).map((f) => f.severity)).toEqual(["fail"]);
+    const broken = of("C30", runChecks(input({ meta: epubMeta, epubs: [
+      epub({ error: "readEpub: not a zip" }),
+      epub({ layout: "reflowable", documents: 0 }),
+      epub({ layout: "reflowable", readLayout: "fixed" }),
+    ] })));
+    expect(broken.map((f) => f.detail)).toEqual([
+      "the fixed EPUB: readEpub: not a zip",
+      "the reflowable EPUB has no content documents",
+      "the reflowable EPUB reads back as fixed",
+    ]);
+  });
+
+  it("passes both layouts and reports the writer's warnings", () => {
+    const fine = [epub(), epub({ layout: "reflowable", readLayout: "reflowable", documents: 2 })];
+    expect(of("C30", runChecks(input({ meta: epubMeta, epubs: fine })))).toEqual([]);
+    const warned = of("C30", runChecks(input({ meta: epubMeta, epubs: [epub({ warnings: ["missingFont: Literata"] })] })));
+    expect(warned).toEqual([{ check: "C30", severity: "warn", detail: "the fixed EPUB: missingFont: Literata" }]);
+    // A recipe without the output is not asked for one.
+    expect(of("C30", runChecks(input()))).toEqual([]);
   });
 });

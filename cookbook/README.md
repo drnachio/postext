@@ -104,7 +104,7 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
 | `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image, and the PDF the pen builds, to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
-| `pnpm cookbook dev <slug> --engine local`, `pnpm cookbook capture <slug> --engine local --preview-dir <dir>` | Run the pen on the workspace engine (`packages/postext/dist` and `packages/postext-pdf/dist`; run `npx tsc` in both first) instead of the released one, to preview a recipe that needs an unreleased feature. The capture only checks: a published recipe is captured from npm once the engine is released. |
+| `pnpm cookbook dev <slug> --engine local`, `pnpm cookbook capture <slug> --engine local --preview-dir <dir>` | Run the pen on the workspace engine (`packages/postext/dist` and `packages/postext-pdf/dist`, and the `dist` of `postext-folio` or `postext-epub` when the pen imports it; run `npx tsc` in each first) instead of the released one, to preview a recipe that needs an unreleased feature. The capture only checks: a published recipe is captured from npm once the engine is released. |
 | `pnpm cookbook capture [slug…] --sandbox-only` | Writes only each edition's `<slug>.postext` and its `sandbox` entry in `capture.json`, running the pen on the engine version `capture.json` records. Pages, card, social image and PDF are left alone. With no slug: every captured recipe. |
 | `pnpm cookbook capture --all --sheet <out.webp>` | A contact sheet of every card and first spread, for the design review. |
 | `pnpm cookbook schema` | Regenerates `cookbook/recipe.schema.json` (editors use it through `$schema`). |
@@ -137,7 +137,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `chapter`, `order` | One chapter; sparse order inside it (10, 20, 30…). |
 | `level` | 1 Basic, 2 Intermediate, 3 Advanced (rubric below). The lint warns when the code reads two levels away. |
 | `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook ephemera any`. |
-| `outputs` | 1–4 of `canvas html pdf bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`. |
+| `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
 | `answers` | Question ids (`Q01`…`Q105`); `answers[0]` is the question the recipe page leads with. |
 | `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
@@ -157,7 +157,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 **Level rubric.** *Basic*: Markdown plus at most four design sections in the config (the
 `colorPalette` and the empty `header` and `footer` every recipe carries do not count), no
 design slots, one resource at most, a single `buildDocument`. *Intermediate*: design slots (openers, running
-heads), placed resources, named styles or a PDF export. *Advanced*: any of `buildBundle`,
+heads), placed resources, named styles or a PDF or EPUB export. *Advanced*: any of `buildBundle`,
 part palettes, rotated or split tables, a column-and-a-half float channel with side captions,
 maths, workers or interactive rebuilds.
 
@@ -172,8 +172,9 @@ maths, workers or interactive rebuilds.
    signal the capture waits for. Interactive recipes paint their first state at top level and
    attach listeners afterwards.
 3. **One engine entry.** Named imports come from `https://esm.sh/postext` (plus
-   `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book), never
-   pinned: the capture pins the released version for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
+   `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book,
+   `https://esm.sh/postext-epub` for EPUB files), never pinned: the capture pins the released
+   version for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
 4. **Design first.** The file reads top to bottom: design, content, fonts, build. The answer
    sits at the top of CodePen's JS panel; the long sample and the kit are folded away.
 5. **Never the default skin** (§7).
@@ -708,7 +709,9 @@ the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joining
 whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it), `FONTS` incomplete (C13),
 PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), the default
 skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm build over
-4 s (C21).
+4 s (C21), and, for an `epub` output, no EPUB written before the module settled, or a file
+that `readEpub` cannot read back in its own layout (C30; the writer's `missingFont` and
+`missingImage` reports are warnings).
 
 **Warnings** go into `capture.json` for the reviewer: blank-page cascades (C22), near-empty
 pages not listed in `expect.nearEmptyPages` (C23), loose lines over 2 % (C24; a Chinese,

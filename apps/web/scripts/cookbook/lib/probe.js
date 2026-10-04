@@ -118,6 +118,11 @@ export function pdfState() {
   return { bytes: cb.pdf?.length ?? 0, error: cb.pdfError ?? null, fontFailures: cb.fontFailures ?? [], ms: round(cb.pdfMs ?? 0) };
 }
 
+/** The EPUBs the pen wrote (shim postext-epub.js), each read back. */
+export function epubState() {
+  return (record().epubs ?? []).map((epub) => ({ ...epub, ms: round(epub.ms) }));
+}
+
 export function pdfBase64() {
   const bytes = record().pdf;
   if (!bytes) return null;

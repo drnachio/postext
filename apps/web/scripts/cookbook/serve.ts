@@ -132,7 +132,7 @@ function localModule(rel: string): { file: string; path: string } | null {
     const file = safeFile(path.join(REPO_DIR, "packages", "postext-pdf", "node_modules", "harfbuzzjs", "dist"), hb[1]!);
     return file ? { file, path: rel } : null;
   }
-  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio)\/(.+)$/.exec(rel);
+  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio|postext-epub)\/(.+)$/.exec(rel);
   if (!match) return null;
   const dist = path.join(REPO_DIR, "packages", match[1]!, "dist");
   const asked = match[2]!;

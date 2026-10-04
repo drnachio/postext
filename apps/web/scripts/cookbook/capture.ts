@@ -255,6 +255,7 @@ function evaluate(
     timeoutMs: meta.capture.timeoutMs ?? 60_000,
     totalMs: run.timings.runMs,
     pdf: run.pdf ? { ...run.pdf, bytes: pdfBytes?.length ?? 0, pages: pdfPages } : null,
+    epubs: run.epubs,
     published: run.published,
     publishError: run.publishError,
     cardErrors: run.cardErrors,

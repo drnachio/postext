@@ -15,7 +15,7 @@ export function plateLabels(t: Translate, facets: Pick<Catalog["facets"], "level
     genres: Object.fromEntries(facets.genres.map((g) => [g.id, g.title])),
     levelOf: (level) => t("levelOf", { level }),
     pages: (count) => t("pages", { count }),
-    badges: { pdf: t("badgePdf"), html: t("badgeHtml"), bundle: t("badgeBundle"), live: t("badgeLive") },
+    badges: { pdf: t("badgePdf"), html: t("badgeHtml"), epub: t("badgeEpub"), bundle: t("badgeBundle"), live: t("badgeLive") },
     draft: t("draft"),
     workaround: t("workaround"),
   };

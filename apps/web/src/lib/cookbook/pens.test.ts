@@ -211,6 +211,23 @@ describe("lintPen (fixture)", () => {
     );
   });
 
+  it("ties the epub output to the postext-epub import (#404)", () => {
+    const epub = (s: string) => s
+      .replace("const LANG", "import { renderToEpub } from 'https://esm.sh/postext-epub';\nconst LANG")
+      .replace("// @kit", "await renderToEpub([doc], { layout: 'fixed', metadata: { title: 'F', language: 'en' } });\n\n// @kit");
+    const meta = { ...fixtureMeta(), outputs: ["canvas" as const, "pdf" as const, "epub" as const] };
+    expect(lint(epub, { meta }).fails).toEqual([]);
+    expect(lint(epub).fails).toContain(
+      'script.js: an "epub" output and an import from https://esm.sh/postext-epub go together (output no, import yes)',
+    );
+    expect(lint(undefined, { meta }).fails).toContain(
+      'script.js: an "epub" output and an import from https://esm.sh/postext-epub go together (output yes, import no)',
+    );
+    const pinned = lint((s) => epub(s).replace("esm.sh/postext-epub'", "esm.sh/postext-epub@0.1.0'"), { meta }).fails;
+    expect(pinned.some((f) => f.includes("no version pins"))).toBe(true);
+    expect(usedApis(epub(SCRIPT))).toContain("renderToEpub");
+  });
+
   it("catches the engine traps", () => {
     expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toContain(
       "script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)",

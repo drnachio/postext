@@ -1,5 +1,5 @@
 {
-  "$comment": "Exported symbols recipes import (from postext, postext/worker, postext-pdf, postext-citeproc and postext-folio) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
+  "$comment": "Exported symbols recipes import (from postext, postext/worker, postext-pdf, postext-citeproc, postext-folio and postext-epub) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
   "buildDocument": {
     "slug": "configuration",
     "heading": {
@@ -484,6 +484,24 @@
       "es": "Un libro en 3D (`postext-folio`)",
       "ca": "Un llibre en 3D (`postext-folio`)",
       "zh": "3D书本（`postext-folio`）"
+    }
+  },
+  "renderToEpub": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Writing a book",
+      "es": "Escribir un libro",
+      "ca": "Escriure un llibre",
+      "zh": "写出一本书"
+    }
+  },
+  "readEpub": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Writing a book",
+      "es": "Escribir un libro",
+      "ca": "Escriure un llibre",
+      "zh": "写出一本书"
     }
   }
 }

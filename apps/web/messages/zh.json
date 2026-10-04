@@ -137,6 +137,7 @@
     "pages": "{count, plural, one {#页} other {#页}}",
     "badgePdf": "PDF",
     "badgeHtml": "HTML",
+    "badgeEpub": "EPUB",
     "badgeBundle": "文件包",
     "badgeLive": "实时",
     "matchQuestions": "问题",

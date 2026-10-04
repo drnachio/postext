@@ -61,8 +61,8 @@ export const GENRE_IDS: readonly GenreId[] = [
   "novel", "poetry", "textbook", "workbook", "manual", "paper", "report", "magazine",
   "newsletter", "catalogue", "photobook", "ephemera", "any",
 ];
-export type OutputId = "canvas" | "html" | "pdf" | "bundle" | "live";
-export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "bundle", "live"];
+export type OutputId = "canvas" | "html" | "pdf" | "epub" | "bundle" | "live";
+export const OUTPUT_IDS: readonly OutputId[] = ["canvas", "html", "pdf", "epub", "bundle", "live"];
 export type Level = 1 | 2 | 3;
 
 /** Write-up sections in their fixed order. Authored ones come from MDX H2
@@ -178,7 +178,8 @@ export interface RecipeMeta {
   level: Level;
   /** 1–3 genres. */
   genres: GenreId[];
-  /** 1–4 outputs; "pdf" ⇔ the pdf kit block and a postext-pdf import. */
+  /** 1–4 outputs; "pdf" ⇔ the pdf kit block and a postext-pdf import;
+   *  "epub" ⇔ a postext-epub import. */
   outputs: OutputId[];
   features: {
     /** 1–3: what the recipe teaches. */

@@ -20,13 +20,13 @@ export interface PlateLabels {
   /** Screen-reader prefix of the level: "Level 2 of 3". */
   levelOf: (level: number) => string;
   pages: (count: number) => string;
-  /** Short badges for the outputs worth flagging (pdf, html, bundle, live). */
+  /** Short badges for the outputs worth flagging (pdf, html, epub, bundle, live). */
   badges: Partial<Record<OutputId, string>>;
   draft: string;
   workaround: string;
 }
 
-const BADGE_ORDER: OutputId[] = ["pdf", "html", "bundle", "live"];
+const BADGE_ORDER: OutputId[] = ["pdf", "html", "epub", "bundle", "live"];
 
 /** "Nº 007" */
 export function plateNumber(prefix: string, n: number): string {

@@ -16,6 +16,7 @@ import {
   POSTEXT_PDF_URL,
   POSTEXT_CITEPROC_URL,
   POSTEXT_FOLIO_URL,
+  POSTEXT_EPUB_URL,
   POSTEXT_URL,
   POSTEXT_WORKER_URL,
   configKeys,
@@ -74,7 +75,7 @@ export const LIMITS = {
 } as const;
 
 /** The only module URLs a pen imports (unpinned: the capture pins them). */
-export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL];
+export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL];
 
 /** Hosts (and path prefixes) a pen may fetch from. Nothing else: no hotlinking. */
 export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [
@@ -332,6 +333,15 @@ export function lintPen(
     fails.push(
       `script.js: a "pdf" output, an import from ${POSTEXT_PDF_URL} and the "pdf" kit block go together ` +
         `(output ${pdfOutput ? "yes" : "no"}, import ${pdfImport ? "yes" : "no"}, kit ${pdfKit ? "yes" : "no"})`,
+    );
+  }
+  // An EPUB has no kit block: the pen writes the file and offers it itself.
+  const epubImport = imports.some((imp) => imp.url === POSTEXT_EPUB_URL);
+  const epubOutput = meta.outputs?.includes("epub") ?? false;
+  if (epubOutput !== epubImport) {
+    fails.push(
+      `script.js: an "epub" output and an import from ${POSTEXT_EPUB_URL} go together ` +
+        `(output ${epubOutput ? "yes" : "no"}, import ${epubImport ? "yes" : "no"})`,
     );
   }
   const pdfNames = new Set(imports.filter((imp) => imp.url === POSTEXT_PDF_URL).flatMap((imp) => imp.names));

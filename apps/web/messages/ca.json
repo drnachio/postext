@@ -137,6 +137,7 @@
     "pages": "{count, plural, one {# pàg.} other {# pàgs.}}",
     "badgePdf": "PDF",
     "badgeHtml": "HTML",
+    "badgeEpub": "EPUB",
     "badgeBundle": "Paquet",
     "badgeLive": "En directe",
     "matchQuestions": "pregunta",
