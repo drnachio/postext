@@ -18,6 +18,8 @@ const LATIN = [
   [0x2212, 0x2212], [0x2215, 0x2215], [0xfeff, 0xfeff], [0xfffd, 0xfffd],
 ];
 const MAIN_COLOR = '#295AA3';
+/** Content warnings on how the text is set that C5 reports. */
+const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing']);
 const FALLBACK_DIRECTIVES = ['pagebreak', 'numbering', 'columnbreak', 'space', 'toc'];
 const FALLBACK_CONTAINERS = ['callout', 'paragraphs', 'part', 'columns', 'paper'];
 /** The parser's own fence patterns (packages/postext/src/parse/blockParser.ts). */
@@ -664,6 +666,16 @@ export function facts({ select = 'last', hero = [] } = {}) {
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
       detail: w.target ?? w.term ?? '',
+    })));
+  // Content warnings about how the text is set, which no source check sees
+  // either: Arabic vowel marks that reach the next line (#376), a word wider
+  // than its measure, letter-spacing a joining script ignores (#368).
+  out.textWarnings = docs.flatMap((doc) => (doc.contentWarnings ?? [])
+    .filter((w) => TEXT_WARNING_KINDS.has(w.kind))
+    .map((w) => ({
+      kind: w.kind,
+      page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
+      detail: w.text ?? '',
     })));
   out.converged = docs.every((doc) => doc.converged !== false);
   out.iterationCount = Math.max(...docs.map((doc) => doc.iterationCount ?? 0));

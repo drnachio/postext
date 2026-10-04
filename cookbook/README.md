@@ -701,7 +701,8 @@ longer matches the published pages.
 
 **Failures** block the write: script errors or timeouts (C1), console errors not listed in
 `expect.console` (C2), failed or disallowed network requests (C3), nothing built (C4), layout
-warnings not in `expect.warnings` (C5), a layout that did not converge (C6), parse issues
+warnings not in `expect.warnings` (C5; with the index's warnings and the content warnings on how
+the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), a layout that did not converge (C6), parse issues
 (C7), unknown directives (C8), unknown style ids (C9), unknown references that print "?"
 (C10), unregistered images (C11), faces used but not loaded, or a CJK face setting characters
 whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it), `FONTS` incomplete (C13),

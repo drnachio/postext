@@ -96,6 +96,10 @@ export interface ProbeFacts {
   warnings?: { kind: string; page: number; overflowPx: number }[];
   /** Warnings `:::index` raised (#172): `doc.contentWarnings` of the index kinds. */
   indexWarnings?: { kind: string; page: number | null; detail: string }[];
+  /** Content warnings on how the text is set (`arabicMarksExceedLeading`,
+   *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
+   *  words they name. */
+  textWarnings?: { kind: string; page: number | null; detail: string }[];
   converged?: boolean;
   iterationCount?: number;
   loose?: {
@@ -444,11 +448,11 @@ function collect(input: CheckInput): Finding[] {
   for (const w of facts.warnings ?? []) {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind} on page ${w.page} (${w.overflowPx} px over)`);
   }
-  for (const w of facts.indexWarnings ?? []) {
+  for (const w of [...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? [])]) {
     if (!expected.has(w.kind)) add("C5", "fail", `${w.kind}${w.detail ? ` "${w.detail}"` : ""}${w.page ? ` on page ${w.page}` : ""}`);
   }
   for (const kind of expected) {
-    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? [])];
+    const seen = [...(facts.warnings ?? []), ...(facts.indexWarnings ?? []), ...(facts.textWarnings ?? [])];
     if (!seen.some((w) => w.kind === kind)) add("C5", "info", `expect.warnings lists ${kind}, which did not occur`);
   }
 

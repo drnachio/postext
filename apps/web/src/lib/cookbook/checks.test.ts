@@ -51,6 +51,32 @@ function input(overrides: Partial<CheckInput> = {}): CheckInput {
 
 const of = (check: string, findings: ReturnType<typeof runChecks>) => findings.filter((f) => f.check === check);
 
+describe("C5: content warnings on how the text is set (#401)", () => {
+  const textWarnings = [
+    { kind: "arabicMarksExceedLeading", page: 3, detail: "وَقَالَ" },
+    { kind: "unbreakableWordOverflow", page: null, detail: "https://example.org/a-very-long-path" },
+    { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
+  ];
+
+  it("fails a recipe on the Arabic and word-overflow warnings it does not expect", () => {
+    const c5 = of("C5", runChecks(input({ facts: facts({ textWarnings }) })));
+    expect(c5.map((f) => [f.severity, f.detail])).toEqual([
+      ["fail", 'arabicMarksExceedLeading "وَقَالَ" on page 3'],
+      ["fail", 'unbreakableWordOverflow "https://example.org/a-very-long-path"'],
+      ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
+    ]);
+  });
+
+  it("lets a recipe that shows one list it in expect.warnings", () => {
+    const m = meta({ capture: { hero: 1, card: "page", expect: { warnings: ["arabicMarksExceedLeading"] } } } as Partial<RecipeMeta>);
+    const c5 = of("C5", runChecks(input({ meta: m, facts: facts({ textWarnings: textWarnings.slice(0, 1) }) })));
+    expect(c5).toEqual([]);
+    // Listed and absent: an info, as for the other warnings.
+    const absent = of("C5", runChecks(input({ meta: m, facts: facts({ textWarnings: [] }) })));
+    expect(absent.map((f) => [f.severity, f.detail])).toEqual([["info", "expect.warnings lists arabicMarksExceedLeading, which did not occur"]]);
+  });
+});
+
 describe("C24: loose lines", () => {
   it("judges Chinese lines by the space between their characters", () => {
     const cjkLoose = {
