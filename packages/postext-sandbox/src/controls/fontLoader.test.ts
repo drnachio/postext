@@ -231,6 +231,16 @@ describe('collectFontUsage / missingUsedVariants', () => {
     expect(italics({ locale: 'en' }, none)).toHaveLength(2);
   });
 
+  it('asks no italics of the body family where emphasis is not set in italics', () => {
+    const italics = (extra: object) => collectFontUsage({ bodyText: { fontFamily: 'Amiri', ...extra }, locale: 'ar' } as unknown as import('postext').PostextConfig).get('Amiri')!.filter((v) => v.style === 'italic');
+    // Arabic sets `*…*` in bold by default, and so does an explicit `bold`.
+    expect(italics({})).toEqual([]);
+    expect(italics({ emphasis: 'bold' })).toEqual([]);
+    expect(italics({ emphasis: 'overline' })).toEqual([]);
+    // Asked for italics, it needs them.
+    expect(italics({ emphasis: 'italic' })).toHaveLength(2);
+  });
+
   it('reports the missing italics of a Latin body face that emphasises Latin in a Chinese document', () => {
     // `*…*` sets dots under 强调 and keeps *emphasis* italic, in EB Garamond.
     const config = { locale: 'zh-Hant', bodyText: { fontFamily: '"EB Garamond", "Noto Serif TC"' } } as unknown as import('postext').PostextConfig;

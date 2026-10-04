@@ -703,6 +703,8 @@ export function hasLatinEmphasis(blocks: readonly ContentBlock[]): boolean {
  * document), `*…*` puts dots under Chinese characters and keeps the
  * italics of the rest: the body family is asked for its italics only when
  * `doc` does not say the text holds no Latin letter or digit in emphasis.
+ * Where `bodyText.emphasis` sets `*…*` in bold, a colour or an overline
+ * (an Arabic document's default), the body family is asked for no italics.
  */
 export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument): Map<string, FontVariantUse[]> {
   const usage = new Map<string, FontVariantUse[]>();
@@ -740,7 +742,10 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
   if (typeof body === 'string' && body.trim()) {
     const emphasis = config.cjk?.emphasis ?? 'auto';
     const dots = emphasis === 'dots' || (emphasis === 'auto' && defaultCjkEmphasis(config.locale) === 'dots');
-    const italics = !dots || doc?.latinEmphasis !== false;
+    // `bodyText.emphasis` other than italics (bold, as Arabic documents set
+    // it by default; a colour; an overline) sets `*…*` upright.
+    const slanted = resolveBodyTextConfig(config.bodyText, config.locale).emphasis === undefined;
+    const italics = slanted && (!dots || doc?.latinEmphasis !== false);
     for (const v of STANDARD_VARIANTS) if (italics || v.style !== 'italic') add(primaryFontFamily(body), v);
   }
   return usage;
