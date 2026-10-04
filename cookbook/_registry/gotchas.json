@@ -1852,5 +1852,20 @@
       "zh": ":::paper中的文字从新页开始，其后的文字也从新页开始。一张纸有两页而只有一种纸张，即其右页的纸张，所以从左页开始的换纸段，这一页会印在它所在那张纸的纸张上。需要从右页开始的地方，加一个分页。"
     },
     "feature": "paper-runs"
+  },
+  "epub-embeds-given-fonts": {
+    "title": {
+      "en": "renderToEpub embeds only the fonts you hand it",
+      "es": "renderToEpub solo incrusta las fuentes que le pasas",
+      "ca": "renderToEpub només incrusta les fonts que li passes",
+      "zh": "renderToEpub只嵌入你交给它的字体"
+    },
+    "body": {
+      "en": "The browser's loaded faces are not files postext-epub can read: pass the bytes of every face the pages use in options.fonts (the same Fontsource woff2 files the page loaded). A face left out is reported as missingFont, and the reading system sets that text in a face of its own, which in a fixed layout no longer fits the lines the page was set with. Embed only faces whose licence allows it.",
+      "es": "Las fuentes que ha cargado el navegador no son archivos que postext-epub pueda leer: pasa en options.fonts los bytes de cada fuente que usan las páginas (los mismos woff2 de Fontsource que cargó la página). Una fuente que falte se avisa como missingFont, y el sistema de lectura compone ese texto con una suya, que en una maquetación fija ya no cabe en las líneas con que se compuso la página. Incrusta solo fuentes cuya licencia lo permita.",
+      "ca": "Les fonts que ha carregat el navegador no són fitxers que postext-epub pugui llegir: passa a options.fonts els bytes de cada font que fan servir les pàgines (els mateixos woff2 de Fontsource que va carregar la pàgina). Una font que falti s'avisa com a missingFont, i el sistema de lectura compon aquest text amb una de seva, que en una maquetació fixa ja no cap a les línies amb què es va compondre la pàgina. Incrusta només fonts la llicència de les quals ho permeti.",
+      "zh": "浏览器加载的字体不是postext-epub能读取的文件：把页面用到的每款字体的字节放进options.fonts（页面加载的同一批Fontsource woff2文件）。缺少的字体会报告为missingFont，阅读系统会用自己的字体排这段文字，在固定版式中就不再符合页面排版时的行。只嵌入许可证允许嵌入的字体。"
+    },
+    "feature": "epub-export"
   }
 }

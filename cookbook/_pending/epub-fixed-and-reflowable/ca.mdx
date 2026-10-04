@@ -1,0 +1,61 @@
+---
+title: "Un llibre, dos EPUB 3: maquetació fixa i fluida"
+summary: "renderToEpub, de postext-epub, escriu els capítols de buildBundle com un EPUB de maquetació fixa i un altre de fluid; readEpub mostra què porta cadascun."
+plain: "Un conte curt compost una vegada per imprimir i desat com dos llibres electrònics: un que conserva cada pàgina impresa i un altre el text del qual el mòbil o el lector electrònic recompon a la seva mida."
+description: "Un llibre de tres capítols compost amb buildBundle i escrit amb postext-epub com a EPUB 3 de maquetació fixa i fluida, cadascun llegit amb readEpub."
+question: "Com exporto el meu llibre a EPUB, amb pàgines fixes o amb un text que es recompon?"
+aliases: ["EPUB", "EPUB 3", "llibre electrònic", "ebook", "maquetació fixa", "maquetació fluida", "text fluid", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "La portada: l'autor en versaletes blaves, el títol ¡Adiós, Cordera! en una romana de rètol, un filet curt i el subtítol en cursiva.", "3": "L'obertura del capítol I sota l'avanttítol ¡Adiós, Cordera!, amb el començament del conte a sota." }
+---
+
+## Què compondràs
+
+*¡Adiós, Cordera!*, el conte de Clarín, en tres capítols sobre una pàgina de 120 × 190 mm, amb portada, pàgina de crèdits al dors i una obertura enfonsada a cada capítol; l'edició anglesa compon divuit faules d'Isop amb el mateix disseny. El llibre es compon una vegada, capítol a capítol, i aquesta composició dona dos fitxers EPUB 3. El de maquetació fixa conserva cada pàgina impresa: les obertures, les capçaleres i els talls de línia, en la Caslon incrustada. El fluid conserva el text i la seva estructura, i el sistema de lectura el torna a compondre en un mòbil o en una pantalla de tinta electrònica. Tots dos es baixen des de la pàgina i tots dos passen EPUBCheck, el validador del W3C.
+
+## Elaboració
+
+### 1 · Compon el llibre per capítols
+
+<Excerpt region="openers" />
+
+`buildBundle` compon cada capítol com un document propi i passa d'un a l'altre el número de pàgina i la paritat, així que `docs` és la mateixa llista que imprimiria `renderToPdf`. L'escriptor d'EPUB llegeix aquesta llista: cada capítol és una entrada de l'índex de navegació, i el fitxer fluid escriu un document XHTML per capítol. La portada i la seva pàgina de crèdits formen el primer capítol, i el seu frontmatter dona el títol, el subtítol i l'autor del llibre.
+
+### 2 · Dona a l'escriptor els fitxers de les fonts
+
+<Excerpt region="embed" />
+
+Les fonts que ha carregat el navegador no són fitxers que l'escriptor pugui llegir, així que el codi torna a demanar els mateixos woff2 de Fontsource, que el navegador ja té a la memòria cau. Cadascun entra a l'EPUB com un fitxer amb la seva regla `@font-face`. Sense ells, la maquetació fixa col·locaria el text compost en Caslon amb una font del lector, i les línies ja no cabrien a la seva mida.
+
+### 3 · Escriu les dues versions
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `layout: 'fixed'` escriu un document XHTML per pàgina impresa, a la mida de la pàgina refilada i amb text de debò, que es pot seleccionar; `layout: 'reflowable'` refà els paràgrafs a partir de les línies compostes, treu els guions que hi van afegir els talls de línia i treu un full d'estils de la configuració. Una data `modified` fixa fa que cada execució doni els mateixos bytes. Les metadades surten del frontmatter del primer capítol, de manera que el títol i l'autor del fitxer són els que s'imprimeixen a la portada.
+
+### 4 · Llegeix cada fitxer de tornada
+
+<Excerpt region="shelf" />
+
+`readEpub` obre el fitxer com l'obre un sistema de lectura: l'ordre de lectura (*spine*), l'índex, la llista de pàgines i la maquetació. El fitxer fix té una entrada per pàgina; el fluid, quatre, una per capítol. Tots dos porten la llista dels folis impresos, així que una cita de la pàgina 9 es troba en qualsevol dels dos. L'enllaç `<a download>` dona nom als bytes; res no passa per un servidor.
+
+## Variants
+
+### Posa una imatge de coberta a la maquetació fixa
+
+Pinta la portada en un canvas i passa-la com a coberta; `showsFirstPage` diu a l'escriptor que no l'afegeixi com una pàgina més.
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### Imprimeix els mateixos capítols en PDF
+
+`renderToPdf(docs, …)`, de `postext-pdf`, rep la mateixa llista, així que el PDF, l'EPUB i la pantalla surten d'una sola composició. <RecipeLink slug="catalan-pocket-novella">La novel·la catalana de butxaca</RecipeLink> mostra el costat del PDF.
+
+## Errors freqüents
+
+El fitxer fluid conserva el text d'un títol, però no el seu disseny: l'avanttítol de cada obertura és un element de disseny i no forma part del text. El que el lector hagi de veure va al mateix títol o al text.

@@ -123,7 +123,9 @@ repository tests take it only with `COOKBOOK_PREVIEW=1` (`COOKBOOK_PREVIEW=1 pnp
 `apps/web`), and without it they fail its engine pin and ask for its capture, as plain
 `pnpm cookbook lint` does. A draft in `develop` pins a released engine and has its capture, so
 the recipe lands in a PR after the release: pin nothing new, run
-`pnpm cookbook capture <slug>` and publish it.
+`pnpm cookbook capture <slug>` and publish it. A preview draft written on `develop`, where
+it would fail the tests, waits in `cookbook/_pending/<slug>/`, which the tools and the tests
+skip; after the release, move it to `cookbook/<slug>/`, capture it and publish it.
 
 ## 4. `recipe.json`
 
@@ -261,6 +263,15 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   `:::paper`. Call `showPages` as well, so the flat pages follow under the book, and use
   `capture.card: "screenshot"` with `"selector": "#folio"`: the capture's Chrome draws WebGL.
   Nº 100–103 are the models.
+- **EPUB.** Add `"epub"` to `outputs` and import `renderToEpub` (and `readEpub`, to list what a
+  file holds) from `https://esm.sh/postext-epub`; the capture pins `packages/postext-epub`'s
+  version. Write the files at top level, from the documents the pen built, so the capture sees
+  them (C30), and hand the writer the Fontsource files as bytes (`fonts`):
+  ```js
+  const fixed = await renderToEpub(docs, { layout: 'fixed', metadata: { title, language: LANG }, fonts });
+  ```
+  Offer each file through an `<a download>` link. `epub-fixed-and-reflowable` is the model (in
+  `cookbook/_pending/` until postext-epub is on npm).
 
 ### 5.4 The kit
 
