@@ -359,5 +359,5 @@ describe("the page flipper", () => {
     }
     expect(most).toBeGreaterThan(0);
     expect(settled).toEqual([27]);
-  });
+  }, 30_000); // a 40-leaf book flipped tick by tick: 5.8 s on the CI runner
 });
