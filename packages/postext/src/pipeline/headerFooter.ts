@@ -6,6 +6,7 @@ import type { DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, R
 import {
   createBoundingBox,
   flowRectToPage,
+  pageIsMirrored,
   pageIsVertical,
   type VDTBlock,
   type VDTDocument,
@@ -83,11 +84,17 @@ function textAlignOffsetX(
   align: DesignTextAlign,
   contentWidth: number,
   lineWidth: number,
+  /** The text starts on the right of its box (`ResolvedTextPrimitive.startRight`). */
+  startRight = false,
 ): number {
   // A justified line fills its room; the last line of a paragraph is set
-  // flush left.
-  if (align === 'left' || align === 'justify') return 0;
-  if (align === 'right') return Math.max(0, contentWidth - lineWidth);
+  // flush with the start. `start` / `end` are the sides the text's
+  // direction reads from and to.
+  const side = align === 'start' || align === 'justify'
+    ? (startRight ? 'right' : 'left')
+    : align === 'end' ? (startRight ? 'left' : 'right') : align;
+  if (side === 'left') return 0;
+  if (side === 'right') return Math.max(0, contentWidth - lineWidth);
   return Math.max(0, (contentWidth - lineWidth) / 2);
 }
 
@@ -123,11 +130,12 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
   const lines = prim.lines.map((l) => ({
     text: l.text,
     xOffset: prim.contentX + (l.xOffset ?? 0)
-      + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx)),
+      + textAlignOffsetX(prim.align, prim.contentWidth - (l.xOffset ?? 0), l.width - trailingTracking(l.text, prim.letterSpacingPx), prim.startRight),
     baselineY: (prim.vertical ? 0 : prim.y) + prim.contentY + vOffset + l.baselineY,
     width: l.width,
     ...(l.runs ? { runs: l.runs.map((r) => ({ ...r })) } : {}),
     ...(l.wordSpacingPx !== undefined ? { wordSpacingPx: l.wordSpacingPx } : {}),
+    ...(l.order ? { order: [...l.order] } : {}),
   }));
 
   return {
@@ -150,6 +158,7 @@ function textPrimitiveToBlock(prim: ResolvedTextPrimitive): VDTDesignTextBlock {
       ? { letterSpacingPx: prim.letterSpacingPx }
       : {}),
     ...(prim.stroke ? { stroke: { ...prim.stroke } } : {}),
+    ...(prim.direction ? { direction: prim.direction } : {}),
     ...(prim.vertical ? { vertical: verticalTextOf(prim) } : {}),
   };
 }
@@ -389,6 +398,10 @@ export function measureHeadingDesign(
 /** Optional page-level inputs for `layoutSlotToVdt`. */
 export interface SlotLayoutExtras {
   frames?: DesignFrames;
+  /** The document's base direction and whether the slot is painted in the
+   *  flow of a mirrored page (see `LayoutContext`). */
+  direction?: 'ltr' | 'rtl';
+  mirrored?: boolean;
   pageRole?: PageRole;
   /** Resources by id, for `kind: 'image'` elements. */
   resourceById?: ReadonlyMap<string, Resource>;
@@ -455,7 +468,11 @@ export function layoutSlotToVdt(
 ): VDTDesignSlot | undefined {
   const result = layoutDesignSlot(
     slot,
-    { container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole, resourceById: extras?.resourceById },
+    {
+      container, dpi, placeholders, frames: extras?.frames, pageRole: extras?.pageRole, resourceById: extras?.resourceById,
+      ...(extras?.direction ? { direction: extras.direction } : {}),
+      ...(extras?.mirrored ? { mirrored: true } : {}),
+    },
     pageIndex,
   );
   if (result.primitives.length === 0) return undefined;
@@ -1064,6 +1081,10 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     const extras: SlotLayoutExtras = {
       frames, pageRole: page.role, resourceById,
       metadataSources: doc.metadataSources, metadata: doc.metadata as Record<string, unknown>,
+      // Right-to-left text: the document's direction, and the mirror of a
+      // right-to-left page's flow, which the slots below are painted in.
+      ...(resolved.direction === 'rtl' ? { direction: 'rtl' as const } : {}),
+      ...(pageIsMirrored(page) ? { mirrored: true } : {}),
     };
     // Running heads and folios stay on the sheet: the physical content
     // area and trim box. `anchor.to: 'outer'` is the outer margin, on the
@@ -1076,7 +1097,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     const outer = outerRight
       ? { x: sheetArea.x + sheetArea.width, y: sheetArea.y, width: Math.max(0, trim.x + trim.width - (sheetArea.x + sheetArea.width)), height: sheetArea.height }
       : { x: trim.x, y: sheetArea.y, width: Math.max(0, sheetArea.x - trim.x), height: sheetArea.height };
-    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer } };
+    const sheetExtras: SlotLayoutExtras = { ...extras, frames: { ...physicalFrames, outer }, mirrored: false };
     const section = sectionByPage[page.index];
     const headerSlot = section?.header ?? resolved.header;
     const footerSlot = section?.footer ?? resolved.footer;

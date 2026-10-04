@@ -16,6 +16,7 @@ import { isRuntLastLine } from './runts';
 import { computeJustifiedSpaceRatio, hasOverfullLine } from './plain';
 import { quoteFamily } from './font';
 import { trimChipLineEdges } from './chipEdges';
+import { directChipRuns } from '../design/bidiText';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount, graphemesOf } from './graphemes';
@@ -447,6 +448,9 @@ export function chipToken(
     first.width = 0;
     first.stacked = true;
   }
+  // Right-to-left runs cut where the direction changes, and their order
+  // (`VDTChip.order`).
+  const directed = directChipRuns(runs, (t, f) => measureTextWidth(t, f) + letterSpacingPx * graphemeCount(t));
   const textWidth = runs.reduce((sum, r) => sum + r.width, 0);
   const paddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;
@@ -466,7 +470,8 @@ export function chipToken(
     width: boxWidth,
     chip: {
       styleId: box?.styleId ?? '',
-      runs,
+      runs: directed.runs,
+      ...(directed.order ? { order: directed.order } : {}),
       marginLeft: 0,
       marginRight: 0,
       boxWidth,

@@ -130,6 +130,24 @@ function fitLeader(char: string, font: string, room: number): { text: string; wi
   return lo > 0 ? { text: char.repeat(lo), width: loWidth } : null;
 }
 
+/**
+ * The visual order (`VDTLine.order`) of a contents row: its title's
+ * `titleCount` segments in their own visual order (`titleOrder`, absent for
+ * 0 … n − 1), then the leader and the page label. The row is laid out in the
+ * document's direction, not by bidi over its text: in a right-to-left
+ * document the label stands at the row's left and the title at its right,
+ * even when the title is a Latin one, whose letters alone would make the
+ * whole row one left-to-right run and send the page number to the right.
+ * The mirror pass (`mirrorFrame.ts`) then turns the order for the page's
+ * mirrored flow. Undefined when the order is the segments' own.
+ */
+export function tocRowOrder(titleOrder: readonly number[] | undefined, titleCount: number, total: number, rtl: boolean): number[] | undefined {
+  const title = titleOrder && titleOrder.length === titleCount ? [...titleOrder] : Array.from({ length: titleCount }, (_, i) => i);
+  const tail = Array.from({ length: total - titleCount }, (_, i) => titleCount + i);
+  const order = rtl ? [...tail.reverse(), ...title] : [...title, ...tail];
+  return order.every((v, i) => v === i) ? undefined : order;
+}
+
 /** Measure one block of an expanded `:::toc` (see the module header). */
 export function measureTocBlock(
   rawBlock: ContentBlock,
@@ -245,6 +263,7 @@ export function measureTocBlock(
   if (label.length > 0) {
     const last = lastOf(lines);
     const segs = segmentsOf(last);
+    const titleCount = segs.length;
     const contentW = segs.reduce((s, seg) => s + seg.width, 0);
     const leaderStart = contentW + gapPx;
     const leaderEnd = availableW - reservePx;
@@ -263,6 +282,9 @@ export function measureTocBlock(
     segs.push({ kind: 'text', text: label, width: labelW, fontString: labelFont, color: labelColor });
     last.text = `${last.text} ${label}`;
     last.bbox.width = availableW;
+    const order = tocRowOrder(last.order, titleCount, segs.length, resolved.direction === 'rtl' && resolved.layout.writingMode !== 'vertical-rl');
+    if (order) last.order = order;
+    else delete last.order;
   }
 
   // Subtitle line(s) under the title (the chapter authors).

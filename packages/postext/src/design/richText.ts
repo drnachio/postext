@@ -16,6 +16,7 @@ import { hyphenateText } from '../hyphenate';
 import { endsInsideGeminate } from '../measure/geminate';
 import { NO_BREAK_SPACES, isBreakingSpace } from '../measure/spaces';
 import type { TextOverflow } from '../types';
+import { hasJoiningScript } from '../bidi';
 
 /** One run of a design text line in its own font (see `VDTDesignTextRun`). */
 export interface DesignTextRun {
@@ -33,6 +34,8 @@ export interface DesignTextRun {
   /** Vertical text: a run the author stood upright (`:upright[…]`) or
    *  turned (`:sideways[…]`). */
   orientation?: 'upright' | 'sideways';
+  /** Painted right to left (see `VDTDesignTextRun.rtl`). */
+  rtl?: true;
 }
 
 interface RunStyle {
@@ -305,6 +308,9 @@ function breakWord(m: RichMeasurer, a: number, b: number, maxWidth: number, hyph
     if (!NO_BREAK_SPACES.includes(text[k]!) || NO_BREAK_SPACES.includes(text[k - 1]!) || pairAround(k)) continue;
     if (m.measure(a, k) <= maxWidth) return { end: k, hyphen: false, next: k + 1 };
   }
+  // A word of a joining script (Arabic) is never cut: it runs past the
+  // line, whole.
+  if (hasJoiningScript(text.slice(a, b))) return { end: b, hyphen: false };
   if (hyphenate) {
     const word = m.rt.text.slice(a, b);
     const hy = hyphenateText(word);
@@ -337,6 +343,7 @@ function breakWord(m: RichMeasurer, a: number, b: number, maxWidth: number, hyph
  *  other are never parted. */
 function syllableFill(m: RichMeasurer, lineStart: number, a: number, b: number, maxWidth: number): number {
   const word = m.rt.text.slice(a, b);
+  if (hasJoiningScript(word)) return 0;
   const hy = hyphenateText(word);
   if (!hy.includes(SOFT_HYPHEN) || hy.replaceAll(SOFT_HYPHEN, '') !== word) return 0;
   const pairs = m.stackedRanges(a, b);
@@ -459,6 +466,18 @@ function isWordBoundary(text: string, i: number, from: number, to: number): bool
   return isBreakingSpace(before) || isBreakingSpace(text[i]) || JOINS_WORDS.test(before);
 }
 
+/** Whether a cut at `i` falls inside a word of `text[from, to)` written in
+ *  a joining script (Arabic): such a word is never cut, whatever is lost
+ *  (its letters would lose their joins and read as another word). */
+function insideJoiningWord(text: string, i: number, from: number, to: number): boolean {
+  if (isWordBoundary(text, i, from, to)) return false;
+  let a = i;
+  while (a > from && !isWordBoundary(text, a, from, to)) a--;
+  let b = i;
+  while (b < to && !isWordBoundary(text, b, from, to)) b++;
+  return hasJoiningScript(text.slice(a, b));
+}
+
 /** The end of a head cut at `cut` once the spaces and joining punctuation
  *  before the ellipsis are dropped. */
 function trimHead(text: string, from: number, cut: number): number {
@@ -478,11 +497,15 @@ function trimTail(text: string, to: number, cut: number): number {
  *  moves back to the last word boundary, and the spaces and joining
  *  punctuation before the ellipsis are dropped — unless what is left keeps
  *  less than half of what fits (a single long word, a URL): then the word
- *  is cut where it must. Never past `fit`, so the head still fits. */
+ *  is cut where it must, except a word of a joining script (Arabic), which
+ *  goes whole. Never past `fit`, so the head still fits. */
 export function ellipsisEndCut(text: string, from: number, to: number, fit: number): number {
   if (!isWordBoundary(text, fit, from, to)) {
     let b = fit - 1;
     while (b > from && !isWordBoundary(text, b, from, to)) b--;
+    // An Arabic word is dropped whole rather than cut, even when that
+    // leaves only the ellipsis.
+    if (insideJoiningWord(text, fit, from, to)) return trimHead(text, from, b);
     if (b > from) {
       const head = trimHead(text, from, b);
       // The guard counts what is kept, after the trim.
@@ -499,6 +522,7 @@ export function ellipsisStartCut(text: string, from: number, to: number, fit: nu
   if (!isWordBoundary(text, fit, from, to)) {
     let b = fit + 1;
     while (b < to && !isWordBoundary(text, b, from, to)) b++;
+    if (insideJoiningWord(text, fit, from, to)) return trimTail(text, to, b);
     if (b < to) {
       const tail = trimTail(text, to, b);
       if (to - tail >= (to - fit) / 2) return tail;
@@ -509,8 +533,11 @@ export function ellipsisStartCut(text: string, from: number, to: number, fit: nu
 
 /** An `ellipsis-middle` truncation keeping `text[from, from + left)` and
  *  `text[to - right, to)`, with the spaces that would touch the ellipsis
- *  dropped. */
+ *  dropped, and neither side ending inside an Arabic word. */
 export function ellipsisMiddleCut(text: string, from: number, to: number, left: number, right: number): { left: number; right: number } {
+  // Neither side ends inside an Arabic word.
+  while (left > 0 && insideJoiningWord(text, from + left, from, to)) left--;
+  while (right > 0 && insideJoiningWord(text, to - right, from, to)) right--;
   while (left > 0 && isSpace(text[from + left - 1])) left--;
   while (right > 0 && isSpace(text[to - right])) right--;
   return { left, right };

@@ -30,6 +30,7 @@ import {
   type VDTBlock,
   type VDTDocument,
   type VDTLine,
+  type VDTLineSegment,
   type VDTPage,
 } from '../vdt';
 
@@ -45,15 +46,40 @@ export function mirroredLineOrder(order: readonly number[] | undefined, n: numbe
   return flow.every((v, i) => v === i) ? undefined : flow;
 }
 
+/** The line's segments with the run order of each chip of two or more
+ *  runs turned for the mirrored frame (`VDTChip.order`: the chip painter
+ *  advances through its runs along the flow's x axis too), or undefined
+ *  when no chip changes. */
+function orientChips(segments: readonly VDTLineSegment[]): VDTLineSegment[] | undefined {
+  let out: VDTLineSegment[] | undefined;
+  segments.forEach((seg, i) => {
+    const chip = seg.chip;
+    if (!chip || chip.runs.length < 2) return;
+    const order = mirroredLineOrder(chip.order, chip.runs.length);
+    if (!order && !chip.order) return;
+    const next = { ...chip };
+    if (order) next.order = order;
+    else delete next.order;
+    out ??= [...segments];
+    out[i] = { ...seg, chip: next };
+  });
+  return out;
+}
+
 function orientLine(line: VDTLine): VDTLine {
   if (oriented.has(line)) return line;
   const n = line.segments?.length ?? 0;
-  // A line of one segment (or painted from its text) has no order to turn.
-  if (n < 2) return line;
-  const order = mirroredLineOrder(line.order, n);
+  const segments = n > 0 ? orientChips(line.segments!) : undefined;
+  // A line of one segment (or painted from its text) has no order to turn,
+  // only, perhaps, its chip's.
+  if (n < 2 && !segments) return line;
   const next: VDTLine = { ...line };
-  if (order) next.order = order;
-  else delete next.order;
+  if (n >= 2) {
+    const order = mirroredLineOrder(line.order, n);
+    if (order) next.order = order;
+    else delete next.order;
+  }
+  if (segments) next.segments = segments;
   oriented.add(next);
   return next;
 }

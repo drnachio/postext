@@ -149,6 +149,11 @@ export interface VDTChipRun {
   /** The first of a subscript and a superscript set over each other, as
    *  on {@link VDTLineSegment.stacked}. */
   stacked?: boolean;
+  /** Paint this run right to left (its bidi level is odd), as
+   *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored.
+   *  The engine cuts a chip's runs where the direction changes. Absent on
+   *  left-to-right runs. */
+  rtl?: true;
 }
 
 /** A laid-out inline chip (`:chip[…]`): a box drawn from
@@ -178,6 +183,13 @@ export interface VDTChip {
   /** Text colour (hex); absent to paint the runs in the surrounding text
    *  colour (bold / italic colours included). */
   color?: string;
+  /** The order in which renderers advance through `runs` from the box's
+   *  start (indices into it), when it is not 0, 1, … n − 1: as
+   *  {@link VDTLine.order}, the visual order of the runs (UAX #9 L2 on
+   *  the chip's own text, its base direction that of its first strong
+   *  letter) in a left-to-right frame, its reverse on a mirrored page.
+   *  Absent on a chip with no right-to-left run. */
+  order?: number[];
 }
 
 export interface VDTLineSegment {
@@ -1422,6 +1434,10 @@ export interface VDTDesignTextRun {
   /** Vertical text: stood upright or turned by its author (`:upright[…]`,
    *  `:sideways[…]`), as {@link VDTLineSegment.orientation}. */
   orientation?: 'upright' | 'sideways';
+  /** Paint this run right to left (its bidi level is odd), as
+   *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored,
+   *  never tracked. Absent on left-to-right runs. */
+  rtl?: true;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -1443,6 +1459,16 @@ export interface VDTDesignTextLine {
    *  word space (U+0020 and the no-break space U+00A0), as CSS
    *  `word-spacing` adds it. The runs' widths already include it. */
   wordSpacingPx?: number;
+  /** The order in which renderers advance through `runs` from `xOffset`
+   *  (indices into it), when it is not 0, 1, … n − 1. As
+   *  {@link VDTLine.order}: the visual order of the runs (UAX #9 L1/L2 on
+   *  the line, at the block's base direction) when the block is painted
+   *  on the sheet or in a left-to-right flow, its reverse when it is
+   *  painted in the flow of a mirrored page (an opener, a heading design,
+   *  a contents part row). A line whose text needs the bidi algorithm is
+   *  always set in `runs`, cut where the direction changes. Absent on a
+   *  line with no right-to-left run. */
+  order?: number[];
 }
 
 /** Outline of the glyphs of a design text block, resolved to px / hex. */
@@ -1493,6 +1519,11 @@ export interface VDTDesignTextBlock {
    *  PDF marks it an artifact and the HTML hides it from assistive
    *  technology, so the text is read once. */
   artifact?: boolean;
+  /** The base direction of the block's text (`DesignTextElement.direction`,
+   *  by default the document's) when it is right to left: its lines'
+   *  runs were ordered at that paragraph level, and an HTML line takes
+   *  `dir="rtl"`. Absent for left-to-right text. */
+  direction?: 'rtl';
   /** Set vertically on a page or a slot whose text is horizontal
    *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
    *  out in the block's own frame, turned a quarter turn clockwise about

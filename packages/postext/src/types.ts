@@ -3538,9 +3538,10 @@ export type PageRoleFilter = 'all' | PageRole;
 // ---------------------------------------------------------------------------
 
 export type HAlign = 'left' | 'center' | 'right';
-/** Alignment of a design text's lines: an {@link HAlign}, or `'justify'`
+/** Alignment of a design text's lines: an {@link HAlign}, `'justify'`, or
+ *  `'start'` / `'end'`, the sides its base direction reads from and to
  *  (see `DesignTextElement.align`). */
-export type DesignTextAlign = HAlign | 'justify';
+export type DesignTextAlign = HAlign | 'justify' | 'start' | 'end';
 export type VAlign = 'top' | 'middle' | 'bottom';
 
 export type AnchorEdge =
@@ -3655,8 +3656,24 @@ export interface DesignTextElement {
    *  but the last of each paragraph so it fills the box (the lines beside a
    *  drop cap fill the room beside it); with `hyphenate` a word that does not
    *  fit is also cut at a syllable to fill the line. A line with no space,
-   *  and a text that does not wrap, is set flush left. */
+   *  and a text that does not wrap, is set flush with the start (left for
+   *  left-to-right text). `'start'` and `'end'` follow the text's base
+   *  direction (`direction`): the right and the left of a right-to-left
+   *  text. `'left'` and `'right'` are the box's own sides; in a design laid
+   *  out in the flow of a right-to-left page (an opener, a heading design)
+   *  the flow is mirrored, so they are its start and end sides, as in the
+   *  body text. */
   align?: DesignTextAlign;
+  /** Base direction of the text (UAX #9 paragraph level): `'auto'` takes
+   *  it from the first strong letter of the resolved text, falling back to
+   *  the document's. Default: the document's direction
+   *  (`PostextConfig.direction`). Right-to-left runs (Arabic, Hebrew) are
+   *  ordered and painted right to left whatever the base; the base decides
+   *  where neutral characters go, the order of the runs on a line and the
+   *  sides `'start'` / `'end'` mean. A text with Arabic letters is never
+   *  tracked (`letterSpacing` is ignored), and its words are never cut
+   *  while wrapping or truncating. */
+  direction?: 'ltr' | 'rtl' | 'auto';
   /** Vertical alignment within the element's box. */
   verticalAlign?: VAlign;
   /** Leading of the element's lines. A number is a multiplier of

@@ -72,6 +72,7 @@ import { computeLevelIndentsPx, computeOrderedLevelIndentsPx, listBulletPosition
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions } from './measureContentBlock';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { headingIsHidden } from './headingStyles';
+import { directDesignTextBlock } from '../design/bidiText';
 import type { ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
 import { shiftLineX } from '../measure/bidiLines';
@@ -448,6 +449,15 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
 
   const { span, placement, title: rawTitle, label: labelText } = resolveCalloutAttrs(style, attrs);
   const isAuto = style.width === 'auto';
+  // The title, the continuation marker and the label are design text set
+  // here by hand: in a right-to-left document their lines are ordered at
+  // that base direction, for the mirrored flow the box is painted in.
+  const rtlDocument = input.resolved.direction === 'rtl';
+  const mirroredFlow = rtlDocument && input.resolved.layout.writingMode !== 'vertical-rl';
+  const directText = (block: VDTDesignTextBlock, trackingPx = 0): VDTDesignTextBlock => {
+    directDesignTextBlock(block, rtlDocument ? 'rtl' : 'ltr', mirroredFlow, trackingPx);
+    return block;
+  };
 
   // --- Marker column (outside the box, on its left) --------------------------
   const hasMarker = iconPresent(style.marker);
@@ -564,7 +574,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       ? measured.lines
       : [{ text: titleText, bbox: createBoundingBox(0, 0, titleW, titleLineHeight), baseline: lineBaselineOffset(titleLineHeight, titleFont), hyphenated: false }];
     const titleHeight = lines.length * titleLineHeight;
-    titleBlock = {
+    titleBlock = directText({
       kind: 'text',
       bbox: createBoundingBox(innerX + titleIndentPx, cursorY, titleW, titleHeight),
       fontString: titleFont,
@@ -578,7 +588,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       clip: false,
       ...(titleTrackingPx > 0 ? { letterSpacingPx: titleTrackingPx } : {}),
       ...(repeatedTitle ? { artifact: true } : {}),
-    };
+    }, titleTrackingPx);
     cursorY += titleHeight;
   }
 
@@ -1176,7 +1186,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     if (input.continues && lines.length > 0) {
       const top = st.cursorY;
       const align = style.continuesMarkerAlign;
-      continuesBlock = {
+      continuesBlock = directText({
         kind: 'text',
         bbox: createBoundingBox(innerX, top, innerWidth, continuesMarkerPx),
         fontString: font,
@@ -1192,7 +1202,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         }),
         clip: false,
         artifact: true,
-      };
+      });
       st.cursorY += continuesMarkerPx;
     }
   }
@@ -1297,14 +1307,14 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       bbox: createBoundingBox(tabX, tabY, tabW, tabH),
       box: { backgroundColor: lb.background.hex, borderWidthPx: 0, borderRadiusPx: 0 },
     });
-    overlayBlocks.push({
+    overlayBlocks.push(directText({
       kind: 'text',
       bbox: createBoundingBox(tabX, tabY, tabW, tabH),
       fontString: lbFont,
       color: lb.color.hex,
       lines: [{ text: labelText, xOffset: padX, baselineY: tabY + tabH / 2 + lbFontPx * 0.36, width: textW }],
       clip: false,
-    });
+    }));
     let edgeX = onRight ? tabX : tabX + tabW;
     if (lb.icon.resourceId) {
       const iconW = px(lb.icon.width);
