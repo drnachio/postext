@@ -3,6 +3,7 @@ import {
   generateOgImage,
   ogSize,
   ogContentType,
+  ogTextLocale,
 } from "@/lib/og-image";
 
 export const alt = "Glossary — Postext";
@@ -15,7 +16,8 @@ export default async function OgImage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Glossary" });
+  const textLocale = ogTextLocale(locale);
+  const t = await getTranslations({ locale: textLocale, namespace: "Glossary" });
 
   return generateOgImage({
     title: t("title"),

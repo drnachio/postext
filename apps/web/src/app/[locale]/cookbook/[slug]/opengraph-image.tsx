@@ -7,7 +7,7 @@ import { ogImageFile } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import type { Locale } from "@/lib/cookbook/types";
-import { generateOgImage, ogContentType, ogSize } from "@/lib/og-image";
+import { generateOgImage, ogContentType, ogSize, ogTextLocale } from "@/lib/og-image";
 
 export const alt = "Postext Cookbook";
 export const size = ogSize;
@@ -27,11 +27,12 @@ export function generateStaticParams() {
 
 export default async function OgImage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  const textLocale = ogTextLocale(locale);
   const recipe = hasLocale(routing.locales, locale) ? getRecipe(slug) : null;
-  const writeup = recipe ? writeupFor(recipe, locale as Locale) : null;
+  const writeup = recipe ? writeupFor(recipe, textLocale as Locale) : null;
   if (!recipe || !writeup) notFound();
 
-  const t = await getTranslations({ locale, namespace: "CookbookRecipe" });
+  const t = await getTranslations({ locale: textLocale, namespace: "CookbookRecipe" });
   const { taxonomy } = loadRegistry();
   const chapter = taxonomy.chapters.find((c) => c.id === recipe.meta.chapter);
   const part = taxonomy.parts.find((p) => p.id === chapter?.part);
@@ -46,7 +47,7 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
   return generateOgImage({
     title: writeup.frontmatter.title,
     description: writeup.frontmatter.summary,
-    kicker: t("ogKicker", { number: String(recipe.meta.number).padStart(3, "0"), chapter: chapter?.title[locale as Locale] ?? "" }),
+    kicker: t("ogKicker", { number: String(recipe.meta.number).padStart(3, "0"), chapter: chapter?.title[textLocale as Locale] ?? "" }),
     accent: PART_INK[part?.color ?? "blue"],
     art,
   });

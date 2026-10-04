@@ -3,6 +3,7 @@ import {
   generateOgImage,
   ogSize,
   ogContentType,
+  ogTextLocale,
 } from "@/lib/og-image";
 
 export const alt = "Postext — Sandbox";
@@ -15,8 +16,9 @@ export default async function OgImage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Sandbox" });
-  const hero = await getTranslations({ locale, namespace: "Hero" });
+  const textLocale = ogTextLocale(locale);
+  const t = await getTranslations({ locale: textLocale, namespace: "Sandbox" });
+  const hero = await getTranslations({ locale: textLocale, namespace: "Hero" });
 
   return generateOgImage({
     title: "Sandbox",

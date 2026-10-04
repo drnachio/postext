@@ -14,6 +14,15 @@ const GILT = "#d8a21a";
 const VERMILION = "#c0452f";
 const MIST = "#b9bcc4";
 
+/** The locale a card's texts are taken from. Satori neither shapes Arabic
+ *  (its letters would print unjoined) nor orders right-to-left text, and
+ *  the Arabic fallback face next/og fetches has contextual lookups its
+ *  font parser rejects: an Arabic page's card is drawn with the English
+ *  texts. */
+export function ogTextLocale(locale: string): string {
+  return /^ar(?:-|$)/.test(locale) ? "en" : locale;
+}
+
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
