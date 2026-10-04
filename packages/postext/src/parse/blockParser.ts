@@ -5,7 +5,7 @@
  * positions back into the original markdown.
  */
 
-import type { ContainerName, ContentBlock, DirectiveName, ListKind, ParseIssue } from './types';
+import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
 import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
@@ -130,11 +130,46 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  */
 export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
   const marks = extractIndexMarks(markdown);
-  if (!marks) return attachContainerAnchors(parseBlocks(markdown));
+  if (!marks) return attachDirections(attachContainerAnchors(parseBlocks(markdown)));
   const result = parseBlocks(marks.text);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
-  return attachContainerAnchors(result);
+  return attachDirections(attachContainerAnchors(result));
+}
+
+/** The direction a `dir` attribute names (`{dir=rtl}`, any case), or
+ *  undefined for none or a value other than `ltr` / `rtl`. */
+function directionAttr(attrs: DirectiveAttrs | undefined): 'ltr' | 'rtl' | undefined {
+  const v = attrs?.dir?.trim().toLowerCase();
+  return v === 'ltr' || v === 'rtl' ? v : undefined;
+}
+
+/**
+ * Block directions (#367): a heading's `{dir=…}` sets its own, a
+ * container's (`:::callout{dir=ltr}`, `:::paragraphs{dir=rtl}`) its own and
+ * that of every block inside it, down to a nested container or heading
+ * that sets another. Stamped on `ContentBlock.direction`, so the layout
+ * reads one field per block; blocks outside any `dir` keep none and follow
+ * the document's `direction`.
+ */
+function attachDirections<T extends { blocks: ContentBlock[] }>(result: T): T {
+  const open: Array<'ltr' | 'rtl' | undefined> = [];
+  for (const b of result.blocks) {
+    const inherited = open[open.length - 1];
+    if (b.type === 'containerStart') {
+      const d = directionAttr(b.containerAttrs) ?? inherited;
+      open.push(d);
+      if (d) b.direction = d;
+      continue;
+    }
+    if (b.type === 'containerEnd') {
+      open.pop();
+      continue;
+    }
+    const d = (b.type === 'heading' ? directionAttr(b.attrs) : undefined) ?? inherited;
+    if (d) b.direction = d;
+  }
+  return result;
 }
 
 /** Text blocks an anchor can sit in. */

@@ -489,6 +489,12 @@ export interface ContentBlock {
   /** For container marker blocks: identifier shared by the matching
    *  start/end pair. Ids start at 1 and increase per parse. */
   containerId?: number;
+  /** The block's base direction when the source sets one (#367): a
+   *  heading's own `{dir=ltr}` / `{dir=rtl}`, or that of the `:::`
+   *  container it sits in (the innermost that sets one; the container's
+   *  start marker carries it too). Absent when nothing sets it: the block
+   *  follows the document's `direction`. */
+  direction?: 'ltr' | 'rtl';
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */
