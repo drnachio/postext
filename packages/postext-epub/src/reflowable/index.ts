@@ -98,8 +98,8 @@ function coverDocument(imageHref: string, alt: string, title: string, lang: stri
 <link rel="stylesheet" type="text/css" href="${relativeHref(`${TEXT_DIR}cover.xhtml`, STYLESHEET_HREF)}"/>
 </head>
 <body class="pt-cover">
-<section epub:type="cover" role="doc-cover">
-<img src="${xmlAttr(relativeHref(`${TEXT_DIR}cover.xhtml`, imageHref))}" alt="${xmlAttr(alt)}"/>
+<section epub:type="cover">
+<img role="doc-cover" src="${xmlAttr(relativeHref(`${TEXT_DIR}cover.xhtml`, imageHref))}" alt="${xmlAttr(alt)}"/>
 </section>
 </body>
 </html>

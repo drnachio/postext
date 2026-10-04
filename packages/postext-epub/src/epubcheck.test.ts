@@ -46,6 +46,7 @@ const samples: { name: string; options: RenderToEpubOptions }[] = [
   { name: 'fixed', options: base('fixed') },
   { name: 'fixed-cover', options: { ...base('fixed'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
   { name: 'reflowable', options: base('reflowable') },
+  { name: 'reflowable-cover', options: { ...base('reflowable'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {
