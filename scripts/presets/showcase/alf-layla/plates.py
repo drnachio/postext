@@ -10,8 +10,10 @@ painted frame), with the caption transcribed (`captionFa`, nastaʿlīq read
 from the scan; `…` where it could not be read), an Arabic caption of ours
 (`caption`) and the tale it shows (a tales.json id). Volume 1 of the
 manuscript covers Bulaq volume 1 only, so the later tales come from William
-Harvey's wood engravings for Lane's translation (1839–41); two of those are
-arabesque ornaments for openers.
+Harvey's wood engravings for Lane's translation (1839–41): from Commons, and
+(`source: "lane"`) cut from the Internet Archive scans of Lane's volumes 2
+and 3 (`ia`: the scan and its leaf, `tone: "gray"`), chosen from Lane's own
+lists of illustrations for the tales of Bulaq volumes 2–6.
 
     python3 fetch.py            # downloads the pages (source/plates)
     python3 plates.py           # crops → work/plates/<id>.jpg, work/plates/plates.json
@@ -29,7 +31,7 @@ import os
 import re
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "source")
@@ -37,7 +39,7 @@ WORK = os.path.join(HERE, "work", "plates")
 SPEC = os.path.join(HERE, "plates.json")
 MAX_SIDE = 3000
 QUALITY = 80
-BUDGET_MB = 20
+BUDGET_MB = 26
 
 HARAKAT = re.compile("[ً-ٰٟـ]")
 
@@ -97,6 +99,10 @@ def crop(plate: dict) -> Image.Image:
         im = im.crop((round(x0 * w), round(y0 * h), round(x1 * w), round(y1 * h)))
     if max(im.size) > MAX_SIDE:
         im.thumbnail((MAX_SIDE, MAX_SIDE), Image.LANCZOS)
+    if plate.get("tone") == "gray":
+        # A wood engraving cut from a scanned page: grey, the paper's tint
+        # and the scan's haze levelled out.
+        im = ImageOps.autocontrast(im.convert("L"), cutoff=(0.5, 0.5))
     return im
 
 

@@ -6943,7 +6943,23 @@
     "paletteId": "ink"
    },
    "align": "center",
-   "labelBold": false
+   "labelBold": false,
+   "note": {
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b5f52",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "align": "center",
+    "gap": {
+     "value": 1,
+     "unit": "pt"
+    }
+   }
   },
   "colorPalette": [
    {
@@ -7889,8 +7905,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-23.jpg",
-   "width": 1172,
-   "height": 1582,
+   "width": 1100,
+   "height": 1485,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7906,8 +7922,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-12.jpg",
-   "width": 1184,
-   "height": 1438,
+   "width": 1100,
+   "height": 1336,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7923,8 +7939,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-08.jpg",
-   "width": 1282,
-   "height": 791,
+   "width": 1100,
+   "height": 679,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7940,8 +7956,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-10.jpg",
-   "width": 1125,
-   "height": 1113,
+   "width": 1100,
+   "height": 1088,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7957,8 +7973,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-21.jpg",
-   "width": 1162,
-   "height": 953,
+   "width": 1100,
+   "height": 902,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7974,8 +7990,8 @@
    "typeId": "plate",
    "kind": "bitmap",
    "file": "resources/harvey-03.jpg",
-   "width": 1209,
-   "height": 1534,
+   "width": 1100,
+   "height": 1396,
    "placement": {
     "position": "auto",
     "span": "page",
@@ -7985,6 +8001,329 @@
    "caption": "الدخان يخرج من القمقم ويصير عفريتًا",
    "note": "من رسوم وليم هارفي",
    "altText": "رسم محفور على الخشب لوليم هارفي: الدخان يخرج من القمقم ويصير عفريتًا"
+  },
+  {
+   "id": "lane-nima",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-nima.jpg",
+   "width": 1100,
+   "height": 699,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "نُعم تفيق حين ترى ورقة نعمة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: نُعم تفيق حين ترى ورقة نعمة"
+  },
+  {
+   "id": "lane-alaeddin",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-alaeddin.jpg",
+   "width": 1100,
+   "height": 860,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.895,
+    "align": "center"
+   },
+   "caption": "علاء الدين يطلع من الطابق على مجلس أمه",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: علاء الدين يطلع من الطابق على مجلس أمه"
+  },
+  {
+   "id": "lane-hatim",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-hatim.jpg",
+   "width": 1100,
+   "height": 1291,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.596,
+    "align": "center"
+   },
+   "caption": "قبر حاتم الطائي على رأس الجبل",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: قبر حاتم الطائي على رأس الجبل"
+  },
+  {
+   "id": "lane-false-caliph",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-false-caliph.jpg",
+   "width": 1100,
+   "height": 1514,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.509,
+    "align": "center"
+   },
+   "caption": "الخليفة المزوَّر يدخل قصره في موكبه",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الخليفة المزوَّر يدخل قصره في موكبه"
+  },
+  {
+   "id": "lane-zumurrud",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-zumurrud.jpg",
+   "width": 1100,
+   "height": 1318,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.584,
+    "align": "center"
+   },
+   "caption": "زمرد تتدلى من الطاقة بحبل",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: زمرد تتدلى من الطاقة بحبل"
+  },
+  {
+   "id": "lane-jubayr",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-jubayr.jpg",
+   "width": 1100,
+   "height": 1302,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.591,
+    "align": "center"
+   },
+   "caption": "عقد جبير بن عمير على الست بدور",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: عقد جبير بن عمير على الست بدور"
+  },
+  {
+   "id": "lane-ebony-horse",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-ebony-horse.jpg",
+   "width": 1100,
+   "height": 410,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "ابن الملك على الفرس الأبنوس بين العسكر",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: ابن الملك على الفرس الأبنوس بين العسكر"
+  },
+  {
+   "id": "lane-ali-misri",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-ali-misri.jpg",
+   "width": 1100,
+   "height": 996,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.773,
+    "align": "center"
+   },
+   "caption": "علي المصري يفتح الصناديق",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: علي المصري يفتح الصناديق"
+  },
+  {
+   "id": "lane-brass",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-brass.jpg",
+   "width": 1100,
+   "height": 1389,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.554,
+    "align": "center"
+   },
+   "caption": "فارس النحاس على الرابية",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: فارس النحاس على الرابية"
+  },
+  {
+   "id": "lane-judar",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-judar.jpg",
+   "width": 1100,
+   "height": 401,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "جودر والمغربي عند البركة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: جودر والمغربي عند البركة"
+  },
+  {
+   "id": "lane-lab",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-lab.jpg",
+   "width": 1100,
+   "height": 1403,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.549,
+    "align": "center"
+   },
+   "caption": "الملكة لاب الساحرة",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الملكة لاب الساحرة"
+  },
+  {
+   "id": "lane-sayf",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-sayf.jpg",
+   "width": 1100,
+   "height": 1052,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.732,
+    "align": "center"
+   },
+   "caption": "ابن الملك الأزرق يختطف دولة خاتون",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: ابن الملك الأزرق يختطف دولة خاتون"
+  },
+  {
+   "id": "lane-bahram",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-bahram.jpg",
+   "width": 562,
+   "height": 3000,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.131,
+    "align": "center"
+   },
+   "caption": "بهرام المجوسي",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: بهرام المجوسي"
+  },
+  {
+   "id": "lane-dahnash",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-dahnash.jpg",
+   "width": 1100,
+   "height": 1286,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.599,
+    "align": "center"
+   },
+   "caption": "حسن على كتفَي العفريت دهنش",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: حسن على كتفَي العفريت دهنش"
+  },
+  {
+   "id": "lane-khalifa",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-khalifa.jpg",
+   "width": 1100,
+   "height": 649,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "الرشيد وجعفر يريان خليفة الصياد",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الرشيد وجعفر يريان خليفة الصياد"
+  },
+  {
+   "id": "lane-abu-sir",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-abu-sir.jpg",
+   "width": 1100,
+   "height": 1475,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.522,
+    "align": "center"
+   },
+   "caption": "الملك يشير بإلقاء أبي صير في البحر",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: الملك يشير بإلقاء أبي صير في البحر"
+  },
+  {
+   "id": "lane-jamila",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-jamila.jpg",
+   "width": 1083,
+   "height": 2338,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.324,
+    "align": "center"
+   },
+   "caption": "السيدة جميلة ترقص",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: السيدة جميلة ترقص"
+  },
+  {
+   "id": "lane-maruf-jinni",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-maruf-jinni.jpg",
+   "width": 1100,
+   "height": 1462,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 0.527,
+    "align": "center"
+   },
+   "caption": "أبو السعادات خادم الخاتم يظهر لمعروف",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: أبو السعادات خادم الخاتم يظهر لمعروف"
+  },
+  {
+   "id": "lane-maruf-plough",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/lane-maruf-plough.jpg",
+   "width": 1100,
+   "height": 693,
+   "placement": {
+    "position": "auto",
+    "span": "page",
+    "width": 1.0,
+    "align": "center"
+   },
+   "caption": "معروف يحرث أرض الفلاح",
+   "note": "من رسوم وليم هارفي",
+   "altText": "رسم محفور على الخشب لوليم هارفي: معروف يحرث أرض الفلاح"
   },
   {
    "id": "cover-panel",

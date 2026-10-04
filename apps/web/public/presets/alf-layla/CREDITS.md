@@ -31,8 +31,12 @@ heading attribute; the edition's own illustrations left out.
   domain. Panels cut from the manuscript pages; the Arabic captions are
   ours, after the Persian captions of the manuscript.
 - William Harvey (1796–1866): wood engravings for E. W. Lane's translation,
-  *The Thousand and One Nights*, London 1839–41. Wikimedia Commons, public
-  domain.
+  *The Thousand and One Nights*, London 1839–41, engraved by Landells,
+  Whimper, Jackson, the Williamses, Harriet Clarke and others. Public domain.
+  Six from Wikimedia Commons; nineteen cut from the Internet Archive scans of
+  Lane's volume 2 (1840, `thousandandonen01lanegoog`) and volume 3 (1841,
+  `thousandandonen01harvgoog`), chosen from Lane's lists of illustrations for
+  the tales of the later Bulaq volumes, set in grey.
 - The headpiece (سرلوح) and the rosettes are drawn for this bundle
   (`ornaments.py`), CC0.
 
@@ -91,6 +95,25 @@ heading attribute; the edition's own illustrations left out.
 | `harvey-10` | أنس الوجود | حكاية أنس الوجود والورد في الأكمام | [Commons](https://commons.wikimedia.org/wiki/File:Harvey_W,_1001_nights_(10).jpg) | Public domain |
 | `harvey-21` | عبد الله البرّي وعبد الله البحري | حكاية عبد الله البحري وعبد الله البرِّي | [Commons](https://commons.wikimedia.org/wiki/File:Harvey_W,_1001_nights_(21).jpg) | Public domain |
 | `harvey-03` | الدخان يخرج من القمقم ويصير عفريتًا | حكاية الصياد مع العفريت | [Commons](https://commons.wikimedia.org/wiki/File:Harvey_W,_1001_nights_(3).jpg) | Public domain |
+| `lane-nima` | نُعم تفيق حين ترى ورقة نعمة | حكاية نعمة ونِعَم | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n217/mode/1up) | Public domain |
+| `lane-alaeddin` | علاء الدين يطلع من الطابق على مجلس أمه | حكاية علاء الدين أبي الشامات | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n273/mode/1up) | Public domain |
+| `lane-hatim` | قبر حاتم الطائي على رأس الجبل | حكاية حاتم الطائي | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n355/mode/1up) | Public domain |
+| `lane-false-caliph` | الخليفة المزوَّر يدخل قصره في موكبه | حكاية الخليفة المزوَّر | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n407/mode/1up) | Public domain |
+| `lane-zumurrud` | زمرد تتدلى من الطاقة بحبل | حكاية علي شار وزمرد | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n471/mode/1up) | Public domain |
+| `lane-jubayr` | عقد جبير بن عمير على الست بدور | حكاية جبير بن عمير والست بدور | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n512/mode/1up) | Public domain |
+| `lane-ebony-horse` | ابن الملك على الفرس الأبنوس بين العسكر | حكاية الفرس الطائر | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n548/mode/1up) | Public domain |
+| `lane-ali-misri` | علي المصري يفتح الصناديق | حكاية علي المصري التاجر من بغداد | [Internet Archive](https://archive.org/details/thousandandonen01lanegoog/page/n644/mode/1up) | Public domain |
+| `lane-brass` | فارس النحاس على الرابية | حكاية مدينة النحاس | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n146/mode/1up) | Public domain |
+| `lane-judar` | جودر والمغربي عند البركة | حكاية جودر الصياد وأخويه | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n210/mode/1up) | Public domain |
+| `lane-lab` | الملكة لاب الساحرة | حكاية جلناز وبدر باسم | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n316/mode/1up) | Public domain |
+| `lane-sayf` | ابن الملك الأزرق يختطف دولة خاتون | حكاية سيف الملوك وبديعة الجمال | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n359/mode/1up) | Public domain |
+| `lane-bahram` | بهرام المجوسي | حكاية حسن الصائغ | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n413/mode/1up) | Public domain |
+| `lane-dahnash` | حسن على كتفَي العفريت دهنش | حكاية حسن الصائغ | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n473/mode/1up) | Public domain |
+| `lane-khalifa` | الرشيد وجعفر يريان خليفة الصياد | خليفة الصياد | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n559/mode/1up) | Public domain |
+| `lane-abu-sir` | الملك يشير بإلقاء أبي صير في البحر | حكاية أبي قِير وأبي صِير | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n625/mode/1up) | Public domain |
+| `lane-jamila` | السيدة جميلة ترقص | حكاية إبراهيم وجميلة | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n678/mode/1up) | Public domain |
+| `lane-maruf-jinni` | أبو السعادات خادم الخاتم يظهر لمعروف | حكاية الإسكافي معروف | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n695/mode/1up) | Public domain |
+| `lane-maruf-plough` | معروف يحرث أرض الفلاح | حكاية الإسكافي معروف | [Internet Archive](https://archive.org/details/thousandandonen01harvgoog/page/n718/mode/1up) | Public domain |
 
 ## Fonts
 

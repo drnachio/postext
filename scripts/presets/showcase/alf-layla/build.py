@@ -502,8 +502,8 @@ def add_spine(out: str, shared: list[dict]) -> None:
                 "ink": PALETTE["gold"],
                 "rules": PALETTE["gold"],
                 "pieces": [
-                    {"text": TITLE, "font": os.path.join(fonts, "ArefRuqaa-Bold.ttf"), "size": 0.42, "at": 0.36},
-                    {"text": "في ستة أجزاء", "font": os.path.join(fonts, "Amiri-Bold.ttf"), "size": 0.26, "at": 0.78},
+                    {"text": TITLE, "font": os.path.join(fonts, "ArefRuqaa-Bold.ttf"), "size": 0.3, "at": 0.4},
+                    {"text": "في ستة أجزاء", "font": os.path.join(fonts, "Amiri-Bold.ttf"), "size": 0.2, "at": 0.8},
                 ],
             }
         },
@@ -587,7 +587,9 @@ def config() -> dict:
         },
         "header": header(RUNNING),
         "footer": {"elements": []},
-        "captionStyle": {"fontFamily": BODY, "fontSize": pt(11.5), "color": col("ink"), "align": "center", "labelBold": False},
+        # The caption centred under the plate, the artist under it smaller in
+        # grey.
+        "captionStyle": {"fontFamily": BODY, "fontSize": pt(11.5), "color": col("ink"), "align": "center", "labelBold": False, "note": {"fontSize": pt(9.5), "color": col("muted"), "align": "center", "gap": pt(1)}},
         "colorPalette": PALETTE_CONFIG,
         "resourceTypes": resource_types(),
         "pdfGeneration": {"outlines": True},
@@ -623,7 +625,7 @@ def front_files() -> list[tuple[str, str, str]]:
 EDITION_NOTE = [
     "هذه نسخة كاملة من «ألف ليلة وليلة» على نص طبعة بولاق، وهي الطبعة التي جمعها المصريون في القرن الثالث عشر للهجرة وطُبعت بالمطبعة الأميرية سنة ١٢٥١هـ، وعنها أُخذ أكثر ما في أيدي الناس من نسخ الكتاب. وقد اعتمدنا النص كما ضبطته مؤسسة هنداوي في أجزائها الستة، بالشكل الكامل في الشعر وبالشكل الخفيف في النثر، وأبقينا على تقسيمها الكتابَ إلى أجزاء.",
     "وجعلنا كل حكاية فصلًا، فإذا رُويت حكاية في أثناء أخرى جعلنا عنوانها بالحمرة في داخل الفصل، كما كان النُّسّاخ يكتبون رؤوس الكلام بالمداد الأحمر. وأما الليالي فقد كتبنا عددها بالحروف بين نجمتين، فقلنا: «الليلة الأولى» و«الليلة الحادية بعد الألف»، وكانت في نسخة هنداوي: «فلما كانت الليلة ١٢». وأضفنا عناوين لبعض الحكايات التي لم تُعنون في الأصل، ولمجموعات الحكايات القصار.",
-    "والتصاوير من صنيع الملك أبي الحسن الغفاري، رسمها مع تلاميذه للترجمة الفارسية للكتاب بين سنتي ١٢٦٥ و١٢٧٢ للهجرة، وهي محفوظة في مكتبة قصر كلستان بطهران، ولا يبلغ مجلدها الأول إلا حكايات الجزء الأول من هذه الطبعة؛ ومن رسوم وليم هارفي المحفورة على الخشب لترجمة إدوارد لين الإنجليزية. والكلام تحت كل صورة من وضعنا. ووضعنا الفهرس في آخر الكتاب على عادة الكتب القديمة.",
+    "والتصاوير من صنيع الملك أبي الحسن الغفاري، رسمها مع تلاميذه للترجمة الفارسية للكتاب بين سنتي ١٢٦٥ و١٢٧٢ للهجرة، وهي محفوظة في مكتبة قصر كلستان بطهران، ولا يبلغ مجلدها الأول إلا حكايات الجزء الأول من هذه الطبعة؛ ومن رسوم وليم هارفي المحفورة على الخشب لترجمة إدوارد لين الإنجليزية، وعنها أخذنا صور حكايات الأجزاء الباقية. والكلام تحت كل صورة من وضعنا. ووضعنا الفهرس في آخر الكتاب على عادة الكتب القديمة.",
 ]
 
 COLOPHON = [
@@ -639,13 +641,13 @@ COLOPHON = [
 
 CREDITS_AR = [
     "**النص:** ألف ليلة وليلة، طبعة مؤسسة هنداوي (٢٠٢٢) في ستة أجزاء، عن طبعة بولاق. نص الكتاب في الملك العام؛ أما الضبط بالشكل وعلامات الترقيم فمن عمل مؤسسة هنداوي، مرخَّص بموجب رخصة المشاع الإبداعي: نسب المصنَّف، الإصدار ٤٫٠ (CC BY 4.0). أُخذت النسخ الإلكترونية (EPUB) من أرشيف الإنترنت. التعديلات: توحيد الترميز، وحذف علامات الاتجاه الخفية، وتصحيح عنوان الليلة ١٣٦ («فقال» ← «فلما»)، وتقسيم أربع فقرات عند بداية حكايات لم تُعنون في الأصل، وعناوين لتلك الحكايات ولمجموعات الحكايات القصار، وكتابة عدد الليالي بالحروف، وحذف رسوم تلك الطبعة.",
-    "**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن صور ويكيميديا كومنز، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط.",
+    "**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن ويكيميديا كومنز وأرشيف الإنترنت، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط ومن عناوين لين لرسوم هارفي.",
     "**الحروف:** «أميري» (الإصدار ١٫٠٠٣) لخالد حسني، و«عارف رقعة» لعبد الله عارف وخالد حسني، برخصة SIL Open Font License 1.1. والزخارف (السرلوح والشمسة) مرسومة لهذه النسخة.",
     "**الإخراج:** صُفَّ الكتاب بمحرك Postext؛ ونصوص هذه النسخة التي كتبناها (الكلمة في الطبعة، والعناوين المضافة، والكلام تحت الصور، وهذه الصفحة) بموجب رخصة المشاع الإبداعي CC BY 4.0.",
 ]
 
 CREDITS_EN = [
-    "One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons, public domain. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.",
+    "One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons and the Internet Archive, public domain. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.",
 ]
 
 
@@ -760,8 +762,9 @@ def write_chapters(out: str, data: dict, max_words: int | None) -> list[dict]:
 
 # --- resources -----------------------------------------------------------------------
 
-PLATE_WIDTH = 1300  # px: about 260 dpi across the 124 mm measure
-PLATE_QUALITY = 80
+PLATE_WIDTH = 1300  # px: about 265 dpi across the 124 mm measure
+PLATE_WIDTH_GRAY = 1100  # the wood engravings, at most 0.7 of it wide
+PLATE_QUALITY = 78
 
 
 def plate_note(p: dict) -> str:
@@ -782,9 +785,11 @@ def resources(out: str, plates: list[dict]) -> list[dict]:
         if p.get("kind") == "ornament":
             continue  # the Harvey gateway and roundel: the drawn headpiece stands for them
         src = os.path.join(WORK, "plates", p["id"] + ".jpg")
-        im = Image.open(src).convert("RGB")
-        if im.width > PLATE_WIDTH:
-            im = im.resize((PLATE_WIDTH, round(im.height * PLATE_WIDTH / im.width)), Image.LANCZOS)
+        im = Image.open(src)
+        im = im.convert("L" if im.mode == "L" else "RGB")
+        limit = PLATE_WIDTH_GRAY if im.mode == "L" else PLATE_WIDTH
+        if im.width > limit:
+            im = im.resize((limit, round(im.height * limit / im.width)), Image.LANCZOS)
         rel = f"resources/{p['id']}.jpg"
         im.save(os.path.join(out, rel), quality=PLATE_QUALITY, optimize=True, progressive=True)
         aspect = im.height / im.width
@@ -905,7 +910,7 @@ def write_manifest(out: str, chapters: list[dict], shared: list[dict], fonts: li
 
 
 def write_credits_md(out: str, plates: list[dict]) -> None:
-    rows = "\n".join(f"| `{p['id']}` | {p['caption']} | {p.get('taleTitle', '')} | [Commons]({p['commonsPage']}) | {p['license']} |" for p in plates if p.get("kind") != "ornament")
+    rows = "\n".join(f"| `{p['id']}` | {p['caption']} | {p.get('taleTitle', '')} | [{'Commons' if 'wikimedia' in p['commonsPage'] else 'Internet Archive'}]({p['commonsPage']}) | {p['license']} |" for p in plates if p.get("kind") != "ornament")
     body = f"""# Credits — ألف ليلة وليلة · One Thousand and One Nights
 
 Showcase preset for the Postext sandbox: the whole of *Alf layla wa-layla*
@@ -939,8 +944,12 @@ heading attribute; the edition's own illustrations left out.
   domain. Panels cut from the manuscript pages; the Arabic captions are
   ours, after the Persian captions of the manuscript.
 - William Harvey (1796–1866): wood engravings for E. W. Lane's translation,
-  *The Thousand and One Nights*, London 1839–41. Wikimedia Commons, public
-  domain.
+  *The Thousand and One Nights*, London 1839–41, engraved by Landells,
+  Whimper, Jackson, the Williamses, Harriet Clarke and others. Public domain.
+  Six from Wikimedia Commons; nineteen cut from the Internet Archive scans of
+  Lane's volume 2 (1840, `thousandandonen01lanegoog`) and volume 3 (1841,
+  `thousandandonen01harvgoog`), chosen from Lane's lists of illustrations for
+  the tales of the later Bulaq volumes, set in grey.
 - The headpiece (سرلوح) and the rosettes are drawn for this bundle
   (`ornaments.py`), CC0.
 

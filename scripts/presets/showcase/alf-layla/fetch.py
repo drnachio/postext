@@ -328,6 +328,36 @@ def fetch_images(manifest: dict) -> None:
         json.dump(meta, f, indent=1, ensure_ascii=False)
 
 
+IA_PAGE = "https://archive.org/download/{id}/page/n{n}.jpg"
+IA_DETAILS = "https://archive.org/details/{id}/page/n{n}/mode/1up"
+
+
+def fetch_lane(manifest: dict) -> None:
+    """The pages of Lane's translation (London 1839–41) that hold the Harvey
+    wood engravings `plates.json` takes from the Internet Archive scans
+    (`ia: {id, n}`, the leaf index of the scan), added to meta.json."""
+    spec = json.load(open(os.path.join(HERE, "plates.json"), encoding="utf-8"))
+    meta_path = os.path.join(SOURCE, "plates", "meta.json")
+    meta = json.load(open(meta_path, encoding="utf-8")) if os.path.exists(meta_path) else {}
+    for plate in spec["plates"]:
+        ia = plate.get("ia")
+        if not ia:
+            continue
+        rel = "plates/" + plate["file"]
+        if download(IA_PAGE.format(**ia), rel, manifest, pace=2.0):
+            print("picture", rel)
+        source = spec["sources"][plate["source"]]
+        meta[rel] = {
+            "title": f"{source['work']}, {ia['id']} n{ia['n']}",
+            "url": IA_PAGE.format(**ia),
+            "descriptionurl": IA_DETAILS.format(**ia),
+            "license": "Public domain",
+            "artist": source["artist"],
+        }
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=1, ensure_ascii=False)
+
+
 if __name__ == "__main__":
     args = set(sys.argv[1:])
     manifest = load_manifest()
@@ -336,6 +366,7 @@ if __name__ == "__main__":
             fetch_fonts(manifest)
         if "--no-images" not in args:
             fetch_images(manifest)
+            fetch_lane(manifest)
         missing = [] if "--no-text" in args else fetch_hindawi(manifest)
     finally:
         save_manifest(manifest)
