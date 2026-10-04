@@ -108,4 +108,19 @@ describe('design text right to left in the PDF', () => {
       expect(rows[0]).toBe('السلامعليكمLatin');
     }
   });
+
+  it.skipIf(!hasPdftotext)('places body runs shaped on a mirrored page in their own boxes', async () => {
+    const doc = buildDocument({ markdown: 'كلمة السلام عليكم كلمة Latin 2024 كلمة' }, { ...config(), header: { elements: [] } });
+    const bytes = await renderToPdf(doc, { fontProvider });
+    const file = path.join(os.tmpdir(), `postext-design-rtl-body-${process.pid}.pdf`);
+    fs.writeFileSync(file, bytes);
+    const xml = execFileSync('pdftotext', ['-bbox', '-l', '1', file, '-'], { encoding: 'utf8' });
+    fs.unlinkSync(file);
+    const words = [...xml.matchAll(/xMin="([\d.]+)" yMin="[\d.]+" xMax="([\d.]+)"/g)].map((m) => [Number(m[1]), Number(m[2])] as const)
+      .sort((a, b) => a[0] - b[0]);
+    expect(words.length).toBeGreaterThanOrEqual(6);
+    // Up to postext 1.14 each run of a mirrored page was turned back about
+    // its left edge and landed one advance off, over its neighbour.
+    for (let i = 1; i < words.length; i++) expect(words[i]![0]).toBeGreaterThanOrEqual(words[i - 1]![1] - 0.5);
+  });
 });

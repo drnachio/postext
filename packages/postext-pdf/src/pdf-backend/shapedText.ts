@@ -37,7 +37,7 @@ import { complexShaperReady, joinsLetters, needsComplexShaping, shapeRun, cluste
 import { bidiRuns, type BidiRun } from '../bidiRuns';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
 import { toUnicodeCmap } from '../fontCache';
-import { pushTextObject, registerComplexPainter, textShows, type PageCtx, type TextOutline, type TextShow } from './primitives';
+import { pushTextObject, registerComplexPainter, textAdvancePx, textShows, type PageCtx, type TextOutline, type TextShow } from './primitives';
 
 /** A fontkit glyph, as far as registering it with a subset needs it. */
 interface FontkitGlyph {
@@ -428,7 +428,15 @@ export function drawShapedTextPx(
   // `letterSpacing` on them too); the graphics state the text object is
   // wrapped in restores the line's spacing after it.
   if ((ctx.trackingPx ?? 0) !== 0 && joinsLetters(text)) shows.unshift({ font: shows[0]?.font ?? font, op: setCharacterSpacing(0) });
-  pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, options.outline, options.actualText ?? undefined);
+  // On a mirrored page the text object is turned back about the run's box,
+  // which needs its advance. `drawTextPx` sets it; a caller painting a line
+  // segment straight through here (`blockRender.ts`) does not, and every
+  // run then landed one advance off its box (the face's advance, as
+  // `drawTextPx` takes it, untracked for joining letters).
+  const advancePx = ctx.mirror && ctx.runAdvancePx === undefined
+    ? textAdvancePx(font, text, sizePx, joinsLetters(text) ? 0 : ctx.trackingPx ?? 0).advance
+    : undefined;
+  pushTextObject(ctx, shows, xPx, baselinePx, font, sizePx, color, options.outline, options.actualText ?? undefined, advancePx);
   return true;
 }
 
