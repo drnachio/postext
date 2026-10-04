@@ -222,10 +222,10 @@ export function ConfigPanel() {
               'hover:bg-(--surface) hover:text-(--foreground) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >
-            <ArrowLeft size={13} aria-hidden="true" />
+            <ArrowLeft size={13} aria-hidden="true" className="rtl:-scale-x-100" />
             {labels.settingsBack}
           </button>
-          <ChevronRight size={12} aria-hidden="true" className="text-(--slate) opacity-60" />
+          <ChevronRight size={12} aria-hidden="true" className="text-(--slate) opacity-60 rtl:-scale-x-100" />
           <span aria-current="page" className="min-w-0 truncate text-xs font-medium text-(--foreground)">
             {String(labels[SETTINGS_GROUPS.find((g) => g.id === group)!.labelKey])}
           </span>
@@ -276,7 +276,7 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
                 ref={(el) => { if (el) buttonRefs.set(g.id, el); else buttonRefs.delete(g.id); }}
                 onClick={() => onOpen(g.id)}
                 className={cn(
-                  'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-left transition-colors',
+                  'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-start transition-colors',
                   'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 )}
               >
@@ -296,7 +296,7 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
                     </span>
                   </span>
                 )}
-                <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) transition-transform group-hover/row:translate-x-0.5" />
+                <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) transition-transform group-hover/row:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover/row:-translate-x-0.5" />
               </button>
             </li>
           );
@@ -373,7 +373,7 @@ function GroupPage({ id, headingRef, onOpen }: {
             type="button"
             onClick={() => onOpen(next.id)}
             className={cn(
-              'flex pt-large:min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--pt-control-border) px-3 py-2 text-left transition-colors',
+              'flex pt-large:min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--pt-control-border) px-3 py-2 text-start transition-colors',
               'hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
             )}
           >
@@ -381,7 +381,7 @@ function GroupPage({ id, headingRef, onOpen }: {
               <span className="text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">{labels.settingsNextGroup}</span>
               <span className="truncate text-[0.8rem] font-medium text-(--foreground)">{String(labels[next.labelKey])}</span>
             </span>
-            <ArrowRight size={14} aria-hidden="true" className="shrink-0 text-(--slate)" />
+            <ArrowRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) rtl:-scale-x-100" />
           </button>
         </div>
       )}
@@ -394,9 +394,10 @@ function SearchInput({ value, onChange }: { value: string; onChange: (v: string)
   const labels = useSandboxLabels();
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex h-7 pt-large:min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 pt-large:pl-2 transition-colors focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
+    <div className="flex h-7 pt-large:min-h-11 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) px-2 pt-large:ps-2 transition-colors focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)">
       <Search size={13} aria-hidden="true" className="shrink-0 text-(--slate)" />
       <input
+        dir="auto"
         ref={inputRef}
         type="search"
         value={value}

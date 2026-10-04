@@ -83,6 +83,7 @@ export function NumberField({
           </NumberFieldPrimitive.Decrement>
         )}
         <NumberFieldPrimitive.Input
+          dir="ltr"
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabelledBy ? undefined : ariaLabel}

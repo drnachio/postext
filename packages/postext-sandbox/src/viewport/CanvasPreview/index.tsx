@@ -941,10 +941,13 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
 
   // The scroller is a named region that takes the keyboard (arrow keys,
   // Page Up/Down, Home/End scroll it): the pages are bitmaps, so nothing
-  // inside it can take focus (WCAG 2.1.1).
+  // inside it can take focus (WCAG 2.1.1). Left to right whatever the
+  // interface's direction: the page geometry is physical, and a
+  // right-to-left book already lays its spreads out right to left.
   return (
     <div
       ref={containerRef}
+      dir="ltr"
       role="region"
       aria-label={regionLabel}
       tabIndex={0}

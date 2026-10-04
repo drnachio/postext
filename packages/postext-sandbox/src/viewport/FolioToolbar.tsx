@@ -10,6 +10,7 @@ import {
   ToolbarButton,
   ToolbarSeparator,
   useToolbarRootProps,
+  PageTurnButtons,
 } from './CanvasToolbar';
 
 interface FolioToolbarProps {
@@ -133,6 +134,7 @@ export function FolioToolbar({
         unpinLabel={labels.toolbarUnpin}
       />
       <ToolbarSeparator />
+      <PageTurnButtons>
       <ToolbarButton
         icon={<PrevIcon size={16} aria-hidden="true" />}
         label={labels.folioPrev}
@@ -153,6 +155,7 @@ export function FolioToolbar({
         onClick={onNext}
         disabled={pageCount === 0 || !canNext}
       />
+      </PageTurnButtons>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import type { KeyboardEvent, ReactNode } from 'react';
 import { cn } from './cn';
+import { useUiRtl } from './direction';
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -31,11 +32,13 @@ interface SegmentedControlProps<T extends string> {
  *  rounded ends, a vertical rule between the options, and a solid fill on
  *  the selected one. Radio semantics; arrow keys move the selection. */
 export function SegmentedControl<T extends string>({ value, onValueChange, options, ariaLabel, ariaLabelledBy, ariaDescribedBy, size = 'md', fill, className }: SegmentedControlProps<T>) {
+  // The options run right to left in a right-to-left interface.
+  const rtl = useUiRtl();
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const idx = options.findIndex((o) => o.value === value);
     let next: number | null = null;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % options.length;
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + options.length) % options.length;
+    if (e.key === (rtl ? 'ArrowLeft' : 'ArrowRight') || e.key === 'ArrowDown') next = (idx + 1) % options.length;
+    else if (e.key === (rtl ? 'ArrowRight' : 'ArrowLeft') || e.key === 'ArrowUp') next = (idx - 1 + options.length) % options.length;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = options.length - 1;
     if (next === null) return;
@@ -85,7 +88,7 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
                   ? 'cursor-default bg-transparent text-(--slate) opacity-50'
                   : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
             )}
-            style={i > 0 ? { borderLeft: '1px solid var(--pt-control-border)' } : undefined}
+            style={i > 0 ? { borderInlineStart: '1px solid var(--pt-control-border)' } : undefined}
           >
             {o.label}
           </button>

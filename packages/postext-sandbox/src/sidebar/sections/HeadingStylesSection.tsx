@@ -330,6 +330,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           hint={idTaken ? labels.paragraphStyleIdHintDuplicate : labels.headingStyleUsageHint.replace('__id__', style.id)}
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -347,6 +348,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
         </Field>
         <Field label={labels.paragraphStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => set('name', e.target.value.length > 0 ? e.target.value : undefined)}

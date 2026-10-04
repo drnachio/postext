@@ -63,7 +63,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(function ListRow
       ref={ref}
       data-selected={selected || undefined}
       className={cn(
-        'group relative flex pt-large:min-h-11 items-center gap-1 rounded border px-2 py-1.5 pt-large:py-0.5 pt-large:pr-0.5 pt-large:pl-2 transition-colors',
+        'group relative flex pt-large:min-h-11 items-center gap-1 rounded border px-2 py-1.5 pt-large:py-0.5 pt-large:pe-0.5 pt-large:ps-2 transition-colors',
         selected ? 'border-(--brand) bg-(--surface)' : 'border-transparent',
         interactive && !disabled && !selected && 'hover:bg-(--surface)',
         disabled && 'opacity-50',

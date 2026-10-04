@@ -253,7 +253,7 @@ export function ResourceDetail({
       <PanelHeader
         title={
           <div className="flex min-w-0 flex-1 items-center gap-1">
-            <IconButton label={labels.resourceBack} icon={<ChevronLeft size={16} />} onClick={onBack} />
+            <IconButton label={labels.resourceBack} icon={<ChevronLeft size={16} className="rtl:-scale-x-100" />} onClick={onBack} />
             <span className="min-w-0 flex-1 truncate" title={resource.id}>
               {resource.id || labels.resourceUntitled}
             </span>
@@ -280,6 +280,7 @@ export function ResourceDetail({
           }
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -345,6 +346,7 @@ export function ResourceDetail({
 
         <Field label={labels.resourceAltLabel} hint={labels.resourceAltHint}>
           <input
+            dir="auto"
             type="text"
             value={resource.altText ?? ''}
             onChange={(e) => onChange(touch({ altText: e.target.value }))}

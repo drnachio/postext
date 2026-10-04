@@ -16,20 +16,21 @@ import {
 } from 'lucide-react';
 import { useSandbox } from '../context/SandboxContext';
 import { groupPagesIntoRows } from './CanvasPreview/layoutUtils';
-import { Tooltip } from '../ui';
+import { Tooltip, useUiRtl } from '../ui';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { useLargeTargets } from '../ui/largeTargets';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
 
-// Common placement + hide-animation style for every floating right-edge
-// toolbar. `hidden` slides it fully off-screen; the transition keeps the
+// Common placement + hide-animation style for every floating toolbar, at
+// the viewport's end edge (the right, or the left in a right-to-left
+// interface). `hidden` slides it fully off-screen; the transition keeps the
 // slide-in/slide-out feeling smooth when the pointer approaches.
 const TOOLBAR_TOP = 60;
 export const TOOLBAR_STYLE_BASE = {
   position: 'absolute' as const,
-  right: 12,
+  insetInlineEnd: 12,
   top: TOOLBAR_TOP,
   zIndex: 10,
   gap: 2,
@@ -48,9 +49,9 @@ const TOOLBAR_SCROLL = {
   scrollbarWidth: 'thin' as const,
 };
 
-export function toolbarHiddenStyle(hidden: boolean): React.CSSProperties {
+export function toolbarHiddenStyle(hidden: boolean, rtl = false): React.CSSProperties {
   return hidden
-    ? { transform: 'translateX(calc(100% + 24px))' }
+    ? { transform: rtl ? 'translateX(calc(-100% - 24px))' : 'translateX(calc(100% + 24px))' }
     : { transform: 'translateX(0)' };
 }
 
@@ -75,13 +76,28 @@ const TOOLBAR_STYLE_COMPACT = {
   justifyContent: 'center',
 };
 
-/** Class and style of a floating toolbar's root: a column at the right
+/** Class and style of a floating toolbar's root: a column at the end
  *  edge, or a row along the bottom in the phone layout. */
 export function useToolbarRootProps(hidden: boolean, scroll = false): { className: string; style: React.CSSProperties } {
   const compact = useCompactLayout();
+  const rtl = useUiRtl();
   return compact
     ? { className: 'flex flex-row items-center', style: TOOLBAR_STYLE_COMPACT }
-    : { className: 'flex flex-col items-center', style: { ...TOOLBAR_STYLE_BASE, ...(scroll ? TOOLBAR_SCROLL : {}), ...toolbarHiddenStyle(hidden) } };
+    : { className: 'flex flex-col items-center', style: { ...TOOLBAR_STYLE_BASE, ...(scroll ? TOOLBAR_SCROLL : {}), ...toolbarHiddenStyle(hidden, rtl) } };
+}
+
+/** The ‹ and › buttons (and the page field between them) whose arrows
+ *  point at the pages on screen: a book runs left to right or right to
+ *  left by its own direction, which the interface's never mirrors, so the
+ *  phone toolbar keeps them in that physical order when its row runs
+ *  right to left. */
+export function PageTurnButtons({ children }: { children: ReactNode }) {
+  const compact = useCompactLayout();
+  return (
+    <div dir="ltr" className={compact ? 'flex shrink-0 flex-row items-center' : 'flex shrink-0 flex-col items-center'} style={{ gap: compact ? 1 : 2 }}>
+      {children}
+    </div>
+  );
 }
 
 interface CanvasToolbarProps {
@@ -156,7 +172,7 @@ export function ToolbarButton({
   // 44×44 with large targets on (WCAG 2.5.5, Target Size Enhanced).
   const size = large ? 44 : compact ? 32 : 28;
   return (
-    <Tooltip content={label} side={compact ? 'top' : 'left'}>
+    <Tooltip content={label} side={compact ? 'top' : 'inline-start'}>
       <button
         type="button"
         onClick={onClick}
@@ -271,8 +287,9 @@ export function PageNumberInput({
   };
 
   return (
-    <Tooltip content={label} side={compact ? 'top' : 'left'}>
+    <Tooltip content={label} side={compact ? 'top' : 'inline-start'}>
       <input
+        dir="ltr"
         type="text"
         inputMode="numeric"
         value={draft}

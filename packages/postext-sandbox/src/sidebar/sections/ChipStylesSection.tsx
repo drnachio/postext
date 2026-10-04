@@ -93,6 +93,7 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
           className="mb-0"
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -110,6 +111,7 @@ function ChipStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
         </FieldRow>
         <FieldRow stacked label={labels.chipStyleNameLabel} tooltip={labels.styleNameHelp} className="mb-0">
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => onChange({ name: e.target.value.length > 0 ? e.target.value : undefined })}

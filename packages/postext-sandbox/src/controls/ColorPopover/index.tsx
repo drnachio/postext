@@ -184,6 +184,7 @@ function ColorPopoverBody({ hex, onChange, initialMode = 'hex', onModeChange, pa
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 6 }}>
         <span style={{ fontSize: 9, color: 'var(--slate)' }}>{labels.colorAlpha}</span>
         <input
+          dir="ltr"
           type="number"
           value={alpha}
           onChange={(e) => updateAlpha(clamp(Number(e.target.value), 0, 100))}

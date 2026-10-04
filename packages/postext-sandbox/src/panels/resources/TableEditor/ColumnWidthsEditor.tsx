@@ -69,6 +69,7 @@ export function ColumnWidthsEditor({ model, columnCount, onModelChange }: Column
         {Array.from({ length: columnCount }, (_, col) => {
           return (
             <input
+              dir="ltr"
               key={col}
               type="number"
               min={0.01}

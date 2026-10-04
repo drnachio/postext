@@ -52,8 +52,11 @@ function getHost(): ShadowRoot | null {
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
   host.dataset.postextSvgMeasure = '1';
-  // Laid out (so glyph geometry exists) but never seen nor hit.
-  host.style.cssText = 'position:absolute;left:-100000px;top:0;width:0;height:0;overflow:visible;visibility:hidden;pointer-events:none;';
+  // Laid out (so glyph geometry exists) but never seen nor hit. Off the
+  // page's start edge, where overflow adds no scroll (the right of a
+  // right-to-left page), and left to right inside, as an SVG image is drawn.
+  const side = getComputedStyle(document.body).direction === 'rtl' ? 'right' : 'left';
+  host.style.cssText = `position:absolute;${side}:-100000px;top:0;width:0;height:0;overflow:visible;visibility:hidden;pointer-events:none;direction:ltr;`;
   document.body.appendChild(host);
   hostRoot = host.attachShadow({ mode: 'open' });
   return hostRoot;

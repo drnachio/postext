@@ -15,7 +15,7 @@ import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
-import { bidiLines } from './bidiLines';
+import { bidiLines, rtlEditor } from './bidiLines';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 
 interface UseCodeMirrorOptions {
@@ -33,9 +33,12 @@ interface UseCodeMirrorOptions {
   ariaLabel?: string;
   /** id of a hint read after the name (keyboard use). */
   ariaDescribedBy?: string;
+  /** The interface runs right to left: so does the editor (its gutter at
+   *  the right), each line still set the way its own text reads. */
+  rtl?: boolean;
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
@@ -89,6 +92,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       indexTheme,
       indexHighlight,
       bidiLines,
+      rtlEditor.of(rtl),
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),

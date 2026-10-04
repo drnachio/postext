@@ -66,11 +66,11 @@ export function Select<T extends string>({
         aria-describedby={ariaDescribedBy}
         aria-label={ariaLabelledBy ? undefined : ariaLabel}
         className={cn(
-          'inline-flex min-w-0 cursor-pointer items-center justify-between gap-1.5 rounded-md border bg-(--surface) text-left transition-colors select-none',
+          'inline-flex min-w-0 cursor-pointer items-center justify-between gap-1.5 rounded-md border bg-(--surface) text-start transition-colors select-none',
           'border-(--pt-control-border) hover:border-(--slate)',
           'focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
           'data-popup-open:border-(--brand) disabled:cursor-default disabled:opacity-50',
-          size === 'sm' ? 'h-6 pr-1 pl-1.5 pt-large:h-11 pt-large:pr-1.5 pt-large:pl-2 text-[0.66rem]' : 'h-7 pr-1.5 pl-2 pt-large:h-11 pt-large:pr-2 pt-large:pl-2.5 text-xs',
+          size === 'sm' ? 'h-6 pe-1 ps-1.5 pt-large:h-11 pt-large:pe-1.5 pt-large:ps-2 text-[0.66rem]' : 'h-7 pe-1.5 ps-2 pt-large:h-11 pt-large:pe-2 pt-large:ps-2.5 text-xs',
           muted ? 'text-(--slate)' : 'text-(--foreground)',
           className,
         )}

@@ -82,6 +82,7 @@ export function ChapterSwitcher() {
   const filter = filterable ? (
     <div className="px-1 pt-0.5 pb-1">
       <input
+        dir="auto"
         ref={filterRef}
         type="search"
         value={query}
@@ -131,7 +132,7 @@ export function ChapterSwitcher() {
       {!single && (
         <IconButton
           label={labels.chapterPrev}
-          icon={<ChevronLeft size={14} />}
+          icon={<ChevronLeft size={14} className="rtl:-scale-x-100" />}
           disabled={index <= 0}
           onClick={() => go(index - 1)}
         />
@@ -149,7 +150,7 @@ export function ChapterSwitcher() {
             type="button"
             title={active?.title}
             className={cn(
-              'flex h-7 pt-large:min-h-11 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-left',
+              'flex h-7 pt-large:min-h-11 min-w-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-start',
               'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             )}
           >
@@ -186,7 +187,7 @@ export function ChapterSwitcher() {
           return (
             <MenuItem key={c.id} selected={c.id === activeChapterId} title={c.title} onClick={() => go(entry.index)}>
               <span className="flex min-w-0 max-w-[26rem] items-center gap-2">
-                <span className="w-5 shrink-0 text-right text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{number === null ? '–' : number}</span>
+                <span className="w-5 shrink-0 text-end text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{number === null ? '–' : number}</span>
                 <span className="min-w-0 flex-1 truncate">{c.title}</span>
                 {pages && <span className="shrink-0 text-[10px]" style={{ color: 'var(--slate)', fontVariantNumeric: 'tabular-nums' }}>{pages}</span>}
               </span>
@@ -197,7 +198,7 @@ export function ChapterSwitcher() {
       {!single && (
         <IconButton
           label={labels.chapterNext}
-          icon={<ChevronRight size={14} />}
+          icon={<ChevronRight size={14} className="rtl:-scale-x-100" />}
           disabled={index >= total - 1}
           onClick={() => go(index + 1)}
         />

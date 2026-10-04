@@ -99,7 +99,7 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
                   style={{ backgroundColor: p.value.hex }}
                 />
               ))}
-              {palette.length > 8 && <span className="ml-1 text-[0.66rem] text-(--slate)">+{palette.length - 8}</span>}
+              {palette.length > 8 && <span dir="ltr" className="ms-1 text-[0.66rem] text-(--slate)">+{palette.length - 8}</span>}
             </span>
           </SummaryLine>
         )}
@@ -117,13 +117,13 @@ function SummaryLine({ onClick, group, wrap, children }: { onClick: () => void; 
       type="button"
       onClick={onClick}
       className={cn(
-        'group/line -mx-1 flex min-h-6 min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-left text-xs text-(--foreground) transition-colors',
+        'group/line -mx-1 flex min-h-6 min-w-0 cursor-pointer items-center justify-between gap-2 rounded px-1 py-0.5 text-start text-xs text-(--foreground) transition-colors',
         'hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
       )}
     >
       <span className={cn('min-w-0', wrap ? '[text-wrap:pretty]' : 'truncate')}>{children}</span>
       <span className="sr-only">— {group}</span>
-      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
+      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) opacity-0 transition-opacity rtl:-scale-x-100 group-hover/line:opacity-100 group-focus-visible/line:opacity-100" />
     </button>
   );
 }

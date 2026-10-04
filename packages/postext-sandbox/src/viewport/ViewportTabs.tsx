@@ -6,7 +6,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../con
 import type { LayoutScope } from '../book/types';
 import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope';
 import type { EpubLayout, SandboxLabels, ViewportTab } from '../types';
-import { SegmentedControl, cn } from '../ui';
+import { SegmentedControl, cn, useUiRtl } from '../ui';
 import { VIEWPORT_TABS as ALL_TABS } from '../storage/viewHash';
 import { folioSupported } from './folioSupport';
 
@@ -44,6 +44,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   const bookScopeTitle = bookScopeBlocked
     ? labels.canvasScopeBookTooLong.replace('__n__', String(WHOLE_BOOK_MAX_CHAPTERS))
     : undefined;
+  const rtl = useUiRtl();
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -77,7 +78,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
       className={cn('flex shrink-0 items-stretch justify-between', compact ? 'flex-wrap' : 'h-9 pt-large:min-h-12')}
       style={{ borderBottom: '1px solid var(--rule)', backgroundColor: 'var(--background)' }}
     >
-      {leading && <div className={cn('flex shrink-0 items-center border-r px-1 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
+      {leading && <div className={cn('flex shrink-0 items-center border-e px-1 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{leading}</div>}
       <div className={cn('flex min-w-0 flex-1 items-center', compact ? 'h-11 px-1.5 pt-large:min-h-12' : 'px-3')}>
         {activeViewport === 'epub' ? (
           <SegmentedControl<EpubLayout>
@@ -126,8 +127,9 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
         onKeyDown={(e) => {
           const idx = TABS.indexOf(activeViewport);
           let next: number | null = null;
-          if (e.key === 'ArrowRight') next = (idx + 1) % TABS.length;
-          else if (e.key === 'ArrowLeft') next = (idx - 1 + TABS.length) % TABS.length;
+          // The tabs run right to left in a right-to-left interface.
+          if (e.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) next = (idx + 1) % TABS.length;
+          else if (e.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) next = (idx - 1 + TABS.length) % TABS.length;
           else if (e.key === 'Home') next = 0;
           else if (e.key === 'End') next = TABS.length - 1;
           if (next === null) return;
@@ -152,11 +154,11 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
                 'flex pt-large:min-w-11 cursor-pointer items-center justify-center text-[0.68rem]',
                 // On the second row of a phone bar the tabs share its width
                 // (the first one without a rule at the window's edge).
-                compact ? 'flex-1 px-1 first:border-l-0! min-[640px]:px-2 min-[640px]:flex-none min-[640px]:first:border-l!' : 'px-3',
+                compact ? 'flex-1 px-1 first:border-s-0! min-[640px]:px-2 min-[640px]:flex-none min-[640px]:first:border-s!' : 'px-3',
                 ' font-medium tracking-[0.01em] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
                 isActive ? 'text-(--foreground)' : 'text-(--slate) hover:text-(--foreground)',
               )}
-              style={{ borderLeft: '1px solid var(--rule)' }}
+              style={{ borderInlineStart: '1px solid var(--rule)' }}
             >
               {abbr ? <abbr title={labels[abbr]} className="no-underline">{label}</abbr> : label}
             </button>
@@ -176,7 +178,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
           }}
         />
       </div>
-      {trailing && <div className={cn('flex shrink-0 items-center gap-0.5 border-l px-0.5 pt-large:gap-0 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
+      {trailing && <div className={cn('flex shrink-0 items-center gap-0.5 border-s px-0.5 pt-large:gap-0 pt-large:px-0', compact && 'h-11 pt-large:min-h-12')} style={{ borderColor: 'var(--rule)' }}>{trailing}</div>}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   ToolbarButton,
   ToolbarSeparator,
   useToolbarRootProps,
+  PageTurnButtons,
 } from './CanvasToolbar';
 
 type ColumnMode = 'single' | 'multi';
@@ -124,6 +125,7 @@ export function HtmlToolbar({
         active={columnMode === 'multi'}
       />
       <ToolbarSeparator />
+      <PageTurnButtons>
       <ToolbarButton
         icon={<ChevronLeft size={16} aria-hidden="true" />}
         label={rightToLeft ? labels.nextColumn : labels.previousColumn}
@@ -136,6 +138,7 @@ export function HtmlToolbar({
         onClick={() => onScrollColumn(rightToLeft ? -1 : 1)}
         disabled={rightToLeft ? prevDisabled : nextDisabled}
       />
+      </PageTurnButtons>
     </div>
   );
 }

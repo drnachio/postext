@@ -185,8 +185,8 @@ function FontListItem({
       aria-selected={selected}
       role="option"
       className={selected
-        ? 'w-full px-3 py-1.5 text-left text-sm transition-colors'
-        : 'w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-(--background)'}
+        ? 'w-full px-3 py-1.5 text-start text-sm transition-colors'
+        : 'w-full px-3 py-1.5 text-start text-sm transition-colors hover:bg-(--background)'}
       style={{
         fontFamily: `"${font}", sans-serif`,
         backgroundColor: selected ? 'var(--brand)' : undefined,
@@ -316,6 +316,7 @@ export function FontPicker({
       >
         <div style={{ padding: '8px 8px 4px' }}>
           <input
+            dir="auto"
             ref={searchRef}
             type="text"
             value={search}
@@ -397,7 +398,7 @@ function FontTrigger({ buttonRef, value, open, muted, onClick }: {
       aria-labelledby={ids ? `${ids.labelId} ${valueId}` : undefined}
       aria-describedby={ids?.descriptionId}
       className={cn(
-        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-1.5 pl-2 transition-colors',
+        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pe-1.5 ps-2 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

@@ -292,7 +292,7 @@ function ChangeRow({ change, labels, uiLocale, lang, onToggle }: {
       <label htmlFor={id} className="flex pt-large:min-h-11 min-w-0 flex-1 cursor-pointer flex-col justify-center">
         <span className="text-xs leading-[1.3] text-(--foreground)">
           {String(labels[ITEM_LABELS[change.id]])}
-          {note && <span className="ml-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}
+          {note && <span className="ms-1.5 text-[0.62rem] text-(--brand)">· {note}</span>}
         </span>
         <span id={`${id}-values`} className="text-[0.68rem] leading-[1.35] text-(--slate) [overflow-wrap:anywhere]">
           {value(change.from)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { ViewPlugin, Decoration, Direction, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
-import { Prec, RangeSetBuilder } from '@codemirror/state';
+import { Facet, Prec, RangeSetBuilder } from '@codemirror/state';
 import { bidiClassOf, isRtlScriptChar } from 'postext';
 
 /**
@@ -15,7 +15,16 @@ import { bidiClassOf, isRtlScriptChar } from 'postext';
  * targets), so `:::`, `{dir=rtl}` or `$x^2$` read as typed instead of
  * being reordered with the Arabic around them. Left-to-right lines get no
  * decoration: an English or Chinese document is drawn as before.
+ *
+ * In a right-to-left interface the editor itself runs right to left (its
+ * gutter at the right, `rtlEditor`): there every line with a left-to-right
+ * letter first (Markdown in English, a fence, code) gets `dir="ltr"`, so
+ * only the lines that read right to left are laid out that way.
  */
+
+/** The editor runs right to left (the interface does): left-to-right lines
+ *  are then marked as such. */
+export const rtlEditor = Facet.define<boolean, boolean>({ combine: (values) => values.some(Boolean) });
 
 /** Markup a right-to-left line shows left to right, in the order the
  *  scanner tries them at each position. */
@@ -107,6 +116,7 @@ export function bidiLine(text: string): BidiLine {
 }
 
 const rtlLine = Decoration.line({ attributes: { dir: 'rtl' } });
+const ltrLine = Decoration.line({ attributes: { dir: 'ltr' } });
 /** `bidiIsolate` tells CodeMirror's own bidi pass (caret motion, the
  *  order it computes for the line) what the `dir` attribute tells the
  *  browser. */
@@ -123,6 +133,7 @@ function buildDecorations(view: EditorView): BidiDecorations {
   const all = new RangeSetBuilder<Decoration>();
   const islands = new RangeSetBuilder<Decoration>();
   const doc = view.state.doc;
+  const rtlBase = view.state.facet(rtlEditor);
   for (const { from, to } of view.visibleRanges) {
     let pos = from;
     while (pos <= to) {
@@ -137,7 +148,11 @@ function buildDecorations(view: EditorView): BidiDecorations {
             all.add(line.from + r.from, line.from + r.to, ltrIsland);
             islands.add(line.from + r.from, line.from + r.to, ltrIsland);
           }
+        } else if (dir === 'ltr' && rtlBase) {
+          all.add(line.from, line.from, ltrLine);
         }
+      } else if (rtlBase && /\S/.test(line.text)) {
+        all.add(line.from, line.from, ltrLine);
       }
       pos = line.to + 1;
     }
@@ -178,5 +193,7 @@ export const bidiLines = [
     // A right-to-left line starts at the right edge; the wrapped lines of
     // a long paragraph follow it.
     '.cm-line[dir="rtl"]': { textAlign: 'right' },
+    // In a right-to-left editor, a left-to-right line starts at the left.
+    '.cm-line[dir="ltr"]': { textAlign: 'left' },
   }),
 ];

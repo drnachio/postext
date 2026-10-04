@@ -89,7 +89,7 @@ function CitationPreview({ raw, locale }: { raw: CitationsConfig | undefined; lo
       {preview && (
         <>
           {note ? (
-            <ol className="mb-2 list-decimal pl-5">
+            <ol className="mb-2 list-decimal ps-5">
               {preview.formatted.map((spans, i) => <li key={i}>{spans ? renderSpans(spans) : null}</li>)}
             </ol>
           ) : (
@@ -101,7 +101,7 @@ function CitationPreview({ raw, locale }: { raw: CitationsConfig | undefined; lo
           )}
           <ul className="space-y-1">
             {preview.entries.map((e) => (
-              <li key={e.id} className="pl-4 -indent-4">
+              <li key={e.id} className="ps-4 -indent-4">
                 {/* Our own sample data, formatted by citeproc. */}
                 {e.label ? <span>{e.label.replace(/<[^>]*>/g, '')} </span> : null}
                 <span dangerouslySetInnerHTML={{ __html: e.html }} />

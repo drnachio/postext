@@ -46,7 +46,7 @@ export function Switch({ checked, onCheckedChange, id, ariaLabelledBy, ariaDescr
         <SwitchPrimitive.Thumb
           className={cn(
             'block h-3.5 w-3.5 rounded-full transition-transform duration-150',
-            'bg-(--slate) data-checked:translate-x-4 data-checked:bg-(--brand-contrast,var(--background))',
+            'bg-(--slate) data-checked:translate-x-4 rtl:data-checked:-translate-x-4 data-checked:bg-(--brand-contrast,var(--background))',
           )}
         />
       </span>

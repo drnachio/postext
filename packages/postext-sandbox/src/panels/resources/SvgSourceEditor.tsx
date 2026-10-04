@@ -259,6 +259,8 @@ export function SvgSourceEditor({
       </div>
       <div
         ref={hostRef}
+        // SVG source is code: left to right in any interface.
+        dir="ltr"
         role="group"
         aria-label={labels.svgSourceAria}
         className="rounded border"

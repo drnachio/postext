@@ -62,6 +62,7 @@ export function TextControl({ value, onChange, placeholder, widthCh, muted, aria
   const ids = useFieldIds();
   return (
     <input
+      dir="auto"
       type="text"
       id={ids?.controlId}
       aria-describedby={ids?.descriptionId}

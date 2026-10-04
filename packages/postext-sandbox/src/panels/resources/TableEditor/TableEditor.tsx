@@ -527,6 +527,7 @@ export function TableEditor({
           <label className="flex items-center gap-1.5" title={labels.tableEditorImageWidthHint}>
             <span>{labels.tableEditorImageWidth}</span>
             <input
+              dir="ltr"
               type="number"
               min={1}
               max={100}
@@ -537,7 +538,7 @@ export function TableEditor({
                 if (Number.isFinite(v)) handleSetImageWidth(v);
               }}
               aria-label={labels.tableEditorImageWidth}
-              className="w-14 rounded border bg-transparent px-1 py-0.5 text-right"
+              className="w-14 rounded border bg-transparent px-1 py-0.5 text-end"
               style={{ borderColor: 'var(--rule)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 11 }}
             />
             <span>%</span>

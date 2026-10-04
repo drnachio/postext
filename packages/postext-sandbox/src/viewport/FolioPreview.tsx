@@ -451,6 +451,9 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     <>
       <div
         ref={hostRef}
+        // The 3D book is physical: a right-to-left book turns its own
+        // leaves leftward, the interface's direction does not mirror it.
+        dir="ltr"
         className="h-full w-full overflow-hidden text-(--foreground)"
         style={{ backgroundColor: 'var(--surface)', '--postext-folio-accent': 'var(--brand)' } as React.CSSProperties}
       />

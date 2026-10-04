@@ -29,7 +29,7 @@ const darkTheme = EditorView.theme(
       backgroundColor: 'var(--background)',
       color: 'var(--slate)',
       border: 'none',
-      borderRight: '1px solid var(--rule)',
+      borderInlineEnd: '1px solid var(--rule)',
     },
     '.cm-activeLineGutter': {
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -37,7 +37,11 @@ const darkTheme = EditorView.theme(
     },
     '.cm-lineNumbers .cm-gutterElement': {
       fontSize: '11px',
-      padding: '0 8px 0 4px',
+      // The gap is on the text's side, the right or (a right-to-left
+      // editor) the left.
+      paddingBlock: '0',
+      paddingInline: '4px 8px',
+      textAlign: 'end',
     },
     '.cm-scroller': {
       overflow: 'auto',
@@ -86,7 +90,7 @@ const lightTheme = EditorView.theme(
       backgroundColor: 'var(--background)',
       color: 'var(--slate)',
       border: 'none',
-      borderRight: '1px solid var(--rule)',
+      borderInlineEnd: '1px solid var(--rule)',
     },
     '.cm-activeLineGutter': {
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
@@ -94,7 +98,11 @@ const lightTheme = EditorView.theme(
     },
     '.cm-lineNumbers .cm-gutterElement': {
       fontSize: '11px',
-      padding: '0 8px 0 4px',
+      // The gap is on the text's side, the right or (a right-to-left
+      // editor) the left.
+      paddingBlock: '0',
+      paddingInline: '4px 8px',
+      textAlign: 'end',
     },
     '.cm-scroller': {
       overflow: 'auto',

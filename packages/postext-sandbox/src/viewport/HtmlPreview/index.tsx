@@ -814,5 +814,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
     };
   }, [docVersion, columnMode]);
 
-  return <div ref={hostRef} className="h-full w-full" />;
+  // Left to right whatever the interface's direction: the scroll and page
+  // geometry are physical, and a book carries its own direction.
+  return <div ref={hostRef} dir="ltr" className="h-full w-full" />;
 });

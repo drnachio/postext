@@ -554,6 +554,7 @@ function CalloutStyleCard({
           }
         >
           <input
+            dir="ltr"
             type="text"
             value={idDraft}
             onChange={(e) => setIdDraft(e.target.value)}
@@ -574,6 +575,7 @@ function CalloutStyleCard({
         </Field>
         <Field label={labels.calloutStyleNameLabel} tooltip={labels.styleNameHelp}>
           <input
+            dir="auto"
             type="text"
             value={style.name ?? ''}
             onChange={(e) => onChange({ name: e.target.value.length > 0 ? e.target.value : undefined })}

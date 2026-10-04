@@ -146,6 +146,9 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
 
   return (
     <svg
+      // Physical drawing: `textAnchor` start/end must not flip with a
+      // right-to-left interface.
+      direction="ltr"
       viewBox={`0 0 ${totalW} ${h}`}
       height={height}
       width={(height * totalW) / h}

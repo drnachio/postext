@@ -3,8 +3,8 @@ import type { CSSProperties, FocusEvent as ReactFocusEvent } from 'react';
 import { loadToolbarPinned, saveToolbarPinned } from '../storage/persistence';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 
-// Width of the invisible hover strip anchored to the right edge of the
-// viewport. Narrow enough to not steal meaningful interaction space (PDF
+// Width of the invisible hover strip anchored to the end edge of the
+// viewport (the right, or the left in a right-to-left interface). Narrow enough to not steal meaningful interaction space (PDF
 // scrollbar etc.) while still catching a deliberate reach toward the toolbar.
 const HOVER_STRIP_WIDTH_PX = 32;
 // Short grace window between leaving the strip or the toolbar before we
@@ -184,7 +184,7 @@ export function useFloatingToolbarShell(
       style: {
         position: 'absolute',
         top: 0,
-        right: 0,
+        insetInlineEnd: 0,
         bottom: 0,
         width: HOVER_STRIP_WIDTH_PX,
         zIndex: 9,

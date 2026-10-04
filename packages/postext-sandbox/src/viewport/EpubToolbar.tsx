@@ -10,7 +10,7 @@ import { formatBytes } from '../epub/viewer';
 import type { SandboxLabels } from '../types';
 import type { EpubNotice } from './EpubViewport';
 import type { EpubReaderPosition } from './EpubReader';
-import { PageNumberInput, PinToolbarButton, ToolbarButton, ToolbarSeparator, useToolbarRootProps } from './CanvasToolbar';
+import { PageNumberInput, PageTurnButtons, PinToolbarButton, ToolbarButton, ToolbarSeparator, useToolbarRootProps } from './CanvasToolbar';
 
 const MIN_FONT_SCALE = 0.6;
 const MAX_FONT_SCALE = 2.5;
@@ -104,17 +104,21 @@ export const EpubToolbar = memo(function EpubToolbar({
           role="img"
           aria-label={labels.pdfDirty}
           title={labels.pdfDirty}
+          // Beside the toolbar, pointing at it: mirrored with the toolbar
+          // in a right-to-left interface (the bounce with it).
+          className="rtl:-scale-x-100"
           style={{
             position: 'absolute',
-            right: 'calc(100% + 6px)',
+            insetInlineEnd: 'calc(100% + 6px)',
             top: 6,
             color: 'var(--brand)',
             display: 'inline-flex',
-            animation: 'postext-dirty-bounce 1s ease-in-out infinite',
             pointerEvents: 'none',
           }}
         >
-          <ArrowRight size={18} aria-hidden="true" />
+          <span style={{ display: 'inline-flex', animation: 'postext-dirty-bounce 1s ease-in-out infinite' }}>
+            <ArrowRight size={18} aria-hidden="true" />
+          </span>
         </span>
       )}
       <ToolbarButton
@@ -154,6 +158,7 @@ export const EpubToolbar = memo(function EpubToolbar({
         </>
       )}
       <ToolbarSeparator />
+      <PageTurnButtons>
       <ToolbarButton
         icon={<ChevronLeft size={16} aria-hidden="true" />}
         label={rtl ? labels.nextPage : labels.previousPage}
@@ -176,6 +181,7 @@ export const EpubToolbar = memo(function EpubToolbar({
         onClick={rtl ? onPrevious : onNext}
         disabled={!ready || !(rtl ? position?.canPrevious : position?.canNext)}
       />
+      </PageTurnButtons>
     </div>
   );
 });
@@ -191,7 +197,7 @@ function ContentsButton({ entries, disabled, label, onGoTo }: { entries: EpubRea
       <span ref={anchorRef} className="inline-flex shrink-0">
         <ToolbarButton icon={<ListTree size={16} aria-hidden="true" />} label={label} onClick={() => setOpen((o) => !o)} active={open} disabled={disabled} />
       </span>
-      <Popover open={open && !disabled} onOpenChange={setOpen} anchor={anchorRef} side={compact ? 'top' : 'left'} align={compact ? 'center' : 'start'} width={320} ariaLabel={label} style={{ padding: 4 }}>
+      <Popover open={open && !disabled} onOpenChange={setOpen} anchor={anchorRef} side={compact ? 'top' : 'inline-start'} align={compact ? 'center' : 'start'} width={320} ariaLabel={label} style={{ padding: 4 }}>
         <nav aria-label={label}>
           <ul className="m-0 list-none p-0">
             {entries.map((entry, i) => (
@@ -202,10 +208,13 @@ function ContentsButton({ entries, disabled, label, onGoTo }: { entries: EpubRea
                     setOpen(false);
                     onGoTo(entry.href);
                   }}
-                  className="w-full cursor-pointer rounded-md text-left text-xs focus-visible:outline-2 focus-visible:-outline-offset-2 hover:bg-(--surface)"
+                  dir="auto"
+                  className="w-full cursor-pointer rounded-md text-start text-xs focus-visible:outline-2 focus-visible:-outline-offset-2 hover:bg-(--surface)"
                   style={{
                     minHeight: large ? 44 : 28,
-                    padding: `4px 8px 4px ${8 + entry.depth * 14}px`,
+                    paddingBlock: 4,
+                    paddingInlineEnd: 8,
+                    paddingInlineStart: 8 + entry.depth * 14,
                     color: entry.depth === 0 ? 'var(--foreground)' : 'var(--slate)',
                     fontWeight: entry.depth === 0 ? 600 : 400,
                     outlineColor: 'var(--brand)',
@@ -233,7 +242,7 @@ function WarningsButton({ notices, labels }: { notices: readonly EpubNotice[]; l
       <span ref={anchorRef} className="inline-flex shrink-0">
         <ToolbarButton icon={<TriangleAlert size={16} aria-hidden="true" />} label={title} onClick={() => setOpen((o) => !o)} active={open} accent />
       </span>
-      <Popover open={open} onOpenChange={setOpen} anchor={anchorRef} side={compact ? 'top' : 'left'} align={compact ? 'center' : 'start'} width={340} ariaLabel={title}>
+      <Popover open={open} onOpenChange={setOpen} anchor={anchorRef} side={compact ? 'top' : 'inline-start'} align={compact ? 'center' : 'start'} width={340} ariaLabel={title}>
         <p className="mb-2 text-xs font-semibold" style={{ color: 'var(--foreground)' }}>{title}</p>
         <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
           {notices.map((n, i) => (

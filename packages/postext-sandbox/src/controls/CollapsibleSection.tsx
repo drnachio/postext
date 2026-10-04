@@ -134,7 +134,7 @@ function SectionFrame({
         <HeadingTag className="m-0 flex min-w-0 flex-1 font-[inherit]">
         <Collapsible.Trigger
           className={cn(
-            'flex flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent text-left transition-colors',
+            'flex flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent text-start transition-colors',
             'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
             topLevel
               ? 'min-h-10 pt-large:min-h-11 px-3 py-2 text-[0.8rem] font-semibold text-(--foreground) hover:bg-(--surface)'
@@ -146,7 +146,7 @@ function SectionFrame({
           <ChevronRight
             size={topLevel ? 14 : 12}
             aria-hidden="true"
-            className="shrink-0 text-(--slate)"
+            className="shrink-0 text-(--slate) rtl:-scale-x-100"
             style={{ transform: effectiveOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
           />
           <span className="min-w-0 flex-1 [text-wrap:pretty]">
@@ -174,7 +174,7 @@ function SectionFrame({
                   e.stopPropagation();
                   openConfirm(e);
                 }}
-                className="mr-1"
+                className="me-1"
               />
             )}
           </ConfirmPopover>

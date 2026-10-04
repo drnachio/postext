@@ -5,7 +5,9 @@ import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 import { usePortalContainer } from './portal';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from './surface';
 
-export type PopoverSide = 'top' | 'right' | 'bottom' | 'left';
+/** `inline-start` / `inline-end`: beside the anchor, before or after it in
+ *  the interface's reading order (left / right, mirrored right to left). */
+export type PopoverSide = 'top' | 'right' | 'bottom' | 'left' | 'inline-start' | 'inline-end';
 export type PopoverAlign = 'start' | 'center' | 'end';
 export type PopoverCloseReason = PopoverPrimitive.Root.ChangeEventReason;
 
@@ -36,7 +38,7 @@ export function Popover({
   open,
   onOpenChange,
   anchor,
-  side = 'right',
+  side = 'inline-end',
   align = 'start',
   sideOffset = 8,
   initialFocus,

@@ -10,7 +10,7 @@ interface MenuProps {
   /** The trigger element (a `Button` or `IconButton`); Base UI merges the
    *  trigger props into it. */
   trigger: ReactElement;
-  side?: 'top' | 'right' | 'bottom' | 'left';
+  side?: 'top' | 'right' | 'bottom' | 'left' | 'inline-start' | 'inline-end';
   align?: 'start' | 'center' | 'end';
   children: ReactNode;
   /** Controlled open state (uncontrolled when omitted). */

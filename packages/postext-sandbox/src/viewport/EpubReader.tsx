@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
+import { useUiRtl } from '../ui/direction';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook';
 import { createSwipeTracker, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer';
 
@@ -167,8 +168,9 @@ function wireFrame(
 
 const SANDBOX = 'allow-same-origin';
 
-/** Width the floating toolbar takes at the right of the desktop layout,
- *  its offset from the edge included (about 66 px with large targets). */
+/** Width the floating toolbar takes at the end edge of the desktop layout
+ *  (the right, or the left in a right-to-left interface), its offset from
+ *  the edge included (about 66 px with large targets). */
 const TOOLBAR_ROOM = 72;
 
 // ---------------------------------------------------------------------------
@@ -183,8 +185,9 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
   const { epub } = book;
   const viewport = epub.viewport ?? { width: 600, height: 800 };
   const rtl = epub.pageProgression === 'rtl';
+  const uiRtl = useUiRtl();
   const pad = compact ? 8 : 24;
-  // The floating toolbar sits over the right edge of the desktop layout.
+  // The floating toolbar sits over the end edge of the desktop layout.
   const side = compact ? 0 : TOOLBAR_ROOM;
   const room = { width: area.width - 2 * pad - side, height: area.height - 2 * pad - reserve };
   const spreads = !compact && prefersSpreads(room, viewport);
@@ -255,8 +258,12 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
       onPointerDown={(e) => swipe.down(e)}
       onPointerUp={(e) => swipe.up(e)}
       onPointerCancel={(e) => swipe.cancel(e)}
+      // The spread's pages stand left and right as the book places them,
+      // whatever the interface's direction; the room kept for the toolbar
+      // is on the toolbar's side.
+      dir="ltr"
       className="absolute inset-0 flex items-center justify-center outline-none focus-visible:outline-2 focus-visible:-outline-offset-2"
-      style={{ paddingBottom: reserve, paddingRight: side, outlineColor: 'var(--brand)', touchAction: SWIPE_TOUCH_ACTION }}
+      style={{ paddingBottom: reserve, [uiRtl ? 'paddingLeft' : 'paddingRight']: side, outlineColor: 'var(--brand)', touchAction: SWIPE_TOUCH_ACTION }}
     >
       {area.width > 0 && slots.map((i, slot) => (
         <div
@@ -329,7 +336,7 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
   const { epub } = book;
   const rtl = epub.pageProgression === 'rtl';
   const toc = useMemo(() => flattenToc(epub.toc), [epub]);
-  // The pages stop short of the floating toolbar at the right of the
+  // The pages stop short of the floating toolbar at the end edge of the
   // desktop layout, as the docked one on a phone is kept below them.
   const width = Math.max(0, area.width - (compact ? 0 : TOOLBAR_ROOM));
   const height = Math.max(0, area.height - reserve);
@@ -503,7 +510,7 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
           sandbox={SANDBOX}
           title={labels.epubChapterFrame.replace('__index__', String(docIndex + 1)).replace('__count__', String(epub.spine.length))}
           onLoad={onLoad}
-          style={{ position: 'absolute', left: 0, top: 0, width, height, border: 0, backgroundColor: '#fff', colorScheme: 'light' }}
+          style={{ position: 'absolute', insetInlineStart: 0, top: 0, width, height, border: 0, backgroundColor: '#fff', colorScheme: 'light' }}
         />
       )}
     </div>

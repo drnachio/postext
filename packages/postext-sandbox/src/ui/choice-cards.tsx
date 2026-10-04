@@ -2,6 +2,7 @@
 
 import type { KeyboardEvent, ReactNode } from 'react';
 import { cn } from './cn';
+import { useUiRtl } from './direction';
 
 export interface ChoiceCard<T extends string> {
   value: T;
@@ -26,11 +27,13 @@ interface ChoiceCardsProps<T extends string> {
  *  read (column layouts, alignments). Radio-group semantics with roving
  *  focus: Tab enters on the selected card, arrow keys move and select. */
 export function ChoiceCards<T extends string>({ value, onValueChange, options, ariaLabelledBy, ariaDescribedBy, ariaLabel, className }: ChoiceCardsProps<T>) {
+  // The options run right to left in a right-to-left interface.
+  const rtl = useUiRtl();
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const idx = options.findIndex((o) => o.value === value);
     let next: number | null = null;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % options.length;
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + options.length) % options.length;
+    if (e.key === (rtl ? 'ArrowLeft' : 'ArrowRight') || e.key === 'ArrowDown') next = (idx + 1) % options.length;
+    else if (e.key === (rtl ? 'ArrowRight' : 'ArrowLeft') || e.key === 'ArrowUp') next = (idx - 1 + options.length) % options.length;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = options.length - 1;
     if (next === null) return;

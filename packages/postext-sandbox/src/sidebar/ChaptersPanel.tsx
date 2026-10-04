@@ -75,6 +75,7 @@ export function ChaptersPanel() {
         <div className="min-w-0 flex-1">
           {renaming ? (
             <input
+              dir="auto"
               type="text"
               autoFocus
               value={draft}

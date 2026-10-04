@@ -143,6 +143,7 @@ export const HtmlViewerSection = memo(function HtmlViewerSection() {
         onReset={() => resetField('overrides')}
       >
         <textarea
+          dir="ltr"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitOverrides}

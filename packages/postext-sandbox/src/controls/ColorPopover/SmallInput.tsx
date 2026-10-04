@@ -18,6 +18,7 @@ export function SmallInput({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
       <input
+        dir="ltr"
         type="number"
         aria-label={label}
         value={value}

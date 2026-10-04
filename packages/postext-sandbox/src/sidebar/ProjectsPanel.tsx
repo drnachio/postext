@@ -301,7 +301,7 @@ export function ProjectsPanel() {
             <Collapsible.Trigger
               className="flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1 py-1 text-[11px] text-(--slate) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-1 outline-(--brand-hover)"
             >
-              <ChevronRight size={12} aria-hidden="true" style={{ transform: hiddenOpen ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
+              <ChevronRight size={12} aria-hidden="true" className="rtl:-scale-x-100" style={{ transform: hiddenOpen ? 'rotate(90deg)' : undefined, transition: 'transform 200ms ease' }} />
               {labels.presetsHidden.replace('__count__', String(hiddenPresets.length))}
             </Collapsible.Trigger>
             <Collapsible.Panel data-postext-collapsible="">
@@ -389,6 +389,7 @@ function ProjectRow({
 
   const title = editing ? (
     <input
+      dir="auto"
       ref={nameRef}
       type="text"
       autoFocus
@@ -403,6 +404,7 @@ function ProjectRow({
   );
   const subtitle = editing ? (
     <input
+      dir="auto"
       ref={descriptionRef}
       type="text"
       value={descriptionDraft}

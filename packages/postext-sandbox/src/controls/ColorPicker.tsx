@@ -152,7 +152,7 @@ function ColorTrigger({ open, onToggle, label, standalone, displayText, modeLabe
       aria-expanded={open}
       aria-haspopup="dialog"
       className={cn(
-        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pr-2 pl-1 transition-colors',
+        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pe-2 ps-1 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',
@@ -167,7 +167,7 @@ function ColorTrigger({ open, onToggle, label, standalone, displayText, modeLabe
       </span>
       {isLinked && <Link2 size={11} aria-hidden="true" className="shrink-0 text-(--brand)" />}
       <span id={valueId} className={cn('min-w-0 truncate text-[0.66rem]', !isLinked && 'font-mono')}>
-        {modeLabel && <span className="mr-1 font-sans text-[0.55rem] text-(--slate)">{modeLabel}</span>}
+        {modeLabel && <span className="me-1 font-sans text-[0.55rem] text-(--slate)">{modeLabel}</span>}
         {displayText}
       </span>
     </button>

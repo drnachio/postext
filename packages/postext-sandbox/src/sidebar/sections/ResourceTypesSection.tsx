@@ -208,6 +208,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
             <div className="flex flex-col gap-2">
               <Field label={labels.idLabel} tooltip={labels.styleIdHelp}>
                 <input
+                  dir="ltr"
                   type="text"
                   value={type.id}
                   readOnly
@@ -219,6 +220,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNameLabel} tooltip={labels.resourceTypeNameTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.name}
                   onChange={(e) => updateType(type.id, { name: e.target.value })}
@@ -229,6 +231,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNamePluralLabel} tooltip={labels.resourceTypeNamePluralTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.namePlural ?? ''}
                   onChange={(e) => updateType(type.id, { namePlural: e.target.value })}
@@ -239,6 +242,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeShortLabelLabel} tooltip={labels.resourceTypeShortLabelTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.shortLabel}
                   onChange={(e) => updateType(type.id, { shortLabel: e.target.value })}
@@ -249,6 +253,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeNumberingLabel} tooltip={labels.resourceTypeNumberingTooltip}>
                 <input
+                  dir="ltr"
                   type="text"
                   value={type.numberingTemplate}
                   onChange={(e) => updateType(type.id, { numberingTemplate: e.target.value })}
@@ -294,6 +299,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               </Field>
               <Field label={labels.resourceTypeCaptionPrefixLabel} tooltip={labels.resourceTypeCaptionPrefixTooltip}>
                 <input
+                  dir="auto"
                   type="text"
                   value={type.captionPrefix}
                   onChange={(e) => updateType(type.id, { captionPrefix: e.target.value })}

@@ -560,7 +560,7 @@ function DocumentLocalePointer({ tag }: { tag: string }) {
     >
       <span lang={tag} className="min-w-0 truncate">{name}</span>
       <span className="sr-only"> — {labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}</span>
-      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate)" />
+      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) rtl:-scale-x-100" />
     </button>
   );
 }

@@ -6,7 +6,7 @@ import { useSandboxSelector } from '../context/SandboxContext';
 interface SidebarPanelProps {
   /** Name of the open panel: the region is a landmark only while open. */
   label?: string;
-  /** The splitter, drawn over the panel's right edge. */
+  /** The splitter, drawn over the panel's end edge. */
   handle?: ReactNode;
   children: ReactNode;
 }

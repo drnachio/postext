@@ -80,7 +80,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
       {modified && (
         <span
           aria-hidden="true"
-          className="mr-1.5 inline-block h-1.5 w-1.5 -translate-y-px rounded-full bg-(--brand) align-middle"
+          className="me-1.5 inline-block h-1.5 w-1.5 -translate-y-px rounded-full bg-(--brand) align-middle"
         />
       )}
       <HighlightedText text={label} tokens={tokens} />
@@ -89,7 +89,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
   );
 
   const helpButton = tooltip ? (
-    <Tooltip content={tooltip} side="right">
+    <Tooltip content={tooltip} side="inline-end">
       <button
         type="button"
         aria-label={labels.fieldHelp.replace('__label__', label)}
@@ -99,7 +99,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(function Field
         className={cn(
           // With large targets on, a 44×44 target (WCAG 2.5.5) around the 12px icon; the
           // negative margins keep the label line from growing with it.
-          'relative inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors after:absolute after:-inset-2 pt-large:-my-2.5 pt-large:-ml-2.5 pt-large:h-11 pt-large:w-11 pt-large:rounded-md pt-large:after:hidden',
+          'relative inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors after:absolute after:-inset-2 pt-large:-my-2.5 pt-large:-ms-2.5 pt-large:h-11 pt-large:w-11 pt-large:rounded-md pt-large:after:hidden',
           'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
           helpOpen ? 'text-(--brand)' : 'text-(--slate) hover:text-(--foreground)',
         )}
