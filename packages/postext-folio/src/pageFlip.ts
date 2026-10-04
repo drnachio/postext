@@ -402,18 +402,88 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
   return m;
 }
 
+/** The uniforms every page block's edge material shares: book units per
+ *  mm, and how strongly the cut face is relieved (uncoated stock shows
+ *  its fibres; a coated sheet is cut cleaner). */
+const edgeUniforms = {
+  uEdgeK: { value: 1 },
+  uEdgeRelief: { value: 1 },
+};
+
+// The cut face of a page block, as a height field in mm over (leaf, mm
+// along the cut): every leaf a rounded ridge standing a hair proud of or
+// behind its neighbours (sheets are never quite in line), the sections
+// and the bundles the knife took together a little out of line with the
+// next, and the faint streaks the guillotine drags across the block. Each
+// scale fades out where it is finer than a pixel, so the face never
+// shimmers. The relief bends the normal (bump mapping from the screen-
+// space derivatives of the field), so the face catches a grazing light.
+const EDGE_RELIEF = /* glsl */ `
+  uniform float uEdgeK;
+  uniform float uEdgeRelief;
+  varying float vRun;
+  float eHash(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+  float eHash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float eNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(eHash2(i), eHash2(i + vec2(1.0, 0.0)), u.x), mix(eHash2(i + vec2(0.0, 1.0)), eHash2(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+  // fade: x = the leaves, y = the bundles, z = the fine knife marks.
+  float edgeHeight(vec2 lv, vec3 fade) {
+    float id = floor(lv.x);
+    float ridge = sin(fract(lv.x) * PI);
+    float proud = eHash(id) - 0.5 + 0.8 * (eNoise(vec2(id * 0.37, lv.y * 0.12)) - 0.5);
+    float leaf = (0.45 * ridge + proud) * 0.04 * fade.x;
+    float bundle = (eNoise(vec2(lv.x / 5.0, lv.y * 0.03)) - 0.5) * 0.12 * fade.y
+      + (eNoise(vec2(lv.x / 24.0 + 7.0, lv.y * 0.02)) - 0.5) * 0.18;
+    float knife = (eNoise(vec2(lv.y * 0.7, lv.x / 90.0)) - 0.5) * 0.035
+      + (eNoise(vec2(lv.y * 3.0, lv.x / 40.0)) - 0.5) * 0.006 * fade.z;
+    return leaf + bundle + knife;
+  }
+  vec3 edgeNormal(vec3 surfPos, vec3 n, vec2 dH, float faceDir) {
+    vec3 sx = dFdx(surfPos);
+    vec3 sy = dFdy(surfPos);
+    vec3 r1 = cross(sy, n);
+    vec3 r2 = cross(n, sx);
+    float det = dot(sx, r1) * faceDir;
+    vec3 grad = sign(det) * (dH.x * r1 + dH.y * r2);
+    return normalize(abs(det) * n - grad);
+  }
+`;
+
 /** The page block's edges: paper with a fine line between leaves (fading
- *  to their average where the lines are finer than a pixel). */
-function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Color }): MeshStandardMaterial {
+ *  to their average where the lines are finer than a pixel), its cut face
+ *  in relief. */
+function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Color }, paper?: Color): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ side: DoubleSide, roughness: 0.92 });
+  if (paper) m.color.copy(paper);
   const band = { uBoardLo: { value: bands?.lo ?? -1 }, uBoardHi: { value: bands?.hi ?? 2 }, uBoardColor: { value: bands?.color ?? new Color(0, 0, 0) } };
   m.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, occlusionUniforms, band, { uSign: { value: sign } });
+    Object.assign(shader.uniforms, occlusionUniforms, edgeUniforms, band, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nvarying float vLayer;\nvarying float vLambda;\n${BOOK_POS_PARS}`)
-      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\n${BOOK_POS}`);
+      .replace("#include <common>", `#include <common>\nattribute float layer;\nattribute float lambda;\nattribute float run;\nvarying float vLayer;\nvarying float vLambda;\nvarying float vRun;\n${BOOK_POS_PARS}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvLayer = layer;\nvLambda = lambda;\nvRun = run;\n${BOOK_POS}`);
     shader.fragmentShader = keyShadowed(shader.fragmentShader)
-      .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}`)
+      .replace("#include <common>", `#include <common>\nuniform float uBoardLo;\nuniform float uBoardHi;\nuniform vec3 uBoardColor;\nvarying float vLayer;\nvarying float vLambda;\nvarying vec3 vBookPos;\n${OCCLUSION}\n${EDGE_RELIEF}`)
+      .replace(
+        "#include <normal_fragment_maps>",
+        `{
+          vec2 lv = vec2(vLayer, vRun / uEdgeK);
+          vec2 dx = dFdx(lv);
+          vec2 dy = dFdy(lv);
+          float wl = fwidth(vLayer);
+          vec3 fade = vec3(
+            1.0 - smoothstep(0.3, 0.8, wl),
+            1.0 - smoothstep(2.0, 5.0, wl),
+            1.0 - smoothstep(0.05, 0.15, fwidth(lv.y))
+          );
+          float h0 = edgeHeight(lv, fade);
+          vec2 dH = vec2(edgeHeight(lv + dx, fade) - h0, edgeHeight(lv + dy, fade) - h0) * uEdgeK * uEdgeRelief;
+          if (vLambda >= uBoardLo && vLambda <= uBoardHi) normal = edgeNormal(-vViewPosition, normal, dH, faceDirection);
+        }`,
+      )
       .replace(
         "#include <map_fragment>",
         `{
@@ -422,6 +492,8 @@ function edgeMaterial(sign: number, bands?: { lo: number; hi: number; color: Col
           float line = smoothstep(0.55 - w, 0.95 + w, d);
           float fine = clamp(w * 1.5, 0.0, 1.0);
           diffuseColor.rgb *= 1.0 - mix(0.22 * line, 0.08, fine);
+          // The bundles' sheets are never quite one shade.
+          diffuseColor.rgb *= 1.0 + 0.06 * uEdgeRelief * (eNoise(vec2(vLayer / 9.0, 3.0)) - 0.5);
           // A board lying in the block (the book's own cover) shows its
           // own edge, not paper.
           if (vLambda < uBoardLo || vLambda > uBoardHi) diffuseColor.rgb = uBoardColor;
@@ -970,9 +1042,10 @@ export class PageFlipper {
           paperSpec({ ...r.paper, grammage: Math.min(350, Math.round(r.paper.grammage * 1.5)), showThrough: false })
         : {
             ...paperSpec({ ...r.paper, type: "board", grammage: 1250, bulk: 1.6, finish: "silk", texture: "smooth", shade: { hex: "#ffffff", model: "hex" }, showThrough: false }),
-            // The book's own printed covers: a laminated card board, thinner
-            // than a case's.
-            caliperMm: Math.min(0.45, BINDINGS[r.binding.type].boardMm || 0.45),
+            // The book's own printed covers: in a case binding a printed
+            // (litho-laminated) case, on the case's 2–3 mm board; on a
+            // paperback a laminated cover card, about 0.3 mm.
+            caliperMm: BINDINGS[r.binding.type].boardMm || 0.45,
             // Board does not bend: it turns on its joint as a plate.
             rigidity: 1,
             roughness: 0.45,
@@ -1045,6 +1118,7 @@ export class PageFlipper {
     this.key.shadow.intensity = 0.55 + 0.25 * (1 - env.softness);
     this.renderer.toneMappingExposure = env.exposure * r.lighting.intensity;
     this.edges.color.set(r.paper.shade.hex);
+    edgeUniforms.uEdgeRelief.value = r.paper.finish === "uncoated" ? 1 : r.paper.finish === "matte" ? 0.7 : 0.5;
     this.surfaceKey = "";
     for (const mesh of [this.left, this.right, ...this.leaves.values()]) mesh.material.userData.spec = null;
     this.redraw();
@@ -1245,6 +1319,7 @@ export class PageFlipper {
     if (key === this.surfaceKey && this.surfaces) return;
     this.surfaceKey = key;
     const k = this.pxPerMm();
+    edgeUniforms.uEdgeK.value = k;
     const half = this.appearance.singlePage ? 0.5 : 1;
     const thick = (leaves: number[], more: number) =>
       (leaves.reduce((s, i) => s + this.specOf(i).caliperMm, 0) * half + more * this.bookSpec.caliperMm) * k;
@@ -1311,7 +1386,7 @@ export class PageFlipper {
             color: this.boardColor(),
           }
         : undefined;
-      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands) : this.edges);
+      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands, this.edges.color) : this.edges);
       mesh.castShadow = mesh.receiveShadow = true;
       this.stacks.push(mesh);
       this.stage.add(mesh);
