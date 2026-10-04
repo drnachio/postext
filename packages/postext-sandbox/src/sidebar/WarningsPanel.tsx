@@ -33,6 +33,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'arabicMarksExceedLeading':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -137,6 +138,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsCjkMarksLeadingTitle;
     case 'rubyExceedsLeading':
       return labels.warningsRubyLeadingTitle;
+    case 'arabicMarksExceedLeading':
+      return labels.warningsArabicMarksLeadingTitle;
     case 'headingHierarchy':
       return labels.warningsHeadingHierarchyTitle;
     case 'consecutiveHeadings':
@@ -326,6 +329,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__text__', payload.text)
         .replace('__need__', String(payload.neededEm))
         .replace('__gap__', String(payload.gapEm));
+    case 'arabicMarksExceedLeading':
+      return labels.warningsArabicMarksLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__pitch__', String(payload.lineHeightEm));
     case 'headingHierarchy':
       return `H${payload.from} → H${payload.to} · ${labels.warningsHeadingHierarchyDetail}`;
     case 'consecutiveHeadings':

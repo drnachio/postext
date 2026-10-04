@@ -563,6 +563,13 @@ export interface VDTLine {
    *  book-title lines, #193), for renderers to draw as they are; absent on
    *  a line with none. */
   marks?: VDTLineMark[];
+  /** How far the ink of the line's words that carry Arabic vowel marks
+   *  (ḥarakāt, #376) reaches above (`above`) and below (`below`) its
+   *  baseline, px: the marks stack past the letters and may leave the
+   *  line's box, and the renderers' column clip takes them in
+   *  (`columnClipRect`). Measured from the glyphs' ink when the measurer
+   *  gives it, else estimated. Absent on a line with no such mark. */
+  markInk?: { above: number; below: number };
   /** Tracking this line takes on top of its block's (`VDTBlock.letterSpacing`),
    *  px after every glyph — negative tightens: a justified line its word
    *  spaces alone would set past `bodyText.maxWordSpacing` or
@@ -1855,6 +1862,17 @@ export type ContentWarning = ContentWarningBase & (
    *  line gap is narrower than the readings: they overlap the next line.
    *  `gapEm` and `neededEm` in em of the text. */
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph of vocalised Arabic (#376) whose vowel marks meet the
+   *  ink of the line above or below it in its column: a mark over a word
+   *  reaches down-hanging letters or marks of the line above, or a kasra
+   *  under a word the marks of the line below. Only words standing over
+   *  each other are compared. The line pitch never changes for the marks:
+   *  give the paragraph more leading (1.7–1.85 em for partly vocalised
+   *  text, 1.9–2.1 for fully vocalised verse). `lineHeightEm` is the
+   *  distance between the two baselines and `neededEm` the height the two
+   *  lines' ink takes there, in em of the text; `text` is the lower line.
+   *  Found by the layout, so `collectContentWarnings` never returns it. */
+  | { kind: 'arabicMarksExceedLeading'; text: string; lineHeightEm: number; neededEm: number }
   /** Markup typed with fullwidth characters, as a Chinese or Japanese
    *  input method types it: a `：：：` fence, a `＃` heading, a `［＾…］`
    *  footnote marker, `｛…｝` attributes after a fence or heading, or

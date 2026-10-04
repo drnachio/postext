@@ -47,6 +47,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'arabicMarksExceedLeading':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':

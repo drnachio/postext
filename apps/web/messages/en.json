@@ -787,6 +787,8 @@
     "warningsCjkMarksLeadingDetail": "“__text__”: emphasis dots or name and title lines need a line gap of __need__ em, and the paragraph has __gap__ em. Set it with more leading.",
     "warningsRubyLeadingTitle": "Readings crowd the next line",
     "warningsRubyLeadingDetail": "“__text__”: its ruby readings are __need__ em high and the line gap is __gap__ em, so they touch the line next to them. Set the paragraph with more leading.",
+    "warningsArabicMarksLeadingTitle": "Vowel marks crowd the next line",
+    "warningsArabicMarksLeadingDetail": "“__text__”: its vowel marks meet the line next to it. The two lines’ ink takes __need__ em and their baselines are __pitch__ em apart. Set the paragraph with more leading.",
     "warningsHeadingHierarchyTitle": "Heading hierarchy jump",
     "warningsHeadingHierarchyDetail": "A heading level was skipped.",
     "warningsConsecutiveHeadingsTitle": "Consecutive headings",

@@ -178,6 +178,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsCjkMarksLeadingDetail: t("warningsCjkMarksLeadingDetail"),
     warningsRubyLeadingTitle: t("warningsRubyLeadingTitle"),
     warningsRubyLeadingDetail: t("warningsRubyLeadingDetail"),
+    warningsArabicMarksLeadingTitle: t("warningsArabicMarksLeadingTitle"),
+    warningsArabicMarksLeadingDetail: t("warningsArabicMarksLeadingDetail"),
     warningsHeadingHierarchyTitle: t("warningsHeadingHierarchyTitle"),
     warningsHeadingHierarchyDetail: t("warningsHeadingHierarchyDetail"),
     warningsConsecutiveHeadingsTitle: t("warningsConsecutiveHeadingsTitle"),

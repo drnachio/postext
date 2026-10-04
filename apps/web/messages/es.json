@@ -1250,6 +1250,8 @@
     "warningsCjkMarksLeadingDetail": "«__text__»: los puntos de énfasis o las líneas de nombre y de título necesitan un hueco entre líneas de __need__ em, y el párrafo tiene __gap__ em. Dale más interlineado.",
     "warningsRubyLeadingTitle": "Lecturas pegadas a la línea vecina",
     "warningsRubyLeadingDetail": "«__text__»: sus lecturas ruby miden __need__ em y el hueco entre líneas es de __gap__ em, así que tocan la línea vecina. Dale más interlineado al párrafo.",
+    "warningsArabicMarksLeadingTitle": "Signos vocálicos pegados a la línea vecina",
+    "warningsArabicMarksLeadingDetail": "«__text__»: sus signos vocálicos tocan la línea vecina. La tinta de las dos líneas ocupa __need__ em y sus líneas de base distan __pitch__ em. Compón el párrafo con más interlineado.",
     "warningsHeadingHierarchyTitle": "Salto en la jerarquía de títulos",
     "warningsHeadingHierarchyDetail": "Se ha saltado un nivel de título.",
     "warningsConsecutiveHeadingsTitle": "Títulos consecutivos",

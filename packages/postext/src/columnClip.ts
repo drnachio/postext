@@ -1,6 +1,7 @@
 import type { BoundingBox, VDTBlock, VDTColumn } from './vdt';
 import { dimensionToPx } from './units';
 import { lineInkExtent } from './lineInk';
+import { markInkOverhang } from './arabicMarks';
 
 /** How far the design overlays of `blocks` reach past `x0` on the left and
  *  `x1` on the right, in px (0 when they stay inside). */
@@ -76,7 +77,10 @@ function firstBlockAbove(blocks: readonly VDTBlock[], y0: number): number {
  * hangs one (its `cjk.hangingPunctuation` is `'none'`), and the lines are
  * not looked into. The column's foot stays the edge: the flow ends there,
  * and a design reaching past it is cut and reported
- * (`collectHeadingDesignCuts`).
+ * (`collectHeadingDesignCuts`). Arabic vowel marks are the exception on
+ * both edges: the marks of a column's first line may rise above its top
+ * and those of its last line hang under its foot (`VDTLine.markInk`,
+ * #376), and the clip grows to take them in.
  * A box frame (a callout) is cut at the column's top as well, with the text
  * inside it. Shared by the canvas and PDF backends so both paint the same
  * thing.
@@ -86,11 +90,12 @@ export function columnClipRect(col: VDTColumn, dpi: number, hanging = true): Bou
   const [left, overlayRight] = designOverlayOverhang(col.blocks, col.bbox.x, col.bbox.x + col.bbox.width);
   // A mark hung past the measure is shown whole.
   const right = Math.max(overlayRight, hanging ? hangingPunctuationOverhang(col.blocks, col.bbox.x + col.bbox.width) : 0);
-  const above = Math.max(headingDesignOverhangAbove(col.blocks, col.bbox.y), firstBlockAbove(col.blocks, col.bbox.y));
+  const [marksAbove, marksBelow] = markInkOverhang(col.blocks, col.bbox.y, col.bbox.y + col.bbox.height);
+  const above = Math.max(headingDesignOverhangAbove(col.blocks, col.bbox.y), firstBlockAbove(col.blocks, col.bbox.y), marksAbove);
   return {
     x: col.bbox.x - overhang - left,
     y: col.bbox.y - above,
     width: col.bbox.width + overhang * 2 + left + right,
-    height: col.bbox.height + above,
+    height: col.bbox.height + above + marksBelow,
   };
 }

@@ -13,6 +13,7 @@ export type WarningKind =
   | 'joiningScriptLetterSpacing'
   | 'cjkMarksExceedLeading'
   | 'rubyExceedsLeading'
+  | 'arabicMarksExceedLeading'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
   | 'listAfterHeading'
@@ -102,6 +103,7 @@ export type WarningPayload =
   | { kind: 'joiningScriptLetterSpacing'; text: string }
   | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  | { kind: 'arabicMarksExceedLeading'; text: string; lineHeightEm: number; neededEm: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
   | { kind: 'listAfterHeading' }

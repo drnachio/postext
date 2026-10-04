@@ -787,6 +787,8 @@
     "warningsCjkMarksLeadingDetail": "“__text__”：着重号或专名号、书名号线需要__need__ em的行间空隙，而这一段只有__gap__ em。请加大行距。",
     "warningsRubyLeadingTitle": "注音挤到下一行",
     "warningsRubyLeadingDetail": "“__text__”：注音高__need__ em，行间空隙只有__gap__ em，因此碰到相邻的行。请加大这一段的行距。",
+    "warningsArabicMarksLeadingTitle": "元音符号挤到相邻行",
+    "warningsArabicMarksLeadingDetail": "“__text__”：元音符号碰到了相邻的行。两行的笔画共占__need__ em，而基线相距__pitch__ em。请加大该段落的行距。",
     "warningsHeadingHierarchyTitle": "标题层级跳跃",
     "warningsHeadingHierarchyDetail": "跳过了一级标题。",
     "warningsConsecutiveHeadingsTitle": "连续标题",

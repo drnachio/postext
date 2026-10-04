@@ -181,6 +181,7 @@ import { raggedLooseLines } from './raggedLines';
 import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
+import { annotateArabicMarks } from '../arabicMarks';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
 
@@ -5767,7 +5768,13 @@ export function* buildDocumentGen(
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);
-  if (located.length > 0 || loose.length > 0 || annotations.length > 0) doc.contentWarnings = [...located, ...loose, ...annotations];
+  // Arabic vowel marks (#376): how far each vocalised line's ink reaches,
+  // for the column clip, and the paragraphs whose marks meet a
+  // neighbouring line.
+  const harakat = annotateArabicMarks(doc);
+  if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0) {
+    doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat];
+  }
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.

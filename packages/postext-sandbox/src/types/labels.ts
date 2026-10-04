@@ -193,6 +193,8 @@ export interface SandboxLabels {
   warningsCjkMarksLeadingDetail: string;
   warningsRubyLeadingTitle: string;
   warningsRubyLeadingDetail: string;
+  warningsArabicMarksLeadingTitle: string;
+  warningsArabicMarksLeadingDetail: string;
   warningsHeadingHierarchyTitle: string;
   warningsHeadingHierarchyDetail: string;
   warningsConsecutiveHeadingsTitle: string;

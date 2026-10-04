@@ -640,6 +640,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'rubyExceedsLeading':
       text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
       break;
+    case 'arabicMarksExceedLeading':
+      text = `The vowel marks of "${w.text}" meet the next line: the two lines' ink takes ${w.neededEm} em, and their baselines are ${w.lineHeightEm} em apart; set the paragraph with more leading`;
+      break;
     case 'unknownNumberFormat':
       text = `${w.path}: unknown number format "${w.value}" — numbered as ${w.used}`;
       break;
