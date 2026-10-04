@@ -527,51 +527,61 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     en: ["Bidirectional text", "Text that mixes scripts written right to left, such as Arabic, with numbers and Latin words read left to right. The Unicode Bidirectional Algorithm decides the order of the pieces on each line."],
     es: ["Texto bidireccional", "Texto que mezcla escrituras de derecha a izquierda, como el árabe, con números y palabras latinas que se leen de izquierda a derecha. El algoritmo bidireccional de Unicode decide el orden de los tramos en cada línea."],
     zh: ["双向文字", "从右到左书写的文字（如阿拉伯文）与从左到右阅读的数字和拉丁词混排的文本。每行中各段的顺序由Unicode双向算法决定。"],
+    ca: ["Text bidireccional", "Text que barreja escriptures de dreta a esquerra, com l'àrab, amb nombres i paraules llatines que es llegeixen d'esquerra a dreta. L'algorisme bidireccional d'Unicode decideix l'ordre dels trams a cada línia."],
   }),
   term("bidi-isolate", "arabic", {
     en: ["Isolate", "A run of text ordered on its own inside a paragraph of the other direction, which the paragraph treats as a single neutral character. In Postext it is written :ltr[…] or :rtl[…]."],
     es: ["Aislamiento", "Tramo de texto que se ordena por su cuenta dentro de un párrafo de la otra dirección, y que el párrafo trata como un solo carácter neutro. En Postext se escribe :ltr[…] o :rtl[…]."],
     zh: ["隔离段", "在另一方向的段落中单独排序的一段文字，段落只把它当作一个中性字符。在Postext中写作:ltr[…]或:rtl[…]。"],
+    ca: ["Aïllament", "Tram de text que s'ordena pel seu compte dins d'un paràgraf de l'altra direcció, i que el paràgraf tracta com un sol caràcter neutre. A Postext s'escriu :ltr[…] o :rtl[…]."],
   }),
   term("kashida", "arabic", {
     en: ["Kashida", "The lengthened join between two connected Arabic letters, used to stretch a justified line instead of spacing its letters apart. Postext inserts it as tatweel characters."],
     es: ["Cachida", "Enlace alargado entre dos letras árabes unidas, con el que se estira una línea justificada en lugar de separar sus letras. Postext la inserta como caracteres tatweel."],
     zh: ["卡希达（kashida）", "两个相连的阿拉伯字母之间拉长的连笔，用来拉伸两端对齐的行，而不是拉开字母间距。Postext以tatweel字符插入它。"],
+    ca: ["Caixida", "Enllaç allargat entre dues lletres àrabs unides, amb què s'estira una línia justificada en lloc de separar-ne les lletres. Postext la insereix com a caràcters tatweel."],
   }, "كشيدة"),
   term("tatweel", "arabic", {
     en: ["Tatweel", "The Arabic elongation character (U+0640, ـ), a stretch of baseline stroke between two joined letters. A run of them draws a kashida."],
     es: ["Tatweel", "Carácter árabe de alargamiento (U+0640, ـ), un trozo de trazo de base entre dos letras unidas. Una serie de ellos dibuja una cachida."],
     zh: ["tatweel", "阿拉伯文的延长字符（U+0640，ـ），是两个相连字母之间的一段基线笔画。几个连在一起就画出一个卡希达。"],
+    ca: ["Tatweel", "Caràcter àrab d'allargament (U+0640, ـ), un tros de traç de base entre dues lletres unides. Una sèrie de tatweels dibuixa una caixida."],
   }, "تطويل"),
   term("harakat", "arabic", {
     en: ["Harakat", "The Arabic vowel marks written above and below the letters, such as fatḥa, kasra and shadda. Fully vocalised text needs more leading."],
     es: ["Harakat", "Signos vocálicos árabes que se escriben encima y debajo de las letras, como la fatḥa, la kasra y la shadda. El texto vocalizado del todo necesita más interlineado."],
     zh: ["元音符号（harakat）", "写在阿拉伯字母上下的元音符号，如fatḥa、kasra和shadda。完全标注元音的文本需要更大的行距。"],
+    ca: ["Harakat", "Signes vocàlics àrabs que s'escriuen damunt i davall de les lletres, com la fatḥa, la kasra i la shadda. El text vocalitzat del tot necessita més interlineat."],
   }, "حركات"),
   term("tashkil", "arabic", {
     en: ["Tashkīl", "The vocalisation of an Arabic text, that is the set of vowel marks it carries. An edition may print it in full, in part or not at all."],
     es: ["Tashkīl", "Vocalización de un texto árabe, es decir, el conjunto de signos vocálicos que lleva. Una edición puede imprimirla entera, en parte o nada."],
     zh: ["标音（tashkīl）", "阿拉伯文文本的元音标注，即它所带的全部元音符号。一个版本可以全部印出、部分印出或完全不印。"],
+    ca: ["Tashkīl", "Vocalització d'un text àrab, és a dir, el conjunt de signes vocàlics que porta. Una edició la pot imprimir sencera, en part o gens."],
   }, "تشكيل"),
   term("abjad", "arabic", {
     en: ["Abjad numerals", "Numbers written with Arabic letters, each worth a fixed value (ا 1, ي 10, ق 100, غ 1000) and added up. Classical books use them for front matter and dates."],
     es: ["Numeración abyad", "Números escritos con letras árabes, cada una con un valor fijo (ا 1, ي 10, ق 100, غ 1000) que se suman. Los libros clásicos la usan en los preliminares y en las fechas."],
     zh: ["阿布杰德数码", "用阿拉伯字母书写的数，每个字母代表固定数值（ا为1，ي为10，ق为100，غ为1000），相加得数。古典书籍用于前置部分页码和纪年。"],
+    ca: ["Numeració abjad", "Nombres escrits amb lletres àrabs, cadascuna amb un valor fix (ا 1, ي 10, ق 100, غ 1000) que se sumen. Els llibres clàssics la fan servir als preliminars i a les dates."],
   }, "أبجد"),
   term("bayt", "arabic", {
     en: ["Bayt", "A verse of classical Arabic poetry, set on one line in two halves: the first (ṣadr) on the right and the second (ʿajuz) on the left."],
     es: ["Bayt", "Verso de la poesía árabe clásica, que se compone en una línea en dos mitades: la primera (ṣadr) a la derecha y la segunda (ʿajuz) a la izquierda."],
     zh: ["联（bayt）", "古典阿拉伯诗歌的一句诗，排在一行内，分为两半：前半（ṣadr）在右，后半（ʿajuz）在左。"],
+    ca: ["Bayt", "Vers de la poesia àrab clàssica, compost en una línia en dues meitats: la primera (ṣadr) a la dreta i la segona (ʿajuz) a l'esquerra."],
   }, "بيت"),
   term("hemistich", "arabic", {
     en: ["Hemistich", "One half of a verse. In an Arabic poem every hemistich is set to one common width, so the rhyme letters line up down the page."],
     es: ["Hemistiquio", "Cada una de las dos mitades de un verso. En un poema árabe todos los hemistiquios se componen a una misma anchura, de modo que las letras de la rima se alinean a lo largo de la página."],
     zh: ["半行", "一句诗的一半。阿拉伯诗中每个半行都排成相同的宽度，使韵脚字母上下对齐。"],
+    ca: ["Hemistiqui", "Cadascuna de les dues meitats d'un vers. En un poema àrab tots els hemistiquis es componen a una mateixa amplada, de manera que les lletres de la rima s'alineen al llarg de la pàgina."],
   }, "شطر"),
   term("naskh", "arabic", {
     en: ["Naskh", "The rounded Arabic book hand on which most text typefaces are based, such as Amiri and Noto Naskh Arabic."],
     es: ["Naskh", "Letra árabe redondeada de los libros, en la que se basan la mayoría de los tipos de texto, como Amiri y Noto Naskh Arabic."],
     zh: ["纳斯赫体（Naskh）", "圆润的阿拉伯书籍字体，大多数正文字体以它为基础，如Amiri和Noto Naskh Arabic。"],
+    ca: ["Naskh", "Lletra àrab arrodonida dels llibres, en què es basen la majoria dels tipus de text, com l'Amiri i la Noto Naskh Arabic."],
   }, "نسخ"),
 
   // ── Software and the web ───────────────────────────────────────────────
