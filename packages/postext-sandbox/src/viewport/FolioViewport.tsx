@@ -78,7 +78,9 @@ export function FolioViewport() {
     const view = previewRef.current?.getView();
     if (!view) return;
     const d = DEFAULT_FOLIO_CONFIG;
-    const { tilt: _tilt, yaw: _yaw, ...rest } = getState().config.folio ?? {};
+    const rest = { ...getState().config.folio };
+    delete rest.tilt;
+    delete rest.yaw;
     const folio = {
       ...rest,
       ...(view.tilt !== d.tilt ? { tilt: view.tilt } : {}),
