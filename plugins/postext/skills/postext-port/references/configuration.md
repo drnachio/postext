@@ -107,7 +107,7 @@ Conversion at `page.dpi` (default 300):
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
-| `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, paper stock, binding (type, covers, spine image), surface, lighting |
+| `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, yaw, paper stock, binding (type, covers, spine image), surface, lighting |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
@@ -1088,7 +1088,8 @@ The HTML viewer also turns on `layout.fitFiguresToPage` itself.
 
 ```jsonc
 "folio": {
-  "tilt": 22,                         // degrees from overhead, 0–40 (clamped)
+  "tilt": 22,                         // degrees from overhead, 0–70 (clamped)
+  "yaw": 0,                           // degrees round the book, −180–180 (wrapped); + = eye to the right
   "paper": {
     "type": "uncoated",               // uncoated | bookWove | coatedMatte | coatedSilk | coatedGloss | bible | newsprint | cardStock | board
     "grammage": 90,                   // g/m², 20–2500; default: the stock's

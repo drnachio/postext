@@ -2813,9 +2813,15 @@ export interface FolioLightingConfig {
  *  the view, the paper, the binding, the surface it lies on and the light.
  *  Canvas, PDF and HTML ignore it. */
 export interface FolioConfig {
-  /** How far the view is tilted from straight above, in degrees (0 … 40):
-   *  the foot of the pages comes closer. Default 22. */
+  /** How far the view is tilted from straight above, in degrees (0 … 70,
+   *  the lowest the reader can orbit it): the foot of the pages comes
+   *  closer. Default 22. */
   tilt?: number;
+  /** How far the view is turned round the book, in degrees (−180 … 180;
+   *  positive brings the eye round to the right of the book): 0 faces the
+   *  foot of the pages.
+   *  Default 0. */
+  yaw?: number;
   paper?: FolioPaperConfig;
   binding?: FolioBindingConfig;
   surface?: FolioSurfaceConfig;
@@ -2824,6 +2830,7 @@ export interface FolioConfig {
 
 export interface ResolvedFolioConfig {
   tilt: number;
+  yaw: number;
   paper: {
     type: FolioPaperType;
     grammage: number;

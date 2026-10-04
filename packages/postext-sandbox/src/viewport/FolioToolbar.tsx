@@ -1,7 +1,7 @@
 'use client';
 
 import type { FocusEventHandler } from 'react';
-import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, TextCursor } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hand, Orbit, RefreshCw, Rotate3d, Save, TextCursor } from 'lucide-react';
 import type { FolioInteraction } from 'postext-folio';
 import { useSandboxLabels } from '../context/SandboxContext';
 import {
@@ -32,6 +32,9 @@ interface FolioToolbarProps {
   onRegenerate: () => void;
   /** Back to the view the settings give, after the reader orbited it. */
   onResetView: () => void;
+  /** Stores the view as it is seen now as the book's (`folio.tilt` and
+   *  `folio.yaw`): Reset view comes back to it. */
+  onSaveView: () => void;
   onTogglePin: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -59,6 +62,7 @@ export function FolioToolbar({
   onSetInteraction,
   onRegenerate,
   onResetView,
+  onSaveView,
   onTogglePin,
   onPrev,
   onNext,
@@ -94,6 +98,11 @@ export function FolioToolbar({
         icon={<Rotate3d size={16} aria-hidden="true" />}
         label={labels.folioResetView}
         onClick={onResetView}
+      />
+      <ToolbarButton
+        icon={<Save size={16} aria-hidden="true" />}
+        label={labels.folioSaveView}
+        onClick={onSaveView}
       />
       <ToolbarSeparator />
       <div role="group" aria-label={labels.folioModes} className="contents">

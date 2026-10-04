@@ -199,10 +199,10 @@ FOLIO_ENUMS = {
     "lighting.environment": {"studio", "daylight", "lamp", "overcast", "night"},
 }
 # (lo, hi) the resolver clamps to; a value outside is silently clamped.
-FOLIO_RANGES = {"tilt": (0, 40), "paper.grammage": (20, 2500), "paper.bulk": (0.5, 3),
+FOLIO_RANGES = {"tilt": (0, 70), "paper.grammage": (20, 2500), "paper.bulk": (0.5, 3),
                 "paper.textureStrength": (0, 2), "lighting.intensity": (0.25, 2)}
 FOLIO_KEYS = {
-    "": {"tilt", "paper", "binding", "surface", "lighting"},
+    "": {"tilt", "yaw", "paper", "binding", "surface", "lighting"},
     "paper": {"type", "grammage", "bulk", "finish", "texture", "textureStrength", "shade", "showThrough"},
     "binding": {"type", "cover", "coverMaterial", "coverColor", "spineImage"},
     "surface": {"type", "color"},

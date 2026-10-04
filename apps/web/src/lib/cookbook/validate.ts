@@ -340,7 +340,8 @@ export const RECIPE_SCHEMA: JsonSchema = {
       type: "object",
       additionalProperties: false,
       properties: {
-        tilt: { type: "number", minimum: 0, maximum: 40 },
+        tilt: { type: "number", minimum: 0, maximum: 70 },
+        yaw: { type: "number", minimum: -180, maximum: 180 },
         paper: {
           type: "object",
           additionalProperties: false,

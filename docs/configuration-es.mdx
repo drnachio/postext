@@ -5957,7 +5957,8 @@ La propiedad `folio` decide cómo presenta el visor Folio (`postext-folio`) el l
 
 ```ts
 interface FolioConfig {
-  tilt?: number;                  // Degrees from straight above, 0–40.
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
   paper?: {
     type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
          | 'bible' | 'newsprint' | 'cardStock' | 'board';
@@ -6002,7 +6003,13 @@ interface FolioConfig {
       <td><code>tilt</code></td>
       <td><code>number</code></td>
       <td><code>22</code></td>
-      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–40. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–70. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Cuánto gira la vista alrededor del libro, en grados, llevado a −180–180. Con 0 el libro se ve desde el pie de sus páginas; un ángulo positivo lleva la mirada hacia su derecha y uno negativo hacia su izquierda. Junto con <code>tilt</code> es la vista con que se abre el visor y a la que vuelve <code>resetView()</code>.</td>
     </tr>
     <tr>
       <td><code>paper.type</code></td>
@@ -7629,7 +7636,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **El documento define el aspecto.** El papel, la encuadernación, la mesa y la luz son los [ajustes `folio`](#visor-folio-configuración) del documento (`doc.config.folio`). Una página compuesta dentro de una tanda `:::paper` lleva su propio papel (`VDTPage.paper`), y su hoja se dibuja con el color, la superficie, el grosor y la rigidez de ese papel. Con `binding.cover: 'pages'`, la primera página es la tapa delantera y la última, si es un verso, la trasera (`covers`).
 - **El contenedor define el tamaño.** El libro lo ocupa entero, con los botones y el contador de páginas en los márgenes, así que dale una altura; al cambiar de tamaño, las páginas se vuelven a pintar al nuevo. Por debajo de 560 px de ancho muestra una página cada vez (`mode: 'auto'`; `'single'` y `'double'` fuerzan una u otra): el lomo va por el borde interior de la página y la hoja gira sobre él; arrastrar hacia el lomo avanza, deslizar en sentido contrario retrocede, y un toque pasa la página.
 - **Qué hace el puntero.** `interaction` (y después `setInteraction`) fija qué hace el botón izquierdo, un dedo o un lápiz sobre el libro: `'hand'` (por defecto) toma las páginas y las pasa, `'orbit'` gira la vista como al arrastrar con el botón derecho (para trackpads y tabletas), `'select'` deja el puntero al anfitrión, por ejemplo para seleccionar texto. `pageAt(event)` da la página bajo un puntero y el punto de ella (`{ page, x, y }`, fracciones de la página desde su esquina superior izquierda), sobre el libro tal como se ve, inclinado o girado; `pointOnScreen(point)` hace el camino inverso, para dibujar un cursor o una selección sobre la página. `refreshPage(src)` vuelve a mostrar el lienzo de una página que el anfitrión ha repintado en su sitio. El Sandbox los usa todos para seleccionar texto y seguir el cursor del editor sobre las páginas en 3D.
-- **El lector puede rodear el libro.** Arrastrar con el botón derecho gira la vista alrededor del libro (hasta 70° desde la vertical), también mientras pasan hojas; `resetView()` la devuelve con suavidad a la `tilt` de los ajustes. El Sandbox lo ofrece en un botón **Restablecer la vista**.
+- **El lector puede rodear el libro.** Arrastrar con el botón derecho gira la vista alrededor del libro (hasta 70° desde la vertical), también mientras pasan hojas; `resetView()` la devuelve con suavidad a la `tilt` y el `yaw` de los ajustes, y `getView()` da la vista tal como se ve ahora (`{ tilt, yaw }`, en grados) para guardarla en esos ajustes. El Sandbox los ofrece en dos botones, **Restablecer la vista** y **Guardar como vista por defecto**.
 - **Antes, fuentes e imágenes.** Como con `renderPage`, las fuentes del documento deben estar cargadas en `document.fonts` y sus imágenes registradas con `registerResourceImage` antes de pintar las páginas.
 - **Accesible.** El visor es un grupo enfocable que responde a ←/→ (en espejo para un libro encuadernado por la derecha), Re Pág/Av Pág, Inicio y Fin; sus botones y el contador de páginas llevan etiqueta (`labels` las traduce), y cada lienzo de página lleva texto alternativo (`alt: (index) => …`).
 - **Sin WebGL2**, o cuando el lector pide menos movimiento, los pliegos simplemente cambian. Un libro en WebGL pesa demasiado para un móvil (una textura por cada cara de página): el Sandbox ofrece su pestaña Folio solo donde hay WebGL2 y el lado corto de la pantalla mide al menos 600 px. `canFlip()` dice si las hojas pasarán en 3D en ese entorno: con WebGL2 y sin preferencia de menos movimiento.

@@ -39,6 +39,7 @@ export interface SandboxLabels {
   folioLoading: string;
   folioToolbar: string;
   folioResetView: string;
+  folioSaveView: string;
   /** The Folio bar's interaction modes: what the left button does. */
   folioModes: string;
   folioModeHand: string;
@@ -925,6 +926,8 @@ export interface SandboxLabels {
   folioAuto: string;
   folioTilt: string;
   folioTiltTooltip: string;
+  folioYaw: string;
+  folioYawTooltip: string;
   folioPaperType: string;
   folioPaperTypeTooltip: string;
   folioPaperUncoated: string;

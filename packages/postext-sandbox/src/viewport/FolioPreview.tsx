@@ -44,6 +44,8 @@ export interface FolioPreviewHandle {
   next: () => void;
   /** Eases the view back to the one the settings give. */
   resetView: () => void;
+  /** The view as it is seen now, in degrees; null without the 3D book. */
+  getView: () => { tilt: number; yaw: number } | null;
   regenerate: () => void;
 }
 
@@ -200,6 +202,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     prev: () => viewerRef.current?.prev(),
     next: () => viewerRef.current?.next(),
     resetView: () => viewerRef.current?.resetView(),
+    getView: () => viewerRef.current?.getView() ?? null,
     regenerate: () => setRebuildKey((k) => k + 1),
   }), []);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { FOLIO_PAPER_STOCKS, resolveFolioConfig } from 'postext';
+import { FOLIO_MAX_TILT, FOLIO_PAPER_STOCKS, resolveFolioConfig } from 'postext';
 import type {
   ColorValue,
   FolioBindingConfig,
@@ -105,7 +105,7 @@ export const FolioSection = memo(function FolioSection() {
   const commit = (next: FolioConfig) => {
     dispatch({ type: 'UPDATE_CONFIG', payload: { folio: prune(next) } });
   };
-  const writeTop = (partial: Pick<FolioConfig, 'tilt'>) => commit({ ...raw, ...partial });
+  const writeTop = (partial: Pick<FolioConfig, 'tilt' | 'yaw'>) => commit({ ...raw, ...partial });
   const writePaper = (partial: Partial<FolioPaperConfig>) =>
     commit({ ...raw, paper: prune({ ...raw?.paper, ...partial }) });
   const writeBinding = (partial: Partial<FolioBindingConfig>) =>
@@ -142,12 +142,24 @@ export const FolioSection = memo(function FolioSection() {
           value={cfg.tilt}
           onChange={(v) => writeTop({ tilt: v })}
           min={0}
-          max={40}
+          max={FOLIO_MAX_TILT}
           step={1}
           suffix="°"
           tooltip={labels.folioTiltTooltip}
           isDefault={raw?.tilt === undefined}
           onReset={() => writeTop({ tilt: undefined })}
+        />
+        <NumberInput
+          label={labels.folioYaw}
+          value={cfg.yaw}
+          onChange={(v) => writeTop({ yaw: v })}
+          min={-180}
+          max={180}
+          step={1}
+          suffix="°"
+          tooltip={labels.folioYawTooltip}
+          isDefault={raw?.yaw === undefined}
+          onReset={() => writeTop({ yaw: undefined })}
         />
       </FieldGroup>
 

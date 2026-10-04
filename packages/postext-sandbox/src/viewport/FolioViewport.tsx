@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { DEFAULT_FOLIO_CONFIG } from 'postext';
 import type { FolioInteraction } from 'postext-folio';
+import { useSandboxDispatch, useSandboxStateGetter } from '../context/SandboxContext';
 import { FolioPreview, type FolioPreviewHandle } from './FolioPreview';
 import { FolioToolbar } from './FolioToolbar';
 import { useFloatingToolbarShell } from './useFloatingToolbarShell';
@@ -68,6 +70,22 @@ export function FolioViewport() {
   const handlePrev = useCallback(() => previewRef.current?.prev(), []);
   const handleNext = useCallback(() => previewRef.current?.next(), []);
   const handleResetView = useCallback(() => previewRef.current?.resetView(), []);
+  // The view as the reader left it becomes the book's: `folio.tilt` and
+  // `folio.yaw` (left out at their defaults), where Reset view comes back.
+  const dispatch = useSandboxDispatch();
+  const getState = useSandboxStateGetter();
+  const handleSaveView = useCallback(() => {
+    const view = previewRef.current?.getView();
+    if (!view) return;
+    const d = DEFAULT_FOLIO_CONFIG;
+    const { tilt: _tilt, yaw: _yaw, ...rest } = getState().config.folio ?? {};
+    const folio = {
+      ...rest,
+      ...(view.tilt !== d.tilt ? { tilt: view.tilt } : {}),
+      ...(view.yaw !== d.yaw ? { yaw: view.yaw } : {}),
+    };
+    dispatch({ type: 'UPDATE_CONFIG', payload: { folio: Object.keys(folio).length ? folio : undefined } });
+  }, [dispatch, getState]);
 
   const shell = useFloatingToolbarShell('folio', generating);
 
@@ -110,6 +128,7 @@ export function FolioViewport() {
         onPrev={handlePrev}
         onNext={handleNext}
         onResetView={handleResetView}
+        onSaveView={handleSaveView}
         onJumpToPageNumber={handleJumpToPageNumber}
         {...shell.toolbarHoverProps}
       />

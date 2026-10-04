@@ -136,6 +136,10 @@ export interface FolioViewer {
   /** Eases the view back to the one the settings give (after the reader
    *  orbited it with a right-drag). */
   resetView(): void;
+  /** The view as it is seen now, in degrees: `tilt` from straight above,
+   *  `yaw` round the book (−180 … 180), ready to store as `folio.tilt` and
+   *  `folio.yaw`; null without the 3D book. */
+  getView(): { tilt: number; yaw: number } | null;
   /** Changes what the left button does. */
   setInteraction(mode: FolioInteraction): void;
   /** A page's canvas was drawn again in place: shows it again. */
@@ -818,6 +822,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
     },
     resetView() {
       flipper?.resetOrbit();
+    },
+    getView() {
+      return flipper?.view() ?? null;
     },
     setInteraction(next) {
       if (next === interaction) return;

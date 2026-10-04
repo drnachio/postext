@@ -5957,7 +5957,8 @@ The `folio` property sets how the Folio viewer (`postext-folio`) presents the pr
 
 ```ts
 interface FolioConfig {
-  tilt?: number;                  // Degrees from straight above, 0–40.
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
   paper?: {
     type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
          | 'bible' | 'newsprint' | 'cardStock' | 'board';
@@ -6002,7 +6003,13 @@ interface FolioConfig {
       <td><code>tilt</code></td>
       <td><code>number</code></td>
       <td><code>22</code></td>
-      <td>Angle of the view away from straight above, in degrees, clamped to 0–40. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+      <td>Angle of the view away from straight above, in degrees, clamped to 0–70. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>How far the view is turned round the book, in degrees, brought into −180–180. At 0 the book is seen from the foot of its pages; a positive angle brings the eye round to its right, a negative one to its left. With <code>tilt</code> it is the view the viewer opens on and the one <code>resetView()</code> eases back to.</td>
     </tr>
     <tr>
       <td><code>paper.type</code></td>
@@ -7627,7 +7634,7 @@ book.setDocument(buildDocument({ markdown: edited }, config));
 - **The document sets the look.** The paper, the binding, the desk and the light are the document's [`folio` settings](#folio-viewer-config) (`doc.config.folio`). A page set inside a `:::paper` run carries its own stock (`VDTPage.paper`), and its leaf is drawn with that paper's colour, surface, thickness and stiffness. With `binding.cover: 'pages'` the first page is the front board and the last, when it is a verso, the back board (`covers`).
 - **The container sets the size.** The book fills it, with the buttons and the page count in the margins, so give the container a height; a resize paints the pages again at the new size. Below 560 px wide it shows one page at a time (`mode: 'auto'`; `'single'` and `'double'` force either): the spine runs along the page's inner edge and the leaf turns over it, a drag towards the spine turns forward, a swipe away from it goes back, a tap turns.
 - **What the pointer does.** `interaction` (and `setInteraction` later) sets what the left button, one finger or a pen does on the book: `'hand'` (the default) takes and turns the pages, `'orbit'` turns the view as a right-drag does (for trackpads and tablets), `'select'` leaves the pointer to the host, to select text, say. `pageAt(event)` gives the page under a pointer and where on it (`{ page, x, y }`, fractions of the page from its top left corner), on the book as it is seen, tilted or orbited; `pointOnScreen(point)` goes the other way, for drawing a caret or a selection over the page. `refreshPage(src)` shows again a page canvas the host drew anew in place. The sandbox uses all of them to select text and follow the editor's caret on the 3D pages.
-- **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt`. The sandbox puts that on a **Reset view** button.
+- **The reader can look round it.** A right-drag orbits the view round the book (down to 70° from overhead), also while leaves are turning; `resetView()` eases it back to the settings' `tilt` and `yaw`, and `getView()` gives the view as it is seen now (`{ tilt, yaw }`, degrees) to store as those settings. The sandbox puts them on two buttons, **Reset view** and **Save as default view**.
 - **Fonts and images first.** As for `renderPage`, the faces the document uses must be loaded in `document.fonts` and its resource images registered with `registerResourceImage` before pages are painted.
 - **Accessible.** The viewer is a focusable group that takes ←/→ (mirrored for a right-bound book), Page Up/Down, Home and End; its buttons and page count are labelled (`labels` translates them), and each page canvas carries `alt` text (`alt: (index) => …`).
 - **Without WebGL2**, or when the reader asks for reduced motion, the spreads simply change. WebGL books are heavy for a phone (a texture per page side): the sandbox offers its Folio tab only where WebGL2 is available and the screen's short side is at least 600 px. `canFlip()` says whether the leaves will turn in 3D here: WebGL2, and no reduced motion.

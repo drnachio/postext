@@ -66,12 +66,26 @@ describe('resolveFolioConfig', () => {
       paper: { grammage: 5000, bulk: 0.1, textureStrength: 5 },
       lighting: { intensity: 0 },
     });
-    expect(r.tilt).toBe(40);
+    expect(r.tilt).toBe(70);
     expect(r.paper.grammage).toBe(2500);
     expect(r.paper.bulk).toBe(0.5);
     expect(r.paper.textureStrength).toBe(2);
     expect(r.lighting.intensity).toBe(0.25);
     expect(resolveFolioConfig({ tilt: -5, lighting: { intensity: 9 } })).toMatchObject({ tilt: 0, lighting: { intensity: 2 } });
+  });
+
+  it('wraps the turn into −180 … 180 and defaults it to 0', () => {
+    expect(resolveFolioConfig({}).yaw).toBe(0);
+    expect(resolveFolioConfig({ yaw: 45 }).yaw).toBe(45);
+    expect(resolveFolioConfig({ yaw: 270 }).yaw).toBe(-90);
+    expect(resolveFolioConfig({ yaw: -540 }).yaw).toBe(180);
+    expect(resolveFolioConfig({ yaw: Number.NaN }).yaw).toBe(0);
+  });
+
+  it('keeps an old book (tilt only, within the old 0 … 40) as it was', () => {
+    expect(resolveFolioConfig({ tilt: 30 })).toMatchObject({ tilt: 30, yaw: 0 });
+    expect(resolveFolioConfig(undefined)).toMatchObject({ tilt: 22, yaw: 0 });
+    expect(stripFolioDefaults({ tilt: 30 })).toEqual({ tilt: 30 });
   });
 
   it('ignores non-positive and non-finite numbers', () => {
@@ -128,6 +142,7 @@ describe('stripFolioDefaults', () => {
   it('round-trips: the stripped config resolves to the same settings', () => {
     const folio = {
       tilt: 30,
+      yaw: 120,
       paper: { type: 'bookWove' as const, grammage: 80, bulk: 1.8, texture: 'laid' as const, showThrough: false },
       binding: { type: 'paperback' as const, coverColor: hex('#aa3322') },
       lighting: { environment: 'lamp' as const, intensity: 1, shadows: false },
@@ -140,6 +155,8 @@ describe('folio in the document config', () => {
   it('is stripped by stripConfigDefaults', () => {
     expect(stripConfigDefaults({ folio: { tilt: 22 } }).folio).toBeUndefined();
     expect(stripConfigDefaults({ folio: { tilt: 10 } }).folio).toEqual({ tilt: 10 });
+    expect(stripConfigDefaults({ folio: { tilt: 22, yaw: 0 } }).folio).toBeUndefined();
+    expect(stripConfigDefaults({ folio: { tilt: 55, yaw: -30 } }).folio).toEqual({ tilt: 55, yaw: -30 });
   });
 
   it('is resolved into the ResolvedConfig only when the config sets it', () => {

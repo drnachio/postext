@@ -3426,6 +3426,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'folioTextureWove',
       'folioTilt',
       'folioTiltTooltip',
+      'folioYaw',
+      'folioYawTooltip',
       'reset',
       'resetSectionConfirm',
     ],

@@ -142,7 +142,7 @@ describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
     const { out } = lint(project({
       ...fonts,
       folio: {
-        tilt: 60,
+        tilt: 80,
         camera: 1,
         paper: { type: "glossy", shade: "#fff" },
         binding: { type: "saddleStitch", spineImage: "spine" },
@@ -152,7 +152,7 @@ describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
     expect(out).toContain("config.folio.paper.type: 'glossy' is not one of");
     expect(out).toContain('config.folio.paper.shade: a colour is {"hex": "#rrggbb", "model": "hex"}');
     expect(out).toContain("config.folio.lighting.shadows: must be true or false");
-    expect(out).toContain("config.folio.tilt: 60 is clamped to 0–40");
+    expect(out).toContain("config.folio.tilt: 80 is clamped to 0–70");
     expect(out).toContain("config.folio.camera: unknown key (ignored)");
     expect(out).toContain("config.folio.binding.spineImage: ignored: a saddle-stitched book has no flat spine");
   });
