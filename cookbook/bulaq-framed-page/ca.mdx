@@ -1,0 +1,53 @@
+---
+title: "Una pàgina de Bulaq: el text emmarcat pel seu comentari"
+summary: "El comentari d'Ibn ʿAqīl a la columna principal i les glosses a la lateral exterior, al costat del que expliquen, dins d'un marc de filets dobles."
+plain: "Una pàgina feta com els llibres àrabs impresos al Caire al segle XIX: el text principal al centre, notes breus sobre ell en una columna estreta al costat de la vora i tota la pàgina tancada entre filets impresos."
+description: "Una pàgina a l'estil de Bulaq amb Postext: columna i mitja amb requadres laterals per a la ḥāshiya, filet de columna i un marc per a cada costat del plec."
+question: "Com componc una pàgina de Bulaq, amb el comentari emmarcat al voltant del text?"
+aliases: ["Bulaq", "Būlāq", "ḥāshiya", "hamix", "comentari al marge", "sharḥ", "pàgina de comentari", "Ibn ʿAqīl", "Alfiyya", "Ibn Mālik", "gramàtica àrab", "marc de filets", "jadwal", "شرح ابن عقيل", "حاشية", "هامش"]
+pageNotes: { "2": "La primera pàgina de text dins d'un marc de filets dobles: un títol en ruqʿa vermell, els primers versos de l'Alfiyya en vermell, dos per línia, i el comentari d'Ibn ʿAqīl en negre; en una columna estreta al costat de la vora dreta, darrere d'un filet vertical, dues glosses amb les primeres paraules en vermell." }
+---
+
+## Què compondràs
+
+Cinc pàgines compostes com imprimien un comentari la impremta de Bulaq i les seves successores del Caire al segle XIX. L'explicació d'Ibn ʿAqīl als primers versos de l'Alfiyya, la gramàtica en mil versos d'Ibn Mālik, corre per la columna principal, amb els versos en vermell; al marge exterior hi ha una ḥāshiya, glosses breus que comencen amb les paraules del text que expliquen, al costat del passatge al qual pertanyen. Un filet doble emmarca la caixa, amb una banda al capdamunt per al capítol i el foli, i un filet simple separa el text del seu marge. En una pàgina de Bulaq autèntica la ḥāshiya envolta el text per tres costats; Postext la posa en un de sol, i la recepta ho diu.
+
+## Elaboració
+
+### 1 · La ḥāshiya en una columna lateral pròpia
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un disseny en columna i mitja amb una columna lateral que només admet flotants deixa el comentari fora del flux del text: cada glossa és un `:::callout{type="hashiya" span="side"}` escrit després del paràgraf que explica, i queda a la seva altura ([Disposició](/ca/docs/configuration#disposició)). El requadre no té fons, vora ni farciment, així que es llegeix com a text compost al marge, amb el lema en negreta, que `boldColor` posa en vermell. `sideColumnSide: 'outer'` porta la columna al tall davanter de les dues pàgines: a la dreta de la pàgina parella, que en un llibre enquadernat per la dreta queda a la dreta del plec.
+
+<PageShot page={3} crop="0,0.08,1,0.4" caption="Pàgina 3: la glossa sobre «كديز» queda al costat del paràgraf que fa servir la paraula, a la vora exterior, darrere del filet de columna." />
+
+### 2 · Un marc dibuixat per a cada costat del plec
+
+<Excerpt region="frame" />
+
+El marc són tres elements de disseny de pàgina a la capçalera: dues caixes amb vora i sense farciment, separades 1,3 mm, i un filet sota la banda que porta la capçalera. Els elements de pàgina són físics, així que el marc es construeix dues vegades, una per paritat, amb els marges d'aquell costat. El foli va a l'extrem exterior de la banda a totes les pàgines, també a les obertures; el títol del capítol va centrat i no apareix a l'obertura, on el mateix títol queda a sota.
+
+### 3 · Una portada dins del mateix marc
+
+<Excerpt region="title" />
+
+La portada reutilitza el marc sense la banda. Les seves línies surten d'atributs del títol, `on` i `margin`, de manera que tota la portada és una línia de Markdown, i la línia llatina de sota canvia amb l'edició.
+
+## Variants
+
+### Posa el comentari al costat interior
+
+Algunes impremtes posen la ḥāshiya al costat del llom, i el text conserva el marge exterior, més ample.
+
+```diff
+-const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'outer',
++const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'inner',
+```
+
+### Tanca cada glossa en un filet
+
+Un filet fi al voltant de cada glossa, com en alguns impresos caireses posteriors, és la vora pròpia del requadre.
+
+```diff
+-  stripe: { enabled: false }, border: { enabled: false },
++  stripe: { enabled: false }, border: { enabled: true, width: pt(0.4), color: col('rule') },
+```

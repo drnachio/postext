@@ -1,0 +1,53 @@
+---
+title: "Una página de Bulaq: el texto enmarcado por su comentario"
+summary: "El comentario de Ibn ʿAqīl en la columna principal y las glosas en la lateral exterior, junto a lo que explican, dentro de un marco de filetes dobles."
+plain: "Una página hecha como los libros árabes impresos en El Cairo en el siglo XIX: el texto principal en el centro, notas breves sobre él en una columna estrecha junto al borde y toda la página encerrada entre filetes impresos."
+description: "Una página al estilo de Bulaq con Postext: columna y media con recuadros laterales para la ḥāshiya, filete de columna y un marco para cada lado del pliego."
+question: "¿Cómo compongo una página de Bulaq, con el comentario enmarcado alrededor del texto?"
+aliases: ["Bulaq", "Būlāq", "ḥāshiya", "hamish", "comentario al margen", "sharḥ", "página de comentario", "Ibn ʿAqīl", "Alfiyya", "Ibn Mālik", "gramática árabe", "marco de filetes", "jadwal", "شرح ابن عقيل", "حاشية", "هامش"]
+pageNotes: { "2": "La primera página de texto dentro de un marco de filetes dobles: un título en ruqʿa rojo, los primeros versos de la Alfiyya en rojo, dos por línea, y el comentario de Ibn ʿAqīl en negro; en una columna estrecha junto al borde derecho, tras un filete vertical, dos glosas cuyas primeras palabras van en rojo." }
+---
+
+## Lo que vas a componer
+
+Cinco páginas compuestas como imprimían un comentario la imprenta de Bulaq y sus sucesoras de El Cairo en el siglo XIX. La explicación de Ibn ʿAqīl a los primeros versos de la Alfiyya, la gramática en mil versos de Ibn Mālik, corre por la columna principal, con los versos en rojo; en el margen exterior va una ḥāshiya, glosas breves que empiezan con las palabras del texto que explican, junto al pasaje al que pertenecen. Un filete doble enmarca la caja, con una banda en la cabeza para el capítulo y el folio, y un filete simple separa el texto de su margen. En una página de Bulaq auténtica la ḥāshiya rodea el texto por tres lados; Postext la pone en uno solo, y la receta lo dice.
+
+## Elaboración
+
+### 1 · La ḥāshiya en una columna lateral propia
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un diseño en columna y media cuya columna lateral solo admite flotantes deja el comentario fuera del flujo del texto: cada glosa es un `:::callout{type="hashiya" span="side"}` escrito después del párrafo que explica, y queda a su altura ([Disposición](/es/docs/configuration#disposición)). El recuadro no tiene fondo, borde ni relleno, así que se lee como texto compuesto en el margen, con el lema en negrita, que `boldColor` pone en rojo. `sideColumnSide: 'outer'` lleva la columna al corte delantero de las dos páginas: a la derecha de la página par, que en un libro encuadernado por la derecha queda a la derecha del pliego.
+
+<PageShot page={3} crop="0,0.08,1,0.4" caption="Página 3: la glosa sobre «كديز» queda junto al párrafo que usa la palabra, en el borde exterior, tras el filete de columna." />
+
+### 2 · Un marco dibujado para cada lado del pliego
+
+<Excerpt region="frame" />
+
+El marco son tres elementos de diseño de página en la cabecera: dos cajas con borde y sin relleno, separadas 1,3 mm, y un filete bajo la banda que lleva la cabecera. Los elementos de página son físicos, así que el marco se construye dos veces, una por paridad, con los márgenes de ese lado ([Orden de las páginas y encuadernación por la derecha](/es/docs/arabic-layout#orden-de-las-páginas-y-encuadernación-por-la-derecha)). El folio va en el extremo exterior de la banda en todas las páginas, también en las aperturas; el título del capítulo va centrado y no aparece en la apertura, donde el propio título queda debajo.
+
+### 3 · Una portada dentro del mismo marco
+
+<Excerpt region="title" />
+
+La portada reutiliza el marco sin la banda. Sus líneas salen de atributos del título, `on` y `margin`, de modo que toda la portada es una línea de Markdown, y la línea latina de debajo cambia con la edición.
+
+## Variantes
+
+### Pon el comentario en el lado interior
+
+Algunas imprentas ponen la ḥāshiya junto al lomo, y el texto conserva el margen exterior, más ancho.
+
+```diff
+-const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'outer',
++const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'inner',
+```
+
+### Encierra cada glosa en un filete
+
+Un filete fino alrededor de cada glosa, como en algunos impresos cairotas posteriores, es el borde propio del recuadro.
+
+```diff
+-  stripe: { enabled: false }, border: { enabled: false },
++  stripe: { enabled: false }, border: { enabled: true, width: pt(0.4), color: col('rule') },
+```

@@ -1,0 +1,53 @@
+---
+title: "A Bulaq page: the text framed by its commentary"
+summary: "Ibn ʿAqīl’s grammar commentary in the main column, glosses in the outer side column beside the passages they explain, all inside a double ruled frame."
+plain: "A page made like the Arabic books printed in Cairo in the 1800s: the main text in the middle, short notes on it in a narrow column at the edge, and the whole page boxed in by printed lines."
+description: "A Bulaq-style page in Postext: a column and a half with side boxes for the ḥāshiya, a column rule and a ruled frame drawn per side of the spread."
+question: "How do I lay out a Bulaq page, with the commentary framed around the text?"
+aliases: ["Bulaq", "Būlāq", "ḥāshiya", "hashiya", "hamish", "margin commentary", "sharḥ", "commentary page", "Ibn ʿAqīl", "Alfiyya", "Ibn Mālik", "Arabic grammar", "ruled frame", "jadwal", "شرح ابن عقيل", "حاشية", "هامش"]
+pageNotes: { "2": "The first text page inside a double ruled frame: a red Ruqʿa chapter title, the opening verses of the Alfiyya in red, two to a line, and Ibn ʿAqīl’s commentary in black; in a narrow column at the right edge, behind a vertical rule, two glosses whose opening words are in red." }
+---
+
+## What you'll build
+
+Five pages set the way the Bulaq press and its Cairo successors printed a commentary in the nineteenth century. Ibn ʿAqīl’s explanation of the first verses of the Alfiyya, Ibn Mālik’s grammar in a thousand lines, runs in the main column, the verses in red; in the outer margin stands a ḥāshiya, short glosses that each open with the words of the text they explain, beside the passage they belong to. A double rule frames the type area, with a band at its head for the chapter and the folio, and a single rule parts the text from its margin. A real Bulaq page wraps the ḥāshiya round three sides of the text; Postext sets it on one side only, and this recipe says so.
+
+## Method
+
+### 1 · The ḥāshiya in a side column of its own
+
+The code is [the short answer](#the-short-answer) above. A column-and-a-half layout whose side column takes only floats keeps the commentary out of the text’s flow: each gloss is a `:::callout{type="hashiya" span="side"}` written after the paragraph it explains, and it stands level with that paragraph ([Layout](/en/docs/configuration#layout)). The box has no background, border or padding, so it reads as text set in the margin, its lemma in bold, which the `boldColor` turns red. `sideColumnSide: 'outer'` puts the column at the fore-edge of both pages: on the right of the even page, which lies on the right in a book bound on the right.
+
+<PageShot page={3} crop="0,0.08,1,0.4" caption="Page 3: the gloss on «كديز» stands beside the paragraph that uses the word, at the outer edge, behind the column rule." />
+
+### 2 · A frame drawn for each side of the spread
+
+<Excerpt region="frame" />
+
+The frame is three page design elements in the header: two boxes with a border and no fill, 1.3 mm apart, and a rule under the band that holds the running head. Page elements are physical, so the frame is built twice, once per parity, from the margins of that side ([Page order and right binding](/en/docs/arabic-layout#page-order-and-right-binding)). The folio sits at the outer end of the band on every page, openers included; the chapter title is centred and left off the opener, where the title itself stands under it.
+
+### 3 · A title page inside the same frame
+
+<Excerpt region="title" />
+
+The title page reuses the frame without its band. Its lines come from heading attributes, `on` and `margin`, so the whole title page is one line of Markdown, and the Latin line under them changes with the edition.
+
+## Variations
+
+### Put the commentary on the inner side
+
+Some presses set the ḥāshiya by the spine, so the text keeps the wider outer margin.
+
+```diff
+-const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'outer',
++const layout = { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: 'inner',
+```
+
+### Box each gloss
+
+A thin rule round each gloss, as some later Cairo prints have, is the callout’s own border.
+
+```diff
+-  stripe: { enabled: false }, border: { enabled: false },
++  stripe: { enabled: false }, border: { enabled: true, width: pt(0.4), color: col('rule') },
+```

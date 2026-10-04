@@ -1,0 +1,132 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 114,
+  "status": "draft",
+  "chapter": "page",
+  "order": 130,
+  "level": 2,
+  "genres": [
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "side-boxes",
+      "design-elements",
+      "text-direction"
+    ],
+    "also": [
+      "column-and-a-half",
+      "side-column-floats",
+      "column-rule",
+      "right-binding",
+      "arabic-fonts",
+      "arabic-language",
+      "arabic-verse",
+      "document-digits",
+      "covers",
+      "heading-styles",
+      "heading-attributes",
+      "running-heads",
+      "page-background",
+      "paragraph-styles",
+      "block-direction",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q130"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Ibn ʿAqīl’s commentary on the opening of the Alfiyya, with Ibn Mālik’s verses, as ar.wikisource gives it (revision 521625), without the modern editor’s footnotes",
+          "es": "El comentario de Ibn ʿAqīl al comienzo de la Alfiyya, con los versos de Ibn Mālik, tal como lo da ar.wikisource (revisión 521625), sin las notas del editor moderno"
+        },
+        "who": "Ibn ʿAqīl, Ibn Mālik",
+        "source": "https://ar.wikisource.org/wiki/شرح_ابن_عقيل/المجلد_الأول/الكلام_وما_يتألف_منه",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The glosses in the margin, the title page, the note on the text and the colophon",
+          "es": "Las glosas del margen, la portada, la nota sobre el texto y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "gaps": [
+    "surrounding-commentary"
+  ],
+  "related": [
+    "qasida-diwan-page",
+    "textbook-margin-column",
+    "annotated-classic-glosses"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}
