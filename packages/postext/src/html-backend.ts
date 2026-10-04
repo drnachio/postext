@@ -789,17 +789,29 @@ function renderChip(
     );
   }
   let tx = bx + chip.borderWidth + chip.paddingX;
-  for (const run of chip.runs) {
+  // The runs in the chip's paint order (`VDTChip.order`); a right-to-left
+  // run's box reads right to left.
+  const order = chip.order && chip.order.length === chip.runs.length ? chip.order : undefined;
+  for (let k = 0; k < chip.runs.length; k++) {
+    const run = chip.runs[order ? order[k]! : k]!;
     const font = quoteFontString(run.fontString);
     const color = chip.color ?? inkFor(run);
     const fontDecl = font !== lineFont ? `font:${font};` : '';
     const colorDecl = color !== lineColor ? `color:${color};` : '';
     const top = run.baselineShift ? `${run.baselineShift.toFixed(3)}px` : '0';
     // A chip's runs were measured one by one, as a whole each.
-    parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false));
+    const html = renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false);
+    parts.push(run.rtl ? rightToLeftBox(html) : html);
     tx += run.width;
   }
   return parts.join('');
+}
+
+/** A run's markup (one absolutely placed `<span>`) set right to left:
+ *  `dir="rtl"` on its outer box, so its neutral characters are ordered and
+ *  its brackets mirrored as the engine resolved them. */
+function rightToLeftBox(html: string): string {
+  return html.startsWith('<span ') ? `<span dir="rtl" ${html.slice(6)}` : html;
 }
 
 function renderBullet(block: VDTBlock): string {
@@ -1523,8 +1535,12 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
     // A justified line: its word spaces widened as the canvas and the PDF
     // advance its runs (EF-109).
     const wordSpacingDecl = line.wordSpacingPx ? `word-spacing:${line.wordSpacingPx.toFixed(3)}px;` : '';
+    // A right-to-left text: the line box reads at that base direction, and
+    // the browser orders its runs (written in logical order) as the engine
+    // did (`VDTDesignTextLine.order`), which keeps copied text logical.
+    const dirAttr = block.direction === 'rtl' ? ' dir="rtl"' : '';
     lineParts.push(
-      `<span style="` +
+      `<span${dirAttr} style="` +
       `position:absolute;` +
       `left:${line.xOffset.toFixed(3)}px;` +
       `top:${top.toFixed(3)}px;` +
