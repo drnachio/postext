@@ -38,6 +38,7 @@ import { cjkCompositionOf, getCjkComposition, setCjkComposition } from '../measu
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMeasureUprightDigits, setMeasureWritingMode } from '../measure/vertical';
 import { stampCentralBaselines } from './verticalMetrics';
 import { orientLinesToFrames } from './mirrorFrame';
+import { verseMarginTopPx } from './buildBlockKind';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
@@ -4643,6 +4644,9 @@ function placeDocumentPass(
         && (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)) ||
       (vdtType === 'listItem' && !nextIsListItem) ||
       (vdtType === 'paragraph' && isContainerTail && paragraphContainer?.snapToGrid !== false) ||
+      // A poem, like a container of one block: its own leading and the
+      // margins of its style are off the grid, the text after it is not.
+      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)) ||
       vdtType === 'mathDisplay'
     );
 
@@ -4806,6 +4810,9 @@ function placeDocumentPass(
               spacingBefore = top - usedHeight;
             }
           }
+        } else if (rawBlock.verse && partIndex === 0) {
+          // A poem: the top margin of the paragraph style its fence names.
+          spacingBefore = Math.max(spacingBefore, style.marginTopPx);
         } else if (rawBlock.toc || rawBlock.index) {
           // A part row or an unnumbered entry of the contents: its top
           // margin (`toc.parts.marginTop`, the level's `marginTop`) applies
@@ -5070,7 +5077,10 @@ function placeDocumentPass(
           const gap = Math.max(style.marginBottomPx, formula?.kind.style.marginTopPx ?? 0);
           goesOn = !!formula && formulaHeight > 0 && availableAfter + FIT_EPS < gap + formulaHeight;
         } else {
-          goesOn = !firstListItemStarts(blockIdx, availableAfter - style.marginBottomPx, curCol.bbox.width, blockMeasureCtx);
+          // The poem starts under the larger of this paragraph's bottom
+          // margin and its own style's top margin.
+          const poemGap = Math.max(style.marginBottomPx, verseMarginTopPx(nextBlock?.verse?.attrs.style, resolved));
+          goesOn = !firstListItemStarts(blockIdx, availableAfter - poemGap, curCol.bbox.width, blockMeasureCtx);
         }
         if (goesOn) {
           const minKeep = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
@@ -6347,4 +6357,11 @@ function* buildDocumentBalanced(
  *  column never cuts. */
 function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
   return a?.verse !== undefined && b?.verse !== undefined && a.verse.bayt === b.verse.bayt;
+}
+
+/** Whether the text after a poem goes back to the baseline grid: unless
+ *  the paragraph style its fence names says `snapToGrid: false`. */
+function verseSnaps(styleId: string | undefined, resolved: ResolvedConfig): boolean {
+  const key = styleId?.trim();
+  return !key || resolved.paragraphStyles.find((s) => s.id === key)?.snapToGrid !== false;
 }

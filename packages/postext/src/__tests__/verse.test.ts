@@ -160,6 +160,17 @@ describe('a qaṣīda in an Arabic book', () => {
       expect(page(intro.lines.at(-1)!)).toBe(page(verseLines(d)[0]!));
     }
   });
+
+  it('counts the space its paragraph style puts above the poem when it keeps the introducer with it', () => {
+    const text = `${'كلمة نص طويل '.repeat(60)}قال:\n\n:::verse{style=poem}\nيا حرقة الدهر كفي || إن لم تكفي فعفي\nفلا بحظي أعطي || ولا بصنعة كفي\n:::`;
+    const styles = { paragraphStyles: [{ id: 'poem', name: 'Poem', marginTop: pt(40) }] };
+    for (let height = 240; height <= 420; height += 4) {
+      const d = buildDocument({ markdown: text }, config({ locale: 'ar', ...styles }, 400, height));
+      const page = (l: VDTLine) => d.pages.findIndex((p) => p.columns.some((c) => c.blocks.some((b) => b.lines.includes(l))));
+      const intro = d.blocks.filter((b) => !b.lines.some((l) => l.verse) && b.type === 'paragraph').at(-1)!;
+      expect(page(intro.lines.at(-1)!), `${height}`).toBe(page(verseLines(d)[0]!));
+    }
+  });
 });
 
 describe('verse in a left-to-right book', () => {
@@ -208,5 +219,24 @@ describe('verse in a left-to-right book', () => {
     expect(b!.baseline - a!.baseline).toBeCloseTo(20, 6);
     const warnings = collectContentWarnings(':::verse{style=nope}\nA || B\n:::', cfg);
     expect(warnings.some((w) => w.kind === 'unknownParagraphStyle' && w.style === 'nope')).toBe(true);
+  });
+
+  it('sets the space a paragraph style asks above and below the poem, the text after it back on the grid', () => {
+    const md = 'Before AAA.\n\n:::verse{style=poem}\nA b || C d\nE f || G h\n:::\n\nAfter BBB.';
+    const at = (margins: object) => {
+      const doc = buildDocument({ markdown: md }, config({ paragraphStyles: [{ id: 'poem', name: 'Poem', ...margins }] }));
+      const lines = doc.blocks.flatMap((b) => b.lines);
+      const before = lines.find((l) => l.text?.includes('AAA'))!;
+      const after = lines.find((l) => l.text?.includes('BBB'))!;
+      return { poem: verseLines(doc)[0]!.baseline, after: after.baseline, onGrid: (after.baseline - before.baseline) / 30 };
+    };
+    const plain = at({});
+    const spaced = at({ marginTop: pt(15), marginBottom: pt(15) });
+    expect(spaced.poem - plain.poem).toBeGreaterThanOrEqual(15 - 1e-6);
+    expect(spaced.after - plain.after).toBeGreaterThanOrEqual(30 - 1e-6);
+    // Half a line above and below: the text after the poem is a whole line
+    // lower, on the grid (30 pt here).
+    expect(spaced.onGrid).toBeCloseTo(Math.round(spaced.onGrid), 6);
+    expect(spaced.after - plain.after).toBeCloseTo(30, 6);
   });
 });

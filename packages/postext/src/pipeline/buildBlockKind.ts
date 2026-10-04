@@ -8,6 +8,7 @@ import { flattenTitleBreaks, flattenTitleBreakSpans } from '../parse/inlineForma
 import type { ContentBlock, InlineSpan, ListKind } from '../parse';
 import type { Resource, ResourceType } from '../types';
 import type { ResolvedConfig, VDTBlock } from '../vdt';
+import { dimensionToPx } from '../units';
 import type { BlockStyle } from './styles';
 import { resolveHeadingStyle, resolveMathDisplayStyle, resolveParagraphStyle } from './styles';
 import type { ListBulletStyle, ListItemResolved, OrderedListMetrics } from './lists';
@@ -245,7 +246,8 @@ export function resolveBlockKind(
 const verseStyles = new WeakMap<ResolvedConfig, Map<string, BlockStyle | null>>();
 
 /** The paragraph style a poem's fence names, or undefined when it names
- *  none or one the config does not have (the poem keeps the text's). */
+ *  none or one the config does not have (the poem keeps the text's). Its
+ *  `marginTop` and `marginBottom` are the space above and below the poem. */
 function verseStyleOf(id: string | undefined, resolved: ResolvedConfig): BlockStyle | undefined {
   const key = id?.trim();
   if (!key) return undefined;
@@ -254,10 +256,28 @@ function verseStyleOf(id: string | undefined, resolved: ResolvedConfig): BlockSt
   let style = byId.get(key);
   if (style === undefined) {
     const cfg = resolved.paragraphStyles.find((s) => s.id === key);
-    style = cfg ? resolveParagraphStyle(cfg, resolved) : null;
+    if (cfg) {
+      // A poem is one block: the style's container margins are its own,
+      // above and below (as a `:::paragraphs` group of one entry).
+      const base = resolveParagraphStyle(cfg, resolved);
+      const dpi = resolved.page.dpi;
+      const marginBottomPx = dimensionToPx(cfg.marginBottom, dpi, base.fontSizePx);
+      style = {
+        ...base,
+        marginTopPx: dimensionToPx(cfg.marginTop, dpi, base.fontSizePx),
+        marginBottomPx: marginBottomPx < 0 ? marginBottomPx : Math.max(base.marginBottomPx, marginBottomPx),
+      };
+    } else {
+      style = null;
+    }
     byId.set(key, style);
   }
   return style ?? undefined;
+}
+
+/** The space a poem's paragraph style asks above it (0 without one). */
+export function verseMarginTopPx(styleId: string | undefined, resolved: ResolvedConfig): number {
+  return verseStyleOf(styleId, resolved)?.marginTopPx ?? 0;
 }
 
 /** A poem's block style: flush left (its lines carry their own geometry),
