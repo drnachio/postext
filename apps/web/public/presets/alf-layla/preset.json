@@ -5683,6 +5683,14 @@
     }
    },
    {
+    "id": "verse",
+    "name": "شعر",
+    "marginTop": {
+     "value": 11.5,
+     "unit": "pt"
+    }
+   },
+   {
     "id": "note",
     "name": "تنبيه",
     "textAlign": "justify",

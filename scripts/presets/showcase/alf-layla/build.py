@@ -449,6 +449,10 @@ def paragraph_styles() -> list[dict]:
         {"id": "imprint", "name": "بيانات الطبع", "fontSize": pt(10.5), "lineHeight": pt(17), "textAlign": "center", "firstLineIndent": zero, "spaceBetween": pt(4)},
         {"id": "credits", "name": "المصادر", "fontSize": pt(11.5), "lineHeight": pt(19), "textAlign": "justify", "firstLineIndent": zero, "spaceBetween": pt(6)},
         {"id": "credits-en", "name": "Sources (English)", "fontSize": pt(10), "lineHeight": pt(14.5), "textAlign": "left", "firstLineIndent": zero, "spaceBetween": pt(4), "marginTop": lead},
+        # The poems (`:::verse{style="verse"}`): the body's face and pitch,
+        # half a line above; the text after a poem goes back to the grid,
+        # which leaves half a line below it too.
+        {"id": "verse", "name": "شعر", "marginTop": pt(G.lead_pt / 2)},
         {"id": "note", "name": "تنبيه", "textAlign": "justify", "firstLineIndent": {"value": 1, "unit": "em"}},
     ]
 
@@ -743,7 +747,7 @@ def write_chapters(out: str, data: dict, max_words: int | None) -> list[dict]:
     for i, ch in enumerate(chs):
         ch["blocks"] = with_plates(ch["blocks"])
         md = markup.chapter_markdown(ch, night_level=0, night_title="ordinal")
-        md = part_body(styled(md))
+        md = part_body(styled(md)).replace("\n:::verse\n", '\n:::verse{style="verse"}\n')
         if i == 0:
             # The text's folios: Arabic-Indic digits from the first volume.
             md = ':::numbering{format="decimal" startAt=1}\n\n' + md
