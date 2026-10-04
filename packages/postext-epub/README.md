@@ -102,6 +102,38 @@ The same array is what `renderToPdf` from `postext-pdf` takes for a book, so a P
 
 Without an `identifier`, the book gets a `urn:uuid:` derived from its title, creators and language, so writing the same book again keeps its identity in a reader's library. A bare ISBN becomes `urn:isbn:…`. Pass `modified` as well for byte-identical output from the same input.
 
+### Writing on a worker: `createEpubWorker()` (`postext-epub/worker`)
+
+`renderToEpub` keeps the thread it runs on busy while it writes; a fixed layout of a long book takes a second or more. In a page, write the book on a worker instead:
+
+```ts
+import { createEpubWorker } from 'postext-epub/worker';
+
+const epubWorker = createEpubWorker();
+const controller = new AbortController();
+const bytes = await epubWorker.render(docs, {
+  layout: 'fixed',
+  metadata: { title: 'My book', language: 'en' },
+  fonts,
+  resourceBytes, // a function, as for renderToEpub, or a Map by fileId
+  onProgress: (p) => console.log(p.phase, p.done, p.total),
+  onWarning: (w) => console.warn(w),
+  signal: controller.signal,
+});
+epubWorker.dispose(); // when the page no longer needs it
+```
+
+`render(docs, options)` takes the options of `renderToEpub` and returns the same bytes. What travels to the worker:
+
+- The documents are copied (structured clone).
+- A `resourceBytes` function is asked on the calling thread for every picture the pages place before the worker starts, since the worker cannot reach the host's stores. A `Map` of `{ bytes, mediaType }` by file id is sent as it is.
+- The buffers of the fonts, the pictures and the cover are transferred, not copied, so the caller's views of them are empty afterwards. Pass copies of bytes you keep.
+- The finished file comes back transferred.
+
+Progress and warnings are forwarded as they happen. Aborting the signal rejects at once with an `AbortError` and stops the worker, and the next render starts a fresh one.
+
+The worker script is `new URL('./epub.worker.js', import.meta.url)`, which webpack, Vite and esbuild bundle. A host that builds its own worker passes it as `createEpubWorker({ worker })`, a `Worker` or a function that makes one. Its script imports `postext-epub/worker/entry`. A worker that fails to load rejects with an `EpubWorkerError`, and the host can then call `renderToEpub` on its own thread.
+
 ### `readEpub(bytes): ReadEpubResult`
 
 Reads an EPUB back for a viewer, without `DOMParser`: the layout, the metadata, the reading direction, every file by its zip path, the manifest, the spine in reading order, the table of contents (from the navigation document, or the NCX of an older file), the page list, the fixed-layout viewport and the cover picture's path. `resolveHref(base, href)` and `dirOf(path)` resolve the links between those files.
@@ -138,7 +170,7 @@ Both renditions carry the EPUB Accessibility 1.1 metadata (access modes, feature
 - The reflowable stylesheet follows the first chapter's configuration: per-part palettes and per-chapter heading-style layouts are not applied.
 - A pull quote edited beyond leaving words out (an ellipsis) does not match the text, and is read as well.
 - Fonts are embedded as given. Respect the font licences: leave out families that may not be redistributed.
-- The file is written on the calling thread; a long book takes a few seconds.
+- `renderToEpub` writes on the calling thread; use `createEpubWorker` in a page. The writer checks the signal between steps, so a call on the page's own thread stops at the next step, not at once.
 
 ## Checking output with EPUBCheck
 

@@ -23,11 +23,21 @@
   "files": [
     "dist"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/worker/epub.worker.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker/client.d.ts",
+      "default": "./dist/worker/client.js"
+    },
+    "./worker/entry": {
+      "types": "./dist/worker/epub.worker.d.ts",
+      "default": "./dist/worker/epub.worker.js"
     },
     "./package.json": "./package.json"
   },
