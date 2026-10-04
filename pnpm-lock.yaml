@@ -166,7 +166,6 @@ overrides:
   postcss@<8.5.10: '>=8.5.10'
 
 patchedDependencies:
-  harfbuzzjs: c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc
   wawoff2: 4464a351270771a5804bde96859b403462c3a9ec2b1fcff9a200cb7c3fda6e0d
 
 importers:
@@ -466,9 +465,6 @@ importers:
       '@pdf-lib/fontkit':
         specifier: ^1.1.1
         version: 1.1.1
-      harfbuzzjs:
-        specifier: ^1.6.2
-        version: 1.6.2(patch_hash=c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc)
       pdf-lib:
         specifier: ^1.17.1
         version: 1.17.1
@@ -485,6 +481,9 @@ importers:
       eslint:
         specifier: ^9.39.4
         version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      harfbuzzjs:
+        specifier: 1.6.2
+        version: 1.6.2
       postext:
         specifier: workspace:*
         version: link:../postext
@@ -7584,7 +7583,7 @@ snapshots:
       section-matter: 1.0.0
       strip-bom-string: 1.0.0
 
-  harfbuzzjs@1.6.2(patch_hash=c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc): {}
+  harfbuzzjs@1.6.2: {}
 
   has-bigints@1.1.0: {}
 

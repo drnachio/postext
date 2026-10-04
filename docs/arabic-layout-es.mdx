@@ -117,7 +117,7 @@ Los elementos de diseño que se colocan en el flujo, como la banda de apertura d
 
 ## Formas enlazadas y palabras enteras
 
-Las letras de una palabra árabe se enlazan, y cada una toma la forma que le piden sus vecinas: inicial, media, final o aislada, con ligaduras como lām-alif. Postext mide y pinta una palabra como una sola cadena con sus formas, nunca letra a letra. El canvas y el HTML dejan las formas al navegador; el PDF las calcula con HarfBuzz, que solo se carga cuando un documento contiene árabe u otra escritura que lo necesite, y vincula cada glifo con sus caracteres, de modo que el texto que se copia del PDF y el que lee un lector de pantalla es el que se tecleó.
+Las letras de una palabra árabe se enlazan, y cada una toma la forma que le piden sus vecinas: inicial, media, final o aislada, con ligaduras como lām-alif. Postext mide y pinta una palabra como una sola cadena con sus formas, nunca letra a letra. El canvas y el HTML dejan las formas al navegador; el PDF las calcula con HarfBuzz, que solo se carga cuando un documento contiene árabe u otra escritura que lo necesite, y vincula cada glifo con sus caracteres, de modo que el texto que se copia del PDF y el que lee un lector de pantalla es el que se tecleó. Si HarfBuzz no se puede cargar, el PDF se escribe igual, con las marcas mal colocadas, y `renderToPdf` lo notifica con un aviso `complexShapingUnavailable`; su opción `harfbuzzWasm` apunta al archivo cuando un anfitrión lo sirve desde otro sitio.
 
 De los enlaces se siguen tres reglas, que valen para toda palabra que contenga una letra del alfabeto árabe, esté en un libro árabe o citada en uno en español:
 

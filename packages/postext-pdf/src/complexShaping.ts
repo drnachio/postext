@@ -10,49 +10,54 @@
  * Arabic shaping at all. The browser that measured the layout shapes with
  * HarfBuzz; so does this module, glyph for glyph the same.
  *
- * harfbuzzjs is a WebAssembly build (about 430 KB, 145 KB brotli). It is
- * loaded only for a document that sets text needing it
+ * HarfBuzz is a WebAssembly build (harfbuzzjs's `harfbuzz.wasm`, about
+ * 430 KB, 145 KB brotli), bound in `harfbuzz.ts` without the harfbuzzjs
+ * glue. It is loaded only for a document that sets text needing it
  * ({@link needsComplexShaping}), once, before the pages are drawn
  * ({@link loadComplexShaper}); shaping itself is then synchronous, as the
- * page painters are. Its ES module fetches `harfbuzz.wasm` next to itself
- * (`new URL('harfbuzz.wasm', import.meta.url)`): Node reads the file, a
- * Worker fetches it, and a bundler emits it as an asset, as it does the
- * PDF worker the client starts the same way.
+ * page painters are.
  *
  * Fonts are identified by their bytes (the file pdf-lib embeds): one
  * HarfBuzz face per file, and per face the runs already shaped, since the
  * same words recur through a book.
  */
 
-type HarfBuzz = typeof import('harfbuzzjs');
-type HbFont = InstanceType<HarfBuzz['Font']>;
-type HbBuffer = InstanceType<HarfBuzz['Buffer']>;
-type HbFeature = InstanceType<HarfBuzz['Feature']>;
+import { loadHarfBuzz, type HarfBuzz, type HarfBuzzWasmSource, type HbFontHandle } from './harfbuzz';
 
 let hb: HarfBuzz | undefined;
-let loading: Promise<boolean> | undefined;
-let buffer: HbBuffer | undefined;
+let loading: Promise<HarfBuzz> | undefined;
+let lastSource: HarfBuzzWasmSource | undefined;
+
+/** Why HarfBuzz could not be loaded, for the `complexShapingUnavailable`
+ *  warning. */
+export interface ComplexShaperFailure {
+  reason: string;
+}
 
 /**
- * Load HarfBuzz, once. Resolves true when it is ready, false when it could
- * not be loaded (no WebAssembly, the module or its `.wasm` not found): the
- * painters then shape with fontkit, as they did before, and the text keeps
- * its joining but not its marks or its order.
+ * Load HarfBuzz, once. Resolves true when it is ready; when it could not
+ * be loaded (no WebAssembly, the binary found nowhere), false, and
+ * `onFailure` hears why: the painters then shape with fontkit, as they did
+ * before, and the text keeps its joining but not its marks or its order.
+ * A failed load is tried again on the next call, which may bring a
+ * `source` (`RenderToPdfOptions.harfbuzzWasm`) the first did not; a call
+ * without one (an SVG's text, shaped while the resources are embedded)
+ * uses the last given. Once loaded, `source` is not looked at.
  */
-export function loadComplexShaper(): Promise<boolean> {
+export async function loadComplexShaper(source?: HarfBuzzWasmSource, onFailure?: (failure: ComplexShaperFailure) => void): Promise<boolean> {
+  if (hb) return true;
+  if (source !== undefined) lastSource = source;
   if (!loading) {
-    loading = import('harfbuzzjs').then(
-      (mod) => {
-        hb = mod;
-        return true;
-      },
-      (err: unknown) => {
-        console.warn(`postext-pdf: HarfBuzz did not load; complex scripts are shaped with fontkit (${err instanceof Error ? err.message : String(err)})`);
-        return false;
-      },
-    );
+    loading = loadHarfBuzz(lastSource);
+    loading.catch(() => { loading = undefined; });
   }
-  return loading;
+  try {
+    hb = await loading;
+    return true;
+  } catch (err) {
+    onFailure?.({ reason: err instanceof Error ? err.message : String(err) });
+    return false;
+  }
 }
 
 /** Whether {@link loadComplexShaper} has finished loading HarfBuzz. */
@@ -152,8 +157,7 @@ export interface ShapeOptions {
 }
 
 interface FaceEntry {
-  font: HbFont;
-  upem: number;
+  font: HbFontHandle;
   runs: Map<string, ShapedRun>;
 }
 
@@ -165,23 +169,17 @@ const RUN_CACHE_SLOTS = 50_000;
 function faceOf(bytes: Uint8Array): FaceEntry {
   let entry = faces.get(bytes);
   if (!entry) {
-    const blob = new hb!.Blob(bytes);
-    const face = new hb!.Face(blob, 0);
-    entry = { font: new hb!.Font(face), upem: face.upem, runs: new Map() };
+    const runs = new Map<string, ShapedRun>();
+    entry = { font: hb!.openFont(bytes, runs), runs };
     faces.set(bytes, entry);
   }
   return entry;
 }
 
-function featureList(features: ShapeFeatures | undefined): HbFeature[] | undefined {
+function featureList(features: ShapeFeatures | undefined): [string, number][] | undefined {
   if (!features) return undefined;
-  const list: HbFeature[] = [];
-  if (Array.isArray(features)) {
-    for (const tag of features as readonly string[]) list.push(new hb!.Feature(tag, 1));
-  } else {
-    for (const [tag, value] of Object.entries(features)) list.push(new hb!.Feature(tag, typeof value === 'number' ? value : value ? 1 : 0));
-  }
-  return list.length > 0 ? list : undefined;
+  if (Array.isArray(features)) return (features as readonly string[]).map((tag) => [tag, 1]);
+  return Object.entries(features).map(([tag, value]) => [tag, typeof value === 'number' ? value : value ? 1 : 0]);
 }
 
 function featureKey(features: ShapeFeatures | undefined): string {
@@ -204,26 +202,13 @@ export function shapeRun(fontBytes: Uint8Array, text: string, options: ShapeOpti
   const key = `${options.direction}|${options.script ?? ''}|${options.language ?? ''}|${featureKey(options.features)}|${text}`;
   const hit = face.runs.get(key);
   if (hit) return hit;
-  buffer ??= new hb.Buffer();
-  const buf = buffer;
-  buf.reset();
-  buf.setClusterLevel(hb.ClusterLevel.MONOTONE_GRAPHEMES);
-  buf.addText(text);
-  buf.guessSegmentProperties();
-  // The enum, not a string: harfbuzzjs passes the number through, and a
-  // string direction silently leaves the text unshaped.
-  buf.setDirection(options.direction === 'rtl' ? hb.Direction.RTL : hb.Direction.LTR);
-  if (options.script) buf.setScript(options.script);
-  if (options.language) buf.setLanguage(options.language);
-  hb.shape(face.font, buf, featureList(options.features));
-  const infos = buf.getGlyphInfos();
-  const positions = buf.getGlyphPositions();
-  const glyphs: ShapedGlyph[] = new Array(infos.length);
-  for (let i = 0; i < infos.length; i++) {
-    const p = positions[i]!;
-    glyphs[i] = { gid: infos[i]!.codepoint, cluster: infos[i]!.cluster, xAdvance: p.xAdvance, yAdvance: p.yAdvance, xOffset: p.xOffset, yOffset: p.yOffset };
-  }
-  const run: ShapedRun = { glyphs, upem: face.upem };
+  const glyphs: ShapedGlyph[] = hb.shape(face.font, text, {
+    direction: options.direction,
+    ...(options.script ? { script: options.script } : {}),
+    ...(options.language ? { language: options.language } : {}),
+    ...(options.features ? { features: featureList(options.features) } : {}),
+  });
+  const run: ShapedRun = { glyphs, upem: face.font.upem };
   if (face.runs.size >= RUN_CACHE_SLOTS) face.runs.clear();
   face.runs.set(key, run);
   return run;

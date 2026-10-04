@@ -1,6 +1,7 @@
 import type { VDTDocument } from 'postext';
 import type { PdfFontProvider } from '../fontCache';
 import type { RenderToPdfOptions } from '../pdf-backend';
+import { sourceBase } from '../harfbuzz';
 import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/renderResourceBlock';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol';
 
@@ -135,8 +136,16 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
           if (bytes.buffer instanceof ArrayBuffer) buffers.add(bytes.buffer);
         }
         const { pageNegative, outlines, colorSpace, accessible } = renderOptions;
+        // A URL goes as its string, resolved against this page (the worker's
+        // own location is its script); bytes are copied, so the
+        // caller's buffer stays usable for the next render.
+        const wasm = renderOptions.harfbuzzWasm;
+        const harfbuzzWasm = wasm === undefined ? undefined
+          : typeof wasm === 'string' || wasm instanceof URL ? new URL(wasm, sourceBase()).href
+          : ArrayBuffer.isView(wasm) ? new Uint8Array(wasm.buffer, wasm.byteOffset, wasm.byteLength).slice()
+          : wasm.slice(0);
         try {
-          send({ kind: 'render', id, docs, settings: { pageNegative, outlines, colorSpace, accessible }, resourceBytes }, [...buffers]);
+          send({ kind: 'render', id, docs, settings: { pageNegative, outlines, colorSpace, accessible, ...(harfbuzzWasm ? { harfbuzzWasm } : {}) }, resourceBytes }, [...buffers]);
         } catch (err) {
           pending.delete(id);
           current = null;

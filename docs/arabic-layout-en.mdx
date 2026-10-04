@@ -117,7 +117,7 @@ Design elements laid out in the flow, such as a chapter opener band or a heading
 
 ## Shaping and whole words
 
-The letters of an Arabic word join, and each takes the form its neighbours ask for: initial, medial, final or isolated, with ligatures such as lām-alif. Postext measures and paints a word as one shaped string, never letter by letter. The canvas and the HTML leave the shaping to the browser; the PDF shapes with HarfBuzz, loaded only when a document holds Arabic or another script that needs it, and maps each glyph back to its characters, so the text copied from the PDF and read by a screen reader is the text that was typed.
+The letters of an Arabic word join, and each takes the form its neighbours ask for: initial, medial, final or isolated, with ligatures such as lām-alif. Postext measures and paints a word as one shaped string, never letter by letter. The canvas and the HTML leave the shaping to the browser; the PDF shapes with HarfBuzz, loaded only when a document holds Arabic or another script that needs it, and maps each glyph back to its characters, so the text copied from the PDF and read by a screen reader is the text that was typed. When HarfBuzz cannot be loaded the PDF is still written, its marks misplaced, and `renderToPdf` reports a `complexShapingUnavailable` warning; its `harfbuzzWasm` option points at the file when a host serves it from somewhere of its own.
 
 Three rules follow from the joins, and hold for every word that holds an Arabic-script letter, in an Arabic book or quoted in an English one:
 

@@ -2,7 +2,11 @@ import type { VDTDocument } from 'postext';
 import type { PdfWarning, RenderProgress, RenderToPdfOptions } from '../pdf-backend';
 
 /** The render options that travel to the worker as data. */
-export type PdfRenderSettings = Pick<RenderToPdfOptions, 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible'>;
+export type PdfRenderSettings = Pick<RenderToPdfOptions, 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible'> & {
+  /** `RenderToPdfOptions.harfbuzzWasm`, as data: a URL string (a `URL`
+   *  does not survive `postMessage`) or the bytes. */
+  harfbuzzWasm?: string | ArrayBuffer | Uint8Array;
+};
 
 export type PdfRequestMessage =
   | {
