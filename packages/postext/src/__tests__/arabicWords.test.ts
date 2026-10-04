@@ -207,6 +207,28 @@ describe('a style change inside an Arabic word', () => {
     expect(textSegs(latin!).map((s) => s.text)).toEqual(['wor', 'd']);
     expect(textSegs(latin!).some((s) => s.runs)).toBe(false);
   });
+
+  it('keeps a word whole around a styled vowel sign between two letters (ب**َ**يت)', () => {
+    for (const direction of [undefined, 'rtl'] as const) {
+      const [line] = measureRichBlock([span('ب'), span('َ', true), span('يت جميل')], FONT, BOLD, FONT, FONT, 400, 20, direction ? { direction } : {}).lines;
+      const segs = textSegs(line!);
+      expect(segs.map((s) => s.text)).toEqual(['بَيت', 'جميل']);
+      expect(segs[0]!.runs).toEqual([{ text: 'ب' }, { text: 'َ', bold: true }, { text: 'يت' }]);
+      expect(segs[0]!.width).toBe(stubWidth('بَيت'));
+    }
+  });
+
+  it('keeps a word whole across several style changes, marks and letters', () => {
+    const [line] = measureRichBlock([span('ك'), span('ِ', true), span('ت'), span('َ', true), span('اب')], FONT, BOLD, FONT, FONT, 400, 20).lines;
+    const segs = textSegs(line!);
+    expect(segs.map((s) => s.text)).toEqual(['كِتَاب']);
+    expect(segs[0]!.runs!.map((r) => r.text)).toEqual(['ك', 'ِ', 'ت', 'َ', 'اب']);
+  });
+
+  it('a styled mark before a space or a Latin word joins only its own word', () => {
+    const [line] = measureRichBlock([span('بي'), span('ِ', true), span(' AAA')], FONT, BOLD, FONT, FONT, 400, 20).lines;
+    expect(textSegs(line!).map((s) => s.text)).toEqual(['بيِ', 'AAA']);
+  });
 });
 
 describe('the canvas', () => {

@@ -1240,8 +1240,15 @@ function joinStyledRuns(
 ): void {
   for (let i = 0; i + 1 < tokens.length; i++) {
     if (!isStyledRunPart(tokens[i])) continue;
+    // Each next run is read against the whole word so far: a run of marks
+    // alone (`ب**َ**يت`, a coloured fatha) has no letter of its own to join
+    // from, the letter it sits on does.
     let j = i + 1;
-    while (j < tokens.length && isStyledRunPart(tokens[j]) && joinsAcross(tokens[j - 1]!.text, tokens[j]!.text)) j++;
+    let word = tokens[i]!.text;
+    while (j < tokens.length && isStyledRunPart(tokens[j]) && joinsAcross(word, tokens[j]!.text)) {
+      word += tokens[j]!.text;
+      j++;
+    }
     if (j === i + 1) continue;
     const parts = tokens.slice(i, j);
     const runs: { text: string; bold?: boolean; italic?: boolean }[] = [];
