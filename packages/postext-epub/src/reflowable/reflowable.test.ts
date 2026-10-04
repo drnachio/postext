@@ -178,8 +178,9 @@ describe('buildReflowablePublication', () => {
     const { pub, files, all } = await render([layOut(`See :ref{id=f1} and :ref{id=t1}.\n\n${para}`, baseConfig, resources)]);
     expectSound(pub, files);
     expect(all).toMatch(/<figure id="res-f1"><img src="\.\.\/images\/[\w-]+\.png" alt="A red square on white"\/>/);
-    // A figcaption is the first or last child: the note goes inside it.
-    expect(all).toMatch(/<figcaption>.*<span class="pt-label">Figure\s1\.<\/span>.*A square\.<span class="pt-note">Drawn for the test\.<\/span><\/figcaption><\/figure>/);
+    // A figcaption is the first or last child: the note goes inside it, a
+    // space after the caption's last word.
+    expect(all).toMatch(/<figcaption>.*<span class="pt-label">Figure\s1\.<\/span>.*A square\. <span class="pt-note">Drawn for the test\.<\/span><\/figcaption><\/figure>/);
     expect(all).toMatch(/<table id="res-t1">\n<caption[^>]*>.*Sizes\.<\/caption>/);
     expect(all).toContain('<thead>\n<tr><th scope="col">Size</th><th scope="col">Width</th><th scope="col">Note</th></tr>\n</thead>');
     expect(all).toContain('<td><strong>tight</strong></td>');

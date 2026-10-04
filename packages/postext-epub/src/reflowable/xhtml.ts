@@ -219,14 +219,16 @@ class Writer {
     const note = node.note.length > 0 ? this.inline(node.note) : '';
     // A figcaption is the figure's first or last child: page starts go
     // before the picture, a note under the caption goes inside it (or after
-    // the picture when there is no caption).
+    // the picture when there is no caption), a space apart, so a reader
+    // without the style sheet, or reading the text aloud, does not run the
+    // caption's last word into the note's first.
     if (node.caption.length === 0) {
       return `<figure id="${node.id}">${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
     if (node.captionAbove) {
       return `<figure id="${node.id}"><figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
-    const caption = `<figcaption>${this.caption(node.caption)}${note ? `<span class="pt-note">${note}</span>` : ''}</figcaption>`;
+    const caption = `<figcaption>${this.caption(node.caption)}${note ? ` <span class="pt-note">${note}</span>` : ''}</figcaption>`;
     return `<figure id="${node.id}">${pre}${body}\n${caption}</figure>`;
   }
 
