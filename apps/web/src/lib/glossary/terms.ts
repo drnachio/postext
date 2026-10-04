@@ -1,6 +1,6 @@
 /**
  * The glossary's terms (WCAG 3.1.3 Unusual Words): the typesetting, Chinese
- * layout and software jargon the docs, the Cookbook and the landing use,
+ * and Arabic layout and software jargon the docs, the Cookbook and the landing use,
  * each with a short definition in every locale. `id` is the anchor on
  * /<locale>/glossary and never changes once published.
  *
@@ -8,22 +8,22 @@
  */
 import type { SiteLocale } from "@/i18n/locales";
 
-export type GlossaryCategory = "type" | "cjk" | "web";
+export type GlossaryCategory = "type" | "cjk" | "arabic" | "web";
 
 export interface GlossaryTerm {
   id: string;
   category: GlossaryCategory;
   /** [term, definition] per locale. */
   text: Record<SiteLocale, readonly [string, string]>;
-  /** The Chinese name of a Chinese-layout term, shown beside the English
-   *  and Spanish ones. */
+  /** The native name of a Chinese- or Arabic-layout term (中文 or العربية),
+   *  shown beside the term in the locales that do not write it already. */
   native?: string;
 }
 
 type Text = GlossaryTerm["text"];
 const term = (id: string, category: GlossaryCategory, text: Text, native?: string): GlossaryTerm => ({ id, category, text, ...(native ? { native } : {}) });
 
-export const GLOSSARY_CATEGORIES: readonly GlossaryCategory[] = ["type", "cjk", "web"];
+export const GLOSSARY_CATEGORIES: readonly GlossaryCategory[] = ["type", "cjk", "arabic", "web"];
 
 export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
   // ── Typesetting and the page ────────────────────────────────────────────
@@ -450,9 +450,9 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ca: ["Escriptura vertical", "Text compost en columnes que van de dalt a baix i es llegeixen de dreta a esquerra, com en molts llibres de Taiwan i en els clàssics xinesos."],
   }, "竖排"),
   term("right-binding", "cjk", {
-    en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese books are bound this way."],
-    es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos en vertical se encuadernan así."],
-    zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排中文书采用这种装订。"],
+    en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese books and Arabic books are bound this way."],
+    es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos en vertical y los libros árabes se encuadernan así."],
+    zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排中文书和阿拉伯文书采用这种装订。"],
     ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos en vertical s'enquadernen així."],
   }, "右装"),
   term("tier", "cjk", {
@@ -521,6 +521,58 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书口书眉", "竖排书中沿页面外侧页边竖排的章名和页码，而不是横排在页面顶部。"],
     ca: ["Capçaleres al tall", "En els llibres verticals, el títol del capítol i el foli compostos al llarg del marge exterior de la pàgina i no a dalt."],
   }, "书口"),
+
+  // ── Arabic layout ──────────────────────────────────────────────────────
+  term("bidi", "arabic", {
+    en: ["Bidirectional text", "Text that mixes scripts written right to left, such as Arabic, with numbers and Latin words read left to right. The Unicode Bidirectional Algorithm decides the order of the pieces on each line."],
+    es: ["Texto bidireccional", "Texto que mezcla escrituras de derecha a izquierda, como el árabe, con números y palabras latinas que se leen de izquierda a derecha. El algoritmo bidireccional de Unicode decide el orden de los tramos en cada línea."],
+    zh: ["双向文字", "从右到左书写的文字（如阿拉伯文）与从左到右阅读的数字和拉丁词混排的文本。每行中各段的顺序由Unicode双向算法决定。"],
+  }),
+  term("bidi-isolate", "arabic", {
+    en: ["Isolate", "A run of text ordered on its own inside a paragraph of the other direction, which the paragraph treats as a single neutral character. In Postext it is written :ltr[…] or :rtl[…]."],
+    es: ["Aislamiento", "Tramo de texto que se ordena por su cuenta dentro de un párrafo de la otra dirección, y que el párrafo trata como un solo carácter neutro. En Postext se escribe :ltr[…] o :rtl[…]."],
+    zh: ["隔离段", "在另一方向的段落中单独排序的一段文字，段落只把它当作一个中性字符。在Postext中写作:ltr[…]或:rtl[…]。"],
+  }),
+  term("kashida", "arabic", {
+    en: ["Kashida", "The lengthened join between two connected Arabic letters, used to stretch a justified line instead of spacing its letters apart. Postext inserts it as tatweel characters."],
+    es: ["Cachida", "Enlace alargado entre dos letras árabes unidas, con el que se estira una línea justificada en lugar de separar sus letras. Postext la inserta como caracteres tatweel."],
+    zh: ["卡希达（kashida）", "两个相连的阿拉伯字母之间拉长的连笔，用来拉伸两端对齐的行，而不是拉开字母间距。Postext以tatweel字符插入它。"],
+  }, "كشيدة"),
+  term("tatweel", "arabic", {
+    en: ["Tatweel", "The Arabic elongation character (U+0640, ـ), a stretch of baseline stroke between two joined letters. A run of them draws a kashida."],
+    es: ["Tatweel", "Carácter árabe de alargamiento (U+0640, ـ), un trozo de trazo de base entre dos letras unidas. Una serie de ellos dibuja una cachida."],
+    zh: ["tatweel", "阿拉伯文的延长字符（U+0640，ـ），是两个相连字母之间的一段基线笔画。几个连在一起就画出一个卡希达。"],
+  }, "تطويل"),
+  term("harakat", "arabic", {
+    en: ["Harakat", "The Arabic vowel marks written above and below the letters, such as fatḥa, kasra and shadda. Fully vocalised text needs more leading."],
+    es: ["Harakat", "Signos vocálicos árabes que se escriben encima y debajo de las letras, como la fatḥa, la kasra y la shadda. El texto vocalizado del todo necesita más interlineado."],
+    zh: ["元音符号（harakat）", "写在阿拉伯字母上下的元音符号，如fatḥa、kasra和shadda。完全标注元音的文本需要更大的行距。"],
+  }, "حركات"),
+  term("tashkil", "arabic", {
+    en: ["Tashkīl", "The vocalisation of an Arabic text, that is the set of vowel marks it carries. An edition may print it in full, in part or not at all."],
+    es: ["Tashkīl", "Vocalización de un texto árabe, es decir, el conjunto de signos vocálicos que lleva. Una edición puede imprimirla entera, en parte o nada."],
+    zh: ["标音（tashkīl）", "阿拉伯文文本的元音标注，即它所带的全部元音符号。一个版本可以全部印出、部分印出或完全不印。"],
+  }, "تشكيل"),
+  term("abjad", "arabic", {
+    en: ["Abjad numerals", "Numbers written with Arabic letters, each worth a fixed value (ا 1, ي 10, ق 100, غ 1000) and added up. Classical books use them for front matter and dates."],
+    es: ["Numeración abyad", "Números escritos con letras árabes, cada una con un valor fijo (ا 1, ي 10, ق 100, غ 1000) que se suman. Los libros clásicos la usan en los preliminares y en las fechas."],
+    zh: ["阿布杰德数码", "用阿拉伯字母书写的数，每个字母代表固定数值（ا为1，ي为10，ق为100，غ为1000），相加得数。古典书籍用于前置部分页码和纪年。"],
+  }, "أبجد"),
+  term("bayt", "arabic", {
+    en: ["Bayt", "A verse of classical Arabic poetry, set on one line in two halves: the first (ṣadr) on the right and the second (ʿajuz) on the left."],
+    es: ["Bayt", "Verso de la poesía árabe clásica, que se compone en una línea en dos mitades: la primera (ṣadr) a la derecha y la segunda (ʿajuz) a la izquierda."],
+    zh: ["联（bayt）", "古典阿拉伯诗歌的一句诗，排在一行内，分为两半：前半（ṣadr）在右，后半（ʿajuz）在左。"],
+  }, "بيت"),
+  term("hemistich", "arabic", {
+    en: ["Hemistich", "One half of a verse. In an Arabic poem every hemistich is set to one common width, so the rhyme letters line up down the page."],
+    es: ["Hemistiquio", "Cada una de las dos mitades de un verso. En un poema árabe todos los hemistiquios se componen a una misma anchura, de modo que las letras de la rima se alinean a lo largo de la página."],
+    zh: ["半行", "一句诗的一半。阿拉伯诗中每个半行都排成相同的宽度，使韵脚字母上下对齐。"],
+  }, "شطر"),
+  term("naskh", "arabic", {
+    en: ["Naskh", "The rounded Arabic book hand on which most text typefaces are based, such as Amiri and Noto Naskh Arabic."],
+    es: ["Naskh", "Letra árabe redondeada de los libros, en la que se basan la mayoría de los tipos de texto, como Amiri y Noto Naskh Arabic."],
+    zh: ["纳斯赫体（Naskh）", "圆润的阿拉伯书籍字体，大多数正文字体以它为基础，如Amiri和Noto Naskh Arabic。"],
+  }, "نسخ"),
 
   // ── Software and the web ───────────────────────────────────────────────
   term("markdown", "web", {

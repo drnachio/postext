@@ -21,7 +21,7 @@ export async function generateMetadata({
   });
 }
 
-const SECTION_TITLE = { type: "categoryType", cjk: "categoryCjk", web: "categoryWeb" } as const;
+const SECTION_TITLE = { type: "categoryType", cjk: "categoryCjk", arabic: "categoryArabic", web: "categoryWeb" } as const;
 
 /** The site's glossary (WCAG 3.1.3 and 3.1.4): the trade words, grouped
  *  and sorted in the reader's language, then every abbreviation with its

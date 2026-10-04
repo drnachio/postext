@@ -29,7 +29,7 @@ export function glossarySections(locale: SiteLocale): GlossarySections {
         id: t.id,
         term: t.text[locale][0],
         definition: t.text[locale][1],
-        ...(t.native && locale !== "zh" ? { native: t.native } : {}),
+        ...(t.native && !(locale === "zh" && t.category === "cjk") ? { native: t.native } : {}),
       }))
       .sort((a, b) => collator.compare(a.term, b.term)),
   }));
