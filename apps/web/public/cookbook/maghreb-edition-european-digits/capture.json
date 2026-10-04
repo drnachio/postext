@@ -1,0 +1,600 @@
+{
+  "schemaVersion": 1,
+  "slug": "maghreb-edition-european-digits",
+  "sourceHash": "ff7a7a7c24495b983242228bb9887047e7b391c622dba60279a9a81cfb453b03",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:34.737Z",
+  "variants": {
+    "en": {
+      "hash8": "2b37fc0d",
+      "vdtHash": "d116e84a017621b857a279bc9c5b1e9214c526f1",
+      "timings": {
+        "importMs": 512,
+        "fontsMs": 1278,
+        "buildMs": 88,
+        "totalMs": 2466,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          135,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Naskh Arabic",
+          "sizePt": 12.5,
+          "leadingPt": 20.5
+        },
+        "families": [
+          "Noto Kufi Arabic",
+          "Noto Naskh Arabic"
+        ],
+        "pages": 4,
+        "ownLines": 87
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1556,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 97616,
+          "alt": "Opening page 41: الفصل 3: أبواب فاس. شكل 3-1: زليج من نجوم ثمانية الرؤوس، على طريقة الفسيفساء الفاسية."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 89480,
+          "alt": "Page 42: 3-1 الأبواب الكبرى."
+        },
+        {
+          "n": 3,
+          "label": "43",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 88502,
+          "alt": "Page 43: 3-2 مدينة داخل السور."
+        },
+        {
+          "n": 4,
+          "label": "44",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 91542,
+          "alt": "Page 44: 3-3 الباب والكتاب."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "maghreb-edition-european-digits.pdf",
+        "bytes": 65706,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "maghreb-edition-european-digits.postext",
+        "bytes": 25825,
+        "folio": "5362c1cb"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.labelSeparator",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.markerTemplate",
+          "footnotes.noteNumberPosition",
+          "footnotes.numbering",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.width",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.levels",
+          "orderedLists.levels[].level",
+          "orderedLists.levels[].numberFormat",
+          "orderedLists.levels[].separator",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 101,
+        "designElements": 1,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "footnotes",
+          "heading-attributes",
+          "heading-numbering",
+          "inline-embeds",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "roman-front-matter",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.35
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "1281cfef",
+      "vdtHash": "dd8a6a9b678ff7206181b1aa8411eb32d7a4079d",
+      "timings": {
+        "importMs": 176,
+        "fontsMs": 78,
+        "buildMs": 88,
+        "totalMs": 1016,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          135,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Naskh Arabic",
+          "sizePt": 12.5,
+          "leadingPt": 20.5
+        },
+        "families": [
+          "Noto Kufi Arabic",
+          "Noto Naskh Arabic"
+        ],
+        "pages": 4,
+        "ownLines": 87
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "41",
+          "role": "opener",
+          "w": 1000,
+          "h": 1556,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 97616,
+          "alt": "Página de apertura 41: الفصل 3: أبواب فاس. شكل 3-1: زليج من نجوم ثمانية الرؤوس، على طريقة الفسيفساء الفاسية."
+        },
+        {
+          "n": 2,
+          "label": "42",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 89480,
+          "alt": "Página 42: 3-1 الأبواب الكبرى."
+        },
+        {
+          "n": 3,
+          "label": "43",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 88502,
+          "alt": "Página 43: 3-2 مدينة داخل السور."
+        },
+        {
+          "n": 4,
+          "label": "44",
+          "role": "body",
+          "w": 1000,
+          "h": 1556,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 93064,
+          "alt": "Página 44: 3-3 الباب والكتاب."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "maghreb-edition-european-digits.pdf",
+        "bytes": 66113,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "maghreb-edition-european-digits.postext",
+        "bytes": 25889,
+        "folio": "5362c1cb"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.labelSeparator",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.markerTemplate",
+          "footnotes.noteNumberPosition",
+          "footnotes.numbering",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.width",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.levels",
+          "orderedLists.levels[].level",
+          "orderedLists.levels[].numberFormat",
+          "orderedLists.levels[].separator",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 101,
+        "designElements": 1,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "footnotes",
+          "heading-attributes",
+          "heading-numbering",
+          "inline-embeds",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "roman-front-matter",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.35
+        },
+        "findings": []
+      }
+    }
+  }
+}

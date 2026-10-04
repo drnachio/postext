@@ -1,0 +1,714 @@
+{
+  "schemaVersion": 1,
+  "slug": "arabic-newspaper-two-columns",
+  "sourceHash": "504bad6130d446a6855c35416a13ded24ed0f4066599238fc81c512cc2208876",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:30.513Z",
+  "variants": {
+    "en": {
+      "hash8": "4f1ac7e2",
+      "vdtHash": "b4408fb2a212cedaa7ebff590129ba6bd5b921fb",
+      "timings": {
+        "importMs": 427,
+        "fontsMs": 1285,
+        "buildMs": 128,
+        "totalMs": 2411,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          246,
+          328
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": false,
+        "body": {
+          "family": "Noto Naskh Arabic",
+          "sizePt": 10.700000000000001,
+          "leadingPt": 16
+        },
+        "families": [
+          "Aref Ruqaa",
+          "Noto Kufi Arabic",
+          "Noto Naskh Arabic"
+        ],
+        "pages": 2,
+        "ownLines": 166
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 85380,
+          "alt": "Opening page ١: الساحل. مسار الخط الأول: ثماني عشرة محطة بين الميناء شرقًا والجامعة غربًا."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 123790,
+          "alt": "Opening page ٢: محليات. مواقيت الصلاة في رأس المرجان، الخميس ١ أكتوبر."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "arabic-newspaper-two-columns.pdf",
+        "bytes": 94832,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "arabic-newspaper-two-columns.postext",
+        "bytes": 21270,
+        "folio": "7d33b710"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.fontSize",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 325,
+        "designElements": 12,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "callout-columns",
+          "callout-styles",
+          "column-rule",
+          "document-digits",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "span-boxes",
+          "text-direction"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 6,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.71
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "d0439dcf",
+      "vdtHash": "955c86cf643652b510c45e8a74bcc4551330732c",
+      "timings": {
+        "importMs": 172,
+        "fontsMs": 99,
+        "buildMs": 134,
+        "totalMs": 1044,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          246,
+          328
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": false,
+        "body": {
+          "family": "Noto Naskh Arabic",
+          "sizePt": 10.700000000000001,
+          "leadingPt": 16
+        },
+        "families": [
+          "Aref Ruqaa",
+          "Noto Kufi Arabic",
+          "Noto Naskh Arabic"
+        ],
+        "pages": 2,
+        "ownLines": 166
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 85380,
+          "alt": "Página de apertura ١: الساحل. مسار الخط الأول: ثماني عشرة محطة بين الميناء شرقًا والجامعة غربًا."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 124114,
+          "alt": "Página de apertura ٢: محليات. مواقيت الصلاة في رأس المرجان، الخميس ١ أكتوبر."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "arabic-newspaper-two-columns.pdf",
+        "bytes": 94979,
+        "pages": 2
+      },
+      "sandbox": {
+        "file": "arabic-newspaper-two-columns.postext",
+        "bytes": 21313,
+        "folio": "7d33b710"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].span",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "headings.marginBottom",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].captionStyle",
+          "resourceTypes[].captionStyle.fontSize",
+          "resourceTypes[].captionStyle.position",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 325,
+        "designElements": 12,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 1,
+          "bitmap": 0,
+          "table": 1
+        },
+        "fonts": [
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 900,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Naskh Arabic",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "callout-columns",
+          "callout-styles",
+          "column-rule",
+          "document-digits",
+          "floated-callouts",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "span-boxes",
+          "text-direction"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 6,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.71
+        },
+        "findings": []
+      }
+    }
+  }
+}

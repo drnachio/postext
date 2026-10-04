@@ -1,0 +1,620 @@
+{
+  "schemaVersion": 1,
+  "slug": "qasida-diwan-page",
+  "sourceHash": "cbf930a06777ac4285fc30a1c986a83bdf829c0e486ef8548a887776e2fce01e",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:39.155Z",
+  "variants": {
+    "en": {
+      "hash8": "e8e28a45",
+      "vdtHash": "c99ac9822289cbbf710009cc43ae7c08724964f2",
+      "timings": {
+        "importMs": 595,
+        "fontsMs": 1283,
+        "buildMs": 78,
+        "totalMs": 2521,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 21
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa",
+          "Noto Kufi Arabic"
+        ],
+        "pages": 4,
+        "ownLines": 143
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 11800,
+          "alt": "Opening page ١: أبي الطيّب المتنبّي."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 75952,
+          "alt": "Opening page ٢: على قدر أهل العزم."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 103156,
+          "alt": "Page ٣."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 99598,
+          "alt": "Page ٤."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "qasida-diwan-page.pdf",
+        "bytes": 79915,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "qasida-diwan-page.postext",
+        "bytes": 29819
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.kashida",
+          "bodyText.kashidaMaxLength",
+          "bodyText.kashidaPatterns",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].hyphenation.locale",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 264,
+        "designElements": 15,
+        "directives": [
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "arabic-verse",
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-styles",
+          "kashida",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "section-running-heads",
+          "text-direction"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.6300000000000001
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "4231610a",
+      "vdtHash": "18615235935b6a3e2d7176c71e2720a69ae9b7af",
+      "timings": {
+        "importMs": 179,
+        "fontsMs": 127,
+        "buildMs": 113,
+        "totalMs": 1057,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 21
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa",
+          "Noto Kufi Arabic"
+        ],
+        "pages": 4,
+        "ownLines": 143
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 11748,
+          "alt": "Página de apertura ١: أبي الطيّب المتنبّي."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 75952,
+          "alt": "Página de apertura ٢: على قدر أهل العزم."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 103156,
+          "alt": "Página ٣."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 101168,
+          "alt": "Página ٤."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "qasida-diwan-page.pdf",
+        "bytes": 80116,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "qasida-diwan-page.postext",
+        "bytes": 29875
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.kashida",
+          "bodyText.kashidaMaxLength",
+          "bodyText.kashidaPatterns",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].hyphenation.locale",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 264,
+        "designElements": 15,
+        "directives": [
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "arabic-verse",
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-styles",
+          "kashida",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "section-running-heads",
+          "text-direction"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.11
+        },
+        "findings": []
+      }
+    }
+  }
+}

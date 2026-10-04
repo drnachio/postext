@@ -1,0 +1,479 @@
+{
+  "schemaVersion": 1,
+  "slug": "vocalised-classical-prose",
+  "sourceHash": "b8b4c7594ab1cde8859b9242c6515c24f22046d986afc8e682275e0f663df316",
+  "engine": {
+    "postext": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:42.690Z",
+  "variants": {
+    "en": {
+      "hash8": "e2100c7f",
+      "vdtHash": "19f1fc45f2f16b0bdbeb7e787694a9850d547d8e",
+      "timings": {
+        "importMs": 341,
+        "fontsMs": 1072,
+        "buildMs": 82,
+        "totalMs": 2054,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 14,
+          "leadingPt": 28
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa"
+        ],
+        "pages": 4,
+        "ownLines": 94
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 84014,
+          "alt": "Opening page ١: المقامة المارستانية."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 108120,
+          "alt": "Page ٢."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 93658,
+          "alt": "Page ٣."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 68992,
+          "alt": "Page ٤."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "vocalised-classical-prose.postext",
+        "bytes": 36124
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.kashida",
+          "bodyText.kashidaPatterns",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 71,
+        "designElements": 0,
+        "directives": [
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "arabic-verse",
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "kashida",
+          "page-background",
+          "paragraph-styles",
+          "right-binding",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.58
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "31692c9f",
+      "vdtHash": "63bdfc263bbdec2ad7bca8e8b6f3ef2e15d0a9ae",
+      "timings": {
+        "importMs": 128,
+        "fontsMs": 51,
+        "buildMs": 114,
+        "totalMs": 921,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 14,
+          "leadingPt": 28
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa"
+        ],
+        "pages": 4,
+        "ownLines": 94
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 83664,
+          "alt": "Página de apertura ١: المقامة المارستانية."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 108120,
+          "alt": "Página ٢."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 93658,
+          "alt": "Página ٣."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 72556,
+          "alt": "Página ٤."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "vocalised-classical-prose.postext",
+        "bytes": 36172
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.kashida",
+          "bodyText.kashidaPatterns",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 71,
+        "designElements": 0,
+        "directives": [
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "arabic-verse",
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "kashida",
+          "page-background",
+          "paragraph-styles",
+          "right-binding",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.79
+        },
+        "findings": []
+      }
+    }
+  }
+}

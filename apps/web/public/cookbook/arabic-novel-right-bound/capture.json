@@ -1,0 +1,698 @@
+{
+  "schemaVersion": 1,
+  "slug": "arabic-novel-right-bound",
+  "sourceHash": "1d78ce7ab001659d73e6750a5888e35445cad7f8d0302af301e42da34143823c",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:14.242Z",
+  "variants": {
+    "en": {
+      "hash8": "51fb1da6",
+      "vdtHash": "228ba9f283926971b507cfd33681a3d1e4d915c7",
+      "timings": {
+        "importMs": 8419,
+        "fontsMs": 2280,
+        "buildMs": 45,
+        "totalMs": 11413,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Markazi Text",
+          "sizePt": 13.5,
+          "leadingPt": 22
+        },
+        "families": [
+          "Markazi Text",
+          "Noto Kufi Arabic",
+          "Reem Kufi"
+        ],
+        "pages": 7,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١٠",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 42782,
+          "alt": "Opening page ١٠: الدرب."
+        },
+        {
+          "n": 2,
+          "label": "١١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 67392,
+          "alt": "Opening page ١١: الفصل الأول الباب الأزرق."
+        },
+        {
+          "n": 3,
+          "label": "١٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 91208,
+          "alt": "Page ١٢."
+        },
+        {
+          "n": 4,
+          "label": "١٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 81538,
+          "alt": "Page ١٣."
+        },
+        {
+          "n": 5,
+          "label": "١٤",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 63680,
+          "alt": "Opening page ١٤: الفصل الثاني صندوق الحروف."
+        },
+        {
+          "n": 6,
+          "label": "١٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 96684,
+          "alt": "Page ١٥."
+        },
+        {
+          "n": 7,
+          "label": "١٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 71820,
+          "alt": "Page ١٦."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          6,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "arabic-novel-right-bound.pdf",
+        "bytes": 85130,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "arabic-novel-right-bound.postext",
+        "bytes": 34697,
+        "folio": "217e1225"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 219,
+        "designElements": 12,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Markazi Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Reem Kufi",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.35
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 9: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "5d091862",
+      "vdtHash": "5b351374d59c99b443d9d730fcdda48da34370b8",
+      "timings": {
+        "importMs": 8345,
+        "fontsMs": 102,
+        "buildMs": 46,
+        "totalMs": 9246,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Markazi Text",
+          "sizePt": 13.5,
+          "leadingPt": 22
+        },
+        "families": [
+          "Markazi Text",
+          "Noto Kufi Arabic",
+          "Reem Kufi"
+        ],
+        "pages": 7,
+        "ownLines": 158
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١٠",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 42782,
+          "alt": "Página de apertura ١٠: الدرب."
+        },
+        {
+          "n": 2,
+          "label": "١١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 67392,
+          "alt": "Página de apertura ١١: الفصل الأول الباب الأزرق."
+        },
+        {
+          "n": 3,
+          "label": "١٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 91208,
+          "alt": "Página ١٢."
+        },
+        {
+          "n": 4,
+          "label": "١٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 81538,
+          "alt": "Página ١٣."
+        },
+        {
+          "n": 5,
+          "label": "١٤",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 63680,
+          "alt": "Página de apertura ١٤: الفصل الثاني صندوق الحروف."
+        },
+        {
+          "n": 6,
+          "label": "١٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 96684,
+          "alt": "Página ١٥."
+        },
+        {
+          "n": 7,
+          "label": "١٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 72528,
+          "alt": "Página ١٦."
+        }
+      ],
+      "spreads": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          6,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "arabic-novel-right-bound.pdf",
+        "bytes": 85083,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "arabic-novel-right-bound.postext",
+        "bytes": 34756,
+        "folio": "217e1225"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberingTemplate",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 219,
+        "designElements": 12,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Markazi Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Reem Kufi",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "right-binding",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.35
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 9: page 1 is a verso in the recipe, a recto in the Sandbox"
+          }
+        ]
+      }
+    }
+  }
+}

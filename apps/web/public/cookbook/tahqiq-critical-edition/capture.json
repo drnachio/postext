@@ -1,0 +1,858 @@
+{
+  "schemaVersion": 1,
+  "slug": "tahqiq-critical-edition",
+  "sourceHash": "baa8e1d525d1f6ad6bd5b2261deb69fd6ab84f64025d9b8d47cecab401fb40a2",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:54.521Z",
+  "variants": {
+    "en": {
+      "hash8": "c2bcfe9a",
+      "vdtHash": "450e833fb8a7df45805cb108debda8aee3d87a64",
+      "timings": {
+        "importMs": 468,
+        "fontsMs": 2376,
+        "buildMs": 206,
+        "totalMs": 3982,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 22.5
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa"
+        ],
+        "pages": 11,
+        "ownLines": 164
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "أ",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 22318,
+          "alt": "Opening page أ: مقدمة ابن خلدون."
+        },
+        {
+          "n": 2,
+          "label": "ب",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 16358,
+          "alt": "Opening page ب: الطبعة."
+        },
+        {
+          "n": 3,
+          "label": "ج",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 85592,
+          "alt": "Opening page ج: مقدمة المحقق."
+        },
+        {
+          "n": 4,
+          "label": "د",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 27520,
+          "alt": "Page د."
+        },
+        {
+          "n": 5,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 90286,
+          "alt": "Opening page ١: القسم الأول من المقدمة."
+        },
+        {
+          "n": 6,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 104982,
+          "alt": "Page ٢."
+        },
+        {
+          "n": 7,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 119378,
+          "alt": "Page ٣."
+        },
+        {
+          "n": 8,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 118244,
+          "alt": "Page ٤."
+        },
+        {
+          "n": 9,
+          "label": "٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 118412,
+          "alt": "Page ٥."
+        },
+        {
+          "n": 10,
+          "label": "٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 111042,
+          "alt": "Page ٦."
+        },
+        {
+          "n": 11,
+          "label": "٧",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 22414,
+          "alt": "Opening page ٧: فهرس الأعلام."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tahqiq-critical-edition.pdf",
+        "bytes": 153125,
+        "pages": 11
+      },
+      "sandbox": {
+        "file": "tahqiq-critical-edition.postext",
+        "bytes": 26931
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.markerTemplate",
+          "footnotes.noteNumberPosition",
+          "footnotes.numbering",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
+          "footnotes.spaceBelowRule",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "index",
+          "index.color",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.ignoreArticle",
+          "index.lineHeight",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 466,
+        "designElements": 26,
+        "directives": [
+          ":::paragraphs",
+          ":::pagebreak",
+          ":::numbering",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}",
+          "^…^"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "document-digits",
+          "footnotes",
+          "heading-attributes",
+          "heading-styles",
+          "index-article-sorting",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "section-geometry",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.3
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "6eff2f5c",
+      "vdtHash": "67748458f8413e649340d042e072eef7e43cf3de",
+      "timings": {
+        "importMs": 183,
+        "fontsMs": 78,
+        "buildMs": 209,
+        "totalMs": 1449,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 22.5
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa"
+        ],
+        "pages": 11,
+        "ownLines": 164
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "أ",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 22186,
+          "alt": "Página de apertura أ: مقدمة ابن خلدون."
+        },
+        {
+          "n": 2,
+          "label": "ب",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 16832,
+          "alt": "Página de apertura ب: الطبعة."
+        },
+        {
+          "n": 3,
+          "label": "ج",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 85592,
+          "alt": "Página de apertura ج: مقدمة المحقق."
+        },
+        {
+          "n": 4,
+          "label": "د",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 27520,
+          "alt": "Página د."
+        },
+        {
+          "n": 5,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 90286,
+          "alt": "Página de apertura ١: القسم الأول من المقدمة."
+        },
+        {
+          "n": 6,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 104982,
+          "alt": "Página ٢."
+        },
+        {
+          "n": 7,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 119378,
+          "alt": "Página ٣."
+        },
+        {
+          "n": 8,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 118244,
+          "alt": "Página ٤."
+        },
+        {
+          "n": 9,
+          "label": "٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 118412,
+          "alt": "Página ٥."
+        },
+        {
+          "n": 10,
+          "label": "٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 111042,
+          "alt": "Página ٦."
+        },
+        {
+          "n": 11,
+          "label": "٧",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 22414,
+          "alt": "Página de apertura ٧: فهرس الأعلام."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "tahqiq-critical-edition.pdf",
+        "bytes": 151481,
+        "pages": 11
+      },
+      "sandbox": {
+        "file": "tahqiq-critical-edition.postext",
+        "bytes": 26968
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].lineHeight",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.markerTemplate",
+          "footnotes.noteNumberPosition",
+          "footnotes.numbering",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
+          "footnotes.spaceBelowRule",
+          "footnotes.textAlign",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].lineHeight",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "index",
+          "index.color",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.ignoreArticle",
+          "index.lineHeight",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.pageNumbering.startAt",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "footnotes",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "unorderedLists"
+        ],
+        "configLeaves": 466,
+        "designElements": 26,
+        "directives": [
+          ":::paragraphs",
+          ":::pagebreak",
+          ":::numbering",
+          ":::index"
+        ],
+        "inline": [
+          "{attrs}",
+          "^…^"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "document-digits",
+          "footnotes",
+          "heading-attributes",
+          "heading-styles",
+          "index-article-sorting",
+          "opener-design",
+          "page-background",
+          "page-breaks",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "section-geometry",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.3
+        },
+        "findings": []
+      }
+    }
+  }
+}
