@@ -492,7 +492,7 @@ export function writeContentDocument(file: FileModel, ctx: SerializeContext): st
 <head>
 <meta charset="UTF-8"/>
 <title>${title}</title>
-<link rel="stylesheet" type="text/css" href="${xmlAttr(relativeHref(file.href, ctx.stylesheet))}"/>
+${[ctx.stylesheet, ...(file.stylesheets ?? [])].map((href) => `<link rel="stylesheet" type="text/css" href="${xmlAttr(relativeHref(file.href, href))}"/>`).join('\n')}
 </head>
 <body>
 <section epub:type="${type}" role="doc-${type}" class="pt-${type}">

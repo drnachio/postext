@@ -34,13 +34,33 @@ export function familyName(family: string): string {
 
 const ALIGN: Record<string, string> = { left: 'start', right: 'end', center: 'center', justify: 'justify' };
 
-/** Declarations as one rule body. */
-function rule(selector: string, decls: (string | false | undefined | null)[]): string {
-  const body = decls.filter(Boolean);
-  return body.length > 0 ? `${selector} {\n${body.map((d) => `  ${d};`).join('\n')}\n}\n` : '';
+/** A rule of the stylesheet: its selector and declarations
+ *  (`property: value`). */
+export interface CssRule {
+  selector: string;
+  decls: string[];
 }
 
-export function bookStylesheet(config: ResolvedConfig, fontFaces: string, options: StylesheetOptions): { css: string; families: Set<string> } {
+/** A rule from its declarations (the falsy ones left out); none when it
+ *  declares nothing. */
+function rule(selector: string, decls: (string | false | undefined | null)[]): CssRule | '' {
+  const body = decls.filter((d): d is string => typeof d === 'string' && d.length > 0);
+  return body.length > 0 ? { selector, decls: body } : '';
+}
+
+function ruleText(r: CssRule): string {
+  return `${r.selector} {\n${r.decls.map((d) => `  ${d};`).join('\n')}\n}\n`;
+}
+
+/** The book's stylesheet: its text, the families it names, and its rules
+ *  (at-rules aside), which {@link stylesheetOverrides} compares. */
+export interface Stylesheet {
+  css: string;
+  families: Set<string>;
+  rules: CssRule[];
+}
+
+export function bookStylesheet(config: ResolvedConfig, fontFaces: string, options: StylesheetOptions): Stylesheet {
   const dpi = config.page.dpi;
   const body = config.bodyText;
   const bodyPx = dimensionToPx(body.fontSize, dpi);
@@ -63,7 +83,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   // logical sides (`margin-inline-start`, `text-align: start`), so they
   // hold in both directions.
   const rtl = config.direction === 'rtl';
-  const out: string[] = [];
+  const out: (string | CssRule)[] = [];
 
   out.push('@charset "UTF-8";\n');
   if (fontFaces) out.push(fontFaces);
@@ -428,5 +448,76 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       '  .pt-verse-ornament { display: none; }\n' +
       '}\n');
   }
-  return { css: out.filter(Boolean).join('\n'), families };
+  return {
+    css: out.filter(Boolean).map((r) => (typeof r === 'string' ? r : ruleText(r))).join('\n'),
+    families,
+    rules: out.filter((r): r is CssRule => typeof r !== 'string'),
+  };
+}
+
+/**
+ * What a chapter's stylesheet changes in the book's (`base`): each rule of
+ * `variant` whose declarations differ from those of the rule with the same
+ * selector (the n-th of that selector, in order), with the declarations it
+ * changes or adds, and `unset` for those it drops; a rule the book's
+ * stylesheet does not have, whole. Written as a stylesheet linked after
+ * the book's: the same selectors come later, so they win, and the
+ * cascade between rules stays as in the chapter's own stylesheet (a class
+ * on the body would raise their specificity above the book's other rules).
+ * Empty when nothing differs.
+ */
+export function stylesheetOverrides(base: readonly CssRule[], variant: readonly CssRule[]): string {
+  const keyed = (rules: readonly CssRule[]): Map<string, CssRule> => {
+    const seen = new Map<string, number>();
+    const out = new Map<string, CssRule>();
+    for (const r of rules) {
+      const n = seen.get(r.selector) ?? 0;
+      seen.set(r.selector, n + 1);
+      out.set(`${r.selector}\u0000${n}`, r);
+    }
+    return out;
+  };
+  const prop = (d: string) => d.slice(0, d.indexOf(':')).trim();
+  const was = keyed(base);
+  const out: string[] = [];
+  for (const [key, r] of keyed(variant)) {
+    const before = was.get(key);
+    if (!before) {
+      out.push(ruleText(r));
+      continue;
+    }
+    const old = new Set(before.decls);
+    const changed = r.decls.filter((d) => !old.has(d));
+    const kept = new Set(r.decls.map(prop));
+    const dropped = before.decls.map(prop).filter((p) => !kept.has(p)).map((p) => `${p}: unset`);
+    if (changed.length + dropped.length > 0) out.push(ruleText({ selector: r.selector, decls: [...changed, ...dropped] }));
+  }
+  return out.join('\n');
+}
+
+/** `config` under a part's palette (palette id → hex): every colour equal
+ *  to the base value of an entry the part changes takes the part's value,
+ *  as the engine recolours the printed text (`applyPartPalettesToFlow`;
+ *  the resolved configuration keeps values, not palette links). */
+export function withPalette(config: ResolvedConfig, overrides: Readonly<Record<string, string>> | undefined): ResolvedConfig {
+  if (!overrides || !config.colorPalette) return config;
+  const remap = new Map<string, string>();
+  for (const e of config.colorPalette) {
+    const hex = overrides[e.id];
+    if (!hex) continue;
+    const next = hex.startsWith('#') ? hex : `#${hex}`;
+    if (next.toLowerCase() !== e.value.hex.toLowerCase()) remap.set(e.value.hex.toLowerCase(), next);
+  }
+  if (remap.size === 0) return config;
+  const walk = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(walk);
+    if (!v || typeof v !== 'object') return v;
+    const o = v as Record<string, unknown>;
+    if (typeof o.hex === 'string' && typeof o.model === 'string') {
+      const next = remap.get(o.hex.toLowerCase());
+      return next ? { ...o, hex: next } : o;
+    }
+    return Object.fromEntries(Object.entries(o).map(([k, x]) => [k, k === 'colorPalette' ? x : walk(x)]));
+  };
+  return walk(config) as ResolvedConfig;
 }

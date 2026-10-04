@@ -451,3 +451,53 @@ describe('reflowable rendition: pull quotes', () => {
     expect(all).toMatch(/<aside class="pt-callout pt-callout-note">\n<p>She put it plainly\.<\/p>/);
   });
 });
+
+describe('reflowable rendition: stylesheets per chapter and part', () => {
+  const band = { hex: '#9bcdbf', model: 'hex' as const, paletteId: 'band' };
+  const config = {
+    ...baseConfig,
+    colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#9bcdbf', model: 'hex' as const } }],
+    bodyText: { boldColor: band },
+    headings: { levels: [{ level: 2, color: band }] },
+  };
+  const sheetOf = (pub: EpubPublication, href: string) => pub.items.find((i) => i.href === href)?.data as string | undefined;
+
+  it('recolours the documents of a part with the palette it sets, in a stylesheet of their own', async () => {
+    const docs = layOutBook([
+      '# Zero\n\nSome **bold** words.\n\n## Before\n\nText.',
+      ':::part{number="II" title="Two" palette="band=#f6c297"}\n:::\n\n# One\n\nMore **bold** words.\n\n## After\n\nText.',
+      '# Two\n\nStill in part two.',
+    ], config);
+    const { pub, files } = await render(docs);
+    expectSound(pub, files);
+    expect(sheetOf(pub, 'styles/book.css')).toMatch(/strong, b \{[^}]*color: #9bcdbf;/);
+    const own = sheetOf(pub, 'styles/book-2.css')!;
+    expect(own).toMatch(/^@charset "UTF-8";\n/);
+    expect(own).toContain('strong, b {\n  color: #f6c297;\n}');
+    expect(own).toContain('h2 {\n  color: #f6c297;\n}');
+    // Only what the palette changes.
+    expect(own).not.toContain('font-size');
+    const links = (href: string) => [...files.get(href)!.matchAll(/<link rel="stylesheet" type="text\/css" href="([^"]+)"\/>/g)].map((m) => m[1]);
+    expect(links('text/chapter-001.xhtml')).toEqual(['../styles/book.css']);
+    // The part opener, the chapter after it and the next chapter of the part.
+    const recoloured = [...files.keys()].filter((href) => links(href).includes('../styles/book-2.css'));
+    expect(recoloured).toEqual(['text/part-001.xhtml', 'text/chapter-002.xhtml', 'text/chapter-003.xhtml']);
+    expect(pub.items.filter((i) => i.mediaType === 'text/css')).toHaveLength(2);
+  });
+
+  it('writes what a chapter configured otherwise changes, and drops what it leaves out', async () => {
+    const first = { ...baseConfig, headingStyles: [{ id: 'plate', fontSize: pt(20), italic: true }] };
+    const second = { ...baseConfig, headingStyles: [{ id: 'plate', fontSize: pt(14) }] };
+    const docs = [
+      layOut('# One {style="plate"}\n\nText.', first),
+      layOut('# Two {style="plate"}\n\nText.', second),
+      layOut('# Three {style="plate"}\n\nText.', first),
+    ];
+    const { pub, files } = await render(docs);
+    expectSound(pub, files);
+    const own = sheetOf(pub, 'styles/book-2.css')!;
+    expect(own).toMatch(/\.hs-plate \{\n {2}font-size: [\d.]+em;\n {2}font-style: unset;\n\}/);
+    expect(files.get('text/chapter-002.xhtml')).toContain('href="../styles/book-2.css"');
+    expect(files.get('text/chapter-003.xhtml')).not.toContain('book-2.css');
+  });
+});

@@ -161,13 +161,14 @@ Reads an EPUB back for a viewer, without `DOMParser`: the layout, the metadata, 
 - Each printed page leaves a page-break marker where its text starts, so the page list gives the print page numbers.
 - A stylesheet is derived from the configuration: sizes relative to the body text, the book's colours, justification with automatic hyphenation, indents, and styles for headings, boxes, tables, captions, lists and notes. Vertical Chinese keeps vertical writing; Arabic documents are `dir="rtl"`.
 - Paragraphs set in a paragraph style (`:::paragraphs{style=…}`, a `:::verse` fence's style) carry its class, inside boxes too, and index entries are classed by their level, both as the layout names them (`VDTBlock.paragraphStyleId`, `VDTBlock.indexLevel`). Documents laid out by an older engine fall back to telling them from the face and the indent.
+- The stylesheet follows the first chapter's configuration. A chapter configured otherwise (its own heading styles, say), and every document of a part whose `palette` recolours the book, links a second stylesheet after it (`styles/book-2.css`…) with only the rules that change; documents that change the same share it.
 - A pull quote repeats words of the text, so it would be read twice. A box with no title (or a title of marks alone, such as a hanging quotation mark) whose words the chapter's text also has is kept on the page as `<aside epub:type="pullquote" role="doc-pullquote" aria-hidden="true">`: readers see it, assistive technology and read-aloud skip it, and the words are read once, in the text. A box whose style id names it a pull quote but whose words are its own is marked `epub:type="pullquote"` and read.
 
 Both renditions carry the EPUB Accessibility 1.1 metadata (access modes, features such as the table of contents and print page numbers, hazards and a summary), and neither claims WCAG conformance by default.
 
 ## Limitations
 
-- The reflowable stylesheet follows the first chapter's configuration: per-part palettes and per-chapter heading-style layouts are not applied.
+- A part's palette recolours the colours equal to the palette entries it overrides, as the printed text does; two entries that share a colour take the last override.
 - A pull quote edited beyond leaving words out (an ellipsis) does not match the text, and is read as well.
 - Fonts are embedded as given. Respect the font licences: leave out families that may not be redistributed.
 - `renderToEpub` writes on the calling thread; use `createEpubWorker` in a page. The writer checks the signal between steps, so a call on the page's own thread stops at the next step, not at once.

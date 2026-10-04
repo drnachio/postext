@@ -19,7 +19,7 @@ import type {
   RenderToEpubOptions,
 } from '../types';
 import { fontAssets, imageAssets, pageProgressionOf } from '../shared/assets';
-import { bookStylesheet } from './css';
+import { bookStylesheet, stylesheetOverrides, withPalette } from './css';
 import { xmlAttr, xmlText } from './inline';
 import type { FileModel, HeadingEntry } from './model';
 import { docLanguage, walkBook } from './walk';
@@ -138,13 +138,43 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   signal?.throwIfAborted();
 
   const vertical = first.config.layout.writingMode === 'vertical-rl';
-  const sheet = bookStylesheet(first.config, fonts.css, { vertical, ...(book.verse ? { verse: true } : {}) });
-  for (const family of sheet.families) {
+  const sheetOptions = { vertical, ...(book.verse ? { verse: true } : {}) };
+  const sheet = bookStylesheet(first.config, fonts.css, sheetOptions);
+  const items: EpubItem[] = [{ id: 'css', href: STYLESHEET_HREF, mediaType: 'text/css', data: sheet.css }];
+  // The stylesheet follows the first chapter's configuration. A document
+  // whose chapter is configured otherwise (its heading styles, say), or
+  // whose part recolours the palette, links a second stylesheet with what
+  // changes, shared by the documents that change the same.
+  const families = new Set(sheet.families);
+  const overrides = new Map<string, string | undefined>();
+  const sheets = new Map<string, string>();
+  for (const file of book.files) {
+    const config = docs[file.doc]!.config;
+    if (config === first.config && !file.palette) continue;
+    const key = `${file.doc}\u0000${JSON.stringify(file.palette ?? {})}`;
+    if (!overrides.has(key)) {
+      const own = bookStylesheet(withPalette(config, file.palette), '', sheetOptions);
+      for (const family of own.families) families.add(family);
+      const css = stylesheetOverrides(sheet.rules, own.rules);
+      let href: string | undefined;
+      if (css) {
+        href = sheets.get(css);
+        if (!href) {
+          href = `${STYLESHEET_HREF.replace(/\.css$/, '')}-${sheets.size + 2}.css`;
+          sheets.set(css, href);
+          items.push({ id: `css-${sheets.size + 1}`, href, mediaType: 'text/css', data: `@charset "UTF-8";\n${css}` });
+        }
+      }
+      overrides.set(key, href);
+    }
+    const href = overrides.get(key);
+    if (href) file.stylesheets = [href];
+  }
+  for (const family of families) {
     if (!fonts.families.has(family)) warn({ kind: 'missingFont', family });
   }
   onProgress?.({ phase: 'resources', done: 2, total: 2 });
 
-  const items: EpubItem[] = [{ id: 'css', href: STYLESHEET_HREF, mediaType: 'text/css', data: sheet.css }];
   items.push(...fonts.items);
   items.push(...images.items.filter((i) => usedImages.has(i.href)));
   const spine: EpubSpineEntry[] = [];

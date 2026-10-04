@@ -183,6 +183,8 @@ class DocWalker {
   private pendingPages: number[] = [];
   private floating = false;
   private partKey?: string;
+  /** The palette overrides of the part in force. */
+  private palette?: Record<string, string>;
   private fileCount = 0;
 
   constructor(
@@ -198,6 +200,7 @@ class DocWalker {
     if (doc.config.direction === 'rtl') this.dir = 'rtl';
     this.bodyPx = dimensionToPx(doc.config.bodyText.fontSize, doc.config.page.dpi);
     this.partMarks = [...(doc.partMarks ?? [])].sort((a, b) => a.afterContentIndex - b.afterContentIndex);
+    this.palette = doc.partStart?.palette;
     const frames = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].filter((b) => b.type === 'callout');
     for (const f of frames) {
       if (f.containerId !== undefined) this.calloutIds.add(f.containerId);
@@ -222,7 +225,7 @@ class DocWalker {
       const bookIndex = this.offset + page.index;
       if (page.partInfo) {
         const key = `${page.partInfo.number}\u0000${page.partInfo.title}`;
-        if (key !== this.partKey) this.openPart(page.partInfo.number, page.partInfo.title, bookIndex);
+        if (key !== this.partKey) this.openPart(page.partInfo.number, page.partInfo.title, bookIndex, page.partInfo.palette);
       } else if (this.file?.kind === 'part') {
         this.newFile('chapter');
       }
@@ -275,6 +278,7 @@ class DocWalker {
       notes: [],
       lang: this.lang,
       ...(this.dir ? { dir: this.dir } : {}),
+      ...(this.palette && Object.keys(this.palette).length > 0 ? { palette: this.palette } : {}),
     };
     this.fileCount++;
     this.book.files.push(file);
@@ -287,11 +291,14 @@ class DocWalker {
 
   /** A part opener: a document of its own with the part's title. A file
    *  holding nothing but page starts becomes the opener. */
-  private openPart(number: string, title: string, bookIndex: number): void {
+  private openPart(number: string, title: string, bookIndex: number, palette: Record<string, string> | undefined): void {
     this.partKey = `${number}\u0000${title}`;
+    this.palette = palette;
     const reuse = this.file && this.file.nodes.every((n) => n.k === 'marker');
     const file = reuse ? this.file! : this.newFile('part');
     file.kind = 'part';
+    if (palette && Object.keys(palette).length > 0) file.palette = palette;
+    else delete file.palette;
     const id = `part-${++this.counters.heading}`;
     const label = [number, title].filter((s) => s.trim()).join(' ');
     const inl: InlineItem[] = [...this.takePages()];
@@ -421,7 +428,7 @@ class DocWalker {
     if (!this.floating && block.contentIndex !== undefined) {
       while (this.partMarks.length > 0 && block.contentIndex > this.partMarks[0]!.afterContentIndex) {
         const mark = this.partMarks.shift()!;
-        this.openPart(mark.number, mark.title, this.offset + block.pageIndex);
+        this.openPart(mark.number, mark.title, this.offset + block.pageIndex, mark.palette);
         this.newFile('chapter');
         root = this.root;
       }

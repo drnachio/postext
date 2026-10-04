@@ -237,6 +237,13 @@ export interface FileModel {
   dir?: 'rtl';
   /** The `<title>`: the first heading's text, else the book's. */
   title?: string;
+  /** The palette overrides of the part in force where the document starts
+   *  (`:::part{palette=…}`: palette id → hex). */
+  palette?: Record<string, string>;
+  /** Stylesheets linked after the book's (hrefs relative to the package
+   *  document): what the chapter's configuration and its part's palette
+   *  change in it. */
+  stylesheets?: string[];
 }
 
 /** A heading as the navigation and the contents rows see it. */
