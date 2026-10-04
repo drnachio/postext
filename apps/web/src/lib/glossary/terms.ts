@@ -453,7 +453,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese books and Arabic books are bound this way."],
     es: ["Encuadernación por la derecha", "Libro encuadernado por el borde derecho, que se abre por lo que un lector occidental consideraría el final. Los libros chinos en vertical y los libros árabes se encuadernan así."],
     zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排中文书和阿拉伯文书采用这种装订。"],
-    ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos en vertical s'enquadernen així."],
+    ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos en vertical i els llibres àrabs s'enquadernen així."],
   }, "右装"),
   term("tier", "cjk", {
     en: ["Tier", "In vertical writing, one of the horizontal bands a page is divided into, the vertical counterpart of a column."],
