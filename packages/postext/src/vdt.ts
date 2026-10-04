@@ -602,7 +602,8 @@ export interface VDTLine {
    *  `[bbox.x, right edge of the block]`: set on the lines of a block whose
    *  direction opposes its frame's (an English quotation in an Arabic book),
    *  whose indent and ragged edge fall on the other side. Absent
-   *  otherwise. */
+   *  otherwise. Its start side is the right of the span: renderers align
+   *  the line there (see {@link lineTextAlign}). */
   measure?: { x: number; width: number };
   /** How many kashidas (tatweels, U+0640) justification inserted into the
    *  line's words, for warnings and overlays. The tatweels themselves are in
@@ -1003,6 +1004,20 @@ export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
 
 /** Whether a page's flow is laid out mirrored, right to left
  *  ({@link VDTMirroredFlowFrame}). */
+/**
+ * The side a line is set from, as the renderers align it (#371): its
+ * block's `textAlign`, except on a line with a {@link VDTLine.measure} (a
+ * block set against its frame's direction), whose start side is the right
+ * of its span: `left` (the start; also the last line of a justified
+ * paragraph, `justify` coming back as `right`) is flush right, `right` (the
+ * end) flush left, and a centred line stays centred. A justified line that
+ * is not its paragraph's last is filled across the span either way.
+ */
+export function lineTextAlign(line: Pick<VDTLine, 'measure'>, textAlign: TextAlign): TextAlign {
+  if (!line.measure) return textAlign;
+  return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
+}
+
 export function pageIsMirrored(page: Pick<VDTPage, 'flow'>): boolean {
   return page.flow?.writingMode === 'horizontal-tb' && page.flow.direction === 'rtl';
 }

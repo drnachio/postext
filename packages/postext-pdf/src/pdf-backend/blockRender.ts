@@ -1,5 +1,5 @@
 import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
-import { segmentOrientation } from 'postext';
+import { lineTextAlign, segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
@@ -405,7 +405,7 @@ function renderLineText(
   // from its start side, the right, as the canvas sets it.
   const span = line.measure;
   const lineX = span ? span.x : line.bbox.x;
-  const align = span ? startSideAlign(block.textAlign) : block.textAlign;
+  const align = lineTextAlign(line, block.textAlign);
   const lineIndent = lineX - columnX;
   const effectiveWidth = span ? span.width : columnWidth - lineIndent;
   const segments = line.segments;
@@ -472,14 +472,6 @@ function renderLineText(
     && drawMeasuredTextPx(ctx, withLineEndSpace(segments, line.text), plainX, line.baseline, blockFont, blockSize, blockColor, tracking, actualText)) return;
   if (complex && drawShapedTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, { base: block.direction, actualText })) return;
   drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, undefined, actualText);
-}
-
-/** The physical alignment of a line set from the right, its start side (a
- *  line with `measure`): `left` (and the last line of a justified
- *  paragraph) reads as start, flush right; `right` as end, flush left; a
- *  centred line stays centred. The canvas's `startSideAlign`. */
-function startSideAlign(textAlign: VDTBlock['textAlign']): VDTBlock['textAlign'] {
-  return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
 }
 
 /** Whether a segment of a line set word by word paints differently from

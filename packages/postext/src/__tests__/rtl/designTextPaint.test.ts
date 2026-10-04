@@ -133,9 +133,18 @@ describe('canvas: design text and chips right to left', () => {
 });
 
 describe('HTML: design text and chips right to left', () => {
-  it('sets a right-to-left running head and chip run with dir="rtl"', () => {
+  it('sets a right-to-left running head and chip run in the right-to-left root, a Latin chip run with dir="ltr"', () => {
     const html = renderToHtml(buildDocument({ markdown: MD }, config()), { mode: 'single' });
-    expect(html).toMatch(/<span dir="rtl" style="position:absolute;left:[\d.]+px;top:[-\d.]+px;line-height:1;white-space:pre;">/);
+    // The document root runs right to left (#379); a right-to-left running
+    // head inherits that direction, a Latin run of the chip declares its own.
+    expect(html).toMatch(/^<div class="pt-doc" lang="ar" dir="rtl"/);
+    expect(html).toMatch(/<span style="position:absolute;left:[\d.]+px;top:[-\d.]+px;line-height:1;white-space:pre;">/);
+    expect(html).toContain(`<span dir="ltr" style="position:absolute;`);
+  });
+
+  it('in a left-to-right document, a right-to-left chip run declares rtl', () => {
+    const cfg = { ...config(), direction: 'ltr' as const, locale: 'en' };
+    const html = renderToHtml(buildDocument({ markdown: `Words :chip[${AR}]{style=k} words.` }, cfg), { mode: 'single' });
     expect(html).toContain(`<span dir="rtl" style="position:absolute;`);
   });
 

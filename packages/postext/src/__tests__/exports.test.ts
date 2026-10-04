@@ -307,6 +307,7 @@ describe("package exports", () => {
       "pageIsVertical",
       "pageIsMirrored",
       "verticalFlowOf",
+      "lineTextAlign",
       "DEFAULT_CENTRAL_BASELINE",
       "verticalOrientation",
       "verticalRuns",

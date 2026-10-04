@@ -451,7 +451,11 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       // Signature gates incremental patching: when any of these change we
       // must rebuild the scroll container wholesale, otherwise we can try to
       // diff at page/block granularity.
-      const sig = `${mode}\x00${columnGapPx}\x00${PADDING_PX}`;
+      // The root's own markup is in it too: its language, direction and the
+      // way its pages run (a book switched to Arabic turns its root right
+      // to left, and a patch never rewrites the root).
+      const rootTag = indexed.html.slice(0, indexed.html.indexOf('>') + 1);
+      const sig = `${mode}\x00${columnGapPx}\x00${PADDING_PX}\x00${rootTag}`;
       const prev = lastRenderRef.current;
       const prevSig = lastRenderSigRef.current;
 

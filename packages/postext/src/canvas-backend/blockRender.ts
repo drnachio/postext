@@ -1,4 +1,5 @@
 import type { VDTBlock, VDTLine, VDTLineSegment, TextAlign } from '../vdt';
+import { lineTextAlign } from '../vdt';
 import type { MathRender } from '../math/types';
 import { getMathRaster } from '../math/rasterCache';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -340,7 +341,7 @@ function renderLine(
   // across it and set ragged from its start side, the right.
   const span = line.measure;
   const lineX = span ? span.x : line.bbox.x;
-  const align = span ? startSideAlign(textAlign) : textAlign;
+  const align = lineTextAlign(line, textAlign);
   // Effective width accounts for line-level indent (e.g. first-line or hanging indent)
   const lineIndent = lineX - columnX;
   const effectiveWidth = span ? span.width : columnWidth - lineIndent;
@@ -401,14 +402,6 @@ function renderLine(
   const plainX = lineX + (align === 'right' ? plainSlack : align === 'center' ? plainSlack / 2 : 0);
   if (cjk) fillWordsText(ctx, line.text, plainX, line.baseline);
   else ctx.fillText(line.text, plainX, line.baseline);
-}
-
-/** The physical alignment of a line set from the right, its start side (a
- *  right-to-left paragraph on a left-to-right page): `left` (and the last
- *  line of a justified paragraph) reads as start, flush right; `right` as
- *  end, flush left; a centred line stays centred. */
-function startSideAlign(textAlign: TextAlign): TextAlign {
-  return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
 }
 
 /** {@link renderLine} for a line of the CJK composer or any line down a
