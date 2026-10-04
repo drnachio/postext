@@ -308,7 +308,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   // --- paragraph styles ----------------------------------------------------
   for (const s of config.paragraphStyles) {
     const sPx = px(s.fontSize);
-    out.push(rule(`p.${idOf('ps-', s.id)}`, [
+    const cls = idOf('ps-', s.id);
+    out.push(rule(`p.${cls}, div.pt-verse.${cls}`, [
       fam(s.fontFamily),
       `font-size: ${round(sPx / bodyPx)}em`,
       lh(s.lineHeight, sPx),

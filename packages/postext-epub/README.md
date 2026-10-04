@@ -128,13 +128,13 @@ Reads an EPUB back for a viewer, without `DOMParser`: the layout, the metadata, 
 - Footnotes link to the notes at the end of the chapter and back. Cross-references, citations and web links work. The printed contents link to the headings, and the index's page numbers link to page markers.
 - Each printed page leaves a page-break marker where its text starts, so the page list gives the print page numbers.
 - A stylesheet is derived from the configuration: sizes relative to the body text, the book's colours, justification with automatic hyphenation, indents, and styles for headings, boxes, tables, captions, lists and notes. Vertical Chinese keeps vertical writing; Arabic documents are `dir="rtl"`.
+- Paragraphs set in a paragraph style (`:::paragraphs{style=…}`, a `:::verse` fence's style) carry its class, inside boxes too, and index entries are classed by their level, both as the layout names them (`VDTBlock.paragraphStyleId`, `VDTBlock.indexLevel`). Documents laid out by an older engine fall back to telling them from the face and the indent.
 
 Both renditions carry the EPUB Accessibility 1.1 metadata (access modes, features such as the table of contents and print page numbers, hazards and a summary), and neither claims WCAG conformance by default.
 
 ## Limitations
 
 - The reflowable stylesheet follows the first chapter's configuration: per-part palettes and per-chapter heading-style layouts are not applied.
-- Paragraph styles in the reflowable book are recognised by family, size, slant and alignment, since laid-out blocks keep no style id; two styles that share all four get no class.
 - A pull quote appears twice in a reflowable book: in the text and as its box.
 - Fonts are embedded as given. Respect the font licences: leave out families that may not be redistributed.
 - The file is written on the calling thread; a long book takes a few seconds.

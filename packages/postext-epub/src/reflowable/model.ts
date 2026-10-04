@@ -158,6 +158,8 @@ export interface VerseNode {
   /** Page starts and anchors that come before its first bayt. */
   pre: InlineItem[];
   bayts: BaytNode[];
+  /** The paragraph style its fence names (`ps-<id>`). */
+  cls?: string[];
   dir?: 'ltr' | 'rtl';
 }
 

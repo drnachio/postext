@@ -162,6 +162,10 @@ class DocWalker {
    *  cross-reference (`See …`) too, which have no page link. */
   private readonly indexRanges = new Set<string>();
   private readonly partMarks: NonNullable<VDTDocument['partMarks']>;
+  /** Whether the engine named the paragraph styles of the blocks
+   *  (`VDTBlock.paragraphStyleId`, `VDTBlock.indexLevel`): an older
+   *  document's are told from their faces (`paragraphStyleOf`). */
+  private readonly styleHints: boolean;
   private file?: FileModel;
   private root!: Container;
   private readonly lastLevel = new Map<FileModel, number>();
@@ -202,6 +206,7 @@ class DocWalker {
     for (const b of doc.blocks) {
       if (b.sourceStart !== undefined && hasPageLink(b)) this.indexRanges.add(rangeKey(b));
     }
+    this.styleHints = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].some((b) => b.paragraphStyleId !== undefined || b.indexLevel !== undefined);
     for (const a of doc.anchors ?? []) {
       if (a.kind !== 'anchor') continue;
       const key = lineKey(a.pageIndex, a.x, a.y);
@@ -433,6 +438,11 @@ class DocWalker {
       return;
     }
     const sink = this.sinks.get(key);
+    if (sink && block.indexLevel !== undefined && block.lines.some((l) => l.indexLevel !== undefined)) {
+      // An index block's fragment that starts entries of its own.
+      this.indexEntries(block, this.enter(block, root), key, sink);
+      return;
+    }
     if (sink) {
       this.enter(block, root);
       const pages = this.takePages();
@@ -562,7 +572,7 @@ class DocWalker {
 
   private paragraph(block: VDTBlock, root: Container, key: string): void {
     const state = this.enter(block, root);
-    if (hasPageLink(block) || (block.sourceStart !== undefined && this.indexRanges.has(rangeKey(block)))) {
+    if (block.indexLevel !== undefined || hasPageLink(block) || (block.sourceStart !== undefined && this.indexRanges.has(rangeKey(block)))) {
       this.indexEntries(block, state, key);
       return;
     }
@@ -579,8 +589,8 @@ class DocWalker {
         node.id = idOf('a-', anchor);
         this.book.anchors.set(anchor, { file: this.file!, id: node.id });
       }
-    } else if (block.containerId === undefined || !this.calloutIds.has(block.containerId)) {
-      const style = paragraphStyleOf(block, this.config, this.bodyPx);
+    } else {
+      const style = this.paragraphStyle(block);
       if (style) cls.push(idOf('ps-', style));
     }
     if (cls.length) node.cls = cls;
@@ -592,9 +602,24 @@ class DocWalker {
     if (!this.floating && block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };
   }
 
+  /** The paragraph style a block is set in: the one the engine names, or
+   *  (an older document) the one its face tells, outside boxes. */
+  private paragraphStyle(block: VDTBlock): string | undefined {
+    if (this.styleHints) return block.paragraphStyleId;
+    if (block.containerId !== undefined && this.calloutIds.has(block.containerId)) return undefined;
+    return paragraphStyleOf(block, this.config, this.bodyPx);
+  }
+
   /** A `:::verse` poem (#378): its lines back to bayts. */
   private verse(block: VDTBlock, state: Container, key: string): void {
-    const node: VerseNode = { k: 'verse', pre: this.takePages(), bayts: [], ...(block.direction ? { dir: block.direction } : {}) };
+    const style = this.styleHints ? block.paragraphStyleId : undefined;
+    const node: VerseNode = {
+      k: 'verse',
+      pre: this.takePages(),
+      bayts: [],
+      ...(style ? { cls: [idOf('ps-', style)] } : {}),
+      ...(block.direction ? { dir: block.direction } : {}),
+    };
     state.nodes.push(node);
     this.book.verse = true;
     const open: OpenVerse = { node, top: this.topOf(state, node) };
@@ -650,34 +675,60 @@ class DocWalker {
    * A block of the back-of-book index: its group letter, then each entry it
    * holds (the entries with no page of their own that head a sub-entry, and
    * the sub-entry) as a paragraph of its own, classed by depth
-   * (`pt-index-l1`, `pt-index-l2`…). The block keeps no depth: an entry
-   * starts on a line set at its level's indent, its turnover lines hang
-   * `turnoverIndent` further in (`indexDirective.ts`).
+   * (`pt-index-l1`, `pt-index-l2`…). The engine marks the first line of
+   * each entry with its level (`VDTLine.indexLevel`); in an older document
+   * an entry starts on a line set at its level's indent, its turnover lines
+   * hanging `turnoverIndent` further in (`indexDirective.ts`). `cont` is
+   * the sink of the entry a later fragment's first lines go on.
    */
-  private indexEntries(block: VDTBlock, state: Container, key: string): void {
+  private indexEntries(block: VDTBlock, state: Container, key: string, cont?: TextSink): void {
     let lines = block.lines;
     const pages = this.takePages();
-    // A group letter of the index, set as the first line of its first
-    // entry in a face of its own: a paragraph of its own.
-    const head = lines[0]!.segments ?? [];
-    const letter = lines.length > 1 && head.some((g) => g.kind === 'text') && head.every((g) => g.kind === 'space' || (g.fontString !== undefined && g.pageLink === undefined));
-    if (letter) {
-      const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
-      state.nodes.push(group);
-      this.appendBlockLines({ inl: group.inl }, block, lines.slice(0, 1), pages.splice(0));
-      lines = lines.slice(1);
-    }
-    const cfg = this.config.index;
-    const dpi = this.config.page.dpi;
-    const sizePx = dimensionToPx(cfg.fontSize, dpi, this.bodyPx);
-    const indentPx = dimensionToPx(cfg.indent, dpi, sizePx);
-    const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, sizePx);
-    const entries: { x: number; level: number; lines: VDTLine[] }[] = [];
-    for (const line of lines) {
-      const x = line.bbox.x - block.bbox.x;
-      const last = entries[entries.length - 1];
-      if (last && Math.abs(x - (last.x + turnoverPx)) < 1) last.lines.push(line);
-      else entries.push({ x, level: indentPx > 0 ? Math.max(0, Math.round(x / indentPx)) : 0, lines: [line] });
+    const hinted = block.indexLevel !== undefined;
+    const entries: { level: number; lines: VDTLine[] }[] = [];
+    if (hinted) {
+      // Lines before the first entry: the run-on of the entry `cont` holds,
+      // or the group's letter.
+      const first = lines.findIndex((l) => l.indexLevel !== undefined);
+      const lead = first < 0 ? lines : lines.slice(0, first);
+      if (lead.length > 0 && cont) {
+        this.appendBlockLines(cont, block, lead, pages.splice(0));
+      } else if (lead.length > 0) {
+        const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
+        state.nodes.push(group);
+        this.appendBlockLines({ inl: group.inl }, block, lead, pages.splice(0));
+      }
+      for (const line of first < 0 ? [] : lines.slice(first)) {
+        if (line.indexLevel !== undefined) entries.push({ level: line.indexLevel, lines: [line] });
+        else entries[entries.length - 1]!.lines.push(line);
+      }
+    } else {
+      // A group letter of the index, set as the first line of its first
+      // entry in a face of its own: a paragraph of its own.
+      const head = lines[0]!.segments ?? [];
+      const letter = lines.length > 1 && head.some((g) => g.kind === 'text') && head.every((g) => g.kind === 'space' || (g.fontString !== undefined && g.pageLink === undefined));
+      if (letter) {
+        const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
+        state.nodes.push(group);
+        this.appendBlockLines({ inl: group.inl }, block, lines.slice(0, 1), pages.splice(0));
+        lines = lines.slice(1);
+      }
+      const cfg = this.config.index;
+      const dpi = this.config.page.dpi;
+      const sizePx = dimensionToPx(cfg.fontSize, dpi, this.bodyPx);
+      const indentPx = dimensionToPx(cfg.indent, dpi, sizePx);
+      const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, sizePx);
+      let lastX = 0;
+      for (const line of lines) {
+        const x = line.bbox.x - block.bbox.x;
+        const last = entries[entries.length - 1];
+        if (last && Math.abs(x - (lastX + turnoverPx)) < 1) {
+          last.lines.push(line);
+        } else {
+          entries.push({ level: indentPx > 0 ? Math.max(0, Math.round(x / indentPx)) : 0, lines: [line] });
+          lastX = x;
+        }
+      }
     }
     let top: Node | undefined;
     for (const [i, entry] of entries.entries()) {

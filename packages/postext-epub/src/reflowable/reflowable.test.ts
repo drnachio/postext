@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { initMathEngine } from 'postext';
-import type { Resource, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
+import type { Resource, VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
 import { PNG, baseConfig, layOut, layOutBook, pt } from './__tests__/vdt';
 import { checkXml } from './__tests__/xml';
 import { buildReflowablePublication } from '.';
@@ -358,5 +358,76 @@ describe('buildReflowablePublication', () => {
     // No fixed widths: every size is relative (but the 1px box of a
     // heading kept for navigation alone).
     expect(css).not.toMatch(/(?<![-\w])(width|font-size|margin|padding)[^;{]*:\s*(?!1px)[\d.]+(px|pt|mm|cm|in)\b/);
+  });
+});
+
+/** A document as an older engine wrote it: no paragraph style ids,
+ *  no index levels. */
+function withoutHints(doc: VDTDocument): VDTDocument {
+  const strip = (b: VDTBlock): VDTBlock => ({
+    ...b,
+    paragraphStyleId: undefined,
+    indexLevel: undefined,
+    lines: b.lines.map((l) => ({ ...l, indexLevel: undefined })),
+  });
+  return {
+    ...doc,
+    blocks: doc.blocks.map(strip),
+    pages: doc.pages.map((p) => ({
+      ...p,
+      columns: p.columns.map((c) => ({ ...c, blocks: c.blocks.map(strip) })),
+      ...(p.floats ? { floats: p.floats.map(strip) } : {}),
+    })),
+  };
+}
+
+describe('reflowable rendition: the engine names styles and index levels', () => {
+  // Two styles in the body face and size: the face alone cannot tell them.
+  const config = {
+    ...baseConfig,
+    paragraphStyles: [
+      { id: 'lead', marginTop: pt(6) },
+      { id: 'coda', marginBottom: pt(6) },
+      { id: 'poem', fontSize: pt(11) },
+    ],
+  };
+  const md = [
+    ':::paragraphs{style="lead"}', 'A lead paragraph.', ':::', '',
+    ':::paragraphs{style="coda"}', 'A closing paragraph.', ':::', '',
+    ':::callout{type="note"}', ':::paragraphs{style="lead"}', 'A lead inside a box.', ':::', ':::', '',
+    ':::verse{style="poem"}', 'One line of verse', ':::',
+  ].join('\n');
+
+  it('classes paragraphs, boxed ones and poems by the style they were set in', async () => {
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<p class="ps-lead">(?:<span epub:type="pagebreak"[^>]*><\/span>)?A lead paragraph\.<\/p>/);
+    expect(all).toContain('<p class="ps-coda">A closing paragraph.</p>');
+    expect(all).toMatch(/<aside class="pt-callout pt-callout-note">\n<p class="ps-lead">A lead inside a box\.<\/p>/);
+    expect(all).toMatch(/<div class="pt-verse ps-poem">/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('p.ps-poem, div.pt-verse.ps-poem {');
+  });
+
+  it('tells an older document\'s styles from their faces', async () => {
+    const { all } = await render([withoutHints(layOut(md, config))]);
+    // Same face: no class to give.
+    expect(all).toMatch(/<p>(?:<span epub:type="pagebreak"[^>]*><\/span>)?A lead paragraph\.<\/p>/);
+    expect(all).toMatch(/<div class="pt-verse">/);
+  });
+
+  it('nests index entries by the level the engine gives, not by their indent', async () => {
+    const index = [
+      'The :index{term="valves!mitral"}mitral and :index{term="valves!aortic"}aortic valves close.',
+      '', para.repeat(6), '', '# Index', '', ':::index',
+    ].join('\n');
+    // Sub-entries set flush: their indent says nothing.
+    const flush = { ...baseConfig, index: { indent: pt(0) } };
+    const { pub, files, all } = await render([layOut(index, flush)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/class="pt-index-entry">valves<\/p>\n<p class="pt-index-entry pt-index-l1">aortic, <a class="pt-pageref"/);
+    expect(all).toMatch(/<p class="pt-index-entry pt-index-l1">mitral, /);
+    const old = await render([withoutHints(layOut(index, flush))]);
+    expect(old.all).toMatch(/<p class="pt-index-entry">mitral, /);
   });
 });

@@ -336,7 +336,7 @@ class Writer {
       const ornament = b.ornament ? ` <span class="pt-verse-ornament" aria-hidden="true">${xmlText(b.ornament)}</span>` : '';
       return `<p class="pt-bayt"><span class="pt-sadr">${this.inline(b.sadr)}</span>${ornament} <span class="pt-ajuz">${this.inline(b.ajuz)}</span></p>`;
     }));
-    return `<div class="pt-verse"${this.dirAttr(node.dir)}>${pre}\n${bayts.join('\n')}\n</div>`;
+    return `<div${this.classAttr(['pt-verse', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${bayts.join('\n')}\n</div>`;
   }
 
   private list(node: ListNode): string {
