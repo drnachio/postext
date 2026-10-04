@@ -766,17 +766,6 @@ class DocWalker {
    *  there; ahead of the document's first block when none comes before. */
   private readFloat(group: VDTBlock[]): void {
     const index = group[0]!.contentIndex;
-    const temp: Container = { nodes: [], lists: [] };
-    const saved = this.lastContainer;
-    this.floating = true;
-    this.lastContainer = undefined;
-    try {
-      for (const block of group) this.place(block, temp);
-    } finally {
-      this.floating = false;
-      this.lastContainer = saved;
-    }
-    if (temp.nodes.length === 0) return;
     let anchor: (typeof this.flow)[number] | undefined;
     if (index !== undefined) {
       for (let i = this.flow.length - 1; i >= 0; i--) {
@@ -786,18 +775,34 @@ class DocWalker {
         }
       }
     }
+    // The float is read in the document its anchor is in: the ids it
+    // registers (a figure, an anchor in a floated box) belong there.
+    const first = this.flow[0];
+    const file = anchor?.file ?? first?.file ?? this.file!;
+    const temp: Container = { nodes: [], lists: [] };
+    const saved = { container: this.lastContainer, file: this.file };
+    this.floating = true;
+    this.lastContainer = undefined;
+    this.file = file;
+    try {
+      for (const block of group) this.place(block, temp);
+    } finally {
+      this.floating = false;
+      this.lastContainer = saved.container;
+      this.file = saved.file;
+    }
+    if (temp.nodes.length === 0) return;
     if (!anchor) {
-      const first = this.flow[0];
-      const file = first?.file ?? this.file!;
       const at = first ? Math.max(0, file.nodes.indexOf(first.top)) : file.nodes.length;
       file.nodes.splice(at, 0, ...temp.nodes);
       return;
     }
-    const nodes = anchor.file.nodes;
+    const nodes = file.nodes;
     const after = nodes.indexOf(this.placedAfter.get(anchor.top) ?? anchor.top);
     nodes.splice(after >= 0 ? after + 1 : nodes.length, 0, ...temp.nodes);
     this.placedAfter.set(anchor.top, temp.nodes[temp.nodes.length - 1]!);
   }
+
 
   // --- notes ---------------------------------------------------------------
 

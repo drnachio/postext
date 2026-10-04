@@ -273,6 +273,18 @@ describe('buildReflowablePublication', () => {
     expect(pub.toc[0]!.children?.map((c) => c.label)).toEqual(['One', 'Two']);
   });
 
+  it('reads a float in the document of the text that cites it', async () => {
+    const config = { ...baseConfig, parts: { page: false } };
+    const md = [
+      ':::part{number="I" title="First"}', ':::', '', `See :ref{id=f1}. ${para}`, '',
+      ':::part{number="II" title="Second"}', ':::', '', para.repeat(3),
+    ].join('\n');
+    const { pub, files } = await render([layOut(md, config as typeof baseConfig, resources)]);
+    expectSound(pub, files);
+    expect([...files.keys()]).toEqual(['text/part-001.xhtml', 'text/chapter-001.xhtml', 'text/part-002.xhtml', 'text/chapter-001-2.xhtml']);
+    expect(files.get('text/chapter-001.xhtml')).toContain('<figure id="res-f1">');
+  });
+
   it('writes a cover first in the spine', async () => {
     const { pub, files } = await render([layOut('# Title\n\nText.')], { cover: { bytes: PNG, mediaType: 'image/png', alt: 'The cover' } });
     expectSound(pub, files);
