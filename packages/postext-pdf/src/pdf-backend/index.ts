@@ -22,8 +22,11 @@ import {
   quarterTurnMatrix,
   whiteColor,
 } from './primitives';
-// Registers the painter of vertical text with the primitives.
+// Register the painters of vertical and of complex-script text with the
+// primitives.
 import './verticalText';
+import './shapedText';
+import { codePointNeedsComplexShaping, loadComplexShaper } from '../complexShaping';
 import { collectFontText, type FontText } from './fontHelpers';
 import {
   computeContentArea,
@@ -553,6 +556,12 @@ export function setRightToLeft(pdfDoc: PDFDocument): void {
   pdfDoc.catalog.set(PDFName.of('PageLayout'), PDFName.of('TwoPageRight'));
 }
 
+/** Whether any face sets a character HarfBuzz shapes. */
+function setsComplexScript(fontText: FontText): boolean {
+  for (const cps of fontText.values()) for (const cp of cps) if (codePointNeedsComplexShaping(cp)) return true;
+  return false;
+}
+
 export async function renderToPdf(
   input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,
@@ -581,6 +590,10 @@ export async function renderToPdf(
   const fontText: FontText = new Map();
   for (const doc of docs) collectFontText(doc, fontText);
   await fontCache.preloadFontStrings(fontText);
+  // HarfBuzz (WebAssembly) is fetched only for a document that sets
+  // right-to-left or joining scripts; the pages are then shaped with it
+  // synchronously.
+  if (setsComplexScript(fontText)) await loadComplexShaper();
 
   const missing = fontCache.missing();
   if (missing.length > 0) {

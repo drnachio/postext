@@ -790,7 +790,30 @@ export function drawTextPx(
     verticalPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, orient);
     return;
   }
+  // Right-to-left and joining scripts are shaped with HarfBuzz when the
+  // document loaded it (`shapedText.ts`).
+  if (complexPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText)) return;
   pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
+}
+
+/** The painter of text HarfBuzz shapes (`shapedText.ts` registers it):
+ *  true when it painted `text`, false to leave it to fontkit. */
+type ComplexPainter = (
+  ctx: PageCtx,
+  text: string,
+  xPx: number,
+  baselinePx: number,
+  font: PDFFont,
+  sizePx: number,
+  color: Color,
+  outline?: TextOutline,
+  actualText?: string,
+) => boolean;
+let complexPainter: ComplexPainter | undefined;
+
+/** Register the painter {@link drawTextPx} hands complex-script text to. */
+export function registerComplexPainter(painter: ComplexPainter): void {
+  complexPainter = painter;
 }
 
 /** The painter of vertical text (`verticalText.ts` registers it, so this
@@ -866,7 +889,7 @@ export function drawMeasuredTextPx(
  * the glyphs. The span has no MCID, so in a tagged PDF it nests in the
  * structure sequence open around it.
  */
-function pushTextObject(
+export function pushTextObject(
   ctx: PageCtx,
   shows: readonly TextShow[],
   xPx: number,

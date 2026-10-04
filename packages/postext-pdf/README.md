@@ -60,6 +60,12 @@ In the browser, load the web fonts (`document.fonts.load(...)`) before calling `
 
 Some bundlers (Vite, webpack, Turbopack) evaluate the emscripten glue as a web module, where it never assigns `module.exports`, and `decompressWoff2` then fails with `wawoff2: no decompress export`. The fix is a one-line patch to `wawoff2/build/decompress_binding.js` and `compress_binding.js` appending `module.exports = Module;` — the [postext monorepo](https://github.com/drnachio/postext/blob/main/patches/wawoff2.patch) applies it through pnpm's `patchedDependencies`. Alternatively, supply TTF/OTF bytes to your font provider directly and never call `decompressWoff2`.
 
+## Arabic, Hebrew and other right-to-left scripts
+
+Text in a right-to-left or joining script (Hebrew, Arabic, Syriac, Thaana, N'Ko and the other right-to-left blocks) is shaped with [HarfBuzz](https://www.npmjs.com/package/harfbuzzjs) compiled to WebAssembly: joining forms, ligatures, harakat stacked as the font places them, brackets mirrored in right-to-left runs, numbers and Latin words kept left to right. The module and its `harfbuzz.wasm` (about 430 KB, 145 KB brotli) are loaded only when a document sets such text. Character spacing is never applied to joining letters.
+
+The module fetches `harfbuzz.wasm` next to itself (`new URL('harfbuzz.wasm', import.meta.url)`), which Node, a Worker and the usual bundlers handle. Its emscripten glue also holds an `import("module")` for Node, which Turbopack and webpack fail to resolve in a browser build (`Can't resolve 'module'`). The [postext monorepo](https://github.com/drnachio/postext/blob/main/patches/harfbuzzjs.patch) marks that import ignored (`webpackIgnore`, `turbopackIgnore`, `@vite-ignore`) through pnpm's `patchedDependencies`; a bundled app needs the same patch, or an alias of `module` to an empty module for the browser.
+
 ## License
 
 MIT

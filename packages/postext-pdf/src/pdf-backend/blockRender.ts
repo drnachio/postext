@@ -17,6 +17,8 @@ import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 import { inkScaleOperators } from './inkScale';
+import { drawShapedTextPx } from './shapedText';
+import { needsComplexShaping } from '../complexShaping';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -135,6 +137,12 @@ function paintComposedText(
  * `/ActualText`. Any other line was set word by word and carries none of
  * them: its segments are painted as every line was before the CJK
  * features, with no further look at each one.
+ *
+ * A line that carries directions ({@link isDirected}: a right-to-left run
+ * on it) is painted in `line.order`, left to right on the sheet, each
+ * right-to-left segment shaped as one run by HarfBuzz (`shapedText.ts`).
+ * Its glyphs are shown in visual order, as every right-to-left PDF shows
+ * them: readers put the line back in logical order from their positions.
  */
 function renderSegments(
   ctx: PageCtx,
@@ -159,6 +167,9 @@ function renderSegments(
   const uris = new UriRuns(ctx, line, linkRegistry, elem);
   const repeatedAt = repeatedHyphenSegment(line, segments);
   const composed = line.cjkComposed === true || ctx.vertical !== undefined;
+  const directed = isDirected(line);
+  // The order segments are painted in, left to right (by default theirs).
+  const order = directed && line.order && line.order.length === segments.length ? line.order : undefined;
   // A composed CJK line (spread characters, Han–Latin spaces) reads as
   // written, not with the gaps between its pieces.
   // A vertical line is painted in runs and cells down the column: it reads
@@ -177,7 +188,8 @@ function renderSegments(
     };
     beginActualTextSpan(ctx, actualLine, lineState);
   }
-  for (let i = 0; i < segments.length; i++) {
+  for (let k = 0; k < segments.length; k++) {
+    const i = order ? order[k]! : k;
     const seg = segments[i]!;
     if (seg.kind === 'space') {
       const inLink = uris.space(seg.text);
@@ -245,7 +257,14 @@ function renderSegments(
     tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
     // The hyphen repeated from the line before is painted but not read.
     const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
-    if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+    // On a line with directions each segment is one run: HarfBuzz shapes a
+    // right-to-left one (and any complex text). The kashidas justification
+    // inserted are painted, not read.
+    const shaped = directed && (seg.rtl || needsComplexShaping(seg.text))
+      && drawShapedTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, { direction: seg.rtl ? 'rtl' : 'ltr', actualText, hideTatweel: line.kashida !== undefined });
+    if (shaped) {
+      // Painted by HarfBuzz.
+    } else if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
     else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
@@ -256,7 +275,7 @@ function renderSegments(
         pageElem ? { elem: pageElem, contents: seg.text } : undefined,
       );
     }
-    const ref = refRun.leave(seg, segments[i + 1], target);
+    const ref = refRun.leave(seg, segments[order ? order[k + 1]! : k + 1], target);
     if (ref && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       const x1 = ref.startX * scale;
@@ -370,7 +389,7 @@ function renderLineText(
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour); otherwise one text
   // object paints the line.
-  if (segments && segments.some(composed ? composedSegmentIsStyled : segmentIsStyled)) {
+  if (segments && (isDirected(line) || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
     renderSegments(ctx, segments, line.bbox.x, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }
@@ -380,12 +399,17 @@ function renderLineText(
   const plainX = line.bbox.x + (block.textAlign === 'right' ? plainSlack : block.textAlign === 'center' ? plainSlack / 2 : 0);
   // Each word where the layout measured it (EF-137): the embedded face's
   // own widths could differ, most of all for a character it has no glyph
-  // for, and would carry the rest of the line along. A line with
-  // right-to-left letters stays one run, which the shaper turns around.
+  // for, and would carry the rest of the line along.
   // The hyphen repeated from the line before is painted but not read.
   const actualText = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : undefined;
-  if (segments && segments.length > 0 && !hasRightToLeft(line.text)
+  // A line with right-to-left or joining letters and no directions (a VDT
+  // from before the engine resolved bidi levels) is set as one text, cut
+  // into bidi runs and shaped by HarfBuzz; with fontkit when HarfBuzz is
+  // not loaded, which turns the whole line around.
+  const complex = needsComplexShaping(line.text);
+  if (segments && segments.length > 0 && !complex
     && drawMeasuredTextPx(ctx, withLineEndSpace(segments, line.text), plainX, line.baseline, blockFont, blockSize, blockColor, tracking, actualText)) return;
+  if (complex && drawShapedTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, { base: block.direction, actualText })) return;
   drawTextPx(ctx, line.text, plainX, line.baseline, blockFont, blockSize, blockColor, undefined, actualText);
 }
 
@@ -428,22 +452,11 @@ function withLineEndSpace(segments: readonly VDTLineSegment[], text: string): Re
   return /^\s+$/.test(rest) ? [...segments, { text: rest, width: 0 }] : segments;
 }
 
-/** Whether `text` holds a right-to-left letter: Hebrew, Arabic, Syriac,
- *  Thaana, N'Ko and the scripts after them up to U+08FF, their
- *  presentation forms, and the right-to-left blocks of the supplementary
- *  planes. */
-function hasRightToLeft(text: string): boolean {
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i);
-    if (c < 0x0590) continue;
-    if (c <= 0x08ff || (c >= 0xfb1d && c <= 0xfdff) || (c >= 0xfe70 && c <= 0xfefe)) return true;
-    if (c >= 0xd800 && c <= 0xdbff) {
-      const cp = text.codePointAt(i)!;
-      if ((cp >= 0x10800 && cp <= 0x10fff) || (cp >= 0x1e800 && cp <= 0x1efff)) return true;
-      i++;
-    }
-  }
-  return false;
+/** Whether a line carries the engine's directions: an order to paint its
+ *  segments in, or a right-to-left segment. Absent on every left-to-right
+ *  line, which is painted as it always was. */
+function isDirected(line: VDTLine): boolean {
+  return line.order !== undefined || (line.segments?.some((s) => s.rtl) ?? false);
 }
 
 function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem: StructElem | undefined): void {

@@ -166,6 +166,7 @@ overrides:
   postcss@<8.5.10: '>=8.5.10'
 
 patchedDependencies:
+  harfbuzzjs: c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc
   wawoff2: 4464a351270771a5804bde96859b403462c3a9ec2b1fcff9a200cb7c3fda6e0d
 
 importers:
@@ -437,6 +438,9 @@ importers:
       '@pdf-lib/fontkit':
         specifier: ^1.1.1
         version: 1.1.1
+      harfbuzzjs:
+        specifier: ^1.6.2
+        version: 1.6.2(patch_hash=c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc)
       pdf-lib:
         specifier: ^1.17.1
         version: 1.17.1
@@ -2987,6 +2991,9 @@ packages:
   gray-matter@4.0.3:
     resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
     engines: {node: '>=6.0'}
+
+  harfbuzzjs@1.6.2:
+    resolution: {integrity: sha512-95c1vWuzoHjM19d5fQgPbz1wcv1pTa0UM9dZrdPgSMUEVuSwuzeVPkq6UhHHw3jLOkE9AYzzTP8XQkRBpPYpEg==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -7545,6 +7552,8 @@ snapshots:
       kind-of: 6.0.3
       section-matter: 1.0.0
       strip-bom-string: 1.0.0
+
+  harfbuzzjs@1.6.2(patch_hash=c6a357f113f6aa9a9c7f59b7e2eb192d9bc0d1aacce9335f120ed897172840dc): {}
 
   has-bigints@1.1.0: {}
 

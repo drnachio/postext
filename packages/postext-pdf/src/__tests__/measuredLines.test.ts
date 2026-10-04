@@ -200,10 +200,12 @@ describe('a plain ragged line keeps its measured word positions (EF-137)', () =>
 });
 
 describe('a line with right-to-left letters', () => {
-  it('stays one run, which the shaper sets right to left', async () => {
+  it('stays one run, which HarfBuzz sets right to left', async () => {
     // Lora has no Hebrew: the browser measured the letters in another font
     // (0.8 em each), the PDF paints notdef glyphs. Word by word, the pieces
-    // would be set left to right in logical order, reversing the words.
+    // would be set left to right in logical order, reversing the words; a
+    // line with no directions in its VDT is cut into bidi runs instead
+    // (#380), here one.
     const doc = buildDocument({ markdown: 'שלום עולם' }, config);
     const line = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!;
     expect(line.segments!.length).toBeGreaterThan(1);
@@ -213,10 +215,11 @@ describe('a line with right-to-left letters', () => {
     const refs = contents instanceof PDFArray ? contents.asArray() : [contents];
     let content = '';
     for (const ref of refs) content += new TextDecoder('latin1').decode(decodePDFRawStream(pdf.context.lookup(ref) as PDFRawStream).decode());
+    // One text object, its glyphs at HarfBuzz's advances (each notdef
+    // under a span that reads as its letter).
+    expect(content.split('\n').filter((l) => l === 'BT')).toHaveLength(1);
     const shows = content.split('\n').filter((l) => /T[jJ]$/.test(l));
-    expect(shows).toHaveLength(1);
-    // One run of glyphs, no pen adjustments between the words.
-    expect(shows[0]).toMatch(/^<[0-9A-Fa-f]+> Tj$/);
+    for (const show of shows) expect(show).toMatch(/^\[ .* \] TJ$/);
   });
 });
 
