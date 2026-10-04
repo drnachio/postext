@@ -51,32 +51,21 @@ Modern CSS is a remarkable tool for building user interfaces. Flexbox, Grid, con
 
 The contrast in :ref{id="feature-comparison"} summarises where the two approaches diverge for long documents. (Mentioning it is enough: the table floats into the first free slot after this paragraph by itself, and you never place it twice.)
 
-The difference is one of kind, not degree. An interface adapts to the window that holds it, and the reader moves through it at will; a page, by contrast, has a fixed size, a beginning and an end, and everything it holds must be resolved within those limits: what fits in this column and what moves to the next, where each figure goes, how each line and each paragraph ends. Those decisions are what make the quality of a book, and none of them can be taken by looking at a single element in isolation.
+The difference is one of kind, not degree. An interface adapts to the window that holds it, and the reader moves through it at will; a page, by contrast, has a fixed size, a beginning and an end, and everything it holds must be resolved within those limits: what fits in this column and what moves to the next, where each figure goes, how each line and each paragraph ends. Those decisions are what make the quality of a book, and none of them can be taken by looking at a single element in isolation, however carefully each one is styled.
 
 CSS handles the first case brilliantly. For the second, the platform has never offered the primitives that matter:
 
-1. **Balanced columns that know about their content**
-   - The CSS _columns_ property flows text, but it cannot level columns by adjusting the space above headings or the looseness of a paragraph
-   - It has no notion of a figure or table that must float to the head of the next free column
-   - It cannot keep a heading with the paragraph it introduces across a column break
-2. **Paragraph-end and column-end defects**
-   - _Orphans_ and _widows_ exist in CSS, but browser support is uneven and they do not see the geometry of the whole page
-   - There is no rule for a _runt_, the short word left alone on the last line of a paragraph
-3. **Whole-paragraph line breaking**
-   - Browsers break lines greedily, one at a time, and can only spread the leftover space inside each line
-   - Balanced justification needs the entire paragraph weighed at once
-4. **A shared vertical rhythm**
-   - Books and magazines set every line on a baseline grid shared by all the columns of a page
-   - CSS has no primitive that snaps lines to a grid across columns and pages
-5. **The apparatus of a book**
-   - Running heads that know the chapter, page numbers in roman or arabic sequences, parity-aware chapter breaks, a table of contents with real page numbers
-   - None of these exist in a scrolling document
+1. **Balanced columns that know about their content.** The CSS _columns_ property flows text, but it cannot level columns by adjusting the space above headings or the looseness of a paragraph; it has no notion of a figure or table that must float to the head of the next free column, and it cannot keep a heading with the paragraph it introduces across a column break.
+2. **Paragraph-end and column-end defects.** _Orphans_ and _widows_ exist in CSS, but browser support is uneven and they do not see the geometry of the whole page; and there is no rule for a _runt_, the short word left alone on the last line of a paragraph.
+3. **Whole-paragraph line breaking.** Browsers break lines greedily, one at a time, and can only spread the leftover space inside each line, while balanced justification needs the entire paragraph weighed at once.
+4. **A shared vertical rhythm.** Books and magazines set every line on a baseline grid shared by all the columns of a page, and CSS has no primitive that snaps lines to a grid across columns and pages.
+5. **The apparatus of a book.** Running heads that know the chapter, page numbers in roman or arabic sequences, parity-aware chapter breaks and a table of contents with real page numbers: none of these exist in a scrolling document.
 
-:::callout{type="quote"}
+:::callout{type="quote" placement="top"}
 _Editorial typography is a constraint satisfaction problem. The browser was never given the language to state the constraints._
 :::
 
-CSS describes the _appearance_ of any single region of text in great detail. What it lacks is _global optimisation_: the ability to weigh a whole paragraph, a whole column and a whole page before committing to any of them.
+CSS describes the _appearance_ of any single region of text in great detail. What it lacks is _global optimisation_: the ability to weigh a whole paragraph, a whole column and a whole page before committing to any of them. A browser settles each box as soon as it meets it, and never goes back to move a line once the next box has been laid out; a typesetter goes back all the time, because a decision taken at the foot of a page can undo one taken at its head.
 
 ## What existing tools miss
 
@@ -114,7 +103,7 @@ The same modesty applies to the content. Postext does not try to understand the 
 
 # How the engine works {lead="Markdown and a configuration object go in; a tree in which every line has a position in real units comes out. In between is a short pipeline that measures text without touching the DOM and iterates until the page settles." summary="Parsing, measuring, laying out, converging"}
 
-The fastest way to understand what Postext can do is to follow a document through it. The engine is a pipeline, sketched in :ref{id="layout-pipeline"}, in which each stage refines one shared in-memory representation of the document. No stage hides behind an opaque format and none touches the disk. The pipeline is also pure: given the same content and the same configuration, it always produces the same layout.
+The fastest way to understand what Postext can do is to follow a document through it. The engine is a pipeline, sketched in :ref{id="layout-pipeline"}, in which each stage refines one shared in-memory representation of the document. No stage hides behind an opaque format and none touches the disk. The pipeline is also pure: given the same content and the same configuration, it always produces the same layout, the same pages line for line.
 
 ## Content and configuration
 
@@ -170,7 +159,7 @@ It helps to see what happens when you type a single letter into a paragraph of t
 
 Because each chapter is laid out on its own, continued from the ones before it, the rest of the book is not touched unless the chapter's page count changes. When it does, the following chapters are paginated again in the background, and the contents page picks up their new page numbers.
 
-:::callout{type="figures" title="The engine in figures"}
+:::callout{type="figures" title="The engine in figures" placement="top"}
 :::columns{count=3 breaks="3,5"}
 **300–600×** faster text measurement than reflowing the DOM. Pretext measures with canvas font metrics and plain arithmetic, which is what lets a whole chapter be set again between two keystrokes.
 
@@ -192,7 +181,7 @@ Balancing converges segment by segment, between chapter openers and explicit pag
 
 What survives the loop is the **VDT**, the virtual document tree: pages that hold columns, columns that hold blocks, blocks that hold lines, each with its box in real units, alongside a flat list of every block for quick access. The tree is pure geometry — it knows nothing about canvas, HTML or PDF — and that is exactly what lets three renderers draw matching output. Every line also remembers the stretch of Markdown it came from, which is how a click on the page puts the editor's cursor on the right word.
 
-Pages also record what they are for. A page can be a body page, a chapter opener, a part divider or a blank page inserted to reach the right parity, and that role is what lets running heads, folios and decorations choose where to appear. Page labels — the printed page number in its sequence — are computed once, in the tree, so the canvas, the HTML and the PDF agree on them without doing their own counting.
+Pages also record what they are for. A page can be a body page, a chapter opener, a part divider or a blank page inserted to reach the right parity, and that role is what lets running heads, folios and decorations choose where to appear. Page labels — the printed page number in its sequence — are computed once, in the tree, so the canvas, the HTML and the PDF agree on them without doing their own counting. A preface numbered in roman numerals and a body that restarts at one need no special case in any renderer: each prints the label the tree gives it.
 
 ## Off the main thread
 
@@ -211,7 +200,7 @@ A layout can take longer than a keystroke, so the engine can run in a Web Worker
 
 # Setting the line {lead="A paragraph is set as a whole, not one line at a time. Postext weighs every possible way of breaking it, prices spacing, hyphens and stray words, and chooses the set of breaks that costs least." summary="Optimal line breaking, hyphenation, spacing and the defects it avoids"}
 
-The quality of a page is decided first in its paragraphs. A browser breaks lines greedily: it fills a line with as many words as fit, moves on, and can only spread the leftover space inside each line. Postext implements the **Knuth-Plass algorithm**, the optimal line breaker that has powered TeX since 1981. It evaluates every feasible way of breaking the whole paragraph and picks the one that minimises the total cost, so spacing stays even from the first line to the last.
+The quality of a page is decided first in its paragraphs. A browser breaks lines greedily: it fills a line with as many words as fit, moves on, and can only spread the leftover space inside each line. Postext implements the **Knuth-Plass algorithm**, the optimal line breaker that has powered TeX since 1981. It evaluates every feasible way of breaking the whole paragraph and picks the one that minimises the total cost, so spacing stays even from the first line to the last, and no line pays for its neighbours.
 
 ## Boxes, glue and penalties
 
@@ -441,7 +430,7 @@ Click the caption of any figure in the canvas: the Resources panel opens on that
 
 # Books, parts and running heads {lead="A book is more than its chapters: a cover, a contents page that keeps itself up to date, part dividers, openers that announce each chapter and running heads that know where the reader is. All of it is configuration." summary="Chapters, heading styles, design slots, parts, contents and page numbers"}
 
-This guide is a book of twelve chapters, and each chapter is a Markdown document of its own. A project in the Sandbox is always a book: the configuration, the resources and the fonts are shared, and the chapters follow each other, as :ref{id="book-anatomy"} shows.
+This guide is a book of thirteen chapters, and each chapter is a Markdown document of its own. A project in the Sandbox is always a book: the configuration, the resources and the fonts are shared, and the chapters follow each other, as :ref{id="book-anatomy"} shows.
 
 ## Chapters make a book
 
@@ -489,7 +478,8 @@ A part can also recolour the book. Colours in the configuration can be linked to
 7. Writing for Postext
 8. The Sandbox
 9. Output: canvas, HTML and PDF
-10. Roadmap and community
+10. The book in 3D
+11. Roadmap and community
 :::
 
 # Writing for Postext {lead="Everything in this book was written in plain Markdown with a handful of extensions. They stay readable in any text editor and say what the text is, never where it goes." summary="Markdown, directives, callouts and paragraph styles"}
@@ -556,7 +546,7 @@ Everything described in this book can be tried right now, without writing code. 
 
 ## A tour of the interface
 
-The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Resources, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in three tabs: Canvas, HTML and PDF.
+The interface follows a familiar editor layout, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Resources, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in four tabs: Canvas, HTML, Folio and PDF.
 
 The sidebar and the viewport share the window, and the boundary between them can be dragged. Every panel and the viewport remember their state between visits: the zoom and view mode of the canvas, the column mode of the HTML view, the groups open in the Design panel. The theme and the interface language are switched from the foot of the activity bar, and the language of the interface is independent of the language of the book.
 
@@ -570,11 +560,15 @@ The editor also keeps an eye on the book. Its chapter menu lists every chapter w
 
 The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, headings and contents, lists, figures and tables, boxes, headers and footers, parts, export, Folio (the book in 3D) and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file.
 
-## The three views
+## The four views
 
-The **canvas** view is the working preview: it zooms from a quarter of real size to four times, fits the page to the width or the height of the viewport, and shows single pages or spreads, with the first page on its own as a recto, the way a printed book opens. The **HTML** view shows the same layout as positioned HTML, isolated from the rest of the page, with a control for the size of the text and two reading modes: one scrolling column, or as many columns as fit the screen. The **PDF** view generates a real PDF in the browser and shows it in the browser's own viewer, with buttons to generate it again, download it and print it.
+The **canvas** view is the working preview: it zooms from a quarter of real size to four times, fits the page to the width or the height of the viewport, and shows single pages or spreads, with the first page on its own as a recto, the way a printed book opens. The **HTML** view shows the same layout as positioned HTML, isolated from the rest of the page, with a control for the size of the text and two reading modes: one scrolling column, or as many columns as fit the screen. The **Folio** view shows the book bound and lying open on a desk, in three dimensions, with leaves that turn under the hand; the next chapter is about it. The **PDF** view generates a real PDF in the browser and shows it in the browser's own viewer, with buttons to generate it again, download it and print it.
 
-The canvas and the HTML views can lay out the current chapter or the whole book; the PDF has its own choice, so a single chapter can be proofed quickly while the previews show the book. This guide opens in whole-book mode.
+The canvas, HTML and Folio views can lay out the current chapter or the whole book; the PDF has its own choice, so a single chapter can be proofed quickly while the previews show the book. This guide opens in whole-book mode. A book set vertically, like the Chinese edition of this guide, reads in the HTML view page by page only, because a single scrolling column would turn its lines on their side.
+
+## On a phone
+
+Below the width of a tablet the Sandbox rearranges itself. The panel bar moves to the foot of the screen, an open panel covers the preview instead of sitting beside it, and closing the panel finds the preview on the page it showed. The toolbars of the previews dock along the bottom edge, where a thumb reaches them, and wrap onto a second row when the screen is narrow. A phone cannot show a PDF inside a page, so the PDF view offers to open the file instead; and since a phone gives a browser tab less memory than a book in three dimensions needs, the Folio view is left out there.
 
 ## Resources and fonts
 
@@ -592,7 +586,7 @@ Your work is saved in the browser as you type. **Projects** are books stored loc
 
 Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which also comes in Simplified Chinese.
 
-A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
+A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. The recipes of the Cookbook open in the Sandbox the same way, as books of your own; a recipe you have opened before asks whether to open your copy, with your changes, or replace it with the published version, which may have been corrected since. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
 :::callout{type="try"}
 Scroll to a page you like and copy the address from the browser: opening that link shows the same book, in the same viewer, at the same page.
@@ -656,7 +650,7 @@ Nothing forces a choice between them. A book can be written in the Sandbox with 
 
 The engine ships as two packages on npm: _postext_ for the layout and the canvas and HTML renderers, and _postext-pdf_ for PDF output. Both are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
-The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF.
+The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ runs in the browser too, and also in Node, so a PDF can be produced on a server from a layout computed elsewhere. Both packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
 
 :::callout{type="note" title="Four steps"}
 1. Load the fonts the configuration names, so the browser can measure them
@@ -667,6 +661,70 @@ The layout engine runs in the browser, where it can measure with the fonts the r
 
 The engine and its PDF renderer are released together, with the same version number, so the two always agree on the shape of the layout they share.
 
+## Pages as images, from a script
+
+A page does not need a browser to become a picture. The canvas renderer draws on any canvas that speaks the browser's drawing interface, and in Node a prebuilt canvas does: lay the book out, draw the page, and encode it as a JPEG or a PNG. That is how the agent skill that ports books to Postext looks at its work. After each change to the configuration or the text it lays the book out again, draws only the pages it is working on and reads them as images, in a second or two, with no PDF to generate. The PDF is built at the end, for the checks that only a PDF can answer: fonts embedded, images at their resolution, the tagged structure.
+
+# The book in 3D {lead="A layout is a set of pages, but a book is an object: paper of a certain weight and colour, a binding that opens a certain way, a thickness the hand feels. The Folio view shows the pages as that object, before anything is printed." summary="The Folio view, paper stocks, bindings, covers and the light"}
+
+Proofs on a screen are flat. A spread seen as two rectangles says nothing about how the book will feel open on a desk: whether the gutter swallows the inner margin, whether a plate on gloss paper catches the light, whether three hundred pages of cream paper make a block too thick for the binding. The **Folio** view answers those questions with the pages Postext has already set. It shows the book bound, lying open on a surface, lit, with leaves that bend and turn under the hand.
+
+Nothing in it is a second layout. The pages are the ones the canvas paints, drawn at the exact pixels of the screen, so the text in Folio is as sharp as in the Canvas view and line for line the same. What Folio adds is everything around the pages: the paper, the binding, the covers, the desk and the light. All of it comes from one part of the configuration, \`folio\`, which the layout never reads. Changing the paper or the binding redraws the book at once and never moves a line.
+
+## Turning the pages
+
+A page is turned the way a page is turned: take it by its edge and drag it over. Let it go past the middle and it lands on the other side; let it go short of that and it falls back. A click on a page turns it too, forward on the right-hand page and back on the left, and so do the arrows of the toolbar and the arrow keys, Page Up and Page Down, Home and End when the book has the focus. The page field of the toolbar takes a page number and turns the book to that spread.
+
+Each leaf bends according to its paper. Thin bible paper rolls in a tight curve and lets the print of the other side show through; card turns in a wide arc; board, as in a board book for small children, turns as a rigid plate on its hinge. The covers turn as boards too. A long jump does not paint every page it sweeps past: those leaves cross the air as blank paper, and the spread where the book lands is painted first.
+
+The view itself can move. A drag with the right mouse button orbits round the book, down to a grazing angle, to look at the spine, the fore-edge or the thickness of the block, and it can be done while leaves are still turning. The view stays where it was left until **Reset view** brings it back to the angle the settings give. In a narrow window the book shows one page at a time, still turning its leaf over the spine; when the system asks for reduced motion, the spreads change without the turn.
+
+:::callout{type="try"}
+Open the Folio tab on this guide, turn a few pages by dragging their corners, then orbit the book with a right-drag to see its stapled fold. Reset view brings it back.
+:::
+
+## Paper
+
+The paper is chosen as a printer would order it: by **stock**, the kind of paper, and by **weight**, its grammage in grams per square metre. Each stock brings the values that are typical of it, listed in :ref{id="paper-stocks"}, and any of them can be changed on its own: a book wove at 70 grams instead of 80, an uncoated stock in a warmer shade.
+
+Thickness follows from two numbers. The **bulk** of a paper, in cubic centimetres per gram, says how much room a gram of it takes; grammage times bulk is the **caliper**, the thickness of one sheet in micrometres. A book's block is its number of leaves times that caliper, which is why the same three hundred pages make a slim volume on coated paper and a fat one on bulky book wove. Folio counts the whole book, so a chapter shown on its own still sits between the pages before and after it, at their real thickness.
+
+The surface has three settings. The **finish** says whether the paper is uncoated, with its fibres and no sheen, or coated and calendered to matte, silk or gloss, which reflects the room. The **texture** is the relief: smooth, the fine tooth of vellum, the even weave of wove, the lines of laid paper, an embossed linen or the irregular marks of felt; its strength can be turned down or up. The **shade** is the colour of the paper before printing, white, natural or cream, and **show-through** lets the print of the reverse appear faintly on thin paper, less and less as the paper gets heavier and more opaque.
+
+## Bindings and covers
+
+Five bindings are available. A **hardcover** is case bound, with boards slightly larger than the pages. A **paperback** is perfect bound, its spine milled and glued, and opens less flat. A **sewn softcover** keeps its sections sewn under a soft cover and opens more easily. A **lay-flat** binding opens fully, with no dip of the pages towards the spine. A **saddle-stitched** booklet is made of folded sheets stapled through the fold, like a magazine or a programme, and has no flat spine. A thick book opens as a thick book does, with its spine standing between the two blocks of pages.
+
+The covers come from one of two places. By default Folio draws a **case** round the pages, in cloth, card or leather and in the cover colour. When the document already carries its covers, as this guide does, they can be **the document's own pages**: the first page becomes the front cover and the last, when it falls on a left-hand page, the back cover. The book then lies closed on its cover until the reader opens it, the cover turns as a stiff board, and turning the last leaf closes the book again.
+
+The spine can carry a picture. Any image or SVG of the Resources panel can be printed on it, seen as the spine is seen on a shelf, head up with the front cover to the right; it is scaled to cover the spine, so it should leave a little room at its edges. A saddle-stitched booklet has no spine to print. The picture travels with the book's resources in its .postext file, and it shows whenever the view is orbited round to the spine.
+
+## Plates on another paper
+
+Books often change paper for a few pages: a section of colour plates on coated stock in a novel printed on book wove, a card divider, a few leaves of tinted paper. In Postext that is a container in the text:
+
+:::callout{type="note" title="A plate section"}
+\`:::paper{type=coatedGloss grammage=130}\` opens the run and \`:::\` closes it. Everything between them is printed on that stock.
+:::
+
+A stock covers whole sheets, so the content inside the run starts on a new page and whatever follows it starts on a new page too. Each page set from inside the run carries its paper in the layout, and the Folio view draws those leaves with that paper's colour, surface, thickness and stiffness; the canvas, the HTML and the PDF set them like any other page. Attributes left out follow the book's paper, and a run inside another overrides only what it sets.
+
+## The desk and the light
+
+The book lies on a **surface**: oak, walnut, linen, felt, leather, marble, a plain colour, or nothing at all, which leaves the background of the page. Each surface is a photographed texture, and a tint recolours any of them. Five **lights** set the scene: a studio, daylight, a reading lamp, an overcast sky and night. Each is a pair: the surroundings that coated and gloss paper reflect as a leaf turns, and a main light that casts the shadows of the block and of a lifted page onto the pages beneath it. The **exposure** brightens or darkens the scene, and the shadows can be turned off on a slow computer. The **tilt** sets how far the view leans from straight above, up to forty degrees.
+
+This guide is set as a saddle-stitched booklet, on coated gloss paper of 170 grams, on a blue felt mat in studio light. Its covers are its own first and last pages, so it opens on the cover and closes when the last leaf turns. All of it is in the **Folio** group of the Design panel, and nothing in that group changes a single line of the pages.
+
+## Where Folio runs
+
+Folio draws with WebGL2, the three-dimensional graphics of the browser, with a texture for each side of every painted page. Painting only the spreads around the open one keeps the memory of a long book to that of a few pages, but a phone still gives a browser tab less memory than a book needs, so the Sandbox offers the Folio tab on computers and tablets and leaves it out on phones, and in browsers without WebGL2.
+
+:::callout{type="note" title="In code"}
+The viewer is a package of its own, _postext-folio_, built on three.js. \`createFolioFromDocument(container, doc)\` shows a laid-out document as a book; \`setDocument\` shows the next layout on the same page, \`setAppearance\` changes the paper, the binding or the light, and \`resetView\` brings the view back. \`createFolio\` does the same over any page images.
+:::
+
+The same package turns the pages of the Cookbook's recipes, and it can sit in any web page that wants to present a book as a book: a publisher's catalogue, a proof sent to an author, a preview before the order goes to the printer.
+
 # Roadmap and community {lead="Postext is young and open. The core pipeline, the document format and the configuration system have shipped; what comes next is decided in public." summary="Where the project stands and how to take part"}
 
 Postext is not trying to be a universal document platform. It aims to be a very good editorial layout engine for the web, and it keeps its scope narrow so the core can stay sharp. Its long-term ambition is to become the standard layout engine for editorial content on the web: something publishers, magazines, book platforms and development teams can adopt and build on.
@@ -675,7 +733,7 @@ Postext is not trying to be a universal document platform. It aims to be a very 
 
 The work is organised in four phases, summarised in :ref{id="development-phases"}. They are not strict milestones; they describe the order in which capabilities become stable enough for production.
 
-The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, and Chinese set horizontally and vertically — and has margin notes still open. The fourth, output, has shipped canvas, HTML and a tagged PDF, together with the worker, the Sandbox and its presets.
+The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, and Chinese set horizontally and vertically — and has margin notes still open. The fourth, output, has shipped canvas, HTML and a tagged PDF, together with the worker, the Sandbox and its presets, and the Folio view that shows a layout as a printed book.
 
 What is still missing is as important as what has shipped. **Margin notes** have a place in the data model but are not laid out yet. Inline code has no style of its own, text does not yet flow around obstacles, Japanese and Korean are set with the Chinese rules rather than their own, and layout happens in the browser only. These are the next problems worth solving, and the ones where help counts most.
 

@@ -54,6 +54,7 @@ export const DEFAULT_RESOURCE_IDS = {
   documentFormatTable: 'document-format',
   presetTable: 'preset-sizes',
   phasesTable: 'development-phases',
+  paperStocksTable: 'paper-stocks',
 } as const;
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -571,6 +572,55 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
       );
 }
 
+/** The Folio paper stocks and what each sets (`FOLIO_PAPER_STOCKS`). */
+function paperStocksTableModel(lang: GuideLang): TableModel {
+  if (lang === 'zh-Hans') {
+    return table(
+      ['纸种', '克重', '单张厚度', '表面', '常见用途'],
+      [
+        ['胶版纸', '90 g/m²', '113 µm', '非涂布', '书籍和报告'],
+        ['书纸（米黄，高松厚）', '80 g/m²', '128 µm', '非涂布', '小说和随笔'],
+        ['哑光涂布纸', '115 g/m²', '115 µm', '哑光', '教材和画册'],
+        ['丝光涂布纸', '115 g/m²', '104 µm', '丝光', '图录和杂志'],
+        ['光面涂布纸', '115 g/m²', '92 µm', '光面', '杂志和图版'],
+        ['字典纸', '40 g/m²', '44 µm', '非涂布', '字典和经典文集'],
+        ['新闻纸', '48 g/m²', '72 µm', '非涂布', '报纸'],
+        ['卡纸', '250 g/m²', '300 µm', '非涂布', '封面和隔页'],
+        ['纸板', '1250 g/m²', '2000 µm', '丝光', '幼儿纸板书'],
+      ],
+    );
+  }
+  return lang === 'es'
+    ? table(
+        ['Papel', 'Gramaje', 'Grosor', 'Acabado', 'Uso habitual'],
+        [
+          ['Offset sin estucar', '90 g/m²', '113 µm', 'Sin estucar', 'Libros e informes'],
+          ['Ahuesado de alto volumen', '80 g/m²', '128 µm', 'Sin estucar', 'Novela y ensayo'],
+          ['Estucado mate', '115 g/m²', '115 µm', 'Mate', 'Libros de texto, libros de arte'],
+          ['Estucado seda', '115 g/m²', '104 µm', 'Seda', 'Catálogos y revistas'],
+          ['Estucado brillo', '115 g/m²', '92 µm', 'Brillo', 'Revistas y láminas'],
+          ['Biblia', '40 g/m²', '44 µm', 'Sin estucar', 'Diccionarios y clásicos'],
+          ['Prensa', '48 g/m²', '72 µm', 'Sin estucar', 'Periódicos'],
+          ['Cartulina', '250 g/m²', '300 µm', 'Sin estucar', 'Cubiertas y separadores'],
+          ['Cartón', '1250 g/m²', '2000 µm', 'Seda', 'Libros de cartón infantiles'],
+        ],
+      )
+    : table(
+        ['Stock', 'Weight', 'Caliper', 'Finish', 'Typical use'],
+        [
+          ['Uncoated offset', '90 g/m²', '113 µm', 'Uncoated', 'Books and reports'],
+          ['Book wove, cream', '80 g/m²', '128 µm', 'Uncoated', 'Novels and essays'],
+          ['Coated matte', '115 g/m²', '115 µm', 'Matte', 'Textbooks, art books'],
+          ['Coated silk', '115 g/m²', '104 µm', 'Silk', 'Catalogues and magazines'],
+          ['Coated gloss', '115 g/m²', '92 µm', 'Gloss', 'Magazines and plates'],
+          ['Bible', '40 g/m²', '44 µm', 'Uncoated', 'Dictionaries and classics'],
+          ['Newsprint', '48 g/m²', '72 µm', 'Uncoated', 'Newspapers'],
+          ['Card', '250 g/m²', '300 µm', 'Uncoated', 'Covers and dividers'],
+          ['Board', '1250 g/m²', '2000 µm', 'Silk', 'Board books for children'],
+        ],
+      );
+}
+
 function presetTableModel(lang: GuideLang): TableModel {
   if (lang === 'zh-Hans') {
     return table(
@@ -942,6 +992,16 @@ const TABLE_SPECS: TableSpec[] = [
     caption: byLang('Preset page sizes and their typical use.', 'Tamaños de página predefinidos y su uso habitual.', '预设开本及其常见用途。'),
   },
   {
+    id: DEFAULT_RESOURCE_IDS.paperStocksTable,
+    model: paperStocksTableModel,
+    placement: { position: 'auto', span: 'page' },
+    caption: byLang(
+      'The paper stocks of the Folio view and the values each one sets: weight, the caliper of one sheet and the finish.',
+      'Los papeles del visor Folio y los valores que fija cada uno: gramaje, grosor de una hoja y acabado.',
+      '书页视图的纸种及各自设定的数值：克重、单张厚度和表面。',
+    ),
+  },
+  {
     id: DEFAULT_RESOURCE_IDS.phasesTable,
     model: phasesTableModel,
     placement: { position: 'auto', span: 'page' },
@@ -949,11 +1009,11 @@ const TABLE_SPECS: TableSpec[] = [
   },
 ];
 
-/** A figure's placement in an edition. The Chinese edition is vertical: a
- *  figure stands upright in its tier and the breadth it takes on the sheet
- *  is the room it uses in the flow, so a wide figure set across both tiers
- *  would hold a whole page for the strip it fills. There every figure takes
- *  one tier, the other going on with the text. */
+/** A figure's or table's placement in an edition. The Chinese edition is
+ *  vertical: a figure or table stands upright in its tier and the breadth
+ *  it takes on the sheet is the room it uses in the flow, so one set across
+ *  both tiers would hold a whole page for the strip it fills. There each
+ *  takes one tier, the other going on with the text. */
 function figurePlacement(placement: ResourcePlacement, lang: GuideLang): ResourcePlacement {
   return lang === 'zh-Hans' && placement.span === 'page' ? { ...placement, span: 'column' } : placement;
 }
@@ -976,7 +1036,7 @@ export function defaultResourcesSignature(): string {
   for (const lang of GUIDE_LANGS) {
     for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(lang));
     for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, figurePlacement(f.placement, lang), f.caption[lang], f.altText[lang]);
-    for (const t of TABLE_SPECS) parts.push(t.id, t.placement, t.caption[lang], t.model(lang));
+    for (const t of TABLE_SPECS) parts.push(t.id, figurePlacement(t.placement, lang), t.caption[lang], t.model(lang));
   }
   return JSON.stringify(parts);
 }
@@ -1030,7 +1090,7 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
     typeId: 'table',
     kind: 'table',
     table: { model: spec.model(lang) },
-    placement: spec.placement,
+    placement: figurePlacement(spec.placement, lang),
     caption: spec.caption[lang],
     createdAt: now,
     updatedAt: now,

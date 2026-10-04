@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDocument, resolveCjkConfig, type CjkRegion, type PostextConfig } from 'postext';
 import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { createPostextGuideConfig } from '../context/guideConfig';
+import { GUIDE_FOLIO } from '../context/guideKit';
 import { SETTINGS_GROUPS, type SettingsGroupId } from '../sidebar/sections/registry';
 import { DEFAULT_LABELS } from '../types/defaultLabels';
 import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride';
@@ -141,6 +142,29 @@ describe('what the guide says about itself and the Sandbox', () => {
         if (words.test(said)) expect(uses[feature], `${edition}: ${feature} in “${said}”`).toBe(true);
       }
     }
+  });
+
+  it('describes the book in 3D as the Folio settings set it', () => {
+    // Paper weight, stock, binding, surface and light, as the chapter on the
+    // Folio view states them.
+    const said: Record<Edition, [RegExp, RegExp, RegExp, RegExp, RegExp]> = {
+      en: [/This guide is set as ([^.]*)\./, /saddle-stitched/, /coated gloss paper of (\d+) grams/, /felt/, /studio light/],
+      es: [/Esta guía está montada como ([^.]*)\./, /grapado a caballete/, /estucado brillo de (\d+) gramos/, /fieltro/, /luz de estudio/],
+      'zh-Hans': [/本指南设为([^。]*)。/, /骑马钉/, /(\d+)g\/m²的光面铜版纸/, /毛毡/, /摄影棚光照/],
+    };
+    for (const edition of Object.keys(said) as Edition[]) {
+      const [sentence, binding, paper, surface, light] = said[edition];
+      const text = claim(edition, sentence)[1]!;
+      expect(text, edition).toMatch(binding);
+      expect(GUIDE_FOLIO.binding?.type).toBe('saddleStitch');
+      expect(Number(text.match(paper)?.[1]), edition).toBe(GUIDE_FOLIO.paper?.grammage);
+      expect(GUIDE_FOLIO.paper?.type).toBe('coatedGloss');
+      expect(text, edition).toMatch(surface);
+      expect(GUIDE_FOLIO.surface?.type).toBe('felt');
+      expect(text, edition).toMatch(light);
+      expect(GUIDE_FOLIO.lighting?.environment).toBe('studio');
+    }
+    expect(createPostextGuideConfig('en').folio).toEqual(GUIDE_FOLIO);
   });
 
   it('gives the HTML view’s vertical lines the length it sets them to', () => {
