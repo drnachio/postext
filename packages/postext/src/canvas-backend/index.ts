@@ -42,6 +42,17 @@ export interface RenderPageOptions {
    *  `applySingleInkToSvg` marked, or registered with `singleInk: false`,
    *  is never tinted. The next major release turns it on. */
   singleInk?: boolean;
+  /** Paints the trimmed page only: with `page.cutLines` on, the bitmap
+   *  covers the trim box (the page as it comes out of the guillotine),
+   *  leaving out the bleed, the slug and the crop marks. `scale` still
+   *  counts bitmap pixels per page pixel. No effect without cut lines. */
+  trim?: boolean;
+}
+
+/** How far the painted area sits inside the sheet: the trim offset when
+ *  the render is trimmed, else 0. */
+function trimInset(doc: VDTDocument, options?: RenderPageOptions): number {
+  return options?.trim ? Math.max(0, doc.trimOffset) : 0;
 }
 
 export function renderPageToCanvas(
@@ -80,8 +91,9 @@ function paintPage(
   options?: RenderPageOptions,
 ): void {
   const scale = options?.scale && options.scale > 0 ? options.scale : 1;
-  canvas.width = Math.max(1, Math.round(page.width * scale));
-  canvas.height = Math.max(1, Math.round(page.height * scale));
+  const inset = trimInset(doc, options);
+  canvas.width = Math.max(1, Math.round((page.width - 2 * inset) * scale));
+  canvas.height = Math.max(1, Math.round((page.height - 2 * inset) * scale));
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -124,9 +136,13 @@ function paintContext(
   // covered — a light hairline at the edge of a dark or coloured page — so
   // the page is stretched to the bitmap's exact size instead (the two
   // factors differ from `scale` by well under a pixel's worth).
-  const sx = canvas.width / page.width;
-  const sy = canvas.height / page.height;
+  // A trimmed render paints the trim box alone, shifted to the bitmap's
+  // origin; the slug and the marks fall outside it.
+  const inset = trimInset(doc, options);
+  const sx = canvas.width / (page.width - 2 * inset);
+  const sy = canvas.height / (page.height - 2 * inset);
   if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
+  if (inset > 0) ctx.translate(-inset, -inset);
 
   if (options?.pageNegative) {
     ctx.filter = 'invert(1)';
@@ -158,10 +174,10 @@ function paintContext(
   // the bleed may run past it; that part would be cut off with the slug.
   const bleedClip = trimOff > 0;
   if (bleedClip) {
-    const inset = Math.max(0, trimOff - bleedPx);
+    const bleedInset = Math.max(0, trimOff - bleedPx);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(inset, inset, page.width - inset * 2, page.height - inset * 2);
+    ctx.rect(bleedInset, bleedInset, page.width - bleedInset * 2, page.height - bleedInset * 2);
     ctx.clip();
   }
 
@@ -260,7 +276,7 @@ function paintContext(
     ctx.filter = 'none';
   }
 
-  renderCutLines(ctx, page, doc);
+  if (inset === 0) renderCutLines(ctx, page, doc);
 }
 
 export function renderPage(page: VDTPage, doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement {

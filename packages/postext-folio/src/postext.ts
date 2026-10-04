@@ -30,6 +30,14 @@ export function firstPageIsRecto(doc: VDTDocument): boolean {
   return (doc.pageIndexOffset ?? 0) % 2 === 0;
 }
 
+/** A page's width and height as bound: the trim box, since a book is cut
+ *  (a sheet laid out with cut lines also carries the bleed, the slug and
+ *  the crop marks, none of which a bound page shows). */
+export function trimmedSize(page: VDTPage, doc: VDTDocument): { width: number; height: number } {
+  const inset = Math.max(0, doc.trimOffset);
+  return { width: page.width - 2 * inset, height: page.height - 2 * inset };
+}
+
 /** The page's colour, for blank pages: white when it has none. */
 function paperOf(doc: VDTDocument): string {
   const hex = doc.config.page.backgroundColor.hex;
@@ -52,7 +60,7 @@ function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): Folio
     folio: doc.config.folio,
     covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
     // Page sizes are in device pixels at the page's dpi.
-    ...(page ? { pageWidthMm: ((page.width - 2 * doc.trimOffset) * 25.4) / (doc.config.page.dpi || 300) } : {}),
+    ...(page ? { pageWidthMm: (trimmedSize(page, doc).width * 25.4) / (doc.config.page.dpi || 300) } : {}),
     extraPages: { before, after },
     ...own,
   };
@@ -171,8 +179,10 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     const page = current.pages[i];
     if (!page) return;
     const canvas = document.createElement("canvas");
+    // The page as bound: trimmed, without the slug and the crop marks.
     renderPageToCanvas(page, current, canvas, {
-      scale: width / page.width,
+      trim: true,
+      scale: width / trimmedSize(page, current).width,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,
     });
@@ -264,7 +274,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       return paper ? { src: "", paper } : "";
     }),
     appearance: appearanceOf(doc, options.appearance),
-    aspect: first ? first.width / first.height : undefined,
+    aspect: first ? ((s) => s.width / s.height)(trimmedSize(first, doc)) : undefined,
     firstPageRecto: firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
     paper: options.paper ?? paperOf(doc),
