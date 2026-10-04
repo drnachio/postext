@@ -51,6 +51,10 @@ function config(bodyText: PostextConfig['bodyText'] = {}): PostextConfig {
   return {
     page: { width: pt(420), height: pt(260), dpi: 72, margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } },
     locale: 'ar',
+    // These tests look at the shaped runs on an unmirrored page; the
+    // mirrored frame of a right-to-left document (#370) has its own tests
+    // (`mirroredPdf.test.ts`).
+    direction: 'ltr',
     layout: { layoutType: 'single' },
     header: { elements: [] },
     footer: { elements: [] },

@@ -240,9 +240,14 @@ export function drawOverlay(
   clearOverlay(svg);
   // A vertical page's marks are drawn in its flow frame, turned onto the
   // sheet the way the canvas paints the flow (`VDTPage.flow`): the caret
-  // becomes a bar across the column, between two characters.
+  // becomes a bar across the column, between two characters. A
+  // right-to-left page's are mirrored with its flow.
   const flow = doc.pages[pageIndex]?.flow;
-  const frame = flow ? `matrix(0 1 -1 0 ${flow.rotation.originX} ${flow.rotation.originY})` : null;
+  const frame = !flow
+    ? null
+    : flow.writingMode === 'vertical-rl'
+      ? `matrix(0 1 -1 0 ${flow.rotation.originX} ${flow.rotation.originY})`
+      : `matrix(-1 0 0 1 ${flow.mirror.originX} 0)`;
   for (const g of [selectionGroup, cursorGroup, looseLineGroup]) {
     if (!g) continue;
     if (frame) g.setAttribute('transform', frame);

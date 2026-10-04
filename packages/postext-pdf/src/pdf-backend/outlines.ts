@@ -6,7 +6,7 @@ import {
   PDFRef,
   type PDFContext,
 } from 'pdf-lib';
-import { blockLinesText, plainTitleText } from 'postext';
+import { blockLinesText, pageIsVertical, plainTitleText } from 'postext';
 import type { VDTBlock, VDTDocument } from 'postext';
 
 interface OutlineEntry {
@@ -91,7 +91,7 @@ function collectHeadings(doc: VDTDocument, base = 0): OutlineEntry[] {
           pageIndex: base + page.index,
           // A vertical page's heading runs down its column from the flow's
           // x: the top of the column on the sheet, where reading starts.
-          y: page.flow ? block.bbox.x : block.bbox.y,
+          y: pageIsVertical(page) ? block.bbox.x : block.bbox.y,
         });
       }
     }

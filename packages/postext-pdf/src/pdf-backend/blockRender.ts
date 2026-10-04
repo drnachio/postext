@@ -4,7 +4,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -48,6 +48,11 @@ function renderMathRender(
   const S = pxPerVb * pxToPt;
   const x = topLeftXPx * pxToPt - render.viewBox.minX * S;
   const y = pageHeightPt - topLeftYPx * pxToPt + render.viewBox.minY * S;
+  // A formula on a mirrored page reads unmirrored in its box.
+  counterFlipPx(ctx, topLeftXPx, render.widthPx, () => paintMathPaths(ctx, render, x, y, S, fallbackColor));
+}
+
+function paintMathPaths(ctx: PageCtx, render: MathRender, x: number, y: number, S: number, fallbackColor: Color): void {
   for (const path of render.paths) {
     // MathJax fills are `currentColor` or a hex; an unpainted path (`none`,
     // as a stroke-only rule leaves after flattening) draws nothing, and any

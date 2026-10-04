@@ -61,6 +61,7 @@ import {
   pushClipOutline,
   popClip,
   strokeOutlinePx,
+  counterFlipPx,
 } from './primitives';
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
@@ -517,9 +518,12 @@ export function drawEmbeddedResource(
     width: wPx * scale,
     height: hPx * scale,
   };
-  if (res.kind === 'image') ctx.page.drawImage(res.image, box);
-  else if (res.kind === 'page') ctx.page.drawPage(res.page, box);
-  else drawVectorDrawing(ctx, res.drawing, xPx, yPx, wPx, hPx);
+  // A picture on a mirrored page reads unmirrored in its box.
+  counterFlipPx(ctx, xPx, wPx, () => {
+    if (res.kind === 'image') ctx.page.drawImage(res.image, box);
+    else if (res.kind === 'page') ctx.page.drawPage(res.page, box);
+    else drawVectorDrawing(ctx, res.drawing, xPx, yPx, wPx, hPx);
+  });
 }
 
 function pickFont(

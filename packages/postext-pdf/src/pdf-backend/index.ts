@@ -7,7 +7,7 @@ import {
 import type { ResourceImageMap, SvgRasterizer } from './renderResourceBlock';
 import fontkit from '@pdf-lib/fontkit';
 import type { HyphenationLocale, PdfColorSpace, RenderWarning, VDTBlock, VDTDocument, VDTPage } from 'postext';
-import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule } from 'postext';
+import { canonicalLocaleTag, cjkGridCells, columnClipRect, computePageTextExtent, dimensionToPx, pageColumnRule, verticalFlowOf } from 'postext';
 import { FontCache, type FontFallback, type FontFileIssue, type FontMissingGlyphs, type PdfFontProvider, type PdfFontRequest } from '../fontCache';
 import {
   type PageCtx,
@@ -20,6 +20,7 @@ import {
   pushClipRect,
   pushFrame,
   quarterTurnMatrix,
+  mirrorMatrix,
   whiteColor,
 } from './primitives';
 // Register the painters of vertical and of complex-script text with the
@@ -377,15 +378,25 @@ function renderPage(
   // column (`verticalText.ts`): characters upright through the fonts'
   // vertical twins, Latin words and long numbers sideways. Running heads,
   // folios and the marks stay on the sheet.
+  // A right-to-left page (`VDTMirroredFlowFrame`) paints its flow through
+  // its mirror the same way, with `ctx.mirror` on: each text object and
+  // picture is turned back about its own box (`pushTextObject`,
+  // `counterFlipPx`), so the geometry lands mirrored and the text reads as
+  // written. Link and structure rects map through the frame too.
   let flowMatrix: PdfMatrix | undefined;
-  if (vdtPage.flow) {
-    flowMatrix = quarterTurnMatrix(vdtPage.flow.rotation, scale, pageHeightPt);
+  const vflow = verticalFlowOf(vdtPage);
+  if (vflow) {
+    flowMatrix = quarterTurnMatrix(vflow.rotation, scale, pageHeightPt);
     pushFrame(ctx, flowMatrix);
     ctx.vertical = {
       region: doc.config.cjk?.region ?? 'mainland',
       uprightDigits: doc.config.cjk?.uprightDigits ?? 2,
-      ...(vdtPage.flow.centralBaselines ? { axes: vdtPage.flow.centralBaselines } : {}),
+      ...(vflow.centralBaselines ? { axes: vflow.centralBaselines } : {}),
     };
+  } else if (vdtPage.flow?.writingMode === 'horizontal-tb') {
+    flowMatrix = mirrorMatrix(vdtPage.flow.mirror.originX, scale);
+    pushFrame(ctx, flowMatrix);
+    ctx.mirror = true;
   }
 
   tagArtifact(ctx, { type: 'Layout' });
@@ -501,6 +512,7 @@ function renderPage(
   if (flowMatrix) {
     popFrame(ctx);
     delete ctx.vertical;
+    delete ctx.mirror;
   }
 
   // Running headers and footers are pagination artifacts.
