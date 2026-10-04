@@ -338,7 +338,22 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-toc-subtitle', ['font-style: italic', 'font-size: 0.9em']));
   out.push(rule('p.pt-bib', ['padding-inline-start: 2em', 'text-indent: -2em', 'margin-block-end: 0.3em']));
   out.push(rule('p.pt-index-group', ['font-weight: bold', 'text-indent: 0', 'margin-block-start: 1em', 'page-break-after: avoid', 'break-after: avoid']));
-  out.push(rule('p.pt-index-entry', ['text-indent: 0', 'text-align: start', 'hyphens: manual']));
+  // Index entries hang their turnover lines, and a sub-entry sits one
+  // indent in per level, both in the index's own em.
+  const ix = config.index;
+  const ixPx = px(ix.fontSize);
+  const turnover = round(px(ix.turnoverIndent, ixPx) / ixPx);
+  const step = round(px(ix.indent, ixPx) / ixPx);
+  out.push(rule('p.pt-index-entry', [
+    ixPx !== bodyPx && `font-size: ${round(ixPx / bodyPx)}em`,
+    `padding-inline-start: ${turnover}em`,
+    `text-indent: -${turnover}em`,
+    'text-align: start',
+    'hyphens: manual',
+  ]));
+  for (const level of [1, 2, 3]) {
+    out.push(rule(`p.pt-index-l${level}`, [`margin-inline-start: ${round(step * level)}em`]));
+  }
 
   // --- maths, chips, swatches, Chinese marks ------------------------------
   out.push(rule('.pt-math-display', ['text-align: center', 'margin: 0.5em 0', 'text-indent: 0', 'overflow-x: auto']));

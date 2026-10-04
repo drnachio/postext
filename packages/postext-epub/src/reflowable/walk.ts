@@ -78,6 +78,12 @@ const fragmentKey = (block: VDTBlock): string => block.id.replace(/-cont-\d+$/, 
 
 const isTocRow = (block: VDTBlock): boolean => block.tocEntry !== undefined || block.tocPart !== undefined;
 
+/** The source range of a block, as a key. */
+const rangeKey = (block: VDTBlock): string => `${block.sourceStart ?? ''}:${block.sourceEnd ?? ''}`;
+
+/** Whether a block links page numbers: an entry of the index. */
+const hasPageLink = (block: VDTBlock): boolean => block.lines.some((l) => l.segments?.some((g) => g.pageLink !== undefined));
+
 const lineKey = (page: number, x: number, y: number): string => `${page}|${x.toFixed(2)}|${y.toFixed(2)}`;
 
 /** The language a chapter document is written in. */
@@ -136,6 +142,10 @@ class DocWalker {
   private readonly calloutIds = new Set<number>();
   /** Inline anchors by the line they sit on. */
   private readonly lineAnchors = new Map<string, string[]>();
+  /** Source ranges of the `:::index` directives: every entry block a
+   *  directive expands into carries its range, the entries with only a
+   *  cross-reference (`See …`) too, which have no page link. */
+  private readonly indexRanges = new Set<string>();
   private readonly partMarks: NonNullable<VDTDocument['partMarks']>;
   private file?: FileModel;
   private root!: Container;
@@ -172,6 +182,9 @@ class DocWalker {
     for (const f of frames) {
       if (f.containerId !== undefined) this.calloutIds.add(f.containerId);
       for (const id of f.calloutPath ?? []) this.calloutIds.add(id);
+    }
+    for (const b of doc.blocks) {
+      if (b.sourceStart !== undefined && hasPageLink(b)) this.indexRanges.add(rangeKey(b));
     }
     for (const a of doc.anchors ?? []) {
       if (a.kind !== 'anchor') continue;
@@ -526,6 +539,10 @@ class DocWalker {
 
   private paragraph(block: VDTBlock, root: Container, key: string): void {
     const state = this.enter(block, root);
+    if (hasPageLink(block) || (block.sourceStart !== undefined && this.indexRanges.has(rangeKey(block)))) {
+      this.indexEntries(block, state, key);
+      return;
+    }
     const node: ParagraphNode = { k: 'p', inl: [], ...(block.direction ? { dir: block.direction } : {}) };
     const cls: string[] = [];
     if (block.bibEntry !== undefined) {
@@ -539,30 +556,64 @@ class DocWalker {
       const style = paragraphStyleOf(block, this.config, this.bodyPx);
       if (style) cls.push(idOf('ps-', style));
     }
-    let lines = block.lines;
-    if (lines.some((l) => l.segments?.some((s) => s.pageLink !== undefined))) {
-      cls.push('pt-index-entry');
-      // A group letter of the index, set as the first line of its first
-      // entry in a face of its own: a paragraph of its own.
-      const head = lines[0]!.segments ?? [];
-      const letter = lines.length > 1 && head.some((g) => g.kind === 'text') && head.every((g) => g.kind === 'space' || (g.fontString !== undefined && g.pageLink === undefined));
-      if (letter) {
-        const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
-        state.nodes.push(group);
-        this.appendBlockLines({ inl: group.inl }, block, lines.slice(0, 1), this.takePages());
-        lines = lines.slice(1);
-      }
-    }
     if (cls.length) node.cls = cls;
     state.nodes.push(node);
     const top = this.topOf(state, node);
     const sink = this.newSink(key, node.inl, top);
-    this.appendBlockLines(sink, block, lines, this.takePages());
+    this.appendBlockLines(sink, block, block.lines, this.takePages());
     this.record(block, top);
-    if (!this.floating) {
-      if (cls.includes('pt-index-entry') && !this.book.index) this.book.index = { file: this.file!, id: (node.id ??= `b-${++this.counters.block}`) };
-      if (block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };
+    if (!this.floating && block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };
+  }
+
+  /**
+   * A block of the back-of-book index: its group letter, then each entry it
+   * holds (the entries with no page of their own that head a sub-entry, and
+   * the sub-entry) as a paragraph of its own, classed by depth
+   * (`pt-index-l1`, `pt-index-l2`…). The block keeps no depth: an entry
+   * starts on a line set at its level's indent, its turnover lines hang
+   * `turnoverIndent` further in (`indexDirective.ts`).
+   */
+  private indexEntries(block: VDTBlock, state: Container, key: string): void {
+    let lines = block.lines;
+    const pages = this.takePages();
+    // A group letter of the index, set as the first line of its first
+    // entry in a face of its own: a paragraph of its own.
+    const head = lines[0]!.segments ?? [];
+    const letter = lines.length > 1 && head.some((g) => g.kind === 'text') && head.every((g) => g.kind === 'space' || (g.fontString !== undefined && g.pageLink === undefined));
+    if (letter) {
+      const group: ParagraphNode = { k: 'p', inl: [], cls: ['pt-index-group'] };
+      state.nodes.push(group);
+      this.appendBlockLines({ inl: group.inl }, block, lines.slice(0, 1), pages.splice(0));
+      lines = lines.slice(1);
     }
+    const cfg = this.config.index;
+    const dpi = this.config.page.dpi;
+    const sizePx = dimensionToPx(cfg.fontSize, dpi, this.bodyPx);
+    const indentPx = dimensionToPx(cfg.indent, dpi, sizePx);
+    const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, sizePx);
+    const entries: { x: number; level: number; lines: VDTLine[] }[] = [];
+    for (const line of lines) {
+      const x = line.bbox.x - block.bbox.x;
+      const last = entries[entries.length - 1];
+      if (last && Math.abs(x - (last.x + turnoverPx)) < 1) last.lines.push(line);
+      else entries.push({ x, level: indentPx > 0 ? Math.max(0, Math.round(x / indentPx)) : 0, lines: [line] });
+    }
+    let top: Node | undefined;
+    for (const [i, entry] of entries.entries()) {
+      const node: ParagraphNode = {
+        k: 'p',
+        inl: [],
+        cls: ['pt-index-entry', ...(entry.level > 0 ? [`pt-index-l${Math.min(entry.level, 3)}`] : [])],
+        ...(block.direction ? { dir: block.direction } : {}),
+      };
+      state.nodes.push(node);
+      top = this.topOf(state, node);
+      // The last entry takes the lines of the block's next fragment.
+      const sink = i === entries.length - 1 ? this.newSink(key, node.inl, top) : { inl: node.inl };
+      this.appendBlockLines(sink, block, entry.lines, i === 0 ? pages : []);
+      if (!this.floating && !this.book.index) this.book.index = { file: this.file!, id: (node.id ??= `b-${++this.counters.block}`) };
+    }
+    if (top) this.record(block, top);
   }
 
   private quote(block: VDTBlock, root: Container, key: string): void {

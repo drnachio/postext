@@ -265,6 +265,25 @@ describe('buildReflowablePublication', () => {
     expect(pub.accessibility.features).toContain('index');
   });
 
+  it('sets each index entry as a paragraph classed by its depth', async () => {
+    const md = [
+      'The :index{term="valves!mitral"}mitral and :index{term="valves!aortic"}aortic valves close. The node:index{term="AV node" see="atrioventricular node"} fires.',
+      '', para.repeat(6), '', '# Index', '', ':::index',
+    ].join('\n');
+    const { pub, files, all } = await render([layOut(md)]);
+    expectSound(pub, files);
+    // The head with no page of its own and its first sub-entry share a
+    // block in print: two paragraphs here, not one broken by <br/>.
+    expect(all).toMatch(/<p (?:id="b-\d+" )?class="pt-index-entry">valves<\/p>\n<p class="pt-index-entry pt-index-l1">aortic, <a class="pt-pageref"/);
+    expect(all).toMatch(/<p class="pt-index-entry pt-index-l1">mitral, <a class="pt-pageref"/);
+    // An entry with only a cross-reference is an index entry too.
+    expect(all).toMatch(/<p (?:id="b-\d+" )?class="pt-index-entry">AV node\. <em>See<\/em> atrioventricular node<\/p>/);
+    expect(all).not.toContain('<br/>');
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/p\.pt-index-entry \{[^}]*padding-inline-start: 2em;\n {2}text-indent: -2em;/);
+    expect(css).toContain('p.pt-index-l1 {\n  margin-inline-start: 1em;');
+  });
+
   it('gives a part its own opener document', async () => {
     const docs = layOutBook([
       ':::part{number="I" title="Foundations"}\n:::\n\n# One\n\nText of one.',
