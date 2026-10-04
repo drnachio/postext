@@ -190,12 +190,16 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
       <td><code>:::index</code></td>
       <td>Print the back-of-book index here: every term marked with <code>:index</code> in the book, sorted and grouped by letter, with the pages it falls on, typeset per the <code>index</code> configuration. <code>:::index&#123;index="names"&#125;</code> prints a named index. See <a href="#back-of-book-index">Back-of-book index</a>.</td>
     </tr>
+    <tr>
+      <td><code>:::verse</code> … <code>:::</code></td>
+      <td>A poem in classical Arabic layout: one bayt a line, its two hemistichs separated by <code>||</code>, set side by side at one common width. See <a href="#verse">below</a>.</td>
+    </tr>
   </tbody>
 </table>
 
 Attribute values may be double-quoted (<code>"…"</code>), single-quoted (<code>'…'</code>), or bare (<code>startAt=17</code>). A bare key without `=` is treated as a present-but-empty flag.
 
-Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+Only `pagebreak`, `numbering`, `columnbreak`, `space`, `toc` and `index` are recognized as single-line directives today (and `references` and `verse` as fenced blocks) — any other `:::name` line that is not a container (below) is parsed as a paragraph and surfaces an **Unknown directive** warning in the sandbox. The engine records it too, as an `unknownDirective` entry in the document's `contentWarnings` (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
 
 ### Attribute values
 
@@ -500,6 +504,27 @@ An answer box of a worksheet is a box whose only content is space: the question 
 
 For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
+
+### `:::verse`
+
+A poem in the classical Arabic layout (a qaṣīda, a qiṭʿa): each verse, the *bayt*, on one line in two halves, the *ṣadr* on the start side (the right in Arabic) and the *ʿajuz* on the end side, with a gap between them. Write one bayt a line, its hemistichs separated by `||` (a `\\` with a space on each side, as in Wikisource texts, works too). A line without a separator is a single hemistich, centred on the poem.
+
+```md
+فأنشد يقول:
+
+:::verse
+يَا حُرْقَةَ الدَّهْرِ كُفِّي || إِنْ لَمْ تَكُفِّي فَعِفِّي
+فَلَا بِحَظِّيَ أُعْطِي || وَلَا بِصَنْعَةِ كَفِّي
+:::
+```
+
+- **One width.** Every hemistich of the poem is set to one width, so each ṣadr starts on the same vertical and each ʿajuz ends on another, and the rhyme letters line up down the poem. The width is that of the widest hemistich, at most half the measure less the gap; `width` sets it (`width=55mm`). Each hemistich is brought to it with kashidas first (verse elongates more than prose: twice `bodyText.kashidaMaxLength`), then its word spaces; a hemistich of one word that cannot fill it leaves the rest in the gap.
+- **The gap** is 2 em by default; `gap` sets it (`gap=3em`, a bare number is in ems). `ornament` prints a mark in its middle (`ornament="٭"`), which is not part of the text.
+- **Too wide.** A hemistich wider than the common width first tightens its word spaces to `bodyText.minWordSpacing`. If it still does not fit, its bayt is set staggered: the ṣadr flush with the start side on its own line, the ʿajuz flush with the end side on the next.
+- **Placement.** The poem is centred in the column; `align=start` sets it flush with the start side. A bayt is never split between columns or pages, and the poem follows the orphan and widow rules of paragraphs (a poem of three bayts or fewer stays whole). The paragraph before the poem, which introduces it («فأنشد يقول:»), keeps its last line with the first bayts.
+- **Type.** The poem takes the body text's face, size and leading; `style` names a paragraph style for it (`style="verse"`), which is how a vocalised poem gets the extra leading its harakat need. `dir=ltr` or `dir=rtl` sets its direction like any block; a poem in Latin script in a left-to-right book has its ṣadr on the left.
+
+The plain text of the poem keeps the hemistichs and bayts apart (a tab and a line break), so a search or a copied passage reads it as written; the kashidas and the ornament are left out.
 
 ### `:::toc`
 

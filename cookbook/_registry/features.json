@@ -8356,6 +8356,65 @@
     },
     "since": "1.15.0"
   },
+  "arabic-verse": {
+    "label": {
+      "en": "Arabic verse (bayt in two hemistichs)",
+      "es": "Verso árabe (bayt en dos hemistiquios)",
+      "zh": "阿拉伯诗体（一联两个半行）"
+    },
+    "definition": {
+      "en": ":::verse sets a poem one bayt a line, the ṣadr on the start side and the ʿajuz on the end side, every hemistich justified to one common width with kashidas and spaces so the rhyme letters line up; a bayt too wide is staggered, never split between pages, and the introducing line stays with it.",
+      "es": ":::verse compone un poema con un bayt por línea, el ṣadr en el lado del comienzo y el ʿajuz en el del final, cada hemistiquio justificado a una anchura común con cachidas y espacios para que las letras de la rima se alineen; un bayt demasiado ancho se escalona, nunca se parte entre páginas, y la línea que lo introduce va con él.",
+      "zh": ":::verse按每行一联排诗，前半行（ṣadr）在起始一侧，后半行（ʿajuz）在结束一侧，每个半行用卡希达和空格对齐到同一宽度，使韵脚字母上下对齐；太宽的联错开排，绝不跨页拆开，引出诗的那一行与诗留在一起。"
+    },
+    "aliases": {
+      "en": [
+        "qasida",
+        "bayt",
+        "hemistich",
+        "classical Arabic poetry",
+        "two-column verse",
+        "Arabic poem",
+        "قصيدة",
+        "بيت"
+      ],
+      "es": [
+        "casida",
+        "bayt",
+        "hemistiquio",
+        "poesía árabe clásica",
+        "verso en dos columnas",
+        "poema árabe",
+        "قصيدة",
+        "بيت"
+      ],
+      "zh": [
+        "卡西达",
+        "联",
+        "半行",
+        "古典阿拉伯诗",
+        "双栏诗",
+        "阿拉伯诗",
+        "قصيدة",
+        "بيت"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::verse`",
+        "es": "`:::verse`",
+        "zh": "`:::verse`"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::verse"
+      ]
+    },
+    "since": "1.15.0"
+  },
   "citation-styles": {
     "label": {
       "en": "Citations in a citation style",

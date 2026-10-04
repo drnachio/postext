@@ -74,13 +74,15 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   `:::columns`, only inside a callout, and `:::paper`, a run of pages on
   another paper stock for the Folio viewer) and six directives
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
-  `:::index`), plus inline index marks (`:index[…]`, `:index{term="…"}`).
-  Anything else prints literally.
+  `:::index`), the fenced `:::references` and `:::verse` (a classical Arabic
+  poem, one bayt a line split at `||`), plus inline index marks
+  (`:index[…]`, `:index{term="…"}`). Anything else prints literally.
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write
   `:::space` (one body line) or `:::space{lines=N}`.
-- **No hard line breaks**: verse, addresses and code lines need one
-  paragraph per line inside `:::paragraphs{style="…"}`.
+- **No hard line breaks**: verse (other than an Arabic poem in `:::verse`),
+  addresses and code lines need one paragraph per line inside
+  `:::paragraphs{style="…"}`.
 
 Config traps:
 

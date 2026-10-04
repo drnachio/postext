@@ -25,7 +25,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
-KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references"}
+KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
 ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s]+)))?")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
@@ -614,7 +614,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     prev_nonblank = False
     prev_kind = ""
     in_math = False
-    in_refs = False  # inside a :::references block: its body is raw data
+    in_refs = False  # inside a :::references or :::verse block: its body is not paragraphs
     fn_cited: dict[str, str] = {}
     fn_defined: dict[str, str] = {}
     for i in range(n, len(lines)):
@@ -752,6 +752,9 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     # BibTeX / CSL-JSON / CSL-YAML up to the closing ::: (postext >= 1.12).
                     if attrs.get("format") and attrs["format"] not in ("bibtex", "biblatex", "bib", "csl-json", "json", "csl-yaml"):
                         rep.warn(where, f"references format {attrs['format']!r} is read as CSL-YAML")
+                    in_refs = True
+                if fname == "verse":
+                    # A poem: one bayt a line up to the closing ::: (postext >= 1.15).
                     in_refs = True
                 if fname == "numbering" and "format" in attrs and attrs["format"] not in ("decimal", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha"):
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
