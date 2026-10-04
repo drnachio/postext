@@ -224,6 +224,19 @@ describe('buildReflowablePublication', () => {
     expect(pub.accessibility.features).toContain('describedMath');
   });
 
+  it('joins a paragraph of a box split across pages', async () => {
+    const config = { ...baseConfig, page: { ...baseConfig.page, height: pt(260) }, calloutStyles: [{ id: 'note', keepTogether: false }] };
+    const md = [para.repeat(3), '', ':::callout{type="note"}', para.repeat(10), '', 'Last words **in** **the** box.', ':::'].join('\n');
+    const doc = layOut(md, config as typeof baseConfig);
+    expect(doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks)).filter((b) => b.type === 'callout').length).toBeGreaterThan(1);
+    const { pub, files, all } = await render([doc]);
+    expectSound(pub, files);
+    const box = /<aside class="pt-callout pt-callout-note">[\s\S]*?<\/aside>/.exec(all)![0];
+    expect(box.match(/<p>/g)).toHaveLength(2);
+    expect(box).toContain('epub:type="pagebreak"');
+    expect(box).toContain('<strong>in the</strong>');
+  });
+
   it('links the rows of a printed contents to their headings, without page numbers', async () => {
     const md = ['# Contents', '', ':::toc', ':::', '', '# Alpha', '', para.repeat(10), '', '## Beta', '', para].join('\n');
     const { pub, files, all } = await render([layOut(md)]);

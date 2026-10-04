@@ -264,6 +264,17 @@ export function bridgeLinks(inl: InlineItem[]): InlineItem[] {
       inl[i] = { ...item, link: a.link };
     }
   }
+  // Likewise a plain space between two runs in one format (two bold words)
+  // takes their format, so they make one element.
+  for (let i = 1; i < inl.length - 1; i++) {
+    const item = inl[i]!;
+    if (item.t !== 'text' || /\S/.test(item.text) || formatKey(item.fmt) !== formatKey({})) continue;
+    const a = inl[i - 1]!;
+    const b = inl[i + 1]!;
+    if (a.t === 'text' && b.t === 'text' && linkKey(a.link) === linkKey(b.link) && linkKey(item.link) === linkKey(a.link) && formatKey(a.fmt) === formatKey(b.fmt)) {
+      inl[i] = { ...item, fmt: a.fmt };
+    }
+  }
   return inl;
 }
 

@@ -395,7 +395,7 @@ class DocWalker {
       this.calloutFrame(block, root);
       return;
     }
-    const key = fragmentKey(block);
+    const key = this.textKey(block);
     const sink = this.sinks.get(key);
     if (sink) {
       this.enter(block, root);
@@ -433,6 +433,18 @@ class DocWalker {
     }
   }
 
+  /** The key the fragments of one text block share: the head's id (a
+   *  continuation adds `-cont-N`); inside a box split across pages, where
+   *  each fragment numbers its children afresh, the box and the content
+   *  index. */
+  private textKey(block: VDTBlock): string {
+    const cid = block.containerId;
+    if (cid !== undefined && this.calloutIds.has(cid) && block.contentIndex !== undefined && block.type !== 'heading' && block.type !== 'resource') {
+      return `box:${cid}:${(block.calloutPath ?? []).join('.')}:${block.contentIndex}`;
+    }
+    return fragmentKey(block);
+  }
+
   private newSink(key: string, inl: InlineItem[], top: Node): Sink {
     const sink: Sink = { inl, top, file: this.file! };
     this.sinks.set(key, sink);
@@ -449,9 +461,10 @@ class DocWalker {
     if (block.callout?.styleId) own.styleId = block.callout.styleId;
     if ((block.callout?.part ?? 0) === 0 && own.title === undefined) {
       const title = (block.designOverlay?.blocks ?? [])
-        .flatMap((b) => (b.kind === 'text' && !b.artifact ? [b.lines.map((l) => l.text).join(' ').trim()] : []))
-        .filter(Boolean)
-        .join(' ');
+        .flatMap((b) => (b.kind === 'text' && !b.artifact ? [b.lines.map((l) => l.text).join(' ')] : []))
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (title) own.title = title;
     }
     // The box's first content block starts its lists afresh.
