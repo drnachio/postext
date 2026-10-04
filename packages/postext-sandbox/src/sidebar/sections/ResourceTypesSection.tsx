@@ -29,6 +29,7 @@ import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { CaptionStyleFields } from './CaptionStyleFields';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview';
+import { documentDigits, documentLanguage } from '../../context/documentDirection';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 
 function newTypeId(): string {
@@ -88,6 +89,8 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const resources = useSandboxResources();
   const floatSide = flowSideLabels(useRightToLeftFlow(), labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
   const types: ResourceType[] = config.resourceTypes ?? defaultResourceTypes(locale);
+  // The previews number in the document's digits, as the pages do.
+  const digits = documentDigits(config.numerals, documentLanguage(config, locale ?? 'en'));
   const isDefault = config.resourceTypes === undefined;
   // Per-type caption overrides are shown merged over the resolved global
   // caption style so every control displays the value that will render.
@@ -425,9 +428,10 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
               <span style={labelStyle}>{labels.previewLabel}</span>
               <span
                 className="rounded px-1.5 py-0.5"
+                dir="auto"
                 style={{ backgroundColor: 'var(--surface)', color: 'var(--foreground)' }}
               >
-                {renderResourceTypePreview(type)}
+                {renderResourceTypePreview(type, digits)}
               </span>
             </div>
           </div>

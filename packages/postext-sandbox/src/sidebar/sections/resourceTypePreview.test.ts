@@ -36,4 +36,14 @@ describe('resource type counter format in the panel', () => {
     expect(resourceCounterFormat('roman')).toBe('decimal');
     expect(resourceCounterFormat(undefined)).toBe('decimal');
   });
+
+  it('numbers in the document digits (#401)', () => {
+    const figure: ResourceType = { ...plate('decimal'), shortLabel: '', captionPrefix: 'شكل', numberingTemplate: '{h1}-{n}' };
+    expect(renderResourceTypePreview(figure, 'arab')).toBe('شكل ١-٧');
+    expect(renderResourceTypePreview(figure, 'arabext')).toBe('شكل ۱-۷');
+    expect(renderResourceTypePreview(figure, 'latn')).toBe('شكل 1-7');
+    expect(renderResourceTypePreview(figure)).toBe('شكل 1-7');
+    // A format the author names is printed as named.
+    expect(renderResourceTypePreview(plate('roman-lower'), 'arab')).toBe('Pl. ١.vii');
+  });
 });
