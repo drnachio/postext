@@ -243,11 +243,11 @@ orderedLists: {
 
 ### Ordinal and cardinal words
 
-`{1:ordinal}` in a heading template writes the definite ordinal in Arabic words and `{1:words}` the cardinal. Arabic ordinals agree with the noun they number, so the template takes the gender after a hyphen: `-feminine` (or `-f`) for a feminine noun such as الليلة, the masculine by default for الفصل or الباب. `-classical` writes مائة for مئة, as Būlāq prints do.
+`{1:ordinal}` in a heading template writes the definite ordinal in Arabic words and `{1:words}` the cardinal. Arabic ordinals agree with the noun they number, so the template takes the gender after a hyphen: `-feminine` (or `-f`) for a feminine noun such as الليلة, the masculine by default for الفصل or الباب. `-classical` writes مائة for مئة, as Būlāq prints do. A night has no title of its own: `numberPosition: 'replace'` prints the number as the whole title, so `# Night` (or any title written in the source) prints الليلة الثانية, and the contents, the running heads and the PDF bookmarks read the same.
 
 ```ts
 headings: {
-  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '' }],
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
 },
 ```
 

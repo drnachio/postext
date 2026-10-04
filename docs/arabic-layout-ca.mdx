@@ -243,11 +243,11 @@ orderedLists: {
 
 ### Ordinals i cardinals en lletres
 
-`{1:ordinal}` en una plantilla de títol escriu amb lletres àrabs l'ordinal determinat, i `{1:words}` el cardinal. Els ordinals àrabs concorden amb el substantiu que numeren, de manera que la plantilla indica el gènere després d'un guionet: `-feminine` (o `-f`) per a un substantiu femení com الليلة, i el masculí per defecte per a الفصل o الباب. `-classical` escriu مائة en lloc de مئة, com les edicions de Būlāq.
+`{1:ordinal}` en una plantilla de títol escriu amb lletres àrabs l'ordinal determinat, i `{1:words}` el cardinal. Els ordinals àrabs concorden amb el substantiu que numeren, de manera que la plantilla indica el gènere després d'un guionet: `-feminine` (o `-f`) per a un substantiu femení com الليلة, i el masculí per defecte per a الفصل o الباب. `-classical` escriu مائة en lloc de مئة, com les edicions de Būlāq. Una nit no té títol propi: `numberPosition: 'replace'` imprimeix el número com el títol sencer, de manera que `# Nit` (o qualsevol títol escrit al text font) imprimeix الليلة الثانية, i l'índex general, els titolets i els marcadors del PDF diuen el mateix.
 
 ```ts
 headings: {
-  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '' }],
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
 },
 ```
 

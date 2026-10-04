@@ -52,6 +52,7 @@ import {
   headingIsNumbered,
   headingMarksFor,
   headingStyleOf,
+  numberTitlesFor,
   planHeadingSections,
 } from './headingStyles';
 import { locateAnchors } from './anchors';
@@ -563,7 +564,7 @@ function placeDocumentPass(
   // bibliography takes `:::bibliography`'s place or follows the text.
   // Arabic vowel marks out of the text when `bodyText.tashkil` says so
   // (#376), for the outline and the layout alike.
-  const parsedBody = headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved);
+  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }])[0] : undefined);
   const citationsApplied = citationContext

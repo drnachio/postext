@@ -2201,6 +2201,12 @@ Les configuracions per nivell admeten les mateixes propietats que els valors gen
       <td>El que separa el número del títol: a la columna, a l'obertura per defecte d'un nivell <code>span: 'page'</code>, als titolets que imprimeixen la línia de l'encapçalament i als marcadors del PDF. El separador del nivell 1 uneix també el número i el títol d'una part a la pàgina de part i a la fila de part de l'índex de continguts quan no tenen disseny propi. Els capítols xinesos porten un espai ideogràfic o res (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). L'índex de continguts conserva la seva pròpia columna de números (<code>toc.levels[].numberGap</code>). Un <a href="#estils-dencapçalament">estil d'encapçalament</a> pot fixar el seu. Quan un títol es parteix en dos amb <code>{'\\\\'}</code>, com els títols aparellats de les novel·les xineses, les formes d'una sola línia (la columna, l'índex de continguts, els titolets) uneixen les dues meitats amb un espai ideogràfic si a banda i banda hi ha caràcters xinesos o japonesos, i amb un espai en els altres casos.</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>On va el número generat. <code>'before'</code>: davant del títol, unit per <code>numberSeparator</code>. <code>'replace'</code>: el número és el títol sencer i el títol escrit al text font no s'imprimeix, de manera que <code># Nit</code> amb <code>numberingTemplate: 'الليلة {1:ordinal-feminine}'</code> imprimeix الليلة الثانية. L'índex general llista el número com a títol de l'entrada (sense columna de número), i les capçaleres (<code>{chapterTitle}</code>, <code>{titleText}</code>) i els marcadors del PDF també el llegeixen; <code>{number}</code> queda buit en aquest títol. Només per a títols numerats amb plantilla (la del nivell o la del seu estil); els altres conserven el seu títol. Un <a href="#heading-styles">estil de títol</a> pot fixar el seu, <code>'before'</code> per conservar els títols que el seu nivell substituiria.</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>

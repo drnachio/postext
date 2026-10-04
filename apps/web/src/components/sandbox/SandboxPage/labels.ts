@@ -672,6 +672,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     headingNumberingTemplatePlaceholder: t("headingNumberingTemplatePlaceholder"),
     headingNumberSeparator: t("headingNumberSeparator"),
     headingNumberSeparatorTooltip: t("headingNumberSeparatorTooltip"),
+    headingNumberReplacesTitle: t("headingNumberReplacesTitle"),
+    headingNumberReplacesTitleTooltip: t("headingNumberReplacesTitleTooltip"),
     headingLevelSnapToGrid: t("headingLevelSnapToGrid"),
     headingLevelSnapToGridTooltip: t("headingLevelSnapToGridTooltip"),
     headingItalic: t("headingItalic"),

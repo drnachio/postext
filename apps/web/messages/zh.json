@@ -1284,6 +1284,8 @@
     "headingNumberingTemplatePlaceholder": "例如'{'1'}'.'{'2'}'",
     "headingNumberSeparator": "编号之后",
     "headingNumberSeparatorTooltip": "编号与标题文字之间的分隔：用于栏内标题、通栏章首、书眉和PDF书签。中文章回标题用一个全角空格或不加分隔：第一回　甄士隱夢幻識通靈。",
+    "headingNumberReplacesTitle": "编号取代标题",
+    "headingNumberReplacesTitleTooltip": "生成的编号作为整个标题印出，正文里写的标题不印：例如某一夜印成الليلة الثانية，栏内、目录、书眉和PDF书签都如此。",
     "headingLevelSnapToGrid": "此级标题后回到网格",
     "headingLevelSnapToGridTooltip": "把此级标题下方的间距向上取整到整数条网格线，使后面的正文落在基线网格上。关闭则保留精确的外边距（例如标题下空一行半）：正文可能偏离网格，直到下一个对齐点。不设置时沿用标题的总设置",
     "headingItalic": "斜体",

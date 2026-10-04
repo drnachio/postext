@@ -2208,6 +2208,12 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td>Lo que separa el número del título: en la columna, en la apertura por defecto de un nivel <code>span: 'page'</code>, en los titulillos que imprimen la línea del encabezado y en los marcadores del PDF. El separador del nivel 1 une también el número y el título de una parte en la página de parte y en la fila de parte del índice de contenidos cuando no tienen diseño propio. Los capítulos chinos llevan un espacio ideográfico o nada (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). El índice de contenidos conserva su propia columna de números (<code>toc.levels[].numberGap</code>). Un <a href="#estilos-de-encabezado">estilo de encabezado</a> puede fijar el suyo. Cuando un título se parte en dos con <code>{'\\\\'}</code>, como los títulos pareados de las novelas chinas, las formas de una sola línea (la columna, el índice de contenidos, los titulillos) unen las dos mitades con un espacio ideográfico si a ambos lados hay caracteres chinos o japoneses, y con un espacio en los demás casos.</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>Dónde va el número generado. <code>'before'</code>: delante del título, unido por <code>numberSeparator</code>. <code>'replace'</code>: el número es el título entero y el título escrito en el texto fuente no se imprime, así que <code># Noche</code> con <code>numberingTemplate: 'الليلة {1:ordinal-feminine}'</code> imprime الليلة الثانية. El índice general lista el número como título de la entrada (sin columna de número), y las cabeceras (<code>{chapterTitle}</code>, <code>{titleText}</code>) y los marcadores del PDF también lo leen; <code>{number}</code> queda vacío en ese título. Solo para títulos numerados con plantilla (la del nivel o la de su estilo); los demás conservan su título. Un <a href="#heading-styles">estilo de título</a> puede fijar el suyo, <code>'before'</code> para conservar los títulos que su nivel sustituiría.</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>

@@ -243,11 +243,11 @@ orderedLists: {
 
 ### Ordinales y cardinales con letras
 
-`{1:ordinal}` en una plantilla de título escribe con letras árabes el ordinal determinado, y `{1:words}` el cardinal. Los ordinales árabes concuerdan con el sustantivo que numeran, así que la plantilla indica el género tras un guion: `-feminine` (o `-f`) para un sustantivo femenino como الليلة, y el masculino por defecto para الفصل o الباب. `-classical` escribe مائة en lugar de مئة, como las ediciones de Būlāq.
+`{1:ordinal}` en una plantilla de título escribe con letras árabes el ordinal determinado, y `{1:words}` el cardinal. Los ordinales árabes concuerdan con el sustantivo que numeran, así que la plantilla indica el género tras un guion: `-feminine` (o `-f`) para un sustantivo femenino como الليلة, y el masculino por defecto para الفصل o الباب. `-classical` escribe مائة en lugar de مئة, como las ediciones de Būlāq. Una noche no tiene título propio: `numberPosition: 'replace'` imprime el número como el título entero, así que `# Noche` (o cualquier título escrito en el texto fuente) imprime الليلة الثانية, y el índice general, los titulillos y los marcadores del PDF dicen lo mismo.
 
 ```ts
 headings: {
-  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '' }],
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
 },
 ```
 

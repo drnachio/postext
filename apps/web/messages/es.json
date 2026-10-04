@@ -1752,6 +1752,8 @@
     "headingNumberingTemplatePlaceholder": "ej. '{'1'}'.'{'2'}'",
     "headingNumberSeparator": "Tras el número",
     "headingNumberSeparatorTooltip": "Lo que separa el número del título en la columna, en la apertura a página completa, en los titulillos y en los marcadores del PDF. Los capítulos chinos llevan un espacio ideográfico o nada: 第一回　甄士隱夢幻識通靈.",
+    "headingNumberReplacesTitle": "El número sustituye al título",
+    "headingNumberReplacesTitleTooltip": "El número generado se imprime como el título entero y el título escrito en el texto se omite: الليلة الثانية para una noche, en la columna, el índice general, los titulillos y los marcadores del PDF.",
     "headingLevelSnapToGrid": "Volver a la retícula tras este título",
     "headingLevelSnapToGridTooltip": "Redondea el espacio bajo los títulos de este nivel a líneas enteras de la retícula, para que el texto siguiente se asiente en la retícula base. Desactivado, mantiene el margen exacto (una línea y media bajo el título, por ejemplo): el texto puede quedar fuera de la retícula hasta el siguiente punto de ajuste. Sin fijar, sigue el ajuste general de los títulos",
     "headingItalic": "Cursiva",

@@ -291,6 +291,7 @@ export type {
   LegacyHeaderFooterElement,
   LegacyHeaderFooterSlot,
   HeadingSpan,
+  HeadingNumberPosition,
   HeadingAdvancedDesignConfig,
   ResolvedHeadingAdvancedDesignConfig,
 } from './types';

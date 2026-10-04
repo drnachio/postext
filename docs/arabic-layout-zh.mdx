@@ -243,11 +243,11 @@ orderedLists: {
 
 ### 序数词与基数词
 
-标题模板中的`{1:ordinal}`用阿拉伯文词写出带定冠词的序数词，`{1:words}`写出基数词。阿拉伯文序数词与它所编号的名词保持一致，所以模板在连字符后注明性：`-feminine`（或`-f`）用于الليلة这样的阴性名词，الفصل或الباب等阳性名词用默认值。`-classical`把مئة写成مائة，与布拉克版的印法相同。
+标题模板中的`{1:ordinal}`用阿拉伯文词写出带定冠词的序数词，`{1:words}`写出基数词。阿拉伯文序数词与它所编号的名词保持一致，所以模板在连字符后注明性：`-feminine`（或`-f`）用于الليلة这样的阴性名词，الفصل或الباب等阳性名词用默认值。`-classical`把مئة写成مائة，与布拉克版的印法相同。每一夜没有自己的标题：`numberPosition: 'replace'`把编号印成整个标题，所以`# Night`（或源文本里写的任何标题）印成الليلة الثانية，目录、书眉和PDF书签也一样。
 
 ```ts
 headings: {
-  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberSeparator: '' }],
+  levels: [{ level: 1, numberingTemplate: 'الليلة {1:ordinal-feminine}', numberPosition: 'replace' }],
 },
 ```
 

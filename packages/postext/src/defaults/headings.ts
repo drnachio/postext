@@ -152,6 +152,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       marginBottom: override?.marginBottom ?? generalMarginBottom,
       numberingTemplate: override?.numberingTemplate ?? def.numberingTemplate,
       numberSeparator: override?.numberSeparator ?? def.numberSeparator,
+      ...(override?.numberPosition === 'replace' ? { numberPosition: 'replace' as const } : {}),
       italic: override?.italic ?? def.italic,
       letterSpacing: override?.letterSpacing ?? def.letterSpacing,
       breakBefore: resolveBreakBefore(override?.breakBefore, def.breakBefore),
@@ -185,6 +186,7 @@ export function resolveHeadingLevelOverrides(
   if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
   if (partial.marginBottom !== undefined) out.marginBottom = partial.marginBottom;
   if (partial.numberSeparator !== undefined) out.numberSeparator = partial.numberSeparator;
+  if (partial.numberPosition === 'replace' || partial.numberPosition === 'before') out.numberPosition = partial.numberPosition;
   if (partial.italic !== undefined) out.italic = partial.italic;
   if (partial.letterSpacing !== undefined) out.letterSpacing = partial.letterSpacing;
   if (partial.breakBefore !== undefined) out.breakBefore = resolveBreakBefore(partial.breakBefore);
@@ -386,6 +388,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       }
       if (level.numberSeparator !== undefined && level.numberSeparator !== def.numberSeparator) {
         entry.numberSeparator = level.numberSeparator;
+        levelHasOverride = true;
+      }
+      if (level.numberPosition === 'replace') {
+        entry.numberPosition = level.numberPosition;
         levelHasOverride = true;
       }
       if (level.italic !== undefined && level.italic !== def.italic) {

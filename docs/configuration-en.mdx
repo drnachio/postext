@@ -2208,6 +2208,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td>What stands between the number and the title: in the column, in the default opener of a <code>span: 'page'</code> level, in the running heads that print the heading line and in the PDF bookmarks. The level-1 separator also joins a part's number and title in the default part page and in the default part row of the contents. Chinese chapter heads take an ideographic space or nothing (<code>'　'</code>: 第一回　甄士隱夢幻識通靈). The contents keep their own number column (<code>toc.levels[].numberGap</code>). A <a href="#heading-styles">heading style</a> may set its own. When a title is broken in two with <code>{'\\\\'}</code>, as the couplet titles of Chinese novels are, the single-line forms (the column, the contents, the running heads) join the halves with an ideographic space when both sides are Chinese or Japanese characters, and with a space otherwise.</td>
     </tr>
     <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>Where the generated number stands. <code>'before'</code>: before the title, joined by <code>numberSeparator</code>. <code>'replace'</code>: the number is the whole title and the title written in the source is not printed, so <code># Night</code> under <code>numberingTemplate: 'الليلة {1:ordinal-feminine}'</code> prints الليلة الثانية. The contents list the number as the entry's title (no number column), and the running heads (<code>{chapterTitle}</code>, <code>{titleText}</code>) and the PDF bookmarks read it too; <code>{number}</code> is empty for such a heading. Only for numbered headings with a template (the level's or their style's); any other keeps its title. A <a href="#heading-styles">heading style</a> may set its own, <code>'before'</code> to keep the titles its level would replace.</td>
+    </tr>
+    <tr>
       <td><code>breakBefore</code></td>
       <td><code>HeadingBreakBeforeConfig</code></td>
       <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>

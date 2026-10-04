@@ -1329,6 +1329,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'headingMarginBottomTooltip',
       'headingMarginTop',
       'headingMarginTopTooltip',
+      'headingNumberReplacesTitle',
+      'headingNumberReplacesTitleTooltip',
       'headingNumberSeparator',
       'headingNumberSeparatorTooltip',
       'headingNumberingTemplate',

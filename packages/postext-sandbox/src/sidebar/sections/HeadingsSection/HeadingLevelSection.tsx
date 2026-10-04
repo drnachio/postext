@@ -234,6 +234,16 @@ export function HeadingLevelSection({
           onReset={() => onReset(level, 'numberSeparator')}
         />
       )}
+      {!isNumberingDefault && (
+        <ToggleSwitch
+          label={labels.headingNumberReplacesTitle}
+          checked={resolved.numberPosition === 'replace'}
+          onChange={(v) => (v ? onUpdate(level, { numberPosition: 'replace' }) : onReset(level, 'numberPosition'))}
+          tooltip={labels.headingNumberReplacesTitleTooltip}
+          isDefault={raw?.numberPosition === undefined}
+          onReset={() => onReset(level, 'numberPosition')}
+        />
+      )}
       <ToggleSwitch
         label={labels.headingBreakBefore}
         checked={resolved.breakBefore.enabled}

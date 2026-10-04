@@ -143,6 +143,19 @@ export function resolveBlockKind(
         };
       }
       const numberSeparator = levelCfg?.numberSeparator ?? ' ';
+      // The number standing for the title (`numberPosition: 'replace'`): the
+      // heading's text, set like a title, not a prefix (#401).
+      if (numberPrefix && rawBlock.numberIsTitle) {
+        return {
+          style,
+          vdtType: 'heading',
+          headingLevel: rawBlock.level,
+          ...(headingNumber !== undefined ? { headingNumber } : {}),
+          contentBlock: { ...contentBlock, text: numberPrefix, spans: [{ text: numberPrefix, bold: false, italic: false }] },
+          bulletXOffsetInColumn: 0,
+          strikethroughText: false,
+        };
+      }
       if (numberPrefix) {
         const sep = `${numberPrefix}${numberSeparator}`;
         const firstSpan = contentBlock.spans[0];

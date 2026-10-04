@@ -1284,6 +1284,8 @@
     "headingNumberingTemplatePlaceholder": "e.g. '{'1'}'.'{'2'}'",
     "headingNumberSeparator": "After the number",
     "headingNumberSeparatorTooltip": "What separates the number from the title: in the column, in the page-wide opener, in the running heads and in the PDF bookmarks. Chinese chapter heads take an ideographic space or nothing: 第一回　甄士隱夢幻識通靈.",
+    "headingNumberReplacesTitle": "Number replaces the title",
+    "headingNumberReplacesTitleTooltip": "The generated number is printed as the whole title, and the title written in the text is left out: الليلة الثانية for a night, in the column, the contents, the running heads and the PDF bookmarks.",
     "headingLevelSnapToGrid": "Snap back to the grid after this heading",
     "headingLevelSnapToGridTooltip": "Round the space under headings of this level up to whole grid lines, so the text that follows sits on the baseline grid. Off keeps the exact margin (a line and a half under a heading, say): the text may sit off the grid until the next snap point. Unset, it follows the headings setting",
     "headingItalic": "Italic",

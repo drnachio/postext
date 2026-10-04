@@ -2299,6 +2299,10 @@ export interface ResolvedHeadingAdvancedDesignConfig {
   minHeight?: Dimension;
 }
 
+/** Where a heading's generated number stands (see
+ *  `HeadingLevelConfig.numberPosition`). */
+export type HeadingNumberPosition = 'before' | 'replace';
+
 export interface HeadingLevelConfig {
   level: number;
   fontSize?: Dimension;
@@ -2321,6 +2325,14 @@ export interface HeadingLevelConfig {
    *  Chinese sets U+3000 (`'　'`) or nothing (`''`). The contents keep
    *  their own number column (`toc.levels[].numberGap`). */
   numberSeparator?: string;
+  /** Where the generated number stands. `'before'` (default): before the
+   *  title, joined by `numberSeparator`. `'replace'`: the number is the
+   *  whole title, and the title written in the source is not printed: a
+   *  `# Night` under `الليلة {1:ordinal-feminine}` prints الليلة الثانية,
+   *  and its contents row, bookmark and running head read the same. Only
+   *  for numbered headings with a template (the level's, or their style's);
+   *  any other keeps its title. */
+  numberPosition?: HeadingNumberPosition;
   italic?: boolean;
   /** Tracking after every glyph of the heading (spaces and the numbering
    *  prefix included), as CSS `letter-spacing`: positive spreads the
@@ -2381,6 +2393,11 @@ export interface ResolvedHeadingLevelConfig {
   numberingTemplate: string;
   /** The level's own separator, else `' '`. */
   numberSeparator: string;
+  /** `'replace'` when the number stands for the title; absent for the
+   *  default `'before'` on a level. A heading style's overrides carry
+   *  `'before'` when the style sets it, to keep the title its level would
+   *  replace. */
+  numberPosition?: HeadingNumberPosition;
   italic: boolean;
   /** The level's own tracking, else `0`. */
   letterSpacing: Dimension;

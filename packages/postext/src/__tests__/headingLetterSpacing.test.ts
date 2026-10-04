@@ -137,7 +137,7 @@ describe('unknown heading settings are reported (EF-83)', () => {
   it('a clean heading config — every documented key — reports nothing', () => {
     const level: Required<HeadingLevelConfig> = {
       level: 1, fontSize: pt(18), lineHeight: pt(22), fontFamily: 'Lora', color: { hex: '#000000', model: 'hex' },
-      fontWeight: 700, marginTop: pt(10), marginBottom: pt(5), numberingTemplate: '', numberSeparator: ' ', italic: false,
+      fontWeight: 700, marginTop: pt(10), marginBottom: pt(5), numberingTemplate: '', numberSeparator: ' ', numberPosition: 'before', italic: false,
       letterSpacing: pt(0), breakBefore: { enabled: true }, span: 'column',
       advancedDesign: { enabled: false, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true,
     };

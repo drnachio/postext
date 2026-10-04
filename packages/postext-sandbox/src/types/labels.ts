@@ -751,6 +751,8 @@ export interface SandboxLabels {
   headingNumberingTemplatePlaceholder: string;
   headingNumberSeparator: string;
   headingNumberSeparatorTooltip: string;
+  headingNumberReplacesTitle: string;
+  headingNumberReplacesTitleTooltip: string;
   headingLevelSnapToGrid: string;
   headingLevelSnapToGridTooltip: string;
   headingItalic: string;

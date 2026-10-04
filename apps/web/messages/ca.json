@@ -1284,6 +1284,8 @@
     "headingNumberingTemplatePlaceholder": "p. ex. '{'1'}'.'{'2'}'",
     "headingNumberSeparator": "Després del número",
     "headingNumberSeparatorTooltip": "El que separa el número del títol a la columna, a l'obertura a pàgina completa, als titolets i als marcadors del PDF. Els capítols xinesos porten un espai ideogràfic o res: 第一回　甄士隱夢幻識通靈.",
+    "headingNumberReplacesTitle": "El número substitueix el títol",
+    "headingNumberReplacesTitleTooltip": "El número generat s'imprimeix com el títol sencer i el títol escrit al text s'omet: الليلة الثانية per a una nit, a la columna, a l'índex general, als titolets i als marcadors del PDF.",
     "headingLevelSnapToGrid": "Tornar a la retícula després d'aquest títol",
     "headingLevelSnapToGridTooltip": "Arrodoneix l'espai sota els títols d'aquest nivell a línies senceres de la retícula, perquè el text següent s'assenti a la retícula de base. Desactivat, manté el marge exacte (una línia i mitja sota el títol, per exemple): el text pot quedar fora de la retícula fins al punt d'ajust següent. Sense fixar, segueix l'ajust general dels títols",
     "headingItalic": "Cursiva",

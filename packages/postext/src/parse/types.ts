@@ -449,6 +449,10 @@ export interface ContentBlock {
   attrSources?: Record<string, { start: number; end: number }>;
   /** Plain-text indices of forced title breaks (`\\` in the source). */
   titleBreaks?: number[];
+  /** A numbered heading whose level or style sets `numberPosition:
+   *  'replace'`: its title is emptied before layout and the generated
+   *  number is printed (and listed) as the whole title (#401). */
+  numberIsTitle?: true;
   /** Depth (1-based) for listItem blocks. Level 1 = outermost. */
   depth?: number;
   /** Discriminator for listItem blocks. Defaults to 'unordered' when absent. */

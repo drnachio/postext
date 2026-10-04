@@ -14,7 +14,7 @@ import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { documentNumerals, resolvedLocale, resolveAllConfig } from './config';
 import { withDigits } from '../arabicNumerals';
-import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
+import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf, numberTitlesFor } from './headingStyles';
 import { tashkilFor } from './tashkil';
 import { partMarkPages, planParts } from './parts';
 import { withBookTitleBrackets } from './annotations';
@@ -134,7 +134,7 @@ export function computeOutline(
   // Headings whose marks the configuration leaves off list plain (EF-122).
   // Arabic vowel marks out under `bodyText.tashkil` (#376), as in the
   // layout.
-  blocks = headingMarksFor(tashkilFor(blocks as ContentBlock[], resolved.bodyText.tashkil), resolved);
+  blocks = numberTitlesFor(headingMarksFor(tashkilFor(blocks as ContentBlock[], resolved.bodyText.tashkil), resolved), resolved);
   const isNumbered = (b: ContentBlock) => headingIsNumbered(b, resolved);
   const { prefixes, values } = computeHeadingNumbering(
     [...blocks],
@@ -170,6 +170,26 @@ export function computeOutline(
     // A style whose own template is empty prints no number at all.
     const ordinal = b.level === 1 && style?.numberingTemplate !== '';
     const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? withDigits(String(values[i] ?? ''), documentNumerals(resolved)) : '') : '';
+    // A heading whose number is its title lists the number as the title,
+    // with no number column (#401).
+    if (b.numberIsTitle && number) {
+      out.push({
+        kind: 'heading',
+        level: b.level,
+        title: number,
+        spans: [{ text: number, bold: false, italic: false }],
+        number: '',
+        ...(values[i] !== undefined ? { counter: values[i] } : {}),
+        numbered,
+        listed: headingIsListed(b, resolved),
+        ...(style ? { styleId: style.id } : {}),
+        ...(b.attrs ? { attrs: b.attrs } : {}),
+        ...(b.attrs?.id ? { anchorId: b.attrs.id } : {}),
+      });
+      if (b.indexMarks) out.push(...indexMarkEntries(b));
+      if (b.anchorMarks) out.push(...anchorEntries(b));
+      continue;
+    }
     // A book title's 《》 are text of the title where they are its mark.
     const titled = withBookTitleBrackets(b.text, b.spans, resolved.cjk);
     out.push({

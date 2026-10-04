@@ -334,6 +334,7 @@ headings
   textTransform: 'none'|'uppercase'    'none' (length-preserving; number prefix kept as written)
   numberingTemplate: string            ''  → no automatic number
   numberSeparator: string              ' ' between the number and the title ('　' U+3000 or '' in Chinese: 第一回　回目)
+  numberPosition: 'before'|'replace'  'replace': the number is the whole title (# Night → الليلة الثانية), listed so in contents/bookmarks
   breakBefore: { enabled: boolean, parity: 'any'|'odd'|'even'|'always-odd'|'always-even' }
   span: 'column'|'page'                'column'
   advancedDesign: { enabled: boolean, slot: DesignSlot, minHeight?: Dimension(abs) }
