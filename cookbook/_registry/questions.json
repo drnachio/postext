@@ -1656,5 +1656,173 @@
       "zh": "装订与纸张，预览"
     },
     "theme": "output"
+  },
+  "Q119": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set an Arabic book right to left and bind it on the right?",
+      "es": "¿Cómo compongo un libro árabe de derecha a izquierda y lo encuaderno por la derecha?",
+      "zh": "怎样让阿拉伯文书从右向左排并右装订？"
+    },
+    "index": {
+      "en": "Arabic books, right to left and bound on the right",
+      "es": "Libros árabes, de derecha a izquierda y encuadernados por la derecha",
+      "zh": "阿拉伯文书，从右向左排、右装订"
+    },
+    "theme": "type"
+  },
+  "Q120": {
+    "kind": "how",
+    "text": {
+      "en": "How do I mix Arabic and English paragraphs, numbers and tables on one page?",
+      "es": "¿Cómo mezclo párrafos, números y tablas en árabe y en inglés en una misma página?",
+      "zh": "怎样在同一页混排阿拉伯文和英文的段落、数字和表格？"
+    },
+    "index": {
+      "en": "Arabic and English on one page",
+      "es": "Árabe e inglés en la misma página",
+      "zh": "阿拉伯文与英文，同页混排"
+    },
+    "theme": "type"
+  },
+  "Q121": {
+    "kind": "how",
+    "text": {
+      "en": "How do I sort an Arabic index without the article ال?",
+      "es": "¿Cómo ordeno un índice árabe sin tener en cuenta el artículo ال?",
+      "zh": "阿拉伯文索引怎样在排序时忽略冠词ال？"
+    },
+    "index": {
+      "en": "Arabic index, sorted without ال",
+      "es": "Índice árabe, ordenado sin ال",
+      "zh": "阿拉伯文索引，排序忽略ال"
+    },
+    "theme": "structure"
+  },
+  "Q122": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cite sources in an Arabic article, with footnotes and a bibliography?",
+      "es": "¿Cómo cito las fuentes en un artículo árabe, con notas al pie y bibliografía?",
+      "zh": "阿拉伯文文章怎样用脚注和参考文献引用来源？"
+    },
+    "index": {
+      "en": "Citations in Arabic",
+      "es": "Citas en árabe",
+      "zh": "阿拉伯文引文"
+    },
+    "theme": "structure"
+  },
+  "Q123": {
+    "kind": "how",
+    "text": {
+      "en": "Which column comes first on an Arabic page, and how do I set a two-column newspaper?",
+      "es": "¿Qué columna va primero en una página árabe y cómo compongo un periódico a dos columnas?",
+      "zh": "阿拉伯文页面哪一栏在前？怎样排双栏报纸？"
+    },
+    "index": {
+      "en": "Columns in Arabic, their order",
+      "es": "Columnas en árabe, su orden",
+      "zh": "阿拉伯文分栏，栏的顺序"
+    },
+    "theme": "page"
+  },
+  "Q124": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print European digits (1, 2, 3) in an Arabic book for a Maghreb edition?",
+      "es": "¿Cómo imprimo cifras europeas (1, 2, 3) en un libro árabe para una edición magrebí?",
+      "zh": "马格里布版本的阿拉伯文书怎样印欧洲数字（1、2、3）？"
+    },
+    "index": {
+      "en": "Digits, European, in an Arabic book (Maghreb)",
+      "es": "Cifras europeas en un libro árabe (Magreb)",
+      "zh": "欧洲数字，用于阿拉伯文书（马格里布）"
+    },
+    "theme": "type"
+  },
+  "Q125": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set classical Arabic verse with each line in two hemistichs?",
+      "es": "¿Cómo compongo verso árabe clásico con cada verso en dos hemistiquios?",
+      "zh": "怎样把古典阿拉伯诗排成每联两个半行？"
+    },
+    "index": {
+      "en": "Arabic verse in two hemistichs (bayt)",
+      "es": "Verso árabe en dos hemistiquios (bayt)",
+      "zh": "阿拉伯诗，分两个半行（bayt）"
+    },
+    "theme": "type"
+  },
+  "Q126": {
+    "kind": "how",
+    "text": {
+      "en": "How much leading does fully vocalised Arabic need?",
+      "es": "¿Cuánto interlineado necesita el árabe con todas sus vocales?",
+      "zh": "全部标注元音的阿拉伯文需要多大行距？"
+    },
+    "index": {
+      "en": "Leading for vocalised Arabic (harakat)",
+      "es": "Interlineado del árabe vocalizado (harakat)",
+      "zh": "行距，全标元音的阿拉伯文"
+    },
+    "theme": "type"
+  },
+  "Q127": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number chapters in Arabic ordinal words, such as الليلة الأولى?",
+      "es": "¿Cómo numero los capítulos con ordinales árabes en letras, como الليلة الأولى?",
+      "zh": "怎样用阿拉伯文序数词给章节编号，例如الليلة الأولى？"
+    },
+    "index": {
+      "en": "Arabic ordinal words in headings",
+      "es": "Ordinales árabes en letras en los títulos",
+      "zh": "阿拉伯文序数词，用于标题"
+    },
+    "theme": "headings"
+  },
+  "Q128": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number the front matter of an Arabic book in abjad letters (أ، ب، ج)?",
+      "es": "¿Cómo numero los preliminares de un libro árabe con letras abjad (أ، ب، ج)?",
+      "zh": "阿拉伯文书的前置部分怎样用abjad字母（أ، ب، ج）编页码？"
+    },
+    "index": {
+      "en": "Abjad letters for the front matter",
+      "es": "Letras abjad en los preliminares",
+      "zh": "abjad字母，前置部分页码"
+    },
+    "theme": "structure"
+  },
+  "Q129": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number Arabic footnotes per page, in parentheses: (١)?",
+      "es": "¿Cómo numero las notas al pie árabes por página, entre paréntesis: (١)?",
+      "zh": "阿拉伯文脚注怎样按页编号并加括号：(١)？"
+    },
+    "index": {
+      "en": "Footnotes in Arabic, numbered per page (١)",
+      "es": "Notas al pie en árabe, numeradas por página (١)",
+      "zh": "阿拉伯文脚注，按页编号(١)"
+    },
+    "theme": "boxes"
+  },
+  "Q130": {
+    "kind": "how",
+    "text": {
+      "en": "How do I lay out a Bulaq page, with the commentary framed around the text?",
+      "es": "¿Cómo compongo una página de Bulaq, con el comentario enmarcado alrededor del texto?",
+      "zh": "怎样排布拉克（Bulaq）版式，让注释加框环绕正文？"
+    },
+    "index": {
+      "en": "Bulaq pages, the text framed by its commentary",
+      "es": "Páginas de Bulaq, el texto enmarcado por su comentario",
+      "zh": "布拉克版式，注释环绕正文"
+    },
+    "theme": "page"
   }
 }

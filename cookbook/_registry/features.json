@@ -6038,9 +6038,9 @@
       "zh": "右翻书"
     },
     "definition": {
-      "en": "page.binding 'right' (the default for vertical text) puts the recto on the left of the spine: mirrored margins swap, spreads read [3 | 2], and the PDF opens right to left.",
-      "es": "page.binding 'right' (lo predeterminado con texto vertical) pone la página impar a la izquierda del lomo: los márgenes simétricos se intercambian, los pliegos se leen [3 | 2] y el PDF se abre de derecha a izquierda.",
-      "zh": "page.binding 'right'（竖排时的默认值）把右页（奇数页）放到书脊左侧：镜像页边距左右互换，跨页读作[3 | 2]，PDF从右向左翻。"
+      "en": "page.binding 'right' (the default for vertical text and for right-to-left text) puts the recto on the left of the spine: mirrored margins swap, spreads read [3 | 2], and the PDF opens right to left.",
+      "es": "page.binding 'right' (lo predeterminado con texto vertical y con texto de derecha a izquierda) pone la página impar a la izquierda del lomo: los márgenes simétricos se intercambian, los pliegos se leen [3 | 2] y el PDF se abre de derecha a izquierda.",
+      "zh": "page.binding 'right'（竖排和从右向左的文字时的默认值）把右页（奇数页）放到书脊左侧：镜像页边距左右互换，跨页读作[3 | 2]，PDF从右向左翻。"
     },
     "aliases": {
       "en": [
@@ -6048,14 +6048,16 @@
         "binding",
         "page progression",
         "R2L",
-        "右翻"
+        "右翻",
+        "Arabic book"
       ],
       "es": [
         "orden de páginas de derecha a izquierda",
         "encuadernación",
         "progresión de páginas",
         "R2L",
-        "右翻"
+        "右翻",
+        "libro árabe"
       ],
       "zh": [
         "右翻",
@@ -6064,7 +6066,8 @@
         "翻页方向",
         "装订",
         "page.binding",
-        "R2L"
+        "R2L",
+        "阿拉伯文书"
       ]
     },
     "group": "page",
@@ -6472,6 +6475,485 @@
       }
     },
     "since": "1.9.0"
+  },
+  "text-direction": {
+    "label": {
+      "en": "Right-to-left text",
+      "es": "Texto de derecha a izquierda",
+      "zh": "从右向左的文字"
+    },
+    "definition": {
+      "en": "direction sets the base direction of the document: 'auto' (the default) takes it from the script of locale, so 'ar', 'fa' or 'he' run right to left; the bidirectional algorithm (UAX #9) orders the Latin words and numbers inside each line, and the book binds on the right.",
+      "es": "direction fija la dirección base del documento: 'auto' (lo predeterminado) la toma de la escritura del locale, así que 'ar', 'fa' o 'he' van de derecha a izquierda; el algoritmo bidireccional (UAX #9) ordena las palabras latinas y los números dentro de cada línea, y el libro se encuaderna por la derecha.",
+      "zh": "direction设定文档的基本方向：默认值'auto'按locale的文字决定，所以'ar'、'fa'或'he'从右向左排；双向算法（UAX #9）安排每行中拉丁词和数字的顺序，书改为右翻。"
+    },
+    "aliases": {
+      "en": [
+        "RTL",
+        "right to left",
+        "bidi",
+        "bidirectional text",
+        "Arabic",
+        "Hebrew",
+        "Persian",
+        "direction"
+      ],
+      "es": [
+        "RTL",
+        "de derecha a izquierda",
+        "bidi",
+        "texto bidireccional",
+        "árabe",
+        "hebreo",
+        "persa",
+        "dirección"
+      ],
+      "zh": [
+        "从右向左",
+        "双向文字",
+        "阿拉伯文",
+        "希伯来文",
+        "波斯文",
+        "文字方向",
+        "RTL",
+        "bidi",
+        "direction"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Languages and scripts",
+        "es": "Idiomas y escrituras",
+        "zh": "语言与文字"
+      }
+    },
+    "since": "1.15.0",
+    "detect": {
+      "config": [
+        "direction"
+      ]
+    }
+  },
+  "block-direction": {
+    "label": {
+      "en": "Paragraphs in the other direction",
+      "es": "Párrafos en la otra dirección",
+      "zh": "反方向的段落"
+    },
+    "definition": {
+      "en": "{dir=ltr} or {dir=rtl} on a heading or a ::: container sets that block against the document's direction: an English quotation in an Arabic book, an Arabic one in an English book, each aligned and indented from its own start.",
+      "es": "{dir=ltr} o {dir=rtl} en un título o en un contenedor ::: compone ese bloque en la dirección contraria a la del documento: una cita en inglés en un libro árabe, una en árabe en un libro inglés, cada una alineada y sangrada desde su propio comienzo.",
+      "zh": "在标题或:::容器上加{dir=ltr}或{dir=rtl}，该块就按与文档相反的方向排：阿拉伯文书中的英文引文，英文书中的阿拉伯文引文，各自从自己的起始一侧对齐和缩进。"
+    },
+    "aliases": {
+      "en": [
+        "dir attribute",
+        "{dir=rtl}",
+        "{dir=ltr}",
+        "mixed direction",
+        "English quotation in Arabic",
+        "bilingual"
+      ],
+      "es": [
+        "atributo dir",
+        "{dir=rtl}",
+        "{dir=ltr}",
+        "dirección mixta",
+        "cita en inglés en árabe",
+        "bilingüe"
+      ],
+      "zh": [
+        "dir属性",
+        "混合方向",
+        "阿拉伯文中的英文引文",
+        "双语",
+        "{dir=rtl}",
+        "{dir=ltr}"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Languages and scripts",
+        "es": "Idiomas y escrituras",
+        "zh": "语言与文字"
+      }
+    },
+    "since": "1.15.0",
+    "detect": {
+      "markdown": [
+        "\\{[^}\\n]*\\bdir=[\"']?(?:ltr|rtl)\\b"
+      ]
+    }
+  },
+  "inline-direction": {
+    "label": {
+      "en": "Runs in the other direction",
+      "es": "Fragmentos en la otra dirección",
+      "zh": "行内反方向文字"
+    },
+    "definition": {
+      "en": ":rtl[…] and :ltr[…] isolate a run of the other direction inside a line (a Latin product name in Arabic, an Arabic title in an English sentence), with an optional lang; the Unicode isolates U+2066–2069 typed in the text work the same way.",
+      "es": ":rtl[…] y :ltr[…] aíslan un fragmento de la otra dirección dentro de una línea (un nombre de producto latino en árabe, un título árabe en una frase inglesa), con un lang opcional; los aislantes Unicode U+2066–2069 escritos en el texto funcionan igual.",
+      "zh": ":rtl[…]和:ltr[…]把一行中方向相反的一段文字隔离出来（阿拉伯文中的拉丁产品名、英文句子中的阿拉伯文书名），可另加lang；直接写在文本中的Unicode隔离符U+2066–2069也同样有效。"
+    },
+    "aliases": {
+      "en": [
+        ":rtl",
+        ":ltr",
+        "bidi isolate",
+        "FSI",
+        "RLI",
+        "LRI",
+        "mixed-direction line",
+        "Latin word in Arabic"
+      ],
+      "es": [
+        ":rtl",
+        ":ltr",
+        "aislante bidi",
+        "FSI",
+        "RLI",
+        "LRI",
+        "línea de dirección mixta",
+        "palabra latina en árabe"
+      ],
+      "zh": [
+        "双向隔离",
+        "混合方向的行",
+        "阿拉伯文中的拉丁词",
+        ":rtl",
+        ":ltr",
+        "FSI",
+        "RLI",
+        "LRI"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Languages and scripts",
+        "es": "Idiomas y escrituras",
+        "zh": "语言与文字"
+      }
+    },
+    "since": "1.15.0",
+    "detect": {
+      "markdown": [
+        "(?<![:\\\\]):(?:rtl|ltr)[\\[{]"
+      ]
+    }
+  },
+  "document-digits": {
+    "label": {
+      "en": "Digits of the generated numbers",
+      "es": "Cifras de los números generados",
+      "zh": "生成数字所用的数码"
+    },
+    "definition": {
+      "en": "numerals ('auto', 'latn', 'arab', 'arabext') picks the digits of every number the engine writes: folios, list and note numbers, heading and figure counters, the pages of the contents and the index. 'auto' follows locale: ١٢٣ for Arabic, 1 2 3 in the Maghreb (ar-MA, ar-DZ, ar-TN). The author's own text is never rewritten.",
+      "es": "numerals ('auto', 'latn', 'arab', 'arabext') elige las cifras de todos los números que escribe el motor: folios, números de lista y de nota, contadores de títulos y figuras, las páginas del índice general y del analítico. 'auto' sigue al locale: ١٢٣ en árabe, 1 2 3 en el Magreb (ar-MA, ar-DZ, ar-TN). El texto del autor nunca se reescribe.",
+      "zh": "numerals（'auto'、'latn'、'arab'、'arabext'）决定引擎写出的所有数字用哪套数码：页码、列表和注释编号、标题和图的编号、目录和索引中的页码。'auto'跟随locale：阿拉伯文用١٢٣，马格里布地区（ar-MA、ar-DZ、ar-TN）用1 2 3。作者自己写的文字不会被改动。"
+    },
+    "aliases": {
+      "en": [
+        "Arabic-Indic digits",
+        "Eastern Arabic numerals",
+        "European digits",
+        "Maghreb",
+        "numbering system",
+        "numerals"
+      ],
+      "es": [
+        "cifras arábigo-índicas",
+        "números arábigos orientales",
+        "cifras europeas",
+        "Magreb",
+        "sistema de numeración",
+        "numerals"
+      ],
+      "zh": [
+        "阿拉伯-印度数字",
+        "东阿拉伯数字",
+        "欧洲数字",
+        "马格里布",
+        "数字系统",
+        "numerals"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Document language",
+        "es": "Idioma del documento",
+        "zh": "文档语言"
+      }
+    },
+    "since": "1.15.0",
+    "detect": {
+      "config": [
+        "numerals"
+      ]
+    }
+  },
+  "arabic-numerals": {
+    "label": {
+      "en": "Arabic numbering styles",
+      "es": "Estilos de numeración árabes",
+      "zh": "阿拉伯文编号样式"
+    },
+    "definition": {
+      "en": "Page numbers, lists, headings and counters in Arabic styles: arabic-indic (١، ٢، ٣), persian (۱، ۲، ۳), abjad letters (أ، ب، ج، د) for front matter and lists, alphabetical hijai letters (أ، ب، ت، ث) and abjad numerals (arabic-abjad, with Maghrebi values).",
+      "es": "Folios, listas, títulos y contadores en estilos árabes: arabic-indic (١، ٢، ٣), persian (۱، ۲، ۳), letras abjad (أ، ب، ج، د) para preliminares y listas, letras alfabéticas hijai (أ، ب، ت، ث) y numerales abjad (arabic-abjad, con los valores magrebíes).",
+      "zh": "页码、列表、标题和编号使用阿拉伯文样式：arabic-indic（١، ٢، ٣）、persian（۱، ۲، ۳）、用于前置部分和列表的abjad字母（أ، ب، ج، د）、按字母表顺序的hijai字母（أ، ب، ت، ث），以及abjad数字（arabic-abjad，含马格里布数值）。"
+    },
+    "aliases": {
+      "en": [
+        "abjad",
+        "abjad numerals",
+        "hijai",
+        "arabic-indic",
+        "Arabic letters in lists",
+        "front matter in letters",
+        "أبجد"
+      ],
+      "es": [
+        "abjad",
+        "numerales abjad",
+        "hijai",
+        "arabic-indic",
+        "letras árabes en listas",
+        "preliminares con letras",
+        "أبجد"
+      ],
+      "zh": [
+        "阿拉伯字母编号",
+        "abjad数字",
+        "前置部分字母编号",
+        "abjad",
+        "hijai",
+        "arabic-indic",
+        "أبجد"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración",
+        "zh": "页码编号"
+      }
+    },
+    "since": "1.15.0"
+  },
+  "arabic-number-words": {
+    "label": {
+      "en": "Arabic ordinals in words",
+      "es": "Ordinales árabes en letras",
+      "zh": "阿拉伯文序数词"
+    },
+    "definition": {
+      "en": "{n:ordinal} and {n:words} write numbers in Arabic words that agree with their noun: masculine by default (الفصل الأول), -feminine for a feminine one (الليلة الأولى … الليلة الحادية بعد الألف), -classical for the old spelling of the hundreds (مائة).",
+      "es": "{n:ordinal} y {n:words} escriben los números en palabras árabes que concuerdan con su sustantivo: en masculino por defecto (الفصل الأول), con -feminine para uno femenino (الليلة الأولى … الليلة الحادية بعد الألف) y con -classical para la grafía antigua de las centenas (مائة).",
+      "zh": "{n:ordinal}和{n:words}用与名词性别一致的阿拉伯文数词写出数字：默认阳性（الفصل الأول），阴性名词加-feminine（الليلة الأولى … الليلة الحادية بعد الألف），百位的旧写法（مائة）加-classical。"
+    },
+    "aliases": {
+      "en": [
+        "ordinal words",
+        "night headings",
+        "الليلة الأولى",
+        "gendered numbers",
+        "spelled-out chapter numbers",
+        "Thousand and One Nights"
+      ],
+      "es": [
+        "ordinales en letras",
+        "títulos de noches",
+        "الليلة الأولى",
+        "números con género",
+        "números de capítulo en letras",
+        "Las mil y una noches"
+      ],
+      "zh": [
+        "序数词",
+        "夜的标题",
+        "数词的性",
+        "章号写成文字",
+        "一千零一夜",
+        "الليلة الأولى"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Spelled-out numbers",
+        "es": "Números con letras",
+        "zh": "以文字书写的编号"
+      }
+    },
+    "since": "1.15.0"
+  },
+  "index-article-sorting": {
+    "label": {
+      "en": "Index sorted without the article",
+      "es": "Índice ordenado sin el artículo",
+      "zh": "索引排序忽略冠词"
+    },
+    "definition": {
+      "en": "index.ignoreArticle (on for Arabic) sorts and groups entries as if the article ال were not there: البصرة files under ب, between بدر and بغداد, and prints as written; hamza and alif forms sort together.",
+      "es": "index.ignoreArticle (activado en árabe) ordena y agrupa las entradas como si no llevaran el artículo ال: البصرة va con la ب, entre بدر y بغداد, y se imprime tal como está escrita; las formas de hamza y alif se ordenan juntas.",
+      "zh": "index.ignoreArticle（阿拉伯文默认开启）在排序和分组时忽略冠词ال：البصرة归入ب，排在بدر和بغداد之间，印出时保持原样；hamza和alif的各种形式一起排序。"
+    },
+    "aliases": {
+      "en": [
+        "al-",
+        "Arabic index",
+        "article ال",
+        "Arabic collation",
+        "ignoreArticle",
+        "فهرس"
+      ],
+      "es": [
+        "al-",
+        "índice árabe",
+        "artículo ال",
+        "ordenación árabe",
+        "ignoreArticle",
+        "فهرس"
+      ],
+      "zh": [
+        "阿拉伯文索引",
+        "冠词ال",
+        "阿拉伯文排序",
+        "ignoreArticle",
+        "al-",
+        "فهرس"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico",
+        "zh": "索引"
+      }
+    },
+    "since": "1.15.0",
+    "detect": {
+      "config": [
+        "index.ignoreArticle"
+      ]
+    }
+  },
+  "arabic-language": {
+    "label": {
+      "en": "Arabic as the document language",
+      "es": "El árabe como idioma del documento",
+      "zh": "以阿拉伯文为文档语言"
+    },
+    "definition": {
+      "en": "locale 'ar' (with any region) gives the captions and continuation strings in Arabic (شكل، جدول، يتبع), dates written out in Arabic, the Arabic CSL locale for citations, Arabic collation in the index and no hyphenation.",
+      "es": "locale 'ar' (con cualquier región) pone en árabe los pies y los textos de continuación (شكل، جدول، يتبع), escribe las fechas en árabe, usa el locale árabe de CSL en las citas, la ordenación árabe en el índice y desactiva la separación silábica.",
+      "zh": "locale设为'ar'（可带任意地区）时，题注和续表字样使用阿拉伯文（شكل، جدول، يتبع），日期用阿拉伯文写出，引文使用CSL阿拉伯文区域设置，索引按阿拉伯文排序，并且不断词。"
+    },
+    "aliases": {
+      "en": [
+        "Arabic",
+        "locale ar",
+        "ar-EG",
+        "ar-MA",
+        "Modern Standard Arabic",
+        "Arabic captions",
+        "العربية"
+      ],
+      "es": [
+        "árabe",
+        "locale ar",
+        "ar-EG",
+        "ar-MA",
+        "árabe estándar moderno",
+        "pies en árabe",
+        "العربية"
+      ],
+      "zh": [
+        "阿拉伯文",
+        "阿拉伯语",
+        "现代标准阿拉伯语",
+        "阿拉伯文题注",
+        "locale ar",
+        "ar-EG",
+        "العربية"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Document language",
+        "es": "Idioma del documento",
+        "zh": "文档语言"
+      }
+    },
+    "since": "1.15.0"
+  },
+  "arabic-fonts": {
+    "label": {
+      "en": "Arabic fonts",
+      "es": "Fuentes árabes",
+      "zh": "阿拉伯文字体"
+    },
+    "definition": {
+      "en": "Arabic faces from Fontsource load their arabic file next to the latin ones, on screen and in the PDF, which shapes the letters with HarfBuzz from the same bytes: joining forms, ligatures and the harakat where the font places them.",
+      "es": "Las fuentes árabes de Fontsource cargan su archivo arabic junto a los latin, en pantalla y en el PDF, que modela las letras con HarfBuzz a partir de los mismos bytes: formas de enlace, ligaduras y los harakat donde los coloca la fuente.",
+      "zh": "来自Fontsource的阿拉伯文字体在latin文件之外再加载arabic文件，屏幕和PDF都是如此；PDF用HarfBuzz从同样的字节为字母成形：连写形式、合字，以及按字体位置放置的元音符号（harakat）。"
+    },
+    "aliases": {
+      "en": [
+        "Amiri",
+        "Noto Naskh Arabic",
+        "Scheherazade New",
+        "Naskh",
+        "HarfBuzz",
+        "Arabic shaping",
+        "harakat"
+      ],
+      "es": [
+        "Amiri",
+        "Noto Naskh Arabic",
+        "Scheherazade New",
+        "nasji",
+        "HarfBuzz",
+        "modelado de glifos árabes",
+        "harakat"
+      ],
+      "zh": [
+        "阿拉伯文字形",
+        "纳斯赫体",
+        "元音符号",
+        "Amiri",
+        "Noto Naskh Arabic",
+        "Scheherazade New",
+        "HarfBuzz"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Browser font provider (Fontsource + WOFF2)",
+        "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)",
+        "zh": "浏览器字体提供函数（Fontsource + WOFF2）"
+      }
+    },
+    "since": "1.15.0"
   },
   "citation-styles": {
     "label": {

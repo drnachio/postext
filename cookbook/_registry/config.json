@@ -168,6 +168,22 @@
       "zh": "断词"
     }
   },
+  "direction": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Languages and scripts",
+      "es": "Idiomas y escrituras",
+      "zh": "语言与文字"
+    }
+  },
+  "numerals": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Document language",
+      "es": "Idioma del documento",
+      "zh": "文档语言"
+    }
+  },
   "debug": {
     "slug": "configuration",
     "heading": {

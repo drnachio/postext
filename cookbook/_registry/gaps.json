@@ -539,9 +539,9 @@
   },
   "rtl-cjk": {
     "label": {
-      "en": "Right-to-left scripts",
-      "es": "Escrituras de derecha a izquierda",
-      "zh": "从右向左书写的文字"
+      "en": "Kashida, Arabic verse and right-to-left HTML",
+      "es": "Cachida, verso árabe y HTML de derecha a izquierda",
+      "zh": "卡希达、阿拉伯诗体与从右向左的HTML"
     },
     "aliases": {
       "en": [
@@ -551,7 +551,12 @@
         "Urdu",
         "RTL",
         "bidi",
-        "right-to-left"
+        "right-to-left",
+        "kashida",
+        "tatweel",
+        "qasida",
+        "hemistich",
+        "bayt"
       ],
       "es": [
         "árabe",
@@ -560,7 +565,12 @@
         "urdu",
         "RTL",
         "bidireccional",
-        "de derecha a izquierda"
+        "de derecha a izquierda",
+        "cachida",
+        "tatweel",
+        "casida",
+        "hemistiquio",
+        "bayt"
       ],
       "zh": [
         "阿拉伯文",
@@ -569,14 +579,18 @@
         "乌尔都文",
         "从右向左",
         "双向文字",
+        "卡希达",
+        "延长线",
+        "半行诗",
         "RTL",
-        "bidi"
+        "bidi",
+        "kashida"
       ]
     },
     "explanation": {
-      "en": "There is no bidirectional layout: Arabic, Hebrew and the other right-to-left scripts are neither shaped nor ordered from the right. A book can be bound on the right (page.binding), which orders its pages, not its lines.",
-      "es": "No hay composición bidireccional: el árabe, el hebreo y las demás escrituras de derecha a izquierda ni se modelan ni se ordenan desde la derecha. Un libro puede encuadernarse por la derecha (page.binding), lo que ordena sus páginas, no sus líneas.",
-      "zh": "不支持双向排版：阿拉伯文、希伯来文和其他从右向左书写的文字既不做字形变化，也不从右往左排序。书可以右翻（page.binding），但这改变的是页的顺序，而不是行内文字的顺序。"
+      "en": "Arabic, Persian and Hebrew are set right to left (direction, taken from locale), ordered by the bidirectional algorithm, shaped with HarfBuzz in the PDF and bound on the right. Three pieces are not there yet: kashida justification (a justified Arabic line is stretched at its spaces only), classical verse with each bayt in two hemistichs (set the two halves as a two-column table without rules), and the HTML output, which does not set right-to-left lines correctly yet (use the canvas or the PDF).",
+      "es": "El árabe, el persa y el hebreo se componen de derecha a izquierda (direction, tomada del locale), ordenados por el algoritmo bidireccional, modelados con HarfBuzz en el PDF y encuadernados por la derecha. Faltan tres piezas: la justificación con cachida (una línea árabe justificada se estira solo en sus espacios), el verso clásico con cada bayt en dos hemistiquios (compón las dos mitades como una tabla de dos columnas sin filetes) y la salida HTML, que aún no compone bien las líneas de derecha a izquierda (usa el canvas o el PDF).",
+      "zh": "阿拉伯文、波斯文和希伯来文从右向左排（direction，按locale决定），由双向算法排序，PDF中用HarfBuzz成形，书改为右翻。还缺三项：卡希达（kashida）两端对齐（两端对齐的阿拉伯文行只在空格处拉伸）、每联（bayt）分两个半行的古典诗体（把两半排成无线的两栏表格），以及HTML输出：它还不能正确排出从右向左的行（请用Canvas或PDF）。"
     },
     "docs": {
       "slug": "document-format",

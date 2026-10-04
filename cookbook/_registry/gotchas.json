@@ -1368,6 +1368,32 @@
     },
     "feature": "cjk-line-breaking"
   },
+  "arabic-fonts-subset": {
+    "title": {
+      "en": "Arabic faces need their arabic file, through the arabic block",
+      "es": "Las fuentes árabes necesitan su archivo arabic, con el bloque arabic",
+      "zh": "阿拉伯文字体需要通过arabic块加载其arabic文件"
+    },
+    "body": {
+      "en": "Fontsource serves Amiri, Noto Naskh Arabic or Scheherazade New as one file per subset, and the Arabic letters are in the arabic file. loadFonts fetches only latin (and latin-ext), so on screen the Arabic comes from a system face and measures wrong, and fontsourceProvider hands the PDF that latin file, which prints empty boxes. List the arabic kit block, call loadArabicFonts(FONTS, markdown) after loadFonts, with every weight the pages set in Arabic listed in FONTS, and give renderToPdf fontProvider: arabicPdfProvider.",
+      "es": "Fontsource sirve Amiri, Noto Naskh Arabic o Scheherazade New en un archivo por subconjunto, y las letras árabes están en el archivo arabic. loadFonts solo descarga latin (y latin-ext), así que en pantalla el árabe sale de una fuente del sistema y se mide mal, y fontsourceProvider entrega al PDF ese archivo latin, que imprime cajas vacías. Añade el bloque arabic del kit, llama a loadArabicFonts(FONTS, markdown) después de loadFonts, con todos los pesos que las páginas usan en árabe listados en FONTS, y pasa a renderToPdf fontProvider: arabicPdfProvider.",
+      "zh": "Fontsource把Amiri、Noto Naskh Arabic或Scheherazade New按子集分成多个文件提供，阿拉伯字母在arabic文件里。loadFonts只获取latin（以及latin-ext），所以屏幕上的阿拉伯文来自系统字体，测量不准；fontsourceProvider交给PDF的也是这个latin文件，印出来是空框。列出kit中的arabic块，在loadFonts之后调用loadArabicFonts(FONTS, markdown)，并在FONTS中列出页面用于阿拉伯文的每个字重，再给renderToPdf传fontProvider: arabicPdfProvider。"
+    },
+    "feature": "arabic-fonts"
+  },
+  "arabic-locale-tag": {
+    "title": {
+      "en": "Tag an Arabic book 'ar', not with LANG",
+      "es": "Etiqueta un libro árabe 'ar', no con LANG",
+      "zh": "阿拉伯文书标记为'ar'，不要用LANG"
+    },
+    "body": {
+      "en": "A recipe's editions are en and es, but an Arabic sample is Arabic in both: `locale: LANG` would set it left to right, bind it on the left, number its pages 1 2 3 and caption its figures Figure or Figura. Write the tag yourself: 'ar' (Arabic-Indic digits, the Mashriq convention), a region such as 'ar-EG' or 'ar-SA', or 'ar-MA', 'ar-DZ' or 'ar-TN' for a Maghreb edition with European digits. A Latin page that only quotes Arabic keeps its own locale.",
+      "es": "Las ediciones de una receta son en y es, pero una muestra árabe es árabe en las dos: `locale: LANG` la compondría de izquierda a derecha, la encuadernaría por la izquierda, numeraría sus páginas 1 2 3 y llamaría Figure o Figura a sus figuras. Escribe tú la etiqueta: 'ar' (cifras arábigo-índicas, la convención del Mashriq), una región como 'ar-EG' o 'ar-SA', o 'ar-MA', 'ar-DZ' o 'ar-TN' para una edición magrebí con cifras europeas. Una página latina que solo cita árabe conserva su propio locale.",
+      "zh": "食谱的版本是en和es，但阿拉伯文示例在两个版本里都是阿拉伯文：`locale: LANG`会让它从左向右排、左装订、页码印成1 2 3，并把图标注为Figure或Figura。自己写出标记：'ar'（阿拉伯-印度数字，马什里克惯例），或带地区的'ar-EG'、'ar-SA'；马格里布版本用欧洲数字，写'ar-MA'、'ar-DZ'或'ar-TN'。只引用阿拉伯文的拉丁文页面保留自己的locale。"
+    },
+    "feature": "text-direction"
+  },
   "cjk-spread-order": {
     "title": {
       "en": "A right-bound book shows its spreads with showBook",
@@ -1375,9 +1401,9 @@
       "zh": "右装订的书用showBook显示跨页"
     },
     "body": {
-      "en": "In a book bound on the right (vertical Chinese, or page.binding 'right') page 1 is still the recto, but it lies on the left of the spine, and the pairs read [3 | 2]. showPages lays every book out left-bound; showBook from the cjk block reads doc.binding and mirrors the pairs. capture.hero still names a spread in reading order, [verso, recto]: [2, 3].",
-      "es": "En un libro encuadernado por la derecha (chino vertical, o page.binding 'right') la página 1 sigue siendo impar, pero queda a la izquierda del lomo, y los pliegos se leen [3 | 2]. showPages compone todos los libros como si se encuadernaran por la izquierda; showBook, del bloque cjk, lee doc.binding y refleja los pliegos. capture.hero sigue nombrando un pliego en orden de lectura, [par, impar]: [2, 3].",
-      "zh": "在右装订的书中（竖排中文，或page.binding 'right'），第1页仍是奇数页（recto），但它位于书脊左侧，跨页读作[3 | 2]。showPages把所有书都按左装订排列；cjk块中的showBook读取doc.binding，把跨页左右镜像。capture.hero仍按阅读顺序[偶数页, 奇数页]指定跨页：[2, 3]。"
+      "en": "In a book bound on the right (Arabic, Hebrew or Persian text, vertical Chinese, or page.binding 'right') page 1 is still the recto, but it lies on the left of the spine, and the pairs read [3 | 2]. showPages lays every book out left-bound; showBook from the book block (the cjk block carries the same function) reads doc.binding and mirrors the pairs. capture.hero still names a spread in reading order, [verso, recto]: [2, 3].",
+      "es": "En un libro encuadernado por la derecha (texto árabe, hebreo o persa, chino vertical, o page.binding 'right') la página 1 sigue siendo impar, pero queda a la izquierda del lomo, y los pliegos se leen [3 | 2]. showPages compone todos los libros como si se encuadernaran por la izquierda; showBook, del bloque book (el bloque cjk trae la misma función), lee doc.binding y refleja los pliegos. capture.hero sigue nombrando un pliego en orden de lectura, [par, impar]: [2, 3].",
+      "zh": "在右装订的书中（阿拉伯文、希伯来文或波斯文，竖排中文，或page.binding 'right'），第1页仍是奇数页（recto），但它位于书脊左侧，跨页读作[3 | 2]。showPages把所有书都按左装订排列；book块中的showBook（cjk块中也有同一个函数）读取doc.binding，把跨页左右镜像。capture.hero仍按阅读顺序[偶数页, 奇数页]指定跨页：[2, 3]。"
     },
     "feature": "right-binding"
   },
