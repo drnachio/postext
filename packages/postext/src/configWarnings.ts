@@ -25,6 +25,7 @@ import { resolveAllConfig, resolveDirection, resolvedLocale, sideColumnPercentUs
 import { computePageMetrics } from './pipeline/buildHelpers';
 import { deriveSectionGeometryConfig } from './pipeline/headingStyles';
 import { cjkGridGeometry } from './pipeline/cjkGrid';
+import { isDigitSystem } from './locale';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
@@ -56,13 +57,14 @@ function percentText(n: number): string {
  * settings or a paragraph style do not have (`unknownConfigKey`:
  * `headings`, its `balancing` and `levels`, `headingStyles`,
  * `paragraphStyles`). And a setting with a value outside its choices
- * (`unknownConfigValue`: `direction`). Pure.
+ * (`unknownConfigValue`: `direction`), and a `numerals` value that names
+ * no digit system (`unknownNumerals`). Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined): ConfigWarning[] {
   if (!config) return [];
   return [
     ...collectValueWarnings(config), ...collectSideColumnWarnings(config), ...collectUnknownKeyWarnings(config),
-    ...collectCjkGridWarnings(config), ...collectChoiceWarnings(config),
+    ...collectCjkGridWarnings(config), ...collectChoiceWarnings(config), ...collectNumeralsWarnings(config),
   ];
 }
 
@@ -76,6 +78,16 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
     out.push({ kind: 'unknownConfigValue', path: 'direction', value: String(direction), used });
   }
   return out;
+}
+
+/** A `numerals` value that names no digit system (`'arabic'`, `'hindi'`,
+ *  a typo): the digits follow the document language, as with `'auto'`
+ *  (`unknownNumerals`, `used` the digit system that gives). */
+function collectNumeralsWarnings(config: PostextConfig): ConfigWarning[] {
+  const value: unknown = config.numerals;
+  if (value === undefined || value === 'auto' || isDigitSystem(value)) return [];
+  const used = resolveAllConfig(config).numerals ?? 'latn';
+  return [{ kind: 'unknownNumerals', path: 'numerals', value: String(value), used }];
 }
 
 // The keys of the heading settings, checked against their types: a key

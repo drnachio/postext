@@ -13,6 +13,7 @@ import { buildBlockMapping } from './sourceMapping';
 import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
 import { joinEastAsianLines } from './softBreaks';
+import { asciiDigits } from '../arabicNumerals';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
 
@@ -59,7 +60,10 @@ function isFenceLine(trimmed: string): boolean {
 /** A footnote definition: `[^id]:` opening a paragraph. */
 const FOOTNOTE_DEF_RE = /^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*/u;
 const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
-const ORDERED_LIST_ITEM_RE = /^(\s*)(\d+)([.)])\s+(.*)$/;
+/** An ordered list item: its number in European, Arabic-Indic (١.) or
+ *  Persian (۱.) digits — what an Arabic or Persian keyboard types — then
+ *  `.` or `)`. */
+const ORDERED_LIST_ITEM_RE = /^(\s*)([0-9]+|[\u0660-\u0669]+|[\u06f0-\u06f9]+)([.)])\s+(.*)$/;
 const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 
 /** One-line `$$ ... $$` display math (the whole line is the formula). */
@@ -554,7 +558,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
             markerLength = taskMatch[2]!.length + 1 + 3 + 1;
           } else if (orderedMatch) {
             listKind = 'ordered';
-            startNumber = parseInt(orderedMatch[2]!, 10);
+            startNumber = parseInt(asciiDigits(orderedMatch[2]!), 10);
             itemText = orderedMatch[4]!;
             // number digits + separator (1) + space (1)
             markerLength = orderedMatch[2]!.length + 1 + 1;

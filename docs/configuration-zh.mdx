@@ -345,10 +345,18 @@ page: {
     <tr><td>地支</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>、<code>子</code></td></tr>
     <tr><td>带圈数字</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>、<code>①</code></td></tr>
     <tr><td>全角数字</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>、<code>１</code></td></tr>
+    <tr><td>阿拉伯-印度数字</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>、<code>١</code></td></tr>
+    <tr><td>波斯数字</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>、<code>urdu</code>、<code>۱</code></td></tr>
+    <tr><td>阿拉伯字母（阿布贾德顺序）</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>、<code>أبجد</code></td></tr>
+    <tr><td>阿拉伯字母（字母表顺序）</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>、<code>arabic-alpha</code>、<code>arabic-alphabetic</code>、<code>أبتث</code></td></tr>
+    <tr><td>阿布贾德数字</td><td>ا, ب … يا（11）, غتمو（1446）</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>阿布贾德数字（马格里布数值）</td><td>ص（60）, ض（90）, ش（1000）</td><td><code>arabic-abjad-maghrebi</code>、<code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 东亚样式在三处设置中都沿用[CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese)中的名称。中文小写数字在10到19之间写作十，前面不加一（十二，但一百一十）；数中连续的零只写一个零（一百零一、一千零五十）；万位用万或萬，亿位用亿或億（一万零一十）。只有`cjk-decimal`使用〇，逐位书写，与年份的写法相同（二〇二六，GB/T 15835—2011）。天干到10为止，地支到12，带圈数字到50；超出后以阿拉伯数字输出。`一`和`壹`跟随文档`locale`的字形：`zh-Hant`、`zh-TW`或`zh-HK`为繁体，其余为简体。有些较早的出版物把101写作一百一，不带零；Postext不输出这种形式。
+
+阿拉伯样式凡CSS已有名称的都沿用之（`arabic-indic`、`persian`；W3C《Ready-made Counter Styles》中的`urdu`和`maghrebi-abjad`分别读作`persian`和`arabic-abjad-maghrebi`）。`arabic`仍表示欧洲数字。`arabic-abjad`输出古典阿拉伯语和抄本页码所用的累加式阿布贾德数字，数值大的在前：11为يا，1446为غتمو，千位的倍数写在غ之前（2000为بغ，1002为غب）；超过999 999时以数字输出。W3C把这个名称用于一个28个字母的序列，其中11为ك；Postext把这个序列称为`abjad`，即按阿布贾德顺序给列表项编字母（أ، ب، ج، د، هـ），按字母表顺序的则是`hijai`（أ، ب، ت، ث）。两者都把第一个字母写成带hamza的أ，把单独出现的he写成带tatweel的هـ，以免被读作数字١和٥；超过28个后按`lower-alpha`的方式双写（أأ、أب）。马格里布数值依照口诀صعفض قرست ثخذ ظغش（ص为60，ض为90）；W3C的列表把ص与ض对调。单个أ无法区分两种字母序列，因此它们的记号是各自的前四个字母：`{1:أبجد}`、`{1:أبتث}`。文档本身的数字由[`numerals`](#文档数字)设定。
 
 其他写法是为不经类型检查的配置准备的，即JSON预设和纯JavaScript。TypeScript类型仍然只列出每处设置自己的写法，也就是沙盒写入、`resolveAllConfig`返回的那种（东亚名称也包括在内），所以有类型的`PostextConfig`要守住这种写法，用别的写法需要类型断言。
 
@@ -1574,6 +1582,20 @@ const config: PostextConfig = {
   locale: 'es',
   bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // 按西班牙语断词
 };
+```
+
+#### 文档数字
+
+顶层的`numerals`决定引擎输出的所有数字所用的数字系统：页码，以及目录、索引和页码引用中的页码标签；有序列表和脚注的编号；标题和章的计数，`{chapterNumber}`；图号及其引用中的`{h1}`与`{n}`；`{totalPages}`、`{bookTotalPages}`和`{numberDecimal}`。`'latn'`输出0–9，`'arab'`输出阿拉伯-印度数字٠–٩，`'arabext'`输出波斯数字۰–۹。只有十进制格式受影响——`decimal`、列表的`arabic`或保持默认的设置——作者指定的格式照原样输出：`lower-roman`仍是i、ii、iii，拉丁文文档中的`arabic-indic`仍输出١、٢、٣。文档正文从不改写。
+
+默认值`'auto'`取`locale`的数字（`defaultNumeralsFor(tag)`）：不带地区或地区不在马格里布的阿拉伯语（`ar`、`ar-EG`、`ar-SA`、`ar-AE`……）为`'arab'`；`ar-MA`、`ar-DZ`、`ar-TN`、`ar-LY`、`ar-MR`和`ar-EH`为`'latn'`；波斯语（`fa`）、普什图语（`ps`）和印度乌尔都语（`ur-IN`）为`'arabext'`；其他语言，包括巴基斯坦乌尔都语，均为`'latn'`。CLDR对不带地区的`ar`和`ar-AE`给出`latn`；马什里克和海湾地区的阿拉伯文图书印的是٠–٩，Postext以图书为准。标签中注明数字系统的（`ar-MA-u-nu-arab`）照其所注。以文档数字编号的页面把`arabic-indic`或`persian`记为`pageNumberFormat`，PDF页码标签因此显示相同的数字。未知的值按语言处理，并报告为`unknownNumerals`。
+
+作者输入的数字三种数字系统都能读取：列表项`٣.`从3开始，`{startAt=٥}`、`:::numbering{startAt=٥}`、`:::space{lines=٢}`和`:::part{number="٣"}`（用于`{numberDecimal}`）都能读出其值。
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
 ```
 
 ### 语言与文字

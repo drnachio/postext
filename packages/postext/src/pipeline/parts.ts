@@ -12,6 +12,7 @@ import { resolvedLocale } from './config';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
 import { dimensionsEqual } from '../defaults/shared';
 import { parseChineseNumeral } from '../chineseNumerals';
+import { asciiDigits } from '../arabicNumerals';
 import { resolveBodyStyle, resolveBlockquoteStyle } from './styles';
 import {
   computeLevelIndentsPx,
@@ -99,13 +100,13 @@ const ROMAN_VALUES: Record<string, number> = {
 };
 
 /** Numeric value of a part number written as a decimal (`'3'`, fullwidth
- *  `'３'`), a roman numeral (`'III'`, `'iv'`) or Chinese numerals (`'三'`,
+ *  `'３'`, Arabic-Indic `'٣'`, Persian `'۳'`), a roman numeral (`'III'`, `'iv'`) or Chinese numerals (`'三'`,
  *  `'十二'`, `'一二〇'`), the latter also with the words that frame them
  *  (`'卷三'`, `'第一卷'`, `'第十二部'`), so `{numberDecimal}` /
  *  `{numberRoman}` work whichever way the author wrote it. `undefined` for
  *  anything else. */
 export function parsePartNumber(raw: string): number | undefined {
-  let s = raw.trim().replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
+  let s = asciiDigits(raw.trim().replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)));
   if (s.length === 0) return undefined;
   if (/[^\x00-\x7f]/.test(s)) {
     s = s.replace(/^(?:第|卷)\s*/, '').replace(/\s*(?:卷|部|篇|编|編|册|冊|章|回|节|節|集)$/, '');

@@ -36,6 +36,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'sideColumnPercentClamped':
     case 'cjkGridClamped':
     case 'unknownNumberFormat':
+    case 'unknownNumerals':
     case 'unknownConfigKey':
     case 'unknownConfigValue':
     case 'headingDesignCut':

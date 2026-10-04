@@ -990,12 +990,15 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
   const numberless = numberlessStyles.size > 0
     ? (b: VDTBlock) => b.headingStyleId !== undefined && numberlessStyles.has(b.headingStyleId)
     : undefined;
+  // The digits of the chapter ordinals and page counts the slots print.
+  const numerals = resolved.numerals;
   const chapterNumberByPageIndex = computeChapterNumbers(
     doc.blocks,
     doc.pages.length,
     doc.pages,
     doc.chapterOrdinalOffset ?? 0,
     numberless,
+    numerals,
   );
   // The chapter in force at the top of each page (`{chapterTitleAtTop}`,
   // `{chapterNumberAtTop}`): the one a page runs on from, even where a new
@@ -1007,12 +1010,13 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     doc.pages,
     doc.chapterOrdinalOffset ?? 0,
     numberless,
+    numerals,
   );
   // A heading design (opener, in-column overlay, contents part row) prints
   // the chapter its block belongs to, not the page's: where two chapters
   // meet on a page, the page value is the later one's. Its height was
   // measured with this value too (`build.ts`).
-  const chapterNumberByBlock = computeChapterNumbersByBlock(doc.blocks, doc.chapterOrdinalOffset ?? 0, numberless);
+  const chapterNumberByBlock = computeChapterNumbersByBlock(doc.blocks, doc.chapterOrdinalOffset ?? 0, numberless, numerals);
   const chapterNumberOf = (block: VDTBlock, pageIndex: number): string =>
     chapterNumberByBlock.get(block) ?? chapterNumberByPageIndex[pageIndex] ?? '';
   // Parity (odd/even elements) counts the pages before a continued document.
@@ -1085,6 +1089,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1121,6 +1126,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1158,6 +1164,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,
@@ -1206,6 +1213,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
           bookTotalPages,
+          numerals,
           marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
@@ -1264,6 +1272,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
             chapterNumberByPageIndex,
             chapterAttrsByPageIndex,
             bookTotalPages,
+            numerals,
             marksFor,
             partTitleByPageIndex,
             partNumberByPageIndex,
@@ -1307,6 +1316,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
           chapterNumberByPageIndex,
           chapterAttrsByPageIndex,
           bookTotalPages,
+          numerals,
           marksFor,
           partTitleByPageIndex,
           partNumberByPageIndex,
@@ -1349,6 +1359,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         chapterNumberByPageIndex,
         chapterAttrsByPageIndex,
         bookTotalPages,
+        numerals,
         marksFor,
         partTitleByPageIndex,
         partNumberByPageIndex,

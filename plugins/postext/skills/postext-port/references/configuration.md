@@ -104,6 +104,7 @@ Conversion at `page.dpi` (default 300):
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9) |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off |
+| `numerals` | `'auto'`\|`'latn'`\|`'arab'`\|`'arabext'` | `'auto'` | digits of every engine-generated decimal number (pages, lists, notes, counters, `{h1}`/`{n}`, `{totalPages}`): `auto` = `arab` ٠–٩ for `ar` (Maghreb `ar-MA/DZ/TN/LY/MR/EH` → `latn`), `arabext` ۰–۹ for `fa`/`ps`/`ur-IN`, else `latn`; named formats print as named |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
@@ -347,7 +348,9 @@ headings
   第十二; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
   `{1:一}` informal in the document's script (`第{1:一}回` → 第一回 … 第一百二十回), `{1:〇}` cjk-decimal
   (一二〇), `{1:壹}` financial, `{1:①}` circled, `{1:甲}` stems, `{1:子}` branches, `{1:１}` fullwidth, or a
-  CSS name (`{1:trad-chinese-informal}`). Design placeholder `{numberHan}`: the counter in informal numerals. Empty counters collapse with their separator.
+  CSS name (`{1:trad-chinese-informal}`). Design placeholder `{numberHan}`: the counter in informal numerals. Arabic: `{1:١}`
+  arabic-indic, `{1:۱}` persian, `{1:أبجد}` abjad letters (أ ب ج د هـ), `{1:أبتث}` hijai letters (أ ب ت ث), or a name
+  (`{1:arabic-abjad}` additive يا = 11). `{1}` follows the document's `numerals`. Empty counters collapse with their separator.
   A heading line's `{startAt=N}` sets its level counter to N instead of advancing it.
   The number is prepended to the title **followed by one space**,
   e.g. `'{1}.{2}'` → "2.3 Title"; `'Chapter {1}.'` → "Chapter 2. Title". It also feeds `{number}`
@@ -645,7 +648,9 @@ fontFamily = body, color = main-color, fontWeight = 700, italic = false  (number
 numberFormat = 'arabic'|'lower-alpha'|'upper-alpha'|'lower-roman'|'upper-roman'  ('arabic')
                | East Asian (≥ 1.9): 'simp-chinese-informal' 一 | 'trad-chinese-informal' | 'simp-chinese-formal' 壹
                | 'trad-chinese-formal' | 'cjk-decimal' 〇 | 'cjk-heavenly-stem' 甲 | 'cjk-earthly-branch' 子
-               | 'circled-decimal' ① | 'fullwidth-decimal' １   (every numbering setting takes them: page labels,
+               | 'circled-decimal' ① | 'fullwidth-decimal' １
+               | Arabic: 'arabic-indic' ١ | 'persian' ۱ | 'abjad' أ ب ج د هـ | 'hijai' أ ب ت ث
+               | 'arabic-abjad' (additive, 11 = يا) | 'arabic-abjad-maghrebi'   (every numbering setting takes them: page labels,
                resource counterFormat, heading templates, :::numbering)
 prefix = ''   (≥ 1.9) text before the number, in the separator's style: prefix '（' + separator '）' → （一）
 separator = '.', numberFontSize = 1em, gap = 0.5em, indent = 0em, numberVerticalOffset = 0em

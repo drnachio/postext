@@ -345,10 +345,18 @@ Three settings choose a numbering format, and each grew its own spelling: page l
     <tr><td>Earthly branches</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
     <tr><td>Circled</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Fullwidth digits</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
+    <tr><td>Arabic-Indic digits</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Persian digits</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>, <code>urdu</code>, <code>۱</code></td></tr>
+    <tr><td>Arabic letters, abjad order</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Arabic letters, alphabetical order</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>, <code>arabic-alpha</code>, <code>arabic-alphabetic</code>, <code>أبتث</code></td></tr>
+    <tr><td>Abjad numerals</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Abjad numerals, Maghrebi values</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>, <code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 The East Asian styles keep their [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) names in all three settings. The informal Chinese numerals write 十 for 10 to 19 without a leading 一 (十二, but 一百一十), one 零 for a run of zeros inside the number (一百零一, 一千零五十), and 万 or 萬 for ten thousand, 亿 or 億 for a hundred million (一万零一十). Only `cjk-decimal` uses 〇, digit by digit, the way years are written (二〇二六, GB/T 15835—2011). The stems stop at 10, the branches at 12 and the circled digits at 50; past them the number prints in digits. `一` and `壹` follow the script of the document's `locale`: Traditional for `zh-Hant`, `zh-TW` or `zh-HK`, Simplified otherwise. Some older editions write 101 as 一百一 with no 零; Postext does not print that form.
+
+The Arabic styles keep the CSS names where CSS has one (`arabic-indic`, `persian`; `urdu` and `maghrebi-abjad` from the W3C *Ready-made Counter Styles* are read as `persian` and `arabic-abjad-maghrebi`). `arabic` keeps its old meaning, the European digits. `arabic-abjad` writes the additive abjad numerals of Classical Arabic and manuscript foliation, highest value first: 11 is يا, 1446 غتمو, and the thousands count goes before غ (2000 بغ, 1002 غب); past 999 999 the number prints in digits. The W3C note uses the name for a 28-letter series where 11 is ك; Postext calls that series `abjad`, the lettering of list items in abjad order (أ، ب، ج، د، هـ), and `hijai` the alphabetical order (أ، ب، ت، ث). Both write the first letter with its hamza (أ), and a heh that would stand alone as هـ, with a tatweel, so neither is read as the digits ١ and ٥; past 28 they double, as `lower-alpha` does (أأ, أب). The Maghrebi values follow the mnemonic صعفض قرست ثخذ ظغش (ص 60, ض 90); the W3C list swaps ص and ض. A single أ cannot tell the two letter series apart, so their tokens are their first four letters: `{1:أبجد}`, `{1:أبتث}`. A document's own digits are set with [`numerals`](#document-digits).
 
 The other spellings are for configurations that nothing type-checks: JSON presets and plain JavaScript. The TypeScript types still name only each setting's own spelling — the one the Sandbox writes and `resolveAllConfig` returns, the East Asian names included — so a typed `PostextConfig` keeps to it, and another spelling needs a cast.
 
@@ -1577,6 +1585,20 @@ const config: PostextConfig = {
   locale: 'es',
   bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // hyphenates in Spanish
 };
+```
+
+#### Document digits
+
+The top-level `numerals` sets the digits of every number the engine writes: page numbers and the page labels of the contents, the index and page references; ordered-list and footnote numbers; heading and chapter counters, `{chapterNumber}`; the `{h1}` and `{n}` of a figure number and of a reference to it; `{totalPages}`, `{bookTotalPages}` and `{numberDecimal}`. `'latn'` writes 0–9, `'arab'` the Arabic-Indic digits ٠–٩ and `'arabext'` the Persian digits ۰–۹. Only the decimal format changes — `decimal`, the lists' `arabic`, or a setting left at its default — so a format the author names prints as named: `lower-roman` stays i, ii, iii, and `arabic-indic` in a Latin document still writes ١, ٢, ٣. The text of the document is never rewritten.
+
+The default, `'auto'`, takes the digits of `locale` (`defaultNumeralsFor(tag)`): `'arab'` for Arabic with no region or with any region outside the Maghreb (`ar`, `ar-EG`, `ar-SA`, `ar-AE`…), `'latn'` for `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` and `ar-EH`, `'arabext'` for Persian (`fa`), Pashto (`ps`) and the Urdu of India (`ur-IN`), and `'latn'` for everything else, the Urdu of Pakistan included. CLDR gives `latn` for a bare `ar` and for `ar-AE`; Arabic books of the Mashriq and the Gulf print ٠–٩, which is what Postext follows. A tag that names its digits keeps them: `ar-MA-u-nu-arab`. A page numbered in the document digits records `arabic-indic` or `persian` as its `pageNumberFormat`, so the PDF page labels show the same digits. An unknown value follows the language and is reported as `unknownNumerals`.
+
+Numbers the author types are read in any of the three systems: a list item `٣.` starts at 3, and `{startAt=٥}`, `:::numbering{startAt=٥}`, `:::space{lines=٢}` and `:::part{number="٣"}` (for `{numberDecimal}`) read the value.
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
 ```
 
 ### Languages and scripts

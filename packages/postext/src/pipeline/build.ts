@@ -23,6 +23,7 @@ import { parseMarkdownMemo, spaceDirectiveLines } from '../parse';
 import {
   buildPageLabels,
   computeHeadingNumbering,
+  documentNumeralStyle,
   parseNumberFormat,
   type NumeralStyle,
   type PageNumberSegment,
@@ -36,6 +37,7 @@ import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMe
 import { stampCentralBaselines } from './verticalMetrics';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedLocale } from './config';
+import { asciiDigits } from '../arabicNumerals';
 import {
   createHeadingLevelResolver,
   deriveSectionGeometryConfig,
@@ -300,6 +302,7 @@ function chapterNumbersOfContent(
   const next = chapterNumberCounter<{ unnumbered?: boolean; contentIndex: number; headingNumber?: number; numberPrefix?: string; styleId?: string }>(
     ordinalOffset,
     (b) => b.styleId !== undefined && numberless.has(b.styleId),
+    resolved.numerals,
   );
   let current = '';
   return blocks.map((b, i) => {
@@ -552,11 +555,12 @@ function placeDocumentPass(
   // Numbered by page or column (`numbering: 'page'`), a note takes the
   // number the previous build gave it where it landed; the first build
   // numbers by chapter (see `buildDocumentNumbered`).
+  // A decimal note number is written in the document's digits.
   const footnoteNumbering = numberFootnotes(
     footnoteSplit.blocks,
     resolved.footnotes.numbering,
     resolved.footnotes.numbering === 'document' ? Math.max(0, Math.floor(continuation?.footnoteNumber ?? 0)) : 0,
-    resolved.footnotes.numberFormat,
+    documentNumeralStyle(resolved.footnotes.numberFormat, resolved.numerals),
   );
   if (hints.footnoteNumbers) {
     for (const [id, number] of hints.footnoteNumbers) {
@@ -613,6 +617,7 @@ function placeDocumentPass(
     resources,
     headingContext,
     continuation ? { counters: continuation.resourceCounters, numbered: continuation.resourceNumbers } : undefined,
+    resolved.numerals,
   );
 
   // Lookups threaded into block-kind resolution + measurement.
@@ -4157,7 +4162,7 @@ function placeDocumentPass(
         const fmt = parseNumberFormat(attrs.format, resolvedLocale(resolved));
         if (fmt) change.format = fmt;
         if (attrs.startAt !== undefined) {
-          const n = Number(attrs.startAt);
+          const n = Number(asciiDigits(attrs.startAt));
           if (Number.isInteger(n) && n >= 1) change.startAt = n;
         }
         if (Object.keys(change).length > 0) {
@@ -4837,7 +4842,7 @@ function placeDocumentPass(
           // columns); in-column headings use just the column width.
           const pageArea = doc.pages[cursor.pageIndex]!.contentArea;
           const measureWidth = lvl.span === 'page' ? pageArea.width : curCol.bbox.width;
-          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
+          const info: HeadingPlaceholderInfo = { titleText: title, formattedNumber: pref, numericValue: headingNumber, locale: resolvedLocale(resolved), ...(resolved.numerals ? { numerals: resolved.numerals } : {}), chapterNumber: chapterNumberByBlock[blockIdx] ?? '', attrs: rawBlock.attrs };
           const design = measureHeadingDesign(
             lvl,
             info,
@@ -5607,7 +5612,7 @@ function placeDocumentPass(
   if (paperOfBlock.some((p) => p !== undefined)) stampPagePaper(doc.pages, paperOfBlock);
 
   // Stamp page-number info onto every page (including blank parity pages).
-  const labels = buildPageLabels(doc.pages.length, pageNumberSegments);
+  const labels = buildPageLabels(doc.pages.length, pageNumberSegments, resolved.numerals);
   for (let i = 0; i < doc.pages.length; i++) {
     const info = labels[i];
     if (!info) continue;
@@ -5824,7 +5829,7 @@ function* buildDocumentNumbered(
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
     const used = printedFootnoteNumbers(doc);
     if (used.size === 0) break;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, f.numberFormat).numbers;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals)).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);

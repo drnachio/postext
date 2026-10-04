@@ -103,6 +103,10 @@ export interface ResolvedConfig {
    *  `'rtl'`, so a left-to-right document resolves as it always has. Read
    *  it with `resolvedDirection()`. */
   direction?: 'rtl';
+  /** The digits of the generated numbers (`PostextConfig.numerals`, with
+   *  `'auto'` resolved from the document language) when they are not the
+   *  European ones; absent for `'latn'` (see `documentNumerals`). */
+  numerals?: 'arab' | 'arabext';
   /** The document's colour palette, kept so per-resource-type caption
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
@@ -1642,8 +1646,11 @@ export interface ConfigWarning {
    *  `unknownConfigValue`: a setting that takes one of a few words holding
    *  another (`direction: 'right'`); the engine reads its default, and
    *  `used` is what that came to (`direction`: `ltr` or `rtl`, from the
-   *  document language). */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue';
+   *  document language).
+   *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
+   *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
+   *  language, and `used` is the digit system that gives. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */

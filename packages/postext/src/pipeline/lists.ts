@@ -1,10 +1,11 @@
 import { flowTextWidth } from '../measure/vertical';
-import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension } from '../types';
+import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension, DigitSystem } from '../types';
 import type { ContentBlock, ListKind } from '../parse';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
 import { formatNumeral, parseNumberFormat } from '../numbering';
+import { withDigits } from '../arabicNumerals';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
 
@@ -239,9 +240,10 @@ export function computeOrderedLevelIndentsPx(
       const measured = maxNumberWidthByDepth.get(prevIndex + 1);
       if (measured !== undefined) return measured;
       const sep = resolveSeparatorRun(prev, prevFontString, dpi, bodyFontSizePx);
-      if (!sep) return flowTextWidth(prev.prefix + '99' + prev.separator, prevFontString);
+      const sample = withDigits('99', resolved.numerals);
+      if (!sep) return flowTextWidth(prev.prefix + sample + prev.separator, prevFontString);
       return (prev.prefix ? flowTextWidth(prev.prefix, sep.fontString) : 0)
-        + flowTextWidth('99', prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
+        + flowTextWidth(sample, prevFontString) + sep.gapPx + flowTextWidth(prev.separator, sep.fontString);
     },
   );
 }
@@ -251,17 +253,18 @@ export function computeOrderedLevelIndentsPx(
  *  (a Markdown list may start at `0.`) prints in digits, and so does a roman
  *  numeral from 4000 up. The resolver hands over the list spelling; a part's
  *  partial override is applied after it, so any spelling is read here too
- *  (unknown → arabic). */
-export function formatListNumber(n: number, format: OrderedListNumberFormat): string {
+ *  (unknown → arabic). Decimal numbers, and those digits, are written in
+ *  the document's `digits`. */
+export function formatListNumber(n: number, format: OrderedListNumberFormat, digits?: DigitSystem): string {
   const style = parseNumberFormat(format) ?? 'decimal';
-  if (n < 0 || (n === 0 && !EAST_ASIAN_ZERO.has(style))) return n.toString();
-  if ((style === 'lower-roman' || style === 'upper-roman') && n >= 4000) return n.toString();
-  return formatNumeral(n, style);
+  if (n < 0 || (n === 0 && !OWN_ZERO.has(style))) return withDigits(n.toString(), digits);
+  if ((style === 'lower-roman' || style === 'upper-roman') && n >= 4000) return withDigits(n.toString(), digits);
+  return formatNumeral(n, style, digits);
 }
 
-/** The styles with a zero of their own (零, 〇, ⓪, ０); an item numbered 0
- *  in them prints it. */
-const EAST_ASIAN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal']);
+/** The styles with a zero of their own (零, 〇, ⓪, ０, ٠, ۰); an item
+ *  numbered 0 in them prints it. */
+const OWN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal', 'arabic-indic', 'persian']);
 
 /**
  * Walks content blocks identifying contiguous ordered-list runs per depth,
@@ -371,7 +374,7 @@ export function computeOrderedListRunMetrics(
       const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
       const levelCfg = lists.levels[levelIdx]!;
       const sepRun = levelSeparatorRuns[levelIdx];
-      const number = formatListNumber(counter, levelCfg.numberFormat);
+      const number = formatListNumber(counter, levelCfg.numberFormat, resolved.numerals);
       perBlock.set(i, sepRun
         ? {
             numberText: number,

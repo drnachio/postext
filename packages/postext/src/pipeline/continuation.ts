@@ -44,6 +44,7 @@ export function continuationAfter(
     content.resources ?? [],
     headingContext,
     before ? { counters: before.resourceCounters, numbered: before.resourceNumbers } : undefined,
+    resolved.numerals,
   );
   // The last part opened in `content` (its fence may well have closed —
   // a part stays in effect until the next one), else the inherited one.

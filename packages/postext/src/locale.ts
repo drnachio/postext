@@ -1,4 +1,4 @@
-import type { CjkRegion, HyphenationLocale, LocaleTag } from './types';
+import type { CjkRegion, DigitSystem, HyphenationLocale, LocaleTag, NumeralsSetting } from './types';
 
 /** The languages whose hyphenation patterns ship with the engine. */
 export const HYPHENATION_LOCALES: readonly HyphenationLocale[] = Object.freeze([
@@ -384,4 +384,71 @@ export function matchContentLocale(candidates: readonly string[], wanted: string
     }
   }
   return best;
+}
+
+// ---------------------------------------------------------------------------
+// Digits: which digit system a document's generated numbers are written in.
+
+/** The Arabic-speaking Maghreb, where books print European digits (alreq
+ *  §Numbers): Morocco, Algeria, Tunisia, Libya, Mauritania and Western
+ *  Sahara. */
+const MAGHREB_REGIONS = new Set(['MA', 'DZ', 'TN', 'LY', 'MR', 'EH']);
+
+const DIGIT_SYSTEMS = new Set<string>(['latn', 'arab', 'arabext']);
+
+/** Whether `value` names a digit system (`'latn'`, `'arab'`, `'arabext'`). */
+export function isDigitSystem(value: unknown): value is DigitSystem {
+  return typeof value === 'string' && DIGIT_SYSTEMS.has(value);
+}
+
+/**
+ * The digits a book in `tag` prints its page numbers, list and note numbers
+ * and counters in (`PostextConfig.numerals: 'auto'`):
+ *
+ * - Arabic (`ar`): the Arabic-Indic digits (`'arab'`, ٠–٩) without a region
+ *   or with any region but the Maghreb's, whose books print European digits
+ *   (`'latn'`: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR`, `ar-EH`).
+ *   CLDR's own defaults give `latn` for a bare `ar` and for `ar-AE`; Arabic
+ *   book publishing in the Mashriq and the Gulf prints ٠–٩, and a book is
+ *   what this setting is for.
+ * - Persian (`fa`), Pashto (`ps`) and the Urdu of India (`ur-IN`): the
+ *   Extended Arabic-Indic digits (`'arabext'`, ۰–۹). The Urdu of Pakistan
+ *   (`ur`, `ur-PK`) takes `'latn'`, as CLDR does: Pakistani books print
+ *   both, and the European digits are the safe default.
+ * - Every other language: `'latn'`.
+ *
+ * A tag that names its digits in a Unicode extension
+ * (`ar-MA-u-nu-arab`, `fa-u-nu-latn`) has those when they are one of the
+ * three. A missing or invalid tag gives `'latn'`.
+ */
+export function defaultNumeralsFor(tag: unknown): DigitSystem {
+  if (!isTag(tag)) return 'latn';
+  let locale: Intl.Locale | undefined;
+  try {
+    locale = typeof Intl.Locale === 'function' ? new Intl.Locale(tag.trim().replace(/_/g, '-')) : undefined;
+  } catch {
+    locale = undefined;
+  }
+  if (isDigitSystem(locale?.numberingSystem)) return locale.numberingSystem;
+  const language = languageOf(tag);
+  // The region as written: a bare `ar` is not Egyptian Arabic.
+  const region = locale?.region ?? tag.trim().split(/[-_]/).slice(1).find((s) => /^[A-Za-z]{2}$|^\d{3}$/.test(s))?.toUpperCase();
+  switch (language) {
+    case 'ar':
+      return region !== undefined && MAGHREB_REGIONS.has(region) ? 'latn' : 'arab';
+    case 'fa':
+    case 'ps':
+      return 'arabext';
+    case 'ur':
+      return region === 'IN' ? 'arabext' : 'latn';
+    default:
+      return 'latn';
+  }
+}
+
+/** The digit system of a `numerals` setting for a document in `tag`: the
+ *  setting itself when it names one, else (`'auto'`, unset, or a value the
+ *  engine does not know) the language's ({@link defaultNumeralsFor}). */
+export function resolveNumerals(setting: NumeralsSetting | undefined, tag: unknown): DigitSystem {
+  return isDigitSystem(setting) ? setting : defaultNumeralsFor(tag);
 }

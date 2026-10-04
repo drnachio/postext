@@ -1,4 +1,5 @@
-import type { DocumentMetadata, PostextConfig } from '../types';
+import type { DigitSystem, DocumentMetadata, PostextConfig } from '../types';
+import { withDigits } from '../arabicNumerals';
 import type { VDTPage } from '../vdt';
 import { chineseInformalStyle, formatCounter, formatNumeral } from '../numbering';
 import { metadataText } from '../frontmatter';
@@ -27,6 +28,9 @@ export interface HeadingPlaceholderInfo {
   /** Document language of the spelled-out placeholders (`{numberWords}`,
    *  `{numberOrdinalWords}`); English when unset. */
   locale?: string;
+  /** The document's digit system, for `{numberDecimal}`; `'latn'` when
+   *  unset. */
+  numerals?: DigitSystem;
   /** `{chapterNumber}` of the chapter the heading belongs to (its own for a
    *  level-1 heading, else the last level-1 heading's before it) — not the
    *  page's, which is the later chapter where two meet on a page. */
@@ -64,6 +68,9 @@ export interface DesignPlaceholderContext {
   /** Physical pages of the whole book (`{bookTotalPages}`); defaults to
    *  `allPages.length`. */
   bookTotalPages?: number;
+  /** The document's digit system: `{totalPages}`, `{bookTotalPages}` and
+   *  `{numberDecimal}` are written in it. `'latn'` when unset. */
+  numerals?: DigitSystem;
   /** Running marks per key, for `{firstMark.<key>}` / `{lastMark.<key>}`
    *  in header and footer slots (see `computePageMarks`). */
   marksFor?: (key: string) => PageMarks | undefined;
@@ -145,13 +152,14 @@ function resolveAttrPlaceholder(key: string, ctx: DesignPlaceholderContext): str
 
 function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string {
   const h = ctx.heading;
+  const digits = ctx.numerals ?? h?.numerals;
   switch (name) {
     case 'titleText':
       return h?.titleText ?? '';
     case 'number':
       return h?.formattedNumber ?? '';
     case 'numberDecimal':
-      return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'decimal') : '';
+      return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'decimal', digits) : '';
     case 'numberRoman':
       return h?.numericValue !== undefined ? formatNumeral(h.numericValue, 'upper-roman') : '';
     case 'numberRomanLower':
@@ -182,9 +190,9 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
     case 'pageNumber':
       return ctx.page.pageLabel;
     case 'totalPages':
-      return String(ctx.allPages.length);
+      return withDigits(String(ctx.allPages.length), digits);
     case 'bookTotalPages':
-      return String(ctx.bookTotalPages ?? ctx.allPages.length);
+      return withDigits(String(ctx.bookTotalPages ?? ctx.allPages.length), digits);
     case 'title':
       return metadataText(ctx.metadata.title) ?? '';
     case 'subtitle':
@@ -220,6 +228,7 @@ export function resolveDesignPlaceholders(
       chapterNumberByPageIndex: ctx.chapterNumberByPageIndex,
       bookTotalPages: ctx.bookTotalPages,
       marksFor: ctx.marksFor,
+      numerals: ctx.numerals,
     };
     return legacyResolvePlaceholders(template, legacy, options);
   }

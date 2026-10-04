@@ -23,7 +23,7 @@ export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, ini
 export type { CjkComposition, PunctuationSide } from './measure';
 export type { BreakTrace, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure';
 export { hyphenateText, setHyphenationLocale, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenate';
-export { DOCUMENT_LANGUAGES, isCjkLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor, directionOf } from './locale';
+export { DOCUMENT_LANGUAGES, isCjkLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, stringsFor, directionOf, defaultNumeralsFor } from './locale';
 export type { DocumentLanguage } from './locale';
 export { parseMarkdown } from './parse';
 export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues } from './table/model';
@@ -119,6 +119,8 @@ export type {
   HyphenationLocale,
   LocaleTag,
   DocumentDirection,
+  DigitSystem,
+  NumeralsSetting,
   HyphenationConfig,
   ResolvedHyphenationConfig,
   BodyTextConfig,
@@ -358,8 +360,9 @@ export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLA
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
 export type { OrientationMark } from './parse';
 export type { InlineSnippetMapping } from './parse';
-export { buildPageLabels, collectPageLabelRuns, formatNumeral, parseNumberFormat, chineseInformalStyle, EAST_ASIAN_NUMERAL_STYLES } from './numbering';
-export type { NumeralStyle, NumberFormatStyle, EastAsianNumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';
+export { buildPageLabels, collectPageLabelRuns, formatNumeral, documentNumeralStyle, parseNumberFormat, chineseInformalStyle, EAST_ASIAN_NUMERAL_STYLES, ARABIC_NUMERAL_STYLES } from './numbering';
+export type { NumeralStyle, NumberFormatStyle, EastAsianNumeralStyle, ArabicNumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';
+export { withDigits, asciiDigits } from './arabicNumerals';
 export { parseChineseNumeral } from './chineseNumerals';
 export { collectConfigWarnings } from './configWarnings';
 export type { MathRender, MathPath, MathViewBox } from './math/types';

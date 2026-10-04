@@ -1,4 +1,5 @@
 import type { DirectiveAttrs } from './types';
+import { asciiDigits } from '../arabicNumerals';
 
 /** An attribute key: ASCII, so ids stay portable. */
 const KEY = '[A-Za-z_][A-Za-z0-9_-]*';
@@ -191,13 +192,13 @@ export function invalidAttributeKeys(raw: string): InvalidAttrKey[] {
 export const MAX_SPACE_LINES = 20;
 
 /** The body lines a `:::space` directive asks for: its `lines` attribute
- *  (default 1). `undefined` when the value is not a positive number up to
- *  {@link MAX_SPACE_LINES} — the engine then falls back to one line and the
- *  sandbox flags it. */
+ *  (default 1), in any digits (`lines=٢`). `undefined` when the value is
+ *  not a positive number up to {@link MAX_SPACE_LINES} — the engine then
+ *  falls back to one line and the sandbox flags it. */
 export function spaceDirectiveLines(attrs: DirectiveAttrs | undefined): number | undefined {
   const raw = attrs?.lines;
   if (raw === undefined) return 1;
-  const n = Number(raw.trim());
+  const n = Number(asciiDigits(raw.trim()));
   if (raw.trim() === '' || !Number.isFinite(n) || n <= 0 || n > MAX_SPACE_LINES) return undefined;
   return n;
 }

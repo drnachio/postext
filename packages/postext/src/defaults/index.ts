@@ -229,5 +229,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   }
   // `'auto'` is the default direction.
   if (result.direction === 'auto') delete result.direction;
+  // `'auto'` is the default: the digits follow the document language.
+  if (result.numerals === 'auto') delete result.numerals;
   return result;
 }

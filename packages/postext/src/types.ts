@@ -1,4 +1,4 @@
-import type { EastAsianNumeralStyle, NumberFormatStyle, NumeralStyle } from './numbering';
+import type { ArabicNumeralStyle, EastAsianNumeralStyle, NumberFormatStyle, NumeralStyle } from './numbering';
 
 /** @deprecated Legacy content-model resource used by the VDT renderer
  *  (`VDTBlock.resource`). The Resources-panel feature uses the newer
@@ -20,15 +20,17 @@ export interface PostextResource {
 // (images, SVGs, HTML tables) that can be referenced inline.
 // ---------------------------------------------------------------------------
 
-/** How a counter renders for a given resource type. The East Asian styles
- *  keep their CSS names (`simp-chinese-informal`, `circled-decimal`…). */
+/** How a counter renders for a given resource type. The East Asian and
+ *  Arabic styles keep their CSS names (`simp-chinese-informal`,
+ *  `circled-decimal`, `arabic-indic`…). */
 export type ResourceCounterFormat =
   | 'decimal'
   | 'roman-lower'
   | 'roman-upper'
   | 'alpha-lower'
   | 'alpha-upper'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 /** When the per-type counter resets back to its starting value. `'never'`
  *  yields a single document-wide running count; `'h1'..'h6'` resets the
@@ -558,7 +560,8 @@ export type PageNumberFormat =
   | 'upper-roman'
   | 'lower-alpha'
   | 'upper-alpha'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 export interface PageNumberingConfig {
   /** Format for page labels. Default: `'decimal'`. The list and resource
@@ -765,6 +768,17 @@ export type LocaleTag = HyphenationLocale | (string & {});
  *  `'ltr'` left to right, `'rtl'` right to left (Arabic, Hebrew), `'auto'`
  *  from the script of the document language. */
 export type DocumentDirection = 'auto' | 'ltr' | 'rtl';
+
+/** A digit system, named as the Unicode `-u-nu-` keyword names it: `'latn'`
+ *  the European digits 0–9, `'arab'` the Arabic-Indic digits ٠–٩ of the
+ *  Mashriq (U+0660–0669), `'arabext'` the Extended Arabic-Indic digits
+ *  ۰–۹ of Persian and Urdu (U+06F0–06F9). */
+export type DigitSystem = 'latn' | 'arab' | 'arabext';
+
+/** The digits a document's generated numbers are written in (see
+ *  `PostextConfig.numerals`): a {@link DigitSystem}, or `'auto'` to take
+ *  the one of the document language (`defaultNumeralsFor`). */
+export type NumeralsSetting = 'auto' | DigitSystem;
 
 export interface HyphenationConfig {
   enabled?: boolean;
@@ -2502,7 +2516,8 @@ export type OrderedListNumberFormat =
   | 'upper-alpha'
   | 'lower-roman'
   | 'upper-roman'
-  | EastAsianNumeralStyle;
+  | EastAsianNumeralStyle
+  | ArabicNumeralStyle;
 
 export interface OrderedListLevelConfig {
   level: number;
@@ -4411,6 +4426,21 @@ export interface PostextConfig {
    *  Unicode Bidirectional Algorithm (`bidi.ts`). Any other value counts
    *  as `'auto'` and is reported (`unknownConfigValue`). */
   direction?: DocumentDirection;
+  /** The digits of every number the engine writes — page numbers (and the
+   *  page labels of the contents, the index and page references), ordered
+   *  list and footnote numbers, heading, chapter and resource counters, the
+   *  `{h1}` and `{n}` of a figure number, `{totalPages}`,
+   *  `{numberDecimal}`: `'latn'` 0–9, `'arab'` ٠–٩, `'arabext'` ۰–۹. Only
+   *  numbers in the decimal format change (`decimal`, the lists'
+   *  `arabic`, or no format at all); a format the author names —
+   *  `lower-roman`, `arabic-indic`, `persian` — prints as named, and the
+   *  author's own text is never rewritten. Default `'auto'`: the digits of
+   *  {@link locale} (`defaultNumeralsFor`) — `'arab'` for Arabic (`ar`,
+   *  `ar-EG`, `ar-SA`…) but `'latn'` in the Maghreb (`ar-MA`, `ar-DZ`,
+   *  `ar-TN`, `ar-LY`, `ar-MR`, `ar-EH`), `'arabext'` for Persian, Pashto
+   *  and the Urdu of India, `'latn'` for every other language; a tag that
+   *  names its digits (`ar-MA-u-nu-arab`) has them. */
+  numerals?: NumeralsSetting;
 
   debug?: DebugConfig;
 

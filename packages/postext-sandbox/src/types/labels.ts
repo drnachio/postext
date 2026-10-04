@@ -130,6 +130,12 @@ export interface SandboxLabels {
   numberFormatCjkEarthlyBranch: string;
   numberFormatCircledDecimal: string;
   numberFormatFullwidthDecimal: string;
+  numberFormatArabicIndic: string;
+  numberFormatPersian: string;
+  numberFormatAbjad: string;
+  numberFormatHijai: string;
+  numberFormatArabicAbjad: string;
+  numberFormatArabicAbjadMaghrebi: string;
   separatorSpace: string;
   separatorIdeographicSpace: string;
   separatorNone: string;
@@ -1212,6 +1218,8 @@ export interface SandboxLabels {
    *  it numbers in decimal. `__used__` is the decimal spelling used. */
   warningsUnknownNumberFormatTitle: string;
   warningsUnknownNumberFormatDetail: string;
+  warningsUnknownNumeralsTitle: string;
+  warningsUnknownNumeralsDetail: string;
   warningsUnknownConfigKeyTitle: string;
   warningsUnknownConfigKeyDetail: string;
   warningsUnknownConfigKeySuggestion: string;

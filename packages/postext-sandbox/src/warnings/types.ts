@@ -65,6 +65,7 @@ export type WarningKind =
   | 'chapterFrontmatterIgnored'
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
+  | 'unknownNumerals'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -268,6 +269,9 @@ export type WarningPayload =
    *  `counterFormat` the engine does not know; it numbers in decimal
    *  (`used` is the decimal spelling of that field). */
   | { kind: 'unknownNumberFormat'; path: string; value: string; used: string }
+  /** A `numerals` value that names no digit system: the digits follow
+   *  the document language, `used` the system that gives. */
+  | { kind: 'unknownNumerals'; path: string; value: string; used: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */

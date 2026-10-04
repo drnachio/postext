@@ -12,7 +12,8 @@ import { collapseTitleSpaces } from '../measure/spaces';
 import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../numbering';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../types';
 import type { ResolvedConfig, VDTDocument } from '../vdt';
-import { resolvedLocale, resolveAllConfig } from './config';
+import { documentNumerals, resolvedLocale, resolveAllConfig } from './config';
+import { withDigits } from '../arabicNumerals';
 import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf } from './headingStyles';
 import { partMarkPages, planParts } from './parts';
 import { withBookTitleBrackets } from './annotations';
@@ -106,12 +107,13 @@ export function headingTemplatesOf(resolved: ResolvedConfig): HeadingTemplates {
 }
 
 /** What heading numbering takes from the resolved config beside the level
- *  templates: the document language (spelled-out counters) and the heading
- *  styles' own templates. */
+ *  templates: the document language (spelled-out counters), its digits
+ *  (decimal counters) and the heading styles' own templates. */
 export function headingNumberingOptions(resolved: ResolvedConfig): HeadingNumberingOptions {
   const styled = resolved.headingStyles.some((s) => s.numberingTemplate !== undefined);
   return {
     locale: resolvedLocale(resolved),
+    ...(resolved.numerals ? { numerals: resolved.numerals } : {}),
     ...(styled ? { templateFor: (b: ContentBlock) => headingStyleOf(b, resolved)?.numberingTemplate } : {}),
   };
 }
@@ -164,7 +166,7 @@ export function computeOutline(
     // Without a template, a chapter lists its ordinal: the level-1 counter.
     // A style whose own template is empty prints no number at all.
     const ordinal = b.level === 1 && style?.numberingTemplate !== '';
-    const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? String(values[i] ?? '') : '') : '';
+    const number = numbered ? (prefix.length > 0 ? prefix : ordinal ? withDigits(String(values[i] ?? ''), documentNumerals(resolved)) : '') : '';
     // A book title's 《》 are text of the title where they are its mark.
     const titled = withBookTitleBrackets(b.text, b.spans, resolved.cjk);
     out.push({

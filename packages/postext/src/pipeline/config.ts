@@ -1,4 +1,4 @@
-import type { PostextConfig, ResolvedHeadingLevelConfig } from '../types';
+import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types';
 import {
   resolvePageConfig,
   resolveLayoutConfig,
@@ -31,7 +31,7 @@ import {
 } from '../defaults';
 import { dimensionToPx } from '../units';
 import { applyCjkGrid } from './cjkGrid';
-import { directionOf, presentTag } from '../locale';
+import { directionOf, presentTag, resolveNumerals } from '../locale';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
 // Resolved configs are never mutated (derived variants spread them), so
@@ -67,6 +67,10 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
   const page = resolvePageConfig(config?.page, documentLocale, layout.writingMode, direction);
+  // The digits of the generated numbers, from the document language unless
+  // the config names them; kept only when they are not the European ones,
+  // so a Latin document resolves exactly as before.
+  const numerals = resolveNumerals(config?.numerals, documentLocale);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -96,6 +100,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     // Only a right-to-left document carries it: a left-to-right one
     // resolves (and hashes) as it did before directions existed.
     ...(direction === 'rtl' ? { direction } : {}),
+    ...(numerals !== 'latn' ? { numerals } : {}),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
     // result is cached against the config object, so a palette the caller
@@ -147,6 +152,13 @@ export function resolvedDirection(resolved: ResolvedConfig): 'ltr' | 'rtl' {
  *  unset. */
 export function resolvedLocale(resolved: ResolvedConfig): string {
   return documentLocaleOf(resolved.locale, resolved.bodyText.hyphenation);
+}
+
+/** The digit system of the document's generated numbers (see
+ *  `PostextConfig.numerals`): `'latn'` unless the config or its language
+ *  says otherwise. */
+export function documentNumerals(resolved: ResolvedConfig): DigitSystem {
+  return resolved.numerals ?? 'latn';
 }
 
 function documentLocaleOf(locale: string | undefined, h: ResolvedConfig['bodyText']['hyphenation']): string {

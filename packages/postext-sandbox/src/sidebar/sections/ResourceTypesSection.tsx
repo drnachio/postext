@@ -22,7 +22,7 @@ import {
   useSandboxResources,
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
-import { eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
+import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
 import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
@@ -45,6 +45,7 @@ function counterFormatOptions(labels: SandboxLabels): { value: ResourceCounterFo
     { value: 'alpha-lower', label: labels.counterFormatAlphaLower },
     { value: 'alpha-upper', label: labels.counterFormatAlphaUpper },
     ...eastAsianNumberFormatOptions(labels),
+    ...arabicNumberFormatOptions(labels),
   ];
 }
 

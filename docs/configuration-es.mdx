@@ -345,10 +345,18 @@ Tres ajustes eligen un formato de numeración, y cada uno creció con su propia 
     <tr><td>Ramas terrestres</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
     <tr><td>En círculo</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Cifras de ancho completo</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
+    <tr><td>Cifras arábigo-índicas</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Cifras persas</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>, <code>urdu</code>, <code>۱</code></td></tr>
+    <tr><td>Letras árabes, orden abyad</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Letras árabes, orden alfabético</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>, <code>arabic-alpha</code>, <code>arabic-alphabetic</code>, <code>أبتث</code></td></tr>
+    <tr><td>Numerales abyad</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Numerales abyad, valores magrebíes</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>, <code>maghrebi-abjad</code></td></tr>
   </tbody>
 </table>
 
 Los estilos de Asia oriental conservan su nombre de [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) en los tres ajustes. Los numerales chinos informales escriben 十 del 10 al 19 sin un 一 delante (十二, pero 一百一十), un solo 零 por cada tramo de ceros dentro del número (一百零一, 一千零五十), y 万 o 萬 para la decena de millar, 亿 o 億 para los cien millones (一万零一十). Solo `cjk-decimal` usa 〇, cifra a cifra, como se escriben los años (二〇二六, GB/T 15835—2011). Los troncos llegan al 10, las ramas al 12 y las cifras en círculo al 50; más allá, el número se imprime en cifras. `一` y `壹` siguen la escritura del `locale` del documento: tradicional para `zh-Hant`, `zh-TW` o `zh-HK`, simplificada en los demás casos. Algunas ediciones antiguas escriben 101 como 一百一, sin 零; Postext no imprime esa forma.
+
+Los estilos árabes conservan el nombre CSS cuando lo hay (`arabic-indic`, `persian`; `urdu` y `maghrebi-abjad`, de la nota del W3C *Ready-made Counter Styles*, se leen como `persian` y `arabic-abjad-maghrebi`). `arabic` mantiene su sentido de siempre: las cifras europeas. `arabic-abjad` escribe los numerales abyad aditivos del árabe clásico y de la foliación de manuscritos, el valor mayor primero: 11 es يا, 1446 غتمو, y el número de millares va antes de غ (2000 بغ, 1002 غب); a partir de 999 999 el número se imprime en cifras. La nota del W3C usa ese nombre para una serie de 28 letras en la que 11 es ك; Postext llama a esa serie `abjad`, la que letra los elementos de lista en orden abyad (أ، ب، ج، د، هـ), y `hijai` al orden alfabético (أ، ب، ت، ث). Las dos escriben la primera letra con su hamza (أ) y una he que quedaría aislada como هـ, con tatweel, para que no se lean como las cifras ١ y ٥; pasadas las 28 letras se duplican, como `lower-alpha` (أأ, أب). Los valores magrebíes siguen la regla mnemotécnica صعفض قرست ثخذ ظغش (ص 60, ض 90); la lista del W3C intercambia ص y ض. Una sola أ no distingue las dos series de letras, así que su token son sus cuatro primeras letras: `{1:أبجد}`, `{1:أبتث}`. Las cifras del propio documento se eligen con [`numerals`](#cifras-del-documento).
 
 Las demás grafías son para las configuraciones que nada comprueba en tipos: los presets en JSON y el JavaScript sin tipos. Los tipos de TypeScript siguen nombrando solo la grafía propia de cada ajuste —la que escribe el Sandbox y devuelve `resolveAllConfig`, con los nombres de Asia oriental incluidos—, así que un `PostextConfig` tipado se ciñe a ella, y otra grafía necesita una conversión de tipo (*cast*).
 
@@ -1577,6 +1585,20 @@ const config: PostextConfig = {
   locale: 'es',
   bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // separa sílabas en español
 };
+```
+
+#### Cifras del documento
+
+La clave `numerals` de primer nivel fija las cifras de todos los números que escribe el motor: los números de página y las etiquetas de página del índice general, del índice alfabético y de las referencias a página; los números de las listas ordenadas y de las notas; los contadores de títulos y capítulos, `{chapterNumber}`; el `{h1}` y el `{n}` del número de una figura y de una referencia a ella; `{totalPages}`, `{bookTotalPages}` y `{numberDecimal}`. `'latn'` escribe 0–9, `'arab'` las cifras arábigo-índicas ٠–٩ y `'arabext'` las persas ۰–۹. Solo cambia el formato decimal —`decimal`, el `arabic` de las listas o un ajuste que se deja por defecto—, así que un formato que el autor nombra se imprime como se nombra: `lower-roman` sigue siendo i, ii, iii, y `arabic-indic` en un documento latino escribe ١, ٢, ٣. El texto del documento nunca se reescribe.
+
+El valor por defecto, `'auto'`, toma las cifras de `locale` (`defaultNumeralsFor(tag)`): `'arab'` para el árabe sin región o con cualquier región fuera del Magreb (`ar`, `ar-EG`, `ar-SA`, `ar-AE`…), `'latn'` para `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` y `ar-EH`, `'arabext'` para el persa (`fa`), el pastún (`ps`) y el urdu de la India (`ur-IN`), y `'latn'` para todo lo demás, incluido el urdu de Pakistán. CLDR da `latn` para `ar` sin región y para `ar-AE`; los libros árabes del Máshrek y del Golfo imprimen ٠–٩, y Postext sigue a los libros. Una etiqueta que nombra sus cifras las conserva: `ar-MA-u-nu-arab`. Una página numerada con las cifras del documento guarda `arabic-indic` o `persian` como `pageNumberFormat`, de modo que las etiquetas de página del PDF muestran las mismas cifras. Un valor desconocido sigue la lengua y se avisa como `unknownNumerals`.
+
+Los números que escribe el autor se leen en cualquiera de los tres sistemas: un elemento de lista `٣.` empieza en 3, y `{startAt=٥}`, `:::numbering{startAt=٥}`, `:::space{lines=٢}` y `:::part{number="٣"}` (para `{numberDecimal}`) leen el valor.
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const magreb: PostextConfig = { locale: 'ar-MA' };                  // 1, 2, 3
+const forzado: PostextConfig = { locale: 'ar', numerals: 'latn' };  // 1, 2, 3
 ```
 
 ### Idiomas y escrituras
