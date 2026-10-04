@@ -441,5 +441,5 @@ function spanOperator(ctx: PageCtx, text: string): PDFOperator {
 }
 
 // `drawTextPx` hands complex text over (it cannot import this module back).
-registerComplexPainter((ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText) =>
-  needsComplexShaping(text) && drawShapedTextPx(ctx, text, xPx, baselinePx, font, sizePx, color, { outline, actualText }));
+registerComplexPainter((ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, direction) =>
+  needsComplexShaping(text) && drawShapedTextPx(ctx, text, xPx, baselinePx, font, sizePx, color, { outline, actualText, ...(direction ? { direction } : {}) }));

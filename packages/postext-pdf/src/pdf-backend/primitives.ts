@@ -821,6 +821,9 @@ export function drawTextPx(
   /** Vertical text: the orientation the author gave it
    *  (`VDTLineSegment.tcy` / `orientation`). */
   orient?: ForcedOrientation,
+  /** The text is one bidi run in this direction (a design text or chip run
+   *  flagged `rtl`): shaped so, not cut into runs by its own letters. */
+  direction?: 'ltr' | 'rtl',
 ): void {
   if (!text) return;
   if (ctx.vertical) {
@@ -835,7 +838,7 @@ export function drawTextPx(
   try {
     // Right-to-left and joining scripts are shaped with HarfBuzz when the
     // document loaded it (`shapedText.ts`).
-    if (complexPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText)) return;
+    if (complexPainter?.(ctx, text, xPx, baselinePx, font, sizePx, color, outline, actualText, direction)) return;
     pushTextObject(ctx, textShows(font, text), xPx, baselinePx, font, sizePx, color, outline, actualText);
   } finally {
     ctx.runAdvancePx = outer;
@@ -854,6 +857,7 @@ type ComplexPainter = (
   color: Color,
   outline?: TextOutline,
   actualText?: string,
+  direction?: 'ltr' | 'rtl',
 ) => boolean;
 let complexPainter: ComplexPainter | undefined;
 
