@@ -1,0 +1,131 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 112,
+  "status": "draft",
+  "chapter": "headings",
+  "order": 110,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "arabic-number-words",
+      "heading-numbering"
+    ],
+    "also": [
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "text-direction",
+      "right-binding",
+      "arabic-fonts",
+      "arabic-language",
+      "document-digits",
+      "running-heads",
+      "section-running-heads",
+      "page-role-filters",
+      "paragraph-styles",
+      "block-direction",
+      "page-background",
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q127"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Merchant and the Jinni, nights 1 to 3 of Alf layla wa-layla, from the Hindawi Foundation edition (2022, vol. 1), with its vowels and punctuation",
+          "es": "El mercader y el genio, noches 1 a 3 de Alf layla wa-layla, de la edición de la Fundación Hindawi (2022, vol. 1), con sus vocales y su puntuación"
+        },
+        "who": "Hindawi Foundation",
+        "source": "https://www.hindawi.org/books/61961973/",
+        "license": "CC-BY-4.0"
+      },
+      {
+        "what": {
+          "en": "The kickers in Arabic, the note on the text and the colophon",
+          "es": "Los antetítulos en árabe, la nota sobre el texto y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "qasida-diwan-page",
+    "five-chapter-openers"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}
