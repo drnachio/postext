@@ -120,8 +120,9 @@ function wireFrame(
 
 const SANDBOX = 'allow-same-origin';
 
-/** Width the floating toolbar takes at the right of the desktop layout. */
-const TOOLBAR_ROOM = 56;
+/** Width the floating toolbar takes at the right of the desktop layout,
+ *  its offset from the edge included (about 66 px with large targets). */
+const TOOLBAR_ROOM = 72;
 
 // ---------------------------------------------------------------------------
 // Fixed layout: one page or a spread, scaled to fit.
