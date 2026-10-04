@@ -172,6 +172,18 @@ describe('fixed layout from a real two-chapter book', () => {
     expect(String(pub.items.find((i) => i.id === 'cover')!.data)).toContain('<img class="pt-cover" src="../images/cover.png" alt="Sample book"/>');
   });
 
+  it('keeps a picture of the first page as the cover image only, the page itself the cover', async () => {
+    const pub = await buildFixedPublication(docs, {
+      layout: 'fixed',
+      metadata: { title: 'Sample book', language: 'en' },
+      cover: { bytes: PNG, mediaType: 'image/png', showsFirstPage: true },
+    });
+    expect(pub.spine[0]!.idref).not.toBe('cover');
+    expect(pub.items.some((i) => i.id === 'cover')).toBe(false);
+    expect(pub.items.find((i) => i.id === 'cover-image')?.properties).toEqual(['cover-image']);
+    expect(pub.landmarks[0]).toEqual({ type: 'cover', label: 'Cover', href: 'pages/page-0001.xhtml' });
+  });
+
   it('runs right to left for a right-bound book', async () => {
     const rtl = docs.map((d) => ({ ...d, binding: 'right' as const }));
     const pub = await buildFixedPublication(rtl, { layout: 'fixed', metadata: { title: 'T', language: 'en' } });

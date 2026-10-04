@@ -65,6 +65,13 @@ export interface EpubCover {
   mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/svg+xml';
   /** Text alternative of the cover picture; defaults to the title. */
   alt?: string;
+  /** The picture shows the book's first printed page (a capture of it).
+   *  The fixed layout then gives it no page of its own, which would show
+   *  the cover twice: it is only the package's cover image (the reading
+   *  system's thumbnail) and the first page is the cover document. The
+   *  reflowable book, which has no printed pages, opens with it all the
+   *  same. */
+  showsFirstPage?: boolean;
 }
 
 export interface EpubProgress {

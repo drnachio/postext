@@ -214,14 +214,17 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     onWarning?.({ kind: 'missingFont', ...miss });
   }
 
-  // The cover: the given picture on a page of its own, else the first page.
+  // The cover: the given picture on a page of its own, else the first page
+  // (a picture of that page is kept as the cover image only).
   const items: EpubItem[] = [];
   const landmarks: EpubLandmark[] = [];
   const first = plans[0];
   const firstGeo = first ? pageGeometry(first.doc, first.page) : { width: 600, height: 800 };
+  const coverExt = options.cover && { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/svg+xml': 'svg' }[options.cover.mediaType];
   if (options.cover) {
-    const coverExt = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/svg+xml': 'svg' }[options.cover.mediaType];
     items.push({ id: 'cover-image', href: `images/cover.${coverExt}`, mediaType: options.cover.mediaType, data: options.cover.bytes, properties: ['cover-image'] });
+  }
+  if (options.cover && !options.cover.showsFirstPage) {
     const alt = options.cover.alt ?? metadata.title;
     items.push({
       id: 'cover',

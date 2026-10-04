@@ -263,7 +263,9 @@ export function EpubViewport() {
 }
 
 /** The cover: the book's own picture when it is a bitmap large enough,
- *  else its first page painted at {@link RENDERED_COVER_WIDTH}. */
+ *  else its first page painted at {@link RENDERED_COVER_WIDTH}. Either is a
+ *  picture of the first page (the Sandbox's covers are captures of it), so
+ *  the fixed layout keeps it as the cover image without a page of its own. */
 async function epubCoverOf(
   first: VDTDocument,
   snapshot: { config: PostextConfig; resources: Resource[] },
@@ -272,7 +274,7 @@ async function epubCoverOf(
 ): Promise<EpubCover | null> {
   const picture = await bookCoverPicture(source);
   const own = picture ? await usableCover(picture.bytes, picture.mime, title) : null;
-  if (own) return own;
+  if (own) return { ...own, showsFirstPage: true };
   const page = first.pages[0];
   if (!page) return null;
   // The page's pictures as the canvas paints them.
@@ -282,5 +284,5 @@ async function epubCoverOf(
   if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready;
   const image = await renderCoverImage(page, first, true, { width: RENDERED_COVER_WIDTH, trimmed: true });
   if (!image || image === 'missing') return null;
-  return { bytes: new Uint8Array(image.bytes), mediaType: 'image/jpeg', alt: title };
+  return { bytes: new Uint8Array(image.bytes), mediaType: 'image/jpeg', alt: title, showsFirstPage: true };
 }
