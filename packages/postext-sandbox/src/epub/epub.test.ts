@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DocumentMetadata, PostextConfig, VDTDocument } from 'postext';
 import { documentCodePoints, facesForText, fontFormatOf, parseUnicodeRange } from './fontSubsets';
 import { bookLanguageOf, epubFileName, epubMetadataOf, isoDateOf, sandboxBookIdentifier } from './metadata';
-import { createSwipeTracker, dockedToolbarReserve, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf, SWIPE_MAX_DURATION, type SwipePoint } from './viewer';
+import { createSwipeTracker, dockedToolbarReserve, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf, SWIPE_MAX_DURATION, type SwipePoint } from './viewer';
 
 describe('font subsets', () => {
   it('reads unicode-range values, wildcards included', () => {
@@ -139,6 +139,13 @@ describe('fixed-layout screens', () => {
 });
 
 describe('reader helpers', () => {
+  it('closes up a Chinese template around a Chinese numeral, not around digits', () => {
+    expect(fillLabel('EPUB 第 __page__ 页', '__page__', '一')).toBe('EPUB 第一页');
+    expect(fillLabel('EPUB 第 __page__ 页', '__page__', '12')).toBe('EPUB 第 12 页');
+    expect(fillLabel('EPUB page __page__', '__page__', 'iv')).toBe('EPUB page iv');
+  });
+
+
   it('flattens the table of contents with depths', () => {
     expect(flattenToc([{ label: 'I', href: 'a', children: [{ label: '1', href: 'b' }] }, { label: 'II', href: 'c' }]))
       .toEqual([{ label: 'I', href: 'a', depth: 0 }, { label: '1', href: 'b', depth: 1 }, { label: 'II', href: 'c', depth: 0 }]);

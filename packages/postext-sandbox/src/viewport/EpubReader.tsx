@@ -4,7 +4,7 @@ import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, 
 import { useSandboxLabels } from '../context/SandboxContext';
 import { useCompactLayout } from '../hooks/useCompactLayout';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook';
-import { createSwipeTracker, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer';
+import { createSwipeTracker, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer';
 
 /** What the toolbar shows of the reader: where it is and where it can go. */
 export interface EpubReaderPosition {
@@ -275,7 +275,7 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
               key={epub.spine[i]!.path}
               src={book.documentUrl(epub.spine[i]!.path)}
               sandbox={SANDBOX}
-              title={labels.epubPageFrame.replace('__page__', printedLabel.get(epub.spine[i]!.path) ?? String(i + 1))}
+              title={fillLabel(labels.epubPageFrame, '__page__', printedLabel.get(epub.spine[i]!.path) ?? String(i + 1))}
               onLoad={(e) => wireFrame(e.currentTarget, epub.spine[i]!.path, (path) => goToPath(path), (ev) => onKeyRef.current(ev), swipe)}
               style={{
                 width: viewport.width,

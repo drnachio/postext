@@ -163,6 +163,13 @@ export function prefersSpreads(area: { width: number; height: number }, viewport
   return spread >= 0.75 * single;
 }
 
+/** A label template with its `__token__` replaced by `value`. The spaces a
+ *  Chinese template keeps around a number set in Arabic digits (`第 __page__
+ *  页`) close up when the value is a Chinese numeral (`第一页`). */
+export function fillLabel(template: string, token: string, value: string): string {
+  return template.replace(token, value).replace(/(\p{Script=Han}) (?=\p{Script=Han})/gu, '$1');
+}
+
 /** Readable byte size (`2.4 MB`). */
 export function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
