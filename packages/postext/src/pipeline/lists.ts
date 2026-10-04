@@ -6,6 +6,8 @@ import type { ResolvedConfig, VDTBlock } from '../vdt';
 import { buildFontString } from '../measure';
 import { formatNumeral, parseNumberFormat } from '../numbering';
 import { withDigits } from '../arabicNumerals';
+import { defaultNumeralsFor, languageOf } from '../locale';
+import { resolvedLocale } from './config';
 import type { BlockStyle } from './styles';
 import { resolveBodyStyle } from './styles';
 
@@ -248,6 +250,14 @@ export function computeOrderedLevelIndentsPx(
   );
 }
 
+/** The digits a list item numbers in: the document's, unless the
+ *  container it sits in names another language (`:::paragraphs{dir=ltr
+ *  lang=en}` in an Arabic book), whose own digits it takes (#401). */
+function listDigits(block: ContentBlock, resolved: ResolvedConfig): DigitSystem | undefined {
+  if (!block.lang || languageOf(block.lang) === languageOf(resolvedLocale(resolved))) return resolved.numerals;
+  return defaultNumeralsFor(block.lang);
+}
+
 /** An ordered-list item's number in its level's format, by the shared
  *  numeral formatter. Lists keep two edges of their own: a number below 1
  *  (a Markdown list may start at `0.`) prints in digits, and so does a roman
@@ -374,7 +384,7 @@ export function computeOrderedListRunMetrics(
       const levelIdx = Math.max(0, Math.min(lists.levels.length - 1, depth - 1));
       const levelCfg = lists.levels[levelIdx]!;
       const sepRun = levelSeparatorRuns[levelIdx];
-      const number = formatListNumber(counter, levelCfg.numberFormat, resolved.numerals);
+      const number = formatListNumber(counter, levelCfg.numberFormat, listDigits(block, resolved));
       perBlock.set(i, sepRun
         ? {
             numberText: number,

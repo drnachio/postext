@@ -758,7 +758,7 @@ El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y
 
 Un documento va en la dirección que implica su `locale` (`direction` en la configuración: de derecha a izquierda para el árabe, el persa, el urdu o el hebreo). Dentro de él, el marcado fija la dirección de un bloque o de un tramo de texto, para una cita inglesa en un libro árabe o una árabe en un libro inglés.
 
-- **Un título o un contenedor**: `{dir=ltr}` o `{dir=rtl}` en sus atributos, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Todos los bloques de un contenedor toman esa dirección, hasta un contenedor anidado o un título que fije otra. Un párrafo normal, una lista o una cita no tienen atributos propios: envuélvelos en `:::paragraphs{dir=…}`. Los demás valores se ignoran.
+- **Un título o un contenedor**: `{dir=ltr}` o `{dir=rtl}` en sus atributos, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Todos los bloques de un contenedor toman esa dirección, hasta un contenedor anidado o un título que fije otra. Un párrafo normal, una lista o una cita no tienen atributos propios: envuélvelos en `:::paragraphs{dir=…}`. Los demás valores se ignoran. El `lang` de un contenedor (`:::paragraphs{dir=ltr lang=en}`) nombra del mismo modo el idioma de los bloques que contiene: sus listas numeradas usan las cifras de ese idioma.
 - **Un tramo de texto**: `:ltr[…]` y `:rtl[…]` aíslan su texto (los LRI…PDI y RLI…PDI del algoritmo bidireccional de Unicode): se ordena por dentro, y el párrafo que lo rodea ve un solo carácter neutro. `{lang=…}` marca el idioma del tramo en el HTML y en el PDF. Una llamada de nota, un `:ref` o una fórmula dentro forman parte del aislamiento, y los aislamientos se anidan.
 
 ```markdown

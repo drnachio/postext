@@ -66,7 +66,7 @@ An English paragraph quoted in an Arabic book, set left to right with its indent
 نشر الكتاب في :ltr[The Arabian Nights, vol. 2]{lang=en} سنة ١٨٣٥.
 ```
 
-A block set against the document's direction keeps its own start side: its first-line indent, its list markers and the flush end of its last line move to the side its text starts on, and its lines are aligned within the column as its text expects. In an Arabic book an English quotation should be `{dir=ltr}`: without it its full stop, a neutral character, belongs to the right-to-left paragraph and prints at the left end of the line, as a browser would show it.
+A block set against the document's direction keeps its own start side: its first-line indent, its list markers and the flush end of its last line move to the side its text starts on, and its lines are aligned within the column as its text expects. In an Arabic book an English quotation should be `{dir=ltr}`: without it its full stop, a neutral character, belongs to the right-to-left paragraph and prints at the left end of the line, as a browser would show it. A container may also name its language, `:::paragraphs{dir=ltr lang=en}`: the ordered lists inside it number in that language's digits (1. 2. in an Arabic book, ١. ٢. under `lang=ar` in an English one). Footnote, figure, table and heading numbers in the block keep the document's digits: they belong to the book's own sequences.
 
 ### Isolates
 

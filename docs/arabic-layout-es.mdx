@@ -66,7 +66,7 @@ An English paragraph quoted in an Arabic book, set left to right with its indent
 نشر الكتاب في :ltr[The Arabian Nights, vol. 2]{lang=en} سنة ١٨٣٥.
 ```
 
-Un bloque compuesto en dirección contraria a la del documento conserva su propio lado de inicio: la sangría de la primera línea, las marcas de lista y el final en bandera de su última línea pasan al lado por el que empieza su texto, y sus líneas se alinean en la columna como su texto pide. En un libro árabe, una cita en inglés debe llevar `{dir=ltr}`: sin él, su punto final, que es un carácter neutro, pertenece al párrafo de derecha a izquierda y se imprime en el extremo izquierdo de la línea, como lo mostraría un navegador.
+Un bloque compuesto en dirección contraria a la del documento conserva su propio lado de inicio: la sangría de la primera línea, las marcas de lista y el final en bandera de su última línea pasan al lado por el que empieza su texto, y sus líneas se alinean en la columna como su texto pide. En un libro árabe, una cita en inglés debe llevar `{dir=ltr}`: sin él, su punto final, que es un carácter neutro, pertenece al párrafo de derecha a izquierda y se imprime en el extremo izquierdo de la línea, como lo mostraría un navegador. Un contenedor puede nombrar también su idioma, `:::paragraphs{dir=ltr lang=en}`: las listas numeradas que contiene se numeran con las cifras de ese idioma (1. 2. en un libro árabe, ١. ٢. con `lang=ar` en uno español). Los números de notas, figuras, tablas y títulos del bloque conservan las cifras del documento: pertenecen a las series del libro.
 
 ### Aislamientos
 

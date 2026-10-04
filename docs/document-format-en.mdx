@@ -758,7 +758,7 @@ The line pitch never changes: marks and readings live in the leading, and the bu
 
 A document runs in the direction its `locale` implies (`direction` in the configuration: right to left for Arabic, Persian, Urdu or Hebrew). Inside it, the markup sets the direction of a block or of a run of text, for an English quotation in an Arabic book or an Arabic one in an English book.
 
-- **A heading or a container**: `{dir=ltr}` or `{dir=rtl}` in its attributes, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Every block inside a container takes the direction, down to a nested container or heading that sets another. A plain paragraph, a list or a quote has no attributes of its own: wrap it in `:::paragraphs{dir=…}`. Other values are ignored.
+- **A heading or a container**: `{dir=ltr}` or `{dir=rtl}` in its attributes, `# Introduction {dir=ltr}`, `:::paragraphs{dir=ltr}`, `:::callout{dir=rtl}`. Every block inside a container takes the direction, down to a nested container or heading that sets another. A plain paragraph, a list or a quote has no attributes of its own: wrap it in `:::paragraphs{dir=…}`. Other values are ignored. A container's `lang` (`:::paragraphs{dir=ltr lang=en}`) names the language of the blocks inside it the same way: their ordered lists number in that language's digits.
 - **A run of text**: `:ltr[…]` and `:rtl[…]` isolate their text (the LRI…PDI and RLI…PDI of the Unicode Bidirectional Algorithm): it is ordered inside, and the paragraph around it sees one neutral character. `{lang=…}` tags the run's language in the HTML and the PDF. A note marker, a `:ref` or a formula inside is part of the isolate, and isolates nest.
 
 ```markdown

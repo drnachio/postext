@@ -524,6 +524,11 @@ export interface ContentBlock {
    *  start marker carries it too). Absent when nothing sets it: the block
    *  follows the document's `direction`. */
   direction?: 'ltr' | 'rtl';
+  /** The language a `:::` container names for its blocks (`lang=en`),
+   *  the innermost that names one (#401). Absent when none does: the block
+   *  is in the document's language. Its ordered lists number in that
+   *  language's digits. */
+  lang?: string;
   /** Character offset of the first source character of this block in the original markdown */
   sourceStart: number;
   /** Character offset just past the last source character of this block */

@@ -148,31 +148,46 @@ function directionAttr(attrs: DirectiveAttrs | undefined): 'ltr' | 'rtl' | undef
   return v === 'ltr' || v === 'rtl' ? v : undefined;
 }
 
+/** The language a `lang` attribute names (`{lang=en}`), trimmed, or
+ *  undefined for none. */
+function langAttr(attrs: DirectiveAttrs | undefined): string | undefined {
+  const v = attrs?.lang?.trim();
+  return v ? v : undefined;
+}
+
 /**
  * Block directions (#367): a heading's `{dir=…}` sets its own, a
  * container's (`:::callout{dir=ltr}`, `:::paragraphs{dir=rtl}`) its own and
  * that of every block inside it, down to a nested container or heading
  * that sets another. Stamped on `ContentBlock.direction`, so the layout
  * reads one field per block; blocks outside any `dir` keep none and follow
- * the document's `direction`.
+ * the document's `direction`. A container's `lang` (`:::paragraphs{dir=ltr
+ * lang=en}`) is stamped the same way on `ContentBlock.lang` (#401).
  */
 function attachDirections<T extends { blocks: ContentBlock[] }>(result: T): T {
   const open: Array<'ltr' | 'rtl' | undefined> = [];
+  const langs: Array<string | undefined> = [];
   for (const b of result.blocks) {
     const inherited = open[open.length - 1];
+    const inheritedLang = langs[langs.length - 1];
     if (b.type === 'containerStart') {
       const d = directionAttr(b.containerAttrs) ?? inherited;
       open.push(d);
       if (d) b.direction = d;
+      const lang = langAttr(b.containerAttrs) ?? inheritedLang;
+      langs.push(lang);
+      if (lang) b.lang = lang;
       continue;
     }
     if (b.type === 'containerEnd') {
       open.pop();
+      langs.pop();
       continue;
     }
     const own = b.type === 'heading' ? directionAttr(b.attrs) : b.verse ? directionAttr(b.verse.attrs) : undefined;
     const d = own ?? inherited;
     if (d) b.direction = d;
+    if (inheritedLang) b.lang = inheritedLang;
   }
   return result;
 }

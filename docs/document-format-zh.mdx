@@ -758,7 +758,7 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 
 文档按其`locale`所隐含的方向排版（即配置中的`direction`：阿拉伯文、波斯文、乌尔都文或希伯来文从右到左）。在文档内部，可以用标记设定某个块或某段文字的方向，例如阿拉伯文书中的英文引文，或英文书中的阿拉伯文引文。
 
-- **标题或容器**：在属性中写`{dir=ltr}`或`{dir=rtl}`，如`# Introduction {dir=ltr}`、`:::paragraphs{dir=ltr}`、`:::callout{dir=rtl}`。容器内的每个块都采用这个方向，直到某个嵌套容器或标题另行设定。普通段落、列表和引用块没有自己的属性：用`:::paragraphs{dir=…}`把它们包起来。其他取值会被忽略。
+- **标题或容器**：在属性中写`{dir=ltr}`或`{dir=rtl}`，如`# Introduction {dir=ltr}`、`:::paragraphs{dir=ltr}`、`:::callout{dir=rtl}`。容器内的每个块都采用这个方向，直到某个嵌套容器或标题另行设定。普通段落、列表和引用块没有自己的属性：用`:::paragraphs{dir=…}`把它们包起来。其他取值会被忽略。容器的`lang`（`:::paragraphs{dir=ltr lang=en}`）以同样方式注明其中各块的语言：其中的编号列表使用该语言的数字。
 - **一段文字**：`:ltr[…]`和`:rtl[…]`把其中的文字隔离开（相当于Unicode双向算法的LRI…PDI和RLI…PDI）：文字在内部排序，外面的段落只把它看作一个中性字符。`{lang=…}`在HTML和PDF中标明这段文字的语言。其中的注码、`:ref`或公式都属于这个隔离段，隔离段可以嵌套。
 
 ```markdown
