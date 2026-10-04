@@ -133,7 +133,7 @@ Arabic books are justified. A line is not stretched by spacing its letters; it i
 
 `bodyText.kashida` is `'auto'` in an Arabic-script document and `'none'` in any other. Each justified line but a paragraph's last first opens its word spaces up to a quarter of their width, then takes the rest of its slack in kashidas, one tatweel at a time at the best joins first; what is left, less than a tatweel, goes back to the spaces. Knuth–Plass counts each word's possible elongation as stretch, so it chooses the breaks knowing that a line of Arabic words can widen there. Latin words, digits, headings, ragged lines and a paragraph's last line never take a kashida.
 
-Where a kashida may go follows the rules of [raqim-kashida](https://github.com/aliftype/raqim-kashida): only between two letters that join, never after a letter that does not join onward (ا د ذ ر ز و ة), never at the end of a word, never inside lām-alif. `kashidaPatterns` picks the rule set: `'naskh'` for the classical Naskh rules, `'simple'` for the priorities of simple modern faces, `'nastaliq'` for Nastaʿlīq, and `'auto'` reads the body face (no kashida at all in a Ruqʿa face such as Aref Ruqaa, whose style forbids it). `kashidaPerWord` (1 by default) and `kashidaMaxLength` (0.6 em) limit how much one word stretches. The tatweels are painted but left out of the plain text, the source map and the text copied from the PDF.
+Where a kashida may go follows the rules of [raqim-kashida](https://github.com/aliftype/raqim-kashida): only between two letters that join, never after a letter that does not join onward (ا د ذ ر ز و ة), never at the end of a word, never inside lām-alif. `kashidaPatterns` picks the rule set: `'naskh'` for the classical Naskh rules, `'simple'` for the priorities of simple modern faces, `'nastaliq'` for Nastaʿlīq, and `'auto'` reads the body face (no kashida at all in a Ruqʿa face such as Aref Ruqaa, whose style forbids it). `kashidaPerWord` (1 by default) and `kashidaMaxLength` (0.6 em) limit how much one word stretches; a word that holds a tatweel the author typed is lengthened there. The inserted tatweels are painted but left out of the plain text, the source map and the text copied from the PDF. [Kashida in Arabic text](/en/docs/justification#kashida-in-arabic-text) has the details of the rule sets.
 
 ```ts
 bodyText: {
@@ -290,7 +290,7 @@ Write the poem in a `:::verse` block, one bayt a line, its hemistichs separated 
 - **Keeping together.** A bayt is never split between columns or pages, a poem follows the paragraphs' orphan and widow rules, and the line that introduces it («فأنشد يقول:») stays with its first bayts.
 - **Type.** The poem takes the body's face and size; `style` names a paragraph style, which is how a vocalised poem gets the leading its marks need. A poem in Latin transliteration in an English book is set the same way, its ṣadr on the left.
 
-The plain text keeps the poem as written, one bayt per line, and leaves out the kashidas and the ornament. See [`:::verse`](/en/docs/document-format) in the document format.
+The plain text keeps the poem as written, one bayt per line, and leaves out the kashidas and the ornament. See [`:::verse`](/en/docs/document-format#verse) in the document format.
 
 ## Contents and index
 
@@ -444,7 +444,8 @@ The chapters start with `:::numbering{format="abjad" startAt=1}` before the intr
 - **Vowel marks** may reach past the edge of a box or a table cell, whose clip does not grow for them; `tashkil` leaves the marks of captions, table cells and design text.
 - **Numbers.** Citation numbers print in European digits; ordinal words are written in the nominative, definite form that headings use.
 - **Index**: ة is filed under ه, and names are not sorted past ابن or أبو; there are no rhyme or root indexes.
-- **Verse**: no run-in verse inside prose, no numbered bayts, no strophic forms with a centred refrain beyond single centred lines.
+- **Verse**: no run-in verse inside prose, no numbered bayts, no strophic forms with a centred refrain beyond single centred lines; a hemistich wider than the measure wraps from the start side, without a hanging indent.
+- **Kashida**: the text copied from the HTML output still holds the inserted tatweels, and kashidas on neighbouring lines are not kept from stacking up one above the other.
 
 ## Sources
 

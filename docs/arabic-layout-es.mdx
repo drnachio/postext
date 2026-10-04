@@ -133,7 +133,7 @@ Los libros árabes se componen justificados. Una línea no se estira espaciando 
 
 `bodyText.kashida` es `'auto'` en un documento escrito en alfabeto árabe y `'none'` en cualquier otro. Cada línea justificada, salvo la última de un párrafo, abre primero sus espacios entre palabras hasta una cuarta parte de su ancho y luego cubre el resto de lo que le falta con cachidas, un tatweel cada vez y por las mejores uniones primero; lo que sobra, menos de un tatweel, vuelve a los espacios. Knuth–Plass cuenta el alargamiento posible de cada palabra como estiramiento, así que elige los cortes sabiendo que una línea de palabras árabes puede ensancharse por ahí. Las palabras latinas, las cifras, los títulos, las líneas en bandera y la última línea de un párrafo nunca llevan cachida.
 
-Dónde puede ir una cachida lo dictan las reglas de [raqim-kashida](https://github.com/aliftype/raqim-kashida): solo entre dos letras que se enlazan, nunca tras una letra que no se enlaza con la siguiente (ا د ذ ر ز و ة), nunca al final de una palabra y nunca dentro de lām-alif. `kashidaPatterns` elige el juego de reglas: `'naskh'` para las reglas clásicas del naskh, `'simple'` para las prioridades de los tipos modernos sencillos, `'nastaliq'` para el nastaʿlīq, y `'auto'` lo deduce del tipo del cuerpo (ninguna cachida en un tipo ruqʿa como Aref Ruqaa, cuyo estilo la prohíbe). `kashidaPerWord` (1 por defecto) y `kashidaMaxLength` (0,6 em) limitan cuánto se estira una palabra. Los tatweels se pintan, pero quedan fuera del texto plano, del mapa de fuente y del texto que se copia del PDF.
+Dónde puede ir una cachida lo dictan las reglas de [raqim-kashida](https://github.com/aliftype/raqim-kashida): solo entre dos letras que se enlazan, nunca tras una letra que no se enlaza con la siguiente (ا د ذ ر ز و ة), nunca al final de una palabra y nunca dentro de lām-alif. `kashidaPatterns` elige el juego de reglas: `'naskh'` para las reglas clásicas del naskh, `'simple'` para las prioridades de los tipos modernos sencillos, `'nastaliq'` para el nastaʿlīq, y `'auto'` lo deduce del tipo del cuerpo (ninguna cachida en un tipo ruqʿa como Aref Ruqaa, cuyo estilo la prohíbe). `kashidaPerWord` (1 por defecto) y `kashidaMaxLength` (0,6 em) limitan cuánto se estira una palabra; una palabra que lleva un tatweel escrito por el autor se alarga ahí. Los tatweels insertados se pintan, pero quedan fuera del texto plano, del mapa de fuente y del texto que se copia del PDF. [Cachida en el texto árabe](/es/docs/justification#cachida-en-el-texto-árabe) detalla los juegos de reglas.
 
 ```ts
 bodyText: {
@@ -290,7 +290,7 @@ Escribe el poema en un bloque `:::verse`, un bayt por línea, con sus hemistiqui
 - **Cohesión.** Un bayt nunca se reparte entre columnas ni entre páginas, un poema sigue las reglas de huérfanas y viudas de los párrafos, y la línea que lo presenta («فأنشد يقول:») se queda con sus primeros bayts.
 - **Tipo de letra.** El poema toma el tipo y el cuerpo del texto; `style` nombra un estilo de párrafo, y así es como un poema vocalizado recibe el interlineado que piden sus signos. Un poema en transliteración latina dentro de un libro en español se compone igual, con su ṣadr a la izquierda.
 
-El texto plano conserva el poema tal como se escribió, un bayt por línea, y deja fuera las cachidas y el ornamento. Véase [`:::verse`](/es/docs/document-format) en el formato de documento.
+El texto plano conserva el poema tal como se escribió, un bayt por línea, y deja fuera las cachidas y el ornamento. Véase [`:::verse`](/es/docs/document-format#verse) en el formato de documento.
 
 ## Índice general e índice analítico
 
@@ -444,7 +444,8 @@ Los capítulos empiezan con `:::numbering{format="abjad" startAt=1}` antes de la
 - **Los signos vocálicos** pueden pasar del borde de un recuadro o de una celda de tabla, cuyo recorte no crece por ellos; `tashkil` deja los signos de los pies, las celdas de tabla y el texto de los diseños.
 - **Números.** Los números de cita se imprimen en cifras europeas; los ordinales con letras se escriben en la forma determinada y en nominativo que usan los títulos.
 - **Índice analítico**: ة se ordena bajo ه, y los nombres no se ordenan saltando ابن o أبو; no hay índices de rimas ni de raíces.
-- **Verso**: no hay verso seguido dentro de la prosa, ni bayts numerados, ni formas estróficas con un estribillo centrado más allá de líneas centradas sueltas.
+- **Verso**: no hay verso seguido dentro de la prosa, ni bayts numerados, ni formas estróficas con un estribillo centrado más allá de líneas centradas sueltas; un hemistiquio más ancho que la medida se parte desde el lado de principio, sin sangría francesa.
+- **Cachida**: el texto que se copia de la salida HTML conserva los tatweels insertados, y nada impide que las cachidas de líneas vecinas se apilen una sobre otra.
 
 ## Referencias
 

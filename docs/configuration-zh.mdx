@@ -1693,6 +1693,7 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
 - **Tashkīl。** `bodyText.tashkil: 'strip'`从排版文本中去掉元音符号和《古兰经》符号，用于由标注元音的底本制作不标元音的版本：fatḥa、ḍamma、kasra及其tanwīn、sukūn、shadda、短竖alif（هٰذا变成هذا），以及U+0656–U+065F和U+06D6–U+06ED的符号。`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留（أ إ آ是字母，用组合符号输入时也一样）。源文本保留其符号；行、标题和目录不带符号排出，每个排出的字符仍对应它在源文本中的位置。
 - **脚注。** `footnotes.markerTemplate: '({n})'`用文档数字写出注码「(١)」，`numbering: 'page'`让编号每页重新开始，`noteNumberPosition: 'inline'`把注文自己的编号排在行内。分隔线和注文编号位于栏的起始一侧，在从右到左的书中即右侧。
 - **整词。** 含阿拉伯字母的词从不断词、切开或加字距，无论是在阿拉伯文书中还是被其他语言的书引用。为阿拉伯文文本设置`letterSpacing`的样式会被报告（`joiningScriptLetterSpacing`），比所在行还宽的词会溢出该行并被报告（`unbreakableWordOverflow`）。见[阿拉伯文排版](/zh/docs/arabic-layout#连写成形与整词)。
+- **卡希达与诗体。** 两端对齐的阿拉伯文行除了在空格处，还用卡希达拉伸（`bodyText.kashida`，见[阿拉伯文的卡希达](/zh/docs/justification#阿拉伯文的卡希达)）；古典诗用`:::verse`排成每行一联、两个等宽的半行（见[`:::verse`](/zh/docs/document-format#verse)）。
 - **索引。** 阿拉伯文索引按字母顺序排序，并忽略冠词ال（`index.ignoreArticle`）、元音符号和hamza的承载字母；见[索引](#索引)。
 
 ### 段首孤行、段末孤行、孤字与不拆分规则
