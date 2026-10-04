@@ -137,6 +137,7 @@
     "pages": "{count, plural, one {# ص} other {# ص}}",
     "badgePdf": "PDF",
     "badgeHtml": "HTML",
+    "badgeEpub": "EPUB",
     "badgeBundle": "حزمة",
     "badgeLive": "تفاعلية",
     "matchQuestions": "سؤال",

@@ -945,7 +945,7 @@
       "es": "Las etiquetas no se interpretan, porque Postext solo lee Markdown y sus propias directivas. Usa atributos de título, chips, estilos de párrafo y recuadros para lo que harías con HTML.",
       "ca": "Les etiquetes no s'interpreten, perquè Postext només llegeix Markdown i les seves pròpies directives. Fes servir atributs de títol, xips, estils de paràgraf i requadres per al que faries amb HTML.",
       "zh": "标签不会被解析，因为Postext只读取Markdown和它自己的指令。HTML能做的事，用标题属性、行内标签、段落样式和标注框来实现。",
-      "ar": "لا تُفسَّر الوسوم، لأن Postext لا يقرأ إلا Markdown وتوجيهاته الخاصة. استعمل سمات العناوين والشرائح وأنماط الفقرات والإطارات لما كان HTML سيفعله."
+      "ar": "لا تُفسَّر الوسوم، لأن Postext لا يقرأ إلا Markdown وتوجيهاته الخاصة. استعمل سمات العناوين والشارات وأنماط الفقرات والإطارات لما كان HTML سيفعله."
     },
     "docs": {
       "slug": "document-format",

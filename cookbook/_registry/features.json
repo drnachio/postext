@@ -1375,7 +1375,7 @@
       "es": "Viudas, huérfanas y líneas cortas",
       "ca": "Vídues, òrfenes i línies curtes",
       "zh": "段末孤行、段首孤行与孤字",
-      "ar": "الأرامل واليتامى والكلمات المعزولة"
+      "ar": "الأسطر الأرامل والأسطر اليتيمة والكلمات المعزولة"
     },
     "definition": {
       "en": "Keeps lone lines off column tops and feet and one-word last lines out of paragraphs; keeps a heading with its text, and a paragraph ending in a colon with the list it introduces.",
@@ -1776,7 +1776,7 @@
       "es": "Chips en línea",
       "ca": "Chips en línia",
       "zh": "行内标签",
-      "ar": "الشرائح داخل السطر"
+      "ar": "الشارات داخل السطر"
     },
     "definition": {
       "en": "Rounded boxes around words that wrap as one unit and never stretch: keycaps, tags, word banks, syllables.",
@@ -1822,11 +1822,11 @@
         "chip"
       ],
       "ar": [
-        "شريحة",
+        "شارة",
         "مفتاح لوحة المفاتيح",
         "وسم",
         "كبسولة",
-        "شارة",
+        "chip",
         "بنك كلمات"
       ]
     },
@@ -10329,13 +10329,15 @@
       "en": "EPUB export",
       "es": "Exportación a EPUB",
       "ca": "Exportació a EPUB",
-      "zh": "导出EPUB"
+      "zh": "导出EPUB",
+      "ar": "التصدير إلى EPUB"
     },
     "definition": {
       "en": "renderToEpub from postext-epub writes the laid-out chapters as an EPUB 3 file in the browser: a fixed layout that keeps every printed page, or reflowable text styled from the same configuration.",
       "es": "renderToEpub, de postext-epub, escribe los capítulos compuestos como un archivo EPUB 3 en el navegador: una maquetación fija que conserva cada página impresa o un texto fluido con estilos sacados de la misma configuración.",
       "ca": "renderToEpub, de postext-epub, escriu els capítols compostos com un fitxer EPUB 3 al navegador: una maquetació fixa que conserva cada pàgina impresa o un text fluid amb estils extrets de la mateixa configuració.",
-      "zh": "postext-epub的renderToEpub在浏览器中把排好的各章写成EPUB 3文件：固定版式保留每一页印刷页面，流式版式的样式来自同一份配置。"
+      "zh": "postext-epub的renderToEpub在浏览器中把排好的各章写成EPUB 3文件：固定版式保留每一页印刷页面，流式版式的样式来自同一份配置。",
+      "ar": "تكتب الدالة renderToEpub من postext-epub الفصول المُخرَجة ملفَّ EPUB 3 في المتصفح: إما تخطيطًا ثابتًا يحفظ كل صفحة مطبوعة، وإما نصًا متدفقًا تُستمد أنماطه من الإعدادات نفسها."
     },
     "aliases": {
       "en": [
@@ -10383,6 +10385,15 @@
         "renderToEpub",
         "readEpub",
         "postext-epub"
+      ],
+      "ar": [
+        "EPUB",
+        "EPUB 3",
+        "كتاب إلكتروني",
+        "تخطيط ثابت",
+        "نص متدفق",
+        "renderToEpub",
+        "postext-epub"
       ]
     },
     "group": "integration",
@@ -10392,7 +10403,8 @@
         "en": "EPUB books (`postext-epub`)",
         "es": "Libros EPUB (`postext-epub`)",
         "ca": "Llibres EPUB (`postext-epub`)",
-        "zh": "EPUB电子书（`postext-epub`）"
+        "zh": "EPUB电子书（`postext-epub`）",
+        "ar": "كتب EPUB (`postext-epub`)"
       }
     },
     "detect": {

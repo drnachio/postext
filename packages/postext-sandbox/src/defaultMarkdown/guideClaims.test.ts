@@ -119,18 +119,21 @@ describe('what the guide says about itself and the Sandbox', () => {
       es: spanish.default.Sandbox,
       ca: catalan.default.Sandbox,
       'zh-Hans': chinese.default.Sandbox,
+      ar: arabic.default.Sandbox,
     };
     const COUNT: Record<Edition, string[]> = {
       en: ['four', 'five', 'six'],
       es: ['cuatro', 'cinco', 'seis'],
       ca: ['quatre', 'cinc', 'sis'],
       'zh-Hans': ['四', '五', '六'],
+      ar: ['أربعة', 'خمسة', 'ستة'],
     };
     const said: Record<Edition, [RegExp, RegExp, RegExp]> = {
       en: [/shows the same layout in (\w+) tabs: ([^.]*)\./, /, | and /, /^## The (\w+) views$/m],
       es: [/muestra la misma maquetación en (\w+) pestañas: ([^.]*)\./, /, | y /, /^## Las (\w+) vistas$/m],
       ca: [/mostra la mateixa maquetació en (\w+) pestanyes: ([^.]*)\./, /, | i /, /^## Les (\w+) vistes$/m],
       'zh-Hans': [/用(.)个标签页显示同一个版面：([^。]*)。/, /、|和/, /^## (.)种视图$/m],
+      ar: [/تعرض الإخراج نفسه في (\S+) تبويبات: ([^.]*)\./, / و/, /^## العروض ال(\S+)$/m],
     };
     const count = (edition: Edition, word: string) => COUNT[edition].indexOf(word) + 4;
     for (const edition of Object.keys(said) as Edition[]) {

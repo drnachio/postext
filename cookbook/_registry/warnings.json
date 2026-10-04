@@ -789,14 +789,14 @@
       "es": "Estilo de chip desconocido",
       "ca": "Estil de xip desconegut",
       "zh": "未知行内标签样式",
-      "ar": "نمط شريحة غير معروف"
+      "ar": "نمط شارة غير معروف"
     },
     "cause": {
       "en": "A chip names a style that chipStyles does not define, so it takes the first style.",
       "es": "Un chip nombra un estilo que chipStyles no define, así que toma el primer estilo.",
       "ca": "Un xip anomena un estil que chipStyles no defineix, de manera que pren el primer estil.",
       "zh": "某个行内标签指定的样式没有在chipStyles中定义，因此它套用第一个样式。",
-      "ar": "شريحة تسمّي نمطًا لا تعرّفه chipStyles، فتأخذ النمط الأول."
+      "ar": "شارة تسمّي نمطًا لا تعرّفه chipStyles، فتأخذ النمط الأول."
     },
     "fix": {
       "en": "Define the style in chipStyles or correct the style attribute.",
@@ -1027,21 +1027,21 @@
       "es": "Los chips tocan la línea siguiente",
       "ca": "Els xips toquen la línia següent",
       "zh": "行内标签碰到下一行",
-      "ar": "الشرائح تلامس السطر التالي"
+      "ar": "الشارات تلامس السطر التالي"
     },
     "cause": {
       "en": "A chip style's box is taller than the line pitch, so chips on consecutive lines touch.",
       "es": "La caja de un estilo de chip es más alta que el interlineado, así que los chips de líneas seguidas se tocan.",
       "ca": "La caixa d'un estil de xip és més alta que l'interlineat, de manera que els xips de línies seguides es toquen.",
       "zh": "某个行内标签样式的框比行距还高，因此相邻两行的标签会相碰。",
-      "ar": "صندوق نمط الشريحة أطول من خطوة السطر، فتتلامس الشرائح في الأسطر المتتالية."
+      "ar": "صندوق نمط الشارة أطول من خطوة السطر، فتتلامس الشارات في الأسطر المتتالية."
     },
     "fix": {
       "en": "Reduce the chip's vertical padding, outline or size, or increase the leading.",
       "es": "Reduce el relleno vertical, el contorno o el cuerpo del chip, o aumenta el interlineado.",
       "ca": "Redueix el farciment vertical, el contorn o el cos del xip, o augmenta l'interlineat.",
       "zh": "减小标签的竖向内边距、轮廓或尺寸，或加大行距。",
-      "ar": "قلّل الحشو الرأسي للشريحة أو حدّها الخارجي أو حجمها، أو زد تباعد الأسطر."
+      "ar": "قلّل الحشو الرأسي للشارة أو حدّها الخارجي أو حجمها، أو زد تباعد الأسطر."
     },
     "docs": {
       "slug": "configuration",

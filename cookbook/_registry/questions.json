@@ -368,14 +368,14 @@
       "es": "¿Cómo evito viudas, huérfanas y últimas líneas de una sola palabra, y mantengo cada título con su texto?",
       "ca": "Com evito vídues, òrfenes i últimes línies d'una sola paraula, i mantinc cada títol amb el seu text?",
       "zh": "怎样避免段末孤行、段首孤行和只有一个词的末行（孤字），并让标题与正文不分开？",
-      "ar": "كيف أتجنب الأرامل واليتامى والأسطر الأخيرة ذات الكلمة الواحدة، وأبقي العنوان مع نصه؟"
+      "ar": "كيف أتجنب الأسطر الأرامل والأسطر اليتيمة والأسطر الأخيرة ذات الكلمة الواحدة، وأبقي العنوان مع نصه؟"
     },
     "index": {
       "en": "Widows, orphans and runts, avoiding",
       "es": "Viudas, huérfanas y líneas cortas, evitar",
       "ca": "Vídues, òrfenes i línies curtes, evitar",
       "zh": "段末孤行、段首孤行与孤字，避免",
-      "ar": "الأرامل واليتامى والكلمات المعزولة، تجنّبها"
+      "ar": "الأسطر الأرامل والأسطر اليتيمة والكلمات المعزولة، تجنّبها"
     },
     "theme": "type"
   },
@@ -910,14 +910,14 @@
       "es": "¿Cómo hago chips en línea: teclas, etiquetas, bancos de palabras para ejercicios?",
       "ca": "Com faig xips en línia: tecles, etiquetes, bancs de paraules per a exercicis?",
       "zh": "怎样做行内标签：键盘按键、标签、练习用的词库？",
-      "ar": "كيف أصنع شرائح مضمّنة: مفاتيح لوحة المفاتيح، ووسوم، وبنوك كلمات للتمارين؟"
+      "ar": "كيف أصنع شارات مضمّنة: مفاتيح لوحة المفاتيح، ووسوم، وبنوك كلمات للتمارين؟"
     },
     "index": {
       "en": "Chips, inline",
       "es": "Chips en línea",
       "ca": "Xips en línia",
       "zh": "行内标签",
-      "ar": "الشرائح، المضمّنة"
+      "ar": "الشارات، المضمّنة"
     },
     "theme": "type"
   },
@@ -2351,13 +2351,15 @@
       "en": "How do I export my book as an EPUB, with fixed pages or with reflowable text?",
       "es": "¿Cómo exporto mi libro a EPUB, con páginas fijas o con texto fluido?",
       "ca": "Com exporto el meu llibre a EPUB, amb pàgines fixes o amb text fluid?",
-      "zh": "怎样把书导出为EPUB，用固定页面还是流式文本？"
+      "zh": "怎样把书导出为EPUB，用固定页面还是流式文本？",
+      "ar": "كيف أصدّر كتابي بصيغة EPUB، بصفحات ثابتة أو بنص متدفق؟"
     },
     "index": {
       "en": "EPUB, fixed layout and reflowable",
       "es": "EPUB, maquetación fija y fluida",
       "ca": "EPUB, maquetació fixa i fluida",
-      "zh": "EPUB，固定版式与流式版式"
+      "zh": "EPUB，固定版式与流式版式",
+      "ar": "EPUB، التخطيط الثابت والنص المتدفق"
     },
     "theme": "output"
   }
