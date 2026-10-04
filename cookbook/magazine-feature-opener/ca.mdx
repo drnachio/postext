@@ -1,0 +1,71 @@
+---
+title: "Reportatge de revista: de la foto d'obertura al signe final"
+summary: "Una obertura advancedDesign posa una foto a sang i treu del títol avantítol, titular, entradeta i signatura; segueixen requadres flotants i un xip de tancament."
+plain: "Un reportatge d'una revista de natura que s'obre amb una gran foto a dalt de la pàgina. Ensenya a col·locar el títol, la presentació, la signatura i el crèdit de la foto, i després requadres i una petita marca final."
+description: "Un reportatge de revista amb Postext: obertura amb foto a sang feta des del títol de Markdown, cometes penjades, requadres flotants i signe final."
+question: "Com trec del títol de Markdown l'avantítol, l'entradeta, la signatura i el crèdit d'una obertura?"
+aliases: ["reportatge de revista", "obertura d'article", "foto d'obertura", "entradeta", "signatura", "crèdit fotogràfic", "cita destacada", "cometes penjades", "requadre de dades", "en xifres", "signe final", "tancament d'article", "obertura de secció"]
+pageNotes: { "1": "Un llac de muntanya que reflecteix els núvols entre vessants de tardor ocupa la part alta de la pàgina; a sota, l'avantítol Clima · Reportatge, el titular El llac que porta el compte en dues línies, una entradeta en cursiva i la signatura, i després dues columnes justificades.", "2": "La pàgina parella: intertítols en cursiva verd blavós, una cita destacada amb les cometes penjades al marge exterior i un requadre D'un cop d'ull sota un filet verd blavós, al capdamunt de la columna dreta.", "3": "La pàgina senar: una banda de pineda nevada a dalt, el final del reportatge tancat amb un petit quadrat negre i un plafó fosc En xifres al peu.", "4": "Cinc classes de gel, una guia de camp, s'obre amb el mateix disseny: el dibuix d'un llac glaçat en secció ocupa el lloc de la foto i l'avantítol va en teula." }
+---
+
+## Què compondràs
+
+El reportatge del número d'hivern de *Boreal*, revista de natura, en pàgina de 225 × 297 mm. Un llac de muntanya a sang ocupa la part alta de la primera pàgina. A sota, un avantítol espaiat encapçala un titular en dues línies, amb l'entradeta en cursiva a la dreta i la signatura a sota; el crèdit del fotògraf va al peu de la foto. El titular és el text del títol de Markdown, i l'avantítol, l'entradeta, la signatura i el crèdit, els seus atributs. La doble pàgina següent va a dues columnes justificades. A la parella, una cita amb les cometes penjades al marge i un requadre de dades al capdamunt de la columna dreta; a la senar, una pineda nevada a dalt i un plafó fosc de xifres al peu. Un quadradet negre tanca el reportatge. Després, una guia de camp repeteix l'obertura amb un dibuix i l'avantítol en teula.
+
+## Elaboració
+
+### 1 · Munta l'obertura amb la línia del títol
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada `{attr.<clave>}` imprimeix el valor `<clave>="…"` de la línia `#` del reportatge, i `{titleText}`, el títol mateix ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)), de manera que cada peça porta els seus textos al seu propi Markdown i tots els títols de nivell 1 comparteixen disseny. La foto penja de la vora superior de la pàgina i el contenidor comença 22 mm més avall, així que `depth - TOP` és la vora inferior de la foto mesurada des del contenidor; el crèdit va 2 mm per sota, a la cantonada superior dreta, i l'avantítol 9 mm per sota, a l'esquerra. El titular va `below` (a sota) de l'avantítol, amb els 118 mm de `HEAD` com a mesura. L'entradeta va `right-of` (a la dreta) del titular, sense amplada pròpia, així que les seves línies arriben fins a la vora del contenidor; la signatura va `below` l'entradeta, de manera que una entradeta més llarga l'empeny cap avall en comptes de muntar-s'hi a sobre. El nivell no fixa `minHeight`. El titular i la signatura acaben en un farciment buit de 5 mm que compta en l'alçada de l'obertura, així que el text arrenca a la primera línia de la retícula com a mínim 5 mm per sota del que acabi més avall, ocupi cadascun les línies que ocupi.
+
+### 2 · Declara les imatges una vegada, amb els seus píxels reals
+
+<Excerpt region="resources" />
+
+Un element de disseny anomena la seva imatge per l'id del recurs, així que la foto de l'obertura es declara com qualsevol figura però no es cita mai: només l'obertura la dibuixa, fins al tall, on no arriba cap flotant. Els mapes de bits es mesuren als 150 `dpi` de la pàgina, així que els 2000 px de la pineda donen 339 mm i es redueixen a l'amplada de la caixa de text, 195 mm, uns 260 ppp a la impressió. Les imatges tenen un tipus propi, amb el prefix del peu i la plantilla de numeració buits, així que el peu de la pineda no porta número de figura. La banda és un flotant `top` a tota l'amplada, i un flotant `top` obre la pàgina següent a la que el cita. La seva línia `::resource` queda a la pàgina parella, després del paràgraf de 1944, així que la banda encapçala la senar.
+
+### 3 · Penja les cometes al marge
+
+<Excerpt region="quote" />
+
+Una icona de glif ocupa una columna pròpia al costat del text, i això sagnaria la cita. La separació (`gap`) negativa torna el text sobre la part dreta del quadrat del glif, que és buida. Un farciment esquerre negatiu, igual al que queda d'aquesta columna (mida + separació), la treu després al marge, i el text torna a començar a la vora de la columna. El marc de la caixa es queda a la columna, així que un fons no arribaria fins a les cometes. Les cometes llatines s'assenten més avall i són més amples, així que aquesta edició compon la seva « a 28 pt, en un quadrat que el farciment treu 22,5 pt; la “ anglesa va a 50 pt i en surt 34 pt. La « treu el cap uns 4,5 mm dins dels 14 mm del marge exterior de la pàgina parella, i la “, uns 6.
+
+### 4 · Porta els requadres al capdamunt d'una columna i al peu de pàgina
+
+<Excerpt region="boxes" />
+
+Amb `placement: 'top'` el requadre de dades flota: surt del flux i pren el següent capdamunt de columna lliure, així que el text continua fins al peu de la columna en comptes de deixar un blanc on el requadre no hi cabia. El plafó de xifres flota cap al costat contrari, al peu de la pàgina, i ocupa les dues columnes; les seves tres xifres són títols de nivell 4, un nivell que el reportatge no fa servir, repartits amb `breaks="3,5"`, que compta blocs, no línies. El signe final és un xip sense text visible. El seu `paddingX` dona l'amplada al quadrat, i el cos del xip, l'alçada; totes dues fan 1,05 em del mateix xip.
+
+### 5 · Capçaleres que anomenen el número i el reportatge
+
+<Excerpt region="heads" />
+
+Els elements de capçalera es pinten sobre la pàgina i no reserven lloc, així que cada peça s'ancora a la pàgina, al marge superior, amb distàncies en mil·límetres. La pàgina parella anomena la revista i el número des del frontmatter; la senar, el títol del reportatge, i `pages: 'body'` les aparta de les obertures, que només porten el foli, al peu. En un text de disseny, la línia de base cau a 0,8 de l'alçada de la seva caixa de línia, que fa 1,2 vegades el cos. Amb aquest càlcul, `baseline()` col·loca l'etiqueta de 7,5 pt 0,34 mm més avall que el foli de 8,5 pt i recolza el quadrat a la mateixa línia. Si canvies qualsevol dels dos cossos, les tres peces continuen en una sola línia de base.
+
+### 6 · Reutilitza l'obertura a la peça següent
+
+<Excerpt region="guide" />
+
+L'obertura és una funció, així que la guia de camp rep el mateix disseny amb la seva pròpia imatge i la seva pròpia alçada mitjançant un estil de títol, `# Cinco clases \\ de hielo {style="guide" …}`; la `\\` [parteix el titular](/ca/docs/document-format#salts-de-línia-als-títols) per on vol la redacció. El dibuix baixa 126 mm per la pàgina en comptes de 160; el crèdit i l'avantítol es mesuren des de `depth - TOP` i els altres textos pengen de l'avantítol, així que tots pugen 34 mm i el text de la guia comença més amunt. La paleta de l'estil canvia `lake` pel teula en aquestes pàgines, així que l'avantítol, i qualsevol intertítol o requadre enllaçat a `lake`, es torna teula sense afegir un argument de color a `opener()`; els xips no segueixen la paleta, i per això el signe final és negre.
+
+## Variants
+
+### Obre cada peça en pàgina senar
+
+Amb `'odd'`, la guia de camp passa a la pàgina 61 i la 60 es queda en blanc.
+
+```diff
+- { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
++ { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Posa el titular sobre una banda de color
+
+Per a un capítol de llibre de text, on una banda de color i un número gran ocupen el lloc de la foto, mira <RecipeLink slug="chapter-opener-bleed-band">Obertura de capítol sobre banda a sang</RecipeLink>.
+
+## Errors freqüents
+
+- Un element d'imatge encaixa la foto dins de la seva caixa i no la retalla mai. Retalla el JPEG a les proporcions de la caixa, aquí 225 × 160 mm, o la foto s'encongirà i deixarà franges blanques a les vores de la pàgina.
+- Les cometes penjades necessiten marge. Si en editar la cita passa a una columna dreta, les cometes es fiquen als 6 mm de l'espai entre columnes, gairebé enganxades al text de la columna esquerra: avança-la o endarrereix-la un paràgraf.
+- El text està ajustat per acabar a la pàgina 59, a sobre del plafó de xifres. Unes quantes línies més envien la cua a una pàgina pròpia, així que, després de cada canvi, torna a ajustar el text de les dues edicions.
+- `runtMinCharacters: 40` evita les últimes línies d'una sola paraula. Quan no hi ha manera d'evitar una última línia curta, el motor compon el paràgraf amb una línia menys: estreny els espais entre paraules i, si no n'hi ha prou, treu fins a 0,01 em entre lletres. Després d'editar, cerca els paràgrafs tan estrets i retalla-hi o afegeix-hi unes quantes paraules; el text publicat no necessita aquest ajust en cap de les dues llengües.

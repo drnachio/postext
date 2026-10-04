@@ -9,7 +9,8 @@ export async function TutorialVideo() {
   if (!MEDIA_BASE) return null;
   const t = await getTranslations("Tutorial");
   const locale = await getLocale();
-  const lang = locale.startsWith("es") ? "es" : locale.startsWith("zh") ? "zh" : "en";
+  // No Catalan cut: Catalan pages play the Spanish one.
+  const lang = /^(es|ca)/.test(locale) ? "es" : locale.startsWith("zh") ? "zh" : "en";
 
   return (
     <div className="my-6">

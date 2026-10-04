@@ -37,10 +37,11 @@ export class ComposeError extends Error {
 }
 
 /** The sample edition a site locale shows: its own when the recipe has one,
- *  otherwise the first sample language (always so for a locale no sample
- *  can be written in, such as zh). */
+ *  the Spanish one for Catalan when there is one, otherwise the first sample
+ *  language (always so for a locale no sample can be written in, such as
+ *  zh). */
 export function variantFor(meta: Pick<RecipeMeta, "sample">, locale: Locale): SampleLocale {
-  const own = meta.sample.locales.find((l) => l === locale);
+  const own = meta.sample.locales.find((l) => l === (locale === "ca" ? "es" : locale));
   return own ?? meta.sample.locales[0];
 }
 

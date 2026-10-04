@@ -1,0 +1,69 @@
+---
+title: "Xinès vertical amb citacions en notes dins de la línia"
+summary: "Un capítol vertical en caràcters tradicionals, enquadernat per la dreta, amb les citacions de nota GB/T 7714 compostes com a 夾注 dins de la columna."
+plain: "Un capítol d'un llibre xinès compost en columnes de dalt a baix. Cada font es cita en una nota petita de dues línies dins de la columna, i al final es llisten les obres citades."
+description: "Un capítol xinès vertical a Postext: citacions de nota GB/T 7714 compostes com a 夾注 (warichu) dins de la columna, amb la llista d'obres citades del capítol."
+question: "Com componc les citacions com a notes de dues línies dins de la línia (夾注) en un llibre xinès vertical?"
+aliases: ["夾注", "夹注", "割注", "warichu", "雙行夾注", "双行夹注", "notes dins de la línia", "citacions en xinès vertical", "豎排", "直排", "notes GB/T 7714", "注釋體", "obres citades", "引用書目", "xinès tradicional", "llibre enquadernat per la dreta", "tategaki"]
+pageNotes: { "1": "La pàgina d'obertura, a l'esquerra del llom: des de la dreta, 第三章 en Hei negreta i el títol 宋刻本的版式 en Kai, cadascun a la seva columna entre tres filets vermelló, i després el text en columnes de 36 caràcters. Dues citacions van dins de les columnes com a notes en dues files de mig cos: el llibre de 宿白 al peu de la tercera columna, que continua al capdamunt de la quarta, i el de 張秀民 més endavant. El foli 四十五 és a baix, al marge esquerre; al peu, una línia de lletra llatina petita diu que el llibre és inventat i que les obres citades són reals.", "2": "Una pàgina dreta: 版刻叢談 baixa pel marge dret amb el foli 四十六. Sis columnes sobre el 版心, el 魚尾 i el 牌記, una nota que cita 黃永年 en dues files de mig cos i, a les dues últimes columnes, dues notes en anglès, girades: el llibre de Carter, que acaba al capdamunt de l'última columna, i el de Twitchett, que comença al peu d'aquesta mateixa columna.", "3": "Una pàgina esquerra: la resta de la nota de Twitchett al capdamunt de la primera columna, l'última frase, el títol en negreta 本章引用書目 i cinc entrades numerades, les dues angleses girades i amb les columnes següents sagnades. 第三章　宋刻本的版式 baixa pel marge esquerre sobre el foli 四十七." }
+---
+
+## Què compondràs
+
+El final d'un capítol d'un llibre inventat sobre la impremta xinesa, 版刻叢談 («Converses sobre la impressió xilogràfica»), compost en caràcters tradicionals, de dalt a baix en columnes que es llegeixen des de la dreta, en una pàgina 大32開 de 140 × 203 mm enquadernada per la dreta. El capítol tracta de la disposició de les edicions Song i cita cinc obres reals. Cada citació es compon com els llibres xinesos han compost el comentari durant segles: com un 夾注, una nota en dues files a mig cos, dins de la columna on és la citació. Una nota que no cap en el que queda de columna continua al capdamunt de la següent, i una d'elles continua després del pas de pàgina. Les notes segueixen la forma de nota de la GB/T 7714—2015, la norma de referències de la Xina continental, i el capítol acaba amb una llista numerada de les obres que cita, les angleses girades. El mateix capítol amb les notes a peu de pàgina es compondria com <RecipeLink slug="novel-footnotes-column-foot">Notes al peu de la columna que les cita</RecipeLink>.
+
+## Elaboració
+
+### 1 · Un estil de notes, compost dins de la línia
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. L'estil de notes de la GB/T 7714 (`china-national-standard-gb-t-7714-2015-note`) converteix cada citació en una nota que anomena l'obra sencera ([Citacions](/ca/docs/configuration#cites)). Per defecte, un estil de notes envia les notes al peu de la pàgina. `notes: 'warichu'` deixa cada nota a la columna, composta com a warichu: dues files a `cjk.warichu.fontSize`, mig cos del text, centrades a la columna, i es llegeix primer la fila dreta ([Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu)). El Markdown és el de qualsevol estil, `[@su1999]` després de les paraules que avala, i la nota ocupa el lloc de la citació, abans del 。 que tanca la frase.
+
+<PageShot page={1} crop="0.48,0.17,0.16,0.7" caption="Pàgina 1: la nota del llibre de 宿白 comença al peu de la tercera columna i continua al capdamunt de la quarta, cada vegada amb la fila dreta primer." />
+
+Les files s'omplen per trams. Al peu de la tercera columna només hi caben 宿白. 唐宋時期, que es reparteixen en dues files de tres i quatre caselles; la resta de la nota omple el capdamunt de la columna següent, altra vegada en dues files. A la pàgina 2 la nota de Twitchett comença al peu de l'última columna, i el lector passa la pàgina per acabar-la.
+
+### 2 · Les obres citades, al final del capítol
+
+`:::bibliography{title="本章引用書目" scope=chapter}` col·loca la llista on és i només inclou les obres que cita aquest capítol ([La bibliografia](/ca/docs/document-format#la-bibliografia)). Les referències surten d'un bloc BibTeX. Cada entrada porta un `langid`, `chinese` o `english`, que l'estil llegeix com a llengua de l'obra, i els noms escrits en caràcters queden sencers. La llista es numera per ordre de primera citació, i les columnes següents de cada entrada comencen sota la seva etiqueta.
+
+### 3 · Caràcters tradicionals amb les regles del continent
+
+`locale: 'zh-Hant-CN'` demana caràcters tradicionals amb les regles de la Xina continental, com componen els editors de Pequín i Xangai els estudis clàssics: la coma i el punt van a la cantonada superior dreta de la seva casella, i un llibre vertical s'enquaderna per la dreta. Les citacions segueixen l'etiqueta: l'escriptura tradicional tria el locale CSL zh-TW, així que les paraules que afegeix l'estil també van en caràcters tradicionals. Noto Serif SC dibuixa els caràcters tradicionals amb les formes del continent, que és el que demana aquesta edició; LXGW WenKai TC, una font de Taiwan, només compon el títol del capítol, que no porta puntuació ([Números en text vertical](/ca/docs/configuration#nombres-en-text-vertical) explica què passa amb les xifres).
+
+A les notes i a la llista, un títol llatí i un any de quatre xifres es giren i baixen per la columna. Un número curt al costat de text xinès, com l'1 d'una etiqueta, queda dret a la seva casella.
+
+### 4 · L'obertura entre filets
+
+<Excerpt region="opener" />
+
+En una pàgina vertical, un disseny de títol es col·loca en el marc del flux: `x` baixa per la columna i `y` travessa la pàgina des de la vora dreta, així que un filet `'horizontal'` és una línia vertical al plec. Tres filets emmarquen dues columnes a 30,4 pt. 第三章 va a la primera en Hei negreta, i el títol a la segona en Kai ([Span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El número del capítol surt de `startAt=3` al títol i de la plantilla `第{1:一}章`, i els folis de `pageNumbering`: `trad-chinese-informal` des de 45. Les capçaleres i els folis baixen pel marge exterior com a <RecipeLink slug="vertical-novel-right-bound">Una novel·la xinesa vertical, enquadernada per la dreta</RecipeLink> ([Elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)).
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Claudàtors al voltant de cada nota
+
+Algunes edicions tanquen el 夾注 entre claudàtors al cos del text. `cjk.warichu` els posa a totes les notes, també a les de les citacions.
+
+```diff
+-  warichu: { fontSize: em(0.5), color: col('ink') }, // no brackets: the half size sets it off
++  warichu: { fontSize: em(0.5), color: col('ink'), open: '〔', close: '〕' },
+```
+
+### Números a la columna en lloc de notes
+
+L'estil numèric de la GB/T 7714 amb claudàtors de cantonada imprimeix 〔1〕 dret a la columna, i la llista no canvia.
+
+```diff
+-  style: 'china-national-standard-gb-t-7714-2015-note',
+-  notes: 'warichu', // 夾注; 'footnote' sets the same notes at the foot of the page
++  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  marker: 'corner', // 〔1〕, upright in vertical text
+```
+
+## Errors freqüents
+
+- Un estil de notes abreuja la segona citació d'una obra, i el de la GB/T 7714 la redueix a 同1, «com a la nota 1». Un warichu no té número, així que el lector no troba la nota 1. Aquest capítol cita cada obra una vegada; un text que torni a citar una obra ha d'escriure la segona citació a mà o fer servir l'estil numèric de la segona variant.
+- L'estil escriu puntuació occidental a les entrades xineses, `宿白. 唐宋時期的雕版印刷[M]. 北京: 文物出版社, 1999.`, tal com les imprimeix la norma. En una columna vertical aquests signes conserven la forma occidental: es giren i ocupen menys d'una casella, a diferència del 。 i la ， del text.
+- Una fila de warichu va a mig cos: amb un text de 10,5 pt, cada fila fa 5,25 pt, la lletra més petita de la pàgina. Compon el text a 五號 o més gran, o puja `cjk.warichu.fontSize`; les dues files comparteixen sempre l'amplada d'una columna.

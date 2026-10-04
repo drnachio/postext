@@ -1,0 +1,66 @@
+---
+title: "Un manual amb remissions que apunten a pàgines"
+summary: "Un manual de bicicleta amb remissions que diuen «consulta l'apartat 3.2, a la pàgina 3», endavant i enrere, amb números i pàgines de la maqueta."
+plain: "Un manual breu per a una bicicleta de cicloturisme. Quan el text t'envia a un altre apartat, en dona el número i la pàgina on és, i tots dos són enllaços."
+description: "Un manual de producte amb Postext: apartats numerats, àncores en paràgrafs i passos, i remissions per número, títol i pàgina que s'actualitzen i enllacen."
+question: "Com remeto a un apartat i a la seva pàgina, i mantinc tots dos correctes quan el llibre canvia?"
+aliases: ["referència creuada", "remissió", "vegeu pàgina", "referència a pàgina", "àncora", "etiqueta", "vegeu apartat", "manual", "manual de l'usuari", "enllaços interns", "pandoc-crossref"]
+pageNotes: { "1": "Pàgina 1: una banda blau marí a la meitat superior amb MANUAL DE L'USUARI, el model Ardena T3 en lletra estreta blanca i gran, un subtítol i la línia de l'edició, tancada per una franja taronja; a sota, una introducció i un índex amb els números, els títols i les pàgines com a remissions en taronja.", "2": "Pàgina 2: l'apartat 1 amb remissions com apartat 3.2, a la pàgina 3, i el pas «tanca la palanca de manera que apunti cap enrere», que enllaça amb l'apartat 2.2; passos numerats per a l'alçada del sellí; l'apartat 2.1 sobre la pressió.", "3": "Pàgina 3: desmuntar i muntar la roda davantera, l'apartat 3 sobre els frens amb un requadre Amb pluja amb franja lateral taronja, i el començament del 3.2.", "4": "Pàgina 4: l'ajust del cable, l'apartat 4 sobre la cadena amb una remissió enrere al requadre Amb pluja de la pàgina 3, i el calendari de manteniment, una llista d'intervals que apunten a un apartat i a una pàgina." }
+---
+
+## Què compondràs
+
+El manual de l'usuari d'una bicicleta de cicloturisme fictícia, l'Ardena T3: quatre pàgines A5 en Archivo, amb el nom del model en una banda blau marí sobre la primera. Un manual no es llegeix en ordre, així que cada instrucció que depèn d'una altra diu on és: *consulta l'apartat 3.2, a la pàgina 3*. Qui l'escriu anomena un títol, un paràgraf o una frase d'un pas amb un identificador i escriu `:ref` allà on el text hi remet; Postext imprimeix el número, el títol o la pàgina i el converteix en enllaç. L'índex de la portada s'escriu igual, així que moure un apartat, o traduir el manual i deixar que es recompongui, no deixa mai un número vell.
+
+## Elaboració
+
+### 1 · Anomena allò a què remet el text
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Els títols porten un identificador a la manera de Pandoc, `### Desgaste de las pastillas {#sec-pad-wear}`; l'avís sobre la pressió comença amb `:anchor{#warn-pressure}`, una marca invisible; l'últim pas per muntar la roda és `[cierra la palanca de modo que apunte hacia atrás]{#step-close-lever}`, que conserva les seves paraules i els posa nom; i el requadre s'obre amb `:::callout{#box-wet type="note" title="Con lluvia"}`. Una remissió al pas imprimeix les seves paraules; una al requadre, el seu títol.
+
+### 2 · Una destinació, quatre maneres d'anomenar-la
+
+`:ref{id="sec-pad-wear"}` imprimeix *apartat 3.2* amb la paraula de `crossRefs.section`; `style=page` imprimeix *pàgina 3* amb la de `crossRefs.page`; `style=title` imprimeix *Desgast de les pastilles*; `style=pageNumber`, només el *3*. L'índex de la portada combina el número sol, el títol i la pàgina sola, així que es llegeix com un índex de debò. En anglès les mateixes remissions imprimeixen *section 3.2* i *page 3*, perquè les plantilles segueixen la llengua de l'edició.
+
+### 3 · Les pàgines s'ajusten soles
+
+El número de pàgina només es coneix quan el manual ja està compost. El motor el compon, llegeix la pàgina on ha caigut cada destinació i el torna a compondre fins que cap remissió no canvia, el mateix bucle que omple un índex. Un text que creix en traduir-lo, o un apartat que passa al davant, canvia les pàgines, i les remissions les segueixen endavant i enrere.
+
+### 4 · Els números surten del comptador de nivell 2
+
+<Excerpt region="numbers" />
+
+El manual té un sol títol de nivell 1, el nom del model a la portada, així que els seus apartats es numeren des del nivell 2: `{2}` dona de l'1 al 5 i `{2}.{3}` dona 1.1, 1.2.
+
+### 5 · La portada és l'obertura d'aquest títol
+
+<Excerpt region="cover" />
+
+La banda fa 104 mm, mitja pàgina, i la tanca una franja taronja. L'avantítol, el subtítol i la línia de l'edició són atributs del títol, així que l'edició espanyola els canvia en el seu propi text.
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Abreuja «pàg.» a les remissions
+
+Una obra de consulta amb moltes remissions a pàgina guanya espai amb l'abreviatura.
+
+```diff
+-  page: t({ en: 'page {n}', es: 'página {n}' }), // spelt out: a manual is read by anyone
++  page: t({ en: 'p. {n}', es: 'pág. {n}' }),
+```
+
+### Deixa les remissions en negre
+
+Quan la pàgina és plena de remissions, deixa-les en el color del text i en negreta; continuen sent enllaços al PDF i a la pantalla.
+
+```diff
+-const references = { referenceColor: col('orange'), referenceBold: true };
++const references = { referenceColor: col('ink'), referenceBold: true };
+```
+
+## Errors freqüents
+
+- Una remissió a un `:anchor` sense estil imprimeix la pàgina, perquè una àncora invisible no té paraules pròpies. Fes servir `[palabras]{#id}` quan la remissió hagi de citar el text.
+- Un identificador ha de ser únic al llibre. Les remissions arriben al primer `{#sec-brakes}`, i el tauler de comprovacions del Sandbox avisa del segon com a `duplicateAnchor`.

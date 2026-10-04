@@ -1,0 +1,64 @@
+---
+title: "Un llibre de lectura vertical amb zhuyin a la dreta"
+summary: "Una lliçó d'un llibre escolar de Taiwan en vertical: {守株|ㄕㄡˇ|ㄓㄨ} posa el zhuyin en columna a la dreta de cada caràcter; a dalt, dibuixos i notes."
+plain: "Un llibre de lectura escolar de Taiwan, escrit en columnes de dalt a baix. Cada caràcter xinès porta al costat una petita guia de pronúncia, perquè els nens llegeixin paraules que encara no coneixen."
+description: "Un llibre de lectura de Taiwan compost amb Postext: text vertical en Kai amb zhuyin al costat de cada caràcter, dibuixos i notes a dalt i llom a la dreta."
+question: "Com poso el zhuyin al costat de cada caràcter d'un text xinès vertical?"
+aliases: ["zhuyin", "bopomofo", "注音", "注音符號", "國語課本", "llibre de text de Taiwan", "llibre de lectura", "text vertical", "直排", "faules"]
+pageNotes: { "1": "Pàgina 86, parella, a la dreta del plec: un dibuix d'un pagès assegut al costat d'una soca mentre una llebre s'allunya; a sota, el títol 第十二課　寓言兩則 en vermell, una entradeta, el títol 一　守株待兔 i el text original, cada caràcter amb el seu zhuyin; a la vora dreta, una pestanya vermella amb 第三單元　寓言故事.", "2": "Pàgina 87: al pis de dalt, un requadre amb les quinze notes de les dues faules, numerades correlativament a tota la lliçó; a baix, la versió moderna de la primera faula i l'original de la segona, 二　鄭人買履.", "3": "Pàgina 88: un dibuix de l'home que torna a casa des d'una parada de sabates cap al tamboret on va deixar la mesura; a baix, la versió moderna de la segona faula i tres preguntes sota 想一想.", "4": "Pàgina 89: al pis de dalt, un requadre sobre Han Fei i un altre amb sis caràcters nous i el seu zhuyin; a baix, 語文天地 sobre les dues faules com a frases fetes, amb els lemes en vermell, i el colofó." }
+---
+
+## Què compondràs
+
+La lliçó 12 del llibre novè de *國語*, un llibre taiwanès de lectura de cinquè de primària, inventat: dues faules del *Han Feizi*, la del pagès de Song que espera una altra llebre al costat d'una soca i la de l'home de Zheng que es fia més de la seva mesura que dels seus peus. A Taiwan aquests llibres es componen en vertical, en lletra Kai, amb el zhuyin de cada caràcter en una columna a la seva dreta, perquè el nen llegeixi un caràcter abans d'aprendre'l. La lliçó s'obre en un plec amb el llom a la dreta. A dalt, un pis guarda els dibuixos, les notes, l'autor i els caràcters nous; a baix va la lliçó en Iansui de 16 pt, 23 caràcters per línia. La seva parella en escriptura llatina és <RecipeLink slug="textbook-margin-column">el llibre de text amb columna al marge</RecipeLink>, la columna lateral de flotants del qual és aquí el pis de dalt, girat un quart de volta.
+
+## Elaboració
+
+### 1 · Una columna de zhuyin al costat de cada caràcter
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `{宋人|ㄙㄨㄥˋ|ㄖㄣˊ}` dona a cada caràcter la seva lectura, una per cada `|`; la puntuació queda fora de les claus, així que 。 i ， no en porten cap. En text vertical, una lectura en bopomofo va a la dreta de la columna, amb els signes l'un sota l'altre, la marca de to a la dreta de l'últim i el punt del to neutre damunt del primer. A la meitat del cos del text, `cjk.ruby.fontSize` deixa els signes en 0,3 em, així que tres signes caben al costat d'un caràcter, i dues lectures així seguides, com a 就像, guarden entre elles almenys un quart de signe sense eixamplar cap dels dos caràcters; amb 0,6 em, ㄇㄧㄥˊ és més alta que 明 i separa els dos 明 de 明明. L'interlineat de 32 pt deixa un buit d'un quadratí entre línies, que el zhuyin i els seus tons omplen a mitges. clreq demana 1,5 em quan el zhuyin va entre línies verticals; això són 40 pt d'interlineat i deu línies per pàgina, així que aquesta pàgina es queda en un quadratí per encabir-hi 13 línies de 23, i cada lectura queda a uns 8 pt de la línia veïna.
+
+### 2 · Dibuixos i notes al pis de dalt
+
+<Excerpt region="upper-tier" />
+
+En text vertical, les columnes d'una maquetació `oneAndHalf` són pisos, i `sideColumnSide: 'left'` posa a dalt el que només admet flotants. `::resource{id="plate-1"}` al text hi envia el primer dibuix; el tipus `plate` no té prefix de peu i els dibuixos no porten peu, així que a sota no s'imprimeix res. Un requadre obert amb `span="side"` cau al pis a partir de la línia on s'obre, i el seu text corre cap avall dins del pis. Les notes de les dues faules van en un sol requadre, numerades correlativament; s'obre després del primer original, que acaba a la pàgina 86, i omple el pis de la pàgina 87, així que les notes de cada faula queden al plec del seu original. El zhuyin fa 0,3 em del text que llegeix i `cjk.ruby` és un ajust per a tot el llibre, així que les notes i el requadre de l'autor van en 13 pt perquè les seves lectures no baixin de 3,9 pt.
+
+### 3 · Quatre fonts, cadascuna carregada amb el seu text
+
+<Excerpt region="build" />
+
+La lliçó va en Iansui, una lletra Kai dibuixada a partir de Klee One amb les formes estàndard de Taiwan, les que els nens aprenen a escriure. Les lectures van en LXGW WenKai TC, el punt de to neutre de la qual continua rodó a 4,8 pt; les notes, en Noto Serif TC, i les etiquetes, en Noto Sans TC. Cada font carrega els fitxers que tenen els caràcters que compon: les lectures se separen dels seus caràcters i els requadres de notes van només a la font Ming. `vertical: true` hi afegeix les formes verticals, perquè 「」 i 、 quedin bé a la columna. `pageIndexOffset: 1` fa de la pàgina 86 una pàgina parella, així que la lliçó s'obre en un plec.
+
+### 4 · La pestanya i els folis a la vora exterior
+
+<Excerpt region="furniture" />
+
+En un llibre amb el llom a la dreta, la pàgina parella queda a la dreta del plec, així que les parelles porten la pestanya de la unitat i el foli a la vora dreta i les senars a l'esquerra. La pestanya és una caixa amb un element de text a sobre; `writingMode: 'vertical-rl'` a l'element compon 第三單元　寓言故事 de dalt a baix, mentre que els folis i les línies del peu continuen en horitzontal.
+
+## Variants
+
+### Imprimeix el zhuyin en un altre color
+
+Alguns llibres imprimeixen les lectures més clares que el text, perquè els caràcters destaquin.
+
+```diff
+-  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5) },
++  ruby: { fontFamily: ZHUYIN, fontSize: em(0.5), color: col('muted') },
+```
+
+### Posa les lectures sobre text horitzontal
+
+<RecipeLink slug="pinyin-primer">La cartilla amb pinyin</RecipeLink> posa una síl·laba sobre cada caràcter en línies horitzontals, com les primeres cartilles de la Xina continental i Hong Kong.
+
+## Errors freqüents
+
+- Pren les lectures del diccionari de Taiwan. Les eines fetes sobre diccionaris del continent, pypinyin entre elles, donen 度 duó, 寧 nìng, 時候 shíhou i 市場 shìchǎng; el *Diccionari Revisat de Xinès Mandarí* del Ministeri d'Educació, que segueixen els llibres de Taiwan, llegeix ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ i ㄕˋ ㄔㄤˊ, i posa en to neutre la segona síl·laba de 故事, 家裡 i 過來. moedict.tw el serveix paraula per paraula. Manté 一 i 不 en el seu to propi, i aquesta lliçó també.
+
+- Dibuixa uns quants caràcters en cada font abans de barrejar-les. LXGW WenKai TC segueix les formes heretades i dibuixa 為 (U+70BA) com 爲, així que una lliçó composta amb aquesta font imprimia 爲宋國笑 al text i 為宋國笑 a la nota en Ming del mateix plec. Iansui dibuixa el 為 estàndard.
+
+- Els números de la lliçó i de les faules s'escriuen als títols (`# 第十二課　{寓言兩則|…}`). Un `numberingTemplate` uneix el número al primer caràcter del títol, i quan aquest caràcter porta lectura, la lectura se centra sobre el número i el caràcter junts.
+
+- Calcula què ha de cabre al pis de dalt de cada pàgina i obre cada requadre on la seva pàgina tingui lloc. El requadre de l'autor s'obre abans de 語文天地 perquè comenci el pis de la pàgina 89, i el dels caràcters nous, obert després de les frases fetes, va darrere. Un requadre o un dibuix que no troba lloc abans que acabi el text surt en una pàgina sense res a sota, i el següent es queda fora sense avís, així que comprova que tots apareixen a les pàgines.
+
+- Iansui té un sol gruix. Els títols destaquen per la mida i els lemes de les frases fetes pel color: l'estil `idiom` fixa `boldFontWeight: 400` amb l'accent com a `boldColor`, així que `**…**` canvia el color i no la lletra.

@@ -1,0 +1,59 @@
+---
+title: "Diccionari amb índex de pestanyes"
+summary: "Un bucle fa un estil de títol per lletra, i la capçalera de cadascun posa la pestanya blava de la seva lletra un pas més avall al tall, damunt l'índex pàl·lid."
+plain: "Quatre pàgines d'un antic diccionari de mariners. Unes pestanyes amb lletres baixen per la vora exterior, i la de la lletra actual va en fosc i més avall a mesura que avança l'alfabet."
+description: "Quatre pàgines del Sailor’s Word-Book de Smyth a dues columnes, amb els lemes en blau, inicials de quatre línies i una pestanya que baixa un pas a cada lletra."
+question: "Com faig que la pestanya d'un diccionari baixi pel tall davanter d'una lletra a la següent?"
+aliases: ["diccionari", "glossari", "vocabulari", "obra de consulta", "índex de pestanyes", "pestanyes", "índex al tall", "lemes", "inicials", "paraules guia"]
+pageNotes: { "1": "La pàgina 1 obre el diccionari sota una banda: una àncora amb el seu cap, VOCABULARI DEL MARINER en versaletes blau marí, el subtítol i la signatura de la portada de 1867 i un filet doble. A sota hi ha la nota de l'editor i una A blava de quatre línies. Per la vora dreta baixa l'índex de 22 pestanyes, amb la A en blau marí.", "2": "La pàgina 2, parella: les entrades de la A omplen la primera columna i acaben a la segona, on una B blava obre la lletra següent. A la vora esquerra la pestanya blava marca la B, un pas per sota de la A, tot i que la pàgina comença a la A.", "3": "La pàgina 3: les entrades de la B acaben al peu de la primera columna i una C blava encapçala la segona. A la vora dreta la pestanya de la C sobresurt de l'índex pàl·lid, dos passos per sota de la A.", "4": "La pàgina 4: les últimes entrades de la C omplen les dues columnes, que acaben a la mateixa altura, i un colofó de tres línies tanca la segona." }
+---
+
+## Què compondràs
+
+Quatre pàgines d'una nova edició del *Sailor’s Word-Book* de l'almirall Smyth (1867), de la A a la C, en una pàgina de 150 × 200 mm. Les entrades van en dues columnes justificades d'Alegreya de 8 pt, separades per un filet, amb el lema en negreta blau marí i sagnat francès d'1 em. Cada lletra s'obre dins de la seva columna amb una inicial blava de quatre línies sobre un filet color llautó, i les entrades continuen sense salt de pàgina. Al tall davanter, cada pàgina imprimeix l'índex sencer, 22 pestanyes en un to pàl·lid. La de la lletra en curs és blau marí, 3,2 mm més ampla que les altres, i baixa un pas amb cada lletra. L'edició castellana conserva els lemes anglesos de Smyth i tradueix les entrades.
+
+## Elaboració
+
+### 1 · Un estil de títol per lletra, cadascun amb la seva pestanya
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `TABS` enumera 22 pestanyes; les lletres amb poques entrades en comparteixen una (QR, UV, XYZ). Cada pestanya fa dues línies de text (7,34 mm), així que entre totes cobreixen les 44 línies de la caixa. El bucle dona a cada lletra un estil de títol el `header` del qual afegeix a les capçaleres i a l'índex pàl·lid la pestanya blava d'aquella lletra, un pas més avall que l'anterior ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). Cada cel·la s'escriu dues vegades, una per `parity`, i s'ancora a la vora exterior de la pàgina, no al contenidor propi de la capçalera. Aquest contenidor és el marge superior, de l'amplada de la caixa i des de la vora superior de la pàgina fins al text, i les pestanyes han d'arribar al tall davanter i baixar per les 44 línies. Una pàgina pren la capçalera de l'última secció que hi comença, així que la <PageRef page={2}>pàgina 2</PageRef> comença a la A i porta la pestanya de la B.
+
+### 2 · Les capçaleres, fora de la primera pàgina
+
+<Excerpt region="running-heads" />
+
+Les capçaleres són elements de text ancorats a la pàgina i filtrats per `parity` i per `pages: 'body'` ([elements de text](/ca/docs/configuration#elements-de-text)). El títol de la pàgina 1 abasta les dues columnes, i això la converteix en pàgina d'obertura. Les capçaleres no hi surten, i el foli el posa el peu, un element amb `pages: 'opener'` que s'imprimeix 6 mm per sota de la caixa. A les senars, `{chapterTitle}` imprimeix la lletra de l'últim títol de nivell 1 que hi ha a la pàgina o abans, *Letra C*. Des de postext 1.5.0, `{firstMark.<clave>}` i `{lastMark.<clave>}` imprimeixen en el seu lloc el primer i l'últim lema de la pàgina, les paraules guia que porten gairebé tots els diccionaris; aquesta recepta es va compondre amb la 1.4.1 i conserva la lletra.
+
+### 3 · Color per als lemes i res més
+
+<Excerpt region="entries" />
+
+Cada entrada és un paràgraf d'un bloc `:::paragraphs{style="entry"}`, amb sagnat francès d'1 em ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). El `boldColor` del cos deixa el **Nota.** de la pàgina 1 en el color del text, i el de l'estil d'entrada posa els lemes en blau marí. Un estil de paràgraf no té `italicColor`, així que les cursives de les entrades conserven el color del cos.
+
+### 4 · Una inicial de quatre línies dins de la columna
+
+<Excerpt region="letter-heads" />
+
+`LETTER`, 55,8 pt, és el cos amb què una majúscula d'Alegreya SC 900 (0,652 em d'alçada) s'assenta a la quarta línia de base i arriba a l'altura de les majúscules de la primera línia de text. La lletra i el filet color llautó acaben dins de la cinquena línia, i el bloc del títol baixa fins a la línia següent de la retícula de base, així que cada inicial ocupa cinc línies i les entrades de sota continuen a la retícula. A la <PageRef page={3}>pàgina 3</PageRef>, la C que encapçala la segona columna mesura el mateix que les quatre primeres línies de la primera. El nivell 1 declara `breakBefore: { enabled: false }`, i els estils de les lletres l'hereten. A la 1.4.1 qualsevol objecte `headings` ja treu el salt de pàgina del nivell 1; amb el valor escrit, les lletres continuaran a la columna encara que una versió posterior recuperi aquest salt.
+
+### 5 · El títol a l'amplada de les dues columnes
+
+<Excerpt region="title" />
+
+L'estil del títol abasta la pàgina amb una banda que reuneix l'àncora, el nom, un subtítol i una signatura presos d'atributs del títol, i un filet doble ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El filet fi acaba 45,1 mm per sota de la vora superior de la caixa, així que la banda s'ajusta a 13 línies de la retícula, 47,7 mm. Sota un títol a tota l'amplada, el filet de columna comença igualment a la vora superior de la caixa i travessaria el títol. Un rectangle del color del paper el tapa fins al filet fi, i el filet de columna només treu el cap per sota. `{titleText}` uneix amb un espai les línies del títol ocult, i la 1.4.1 talla un títol a tota l'amplada a la mesura d'una columna. En anglès, amb el cos de l'H1 per defecte, la banda imprimia *Word- Book*; per això l'estil del títol dona al títol ocult el cos del text, amb el qual el nom cap en una línia de la columna de 60 mm.
+
+## Variants
+
+### Imprimeix només la pestanya en curs
+
+Els índexs de pestanyes impresos solen mostrar només la de la lletra en curs; treu `ladder` de la capçalera i la pestanya blava continuarà baixant de la A a la C.
+
+```diff
+-  header: { elements: [...runningHeads, ...ladder,
++  header: { elements: [...runningHeads,
+```
+
+## Errors freqüents
+
+- A postext 1.4.1 el filet de columna sota un títol a tota l'amplada comença a la vora superior de la caixa encara que la banda faci un nombre enter de línies de la retícula, com aquesta. El tapa un rectangle del color de la pàgina, pintat per sota dels altres elements del disseny.
+- Una columna de 60 mm admet uns 50 caràcters, i l'anglès de Smyth no es pot reescriure. A la captura, 18 de les 218 línies justificades angleses (un 8 %) estiren l'espai més d'1,7 vegades la seva amplada normal, davant de menys d'un 2 % a l'edició castellana, la traducció de la qual es va ajustar a la columna. L'anglès arribava al 17 % abans de canviar per unes altres les cinc entrades que pitjor componien (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*). Tria entrades que componguin bé, o eixampla la columna.

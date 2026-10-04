@@ -3009,7 +3009,7 @@
     "title": "Accesibilidad",
     "lastUpdated": "Última actualización: octubre de 2026",
     "targetTitle": "Nivel de conformidad",
-    "targetText": "Queremos que este sitio web y el Sandbox cumplan las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2 en el nivel AAA, en inglés, español y chino, con el tema claro y con el oscuro. Cada página pasa pruebas automáticas (axe-core y comprobaciones propias para los criterios AAA) y un recorrido con el teclado.",
+    "targetText": "Queremos que este sitio web y el Sandbox cumplan las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2 en el nivel AAA, en inglés, español, catalán y chino, con el tema claro y con el oscuro. Cada página pasa pruebas automáticas (axe-core y comprobaciones propias para los criterios AAA) y un recorrido con el teclado.",
     "prefsTitle": "Preferencias de lectura",
     "prefsText": "El sitio compone sus textos justificados y con guiones, como los libros que hace Postext. Si así te cuesta más leer, el icono del libro de la barra de menú abre las preferencias de lectura. Se aplican a todas las páginas del sitio y se guardan en este navegador.",
     "prefsTheme": "Tema: claro u oscuro. Es el mismo ajuste que el interruptor de la barra de menú; si no eliges ninguno, el sitio sigue el de tu sistema.",

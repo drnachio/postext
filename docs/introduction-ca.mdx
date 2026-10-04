@@ -1,0 +1,216 @@
+{/* docs/introduction-ca.mdx */}
+
+export const metadata = {
+  title: 'Introducció a Postext',
+  sidebarTitle: 'Introducció',
+  description: 'Què és Postext, per què existeix i el problema que resol',
+  lang: 'ca',
+  lastUpdated: '2026-09-24',
+  readingTime: '7 min',
+  order: 1,
+  plainSummary: "Postext és un programa lliure i gratuït que compon les pàgines de llibres, revistes i informes al web. Els llibres impresos segueixen des de fa segles regles de maquetació molt acurades, com igualar les columnes o posar cada imatge a prop del text que l'esmenta. Les pàgines web no han tingut mai aquestes regles, i Postext les hi afegeix. Tu escrius el text i Postext col·loca a la pàgina cada línia, imatge i nota. Aquesta pàgina explica per què existeix el projecte i com va començar.",
+};
+
+# Introducció a Postext
+
+**Un compositor tipogràfic programable per al web.**
+
+Obre qualsevol llibre ben maquetat. Fixa't en com el text reposa sobre la pàgina: columnes
+perfectament equilibrades, imatges integrades en el flux, sense forats maldestres, sense línies
+òrfenes perdudes a l'inici d'una columna. Que això sembli natural és fruit de segles d'ofici.
+
+Ara obre una pàgina web. Fins i tot les millors es noten diferents. El text xoca contra les
+imatges. Les columnes es desborden o queden mig plenes. Les notes a peu de pàgina desapareixen al
+fons de la pàgina en lloc de quedar-se a prop de les paraules que hi fan referència. El web ens va
+donar maquetació responsiva, sí — però mai no ens va donar maquetació *editorial*.
+
+Postext tanca aquesta bretxa. És un motor de composició que rep el teu contingut — prosa en
+markdown més recursos declarats (imatges de mapa de bits, diagrames SVG i taules) que s'incorporen
+per referència — i aplica les mateixes regles que aplicaria un tipògraf professional: prevenció
+d'òrfenes i vídues, equilibri de columnes, flux de text al voltant d'obstacles, espaiat
+deliberat. El resultat és geometria de composició amb qualitat editorial, tant per a HTML com per
+a PDF.
+
+Construït sobre [`@chenglou/pretext`](https://github.com/chenglou/pretext) per mesurar text sense
+DOM, a velocitats que fan possible tot això.
+
+
+## La bretxa entre la impremta i el web
+
+Durant segles, els tipògrafs han seguit regles que fan que el text sigui agradable de llegir. No
+són preferències estètiques — són principis forjats al llarg de generacions de llibres impresos,
+diaris i revistes:
+
+- Sense òrfenes (una sola línia d'un paràgraf encallada a l'inici d'una columna).
+- Sense vídues (una sola línia d'un paràgraf abandonada al final d'una columna).
+- Columnes equilibrades (alçada aproximadament igual entre columnes en una doble pàgina).
+- Text que flueix al voltant de figures, cites destacades i imatges inserides.
+- Notes a peu de pàgina col·locades correctament al final de la columna on es referencien.
+- Notes al marge alineades amb el paràgraf que les cita.
+- Espaiat coherent i deliberat al voltant d'encapçalaments, cites i figures.
+- Partició de mots que evita rius d'espai en blanc i vores irregulars.
+
+Més enllà d'aquestes regles, dues dimensions concretes i mesurables mostren fins a quin punt el
+web s'allunya de la impremta:
+
+- **Amplada de línia.** Bringhurst situa l'interval còmode entre **45 i 75 caràcters** per a una
+  columna (i entre **40 i 50** en multicolumna); la guia d'accessibilitat
+  [WCAG 1.4.8](https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html) fixa el
+  límit en 80. La majoria de webs deixen que la línia s'estiri fins a 100, 120 o més — molt per
+  sobre del punt on l'ull la pot seguir sense descarrilar.
+- **Interlineat.** La tradició recomana **1,3–1,5 vegades la mida de la font**, i
+  [WCAG 1.4.12](https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html) exigeix que el
+  contingut continuï funcionant amb almenys 1,5. Però l'ajust depèn de l'amplada de línia: un
+  interlineat que es llegeix bé a 50 caràcters es queda curt a 90. Els tipògrafs ajusten l'un en
+  funció de l'altre; CSS no ofereix cap manera automàtica de fer-ho.
+
+I aquí s'acaba el que aporta CSS: `column-count` i poca cosa més. Sense control sobre la
+col·locació de recursos, sense consciència del desbordament, sense prevenció d'òrfenes o vídues
+entre columnes, sense cap manera nativa de fer fluir el text al voltant d'un obstacle arbitrari.
+Les maquetacions editorials multicolumna continuen sent artesanals — dissenys estàtics que es
+trenquen tan bon punt canvia la mida de la pantalla.
+
+El web fa més d'una dècada que té maquetació responsiva — flexbox, grid, contenidors que
+s'adapten a qualsevol pantalla. El que no ha tingut mai és maquetació *editorial* responsiva: la
+que fa que el contingut reflueixi de manera intel·ligent a través de columnes, al voltant
+d'imatges, més enllà de notes a peu de pàgina, obeint les regles que fan que el text sigui
+*agradable de llegir*.
+
+<Illustration name="CssGapVsEditorial" data='{"title": "La bretxa entre CSS multicolumna i la maquetació editorial", "desc": "CSS ofereix column-count i poca cosa més; la maquetació editorial necessita control d’òrfenes i vídues, flux al voltant d’obstacles, equilibri de columnes, col·locació de notes a peu de pàgina i refinament per convergència.", "caption": "El que ofereix CSS davant del que realment necessita la maquetació editorial.", "cssTitle": "El que ofereix CSS", "cssLead": "column-count", "cssMore": "...i poca cosa més.", "cssCons": ["Sense control d’òrfenes/vídues", "Sense flux al voltant d’obstacles", "Sense equilibri de columnes", "Sense col·locació de notes a peu de pàgina", "Sense convergència/refinament"], "gap": "la bretxa", "editorialTitle": "El que necessita la maquetació editorial", "editorialPros": ["Prevenció d’òrfenes i vídues", "Flux de text al voltant de recursos", "Columnes equilibrades", "Col·locació de notes a peu de pàgina", "Control de la partició de mots", "Refinament per convergència"], "equals": "= Postext"}' />
+
+
+## Una dècada buscant la peça que faltava
+
+El projecte
+[Content First](https://medium.com/binpar/el-arte-de-maquetar-para-ser-le%C3%ADdo-933be57cb293)
+va arrencar el 2014 com un intent primerenc de portar la qualitat de la composició editorial al
+web. Maquetacions en columnes, experiments de flux de text, prototips successius — i sempre el
+mateix mur: **no pots prendre bones decisions de composició sense saber exactament quant espai
+ocuparà el text.**
+
+Sembla senzill, però aquí hi ha tot el problema. Cada vegada que preguntes al navegador «quant mesura
+aquest paràgraf a aquesta amplada?», provoques un reflow complet del layout. Fes-ho uns quants
+centenars de vegades en un document multicolumna complex i la pàgina es congela. El navegador no
+es va dissenyar per a aquesta mena de mesura especulativa — provar deu amplades de columna
+diferents per trobar la millor, comprovar on trencar un paràgraf, verificar si una imatge hi cap
+o s'ha de moure a la columna següent.
+
+Faltava una manera de mesurar text prou ràpida per experimentar lliurement, sense bloquejar el
+fil principal. Durant una dècada, aquesta eina no va existir.
+
+
+## La peça que faltava
+
+El 2025, Cheng Lou va publicar [`Pretext`](https://github.com/chenglou/pretext): una biblioteca de
+mesura de text sense DOM, entre 300 i 600 vegades més ràpida que el reflow del navegador i
+pixel-perfect a Chrome, Safari i Firefox. Fa servir les mètriques de font del canvas i pura
+aritmètica per calcular l'alçada del text i els salts de línia sense tocar mai el DOM.
+
+Amb Pretext, el coll d'ampolla que va bloquejar aquest treball durant deu anys desapareix. Es
+poden mesurar milers de blocs de text en mil·lisegons, provar deu configuracions de columna
+diferents i quedar-se amb la millor, executar l'algorisme complet de composició a cada
+redimensionament de finestra sense bloquejar el fil principal.
+
+Postext és el que ve després.
+
+
+## Pretext + Postext
+
+La nomenclatura és intencionada: dues meitats de la mateixa operació. Separar-les importa perquè
+són responsabilitats diferents — una mesura, l'altra decideix — i aïllar la mesura permet fer-la
+servir des de qualsevol backend sense lligar-se a les regles editorials.
+
+**Pretext** és el que passa *abans* de col·locar el text: mesurar quant espai necessitarà. Sense
+DOM, basat en canvas, operant amb nombres purs.
+
+**Postext** és el que passa *després* de la mesura: les decisions editorials. Donades les
+dimensions exactes de cada bloc de text a qualsevol amplada, el motor decideix on va cada
+element — a quina columna, en quina posició, fluint al voltant de quins recursos, obeint quines
+regles tipogràfiques.
+
+```ts
+import { prepare, layout } from '@chenglou/pretext';
+import { buildDocument, renderToCanvas, renderToHtml } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+// pretext: mesurar (la feina "pre")
+const prepared = prepare(paragraphText, '16px/1.5 Inter');
+const { height } = layout(prepared, columnWidth, 24);
+// => "Aquest paràgraf fa 144px d'alçada a aquesta amplada de columna."
+
+// postext: decidir (la feina "post")
+const vdt = buildDocument(content, config);
+// => Un Arbre Virtual del Document complet amb cada paràgraf,
+//     encapçalament i recurs col·locats en coordenades exactes.
+
+// Un únic VDT, tres modes de sortida:
+const canvases = renderToCanvas(vdt);                       // bitmap pixel-perfect per pàgina
+const html = renderToHtml(vdt);                             // DOM seleccionable per al web
+const pdfBytes = await renderToPdf(vdt, { fontProvider });  // PDF a punt per imprimir
+```
+
+Pretext proporciona les mesures. Postext proporciona la composició.
+
+<Illustration name="PretextPostextPipeline" data='{"title": "Pretext mesura, Postext decideix", "desc": "Pretext ofereix mesura de text sense DOM basada en canvas. Postext fa servir aquestes dimensions exactes per decidir columna, posició, flux al voltant de recursos i regles d’òrfenes, vídues i equilibri.", "caption": "Dues meitats de la mateixa operació: Pretext abans, Postext després.", "pretextTitle": "Pretext", "pretextSubtitle": "mesurar", "pretextBullets": ["Sense DOM, basat en canvas", "300-600x més ràpid que el reflow", "Salts de línia pixel-perfect"], "bridge": ["dimensions", "exactes"], "postextTitle": "Postext", "postextSubtitle": "decidir", "postextBullets": ["Quina columna, quina posició", "Flux al voltant de recursos", "Òrfenes, vídues, equilibri"]}' />
+
+*Pretext el va crear [Cheng Lou](https://github.com/chenglou). Postext es construeix a sobre.*
+
+
+## Com funciona
+
+El procés té tres etapes:
+
+1. **Tu proporciones el contingut.** Prosa en markdown més recursos declarats — imatges de mapa
+   de bits, diagrames SVG i taules. Una referència en línia `:ref{id="..."}` numera el recurs i,
+   alhora, el fa flotar a una banda superior o inferior a prop de la seva primera referència, tal
+   com un tipògraf d'impremta col·loca les figures. El contingut continua sent purament semàntic:
+   descriu *què* cal presentar, no *com*; les decisions de composició no queden mai gravades a foc
+   al document d'origen. La secció de Recursos del
+   [format de document](/ca/docs/document-format) recull la sintaxi completa.
+
+2. **El motor pren les decisions.** Postext analitza el contingut, crida Pretext per a la mesura
+   de text pixel-perfect sense tocar el DOM, i després executa un pipeline de composició de
+   diverses passades: equilibri de columnes, numeració i flotació de recursos, prevenció de vídues
+   i òrfenes, alineació de línies de base, refinament de l'espaiat. Cada decisió la controla la
+   configuració — geometria de pàgina i maquetació, cos de text i encapçalaments, més
+   `tableStyle` per a la tipografia de les cel·les de taula, `captionStyle` per als peus de figura
+   i `diagramStyle` amb `singleInk`, que torna a acolorir els diagrames SVG amb matisos d'una sola
+   tinta assignats per luminància, pensat per a impressió amb un únic color directe. Tu defineixes
+   les regles, el motor les aplica.
+
+3. **Obtens una composició completa.** Coordenades i dimensions precises per a cada element a
+   cada pàgina. Els renderitzadors tradueixen aquesta geometria al format de destinació —
+   **canvas** per a una previsualització bitmap pixel-perfect (`renderToCanvas`, `renderPage`),
+   **HTML** per a tipografia seleccionable i que s'adapta al redimensionament al web
+   (`renderToHtml`, `renderToHtmlIndexed`), i **PDF** per a una sortida a punt per imprimir amb
+   fonts incrustades (`renderToPdf`, del paquet `postext-pdf`). El mateix contingut, les mateixes
+   regles, tres sortides intercanviables.
+
+<Illustration name="LayoutProcess" data='{"title": "Procés de composició en tres etapes", "desc": "Markdown enriquit més configuració entra al motor, que executa un pipeline de composició de diverses passades amb la mesura de Pretext a dins, i genera HTML o PDF renderitzat.", "caption": "Contingut a l’entrada, geometria a la sortida — després renderitzada al format de destinació.", "inputTitle": "Markdown enriquit", "inputSubtitle": "+ configuració", "parse": "analitzar", "engineTitle": "motor Postext", "engineSub1": "mesura via Pretext", "engineSub2": "composició de diverses passades", "render": "renderitzar", "outputTitle": "HTML / PDF", "outputSubtitle": "sortida renderitzada"}' />
+
+Per veure en detall els mecanismes interns del motor — l'Arbre Virtual del Document, el pipeline
+de diverses passades i el bucle de convergència — consulta el document
+d'[Arquitectura](/ca/docs/architecture). Per a una referència completa de totes les opcions de
+configuració — des de la geometria de pàgina fins als estils de taula, peu de figura i
+diagrama — consulta la pàgina de [Configuració](/ca/docs/configuration). I per provar-ho tot en
+viu — editor del text de cada capítol, tauler de recursos amb editor de taules i pujada
+d'imatges i SVG, un tauler de Disseny que recorre cada opció en termes editorials i
+previsualitzacions en viu en canvas, HTML i PDF — obre el [Sandbox](/ca/docs/sandbox).
+
+
+## Reconeixements
+
+**[Pretext](https://github.com/chenglou/pretext)** de Cheng Lou — la biblioteca fonamental de
+mesura de text que fa possible Postext. Sense una mesura pixel-perfect, sense DOM i a velocitat
+de submil·lisegon, res d'això no seria pràctic.
+
+**Content First** (~2014) — l'exploració original de la composició editorial d'alta qualitat al
+web. Una dècada topant amb murs, aprenent què no funciona, i construint la convicció que aquest
+problema mereix una solució de debò.
+
+Postext es recolza en segles de tradició tipogràfica. Les regles que implementa no són
+inventades — són heretades de la feina de tipògrafs, dissenyadors i compositors que van refinar
+l'ofici de fer el text llegible molt abans que existissin les pantalles. Des dels tipus mòbils de
+Gutenberg fins a la tipografia asimètrica de Tschichold, passant pels *Elements de l'estil
+tipogràfic* de Bringhurst, l'ofici de disposar text sobre una pàgina fa més de cinc-cents anys
+que evoluciona. Postext porta aquesta saviesa acumulada al web, on ha brillat per la seva absència.

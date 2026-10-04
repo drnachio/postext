@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from "postext-sandbox";
+import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_ZH_HANS } from "postext-sandbox";
 import { useTranslations, useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
@@ -25,6 +25,7 @@ const RECIPE_SLUG = /^[a-z0-9-]+$/;
 const GUIDE_MARKDOWN: Record<SiteLocale, string> = {
   en: DEFAULT_MARKDOWN_EN,
   es: DEFAULT_MARKDOWN_ES,
+  ca: DEFAULT_MARKDOWN_CA,
   zh: DEFAULT_MARKDOWN_ZH_HANS,
 };
 
@@ -33,12 +34,13 @@ const GUIDE_MARKDOWN: Record<SiteLocale, string> = {
  *  its pages (`public/cookbook/<slug>/<variant>/<slug>.postext`). A recipe
  *  captured in one language only still opens from the other language's
  *  link: the sandbox tries the variants in order. Recipes are captured in
- *  English and Spanish only: a link in any other language (`lang=zh-Hans`)
- *  tries English first. */
+ *  English and Spanish only: a Catalan link (`lang=ca`) tries Spanish
+ *  first, any other language (`lang=zh-Hans`) English. */
 const HASH_BUNDLES = {
   recipe: (slug: string, lang: string | null) => {
     if (!RECIPE_SLUG.test(slug)) return null;
-    const first = lang !== null && /^es(-|$)/i.test(lang) ? "es" : "en";
+    // Catalan reads the Spanish capture first, the nearer language.
+    const first = lang !== null && /^(es|ca)(-|$)/i.test(lang) ? "es" : "en";
     const second = first === "es" ? "en" : "es";
     return [first, second].map((variant) => `/cookbook/${slug}/${variant}/${slug}.postext`);
   },

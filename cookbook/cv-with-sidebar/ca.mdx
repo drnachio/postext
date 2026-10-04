@@ -1,0 +1,63 @@
+---
+title: "Currículum d'una pàgina amb barra lateral"
+summary: "Un currículum A4 amb la barra pruna com a requadre a la columna esquerra, només per a flotants; unes caixes de la capçalera la prolonguen pels marges."
+plain: "Un currículum d'una pàgina per a una dissenyadora de llibres, amb una franja de color a l'esquerra per a les dades de contacte i les habilitats. Les dates de cada lloc de feina s'alineen a la dreta."
+description: "Un currículum d'una pàgina a columna i mitja, amb un requadre pruna que omple la columna lateral i caixes de la capçalera que porten aquest color a sang."
+question: "Com componc un currículum d'una pàgina amb una columna lateral de color i les dates a la dreta?"
+aliases: ["currículum", "currículum vitae", "CV", "full de vida", "barra lateral", "currículum a dues columnes", "dates alineades a la dreta", "habilitats en etiquetes", "resume"]
+pageNotes: { "1": "Un currículum A4. Una banda pruna recorre la vora esquerra del full de dalt a baix; a dalt de tot, una pila de cinc llibres enquadernats en tela albercoc, blanca, gerd i lila queda a l'altura de la línia de base del nom. A sota, majúscules albercoc encapçalen les seccions, de text blanc: Contacte; Habilitats i Eines, en píndoles arrodonides; Llengües, Formació, Docència i Fora de la feina. A la pàgina blanca de la dreta, Irene Salcedo en lletra amb gràcies de cos gran, DISSENYADORA EDITORIAL I DIRECTORA D'ART en majúscules petites de color gerd, un perfil de cinc línies i després Experiència, un títol gerd en lletra amb gràcies seguit d'un filet fi fins al marge, tres llocs de feina amb el càrrec a l'esquerra, les dates a la dreta a la mateixa línia i l'empresa en cursiva a sota, una llista de Llibres seleccionats i un colofó d'una línia." }
+---
+
+## Què compondràs
+
+El currículum d'Irene Salcedo, dissenyadora editorial fictícia establerta a Madrid, en un sol full A4. Una banda pruna de 66 mm d'amplada recorre la vora esquerra de dalt a baix. A dalt de tot, una pila de llibres enquadernats en tela, dibuixada en codi, queda a l'altura de la línia de base del nom. A sota hi ha el contacte, les habilitats i eines en píndoles, les llengües, la formació, la docència i les seves aficions. El nom, en Hedvig Letters Serif de 46 pt, encapçala una columna de text de 118 mm amb un perfil de cinc línies, tres llocs de feina i els llibres que ha dissenyat. Cada lloc de feina porta el càrrec a l'esquerra i les dates a la dreta a la mateixa línia de base, amb l'empresa en cursiva a sota. El primer títol de la barra comparteix línia de base amb la professió, sota el nom.
+
+## Elaboració
+
+### 1 · Niua les seccions en un sol requadre lateral
+
+<Excerpt region="sections" />
+
+Dins de la columna, la banda és el requadre de [la resposta curta](#la-resposta-curta). S'obre abans del nom, i per això `span="side"` el col·loca al capdamunt de la columna només per a flotants. Les seccions hi van niuades com a requadres sense fons propi, de manera que el pruna corre sense talls de Contacte a Fora de la feina. Compostes com a requadres laterals solts, queden separades per franges de paper de 4,7 a 9,1 mm, fins i tot amb `marginBottom` a 0. Les píndoles fan uns 3,9 mm d'alçada. Habilitats i Eines fan servir un estil propi, `chips`, l'interlineat de 16 pt del qual deixa 1,8 mm entre files; amb els 12,4 pt de les altres seccions, quedarien a mig mil·límetre les unes de les altres ([estils de xip](/ca/docs/configuration#estils-de-xip)).
+
+### 2 · Pinta els marges al voltant de la columna
+
+<Excerpt region="margins" />
+
+Com que la columna lateral queda dins dels marges, el requadre s'atura a 9 mm de la vora esquerra i a 18 mm de la superior. Tres caixes de la capçalera omplen el marge superior damunt la columna, l'esquerre de dalt a baix i l'inferior sota la columna. Els elements de la capçalera es pinten després del text i a sobre; per això la recepta els deixa als marges, on no hi ha text. A més, es repeteixen a totes les pàgines, i una segona pàgina també portaria la banda ([capçaleres i peus](/ca/docs/configuration#capçaleres-i-peus)). Les caixes de dalt i de l'esquerra munten 0,5 mm sobre el requadre, i la del peu puja 1 mm per damunt del peu de la columna, sobre el final del requadre, perquè no s'hi vegi un fil de paper a les juntes. El `:::space` que tanca el requadre l'allarga fins a 278,0 mm, 0,8 mm per damunt del peu de la columna, amb 2,76 línies en anglès i 1,76 en castellà.
+
+### 3 · Compon el nom al capdamunt de la columna de text
+
+<Excerpt region="name" />
+
+L'H1 conserva el `span: 'column'` per defecte. Amb `'page'` es compon com a obertura sobre les dues columnes; com que va darrere del requadre lateral, passa a la pàgina 2, i allà la columna lateral comença sota el nom, a 45,9 mm. `breakBefore` està desactivat perquè el requadre lateral ja és a la pàgina: amb salt, el nom i tota la columna de text passen a la pàgina 2. El `marginBottom` del nivell, una línia de la retícula, baixa el perfil de 41,3 a 45,9 mm. El farciment superior del requadre lateral és `ROLE_Y`, l'alçada del nom més l'aire que el separa de la professió, de manera que el primer títol de la barra i la professió comparteixen línia de base, a 39,3 mm de la vora superior.
+
+### 4 · Posa les dates a la línia del càrrec
+
+<Excerpt region="jobs" />
+
+Cada lloc de feina és un H3 amb els atributs que porten l'empresa i les dates: `### Directora de arte {org="Ediciones del Albardín, Madrid" dates="2021 – actualidad"}` ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El càrrec i les dates s'ancoren al capdamunt del mateix contenidor, cadascun en una cantonada, amb el mateix cos i interlineat, i per això comparteixen línia de base. El càrrec té una amplada màxima de 84 mm i admet diverses línies: un de llarg salta a la segona abans d'arribar a les dates, i l'empresa baixa amb ell. Cada títol de secció ocupa, amb l'espai de damunt, tres línies justes de la retícula, i així tots els llocs de feina comencen 9 pt per sota d'una línia, tant si vénen d'un títol de secció com d'una llista.
+
+## Variants
+
+### Canvia el color de la banda
+
+Cada color s'escriu una sola vegada, a `palette`, i d'allà el prenen les caixes de la banda, el requadre lateral, els xips, la professió, els títols i el dibuix. Amb aquestes tres línies, la banda, l'accent i els xips passen a verd blavós.
+
+```diff
+-  band: '#3a2235', // the sidebar
++  band: '#1d3b3a', // the sidebar
+-  accent: '#8f3b62', // on paper: the role and the section heads (7.1:1)
++  accent: '#2b5f5b', // on paper: the role and the section heads (7.3:1)
+-  chip: '#744d6c', // on the band: the skill chips
++  chip: '#456d69', // on the band: the skill chips
+```
+
+### Porta figures a la mateixa columna
+
+El <RecipeLink slug="textbook-margin-column">llibre de text amb columna al marge</RecipeLink> posa figures, peus laterals i glosses en una columna només per a flotants a la vora exterior de cada pàgina.
+
+## Errors freqüents
+
+- Ajusta el `:::space` a la pàgina. A l'edició castellana, 1,76 línies acaben el requadre 0,8 mm per damunt del peu de la columna. Amb 1,96 línies passa del peu en 0,1 mm i tota la barra se'n va a la pàgina 2; amb 1,66 s'obre una franja de paper entre el requadre i la caixa del peu.
+- Una caixa del disseny del nom no serveix per pintar la banda. Si acaba just damunt del peu de la columna, el títol reserva 265 mm, més que els 260,8 mm de la columna, i el text passa a la pàgina 2; si arriba fins al peu del full, el títol perd l'alçada que reservava i el perfil puja a 30,3 mm i es munta sobre la professió.

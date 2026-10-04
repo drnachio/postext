@@ -19,10 +19,12 @@ describe("docs table of contents", () => {
       "skill",
     ]);
     for (const doc of docs) {
-      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["en", "es", "zh"]);
+      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["ca", "en", "es", "zh"]);
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.es!.order);
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.zh!.order);
       expect(doc.locales.zh!.lang, doc.slug).toBe("zh");
+      expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.ca!.order);
+      expect(doc.locales.ca!.lang, doc.slug).toBe("ca");
     }
   });
 
@@ -56,7 +58,7 @@ describe("docs table of contents", () => {
   });
 
   it("gives every heading of the Chinese layout page its own title", () => {
-    for (const locale of ["en", "es", "zh"] as const) {
+    for (const locale of ["en", "es", "ca", "zh"] as const) {
       const texts = extractToc(getDocSource("chinese-layout", locale)!.source).map((t) => t.text);
       expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
     }
@@ -67,7 +69,7 @@ describe("docs table of contents", () => {
     // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
     // <code>{'*…*'}</code> prints nothing. A character reference stays
     // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
-    for (const locale of ["en", "es", "zh"] as const) {
+    for (const locale of ["en", "es", "ca", "zh"] as const) {
       const { source } = getDocSource("chinese-layout", locale)!;
       for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
         expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
@@ -80,7 +82,7 @@ describe("docs table of contents", () => {
     (page, locale) => {
       const { source } = getDocSource(page, locale)!;
       const own = new Set(extractToc(source).map((t) => t.id));
-      for (const m of source.matchAll(/\]\(\/(en|es|zh)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
+      for (const m of source.matchAll(/\]\(\/(en|es|ca|zh)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
         const [, lang, slug, anchor] = m;
         expect(lang, m[0]).toBe(locale);
         const doc = getDocSource(slug!, locale);

@@ -151,6 +151,12 @@ export const STOP_WORDS: Record<Locale, ReadonlySet<string>> = {
     "me", "mi", "mis", "muy", "no", "o", "para", "pero", "por", "que", "se", "si", "sin", "sobre",
     "su", "sus", "tu", "un", "una", "uno", "unos", "y", "yo",
   ]),
+  ca: new Set([
+    "a", "al", "als", "amb", "com", "de", "del", "dels", "el", "els", "en", "entre", "es", "esta",
+    "aquest", "aquesta", "aixo", "hi", "ho", "i", "la", "les", "li", "lo", "ma", "mes", "meu", "molt",
+    "no", "o", "on", "per", "pero", "que", "quan", "qual", "se", "si", "sense", "sobre", "seu",
+    "seus", "teu", "un", "una", "uns", "unes", "jo",
+  ]),
 };
 
 /** Lowercase and without diacritics: "Cómo" → "como", "Título" → "titulo". */
@@ -167,6 +173,13 @@ function singular(term: string, locale: Locale): string {
     if (term.length > 4 && /ces$/.test(term)) return term.slice(0, -3) + "z";
     if (term.length > 4 && /[^aeiou]es$/.test(term)) return term.slice(0, -2);
     if (/[aeiou]s$/.test(term)) return term.slice(0, -1);
+    return term;
+  }
+  if (locale === "ca") {
+    // taules / taula → taul, imatges / imatge → imatg, colors → color
+    if (term.length > 4 && /es$/.test(term)) return term.slice(0, -2);
+    if (/[^aeiou]s$/.test(term)) return term.slice(0, -1);
+    if (term.length > 4 && /[ae]$/.test(term)) return term.slice(0, -1);
     return term;
   }
   // boxes → box, classes → class, entries → entry, captions → caption
@@ -192,7 +205,7 @@ export function makeProcessTerm(locale: Locale): (term: string) => string | null
 
 /** The search locale of a site locale segment, English for anything else. */
 export function searchLocale(locale: string): Locale {
-  return locale === "es" || locale === "zh" ? locale : "en";
+  return locale === "es" || locale === "ca" || locale === "zh" ? locale : "en";
 }
 
 // ─── MiniSearch ─────────────────────────────────────────────────────────────
@@ -226,6 +239,7 @@ export function miniSearchOptions(locale: Locale): Options<SearchDocument> {
 export const MINISEARCH_OPTIONS: Record<Locale, Options<SearchDocument>> = {
   en: miniSearchOptions("en"),
   es: miniSearchOptions("es"),
+  ca: miniSearchOptions("ca"),
   zh: miniSearchOptions("zh"),
 };
 

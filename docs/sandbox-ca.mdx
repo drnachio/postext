@@ -1,0 +1,800 @@
+{/* docs/sandbox-ca.mdx */}
+
+export const metadata = {
+  title: 'Sandbox',
+  sidebarTitle: 'Sandbox',
+  description: 'Entorn interactiu per experimentar amb el motor de maquetació de Postext',
+  lang: 'ca',
+  lastUpdated: '2026-09-29',
+  readingTime: '15 min',
+  order: 8,
+  plainSummary: "El Sandbox és una eina gratuïta d'aquest web per provar Postext sense instal·lar res. Escrius el text a una banda i veus les pàgines acabades a l'altra, i canvien mentre escrius. Pots triar tipografies, mides de pàgina, columnes i colors, i afegir imatges. Pots organitzar la teva feina com un llibre amb capítols i baixar-lo en PDF. La teva feina es desa al teu propi navegador sobre la marxa.",
+};
+
+# Sandbox
+
+**Un entorn interactiu per al motor de maquetació de Postext.**
+
+El Sandbox t'ofereix una interfície d'editor on escrius el text, gestiones els recursos i les fonts, ajustes el disseny i veus el resultat en temps real en cinc vistes sincronitzades: **canvas**, **PDF**, **Folio** (el llibre imprès en 3D), **HTML** i **EPUB 3**. Està pensat per experimentar: pots canviar la tipografia o el nombre de columnes, provar diferents col·locacions de les figures i observar com respon el motor. Els taulers fan servir paraules de l'ofici editorial (llibres, figures, requadres, capçaleres) en lloc de termes del motor, de manera que qui ve del món del llibre s'hi orienta sense conèixer l'esquema de configuració. Tots els controls es poden fer servir amb el teclat i amb lectors de pantalla.
+
+## Disposició de la interfície
+
+El Sandbox té tres àrees principals: una **barra d'activitat** estreta per canviar de tauler, una **barra lateral** redimensionable amb el tauler actiu i un **viewport** a la dreta amb les pestanyes de sortida. Les capçaleres dels taulers, la barra de pestanyes del viewport i la cel·la del logotip, a dalt de la barra d'activitat, comparteixen la mateixa alçada, de manera que la franja superior es llegeix com una sola línia a tota l'amplada de la finestra.
+
+<Illustration name="SandboxLayout" data='{"title": "Interfície del Sandbox", "desc": "Barra d’activitat a l’esquerra amb sis taulers retolats, barra lateral redimensionable al centre i viewport a la dreta amb les pestanyes Canvas, PDF, Folio, HTML i EPUB 3.", "caption": "Tres àrees: barra d’activitat, barra lateral redimensionable i viewport amb pestanyes de sortida.", "activityBar": "Activitat", "activityIcons": ["📚", "¶", "▣", "T", "⚙", "⚠"], "activityLabels": ["Llibres", "Text", "Recursos", "Fonts", "Disseny", "Revisió"], "sidebarTitle": "Barra lateral", "sidebarSubtitle": "tauler actiu", "viewportTitle": "Viewport", "tabs": ["Canvas", "PDF", "Folio", "HTML", "EPUB 3"], "resizeHint": "arrossega per redimensionar"}' />
+
+### Barra d'activitat
+
+Una tira estreta a la vora esquerra té un botó per tauler. Cada botó mostra una icona amb una etiqueta d'una paraula a sota, i una indicació més llarga com a tooltip (la mateixa indicació és la descripció accessible del botó). De dalt a baix:
+
+- **Llibres** (icona `Files`): els teus llibres i els llibres d'exemple
+- **Capítols** (icona `BookOpen`): el llibre obert i els seus capítols
+- **Text** (icona `FileCode`): escriu i corregeix el text del capítol actual
+- **Recursos** (icona `FolderOpen`): imatges, dibuixos SVG i taules que fa servir el llibre
+- **Fonts** (icona `Type`): els tipus de lletra que fa servir el llibre i els teus propis fitxers de font
+- **Disseny** (icona `Settings2`): configuració de pàgina, tipografia, títols, figures, requadres i exportació
+- **Revisió** (icona `AlertTriangle`): problemes de composició trobats a la maquetació. La icona porta una insígnia amb el recompte d'avisos actuals, limitada a `99+`.
+
+Prémer el botó del tauler actiu replega la barra lateral, i prémer un altre botó canvia a aquell tauler. La barra és una sola parada de tabulació: les fletxes (↑ / ↓, amb tornada al principi), **Inici** i **Fi** mouen el focus entre els botons, i Retorn o Espai obren el tauler que té el focus.
+
+L'aplicació amfitriona pot afegir els seus propis elements a la barra: un **enllaç amb el logotip d'inici** opcional a la cel·la superior (mitjançant les props `homeUrl` o `homeLink`), i un **commutador de tema** i un **selector d'idioma** a la part inferior. Els llibres complets s'intercanvien com a fitxers `.postext` des del tauler Llibres, i les capçaleres dels taulers Text i Disseny exporten la seva pròpia part (consulta [Exportar i importar](#exportar-i-importar)).
+### Taulers laterals
+
+La barra lateral es pot redimensionar. Arrossega el separador entre la barra lateral i el viewport, o enfoca'l amb Tab i fes servir el teclat: ← / → canvien l'amplada un 2 % (un 10 % amb Maj), i **Inici** / **Fi** salten a l'amplada mínima i a la màxima. El separador anuncia el seu valor actual als lectors de pantalla, i el viewport sempre conserva com a mínim 200 px. La barra lateral es replega del tot quan no hi ha cap tauler actiu, i la seva amplada es recorda entre sessions.
+
+Les files de configuració posen l'etiqueta al costat del control, o a sobre quan la barra lateral és estreta. Per fer-ho s'usen container queries, de manera que segueixen l'amplada de la barra lateral i no la de la finestra.
+
+#### Tauler de text
+
+Un editor CodeMirror 6 per al Markdown del capítol. Els lectors de pantalla l'anuncien com a *Text del capítol*. Ofereix:
+
+- **Ressaltat de sintaxi**: títols, èmfasi, enllaços, blocs de codi i citacions es distingeixen a primer cop d'ull, amb ressaltat propi per al **frontmatter YAML**, les regions de **matemàtiques LaTeX**, els **xips en línia** (`:chip[…]`: els claudàtors i els atributs queden marcats i el text del xip, tenyit), les **versaletes** (`:smallcaps[…]`: els claudàtors queden marcats i el text es mostra en versaletes), les **marques d'orientació** del text vertical (`:tcy[…]`, `:upright[…]`, `:sideways[…]`: els claudàtors marcats i el text subratllat amb punts) i les **anotacions xineses** (`:dots[…]`, `:name[…]` i `:book[…]` amb la seva marca dibuixada sota el text; `:ruby[…]{rt="…"}` i `{紅樓|hóng|lóu}`; `:warichu[…]` amb la nota en cos menor). En escriure `:do`, `:na`, `:bo`, `:ru` o `:wa` s'ofereix la directiva
+- **Compleció de xips**: en escriure `:c` al principi d'un mot s'ofereix `:chip[…]` (el cursor queda entre els claudàtors). Dins de `{style="…"}` s'ofereixen els ids dels estils de xip configurats.
+- **Compleció de versaletes**: en escriure `:sm` al principi d'un mot (o just després de `*` o `_`) s'ofereix `:smallcaps[…]`, amb el cursor entre els claudàtors.
+- **Números de línia** i ressaltat de la línia activa
+- **Ajust de línia** per als paràgrafs llargs
+- **Línies de dreta a esquerra**: una línia el text de la qual comença amb una lletra àrab o hebrea va de dreta a esquerra, i el cursor i les fletxes la segueixen. El marcatge que conté (atributs `{…}`, etiquetes `[^id]`, el nom d'una directiva, un `:ref[fig-1]` sencer, fórmules, codi, destinacions d'enllaç) es manté d'esquerra a dreta, de manera que es llegeix tal com es va escriure. Les tanques, el preàmbul i les línies que comencen amb un mot llatí continuen d'esquerra a dreta.
+- **Barra d'eines**: comença amb **Desfer / Refer**, seguits de negreta, cursiva, títols de nivell 1–3, enllaç, codi en línia, **xip** (embolcalla la selecció en `:chip[…]`), **versaletes** (l'embolcalla en `:smallcaps[…]`), citació, llistes numerades i amb pics, i tres inseridors de directives:
+  - `:::pagebreak`
+  - `:::space`: una línia d'espai vertical (`:::space{lines=N}` per a més)
+  - `:::numbering{format="decimal" startAt=1}`: s'insereix amb atributs d'exemple que pots ajustar
+
+Les aplicacions amfitriones poden afegir els seus propis botons a la barra amb `extraActions`. L'editor també comunica el seu cursor i la seva selecció a les previsualitzacions, cosa que permet la sincronització clic-a-cursor: en fer clic al text de la sortida, el cursor salta a la posició corresponent del Markdown, i les previsualitzacions poden ressaltar la selecció actual.
+
+La capçalera del tauler és un **selector de capítols**: fletxes anterior/següent, la posició i el títol del capítol, i un menú amb tots els capítols del llibre i el seu interval de pàgines tan bon punt se'n coneix la paginació (consulta [Llibres i capítols](#llibres-i-capítols)). Cada capítol té la seva pròpia instància de l'editor, de manera que l'historial de desfer i la posició del cursor es conserven per capítol. La capçalera ofereix, a més, tres accions:
+
+- **Restablir** (demana confirmació): torna a carregar la **part de document** del llibre d'exemple obert. Tots els capítols i tot el conjunt de figures se substitueixen pels de l'exemple (en l'exemple integrat, el document de mostra de la llengua i els seus recursos d'exemple). El disseny no es toca, excepte les fonts pròpies de l'exemple. Consulta [Tauler de llibres](#tauler-de-llibres).
+- **Exportar**: baixa el capítol actiu com a fitxer `.md`, amb el nom `<libro>-<nn>-<capítulo>.md` en un llibre de diversos capítols i, si no, amb el del llibre obert o `document.md`
+- **Importar**: substitueix el capítol actiu pel contingut d'un fitxer `.md`
+
+#### Tauler de llibres
+
+El primer tauler de la barra d'activitat: la galeria dels teus llibres i dels llibres d'exemple, amb el menú **Nou**, l'estat de l'última operació i la franja d'un llibre d'exemple que té una versió nova. Al codi i a l'emmagatzematge un llibre encara es diu *projecte* (*project*), i un llibre d'exemple, *preset*.
+
+En prémer un llibre (o una de les etiquetes de llengua d'un llibre d'exemple) s'obre i, tan bon punt és a la pantalla, la barra lateral passa al [tauler de capítols](#tauler-de-capítols). Si prems el llibre que ja és obert, hi passa directament. Els menús de les files (canviar el nom, duplicar, baixar, amagar, suprimir) mai no canvien de tauler. El llibre obert continua marcat a la llista. El tauler té dos grups:
+
+- **Els meus llibres**: llibres locals i editables desats al navegador (IndexedDB). L'obert apareix marcat; els seus capítols són al tauler de capítols.
+
+  Mentre tens obert un llibre propi, el document de treball *és* aquest llibre. Cada canvi en el text, el disseny, les figures i les fonts s'hi desa automàticament (amb el mateix retard d'1 segon que `localStorage`), de manera que pots canviar de llibre i tornar-hi sense perdre res. Els llibres es creen des del menú **Nou** de la capçalera:
+    - **Còpia del llibre obert** copia el llibre obert, les seves figures i les seves fonts en un llibre nou.
+    - **Llibre en blanc** en comença un de buit.
+    - **Obrir un fitxer .postext…** importa un fitxer.
+
+  També pots duplicar qualsevol fila. Mentre no tinguis llibres propis, el grup mostra un estat buit amb la mateixa drecera. Cada fila té un únic menú **⋯** retolat (*Més accions de «…»*) amb **Canviar el nom…**, **Duplicar**, **Baixar (.postext)** i **Suprimir…**. Suprimir demana confirmació just al costat del botó ⋯.
+
+  Canviar el nom obre en línia els camps de nom i descripció. Retorn en qualsevol dels dos confirma tots dos, i Escapada cancel·la.
+
+  Un llibre porta, a més, una **portada**, que apareix on un llibre d'exemple mostra la seva miniatura. En fer una còpia d'un llibre d'exemple (o d'un altre llibre), la còpia n'hereta la portada. Mentre es reanomena una fila, la portada és el control que la canvia: fes-hi clic per triar un PNG, JPEG, WebP, GIF o SVG, o fes servir la X del costat per treure l'actual. La portada és del llibre, no de les seves figures, i viatja amb ell en exportar i importar.
+
+  Un llibre sense portada l'obté de la seva **primera pàgina** (la primera pàgina del seu primer capítol): la primera vegada que aquesta pàgina es maqueta i es pinta a la pestanya Canvas, el Sandbox en fa una imatge petita (240 px d'amplada, en JPEG) quan el navegador està desocupat, amb les fonts i les imatges de la pàgina ja carregades. Es desa com a portada del llibre, de manera que una baixada la porta com a `thumbnail` del paquet. Un llibre d'exemple que no porta miniatura obté la seva de la mateixa manera; es desa al navegador (el magatzem `presetCovers` de la base de dades IndexedDB, una per exemple i llengua), apareix a la seva fila i l'hereten les seves còpies i les seves baixades. Una portada que ja existeix mai no se substitueix, tant si ve de l'exemple, d'un fitxer importat, de la teva elecció o d'una captura anterior. Si treus la portada, es torna a prendre de la primera pàgina en una visita posterior.
+
+  Obrir un llibre mai no demana confirmació: el llibre que deixes es desa abans, sigui quin sigui. Mentre es carrega el següent, el visor mostra *S'està obrint el llibre…* en lloc del llibre que deixes. Si suprimeixes el llibre obert, es torna a l'exemple integrat.
+
+- **Llibres d'exemple**: punts de partida, llistats sota els teus llibres. El paquet en si mai no canvia, però els teus canvis en un llibre d'exemple es conserven: el primer canvi desa una còpia (el seu *esborrany*) al navegador, una per exemple i llengua, i la fila mostra l'etiqueta *Editat*. En tornar a obrir aquest exemple en aquesta llengua torna la teva versió; un exemple que no has tocat s'obre tal com es va publicar. El menú ⋯ de cada fila ofereix:
+    - **Fer-ne una còpia pròpia** converteix l'exemple en un llibre teu amb les seves pròpies còpies dels fitxers del paquet, de manera que editar després el paquet al disc mai no l'afecta.
+    - **Baixar (.postext)** desa l'exemple com a fitxer `.postext`.
+    - **Amagar de la llista** retira l'exemple de la llista (l'integrat no es pot amagar).
+    - **Restaurar l'original…** descarta els teus canvis en l'exemple (en totes les seves llengües) i, si és obert, carrega en el seu lloc la versió publicada. Demana confirmació i només apareix en els exemples editats.
+
+  Un exemple en diverses llengües mostra una etiqueta per llengua, en l'ordre del seu manifest: 繁 i 简 per al xinès tradicional i el simplificat, el codi de la llengua (EN, ES) per a les altres; la descripció emergent anomena la llengua en la de la interfície (*Carregar la versió en xinès tradicional*). Un exemple l'original del qual és en una llengua diferent de la de la interfície (una novel·la xinesa amb traducció anglesa) indica en quina s'obre (`openLocale`, consulta [Format de paquet de preset](#format-de-paquet-de-preset)), de manera que un clic a la seva fila mostra l'original.
+
+  Els exemples amagats es recullen en un desplegable *Llibres d'exemple amagats* al final del grup, cadascun amb **Mostrar a la llista**. L'elecció es recorda a `localStorage`.
+
+Un fitxer `.postext` obert des del menú **Nou** es converteix en un llibre nou i obert. Si el fitxer és en diverses llengües, abans pregunta quina importar, començant per aquella en què està escrit (el `locale` del seu manifest). Exportar és una acció de cada fila: la del llibre obert exporta el que hi ha a la pantalla. Un fitxer `.postext` és un directori de paquet de preset comprimit en zip (consulta [Exportar i importar](#exportar-i-importar)).
+
+Els botons Restablir dels taulers Text i Disseny restauren l'exemple del qual es va copiar un llibre. Un llibre en blanc o importat no té original, de manera que aquests botons s'amaguen mentre és obert.
+
+#### Tauler de capítols
+
+El segon tauler de la barra d'activitat mostra només el llibre obert. A dalt, el seu nom, quin tipus de llibre és (*Llibre propi*, o *Llibre d'exemple* amb la seva llengua i l'etiqueta *Editat* tan bon punt el canvies) i un menú ⋯ amb les accions que s'hi poden fer: **Canviar el nom…** en els teus llibres (també amb doble clic al nom), **Duplicar** o **Fer-ne una còpia pròpia**, **Baixar (.postext)** i **Restaurar l'original…** en un llibre d'exemple editat.
+
+A sota, els seus **capítols** ocupen la resta del tauler, amb el seu propi desplaçament (consulta [Llibres i capítols](#llibres-i-capítols)). Cada fila de capítol mostra el seu interval de pàgines i el seu nombre de mots, i el capítol actiu apareix marcat. Un llibre en xinès, japonès o coreà compta caràcters: cada caràcter han, kana o hangul compta un, i també cada mot llatí entre ells. **Afegir capítol** és a la capçalera del tauler, al costat del nombre de capítols; les files es reordenen arrossegant-ne la nansa (o amb les fletxes sobre ella) i el menú ⋯ de cada capítol ofereix **Reanomenar**, **Pujar / Baixar**, **Dividir per títols de nivell 1**, **Fusionar amb el capítol anterior** i **Suprimir** (l'últim capítol no es pot suprimir mai).
+
+##### Llibres d'exemple (presets)
+
+Un **paquet de preset** és un punt de partida complet que es carrega com una unitat: el Markdown dels capítols, un `PostextConfig`, els recursos (amb els seus continguts de mapa de bits/SVG i els seus models de taula) i els fitxers de fonts personalitzades als quals fa referència la configuració. El tauler llista tots els presets a què pot accedir el Sandbox i marca l'obert:
+
+- **Preset integrat**: la *Guia de Postext*, el llibre d'exemple per defecte que acompanya el paquet. Sempre és disponible, sempre és el primer de la llista i és **públic**. És en castellà, en català, en anglès i en xinès simplificat (els botons ES, CA, EN i 简 de la seva fila; `#preset=postext-guide&lang=zh-Hans` enllaça amb l'edició xinesa). L'edició xinesa té un disseny propi (Noto Serif SC i Noto Sans SC, puntuació i tall de línies de la Xina continental) i figures amb rètols en xinès; la interfície continua en castellà o en anglès, i una guia xinesa sense tocar continua en xinès quan el Sandbox s'obre en qualsevol de les dues.
+- **Presets remots**: paquets servits per HTTP des de les URL base passades a la prop `presetSources` (consulta [Props](#props)). Cada font és pública o **privada**. Els presets privats porten l'etiqueta *Privat* a la llista i estan pensats per a material que no ha de sortir d'una màquina. El lloc web públic només llista una font privada en desenvolupament local, on l'aplicació Next.js serveix la carpeta indicada per `POSTEXT_PRIVATE_PRESETS_DIR` a través de `/api/private-presets`. En producció no es llista mai. La font pública del lloc web, `/presets`, serveix els seus llibres d'exemple: *Bioquímica*, *Cielo profundo*, *Don Quijote*, *Física universitaria (OpenStax)*, *Pintura española* i *Señales 2020* en castellà i anglès, *Somni del pavelló vermell* en tres edicions i *El paradís perdut* en anglès, amb les notes de Verity a peu de pàgina i les làmines de Doré. Cadascun porta la seva llicència i els seus crèdits.
+- **`default: true`**: un preset privat marcat com a predeterminat es carrega automàticament la primera vegada que s'obre un Sandbox *intacte* (amb el document integrat sense tocar). Si n'hi ha diversos de marcats, guanya aquell el `locale` del qual coincideix amb la llengua de la interfície. Els presets públics no es carreguen mai automàticament.
+
+Cada fila mostra el nom del preset, una descripció opcional, la seva etiqueta de llengua i les seves etiquetes *Privat* / *Per defecte*. Prémer una fila carrega el preset **complet**: text, figures, disseny i fonts. El Sandbox escriu primer els fitxers de font i les dades de les figures a IndexedDB, de manera que els viewports mai no veuen un document a mig aplicar. Prémer una fila obre l'exemple en la llengua de la interfície, tret que només l'hagis editat en una altra llengua: llavors s'obre la teva versió més recent. Les etiquetes de llengua d'un exemple bilingüe l'obren en aquesta llengua (la teva versió en aquesta llengua, si la tens).
+
+**Presets en viu.** Els presets remots se segueixen automàticament. Cada vegada que s'aplica un preset, el Sandbox registra l'*empremta* (fingerprint) del paquet juntament amb els hashes del Markdown, la configuració i el conjunt de recursos que va aplicar. Mentre la pàgina és visible, consulta l'empremta cada 3 segons, i immediatament quan la pestanya torna a ser visible o la finestra recupera el focus. Quan l'empremta canvia:
+
+- Si el llibre és **intacte** (Markdown, configuració i recursos continuen donant els hashes que va aplicar el preset), el preset es torna a aplicar del tot i al tauler apareix un avís breu.
+- Si hi ha **canvis locals**, es conserven. Una franja a la part superior del tauler (*Hi ha una versió nova d'aquest llibre d'exemple. Els teus canvis es conserven.*) ofereix **Carregar la versió nova**, que demana confirmació abans de descartar els teus canvis en aquesta llengua de l'exemple, i mentrestant el botó Llibres de la barra d'activitat mostra un punt. L'esborrany recorda la versió de la qual va partir, de manera que la franja torna cada vegada que l'obres fins que carregues la versió nova. Les figures de l'esborrany els fitxers de les quals canvien a la versió nova conserven les dades que tenien: l'esborrany rep la seva pròpia còpia abans que s'escriguin les del paquet. Els paquets només se segueixen mentre hi ha un llibre d'exemple obert. Un llibre copiat d'un d'ells conserva la seva pròpia còpia.
+
+La mateixa comprovació s'executa en carregar, de manera que si edites un paquet i després obres el Sandbox, recull la versió nova sempre que el llibre fos intacte. L'empremta prové de `<directorio-del-preset>/fingerprint.json`. A la ruta de desenvolupament és un fitxer virtual que respon amb un hash del directori basat només en metadades (consulta l'apèndix [Format de paquet de preset](#format-de-paquet-de-preset)). Les fonts que no el serveixen no se segueixen.
+
+El llibre d'exemple obert determina, a més, què restauren els botons **Restablir** dels altres taulers:
+
+<table>
+  <thead>
+    <tr>
+      <th>Tauler</th>
+      <th>Restablir restaura</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Text</td>
+      <td>El text de l'exemple i el seu conjunt de figures (la part de document)</td>
+    </tr>
+    <tr>
+      <td>Disseny</td>
+      <td>El disseny de l'exemple, fonts incloses</td>
+    </tr>
+    <tr>
+      <td>Llibres (Restaurar l'original…)</td>
+      <td>Tot: text, figures, disseny i fonts</td>
+    </tr>
+  </tbody>
+</table>
+
+Un preset que va estar obert en una sessió anterior però que ja no llista cap font (normalment un preset privat en una compilació que no el serveix) continua apareixent, atenuat com a *No disponible en aquesta compilació*. El Sandbox conserva el contingut carregat en lloc de canviar-lo sense avisar per l'exemple integrat. L'id del preset obert es desa sota la clau `postext-sandbox-preset` (consulta [Persistència](#persistència)). El format del paquet es descriu a l'apèndix [Format de paquet de preset](#format-de-paquet-de-preset).
+
+#### Tauler de recursos
+
+Gestiona els recursos del llibre: imatges de mapa de bits, figures SVG i taules. El text s'hi refereix amb blocs `::resource{id="…"}` i referències en línia `:ref{id="…"}`. Per a la sintaxi de referència i el model de flotació, consulta [Format de document → Recursos](/ca/docs/document-format#recursos).
+
+**Vista de llista.** La capçalera mostra el nombre de recursos. Els recursos s'agrupen pel nom del seu tipus de recurs, i cada grup és una llista amb el seu recompte. Els recursos el `typeId` dels quals ja no coincideix amb cap tipus configurat van a parar a un grup *Sense tipus* perquè hi puguis continuar arribant. Cada element mostra una miniatura de 36 px al costat de la seva llegenda i el seu id: una previsualització real per als mapes de bits i els SVG, i un glif per a les taules. Quan el llibre té més de sis recursos, un camp de **cerca** (*Cercar recursos…*) filtra la llista per llegenda i id, sense distingir accents. Quan el llibre encara no té recursos, un estat buit explica com afegir-ne i col·locar-los al text amb `:ref{#id}`. Un desplegable **Nou** ofereix tres maneres d'afegir-ne un:
+
+- **Pujar imatge**: PNG, JPEG, WebP o GIF
+- **Pujar SVG**
+- **Nova taula**: comença com una quadrícula de 2×2 amb una fila de capçalera
+
+També pots arrossegar fitxers des del disc i deixar-los anar sobre el tauler. Es pugen en lot, amb ids generats com a slugs a partir dels seus noms de fitxer. Els fitxers no admesos s'ometen, i una nota breu indica quants se n'han afegit i quants se n'han omès.
+
+**Vista de detall.** En seleccionar un recurs s'obre el seu editor:
+
+- **ID**: editable i validat com a slug. Els ids duplicats s'assenyalen i mai no es confirmen, i un id buit rep un suggeriment derivat de la llegenda. Reanomenar conserva el fitxer d'imatge o SVG emmagatzemat.
+- **Tipus**: un dels tipus de recurs configurats
+- **Llegenda**: admet Markdown en línia (negreta, cursiva, codi i `:ref`). `\\`, o una barra inversa al final d'una línia, comença una línia nova; un salt de línia simple compta com un espai
+- **Nota**: una línia opcional de font, crèdit o observació, composta en un cos menor sota el recurs (amb el mateix format en línia i els mateixos salts de línia que la llegenda). S'estilitza amb el grup *Nota* de la configuració de *Peus de figura*.
+- **Text alternatiu**: descripció d'accessibilitat per a la sortida HTML
+- **Estil de taula**: en les taules, l'estil amb nom amb què es compon la taula (`table.styleId`). Pot ser *Estil de taula del document* (per defecte) o un dels *Estils de taula* declarats a la configuració. Un id que cap estil no declara apareix com a inexistent i es compon amb l'estil de taula del document.
+- **Ubicació**:
+  - **Posició**: `auto` (el primer espai lliure, el valor per defecte), `top`, `bottom` o `here`.
+  - **Extensió**: `column`, `page` o `side`. Queda deshabilitada quan la posició és `here`. Els valors per defecte coincideixen amb els del motor, `auto` + `column`.
+  - **Orientació**: vertical, o girat un quart de volta (capçalera a l'esquerra o a la dreta). Un recurs girat ocupa una pàgina pròpia, enganxat al llom, de manera que el selector d'extensió queda deshabilitat.
+  - **Amplada**: una fracció d'amplada amb una alineació, per als flotants i les insercions en línia més estrets que la seva columna. L'alineació també situa un mapa de bits o un SVG més estret que el seu espai a amplada completa (un mapa de bits més petit que la columna, o una figura que `layout.fitFiguresToPage` ha reduït), de manera que en les imatges continua habilitada; en una taula exigeix una amplada inferior al 100 %. Un recurs girat no té cap de les dues.
+  - **Peu al costat de la figura**: un interruptor per a la columna lateral d'una disposició de columna i mitja. S'aplica als flotants de columna, de manera que s'amaga quan la posició és `here`.
+- **Contingut**: carregadors que substitueixen el fitxer de mapa de bits o SVG
+- **Codi font de l'SVG**: en les figures SVG, un editor de codi sota el carregador. Només admeten canvis els nodes de text: el contingut dels elements `<text>` / `<tspan>`, tenyit a l'editor. Escriure en qualsevol altre lloc es rebutja, i els caràcters `<`, `>` i `&` teclejats dins d'un node de text s'escapen perquè el fitxer continuï ben format. Cada canvi es desa després d'una pausa breu com un fitxer emmagatzemat **nou**, i la figura es torna a renderitzar (recoloració a una sola tinta inclosa). L'editor avisa quan l'SVG no té nodes de text.
+- **Previsualització**: una maqueta en viu de com es veurà el recurs, amb `#` en lloc del número (els números reals depenen d'on caigui el recurs al document). El peu comença amb l'etiqueta que posa el document: el prefix del peu del tipus i el número (`Figura #.`), només el prefix en un tipus numerat amb una plantilla buida (`Doc.`) i res en un tipus sense prefix del peu
+- **Suprimir**: demana confirmació abans i adverteix de quantes referències `::resource` / `:ref` del text quedarien apuntant a res
+
+**Editor de taules.** Els recursos de taula obren un editor de quadrícula interactiu:
+
+- **Barra d'eines**:
+  - Afegeix o treu files i columnes, i combina o divideix cel·les.
+  - Activa una fila o una columna de capçalera.
+  - Fixa l'alineació horitzontal i vertical de cada cel·la (a dalt, al centre o a baix). El contingut de la cel·la es mou com una unitat dins d'una fila més alta.
+  - Fixa l'emplenament de cada cel·la: un selector de color, vinculable a la paleta, amb un botó per treure'l. L'emplenament es desa a `TableCell.background` i es mostra a la quadrícula.
+- **Amplades de columna**: un pes numèric per columna sota la quadrícula (`2, 1, 1` dona a la primera columna la meitat de l'amplada; buit vol dir amplades iguals), que s'escriu a `table.model.columnWidths`. Afegir o treure una columna manté els pesos alineats, i un enllaç *Amplades iguals* els esborra.
+- **Enganxar com a taula**: enganxar TSV (o CSV simple amb cometes) emplena la quadrícula
+- **Desfer/refer**: Cmd/Ctrl+Z i Maj+Cmd/Ctrl+Z
+- **Navegació amb teclat**: Tab / Maj-Tab (amb salt de fila) i les fletxes mouen entre cel·les
+- **Edició des de la previsualització**: fes clic en una cel·la de taula, una llegenda, una nota o un fragment de text d'una figura SVG en qualsevol de les dues pestanyes de previsualització. El tauler Recursos s'obre en aquest recurs i enfoca el camp corresponent, amb el cursor al glif on has fet clic. Arrossegar selecciona un interval dins de la mateixa cel·la o camp, i el doble clic selecciona el mot. Mentre el camp té el focus, la seva selecció es reflecteix a la pàgina com un ressaltat (un cursor fi quan està contreta), tant a la pestanya Canvas com a la HTML.
+
+Totes les edicions passen per funcions pures de model exportades pel nucli de postext (`addRow`, `addColumn`, `removeRow`, `removeColumn`, `mergeCells`, `unmergeCell`, `setCellContent`, `setAlignment` i `parseTSV`), de manera que el mateix model de taula es comporta igual dins i fora del Sandbox.
+
+#### Tauler de fonts
+
+Mostra els tipus de lletra que fa servir el llibre i gestiona els teus propis fitxers de font al costat del catàleg integrat de Google Fonts:
+
+- **Tipus de lletra d'aquest llibre** llista totes les famílies que fa servir el disseny. Cada nom de família apareix compost en el seu propi tipus de lletra, amb la seva funció (*Text base*, *Títols* o *Altres elements*) i el seu origen (*Google Fonts* o *Fitxer propi*). Els tipus de lletra en si es canvien a **Disseny → Tipografia** i **Títols i índex**.
+- **Els teus fitxers de font** és on afegeixes, reanomenes i suprimeixes famílies personalitzades.
+  - **Puja fitxers de variant** per pes (100–900) i estil (normal / cursiva). Els formats acceptats són WOFF2, WOFF, TTF i OTF, detectats per l'extensió del fitxer. Els fitxers es desen a l'IndexedDB del navegador.
+  - Les famílies personalitzades apareixen a tots els selectors de font sota un grup **Personalitzades**, al costat dels resultats de Google Fonts. Una família personalitzada **té prioritat** sobre una Google Font amb el mateix nom.
+  - En un document en xinès, tots els selectors de font mostren primer, sota *Xinès simplificat* o *Xinès tradicional*, les famílies de Google que contenen els seus caràcters (els subconjunts `chinese-simplified`, `chinese-traditional` i `chinese-hongkong` de Fontsource), i després les altres.
+  - En un document en àrab (o una altra llengua escrita amb l'alfabet àrab), tots els selectors de font mostren primer, sota *Àrab*, les famílies de Google amb el subconjunt `arabic` de Fontsource, començant per les de llibre (Amiri, Noto Naskh Arabic, Scheherazade New, Markazi Text, Lateef, i després Noto Kufi Arabic, Reem Kufi, Aref Ruqaa, El Messiri). Les previsualitzacions carreguen el fitxer àrab de cada font abans de la primera composició, i el PDF l'incrusta al costat del llatí quan el text fa servir tots dos.
+  - Els fitxers de font òrfens (pujades que ja no fa servir cap família) se suprimeixen d'IndexedDB automàticament.
+
+#### Tauler de disseny
+
+Un editor de formulari per a `PostextConfig`, amb més de cinc-cents camps.
+
+**Resum.** En obrir el tauler Disseny es mostra un resum:
+
+- Una targeta **Aquest llibre** amb un dibuix en viu de la pàgina. El dibuix respecta les proporcions reals i mostra els marges, les columnes i els colors de la pàgina i la tinta, com a doble pàgina quan els marges són simètrics. Les línies d'un llibre vertical es dibuixen de dalt a baix començant per la dreta, i les seves columnes, com a pisos. Al costat apareixen el format, la disposició de columnes, l'escriptura, el tipus de lletra i el cos del text base, i la paleta. La línia de l'escriptura anomena la llengua del document i, quan són una elecció, la direcció i l'enquadernació (*Vertical · enquadernat per la dreta · 中文（繁體）*, *De dreta a esquerra · enquadernat per la dreta · العربية*); obre **Escriptura**.
+- La llista dels tretze **grups de configuració**. Cada grup té una descripció d'una frase i el nombre de seccions que hi has canviat.
+
+**Una pàgina per grup.** En obrir un grup, les seves seccions es mostren com una pàgina pròpia. Només es construeix aquest grup, cosa que manté el tauler àgil fins i tot en llibres grans.
+
+- Una ruta de navegació (**Disseny › grup**) porta de tornada al resum.
+- Unes fitxes sota el títol de la pàgina salten a cada secció de la pàgina.
+- Un enllaç **Següent** al final obre el grup següent.
+- El focus passa al títol de la pàgina en obrir un grup, i torna a la fila del grup en tornar enrere.
+- El grup obert es recorda entre sessions.
+
+Els grups, en ordre de navegació:
+
+- **Pàgina i columnes**
+  - *Pàgina*: els camps s'agrupen en **Mida**, **Marges**, **Paper**, **Numeració** i **Preparació per a impremta**.
+    - **Mida**: els formats predefinits diuen per a què serveixen: *Llibre de butxaca* 11 × 17, *Novel·la, narrativa* 12 × 19, *Assaig, manual* 17 × 24 i *Llibre de text, revista* 21 × 28, o *Personalitzat*.
+    - **Marges**: cada marge està lligat al dibuix de la pàgina. En assenyalar o enfocar un camp de marge, aquest marge es tenyeix al dibuix. Un interruptor de **marges simètrics** converteix esquerre/dret en interior/exterior per a pàgines enfrontades.
+    - **Paper**: el color de fons de la pàgina.
+    - **Numeració**: el format del número de pàgina i el número pel qual comencen les pàgines.
+    - **Preparació per a impremta**: DPI i línies de tall.
+  - *Columnes*: la disposició es tria entre targetes il·lustrades: *Una columna* (novel·la, assaig), *Dues columnes* (llibres de text, revistes, obres de consulta) o *Columna i mitja* (una columna principal i una altra d'estreta al costat per a notes i figures petites). La secció inclou també l'espai entre columnes, la columna lateral, **Reduir les figures que no hi caben** (`layout.fitFiguresToPage`), **Espai al voltant de les figures en línia** (`layout.inlineResourceGap`), **Espai al voltant de les figures dels requadres** (`layout.inlineResourceGapInBoxes`), **Línies d'un paràgraf al tall d'un requadre** (`layout.boxChildSplitMinLines`) i **Flotants de tancament al costat del text** (`layout.hugClosingFloats`).
+- **Escriptura**. La pàgina comença amb el dibuix de Pàgina i columnes. La seva doble pàgina porta folis: 2 | 3 en un llibre enquadernat per l'esquerra, 3 | 2 en un d'enquadernat per la dreta, la pàgina senar del qual és l'esquerra; el peu avisa quan el llibre s'enquaderna per la dreta i quan les seves línies són verticals.
+  - *Llengua i direcció*:
+    - **Llengua del document**, amb el xinès com a 中文（简体）, 中文（繁體） i 中文（香港）, i l'àrab com a العربية, العربية (مصر) i العربية (المغرب) (la regió fixa els valors regionals, com les xifres). Una etiqueta que no és a la llista (`es-ES`, `zh-TW`, `sv`) apareix com a opció addicional, amb el nom de la llengua que representa. En canviar-la, els tipus de figura i taula incorporats passen a la llengua nova si continuen sent els de l'anterior (un llibre en castellà que passa a xinès imprimeix 图 i 表, no *Figura* i *Tabla*); els tipus que hagis reanomenat conserven el seu nom.
+    - **Direcció del text**: *Automàtic*, que indica a què es resol (de dreta a esquerra per a l'àrab), *D'esquerra a dreta* o *De dreta a esquerra* (`direction`).
+    - **Direcció d'escriptura**, amb targetes il·lustrades: *Horitzontal*, o *Vertical*, amb les línies de dalt a baix i de dreta a esquerra (`layout.writingMode`).
+    - **Enquadernació**: *Automàtic*, que indica a què es resol (per la dreta en un llibre vertical o de dreta a esquerra), *Per l'esquerra* o *Per la dreta* (`page.binding`).
+    - **Xifres**: *Automàtic*, que indica les xifres que dona la llengua (٠ ١ ٢ ٣ per a l'àrab, 0 1 2 3 per a l'àrab del Magrib i qualsevol altra llengua), *Europees*, *Aràbigo-índiques* o *Perses* (`numerals`).
+    - **Configuració per al xinès**: **Revisar…** enumera el que canvia en preparar el llibre per al xinès. Es trien els caràcters, *Simplificats 简体* o *Tradicionals 繁體*, i la direcció: un llibre nou en tradicional comença en vertical, un en simplificat en horitzontal, i un llibre que ja és en xinès conserva la seva direcció. Cada fila mostra l'ajust tal com és i tal com queda: la llengua del document (es conserva una etiqueta xinesa dels mateixos caràcters, com `zh-TW`), la direcció d'escriptura amb l'enquadernació que li correspon, Noto Serif i Noto Sans en SC, TC o HK per al text i els títols (la fila dels títols anomena també les fonts pròpies de nivells i estils de títol, i, marcada, les passa també a la font xinesa), sagnat de primera línia de 2 quadratins, sagnat després dels títols, sense espai entre paràgrafs, text justificat, sense partició de mots, 图 o 圖 i 表 numerats per capítol (`{h1}-{n}`), peus com 图1-1　标题 (res abans del número i un espai ideogràfic després), capítols numerats 第一章 (`第{1:一}章`, amb un espai ideogràfic abans del títol) i llistes numerades 一、 （一） 1. （1） ①. Només apareix el que canvia. Un ajust que has canviat tu arriba sense marcar, amb la nota *ajust teu*, i es queda tal com és tret que el marquis; la llengua i la direcció s'apliquen sempre, i també la partició de mots, que un document en xinès desactiva per si sol (tret que l'haguessis activat per a una llengua llatina indicada en la seva llengua de partició). **Aplicar** fa els canvis marcats d'una vegada, i **Desfer**, al costat de la confirmació, desfà aquest pas en el mateix llibre: cada ajust que ha canviat recupera el seu valor anterior, encara que després hagis canviat altres ajustos del mateix grup; el que hagis tornat a canviar es queda com el vas deixar, i la confirmació ho indica. En obrir un altre llibre, **Desfer** desapareix.
+    - **Configuració per a l'àrab** (en un document en àrab): **Revisar…** enumera el que canvia en preparar el llibre per a l'àrab. Es trien els tipus: *Clàssic*, Amiri per al text i els títols, o *Modern*, Noto Naskh Arabic amb títols en Noto Kufi Arabic. Les files: la direcció torna a *Automàtic* si el llibre estava d'esquerra a dreta (s'aplica sempre), l'enquadernació torna a *Automàtic* (per la dreta), els dos tipus, interlineat d'1,75 em, text justificat, sense partició de mots, les xifres de la regió si el llibre en fixa unes altres, شكل i جدول numerats per capítol, peus com شكل ١-١: العنوان, capítols numerats الفصل الأول (`الفصل {1:ordinal}`, amb dos punts abans del títol), llistes numerades ١- أ- (١) i notes a peu de pàgina numerades de nou a cada pàgina, tot en les xifres del document. Les marques, *ajust teu*, **Aplicar** i **Desfer** funcionen com a la llista del xinès.
+  - *Tipografia de l'Àsia oriental* (`cjk`): **Convencions regionals** (Xina continental, Taiwan, Hong Kong) a dalt i després els camps en vuit grups: **Principi i final de línia** (**Tall de línia**: cap, bàsic, GB, estricte; **Retallar parèntesis a les vores**; **Puntuació penjada**), **Amplada dels signes** (**Amplada de la puntuació**: kaiming, amplada completa, mitja a final de línia, mitja amplada; **Comprimir signes contigus**), **Espaiat** (**Espai entre xinès i llatí**), **Text vertical** (**Números en una casella**: desactivat, o fins a 2, 3 o 4 xifres, `cjk.uprightDigits`), **Marques** (**Èmfasi en text xinès**: el que imprimeix `*…*`, punts o cursiva; **Títols d'obres (:book)**: 《》, una línia ondulada o res; **Color de les marques**), **Ruby** (tipus de lletra, mida, color i posició de les lectures), **Notes warichu** (mida, color i signes d'obertura i tancament de les notes) i **Retícula de caràcters** (caràcters per línia, línies per pàgina, la retícula dibuixada a la pantalla i la lectura 字 × 行 amb els marges que fixa). Cada *Automàtic* segueix la llengua del document i indica a quin valor es resol. En un document la llengua del qual no és xinès, japonès ni coreà i que no fixa cap d'aquests ajustos, la secció mostra una línia que ho diu i un botó **Mostrar la configuració**; una cerca mostra els camps en qualsevol document. [Composició xinesa](/ca/docs/chinese-layout) explica què fan aquests ajustos; les claus són a [Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental), [Escriptura vertical](/ca/docs/configuration#escriptura-vertical), [Números en text vertical](/ca/docs/configuration#nombres-en-text-vertical) i [Enquadernació](/ca/docs/configuration#enquadernació).
+- **Colors**
+  - *Paleta*: colors amb nom que reutilitzen tots els selectors de color. Canviar una entrada actualitza totes les referències que hi apunten.
+- **Tipografia**
+  - *Text base*: comença amb una **mostra tipogràfica** a mida real composta amb el tipus de lletra, el cos, l'interlineat i el color actuals, en la llengua del document: un llibre en xinès mostra el començament de 紅樓夢 en els seus caràcters, `*…*` amb punts d'èmfasi, i el compon de dalt a baix quan les seves línies són verticals. Els seus salts de línia són els del navegador; la pàgina fa servir els de Postext. Els camps s'agrupen en:
+    - **Lletra**: font, cos, interlineat i els pesos normal i negreta.
+    - **Paràgrafs**: alineació (amb la partició de mots, els límits de justificació i **Màxim espaiat de lletres en justificar** (`bodyText.maxJustifyTracking`) quan el text és justificat, i **Partició de mots en bandera** amb la seva zona, **Tall de línia òptim** i **Tall òptim del text en bandera** (`bodyText.optimalRagged`) quan no ho és; amb el cos justificat, **Tall òptim del text en bandera** segueix **Tall de línia òptim**, per als estils de paràgraf i requadres en bandera; **Partir mots entre columnes** (`bodyText.hyphenateAcrossColumns`) sota la partició de mots quan el cos és justificat, i sota **Tall òptim del text en bandera**, mentre està activat, quan va en bandera; **Dividir mots compostos** (`bodyText.hyphenation.compounds`) al costat de la llengua de la partició de mots), **Tallar després de guió llarg** (`bodyText.breakAfterDashes`), **Tallar després de guionet** (`bodyText.breakAfterHyphens`), **Repetir el guionet a la línia següent** (`bodyText.repeatHyphen`), sagnats i espai entre paràgrafs.
+    - **Color**: els colors del text, la negreta i la cursiva.
+    - **Llengua**: la llengua del document, amb el seu nom en aquesta llengua. Es tria a **Escriptura**; la fila obre aquest grup.
+    - **Vídues, òrfenes i línies curtes** (plegable): inclou **Penalització graduada** (`bodyText.gradedRuntPenalty`), **Estrènyer per recollir la línia curta** (`bodyText.tightenRunts`), **Màxim estrenyiment de lletres** (`bodyText.maxRuntTracking`), i **Mantenir els dos punts amb la llista** amb **Espai sota els dos punts** (`bodyText.colonListRoom`): quant espai necessita a sota la línia que acaba en dos punts per quedar-se amb la seva llista, el que necessita el primer ítem o una línia, com fins a postext 1.4.
+    - **Citacions** (plegable): el color de les citacions amb `>`, **Citacions en cursiva**, **Sagnat de les citacions** i **Sagnat de primera línia de les citacions** (`bodyText.blockquote`).
+    - **Referències creuades** (plegable).
+  - *Estils de paràgraf* (`paragraphStyles`): estils amb nom per als contenidors `:::paragraphs{style="…"}`. Pots afegir, suprimir i reanomenar ids, i després fixar la font, el cos, l'interlineat, el color, els colors de les negretes i les cursives, els pesos normal i negreta, els interruptors de **cursiva** i **versaletes**, l'alineació, la partició de mots, el sagnat esquerre de totes les línies, els sagnats de primera línia i francès (mesurats des de l'esquerra), l'espai entre paràgrafs, els marges, **Ajustar a la retícula** (`paragraphStyles[].snapToGrid`) i **Caixa del text** (`textTransform`, majúscules). Els camps sense fixar hereten el text base. Damunt dels estils, **Espai sota un contenidor** (`bodyText.paragraphContainerSpacing`) decideix com s'uneix l'espai sota un contenidor amb el bloc següent: *Fusionar*, o *Sumar (1.4)*.
+  - *Etiquetes en línia* (`chipStyles`): estils amb nom per al `:chip[texto]{style="…"}` en línia. Mentre la configuració no en té cap, es mostra l'estil integrat `chip`. Pots afegir, suprimir i reanomenar ids, i després fixar:
+    - **Text**: font, cos, color, negreta i cursiva. Cadascun hereta el text que l'envolta fins que el fixes.
+    - **Caixa**: emplenament, gruix i color del contorn, radi de les cantonades, farciment horitzontal i vertical (amb **Farciment superior** i **Farciment inferior** per farcir cada costat per separat, cosa que centra una majúscula en un xip rodó), i la separació mínima amb els mots veïns.
+  - *Fórmules* (`math`), amb **Sagnar després d'una fórmula en bloc** (`math.indentAfterDisplay`) i **Mantenir amb la línia que la introdueix** (`math.keepWithLeadIn`).
+  - *Notes a peu de pàgina* (`footnotes`): **Posició** (peu de columna o final del capítol), **Posició a la columna** al final d'un capítol, **Numeració** (per capítol o contínua), el cos, l'interlineat, el color, l'alineació i el sagnat francès de les notes, els espais damunt de les notes i entre elles, i el **Filet separador** (longitud, gruix, color). Consulta [Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina).
+- **Títols i índex**
+  - *Títols*: valors generals més ajustos per nivell H1–H6. Inclouen:
+    - la caixa del text, l'**Espaiat entre lletres** (`levels[].letterSpacing`, negatiu per estrènyer), l'alineació (en bandera, justificada, centrada o alineada a la dreta), el salt previ amb paritat i l'extensió;
+    - un interruptor **Tornar a la retícula després dels títols** (`headings.snapToGrid`, activat per defecte: el text torna a la retícula de base sota un títol) i, per nivell, **Tornar a la retícula després d'aquest títol** (`levels[].snapToGrid`), que el substitueix per a aquest nivell;
+    - un interruptor **Marques en línia als títols** (`headings.inlineMarks`, activat per defecte): un títol compon la cursiva, la negreta, els superíndexs i subíndexs, les versaletes i els enllaços que s'hi han escrit, com un paràgraf; desactivat, imprimeix els mots marcats amb el seu propi estil;
+    - per nivell, **Ocult (estructural)** (`levels[].hidden`): el títol no imprimeix res ni ocupa espai, però continua saltant de pàgina, numerant-se i alimentant l'índex, les capçaleres i els marcadors del PDF;
+    - un editor avançat de ranura de disseny per nivell, amb alçada mínima d'obertura; cada element del disseny d'un títol té un interruptor **Reserva espai** (desactivat, es pinta sense sumar-se a l'alçada que reserva el títol);
+    - les palanques d'equilibri de columnes, amb el límit de cadascuna, i **Requadre que tanca una columna** (`balancing.closingBox`): quan baixa fins al peu de la columna un requadre que acaba una columna curta — primer, després de les altres palanques o mai.
+  - *Estils de títol* (`headingStyles`): estils amb nom que s'apliquen amb `{style="…"}` a la línia d'un títol. Pots afegir, suprimir i reanomenar ids, i per a cada estil:
+    - decidir si el títol es numera i apareix a l'índex, i donar-li una plantilla de numeració pròpia;
+    - desactivar **Apareix als titolets** (`runningChapter`) per a una làmina o un mapa que es compon com a H1 dins d'un capítol, de manera que les capçaleres continuïn anomenant el capítol que interromp;
+    - substituir la tipografia (espaiat entre lletres inclòs), el salt i l'extensió del títol, **Tornar a la retícula després d'aquest títol** i **Ocult (estructural)**;
+    - donar a la secció les seves pròpies capçaleres, partint si vols de les del document;
+    - fixar-ne els marges i la disposició de columnes (amb el paper i el costat de la columna lateral, com a *Columnes*, i el seu propi *Reduir les figures que no hi caben*);
+    - fixar l'estil del cos, les substitucions de llistes i els colors de la paleta.
+  - *Índex* (`toc`): els nivells de títol que llista un `:::toc`, amb la tipografia de cada entrada. Cobreix també les entrades sense numerar, els números de pàgina, la línia de punts, la línia de subtítol presa d'un atribut del títol i les files de part amb la seva pròpia ranura de disseny.
+- **Llistes**
+  - *Llistes amb pics*, amb **Ajustar l'inici a la retícula** (`unorderedLists.snapTopToGrid`), que arrodoneix cap amunt l'espai damunt d'una llista perquè el seu primer element quedi a la retícula de base.
+  - *Llistes numerades*: per nivell, la font, el pes, la cursiva, el color i la separació del separador al costat de la seva numeració; **Ajustar l'inici a la retícula** (`orderedLists.snapTopToGrid`), com a les llistes amb pics; i **Columna de números** (`orderedLists.numberWidth`): on comença el text d'un ítem, després del número més ample del seu propi tram (*Per tram*) o del seu nivell al capítol (*Per nivell*).
+- **Figures i taules**
+  - *Numeració i col·locació* (`resourceTypes`): per a cada tipus de recurs:
+    - noms i etiquetes curtes;
+    - plantilles de numeració amb marcadors `{n}` i `{h1}`…`{h6}`, el format i el nivell de reinici del comptador, i el prefix del peu, amb una previsualització en viu a l'estil «Fig. 1.7»;
+    - un grup **Col·locació**: la posició, l'extensió (columna, pàgina o la columna lateral) i el gir per defecte del tipus, una fracció d'amplada, una alineació per als recursos més estrets que el seu espai (flotants i insercions estrets amb l'amplada, i imatges més estretes que la columna) i un interruptor de peu al costat de la figura;
+    - una **substitució de l'estil del peu** plegable que reemplaça només els camps del peu que fixis per a aquest tipus (posició, barra, colors, tipografia) i hereta la resta.
+  - *Peus de figura* (`captionStyle`): tipografia, cos, alineació i **posició** damunt o sota el recurs. Hi ha una **barra de fons** opcional amb el seu color i el seu farciment, i l'etiqueta i la descripció s'estilitzen per separat. Un grup **Nota** fixa el cos, el color, la inclinació, l'alineació i la separació de la nota respecte del recurs.
+  - *Taules* (`tableStyle`):
+    - tipografia i farciments del cos i de la capçalera, amb l'**Espaiat entre lletres** (`headerLetterSpacing`) i la **Caixa del text** (`headerTextTransform`) de la capçalera;
+    - vores, amb un patró de **filets**: quadrícula completa, només horitzontals, marc exterior o cap;
+    - un **radi de les cantonades** per al marc exterior;
+    - farciment de cel·la;
+    - a *Cel·les del cos*, **Files alternes** (`bodyAlternateBackgroundEnabled`), que emplena una de cada dues files del cos amb el **color de les files alternes** (`bodyAlternateBackground`) que apareix mentre està activat.
+  - *Estils de taula* (`tableStyles`): estils de taula amb nom. Pots afegir, suprimir i reanomenar ids (en reanomenar, les taules que fan servir l'id el segueixen), i després fixar qualsevol dels camps de *Taules*. Cada control mostra el valor heretat de *Taules* fins que el fixes.
+  - *Diagrames* (`diagramStyle`): un interruptor de **tinta única** que recoloreja els diagrames SVG en tints d'una sola tinta per imprimir a un color, més un selector del color de la tinta que per defecte fa servir el color principal de la paleta.
+- **Requadres**
+  - *Estils de requadre* (`calloutStyles`): estils amb nom per a `:::callout{type="…"}`. Pots afegir, duplicar, suprimir i reanomenar ids, i després fixar:
+    - el títol per defecte, l'extensió, la col·locació i l'amplada;
+    - el fons, la vora, el radi de les cantonades i el farciment, i una **franja** lateral;
+    - una **icona**: un glif de text o un SVG/mapa de bits triat del tauler Recursos. Pot anar en línia o com a distintiu de cantonada, amb el costat de la cantonada i una amplada per a icones no quadrades.
+    - un grup **Pestanya d'etiqueta** (`calloutStyles[].label`): font, cos, pes, color, emplenament, cantonada, alçada, farciment interior, desplaçament i reculada, un recurs d'icona al costat de la pestanya i un filet al llarg de la vora superior;
+    - la tipografia del títol, amb espaiat entre lletres, sagnat i **Interlineat del títol** (`titleStyle.lineHeight`);
+    - substitucions del cos i de les llistes que hereten el text del document. Inclouen els colors de la negreta i de la **cursiva** del cos, els seus pesos normal i negreta, els interruptors de **cursiva** i **versaletes**, i la mida i el pes del pic.
+    - una separació de columnes per als grups `:::columns` dins del requadre;
+    - un interruptor **Ajustar a la retícula** (`calloutStyles[].snapToGrid`, activat per defecte; desactivat conserva el marge inferior exacte per a requadres apilats);
+    - la columna de marcador, un ancoratge fix, mantenir junt i línies mínimes en partir, i els controls de barrera de flotants;
+    - una opció **Requadre lateral al final de la columna** (`sideAtColumnEnd`) per als requadres laterals el text dels quals no continua a la mateixa columna: al costat del text anterior a la tanca o al costat del text posterior;
+    - un grup **Requadres partits**: repetir el títol amb un sufix a cada continuació (`repeatTitle`, `continuedSuffix`) i un indicador de continuació sota cada part que continua, amb el seu text, la seva alineació i la seva cursiva (`continuesMarkerEnabled`, `continuesMarker`, `continuesMarkerAlign`, `continuesMarkerItalic`). Les cadenes prenen per defecte la llengua del document.
+- **Capçaleres i peus**
+  - *Capçaleres i peus de pàgina*: elements de text, filet, caixa i imatge per ranura.
+    - **Elements de text**: alineació vertical, **alineació del text** dins de la seva pròpia caixa (`align`: a l'esquerra, centrat o a la dreta, visible quan la caixa és més ampla que el text, o justificat, que eixampla els espais de cada línia excepte l'última de cada paràgraf fins a omplir la caixa i, amb la **Partició de mots** activada, parteix un mot per una síl·laba per omplir la línia), interlineat, espaiat entre lletres (negatiu per estrènyer un títol gran), caixa del text, una amplada i una alçada ajustades, d'emplenament o fixes, i una amplada màxima. **Marques en línia** (`inlineMarks`) compon `**negrita**`, `*cursiva*` i les altres marques en línia del text de l'element, i un contorn dibuixa el perfil de les lletres: **Gruix del contorn**, **Color del contorn** i **Lletres buides** (`stroke`).
+    - **Filets**: horitzontals o verticals.
+    - **Marcadors**, presos de la llista permesa del motor: número de pàgina, total de pàgines, total de pàgines del llibre, títol, subtítol, autor, data de publicació, títol i número de capítol, títol i número de part, i `{attr.key}` per a un atribut del capítol. Les capçaleres i els peus admeten, a més, el títol i el número del capítol a capdamunt de pàgina, `{chapterTitleAtTop}` / `{chapterNumberAtTop}` (consulta [Capítol a capdamunt de pàgina](/ca/docs/configuration#capítol-al-cap-de-pàgina)), i els mots guia `{firstMark.h2}` / `{lastMark.h2}` (després del punt, un nivell de títol o l'id d'un estil de paràgraf; consulta [Mots guia](/ca/docs/configuration#paraules-guia-primera-i-última-marca)).
+    - **On apareix una ranura**: la paritat i un filtre de **pàgines**: totes, cos, obertures de capítol, separadors de part o pàgines en blanc.
+    - **Col·locació**: el desbordament i un ancoratge al contenidor, a un element germà o al marc de **pàgina** / **sang** per a bandes de vora a vora; els elements de capçalera i peu també es poden ancorar al **Marge exterior** (`'outer'`), el marge del costat oposat al llom.
+    - **Direcció d'escriptura** d'un element de text: *Horitzontal*, o *Vertical, línies de dreta a esquerra* (`writingMode`), per a capçaleres compostes al llarg del marge exterior d'un llibre vertical. **Capçaleres al marge exterior (vertical)**, a l'editor de la capçalera, afegeix el títol del capítol quatre caràcters per sota del capdamunt de la caixa i el foli cinc per sobre del seu peu, tots dos en vertical, al 80 % del cos del text i ancorats al marge exterior (consulta [Elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)).
+    - Un grup **Caplletra** (línies, font, pes, cos, color i separació) i un sagnat de paràgraf. Un text amb caplletra passa a línia nova sigui quin sigui el seu **Desbordament**, i sense mida fixada la part alta de la lletra s'enrasa amb les majúscules de la primera línia.
+    - Les altres ranures de disseny ofereixen els mateixos controls de text.
+- **Parts**
+  - *Parts* (`parts`):
+    - **Portadella de part** (`parts.page`): si la desactives no s'obre cap pàgina, i el número, el títol i els colors de la part s'apliquen directament a partir del contingut següent. També amaga els ajustos de sota.
+    - la paritat de la pàgina en què s'obre un `:::part`, i un salt opcional després de la part amb la seva pròpia paritat;
+    - els marges de la portadella. Hereten els de la pàgina, amb les mateixes etiquetes interior/exterior en mode simètric.
+    - una ranura de **disseny d'obertura** disposada sobre la caixa de tall de la pàgina. El seu selector de marcadors afegeix el joc de títols: el títol actual i el seu número en forma decimal, romana o alfabètica.
+    - un **estil del cos** per als blocs dins de la part. Hereta el text base i els colors de les llistes, i inclou les substitucions de llistes (format de numeració i desplaçaments, marges, sagnat francès i els camps de les llistes de tasques).
+- **Exportació**
+  - *PDF*.
+  - *Lector web (HTML)*: els ajustos d'`htmlViewer`.
+- **Folio**
+  - *Visor Folio (3D)* (`folio`), en cinc grups: **Vista** (la inclinació i el gir), **Paper** (tipus, gramatge, mà amb el gruix que en resulta, acabat, textura i la seva intensitat, to, transparència), **Enquadernació** (tipus, cobertes, material i color de la coberta, imatge del llom), **Superfície** (el material de la taula i el seu tint) i **Il·luminació** (llum, exposició, ombres). En triar un altre tipus de paper, els camps que no has canviat prenen els valors d'aquest paper; els que vas canviar conserven els teus. La imatge del llom es tria entre els mapes de bits i els SVG del tauler Recursos. Consulta [Pestanya Folio](#pestanya-folio).
+- **Avançat**
+  - *Ajudes a la pantalla* (`debug`): la **retícula de base** (`page.baselineGrid`), que viu aquí i no a *Pàgina*, i la resta de superposicions per revisar la maquetació.
+  - *Avisos*: quins problemes assenyala el tauler Revisió, i els seus llindars.
+
+**Trobar un ajust.** La barra sota la capçalera funciona en tots els grups:
+
+- **Cercar ajustos…** filtra tots els camps de totes les seccions per la seva etiqueta, el seu text d'ajuda i els noms de les seves opcions. No distingeix accents i cerca per principi de mot: *marg* troba *Marge superior* i *Top margin*, i *h3* obre *Títols › H3*. Els resultats s'agrupen per grup de configuració. Les seccions amb coincidències s'obren soles, les files i seccions sense coincidències s'amaguen i els encerts es ressalten. Escapada esborra la cerca i després surt del camp.
+- **Canviats** mostra només els camps el valor dels quals difereix del predeterminat.
+
+**Text d'ajuda.** Cada camp té una explicació breu. Els lectors de pantalla la senten com a descripció del camp, i a la pantalla queda oculta fins que l'obres amb el botó **?** de la fila (*Què és «…»?*). L'interruptor **Mostrar totes les explicacions** de la capçalera les obre totes alhora, i l'elecció es recorda.
+
+**Valors canviats.** El tauler segueix un **model de substitucions** coherent:
+
+- Les capçaleres de secció porten una insígnia amb el nombre de camps canviats que contenen, comptant també els grups niats.
+- La capçalera d'una secció mostra un botó de restablir (que demana confirmació) només mentre conté canvis.
+- Un camp canviat té un punt al costat de la seva etiqueta (que es llegeix com a *modificat*) i un petit botó de restablir propi.
+- Només es desa o s'exporta el subarbre canviat. Els valors per defecte s'eliminen, de manera que un Sandbox intacte emmagatzema una configuració buida.
+- Restablir *Pàgina* no toca la retícula de base, ja que la retícula s'edita a *Avançat*.
+
+**Els controls:**
+
+- Les eleccions són desplegables les opcions dels quals poden portar una descripció d'una línia, o botons segmentats quan n'hi ha poques.
+- Els ajustos de sí/no són interruptors.
+- Els números tenen botons − / +. Les fletxes canvien el valor pas a pas, deu vegades més amb Maj i una desena part amb Alt.
+- Les longituds tenen un selector d'unitat que converteix el valor en canviar d'unitat (cm, mm, in, pt, px, em, rem).
+- Un color és un únic botó que mostra la mostra i el valor.
+- El selector de fonts es pot recórrer amb les fletxes.
+
+Els controls depenen del context. L'amplada de l'espai entre columnes només apareix en disposicions de diverses columnes, els ajustos de justificació només apareixen quan el text és justificat (el text en bandera mostra en el seu lloc **Partició de mots en bandera**, i un estil de paràgraf o un requadre mostra el seu interruptor de partició de mots quan és justificat o quan la partició en bandera està activada), i el percentatge de la columna lateral només apareix a la disposició de columna i mitja. Els canvis es veuen immediatament a la previsualització del viewport. Per a una referència completa de totes les opcions de configuració i els seus valors per defecte, consulta la pàgina de [Configuració](/ca/docs/configuration).
+
+La capçalera del tauler ofereix, a més, **Restablir** (demana confirmació; només apareix quan el disseny difereix del del llibre d'exemple obert, i restaura el disseny d'aquest exemple, fonts incloses), **Exportar** i **Importar**. Consulta [Exportar i importar](#exportar-i-importar).
+
+#### Tauler de revisió
+
+Diagnòstics en viu, recalculats a partir del text, el disseny, les figures i l'última composició. El recompte coincideix amb la insígnia del botó de la barra d'activitat. Els avisos s'agrupen per tipus, en ordre de prioritat: primer el que trenca la sortida, després el marcatge i al final la composició fina, que sol portar molts avisos petits. Cada grup es pot plegar i mostra el seu recompte:
+
+- **Fonts**: una família tipogràfica que falta, o variants de pes/estil que falten o estan duplicades en una família personalitzada, i *Llista de fonts en una família*: un ajust `fontFamily` que conté una llista de fonts CSS (el text es compon amb la primera família; l'entrada anomena la ruta de l'ajust)
+- **Figures i taules**: un id de recurs desconegut en un `::resource` / `:ref` —també al peu, la nota o les cel·les d'una figura que el text fa servir, o com a imatge d'una cel·la de taula—, ids de recurs duplicats, referències a un tipus de recurs que no existeix, mapes de bits renderitzats força més grans que la seva mida en píxels, una taula l'id d'estil de la qual no anomena cap estil de taula, una quadrícula de taula irregular (una cel·la combinada a la qual falten les cel·les cobertes, o una fila amb un forat: torna a combinar les cel·les a l'editor de taules) i una imatge el fitxer de la qual falta a l'emmagatzematge o no es pot descodificar (es mostra un marcador de posició)
+- **Text i marcatge**:
+  - salts en la jerarquia de títols (per exemple H1 → H3), i títols consecutius sense text entre ells;
+  - fórmules `$…$` / `$$…$$` invàlides o sense tancar;
+  - noms de directiva desconeguts (s'accepta qualsevol nom que conegui el parser: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` i `columns`), atributs de numeració o paritat invàlids i un `:::space{lines=N}` fora de 0–20 línies;
+  - una tanca de contenidor `:::` sense tancar al final del document (en fer-hi clic s'enfoca la seva línia d'obertura);
+  - un `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}` o un `{style="…"}` de títol l'estil del qual no està configurat;
+  - una línia `::resource` que s'imprimeix com a text, perquè està mal formada o enganxada sota un paràgraf sense línia en blanc;
+  - *Marques en amplada completa*: marques escrites amb un mètode d'entrada xinès o japonès (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), que s'imprimeixen com a text; l'avís mostra la forma ASCII que cal escriure;
+  - *Clau d'atribut no llegida*: una clau d'atribut escrita fora de l'ASCII (`作者=曹雪芹`), que l'analitzador ignora;
+  - *Metadades ignorades*: un capítol diferent del primer que comença amb un bloc de metadades (només les metadades del primer capítol són les del llibre).
+- **Disseny**:
+  - noms de marcador de capçaleres i peus fora de la llista permesa del motor (s'accepten `{attr.…}` i els marcadors de part), i marcadors les metadades del document dels quals falten;
+  - ancoratges cíclics entre elements de disseny, o ancoratges a un element que no existeix. Aquesta comprovació i la dels marcadors recorren totes les ranures de disseny: les capçaleres i peus, l'obertura de part, el verso en blanc que segueix una pàgina de part, les files de part de l'índex, el disseny de cada nivell de títol, i el disseny de cada estil de títol i les capçaleres i peus de la seva secció. Una entrada d'un estil de títol anomena l'estil, com a `{style="index"} header · #rh → #missing`, i una del verso o de les files de part de l'índex anomena el seu ajust, com a `toc.parts.design · #row → #missing`;
+  - elements de text el desbordament per retall dels quals sempre trunca;
+  - *Disseny de títol tallat*: un disseny de títol més alt del que cap a la seva pàgina — text d'una obertura compost més enllà del peu de la pàgina, o d'un disseny de columna més enllà del peu de la seva columna (una entradeta llarga en una pàgina de pantalla petita). El títol reclama la resta de la seva pàgina o de la seva columna, de manera que el text que el segueix comença a la següent, però aquesta part del disseny es perd; en fer clic a l'entrada s'enfoca el títol;
+  - *Columna lateral fora de rang*: una columna lateral de columna i mitja que el motor ha hagut de retallar per deixar espai a la columna principal;
+  - *Format de numeració desconegut*: un format de numeració de llista, de pàgina o de tipus de recurs que el motor no coneix, i que numera en decimal;
+  - *Ajust desconegut*: una clau que no existeix als títols, en un nivell de títol o en un estil de títol (un `letterSpacng` mal escrit), i que el motor ignora; l'entrada suggereix l'ajust al qual més s'assembla, quan n'hi ha.
+
+  Aquests tres últims, com *Llista de fonts en una família*, vénen de la configuració i no del text: l'entrada anomena la ruta de l'ajust, i en fer-hi clic l'editor no es mou.
+- **Composició**:
+  - línies obertes (espaiat entre mots estirat més enllà del llindar configurat);
+  - *Línia CJK curta*: una línia de text xinès, japonès o coreà que queda abans de la mesura perquè omplir-la separaria els seus caràcters més del que es permet;
+  - *Marques enganxades a la línia veïna* i *Lectures enganxades a la línia veïna*: punts d'èmfasi, línies de nom i de títol, o lectures ruby que necessiten més espai entre línies del que té el paràgraf; l'entrada dona totes dues mesures, en em;
+  - requadres que desborden la seva columna;
+  - *Els xips toquen la línia següent*: un xip la caixa del qual envaeix un xip de la línia de sobre o de sota (el solapament s'indica en punts); un xip alt sense cap xip a sobre ni a sota no s'assenyala;
+  - cascades de paritat;
+  - *Llengua sense patrons de partició de mots*: la llengua del document (la seva llengua de partició de mots o, si no, `locale`) no té patrons inclosos, de manera que el seu text es divideix amb els de l'anglès dels EUA. Desapareix en desactivar la partició de mots.
+- **Navegador**: emmagatzematge no disponible (falta IndexedDB)
+
+Cada entrada mostra una icona, un títol, un detall d'una línia i, quan escau, el capítol i la línia d'origen (*Cap. 2 · Línia 12* en un llibre de diversos capítols). En fer clic en una entrada amb ubicació d'origen es canvia a aquest capítol i s'enfoca l'editor en aquest punt. Quan no hi ha res a assenyalar, el tauler mostra **Tot en ordre**. Quines comprovacions s'executen es decideix a **Disseny → Avançat → Avisos**.
+### Viewport principal
+
+El costat dret de la interfície mostra la sortida renderitzada. Hi ha cinc pestanyes disponibles, una per cada mode de renderització, en aquest ordre: **Canvas**, **PDF**, **Folio**, **HTML** i **EPUB 3**. Canviar de pestanya no torna a executar la composició: el mateix VDT alimenta tots els backends, de manera que el contingut que veus és coherent entre els modes. La pestanya Folio només s'ofereix on el navegador té WebGL2 i la pantalla no és la d'un mòbil (consulta [Pestanya Folio](#pestanya-folio)).
+
+Cada viewport executa el pipeline de composició dins d'un **Web Worker** dedicat (`postext/worker`). Un hook `useLayoutWorker` per viewport té el handle del worker, envia les fonts com a `ArrayBuffer`s transferibles i dirigeix els builds amb **cancel·lació last-wins** — una pulsació de tecla o un arrossegament de slider avorta l'`AbortSignal` del build anterior abans que comenci el següent, per la qual cosa escriure de pressa no acumula mai feina obsoleta al fil principal. Desmuntar un viewport allibera el seu worker i rebutja qualsevol build pendent. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration#executar-la-composició-en-un-web-worker) per al patró d'integració que s'usa aquí.
+
+<Illustration name="SandboxSyncFlow" data='{"title": "Un únic VDT, cinc sortides", "desc": "El markdown i la configuració del sandbox alimenten un únic VDT en memòria. Canvas, PDF, Folio, HTML i EPUB 3 es renderitzen a partir del mateix VDT, de manera que totes les pestanyes mostren la mateixa maquetació.", "caption": "Un mateix VDT alimenta les cinc pestanyes de sortida.", "markdownLabel": "Markdown", "configLabel": "Configuració", "vdtTitle": "VDT", "vdtSubtitle": "composició compartida", "canvasLabel": "Canvas", "htmlLabel": "HTML", "folioLabel": "Folio", "pdfLabel": "PDF", "epubLabel": "EPUB 3", "singleSource": "font única de veritat"}' />
+
+#### Pestanya Canvas
+
+Renderitza una previsualització rasteritzada del document en un element HTML5 `<canvas>`. Això ofereix una representació precisa al píxel de com es veurà el document compost final, inclosa la col·locació exacta del text, la maquetació per columnes i la col·locació de recursos.
+
+Una barra d'eines a la part superior del viewport de canvas proporciona:
+
+- **Controls de zoom** — Augmentar i reduir el zoom (1,25x per pas, interval 0,25x–4x). El zoom manual desactiva el mode d'ajust.
+- **Modes d'ajust** — Ajustar a l'amplada o a l'alçada de la pàgina. S'activen/desactiven; l'ajust es recalcula automàticament en redimensionar la finestra.
+- **Modes de vista** — Pàgina única (una pàgina per fila) o doble pàgina (maquetació estil llibre, on la primera pàgina apareix a la dreta com a recto i les següents s'aparellen com a dobles pàgines). Un llibre enquadernat per la dreta (`page.binding`, xinès vertical) mostra els plecs al revés: la pàgina 1 sola a l'esquerra i després `[3 | 2]`, `[5 | 4]`. En una pàgina vertical, un clic cau al caràcter que hi ha sota el punter i el cursor és una barra que travessa la columna.
+
+Les pàgines es renderitzen de manera mandrosa mitjançant `IntersectionObserver` — només les pàgines visibles (més un marge de 200 px) es dibuixen al canvas, cosa que manté baix l'ús de memòria de GPU per a documents llargs.
+
+#### Pestanya PDF
+
+Genera un PDF real del document actual mitjançant el paquet `postext-pdf` i el mostra dins del visor PDF integrat del navegador. El PDF es reconstrueix automàticament en muntar la pestanya per primera vegada i en cada regeneració posterior, amb el mateix VDT que alimenta les pestanyes de canvas i HTML — de manera que els salts de línia, les fronteres entre pàgines i la col·locació de recursos coincideixen al píxel entre els tres backends, inclosa la compressió de les línies finals sobreplenes que Knuth–Plass accepta ocasionalment.
+
+Una barra d'eines flotant a la cantonada inferior dreta del viewport proporciona:
+
+- **Regenerar** (icona `RefreshCw`) — Reconstrueix el PDF a partir del markdown i la configuració actuals. Útil després de canviar un ajust que no dispara un rebuild automàticament, o quan les fonts acaben de carregar-se.
+- **Baixar** (icona `Download`) — Desa el PDF actual al disc. El nom del fitxer es deriva del primer encapçalament H1 del document (amb `document.pdf` com a valor per defecte).
+- **Imprimir** (icona `Printer`) — Obre el diàleg d'impressió del navegador sobre el visor PDF integrat, que en la majoria de navegadors permet imprimir o tornar a desar com a PDF.
+- **Capítol actual / Llibre complet** (selector a l'esquerra de la barra de pestanyes, llibres amb més d'un capítol) — Genera tots els capítols com un únic PDF continu en lloc del capítol actiu a continuació dels anteriors (l'opció predeterminada). Canviar-lo regenera el PDF. El canvas té el seu propi selector (consulta [Llibres i capítols](#llibres-i-capítols)).
+
+Internament el sandbox fa servir un helper `createPdfFontProvider()` que baixa els fitxers WOFF2 estàtics per pes des de la CDN de Fontsource a jsdelivr, els descomprimeix a TTF al navegador i lliura els bytes a `pdf-lib` a través de `renderToPdf`. S'usen fonts estàtiques per pes (en lloc d'una única font variable) perquè el text en negreta s'incrusti realment amb el pes bold. Consulta [Generació de PDF](/ca/docs/configuration#generació-de-pdf) per al mateix patró fora del sandbox.
+
+#### Pestanya Folio
+
+Mostra el llibre com a objecte imprès: les pàgines que compon el motor, enquadernades i obertes sobre una taula, en 3D (`postext-folio`, three.js). Les pàgines són les mateixes que pinta el canvas, mostrades tèxel a píxel, de manera que el text es veu tan nítid com a la pestanya Canvas; el que canvia és tot el que les envolta. El paper, l'enquadernació, la taula i la llum surten del grup **Folio** del tauler Disseny (la configuració `folio`), i una tanda `:::paper` del text imprimeix les seves pàgines en un altre paper (consulta [Format del document › `:::paper`](/ca/docs/document-format#paper)).
+
+- **Què compon.** La pestanya Folio segueix el selector **Capítol actual / Llibre complet** del canvas. Un capítol es mostra com a part del seu llibre: les pàgines anteriors i posteriors compten en el gruix dels dos blocs de pàgines, i el capítol s'obre al costat del plec que li correspon. Un llibre enquadernat per la dreta (`page.binding: 'right'`, o un llibre vertical) apareix en mirall i passa els fulls cap a l'esquerra.
+- **Passar pàgines.** Agafa una pàgina per la vora i arrossega-la; si la deixes anar passada la meitat, el full passa, i si no, torna al seu lloc. Un clic en una pàgina la passa (la de la dreta endavant, la de l'esquerra enrere), igual que els botons ‹ › de la barra d'eines i, amb el llibre enfocat, les fletxes del teclat, Re Pàg/Av Pàg, Inici i Fi. Cada full es corba segons el seu paper: el paper bíblia s'enrotlla tancat, la cartolina passa en un arc ampli, i el cartró i les cobertes giren com a planxes rígides.
+- **Salts llargs.** Una pàgina a més de deu pàgines de distància (escrita al camp de pàgina, indicada a l'enllaç permanent, assolida per un enllaç o pel cursor del tauler Text) s'assoleix d'una vegada: el bloc de pàgines intermedi s'aixeca sencer, amb el gruix d'aquestes pàgines, i es deixa caure a l'altre costat. Fins a deu pàgines, els fulls passen un a un.
+- **Envoltar el llibre.** Arrossegar amb el botó dret gira la vista al voltant del llibre, fins a 70° des de la vertical, per veure el llom, el tall davanter o el gruix del bloc. La vista es queda on la deixes, també mentre passen les pàgines, fins que **Restablir la vista** la torna suaument a la vista de la configuració (*Inclinació* i *Gir*). **Desar com a vista per defecte** desa en aquesta configuració la vista tal com la veus, de manera que el llibre s'obre així i Restablir la vista hi torna.
+- **Què fa el punter.** Tres botons de la barra trien què fa el botó esquerre (un dit, un llapis) sobre el llibre: **Passar pàgines a mà**, el mode per defecte, com s'ha descrit més amunt; **Orbitar la vista**, el mateix que arrossegar amb el botó dret, per a un trackpad o una tauleta; **Seleccionar text**, que funciona com a la pestanya Canvas sobre el llibre tal com es veu, inclinat o orbitat: un clic posa el cursor al tauler Text, un arrossegament selecciona, un doble clic agafa una paraula i un clic en un enllaç el segueix. L'elecció es recorda; H, O i S la canvien quan el llibre té el focus.
+- **Segueix l'editor.** El cursor i la selecció del tauler Text es dibuixen sobre les pàgines i hi continuen mentre escrius: la pàgina mostra l'edició tan bon punt es torna a compondre. Portar el cursor de l'editor a una pàgina que no és a la vista passa el llibre fins a aquesta pàgina.
+- **Cobertes.** Amb *Cobertes: Una tapa al voltant de les pàgines*, el llibre va en una tapa de tela, cartolina o pell del color de la coberta. Amb *Les pàgines del document*, la primera pàgina és la coberta i l'última (si cau en una pàgina esquerra) la contracoberta: el llibre queda tancat fins que es passa la coberta, i en passar l'últim full es torna a tancar. Un llibre gruixut s'obre amb el llom aixecat entre els dos blocs.
+- **La barra d'eines.** Una barra flotant com la del canvas: **Recalcular**, **Restablir la vista**, **Desar com a vista per defecte**, els tres modes del punter, el botó per fixar la barra, ‹ › i el camp de pàgina, que accepta un número de pàgina del llibre i passa al seu plec. La pàgina dreta del plec obert és la que indica el permalink (`view=folio&page=N`).
+- **La configuració s'aplica a l'instant.** La configuració de Folio no forma part de la composició: canviar el paper, l'enquadernació o la llum redibuixa el llibre sense tornar a compondre cap pàgina.
+- **On s'ofereix.** La pestanya necessita WebGL2 i una pantalla amb el costat curt d'almenys 600 px: en un mòbil, el llibre en 3D ocupa més memòria de la que el navegador dona a una pestanya, així que allà no apareix (tampoc en un navegador sense WebGL2). En un tauler de menys de 560 px d'amplada, el llibre mostra una pàgina cada vegada i el full continua girant sobre el llom. Si el sistema demana menys moviment, els plecs canvien sense passar el full.
+- **Alternatives textuals.** Cada pàgina es dibuixa com a imatge; el seu nom accessible remet a la pestanya HTML i al tauler Text per llegir-ne el text.
+
+#### Pestanya HTML
+
+Renderitza la sortida de postext dins d'un contenidor Shadow DOM, que garanteix un aïllament complet d'estils respecte a la pàgina amfitriona. El CSS editorial (tipografia, espaiat, filets de columna) s'injecta dins del shadow root perquè no el puguin afectar els estils de l'aplicació circumdant ni s'hi pugui filtrar.
+
+Els enllaços Markdown són actius aquí i al PDF (consulta [Format del document › Enllaços](/ca/docs/document-format#enllaços)). En aquesta pestanya, si fas clic en un, la seva destinació s'obre en una pestanya nova del navegador, perquè el Sandbox continuï obert; les cites `:ref` continuen saltant dins del document.
+
+Una barra d'eines a la part superior del viewport ofereix:
+
+- **Controls d'escala de font** — Redueix o augmenta el text del cos tot conservant cada mesura relativa de la configuració.
+- **Modes de columna** — Columna única (una sola columna alta i desplaçable verticalment) o multicolumna (el nombre de columnes l'amplada de les quals s'acosta més a la mesura configurada, amb scroll-snap horitzontal entre pàgines). Un document a dues columnes conserva les seves pàgines de dues columnes, però el visor pot mostrar un nombre senar de columnes — tres en lloc de dues d'estirades o quatre d'estretes — quan aquest és l'ajust més proper; l'última pertany llavors a la pàgina següent, visible a mitges. Un llibre enquadernat per la dreta (`page.binding`) ordena les seves pàgines de dreta a esquerra en mode multicolumna: el visor s'obre per l'extrem dret i la fletxa ‹ passa a la pàgina següent. Un llibre compost en vertical només es llegeix en mode multicolumna: el botó **Columna única** queda desactivat, amb una indicació que explica per què, i l'elecció que vas desar torna amb el llibre horitzontal següent.
+
+La geometria de les columnes la controla la secció **Lector web (HTML)** del tauler Disseny: `maxCharsPerLine` defineix la mesura objectiu en caràcters de la font del cos, `columnGap` l'espai horitzontal entre columnes en mode multi i `optimalLineBreaking` activa o desactiva l'algorisme Knuth–Plass dins del visor. Consulta la [referència de configuració del Visor HTML](/ca/docs/configuration#visor-html) i l'[exemple d'integració complet](/ca/docs/configuration#integrar-el-visor-html) — el mateix patró que fa servir internament el sandbox.
+
+#### Pestanya EPUB 3
+
+Genera el llibre sencer com un fitxer EPUB 3 amb el paquet `postext-epub`, a partir de la mateixa maquetació capítol a capítol que fa servir la pestanya PDF amb **Llibre complet**. La pestanya no té el selector **Capítol actual / Llibre complet**, perquè un EPUB conté sempre el llibre sencer. En lloc seu, a l'esquerra de la barra de pestanyes, ofereix la **Maquetació de l'EPUB** (amb icones al mòbil):
+
+- **Maquetació fixa**: cada pàgina tal com s'imprimeix, per a lectors que mostren pàgines senceres.
+- **Maquetació fluida** (la predeterminada): el text, les figures i les taules en ordre de lectura, que el lector torna a compondre segons la seva pantalla, la seva lletra i la seva mida.
+
+L'elecció es recorda entre visites. De moment la pestanya mostra quina maquetació està triada; la previsualització del fitxer i la baixada arriben amb el visor EPUB.
+
+### Mòbils i pantalles petites
+
+Per sota de 768 px d'amplada, el Sandbox passa a una disposició pròpia:
+
+- **Taulers.** La barra de taulers baixa al peu de la finestra, amb els mateixos botons en el mateix ordre. Un tauler obert cobreix la previsualització en lloc de quedar-hi al costat; la previsualització continua a sota on era, fora de l'ordre de tabulació, així que en tancar el tauler apareix a la mateixa pàgina.
+- **Barra superior.** Les pestanyes de sortida, el selector d'abast (a la pestanya EPUB, la maquetació) i els controls de l'integrador (objectius grans, tema, idioma) comparteixen la barra que hi ha sobre la previsualització. Per sota de 640 px ocupa dues files: a dalt el logotip, l'abast i els controls; a baix les pestanyes, a tota l'amplada; a 320 px n'hi caben cinc.
+- **Barres d'eines.** Les barres flotants de les previsualitzacions s'acoblen al peu de la previsualització i passen a una segona fila quan no hi caben.
+- **Folio.** La pestanya Folio no s'ofereix a la pantalla d'un mòbil (consulta [Pestanya Folio](#pestanya-folio)).
+- **PDF.** Els mòbils i les tauletes només tàctils no poden mostrar un PDF dins de la pàgina (Android no té visor integrat i iOS només dibuixa la primera pàgina), així que la pestanya PDF mostra en lloc seu una targeta amb **Obrir el PDF**, que obre el fitxer en una pestanya nova; **Baixar**, a la barra d'eines, el continua desant.
+
+## Llibres i capítols
+
+Tot el que obres al Sandbox és un **llibre**, igual que un fitxer de llibre d'InDesign agrupa un document per capítol: la configuració, les fonts personalitzades i el conjunt de recursos són comuns a tot el llibre, i cada **capítol** és el seu propi document markdown. Les obres llargues — un manual de cinc-centes pàgines — s'editen capítol a capítol, mentre que la numeració, les referències creuades i l'exportació continuen veient un sol document.
+
+- **L'estructura** viu al tauler de capítols i al selector de capítols del tauler Text: afegir, canviar el nom (doble clic en una fila), reordenar, dividir un capítol en un per títol de nivell 1, fusionar un capítol amb l'anterior, suprimir. Cada capítol conserva el seu propi historial de desfer i el seu cursor.
+- **Capítol a capítol.** Per defecte les previsualitzacions maqueten el **capítol actiu**, a continuació dels capítols anteriors: el seu primer número de pàgina segueix l'última pàgina del capítol previ, els títols de nivell 1 continuen comptant (el capítol 4 es numera 4 i les seves figures 4.1, 4.2, …), els folis explicatius `{chapterNumber}` i `{chapterTitle}` l'acompanyen, es respecta la paritat recto/verso (un inici de capítol afegeix una pàgina en blanc exactament igual que a mig llibre) i una `:ref` a una figura esmentada per primera vegada al capítol 1 conserva aquest número. El nombre de pàgines dels capítols anteriors prové de la maquetació que va mostrar cadascun per última vegada; els capítols mai visitats (o editats des de llavors) es maqueten en segon pla, l'un darrere l'altre, i la llista de capítols mostra *pàgines pendents* fins que arriben. Els intervals de pàgines són exactes per als capítols que obren en pàgina nova (el més habitual); un capítol el text del qual hauria continuat a la pàgina anterior es col·loca al principi de la seva pròpia pàgina.
+- **Llibre complet.** El canvas, la vista HTML i la pestanya PDF poden mostrar el llibre sencer com un document continu: tria **Llibre complet** al selector a l'esquerra de la barra de pestanyes (llibres amb més d'un capítol). El canvas maqueta llavors tots els capítols en ordre, cadascun a continuació de les pàgines on van acabar els anteriors, i mostra els documents cosits l'un darrere l'altre: una edició torna a maquetar només el seu capítol, i els següents únicament si la seva primera pàgina s'ha mogut; la llista de capítols, les parts `chapter=` i `page=` del permalink i la sincronització amb l'editor segueixen el capítol de cada pàgina. L'elecció es desa amb el llibre (una novel·la curta es llegeix com un sol document; un llibre de text, capítol a capítol), i un preset es pot obrir així mitjançant `view.canvasScope` al seu manifest. La vista HTML comparteix l'elecció del canvas i maqueta el llibre sencer com un sol document des de la seva primera pàgina, amb les files de l'índex i el fragment seguint el capítol de cada pàgina; la pestanya PDF conserva el seu propi selector.
+- **Metadades.** Les metadades (frontmatter) del primer capítol són les del llibre (títol, autor, …). Un bloc de metadades al principi de qualsevol altre capítol s'ignora, i el tauler Revisió ho indica. `buildBundle` segueix la mateixa regla, així que un llibre surt igual al Sandbox i al teu propi programa.
+- **Llibres llargs.** Un llibre de 120 capítols funciona com un de curt. El menú de capítols de la capçalera del tauler Text es desplaça dins de la finestra i s'obre al capítol actiu; les fletxes avancen des d'aquest capítol. Un llibre en parts (tanques `:::part` als seus capítols) agrupa els capítols sota les seves parts, al menú i al tauler Capítols, i un clic en una part del menú n'obre el primer capítol. Amb més de 30 capítols el menú porta a dalt un camp de cerca que troba números de capítol (`27`) i paraules dels títols i dels noms de les parts (`埋香`, `卷三`); Retorn obre el primer que coincideix. Mentre un mètode d'entrada compon (zhuyin, cangjie, pinyin, kana), Retorn i les fletxes són seus: Retorn confirma la conversió i no obre res. Els fitxers de capítol d'un llibre d'exemple es carreguen de vuit en vuit, i mentre els capítols es paginen en segon pla el tauler Capítols mostra l'avenç (*S'estan paginant 34/120*). El canvas i la vista HTML mostren un llibre de més de 200 capítols de capítol en capítol, demani el que demani el llibre o el seu manifest: maquetar alhora tots els capítols obliga a tenir el llibre sencer en memòria. Un de més curt es pot obrir complet: 紅樓夢 (129 capítols, unes 2.000 pàgines) triga uns 25 segons i ocupa uns 100 MB al canvas. La pestanya PDF pot continuar exportant qualsevol llibre complet.
+- **Recompte de pàgines.** Cada capítol es maqueta com un document propi, així que `{totalPages}` compta les pàgines del capítol. `{bookTotalPages}` compta el llibre sencer: tan bon punt es coneixen les pàgines de tots els capítols, les previsualitzacions maqueten cada capítol amb aquest total (només si una capçalera, un peu o un disseny l'imprimeix). Fins llavors, un capítol imprimeix les pàgines fins al seu propi final. El **Llibre complet** de la pestanya PDF compta les pàgines que maqueta, així que el fitxer imprimeix sempre el total real del llibre.
+- **Obertures de capítol.** No es força cap salt de pàgina entre capítols: un capítol el primer bloc del qual és un títol de nivell 1 obre pàgina nova gràcies al mateix ajust *salt previ* del títol, exactament igual que un capítol que comença a mig document.
+- **Sincronització.** Fer clic en un paràgraf de qualsevol capítol a la vista Canvas o HTML canvia l'editor a aquest capítol i hi col·loca el cursor; el cursor de l'editor es ressalta a les previsualitzacions allà on el capítol quedi dins del llibre. Els avisos porten el seu capítol.
+- **Els documents existents** s'obren com un llibre d'un sol capítol; no canvia res fins que s'afegeix un segon capítol.
+## Persistència
+
+El Sandbox desa automàticament la teva feina al navegador:
+
+- **Llibre i configuració** — Els capítols, el capítol actiu i l'abast del canvas es desen automàticament a `localStorage` sota `postext-sandbox-book` (un document únic desat per una versió anterior es llegeix de `postext-sandbox-markdown` com a llibre d'un capítol i es migra en el primer desament); la configuració es desa després d'1 segon d'inactivitat amb els valors per defecte eliminats perquè només s'emmagatzemin els teus ajustos personalitzats, juntament amb la seva versió (`postext-sandbox-config-version`); una configuració desada abans que existís la versió es llegeix com s'explica més avall a *Salts d'encapçalament desats amb postext 1.4 o anterior*
+- **Estat de la interfície** — El tauler i la pestanya de viewport actius, l'amplada de la barra lateral, el grup obert del tauler Disseny (`postext-sandbox-settings-group`), el seu interruptor *Mostrar totes les explicacions* (`postext-sandbox-settings-help`) i l'estat obert/tancat de les seccions, els llibres d'exemple amagats, els modes de zoom/ajust/vista del canvas, l'escala de font i el mode de columnes de l'HTML, la maquetació de la pestanya EPUB (`postext-sandbox-epub-layout`) i l'estat d'ancoratge de les barres d'eines es desen a `localStorage`
+- **Llibre obert** — L'id del llibre propi obert (un *projecte*) es desa a `localStorage` sota `postext-sandbox-project`; els projectes en si (capítols, configuració i registres de recursos; registres `version: 8`, el `CONFIG_VERSION` del motor, amb el qual també es marquen la configuració de treball i les exportacions `postext-config.json`, de manera que cadascuna es migra una sola vegada quan canvien les regles del motor; en llegir-los es migren els registres de document únic de versions anteriors i es fixen, com s'explica més avall, els salts d'encapçalament dels registres anteriors a la versió 3, la mida de les fórmules dels anteriors a la versió 4, l'espai sota les figures en línia dels anteriors a la versió 5, l'espai al voltant de les figures en línia dels requadres, les marques dels títols, la mida de les caplletres, el lloc sota una línia de dos punts i els talls dels requadres dels anteriors a la versió 6, els talls després d'una ratlla i la composició del text en bandera dels anteriors a la versió 7, i la divisió sota un títol, els talls després del guionet d'un compost i l'espai sota els contenidors `:::paragraphs` dels anteriors a la versió 8) viuen al magatzem `projects` de la base de dades IndexedDB del sandbox, i els seus continguts binaris comparteixen els magatzems de blobs i fonts amb el document de treball. Els continguts es recullen quan ni el document de treball ni cap projecte no hi fan referència
+- **Llibres d'exemple editats** — La teva versió d'un llibre d'exemple (els seus capítols, el capítol actiu, l'abast del llenç, la configuració i els registres de recursos, juntament amb el que va aplicar l'exemple en obrir-lo) es desa al magatzem `presetDrafts` de la base de dades IndexedDB del sandbox, un registre per exemple i llengua del contingut, i la recollida d'escombraries en conserva els fitxers igual que els d'un projecte. Restaurar l'original l'esborra
+- **Portades dels llibres d'exemple** — La portada presa de la primera pàgina d'un llibre d'exemple que no porta miniatura es desa al magatzem `presetCovers` de la base de dades IndexedDB del sandbox, un registre per exemple i llengua del contingut (consulta [Tauler de llibres](#tauler-de-llibres)). Un llibre propi desa la portada al seu registre de projecte.
+- **Desament en sortir** — Els canvis pendents s'escriuen a l'acte quan la pàgina s'amaga o es tanca, quan surts del sandbox per un enllaç (el logotip) i abans d'obrir un altre llibre, sense esperar la pausa d'1 segon
+- **Llibre d'exemple obert** — L'id de l'últim preset carregat es desa a `localStorage` sota `postext-sandbox-preset`, de manera que els botons Restablir dels taulers continuen restaurant aquest preset entre sessions (un preset que ja no se serveix apareix com a no disponible). El que va aplicar aquest preset — l'empremta del paquet més els hashes del markdown, la configuració i el conjunt de recursos — es desa sota `postext-sandbox-preset-applied`, que és com la visita següent distingeix un document intacte d'un d'editat
+- **Recursos i fonts** — Els registres de recursos, els seus blobs binaris (mapes de bits i SVG) i els fitxers de fonts personalitzades persisteixen a **IndexedDB**; quan IndexedDB no està disponible (p. ex. alguns modes de navegació privada), apareix un avís d'*emmagatzematge no disponible* al tauler Revisió (a *Navegador*)
+- **Permalink** — El fragment de l'URL anomena el que hi ha a la pantalla, de manera que una recàrrega, un marcador o un enllaç passat a una altra persona aterra a la mateixa pàgina del mateix llibre al mateix visor: `#preset=bioquimica-feduchi&lang=es&view=canvas&chapter=1&page=7` obre el preset de Bioquímica en castellà a la pestanya Canvas, al capítol 1, pàgina 7 (el número imprès a la pàgina). `view` és `canvas`, `pdf`, `folio`, `html` o `epub`; a la pestanya Folio, la pàgina és la de la dreta del plec obert. Un projecte local s'anomena com a `project=ID` — el seu id d'emmagatzematge, així que només el navegador que desa el projecte pot seguir aquest enllaç. El sandbox manté el fragment al dia en canviar de llibre, pestanya o capítol i en desplaçar-te. Una part omesa vol dir el que hi hagi (sense pàgina: la primera del capítol; sense llibre: l'últim obert), i un llibre que el navegador no pot obrir es passa per alt. Enganxar un enllaç a la barra d'adreces d'un sandbox obert l'obre allà mateix. Si la pàgina s'obre amb un enllaç a un llibre diferent de l'últim obert, el sandbox mostra el seu estat de càrrega fins que el llibre enllaçat és a punt, mai l'anterior. Qui integra el sandbox també pot enllaçar llibres propis amb la prop `hashBundles` (consulta [Props](#props)): el web obre una recepta del Receptari amb `#recipe=<slug>&lang=es`. La primera visita importa el fitxer `.postext` de la recepta com un dels teus llibres. Una visita posterior amb el mateix enllaç pregunta abans (*Ja tens aquest llibre*): **Obrir la meva còpia** obre aquest llibre, amb els teus canvis, i **Substituir per la versió publicada** torna a importar la recepta, que pot haver-se corregit després, i esborra la teva còpia tan bon punt la nova és oberta; Escape conserva la teva còpia. Després el fragment passa a anomenar el projecte. L'idioma de la interfície continua a la ruta (`/en/sandbox`, `/es/sandbox`); `lang` és la llengua del contingut d'un paquet bilingüe, qualsevol etiqueta BCP 47, que es conserva amb les majúscules canòniques (`lang=zh-hant` es llegeix `zh-Hant`). Una etiqueta que el paquet no llista obre l'edició que li correspon: `zh-TW` i `zh-HK` obren la de xinès tradicional (`zh-Hant`), `zh` i `zh-CN` la de xinès simplificat (`zh-Hans`), `en-GB` l'anglesa. L'altra escriptura del xinès només es llegeix quan el paquet no té edició en la del lector: un enllaç `zh-TW` a un llibre en `zh-Hans` i anglès obre el text simplificat, no l'anglès. Un enllaç sense `lang` obre l'`openLocale` del paquet si l'indica i, si no, l'edició en l'idioma de la interfície. El capítol i la pàgina de l'enllaç s'apliquen a l'edició que obre, i el fragment passa a anomenar-la amb la seva pròpia etiqueta (`lang=zh-TW&chapter=28` queda en `lang=zh-Hant&chapter=28`).
+
+**Salts d'encapçalament desats amb postext 1.4 o anterior.** Fins a postext 1.4, una configuració amb un objecte `headings` componia els seus encapçalaments de nivell 1 sense salt de pàgina tret que fixés explícitament l'interruptor *Trencar abans* d'H1 (i en desar-la es perdia un salt d'H1 desactivat), un salt d'H1 parcial completava el camp que li faltava amb el valor sense salt, i el salt d'un estil d'encapçalament feia el mateix en lloc de combinar-se amb el del seu nivell. El motor conserva ara el valor per defecte de cada nivell — H1 obre en una pàgina senar nova (`always-odd`) — i hi combina un salt parcial. Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox escriu aquests salts en llegir un registre de projecte anterior a la versió 3 o una configuració de treball sense versió: `enabled: false` a H1 on el salt estava desactivat, i `parity: 'any'` al costat d'un `enabled: true` que no indicava paritat, a H1 i als estils d'encapçalament. El tauler Disseny mostra llavors el salt amb què es van compondre les pàgines. Des de postext 1.5 els fitxers també registren la versió: un fitxer `.postext` el manifest del qual no té `configVersion`, i un `postext-config.json` sense aquest camp, els va escriure postext 1.4 o anterior, i es llegeixen de la mateixa manera en importar-los o obrir-los (vegeu [Paquets escrits per postext 1.4 o anterior](/ca/docs/configuration#paquets-escrits-per-postext-14-o-anterior)).
+
+**Mida de les fórmules desada abans de postext 1.5.** Fins a postext 1.4, cada fórmula sortia 1,131 vegades més gran del que diu la seva *Escala de mida* (vegeu [Mida de les fórmules](/ca/docs/configuration#matemàtiques)). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox fixa aquesta mida en llegir un registre de projecte anterior a la versió 4, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 4` o un `postext-config.json` exportat abans: l'*Escala de mida* passa a ser l'escala desada × 1,1312, i un marge de les fórmules en bloc en `em` es divideix per 1,1312, de manera que les fórmules i l'espai que les envolta queden com estaven. Un llibre els capítols del qual no tenen cap `$` es queda com estava (un `postext-config.json` no porta capítols, així que la seva mida es fixa sempre que les matemàtiques estiguin activades), i també un amb *Activar LaTeX* desactivat. La secció Fórmules mostra llavors els valors amb què es compon el llibre; restableix *Escala de mida*, *Marge superior de les fórmules en bloc* i *Marge inferior de les fórmules en bloc* per compondre'l a la mida actual. La fixació s'escriu una sola vegada: el registre es torna a desar amb la versió actual i des de llavors es llegeix tal qual. Un preset aplicat aleshores i mai editat continua comptant com a intacte (el Sandbox el compara amb els seus valors fixats, i el mateix val per a la fixació dels salts d'encapçalament): recarregar-lo o canviar de llibre no demana descartar canvis que no vas fer, i una versió més nova del preset, com la de la guia integrada, el continua substituint.
+
+**Figures en línia desades abans de postext 1.5.** Fins a postext 1.4, una figura o taula composta en línia en el text (col·locació *En línia (aquí)*) conservava una línia d'espai només a sobre: el text que la seguia continuava a la línia següent de la retícula, per prop que quedés. Ara conserva la mateixa línia a sota (**Columnes → Espai al voltant de les figures en línia**, *A sobre i a sota*). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox posa *Espai al voltant de les figures en línia* en *Només a sobre* en llegir un registre de projecte anterior a la versió 5, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 5` o un `postext-config.json` exportat abans, quan una línia del llibre insereix un recurs —`::resource{id="…"}` sola a la seva línia, no una menció en el text—. Un `postext-config.json` no porta capítols, així que s'hi posa sempre que el fitxer sigui anterior. Tria *A sobre i a sota* per compondre el llibre amb l'espaiat actual.
+
+**Figures en línia dels requadres desades abans de postext 1.5.** Fins a postext 1.4, una figura o taula composta en línia dins d'un requadre quedava enganxada al text del requadre que l'envolta. Ara conserva a sobre una línia del text del requadre i, amb *A sobre i a sota*, també a sota (**Columnes → Espai al voltant de les figures dels requadres**). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox desactiva *Espai al voltant de les figures dels requadres* en llegir un registre de projecte anterior a la versió 6, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 6` o un `postext-config.json` exportat abans, quan un requadre del llibre insereix un recurs en una línia pròpia. Un `postext-config.json` no porta capítols, així que s'hi desactiva sempre que el fitxer sigui anterior. Activa'l per compondre el llibre amb l'espaiat actual.
+
+**Marques dels títols i caplletres desades abans de postext 1.5.** Fins a postext 1.4, un títol imprimia les paraules de la seva `*cursiva*`, la seva `**negrita**` i les seves altres marques amb el seu propi estil, sense marques, i una caplletra sense mida era tan alta com totes les línies que abasta, amb la part alta per sobre de la primera línia. Ara un títol compon les seves marques (**Títols → Marques en línia als títols**) i la part alta d'una caplletra s'enrasa amb les majúscules de la primera línia. Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox desactiva *Marques en línia als títols* en llegir un registre de projecte anterior a la versió 6, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 6` o un `postext-config.json` exportat abans, quan algun títol del llibre porta una marca (un `postext-config.json` no porta capítols, així que s'hi desactiva sempre que el fitxer sigui anterior); i escriu a la **Mida de la caplletra** de cada lletra la mida amb què es componia. Activa l'interruptor, o esborra la mida, per compondre el llibre amb les regles actuals. Tingues en compte que un títol en cursiva amb tot el títol marcat amb `*…*` surt llavors en rodona.
+
+**Llistes després de dos punts desades abans de postext 1.5.** Fins a postext 1.4, *Mantenir els dos punts amb la llista* donava per bona per a la llista una línia de lloc sota la línia que acaba en dos punts, així que un primer ítem de dues línies que les regles d'òrfenes i vídues mantenen sencer passava a la columna següent i deixava sola al peu la línia dels dos punts. Ara demana el lloc que necessita el primer ítem (**Tipografia → Text base → Vídues, òrfenes i línies curtes → Lloc sota els dos punts**, *El que necessita el primer ítem*). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox posa *Lloc sota els dos punts* en *Una línia (1.4)* en llegir un registre de projecte anterior a la versió 6, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 6` o un `postext-config.json` exportat abans, quan una llista del llibre segueix una línia que acaba en dos punts. Un `postext-config.json` no porta capítols, així que s'hi posa sempre que el fitxer sigui anterior. Tria *El que necessita el primer ítem* per compondre el llibre amb la regla actual.
+
+**Talls dels requadres desats abans de postext 1.5.** Fins a postext 1.4, un requadre que es partia dins d'un paràgraf o d'un ítem de llista podia deixar una sola línia seva a un costat, sempre que cada costat del requadre sumés les seves *Línies a cada costat del tall*. Ara el tall deixa almenys dues línies del paràgraf o de l'ítem a cada costat (**Columnes → Línies d'un paràgraf en el tall d'un requadre**). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox posa *Línies d'un paràgraf en el tall d'un requadre* en 1 en llegir un registre de projecte anterior a la versió 6, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 6` o un `postext-config.json` exportat abans, quan algun capítol del llibre obre un `:::callout`. Un `postext-config.json` no porta capítols, així que s'hi posa sempre que el fitxer sigui anterior. Torna a posar-lo en 2 per compondre el llibre amb la regla actual.
+
+**Ratlles i text en bandera desats abans de postext 1.5.** Fins a postext 1.4, la partició de línies òptima mai no acabava una línia després d'una ratlla o una semiratlla posada entre dues paraules sense espais (`Madrid–Barcelona`, `I.—Que trata`), i el text en bandera es componia sempre línia a línia, omplint cada línia abans de passar a la següent. Ara una línia pot acabar després d'aquesta ratlla (**Tipografia → Text base → Paràgrafs → Tallar després de ratlla**), i el text corregut en bandera també es compon amb Knuth-Plass (**Partició òptima del text en bandera**). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox desactiva *Tallar després de ratlla* en llegir un registre de projecte anterior a la versió 7, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 7` o un `postext-config.json` exportat abans, quan algun capítol del llibre té una ratlla així (un `postext-config.json` no porta capítols, així que s'hi desactiva sempre que el fitxer sigui anterior); i desactiva *Partició òptima del text en bandera* quan la configuració posa en bandera algun text corregut: el text base, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció. Activa'ls per compondre el llibre amb les regles actuals.
+
+**Divisions sota un títol desades abans de postext 1.5.** Fins a postext 1.4, el paràgraf que segueix un títol al peu d'una columna hi conservava totes les línies que hi cabessin, encara que en passessin molt poques a la columna següent. Ara respecta també el mínim d'òrfenes, o el títol passa a la columna següent amb ell (**Títols i índex → Títols → Divisió sota un títol**). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox posa *Divisió sota un títol* en *Omplir la columna* en llegir un registre de projecte anterior a la versió 8, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 8` o un `postext-config.json` exportat abans, quan algun capítol del llibre té un títol (un `postext-config.json` no porta capítols, així que s'hi fixa sempre que el fitxer sigui anterior) i la configuració manté activats *No deixar títols solts* i el control d'òrfenes. Posa'l en *Segons les regles* per compondre el llibre amb la regla actual.
+
+**Contenidors de paràgrafs desats abans de postext 1.5.** Fins a postext 1.4, l'espai sota un contenidor `:::paragraphs` era el del mateix estil (el més gran entre el seu espai entre paràgrafs i el seu marge inferior), posat sota l'última línia abans que el text tornés a la retícula; l'espai que un encapçalament deixa damunt seu se sumava a sota, i la separació entre paràgrafs del text base no comptava, així que un encapçalament quedava més lluny d'una bibliografia que d'un paràgraf, i el paràgraf que seguia un grup d'entrades atapeïdes hi quedava més enganxat que a qualsevol altre. Ara aquest espai es fon amb el del bloc següent i és almenys la separació entre paràgrafs del text (**Tipografia → Estils de paràgraf → Espai sota un contenidor**, *Fusionar*). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox posa *Espai sota un contenidor* en *Sumar (1.4)* en llegir un registre de projecte anterior a la versió 8, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 8` o un `postext-config.json` exportat abans, quan la configuració declara algun estil de paràgraf i algun capítol del llibre obre un contenidor `:::paragraphs`. Un `postext-config.json` no porta capítols, així que s'hi posa sempre que el fitxer sigui anterior i declari algun estil de paràgraf. Tria *Fusionar* per compondre el llibre amb la regla actual.
+
+**Compostos desats abans de postext 1.5.** Fins a postext 1.4, la partició de línies òptima mai no acabava una línia justificada després del guionet d'un compost (`físico-química`) en un paràgraf sense negretes, cursives ni cap altre format, i sí que ho feia en un amb format. Ara una línia pot acabar-hi en qualsevol paràgraf (**Tipografia → Text base → Paràgrafs → Tallar després de guionet**). Perquè un llibre desat aleshores conservi les seves pàgines, el Sandbox desactiva *Tallar després de guionet* en llegir un registre de projecte anterior a la versió 8, una configuració de treball desada amb una marca anterior (o sense), un fitxer `.postext` el manifest del qual és anterior a `configVersion: 8` o un `postext-config.json` exportat abans, quan algun capítol del llibre té un guionet entre dues lletres (un `postext-config.json` no porta capítols, així que s'hi desactiva sempre que el fitxer sigui anterior). Activa'l per compondre el llibre amb la regla actual.
+
+Aquestes fixacions eviten allò que mouria cadascun d'aquests canvis de regles. La 1.5 corregeix a més errors de composició, i una correcció no té fixació, així que en un llibre desat encara es pot moure alguna pàgina on s'apliqui: la banda d'un títol de capítol a tota la pàgina sense disseny, una caplletra en un disseny de títol, un paràgraf dins d'un requadre, un paràgraf fluix que estira l'equilibrat de columnes, un requadre flotant amb un marge més gran que una línia, un titolet centrat o a la dreta amb tracking, la segona columna sota una obertura a tota la pàgina, un titolet pres d'un títol tallat després d'un guionet, una paraula més ampla que la seva línia tallada al costat del seu propi guionet, la resta d'una paraula més ampla que la seva línia, que ara conserva els seus propis punts de tall, l'ítem que segueix una llista niuada en una altra (la llista és a [Mida de les fórmules](/ca/docs/configuration#matemàtiques)).
+
+L'emmagatzematge es **comparteix entre els idiomes de la interfície**. Un document per defecte intacte canvia al markdown per defecte de l'idioma actual i torna a sembrar els recursos d'exemple quan canvia l'idioma — així, obrir el sandbox en castellà mostra exemples en castellà. Qualsevol edició de l'usuari desactiva aquest comportament. Totes les previsualitzacions deriven a més la configuració regional de partició de mots de l'idioma de la interfície quan la configuració no anomena cap llengua (ni una de partició de mots ni `locale`).
+
+### Exportar i importar
+
+Un llibre complet viatja com a **fitxer `.postext`**: un zip amb exactament l'estructura d'un directori de paquet de preset — `preset.json`, `chapters/*.md`, `resources/*` i `fonts/*` (consulta [Format de paquet de preset](#format-de-paquet-de-preset)). El fitxer porta a més la **paginació** del llibre com a `layouts.json` — el nombre de pàgines i la numeració de cada capítol, marcats amb la versió del motor, la configuració i els recursos amb què es va calcular —, de manera que un llibre importat s'obre paginat i només es torna a compondre allò que aquestes marques ja no avalen. Un paquet en diverses llengües compon cadascuna amb la seva pròpia configuració, així que pot portar-ne en el seu lloc una per llengua, `layouts.<idioma>.json` (`layouts.zh-Hant.json`), que es llegeix abans que `layouts.json`. El document actiu exporta la paginació que té en memòria; un projecte o un preset exportat des de la seva fila porta la que es va registrar l'última vegada que va ser el document de treball. La portada s'escriu com el `thumbnail` del manifest, així que sobreviu al viatge d'anada i tornada. El menú **Nou** del **tauler Llibres** (**Obrir un fitxer .postext…**) importa un fitxer com a llibre nou; el menú ⋯ de cada fila té el seu propi **Baixar (.postext)**, i el del llibre obert exporta el document de treball. La importació accepta els fitxers a l'arrel del zip o sota una única carpeta de primer nivell (com en comprimir la mateixa carpeta; les entrades `__MACOSX` i els fitxers ocults s'ignoren). Les fonts s'escriuen com a fitxers separats, mai dins de `config.customFonts`; les cares `.woff` s'ometen amb un avís en tots dos sentits, igual que els recursos dels quals falten els bytes. Descomprimeix un fitxer exportat a `<raíz-de-presets>/<dir>/` i afegeix una entrada a `index.json` per servir-lo com a preset. Els fitxers escrits per versions anteriors (un manifest versió 1 amb un únic `document.md`) s'importen com a llibre d'un capítol. Un llibre en una sola llengua conserva els rètols de figures i taules d'aquesta llengua, sigui quin sigui el de la interfície: un fitxer en anglès obert des de `/es/sandbox` imprimeix *Figure* i *Table*, tret que la seva configuració anomeni altres tipus de recurs. La llengua és la que anomena el fitxer o, si no n'anomena cap, la que fixa la seva configuració (`locale` i, si falta, la de la partició de mots).
+
+El paquet `postext` llegeix i escriu aquests mateixos fitxers (`openBundle`, `createBundle`, `buildBundle`; consulta [Paquets](/ca/docs/configuration#paquets-fitxers-postext)). Un llibre exportat aquí s'obre al teu propi programa, i un llibre que escriu el teu programa s'obre aquí. Això converteix el Sandbox en el lloc on revisar i ajustar el que compon un programa: exporta'l des del programa, importa'l aquí, corregeix-lo amb la previsualització en directe, torna a exportar-lo i carrega'l de nou al programa. L'[skill per a agents](/ca/docs/skill) també lliura les seves adaptacions com a fitxers `.postext`.
+
+El text i el disseny també s'exporten per separat des de les capçaleres dels taulers Text i Disseny.
+
+La capçalera del **tauler Disseny** baixa `postext-config.json` amb els valors per defecte eliminats:
+
+```json
+{
+  "type": "postext-config",
+  "version": 1,
+  "config": { ... }
+}
+```
+
+La capçalera del **tauler Text** baixa el capítol actiu com un fitxer `.md` i el seu botó **Importar** substitueix el capítol actiu pel contingut d'un fitxer `.md`. El botó **Importar** del tauler Disseny obre un selector de fitxers `.json` validats contra el `type` i la `version` esperats; els fitxers no vàlids s'ignoren silenciosament. L'embolcall `postext-markdown.json` i el format combinat `postext-sandbox.json` de versions anteriors ja no existeixen.
+
+## Ús standalone
+
+El Sandbox està disponible com un paquet React independent (`postext-sandbox`) que es pot incrustar en qualsevol aplicació React:
+
+```bash
+npm install postext-sandbox postext
+```
+
+```tsx
+import { PostextSandbox } from 'postext-sandbox';
+
+function App() {
+  return (
+    <PostextSandbox
+      initialMarkdown="# Hola món"
+      initialConfig={{ layout: { layoutType: 'double' } }}
+      onMarkdownChange={(md) => console.log(md)}
+      onConfigChange={(cfg) => console.log(cfg)}
+    />
+  );
+}
+```
+
+### Props
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Tipus</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>initialMarkdown</code></td>
+      <td><code>string</code></td>
+      <td>Contingut markdown inicial</td>
+    </tr>
+    <tr>
+      <td><code>initialConfig</code></td>
+      <td><code>PostextConfig</code></td>
+      <td>Configuració de maquetació inicial</td>
+    </tr>
+    <tr>
+      <td><code>className</code></td>
+      <td><code>string</code></td>
+      <td>Classe CSS per al contenidor arrel</td>
+    </tr>
+    <tr>
+      <td><code>labels</code></td>
+      <td><code>Partial&lt;SandboxLabels&gt;</code></td>
+      <td>Substitucions de les etiquetes de la interfície, combinades sobre els valors per defecte en anglès — passa etiquetes traduïdes juntament amb <code>locale</code> en incrustar-lo en un altre idioma</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>Idioma de la interfície (<code>'en'</code> per defecte). Selecciona els tipus de recurs i els recursos d'exemple localitzats (un preset o un fitxer en una sola llengua rep els tipus de recurs de la seva pròpia llengua), i proporciona la configuració regional de partició de mots que fan servir les previsualitzacions quan no n'hi ha cap de configurada</td>
+    </tr>
+    <tr>
+      <td><code>presetSources</code></td>
+      <td><code>&#123; url: string; private?: boolean &#125;[]</code></td>
+      <td>Fonts de presets remotes, consultades en ordre després del preset integrat. Cada <code>url</code> és un URL base que serveix un <code>index.json</code> (consulta <a href="#format-de-paquet-de-preset">Format de paquet de preset</a>); <code>private: true</code> etiqueta els presets de la font com a privats i fa que la seva marca <code>default</code> es pugui carregar automàticament. Les fonts que no responen simplement no aporten res</td>
+    </tr>
+    <tr>
+      <td><code>hashBundles</code></td>
+      <td><code>Record&lt;string, (id: string, lang: string | null) =&gt; string | string[] | null&gt;</code></td>
+      <td>Llibres enllaçats amb una clau de fragment pròpia de l'integrador: <code>&#123; recipe: (slug, lang) =&gt; `/cookbook/$&#123;slug&#125;/$&#123;lang&#125;/$&#123;slug&#125;.postext` &#125;</code> fa que <code>#recipe=&lt;slug&gt;&amp;lang=es</code> obri aquest paquet. Retorna l'URL d'un fitxer <code>.postext</code> del mateix origen que la pàgina, diversos per provar en ordre (guanya el primer que respon) o <code>null</code> per a un id que no se serveix. La primera visita importa el fitxer com un projecte que recorda l'enllaç (<code>recipe:&lt;slug&gt;:&lt;lang&gt;</code>); una visita posterior pregunta si cal obrir aquest projecte, amb els seus canvis, o substituir-lo pel fitxer tal com se serveix ara. Després el fragment passa a ser <code>#project=&lt;id&gt;</code></td>
+    </tr>
+    <tr>
+      <td><code>onConfigChange</code></td>
+      <td><code>(config) =&gt; void</code></td>
+      <td>Callback quan canvia la configuració</td>
+    </tr>
+    <tr>
+      <td><code>onMarkdownChange</code></td>
+      <td><code>(markdown) =&gt; void</code></td>
+      <td>Callback quan canvia el markdown</td>
+    </tr>
+    <tr>
+      <td><code>themeToggle</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Component personalitzat per al commutador de tema, allotjat a la part inferior de la barra d'activitat</td>
+    </tr>
+    <tr>
+      <td><code>languageSwitcher</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Component personalitzat per al selector d'idioma, allotjat a la part inferior de la barra d'activitat</td>
+    </tr>
+    <tr>
+      <td><code>homeUrl</code></td>
+      <td><code>string</code></td>
+      <td>Si s'estableix, renderitza un enllaç amb el logotip d'inici a la part superior de la barra d'activitat que apunta a aquest URL</td>
+    </tr>
+    <tr>
+      <td><code>homeLink</code></td>
+      <td><code>ReactNode</code></td>
+      <td>Node personalitzat per a l'espai d'inici, que substitueix l'enllaç amb el logotip per defecte (té prioritat sobre <code>homeUrl</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+### Requisits de CSS
+
+El paquet fa servir classes utilitàries de Tailwind CSS que fan referència a variables CSS personalitzades. L'aplicació amfitriona ha de proporcionar aquestes variables:
+
+- `--background`, `--foreground` — Colors base
+- `--surface` — Color per a superfícies elevades; `--surface-2` — Files sota el punter i opcions ressaltades (per defecte, `--background`)
+- `--slate` — Color per a text atenuat
+- `--rule` — Color de vores/divisors; `--rule-strong` — Filet més marcat per als controls sota el punter (per defecte, `--slate`)
+- `--brand` — Color d'accent: la marca del tauler actiu, els anells de focus, els interruptors i les opcions seleccionades
+- `--brand-hover` — Color d'accent en passar-hi el punter
+- `--brand-soft` — Farciment d'accent translúcid darrere de les opcions seleccionades (per defecte, `--surface`)
+- `--brand-contrast` — Botó d'un interruptor activat (per defecte, `--background`)
+- `--destructive` — Color de les accions destructives i els errors
+- `--accent-blue` — Color d'enllaç/accent
+- `--font-sans` — Família tipogràfica de la interfície
+- `--font-mono` — Família monoespaiada (per a l'editor de codi)
+- `--font-display`, `--brand-blue`, `--brand-gilt` — Tipus de lletra i colors opcionals de la marca del logotip per defecte a la barra d'activitat (per defecte, Georgia, `#2b4acb` i `#d8a21a`)
+
+El lloc web assigna a `--brand` el daurat en el tema fosc i el blau en el clar. Les versions anteriors llegien `--gilt` i `--gilt-hover`; el sandbox ja no les fa servir.
+
+Els popovers, menús i tooltips es renderitzen en un portal sobre `document.body`, així que defineix les variables a `:root` (o `body`), no només a l'element que embolcalla el sandbox. La compilació de Tailwind de l'aplicació amfitriona ha d'escanejar el codi font del paquet (`@source "…/postext-sandbox/src/**/*.tsx"` a Tailwind 4) perquè es generin les classes utilitàries que fa servir.
+
+## Format de paquet de preset
+
+Apèndix. Una font de presets és un directori (servit per HTTP) l'arrel del qual conté un `index.json` que llista directoris de preset; cada directori conté un manifest `preset.json` més els fitxers de markdown, recursos i fonts als quals es refereix. Les eines de `scripts/presets/` del repositori generen paquets exactament amb aquesta forma, i un fitxer `.postext` exportat des del sandbox és un d'aquests directoris comprimit en zip (sense l'`index.json`).
+
+```
+<raíz-de-presets>/
+  index.json
+  <directorio-del-preset>/
+    preset.json
+    chapters/              un .md per capítol, en ordre (un manifest versió 1 anomena un únic document)
+    resources/             figures: .svg / .png / .jpg / .jpeg / .webp / .gif (+ originals d'impremta .pdf opcionals)
+    fonts/                 .otf / .ttf / .woff2, una cara per fitxer
+```
+
+### `index.json`
+
+```jsonc
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "acme-journal",          // id estable, [a-z0-9-]
+      "dir": "acme-journal",         // nom del directori relatiu a index.json
+      "name": "Acme Journal",
+      "description": "Article de revista a dues columnes",   // opcional
+      "locale": "es",                 // opcional
+      "default": true,                // opcional, com a màxim un
+      "locales": ["es", "en"],        // opcional: totes les llengües del paquet
+      "openLocale": "es",             // opcional: la llengua en què s'obre si no se'n demana cap
+      "thumbnail": "thumbnail.jpg",   // opcional: previsualització al selector
+      "license": "CC BY 4.0",         // opcional: es mostra com a etiqueta
+      "credits": "Textos i imatges: ESO",  // opcional: una línia sota la descripció
+      "tags": ["revista", "dues-columnes"],  // opcional
+      "binding": "left"               // opcional: la vora on la prestatgeria del web dibuixa el llom ("right" per a un llibre enquadernat a la dreta)
+    }
+  ]
+}
+```
+### `preset.json`
+
+```jsonc
+{
+  "version": 2,
+  "id": "acme-journal",
+  "name": "Acme Journal",
+  "description": "Article de revista a dues columnes",       // opcional
+  "locale": "es",                                     // opcional
+  "default": true,                                    // opcional
+  "configVersion": 8,                                 // opcional: les regles de configuració per a les quals es va escriure `config`
+  // Els mateixos camps opcionals d'aparador que l'entrada de l'índex:
+  // "locales", "openLocale", "thumbnail", "license", "credits", "tags"
+
+  // Els capítols del llibre, en ordre — o una llista per llengua
+  "chapters": [
+    { "title": "Introducció", "file": "chapters/01-introduccion.md" },
+    { "title": "Mètodes", "file": "chapters/02-metodos.md" }
+  ],
+  // "chapters": { "en": [ … ], "es": [ … ] },
+  // Els manifestos versió 1 fan servir un únic document i encara s'accepten:
+  // "version": 1, "markdown": "article.md"  (o un mapa llengua → fitxer)
+
+  // JSON de PostextConfig opcional (pàgina, marges, columnes, tipografia...).
+  // NO hi incloguis customFonts: les fonts vénen de l'array `fonts` de més avall.
+  "config": { },
+
+  "resources": [
+    {
+      "id": "fig-1-1",                 // referenciat des del markdown (:ref)
+      "typeId": "figure",              // id del tipus de recurs (figure, table, ...)
+      "kind": "svg",                   // "svg" | "bitmap" | "table"
+      "file": "resources/fig-1-1.svg", // només svg/bitmap, relatiu a preset.json
+      "width": 240.5,                  // opcional, pt (svg) / px (bitmap)
+      "pdfFile": "resources/fig-1-1.pdf", // opcional, només svg: original d'impremta vectorial (vegeu les notes)
+      "height": 180,                   // opcional
+      "caption": "Text de la llegenda",
+      "altText": "Descripció accessible",             // opcional
+      "placement": { "position": "top", "span": "column" },  // opcional
+      "note": "Font: ...",                            // opcional
+      "table": { "model": { "rows": [[{ "content": "A", "isHeader": true }]], "headerRowCount": 1 } }
+                                                      // només kind "table"
+    }
+  ],
+
+  "fonts": [
+    {
+      "name": "Some Family",           // nom de família que fa servir la configuració
+      "variants": [
+        { "weight": 400, "style": "normal", "file": "fonts/SomeFamily-Regular.otf" },
+        { "weight": 400, "style": "italic", "file": "fonts/SomeFamily-Italic.otf" },
+        { "weight": 700, "style": "normal", "file": "fonts/SomeFamily-Bold.otf" }
+      ]
+    }
+  ]
+}
+```
+
+Notes:
+
+- L'`id` de `preset.json` ha de coincidir amb l'entrada d'`index.json`; `description`, `locale` i `default` del manifest prevalen sobre els valors de l'índex un cop carregat el preset, igual que els camps d'aparador `locales`, `openLocale`, `license`, `credits` i `tags`. `openLocale`, un dels `locales`, és la llengua en què s'obre el llibre quan un enllaç o un clic no en demanen cap (la prestatgeria de la portada web també hi enllaça): fes-lo servir quan l'original no és en la llengua del lector, com fa l'aparador de 紅樓夢 amb `zh-Hant`, perquè la seva traducció anglesa no s'obri a qualsevol lector de parla anglesa. Sense aquest camp decideix l'idioma de la interfície. El selector mostra com a etiquetes cada llengua de `locales` (o `locale`) i la llicència, els crèdits sota la descripció, i `thumbnail` — una petita imatge de pàgina relativa al directori del preset — en lloc de la columna de la marca de verificació; un llibre copiat del preset (**Fer-ne una còpia pròpia**) la conserva com a portada. Els presets públics d'aparador d'`apps/web/public/presets/` fan servir tots els camps i porten un `CREDITS.md` amb la llicència i la procedència de cada text i imatge.
+- `configVersion` (opcional) anomena les regles de configuració per a les quals es van escriure `config` i les configuracions de `localized`. Tot el que s'escriu des de postext 1.5 el fixa en 8. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, i els salts d'encapçalament, la mida de les fórmules, l'espai al voltant de les figures en línia (en el text i en els requadres), les marques dels títols, les caplletres, el lloc sota una línia de dos punts, els talls dels requadres, els talls després d'una ratlla i després del guionet d'un compost, el text en bandera, les divisions sota un títol i l'espai sota els contenidors de paràgrafs es llegeixen tal com els componia la 1.4 (consulta *Salts d'encapçalament desats amb postext 1.4 o anterior*, *Mida de les fórmules desada abans de postext 1.5*, *Figures en línia desades abans de postext 1.5*, *Figures en línia dels requadres desades abans de postext 1.5*, *Marques dels títols i caplletres desades abans de postext 1.5*, *Llistes després de dos punts desades abans de postext 1.5*, *Talls dels requadres desats abans de postext 1.5*, *Ratlles i text en bandera desats abans de postext 1.5*, *Compostos desats abans de postext 1.5*, *Divisions sota un títol desades abans de postext 1.5* i *Contenidors de paràgrafs desats abans de postext 1.5* a [Persistència](#persistència)); a un manifest marcat amb un valor de 3 a 7 (una versió preliminar de la 1.5) només se li apliquen les fixacions de les regles posteriors: amb 3, la mida de les fórmules, el buit en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb 4, el buit en línia i les de les regles 6, 7 i 8; amb 5, les de les regles 6, 7 i 8; amb 6, les de les regles 7 i 8; amb 7, només les de les regles 8. Fixa'l en 8 quan escriguis a mà un manifest per a les regles actuals.
+- `view` (opcional) indica com obre el sandbox el paquet: `{ "canvasScope": "book" }` maqueta el llibre sencer al canvas (consulta [Llibres i capítols](#llibres-i-capítols)); si hi falta, el canvas mostra un capítol cada vegada. Els llibres exportats el porten quan és actiu. Un llibre de més de 200 capítols s'obre capítol a capítol, demani el que demani.
+- `localized` (opcional) conté les variants per llengua d'un paquet bilingüe: `{ "es": { "config": { … }, "resources": [ { "id": "fig-1", "caption": "…", "note": "…", "altText": "…" } ] } }`. Les variants de la llengua de la qual es van prendre els capítols s'apliquen sobre el `config` compartit (les claus de primer nivell se substitueixen senceres — típicament `resourceTypes` amb els prefixos de peu traduïts) i sobre `resources` (peu, nota, text alternatiu i cel·les de taula, fusionats per id); una llengua sense entrada conserva la redacció compartida. Una entrada també pot portar la seva pròpia `view`, que s'aplica sobre la compartida en aquella edició: 紅樓夢 obre les seves edicions xineses en el llibre complet i l'anglesa de Joly, molt més lenta de pintar sencera, capítol a capítol (`"en": { "view": { "canvasScope": "chapter" } }`).
+- `chapters` (versió 2) és una llista de `{ title, file }` en l'ordre del llibre, o un mapa llengua → llista; `markdown` (versió 1) és un nom de fitxer o un mapa llengua → fitxer. En tots dos casos el sandbox tria l'entrada que coincideix amb la llengua demanada (etiqueta exacta, sense distingir majúscules; després la mateixa llengua i la mateixa escriptura, de manera que `zh-TW` llegeix `zh-Hant` abans que `zh-Hans`; després la mateixa llengua en l'altra escriptura, de manera que qui demana `zh-TW` a un paquet amb la clau `zh` sola rep el xinès; després el `locale` del mateix preset i, finalment, la primera entrada), i només es llegeixen els fitxers de capítol d'aquella llengua. Un `title` buit es deriva del primer títol de nivell 1 del fitxer. El sandbox sempre escriu la versió 2.
+- `width` / `height` són opcionals per als recursos `svg` i `bitmap` — si hi falten, es llegeixen del fitxer en carregar-lo.
+- `pdfFile` (només recursos `svg`) apunta a un PDF d'una pàgina amb la mateixa figura en vectors — normalment l'exportació original d'Illustrator o PDF de la qual es va derivar l'SVG. L'exportació a PDF incrusta aquesta pàgina tal qual (fonts, degradats i espais de color intactes) en lloc de l'SVG; les previsualitzacions en canvas i HTML continuen fent servir l'SVG. S'ignora en mode d'una tinta, el recoloreig del qual només opera sobre el codi SVG, i si el fitxer hi falta només es perd l'original, mai la figura. Editar el codi de l'SVG al detall del recurs treu l'original (es va fer per al codi tal com era), de manera que l'exportació a PDF segueix l'SVG editat a partir d'aleshores; restaura l'original (**Restaurar l'original…** al tauler Llibres) per recuperar-lo. Els SVG sense original s'emeten com a traçats vectorials quan es mantenen dins del subconjunt del backend PDF (formes bàsiques, traçats, grups, `use`, retalls, emplenaments i traços sòlids, opacitat, i textos `text` / `tspan` compostos amb les fonts que el document pot carregar — primer les fonts personalitzades, després les famílies de Google) i es rasteritzen a 600 ppp en cas contrari.
+- El `text` d'un SVG es renderitza amb les fonts personalitzades del sandbox a tot arreu: les previsualitzacions incrusten els `@font-face` corresponents a l'SVG abans de descodificar-lo (un `<img>` no veu les fonts de la pàgina) i l'exportació a PDF compon els textos com a text real i seleccionable amb les mateixes fonts incrustades. Escriu la família a `font-family` exactament com apareix a Fonts.
+- L'editor de codi de l'SVG només permet escriure dins dels nodes de text (ressaltats) perquè una figura no es trenqui per accident; el botó de cadenat de la seva capçalera obre tot el codi — coordenades, colors, estructura — i, en tornar a bloquejar-lo, es tornen a detectar els nodes de text.
+- `table.model` és un `TableModel` de Postext: `rows` és un array de cel·les per files (`content` i, opcionalment, `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`), `headerRowCount` el nombre de files de capçalera inicials i `columnWidths` un array opcional de pesos relatius de columna. `table.styleId` anomena, opcionalment, un dels `tableStyles` de la configuració.
+- Els fitxers de font es desen a IndexedDB amb ids derivats de l'id del preset i la ruta del fitxer, i les famílies s'afegeixen a `config.customFonts` en aplicar el preset; un `index.json` absent o mal format no produeix cap preset en lloc d'un error.
+- `<directorio-del-preset>/fingerprint.json` és opcional i, a la ruta de desenvolupament, **virtual**: quan no existeix aquest fitxer, `GET` respon `{ "fingerprint": "<sha1 hex>", "files": <n> }` calculat a partir de les metadades dels fitxers del directori (ruta relativa, data de modificació i mida de cada fitxer fins a quatre nivells de profunditat, ometent els fitxers ocults i `node_modules`), mai a partir del seu contingut, amb `Cache-Control: no-store`. El sandbox el consulta per seguir les edicions del paquet (consulta [Tauler de llibres](#tauler-de-llibres)). Un servidor estàtic pot servir un `fingerprint.json` real amb la mateixa forma, o cap, i en aquest cas els seus presets no se segueixen.
+
+## Full de ruta
+
+Les característiques següents estan planificades per a versions futures:
+
+- **Edició col·laborativa** — Editar un mateix llibre alhora des de diversos navegadors

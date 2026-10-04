@@ -1,0 +1,78 @@
+---
+title: "Castellà justificat en una novel·la de butxaca"
+summary: "El començament de Marianela en edició de butxaca: partició de mots del castellà, espais de menys d'1,7×, caplletra alçada i el plànol com a Figura 1."
+plain: "Les primeres pàgines d'una novel·la castellana de 1878 en edició de butxaca. Ensenya a deixar igualats els espais entre paraules, partint les paraules per les seves síl·labes."
+description: "Marianela, de Galdós, en edició de butxaca d'11,5 × 18 cm: partició de mots, espais de menys d'1,7×, guions llargs, cometes llatines i un plànol com a Figura 1."
+question: "Com justifico un text castellà amb partició de mots, guions llargs, cometes llatines i «Figura», no «Figure»?"
+aliases: ["ortotipografia", "partició de mots", "partició sil·làbica en castellà", "guió llarg", "diàleg", "cometes llatines", "cometes angulars", "caplletra alçada", "lletra capital", "Figura en lloc de Figure", "espaiat entre paraules", "línia curta", "novel·la de butxaca", "frontispici"]
+pageNotes: { "1": "El frontispici: un plànol conjectural de les mines de Socartes, amb el camí puntejat del viatger des de la vila, per la passera i el turó arbrat, fins a la vora de la mina.", "2": "El capítol I: CAPÍTULO PRIMERO en versaletes sobre un filet curt i el títol Perdido en cursiva; a un quart de l'alçada de la pàgina comença el text, amb una S alçada de color sang de bou." }
+---
+
+## Què compondràs
+
+El començament de *Marianela* (1878), de Galdós, en una edició de butxaca d'11,5 × 18 cm, amb un plànol conjectural de les mines de Socartes davant del capítol I. Sobre el títol, en Libre Bodoni cursiva, va *capítulo primero* en versaletes i escrit amb lletres; el text, en Gentium Book Plus, comença a un quart de l'alçada de la pàgina amb una caplletra alçada de color sang de bou. Les paraules es parteixen per síl·labes (*hie-rro*, *esta-blecimiento*) i els espais no passen d'1,7 vegades la seva amplada normal; cap paràgraf no acaba amb la resta d'una paraula partida. Els diàlegs porten guió llarg, el mateix que obre i tanca els incisos del narrador. La consigna del viatger va entre «cometes llatines», i entre “angleses” a la nota final, que la cita dins d'una altra cita. El plànol és la *Figura 1*, citada en el text com [fig. 1]. Les capçaleres, en Marcellus SC, porten l'autor a les parelles i el títol a les senars.
+
+## Elaboració
+
+### 1 · Síl·labes del castellà, espais continguts
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Els patrons de partició de mots del castellà els tria `locale: 'es'`, i només aquest codi exacte: amb `'es-ES'`, aquestes pàgines parteixen *cabal-los*, *hi-erro* i *establec-imiento* amb les regles de l'anglès americà, i en una línia els espais arriben a 2,13× ([llengües admeses](/ca/docs/justification#llengües-compatibles)). La justificació, Knuth–Plass i les regles de vídues i òrfenes vénen activades de sèrie. A més, en una mesura de 86 mm cal contenir els espais: amb el `maxWordSpacing: 2` per defecte, vuit línies passen d'1,6× i la més oberta arriba a 1,89×; amb 1,7, la més oberta es queda en 1,65×, perquè llavors l'algorisme parteix *hie-rro* i *ca-lles* ([límits d'espaiat entre paraules](/ca/docs/justification#límits-despaiat-entre-paraules)). Per sobre del límit una línia costa molt més, però continua sent vàlida, així que en una mesura més estreta, si no hi ha un tall millor, s'hi pot passar. `runtMinCharacters: 26` evita les restes de paraula partida que deixa passar el valor per defecte, 20 amplades d'espai: *siem- / pre adelante.* passa a ser *Adelante, / siempre adelante.*, i *So- / cartes [fig. 1].*, *de / Socartes [fig. 1].* ([línies curtes](/ca/docs/configuration#òrfenes-vídues-runts-i-regles-de-cohesió)).
+
+### 2 · Una pàgina de butxaca de línies senceres
+
+<Excerpt region="page" />
+
+El marge inferior es calcula a partir del format, del marge superior i de `LINES`, així que la caixa té exactament 30 línies de 13,8 pt i tota pàgina plena acaba a la mateixa línia de base, com es veu a <PageRef page={3}>les pàgines 10 i 11</PageRef>. Amb `mirror: true`, el marge interior, de 15 mm, queda al costat del llom a les dues pàgines, i l'exterior, de 14 mm, al costat del tall ([marges simètrics](/ca/docs/configuration#marges-simètrics-mirall)), i en la mesura de 86 mm hi caben uns 57 caràcters de Gentium Book Plus a 10 pt.
+
+### 3 · El capítol en lletres i una caplletra alçada
+
+<Excerpt region="opener" />
+
+Les plantilles de numeració només imprimeixen números i lletres (1, 01, I, i, A, a), mai paraules, així que *capítulo primero* surt de l'atribut `ordinal` del mateix títol ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). Postext només dibuixa caplletres en el text de disseny, que es compon en bandera, i només si aquest text porta `overflow: 'wrap'`. Perquè la bandera no es noti, la caplletra acompanya una sola línia: `lines: 1` l'alça al costat de la línia que guarda l'atribut `lead`, i `INITIAL_GAP` s'ha anat ajustant fins que aquella línia acaba arran, a 0,1 mm de la mesura. El paràgraf continua al Markdown, sense sagnat ([elements de text](/ca/docs/configuration#elements-de-text)). El `marginBottom: 0` del nivell del capítol substitueix el marge per defecte, que afegiria una línia en blanc, i el text continua a la línia de sota de l'entradeta.
+
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Pàgina 9: l'avanttítol i el títol del capítol, i la caplletra alçada al costat d'una primera línia que acaba al mateix punt que les línies justificades que la segueixen." />
+
+### 4 · El plànol, davant del capítol, com a Figura 1
+
+<Excerpt region="figure" />
+
+`position: 'here'` col·loca el plànol on és `::resource{id="plano"}`, sota un títol propi. Aquest títol converteix la pàgina 8 del llibre en una obertura, i a les obertures no s'imprimeixen capçaleres. El seu estil deixa buit el peu de pàgina i fixa el seu propi salt, de manera que la làmina queda davant del capítol I, sense capçalera ni foli, encara que els capítols comencin en pàgina senar ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). Els tipus en castellà de la resposta curta imprimeixen *Figura 1.* al peu del plànol (sense `resourceTypes` diria *Figure 1.1*, sigui quina sigui la llengua) i *Fig. 1* en el text, que el `case="lower"` del `:ref` del Markdown converteix en *fig. 1*. La referència va entre claudàtors, que a les edicions castellanes assenyalen allò que l'editor afegeix al text de l'autor.
+
+### 5 · L'autor a la pàgina parella, el títol a la senar
+
+<Excerpt region="heads" />
+
+`parity: 'even'` posa l'autor a les parelles i `'odd'` el títol a les senars, i `pages: 'body'` els deixa fora de l'obertura, on només apareix el foli al peu, l'element amb `pages: 'opener'`. Cada capçalera s'ancora a la pàgina i `SHIFT` la desplaça al centre de la caixa, que queda mig mil·límetre fora del centre de la pàgina perquè el marge interior i l'exterior no fan el mateix. Per això mateix el foli al peu té una versió per a cada paritat. Els folis van en Gentium, perquè en Marcellus SC l'1 i el 0 es confonen amb la I i la O.
+
+### 6 · La puntuació castellana, al Markdown
+
+<Excerpt region="styles" />
+
+<PageRef page={5}>La pàgina 12</PageRef>, l'última, es tanca amb tres estils de paràgraf. Els asteriscs, de Bodoni i de color sang de bou, van centrats després d'un [`:::space{lines=2}`](/ca/docs/document-format#space), perquè les línies en blanc no afegeixen espai. La nota de l'edició va en cos 8,3 amb 11 pt d'interlineat, i el colofó, en cos 7,5 i en el gris de les capçaleres. La nota es queda en el color del text: un estil de paràgraf no té color de cursiva, i en una nota grisa el títol *Marianela*, en cursiva, sortiria més fosc que la resta. Al Markdown, el diàleg comença amb guió llarg (—) i mai amb guionet, perquè un guionet seguit d'un espai al principi de la línia obre una llista. *1878.* al començament de la nota obriria una llista numerada, i per això porta al davant un unidor de paraules (U+2060). Els asteriscs van escapats (`\*`); sense la barra, el primer obriria una llista amb pics i els altres dos una cursiva, i la línia desapareixeria.
+
+## Variants
+
+### Obre cada capítol en pàgina senar
+
+Amb `'odd'`, davant d'un capítol que hagués de començar en pàgina parella s'afegeix una pàgina en blanc, com en una edició menys atapeïda. El capítol I ja comença en senar, i la làmina conserva la seva pàgina perquè el seu estil fixa el seu propi salt.
+
+```diff
+-const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
++const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
+```
+
+### Numera les figures per capítol
+
+Si es deixen els tipus en castellà tal com vénen, les figures es numeren dins de cada títol de primer nivell: el plànol passa a ser la *Figura 1.1*, i la referència, *fig. 1.1*.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LOCALE)
+-  .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
++const resourceTypes = defaultResourceTypes(LOCALE);
+```
+
+## Errors freqüents
+
+- Amb una caiguda de nou línies en lloc de vuit, la pàgina 11 es quedava una línia curta, perquè `avoidWidows` no deixa que un paràgraf comenci a l'última línia de la pàgina. Després de qualsevol canvi en la configuració o en el text, revisa el peu de totes les pàgines.
+- L'atribut `lead` es talla a mitja frase (*…vino tranquila*) i el paràgraf del Markdown el reprèn (*y oscura la noche*), perquè l'atribut guarda només les paraules que caben al costat de la caplletra. Amb una altra lletra, un altre cos, una altra mesura o un altre `INITIAL_GAP`, la línia deixa d'acabar arran: passa paraules de l'un a l'altre fins que torni a fer-ho.
+- Cap d'aquestes fonts no porta l'asterisme ⁂ (U+2042) al seu fitxer latin de Fontsource, així que el navegador l'agafaria d'una font del sistema. Als llibres castellans, a més, el que és habitual són tres asteriscs espaiats.

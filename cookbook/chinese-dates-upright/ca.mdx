@@ -1,0 +1,77 @@
+---
+title: "Dates i sigles dretes en text vertical"
+summary: "Dos documents de 1912 compostos en vertical i enquadernats per la dreta: els nombres de dues xifres es posen drets sols; :tcy i :upright marquen la resta."
+plain: "Dos documents xinesos de 1912 escrits en columnes de dalt a baix. Ensenya a col·locar dates, nombres i lletres llatines perquè es llegeixin bé dins del text vertical."
+description: "Un llibre de documents xinesos a Postext: text vertical en una retícula de 44 caràcters, dates en tate-chu-yoko, una sigla apilada i el llatí girat."
+question: "Com mantinc dretes les dates en un text xinès vertical, i què passa amb les sigles i les paraules llatines?"
+aliases: ["tate-chu-yoko", "縱中橫", "dates en xinès vertical", "nombres en text vertical", "sigles en text vertical", "antologia de documents", "proclama", "capçaleres al tall", "文告"]
+pageNotes: { "1": "La coberta: un camp vermelló dins d'un filet gruixut i un altre de prim en vermelló pàl·lid; el títol 民國元年文告二種 baixa per la dreta en blanc, i els dos documents amb les seves dates ocupen dues línies a l'esquerra, amb l'11 de 3月11日 dret en una sola casella.", "2": "L'obertura de la proclama: una banda vermelló per la vora dreta porta el títol, el subtítol en castellà girat i la data al peu; la presentació en lletra Kai, dos caràcters més avall, i després la proclama en Song.", "3": "La proclama continua a tota la pàgina i acaba amb la seva línia de data, dotze caràcters més avall, i, a la línia següent, l'avís del segell en vermelló, que comença un caràcter per sota del final de la data.", "4": "Les notes a la proclama en lletra Kai: 10月10日 dret, 1911 i Sun Yat-sen girats, ROC apilada lletra a lletra.", "5": "L'obertura de la Constitució Provisional: la banda, la presentació amb 3月8日 i 第35號 drets, l'ordre de promulgació amb el seu segell i la seva data, i el capítol primer.", "6": "El capítol segon de la constitució: els articles 5 a 15, amb les set llibertats de l'article 6 dos caràcters més avall.", "7": "Les notes a la constitució i el colofó, en castellà, girat." }
+---
+
+## Què compondràs
+
+Set pàgines amb dos textos fundacionals de la República de la Xina: la proclama amb què Sun Wen va assumir la presidència provisional l'1 de gener de 1912 i els dos primers capítols de la Constitució Provisional de l'11 de març. Tot va en vertical, en una pàgina de 184 × 260 mm enquadernada per la dreta. Els documents conserven els seus numerals xinesos, 民國元年三月十一日. Les presentacions i les notes, en lletra Kai, donen en xifres aràbigues les dates del calendari occidental, les quantitats i els números de sèrie, i aquestes xifres són el tema de la recepta: 10月10日 posa cada nombre dret a la seva casella, 1912 i Sun Yat-sen van girats, 民國115年 fica tres xifres en una casella i ROC apila les seves lletres. Una coberta vermelló amb doble filet, una banda vermelló a l'obertura de cada document i capçaleres al tall, amb folis en numerals xinesos, emmarquen el text.
+
+## Elaboració
+
+### 1 · Deixa els nombres curts a la configuració
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `cjk.uprightDigits: 2`, qualsevol grup d'una o dues xifres d'un text vertical es posa dret en una casella d'un quadratí, amb les dues xifres l'una al costat de l'altra: 10月10日, 第35號 i 7章56條 no porten cap marca. Un nombre més llarg es compon sencer de costat, com una paraula llatina, que és com clreq compon els nombres de quatre xifres, així que 1912 i 1644 baixen per la línia girats un quart de volta. Si vols dret un nombre de tres xifres, marca'l: `民國:tcy[115]年` estreny el 115 fins que càpiga al quadratí. `:upright[ROC]` posa cada lletra dreta a la seva pròpia casella, l'una sota l'altra, i la línia mai no es talla a dins ([nombres en text vertical](/ca/docs/configuration#nombres-en-text-vertical)).
+
+<PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Pàgina 4, les notes: 10月10日 i 2月12日 drets, 1911 i Sun Yat-sen de costat, 268 i 115 estrenyits amb :tcy, ROC apilada amb :upright." />
+
+Els textos de 1912 queden com es van imprimir. Les notes de l'editor segueixen les normes de Taiwan sobre els nombres, el 公文書橫式書寫數字使用原則 del Iuan Executiu, del 2004: les dates, els números de sèrie i les quantitats van en xifres aràbigues (1912年3月8日, 第35號, 7章56條), i els noms propis, les expressions fixes i les xifres rodones conserven els numerals xinesos (東三省, 四萬萬, 四億), igual que la data lunar, 辛亥年八月十九日. Quan una nota cita un títol o un terme dels documents, el deixa com és: 第一章, 二十二行省. Aquestes normes es van escriure per a documents en horitzontal; en vertical, les seves xifres són les que la recepta ha de posar dretes.
+
+### 2 · Obre cada document amb una banda a la dreta
+
+<Excerpt region="opener" />
+
+En un flux vertical, el cap de la pàgina és la vora dreta del full, on comença la lectura. Un disseny de títol ancorat al cap de la sang és, per tant, una banda que baixa per la vora dreta, i el seu `size.height` és la seva amplada sobre el paper. Els desplaçaments giren amb el flux: `x` es mesura cap avall i `y` cap a l'esquerra. La retícula centra la taca entre els marges, i `HEAD` repeteix aquest càlcul perquè el títol comenci a l'altura del primer caràcter de cada línia. `align: 'right'` porta la data al peu de la seva línia, on acaben les línies de text, i `cjk.uprightDigits` arriba també al text del disseny: l'11 de 3月11日 ocupa una sola casella, com al cos. La banda és la de <RecipeLink slug="chapter-opener-bleed-band">Obertura de capítol sobre banda a sang</RecipeLink>, girada un quart de volta.
+
+Un disseny de títol no distingeix pàgines parelles i senars, així que la banda baixa sempre per la vora dreta del full. A la pàgina 2, que queda a la dreta, aquesta vora és el tall; a la pàgina 5, que en un llibre enquadernat per la dreta queda a l'esquerra, és el llom, i el títol comença a 8 mm del llom, dins del marge interior de 21,6 mm. Un quadernet grapat s'obre prou per a això. En un llibre cosit o encolat, obre cada document en una pàgina de la dreta amb `breakBefore.parity: 'even'`, que deixa en blanc la pàgina 5.
+
+<PageShot page={2} crop="0.55,0.13,0.45,0.52" caption="Pàgina 2: el títol des del cap de la taca, la data al peu de la banda, el 10 de 晚上10時 i el 29 de 同月29日 drets a la presentació." />
+
+### 3 · Porta les capçaleres al tall
+
+<Excerpt region="heads" />
+
+`anchor.to: 'outer'` és el marge del costat oposat al llom, així que en un llibre enquadernat per la dreta les capçaleres baixen per la vora esquerra de la pàgina senar i per la dreta de la parella. El títol queda quatre caràcters per sota del cap de la taca i el foli acaba cinc per damunt del seu peu, tots dos en vertical, al 80 % del cos del text ([elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)). `pageNumbering.format: 'trad-chinese-informal'` imprimeix els folis 三, 四, 六 i 七, i `pages: 'body'` els treu de les dues obertures.
+
+### 4 · Porta la coberta a sang amb un disseny de pàgina
+
+<Excerpt region="cover" />
+
+Un disseny de títol en una columna es talla al peu de la columna, i en una pàgina vertical aquest peu és el marge esquerre: un camp ancorat a la sang es quedava a 21,6 mm del tall esquerre. Amb `span: 'page'` el títol es compon com a banda de pàgina, que no es talla, i el camp arriba a les dues vores. Els dos marcs dibuixen el filet doble, gruixut i prim, dels llibres impresos xinesos: 1,6 pt i 0,5 pt, separats 2 mm.
+
+### 5 · Carrega cada veu amb el text que compon
+
+<Excerpt region="voices" />
+
+Fontsource serveix cada pes d'aquestes fonts en un centenar de fitxers, cadascun amb un tram de caràcters, i `loadCjkFonts` carrega els fitxers que toca un text. Amb només els títols, els avisos de segell, el colofó, les línies de la coberta i els folis, cada pes de Noto Sans TC carrega 10 fitxers; amb la mostra sencera en carregaria 35, i són tres pesos. LXGW WenKai TC rep les presentacions i les notes, i en carrega 16. Una font que rep menys text del que compon fa fallar la captura (C12), que anomena els caràcters que ha hagut de prendre d'una altra font.
+
+## Variants
+
+### Posa drets també els nombres de tres xifres
+
+Amb 3, el 268 i el 115 de les notes ocupen la seva casella sense marca, igual que qualsevol número d'article o de pàgina fins al 999; 1912 continua de costat.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 3,
+```
+
+### Gira tots els nombres
+
+Amb 0 cap nombre es posa dret per si sol: 10月10日 es gira com 1912, i només el 268, el 115 i ROC, que porten marca, continuen drets.
+
+```diff
+-  uprightDigits: 2,
++  uprightDigits: 0,
+```
+
+## Errors freqüents
+
+- Noto Serif TC, tal com la serveix Fontsource, no té 爲 ni 敎: el seu full d'estils els declara, però cap fitxer no porta el glif. La constitució, tal com es va imprimir el 1912, fa servir aquestes formes per a 為 i 教. El llenç va dibuixar 敎 amb una font del sistema i el PDF no en tenia el glif, cosa que va advertir la captura (C25). L'edició compon 為 i 教, porta amb ells 靑 i 决 a 青 i 決, i la presentació ho diu.
+- LXGW WenKai TC, tal com la serveix Fontsource, dibuixa 即, 為, 青 i 教 amb les seves formes antigues, 卽, 爲, 靑 i 敎, que desentonen al costat dels mateixos caràcters del text en Song. Les notes es van redactar sense aquests quatre; només la presentació que enumera les formes antigues de la constitució els vol. Llegeix a mida real el text en Kai de les teves pròpies notes.
+- Un nombre compost de costat se separa del xinès que l'envolta com una paraula llatina, un quart de quadratí a cada costat (`cjk.latinSpacing`), i per això les presentacions mostren `1912 年`; un nombre en una casella no porta espai, com un caràcter xinès.

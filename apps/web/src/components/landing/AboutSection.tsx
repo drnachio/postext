@@ -40,6 +40,22 @@ como muestra :ref{id="fig-flujo"}.
 Cambia una palabra: la página
 vuelve a componerse.
 :::`,
+  ca: `:::part{number="I" title="Fonaments"
+  palette="band=#2b4acb"}
+:::
+
+# Per què Postext {lead="La tipografia
+impresa va passar cinc segles…"}
+
+Postext és un **motor de maquetació
+de codi obert** que porta al web
+l'ofici de la tipografia impresa,
+com mostra :ref{id="fig-flux"}.
+
+:::callout{type="try"}
+Canvia una paraula: la pàgina
+es torna a compondre.
+:::`,
   zh: `:::part{number="I" title="基础"
   palette="band=#2b4acb"}
 :::

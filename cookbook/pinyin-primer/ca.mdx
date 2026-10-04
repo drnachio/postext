@@ -1,0 +1,68 @@
+---
+title: "Una cartilla amb pinyin: la lectura sobre cada caràcter"
+summary: "Ruby caràcter a caràcter en una cartilla de Hong Kong: {人之初|rén zhī chū} centra una síl·laba de pinyin sobre cada caràcter, en Andika, en 28 pt d'interlínia."
+plain: "Pàgines d'una cartilla infantil de Hong Kong. Ensenya a escriure la pronúncia en lletres llatines damunt de cada caràcter xinès, amb quadrícules per practicar l'escriptura."
+description: "Una cartilla xinesa composta amb Postext: una síl·laba de pinyin sobre cada caràcter d'una kai de 26 pt, títols amb lectura i quadrícules, amb tot el codi."
+question: "Com poso pinyin sobre cada caràcter d'un text xinès, com en una cartilla?"
+aliases: ["pinyin", "注音版", "cartilla", "llibre de lectura", "ruby", "三字經", "Clàssic dels tres caràcters", "田字格", "quadrícula d'escriptura"]
+pageNotes: { "1": "Lliçó primera, 人之初: una banda verd pàl·lid amb l'etiqueta vermella 第一課, un brot i el títol amb el pinyin rén zhī chū; quatre parelles de versos del Clàssic dels tres caràcters amb una síl·laba de pinyin sobre cada caràcter; sis quadrícules d'escriptura amb 人之本不相以 i una nota per a les famílies.", "2": "Lliçó segona, 昔孟母, sobre la mare de Menci: la mateixa pàgina amb una llançadora que travessa l'ordit, les quadrícules amb 子母山五方名 i una nota sobre Menci i Dou Yanshan.", "3": "Lliçó tercera, 養不教: un pinzell que traça una pinzellada en una quadrícula, quatre parelles de versos, les quadrícules amb 父師學幼老何 i una nota sobre el to de bù.", "4": "Lliçó quarta, 玉不琢: un disc de jade tallat en un cordó vermell, quatre parelles de versos, les quadrícules amb 玉成知方友禮, una nota per a les famílies i el colofó." }
+---
+
+## Què compondràs
+
+Dos plecs de 《蒙學誦讀》, una cartilla inventada de Hong Kong, on els infants llegeixen en veu alta el *Clàssic dels tres caràcters* en mandarí (putonghua). Cada pàgina és una lliçó de quatre parelles de versos en kai de 一号 (26 pt), i cada caràcter va sota la seva síl·laba de pinyin. Les síl·labes van en Andika perquè dibuixa la a i la g d'un sol pis que imprimeixen els llibres escolars xinesos. Una banda verd pàl·lid porta l'etiqueta vermella de la lliçó, una petita aquarel·la i el títol en 初号 (42 pt) amb la seva pròpia lectura. Sota el text, sis quadrícules d'escriptura (田字格) guarden els caràcters per copiar, i una nota explica a la família què diuen els versos. La seva parella en castellà és <RecipeLink slug="reading-primer-syllables">la cartilla de síl·labes en xips</RecipeLink>, on cada síl·laba és un xip de color en lloc d'una lectura sobre un caràcter.
+
+Una cartilla s'aparta expressament de les normes del llibre xinès. Un infant llegeix pocs caràcters i grans, així que la línia en porta dotze de 26 pt on un llibre en posa entre 25 i 40 de 10,5 pt, i la interlínia passa una mica del doble del cos perquè hi càpiguen les lectures. Cada parella de versos va centrada a la seva pròpia línia, sense justificar ni sagnar. El text va en kai, la lletra que segueix el pinzell, perquè ensenya els traços que l'infant aprèn a escriure; un llibre el compondria en song.
+
+## Elaboració
+
+### 1 · Una síl·laba sobre cada caràcter
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `{人之初|rén zhī chū}` dona tres lectures a tres caràcters, separades pels espais: cada síl·laba se centra sobre el seu caràcter, i la línia es pot tallar entre ells. La lectura no ocupa espai propi. Va al buit entre línies, aquí 54 − 26 = 28 pt, i un buit més estret que la lectura s'avisa com a `rubyExceedsLeading`. Una síl·laba més ampla que el seu caràcter sí que ocupa espai: eixampla la caixa d'aquest caràcter, i en una línia centrada els caràcters que la segueixen surten de la retícula. Les lectures porten el cos amb què les síl·labes més amples de la mostra, xiāng i zhuān, encara caben sobre un caràcter, 0,38 em (9,9 pt): cada parella de versos fa vuit caràcters i cada caràcter conserva la seva casella. Amb 0,45 em, 性相近，習相遠 s'estiraria fins a vuit caràcters i mig i obriria buits al voltant de 相.
+
+### 2 · El títol conserva la seva lectura
+
+<Excerpt region="opener" />
+
+El text d'un disseny no imprimeix lectures, així que el títol no pot sortir del disseny de l'obertura. El títol de primer nivell, 第一課, dibuixa la banda, la vinyeta i l'etiqueta vermella; el de la lliçó és el títol de segon nivell que va a sota, sense disseny propi, en 初号, i el compositor de text el compon amb el seu pinyin. `reserve: false` deixa la banda i la vinyeta fora de l'alçada del títol, i `span: 'page'` les pinta sota el text.
+
+Un disseny de títol no té en compte `parity`, així que la vinyeta té un element a cada costat de la pàgina: `{attr.left}` a 14 mm de la vora esquerra i `{attr.right}` a 14 mm de la dreta. Les lliçons de pàgina parella escriuen `# 第一課 {left="sprout"}`, i les de senar, `{right="shuttle"}`, de manera que cada vinyeta queda al costat exterior del plec; l'element al qual falta l'atribut no dibuixa res.
+
+### 3 · Sis quadrícules amb un sol atribut
+
+<Excerpt region="squares" />
+
+`### 我會寫 {write="人之本不相以"}` passa al disseny els sis caràcters en un atribut. En LXGW WenKai TC cada caràcter xinès fa un quadratí, així que un espaiat igual al pas de les quadrícules menys un quadratí (18,4 − 10,6 mm) porta cada caràcter a la seva quadrícula, i un sol element de text omple la fila. La quadrícula és un SVG dibuixat en codi: un marc vermell i una creu de traços.
+
+### 4 · Cada font carrega els seus propis caràcters
+
+<Excerpt region="voices" />
+
+Fontsource talla cada font xinesa en un centenar de fitxers per intervals de caràcters. La kai compon tota la mostra i carrega els fitxers que contenen els seus caràcters. La hei només compon les etiquetes, els rètols i el peu, així que rep aquest text i baixa uns pocs fitxers. Andika arriba amb `loadFonts`, que afegeix el fitxer latin-ext quan el text té lletres més enllà de Latin-1, com ǎ i ǐ.
+
+### 5 · L'etiqueta de llengua porta la puntuació de Hong Kong
+
+<Excerpt region="locale" />
+
+`zh-HK` fixa les regles de Hong Kong: puntuació d'amplada completa i el joc bàsic de regles de tall, que aquí cap parella de versos no necessita. LXGW WenKai TC dibuixa la coma i el punt al centre de la casella, com els imprimeixen Hong Kong i Taiwan, i per això aquesta cartilla és de Hong Kong. Una cartilla continental també va en kai, en caràcters simplificats i amb la coma i el punt a baix a l'esquerra de la casella. Però Fontsource no té una kai de text per al xinès simplificat, i la tradicional enganxaria aquests signes al caràcter següent, així que en aquest Receptari una pàgina continental pren Noto Serif SC, la song de <RecipeLink slug="chinese-novel-horizontal">la pàgina de novel·la continental</RecipeLink>.
+
+## Variants
+
+### Mostra la retícula mentre compons
+
+`show: true` dibuixa al canvas les dotze caselles de cada línia; el PDF les omet tret que `renderToPdf` rebi `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11 },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 11, show: true },
+```
+
+### Posa el zhuyin al costat dels caràcters
+
+Les lectures en bopomofo es col·loquen en una columna a la dreta de cada caràcter; <RecipeLink slug="zhuyin-vertical-reader">la cartilla de zhuyin</RecipeLink> les compon en una pàgina vertical.
+
+## Errors freqüents
+
+- Aquesta recepta no ofereix PDF. El `fontsourceProvider` del kit incrusta només el fitxer latin d'una font, i les lletres amb to ā ǎ ǐ ǒ ǔ són a latin-ext, així que el PDF les perdria i postext-pdf avisaria de cadascuna amb `missingGlyph`. Si el necessites, compon les lectures amb una font xinesa, els fitxers de la qual tria `cjkPdfProvider` caràcter a caràcter.
+
+- Comprova cada caràcter de les quadrícules amb les formes normalitzades de la regió. LXGW WenKai TC dibuixa 為 amb la part de dalt de 爲 (爫), una forma antiga que passa al text corrent, com a 老何為 i 為人子, però no en una quadrícula que copia un infant de Hong Kong. Per això la lliçó tercera practica 幼.

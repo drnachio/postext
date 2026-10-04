@@ -34,20 +34,21 @@ export function resolvePresetLocale(summary: Pick<PresetSummary, 'locale' | 'loc
 }
 
 /** The interface languages the showcase books are written for: a viewer in
- *  any other language (Chinese) reads a book it has no edition for in
- *  English, where the book has one. */
+ *  any other language (Catalan, Chinese) reads a book it has no edition for
+ *  in another one, where the book has it. */
 const EDITION_LANGUAGES = ['en', 'es'];
 
 /** The language a viewer in `viewer` reads a preset in when nobody asks
  *  for one: `viewer` itself, unless it is a language other than English or
- *  Spanish that the book's locales lack and the book has an English
- *  edition: then that edition's tag. A book that lists no locales (the
- *  bundle decides on load) keeps `viewer`. */
+ *  Spanish that the book's locales lack: then its Spanish edition for a
+ *  Catalan viewer, when there is one, else its English edition's tag. A
+ *  book that lists no locales (the bundle decides on load) keeps `viewer`. */
 export function presetReaderLocale(summary: Pick<PresetSummary, 'locale' | 'locales'>, viewer: string): string {
   if (EDITION_LANGUAGES.some((l) => sameContentLocale(l, viewer))) return viewer;
   const locales = presetLocales(summary);
   if (locales.length === 0 || matchContentLocale(locales, viewer)) return viewer;
-  return matchContentLocale(locales, 'en') ?? viewer;
+  const spanish = sameContentLocale('ca', viewer) ? matchContentLocale(locales, 'es') : undefined;
+  return spanish ?? matchContentLocale(locales, 'en') ?? viewer;
 }
 
 /** The locale a preset opens in when nobody asks for one (its

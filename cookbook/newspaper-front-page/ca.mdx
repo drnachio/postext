@@ -1,0 +1,77 @@
+---
+title: "Portada de diari"
+summary: "Portada i pàgina 2 d'un setmanari local a dues columnes amb filet, titulars a tota l'amplada en requadres i una franja de breus a quatre columnes al peu."
+plain: "La portada i la pàgina 2 d'un setmanari local. Ensenya a posar grans titulars a l'amplada de la pàgina i una franja de notícies breus al peu."
+description: "Portada de diari amb Postext, amb el codi: capçalera gòtica, titulars en requadres a tota l'amplada, columnes amb filet i breus a quatre columnes."
+question: "Puc compondre una pàgina de diari a més de dues columnes, o fer que el text envolti la foto?"
+aliases: ["diari", "portada", "primera plana", "capçalera del diari", "capçalera", "titular a tota plana", "breus", "tres columnes", "quatre columnes", "filet de columna", "corondell", "setmanari"]
+pageNotes: { "1": "La portada de The Elverdale Courier: la capçalera en lletra gòtica entre una orella amb el temps i una altra amb el preu, un filet gruixut i un de fi sobre la línia de data, el titular a dues línies Harrow Ridge turbines win the town’s vote, un subtítol en cursiva, una foto d'aerogeneradors en un turó nevat a l'amplada de les dues columnes, la notícia en dues columnes justificades separades per un filet fi i, al peu, una franja de breus a quatre columnes sobre fons beix, cada breu precedit d'un xip vermell.", "2": "La pàgina 2, sota el rètol vermell Town & Valley sobre una barra negra: la notícia del pont Old Mill amb un dibuix del pont de dos arcs entre les seves ribes i la seva sabata nova en vermell, una taula amb la previsió del temps a cinc dies al capdamunt de la columna dreta, un segon titular a tota l'amplada sobre la notícia dels resultats per barris i una columna de cartes, i al peu una taula amb el vot dels cinc barris i una barra vermella i grisa a cada fila." }
+---
+
+## Què compondràs
+
+Portada i pàgina 2 de *The Elverdale Courier*, un setmanari comarcal inventat, en pàgines de 246 × 328 mm. La capçalera gòtica va entre dues orelles, el temps i el preu, sobre dos filets i la línia de data. La notícia principal arrenca amb un titular a dues línies en Libre Franklin Black de 56 pt sobre les dues columnes, un subtítol en cursiva i una foto en banda de 222 mm, i continua en dues columnes justificades amb filet. Al peu, quatre breus comparteixen una franja de fons beix, un per columna, cadascun encapçalat per un xip vermell. La pàgina 2 obre amb un rètol de secció vermell i porta la notícia del pont amb un dibuix fet amb codi, el temps al capdamunt de la columna dreta, un segon titular a tota l'amplada, les cartes i una taula de vots amb una barra a cada fila.
+
+## Elaboració
+
+### 1 · Paper de diari, tinta i un vermell
+
+<Excerpt region="palette" />
+
+El paper és un blanc trencat càlid (#f8f5ee) i la lletra, un negre fred (#111315). L'únic vermell, #a6192e, va als rètols de secció, els avanttítols, els xips i les barres del sí. Cada color porta el seu `paletteId` i el seu hexadecimal, perquè la 1.4.1 pinta els elements de disseny amb l'hexadecimal. `main-color` apunta a la tinta, de manera que les cursives i tot el que la configuració deixa per defecte surt en negre. `bodyText.boldColor` també es fixa en la tinta: les remissions i la negreta dels requadres en prenen el color, i la paleta no arriba a cap de les dues. Sense ell, les dues remissions de la pàgina 2 i les primeres paraules en negreta dels breus surten en el blau per defecte, #295AA3.
+
+### 2 · La capçalera és l'H1 de la portada
+
+<Excerpt region="nameplate" />
+
+`# The Elverdale Courier` porta l'estil de títol `front`, que compon la capçalera amb el text del títol i set dels seus atributs (`issue`, `area`, `outlook`, `temps`, `since`, `day` i `price`); la data surt del `publishDate` del frontmatter. Una caixa buida de set línies exactes de la retícula (31,1 mm) fixa l'alçada de l'obertura. Els filets, la línia de data i el nom pengen del seu peu, i així l'obertura acaba just en una línia de la retícula. Amb una caixa de 6,6 línies, a la 1.4.1 el filet de columna travessa el nom i la línia de data.
+
+### 3 · Un titular sobre les dues columnes és un requadre
+
+<Excerpt region="banner" />
+
+Un títol només ocupa les dues columnes com a obertura, i una obertura comença pàgina. Si poses `span: 'page'` a l'H2 de la notícia dels barris en lloc de posar-lo al seu requadre, aquesta notícia se'n va a una tercera pàgina. Un requadre sense marc amb `span="page"`, en canvi, pot començar a mitja pàgina. A la <PageRef page={2}>pàgina 2</PageRef>, les columnes queden igualades per sobre i continuen per sota. A dins hi van l'H2, amb un de tres estils de títol (56, 30 o 22 pt), el subtítol en cursiva i, a la portada, la foto. El seu `marginBottom` de mitja línia fa que les columnes comencin a la línia següent de la retícula, 3,4 mm per sota del subtítol a la pàgina 2. Amb el marge per defecte en queden 7,8 mm i les cartes passen a una tercera pàgina.
+
+### 4 · Més de dues columnes caben en un requadre
+
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. El text d'una pàgina admet com a màxim dues columnes ([Tipus de disposició](/ca/docs/configuration#tipus-de-disposició)), per la qual cosa les quatre o cinc columnes d'un diari han d'anar en un requadre, aquí un a tota l'amplada amb un grup [`:::columns`](/ca/docs/document-format#columns) a dins. `breaks` compta els blocs del grup, un per breu, així que els breus 2, 3 i 4 obren les columnes 2, 3 i 4. Cada columna fa 49 mm, amb l'espai entre columnes de 6 mm de la pàgina entre una i l'altra.
+
+```markdown
+:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
+:::columns{count=4 breaks="2,3,4"}
+:chip[TRANSPORT]{style="flag"} **Bus 44 back on Sundays.** The Elverdale to Kirkby bus …
+
+:chip[SCHOOLS]{style="flag"} **An orchard for Brook Lane.** Pupils at Brook Lane …
+…
+:::
+:::
+```
+
+`placement="bottom"` porta el requadre al peu de la <PageRef page={1}>pàgina 1</PageRef>, on ocupa 36,9 mm, i la notícia omple els 83 mm de columna que queden a sobre. La 1.4.1 tampoc no fa que el text envolti una imatge. Un flotant ocupa una banda sencera de la seva columna o de la pàgina; per això la foto principal és una banda sobre les dues columnes dins del requadre del titular, i el dibuix del pont ocupa tota l'amplada de la columna 1. Per posar text al costat d'una imatge serveix el mateix tipus de requadre: a `:::columns{count=2 breaks="2"}`, la línia `::resource` obre la primera columna i el text, la segona.
+
+### 5 · Imatges en línia, taules flotants
+
+<Excerpt region="floats" />
+
+La foto va en línia dins del requadre del titular perquè un flotant `top` a tota l'amplada mai no cau per sobre de la línia que el cita; com a flotant, obriria la pàgina 2 (vegeu Errors freqüents). El dibuix del pont també va en línia, després del paràgraf sobre la pila. La previsió flota al capdamunt d'una columna i cau a la de la dreta. La taula de barris flota sota les dues columnes, on s'atura el filet de columna. A l'última pàgina es col·loca just sota les columnes igualades, i per això el text de sobre està ajustat perquè la taula arribi al peu. Els dos tipus de recurs fixen `captionPrefix: ''`, i la 1.4.1 només imprimeix l'etiqueta del peu quan el prefix té text, així que cap peu no comença per «Figure 1».
+
+### 6 · Una pàgina interior obre amb un rètol de secció
+
+<Excerpt region="inside" />
+
+`# Town & Valley` és un H1 el `breakBefore` del qual porta la paritat `'any'`, així que la secció obre la pàgina 2 sense una pàgina en blanc al davant. El seu disseny és un rètol vermell sobre una barra de 3 pt, penjat d'una caixa buida de dues línies de la retícula. La línia de foli és una capçalera ancorada a 6 mm de la vora superior de la pàgina, amb una versió per a les parelles i una altra per a les senars. L'estil de la portada deixa buida la capçalera de pàgina, de manera que sobre la capçalera del diari no s'imprimeix cap línia de foli.
+
+## Variants
+
+### Deixa els breus sota la foto
+
+Sense `placement="bottom"` a `content.en.md`, la franja es queda al seu lloc del text, just sota la foto, i la notícia principal continua per sota fins al peu de la pàgina.
+
+```diff
+-:::callout{type="briefs" span="page" placement="bottom" title="In brief"}
++:::callout{type="briefs" span="page" title="In brief"}
+```
+
+## Errors freqüents
+
+- Si dones a la foto `placement: { position: 'top', span: 'page' }`, surt de la pàgina 1 i queda sola a la pàgina 2. La notícia de la portada acaba llavors 92 mm per sobre de la franja de breus, i la secció passa a la pàgina 3.

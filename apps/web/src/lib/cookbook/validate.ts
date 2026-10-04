@@ -858,7 +858,7 @@ const FEATURE_GROUPS = [
 ];
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
-/** Every object with a locale key (`en`, `es`, `zh`) must carry non-empty
+/** Every object with a locale key (`en`, `es`, `ca`, `zh`) must carry non-empty
  *  text (or a list of non-empty strings) in each. */
 function localizedErrors(value: unknown, path: string, errors: string[]): void {
   if (Array.isArray(value)) {
@@ -881,7 +881,7 @@ function localizedErrors(value: unknown, path: string, errors: string[]): void {
 
 function anchorErrors(anchor: unknown, path: string, errors: string[]): void {
   if (!isObject(anchor) || typeof anchor.slug !== "string" || !anchor.slug || !isObject(anchor.heading)) {
-    errors.push(`${path}: must be { slug, heading: { en, es, zh } }`);
+    errors.push(`${path}: must be { slug, heading: { en, es, ca, zh } }`);
   }
 }
 
@@ -945,7 +945,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (!FEATURE_GROUPS.includes(feature.group)) errors.push(`${at}.group: unknown group "${feature.group}"`);
     anchorErrors(feature.docs, `${at}.docs`, errors);
     if (feature.since !== undefined && !SEMVER.test(feature.since)) errors.push(`${at}.since: must be a version`);
-    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [], zh: [] }`);
+    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [], ca: [], zh: [] }`);
     if (feature.detect !== undefined) {
       for (const [key, list] of Object.entries(feature.detect)) {
         if (!["config", "markdown", "api"].includes(key) || !Array.isArray(list)) errors.push(`${at}.detect.${key}: unknown rule`);
@@ -963,7 +963,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (question.gap !== undefined && !registry.gaps?.[question.gap]) errors.push(`${at}.gap: unknown gap "${question.gap}"`);
   }
   for (const [id, gap] of Object.entries(registry.gaps ?? {})) {
-    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], zh: [] }`);
+    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], ca: [], zh: [] }`);
     if (gap.docs !== undefined) anchorErrors(gap.docs, `gaps.${id}.docs`, errors);
   }
   for (const [kind, warning] of Object.entries(registry.warnings ?? {})) {

@@ -1,0 +1,65 @@
+---
+title: "Almanac de l'hort: calendari i gràfic apaïsat"
+summary: "Un gràfic de sembres apaïsat en dues pàgines, un calendari calculat amb dates i una matriu de cultius associats, acolorits amb la paleta."
+plain: "Les pàgines de març d'un almanac d'hort, amb un calendari del mes i taules de colors. Ensenya a crear taules a partir de dades i a girar de costat una taula massa ampla per a la pàgina."
+description: "Març en un almanac italià per a l'hort: un calendari calculat a partir de dates, una matriu de cultius associats en colors i un gràfic apaïsat."
+question: "Com componc una taula ampla en apaïsat, en pàgines pròpies i amb la capçalera repetida en continuar?"
+aliases: ["calendari", "almanac", "calendari de sembra", "taula apaïsada", "taula girada", "diagrama de Gantt", "mapa de calor", "fases lunars", "italià", "hort"]
+pageNotes: { "1": "L'obertura de març: planters en terra fosca sota un cel pàl·lid, «Marzo» en cos gran i una dita pagesa, dues columnes de text i el mes en una quadrícula. Els diumenges van en vermell sobre una columna crema, el diumenge i el dilluns de Pasqua sobre rosa, i les quatre fases de la lluna apareixen dibuixades al costat dels dies 8, 15, 22 i 30.", "2": "Un requadre blau pàl·lid amb les feines del mes en dues columnes, una secció breu sobre cultius associats amb mostres de color al text i una matriu de deu per deu: caselles verdes amb un +, roses amb un − i crema en blanc, amb el dibuix de cada cultiu a la diagonal.", "3": "El gràfic de sembres, girat un quart de volta a l'esquerra: per llegir-lo cal girar el llibre en el sentit de les agulles del rellotge. Tal com és la pàgina, els cultius són columnes agrupades per famílies, amb el nom al peu; les quinzenes de l'any pugen des de gener, just a sobre dels noms, fins a desembre, al cap de la pàgina, i les capçaleres d'estació i de mes ocupen una franja al costat de la vora esquerra. Les dates de sembra i trasplantament dibuixen barres de caselles ocres, verdes i marrons, i la capçalera de març va en vermell.", "4": "El gràfic continua des de la família de les Liliacee amb la capçalera repetida i «(segue)» al final del peu, i acaba amb una nota: al sud se sembra abans i a la muntanya, després." }
+---
+
+## Què compondràs
+
+Les pàgines de març d'un almanac d'hort en italià. La pàgina 27 s'obre amb una aquarel·la de planters en terra fosca sota un cel pàl·lid, «Marzo» a 84 pt i una dita pagesa. Sota dues columnes de text va el calendari del mes, que el pen calcula amb les dates: els diumenges en vermell sobre una columna crema, el diumenge i el dilluns de Pasqua sobre rosa i les fases de la lluna al costat dels seus dies. La pàgina 28 reuneix les feines del mes en un requadre de dues columnes i acoloreix de verd, rosa o crema una matriu de deu per deu de cultius associats, amb el dibuix de cada cultiu a la diagonal. El gràfic de sembres, 38 cultius per quinzenes, no hi cap d'amplada i va girat a les pàgines 29 i 30, amb la capçalera repetida a la segona.
+
+## Elaboració
+
+### 1 · Gira el gràfic i deixa que continuï
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `rotate: 'ccw'`, la taula passa a ser un flotant a l'amplada de la pàgina, en pàgines pròpies ([Col·locació](/ca/docs/document-format#collocació)), amb la capçalera cap a la vora esquerra, i s'enganxa al llom tant a la pàgina senar com a la parella. Girada, la taula es compon a l'alçada de la caixa de text i n'ocupa 227 dels 237 mm: les 47 línies senceres de 14 pt que caben a la retícula, menys una per a la separació del flotant. Les seves files s'apilen a l'amplada dels 176 mm de la caixa; quan ja no hi caben, la taula es talla entre dues files i continua a la pàgina següent, sota les seves dues files de capçalera i el seu peu, que acaba en `(segue)` ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Només un flotant pot girar o partir-se: amb `position: 'here'` el gir s'ignora i la taula no es parteix mai. La capçalera porta tres classes de cel·les combinades: `Coltura` ocupa les seves dues files, cada estació abasta els seus mesos i cada mes, les seves dues quinzenes.
+
+### 2 · Un calendari calculat amb dates
+
+<Excerpt region="calendar" />
+
+Amb `Date.UTC`, cada data es converteix en un número de dia, i d'aquest número surt el dia de la setmana; la quadrícula comença el dilluns 1 de març i ocupa cinc setmanes. La Pasqua surt del còmput eclesiàstic, i les fases de la lluna, del mes sinòdic mitjà. Amb aquest càlcul, una fase pot caure un dia abans o després, com adverteix el peu. El mateix bucle que dibuixa cada lluna escriu la seva data al peu. La imatge d'una cel·la sempre va damunt del seu text; per això cada dia ocupa dues columnes, la de la lluna i la de la data: una lluna a la cel·la de la data baixaria la xifra només en quatre dies. Els diumenges i les festes surten en vermell amb un estil de xip que només canvia el color, i les notes són xips a la meitat del cos. Un dia sense nota porta com a segona línia un unidor de paraules (U+2060), i així les cinc setmanes tenen la mateixa alçada.
+
+### 3 · Acoloreix la matriu a partir de símbols enganxats
+
+<Excerpt region="matrix" />
+
+Les parelles s'escriuen com a TSV, un símbol per cel·la. A postext 1.4.1, `parseTSV` crea cel·les normals i deixa `headerRowCount` sense fixar, així que s'afegeix a mà `headerRowCount: 1` perquè la fila amb els noms dels cultius sigui la capçalera. Els pesos de `columnWidths` reparteixen en mil·límetres els 176 mm de la mesura: 26 per als noms i 15 per a cada cultiu. Cada símbol correspon a una entrada de la paleta, que `setCellBackground` posa de fons a la cel·la; el `+` i el `−` s'imprimeixen també, en un xip a 1,4 em, perquè la matriu es llegeixi en una còpia en escala de grisos. La diagonal aparella cada cultiu amb si mateix, i allà `setCellImage` posa el seu dibuix, al 62 % de l'amplada interior de la cel·la.
+
+### 4 · Posa la llegenda amb mostres de color
+
+<Excerpt region="resources" />
+
+`:swatch{color="leaf"}` compon un quadrat de tres quarts del cos, emplenat amb una entrada de la paleta i perfilat en el color del text; aquestes pàgines el fan servir al text corrent, en dos peus i en una nota. La llegenda del gràfic va al seu peu, perquè cada part d'una taula partida repeteix el peu, mentre que la nota només surt sota l'última. El calendari és un tipus de recurs propi amb el prefix del peu buit, i el seu peu comença per la llegenda i no per una etiqueta `Tabella`. `position: 'bottom'` amb `span: 'page'` col·loca el calendari i la matriu a l'amplada de les dues columnes, al peu de la seva pàgina. La pàgina 28 és l'última amb text. En una pàgina així, la 1.4.1 puja el flotant a l'amplada de la pàgina fins a una línia per sota del text; per això la matriu acaba 10 mm per sobre del marge inferior.
+
+### 5 · Un estil de la casa i una variant per taula
+
+<Excerpt region="styles" />
+
+`tableStyle` fixa l'estil de la casa: capçalera amb fons de tinta i rètols en Commissioner del color del paper, filets fins entre files i els textos de continuació en italià, que la 1.4.1 només porta en anglès i en espanyol. Cada estil amb nom indica només el que canvia la seva taula. El calendari compon els dies en Gilda Display a 15 pt; la matriu treu l'emplenament de la capçalera, i la matriu i el gràfic tracen una retícula de filets del color del paper, de 2 pt i 1 pt, que talla els seus emplenaments en caselles.
+
+### 6 · El mes s'obre amb una aquarel·la
+
+<Excerpt region="opener" />
+
+El títol de primer nivell es dibuixa amb una ranura d'elements. L'aquarel·la és un element d'imatge al cap de la pàgina, i l'avanttítol, la dita i la seva font surten dels atributs del títol. A la 1.4.1 un element d'imatge no reserva alçada, i `minHeight` ho compensa: 92 mm d'aquarel·la més 5 mm d'aire, menys els 22 mm del marge superior, donen 75 mm, que s'arrodoneixen cap amunt a 16 línies de 14 pt (79 mm). La primera línia de text queda a 101 mm de la vora superior de la pàgina, 9 mm per sota de la terra. El títol es desplaça 1,5 mm a l'esquerra, el que mesura el blanc lateral de la M de Gilda Display a 84 pt, i així el remat de la M s'alinea amb l'avanttítol; la dita es desplaça el mateix cap a la dreta.
+
+## Variants
+
+### Gira el gràfic en el sentit de les agulles del rellotge
+
+La capçalera mira llavors a la vora dreta de la pàgina, i el lector gira el llibre cap a l'altre costat.
+
+```diff
+-const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
++const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+```
+
+## Errors freqüents
+
+- La imatge d'una cel·la de taula es dibuixa sempre damunt del text de la cel·la i amb la mateixa alineació. Per posar una icona al costat d'una xifra, dona a la icona una columna pròpia, com fa el calendari amb la lluna.
+- La nota d'una taula partida només apareix sota l'última part; una llegenda que necessitin totes les parts va al peu.

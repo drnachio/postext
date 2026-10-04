@@ -7,6 +7,7 @@
  */
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
+import ca from "../../messages/ca.json";
 import zh from "../../messages/zh.json";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
@@ -26,7 +27,7 @@ import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registr
 import { localizedText } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
-const MESSAGES: Record<string, Messages> = { en, es: es as Messages, zh: zh as Messages };
+const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
@@ -175,6 +176,75 @@ const LABELS = {
     licenseOriginal: "original",
     licensePD: "dominio público",
     licenseAuthorised: "reproducido con permiso",
+  },
+  ca: {
+    docs: "Documentació",
+    optional: "Optional",
+    lastUpdated: "Última actualització",
+    readingTime: "Temps de lectura",
+    canonical: "Versió HTML",
+    otherLanguages: "Altres idiomes",
+    figure: "Figura",
+    example: "Exemple executable",
+    exampleSource: "codi",
+    home: "Inici",
+    sandbox: "Sandbox",
+    sandboxDesc: "Editor interactiu al navegador: escriu markdown, ajusta la configuració i exporta un PDF a punt per a impremta.",
+    fullText: "Text complet de totes les pàgines de documentació en un sol fitxer",
+    install: "Instal·lació",
+    fullDocs: "Documentació completa",
+    links: "Enllaços",
+    localeDocs: "Documentació en català",
+    cookbook: "Receptari",
+    cookbookTitle: "Receptari de Postext",
+    cookbookDesc: "Exemples de Postext per copiar, des d'una obertura de capítol fins a un llibre sencer, cadascun amb les pàgines que compon i el codi complet.",
+    cookbookIntro:
+      "Cada recepta és un pen: un mòdul JavaScript (amb una pàgina HTML i el seu CSS quan els necessita) que importa postext des d'esm.sh i compon la seva pròpia pàgina. Cada enllaç d'aquí sota és la versió Markdown d'una recepta, amb l'explicació i el codi complet.",
+    allRecipes: "Totes les receptes, per capítols",
+    noRecipes: "Encara no hi ha receptes.",
+    part: "Part",
+    chapter: "Capítol",
+    recipe: "Recepta",
+    numberSign: "Núm.",
+    level: "Nivell",
+    outputs: "Sortides",
+    genres: "Gèneres",
+    draft: "Esborrany",
+    requires: "Requereix",
+    testedWith: "provada amb",
+    testedOn: "el",
+    pages: "Pàgines",
+    pdf: "PDF",
+    openInSandbox: "Obre al Sandbox",
+    answers: "Aquesta recepta respon a",
+    teaches: "Ensenya",
+    alsoUses: "També fa servir",
+    configAtAGlance: "La configuració d'un cop d'ull",
+    apis: "API",
+    typefaces: "Tipus de lletra",
+    lines: "línies",
+    wholeRecipe:
+      "Els fitxers d'aquí sota es componen a partir de la carpeta de la recepta, amb el text d'exemple i el kit comú del Receptari ja inclosos. Per executar-los com una sola pàgina, posa l'HTML a `<body>`, el CSS en un element `<style>` i l'script en un `<script type=\"module\">`; o enganxa cadascun al tauler corresponent d'un pen nou de CodePen (el JS com a mòdul). L'script importa postext des d'esm.sh, així que no cal instal·lar ni compilar res.",
+    wholeRecipeScript:
+      "Un sol fitxer, compost a partir de la carpeta de la recepta amb el text d'exemple i el kit comú del Receptari ja inclosos; construeix la seva pròpia pàgina. Per executar-lo, posa'l en un `<script type=\"module\">` d'una pàgina buida o enganxa'l al tauler JS d'un pen nou de CodePen (com a mòdul). Importa postext des d'esm.sh, així que no cal instal·lar ni compilar res.",
+    externals: "Recursos que carrega la pàgina",
+    sourceFolder: "Carpeta de la recepta",
+    notComposed: "No s'ha pogut compondre el codi d'aquesta recepta",
+    pitfall: "Error freqüent",
+    warning: "Avís de maquetació",
+    fix: "Solució",
+    fixedIn: "resolt a",
+    recipeBy: "Recepta",
+    creditText: "Text",
+    creditImages: "Imatges",
+    creditType: "Tipus de lletra",
+    creditCode: "Codi",
+    creditContent: "Contingut d'exemple",
+    source: "font",
+    related: "Relacionades",
+    licenseOriginal: "original",
+    licensePD: "domini públic",
+    licenseAuthorised: "reproduït amb permís",
   },
   zh: {
     docs: "文档",

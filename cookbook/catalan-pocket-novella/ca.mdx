@@ -1,0 +1,78 @@
+---
+title: "Una novel·la curta en català, amb la partició de l'IEC"
+summary: "El transplantat d'Oller, complet, en una butxaca de 32 pàgines: síl·labes catalanes segons l'IEC, l·l tallada com il- | lusió i un gravat per capítol."
+plain: "Una novel·la curta sencera en català, composta com un llibre de butxaca. Els mots es tallen a final de línia com demanen les normes catalanes, també la ela geminada amb punt volat."
+description: "El transplantat d'Oller (1928) en butxaca de 12 × 18,5 cm: locale 'ca', partició de mots de l'IEC, l·l tallada com il- | lusió i obertures amb gravat."
+question: "Com parteixo bé el català a final de línia, amb la l·l, els apòstrofs i els pronoms units amb guionet?"
+aliases: ["català", "catalán", "partició de mots", "partició sil·làbica catalana", "ela geminada", "l·l", "punt volat", "IEC", "Institut d’Estudis Catalans", "pronoms enclítics", "Narcís Oller", "llibre de butxaca", "novel·la curta completa", "frontispici", "gravat"]
+pageNotes: { "2": "El frontispici: un gravat d'un forner gras, amb davantal blanc, a la porta del seu forn de poble, amb el foc al darrere; a sota, EL FORNER DE LES MONGES en versaletes.", "3": "La portada: NARCÍS OLLER en versaletes, El transplantat en cursiva vermella grossa, De «Croquis del natural» a sota i un filet vermell curt.", "27": "Una pàgina de text del capítol IV. A mitja alçada, una línia acaba en titil- i la següent comença per laven: el punt volat de titil·laven deixa el seu lloc al guionet." }
+---
+
+## Què compondràs
+
+*El transplantat* de Narcís Oller sencer, amb el text de les seves *Obres completes* (Barcelona, 1928), en un llibre de butxaca de 12 × 18,5 cm i 32 pàgines. Abans dels quatre capítols hi ha una avantportada, un frontispici amb el forner davant del seu forn, la portada en Cormorant Garamond cursiva i vermella, i una nota sobre l'edició. Cada capítol s'obre sota un gravat de dotze línies d'alçada, amb el seu número romà en vermell. El text, en Crimson Pro de 10,4 pt, es parteix per síl·labes catalanes com demana l'Institut d’Estudis Catalans: almenys dues lletres a cada costat, cap tall entre vocals en hiat ni just després d'un apòstrof, i *titil·laven* es talla *titil-* | *laven*, amb el guionet al lloc del punt volat. Els diàlegs porten guió i les citacions, «cometes baixes».
+
+## Elaboració
+
+### 1 · El català pel seu codi
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `locale: 'ca'` tria els patrons catalans, que des de postext 1.14 segueixen el *Llibre d’estil* de l'IEC ([llengües admeses](/ca/docs/justification#llengües-compatibles)). Són els mateixos patrons que fa servir TeX, amb almenys dues lletres a cada costat del tall en lloc de les tres del paquet d'npm, així que *ter-ra*, *cai-xa* i *plu-ja* es poden tallar. Les vocals en hiat no se separen (*cièn-cia*, *ca-mions*), però una *i* entre vocals obre la seva síl·laba (*fe-ia*). La *ela geminada* es talla entre les seves dues *l*: la línia acaba en *titil-* i la següent comença per *laven*, sense punt volat en cap de les dues, i Knuth–Plass mesura la línia sense el punt.
+
+<PageShot page={27} crop="0.06,0.495,0.88,0.085" caption="Pàgina 27: titil·laven a final de línia, compost titil- | laven. És l'única l·l que cau a final de línia en aquestes 32 pàgines." />
+
+`compounds: false` deixa sencers el verb i el seu pronom llevat del seu propi guionet (*arrossegar-* | *se*), que és el tall que prefereix l'IEC ([partició de mots](/ca/docs/configuration#partició-de-mots)). Costa una línia fluixa: a la pàgina 7, la línia anterior a *d’inaugurar-se* obre els seus espais fins a 1,94 vegades, tot i que `maxJustifyTracking: 10` absorbeix l'excés a les altres.
+
+### 2 · Una pàgina de butxaca de línies senceres
+
+<Excerpt region="page" />
+
+El marge inferior surt del format, el marge superior i `LINES`, així que la caixa admet 29 línies de 14 pt i tota pàgina plena acaba a la mateixa línia de base. La mesura de 89 mm dona uns 64 caràcters de Crimson Pro. `mirror: true` manté el marge de 16 mm al llom a les dues pàgines del plec ([marges simètrics](/ca/docs/configuration#marges-simètrics-mirall)).
+
+### 3 · Una obertura per als quatre capítols
+
+<Excerpt region="opener" />
+
+`resourceId: '{attr.art}'` dibuixa la imatge que anomena el títol, així que `# II {style="capitol" art="cap2"}` obre el capítol II sota el seu propi gravat amb el mateix estil que els altres ([atributs de títol](/ca/docs/document-format#atributs-dencapçalament)). Les imatges no reserven alçada en una obertura, així que `minHeight` guarda setze línies: dotze per al gravat, després el número i el seu filet, i el text comença a la línia disset de la pàgina, igual a tots els capítols.
+
+### 4 · Quatre pàgines abans del capítol I
+
+<Excerpt region="front" />
+
+Cada peça dels preliminars és un títol de primer nivell amb estil propi: `# El transplantat {style="portada"}` imprimeix l'autor i el subtítol del frontmatter i el títol com a títol. Cada estil repeteix el seu salt de pàgina, perquè un estil hereta el del seu nivell, i buida la capçalera i el peu, així que aquestes pàgines no porten capçaleres ni folis. El frontispici cau a la pàgina 2, parella, i queda davant de la portada.
+
+### 5 · L'autor a la parella, el títol a la senar
+
+<Excerpt region="heads" />
+
+`parity` posa l'autor a les pàgines parelles i el títol a les senars; `pages: 'body'` les treu de les obertures, on va un foli al peu amb `pages: 'opener'`. `SHIFT` centra cada capçalera sobre la caixa, que està desplaçada mig mil·límetre del centre de la pàgina perquè els dos marges no mesuren el mateix.
+
+### 6 · Cinc gravats, sense peu
+
+<Excerpt region="pictures" />
+
+Les imatges són d'un tipus de recurs amb `captionPrefix` buit, així que res no les numera ni les retola. Cadascuna es declara amb la seva mida en píxels i es carrega amb el seu identificador de fitxer abans de compondre. Abans de desar-les es va portar el seu blanc al crema de la pàgina i el seu negre a la tinta del text, així que s'imprimeixen com a part de la pàgina i no com a fotos enganxades a sobre.
+
+## Variants
+
+### Que els pronoms també es tallin
+
+Amb el `compounds: true` per defecte, *d’inaugurar-se* es pot tallar *d’inau-gurar-se* i la pàgina 7 perd la seva línia fluixa. A canvi, en aquestes pàgines el tall `titil-` | `laven` deixa de caure a final de línia.
+
+```diff
+-  hyphenation: { compounds: false },
++  hyphenation: { compounds: true },
+```
+
+### Obrir cada capítol en pàgina senar
+
+`parity: 'odd'` afegeix una pàgina en blanc abans d'un capítol que començaria en parella, com en una edició més folgada. El capítol IV, que s'obre a la pàgina 26, passa a la 27 després d'una pàgina en blanc.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' }, // a chapter opens on the next page, either side
++  breakBefore: { enabled: true, parity: 'odd' },
+```
+
+## Errors freqüents
+
+- Copia el text de Viquitexts amb les seves cursives: Oller marca *tentu*, *Ensanxe* i *palacio* com a col·loquials o castellanes, i una exportació en text pla les perd. Acara els mots dubtosos amb el facsímil del volum de 1928: sis vegades la transcripció porta *tom-* on el verb és *tornar* (*tomà*, *tomaré*, *tomar*), i una vegada *jom* per *jorn*.
+- Amb 6800 paraules, els cinc fitxers de contingut i el kit deixen l'script compost en uns 69 KB. Un llibre sencer és la mostra més llarga que cap en un pen; una obra més llarga va en un paquet `.postext`.

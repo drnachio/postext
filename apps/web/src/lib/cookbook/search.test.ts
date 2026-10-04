@@ -241,3 +241,18 @@ describe("ranking helpers", () => {
     expect(matchReason({ newsreader: ["fonts"], pdf: ["summary", "title"] })).toEqual({ field: "summary", terms: ["pdf"] });
   });
 });
+
+describe("processTerm in Catalan", () => {
+  const ca = (term: string) => processTerm(term, "ca");
+  it("folds a feminine plural and its singular onto one term", () => {
+    expect(ca("taules")).toBe(ca("taula"));
+    expect(ca("capçaleres")).toBe(ca("capçalera"));
+    expect(ca("imatges")).toBe(ca("imatge"));
+    expect(ca("colors")).toBe(ca("color"));
+  });
+  it("drops Catalan stop words and keeps diacritics folded", () => {
+    expect(ca("amb")).toBeNull();
+    expect(ca("Què")).toBeNull();
+    expect(ca("Índex")).toBe("index");
+  });
+});

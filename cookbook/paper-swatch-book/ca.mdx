@@ -1,0 +1,63 @@
+---
+title: "Un mostrari amb cada full en el seu paper"
+summary: "Cada full del mostrari d'un magatzem de paper va en un bloc :::paper, i postext-folio el dibuixa amb el to, el gramatge i la rigidesa d'aquell paper."
+plain: "Un petit llibre de mostres d'una botiga de paper. Cada pàgina diu en quin paper està impresa, i al visor 3D cada pàgina es veu i es passa com aquell paper."
+description: "Un bloc :::paper per full dona a cada pàgina el seu paper a la composició; postext-folio passa diferent l'estucat, el verjurat i el bíblia, en un pen mínim."
+question: "Com imprimeixo una coberta, un encart o un plec de làmines en un paper diferent de la resta del llibre?"
+aliases: ["tipus de paper", "mostrari", "mostres de paper", ":::paper", "plec de làmines", "encart", "paper bíblia", "transparència"]
+pageNotes: { "1": "La coberta: un camp granat fins a totes les vores, un avanttítol petit espaiat, el títol The Stock Book en una Caslon de rètol gran i un subtítol en cursiva.", "3": "La fitxa de Book Wove, Natural: avanttítol, el nom del paper sobre un filet fi, cinc línies d'especificacions amb etiquetes en negreta i dos paràgrafs sobre el paper.", "11": "La mostra del paper bíblia: sis entrades de glossari amb sagnat francès." }
+---
+
+## Què compondràs
+
+*The Stock Book* de Harwell & Daughters, un magatzem de paper fictici de Bristol: dotze pàgines de 120 × 176 mm, coberta de cartolina i quatre fulls que descriuen cadascun el paper en què estan impresos. El recto de cada full és la fitxa del paper, amb gramatge, mà, acabat, to i opacitat; el verso, una pàgina de text composta com es fa servir aquell paper: una novel·la, una carta, un peu de làmina, un glossari. Planes a la pantalla, les dotze pàgines s'imprimeixen igual. A Folio cada full té el seu paper: l'esponjat crema, el verjurat amb els seus corondells, l'estucat brillant que gira pla i rígid i el bíblia de 40 g que cau de seguida i deixa veure el revers.
+
+## Elaboració
+
+### 1 · Un bloc per full
+
+<Excerpt region="paper-runs" />
+
+Un bloc `:::paper` comença en pàgina nova i el text que el segueix també, així que aquí cada tanda omple un full: la fitxa al recto, un `:::pagebreak` i la mostra al verso. Un full té un sol paper per a les dues cares, el del seu recto: una tanda que comencés en un verso imprimiria aquella pàgina en el paper del full que comparteix (mira Errors freqüents).
+
+### 2 · El paper del llibre i les seves tapes
+
+<Excerpt region="folio" />
+
+`folio.paper` és el paper de tota pàgina fora d'un bloc; els atributs d'un bloc el substitueixen camp per camp, i la resta surt dels valors del tipus de paper. `cover: 'pages'` fa de la pàgina 1 la tapa davantera i de la 12 la del darrere, de manera que el llibre està tancat fins que l'obres; per això el nombre de pàgines ha de ser parell, i el salt `parity: 'even'` de la contracoberta ho garanteix.
+
+### 3 · Cobertes a sang
+
+<Excerpt region="covers" />
+
+Cada coberta és un estil de títol el disseny del qual porta un camp de color tan gran com el tall. L'estil posa els marges a zero mentre dura la seva secció, que és només la pàgina de coberta, així que el camp arriba a totes les vores i les pàgines següents conserven els seus marges.
+
+### 4 · La fitxa del paper
+
+<Excerpt region="stock-card" />
+
+Cada full obre amb un títol de primer nivell dibuixat des d'un buit de disseny: l'avanttítol surt dels atributs del títol, després el nom del paper i un filet fi. Les línies d'especificacions són un estil de paràgraf en la lletra estreta de les etiquetes, amb les etiquetes en negreta i en el color d'accent.
+
+### 5 · Llegeix el paper a la composició
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada pàgina composta dins d'un bloc porta els atributs del bloc a `page.paper`, tal com es van escriure: `{ type: 'bible', grammage: 40 }`. `createFolioFromDocument` els passa al visor, que dibuixa cada full amb el seu paper; el pen també els llegeix per a la línia d'estat i per al text alternatiu de cada pàgina.
+
+## Variants
+
+### Afegeix un plec de làmines en estucat més gruixut
+
+Un bloc dins del text de qualsevol llibre imprimeix aquelles pàgines en el seu propi paper; les figures citades a dins es col·loquen abans que es tanqui.
+
+```diff
++:::paper{type=coatedGloss grammage=170 showThrough=false}
++
++# Plates {kicker="Between pages 64 and 65"}
++
++::resource{id="plate-1"}
++
++:::
+```
+
+### Un quadern grapat amb coberta de cartolina
+
+<RecipeLink slug="saddle-stitched-card-cover">La recepta del fanzine</RecipeLink> embolcalla pàgines de paper premsa en un plec de coberta de cartolina amb dos blocs i un grapat a cavall.

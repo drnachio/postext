@@ -28,16 +28,16 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`) => ({ en, es, zh });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`) => ({ en, es, ca, zh });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer", "成品一览"),
-  short: L("The short answer", "La respuesta corta", "简短回答"),
-  ingredients: L("Ingredients", "Ingredientes", "用料"),
-  method: L("Method", "Elaboración", "做法"),
-  whole: L("The whole recipe", "La receta completa", "完整食谱"),
-  variations: L("Variations", "Variantes", "变化"),
-  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题"),
-  credits: L("Credits", "Créditos", "致谢"),
+  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs"),
+  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta"),
+  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients"),
+  method: L("Method", "Elaboración", "做法", "Elaboració"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa"),
+  variations: L("Variations", "Variantes", "变化", "Variants"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents"),
+  credits: L("Credits", "Créditos", "致谢", "Crèdits"),
 } satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */

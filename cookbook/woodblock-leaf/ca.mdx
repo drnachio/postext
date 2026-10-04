@@ -1,0 +1,89 @@
+---
+title: "Un full xilogràfic: marc doble, filets i franja central"
+summary: "El comentari de Zhu Xi a les Analectes com l'imprimia un bloc de fusta: un full per doble pàgina, marc doble, filets i la franja central al plec."
+plain: "Un clàssic xinès compost com els antics llibres impresos amb planxes de fusta. Cada pàgina porta un marc doble i línies fines entre columnes, i les notes van en lletra petita dins de les línies."
+description: "Tres fulls del comentari de Zhu Xi a les Analectes compostos amb Postext com un llibre xilogràfic: text vertical, notes en dues files i franja central."
+question: "Com componc un full xilogràfic amb marc doble, filets entre columnes i la franja central al plec?"
+aliases: ["xilografia", "llibre xilogràfic", "impressió amb blocs de fusta", "llibre cosit a la xinesa", "portada", "clàssic xinès", "Analectes", "Zhu Xi", "cua de peix", "filets de columna", "marc doble", "mig full", "número de full", "線裝書", "刻本", "內封", "版心", "魚尾", "界行", "四周雙邊", "半葉", "論語集註"]
+pageNotes: { "1": "Pàgina 1, la portada, sola a l'esquerra del llom: un marc doble dividit en tres columnes per dos filets fins. L'autoria 宋 朱子 集註 a dalt a la columna dreta, el títol 論語集註 en caràcters Kai grans pel centre i, al peu de la columna esquerra, tres columnes curtes en vermell: la nota d'aquesta edició. Sota el marc, un colofó de dues línies en lletra petita grisa.", "2": "Pàgina 2, la meitat dreta del primer full: nou columnes dins d'una línia gruixuda exterior i una altra de fina interior, amb un filet fi entre cada dues columnes. Des de la dreta: 論語卷一, l'autoria 宋 朱子 集註 a baix a la segona columna, 學而第一 amb la seva nota en dues files petites i després 子曰學而時習之不亦說乎 amb les notes de Zhu Xi plegades dins de les columnes. A la vora esquerra, sobre el plec, mitja franja central: 論語集註, una cua de peix negra, 卷一 i el número de full 一.", "3": "Pàgina 3, la meitat esquerra del mateix full, amb l'altra mitja franja central a la vora dreta: les pàgines 2 i 3 juntes mostren el full sencer amb la franja al centre.", "6": "Pàgina 6, la meitat dreta del tercer full. La primera columna continua amb una nota en dues files petites, tallada on va acabar el segon full; el número de full del plec és 三.", "7": "Pàgina 7, la meitat esquerra del tercer full. El text acaba una columna abans del marc." }
+---
+
+## Què compondràs
+
+Tres fulls del comentari de Zhu Xi a les *Analectes* (論語集註), el començament del llibre 學而, compostos com els imprimia un bloc de fusta, després d'una portada. Cada pàgina és mig full de 121 × 213 mm i cada doble pàgina és un full sencer, que es llegeix des de la dreta: a cada meitat, nou columnes de 17 caràcters en Noto Serif TC de 20 pt, un marc doble, un filet fi entre cada dues columnes i, al plec, la franja central (版心) amb el títol, una cua de peix negra, el *juan* i el número del full. Les notes de Zhu Xi es pleguen en dues files de caràcters de 10 pt dins de la columna, a continuació de les paraules que expliquen. El marge superior dobla l'inferior.
+
+## Elaboració
+
+### 1 · Cada pàgina, mig full; cada doble pàgina, un full
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un bloc imprimia el full (葉) sencer d'una vegada, amb les dues meitats als costats de la franja central; l'impressor doblegava el paper per la franja, amb la cara impresa cap enfora, i cosia les vores obertes, de manera que la franja acabava al tall davanter del llibre. Aquestes pàgines queden com el full sortia del bloc. Cada pàgina és mig full. En un [llibre enquadernat per la dreta](/ca/docs/configuration#enquadernació) la pàgina 1 va sola a l'esquerra del llom i cada doble pàgina següent ajunta una pàgina parella a la dreta amb la senar que la segueix, així que, amb la portada a la pàgina 1, cada doble pàgina és un full. La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) fixa el 行款 del bloc, nou columnes de 17 caràcters, i els marges que deixa són exactes: l'interior fa mitja franja.
+
+Postext numera pàgines, no fulls. Cada full comença amb un títol de nivell 1 [ocult](/ca/docs/configuration#configuració-per-nivell): no imprimeix res ni ocupa lloc, però el seu `breakBefore` amb `parity: 'even'` obre una pàgina de la dreta, i el seu número, 一, 二, 三 amb `numberingTemplate: '{1:一}'`, és el `{chapterNumber}` de la franja.
+
+### 2 · Talla el text on acaba cada full
+
+El copista que passava en net un text per al gravador l'ajustava al bloc full a full. El Markdown fa el mateix: el títol d'un full va on acaba la novena columna de la meitat esquerra de l'anterior, encara que caigui dins d'una frase o d'una nota. Una nota tallada allà es tanca i es torna a obrir, i com que cada columna plega en dues files el seu propi tros de nota, les files surten igual que abans:
+
+```markdown
+子曰巧言令色鮮矣仁:warichu[巧好令善也好其言善其色致飾於]
+
+# 學而
+
+:warichu[外務以悦人則人欲肆而本心之德亡矣…]
+```
+
+El bloc no porta puntuació, així que cap regla de tall de línia no mou cap caràcter i cada columna acaba al dissetè: els talls de full es compten una vegada i no es mouen. Les notes de Zhu Xi són [`:warichu[…]`](/ca/docs/document-format#marques-xineses-ruby-i-warichu) a la meitat del cos, que és el valor per defecte, 34 caràcters petits per fila, amb un ○ entre la lectura i la glossa com al bloc.
+
+### 3 · Dibuixa el bloc amb els números de la retícula
+
+<Excerpt region="frame" />
+
+La capçalera es compon sobre el paper, així que el marc, els filets i la franja es col·loquen en punts des de la cantonada de la pàgina amb els mateixos números que fixen la retícula: un [element de línia](/ca/docs/configuration#elements-de-línia) cada 29 pt a l'amplada de la caixa de text, una [caixa](/ca/docs/configuration#elements-de-caixa) a 4,5 pt del text per a la línia fina i una altra 4,5 pt més enfora per a la gruixuda. Cada columna de caràcters queda al centre del seu pas, així que els filets cauen a mig camí entre columnes. El text de la franja va de dalt a baix en [elements de text verticals](/ca/docs/configuration#elements-de-text-verticals) i la cua de peix és un SVG en un [element d'imatge](/ca/docs/configuration#elements-dimatge), tots dos centrats entre els dos filets de la franja, sobre el plec: cada pàgina mostra 17 pt de franja. Cada pàgina dibuixa sencers el text de la franja i la cua de peix i en mostra la part del seu costat, i en ajuntar-les les parts encaixen. Els marcs passen del plec pel mateix motiu.
+
+### 4 · Dona a la portada un estil propi
+
+<Excerpt region="title" />
+
+La portada (內封) és un títol de nivell 1 amb un [estil de títol](/ca/docs/configuration#estils-dencapçalament) ocult i sense número, així que els fulls continuen comptant des de 一. Un estil governa les pàgines de la seva secció, i el seu `header` hi substitueix el del document: la portada porta un marc tancat i dividit en tres columnes en lloc dels elements del mig full. L'autoria, la nota d'aquesta edició en Kai vermell i el colofó surten dels [atributs](/ca/docs/document-format#atributs-dencapçalament) del títol; el colofó és l'única línia que canvia amb la llengua de l'edició. `\n` dins d'un atribut comença una altra columna.
+
+### 5 · Carrega cada font amb els caràcters que compon
+
+<Excerpt region="voices" />
+
+Fontsource serveix cada font xinesa en un centenar de fitxers per pes. Song compon els fulls, la franja i els números de full, així que la seva crida rep la mostra i aquests caràcters; Kai compon només el títol i la nota. El bloc no porta puntuació, així que cap de les dues no necessita les formes verticals de `loadCjkFonts(…, { vertical: true })`.
+
+### 6 · Una tinta sobre un paper càlid
+
+<Excerpt region="palette" />
+
+El text i les línies del bloc s'imprimeixen en el mateix negre càlid, a 14 : 1 sobre el paper. Tot i així són dues entrades de la paleta, `ink` i `rule`, perquè els filets canviïn de color sense tocar el text. El vermell queda per al que afegeix aquesta edició.
+
+## Variants
+
+### Pauta les columnes en vermell
+
+Les còpies del 四庫全書 es van escriure sobre paper pautat en vermell (朱絲欄). Canvia el color dels filets; la cua de peix el segueix.
+
+```diff
+-  rule: '#1f1b17', // the frame, the column rules and the fish tail: the same block, same ink
++  rule: '#b3412e', // 朱絲欄: red rules under black text
+```
+
+### Talla un altre bloc
+
+Hi va haver molts 行款 diferents, i 半葉十行，行二十字 és dels més corrents. Els marcs, la franja, les tres caselles de la portada i el sagnat de l'autoria surten d'aquests números, així que s'ajusten sols; els talls de full del Markdown s'han de tornar a comptar.
+
+```diff
+-const [BODY, PITCH, CHARS, LINES] = [20, 29, 17, 9];
++const [BODY, PITCH, CHARS, LINES] = [17, 24.5, 20, 10];
+```
+
+### Compara-la amb una pàgina europea sobre retícula
+
+<RecipeLink slug="baseline-grid-book-page">Una pàgina de llibre sobre una retícula de base</RecipeLink> construeix la seva caixa de text comptant línies, com aquest full construeix la seva amb columnes i caràcters; <RecipeLink slug="certificate-single-page">el diploma</RecipeLink> dibuixa la seva orla a la capçalera d'un estil de títol, com aquí la portada.
+
+## Errors freqüents
+
+- Els talls de full viuen al Markdown. Si canvies el text, el cos o el 行款, un full que se'n passa empeny el títol següent una pàgina més enllà i les dobles pàgines deixen de coincidir amb els fulls; un que es queda curt deixa columnes en blanc abans del plec. Revisa l'última columna de cada pàgina de l'esquerra.
+- La transcripció del 四庫全書 escriu 巳 tant per 已 com per 己; aquesta mostra decideix cada cas per la frase. La pàgina encara demana que algú la confronti amb els facsímils, i es nota: el comentari de 張敬夫 diu 必開其政 on les *Analectes*, que ell repeteix, diuen 必聞其政, i dos caràcters vénen com a imatges del glif. La mostra posa 聞, 傳 i 邦. Confronta el passatge amb una segona edició abans de compondre'l.
+- La mateixa transcripció porta formes que Noto Serif TC no té (廹 徳 絶 逺 専 内). Cinc cauen dins del rang d'un fitxer de Fontsource, així que `loadCjkFonts` les deixa passar, i després el llenç les agafa d'una font del sistema i postext-pdf imprimeix una caixa buida i avisa. 廹 no cau dins del rang de cap fitxer, i `loadCjkFonts` s'atura amb un error. La mostra fa servir 迫 德 絕 遠 專 內.

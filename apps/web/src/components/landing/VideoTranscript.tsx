@@ -20,7 +20,9 @@ export async function VideoTranscript({
   const t = await getTranslations("Transcript");
   const lang: TranscriptLocale = locale.startsWith("es")
     ? "es"
-    : locale.startsWith("zh")
+    : locale.startsWith("ca")
+      ? "ca"
+      : locale.startsWith("zh")
       ? "zh"
       : "en";
   const blocks = TRANSCRIPTS[video][lang];

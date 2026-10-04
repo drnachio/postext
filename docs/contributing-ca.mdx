@@ -1,0 +1,185 @@
+{/* docs/contributing-ca.mdx */}
+
+export const metadata = {
+  title: 'Contribuir a Postext',
+  sidebarTitle: 'Contribuir',
+  description: 'Com unir-se a la comunitat Postext i contribuir al projecte',
+  lang: 'ca',
+  lastUpdated: '2026-09-24',
+  readingTime: '5 min',
+  order: 7,
+  plainSummary: "Postext el construeix una comunitat de voluntaris, i qualsevol persona hi pot ajudar. No cal saber programar. També pots ajudar fent proves, escrivint documentació, traduint o compartint el que saps de disseny i d'impremta. Aquesta pàgina explica com treballa l'equip, on fa més falta ajuda i com fer la teva primera aportació. Acaba amb els objectius del projecte a llarg termini.",
+};
+
+# Contribuir a Postext
+
+**Construint junts el motor de composició editorial que el web no ha tingut mai.**
+
+Postext és un projecte de codi obert impulsat per la seva comunitat. El seu objectiu és resoldre un
+problema que fa dècades que s'ignora: portar la composició editorial professional al web. És una
+ambició gran, i demana més que una sola persona.
+
+El projecte és jove, però ja no és una pàgina en blanc: el pipeline de composició, el format de
+document i el sistema de configuració ja estan publicats. Tot i això, queden moltes decisions de
+disseny obertes, i qui s'hi incorpora ara té una influència real sobre la direcció del
+projecte. Si esperaves un bon moment per unir-t'hi — és aquest.
+
+No cal ser programador per contribuir. Tant si escrius codi com si dissenyes maquetacions
+editorials, entens de tipografia, fas proves en diferents navegadors, redactes documentació,
+tradueixes contingut o simplement tens idees sobre com hauria de funcionar el contingut editorial
+al web — aquí hi ha un lloc per a tu.
+
+
+## Per què contribuir
+
+Totes les empreses de desenvolupament editorial del món s'enfronten al mateix problema: CSS no es va
+dissenyar per a la maquetació editorial. No hi ha suport natiu per a l'equilibri de columnes, la prevenció
+d'òrfenes i vídues, el flux de text al voltant d'obstacles ni la col·locació de notes a peu de pàgina. Cada
+equip resol aquests problemes des de zero, i construeix solucions fràgils i a mida que són
+cares de mantenir i impossibles de compartir.
+
+Postext vol canviar això. No com una eina propietària, sinó com un estàndard obert
+compartit — un motor de composició únic i d'alta qualitat que editorials, revistes, diaris,
+plataformes de llibres i equips de desenvolupament de tot el món puguin adoptar i sobre el qual
+puguin construir.
+
+Aquesta mena d'estàndard no el pot construir una sola persona ni una sola empresa. Necessita la
+perspectiva de tipògrafs de tradicions diferents, especialistes en PDF, experts en accessibilitat,
+desenvolupadors que treballin amb escriptures de dreta a esquerra, dissenyadors que maquetin
+revistes i enginyers que optimitzin el rendiment del renderitzat. La diversitat del món editorial
+exigeix una comunitat diversa darrere l'eina que el serveix.
+
+
+## Com treballem
+
+Tota la coordinació té lloc a GitHub. No hi ha canals privats, ni llistes de correu tancades, ni
+decisions preses a porta tancada. Tot és públic, indexable i obert a la participació.
+
+- **[Issues](https://github.com/drnachio/postext/issues)** — per a informes d'errors, sol·licituds
+  de funcionalitats i tasques concretes. Si vols treballar en alguna cosa, comença per aquí.
+- **[Pull Requests](https://github.com/drnachio/postext/pulls)** — per a contribucions de codi.
+  Obre primer un issue per discutir l'enfocament abans d'escriure codi.
+- **[Discussions](https://github.com/drnachio/postext/discussions)** — per a idees, converses
+  de disseny, preguntes i qualsevol cosa que no sigui un error concret o una tasca específica. Aquest
+  és el lloc per pensar en veu alta.
+
+Això és deliberat: quan tot viu en un sol lloc, qualsevol persona pot trobar el context que hi ha darrere
+de cada decisió, i els col·laboradors nous poden llegir-ne l'historial.
+
+<Illustration name="ContributionWorkflow" data='{"title": "Flux típic de contribució", "desc": "Una idea comença com a Issue o Discussion, es discuteix, es converteix en un Pull Request que es revisa i finalment es fusiona. Els issues etiquetats com a good first issue són el punt d’entrada per a qui comença.", "caption": "D’una idea a un merge: quatre etapes, totes públiques a GitHub.", "steps": [{"name": "Issue", "sub": "problema o idea"}, {"name": "Discussion", "sub": "enfocament i disseny"}, {"name": "Pull Request", "sub": "revisió del codi"}, {"name": "Merge", "sub": "a develop"}], "branchLabel": "good first issue", "branchSub": "millor punt d’entrada"}' />
+
+
+## Àrees on pots ajudar
+
+El projecte necessita molts tipus diferents d'experiència. Aquestes són algunes àrees on les
+contribucions són especialment valuoses:
+
+### Codi i algorismes
+- **Algorismes de composició tipogràfica** — el motor de justificació Knuth-Plass, l'equilibri de
+  columnes, el tall òptim de paràgrafs, la numeració tipada de recursos i la col·locació de flotants.
+- **Generació de PDF** — construcció de PDF a baix nivell, incrustació de fonts, gestió del
+  color i tractament dels bytes de recursos per a figures a una tinta.
+- **Renderitzat de text** — renderitzat basat en canvas, sortida SVG, recoloració de SVG a una
+  tinta (`diagramStyle.singleInk`), mètriques de font.
+- **Optimització del rendiment** — la capa de memòria cau de mesura, i mantenir el motor prou
+  ràpid per a l'ús en temps real a cada redimensionament.
+
+### Sandbox i interfície
+El [sandbox](/ca/docs/sandbox) s'ha convertit en una superfície React considerable per dret
+propi: un tauler de recursos amb un editor interactiu de taules i pujada d'imatges i SVG, un
+tauler de fonts i un tauler de Disseny els dotze grups del qual cobreixen cada racó del motor. Els seus
+controls es construeixen sobre primitives de Base UI (`packages/postext-sandbox/src/ui/`) i es
+revisen amb axe-core segons WCAG 2.1 AA, de manera que els controls nous les han de reutilitzar i
+mantenir cada camp anomenat per la seva etiqueta i descrit pel seu text d'ajuda. Cada cadena de la
+interfície segueix una convenció estricta d'i18n, connectada mitjançant etiquetes en cinc fitxers
+repartits entre el paquet del sandbox i els catàlegs d'idiomes de l'aplicació web. Si
+contribueixes des del frontend o la UX, aquest és el teu terreny.
+
+### Disseny i tipografia
+- **Experiència en disseny editorial** — si tens experiència maquetant revistes, diaris o
+  llibres, el teu coneixement sobre què fa que una maquetació funcioni (o falli) és inestimable —
+  sense necessitat d'escriure codi.
+- **Tradicions tipogràfiques** — el projecte ha de respectar les convencions tipogràfiques de
+  llengües i sistemes d'escriptura diferents, no només de les escriptures llatines.
+
+### Documentació i comunitat
+- **Documentació** — millorar, ampliar i mantenir la documentació. Una documentació clara marca la
+  diferència entre un projecte que la gent pot adoptar i un que acaba abandonant.
+- **Traduccions** — la documentació és actualment bilingüe (anglès i castellà). Més llengües hi són
+  benvingudes.
+- **Testing** — fer proves en diferents navegadors, sistemes operatius i casos límit. Trobar les
+  maquetacions que es trenquen és tan valuós com construir les que funcionen.
+
+### Disseny de format i esquema
+El format ja no és un llenç en blanc: els blocs `::resource`, les referències en línia `:ref`
+i les seccions de configuració `tableStyle`, `captionStyle` i `diagramStyle` ja estan publicats.
+Ara la feina consisteix a fer evolucionar un format establert sense trencar-lo:
+
+- **Gramàtica del document** — les notes al marge i les referències creuades
+  més enllà dels recursos continuen sent preguntes obertes, cadascuna tant un problema de disseny com
+  tècnic.
+- **Esquema de configuració** — mantenir el sistema prou potent per als professionals i
+  prou senzill per als nouvinguts a mesura que creix.
+
+<Illustration name="ContributionAreas" data='{"title": "On pots ajudar, d’un cop d’ull", "desc": "Quatre quadrants amb exemples concrets a cadascun: codi i la interfície del sandbox, disseny i tipografia, documentació i comunitat, format i esquema.", "caption": "No cal tocar codi: una aportació marca la diferència en molts fronts.", "areas": [{"name": "Codi & UI del sandbox", "items": ["Knuth-Plass i flotants", "PDF i renderitzat", "Memòria cau de mesura", "UI del sandbox i i18n"]}, {"name": "Disseny & tipografia", "items": ["Disseny editorial", "Tradicions tipogràfiques", "Revistes i diaris", "Escriptures no llatines"]}, {"name": "Documentació & comunitat", "items": ["Millorar la documentació", "Traduccions", "Testing multinavegador", "Acollida als nous"]}, {"name": "Format & esquema", "items": ["Directives ::resource i :ref", "Esquema de config", "Notes a peu de pàgina i al marge", "Referències creuades"]}]}' />
+
+
+## Primers passos
+
+La configuració pràctica — clonar el repositori, instal·lar dependències, executar tests — està
+documentada a
+[CONTRIBUTING.md](https://github.com/drnachio/postext/blob/develop/CONTRIBUTING.md). Comença per
+aquí per als passos mecànics.
+
+Un cop ho tinguis tot a punt, tres accions concretes, de menys a més compromís:
+
+1. **Presenta't a [Discussions](https://github.com/drnachio/postext/discussions)** — explica en
+   què treballes i què t'hi ha portat. Cap pregunta no és massa bàsica, i és la manera més
+   ràpida de fer saber a la comunitat que has arribat.
+2. **Cerca un issue etiquetat [good first issue](https://github.com/drnachio/postext/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** —
+   triat perquè sigui un punt d'entrada realista, sense dependències de context històric.
+3. **Tradueix la documentació a una llengua nova** — avui la documentació és en anglès i castellà.
+   Qualsevol tercera llengua és un regal per als lectors que avui queden fora.
+
+Si penses escriure codi, obre primer un issue per discutir l'enfocament — evita feina
+duplicada, i una conversa ràpida al principi estalvia temps a tothom.
+
+### Què llegir després
+
+Per orientar-te abans de començar:
+
+- **[Arquitectura](/ca/docs/architecture)** — com està estructurat el pipeline de composició i
+  on viu cada subsistema.
+- **[Format del document](/ca/docs/document-format)** — la gramàtica de markdown enriquit que
+  els col·laboradors amplien.
+- **[Sandbox](/ca/docs/sandbox)** — el laboratori on és més fàcil veure i provar la majoria
+  dels canvis.
+
+
+## La comunitat
+
+Postext encara és als seus inicis — i això és precisament el que fa especial aquest moment.
+Qui s'hi incorpora ara no només escriu codi; està donant forma a les convencions, les
+prioritats i la cultura.
+
+El projecte valora:
+
+- **Disseny reflexiu abans que velocitat.** Encertar les abstraccions importa més que lliurar
+  ràpid. La tipografia s'ha refinat durant segles; ens podem prendre el temps de fer-ho bé.
+- **Claredat abans que enginy.** El codi fàcil de llegir i de raonar val més que el codi
+  impressionant però opac.
+- **Col·laboració abans que territori.** Ningú no és amo d'una part del codi. Les idees s'avaluen
+  pel seu mèrit, no per qui les va proposar.
+
+Tots els col·laboradors tenen reconeixement. Aquest projecte existeix perquè hi ha persones que trien
+dedicar el seu temps a millorar-lo.
+
+
+## Visió
+
+Postext aspira a convertir-se en el motor de composició estàndard per al contingut editorial al
+web — l'eina a la qual recorrin editorials, revistes, diaris i plataformes de llibres
+quan necessitin tipografia professional.
+
+Si treballes en desenvolupament editorial i fa anys que resols aquests problemes de maquetació tot
+sol, aquesta és la teva invitació a resoldre'ls una vegada, bé, al costat d'altres.

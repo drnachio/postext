@@ -4,11 +4,13 @@
     "title": {
       "en": "Any headings object switches off the H1 page break",
       "es": "Cualquier objeto headings desactiva el salto de página del H1",
+      "ca": "Qualsevol objecte headings desactiva el salt de pàgina de l'H1",
       "zh": "传入任何headings对象都会关掉H1换页"
     },
     "body": {
       "en": "By default an H1 breaks to a recto (always-odd), but passing any headings object resets that default, so chapters run on and span: 'page' does nothing. Restate headings.levels[0].breakBefore: { enabled: true, parity } in every config.",
       "es": "Por defecto un H1 salta a una página impar (always-odd), pero cualquier objeto headings anula ese valor, así que los capítulos van seguidos y span: 'page' no hace nada. Vuelve a declarar headings.levels[0].breakBefore: { enabled: true, parity } en cada configuración.",
+      "ca": "Per defecte un H1 salta a una pàgina senar (always-odd), però qualsevol objecte headings anul·la aquest valor, de manera que els capítols van seguits i span: 'page' no fa res. Torna a declarar headings.levels[0].breakBefore: { enabled: true, parity } a cada configuració.",
       "zh": "默认情况下，H1换页到右页（always-odd），但只要传入headings对象，这个默认值就会被重置，于是各章接排，span: 'page'也不起作用。在每份配置中重新写明headings.levels[0].breakBefore: { enabled: true, parity }。"
     },
     "feature": "chapter-breaks",
@@ -18,11 +20,13 @@
     "title": {
       "en": "Attribute values: no { or }; single-quote a value with \"",
       "es": "Valores de atributo: sin { ni }; comillas simples si llevan \"",
+      "ca": "Valors d'atribut: sense { ni }; cometes simples si porten \"",
       "zh": "属性值：不能含{ or }；含\"的值用单引号"
     },
     "body": {
       "en": "An attribute value ends at the closing brace, so it cannot hold { or }. A value that contains a double quote goes in single quotes; a dollar sign is fine.",
       "es": "Un valor de atributo termina en la llave de cierre, así que no puede contener { ni }. Un valor que lleve comillas dobles va entre comillas simples; el signo de dólar no da problemas.",
+      "ca": "Un valor d'atribut acaba a la clau de tancament, així que no pot contenir { ni }. Un valor que porti cometes dobles va entre cometes simples; el signe de dòlar no dona problemes.",
       "zh": "属性值在右花括号处结束，所以不能包含{ or }。含双引号的值要放在单引号里；美元符号没有问题。"
     },
     "feature": "heading-attributes"
@@ -31,11 +35,13 @@
     "title": {
       "en": "Quote every frontmatter value",
       "es": "Entrecomilla cada valor del frontmatter",
+      "ca": "Posa entre cometes cada valor del frontmatter",
       "zh": "frontmatter的每个值都加引号"
     },
     "body": {
       "en": "YAML reads title: 1984 as a number and a date as a Date object, and non-string values print empty in placeholders and leave the PDF without a title. Quote every value: title: \"1984\".",
       "es": "YAML lee title: 1984 como un número y una fecha como un objeto Date, y los valores que no son cadenas se imprimen vacíos en los marcadores y dejan el PDF sin título. Entrecomilla cada valor: title: \"1984\".",
+      "ca": "YAML llegeix title: 1984 com un nombre i una data com un objecte Date, i els valors que no són cadenes s'imprimeixen buits als marcadors i deixen el PDF sense títol. Posa entre cometes cada valor: title: \"1984\".",
       "zh": "YAML会把title: 1984读成数字，把日期读成Date对象；非字符串的值在占位符中打印为空，PDF也会没有标题。每个值都加引号：title: \"1984\"。"
     },
     "feature": "frontmatter",
@@ -45,11 +51,13 @@
     "title": {
       "en": "Load every face before layout",
       "es": "Carga todas las fuentes antes de componer",
+      "ca": "Carrega totes les fonts abans de compondre",
       "zh": "排版前加载所有字体"
     },
     "body": {
       "en": "Layout measures text with the faces the browser has loaded and caches the widths, so a face that arrives after the first build leaves wrong line breaks and a PDF that no longer matches the screen. Load every weight and style first, and call clearMeasurementCache() before rebuilding when one arrives late.",
       "es": "La composición mide el texto con las fuentes que el navegador ha cargado y guarda los anchos, así que una fuente que llega después de la primera composición deja cortes de línea erróneos y un PDF que ya no coincide con la pantalla. Carga antes todos los pesos y estilos, y llama a clearMeasurementCache() antes de recomponer si alguna llega tarde.",
+      "ca": "La composició mesura el text amb les fonts que el navegador ha carregat i en desa les amplades, així que una font que arriba després de la primera composició deixa talls de línia erronis i un PDF que ja no coincideix amb la pantalla. Carrega abans tots els pesos i estils, i crida clearMeasurementCache() abans de recompondre si alguna arriba tard.",
       "zh": "排版用浏览器已加载的字体测量文字，并缓存宽度，所以首次构建之后才到的字体会造成断行错误，PDF也不再与屏幕一致。先加载所有字重和样式；有字体迟到时，重新构建前调用clearMeasurementCache()。"
     },
     "feature": "font-loading"
@@ -58,11 +66,13 @@
     "title": {
       "en": "An opener reserves height down to its lowest page-anchored element",
       "es": "Una apertura reserva altura hasta su elemento anclado más bajo",
+      "ca": "Una obertura reserva alçada fins al seu element ancorat més baix",
       "zh": "章首页预留的高度一直到最低的页面锚定元素"
     },
     "body": {
       "en": "An advanced-design opener reserves the height of its lowest element, and page- or bleed-anchored elements below the heading count too, so decoration at the foot of the page pushes the text to the next page. Keep such decoration above the heading, move it to a header or footer slot, or set the reservation with minHeight.",
       "es": "Una apertura de diseño avanzado reserva la altura de su elemento más bajo, y cuentan también los anclados a la página o a la sangre que quedan por debajo del título, así que un adorno al pie de la página empuja el texto a la siguiente. Deja esos adornos por encima del título, pásalos a una ranura de cabecera o de pie, o fija la reserva con minHeight.",
+      "ca": "Una obertura de disseny avançat reserva l'alçada del seu element més baix, i també hi compten els ancorats a la pàgina o a la sang que queden per sota del títol, així que un ornament al peu de la pàgina empeny el text a la següent. Deixa aquests ornaments per sobre del títol, passa'ls a una ranura de capçalera o de peu, o fixa la reserva amb minHeight.",
       "zh": "高级设计的章首页会预留到其最低元素为止的高度，标题下方锚定在页面或出血上的元素也算在内，所以页脚处的装饰会把正文推到下一页。把这类装饰放在标题上方，移到页眉或页脚槽位，或者用minHeight设定预留高度。"
     },
     "feature": "opener-design",
@@ -72,11 +82,13 @@
     "title": {
       "en": "A 'top' float never lands on its citing page",
       "es": "Un flotante 'top' nunca cae en la página que lo cita",
+      "ca": "Un flotant 'top' no cau mai a la pàgina que el cita",
       "zh": "'top'浮动体不会出现在引用它的那一页"
     },
     "body": {
       "en": "A float never goes above its own reference, so a page-wide 'top' float cited on page N opens page N+1. Cite it earlier, or use position 'auto' or 'bottom', which can take the foot of the citing page.",
       "es": "Un flotante nunca va por encima de su propia referencia, así que un flotante 'top' a todo el ancho citado en la página N abre la página N+1. Cítalo antes, o usa la posición 'auto' o 'bottom', que pueden ocupar el pie de la página que lo cita.",
+      "ca": "Un flotant no va mai per sobre de la seva pròpia referència, així que un flotant 'top' a tota l'amplada citat a la pàgina N obre la pàgina N+1. Cita'l abans, o fes servir la posició 'auto' o 'bottom', que poden ocupar el peu de la pàgina que el cita.",
       "zh": "浮动体不会排在自己的引用之前，所以在第N页引用的整页宽'top'浮动体会出现在第N+1页的顶部。把引用提前，或者使用position 'auto'或'bottom'，它们可以占用引用页的底部。"
     },
     "feature": "float-placement"
@@ -85,11 +97,13 @@
     "title": {
       "en": "A figure is queued where its citing paragraph starts",
       "es": "Una figura entra en la cola donde empieza el párrafo que la cita",
+      "ca": "Una figura entra a la cua on comença el paràgraf que la cita",
       "zh": "图在引用它的段落开始处排队"
     },
     "body": {
       "en": "A figure is queued when the paragraph that cites it starts, not at the line of its :ref. When that paragraph begins at the foot of one page and the citation falls on the next, a 'top' figure can open that next page above the sentence that cites it. Put the :ref early in its paragraph, or open a new paragraph with it.",
       "es": "Una figura entra en la cola cuando empieza el párrafo que la cita, no en la línea de su :ref. Si ese párrafo empieza al pie de una página y la cita cae en la siguiente, una figura 'top' puede abrir esa página por encima de la frase que la cita. Pon el :ref al principio de su párrafo, o abre con él un párrafo nuevo.",
+      "ca": "Una figura entra a la cua quan comença el paràgraf que la cita, no a la línia del seu :ref. Si aquest paràgraf comença al peu d'una pàgina i la cita cau a la següent, una figura 'top' pot obrir aquella pàgina per sobre de la frase que la cita. Posa el :ref al principi del paràgraf, o obre-hi un paràgraf nou.",
       "zh": "图在引用它的段落开始时就进入队列，而不是在:ref所在的那一行。如果这个段落从一页的底部开始，而引用落在下一页，'top'图可能出现在下一页顶部、引用它的句子之前。把:ref放在段落靠前的位置，或者从它开始另起一段。"
     },
     "feature": "figure-citations",
@@ -99,11 +113,13 @@
     "title": {
       "en": "Put :::pagebreak after a full-page cover",
       "es": "Pon :::pagebreak tras una cubierta a página completa",
+      "ca": "Posa :::pagebreak després d'una coberta a pàgina completa",
       "zh": "整页封面之后加:::pagebreak"
     },
     "body": {
       "en": "In a multi-column layout a full-page opener such as a cover lets the next block start in column 2 of the same page, on top of the art. A :::pagebreak right after the cover heading ends the page and leaves no blank one.",
       "es": "Con varias columnas, una apertura a página completa, como una cubierta, deja que el bloque siguiente empiece en la columna 2 de la misma página, encima de la ilustración. Un :::pagebreak justo después del título de la cubierta cierra la página sin dejar una en blanco.",
+      "ca": "Amb diverses columnes, una obertura a pàgina completa, com una coberta, deixa que el bloc següent comenci a la columna 2 de la mateixa pàgina, damunt de la il·lustració. Un :::pagebreak just després del títol de la coberta tanca la pàgina sense deixar-ne cap en blanc.",
       "zh": "在多栏版面中，封面这类整页章首页之后，下一个块可能从同一页的第2栏开始，压在图上。在封面标题后紧跟一个:::pagebreak，就能结束这一页，而且不会多出空白页。"
     },
     "feature": "covers",
@@ -113,11 +129,13 @@
     "title": {
       "en": ":::space is dropped at the top of a box or column",
       "es": ":::space se descarta al principio de un recuadro o columna",
+      "ca": ":::space es descarta al principi d'un requadre o columna",
       "zh": ":::space在框顶或栏顶会被丢掉"
     },
     "body": {
       "en": ":::space is dropped at the top of a column, a box or a :::columns group, even when it is the box's only content, so an answer box made of space collapses. Open the box with a title or a prompt line, then add the space.",
       "es": ":::space se descarta al principio de una columna, de un recuadro o de un grupo :::columns, aunque sea el único contenido de la caja, así que una caja de respuesta hecha solo de espacio se queda sin altura. Abre la caja con un título o una línea de enunciado y añade después el espacio.",
+      "ca": ":::space es descarta al principi d'una columna, d'un requadre o d'un grup :::columns, encara que sigui l'únic contingut de la caixa, així que una caixa de resposta feta només d'espai es queda sense alçada. Obre la caixa amb un títol o una línia d'enunciat i afegeix-hi després l'espai.",
       "zh": ":::space出现在栏顶、框顶或:::columns组顶部时会被丢掉，即使它是框里唯一的内容，所以只由空白组成的答题框会塌掉。框以标题或一行提示开头，再加空白。"
     },
     "feature": "vertical-space",
@@ -127,11 +145,13 @@
     "title": {
       "en": "A whitespace-only chip prints its markup",
       "es": "Un chip solo con espacios imprime su marcado",
+      "ca": "Un xip només amb espais imprimeix el marcatge",
       "zh": "只含空白的行内标签会打印出标记"
     },
     "body": {
       "en": "A chip whose text is only spaces, no-break spaces included, prints :chip[ ] literally. For a blank answer chip put a word joiner (U+2060) inside it.",
       "es": "Un chip cuyo texto son solo espacios, incluidos los de no separación, imprime :chip[ ] tal cual. Para un chip de respuesta en blanco, pon dentro un unidor de palabras (U+2060).",
+      "ca": "Un xip el text del qual són només espais, inclosos els de no separació, imprimeix :chip[ ] tal qual. Per a un xip de resposta en blanc, posa-hi dins un unidor de paraules (U+2060).",
       "zh": "文字只有空格（包括不换行空格）的行内标签，会按原样打印出:chip[ ]。要做空白的答题标签，在里面放一个连接符（U+2060）。"
     },
     "feature": "chips",
@@ -141,11 +161,13 @@
     "title": {
       "en": "\\n in an attribute breaks lines only with paragraphIndent > 0",
       "es": "\\n en un atributo solo corta líneas con paragraphIndent > 0",
+      "ca": "\\n en un atribut només talla línies amb paragraphIndent > 0",
       "zh": "属性中的\\n只在paragraphIndent > 0时换行"
     },
     "body": {
       "en": "In a design text element, a \\n written in an attribute value starts a new line only when paragraphIndent is above zero or a drop cap is set; otherwise the text stays on one line. Set paragraphIndent to a hair (0.01 pt), or use one attribute per line.",
       "es": "En un elemento de texto de diseño, un \\n escrito en el valor de un atributo solo abre línea nueva si paragraphIndent es mayor que cero o hay capitular; si no, el texto sigue en una línea. Pon en paragraphIndent un valor mínimo (0,01 pt) o usa un atributo por línea.",
+      "ca": "En un element de text de disseny, un \\n escrit al valor d'un atribut només obre una línia nova si paragraphIndent és més gran que zero o hi ha caplletra; si no, el text continua en una línia. Posa a paragraphIndent un valor mínim (0,01 pt) o fes servir un atribut per línia.",
       "zh": "在设计文本元素中，属性值里写的\\n只有在paragraphIndent大于零或设置了首字下沉时才另起一行，否则文字留在同一行。把paragraphIndent设为一个极小值（0.01 pt），或每行用一个属性。"
     },
     "feature": "design-elements",
@@ -155,11 +177,13 @@
     "title": {
       "en": "{number}/{chapterNumber} print the H1 number; {numberRoman} is parts-only",
       "es": "{number}/{chapterNumber} dan el número del H1; {numberRoman} solo en partes",
+      "ca": "{number}/{chapterNumber} donen el número de l'H1; {numberRoman} només en parts",
       "zh": "{number}/{chapterNumber}打印H1编号；{numberRoman}只用于篇"
     },
     "body": {
       "en": "{number} and {chapterNumber} print the heading's formatted number, but {numberRoman}, {numberDecimal} and the other numeric variants are filled only on part pages. Format a chapter number in its numberingTemplate ({1:I}) or pass it as an attribute.",
       "es": "{number} y {chapterNumber} imprimen el número ya formateado del título, pero {numberRoman}, {numberDecimal} y las demás variantes numéricas solo se rellenan en las páginas de parte. Da formato al número de capítulo en su numberingTemplate ({1:I}) o pásalo como atributo.",
+      "ca": "{number} i {chapterNumber} imprimeixen el número ja formatat del títol, però {numberRoman}, {numberDecimal} i les altres variants numèriques només s'emplenen a les pàgines de part. Dona format al número de capítol al seu numberingTemplate ({1:I}) o passa'l com a atribut.",
       "zh": "{number}和{chapterNumber}打印标题格式化后的编号，但{numberRoman}、{numberDecimal}等其他数字变体只在篇页上填入。在numberingTemplate中格式化章号（{1:I}），或者通过属性传入。"
     },
     "feature": "heading-numbering",
@@ -169,11 +193,13 @@
     "title": {
       "en": "A page takes the header of the last section that starts on it",
       "es": "Una página toma la cabecera de la última sección que empieza en ella",
+      "ca": "Una pàgina pren la capçalera de l'última secció que hi comença",
       "zh": "一页采用最后一个在该页开始的节的页眉"
     },
     "body": {
       "en": "When two heading styles start on one page, the page takes the header, footer and palette of the last one. A separator blank belongs to the chapter before it, parity padding to the chapter after it.",
       "es": "Cuando dos estilos de título empiezan en la misma página, esta toma la cabecera, el pie y la paleta del último. Una página en blanco de separación pertenece al capítulo anterior, y el relleno de paridad al siguiente.",
+      "ca": "Quan dos estils de títol comencen a la mateixa pàgina, aquesta pren la capçalera, el peu i la paleta de l'últim. Una pàgina en blanc de separació pertany al capítol anterior, i l'emplenament de paritat, al següent.",
       "zh": "两个标题样式在同一页开始时，这一页采用后一个的页眉、页脚和调色板。分隔用的空白页属于它前面的章，为奇偶页补的空白页属于它后面的章。"
     },
     "feature": "section-running-heads"
@@ -182,11 +208,13 @@
     "title": {
       "en": "Ragged text is never hyphenated",
       "es": "En el texto en bandera no hay separación silábica",
+      "ca": "En el text en bandera no hi ha partició de mots",
       "zh": "齐左文字从不断词"
     },
     "body": {
       "en": "Hyphenation applies to justified text only; ragged-right text breaks between words, so a narrow ragged column gets a deep rag. Justify the passage or widen the measure.",
       "es": "La separación silábica solo se aplica al texto justificado; el texto en bandera corta entre palabras, así que una columna estrecha en bandera queda muy desigual. Justifica el pasaje o ensancha la medida.",
+      "ca": "La partició de mots només s'aplica al text justificat; el text en bandera talla entre paraules, així que una columna estreta en bandera queda molt desigual. Justifica el passatge o eixampla la mesura.",
       "zh": "断词只用于两端对齐的文字；左对齐不齐行的文字在词间断行，所以窄栏的齐左文字行尾会很参差。把这段改为两端对齐，或加大行长。"
     },
     "feature": "hyphenation-languages",
@@ -196,11 +224,13 @@
     "title": {
       "en": "A heading that prints nothing needs a design with one element",
       "es": "Un título que no imprime nada necesita un diseño con un elemento",
+      "ca": "Un títol que no imprimeix res necessita un disseny amb un element",
       "zh": "什么都不打印的标题需要一个只含一个元素的设计"
     },
     "body": {
       "en": "A heading meant only for structure (a colophon or dedication) still prints: a page-span heading gets a synthesised {titleText} opener and an in-column one its text. Give it an advanced design holding one invisible element, such as a 0.1 pt box.",
       "es": "Un título pensado solo para la estructura (un colofón o una dedicatoria) se sigue imprimiendo: uno a todo el ancho recibe una apertura sintetizada con {titleText} y uno en columna, su texto. Dale un diseño avanzado con un único elemento invisible, como una caja de 0,1 pt.",
+      "ca": "Un títol pensat només per a l'estructura (un colofó o una dedicatòria) s'imprimeix igualment: un a tota l'amplada rep una obertura sintetitzada amb {titleText}, i un en columna, el seu text. Dona-li un disseny avançat amb un únic element invisible, com una caixa de 0,1 pt.",
       "zh": "只用于结构的标题（版权页或献词）仍然会打印：通栏标题会得到自动生成的{titleText}章首页，栏内标题会打印它的文字。给它一个高级设计，里面只放一个看不见的元素，例如一个0.1 pt的框。"
     },
     "feature": "opener-design",
@@ -210,11 +240,13 @@
     "title": {
       "en": "parts.versoDesign needs parts.breakAfter parity 'odd'",
       "es": "parts.versoDesign necesita parts.breakAfter con paridad 'odd'",
+      "ca": "parts.versoDesign necessita parts.breakAfter amb paritat 'odd'",
       "zh": "parts.versoDesign需要parts.breakAfter的parity为'odd'"
     },
     "body": {
       "en": "The back of a part divider is painted only when parts.breakAfter { enabled: true, parity: 'odd' } leaves that verso blank.",
       "es": "El dorso de una portadilla de parte solo se pinta cuando parts.breakAfter { enabled: true, parity: 'odd' } deja ese verso en blanco.",
+      "ca": "El dors d'una portadella de part només es pinta quan parts.breakAfter { enabled: true, parity: 'odd' } deixa aquest verso en blanc.",
       "zh": "只有当parts.breakAfter { enabled: true, parity: 'odd' }让篇章页的背面（左页）空出来时，这一页才会被绘制。"
     },
     "feature": "part-dividers"
@@ -223,11 +255,13 @@
     "title": {
       "en": "Part rows without a divider page have no page label",
       "es": "Las filas de parte sin portadilla no tienen número de página",
+      "ca": "Les files de part sense portadella no tenen número de pàgina",
       "zh": "没有篇章页的篇条目没有页码"
     },
     "body": {
       "en": "With parts.page: false there is no divider page, so a contents part row has no page label to print. Leave {pageNumber} out of the part-row design in that case.",
       "es": "Con parts.page: false no hay portadilla, así que la fila de parte del índice no tiene número de página que imprimir. En ese caso deja {pageNumber} fuera del diseño de la fila.",
+      "ca": "Amb parts.page: false no hi ha portadella, així que la fila de part de l'índex no té número de pàgina per imprimir. En aquest cas deixa {pageNumber} fora del disseny de la fila.",
       "zh": "parts.page: false时没有篇章页，所以目录中的篇条目没有页码可印。这种情况下，篇条目的设计中不要放{pageNumber}。"
     },
     "feature": "toc",
@@ -237,11 +271,13 @@
     "title": {
       "en": "renderToPdf ignores svg.pdfFileId: serve the master through resourceBytes",
       "es": "renderToPdf ignora svg.pdfFileId: sirve el máster con resourceBytes",
+      "ca": "renderToPdf ignora svg.pdfFileId: serveix el màster amb resourceBytes",
       "zh": "renderToPdf忽略svg.pdfFileId：通过resourceBytes提供母版"
     },
     "body": {
       "en": "Outside bundles, renderToPdf asks resourceBytes for the SVG's own fileId and never for svg.pdfFileId. Return the print master's bytes for the SVG's fileId in your resourceBytes.",
       "es": "Fuera de los paquetes, renderToPdf pide a resourceBytes el fileId del propio SVG y nunca svg.pdfFileId. Devuelve en tu resourceBytes los bytes del máster de impresión para el fileId del SVG.",
+      "ca": "Fora dels paquets, renderToPdf demana a resourceBytes el fileId del mateix SVG i mai svg.pdfFileId. Retorna al teu resourceBytes els bytes del màster d'impressió per al fileId de l'SVG.",
       "zh": "在文件包之外，renderToPdf只向resourceBytes请求SVG自己的fileId，从不请求svg.pdfFileId。在你的resourceBytes中，对SVG的fileId返回印刷母版的字节。"
     },
     "feature": "svg-print-masters",
@@ -251,11 +287,13 @@
     "title": {
       "en": "Design text has no inline ^sup^ or **bold**",
       "es": "El texto de diseño no admite ^sup^ ni **negrita**",
+      "ca": "El text de disseny no admet ^sup^ ni **negreta**",
       "zh": "设计文本不支持行内^sup^或**bold**"
     },
     "body": {
       "en": "Design text elements print plain text, so ^1^ or **bold** in an attribute appear literally. Use Unicode superscripts (¹ ² ³ are in the latin subset) or a second element in another weight.",
       "es": "Los elementos de texto de diseño imprimen texto plano, así que ^1^ o **negrita** en un atributo aparecen tal cual. Usa superíndices Unicode (¹ ² ³ están en el subconjunto latin) o un segundo elemento con otro peso.",
+      "ca": "Els elements de text de disseny imprimeixen text pla, així que ^1^ o **negreta** en un atribut apareixen tal qual. Fes servir superíndexs Unicode (¹ ² ³ són al subconjunt latin) o un segon element amb un altre pes.",
       "zh": "设计文本元素只打印纯文本，所以属性中的^1^或**bold**会原样出现。使用Unicode上标字符（¹ ² ³在latin子集中），或者再加一个字重不同的元素。"
     },
     "feature": "design-elements",
@@ -265,11 +303,13 @@
     "title": {
       "en": "Named table styles have no zebra rows",
       "es": "Los estilos de tabla no tienen filas alternas",
+      "ca": "Els estils de taula no tenen files alternes",
       "zh": "命名表格样式没有斑马纹"
     },
     "body": {
       "en": "A table style has a header fill and a single body fill, with no alternating rows. Fill every other row cell by cell (setCellBackground) with a palette-linked tint.",
       "es": "Un estilo de tabla tiene un relleno de cabecera y uno solo para el cuerpo, sin filas alternas. Rellena una fila de cada dos celda a celda (setCellBackground) con un tinte enlazado a la paleta.",
+      "ca": "Un estil de taula té un emplenament de capçalera i un de sol per al cos, sense files alternes. Emplena una fila de cada dues cel·la a cel·la (setCellBackground) amb un matís enllaçat a la paleta.",
       "zh": "表格样式只有一种表头底色和一种表体底色，没有隔行变色。用与调色板关联的浅色，逐个单元格给每隔一行填色（setCellBackground）。"
     },
     "feature": "cell-fills",
@@ -279,11 +319,13 @@
     "title": {
       "en": "buildBundle passes no metadata between chapters; {totalPages} is per chapter",
       "es": "buildBundle no pasa metadatos de un capítulo a otro; {totalPages} es por capítulo",
+      "ca": "buildBundle no passa metadades d'un capítol a un altre; {totalPages} és per capítol",
       "zh": "buildBundle不在章与章之间传递元数据；{totalPages}按章计算"
     },
     "body": {
       "en": "buildBundle passes no metadata from one chapter to the next: {title}, {author} and the rest come only from a chapter's own frontmatter, so every chapter without one prints them blank (and the Sandbox drops the frontmatter of every chapter after the first), and {totalPages} counts the pages of each chapter. Write the book title literally in the running heads.",
       "es": "buildBundle no pasa metadatos de un capítulo al siguiente: {title}, {author} y los demás salen solo del frontmatter del propio capítulo, así que todo capítulo sin él los deja vacíos (y el Sandbox descarta el frontmatter de todos los capítulos menos el primero), y {totalPages} cuenta las páginas de cada capítulo. Escribe el título del libro literalmente en las cabeceras.",
+      "ca": "buildBundle no passa metadades d'un capítol al següent: {title}, {author} i els altres surten només del frontmatter del mateix capítol, així que tot capítol sense frontmatter els deixa buits (i el Sandbox descarta el frontmatter de tots els capítols tret del primer), i {totalPages} compta les pàgines de cada capítol. Escriu el títol del llibre literalment a les capçaleres.",
       "zh": "buildBundle不会把元数据从一章传到下一章：{title}、{author}等只来自该章自己的frontmatter，所以没有frontmatter的章都会把它们印成空白（沙盒还会丢掉第一章之后每一章的frontmatter），{totalPages}统计的是每章的页数。在书眉中直接写出书名。"
     },
     "feature": "multi-chapter-books",
@@ -293,11 +335,13 @@
     "title": {
       "en": "Merged cells need hiddenBy placeholders: use mergeCells",
       "es": "Las celdas combinadas necesitan hiddenBy: usa mergeCells",
+      "ca": "Les cel·les combinades necessiten hiddenBy: fes servir mergeCells",
       "zh": "合并单元格需要hiddenBy占位：使用mergeCells"
     },
     "body": {
       "en": "Cells are laid out by their position in the row array, so a merged cell needs placeholder cells marked hiddenBy where it spreads; leaving them out, as HTML does, shifts every later column. Build merges with mergeCells.",
       "es": "Las celdas se colocan según su posición en la fila, así que una celda combinada necesita celdas de relleno marcadas con hiddenBy donde se extiende; omitirlas, como en HTML, desplaza todas las columnas siguientes. Combina celdas con mergeCells.",
+      "ca": "Les cel·les es col·loquen segons la seva posició a la fila, així que una cel·la combinada necessita cel·les de farciment marcades amb hiddenBy on s'estén; ometre-les, com en HTML, desplaça totes les columnes següents. Combina cel·les amb mergeCells.",
       "zh": "单元格按其在行数组中的位置排布，所以合并单元格延伸到的地方需要标记hiddenBy的占位单元格；像HTML那样省略它们，后面的每一列都会错位。用mergeCells来合并。"
     },
     "feature": "table-model",
@@ -307,11 +351,13 @@
     "title": {
       "en": "fontFamily is one family name, never a CSS stack",
       "es": "fontFamily es un nombre de familia, nunca una pila CSS",
+      "ca": "fontFamily és un nom de família, mai una pila CSS",
       "zh": "fontFamily是一个字族名，不是CSS字体栈"
     },
     "body": {
       "en": "A stack such as 'Lora, serif' is read as one family that does not exist, so text silently measures with a fallback and canvas, HTML and PDF disagree. Name a single family.",
       "es": "Una pila como 'Lora, serif' se lee como una única familia que no existe, así que el texto se mide sin aviso con una fuente de reserva y el canvas, el HTML y el PDF no coinciden. Escribe una sola familia.",
+      "ca": "Una pila com 'Lora, serif' es llegeix com una única família que no existeix, així que el text es mesura sense avís amb una font de reserva i el canvas, l'HTML i el PDF no coincideixen. Escriu una sola família.",
       "zh": "'Lora, serif'这样的字体栈会被当作一个不存在的字族，于是文字悄悄用后备字体测量，Canvas、HTML和PDF的结果对不上。只写一个字族名。"
     },
     "feature": "font-loading",
@@ -321,11 +367,13 @@
     "title": {
       "en": "Bitmaps are laid out in px at the document dpi: declare print size",
       "es": "Los mapas de bits se miden en píxeles a la resolución del documento: declara el tamaño de impresión",
+      "ca": "Els mapes de bits es mesuren en píxels a la resolució del document: declara la mida d'impressió",
       "zh": "位图按文档dpi以px排版：声明印刷尺寸"
     },
     "body": {
       "en": "A bitmap resource is sized from the width and height it declares, in pixels at the document's dpi, not from the file. Declare the print-size pixels (about 300 dpi at the printed width) so the figure lands at the right size and stays sharp.",
       "es": "Un recurso de mapa de bits toma su tamaño del ancho y el alto que declara, en píxeles a la resolución del documento, no del archivo. Declara los píxeles del tamaño de impresión (unos 300 ppp al ancho impreso) para que la figura salga a su tamaño y nítida.",
+      "ca": "Un recurs de mapa de bits pren la mida de l'amplada i l'alçada que declara, en píxels a la resolució del document, no del fitxer. Declara els píxels de la mida d'impressió (uns 300 ppp a l'amplada impresa) perquè la figura surti a la seva mida i nítida.",
       "zh": "位图资源的尺寸取自它声明的宽和高，单位是文档dpi下的像素，而不是取自文件本身。声明印刷尺寸对应的像素数（按印刷宽度约300 dpi），图才会以正确的大小出现并保持清晰。"
     },
     "feature": "resources"
@@ -334,11 +382,13 @@
     "title": {
       "en": "Lists say 'arabic', resources 'roman-upper', pages 'upper-roman'",
       "es": "Listas 'arabic', recursos 'roman-upper', páginas 'upper-roman'",
+      "ca": "Llistes 'arabic', recursos 'roman-upper', pàgines 'upper-roman'",
       "zh": "列表写'arabic'，资源写'roman-upper'，页码写'upper-roman'"
     },
     "body": {
       "en": "Each numbering setting spells its formats differently: lists take numberFormat 'arabic' ('decimal' prints \"undefined\"), resource types take counterFormat 'roman-upper', pages and :::numbering take 'upper-roman'.",
       "es": "Cada ajuste de numeración escribe sus formatos a su manera: las listas usan numberFormat 'arabic' ('decimal' imprime «undefined»), los tipos de recurso counterFormat 'roman-upper' y las páginas y :::numbering 'upper-roman'.",
+      "ca": "Cada opció de numeració escriu els formats a la seva manera: les llistes fan servir numberFormat 'arabic' ('decimal' imprimeix «undefined»), els tipus de recurs counterFormat 'roman-upper' i les pàgines i :::numbering 'upper-roman'.",
       "zh": "每种编号设置对格式的拼写都不同：列表的numberFormat用'arabic'（写'decimal'会打印出\"undefined\"），资源类型的counterFormat用'roman-upper'，页码和:::numbering用'upper-roman'。"
     },
     "feature": "numbered-lists",
@@ -348,11 +398,13 @@
     "title": {
       "en": "::resource{id=\"…\"} takes double quotes only",
       "es": "::resource{id=\"…\"} solo admite comillas dobles",
+      "ca": "::resource{id=\"…\"} només admet cometes dobles",
       "zh": "::resource{id=\"…\"}只接受双引号"
     },
     "body": {
       "en": "A block embed is recognised only as ::resource{id=\"…\"} with double quotes; any other form stays in the text as a visible line.",
       "es": "Una inserción de bloque solo se reconoce como ::resource{id=\"…\"} con comillas dobles; cualquier otra forma se queda en el texto como una línea visible.",
+      "ca": "Una inserció de bloc només es reconeix com a ::resource{id=\"…\"} amb cometes dobles; qualsevol altra forma es queda al text com una línia visible.",
       "zh": "块级嵌入只有写成带双引号的::resource{id=\"…\"}才能被识别；其他写法会作为一行可见文字留在正文中。"
     },
     "feature": "inline-embeds"
@@ -361,11 +413,13 @@
     "title": {
       "en": "The PDF asks for every weight and style of every family",
       "es": "El PDF pide todos los pesos y estilos de cada familia",
+      "ca": "El PDF demana tots els gruixos i estils de cada família",
       "zh": "PDF会请求每个字族的所有字重和样式"
     },
     "body": {
       "en": "renderToPdf asks the font provider for the bold, italic and bold-italic faces of every family a block could use, even ones never printed, and a single rejection stops the export. The provider must snap to the nearest weight the family ships and fall back to upright when there is no italic.",
       "es": "renderToPdf pide al proveedor de fuentes la negrita, la cursiva y la negrita cursiva de cada familia que un bloque podría usar, aunque nunca se imprima, y un solo rechazo detiene la exportación. El proveedor debe ajustarse al peso más cercano que tenga la familia y volver a la redonda cuando no haya cursiva.",
+      "ca": "renderToPdf demana al proveïdor de fonts la negreta, la cursiva i la negreta cursiva de cada família que un bloc podria fer servir, encara que no s'imprimeixi mai, i un sol rebuig atura l'exportació. El proveïdor s'ha d'ajustar al gruix més proper que tingui la família i tornar a la rodona quan no hi hagi cursiva.",
       "zh": "renderToPdf会向字体提供函数请求任何块可能用到的每个字族的粗体、斜体和粗斜体，哪怕从来没有印出来，只要有一次请求被拒绝，导出就会中止。提供函数必须就近匹配该字族实际提供的字重，没有斜体时退回正体。"
     },
     "feature": "pdf-fonts",
@@ -375,11 +429,13 @@
     "title": {
       "en": "HTML output has no column rule, grid or marks, and is transparent",
       "es": "La salida HTML no tiene filetes, retícula ni marcas, y es transparente",
+      "ca": "La sortida HTML no té filets, retícula ni marques, i és transparent",
       "zh": "HTML输出没有栏间线、网格和标记，且背景透明"
     },
     "body": {
       "en": "renderToHtml draws no column rule, baseline grid or crop marks, and its pages are transparent unless you pass a background, which on a dark page means dark text on dark.",
       "es": "renderToHtml no dibuja filetes de columna, rejilla base ni marcas de corte, y sus páginas son transparentes si no le pasas un fondo, lo que en una página oscura deja texto oscuro sobre oscuro.",
+      "ca": "renderToHtml no dibuixa filets de columna, retícula de base ni marques de tall, i les seves pàgines són transparents si no li passes un fons, cosa que en una pàgina fosca deixa text fosc sobre fosc.",
       "zh": "renderToHtml不画栏间线、基线网格和裁切标记，页面也是透明的，除非传入background；在深色页面上，就成了深色背景上的深色文字。"
     },
     "feature": "html-viewer"
@@ -388,11 +444,13 @@
     "title": {
       "en": "Maths needs https://esm.sh/postext?bundle and initMathEngine()",
       "es": "Las matemáticas necesitan postext?bundle e initMathEngine()",
+      "ca": "Les matemàtiques necessiten postext?bundle i initMathEngine()",
       "zh": "数学公式需要https://esm.sh/postext?bundle和initMathEngine()"
     },
     "body": {
       "en": "Formulas from https://esm.sh/postext paint grey boxes without an error. Import every symbol from https://esm.sh/postext?bundle, never mixing the two URLs, and await initMathEngine() before the first build.",
       "es": "Las fórmulas cargadas desde https://esm.sh/postext se pintan como cajas grises sin ningún error. Importa todos los símbolos desde https://esm.sh/postext?bundle, sin mezclar nunca las dos URL, y espera a initMathEngine() antes de la primera composición.",
+      "ca": "Les fórmules carregades des de https://esm.sh/postext es pinten com a caixes grises sense cap error. Importa tots els símbols des de https://esm.sh/postext?bundle, sense barrejar mai les dues URL, i espera initMathEngine() abans de la primera composició.",
       "zh": "从https://esm.sh/postext导入时，公式会画成灰色方框，而且不报错。所有符号都从https://esm.sh/postext?bundle导入，不要混用两个URL，并在首次构建前await initMathEngine()。"
     },
     "feature": "math",
@@ -402,11 +460,13 @@
     "title": {
       "en": "A config is cached by identity: build a fresh object",
       "es": "Una configuración se cachea por identidad: crea un objeto nuevo",
+      "ca": "Una configuració es desa a la memòria cau per identitat: crea un objecte nou",
       "zh": "配置按对象身份缓存：每次新建一个对象"
     },
     "body": {
       "en": "The engine caches resolved configs by object identity, so changing a config in place and building again reuses the old result. Build a fresh object for every build, which is why a recipe's config is a factory: config().",
       "es": "El motor guarda en caché las configuraciones resueltas según la identidad del objeto, así que modificar el mismo objeto y volver a componer reutiliza el resultado anterior. Crea un objeto nuevo en cada composición: por eso la configuración de una receta es una función, config().",
+      "ca": "El motor desa a la memòria cau les configuracions resoltes segons la identitat de l'objecte, de manera que modificar el mateix objecte i tornar a compondre reutilitza el resultat anterior. Crea un objecte nou a cada composició: per això la configuració d'una recepta és una funció, config().",
       "zh": "引擎按对象身份缓存解析后的配置，所以就地修改配置再构建，会复用旧的结果。每次构建都新建一个对象，这也是食谱的配置写成工厂函数config()的原因。"
     },
     "feature": "canvas-rendering"
@@ -415,11 +475,13 @@
     "title": {
       "en": "Text inside an SVG <img> cannot use web fonts",
       "es": "El texto dentro de un SVG <img> no puede usar fuentes web",
+      "ca": "El text dins d'un SVG <img> no pot fer servir fonts web",
       "zh": "SVG <img>中的文字不能使用网络字体"
     },
     "body": {
       "en": "An SVG is drawn as an image, and an image has no access to the page's web fonts, so its labels fall back to a system face. Outline the text, embed an @font-face subset in the SVG, or move the labels to the caption.",
       "es": "Un SVG se dibuja como imagen, y una imagen no tiene acceso a las fuentes web de la página, así que sus rótulos salen con una fuente del sistema. Convierte el texto en trazados, incrusta un subconjunto @font-face en el SVG o lleva los rótulos al pie.",
+      "ca": "Un SVG es dibuixa com a imatge, i una imatge no té accés a les fonts web de la pàgina, de manera que els seus rètols surten amb una font del sistema. Converteix el text en traçats, incrusta un subconjunt @font-face a l'SVG o porta els rètols al peu.",
       "zh": "SVG作为图像绘制，而图像无法使用页面的网络字体，所以其中的标签会退回系统字体。把文字转成轮廓，在SVG中嵌入@font-face子集，或者把标签移到题注里。"
     },
     "feature": "resources"
@@ -428,11 +490,13 @@
     "title": {
       "en": "No <marker> or filters in SVG art (raster fallback)",
       "es": "Sin <marker> ni filtros en los SVG, o pasan a mapa de bits",
+      "ca": "Sense <marker> ni filtres als SVG, o passen a mapa de bits",
       "zh": "SVG插图中不要用<marker>或滤镜（会退回位图）"
     },
     "body": {
       "en": "An SVG figure stays vector in the PDF only without <marker>, filters and masks; otherwise it falls back to a raster, and deeply nested filters can blank it in Chrome. Draw arrowheads as paths.",
       "es": "Una figura SVG solo sigue siendo vectorial en el PDF sin <marker>, filtros ni máscaras; si no, pasa a mapa de bits, y los filtros muy anidados pueden dejarla en blanco en Chrome. Dibuja las puntas de flecha como trazados.",
+      "ca": "Una figura SVG només continua sent vectorial al PDF sense <marker>, filtres ni màscares; si no, passa a mapa de bits, i els filtres molt imbricats la poden deixar en blanc a Chrome. Dibuixa les puntes de fletxa com a traçats.",
       "zh": "SVG图只有在不含<marker>、滤镜和蒙版时，才能在PDF中保持矢量；否则会退回位图，而且层层嵌套的滤镜可能让它在Chrome中变成空白。箭头用路径来画。"
     },
     "feature": "resources"
@@ -441,11 +505,13 @@
     "title": {
       "en": "Fontsource latin files drop glyphs outside Latin",
       "es": "Los archivos latin de Fontsource solo traen glifos del rango latino",
+      "ca": "Els fitxers latin de Fontsource només porten glifs de l'interval llatí",
       "zh": "Fontsource的latin文件不含拉丁字母以外的字形"
     },
     "body": {
       "en": "The PDF provider embeds Fontsource's latin files, which cover Spanish and Western European text but not →, ≈, ✓, ★, Greek or Central European letters; those glyphs go missing in the PDF. Keep PDF text inside the latin range.",
       "es": "El proveedor del PDF incrusta los archivos latin de Fontsource, que cubren el español y las lenguas de Europa occidental pero no →, ≈, ✓, ★, el griego ni las letras de Europa central; esos glifos faltan en el PDF. Mantén el texto del PDF dentro del rango latin.",
+      "ca": "El proveïdor del PDF incrusta els fitxers latin de Fontsource, que cobreixen el castellà i les llengües de l'Europa occidental però no →, ≈, ✓, ★, el grec ni les lletres de l'Europa central; aquests glifs falten al PDF. Mantén el text del PDF dins de l'interval latin.",
       "zh": "PDF字体提供函数嵌入的是Fontsource的latin文件，它们覆盖西班牙语和西欧文字，但不包括→、≈、✓、★、希腊字母或中欧字母；这些字形在PDF中会缺失。PDF中的文字要保持在latin范围内。"
     },
     "feature": "pdf-fonts"
@@ -454,11 +520,13 @@
     "title": {
       "en": "'1998. ' or '- ' at a paragraph start opens a list",
       "es": "«1998. » o «- » al principio de un párrafo abren una lista",
+      "ca": "«1998. » o «- » al començament d'un paràgraf obren una llista",
       "zh": "段首的'1998. '或'- '会开始一个列表"
     },
     "body": {
       "en": "A paragraph that starts with a number, a period and a space, or with a hyphen and a space, becomes a list item. Put a word joiner (U+2060) before the number, and write dialogue with an em dash.",
       "es": "Un párrafo que empieza por un número, un punto y un espacio, o por un guion y un espacio, se convierte en un elemento de lista. Pon un unidor de palabras (U+2060) antes del número y escribe los diálogos con raya.",
+      "ca": "Un paràgraf que comença per un número, un punt i un espai, o per un guionet i un espai, es converteix en un element de llista. Posa un unidor de paraules (U+2060) davant del número i escriu els diàlegs amb guió llarg.",
       "zh": "以数字、句点和空格开头，或以连字符和空格开头的段落，会变成列表项。在数字前放一个连接符（U+2060），对话用长破折号来写。"
     },
     "feature": "escapes"
@@ -467,11 +535,13 @@
     "title": {
       "en": "A bare $ opens maths: write \\$",
       "es": "Un $ suelto abre matemáticas: escribe \\$",
+      "ca": "Un $ sol obre matemàtiques: escriu \\$",
       "zh": "单独的$会开始数学公式：写成\\$"
     },
     "body": {
       "en": "A dollar sign opens inline maths, so a price such as $40 starts a formula. Write \\$40.",
       "es": "El signo de dólar abre matemáticas en línea, así que un precio como $40 empieza una fórmula. Escribe \\$40.",
+      "ca": "El signe de dòlar obre matemàtiques en línia, de manera que un preu com $40 comença una fórmula. Escriu \\$40.",
       "zh": "美元符号会开始行内公式，所以$40这样的价格会变成公式的开头。写成\\$40。"
     },
     "feature": "escapes"
@@ -480,11 +550,13 @@
     "title": {
       "en": "Side boxes never float: they wait for room",
       "es": "Los recuadros laterales no flotan: esperan sitio",
+      "ca": "Els requadres laterals no floten: esperen lloc",
       "zh": "边栏框不浮动：它们等待空位"
     },
     "body": {
       "en": "A span: 'side' box does not float: it sits beside the block it follows and, when the margin channel is full, waits for the next page. Put each gloss right after the paragraph it explains.",
       "es": "Un recuadro con span: 'side' no flota: se coloca junto al bloque al que sigue y, si el canal del margen está lleno, espera a la página siguiente. Pon cada glosa justo después del párrafo que explica.",
+      "ca": "Un requadre amb span: 'side' no flota: es col·loca al costat del bloc al qual segueix i, si el canal del marge és ple, espera la pàgina següent. Posa cada glossa just després del paràgraf que explica.",
       "zh": "span: 'side'的框不浮动：它排在所跟随的块旁边，页边的通道满了就等到下一页。把每条旁注紧跟在它解释的段落后面。"
     },
     "feature": "side-boxes"
@@ -493,11 +565,13 @@
     "title": {
       "en": ":::columns works only inside a box and never splits",
       "es": ":::columns solo funciona dentro de un recuadro y no se parte",
+      "ca": ":::columns només funciona dins d'un requadre i no es parteix",
       "zh": ":::columns只在框内起作用，且不会拆分"
     },
     "body": {
       "en": ":::columns is ignored outside a callout, and a box that splits never cuts inside a columns group. A breaks attribute counts child blocks, with a nested box as one.",
       "es": ":::columns se ignora fuera de un recuadro, y un recuadro que se parte nunca corta dentro de un grupo de columnas. El atributo breaks cuenta bloques hijos, y un recuadro anidado cuenta como uno.",
+      "ca": ":::columns s'ignora fora d'un requadre, i un requadre que es parteix mai no talla dins d'un grup de columnes. L'atribut breaks compta blocs fills, i un requadre imbricat compta com un.",
       "zh": ":::columns在标注框之外会被忽略，拆分的框也不会从columns组中间断开。breaks属性按子块计数，嵌套的框算一个。"
     },
     "feature": "callout-columns"
@@ -506,11 +580,13 @@
     "title": {
       "en": "A 'here' table never splits",
       "es": "Una tabla 'here' nunca se parte",
+      "ca": "Una taula 'here' no es parteix mai",
       "zh": "'here'表格从不拆分"
     },
     "body": {
       "en": "Only floated tables split across columns and pages; a table placed 'here' moves whole. Let a long table float, or keep inline tables short.",
       "es": "Solo se parten entre columnas y páginas las tablas flotantes; una tabla colocada 'here' se mueve entera. Deja flotar las tablas largas o mantén cortas las tablas en línea.",
+      "ca": "Només es parteixen entre columnes i pàgines les taules flotants; una taula col·locada 'here' es mou sencera. Deixa flotar les taules llargues o mantén curtes les taules en línia.",
       "zh": "只有浮动的表才会跨栏、跨页拆分；放在'here'的表整体移动。让长表浮动，或者让行内的表保持简短。"
     },
     "feature": "table-split"
@@ -519,11 +595,13 @@
     "title": {
       "en": "Most warnings exist only in the Sandbox",
       "es": "La mayoría de los avisos solo existen en el Sandbox",
+      "ca": "La majoria dels avisos només existeixen al Sandbox",
       "zh": "大多数警告只在沙盒中出现"
     },
     "body": {
       "en": "Unknown ids, styles and directives, missing fonts and loose lines are checked by the Sandbox, not the engine: a pen only gets doc.warnings and parseMarkdownWithIssues. An unknown style silently falls back and an unknown directive prints as text, so check your ids.",
       "es": "Los ids, estilos y directivas desconocidos, las fuentes que faltan y las líneas flojas los comprueba el Sandbox, no el motor: un pen solo recibe doc.warnings y parseMarkdownWithIssues. Un estilo desconocido se sustituye sin aviso por otro y una directiva desconocida se imprime como texto, así que revisa tus ids.",
+      "ca": "Els ids, estils i directives desconeguts, les fonts que falten i les línies fluixes els comprova el Sandbox, no el motor: un pen només rep doc.warnings i parseMarkdownWithIssues. Un estil desconegut se substitueix per un altre sense avís i una directiva desconeguda s'imprimeix com a text, així que revisa els teus ids.",
       "zh": "未知的id、样式和指令，缺失的字体和过松的行，都由沙盒检查，而不是引擎：CodePen示例只能得到doc.warnings和parseMarkdownWithIssues。未知样式会悄悄退回默认，未知指令会作为文字打印出来，所以要核对你的id。"
     },
     "feature": "diagnostics",
@@ -533,11 +611,13 @@
     "title": {
       "en": "Some htmlViewer settings exist only in the Sandbox",
       "es": "Algunos ajustes de htmlViewer solo existen en el Sandbox",
+      "ca": "Alguns paràmetres d'htmlViewer només existeixen al Sandbox",
       "zh": "有些htmlViewer设置只在沙盒中有效"
     },
     "body": {
       "en": "htmlViewer.maxCharsPerLine, columnGap and optimalLineBreaking are read by the Sandbox's viewer, not by renderToHtml. In your own page, size the page yourself and pass mode and columnGap to renderToHtml; overrides are applied with applyHtmlViewerOverrides.",
       "es": "htmlViewer.maxCharsPerLine, columnGap y optimalLineBreaking los lee el visor del Sandbox, no renderToHtml. En tu propia página, dimensiona tú la página y pasa mode y columnGap a renderToHtml; las correcciones se aplican con applyHtmlViewerOverrides.",
+      "ca": "htmlViewer.maxCharsPerLine, columnGap i optimalLineBreaking els llegeix el visor del Sandbox, no renderToHtml. A la teva pròpia pàgina, dimensiona tu mateix la pàgina i passa mode i columnGap a renderToHtml; les correccions s'apliquen amb applyHtmlViewerOverrides.",
       "zh": "htmlViewer.maxCharsPerLine、columnGap和optimalLineBreaking由沙盒的查看器读取，renderToHtml不读。在你自己的页面中，自己设定页面尺寸，把mode和columnGap传给renderToHtml；覆盖设置用applyHtmlViewerOverrides应用。"
     },
     "feature": "html-viewer"
@@ -546,11 +626,13 @@
     "title": {
       "en": "Header and footer elements paint over text",
       "es": "Los elementos de cabecera y pie se pintan encima del texto",
+      "ca": "Els elements de capçalera i peu es pinten damunt del text",
       "zh": "页眉和页脚元素画在正文之上"
     },
     "body": {
       "en": "Header and footer elements are painted over the page and the text area does not make room for them. Keep them within the margins, which are what reserve their space.",
       "es": "Los elementos de cabecera y pie se pintan sobre la página y el área de texto no les deja sitio. Mantenlos dentro de los márgenes, que son los que les reservan el espacio.",
+      "ca": "Els elements de capçalera i peu es pinten sobre la pàgina i l'àrea de text no els deixa lloc. Mantén-los dins dels marges, que són els que els reserven l'espai.",
       "zh": "页眉和页脚元素画在页面上层，正文区域不会为它们让出位置。把它们放在页边距以内，为它们预留空间的正是页边距。"
     },
     "feature": "running-heads"
@@ -559,11 +641,13 @@
     "title": {
       "en": "Localise Figure/Table with defaultResourceTypes(locale)",
       "es": "Traduce Figura y Tabla con defaultResourceTypes(locale)",
+      "ca": "Tradueix Figura i Taula amb defaultResourceTypes(locale)",
       "zh": "用defaultResourceTypes(locale)本地化Figure/Table"
     },
     "body": {
       "en": "The config's locale sets hyphenation, not captions: without resourceTypes the built-in types say Figure and Table in English. Pass resourceTypes: defaultResourceTypes('es') for Spanish; for any other language, write the names yourself in resourceTypes.",
       "es": "El locale de la configuración fija la separación silábica, no los pies: sin resourceTypes, los tipos de serie dicen Figure y Table en inglés. Pasa resourceTypes: defaultResourceTypes('es') para el español; para cualquier otro idioma, escribe tú los nombres en resourceTypes.",
+      "ca": "El locale de la configuració fixa la partició de mots, no els peus: sense resourceTypes, els tipus de sèrie diuen Figure i Table en anglès. Passa resourceTypes: defaultResourceTypes('es') per al castellà; per a qualsevol altra llengua, escriu tu mateix els noms a resourceTypes.",
       "zh": "配置的locale决定断词，不决定题注：没有resourceTypes时，内置类型用英文写作Figure和Table。西班牙语传入resourceTypes: defaultResourceTypes('es')；其他语言请在resourceTypes中自己写出名称。"
     },
     "feature": "localised-labels",
@@ -573,11 +657,13 @@
     "title": {
       "en": "Only 8 locales hyphenate, by exact code",
       "es": "Solo 8 idiomas tienen separación silábica, con el código exacto",
+      "ca": "Només 8 llengües tenen partició de mots, amb el codi exacte",
       "zh": "只有8种语言区域能断词，且须代码完全一致"
     },
     "body": {
       "en": "Hyphenation ships for en-us, es, fr, de, it, pt, ca and nl, matched exactly: 'es-ES' or any other language silently falls back to American English.",
       "es": "La separación silábica existe para en-us, es, fr, de, it, pt, ca y nl, con el código exacto: 'es-ES' o cualquier otro idioma pasa sin aviso al inglés americano.",
+      "ca": "La partició de mots existeix per a en-us, es, fr, de, it, pt, ca i nl, amb el codi exacte: 'es-ES' o qualsevol altra llengua passa sense avís a l'anglès americà.",
       "zh": "断词支持en-us、es、fr、de、it、pt、ca和nl，须完全匹配：'es-ES'或其他任何语言都会悄悄退回美式英语。"
     },
     "feature": "hyphenation-languages",
@@ -587,11 +673,13 @@
     "title": {
       "en": "An unknown :ref id prints '?' with no engine warning",
       "es": "Un :ref desconocido imprime «?» sin aviso del motor",
+      "ca": "Un :ref desconegut imprimeix «?» sense avís del motor",
       "zh": "未知的:ref id打印'?'，引擎不报警告"
     },
     "body": {
       "en": "A :ref to an id no resource has prints \"?\" and places nothing, and only the Sandbox warns about it. Check that every cited id exists.",
       "es": "Un :ref a un id que no tiene ningún recurso imprime «?» y no coloca nada, y solo el Sandbox avisa. Comprueba que existe cada id que citas.",
+      "ca": "Un :ref a un id que no té cap recurs imprimeix «?» i no col·loca res, i només el Sandbox n'avisa. Comprova que existeix cada id que cites.",
       "zh": "引用了不存在的资源id的:ref会打印\"?\"，什么也不放置，只有沙盒会就此给出警告。检查每个被引用的id是否存在。"
     },
     "feature": "figure-citations",
@@ -601,11 +689,13 @@
     "title": {
       "en": "Page 1 is a recto: plan pages with physical numbers",
       "es": "La página 1 es impar: planifica con números físicos",
+      "ca": "La pàgina 1 és senar: planifica amb números físics",
       "zh": "第1页是右页：按物理页码规划页面"
     },
     "body": {
       "en": "Page 1 is a right-hand page and page 2 the first verso, so plan spreads with physical page numbers: an opener on an even page faces the odd page after it.",
       "es": "La página 1 queda a la derecha y la 2 es la primera página par, así que planifica los pliegos con números de página físicos: una apertura en página par queda frente a la impar que la sigue.",
+      "ca": "La pàgina 1 queda a la dreta i la 2 és la primera pàgina parella, així que planifica els plecs amb números de pàgina físics: una obertura en pàgina parella queda davant de la senar que la segueix.",
       "zh": "第1页是右页（奇数页），第2页是第一个左页（偶数页），所以要按物理页码规划跨页：偶数页上的章首页对着它后面的奇数页。"
     },
     "feature": "page-breaks"
@@ -614,11 +704,13 @@
     "title": {
       "en": "A nested box ignores span, placement and snapToGrid",
       "es": "Un recuadro anidado ignora span, placement y snapToGrid",
+      "ca": "Un requadre imbricat ignora span, placement i snapToGrid",
       "zh": "嵌套框忽略span、placement和snapToGrid"
     },
     "body": {
       "en": "A callout nested in another ignores its span, placement, snapToGrid and floatBarrier: it always flows inside its parent, at the parent's inner width.",
       "es": "Un recuadro anidado en otro ignora su span, placement, snapToGrid y floatBarrier: siempre se compone dentro del recuadro que lo contiene, con el ancho interior de este.",
+      "ca": "Un requadre imbricat en un altre ignora el seu span, placement, snapToGrid i floatBarrier: sempre es compon dins del requadre que el conté, amb l'amplada interior d'aquest.",
       "zh": "嵌套在另一个标注框中的标注框会忽略自己的span、placement、snapToGrid和floatBarrier：它总是在父框内部排，宽度为父框的内宽。"
     },
     "feature": "nested-callouts"
@@ -627,11 +719,13 @@
     "title": {
       "en": ":::numbering takes effect at the next page",
       "es": ":::numbering se aplica en la página siguiente",
+      "ca": ":::numbering s'aplica a la pàgina següent",
       "zh": ":::numbering从下一页起生效"
     },
     "body": {
       "en": ":::numbering changes the count from the next page that starts, not the current one. Put it right after a :::pagebreak (parity odd before chapter one) so the new numbering begins where you mean.",
       "es": ":::numbering cambia la cuenta a partir de la siguiente página que empieza, no de la actual. Colócalo justo después de un :::pagebreak (con paridad odd antes del primer capítulo) para que la numeración nueva empiece donde quieres.",
+      "ca": ":::numbering canvia el compte a partir de la pàgina següent que comença, no de l'actual. Col·loca'l just després d'un :::pagebreak (amb paritat odd abans del primer capítol) perquè la numeració nova comenci on vols.",
       "zh": ":::numbering从下一个开始的页面起改变计数，而不是当前页。把它紧跟在:::pagebreak之后（第一章之前用parity odd），新的编号才会从你想要的地方开始。"
     },
     "feature": "roman-front-matter"
@@ -640,11 +734,13 @@
     "title": {
       "en": "Design text overflow defaults to 'ellipsis-end'",
       "es": "El desbordamiento del texto de diseño es 'ellipsis-end' por defecto",
+      "ca": "El desbordament del text de disseny és 'ellipsis-end' per defecte",
       "zh": "设计文本的overflow默认为'ellipsis-end'"
     },
     "body": {
       "en": "A design text element that does not fit its width ends in an ellipsis by default. Set overflow: 'wrap' for titles that should break onto more lines.",
       "es": "Un elemento de texto de diseño que no cabe en su ancho termina en puntos suspensivos por defecto. Pon overflow: 'wrap' en los títulos que deban pasar a más líneas.",
+      "ca": "Un element de text de disseny que no cap en la seva amplada acaba en punts suspensius per defecte. Posa overflow: 'wrap' als títols que hagin de passar a més línies.",
       "zh": "宽度放不下的设计文本元素默认以省略号结尾。需要折成多行的标题，设置overflow: 'wrap'。"
     },
     "feature": "design-elements"
@@ -653,11 +749,13 @@
     "title": {
       "en": "Container-relative negative offsets render nothing",
       "es": "Los desplazamientos negativos relativos al contenedor no pintan nada",
+      "ca": "Els desplaçaments negatius relatius al contenidor no pinten res",
       "zh": "相对容器的负偏移什么也渲染不出来"
     },
     "body": {
       "en": "Auto-width design text is clamped to its container, so a negative offset from the container pushes it out and nothing renders. Anchor such elements to the page or the bleed with explicit mm offsets, or give them a fixed width.",
       "es": "El texto de diseño de ancho automático se limita a su contenedor, así que un desplazamiento negativo respecto al contenedor lo saca fuera y no se pinta nada. Ancla esos elementos a la página o a la sangre con desplazamientos explícitos en mm, o dales un ancho fijo.",
+      "ca": "El text de disseny d'amplada automàtica es limita al seu contenidor, de manera que un desplaçament negatiu respecte al contenidor el treu fora i no es pinta res. Ancora aquests elements a la pàgina o a la sang amb desplaçaments explícits en mm, o dona'ls una amplada fixa.",
       "zh": "自动宽度的设计文本被限制在容器内，所以相对容器的负偏移会把它推出去，结果什么也不渲染。把这类元素用明确的mm偏移锚定到页面或出血上，或者给它们一个固定宽度。"
     },
     "feature": "design-anchoring"
@@ -666,11 +764,13 @@
     "title": {
       "en": "renderPage does not recolour SVGs; renderToPdf does",
       "es": "renderPage no recolorea los SVG; renderToPdf sí",
+      "ca": "renderPage no recoloreja els SVG; renderToPdf sí",
       "zh": "renderPage不给SVG重新着色，renderToPdf会"
     },
     "body": {
       "en": "diagramStyle.singleInk is applied by renderToPdf, but the canvas paints registered SVGs as given. Recolour the markup with applySingleInkToSvg before registering it, so screen and PDF match.",
       "es": "renderToPdf aplica diagramStyle.singleInk, pero el canvas pinta los SVG registrados tal como llegan. Recolorea el marcado con applySingleInkToSvg antes de registrarlo para que pantalla y PDF coincidan.",
+      "ca": "renderToPdf aplica diagramStyle.singleInk, però el canvas pinta els SVG registrats tal com arriben. Recoloreja el marcatge amb applySingleInkToSvg abans de registrar-lo perquè pantalla i PDF coincideixin.",
       "zh": "diagramStyle.singleInk由renderToPdf应用，而Canvas按原样绘制注册的SVG。注册之前先用applySingleInkToSvg给标记重新着色，屏幕和PDF才一致。"
     },
     "feature": "single-ink",
@@ -680,11 +780,13 @@
     "title": {
       "en": "Chips taller than the line pitch touch the next line",
       "es": "Los chips más altos que el interlineado tocan la línea siguiente",
+      "ca": "Els xips més alts que l'interlineat toquen la línia següent",
       "zh": "高于行距的行内标签会碰到下一行"
     },
     "body": {
       "en": "A chip whose box is taller than the line pitch touches the chips on the next line (the chipOverlap warning). Reduce its vertical padding, border or size, or open the leading.",
       "es": "Un chip cuya caja es más alta que el interlineado toca los chips de la línea siguiente (el aviso chipOverlap). Reduce su relleno vertical, su borde o su cuerpo, o abre el interlineado.",
+      "ca": "Un xip amb una caixa més alta que l'interlineat toca els xips de la línia següent (l'avís chipOverlap). Redueix-ne el farciment vertical, la vora o el cos, o obre l'interlineat.",
       "zh": "框高超过行距的行内标签会碰到下一行的行内标签（chipOverlap警告）。减小它的上下内边距、边框或字号，或者加大行距。"
     },
     "feature": "chips"
@@ -693,11 +795,13 @@
     "title": {
       "en": "A swapped palette misses design elements and the reference colour",
       "es": "Una paleta cambiada no llega a los elementos de diseño ni al color de las remisiones",
+      "ca": "Una paleta canviada no arriba als elements de disseny ni al color de les remissions",
       "zh": "替换调色板时，设计元素和引用颜色不会跟着变"
     },
     "body": {
       "en": "postext 1.4.1 reads colorPalette into the text styles (body, headings, lists, captions, tables, boxes) but not into the elements of headers, footers, openers and part pages, nor into bodyText.referenceColor: they keep the hex written beside their paletteId. When you swap the palette, for a dark screen edition or a retint, rewrite every linked colour from colorPalette before the build.",
       "es": "postext 1.4.1 aplica colorPalette a los estilos de texto (cuerpo, títulos, listas, pies, tablas, recuadros), pero no a los elementos de cabeceras, pies de página, aperturas y portadillas, ni a bodyText.referenceColor: conservan el hex escrito junto a su paletteId. Si cambias la paleta, para una edición de pantalla oscura o para recolorear, reescribe cada color enlazado a partir de colorPalette antes de componer.",
+      "ca": "postext 1.4.1 aplica colorPalette als estils de text (cos, títols, llistes, peus, taules, requadres), però no als elements de capçaleres, peus de pàgina, obertures i portadelles, ni a bodyText.referenceColor: conserven l'hex escrit al costat del seu paletteId. Si canvies la paleta, per a una edició de pantalla fosca o per recolorejar, reescriu cada color enllaçat a partir de colorPalette abans de compondre.",
       "zh": "postext 1.4.1把colorPalette读入文字样式（正文、标题、列表、题注、表格、框），但不读入页眉、页脚、章首页和篇章页的元素，也不读入bodyText.referenceColor：它们保留写在paletteId旁边的十六进制颜色。替换调色板时（例如做深色屏幕版或换色），在构建前根据colorPalette重写每一个关联的颜色。"
     },
     "feature": "color-palette",
@@ -707,11 +811,13 @@
     "title": {
       "en": "A top float can push the last column down on a closing page",
       "es": "Un flotante superior puede bajar la última columna en una página de cierre",
+      "ca": "Un flotant superior pot fer baixar l'última columna en una pàgina de tancament",
       "zh": "在收尾页上，顶部浮动体可能把最后一栏往下推"
     },
     "body": {
       "en": "In postext 1.4.1, when a chapter or story ends on a page that opens with a page-wide top float and its lines split unevenly between the columns, stretchAfterFloats adds a blank line under the float in the shorter column instead of letting it end short, so the two columns no longer start on the same line. Set headings.balancing.stretchAfterFloats to false, or fit the copy to an even number of lines.",
       "es": "En postext 1.4.1, cuando un capítulo o un reportaje termina en una página que se abre con un flotante superior a todo el ancho y sus líneas se reparten de forma desigual entre las columnas, el ajuste stretchAfterFloats añade una línea en blanco bajo el flotante en la columna más corta en vez de dejar que termine antes, y las dos columnas ya no empiezan en la misma línea. Pon headings.balancing.stretchAfterFloats a false o ajusta el texto a un número par de líneas.",
+      "ca": "A postext 1.4.1, quan un capítol o un reportatge acaba en una pàgina que s'obre amb un flotant superior a tota l'amplada i les seves línies es reparteixen de manera desigual entre les columnes, l'ajust stretchAfterFloats afegeix una línia en blanc sota el flotant a la columna més curta en lloc de deixar que acabi abans, i les dues columnes ja no comencen a la mateixa línia. Posa headings.balancing.stretchAfterFloats a false o ajusta el text a un nombre parell de línies.",
       "zh": "在postext 1.4.1中，当一章或一篇文章结束在以整页宽顶部浮动体开头的页面上，而且各栏的行数分配不均时，stretchAfterFloats会在较短的一栏中、浮动体下方加一个空行，而不是让它提前结束，于是两栏不再从同一行开始。把headings.balancing.stretchAfterFloats设为false，或者把文字调整到偶数行。"
     },
     "feature": "column-balancing",
@@ -721,11 +827,13 @@
     "title": {
       "en": "A \\tag makes a display formula vanish",
       "es": "Un \\tag hace desaparecer la fórmula destacada",
+      "ca": "Un \\tag fa desaparèixer la fórmula destacada",
       "zh": "\\tag会让行间公式消失"
     },
     "body": {
       "en": "In postext 1.4.1 a display formula with \\tag{…} comes out 0 wide, so nothing prints and no invalidMath warning is raised. Number the equations yourself: centre the formula and set its number flush right in \\mathmakebox boxes whose widths add up to the column.",
       "es": "En postext 1.4.1 una fórmula destacada con \\tag{…} sale con anchura 0, así que no se imprime nada y no salta el aviso invalidMath. Numera tú las ecuaciones: centra la fórmula y pon su número al borde derecho en cajas \\mathmakebox cuyas anchuras sumen la de la columna.",
+      "ca": "A postext 1.4.1 una fórmula destacada amb \\tag{…} surt amb amplada 0, de manera que no s'imprimeix res i no salta l'avís invalidMath. Numera tu mateix les equacions: centra la fórmula i posa'n el número a la vora dreta en caixes \\mathmakebox les amplades de les quals sumin la de la columna.",
       "zh": "在postext 1.4.1中，带\\tag{…}的行间公式宽度为0，于是什么也不打印，也不报invalidMath警告。自己给公式编号：用\\mathmakebox框把公式居中、把编号排在右端，框的宽度加起来等于栏宽。"
     },
     "feature": "math",
@@ -735,11 +843,13 @@
     "title": {
       "en": "A no-break space still breaks the line",
       "es": "Un espacio de no separación sigue partiendo la línea",
+      "ca": "Un espai de no separació continua partint la línia",
       "zh": "不换行空格仍然会断行"
     },
     "body": {
       "en": "In postext 1.4.1 the line breaker treats U+00A0 as an ordinary space, so 0.08 %, 2.006 s or Section 2 can split across two lines. Close the pair up (0.08%) or reword the sentence.",
       "es": "En postext 1.4.1 el algoritmo de corte trata U+00A0 como un espacio normal, así que 0,08 %, 2,006 s o sección 2 pueden quedar en dos líneas. Junta los dos elementos (0,08%) o reescribe la frase.",
+      "ca": "A postext 1.4.1 l'algorisme de tall tracta U+00A0 com un espai normal, de manera que 0,08 %, 2,006 s o secció 2 poden quedar en dues línies. Ajunta els dos elements (0,08%) o reescriu la frase.",
       "zh": "在postext 1.4.1中，断行器把U+00A0当作普通空格，所以0.08 %、2.006 s或Section 2可能被拆到两行。把两部分连写（0.08%），或者改写句子。"
     },
     "feature": "escapes",
@@ -749,11 +859,13 @@
     "title": {
       "en": "A design text's lineHeight is a multiple, never a dimension",
       "es": "El lineHeight de un texto de diseño es un múltiplo, nunca una medida",
+      "ca": "El lineHeight d'un text de disseny és un múltiple, mai una mesura",
       "zh": "设计文本的lineHeight是倍数，不是尺寸"
     },
     "body": {
       "en": "In a design slot, a text element's lineHeight multiplies its font size (lineHeight: 1.05). In postext 1.4.1 a dimension such as pt(15) is not rejected: the opener's height measures as NaN, the room it reserves, minHeight included, is dropped without a warning and the text runs under the title.",
       "es": "En una ranura de diseño, el lineHeight de un elemento de texto multiplica su cuerpo (lineHeight: 1.05). En postext 1.4.1 una medida como pt(15) no da error: la altura de la apertura sale NaN, el espacio que reserva, minHeight incluido, se pierde sin aviso y el texto se superpone al título.",
+      "ca": "En una ranura de disseny, el lineHeight d'un element de text multiplica el seu cos (lineHeight: 1.05). A postext 1.4.1 una mesura com pt(15) no dona error: l'alçada de l'obertura surt NaN, l'espai que reserva, minHeight inclòs, es perd sense avís i el text se superposa al títol.",
       "zh": "在设计槽位中，文本元素的lineHeight是其字号的倍数（lineHeight: 1.05）。在postext 1.4.1中，写成pt(15)这样的尺寸值不会被拒绝：章首页的高度会算成NaN，它预留的空间（连同minHeight）被丢弃，也不给出警告，正文就排到了标题底下。"
     },
     "feature": "design-elements",
@@ -763,11 +875,13 @@
     "title": {
       "en": "A :ref to an earlier chapter's figure places it again",
       "es": "Un :ref a una figura de un capítulo anterior la vuelve a colocar",
+      "ca": "Un :ref a una figura d'un capítol anterior la torna a col·locar",
       "zh": "引用前面章节的图时，:ref会再放一次图"
     },
     "body": {
       "en": "Under buildBundle in postext 1.4.1, a :ref to a figure first cited in an earlier chapter prints the right number but floats the figure a second time in the later chapter, where it counts as a first reference. Refer back in words (the October frame, figure 1.1).",
       "es": "Con buildBundle, en postext 1.4.1, un :ref a una figura citada por primera vez en un capítulo anterior imprime el número correcto, pero vuelve a colocar la figura en el capítulo posterior, donde cuenta como primera referencia. Remite a ella con palabras (el cuadro de octubre, figura 1.1).",
+      "ca": "Amb buildBundle, a postext 1.4.1, un :ref a una figura citada per primer cop en un capítol anterior imprimeix el número correcte, però torna a col·locar la figura al capítol posterior, on compta com a primera referència. Remet-hi amb paraules (el quadre d'octubre, figura 1.1).",
       "zh": "在postext 1.4.1的buildBundle下，如果:ref所引用的图在前面某一章已首次被引用，编号会印对，但图会在后面这一章再浮动一次，因为在这里它算作首次引用。回指前文的图时改用文字表述（如“十月的画框，图1.1”）。"
     },
     "feature": "multi-chapter-books",
@@ -777,11 +891,13 @@
     "title": {
       "en": "A heading style inherits its level's page break",
       "es": "Un estilo de título hereda el salto de página de su nivel",
+      "ca": "Un estil de títol hereta el salt de pàgina del seu nivell",
       "zh": "标题样式会继承其级别的分页设置"
     },
     "body": {
       "en": "A headingStyles entry takes every field it leaves out from its heading level, breakBefore included. A contents page or a colophon styled on an H1 after a :::pagebreak inherits parity 'odd' and lands behind a blank page. Give such a style breakBefore: { enabled: false }.",
       "es": "Una entrada de headingStyles toma de su nivel de título todo lo que no fija, también breakBefore. Un índice o un colofón con estilo sobre un H1 tras un :::pagebreak hereda la paridad 'odd' y cae detrás de una página en blanco. Dale a ese estilo breakBefore: { enabled: false }.",
+      "ca": "Una entrada de headingStyles pren del seu nivell de títol tot allò que no fixa, també breakBefore. Un índex o un colofó amb estil sobre un H1 després d'un :::pagebreak hereta la paritat 'odd' i cau darrere d'una pàgina en blanc. Dona a aquest estil breakBefore: { enabled: false }.",
       "zh": "headingStyles中的条目没有写出的字段都取自它所属的标题级别，breakBefore也不例外。在:::pagebreak之后以H1设置样式的目录页或版权页会继承parity 'odd'，结果落在一张空白页之后。给这类样式设置breakBefore: { enabled: false }。"
     },
     "feature": "heading-styles",
@@ -791,11 +907,13 @@
     "title": {
       "en": "A paragraph style has no italic colour",
       "es": "Un estilo de párrafo no tiene color de cursiva",
+      "ca": "Un estil de paràgraf no té color de cursiva",
       "zh": "段落样式没有斜体颜色"
     },
     "body": {
       "en": "In postext 1.4.1 a paragraph style sets color and boldColor but no italicColor: its italic runs take bodyText.italicColor. A muted style (small print, a source line) prints its italic titles darker than the words around them. Keep such styles in the body's ink, or avoid italics in them.",
       "es": "En postext 1.4.1 un estilo de párrafo fija color y boldColor, pero no italicColor: sus cursivas toman bodyText.italicColor. Un estilo atenuado (la letra pequeña, la línea «Fuente:» de una tabla) imprime sus títulos en cursiva más oscuros que el texto que los rodea. Deja esos estilos en el color del texto o evita en ellos las cursivas.",
+      "ca": "A postext 1.4.1 un estil de paràgraf fixa color i boldColor, però no italicColor: les seves cursives prenen bodyText.italicColor. Un estil atenuat (la lletra petita, la línia «Font:» d'una taula) imprimeix els seus títols en cursiva més foscos que el text que els envolta. Deixa aquests estils en el color del text o evita-hi les cursives.",
       "zh": "在postext 1.4.1中，段落样式可以设置color和boldColor，但没有italicColor：其中的斜体文字取bodyText.italicColor。于是一个淡色样式（小字、出处行）里的斜体书名会比周围的文字颜色更深。这类样式要么沿用正文的墨色，要么不用斜体。"
     },
     "feature": "paragraph-styles",
@@ -805,11 +923,13 @@
     "title": {
       "en": "A side box after a heading indents the next paragraph",
       "es": "Un recuadro lateral tras un título sangra el párrafo siguiente",
+      "ca": "Un requadre lateral després d'un títol sagna el paràgraf següent",
       "zh": "标题后的侧栏框会让下一段缩进"
     },
     "body": {
       "en": "In postext 1.4.1 a span: 'side' box fenced between a heading and its first paragraph gives that paragraph a first-line indent, even with indentAfterHeading: false: the box leaves the flow, but its blocks still count as the block after the heading. Fence the box after the first paragraph.",
       "es": "En postext 1.4.1, un recuadro con span: 'side' entre un título y su primer párrafo le da a ese párrafo sangría de primera línea, aunque indentAfterHeading sea false: el recuadro sale del flujo, pero sus bloques siguen contando como el bloque que sigue al título. Coloca el recuadro después del primer párrafo.",
+      "ca": "A postext 1.4.1, un requadre amb span: 'side' entre un títol i el seu primer paràgraf dona a aquest paràgraf sagnat de primera línia, encara que indentAfterHeading sigui false: el requadre surt del flux, però els seus blocs continuen comptant com el bloc que segueix el títol. Col·loca el requadre després del primer paràgraf.",
       "zh": "在postext 1.4.1中，把span: 'side'的框围在标题和它的第一段之间，即使设了indentAfterHeading: false，这一段也会首行缩进：框离开了正文流，但它的块仍被算作标题之后的那个块。把框围在第一段之后。"
     },
     "feature": "side-boxes",
@@ -819,11 +939,13 @@
     "title": {
       "en": "The ellipsis cuts mid-word and keeps a space before it",
       "es": "Los puntos suspensivos cortan a mitad de palabra y conservan el espacio anterior",
+      "ca": "Els punts suspensius tallen a mig mot i conserven l'espai anterior",
       "zh": "省略号会在词中间截断，并保留前面的空格"
     },
     "body": {
       "en": "In postext 1.4.1 overflow: 'ellipsis-end' cuts after the last character that fits, not at a word boundary, and keeps a space it lands after, so a running head can end 'fals…' or 'false …'. Fit maxWidth to a word end for a title you know, or give long titles a short running title in a heading attribute.",
       "es": "En postext 1.4.1, overflow: 'ellipsis-end' corta tras el último carácter que cabe, no en un límite de palabra, y conserva el espacio si cae justo detrás de uno, así que una cabecera puede acabar en «fals…» o «false …». Ajusta maxWidth al final de una palabra si conoces el título, o da a los títulos largos un título corto de cabecera en un atributo.",
+      "ca": "A postext 1.4.1, overflow: 'ellipsis-end' talla després de l'últim caràcter que hi cap, no en un límit de paraula, i conserva l'espai si cau just darrere d'un, de manera que una capçalera pot acabar en «fals…» o «false …». Ajusta maxWidth al final d'una paraula si coneixes el títol, o dona als títols llargs un títol curt de capçalera en un atribut.",
       "zh": "在postext 1.4.1中，overflow: 'ellipsis-end'在最后一个放得下的字符之后截断，而不是在词的边界处；截断点恰好在空格之后时，这个空格也会保留，所以书眉可能以'fals…'或'false …'结尾。对于已知的标题，把maxWidth调到刚好落在词尾；长标题则在标题属性里给一个简短的书眉标题。"
     },
     "feature": "design-elements",
@@ -833,11 +955,13 @@
     "title": {
       "en": "Ragged text can strand punctuation next to bold or a :ref",
       "es": "El texto en bandera puede dejar sola la puntuación junto a una negrita o un :ref",
+      "ca": "El text en bandera pot deixar sola la puntuació al costat d'una negreta o un :ref",
       "zh": "齐左文字可能让标点与粗体或:ref分开"
     },
     "body": {
       "en": "In postext 1.4.1 text that is not justified (box bodies, ragged paragraphs) can break a line between a bold or italic run, or a :ref, and the punctuation touching it: a full stop can open the next line, and the '(' before a reference can end the line above. Justified text never breaks there. Read the boxes of every edition and reword any sentence where it happens, so the run sits mid-line.",
       "es": "En postext 1.4.1, el texto que no va justificado (cuerpos de recuadro, párrafos en bandera) puede partir la línea entre una negrita, una cursiva o un :ref y el signo de puntuación pegado a ellos: un punto puede abrir la línea siguiente y el «(» de una remisión puede cerrar la anterior. El texto justificado nunca se parte ahí. Revisa los recuadros de cada edición y reescribe la frase afectada para que ese tramo quede en mitad de la línea.",
+      "ca": "A postext 1.4.1, el text que no va justificat (cossos de requadre, paràgrafs en bandera) pot partir la línia entre una negreta, una cursiva o un :ref i el signe de puntuació que hi va enganxat: un punt pot obrir la línia següent i el «(» d'una remissió pot tancar l'anterior. El text justificat no es parteix mai en aquest punt. Revisa els requadres de cada edició i reescriu la frase afectada perquè aquest tram quedi a mitja línia.",
       "zh": "在postext 1.4.1中，不两端对齐的文字（框内正文、齐左段落）可能在粗体或斜体片段（或:ref）与紧挨着它的标点之间断行：句号可能出现在下一行行首，引用前的'('可能留在上一行行尾。两端对齐的文字从不在这里断行。逐一检查每个版本中的框，遇到这种情况就改写句子，让这个片段落在行中间。"
     },
     "feature": "emphasis-colours",
@@ -847,11 +971,13 @@
     "title": {
       "en": "Contents numbers sit a little above the entry's baseline",
       "es": "Los números del índice quedan algo por encima de la línea base de la entrada",
+      "ca": "Els números de l'índex queden una mica per sobre de la línia de base de l'entrada",
       "zh": "目录编号比条目的基线略高"
     },
     "body": {
       "en": "In postext 1.4.1 :::toc paints each entry's number centred on the line instead of on the text's baseline, so the chapter numbers ride slightly high beside their titles, about 0.7 mm next to a 16 pt title, whatever face or size you give them. No toc option moves them yet, so look at the contents page at full size before you print.",
       "es": "En postext 1.4.1, :::toc pinta el número de cada entrada centrado en la línea y no sobre la línea base del texto, así que los números de capítulo quedan algo altos junto a sus títulos, unos 0,7 mm al lado de un título de 16 pt, sea cual sea su fuente o su tamaño. Todavía no hay opción de toc que los mueva, así que revisa el índice a tamaño real antes de imprimir.",
+      "ca": "A postext 1.4.1, :::toc pinta el número de cada entrada centrat a la línia i no sobre la línia de base del text, de manera que els números de capítol queden una mica alts al costat dels seus títols, uns 0,7 mm al costat d'un títol de 16 pt, sigui quina sigui la font o la mida. Encara no hi ha cap opció de toc que els mogui, així que revisa l'índex a mida real abans d'imprimir.",
       "zh": "在postext 1.4.1中，:::toc把每个条目的编号绘制在行的垂直居中位置，而不是文字的基线上，所以章号在标题旁略微偏高：在16 pt的标题旁约高0.7 mm，无论给它什么字体或字号都是如此。目前没有toc选项能调整它，所以付印前要按实际尺寸查看目录页。"
     },
     "feature": "toc",
@@ -861,11 +987,13 @@
     "title": {
       "en": "An inline figure gets space above it but not below",
       "es": "Una figura en línea lleva aire encima, pero no debajo",
+      "ca": "Una figura en línia porta aire a sobre, però no a sota",
       "zh": "行内图上方有间距，下方没有"
     },
     "body": {
       "en": "In postext 1.4.1 a figure that ::resource sets at position 'here' gets one grid line of space above it, but below it only what is left over when the next line snaps to the baseline grid: anywhere from a whole line to almost nothing, so the next paragraph can start right under the caption. Follow the ::resource line with :::space{lines=1}; like any :::space, it is dropped at the top of a column.",
       "es": "En postext 1.4.1, una figura que ::resource coloca con la posición 'here' lleva una línea de la rejilla base de aire encima, pero debajo solo lo que sobra cuando la línea siguiente se ajusta a la rejilla: desde una línea entera hasta casi nada, así que el párrafo siguiente puede empezar pegado al pie. Pon :::space{lines=1} tras la línea ::resource; como todo :::space, se descarta en la cabeza de una columna.",
+      "ca": "A postext 1.4.1, una figura que ::resource col·loca amb la posició 'here' porta una línia de la retícula de base d'aire a sobre, però a sota només el que sobra quan la línia següent s'ajusta a la retícula: des d'una línia sencera fins a gairebé res, de manera que el paràgraf següent pot començar enganxat al peu. Posa :::space{lines=1} després de la línia ::resource; com tot :::space, es descarta al capdamunt d'una columna.",
       "zh": "在postext 1.4.1中，::resource以位置'here'排入的图，上方有一个网格行的间距，下方却只有下一行对齐基线网格时剩下的空间：可能是整整一行，也可能几乎没有，于是下一段可能紧贴在题注下面开始。在::resource这一行之后加:::space{lines=1}；和其他:::space一样，它在栏顶会被丢弃。"
     },
     "feature": "inline-embeds",
@@ -875,11 +1003,13 @@
     "title": {
       "en": "A table or figure inside a box gets no space around it",
       "es": "Una tabla o una figura dentro de un recuadro no lleva aire alrededor",
+      "ca": "Una taula o una figura dins d'un requadre no porta aire al voltant",
       "zh": "框内的表或图四周没有间距"
     },
     "body": {
       "en": "In postext 1.4.1 a table or figure that ::resource sets at position 'here' inside a :::callout gets none of the space it keeps in the running text: it touches the paragraph above it and the one below. Put a :::space before the ::resource line, and another after it when text follows; a fraction of a line, such as lines=0.33, gives a small gap.",
       "es": "En postext 1.4.1, una tabla o una figura que ::resource coloca con la posición 'here' dentro de un :::callout no recibe nada del aire que conserva en el texto corrido: toca el párrafo de encima y el de debajo. Pon un :::space antes de la línea ::resource, y otro después si sigue texto; una fracción de línea, como lines=0.33, deja un espacio pequeño.",
+      "ca": "A postext 1.4.1, una taula o una figura que ::resource col·loca amb la posició 'here' dins d'un :::callout no rep res de l'aire que conserva al text corregut: toca el paràgraf de sobre i el de sota. Posa un :::space abans de la línia ::resource, i un altre després si hi segueix text; una fracció de línia, com lines=0.33, deixa un espai petit.",
       "zh": "在postext 1.4.1中，::resource在:::callout里以位置'here'排入的表或图，得不到它在正文中享有的间距：上下紧贴前后两段。在::resource这一行之前放一个:::space，后面还有文字时再在其后放一个；取一行的几分之一（如lines=0.33）就能留出一道小间隙。"
     },
     "feature": "inline-embeds",
@@ -889,11 +1019,13 @@
     "title": {
       "en": "An opener's images never count towards the height it reserves",
       "es": "Las imágenes de una apertura no cuentan para la altura que reserva",
+      "ca": "Les imatges d'una obertura no compten per a l'alçada que reserva",
       "zh": "章首页的图片从不计入它预留的高度"
     },
     "body": {
       "en": "In postext 1.4.1 an advanced-design heading measures the height it reserves without its images: its texts, rules and boxes count, even when anchored to the page, but an image, such as a picture bled across the head of the page, reserves nothing, so the text can start on top of it. Set minHeight to where the text should begin.",
       "es": "En postext 1.4.1, un título con diseño avanzado mide la altura que reserva sin contar sus imágenes: sus textos, filetes y cajas cuentan, aunque estén anclados a la página, pero una imagen, como un dibujo a sangre en la cabeza de la página, no reserva nada, así que el texto puede empezar encima de ella. Fija con minHeight dónde debe empezar el texto.",
+      "ca": "A postext 1.4.1, un títol amb disseny avançat mesura l'alçada que reserva sense comptar-ne les imatges: els seus textos, filets i caixes compten, encara que estiguin ancorats a la pàgina, però una imatge, com un dibuix a sang al capdamunt de la pàgina, no reserva res, de manera que el text pot començar a sobre. Fixa amb minHeight on ha de començar el text.",
       "zh": "在postext 1.4.1中，高级设计标题计算预留高度时不算其中的图片：文字、线条和框都计入，即使它们锚定在页面上；但图片（例如出血铺满页面顶部的图）不预留任何空间，所以正文可能排到它上面。把minHeight设为正文应当开始的位置。"
     },
     "feature": "opener-design",
@@ -903,11 +1035,13 @@
     "title": {
       "en": "A section or part palette does not recolour a drop cap",
       "es": "La paleta de una sección o de una parte no recolorea la capitular",
+      "ca": "La paleta d'una secció o d'una part no recoloreja la caplletra",
       "zh": "节或篇的调色板不会改变首字下沉的颜色"
     },
     "body": {
       "en": "In postext 1.4.1 a heading style's palette, like a part's, recolours the palette-linked colours of the design elements on its pages (texts, rules, boxes, box backgrounds and borders) but not dropCap.color: the initial keeps the hex written in the config. Give the drop cap the section's own colour, or leave dropCap.color unset so that it takes the colour of its text element.",
       "es": "En postext 1.4.1, la paleta de un estilo de título, igual que la de una parte, recolorea en sus páginas los colores enlazados de los elementos de diseño (textos, filetes, cajas, fondos y bordes de caja), pero no dropCap.color: la capitular conserva el hex escrito en la configuración. Pon en la capitular el color propio de la sección, o deja dropCap.color sin fijar para que tome el color de su elemento de texto.",
+      "ca": "A postext 1.4.1, la paleta d'un estil de títol, igual que la d'una part, recoloreja a les seves pàgines els colors enllaçats dels elements de disseny (textos, filets, caixes, fons i vores de caixa), però no dropCap.color: la caplletra conserva l'hex escrit a la configuració. Posa a la caplletra el color propi de la secció, o deixa dropCap.color sense fixar perquè prengui el color del seu element de text.",
       "zh": "在postext 1.4.1中，标题样式的调色板和篇的调色板一样，会改变其页面上设计元素（文字、线条、框、框的背景和边框）中与调色板关联的颜色，但不改dropCap.color：首字保持配置里写的十六进制颜色。给首字下沉设为该节自己的颜色，或者不设dropCap.color，让它取其文本元素的颜色。"
     },
     "feature": "drop-caps",
@@ -917,11 +1051,13 @@
     "title": {
       "en": "A heading style's column rule is not drawn",
       "es": "El filete de columna de un estilo de título no se dibuja",
+      "ca": "El filet de columna d'un estil de títol no es dibuixa",
       "zh": "标题样式的栏间线不会绘制"
     },
     "body": {
       "en": "In postext 1.4.1 a heading style's layout switches its section to two columns, but the renderers read only the document's layout.columnRule, so a columnRule inside headingStyles[].layout is ignored. Declare the rule on the document's layout instead: it is drawn only where a page has more than one column, so a single-column book gets it on its two-column section alone.",
       "es": "En postext 1.4.1, el layout de un estilo de título pasa su sección a dos columnas, pero los renderizadores solo leen el layout.columnRule del documento, así que un columnRule dentro de headingStyles[].layout se ignora. Declara el filete en el layout del documento: solo se dibuja donde una página tiene más de una columna, de modo que un libro a una columna lo muestra únicamente en su sección a dos columnas.",
+      "ca": "A postext 1.4.1, el layout d'un estil de títol passa la seva secció a dues columnes, però els renderitzadors només llegeixen el layout.columnRule del document, així que un columnRule dins de headingStyles[].layout s'ignora. Declara el filet al layout del document: només es dibuixa on una pàgina té més d'una columna, de manera que un llibre a una columna el mostra únicament a la seva secció a dues columnes.",
       "zh": "在postext 1.4.1中，标题样式的layout可以把它这一节切换成两栏，但渲染器只读取文档的layout.columnRule，所以headingStyles[].layout中的columnRule会被忽略。改为在文档的layout上声明栏间线：它只在页面多于一栏的地方绘制，因此单栏的书只在那个两栏的节上出现这条线。"
     },
     "feature": "column-rule",
@@ -931,11 +1067,13 @@
     "title": {
       "en": "A paragraph style's margins do not count inside a box",
       "es": "Los márgenes de un estilo de párrafo no cuentan dentro de un recuadro",
+      "ca": "Els marges d'un estil de paràgraf no compten dins d'un requadre",
       "zh": "段落样式的外边距在框内不起作用"
     },
     "body": {
       "en": "In postext 1.4.1 a :::paragraphs container nested in a :::callout ignores its style's marginTop and marginBottom, so a small-print line set under a note's text sits right against it. Give the style a taller lineHeight, which puts air above its first line, or keep the line out of the box.",
       "es": "En postext 1.4.1, un contenedor :::paragraphs dentro de un :::callout no aplica el marginTop ni el marginBottom de su estilo, así que una línea en letra pequeña bajo el texto de una nota queda pegada a él. Da al estilo un lineHeight mayor, que deja aire sobre su primera línea, o saca esa línea del recuadro.",
+      "ca": "A postext 1.4.1, un contenidor :::paragraphs dins d'un :::callout no aplica el marginTop ni el marginBottom del seu estil, de manera que una línia en lletra petita sota el text d'una nota hi queda enganxada. Dona a l'estil un lineHeight més gran, que deixa aire sobre la primera línia, o treu aquesta línia del requadre.",
       "zh": "在postext 1.4.1中，嵌套在:::callout里的:::paragraphs容器会忽略其样式的marginTop和marginBottom，所以排在注释正文下面的一行小字会紧贴着正文。给这个样式更大的lineHeight，让首行上方留出空隙，或者把这一行放到框外。"
     },
     "feature": "paragraph-styles",
@@ -945,11 +1083,13 @@
     "title": {
       "en": "Design text is never justified, so a drop-cap lead is ragged",
       "es": "El texto de diseño nunca se justifica, así que la entradilla de una capitular va en bandera",
+      "ca": "El text de disseny no es justifica mai, així que l'entradeta d'una caplletra va en bandera",
       "zh": "设计文本从不两端对齐，所以首字下沉旁的导语参差不齐"
     },
     "body": {
       "en": "In postext 1.4.1 a design text element aligns left, centre or right and wraps word by word: there is no justified alignment, and hyphenate: true only splits a word too long for a whole line. The lines of a lead set beside a dropCap therefore end ragged next to justified body text. Keep the lead to the lines beside the initial and fit them by hand: with lines: 1 (a raised initial) the lead is one line, which the dropCap gap can fit flush; the paragraph goes on in the Markdown.",
       "es": "En postext 1.4.1, un elemento de texto de diseño se alinea a la izquierda, al centro o a la derecha y corta palabra a palabra: no hay alineación justificada, y hyphenate: true solo parte una palabra que no cabe en una línea entera. Las líneas de una entradilla junto a una dropCap acaban, por tanto, en bandera al lado del texto justificado. Limita la entradilla a las líneas que acompañan a la capitular y ajústalas a mano: con lines: 1 (una capitular alzada) la entradilla es una sola línea, que el gap de la dropCap puede dejar a ras; el párrafo sigue en el Markdown.",
+      "ca": "A postext 1.4.1, un element de text de disseny s'alinea a l'esquerra, al centre o a la dreta i talla paraula per paraula: no hi ha alineació justificada, i hyphenate: true només parteix una paraula que no cap en una línia sencera. Les línies d'una entradeta al costat d'una dropCap acaben, per tant, en bandera al costat del text justificat. Limita l'entradeta a les línies que acompanyen la caplletra i ajusta-les a mà: amb lines: 1 (una caplletra alçada) l'entradeta és una sola línia, que el gap de la dropCap pot deixar arran; el paràgraf continua al Markdown.",
       "zh": "在postext 1.4.1中，设计文本元素只能左对齐、居中或右对齐，并按词换行：没有两端对齐，hyphenate: true也只拆分长得一整行都放不下的词。因此排在dropCap旁的导语各行，在两端对齐的正文旁边参差不齐。导语只写首字旁边那几行，并手工调整让它们排满：用lines: 1（上升式首字）时导语只有一行，调整dropCap的间距就能让它齐边；段落的其余部分在Markdown里接着写。"
     },
     "feature": "drop-caps",
@@ -959,11 +1099,13 @@
     "title": {
       "en": "A drop cap's font box can add a blank line under the lead",
       "es": "La caja de una capitular puede dejar una línea en blanco bajo la entradilla",
+      "ca": "La caixa d'una caplletra pot deixar una línia en blanc sota l'entradeta",
       "zh": "首字下沉的字框可能在导语下多出一个空行"
     },
     "body": {
       "en": "In postext 1.4.1 an opener reserves the height of every element's box, and a dropCap initial's box is 1.2 em tall, so it reaches below the baseline of the last line it spans. When the lead has no line under the initial, that overhang rounds the reserved height up to one more grid line, and the body starts after a blank line. Give the heading level marginBottom: minus one lead, which the grid snap subtracts, and reset it to 0 in any heading style of that level that draws no initial.",
       "es": "En postext 1.4.1, una apertura reserva la altura de la caja de cada elemento, y la caja de una capitular dropCap mide 1,2 em de alto, así que baja por debajo de la línea de base de la última línea que abarca. Cuando la entradilla no tiene ninguna línea bajo la capitular, ese sobrante redondea la altura reservada a una línea más de la rejilla y el texto empieza tras una línea en blanco. Da al nivel del título un marginBottom de menos un interlineado, que el ajuste a la rejilla resta, y devuélvelo a 0 en los estilos de ese nivel que no dibujen capitular.",
+      "ca": "A postext 1.4.1, una obertura reserva l'alçada de la caixa de cada element, i la caixa d'una caplletra dropCap fa 1,2 em d'alt, de manera que baixa per sota de la línia de base de l'última línia que abasta. Quan l'entradeta no té cap línia sota la caplletra, aquest sobrant arrodoneix l'alçada reservada a una línia més de la retícula i el text comença després d'una línia en blanc. Dona al nivell del títol un marginBottom de menys un interlineat, que l'ajust a la retícula resta, i torna'l a 0 en els estils d'aquest nivell que no dibuixin caplletra.",
       "zh": "在postext 1.4.1中，章首页会预留每个元素框的高度，而dropCap首字的框高1.2 em，会伸到它所跨的最后一行基线以下。导语在首字下方没有行时，这段伸出部分会让预留高度向上取整，多出一个网格行，正文便在一个空行之后才开始。给该标题级别设marginBottom为负一个行距（对齐网格时会减去），并在该级别中不绘制首字的标题样式里把它重设为0。"
     },
     "feature": "drop-caps",
@@ -974,11 +1116,13 @@
     "title": {
       "en": "avoidWidows guards the foot of a column, avoidOrphans its head",
       "es": "avoidWidows vigila el pie de la columna, y avoidOrphans, su cabeza",
+      "ca": "avoidWidows vigila el peu de la columna, i avoidOrphans, el capdamunt",
       "zh": "avoidWidows管栏底，avoidOrphans管栏顶"
     },
     "body": {
       "en": "Postext names the two lone lines its own way: avoidWidows (widowMinLines, widowPenalty) keeps a paragraph's first line from standing alone at the foot of a column, and avoidOrphans (orphanMinLines, orphanPenalty) keeps its last line from standing alone at the head of the next. Many style manuals give the two names the other way round, so pick the setting by where it acts. Both are on by default and work as penalties: the layout weighs each one against the empty lines that obeying it would leave.",
       "es": "Postext da nombre propio a las dos líneas solas: avoidWidows (widowMinLines, widowPenalty) evita que la primera línea de un párrafo quede sola al pie de una columna, y avoidOrphans (orphanMinLines, orphanPenalty), que la última quede sola en la cabeza de la siguiente. Muchos manuales de estilo usan los dos nombres al revés, así que elige el ajuste por el lugar donde actúa. Los dos vienen activados y funcionan como penalizaciones: la composición compara cada una con las líneas vacías que dejaría respetarla.",
+      "ca": "Postext dona nom propi a les dues línies soles: avoidWidows (widowMinLines, widowPenalty) evita que la primera línia d'un paràgraf quedi sola al peu d'una columna, i avoidOrphans (orphanMinLines, orphanPenalty), que l'última quedi sola al capdamunt de la següent. Molts manuals d'estil fan servir els dos noms al revés, així que tria l'opció pel lloc on actua. Totes dues vénen activades i funcionen com a penalitzacions: la composició compara cadascuna amb les línies buides que deixaria respectar-la.",
       "zh": "Postext对两种孤行的命名自成一套：avoidWidows（widowMinLines、widowPenalty）防止段落的首行单独留在栏底，avoidOrphans（orphanMinLines、orphanPenalty）防止段落的末行单独出现在下一栏的栏顶。很多体例手册的叫法正好相反，所以要按作用的位置选择设置。两者默认开启，都以惩罚值的方式起作用：排版时会把每一项与遵守它所留下的空行放在一起权衡。"
     },
     "feature": "widows-orphans-runts"
@@ -987,11 +1131,13 @@
     "title": {
       "en": "A heading drops its bold and italic marks",
       "es": "Un título pierde sus marcas de negrita y cursiva",
+      "ca": "Un títol perd les marques de negreta i cursiva",
       "zh": "标题会丢掉粗体和斜体标记"
     },
     "body": {
       "en": "In postext 1.4.1 a heading line loses its inline marks: ###### *Rock bar* prints Rock bar in the plain level-6 face, without the asterisks and without italic. A seventh level, or a word set apart inside a title, needs a heading style ({style=\"…\"}) or an advanced design instead.",
       "es": "En postext 1.4.1 una línea de título pierde sus marcas en línea: ###### *Barra de palanca* imprime Barra de palanca con la letra normal del nivel 6, sin asteriscos y sin cursiva. Un séptimo nivel, o una palabra destacada dentro de un título, necesitan un estilo de título ({style=\"…\"}) o un diseño avanzado.",
+      "ca": "A postext 1.4.1 una línia de títol perd les marques en línia: ###### *Barra de palanca* imprimeix Barra de palanca amb la lletra normal del nivell 6, sense asteriscs i sense cursiva. Un setè nivell, o una paraula destacada dins d'un títol, necessiten un estil de títol ({style=\"…\"}) o un disseny avançat.",
       "zh": "在postext 1.4.1中，标题行会丢失行内标记：###### *Rock bar*印出的是第6级普通字体的Rock bar，没有星号，也不是斜体。第七级标题，或标题中要单独突出的词，需要改用标题样式（{style=\"…\"}）或高级设计。"
     },
     "feature": "heading-styles",
@@ -1001,11 +1147,13 @@
     "title": {
       "en": "A bold or italic the family lacks is faked on screen, not in the PDF",
       "es": "La negrita o la cursiva que la familia no trae se simula en pantalla, no en el PDF",
+      "ca": "La negreta o la cursiva que la família no porta se simula a la pantalla, no al PDF",
       "zh": "字体家族缺少的粗体或斜体在屏幕上是模拟的，在PDF中则没有"
     },
     "body": {
       "en": "When text asks for a weight or style its family does not ship (a bold table header in a single-face label font, italic in a sans with no italics), the browser synthesises it on the canvas and in HTML, thickening or slanting the upright face on the same widths. A PDF embeds real faces only, so there the provider's closest face prints plain. Put only faces the family ships in your font list and set every style to match, such as tableStyle.headerBold: false.",
       "es": "Cuando un texto pide un peso o un estilo que su familia no trae (una cabecera de tabla en negrita con una fuente de rótulos de un solo estilo, cursiva en una sans sin cursivas), el navegador lo sintetiza en el canvas y en HTML: engruesa o inclina la redonda con los mismos anchos. Un PDF solo incrusta fuentes reales, así que allí se imprime la fuente más cercana que dé el proveedor, sin engrosar ni inclinar. Pon en tu lista de fuentes solo las que la familia trae y ajusta cada estilo a ellas, por ejemplo con tableStyle.headerBold: false.",
+      "ca": "Quan un text demana un pes o un estil que la seva família no porta (una capçalera de taula en negreta amb una font de retolació d'un sol estil, cursiva en una sans sense cursives), el navegador el sintetitza al canvas i a l'HTML: engruixeix o inclina la rodona amb les mateixes amplades. Un PDF només incrusta fonts reals, així que allà s'imprimeix la font més propera que doni el proveïdor, sense engruixir ni inclinar. Posa a la llista de fonts només les que la família porta i ajusta cada estil a aquestes, per exemple amb tableStyle.headerBold: false.",
       "zh": "当文字要求其字体家族没有提供的字重或样式时（只有一种字型的标签字体中的粗体表头，没有斜体的无衬线字体中的斜体），浏览器会在Canvas和HTML中合成它：在相同宽度上把正体字型加粗或倾斜。PDF只嵌入真实的字型，所以在PDF中，字体提供者给出的最接近的字型印出来是普通样式。字体列表里只放家族实际提供的字型，并让每种样式与之匹配，例如tableStyle.headerBold: false。"
     },
     "feature": "pdf-fonts"
@@ -1014,11 +1162,13 @@
     "title": {
       "en": "A runt fix can tighten tracking that is never painted",
       "es": "El arreglo de las líneas cortas puede apretar un interletraje que nunca se pinta",
+      "ca": "La correcció de les línies curtes pot estrènyer un espaiat entre lletres que no es pinta mai",
       "zh": "消除孤字时收紧的字距可能根本不绘制"
     },
     "body": {
       "en": "In postext 1.4.1, when a paragraph ends on a runt, the layout sets it one line shorter: first with tighter word spacing, then with up to maxRuntTracking thousandths of an em of negative tracking. The canvas and PDF renderers paint tracking only above zero, so a tracked paragraph prints untracked: its justified lines lose the difference from their word spaces and look crushed, and its last line can run past the measure and be clipped at the column edge. Set bodyText.maxRuntTracking: 0, which keeps the word-spacing fix, and reword any runt that comes back.",
       "es": "En postext 1.4.1, cuando un párrafo acaba en una línea corta, el motor lo compone con una línea menos: primero aprieta el espacio entre palabras y luego aplica hasta maxRuntTracking milésimas de em de interletraje negativo. Los renderizadores de canvas y PDF solo pintan el interletraje mayor que cero, así que el párrafo se imprime sin él: sus líneas justificadas pierden esa diferencia en los espacios entre palabras, que salen aplastados, y su última línea puede pasarse de la medida y quedar cortada en el borde de la columna. Pon bodyText.maxRuntTracking: 0, que conserva el arreglo por el espacio entre palabras, y reescribe los párrafos que vuelvan a acabar en una línea corta.",
+      "ca": "A postext 1.4.1, quan un paràgraf acaba en una línia curta, el motor el compon amb una línia menys: primer estreny l'espai entre paraules i després aplica fins a maxRuntTracking mil·lèsimes d'em d'espaiat negatiu entre lletres. Els renderitzadors de canvas i PDF només pinten l'espaiat entre lletres més gran que zero, així que el paràgraf s'imprimeix sense aquest espaiat: les seves línies justificades perden aquesta diferència en els espais entre paraules, que surten aixafats, i l'última línia pot passar-se de la mesura i quedar tallada a la vora de la columna. Posa bodyText.maxRuntTracking: 0, que conserva la correcció amb l'espai entre paraules, i reescriu els paràgrafs que tornin a acabar en una línia curta.",
       "zh": "在postext 1.4.1中，段落以孤字结尾时，排版会把它排短一行：先收紧词间距，再用最多maxRuntTracking个千分之一em的负字距。Canvas和PDF渲染器只绘制大于零的字距，所以收紧了字距的段落印出来时并没有收紧：两端对齐的行从词间空格中扣掉了这部分差额，显得拥挤，末行还可能超出行长，在栏边被裁掉。设置bodyText.maxRuntTracking: 0，保留词间距的修正，再改写重新出现的孤字。"
     },
     "feature": "widows-orphans-runts",
@@ -1028,11 +1178,13 @@
     "title": {
       "en": "A list number is centred on its first line, not set on the baseline",
       "es": "El número de una lista se centra en su primera línea, no se apoya en la línea base",
+      "ca": "El número d'una llista es centra a la primera línia, no es recolza en la línia de base",
       "zh": "列表编号以首行居中，而不是立在基线上"
     },
     "body": {
       "en": "In postext 1.4.1 an ordered list's number is painted with the canvas 'middle' baseline, 0.3 em of the text above the item's first baseline, so a number in another face or at a larger numberFontSize grows up and down from there instead of standing on the line: a display face rides high, and a big step number hangs across the first line. Place it with orderedLists.numberVerticalOffset, and check the result at full size.",
       "es": "En postext 1.4.1 el número de una lista numerada se pinta con la línea base «middle» del canvas, 0,3 em del texto por encima de la primera línea base del elemento, así que un número en otra fuente o con un numberFontSize mayor crece hacia arriba y hacia abajo desde ahí en vez de apoyarse en la línea: una fuente de rótulo queda alta y un número grande de paso cuelga sobre la primera línea. Colócalo con orderedLists.numberVerticalOffset y revisa el resultado a tamaño real.",
+      "ca": "A postext 1.4.1 el número d'una llista numerada es pinta amb la línia de base «middle» del canvas, 0,3 em del text per sobre de la primera línia de base de l'element, així que un número en una altra font o amb un numberFontSize més gran creix cap amunt i cap avall des d'allà en lloc de recolzar-se en la línia: una font de retolació queda alta i un número de pas gran penja sobre la primera línia. Col·loca'l amb orderedLists.numberVerticalOffset i revisa el resultat a mida real.",
       "zh": "在postext 1.4.1中，有序列表的编号用Canvas的'middle'基线绘制，位于该项首行基线之上0.3 em（按正文字号）处，所以换用别的字体或加大numberFontSize的编号会从这里向上下两个方向扩展，而不是立在行上：展示字体会偏高，大号的步骤编号会横跨首行。用orderedLists.numberVerticalOffset调整位置，并按实际尺寸检查效果。"
     },
     "feature": "numbered-lists",
@@ -1042,11 +1194,13 @@
     "title": {
       "en": "The column rule can run down through a page-span opener",
       "es": "El filete de columna puede atravesar una apertura a todo el ancho",
+      "ca": "El filet de columna pot travessar una obertura a tota l'amplada",
       "zh": "栏间线可能穿过通栏章首页"
     },
     "body": {
       "en": "In postext 1.4.1 the column rule of a band starts at the top of its highest column. A page-span heading stays in the first column, so when its opener does not end exactly on a grid line, the sliver of second column left beside it makes the rule start at the top of the text block and cross the opener. Make the opener a whole number of grid lines deep, with an empty box of that height or a minHeight when the design is shorter: it then ends on a grid line and leaves no sliver.",
       "es": "En postext 1.4.1 el filete de columna de una banda empieza en lo alto de su columna más alta. Un título a todo el ancho se queda en la primera columna, así que, si su apertura no termina justo en una línea de la rejilla base, el resquicio de segunda columna que queda a su lado hace que el filete arranque en lo alto de la caja de texto y cruce la apertura. Dale a la apertura una altura de líneas de rejilla enteras, con una caja vacía de esa altura o con minHeight si el diseño es más bajo: así termina en una línea de la rejilla y no deja resquicio.",
+      "ca": "A postext 1.4.1 el filet de columna d'una banda comença al capdamunt de la seva columna més alta. Un títol a tota l'amplada es queda a la primera columna, així que, si la seva obertura no acaba just en una línia de la retícula de base, l'escletxa de segona columna que queda al costat fa que el filet arrenqui al capdamunt de la caixa de text i travessi l'obertura. Dona a l'obertura una alçada de línies de retícula senceres, amb una caixa buida d'aquesta alçada o amb minHeight si el disseny és més baix: així acaba en una línia de la retícula i no deixa cap escletxa.",
       "zh": "在postext 1.4.1中，一个区段的栏间线从其最高一栏的顶端开始。通栏标题仍属于第一栏，所以当它的章首页没有正好结束在网格行上时，旁边剩下的一小条第二栏会让栏间线从版心顶部开始，穿过章首页。让章首页的深度为整数个网格行：设计较矮时，加一个等高的空框或设minHeight，它就结束在网格行上，不留小条。"
     },
     "feature": "column-rule",
@@ -1056,11 +1210,13 @@
     "title": {
       "en": "A box's lists.color also recolours its list numbers",
       "es": "El lists.color de un recuadro también cambia el color de los números de sus listas",
+      "ca": "El lists.color d'un requadre també canvia el color dels números de les seves llistes",
       "zh": "框的lists.color也会改变列表编号的颜色"
     },
     "body": {
       "en": "In postext 1.4.1 a callout style's lists.color reaches the numbers of its ordered lists whenever it differs from unorderedLists.color, even when orderedLists sets a colour of its own: give a box olive bullets that way and its step numbers turn olive too. To colour a box's bullets alone, set unorderedLists.color for the document and leave lists.color out of the box style.",
       "es": "En postext 1.4.1 el lists.color de un estilo de recuadro llega a los números de sus listas numeradas siempre que sea distinto de unorderedLists.color, aunque orderedLists fije su propio color: si das así viñetas verde oliva a un recuadro, sus números de paso también se vuelven verde oliva. Para colorear solo las viñetas de un recuadro, fija unorderedLists.color en el documento y deja lists.color fuera del estilo del recuadro.",
+      "ca": "A postext 1.4.1 el lists.color d'un estil de requadre arriba als números de les seves llistes numerades sempre que sigui diferent d'unorderedLists.color, encara que orderedLists fixi el seu propi color: si dones així vinyetes verd oliva a un requadre, els seus números de pas també es tornen verd oliva. Per acolorir només les vinyetes d'un requadre, fixa unorderedLists.color al document i deixa lists.color fora de l'estil del requadre.",
       "zh": "在postext 1.4.1中，只要标注框样式的lists.color与unorderedLists.color不同，它就会作用于框内有序列表的编号，即使orderedLists设了自己的颜色：用这种方式给框设橄榄色项目符号，它的步骤编号也会变成橄榄色。只想给框内的项目符号上色时，在文档层面设置unorderedLists.color，框样式里不写lists.color。"
     },
     "feature": "callout-styles",
@@ -1070,11 +1226,13 @@
     "title": {
       "en": "customFonts loads no font",
       "es": "customFonts no carga ninguna fuente",
+      "ca": "customFonts no carrega cap font",
       "zh": "customFonts不会加载任何字体"
     },
     "body": {
       "en": "config.customFonts only names font files by fileId: buildDocument and the canvas, HTML and PDF renderers never read it, so a family listed there and not registered is measured and painted in a fallback. Register each face yourself (a FontFace from its bytes) before the first build and give the same bytes to the PDF font provider. createBundle reads the list to pack the files into a .postext, and the Sandbox reads it to register the faces.",
       "es": "config.customFonts solo nombra archivos de fuente por su fileId: buildDocument y los renderizadores de canvas, HTML y PDF no lo leen nunca, así que una familia que figura ahí y no se ha registrado se mide y se pinta con una fuente de reserva. Registra tú cada estilo (un FontFace con sus bytes) antes de la primera composición y pasa esos mismos bytes al proveedor de fuentes del PDF. createBundle lee la lista para meter los archivos en un .postext, y el Sandbox, para registrar las fuentes.",
+      "ca": "config.customFonts només anomena fitxers de font pel seu fileId: buildDocument i els renderitzadors de canvas, HTML i PDF no el llegeixen mai, així que una família que hi figura i no s'ha registrat es mesura i es pinta amb una font de reserva. Registra tu mateix cada estil (un FontFace amb els seus bytes) abans de la primera composició i passa aquests mateixos bytes al proveïdor de fonts del PDF. createBundle llegeix la llista per ficar els fitxers en un .postext, i el Sandbox, per registrar les fonts.",
       "zh": "config.customFonts只是按fileId列出字体文件：buildDocument以及Canvas、HTML和PDF渲染器从不读取它，所以列在这里却没有注册的字体家族会用后备字体测量和绘制。在第一次构建前自己注册每个字型（用其字节创建FontFace），并把同样的字节交给PDF字体提供者。createBundle读取这个列表，把文件打包进.postext；沙盒读取它来注册字型。"
     },
     "feature": "custom-fonts"
@@ -1083,11 +1241,13 @@
     "title": {
       "en": "A floated figure is read after the text of its page",
       "es": "Una figura flotante se lee después del texto de su página",
+      "ca": "Una figura flotant es llegeix després del text de la seva pàgina",
       "zh": "浮动的图要到其页面的正文之后才被读到"
     },
     "body": {
       "en": "renderToPdf tags a page in the order it paints it: an opener band's title, each column from top to bottom, then the page's floats. A figure or table that floats to the head of a column is therefore read after the last paragraph and the last table of its page, away from the sentence that cites it. Set the ones a reader must meet where they are cited inline, with placement 'here' and a ::resource line.",
       "es": "renderToPdf etiqueta cada página en el orden en que la pinta: el título de la banda de apertura, cada columna de arriba abajo y, al final, los flotantes de la página. Una figura o una tabla que flota a la cabeza de una columna se lee, por tanto, después del último párrafo y de la última tabla de su página, lejos de la frase que la cita. Pon en línea las que el lector deba encontrar donde se citan, con placement 'here' y una línea ::resource.",
+      "ca": "renderToPdf etiqueta cada pàgina en l'ordre en què la pinta: el títol de la banda d'obertura, cada columna de dalt a baix i, al final, els flotants de la pàgina. Una figura o una taula que flota al capdamunt d'una columna es llegeix, per tant, després de l'últim paràgraf i de l'última taula de la seva pàgina, lluny de la frase que la cita. Posa en línia les que el lector hagi de trobar on es citen, amb placement 'here' i una línia ::resource.",
       "zh": "renderToPdf按绘制顺序给页面加标签：先是章首页区段的标题，然后是从上到下的每一栏，最后是页面的浮动体。所以浮动到栏顶的图或表，会在该页最后一段和最后一张表之后才被读到，与引用它的句子相隔很远。读者必须在引用处读到的图表，用placement 'here'和一行::resource排在行内。"
     },
     "feature": "tagged-pdf",
@@ -1097,11 +1257,13 @@
     "title": {
       "en": "Contents leaders overrun in a face that kerns full stops",
       "es": "Las líneas de puntos del índice se desbordan con una letra que separa los puntos seguidos",
+      "ca": "Les línies de punts de l'índex es desborden amb una lletra que separa els punts seguits",
       "zh": "字体对句点做字偶距调整时，目录前导符会溢出"
     },
     "body": {
       "en": "postext 1.4.1 counts a leader's dots from the width of one dot and sets them in the page numbers' face. Some faces space a run of full stops wider than that (Public Sans Bold at 12 pt: 6.7 px for one dot at 150 dpi, 7.6 px for each dot of a run), so the dots overrun their room, touch the page number and stop lining up from row to row. Give toc.pageNumber a fontFamily whose full stops keep their width in a run, such as the body face.",
       "es": "postext 1.4.1 cuenta los puntos de una línea de puntos por el ancho de un solo punto y los compone con la letra de los números de página. Algunas letras separan más los puntos seguidos (Public Sans Bold a 12 pt: 6,7 px un punto suelto a 150 ppp y 7,6 px cada punto de una serie), así que los puntos se salen de su hueco, tocan el número de página y dejan de alinearse de una fila a otra. Da a toc.pageNumber un fontFamily cuyos puntos conserven su ancho en serie, como la letra del texto.",
+      "ca": "postext 1.4.1 compta els punts d'una línia de punts per l'amplada d'un sol punt i els compon amb la lletra dels números de pàgina. Algunes lletres separen més els punts seguits (Public Sans Bold a 12 pt: 6,7 px un punt solt a 150 ppp i 7,6 px cada punt d'una sèrie), així que els punts surten del seu espai, toquen el número de pàgina i deixen d'alinear-se d'una fila a l'altra. Dona a toc.pageNumber un fontFamily els punts del qual conservin l'amplada en sèrie, com la lletra del text.",
       "zh": "postext 1.4.1按一个点的宽度计算前导符的点数，并用页码的字体排这些点。有些字体连排句点时比单个点宽（Public Sans Bold 12 pt在150 dpi下：单个点6.7 px，连排时每个点7.6 px），于是点超出了留给它们的空间，碰到页码，各行之间也不再对齐。给toc.pageNumber指定一个句点连排时宽度不变的fontFamily，例如正文字体。"
     },
     "feature": "toc",
@@ -1111,11 +1273,13 @@
     "title": {
       "en": "Ragged text is never checked for runts",
       "es": "En el texto en bandera no se evitan las líneas cortas",
+      "ca": "En el text en bandera no s'eviten les línies curtes",
       "zh": "齐左文字从不检查孤字"
     },
     "body": {
       "en": "optimalLineBreaking, avoidRunts, runtPenalty and runtMinCharacters act on the Knuth–Plass line breaker, which postext 1.4.1 runs for justified text only. A ragged paragraph is broken line by line and can end on one short word whatever those settings say. Read the last lines of ragged text and reword a paragraph that ends on a runt.",
       "es": "optimalLineBreaking, avoidRunts, runtPenalty y runtMinCharacters actúan sobre el algoritmo de Knuth–Plass, que postext 1.4.1 solo aplica al texto justificado. Un párrafo en bandera se corta línea a línea y puede terminar en una sola palabra corta, digan lo que digan esos ajustes. Revisa las últimas líneas del texto en bandera y reescribe el párrafo que acabe en una línea corta.",
+      "ca": "optimalLineBreaking, avoidRunts, runtPenalty i runtMinCharacters actuen sobre l'algorisme de Knuth–Plass, que postext 1.4.1 només aplica al text justificat. Un paràgraf en bandera es talla línia a línia i pot acabar en una sola paraula curta, diguin el que diguin aquestes opcions. Revisa les últimes línies del text en bandera i reescriu el paràgraf que acabi en una línia curta.",
       "zh": "optimalLineBreaking、avoidRunts、runtPenalty和runtMinCharacters作用于Knuth–Plass断行器，而postext 1.4.1只对两端对齐的文字运行它。齐左段落逐行断行，无论这些设置怎么写，都可能以一个短词结尾。检查齐左文字的末行，改写以孤字结尾的段落。"
     },
     "feature": "widows-orphans-runts",
@@ -1125,11 +1289,13 @@
     "title": {
       "en": "A bundle without resourceTypes labels figures in the reader's language",
       "es": "Un paquete sin resourceTypes rotula las figuras en el idioma de quien lo abre",
+      "ca": "Un paquet sense resourceTypes retola les figures en l'idioma de qui l'obre",
       "zh": "没有resourceTypes的文件包会用读者的语言标注图"
     },
     "body": {
       "en": "When a .postext file carries no resourceTypes, openBundle in postext 1.4.1 builds Figure and Table in the locale the reader asks for, not in the file's own, and the Sandbox imports every file in the language of its interface. A Spanish bundle opened with { locale: 'en' }, or imported at /en/sandbox, prints Figure 1.1 over Spanish text while bundle.locale still says 'es'. Write resourceTypes: defaultResourceTypes(lang) into the config you pass to createBundle.",
       "es": "Cuando un archivo .postext no trae resourceTypes, openBundle en postext 1.4.1 crea Figura y Tabla en el idioma que pide quien lo abre, no en el del archivo, y el Sandbox importa cada archivo en el idioma de su interfaz. Un paquete en español abierto con { locale: 'en' }, o importado desde /en/sandbox, imprime Figure 1.1 sobre texto en español aunque bundle.locale siga diciendo 'es'. Escribe resourceTypes: defaultResourceTypes(idioma) en la configuración que pasas a createBundle.",
+      "ca": "Quan un fitxer .postext no porta resourceTypes, openBundle a postext 1.4.1 crea Figura i Taula en l'idioma que demana qui l'obre, no en el del fitxer, i el Sandbox importa cada fitxer en l'idioma de la seva interfície. Un paquet en castellà obert amb { locale: 'en' }, o importat des de /en/sandbox, imprimeix Figure 1.1 sobre text en castellà encara que bundle.locale continuï dient 'es'. Escriu resourceTypes: defaultResourceTypes(idioma) a la configuració que passes a createBundle.",
       "zh": "当.postext文件不带resourceTypes时，postext 1.4.1的openBundle按读者请求的语言环境生成Figure和Table，而不是按文件自身的语言；沙盒也以其界面语言导入每个文件。一个西班牙语文件包用{ locale: 'en' }打开，或在/en/sandbox导入，会在西班牙语正文上印出Figure 1.1，而bundle.locale仍然是'es'。在传给createBundle的配置中写入resourceTypes: defaultResourceTypes(lang)。"
     },
     "feature": "bundles",
@@ -1139,11 +1305,13 @@
     "title": {
       "en": "A side box starts level with the block after its fence",
       "es": "Un recuadro lateral empieza a la altura del bloque que sigue a su valla",
+      "ca": "Un requadre lateral comença a l'altura del bloc que segueix la seva tanca",
       "zh": "侧栏框与其围栏之后的块齐平开始"
     },
     "body": {
       "en": "In postext 1.4.1 a span: 'side' box stands in the side column at the height the text has reached at its fence, on the next grid line, and under any box already there. Fence a gloss just before the paragraph it explains: fenced after it, the gloss starts beside the next paragraph. A box that would run past the column's foot slides up until its foot sits on the column's foot, as far as the box above it allows; one that still does not fit waits for the side column of the next page.",
       "es": "En postext 1.4.1, un recuadro con span: 'side' se coloca en la columna lateral a la altura a la que ha llegado el texto en su valla, en la siguiente línea de la rejilla y debajo de los recuadros que ya haya. Pon la valla de una glosa justo antes del párrafo que explica: si va después, la glosa empieza junto al párrafo siguiente. Un recuadro que pasaría del pie de la columna sube hasta que su pie coincide con el de la columna, si el recuadro de encima le deja sitio; si aun así no cabe, espera a la columna lateral de la página siguiente.",
+      "ca": "A postext 1.4.1, un requadre amb span: 'side' es col·loca a la columna lateral a l'altura on ha arribat el text a la seva tanca, a la línia següent de la retícula i sota els requadres que ja hi hagi. Posa la tanca d'una glossa just abans del paràgraf que explica: si va després, la glossa comença al costat del paràgraf següent. Un requadre que passaria del peu de la columna puja fins que el seu peu coincideix amb el de la columna, si el requadre de sobre li deixa lloc; si tot i així no hi cap, espera la columna lateral de la pàgina següent.",
       "zh": "在postext 1.4.1中，span: 'side'的框在侧栏中的位置，是正文排到其围栏处时的高度，落在下一个网格行上，并排在已在那里的框之下。把旁注围在它所解释的段落之前：围在段落之后，旁注就会从下一段旁边开始。会超出栏底的框会向上滑，在上方框允许的范围内，直到底边落在栏底；仍然放不下的，就等到下一页的侧栏。"
     },
     "feature": "side-boxes"
@@ -1152,11 +1320,13 @@
     "title": {
       "en": "A table cell keeps the backslash of \\$",
       "es": "Una celda de tabla conserva la barra de \\$",
+      "ca": "Una cel·la de taula conserva la barra de \\$",
       "zh": "表格单元格会保留\\$中的反斜杠"
     },
     "body": {
       "en": "postext 1.4.1 does not read table cells for maths and does not unescape \\$ in them: a cell written \\$4.50 prints \\$4.50, backslash included, while \\* in the same cell prints a plain asterisk. A paragraph needs the escape, because a bare $ opens maths there. Write $ bare in cell content and \\$ in paragraphs; a string used in both places prints wrong in one of them.",
       "es": "postext 1.4.1 no lee las celdas de tabla como matemáticas ni quita la barra de \\$: una celda escrita \\$4.50 imprime \\$4.50, con la barra, mientras que \\* en la misma celda imprime solo el asterisco. En un párrafo el escape sí hace falta, porque allí un $ suelto abre matemáticas. Escribe $ sin barra en las celdas y \\$ en los párrafos; un texto que se use en los dos sitios sale mal en uno de ellos.",
+      "ca": "postext 1.4.1 no llegeix les cel·les de taula com a matemàtiques ni treu la barra de \\$: una cel·la escrita \\$4.50 imprimeix \\$4.50, amb la barra, mentre que \\* a la mateixa cel·la imprimeix només l'asterisc. En un paràgraf l'escapament sí que cal, perquè allà un $ solt obre matemàtiques. Escriu $ sense barra a les cel·les i \\$ als paràgrafs; un text que es faci servir en tots dos llocs surt malament en un d'ells.",
       "zh": "postext 1.4.1不在表格单元格中识别数学公式，也不对其中的\\$去转义：单元格写\\$4.50就印出\\$4.50，反斜杠照印，而同一单元格里的\\*却印成普通星号。段落里必须转义，因为单独的$在那里会开始数学公式。单元格内容里直接写$，段落里写\\$；两处共用的字符串总会在其中一处印错。"
     },
     "feature": "table-model",
@@ -1166,11 +1336,13 @@
     "title": {
       "en": "The PDF keeps a font copy for every face it asks for",
       "es": "El PDF guarda una copia de fuente por cada estilo que pide",
+      "ca": "El PDF desa una còpia de font per cada estil que demana",
       "zh": "PDF为请求的每个字型都保留一份字体副本"
     },
     "body": {
       "en": "postext-pdf 1.4.1 writes one font program for every family, weight and style it asks the font provider for, even when the provider answers several of them with the same file and no page draws with the face. Each stand-in for a missing italic or weight therefore adds another copy of the file it borrows, unused when no text is set in that face. pdffonts lists only the fonts the pages use, but the copies are in the file all the same, and nothing a pen does removes them.",
       "es": "postext-pdf 1.4.1 escribe un programa de fuente por cada familia, peso y estilo que pide al proveedor de fuentes, aunque el proveedor responda a varios con el mismo archivo y ninguna página dibuje con ese estilo. Por eso, cada sustituto de una cursiva o de un peso que falta añade otra copia del archivo que toma prestado, sin usar si ningún texto va en ese estilo. pdffonts solo lista las fuentes que usan las páginas, pero las copias están en el archivo igualmente, y nada de lo que haga un pen las quita.",
+      "ca": "postext-pdf 1.4.1 escriu un programa de font per cada família, pes i estil que demana al proveïdor de fonts, encara que el proveïdor respongui a diversos amb el mateix fitxer i cap pàgina dibuixi amb aquest estil. Per això, cada substitut d'una cursiva o d'un pes que falta afegeix una altra còpia del fitxer que manlleva, que no es fa servir si cap text no va en aquest estil. pdffonts només llista les fonts que fan servir les pàgines, però les còpies són igualment al fitxer, i res del que faci un pen no les treu.",
       "zh": "postext-pdf 1.4.1为它向字体提供者请求的每个家族、字重和样式都写入一份字体程序，即使提供者对其中几个返回同一个文件，而且没有任何页面用到这个字型。所以每个代替缺失斜体或字重的替身，都会给它借用的文件再添一份副本，没有文字用那个字型排时也照样存在。pdffonts只列出页面用到的字体，但这些副本仍在文件里，pen里怎么做都去不掉。"
     },
     "feature": "pdf-fonts",
@@ -1180,11 +1352,13 @@
     "title": {
       "en": "A paragraph keeps the measure of the column it starts in",
       "es": "Un párrafo conserva la medida de la columna en la que empieza",
+      "ca": "Un paràgraf conserva la mesura de la columna on comença",
       "zh": "段落保持它起始那一栏的行长"
     },
     "body": {
       "en": "In postext 1.4.1 a paragraph is broken into lines once, at the width of the column where it starts. In a column-and-a-half page with text in both columns, a paragraph that runs over from the wide column into the narrow one keeps its long lines, which are clipped at the narrow column's edge; one that runs from the narrow column into the next page's wide column keeps its short lines. End each column on a whole paragraph: fit the copy, and put a :::columnbreak after the last paragraph so that the next block opens the next column.",
       "es": "En postext 1.4.1 un párrafo se corta en líneas una sola vez, con el ancho de la columna en la que empieza. En una página a columna y media con texto en las dos columnas, un párrafo que pasa de la columna ancha a la estrecha conserva sus líneas largas, que se recortan en el borde de la columna estrecha; uno que pasa de la columna estrecha a la ancha de la página siguiente conserva sus líneas cortas. Termina cada columna con un párrafo completo: ajusta el texto y pon un :::columnbreak después del último párrafo, para que el bloque siguiente abra la columna siguiente.",
+      "ca": "A postext 1.4.1 un paràgraf es talla en línies una sola vegada, amb l'amplada de la columna on comença. En una pàgina a columna i mitja amb text a les dues columnes, un paràgraf que passa de la columna ampla a l'estreta conserva les línies llargues, que es retallen a la vora de la columna estreta; un que passa de la columna estreta a l'ampla de la pàgina següent conserva les línies curtes. Acaba cada columna amb un paràgraf complet: ajusta el text i posa un :::columnbreak després de l'últim paràgraf, perquè el bloc següent obri la columna següent.",
       "zh": "在postext 1.4.1中，段落只断一次行，按它起始那一栏的宽度。在两栏都有正文的一栏半页面中，从宽栏延续到窄栏的段落保留长行，这些行在窄栏边缘被裁掉；从窄栏延续到下一页宽栏的段落则保留短行。让每一栏在完整的段落处结束：调整文稿篇幅，并在最后一段之后放一个:::columnbreak，使下一个块从下一栏开始。"
     },
     "feature": "column-and-a-half",
@@ -1194,11 +1368,13 @@
     "title": {
       "en": "A section or part palette does not recolour chips",
       "es": "La paleta de una sección o de una parte no recolorea los chips",
+      "ca": "La paleta d'una secció o d'una part no torna a acolorir els xips",
       "zh": "节或篇的调色板不会改变行内标签的颜色"
     },
     "body": {
       "en": "In postext 1.4.1 the palette of a heading style or a part recolours the text, the boxes and the design elements of its pages, but a chip keeps the colours of its chipStyles entry. A chip linked to an entry the section overrides shows the document's value on every page. Set chips in colours no section changes, such as ink on paper, or give each section a chip style of its own.",
       "es": "En postext 1.4.1 la paleta de un estilo de título o de una parte recolorea en sus páginas el texto, los recuadros y los elementos de diseño, pero un chip conserva los colores de su entrada de chipStyles. Un chip enlazado a una entrada que la sección cambia muestra el valor del documento en todas las páginas. Pon los chips en colores que ninguna sección cambie, como tinta sobre papel, o da a cada sección su propio estilo de chip.",
+      "ca": "A postext 1.4.1 la paleta d'un estil de títol o d'una part torna a acolorir a les seves pàgines el text, els requadres i els elements de disseny, però un xip conserva els colors de la seva entrada de chipStyles. Un xip enllaçat a una entrada que la secció canvia mostra el valor del document a totes les pàgines. Posa els xips en colors que cap secció no canviï, com tinta sobre paper, o dona a cada secció el seu propi estil de xip.",
       "zh": "在postext 1.4.1中，标题样式或篇的调色板会改变其页面上的文字、框和设计元素的颜色，但行内标签保留其chipStyles条目的颜色。即使行内标签所关联的条目被该节覆盖，每页上显示的仍是文档的值。给行内标签用各节都不改的颜色（如白纸黑字），或者给每节单独一个标签样式。"
     },
     "feature": "chips",
@@ -1208,11 +1384,13 @@
     "title": {
       "en": "A page that opens on an inline table skips a waiting top float",
       "es": "Una página que empieza con una tabla en línea se salta un flotante de cabeza pendiente",
+      "ca": "Una pàgina que comença amb una taula en línia se salta un flotant de capdamunt pendent",
       "zh": "以行内表开头的页面会跳过等待中的顶部浮动体"
     },
     "body": {
       "en": "In postext 1.4.1, when an inline table (position 'here', set with ::resource) moves to the head of the next page, a page-wide 'top' float cited on the page before does not take the head of that page: it waits for the page after. Float the table too (position 'top' or 'auto', cited with :ref), or cite the figure where the next page opens on text.",
       "es": "En postext 1.4.1, cuando una tabla en línea (posición 'here', colocada con ::resource) pasa a la cabeza de la página siguiente, un flotante 'top' a todo el ancho citado en la página anterior no ocupa la cabeza de esa página: espera a la de después. Haz flotar también la tabla (posición 'top' o 'auto', citada con :ref) o cita la figura donde la página siguiente empiece con texto.",
+      "ca": "A postext 1.4.1, quan una taula en línia (posició 'here', col·locada amb ::resource) passa al capdamunt de la pàgina següent, un flotant 'top' a tota l'amplada citat a la pàgina anterior no ocupa el capdamunt d'aquesta pàgina: espera la de després. Fes flotar també la taula (posició 'top' o 'auto', citada amb :ref) o cita la figura on la pàgina següent comenci amb text.",
       "zh": "在postext 1.4.1中，当一个行内表（位置'here'，用::resource排入）移到下一页顶部时，在前一页引用的整页宽'top'浮动体不会占据该页顶部，而是等到再下一页。把表也设为浮动（位置'top'或'auto'，用:ref引用），或者在下一页以正文开头的地方引用该图。"
     },
     "feature": "float-placement",
@@ -1222,11 +1400,13 @@
     "title": {
       "en": "A blank line in a table cell is dropped",
       "es": "Una línea en blanco dentro de una celda desaparece",
+      "ca": "Una línia en blanc dins d'una cel·la desapareix",
       "zh": "表格单元格中的空行会被丢弃"
     },
     "body": {
       "en": "A line break in a table cell starts a new paragraph, but postext 1.4.1 drops a paragraph that is empty or holds only no-break spaces (U+00A0), so a cell written 'NAME\\n\\n' is one line tall. To leave lines to write on, put a word joiner (U+2060) on each blank line: 'NAME\\n\\u2060\\n\\u2060' is three lines tall.",
       "es": "Un salto de línea dentro de una celda empieza un párrafo nuevo, pero postext 1.4.1 descarta el párrafo vacío o que solo lleva espacios de no separación (U+00A0), así que una celda escrita 'NOMBRE\\n\\n' ocupa una sola línea. Para dejar líneas en las que escribir, pon un unidor de palabras (U+2060) en cada línea en blanco: 'NOMBRE\\n\\u2060\\n\\u2060' ocupa tres.",
+      "ca": "Un salt de línia dins d'una cel·la comença un paràgraf nou, però postext 1.4.1 descarta el paràgraf buit o que només porta espais de no separació (U+00A0), així que una cel·la escrita 'NOM\\n\\n' ocupa una sola línia. Per deixar línies on escriure, posa un unidor de paraules (U+2060) a cada línia en blanc: 'NOM\\n\\u2060\\n\\u2060' n'ocupa tres.",
       "zh": "表格单元格中的换行会开始一个新段落，但postext 1.4.1会丢弃空段落和只含不换行空格（U+00A0）的段落，所以写成'NAME\\n\\n'的单元格只有一行高。要留出填写用的空行，在每个空行上放一个词连接符（U+2060）：'NAME\\n\\u2060\\n\\u2060'有三行高。"
     },
     "feature": "table-model",
@@ -1236,11 +1416,13 @@
     "title": {
       "en": "The layout worker measures with its own fonts",
       "es": "El worker de composición mide con sus propias fuentes",
+      "ca": "El worker de composició mesura amb les seves pròpies fonts",
       "zh": "排版工作线程用它自己的字体测量"
     },
     "body": {
       "en": "A worker has a FontFaceSet of its own, so the faces the page has loaded are invisible to it. Send it the bytes of every face with registerFonts() before the first build, with the weight as a string ('400'). Without them the worker measures in a fallback font, with no error or warning, and the line breaks and the page count change.",
       "es": "Un worker tiene su propio FontFaceSet, así que no ve las fuentes que ha cargado la página. Envíale los bytes de cada fuente con registerFonts() antes de la primera composición, con el peso como texto ('400'). Sin ellos mide con una fuente de reserva, sin error ni aviso, y cambian los cortes de línea y el número de páginas.",
+      "ca": "Un worker té el seu propi FontFaceSet, així que no veu les fonts que ha carregat la pàgina. Envia-li els bytes de cada font amb registerFonts() abans de la primera composició, amb el pes com a text ('400'). Sense aquests bytes mesura amb una font de reserva, sense cap error ni avís, i canvien els salts de línia i el nombre de pàgines.",
       "zh": "工作线程有自己的FontFaceSet，页面已加载的字型对它不可见。第一次构建前，用registerFonts()把每个字型的字节发给它，字重写成字符串（'400'）。没有这些字节，工作线程会用后备字体测量，不报错也不警告，断行和页数都会改变。"
     },
     "feature": "worker",
@@ -1250,11 +1432,13 @@
     "title": {
       "en": "createLayoutWorker() cannot start its worker from a CDN",
       "es": "createLayoutWorker() no puede arrancar su worker desde una CDN",
+      "ca": "createLayoutWorker() no pot arrencar el seu worker des d'una CDN",
       "zh": "createLayoutWorker()无法从CDN启动工作线程"
     },
     "body": {
       "en": "Called with no options, createLayoutWorker() starts the worker file that sits next to the module. Imported from esm.sh, that file is on another origin, and the Worker constructor throws a SecurityError ('cannot be accessed from origin'). Start a module worker from a same-origin blob that imports https://esm.sh/postext/worker/entry and pass it in: createLayoutWorker({ worker }). A bundler that serves postext from your own origin does not need the blob.",
       "es": "Sin opciones, createLayoutWorker() arranca el archivo del worker que está junto al módulo. Importado desde esm.sh, ese archivo está en otro origen y el constructor Worker lanza un SecurityError («cannot be accessed from origin»). Arranca un worker de módulo desde un blob del mismo origen que importe https://esm.sh/postext/worker/entry y pásaselo: createLayoutWorker({ worker }). Con un empaquetador que sirva postext desde tu propio origen, el blob no hace falta.",
+      "ca": "Sense opcions, createLayoutWorker() arrenca el fitxer del worker que hi ha al costat del mòdul. Importat des d'esm.sh, aquest fitxer és en un altre origen i el constructor Worker llança un SecurityError («cannot be accessed from origin»). Arrenca un worker de mòdul des d'un blob del mateix origen que importi https://esm.sh/postext/worker/entry i passa-l'hi: createLayoutWorker({ worker }). Amb un empaquetador que serveixi postext des del teu propi origen, el blob no cal.",
       "zh": "不带参数调用时，createLayoutWorker()会启动模块旁边的工作线程文件。从esm.sh导入时，这个文件位于另一个源，Worker构造函数会抛出SecurityError（'cannot be accessed from origin'）。从一个导入https://esm.sh/postext/worker/entry的同源blob启动模块工作线程，再把它传进去：createLayoutWorker({ worker })。如果打包工具从你自己的源提供postext，就不需要这个blob。"
     },
     "feature": "worker",
@@ -1264,11 +1448,13 @@
     "title": {
       "en": "Column balancing drops the box that ends a page to its foot",
       "es": "El equilibrado de columnas baja al pie el recuadro que cierra una página",
+      "ca": "L'equilibrat de columnes baixa al peu el requadre que tanca una pàgina",
       "zh": "各栏齐底会把结束一页的框推到页底"
     },
     "body": {
       "en": "When a box is the last block on a page that the text goes on from, column balancing (on by default) moves the room left under the box above it, so the box leaves the block before it and ends on the page's last line. In postext 1.4.1 no single balancing option turns this off: headings.balancing.enabled: false turns off all balancing, which suits pages meant to end short, such as a page of poems.",
       "es": "Cuando un recuadro es el último bloque de una página tras la que sigue el texto, el equilibrado de columnas (activo por defecto) pasa el espacio que queda debajo por encima del recuadro, que se separa del bloque anterior y termina en la última línea de la página. En postext 1.4.1 ninguna opción del equilibrado lo desactiva por separado: headings.balancing.enabled: false apaga todo el equilibrado, lo que conviene a páginas que deben terminar cortas, como una página de poemas.",
+      "ca": "Quan un requadre és l'últim bloc d'una pàgina després de la qual continua el text, l'equilibrat de columnes (actiu per defecte) passa l'espai que queda a sota per sobre del requadre, que se separa del bloc anterior i acaba a l'última línia de la pàgina. A postext 1.4.1 cap opció de l'equilibrat no el desactiva per separat: headings.balancing.enabled: false apaga tot l'equilibrat, cosa que convé a pàgines que han d'acabar curtes, com una pàgina de poemes.",
       "zh": "当框是某页的最后一个块、正文还要延续到下一页时，各栏齐底（默认开启）会把框下面剩余的空间移到框上面，于是框与前一个块分开，结束在该页最后一行。在postext 1.4.1中，没有单独的齐底选项能关掉这一点：headings.balancing.enabled: false会关闭所有齐底，适合本来就要短页结束的页面，例如诗歌页。"
     },
     "feature": "column-balancing",
@@ -1278,11 +1464,13 @@
     "title": {
       "en": "Side boxes stacked in the channel keep a line of paper between them",
       "es": "Los recuadros laterales apilados en el canal dejan una línea de papel entre ellos",
+      "ca": "Els requadres laterals apilats al canal deixen una línia de paper entre ells",
       "zh": "侧栏中叠放的框之间总隔着一行空白"
     },
     "body": {
       "en": "In postext 1.4.1 a span: 'side' box leaves at least one body line under it before the next thing in the channel, rounded up to the baseline grid, whatever its marginBottom says. Boxes that share a background therefore never touch: stacked, they read as separate cards. For one continuous panel, fence a single side box and nest the sections inside it.",
       "es": "En postext 1.4.1, un recuadro con span: 'side' deja debajo al menos una línea de texto antes de lo siguiente que haya en el canal, redondeada a la rejilla base, diga lo que diga su marginBottom. Por eso los recuadros con el mismo fondo nunca se tocan: apilados, se leen como tarjetas sueltas. Para un panel continuo, abre un solo recuadro lateral y anida dentro las secciones.",
+      "ca": "A postext 1.4.1, un requadre amb span: 'side' deixa a sota almenys una línia de text abans del que vingui després al canal, arrodonida a la retícula de base, digui el que digui el seu marginBottom. Per això els requadres amb el mateix fons no es toquen mai: apilats, es llegeixen com a targetes soltes. Per a un tauler continu, obre un sol requadre lateral i niua-hi les seccions.",
       "zh": "在postext 1.4.1中，span: 'side'的框下面至少留出一个正文行的空间，才接侧栏里的下一个内容，并向上取整到基线网格，不管它的marginBottom怎么写。因此共用背景的框永远不会相接：叠放在一起时，看起来是一张张独立的卡片。要得到一整块连续的面板，只围一个侧栏框，把各部分嵌套在里面。"
     },
     "feature": "side-boxes"
@@ -1291,11 +1479,13 @@
     "title": {
       "en": "An opener kept in its column is cut off at the top of the text block",
       "es": "Una apertura que se queda en su columna se corta en la cabeza de la caja de texto",
+      "ca": "Una obertura que es queda a la seva columna es talla al capdamunt de la caixa de text",
       "zh": "留在栏内的章首页在版心顶部被裁切"
     },
     "body": {
       "en": "In postext 1.4.1 an advanced-design heading that stays in its column is clipped at the column's top edge: a box or a picture anchored to the page or the bleed paints into the side margins but not into the top margin, and no warning says so. Give such a heading span: 'page', even in a single-column book: its design is then painted as the page's opener band, whole.",
       "es": "En postext 1.4.1, un título con diseño avanzado que se queda en su columna se recorta por el borde superior de la columna: una caja o una imagen ancladas a la página o a la sangre se pintan en los márgenes laterales, pero no en el de cabeza, y ningún aviso lo dice. Dale span: 'page' a ese título, aunque el libro tenga una sola columna: su diseño se pinta entonces entero, como banda de apertura de la página.",
+      "ca": "A postext 1.4.1, un títol amb disseny avançat que es queda a la seva columna es retalla per la vora superior de la columna: una caixa o una imatge ancorades a la pàgina o a la sang es pinten als marges laterals, però no al superior, i cap avís no ho diu. Dona span: 'page' a aquest títol, encara que el llibre tingui una sola columna: llavors el seu disseny es pinta sencer, com a banda d'obertura de la pàgina.",
       "zh": "在postext 1.4.1中，留在栏内的高级设计标题会在栏的上边缘被裁切：锚定在页面或出血上的框或图片可以画进左右页边距，却画不进上页边距，而且没有任何警告。给这样的标题设span: 'page'，即使是单栏的书也一样：这样它的设计会作为页面的章首页区段完整地绘制出来。"
     },
     "feature": "opener-design",
@@ -1305,11 +1495,13 @@
     "title": {
       "en": "An opener taller than its column loses its whole reservation",
       "es": "Una apertura más alta que su columna pierde toda la reserva",
+      "ca": "Una obertura més alta que la seva columna perd tota la reserva",
       "zh": "比栏还高的章首页会失去全部预留空间"
     },
     "body": {
       "en": "In postext 1.4.1, when the height an advanced-design heading reserves (its minHeight, or its lowest design element) is taller than the column it opens, the heading keeps only the height of its own title line, with no warning, and the text runs over the design. A full-page plate needs a column as tall as the page: give its heading style zero margins, then set minHeight to the page's height.",
       "es": "En postext 1.4.1, cuando la altura que reserva un título con diseño avanzado (su minHeight, o su elemento de diseño más bajo) supera la de la columna que abre, el título se queda solo con la altura de su propia línea, sin ningún aviso, y el texto se compone encima del diseño. Una lámina a página completa necesita una columna tan alta como la página: dale márgenes cero a su estilo de título y fija minHeight en la altura de la página.",
+      "ca": "A postext 1.4.1, quan l'alçada que reserva un títol amb disseny avançat (el seu minHeight, o el seu element de disseny més baix) supera la de la columna que obre, el títol es queda només amb l'alçada de la seva pròpia línia, sense cap avís, i el text es compon a sobre del disseny. Una làmina a pàgina completa necessita una columna tan alta com la pàgina: dona marges zero al seu estil de títol i fixa minHeight a l'alçada de la pàgina.",
       "zh": "在postext 1.4.1中，当高级设计标题预留的高度（其minHeight，或其最低的设计元素）超过它所开启的栏时，标题只保留它自身标题行的高度，不给警告，正文就排到设计上面。整页插图需要一栏与页面等高：给它的标题样式设零外边距，再把minHeight设为页面高度。"
     },
     "feature": "opener-design",
@@ -1319,11 +1511,13 @@
     "title": {
       "en": "Two filled table cells side by side show a pale seam on the canvas",
       "es": "Entre dos celdas de tabla rellenas asoma una línea clara en el canvas",
+      "ca": "Entre dues cel·les de taula emplenades s'entreveu una línia clara al canvas",
       "zh": "Canvas上两个相邻的填色单元格之间有一条浅缝"
     },
     "body": {
       "en": "In postext 1.4.1 the canvas renderer fills each table cell with a rectangle of its own at fractional pixel positions, so where two filled cells meet (the cells of a header row filled in colour, or tinted body cells) a hairline of the page shows between them. Fill only rows whose cells are merged into one, stroke the rules in the fill colour, or leave the cells unfilled.",
       "es": "En postext 1.4.1, el renderizador de canvas rellena cada celda de la tabla con un rectángulo propio en posiciones de píxel fraccionarias, así que donde se tocan dos celdas rellenas (las de una fila de cabecera en color o celdas del cuerpo con fondo) asoma entre ellas una línea finísima del color del papel. Rellena solo filas cuyas celdas estén combinadas en una, traza los filetes en el color del relleno o deja las celdas sin relleno.",
+      "ca": "A postext 1.4.1, el renderitzador de canvas emplena cada cel·la de la taula amb un rectangle propi en posicions de píxel fraccionàries, així que on es toquen dues cel·les emplenades (les d'una fila de capçalera en color o cel·les del cos amb fons) s'entreveu entre elles una línia finíssima del color del paper. Emplena només files les cel·les de les quals estiguin combinades en una, traça els filets en el color de l'emplenament o deixa les cel·les sense emplenar.",
       "zh": "在postext 1.4.1中，Canvas渲染器在小数像素位置用各自的矩形填充每个表格单元格，所以两个填色单元格相接处（彩色填充的表头行单元格，或带底色的正文单元格）会露出一条纸色的细线。只给单元格合并成一个的行填色，用填充色描线，或者不给单元格填色。"
     },
     "feature": "table-style",
@@ -1333,11 +1527,13 @@
     "title": {
       "en": "Chinese faces load by slices, through the cjk block",
       "es": "Las fuentes chinas se cargan por fragmentos, con el bloque cjk",
+      "ca": "Les fonts xineses es carreguen per fragments, amb el bloc cjk",
       "zh": "中文字体通过cjk块分片加载"
     },
     "body": {
       "en": "Fontsource serves a Chinese, Japanese or Korean family as about a hundred files per weight, each covering a range of characters. loadFonts fetches only the latin file, so on screen the Han characters come from a system face and measure wrong, and fontsourceProvider hands the PDF that latin file, which prints them as empty boxes. List the cjk kit block, call loadCjkFonts(FONTS, markdown) after loadFonts (once per voice, with the text it sets, when the book uses several CJK faces) and give renderToPdf fontProvider: cjkPdfProvider: both take the files that hold the text's characters.",
       "es": "Fontsource sirve una familia china, japonesa o coreana en un centenar de archivos por peso, cada uno con un intervalo de caracteres. loadFonts solo descarga el archivo latin, así que en pantalla los caracteres chinos salen de una fuente del sistema y se miden mal, y fontsourceProvider entrega al PDF ese archivo latin, que los imprime como cajas vacías. Añade el bloque cjk del kit, llama a loadCjkFonts(FONTS, markdown) después de loadFonts (una vez por voz, con el texto que compone, si el libro usa varias fuentes chinas) y pasa a renderToPdf fontProvider: cjkPdfProvider: ambos toman los archivos que contienen los caracteres del texto.",
+      "ca": "Fontsource serveix una família xinesa, japonesa o coreana en un centenar de fitxers per pes, cadascun amb un interval de caràcters. loadFonts només baixa el fitxer latin, així que a la pantalla els caràcters xinesos surten d'una font del sistema i es mesuren malament, i fontsourceProvider lliura al PDF aquest fitxer latin, que els imprimeix com a caixes buides. Afegeix el bloc cjk del kit, crida loadCjkFonts(FONTS, markdown) després de loadFonts (una vegada per veu, amb el text que compon, si el llibre fa servir diverses fonts xineses) i passa a renderToPdf fontProvider: cjkPdfProvider: tots dos agafen els fitxers que contenen els caràcters del text.",
       "zh": "Fontsource把一个中文、日文或韩文字体家族按每个字重约一百个文件提供，每个文件覆盖一段字符范围。loadFonts只获取latin文件，所以屏幕上的汉字来自系统字体，测量不准；fontsourceProvider交给PDF的也是这个latin文件，汉字印出来是空框。列出kit中的cjk块，在loadFonts之后调用loadCjkFonts(FONTS, markdown)（书中用到几种CJK字体时，每种字体调用一次，并传入它所排的文字），并给renderToPdf传fontProvider: cjkPdfProvider：两者都会取用包含文中字符的那些文件。"
     },
     "feature": "cjk-fonts"
@@ -1346,11 +1542,13 @@
     "title": {
       "en": "Chinese has no italic",
       "es": "El chino no tiene cursiva",
+      "ca": "El xinès no té cursiva",
       "zh": "中文没有斜体"
     },
     "body": {
       "en": "The CJK families ship no italic, and Chinese typography marks emphasis with dots beside the characters, not with a slant. In a document tagged Chinese, *…* sets emphasis dots on the Chinese characters it holds and keeps italics for the Latin words (cjk.emphasis: 'dots', the default for Chinese); :dots[…] sets them anywhere. With cjk.emphasis: 'italic', or in a document tagged en or es, *…* makes the canvas slant the upright glyphs, a synthetic oblique that Chinese typography never uses (the PDF falls back to the upright face): keep the Chinese tag, or set emphasis in bold or in a Kai face (LXGW WenKai) through a paragraph or chip style.",
       "es": "Las familias CJK no traen cursiva, y la tipografía china marca el énfasis con puntos junto a los caracteres, no inclinándolos. En un documento etiquetado como chino, *…* pone puntos de énfasis en los caracteres chinos que abarca y deja la cursiva para las palabras latinas (cjk.emphasis: 'dots', lo predeterminado en chino); :dots[…] los pone en cualquier sitio. Con cjk.emphasis: 'italic', o en un documento etiquetado en o es, *…* hace que el canvas incline los glifos redondos, una oblicua sintética que la tipografía china nunca usa (el PDF recurre a la redonda): conserva la etiqueta china, o marca el énfasis en negrita o en una fuente Kai (LXGW WenKai) con un estilo de párrafo o de chip.",
+      "ca": "Les famílies CJK no porten cursiva, i la tipografia xinesa marca l'èmfasi amb punts al costat dels caràcters, no pas inclinant-los. En un document etiquetat com a xinès, *…* posa punts d'èmfasi als caràcters xinesos que abasta i deixa la cursiva per a les paraules llatines (cjk.emphasis: 'dots', el valor predeterminat en xinès); :dots[…] els posa a qualsevol lloc. Amb cjk.emphasis: 'italic', o en un document etiquetat en o es, *…* fa que el canvas inclini els glifs rodons, una obliqua sintètica que la tipografia xinesa no fa servir mai (el PDF recorre a la rodona): conserva l'etiqueta xinesa, o marca l'èmfasi en negreta o amb una font Kai (LXGW WenKai) amb un estil de paràgraf o de xip.",
       "zh": "CJK字体家族不带斜体，中文排版用字旁的着重号标示强调，而不是倾斜。在标记为中文的文档中，*…*给其中的汉字加着重号，拉丁文词仍用斜体（cjk.emphasis: 'dots'，中文的默认值）；:dots[…]可以在任何地方加着重号。设置cjk.emphasis: 'italic'时，或在标记为en或es的文档中，*…*会让Canvas把正体字形倾斜，这种合成的伪斜体是中文排版从来不用的（PDF会退回正体字型）：保留中文标记，或者通过段落样式或标签样式，用粗体或楷体（LXGW WenKai）表示强调。"
     },
     "feature": "cjk-fonts"
@@ -1359,11 +1557,13 @@
     "title": {
       "en": "Tag the document zh-Hans or zh-Hant, not with LANG",
       "es": "Etiqueta el documento zh-Hans o zh-Hant, no con LANG",
+      "ca": "Etiqueta el document zh-Hans o zh-Hant, no amb LANG",
       "zh": "用zh-Hans或zh-Hant标记文档，不要用LANG"
     },
     "body": {
       "en": "A recipe's editions are en and es, but a Chinese sample is Chinese in both: `locale: LANG` would tag it English or Spanish, hyphenate its Latin words, label its figures Figure or Figura and give the PDF the wrong language. Write the tag yourself: 'zh-Hans' (mainland conventions: GB line breaking, Kaiming punctuation) or 'zh-Hant' (Taiwan: full-width centred punctuation); 'zh-HK' for Hong Kong. A bare 'zh' reads as Simplified, mainland.",
       "es": "Las ediciones de una receta son en y es, pero una muestra china es china en las dos: `locale: LANG` la etiquetaría como inglés o español, separaría sus palabras latinas, llamaría Figure o Figura a sus figuras y daría al PDF un idioma equivocado. Escribe tú la etiqueta: 'zh-Hans' (convenciones de la China continental: corte GB, puntuación Kaiming) o 'zh-Hant' (Taiwán: puntuación de ancho completo centrada); 'zh-HK' para Hong Kong. Un 'zh' a secas se lee como chino simplificado continental.",
+      "ca": "Les edicions d'una recepta són en i es, però una mostra xinesa és xinesa en totes dues: `locale: LANG` l'etiquetaria com a anglès o castellà, separaria les seves paraules llatines, anomenaria Figure o Figura les seves figures i donaria al PDF una llengua equivocada. Escriu tu l'etiqueta: 'zh-Hans' (convencions de la Xina continental: tall GB, puntuació Kaiming) o 'zh-Hant' (Taiwan: puntuació d'amplada completa centrada); 'zh-HK' per a Hong Kong. Un 'zh' tot sol es llegeix com a xinès simplificat continental.",
       "zh": "食谱的版本是en和es，但中文示例在两个版本里都是中文：`locale: LANG`会把它标记为英文或西班牙文，给其中的拉丁文词断词，把图标注为Figure或Figura，并给PDF标上错误的语言。自己写出标记：'zh-Hans'（大陆规范：GB断行规则、开明式标点）或'zh-Hant'（台湾：全角居中标点）；香港用'zh-HK'。单写'zh'按简体、大陆规范处理。"
     },
     "feature": "cjk-line-breaking"
@@ -1372,11 +1572,13 @@
     "title": {
       "en": "Arabic faces need their arabic file, through the arabic block",
       "es": "Las fuentes árabes necesitan su archivo arabic, con el bloque arabic",
+      "ca": "Les fonts àrabs necessiten el seu fitxer arabic, amb el bloc arabic",
       "zh": "阿拉伯文字体需要通过arabic块加载其arabic文件"
     },
     "body": {
       "en": "Fontsource serves Amiri, Noto Naskh Arabic or Scheherazade New as one file per subset, and the Arabic letters are in the arabic file. loadFonts fetches only latin (and latin-ext), so on screen the Arabic comes from a system face and measures wrong, and fontsourceProvider hands the PDF that latin file, which prints empty boxes. List the arabic kit block, call loadArabicFonts(FONTS, markdown) after loadFonts, with every weight the pages set in Arabic listed in FONTS, and give renderToPdf fontProvider: arabicPdfProvider.",
       "es": "Fontsource sirve Amiri, Noto Naskh Arabic o Scheherazade New en un archivo por subconjunto, y las letras árabes están en el archivo arabic. loadFonts solo descarga latin (y latin-ext), así que en pantalla el árabe sale de una fuente del sistema y se mide mal, y fontsourceProvider entrega al PDF ese archivo latin, que imprime cajas vacías. Añade el bloque arabic del kit, llama a loadArabicFonts(FONTS, markdown) después de loadFonts, con todos los pesos que las páginas usan en árabe listados en FONTS, y pasa a renderToPdf fontProvider: arabicPdfProvider.",
+      "ca": "Fontsource serveix Amiri, Noto Naskh Arabic o Scheherazade New en un fitxer per subconjunt, i les lletres àrabs són al fitxer arabic. loadFonts només baixa latin (i latin-ext), de manera que a la pantalla l'àrab surt d'una font del sistema i es mesura malament, i fontsourceProvider lliura al PDF aquell fitxer latin, que imprimeix caixes buides. Afegeix el bloc arabic del kit, crida loadArabicFonts(FONTS, markdown) després de loadFonts, amb tots els pesos que les pàgines fan servir en àrab llistats a FONTS, i passa a renderToPdf fontProvider: arabicPdfProvider.",
       "zh": "Fontsource把Amiri、Noto Naskh Arabic或Scheherazade New按子集分成多个文件提供，阿拉伯字母在arabic文件里。loadFonts只获取latin（以及latin-ext），所以屏幕上的阿拉伯文来自系统字体，测量不准；fontsourceProvider交给PDF的也是这个latin文件，印出来是空框。列出kit中的arabic块，在loadFonts之后调用loadArabicFonts(FONTS, markdown)，并在FONTS中列出页面用于阿拉伯文的每个字重，再给renderToPdf传fontProvider: arabicPdfProvider。"
     },
     "feature": "arabic-fonts"
@@ -1385,11 +1587,13 @@
     "title": {
       "en": "Tag an Arabic book 'ar', not with LANG",
       "es": "Etiqueta un libro árabe 'ar', no con LANG",
+      "ca": "Etiqueta un llibre àrab 'ar', no amb LANG",
       "zh": "阿拉伯文书标记为'ar'，不要用LANG"
     },
     "body": {
       "en": "A recipe's editions are en and es, but an Arabic sample is Arabic in both: `locale: LANG` would set it left to right, bind it on the left, number its pages 1 2 3 and caption its figures Figure or Figura. Write the tag yourself: 'ar' (Arabic-Indic digits, the Mashriq convention), a region such as 'ar-EG' or 'ar-SA', or 'ar-MA', 'ar-DZ' or 'ar-TN' for a Maghreb edition with European digits. A Latin page that only quotes Arabic keeps its own locale.",
       "es": "Las ediciones de una receta son en y es, pero una muestra árabe es árabe en las dos: `locale: LANG` la compondría de izquierda a derecha, la encuadernaría por la izquierda, numeraría sus páginas 1 2 3 y llamaría Figure o Figura a sus figuras. Escribe tú la etiqueta: 'ar' (cifras arábigo-índicas, la convención del Mashriq), una región como 'ar-EG' o 'ar-SA', o 'ar-MA', 'ar-DZ' o 'ar-TN' para una edición magrebí con cifras europeas. Una página latina que solo cita árabe conserva su propio locale.",
+      "ca": "Les edicions d'una recepta són en i es, però una mostra àrab és àrab en totes dues: `locale: LANG` la compondria d'esquerra a dreta, l'enquadernaria per l'esquerra, numeraria les seves pàgines 1 2 3 i anomenaria Figure o Figura les seves figures. Escriu tu l'etiqueta: 'ar' (xifres aràbigo-índiques, la convenció del Màixriq), una regió com 'ar-EG' o 'ar-SA', o 'ar-MA', 'ar-DZ' o 'ar-TN' per a una edició magribina amb xifres europees. Una pàgina llatina que només cita àrab conserva el seu propi locale.",
       "zh": "食谱的版本是en和es，但阿拉伯文示例在两个版本里都是阿拉伯文：`locale: LANG`会让它从左向右排、左装订、页码印成1 2 3，并把图标注为Figure或Figura。自己写出标记：'ar'（阿拉伯-印度数字，马什里克惯例），或带地区的'ar-EG'、'ar-SA'；马格里布版本用欧洲数字，写'ar-MA'、'ar-DZ'或'ar-TN'。只引用阿拉伯文的拉丁文页面保留自己的locale。"
     },
     "feature": "text-direction"
@@ -1398,11 +1602,13 @@
     "title": {
       "en": "A right-bound book shows its spreads with showBook",
       "es": "Un libro encuadernado por la derecha muestra sus pliegos con showBook",
+      "ca": "Un llibre enquadernat per la dreta mostra els seus plecs amb showBook",
       "zh": "右装订的书用showBook显示跨页"
     },
     "body": {
       "en": "In a book bound on the right (Arabic, Hebrew or Persian text, vertical Chinese, or page.binding 'right') page 1 is still the recto, but it lies on the left of the spine, and the pairs read [3 | 2]. showPages lays every book out left-bound; showBook from the book block (the cjk block carries the same function) reads doc.binding and mirrors the pairs. capture.hero still names a spread in reading order, [verso, recto]: [2, 3].",
       "es": "En un libro encuadernado por la derecha (texto árabe, hebreo o persa, chino vertical, o page.binding 'right') la página 1 sigue siendo impar, pero queda a la izquierda del lomo, y los pliegos se leen [3 | 2]. showPages compone todos los libros como si se encuadernaran por la izquierda; showBook, del bloque book (el bloque cjk trae la misma función), lee doc.binding y refleja los pliegos. capture.hero sigue nombrando un pliego en orden de lectura, [par, impar]: [2, 3].",
+      "ca": "En un llibre enquadernat per la dreta (text àrab, hebreu o persa, xinès vertical, o page.binding 'right') la pàgina 1 continua sent senar, però queda a l'esquerra del llom, i els plecs es llegeixen [3 | 2]. showPages compon tots els llibres com si s'enquadernessin per l'esquerra; showBook, del bloc book (el bloc cjk porta la mateixa funció), llegeix doc.binding i reflecteix els plecs. capture.hero continua anomenant un plec en ordre de lectura, [parella, senar]: [2, 3].",
       "zh": "在右装订的书中（阿拉伯文、希伯来文或波斯文，竖排中文，或page.binding 'right'），第1页仍是奇数页（recto），但它位于书脊左侧，跨页读作[3 | 2]。showPages把所有书都按左装订排列；book块中的showBook（cjk块中也有同一个函数）读取doc.binding，把跨页左右镜像。capture.hero仍按阅读顺序[偶数页, 奇数页]指定跨页：[2, 3]。"
     },
     "feature": "right-binding"
@@ -1411,11 +1617,13 @@
     "title": {
       "en": "Set each region's punctuation in a face of that region",
       "es": "Compón la puntuación de cada región con una fuente de esa región",
+      "ca": "Compon la puntuació de cada regió amb una font d'aquella regió",
       "zh": "各地区的标点要用该地区的字体排"
     },
     "body": {
       "en": "The punctuation widths move the blank beside each mark to the side the document's region puts it, not the side the font draws it: under zh-Hans a Kaiming comma keeps the left half of its box, where a Simplified face draws the glyph, and gives up the right half. A Traditional face centres ，。 in the box, so the half that goes holds part of the glyph and the comma crowds the next character. LXGW WenKai TC, the only Kai text face on Fontsource, does this in Simplified text. Set mainland text, notes and quotations in Noto Serif SC or Noto Sans SC, keep the TC faces for zh-Hant, and use a Simplified brush face (Ma Shan Zheng) only for display lines, where design text applies no punctuation widths. It also draws inherited forms that neither the mainland nor the Taiwan standard prints, 為 with the 爫 top of 爲 and 令 (in 冷, 領) with a 卩 foot: check the characters a page sets in it.",
       "es": "Los anchos de la puntuación mueven el blanco de cada signo al lado donde lo pone la región del documento, no al lado donde lo dibuja la fuente: con zh-Hans, una coma Kaiming conserva la mitad izquierda de su caja, donde una fuente simplificada dibuja el signo, y cede la derecha. Una fuente tradicional centra ，。 en la caja, así que la mitad que se va se lleva parte del signo y la coma se pega al carácter siguiente. LXGW WenKai TC, la única Kai de texto de Fontsource, lo hace en texto simplificado. Compón el texto, las notas y las citas continentales en Noto Serif SC o Noto Sans SC, deja las fuentes TC para zh-Hant y usa una letra de pincel simplificada (Ma Shan Zheng) solo en líneas de exhibición, donde el texto de diseño no aplica anchos de puntuación. Además dibuja formas heredadas que no imprime ni el estándar continental ni el de Taiwán, 為 con el 爫 de 爲 y 令 (en 冷, 領) con el pie de 卩: revisa los caracteres que compone en cada página.",
+      "ca": "Les amplades de la puntuació mouen el blanc de cada signe al costat on el posa la regió del document, no al costat on el dibuixa la font: amb zh-Hans, una coma Kaiming conserva la meitat esquerra de la seva caixa, on una font simplificada dibuixa el signe, i cedeix la dreta. Una font tradicional centra ，。 a la caixa, de manera que la meitat que se'n va s'emporta part del signe i la coma s'enganxa al caràcter següent. LXGW WenKai TC, l'única Kai de text de Fontsource, ho fa en text simplificat. Compon el text, les notes i les cites continentals en Noto Serif SC o Noto Sans SC, deixa les fonts TC per a zh-Hant i fes servir una lletra de pinzell simplificada (Ma Shan Zheng) només en línies d'exhibició, on el text de disseny no aplica amplades de puntuació. A més, dibuixa formes heretades que no imprimeix ni l'estàndard continental ni el de Taiwan, 為 amb el 爫 de 爲 i 令 (a 冷, 領) amb el peu de 卩: revisa els caràcters que compon a cada pàgina.",
       "zh": "标点宽度调整会把每个标点旁的空白移到文档所属地区规定的一侧，而不是字体绘制时的那一侧：在zh-Hans下，开明式的逗号保留字框的左半部分（简体字体把字形画在这里），让出右半部分。繁体字体把，。画在字框中央，所以让出的那一半含有部分字形，逗号就挤到了下一个字上。LXGW WenKai TC是Fontsource上唯一的楷体正文字体，在简体文字中就会这样。大陆的正文、注释和引文用Noto Serif SC或Noto Sans SC排，TC字体留给zh-Hant，简体毛笔字体（Ma Shan Zheng）只用于展示行，因为设计文本不做标点宽度调整。LXGW WenKai TC还会画出大陆和台湾标准都不采用的传承字形：為用爲的爫头，令（在冷、領中）用卩底。要检查页面上用它排的字。"
     },
     "feature": "cjk-punctuation"
@@ -1424,11 +1632,13 @@
     "title": {
       "en": "Traditional transcriptions carry stray Simplified characters",
       "es": "Las transcripciones en chino tradicional traen caracteres simplificados sueltos",
+      "ca": "Les transcripcions en xinès tradicional porten caràcters simplificats solts",
       "zh": "繁体录入本夹杂零星简体字"
     },
     "body": {
       "en": "Texts copied from Wikisource or another web edition of a Traditional book sometimes carry a Simplified form (颙 for 顒 in 三國演義, chapter 1), and a TC face such as Noto Serif TC may not have it. loadCjkFonts stops the pen with the character in its message; on a page it would print in a fallback face. Restore the Traditional form in the sample and say so in the credits.",
       "es": "Los textos copiados de Wikisource o de otra edición en la web de un libro en chino tradicional traen a veces una forma simplificada (颙 por 顒 en el capítulo 1 de 三國演義), y una fuente TC como Noto Serif TC puede no tenerla. loadCjkFonts detiene la receta y nombra el carácter; en la página saldría con una fuente de sustitución. Recupera la forma tradicional en la muestra y dilo en los créditos.",
+      "ca": "Els textos copiats de Wikisource o d'una altra edició al web d'un llibre en xinès tradicional porten a vegades una forma simplificada (颙 per 顒 al capítol 1 de 三國演義), i una font TC com Noto Serif TC pot no tenir-la. loadCjkFonts atura la recepta i anomena el caràcter; a la pàgina sortiria amb una font de substitució. Recupera la forma tradicional a la mostra i digues-ho als crèdits.",
       "zh": "从维基文库或其他网络版本复制的繁体书文字，有时夹着简体字形（《三國演義》第一回中以颙代顒），而Noto Serif TC这类TC字体可能没有这个字。loadCjkFonts会中止pen，并在消息中给出这个字符；在页面上，它会用后备字体印出。在示例中恢复繁体字形，并在出处说明中注明。"
     },
     "feature": "cjk-fonts"
@@ -1437,11 +1647,13 @@
     "title": {
       "en": "Readings print in the text, not in designs, captions or cells",
       "es": "Las lecturas se imprimen en el texto, no en diseños, pies ni celdas",
+      "ca": "Les lectures s'imprimeixen al text, no en dissenys, peus ni cel·les",
       "zh": "注音印在正文中，不印在设计元素、题注或单元格中"
     },
     "body": {
       "en": "Ruby readings are drawn in paragraphs, headings, list items, quotations and boxes. A design text element (an opener, a running head, a badge), a caption, a footnote and a table cell print the base characters without their readings. A title that needs its pinyin is a heading without a design of its own: draw what surrounds it (a band, a lesson number) with the design of the heading before it, whose elements with reserve: false paint under the text of a span: 'page' opener.",
       "es": "Las lecturas ruby se dibujan en párrafos, títulos, elementos de lista, citas y recuadros. Un elemento de texto de un diseño (una apertura, una cabecera, una etiqueta), un pie, una nota al pie y una celda de tabla imprimen los caracteres base sin sus lecturas. Un título que necesita su pinyin es un título sin diseño propio: dibuja lo que lo rodea (una banda, el número de la lección) con el diseño del título anterior, cuyos elementos con reserve: false se pintan bajo el texto de una apertura span: 'page'.",
+      "ca": "Les lectures ruby es dibuixen en paràgrafs, títols, elements de llista, cites i requadres. Un element de text d'un disseny (una obertura, una capçalera, una etiqueta), un peu, una nota a peu de pàgina i una cel·la de taula imprimeixen els caràcters base sense les seves lectures. Un títol que necessita el seu pinyin és un títol sense disseny propi: dibuixa el que l'envolta (una banda, el número de la lliçó) amb el disseny del títol anterior, els elements del qual amb reserve: false es pinten sota el text d'una obertura span: 'page'.",
       "zh": "注音会绘制在段落、标题、列表项、引文和框中。设计文本元素（章首页、书眉、徽标）、题注、脚注和表格单元格只印出基字，不带注音。需要拼音的标题应当是一个没有自身设计的标题：把它周围的内容（色带、课次编号）画在它前面那个标题的设计里，该设计中reserve: false的元素会画在span: 'page'章首页的文字下层。"
     },
     "feature": "ruby"
@@ -1450,11 +1662,13 @@
     "title": {
       "en": "In vertical text the side column is a tier, and 'left' is the top one",
       "es": "En texto vertical la columna lateral es un piso, y 'left' es el de arriba",
+      "ca": "En text vertical la columna lateral és un pis, i 'left' és el de dalt",
       "zh": "竖排时侧栏变成一层，'left'是最上面一层"
     },
     "body": {
       "en": "With layout.writingMode 'vertical-rl' the page is a horizontal page turned a quarter turn, so the side column of a oneAndHalf layout becomes a tier across the page: sideColumnSide 'left' puts it at the head, the place of head-margin comments (眉批), and 'right' at the foot. 'outer' and 'inner' read as 'right' and 'left' (a tier has no outer edge), so the 'outer' of a textbook's margin column sends the notes to the foot. sideColumnPercent is a share of the page's height.",
       "es": "Con layout.writingMode 'vertical-rl' la página es una página horizontal girada un cuarto de vuelta, así que la columna lateral de una disposición oneAndHalf pasa a ser un piso que cruza la página: sideColumnSide 'left' la pone arriba, donde van los comentarios del margen superior (眉批), y 'right' al pie. 'outer' e 'inner' se leen como 'right' y 'left' (un piso no tiene borde exterior), así que el 'outer' de la columna de notas de un libro de texto manda las notas al pie. sideColumnPercent es una fracción de la altura de la página.",
+      "ca": "Amb layout.writingMode 'vertical-rl' la pàgina és una pàgina horitzontal girada un quart de volta, de manera que la columna lateral d'una disposició oneAndHalf passa a ser un pis que travessa la pàgina: sideColumnSide 'left' la posa a dalt, on van els comentaris del marge superior (眉批), i 'right' al peu. 'outer' i 'inner' es llegeixen com a 'right' i 'left' (un pis no té vora exterior), de manera que el valor 'outer' de la columna de notes d'un llibre de text envia les notes al peu. sideColumnPercent és una fracció de l'alçada de la pàgina.",
       "zh": "当layout.writingMode为'vertical-rl'时，页面相当于把横排页面转了四分之一圈，所以oneAndHalf版式的侧栏变成横贯页面的一层：sideColumnSide 'left'把它放在页头，即眉批的位置，'right'则放在页脚。'outer'和'inner'分别按'right'和'left'处理（一层没有外侧边），所以教科书边栏的'outer'会把注释送到页脚。sideColumnPercent是页面高度的比例。"
     },
     "feature": "side-column-floats"
@@ -1463,11 +1677,13 @@
     "title": {
       "en": "Fontsource has no Fangsong (仿宋) face",
       "es": "Fontsource no tiene ninguna fuente Fangsong (仿宋)",
+      "ca": "Fontsource no té cap font Fangsong (仿宋)",
       "zh": "Fontsource没有仿宋字体"
     },
     "body": {
       "en": "GB/T 9704 and most mainland forms set their text in 仿宋, a Song face drawn with the thin, slightly rising strokes of the brush. None of the Chinese families on Fontsource is a Fangsong, so a recipe sets the text in the Song face it has, Noto Serif SC, and says so. A Fangsong you hold a licence for goes in as your own font: register its file with FontFace, name the family in bodyText.fontFamily and give renderToPdf a fontProvider that returns its bytes.",
       "es": "La GB/T 9704 y casi todos los impresos de la China continental componen el texto en 仿宋, una letra Song dibujada con los trazos finos y algo ascendentes del pincel. Ninguna de las familias chinas de Fontsource es una Fangsong, así que una receta compone el texto con la Song que hay, Noto Serif SC, y lo dice. Una Fangsong con licencia entra como fuente propia: registra su archivo con FontFace, nombra la familia en bodyText.fontFamily y pasa a renderToPdf un fontProvider que devuelva sus bytes.",
+      "ca": "La GB/T 9704 i gairebé tots els impresos de la Xina continental componen el text en 仿宋, una lletra Song dibuixada amb els traços fins i una mica ascendents del pinzell. Cap de les famílies xineses de Fontsource no és una Fangsong, de manera que una recepta compon el text amb la Song que hi ha, Noto Serif SC, i ho diu. Una Fangsong amb llicència entra com a font pròpia: registra'n el fitxer amb FontFace, anomena la família a bodyText.fontFamily i passa a renderToPdf un fontProvider que en retorni els bytes.",
       "zh": "GB/T 9704和大多数大陆公文用仿宋排正文，这是一种以毛笔细而略向上扬的笔画绘制的宋体。Fontsource上的中文字体家族没有一个是仿宋，所以食谱改用现有的宋体Noto Serif SC排正文，并加以说明。你持有授权的仿宋字体可以作为自己的字体加入：用FontFace注册其文件，在bodyText.fontFamily中写上家族名，并给renderToPdf一个返回其字节的fontProvider。"
     },
     "feature": "cjk-fonts"
@@ -1476,11 +1692,13 @@
     "title": {
       "en": "On a character grid, turn column balancing off",
       "es": "En una retícula de caracteres, desactiva el equilibrado de columnas",
+      "ca": "En una retícula de caràcters, desactiva l'equilibri de columnes",
       "zh": "在字格网格上关闭各栏齐底"
     },
     "body": {
       "en": "Column balancing fills a page that ends short, as a head kept with its text leaves blank lines at the foot, by adding grid lines above heads and by setting a paragraph one line looser. A looser Chinese line spreads its characters (0.13 em on a GB/T 9704 page, far past balancing.maxTracking), so the characters leave the columns of the grid and the heads leave their lines. A page counted in cells ends short instead: set headings.balancing: { enabled: false }.",
       "es": "El equilibrado de columnas llena una página que acaba corta (un título que se queda con su texto deja líneas en blanco al pie) añadiendo líneas de la retícula encima de los títulos y componiendo un párrafo una línea más holgado. Una línea china más holgada separa sus caracteres (0,13 em en una página GB/T 9704, muy por encima de balancing.maxTracking), así que los caracteres se salen de las columnas de la retícula y los títulos de sus líneas. Una página contada en casillas acaba corta: pon headings.balancing: { enabled: false }.",
+      "ca": "L'equilibri de columnes omple una pàgina que acaba curta (un títol que es queda amb el seu text deixa línies en blanc al peu) afegint línies de la retícula a sobre dels títols i component un paràgraf una línia més folgat. Una línia xinesa més folgada separa els seus caràcters (0,13 em en una pàgina GB/T 9704, molt per sobre de balancing.maxTracking), de manera que els caràcters surten de les columnes de la retícula i els títols de les seves línies. Una pàgina comptada en caselles acaba curta: posa headings.balancing: { enabled: false }.",
       "zh": "页面提前结束时（例如标题要与正文同栏，在页底留下空行），各栏齐底会在标题上方增加网格行，或把一个段落排松一行，把页面填满。中文行排松后字会散开（在GB/T 9704页面上为0.13 em，远超balancing.maxTracking），于是字离开网格的列，标题也离开它们所在的行。以格计量的页面应当让它提前结束：设置headings.balancing: { enabled: false }。"
     },
     "feature": "character-grid"
@@ -1489,11 +1707,13 @@
     "title": {
       "en": "A Chinese face sets quotation marks and apostrophes full width, in Latin text too",
       "es": "Una fuente china compone comillas y apóstrofos a ancho completo, también en texto latino",
+      "ca": "Una font xinesa compon cometes i apòstrofs d'amplada completa, també en text llatí",
       "zh": "中文字体把引号和撇号排成全角，拉丁文中也一样"
     },
     "body": {
       "en": "Noto Serif TC and the other Traditional Chinese faces draw ‘ ’ “ ” one em wide, the way Chinese text uses them, and that glyph is what a Latin word set in the face gets: Li Bai’s prints with a wide gap after the apostrophe, and an English quotation opens and closes on a full em of blank. A CJK face has no italic either, and the slant faked on screen prints upright in the PDF. Text that mixes Chinese with a Latin language in one face (footnotes, which take the body face, or glosses with pinyin) reads best without apostrophes, curly quotes and italics; « » and the Latin-1 marks keep their width. Where the Latin text runs on its own, give it a Latin face through a paragraph style.",
       "es": "Noto Serif TC y las demás fuentes de chino tradicional dibujan ‘ ’ “ ” con un cuadratín de ancho, como las usa el texto chino, y ese es el signo que recibe una palabra latina compuesta con la fuente: Li Bai’s sale con un hueco ancho tras el apóstrofo y una cita inglesa abre y cierra con un cuadratín en blanco. Una fuente china tampoco tiene cursiva, y la inclinación simulada en pantalla sale recta en el PDF. El texto que mezcla chino y una lengua latina en una sola fuente (las notas al pie, que usan la fuente del cuerpo, o las glosas con pinyin) se lee mejor sin apóstrofos, comillas inglesas ni cursivas; « » y los signos de Latin-1 conservan su ancho. Cuando el texto latino va aparte, dale una fuente latina con un estilo de párrafo.",
+      "ca": "Noto Serif TC i les altres fonts de xinès tradicional dibuixen ‘ ’ “ ” amb un quadratí d'amplada, com les fa servir el text xinès, i aquest és el signe que rep una paraula llatina composta amb la font: Li Bai’s surt amb un buit ample després de l'apòstrof i una cita anglesa obre i tanca amb un quadratí en blanc. Una font xinesa tampoc no té cursiva, i la inclinació simulada a la pantalla surt recta al PDF. El text que barreja xinès i una llengua llatina en una sola font (les notes a peu de pàgina, que fan servir la font del cos, o les glosses amb pinyin) es llegeix millor sense apòstrofs, cometes angleses ni cursives; « » i els signes de Latin-1 conserven la seva amplada. Quan el text llatí va a part, dona-li una font llatina amb un estil de paràgraf.",
       "zh": "Noto Serif TC和其他繁体中文字体把‘ ’ “ ”画成一个em宽，这是中文使用它们的方式，而用该字体排的拉丁文词得到的也是这个字形：Li Bai’s的撇号后面出现很宽的空隙，英文引文开头和结尾各空出整整一个em。CJK字体也没有斜体，屏幕上模拟的倾斜在PDF中印成正体。在同一种字体中混排中文和拉丁语言的文字（脚注，它取正文字体；或带拼音的注释），最好不用撇号、弯引号和斜体；« »和Latin-1标点保持原宽度。拉丁文单独成段时，通过段落样式给它一个拉丁字体。"
     },
     "feature": "cjk-fonts"
@@ -1502,11 +1722,13 @@
     "title": {
       "en": "A page-span heading always opens a new page",
       "es": "Un título a todo el ancho siempre abre una página nueva",
+      "ca": "Un títol a tota l'amplada sempre obre una pàgina nova",
       "zh": "通栏标题总是开启新页"
     },
     "body": {
       "en": "A heading whose level or style sets span: 'page' is laid out as an opener at the head of a page, whether or not it has a breakBefore. Placed after other text, or after another opener on the same page, it moves to the next page and leaves the rest of the current one empty. A banner headline across both columns (or both tiers of a vertical page) under a masthead goes into the opener's own design, next to the masthead, or into a :::callout{span=\"page\"} box as a heading without span, as newspaper-front-page sets its banners.",
       "es": "Un título cuyo nivel o estilo fija span: 'page' se compone como apertura en la cabeza de una página, tenga o no breakBefore. Colocado después de otro texto, o de otra apertura en la misma página, pasa a la página siguiente y deja vacío el resto de la actual. Un titular que cruza las dos columnas (o los dos pisos de una página vertical) bajo la cabecera del periódico va en el diseño de la propia apertura, junto a la cabecera, o dentro de un recuadro :::callout{span=\"page\"} como título sin span, que es como newspaper-front-page compone sus titulares.",
+      "ca": "Un títol el nivell o l'estil del qual fixa span: 'page' es compon com a obertura al capdamunt d'una pàgina, tingui o no breakBefore. Col·locat després d'un altre text, o d'una altra obertura a la mateixa pàgina, passa a la pàgina següent i deixa buida la resta de l'actual. Un titular que travessa les dues columnes (o els dos pisos d'una pàgina vertical) sota la capçalera del diari va al disseny de la mateixa obertura, al costat de la capçalera, o dins d'un requadre :::callout{span=\"page\"} com a títol sense span, que és com newspaper-front-page compon els seus titulars.",
       "zh": "标题级别或样式设了span: 'page'的标题，会作为章首页排在页面顶部，不管它有没有breakBefore。放在其他文字之后，或同一页另一个章首页之后，它都会移到下一页，当前页余下部分留空。报头下横跨两栏（或竖排页面两层）的通栏大标题，要放进章首页自己的设计里，与报头并列；或者放进:::callout{span=\"page\"}框中，作为不设span的标题，newspaper-front-page就是这样排通栏标题的。"
     },
     "feature": "opener-design"
@@ -1515,11 +1737,13 @@
     "title": {
       "en": "Circled numbers ① ② are set as Latin text",
       "es": "Los números en círculo ① ② se componen como texto latino",
+      "ca": "Els números en cercle ① ② es componen com a text llatí",
       "zh": "带圈数字①②按拉丁文排"
     },
     "body": {
       "en": "In a Chinese paragraph the composer sets ① to ⑳ as Latin letters: a line may end on a number whose sense opens the next line, and cjk.latinSpacing puts its quarter em between the number and the character after it. Type a word joiner (U+2060) after each number: the number stays on the line of its sense and the space goes.",
       "es": "En un párrafo chino, el compositor trata ① a ⑳ como letras latinas: una línea puede acabar en un número cuya acepción empieza en la línea siguiente, y cjk.latinSpacing pone su cuarto de cuadratín entre el número y el carácter siguiente. Escribe una unión de palabras (U+2060) después de cada número: el número se queda en la línea de su acepción y el espacio desaparece.",
+      "ca": "En un paràgraf xinès, el compositor tracta de ① a ⑳ com a lletres llatines: una línia pot acabar en un número l'accepció del qual comença a la línia següent, i cjk.latinSpacing posa el seu quart de quadratí entre el número i el caràcter següent. Escriu una unió de paraules (U+2060) després de cada número: el número es queda a la línia de la seva accepció i l'espai desapareix.",
       "zh": "在中文段落中，排版器把①到⑳当作拉丁字母处理：一行可能以一个编号结尾，而它所属的内容却从下一行开始，cjk.latinSpacing还会在编号和其后的汉字之间加四分之一em的间距。在每个编号后输入一个词连接符（U+2060），编号就会和它的内容留在同一行，间距也随之消失。"
     },
     "feature": "han-latin-spacing"
@@ -1528,11 +1752,13 @@
     "title": {
       "en": "A nocite key that matches nothing is dropped silently",
       "es": "Una clave de nocite que no coincide con nada se descarta sin aviso",
+      "ca": "Una clau de nocite que no coincideix amb res es descarta sense avís",
       "zh": "nocite中找不到的键会被悄悄丢弃"
     },
     "body": {
       "en": "A cited key with no reference raises unknownCitationKey, but a key in nocite that matches no entry is skipped without a warning. Copy the keys from the export and count the entries in the list.",
       "es": "Una clave citada sin referencia da el aviso unknownCitationKey, pero una clave de nocite que no corresponde a ninguna entrada se omite sin avisar. Copia las claves de la exportación y cuenta las entradas de la lista.",
+      "ca": "Una clau citada sense referència dona l'avís unknownCitationKey, però una clau de nocite que no correspon a cap entrada s'omet sense avisar. Copia les claus de l'exportació i compta les entrades de la llista.",
       "zh": "被引用却没有文献数据的键会触发unknownCitationKey警告，但nocite中对不上任何条目的键会被直接跳过，没有警告。从导出文件里复制键，并数一数列表中的条目。"
     },
     "feature": "generated-bibliography"
@@ -1541,11 +1767,13 @@
     "title": {
       "en": "A key defined twice keeps its first entry, silently",
       "es": "Una clave definida dos veces conserva su primera entrada, sin aviso",
+      "ca": "Una clau definida dues vegades conserva la primera entrada, sense avís",
       "zh": "重复定义的键只保留第一条，且没有警告"
     },
     "body": {
       "en": "References count for the whole book: a key written in two chapters keeps the first definition and the second is ignored with no warning. In a book by several authors, prefix each contributor's keys.",
       "es": "Las referencias valen para todo el libro: una clave escrita en dos capítulos conserva la primera definición y la segunda se ignora sin aviso. En un libro de varios autores, pon un prefijo a las claves de cada uno.",
+      "ca": "Les referències valen per a tot el llibre: una clau escrita en dos capítols conserva la primera definició i la segona s'ignora sense avís. En un llibre de diversos autors, posa un prefix a les claus de cadascun.",
       "zh": "文献数据对全书有效：同一个键在两章中各写一次时，保留第一处定义，第二处被忽略且没有警告。多位作者合写的书，给每位作者的键加上前缀。"
     },
     "feature": "generated-bibliography"
@@ -1554,11 +1782,13 @@
     "title": {
       "en": "A heading style's header holds for its whole section",
       "es": "La cabecera de un estilo de título rige toda su sección",
+      "ca": "La capçalera d'un estil de títol regeix tota la seva secció",
       "zh": "标题样式的页眉对整个节有效"
     },
     "body": {
       "en": "header: { elements: [] } on a title's style removes the running heads up to the next styled heading, not only on the opener. To keep them off the first page alone, give the header elements pages: 'body'.",
       "es": "header: { elements: [] } en el estilo del título quita las cabeceras hasta el siguiente título con estilo, no solo en la apertura. Para dejar libre solo la primera página, da a los elementos de la cabecera pages: 'body'.",
+      "ca": "header: { elements: [] } a l'estil del títol treu les capçaleres fins al títol següent amb estil, no només a l'obertura. Per deixar lliure només la primera pàgina, dona als elements de la capçalera pages: 'body'.",
       "zh": "在标题样式上写header: { elements: [] }，会让直到下一个带样式标题之前的页眉都消失，而不只是首页。只想让首页不出页眉，就给页眉元素加上pages: 'body'。"
     },
     "feature": "running-heads"
@@ -1567,11 +1797,13 @@
     "title": {
       "en": "A figure is numbered and placed where it is first cited",
       "es": "Una figura se numera y se coloca donde se cita por primera vez",
+      "ca": "Una figura es numera i es col·loca on es cita per primer cop",
       "zh": "图在首次被引用处编号和定位"
     },
     "body": {
       "en": "The first :ref or @fig: reference to a figure or table gives it its number and its place, so a reference in an earlier chapter pulls it there. Refer forward to the section that holds it, and to the figure itself only once it is placed.",
       "es": "La primera referencia :ref o @fig: a una figura o una tabla le da su número y su sitio, así que una referencia en un capítulo anterior la lleva allí. Remite hacia delante a la sección que la contiene, y a la figura solo cuando ya esté colocada.",
+      "ca": "La primera referència :ref o @fig: a una figura o una taula li dona el número i el lloc, de manera que una referència en un capítol anterior la porta allà. Remet cap endavant a la secció que la conté, i a la figura només quan ja estigui col·locada.",
       "zh": "对图或表的第一次:ref或@fig:引用决定它的编号和位置，所以前面章节里的引用会把它拉到那里。向后引用时指向包含它的节，等图已经排出之后再直接引用图本身。"
     },
     "feature": "cross-references"
@@ -1580,11 +1812,13 @@
     "title": {
       "en": "The Folio viewer takes the size of its container",
       "es": "El visor Folio toma el tamaño de su contenedor",
+      "ca": "El visor Folio pren la mida del seu contenidor",
       "zh": "Folio查看器取其容器的尺寸"
     },
     "body": {
       "en": "createFolioFromDocument fits the book into the element you give it, with the buttons and the page count in its margins. An element with no height (an empty div in normal flow) shows nothing: give it a height in CSS.",
       "es": "createFolioFromDocument encaja el libro en el elemento que le das, con los botones y el contador de páginas en sus márgenes. Un elemento sin altura (un div vacío en el flujo normal) no muestra nada: dale una altura en CSS.",
+      "ca": "createFolioFromDocument encaixa el llibre a l'element que li dones, amb els botons i el comptador de pàgines als marges. Un element sense alçada (un div buit en el flux normal) no mostra res: dona-li una alçada en CSS.",
       "zh": "createFolioFromDocument把书本放进你给它的元素中，按钮和页码显示在元素的边距里。没有高度的元素（正常文档流中的空div）什么也显示不出：要用CSS给它设定高度。"
     },
     "feature": "folio-viewer"
@@ -1593,11 +1827,13 @@
     "title": {
       "en": "cover: 'pages' needs an even page count for the back board",
       "es": "cover: 'pages' necesita un número par de páginas para la tapa trasera",
+      "ca": "cover: 'pages' necessita un nombre parell de pàgines per a la tapa posterior",
       "zh": "cover: 'pages'需要偶数页才有封底"
     },
     "body": {
       "en": "With binding.cover set to 'pages' the first page turns as the front board and the last page as the back board only when it falls on a verso. An odd page count leaves the book with a front cover and no back: pad it to an even count or keep the case.",
       "es": "Con binding.cover en 'pages' la primera página gira como tapa delantera, y la última como tapa trasera solo si cae en un verso. Con un número impar de páginas el libro tiene tapa delantera y no trasera: complétalo hasta un número par o deja la caja.",
+      "ca": "Amb binding.cover a 'pages' la primera pàgina gira com a tapa anterior, i l'última com a tapa posterior només si cau en un verso. Amb un nombre senar de pàgines el llibre té tapa anterior i no posterior: completa'l fins a un nombre parell o deixa la caixa.",
       "zh": "binding.cover设为'pages'时，第一页作为封面翻动，最后一页只有落在左页时才作为封底。页数为奇数时书只有封面没有封底：把页数补成偶数，或保留书壳。"
     },
     "feature": "folio-appearance"
@@ -1606,11 +1842,13 @@
     "title": {
       "en": "A paper run starts and ends on a new page, and a leaf takes its recto's paper",
       "es": "Una tanda de papel empieza y acaba en página nueva, y la hoja toma el papel de su recto",
+      "ca": "Una tanda de paper comença i acaba en pàgina nova, i el full pren el paper del seu recto",
       "zh": "换纸段从新页开始、在新页结束，一张纸取其右页的纸张"
     },
     "body": {
       "en": "Text inside :::paper starts on a new page and the text after it does too. A leaf has two pages and one paper, its recto's, so a run that starts on a verso prints that page on the paper of the leaf it shares. Put a page break where a run should start on a recto.",
       "es": "El texto dentro de :::paper empieza en página nueva, y el que le sigue también. Una hoja tiene dos páginas y un solo papel, el de su recto, así que una tanda que empieza en un verso imprime esa página en el papel de la hoja que comparte. Pon un salto de página donde una tanda deba empezar en recto.",
+      "ca": "El text dins de :::paper comença en pàgina nova, i el que el segueix també. Un full té dues pàgines i un sol paper, el del seu recto, de manera que una tanda que comença en un verso imprimeix aquella pàgina en el paper del full que comparteix. Posa un salt de pàgina on una tanda hagi de començar en recto.",
       "zh": ":::paper中的文字从新页开始，其后的文字也从新页开始。一张纸有两页而只有一种纸张，即其右页的纸张，所以从左页开始的换纸段，这一页会印在它所在那张纸的纸张上。需要从右页开始的地方，加一个分页。"
     },
     "feature": "paper-runs"

@@ -11,13 +11,23 @@ const preset = (extra: Partial<Parameters<typeof createPostextGuidePreset>[0]> =
 const svgFileIds = (resources: { kind: string; svg?: { fileId: string } }[]) =>
   resources.filter((r) => r.kind === 'svg').map((r) => r.svg!.fileId);
 
-describe('the built-in guide in three languages', () => {
-  it('lists Spanish, English and Simplified Chinese, the last shown as 简', () => {
+describe('the built-in guide in four languages', () => {
+  it('lists Spanish, Catalan, English and Simplified Chinese, the last shown as 简', () => {
     const { summary } = preset();
-    expect(summary.locales).toEqual(['es', 'en', 'zh-Hans']);
+    expect(summary.locales).toEqual(['es', 'ca', 'en', 'zh-Hans']);
     expect([...BUILTIN_PRESET_LOCALES]).toEqual(summary.locales);
     expect(localeShortTag('zh-Hans', summary.locales!)).toEqual({ text: '简', lang: 'zh-Hans' });
     expect(localeShortTag('es', summary.locales!).text).toBe('es');
+    expect(localeShortTag('ca', summary.locales!).text).toBe('ca');
+  });
+
+  it('loads the Catalan edition, hyphenated in Catalan, with its own figures', async () => {
+    const loaded = await preset().load('ca-ES');
+    expect(loaded.locale).toBe('ca');
+    expect(loaded.config.locale).toBe('ca');
+    expect(loaded.config.bodyText?.hyphenation?.locale).toBe('ca');
+    expect(loaded.chapters[0]!.markdown).toContain('Un tipògraf programable per al web');
+    expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ca'))).toBe(true);
   });
 
   it('loads the Chinese edition for any Chinese tag', async () => {

@@ -1,0 +1,46 @@
+---
+title: "Un banc de proves per a la configuració de Folio"
+summary: "Un formulari amb cada paràmetre de config.folio governa un visor postext-folio amb setAppearance: paper, enquadernació, cobertes, taula i llum canvien al vol."
+plain: "Un llibret de butxaca en 3D al costat d'un tauler de controls. Canvia el paper, l'enquadernació, la taula o la llum i el llibre canvia a l'instant, sense tornar-se a compondre."
+description: "Tipus de paper, gramatge, textura, enquadernació, cobertes, taula, llum i inclinació: cadascun un camp que canvia un llibre de postext-folio amb setAppearance."
+question: "Com veig l'enquadernació, la coberta, el paper i la llum d'un llibre abans d'enviar-lo a impremta?"
+aliases: ["configuració de Folio", "setAppearance", "previsualització de l'enquadernació", "previsualització del paper", "maqueta de llibre", "color de la coberta", "il·luminació", "textura de la taula"]
+pageNotes: { "1": "La coberta: un camp vermell maó fins a totes les vores, el títol Six Knots en una lletra de pal sec geomètrica crema, una entradeta en cursiva i el nom de l'autora al peu.", "3": "Una pàgina de nus: un avanttítol vermell petit, el nom del nus en un títol de pal sec i dos paràgrafs curts justificats.", "10": "La contracoberta: el camp vermell maó amb una línia en cursiva centrada." }
+---
+
+## Què compondràs
+
+*Six Knots*, un llibre de butxaca de deu pàgines a 110 × 160 mm, obert a Folio al costat d'un tauler amb tots els paràmetres de `config.folio`. Tria un paper i els fulls canvien de color, de superfície i de rigidesa; passa de rústica a tapa dura i apareix una caixa al voltant del bloc; tria la caixa en lloc de les cobertes impreses, tela o pell, una taula, una llum, una inclinació. El llibre es compon una vegada. Cada canvi arriba al visor amb `setAppearance`, així que no es mou cap línia ni es torna a pintar cap pàgina, i sota el formulari apareixen els paràmetres com el codi que s'enganxa a `config.folio`.
+
+## Elaboració
+
+### 1 · Anomena els camps com la configuració
+
+<Excerpt region="form" />
+
+Cada camp del formulari es diu com la seva ruta a `config.folio` (`paper.grammage`, `binding.cover`, `lighting.environment`), de manera que un sol bucle converteix el formulari en l'objecte que rep el visor: nombres dels lliscadors, booleans de les caselles i un color `{ hex, model }` del selector. Aquest mateix objecte és el `config.folio` del document quan el pen el compon, així que el Sandbox obre el llibre tal com comença el formulari.
+
+### 2 · Cobertes que el visor passa com a tapes
+
+<Excerpt region="covers" />
+
+Amb `binding.cover: 'pages'` la primera pàgina és la tapa davantera i l'última la del darrere, si cau en un verso. L'estil de la contracoberta salta a pàgina parella, així que el llibre acaba sempre en un verso i giren les dues tapes. Canvia el formulari a *A case round the pages* i aquestes dues pàgines giren com a fulls corrents dins d'una caixa de tela.
+
+### 3 · Canvia el llibre sense refer-lo
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `setAppearance({ folio })` substitueix la configuració del document i torna a dibuixar l'escena: gruix i rigidesa del paper, la caixa, els mapes de la taula i la llum. Les pàgines conserven la seva pintura, així que el canvi apareix al fotograma següent. Cada tipus de paper porta el seu gramatge, per això en triar-ne un es mou el lliscador del pes; `resetView()` torna la càmera al seu lloc després que el lector hagi girat el llibre arrossegant amb el botó dret.
+
+## Variants
+
+### Comença en tapa dura amb caixa de tela
+
+Canvia els valors inicials del formulari a `index.html`; el document i el Sandbox els segueixen.
+
+```diff
+-        <option value="hardcover">Hardcover</option><option value="paperback" selected>Paperback</option>
++        <option value="hardcover" selected>Hardcover</option><option value="paperback">Paperback</option>
+```
+
+### Un llibre amb el seu aspecte a la configuració
+
+<RecipeLink slug="folio-book-on-a-desk">Un llibre sobre la taula</RecipeLink> escriu els mateixos paràmetres una vegada a `config.folio`, sense formulari, i <RecipeLink slug="paper-swatch-book">el mostrari</RecipeLink> posa un paper diferent a cada full.

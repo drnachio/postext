@@ -1,0 +1,68 @@
+---
+title: "Final de tesi: apèndix, glossari i índex"
+summary: "El final d'una tesi en blanc i negre: apèndix amb lletra, glossari a dues columnes, bibliografia APA i índex tret de marques en el text."
+plain: "Les últimes pàgines d'una tesi doctoral, del capítol final a l'índex. Postext crea l'índex a partir de paraules marcades en el text i hi posa els números de pàgina."
+description: "Estils de títol per al final d'una tesi a Postext: apèndix A, glossari a dues columnes, bibliografia amb sagnat francès i índex de marques :index."
+question: "Com componc el glossari, la bibliografia i l'índex d'una tesi, amb sagnat francès i cos menor?"
+aliases: ["tesi", "tesi doctoral", "treball de fi de màster", "TFM", "apèndix", "annex", "apèndix amb lletra", "glossari", "bibliografia", "referències", "normes APA", "índex alfabètic", "índex analític", "índex de matèries", "sagnat francès", "blanc i negre"]
+pageNotes: { "1": "La pàgina 171 obre el capítol 6, Conclusion, sota una banda negra de 62 mm: el títol i un numeral de 118 pt en blanc, amb l'avanttítol CHAPTER a sobre. La taula 6.1 queda al peu, entre filets horitzontals.", "3": "La pàgina 173, Appendix A, Interview guide: la banda porta la lletra A on el capítol portava el numeral. A sota, set preguntes numerades amb dues repreguntes i la taula A.1.", "4": "La pàgina 174, el glossari: a la banda, l'avanttítol BACK MATTER i una nota en cursiva; a sota, dues columnes en bandera de termes en negreta amb sagnat francès d'1 em.", "5": "La pàgina 175, la bibliografia: una columna de disset referències APA en cos 9,3, cadascuna amb sagnat francès d'1,5 em.", "6": "La pàgina 176, l'índex alfabètic: lletres en la font dels titulars sobre dues columnes d'entrades i subentrades sagnades. Els números en negreta remeten a les definicions del glossari.", "7": "La pàgina 177: l'índex acaba en dues columnes gairebé iguals sota la capçalera INDEX, i el segueix el colofó." }
+---
+
+## Què compondràs
+
+Les set últimes pàgines d'una tesi doctoral sobre la lectura en pantalla i en paper, en format B5 i en blanc i negre. El capítol 6, l'apèndix A, el glossari, la bibliografia i l'índex alfabètic obren sota la mateixa banda negra de 62 mm, amb el títol calat en blanc. El capítol porta el numeral a la banda; l'apèndix, la lletra; i les seccions finals, l'avanttítol BACK MATTER i una nota breu en cursiva. El capítol va a una columna justificada. El glossari i l'índex passen a dues columnes en bandera i la bibliografia torna a una, amb les línies de continuació de cada entrada sagnades. L'índex surt de marques en el text: el motor ordena els termes sota la seva lletra, cerca la pàgina de cada marca i agrupa les seguides en trams com 171–73. Els números en negreta remeten a les definicions del glossari.
+
+## Elaboració
+
+### 1 · Un estil de títol per a cada part del final
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `# Glossary {style="glossary" note="…"}` obre una secció que arriba fins al títol de nivell 1 següent, i les seves pàgines prenen la disposició, les capçaleres i l'obertura de l'estil ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)), de manera que el glossari i l'índex passen a dues columnes i la bibliografia, l'estil de la qual no fixa disposició, torna a la columna única del document. `numbered: false` deixa aquests títols fora del recompte de capítols (sense aquesta opció, a la banda del glossari sortiria un 8), i cada estil declara el seu salt de pàgina, perquè el que no el declara hereta el `'odd'` del capítol i deixa pàgines parelles en blanc. Les entrades del glossari i de la bibliografia són paràgrafs d'un bloc `:::paragraphs{style="…"}` en cos 9,3 sobre 12,4 pt, enfront de l'11 sobre 14,6 del text, amb les línies de continuació sagnades 1 em al glossari i 1,5 em a la bibliografia ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
+
+### 2 · Una sola banda per a totes les obertures
+
+<Excerpt region="opener" />
+
+La marca és `{number}`, que queda buit en un títol sense numerar, així que el mateix disseny serveix per al capítol, per a l'apèndix, que passa `{attr.letter}` com a marca, i per a les seccions finals, que imprimeixen el seu `{attr.note}` on aniria el numeral. `minHeight` reserva vuit línies de 14,6 pt, 41,2 mm des del capdamunt de la caixa de text, que deixen 3,2 mm lliures sota la banda i mantenen el text a la seva retícula. En els textos de disseny, la línia de base cau a 0,8 de l'alçada de línia, de manera que una caixa alineada a baix el peu de la qual queda a `below()` d'una línia de base hi assenta la seva última línia. Així, el títol, el numeral de 118 pt i l'última línia de la nota es recolzen a la línia de base del títol, a 52,5 mm del tall. La línia del numeral fa 0,72 vegades el seu cos perquè a la 1.4.1 una línia més alta que la seva caixa ignora `verticalAlign: 'bottom'`.
+
+### 3 · La lletra de l'apèndix es posa a mà
+
+<Excerpt region="appendix" />
+
+A postext 1.4.1 un estil de títol no pot canviar la numeració del seu nivell, així que l'apèndix va sense numerar i la seva lletra s'escriu com a atribut: `# Interview guide {style="appendix" letter="A"}`. La banda i la capçalera de l'apèndix la prenen d'aquí, i un tipus de recurs propi numera les seves taules A.1, A.2, etc.; amb el tipus per defecte, la taula seria la 6.2, perquè un títol sense numerar deixa el comptador de capítols en 6. Els títols del capítol es numeren amb les plantilles de cada nivell: `'{1}.{2}'` imprimeix 6.1, i `continuation.headings.h1: 5` fa d'aquest el sisè capítol.
+
+### 4 · Les capçaleres, cap al marge exterior
+
+<Excerpt region="running-heads" />
+
+Els quatre textos s'ancoren a la pàgina i es filtren per `parity`, cosa que manté el foli a la vora exterior de les dues pàgines; cadascun es col·loca per la vora superior, a `above()` per sobre d'una línia de base situada a 17,5 mm del tall, així que el foli de 9,5 pt i les majúscules de 7,5 pt queden a la mateixa línia. La parella porta el títol de la tesi (`{title}`, del frontmatter) i la senar el de la secció (`{chapterTitle}`), com INDEX a la <PageRef page={7}>pàgina 177</PageRef>. `pages: 'body'` les deixa fora de les obertures, on el foli passa al peu. La senar del capítol diria *Chapter 6. Conclusion* i la de l'apèndix *Appendix A. Interview guide*, però en aquesta mostra només l'índex continua en una pàgina senar després de la seva obertura.
+
+### 5 · Marca els termes on el text en parla
+
+<Excerpt region="index" />
+
+`:index[tablet]` imprimeix la paraula i la registra tal com és; `Rayner:index{term="Rayner, Keith"}` no imprimeix res i registra la pàgina de *Rayner* sota el nom complet; `term="interviews!timing of"` crea una subentrada. Els termes del glossari porten `main`, així que la seva pàgina surt en negreta, com avisa la nota de la banda de l'índex. `:::index`, sota `# Index {style="index"}`, imprimeix les entrades a les dues columnes de l'estil, i `buildDocument` torna a compondre el document fins que els números de pàgina deixen de moure's. Les entrades van en cos 9 sobre 11,6 pt, amb les línies de continuació sagnades 2 em i les subentrades 1 em; les lletres, en 13 pt amb la font dels titulars. Les marques no funcionen a les cel·les de taula, així que les files de la taula 6.1 no hi afegeixen pàgines: *look-backs* remet al paràgraf que les comenta, no a la taula.
+
+### 6 · Tots els valors per defecte, en negre
+
+<Excerpt region="palette" />
+
+La negreta, la cursiva i les vinyetes i els números de les llistes segueixen per defecte l'entrada `main-color` de la paleta, així que, si li dones el color de la tinta, surten en negre i no en blau ([paleta de colors](/ca/docs/configuration#paleta-de-colors)). A la 1.4.1 la paleta no arriba a `bodyText.referenceColor`, i per això la configuració el repeteix: sense aquesta línia, *Table 6.1* surt al text en blau #295AA3. `referenceBold: false` posa la referència en rodona, com les cites autor-any que l'envolten.
+
+<Note>Tres coses encara es fan a mà: una llista de taules, les remissions a una pàgina del text (*vegeu p. 172*) i, a la 1.4.1, un comptador amb lletres per als apèndixs. En una tesi sencera composta capítol a capítol amb `buildBundle`, el capítol que conté `:::index` rep les marques de tots els capítols.</Note>
+
+## Variants
+
+### Obre cada secció en pàgina senar
+
+Les tesis que s'enquadernen per a una biblioteca solen obrir cada secció en pàgina senar. El glossari, la bibliografia i l'índex passen llavors a les pàgines 175, 177 i 179, cadascuna després d'una parella en blanc, i els números en negreta de l'índex apunten a la 175.
+
+```diff
+-const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
+-  parity: 'any' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
++const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
++  parity: 'odd' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
+```
+
+### Compon també el principi de la tesi
+
+Els preliminars, numerats en romans abans de la pàgina 1, són a <RecipeLink slug="front-matter-roman-to-arabic">Preliminars amb folis romans i després la pàgina 1</RecipeLink>.

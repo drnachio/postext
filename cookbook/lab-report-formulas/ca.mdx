@@ -1,0 +1,81 @@
+---
+title: "Informe de laboratori: fórmules, subíndexs i corba de pH"
+summary: "Un informe de química de quatre pàgines A4 que marca amb ~ i ^ les fórmules i unitats del text i deixa TeX per a la reacció i les equacions."
+plain: "Un informe escolar de química de quatre pàgines sobre l'anàlisi d'un vinagre. Ensenya a escriure fórmules químiques i unitats amb números petits a dalt i a baix, a més d'algunes equacions completes."
+description: "Un informe de química compost amb Postext. Les fórmules van en la lletra del text, i la taula i la corba de valoració surten de les mateixes lectures."
+question: "Com escric fórmules químiques i unitats amb subíndexs i superíndexs, i deixo TeX per a les equacions?"
+aliases: ["informe de laboratori", "informe de pràctiques", "química", "fórmula química", "subíndex", "superíndex", "unitats", "mhchem", "corba de valoració", "números penjats"]
+pageNotes: { "1": "Una banda rosa pàl·lid porta la línia del curs, el títol amb el número de la pràctica, 4, penjat al marge esquerre i les dades d'autoria, amb els rètols penjats de la mateixa manera; a la dreta, una bureta dibuixada degota sobre un matràs de líquid rosa pàl·lid, rosa intens on cau la gota. Sota la banda, el resum amb un filet rosa a l'esquerra, els apartats 1 i 2 amb els números penjats, la reacció de neutralització i l'equació del pH a l'equivalència.", "2": "L'equació de Henderson-Hasselbalch, l'apartat 3 amb la llista de materials i una nota de seguretat en un marc rosa fi, i l'apartat 4 amb els sis passos numerats del procediment.", "3": "L'apartat 5, Resultats: la taula 1 amb les lectures de la bureta sota una capçalera gris pissarra, les xifres alineades a la dreta en una lletra monoespaiada i els rètols de la mitjana i la desviació típica estesos sobre tres columnes, el càlcul de la concentració del vinagre en una equació destacada, el subapartat 5.2 sobre la corba de pH i el començament de la discussió.", "4": "La figura 1, la corba de valoració: punts rosa per a les lectures del pH-metre sobre la línia del model, l'interval de viratge de l'indicador com una banda rosa, el punt d'equivalència encerclat i el pKa llegit a la meitat del volum d'equivalència; després, el final de la discussió, l'apartat 7 amb les conclusions, tres referències amb sagnat francès i el colofó." }
+---
+
+## Què compondràs
+
+A la pràctica 4 de Química, tres alumnes de 2n de Batxillerat valoren un vinagre de poma amb hidròxid de sodi per saber quant àcid acètic conté. Són quatre pàgines A4 impreses per una cara. Els números de secció pengen en un marge esquerre de 55 mm, de manera que títols i paràgrafs comencen al mateix límit. La bureta i la capçalera de la taula van en gris pissarra, i l'únic color és el rosa de la fenolftaleïna, pàl·lid a la banda de l'obertura i a l'interval de viratge, intens als números de secció i a les lectures del pH-metre. Les fórmules i unitats del text van en la mateixa lletra, amb subíndexs i superíndexs; TeX compon la reacció i tres equacions destacades. La taula 1 i la corba de la figura 1 surten d'un únic array de lectures al codi.
+
+## Elaboració
+
+### 1 · Fórmules com a text, TeX per a les equacions
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. [`~…~` i `^…^`](/ca/docs/document-format#format-en-línia) componen un tram al 58 % del cos en la lletra del text, de manera que `CH~3~COOH`, `OH^−^` (el seu signe menys és U+2212) i `cm^3^` conserven el pes i el color de la frase que els envolta. Les marques serveixen també als peus i a les cel·les de taula, on no hi cap TeX. La reacció, escrita amb `\ce{…}` de mhchem, i les equacions van en TeX entre `$$`. El [motor de fórmules](/ca/docs/configuration#arrencar-el-motor-de-fórmules) només ve a la versió `?bundle`, així que tots els símbols s'importen d'aquesta. `math.fontSizeScale` es deixa en 1: a la 1.4.1 l'alçada de la x d'una fórmula és mig cos i la d'Inria Serif és de 0,495 em, de manera que les minúscules de fórmula i text queden a la mateixa alçada.
+
+### 2 · Números de secció penjats al marge
+
+<Excerpt region="hanging" />
+
+El disseny de cada nivell de títol és una ranura amb dos elements: el títol, al límit del text, i el `{number}`, ancorat a la seva esquerra (`left-of`) a 4 mm, en una caixa de 33 mm alineada a la dreta. La caixa necessita una amplada fixa. L'amplada automàtica es limita a l'espai que la columna deixa a la seva esquerra, i com que no en deixa gens, la caixa es queda en 0 mm i els títols creixen d'una a tres línies. El cos i l'interlineat del nivell només compten per al flux, on cada títol ocupa una línia de 15 pt. La lletra la posa el disseny: els apartats, numerats `{2}`, en rosa a 13 pt, i els subapartats, `{2}.{3}`, en gris i al cos del text.
+
+### 3 · L'obertura de l'informe surt de l'H1
+
+<Excerpt region="head" />
+
+L'únic H1 de l'informe porta l'[estil de títol](/ca/docs/configuration#span-i-disseny-avançat) `report`, que el substitueix per una obertura dibuixada: una banda rosa a dalt de la pàgina, la bureta, la línia del curs, el títol amb el número de la pràctica penjat com un número de secció i les dades d'autoria. Aquestes dades surten dels [atributs del títol](/ca/docs/document-format#atributs-dencapçalament) i del `publishDate` del frontmatter. La banda és una caixa, i les caixes compten per a l'alçada que reserva el títol, així que el text començaria sota el seu peu, a 104 mm del límit superior de la pàgina, fins i tot sense `minHeight`. `minHeight` fixa una alçada mínima que arriba 8 mm per sota de la banda; amb el marge inferior de l'H1 i la retícula de 15 pt queden 15 mm de blanc sobre el resum, en lloc de 4,7 mm.
+
+### 4 · Taula i Figura en la llengua de l'informe
+
+<Excerpt region="labels" />
+
+[`defaultResourceTypes(LANG)`](/ca/docs/configuration#tipus-de-recurs) dona Tabla i Figura a l'edició espanyola; el `locale` tot sol les deixaria en anglès. La plantilla `{h1}.{n}` imprimeix aquí un 1 a seques, perquè l'H1 de l'informe no porta número i un `{h1}` buit desapareix amb el seu punt. El peu de la taula va a sobre, com és costum als informes. El text cita taula i figura amb `:ref{id="lecturas" style="full" case="lower"}`, que escriu «tabla 1» en minúscula, amb la tinta i el pes del text.
+
+### 5 · Una sola sèrie de lectures per a la taula i la corba
+
+<Excerpt region="data" />
+
+Les quatre parelles de lectures de la bureta donen totes les cel·les de la taula 1, la mitjana i la desviació típica, i el volum mitjà fixa el punt d'equivalència del model de pH que dibuixa la figura 1. La primera fila és la capçalera (`headerRowCount: 1`), i `columnWidths` dona a la columna de rètols 1,8 parts de l'amplada. Cada cel·la porta el seu propi `align`, i [`mergeCells`](/ca/docs/configuration#construir-models-de-taula) estén els rètols de la mitjana i la desviació sobre les tres primeres columnes, alineats a la dreta al costat del seu valor. Les xifres van en Sometype Mono, de manera que les comes decimals queden en columna. Les capçaleres són magnituds sobre unitats, com `V~b~ gastado / cm^3^`, amb les mateixes marques que el text.
+
+### 6 · Referències amb sagnat francès
+
+<Excerpt region="references" />
+
+Un contenidor `:::paragraphs{style="references"}` aplica l'[estil de paràgraf](/ca/docs/configuration#estils-de-paràgraf) a cada referència: 9 pt sobre 12,5 pt, en bandera, amb 6 mm de sagnat francès i 4 pt entre entrades. A la 1.4.1 el text en bandera no té partició de mots, així que un títol llarg com *Fundamentos de química analítica* només es talla entre paraules. El colofó porta un estil propi, Inria Sans a 7,4 pt, amb una línia de 15 pt de blanc a sobre.
+
+## Variants
+
+### Acoloreix la nota de seguretat en lloc d'emmarcar-la
+
+Un fons amb el rosa del viratge substitueix el marc, i el requadre continua amb un sol recurs gràfic.
+
+```diff
+   box('safety', t({ es: 'Seguridad', en: 'Safety' }), {
+-    border: { enabled: true, color: col('phenol'), width: pt(0.75) },
++    backgroundEnabled: true, background: col('blush'),
+```
+
+### Numera taules i figures per apartat
+
+Els resultats passen a ser la taula 5.1 i la figura 5.1, amb el compte reiniciat a cada apartat.
+
+```diff
+-const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id === 'table'
+-  ? { ...type, captionStyle: { position: 'above' } } : type)); // a table's caption goes on top
++const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
++  ...(type.id === 'table' && { captionStyle: { position: 'above' } }) }));
+```
+
+## Errors freqüents
+
+- Una equació destacada no queda unida a la frase que la presenta, i una frase que acaba en «así que» pot tancar una pàgina amb l'equació ja a la següent. El text de les dues edicions està ajustat perquè l'equació de [OH⁻] tanqui la pàgina 1 sota la seva frase.
+- Els glifs de TeX són els de MathJax, no els d'Inria Serif, i una equació pesa una mica menys que el text que l'envolta. Deixa les fórmules que van dins d'una frase com a marques `~` i `^`, i reserva TeX per a les línies que el necessiten.
+- A la 1.4.1, un disseny de títol que es queda a la columna es retalla pel límit superior de la columna. L'estil `report` porta `span: 'page'` en aquest informe d'una sola columna només per això: sense aquesta opció, els 24 mm de dalt de la banda i de la bureta surten en blanc.
+- Els peus es componen en bandera, i a la 1.4.1 una línia en bandera es pot partir entre una paraula i el seu superíndex. Quan ocupava dues línies, el peu de la taula 1 de l'edició anglesa es tallava entre `mol·dm` i `−3`; ara cap en una línia a les dues edicions. Revisa cada peu que porti una unitat.
+- Les fonts web no arriben a un SVG dibuixat com a imatge, així que les xifres dels eixos i els seus rètols a la corba són contorns de MathJax: `tex()` demana a `renderMath` els traçats de cada rètol i els col·loca a l'SVG. Al PDF continuen sent vectorials i tenen els mateixos glifs que les equacions.

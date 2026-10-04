@@ -1,0 +1,65 @@
+---
+title: "Manual de producte amb avisos de seguretat"
+summary: "Manual d'un bullidor en alemany: els requadres WARNUNG i VORSICHT porten el triangle en una franja del color d'avís, i els peus diuen Abbildung i Tabelle."
+plain: "Un manual d'instruccions de set pàgines, en alemany, per a un bullidor elèctric. Mostra com crear requadres de seguretat amb el triangle d'advertiment, en vermell o ambre segons el nivell de perill."
+description: "Manual en alemany d'un electrodomèstic, compost amb Postext: avisos amb triangle en una franja de color, tecles en xips, dibuix de peces i taula partida."
+question: "Com faig requadres d'avís amb una icona sobre una franja de color, en una llengua que Postext no retola?"
+aliases: ["avís de seguretat", "requadre d'advertiment", "requadre de precaució", "paraula d'advertiment", "paraula de senyal", "triangle de perill", "manual d'instruccions", "manual d'usuari", "alemany", "Bedienungsanleitung", "WARNUNG", "VORSICHT", "tecla", "taula d'avaries"]
+pageNotes: { "1": "La coberta: Verra W1 en blanc sobre una paret verd blavós, damunt d'un bullidor blanc dibuixat amb traç verd blavós que es recolza en el terç inferior blanc de la pàgina, amb Bedienungsanleitung, una pestanya DE i la línia del model.", "2": "La secció 1, Sicherheitshinweise, sota una pestanya verd blavós amb un 1 blanc. Tres paràgrafs, l'últim amb les paraules d'advertiment en xips vermell, ambre i verd blavós, i dos requadres: WARNUNG · STROMSCHLAG, amb un triangle blanc sobre una franja vermella dins d'un marc fi vermell, i VORSICHT · VERBRÜHUNGSGEFAHR, amb un triangle negre sobre una franja ambre.", "3": "La secció 2: el bullidor de perfil amb vuit línies de referència numerades en verd blavós, Abbildung 1, i la Tabelle 1, una llegenda de quatre files els números de la qual són xips rodons i la fila del tauler de comandaments de la qual mostra tres tecles perfilades; després, dos paràgrafs breus i una llista de comprovació de tres caselles.", "4": "La secció 3: passos amb números grans en verd blavós i tecles en xips perfilats, guions niats en dos nivells sota l'últim pas, un requadre HINWEIS verd blavós amb cantonades arrodonides i una icona d'informació, i una llista de quatre temperatures.", "5": "La secció 4, Reinigung und Entkalken: dos paràgrafs, tres passos per descalcificar amb números grans en verd blavós i un requadre HINWEIS; després, la secció 5, Störungen beheben, el paràgraf de la qual cita la Tabelle 2.", "6": "La Tabelle 2, la taula d'avaries: una fila de capçalera negra, cada avaria en negreta en una cel·la que abasta totes les seves causes i «Fortsetzung auf der nächsten Seite» sota l'última fila.", "7": "La Tabelle 2 continua sota la seva capçalera repetida i amb «(Fortsetzung)» al peu; després, Technische Daten en una taula de quatre columnes i Entsorgung amb un colofó." }
+---
+
+## Què compondràs
+
+Un manual de set pàgines per al Verra W1, un bullidor inventat, en alemany i en A5. A la pàgina de seguretat, els dos nivells de perill van en requadres: a l'esquerra baixa una franja del color d'avís amb el triangle d'advertiment, i un marc fi del mateix color tanca el requadre, vermell a WARNUNG i ambre a VORSICHT. HINWEIS, que avisa de danys a l'aparell, canvia franja i triangle per un fons verd blavós de cantonades arrodonides. Abans dels requadres, un paràgraf presenta les tres paraules d'advertiment en xips plens. A la pàgina 3, un dibuix amb línies de referència numerades va sobre la seva llegenda, i a la 4 les tecles són xips perfilats al costat de números de pas grans. La taula d'avaries ocupa les pàgines 6 i 7. Els peus diuen Abbildung i Tabelle, i la taula partida, Fortsetzung.
+
+## Elaboració
+
+### 1 · Una franja que porta el triangle
+
+El codi és el de [la resposta curta](#la-resposta-curta), més amunt. `stripe` pinta la franja per la vora esquerra. Quan un requadre porta franja lateral, 1.4.1 centra la icona sobre la franja en lloc de donar-li una columna pròpia ([estils d'avís](/ca/docs/configuration#estils-davís)), i `align: 'top'` alinea la vora superior de la icona amb la del títol. El `border` del mateix color converteix la franja en el costat gruixut d'un marc; sense ell, el text del requadre quedaria solt a la pàgina, al costat d'una barra de color. `PAD_Y` està calculat perquè el títol, la seva separació i els farciments superior i inferior sumin dues línies de la retícula de 12,8 pt. El cos manté l'interlineat de la retícula, així que cada requadre mesura un nombre enter de línies (10 el de WARNUNG, 8 el de VORSICHT), i `marginTop: pt(LEAD)` deixa exactament una línia entre els dos requadres de la pàgina 2. A VORSICHT, l'ambre es queda a la franja i el marc, i el títol i les vinyetes van en el color del text: l'ambre sobre blanc dona un contrast de 2,0:1, i la lletra petita necessita 4,5:1. HINWEIS parteix de la mateixa base (`...notice(…)`) i desactiva la franja i el marc, de manera que la seva icona d'informació ocupa una columna pròpia i `borderRadius` arrodoneix un fons llis.
+
+### 2 · Noms alemanys per a figures i taules
+
+<Excerpt region="types" />
+
+Amb `locale: 'de'`, la partició de mots és l'alemanya, però 1.4.1 només porta en anglès i en castellà els noms dels tipus de recurs i els avisos de continuació d'una taula partida. Sense aquestes línies, els peus dirien Figure 2.1 i Table 5.1, i sota la primera part de la taula partida es llegiria Continued. Un tipus de recurs escrit a mà ha de donar tots els seus camps, també els de la numeració, i d'això se n'encarrega `counted`: `{n}` amb `resetOn: 'never'` numera correlativament tot el manual (Abbildung 1, Tabelle 1 a 3) en lloc de tornar a començar a cada secció. Només el tipus de taula fixa `captionStyle.position: 'above'`, així que les taules porten el peu damunt de la capçalera i el dibuix el manté a sota.
+
+### 3 · Tecles, paraules d'advertiment i números de peça com a xips
+
+<Excerpt region="chips" />
+
+`taste` envolta amb un filet el nom d'una tecla, en Red Hat Mono i sense farciment, tal com el porta imprès el botó. Els xips de les paraules d'advertiment van plens del color del seu requadre, i l'ambre porta la paraula en el color del text, igual que el títol de VORSICHT. `nr` dona als números de peça un radi més gran que la meitat de la seva alçada, així que surten rodons, com els cercles numerats del dibuix. La mida dels xips es dona en em del text que els envolta: una tecla mesura 8,6 pt al text corregut i 7,5 pt en una cel·la de taula ([estils de xip](/ca/docs/configuration#estils-de-xip)).
+
+### 4 · Números de pas sobre la línia de base
+
+<Excerpt region="steps" />
+
+Els passos són una llista numerada amb les xifres en Red Hat Display 800 a 15 pt, en verd blavós i sense separador. 1.4.1 centra el número d'una llista a la seva primera línia en comptes de recolzar-lo a la línia de base, així que una xifra de 15 pt al costat de text de 9,3 pt queda prop d'1 pt per sota de la línia. `numberVerticalOffset: pt(-1)`, un valor mesurat a la captura, puja el seu peu fins a la línia de base. `itemSpacing` separa els passos 5 pt per deixar lloc a les xifres grans. Les vinyetes niades sota un pas comencen a 6,5 mm, a l'alçada del text del pas; són guions verd blavós, i els del tercer nivell, grisos ([llistes ordenades](/ca/docs/configuration#llistes-ordenades)).
+
+### 5 · Números de secció en una pestanya invertida
+
+<Excerpt region="section" />
+
+Cada secció és un títol de primer nivell dins de la columna, dibuixat amb una ranura d'elements. La pestanya imprimeix `{number}` (l'omple `numberingTemplate: '{1}'`) en blanc sobre un quadrat verd blavós, i el títol comença 3 mm a la seva dreta. Número i títol comparteixen cos i interlineat, així que el mateix farciment superior els assenta a la mateixa línia de base. La pestanya és un quadrat de 22 pt, 3,6 pt menys que dues línies de la retícula de 12,8 pt, de manera que pestanya i títol caben en dues línies de retícula. La coberta també és un títol de primer nivell, amb un estil de títol sense número, així que Sicherheitshinweise és la secció 1.
+
+### 6 · Una taula d'avaries amb cel·les combinades que es parteix
+
+<Excerpt region="tables" />
+
+Cada taula és un TSV en un fitxer de contingut propi. A les dades d'avaries, una línia amb la primera cel·la buida pertany a l'avaria anterior; `mergeCells` uneix aquestes primeres cel·les en una sola cel·la alta i marca com a ocultes les que cobreix. `parseTSV` no fixa cap fila de capçalera, així que la declara `headerRowCount: 1`, i aquesta és la fila que es repeteix a la pàgina 7. La taula és més alta que una pàgina, i a 1.4.1 només es parteix una taula flotant; per això `position: 'top'` la converteix en flotant. El tall cau entre dues files i no travessa mai una cel·la combinada, així que cada avaria queda a la mateixa pàgina que les seves causes ([taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Es cita a la pàgina 5 i encapçala la 6, la primera pàgina després de la cita que pot ocupar un flotant `top`. `fold` col·loca les dues meitats d'una llista l'una al costat de l'altra, a la llegenda i a les dades tècniques, i la llegenda centra els seus xips de número amb `align: 'center'`.
+
+## Variants
+
+### Numera figures i taules per secció
+
+Amb el número de secció a la plantilla i un reinici a cada secció, el dibuix passa a ser Abbildung 2.1 i la taula d'avaries, Tabelle 5.1.
+
+```diff
+-const counted = { numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // 1, 2…
++const counted = { numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal' };
+```
+
+## Errors freqüents
+
+- A 1.4.1, l'element que segueix una llista niada pren l'`itemSpacing` de la llista niada, no el de la seva pròpia llista. Amb 5 pt entre passos i cap entre vinyetes, un pas que seguís una llista de vinyetes quedaria 5 pt més a prop que els altres; per això aquí només l'últim pas porta vinyetes.
+- L'equilibri de columnes baixa un requadre que tanca una pàgina fins a l'última línia de la retícula, així que l'espai que sobra a la pàgina s'obre damunt seu ([equilibri de columnes](/ca/docs/configuration#equilibratge-de-columnes)). El text de la pàgina 2 està ajustat per omplir la columna sense que sobri cap línia. Si esborres una vinyeta de VORSICHT, el requadre continua acabant al peu i la separació entre els dos requadres passa de 4,5 a 13,6 mm; amb `headings: { balancing: { enabled: false } }` el requadre es queda una línia per sota de WARNUNG i la pàgina acaba dues línies abans del peu.

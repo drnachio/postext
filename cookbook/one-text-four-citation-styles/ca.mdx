@@ -1,0 +1,60 @@
+---
+title: "Un mateix text en quatre estils de citació"
+summary: "Un assaig breu amb sis citacions, compost en APA 7, Chicago autor-any, IEEE i ISO 690: l'opció d'estil és l'únic que canvia."
+plain: "Els mateixos dos paràgrafs sobre tipografia, amb les mateixes fonts, impresos quatre vegades. Cada pàgina fa servir una manera diferent de citar, i les citacions i la llista final hi canvien, tot i que el text es va escriure un sol cop."
+description: "Un assaig citat en APA 7, Chicago, IEEE i ISO 690 amb Postext: les citacions i la llista de referències segueixen una sola opció i el text no canvia."
+question: "Com passo un text d'un estil de citació a un altre sense tocar-lo?"
+aliases: ["estil de citació", "canviar d'estil", "APA", "Chicago", "IEEE", "ISO 690", "autor-any", "citacions numerades", "CSL", "citeproc", "llista de referències"]
+pageNotes: { "1": "Pàgina 1: una banda blava amb l'etiqueta ESTIL DE CITACIÓ · 1 / 4 · AUTOR-ANY i APA 7 en grans lletres blanques; a sota, l'assaig La pàgina que no es veu amb citacions com Warde (1955), Bringhurst (2004, p. 17) i (Rayner, 1998; Tinker, 1963), i una llista de referències APA ordenada per autor.", "2": "Pàgina 2: el mateix assaig sota una banda vermella que diu Chicago: (Tinker 1963; Rayner 1998) sense comes i en l'ordre escrit, i una llista amb els noms complets i l'edició després del títol.", "3": "Pàgina 3: sota una banda blau fosc que diu IEEE, el mateix assaig amb números entre claudàtors, de Warde [1] a [6], i una llista numerada per ordre de citació.", "4": "Pàgina 4: sota una banda verda que diu ISO 690, el mateix assaig amb citacions autor-any i una llista amb els cognoms en majúscules." }
+---
+
+## Què compondràs
+
+Un assaig de dos paràgrafs sobre per què la bona tipografia passa inadvertida, amb sis fonts: una citació narrativa, una amb pàgina, una que omet l'autor perquè la frase ja l'anomena i dues obres citades juntes. El text es compon quatre vegades en una pàgina de 155 × 235 mm, i l'únic que canvia entre les quatre composicions és `citations.style`: APA 7, Chicago autor-any, IEEE i ISO 690. Cada pàgina porta el nom de l'estil en una banda del seu propi color, de manera que, posades l'una al costat de l'altra, es llegeixen com una taula comparativa. Les citacions canvien de forma, d'ordre i de puntuació, la llista canvia d'ordre i de noms, i l'assaig és el mateix fitxer.
+
+## Elaboració
+
+### 1 · Una sola opció
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les citacions s'escriuen una vegada al contingut, amb la sintaxi de Pandoc, i les referències van en un bloc BibTeX al final. `citations.style` anomena un estil CSL, i citeproc-js l'utilitza per escriure cada citació i cada entrada: APA posa coma abans de l'any i ordena dues obres per autor, Chicago respecta l'ordre en què es van escriure, IEEE les converteix en números per ordre de primera citació, ISO 690 posa en majúscules els cognoms de la llista. En un llibre en curs, el canvi és aquest: un valor de la configuració, sense tocar el text.
+
+### 2 · Quatre composicions, dos plecs
+
+<Excerpt region="build" />
+
+L'estil val per a tot el document, així que les quatre versions són quatre composicions del mateix Markdown. Cadascuna rep un `pageIndexOffset` una unitat més gran que l'anterior, que converteix la seva pàgina en la següent d'un llibre imaginari; la taula les aparella llavors en dos plecs, amb els dos estils autor-any que menys es diferencien l'un al costat de l'altre.
+
+### 3 · El nom de l'estil en una banda
+
+<Excerpt region="band" />
+
+El disseny del títol dibuixa la banda des del tall, l'avanttítol amb el número i el sistema de l'estil, i el nom a 54 pt. El nom i el sistema surten de l'script i no del Markdown, perquè el text és el mateix als quatre documents.
+
+<Excerpt region="palette" />
+
+Cada document apunta `main-color` a la seva pròpia banda, així que els quatre colors són entrades enllaçades de la paleta, i qualsevol valor per defecte que la configuració no fixi segueix la banda de la seva pàgina.
+
+## Variants
+
+### Prova un estil de notes
+
+Amb Chicago notes i bibliografia, cada citació es converteix en una nota a peu de pàgina i la llista en una bibliografia; el text continua sense canviar.
+
+```diff
+-  { style: 'apa', band: 'apa', name: 'APA 7', system: t({ en: 'author-date', es: 'autor-año' }) },
++  { style: 'chicago-notes-bibliography', band: 'apa', name: 'Chicago', system: 'notas' },
+```
+
+### Escriu els números volats
+
+Un estil numèric pot conservar la seva llista i imprimir les citacions com a números volats, com fan Nature i Vancouver.
+
+```diff
+-  link: true,
++  link: true, marker: 'superscript',
+```
+
+## Errors freqüents
+
+- El localitzador s'escriu una vegada i cada estil imprimeix la seva pròpia paraula: aquí, «p. 17» als quatre. L'estil ISO 690 en castellà que porta el motor imprimeix «p.» per a qualsevol localitzador, també per a una secció o un capítol, i per això aquest text cita una pàgina.
+- El número d'edició va a BibTeX com a número (`edition = {3}`): així cada estil escriu «3rd ed.», «3.ª ed.» o «3.» a la seva manera. Escrit com a «3rd», s'imprimeix tal qual i es perd la forma pròpia de l'estil.

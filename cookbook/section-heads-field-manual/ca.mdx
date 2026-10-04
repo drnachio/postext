@@ -1,0 +1,76 @@
+---
+title: "Títols de secció fins a set nivells"
+summary: "Seccions de l'1.1 a l'1.12 numerades en una píndola ambre que creix amb el número, quatre nivells més per sota i un setè tret d'un estil de títol."
+plain: "Un capítol d'un manual per a colles que tenen cura de senders, sobre com treure l'aigua dels camins. Ensenya a donar set nivells als títols, cadascun amb el seu aspecte, per veure com encaixen les parts."
+description: "El manual de camp d'una brigada de senders, amb Postext: títols numerats en píndoles, nivells amb filet i cursiva, un setè nivell i llistes niades."
+question: "Com numero els títols 1.1 i 1.1.1, dono a cada nivell un estil diferent i poso el número en una píndola?"
+aliases: ["títols numerats", "numeració de títols", "numeració decimal", "nivells de títol", "encapçalaments numerats", "H7", "setè nivell de títol", "més de sis nivells", "insígnia amb número", "píndola amb número", "secció sense numerar", "títols en línia", "llista numerada niada", "numeració a) i)", "llista de tasques", "caselles", "manual de camp", "manual tècnic"]
+pageNotes: { "1": "L'obertura del capítol 1, Drenaje: el número 1 en una gran píndola ambre al costat del títol, una entradeta en cursiva i el perfil d'un sender que puja cap a la dreta pel cap de la pàgina, en bandes verdes amb dotze punts ambre als llocs abalisats per a nous desviadors. A sota, dues columnes comencen amb les seccions 1.1 a 1.3 en petites píndoles ambre, una llista de pics i el títol amb filet 1.2.1.", "2": "Les seccions 1.4 a 1.6 omplen les dues columnes; la 1.5, el títol de la qual passa a dues línies al costat de la píndola, reuneix els nivells més fondos del capítol: els títols amb filet 1.5.1 i 1.5.2, títols en cursiva, el títol verd Herramientas para la zanja, l'etiqueta Barras de acero en majúscules d'amplada fixa i, a sota, els noms de dues eines en cursiva grisa.", "3": "Les seccions 1.7 a 1.12, amb la píndola que s'eixampla de l'1.9 a l'1.10, normes de seguretat que comencen amb termes en negreta verda i una Lista de control sense número, amb un quadrat ambre buit al costat, una llista numerada 1., a) i i. i dues caselles de tasca; un colofó gris en lletra petita tanca el capítol." }
+---
+
+## Què compondràs
+
+*Drenaje*, capítol 1 del manual de camp d'una brigada de senders, en tres pàgines B5 a dues columnes: IBM Plex Serif per al text, Sans Condensed per a títols i números de secció, i Mono per a etiquetes, folis i números d'apartat. L'obertura posa el número en una gran píndola ambre sobre el perfil del sender, amb dotze punts ambre on aniran nous desviadors. Les seccions 1.1 a 1.12 porten el número en píndoles més petites, que s'eixamplen a l'1.10. Un filet verd i majúscules espaiades marquen els apartats 1.2.1, 1.5.1 i 1.5.2. Els nivells 4 a 6, sense número, canvien de lletra, de color o de caixa, i un setè, en cursiva grisa, anomena les eines. Les normes de seguretat comencen en negreta verda. Tanca el capítol una llista de control sense número, amb un quadrat buit al costat, llistes 1., a) i i. i dues caselles.
+
+## Elaboració
+
+### 1 · Posa el número en una píndola que creix amb ell
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `numberingTemplate: '{1}.{2}'` ajunta el comptador del capítol i el de la secció, i així les seccions van de l'1.1 a l'1.12 ([configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). Si el nivell té un disseny avançat, el número ja no s'imprimeix davant del títol i és el disseny el que col·loca `{number}`. Aquí va en un element de text amb una caixa (`box`) de fons ambre i cantonades arrodonides, sense amplada fixa, de manera que la píndola fa el que fa el número més el seu farciment: 10,1 mm a l'1.9 i 12,7 mm a l'1.10. `'right-of'` penja el títol de la vora dreta de la píndola i n'alinea les línies a l'esquerra; per això el títol llarg de la 1.5 passa a una segona línia al costat del número i no a sota ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)). El títol necessita a més `overflow: 'wrap'`, perquè, per defecte, el text de disseny que no hi cap es talla amb punts suspensius. A la píndola li falten 3 pt per fer dues línies de la retícula, i com que cada títol de secció comença en una línia de la retícula, aquests 3 pt són el blanc que queda entre la píndola i el text de sota, tant si el títol obre una columna com si segueix un paràgraf.
+
+<PageShot page={3} crop="0.07,0.465,0.44,0.218" caption="Pàgina 3: la píndola s'eixampla de l'1.9 a l'1.10 i el títol es desplaça a la dreta el que ocupa la xifra de més." />
+
+### 2 · Posa filet i espaiat al tercer nivell
+
+<Excerpt region="ruled" />
+
+A la 1.4.1 els títols no tenen `letterSpacing` i el text de disseny sí, així que el nivell 3 també és un disseny: un filet verd de 0,75 pt, el número en IBM Plex Mono i, al costat, el títol en majúscules espaiades. El tercer comptador de `'{1}.{2}.{3}'` torna a començar a cada secció; per això tant l'1.2.1 com l'1.5.1 acaben en 1. `DROP` baixa només el filet. El número es col·loca `LEAD - DROP` per sota seu, de manera que número i títol queden una línia de la retícula per sota d'on comença el títol, sigui quin sigui `DROP`. Com que el filet queda més a prop del número que del paràgraf anterior, es llegeix com a part del títol.
+
+### 3 · Baixa del nivell 4 al 6
+
+<Excerpt region="levels" />
+
+Un nivell sense `numberingTemplate` no imprimeix número, així que a partir del nivell 4 el que distingeix un títol d'un altre és la lletra, el color o la caixa: una cursiva amb gràcies al 4, la lletra dels títols, en verd, al 5 i majúscules seminegres d'amplada fixa al 6. L'interlineat i els marges definits al mateix `headings` arriben a tots els nivells i posen cada títol sobre la retícula, amb una línia en blanc a sobre i cap a sota. Qualsevol objecte `headings` anul·la el salt de pàgina que obre cada capítol, i per això el nivell 1 el torna a declarar.
+
+### 4 · Fes un setè nivell i una secció sense número amb estils
+
+<Excerpt region="styles" />
+
+Markdown no passa de `######`, i un títol perd les marques de negreta i cursiva, així que `###### *Barra de palanca*` sortiria com un nivell 6 més. L'estil de títol `'level7'` compon els noms de les eines en una cursiva estreta grisa de pes 500, més lleugera que el 600 del nivell 6, i `textTransform: 'none'` els treu les majúscules que heretarien. Es llegeixen un graó per sota de l'etiqueta d'amplada fixa que els precedeix, tot i que a 8,4 pt són més grans que els 7,8 pt de l'etiqueta ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). `numbered: false` deixa la llista de control fora del compte, de manera que una secció posterior continuaria sent la 1.13. Un `{number}` buit continuaria pintant la píndola ambre, així que l'estil porta el seu propi disseny, amb un quadrat buit al seu lloc. El verd dels termes que obren les normes de seguretat és el `boldColor` d'un estil de paràgraf.
+
+### 5 · Canvia les marques de la llista amb la profunditat
+
+<Excerpt region="lists" />
+
+Cada profunditat pren de `levels` la seva marca, el seu color i el seu separador: la llista de control numera amb 1., a) i i. ([sobreescriptures per nivell de les llistes ordenades](/ca/docs/configuration#sobreescriptures-per-nivell-llistes-ordenades)) i els pics passen del verd al sàlvia ([sobreescriptures per nivell de les no ordenades](/ca/docs/configuration#sobreescriptures-per-nivell-llistes-no-ordenades)). El nivell 1 conserva el format per defecte, `'arabic'`; `'decimal'`, la paraula que fa servir CSS, imprimiria «undefined». Les dues entrades `- [ ]` del final de la llista de control porten, en lloc de pic, el `taskCheckboxChar`, que per defecte és ☐, en el verd dels pics de primer nivell ([extensions per a llistes de tasques](/ca/docs/configuration#extensions-per-a-llistes-de-tasques)). Amb els marges de dalt i de baix a zero, totes les llistes continuen sobre la retícula de base.
+
+### 6 · Obre el capítol sobre el perfil del sender
+
+<Excerpt region="opener" />
+
+El perfil és un element d'imatge de l'obertura, ancorat a la pàgina i tan ample com ella. Si fos una figura flotant a tota l'amplada, citada a la pàgina 1 i col·locada a dalt, obriria la pàgina 2 ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). En una obertura, una imatge no reserva alçada, així que `minHeight` porta el text a la primera línia de la retícula que quedi almenys 6 mm per sota seu. La llegenda sobre el verd és text de disseny, perquè un SVG pintat com a imatge no pot fer servir les fonts de la pàgina. La píndola gran repeteix la lletra i l'ambre de les de secció, i el seu `{number}` és el número del capítol, que dona `numberingTemplate: '{1}'`.
+
+## Variants
+
+### Treu el número del capítol de les píndoles
+
+Treu de la plantilla el comptador del capítol i les píndoles aniran de l'1 al 12, més amples a partir del 10; el nivell 3 continuarà imprimint 1.5.1 mentre la seva pròpia plantilla conservi `{1}`.
+
+```diff
+-const h2 = { level: 2, numberingTemplate: '{1}.{2}',
++const h2 = { level: 2, numberingTemplate: '{2}',
+```
+
+### Dona a totes les píndoles la mateixa amplada
+
+Una amplada fixa, la de l'1.10, centra cada número en una píndola igual a les altres i alinea els títols en una sola columna.
+
+```diff
+-  placement: at('container', 'top-left') }; // plus its padding
++  placement: { ...at('container', 'top-left'), size: { width: mm(12.7) } } };
+```
+
+## Errors freqüents
+
+- El setè nivell és un títol de nivell 6 amb l'estil `level7`, així que cap títol de l'exemple no baixa més d'un nivell respecte a l'anterior: *La zanja*, *Herramientas para la zanja*, BARRAS DE ACERO i *Barra de palanca* són dels nivells 4, 5, 6 i 6. El Sandbox avisa d'aquest cas amb «Salt en la jerarquia de títols», i en aquest capítol l'avís no apareix.
+- Una línia que acaba en dos punts només continua unida a la seva llista si el primer element cap en l'espai que queda: a la versió 1.4.1 la regla comprova que hi càpiga una línia, així que un primer element de dues línies que troba una sola línia lliure passa sol a la columna següent i deixa els dos punts aïllats. La secció 1.2 manté el primer element en una línia a les dues edicions.

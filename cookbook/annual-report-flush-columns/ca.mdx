@@ -1,0 +1,68 @@
+---
+title: "Memòria anual amb columnes arran"
+summary: "La memòria anual d'una cooperativa energètica a dues columnes que acaben a la mateixa línia, amb un requadre de xifres a tot l'ample i l'última pàgina igualada."
+plain: "L'informe anual d'una petita cooperativa d'energia, en dues columnes. Ensenya a fer que les dues columnes de text acabin exactament a la mateixa alçada."
+description: "Una memòria anual de cinc pàgines composta amb Postext sobre una retícula de 50 línies: cada columna acaba arran del peu i la pàgina de tancament surt igualada."
+question: "Com faig que cada columna acabi a l'última línia de la retícula i que la pàgina de tancament quedi igualada?"
+aliases: ["justificació vertical", "columnes arran", "columnes equilibrades", "peu de columna igualat", "xifres clau", "tauler de xifres", "compte de resultats", "memòria anual", "annual report", "colors per secció", "requadre flotant"]
+pageNotes: { "1": "La coberta: un fons blau gairebé negre amb Tidewell Community Energy en blanc, 2025 en xifres blanques molt grosses, Annual report and accounts en groc i el període en majúscules espaiades. A la meitat inferior, una cinta verd blavós i una altra de groga s'eixamplen i es creuen de gener a desembre, retolades WIND i SUN, sobre una fila d'inicials dels mesos, amb dues línies de lletra petita a baix.", "2": "La carta de la presidenta sota una franja blau mar i el títol The wind and the sun took turns. Els primers paràgrafs es tallen a la mateixa alçada a les dues columnes sobre un requadre blau gairebé negre amb tres xifres en groc, 8.47 GWh, 2,316 i £84,000; la carta continua a sota i acaba en una signatura manuscrita al peu de la columna dreta.", "3": "L'informe d'explotació sota una franja verd blavós, dues columnes amb intertítols del mateix color, una llista breu de les tres teulades més grans i, al peu de la pàgina, un gràfic de barres dobles, verdes i grogues, amb els dotze mesos.", "4": "Una nota sobre com es compta un quilowatt hora, a dues columnes sota un filet verd blavós al cap de la pàgina; a sota, una taula de producció per emplaçament i un gràfic d'anell amb les hores dels aerogeneradors al cap de cada columna, i la resta de l'informe fins al peu.", "5": "L'informe de la tresorera sota una franja vermell maó: dues columnes curtes que acaben a la mateixa línia i, a sota, el compte de resultats a tota l'amplada de la pàgina, amb la fila de capçalera en blau gairebé negre, els encapçalaments de grup en cursiva i els subtotals en negreta sobre un tint clar." }
+---
+
+## Què compondràs
+
+La memòria de 2025 de Tidewell Community Energy, una cooperativa inventada amb dos aerogeneradors, un hort solar i plaques a 21 teulades. Cinc pàgines de 210 × 280 mm, en anglès. A la coberta, dues cintes dibuixen mes a mes la producció eòlica i la solar sota un «2025» de 150 pt. Segueixen la carta de la presidenta, l'informe d'explotació i els comptes, a dues columnes justificades de Brygada 1918 sobre una retícula de 50 línies. Les columnes plenes acaben a l'última línia, i les curtes, a l'altura de la del costat. Un requadre de tres xifres travessa la pàgina de la carta, i una nota flotant sobre els comptadors obre la pàgina 4. A la pàgina de tancament, les columnes acaben juntes sobre el compte de resultats. Un atribut `palette` tenyeix de verd blavós les pàgines d'explotació i de vermell maó la de comptes.
+
+## Elaboració
+
+### 1 · Tot sobre la retícula, i les palanques tanquen els buits
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. La caixa de text fa exactament 50 línies de 13,4 pt, i el marge inferior (21,6 mm) es calcula a partir d'aquesta alçada. Cada intertítol ocupa una línia de la retícula a sobre i una altra de pròpia, així que una columna que acaba curta es queda curta en línies senceres, que és el que afegeix l'<Feature id="column-balancing">equilibratge de columnes</Feature>. A la <PageRef page={3}>pàgina 3</PageRef>, el paràgraf de tres línies sobre la calamarsa passa sencer a la pàgina 4 per `avoidOrphans`, l'ajust amb què Postext impedeix que l'última línia d'un paràgraf quedi sola al cap d'una columna (la línia vídua dels manuals espanyols), i la columna dreta es queda dues línies curta. Amb `maxLinesPerHeading: 1`, una d'aquestes línies va a l'espai sobre *The Saltings and the roofs* i l'altra queda per a la palanca següent, que la posa després de la llista de teulades. Amb el valor per defecte, 4, anirien totes dues sobre el títol.
+
+### 2 · Iguala el text sobre un requadre que travessa la pàgina
+
+<Excerpt region="figures" />
+
+Un requadre amb `span="page"` parteix en bandes una pàgina a dues columnes. A la <PageRef page={2}>pàgina 2</PageRef>, la carta es talla en vuit línies per columna damunt del requadre i continua a sota a les dues columnes. A dins, `:::columns{count=3 breaks="3,5"}` obre la segona i la tercera columna a la segona i la tercera xifra (els blocs tercer i cinquè del grup), en lloc de tallar on les columnes quedarien més igualades. L'estil de paràgraf `figure` compon aquestes xifres a 26 pt, i el seu `boldColor` les posa en groc.
+
+### 3 · Fes flotar un requadre al cap de la pàgina següent
+
+<Excerpt region="aside" />
+
+Al Markdown, la nota sobre els comptadors va després del primer paràgraf sobre Harrow Down, a la pàgina 3, però `placement="top"` la treu del flux i la col·loca al cap de la pàgina següent. L'informe omple la resta de la pàgina 3, i la <PageRef page={4}>pàgina 4</PageRef> s'obre amb el requadre sobre les dues columnes. A sota, la taula per emplaçament i el gràfic d'anell, tots dos amb `position: 'top'`, encapçalen una columna cadascun, una línia de la retícula més avall del que quedarien sense els 3,5 mm de farciment inferior del requadre.
+
+### 4 · Dona a cada secció el seu color sense portadella
+
+<Excerpt region="palette" />
+
+Amb `parts: { page: false }`, una tanca com `:::part{number="02" title="Operations" palette="band=#1c6e67"}` no obre pàgina. Dona nom a la secció a la franja d'obertura i al costat del foli, i canvia `band` a totes les pàgines fins a la part següent. Les franges, els intertítols, les vinyetes de la llista, les etiquetes dels peus i el filet de la nota prenen `band`, així que les pàgines d'explotació surten en verd blavós i la de comptes en vermell maó, mentre la carta conserva el blau mar de base (<Feature id="part-palettes">colors per part</Feature>).
+
+### 5 · Construeix les taules amb les dades i iguala l'última pàgina
+
+<Excerpt region="data" />
+
+`statement()` converteix `DATA.accounts` en el compte de resultats fila a fila. Una etiqueta que comença per `=` imprimeix en negreta, sobre el tint, la suma acumulada de cada any. Els costos van en negatiu a les dades, així que l'*Operating surplus* surt d'aquesta suma sense teclejar cap total. Una etiqueta sense xifres, com *Income* o *Operating costs*, passa a ser una sola cel·la en cursiva a tota l'amplada de la taula, combinada amb `mergeCells`, que escriu també les cel·les ocultes que necessita cada combinació. A la <PageRef page={5}>pàgina 5</PageRef>, el compte va com a flotant a tota l'amplada del peu, sota l'informe de la tresorera, amb què acaba el document. Sense equilibratge, les columnes arribarien a 12 línies l'esquerra i a 9 la dreta; el tall de tancament les deixa totes dues en 11, i la palanca de títols afegeix sobre *Cash and reserves* la línia que encara li falta a la dreta.
+
+## Variants
+
+### Deixa tot el buit als títols
+
+A la pàgina 3, les dues línies lliures van llavors sobre *The Saltings and the roofs*, i cap després de la llista.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = {}; // the default: up to 4 lines above each heading
+```
+
+### Desactiva l'equilibratge
+
+La columna dreta de la pàgina 3 acaba llavors dues línies curta. A la pàgina 5, l'esquerra arriba a 12 línies i la dreta es queda en 9, i el compte comença una línia més avall.
+
+```diff
+-const balancing = { maxLinesPerHeading: 1 }; // one line per heading; the next lever takes more
++const balancing = { enabled: false };
+```
+
+## Errors freqüents
+
+- Si les columnes de la pàgina de tancament difereixen en una sola línia, es queden així, amb l'esquerra una línia més llarga, com les deixaria un caixista; el tall de tancament només actua amb dues línies de diferència o més. Perquè acabin juntes, allarga o escurça el text en una línia.
+- Postext 1.4.1 treu els espais del final de cada cel·la de taula, també el de no separació. Per alinear les xifres positives amb els costos entre parèntesis, la recepta tanca cada xifra positiva amb un espai de no separació i un caràcter d'unió (U+2060, *word joiner*).

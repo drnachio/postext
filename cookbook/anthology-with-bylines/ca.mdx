@@ -1,0 +1,83 @@
+---
+title: "Antologia amb signatures d'autor"
+summary: "Tres assaigs sobre caminar amb títols que porten autor, any i revista: l'obertura imprimeix les tres dades; les capçaleres parelles i l'índex, només l'autor."
+plain: "Un llibret de tres assaigs sobre caminar. L'autor i l'any de cada assaig s'escriuen una vegada i després apareixen on el llibre els necessita, com a l'índex."
+description: "Antologia de butxaca de Hazlitt, Thoreau i Stevenson composta amb Postext: signatures, capçaleres parelles i índex surten dels atributs de cada títol."
+question: "Com faig un índex que s'ompli sol, amb línies de punts, números de pàgina i l'autor de cada assaig?"
+aliases: ["antologia", "obra col·lectiva", "llibre d'assaigs", "col·laboradors", "signatura d'autor", "autor sota el títol a l'índex", "autor a la capçalera", "índex amb autors", "autor del capítol", "subtítol de l'índex"]
+pageNotes: { "2": "L'índex: numerals romans en vermell òxid, els títols dels assaigs en Gloock amb línies de punts espaiats fins a les pàgines 3, 5 i 8, el nom de cada autor a sota en cursiva morada i la nota sobre els textos fixada al peu de la pàgina.", "3": "L'assaig I s'obre amb el numeral, el títol, la signatura WILLIAM HAZLITT i la procedència, «The New Monthly Magazine, 1822», damunt d'un filet fi.", "6": "Una pàgina parella: el foli i HENRY DAVID THOREAU a la capçalera.", "7": "Una pàgina senar: la capçalera WALKING al costat del foli; l'assaig acaba quatre línies abans del peu." }
+---
+
+## Què compondràs
+
+Nou pàgines d'*Afoot*, una antologia de butxaca amb tres assaigs sobre caminar, de Hazlitt (1822), Thoreau (1862) i Stevenson (1876), en l'anglès original. Una pintura d'un bruguerar al capvespre, un JPEG generat amb models de difusió, ocupa la coberta. L'índex dona a cada assaig un numeral en vermell òxid, el títol en Gloock, una línia de punts espaiats fins a la seva pàgina i, a sota, el nom de l'autor en cursiva morada. Cada assaig s'obre amb el numeral i el títol, una signatura en majúscules espaiades i la revista i l'any en què es va publicar per primera vegada. Les pàgines parelles porten l'autor a la capçalera; les senars, el títol de l'assaig. El títol de cada assaig porta com a atributs l'autor, l'any i la revista, i l'obertura, les capçaleres i l'índex els prenen d'aquí, de manera que per afegir un quart assaig no cal tocar la configuració.
+
+## Elaboració
+
+### 1 · Numerar els assaigs i baixar-ne el text
+
+<Excerpt region="opener" />
+
+El `numberingTemplate: '{1:I}'` del nivell numera els assaigs I, II i III, i `{number}` imprimeix el numeral damunt del títol ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). `minHeight` reserva 12 línies de 14 pt i el filet fi acaba 7 mm per sobre d'aquest límit, així que, amb un títol d'una línia, el text comença a 79 mm de la vora superior en totes les obertures. Una segona línia de títol, a 26 pt, hi afegeix 9,9 mm i baixa el text una línia de la retícula; amb `SINK = 14`, el text comença a la mateixa alçada sota títols d'una i de dues línies. El `marginBottom: pt(0)` del nivell impedeix que el marge per defecte del títol se sumi a aquesta reserva.
+
+### 2 · Un índex que s'omple sol
+
+<Excerpt region="contents" />
+
+`:::toc` al Markdown imprimeix una entrada per cada títol inclòs, amb el número, el text del títol, la línia de punts, l'etiqueta de la pàgina i, gràcies a `subtitle`, l'autor. `buildDocument` torna a compondre el llibre fins que les etiquetes de pàgina deixen de canviar, de manera que, si un assaig canvia de títol o d'extensió, l'índex s'actualitza ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). Postext 1.4.1 col·loca el centre del número de cada entrada 0,3 vegades el cos de l'entrada per sobre de la línia de base, i Chrome situa el centre de Gloock 0,3125 em per sobre de la seva, així que un numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt s'assenta a la línia de base del títol de 15 pt; un de 12 pt queda 0,3 mm més amunt. Un llibre amb parts hi afegeix, a més, una fila per cada `:::part`, amb el disseny de `toc.parts.design`, com a <RecipeLink slug="parts-in-colour">Parts en color</RecipeLink>.
+
+### 3 · L'autor a la pàgina parella, l'assaig a la senar
+
+<Excerpt region="running-heads" />
+
+Cada capçalera s'ancora a la pàgina, a 11 mm de la vora superior, i `parity` tria el costat: el foli s'alinea amb la vora exterior del text, i el nom o el títol queda 7 mm més endins. El `pages: 'body'` de `head()` deixa les capçaleres fora de les obertures, on la signatura ja anomena l'autor, i l'element del peu amb `pages: 'opener'` hi imprimeix el foli, centrat sota el text ([elements de text](/ca/docs/configuration#elements-de-text)). `{chapterTitle}` imprimeix el títol de l'assaig sense el numeral.
+
+### 4 · La coberta i l'índex no compten
+
+<Excerpt region="front" />
+
+Amb `numbered: false`, la coberta i l'índex no fan avançar el comptador, així que Hazlitt és el I, i `toc: false` els deixa fora de la llista ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els dos estils hereten el `breakBefore` del nivell, amb paritat `'any'`, i per això l'índex segueix la coberta a la pàgina 2 sense cap `:::pagebreak`. L'estil de la coberta ocupa tota la pàgina encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es retalla per les vores superior i inferior i deixaria 20 mm de paper per sobre del paisatge.
+
+### 5 · Cada color escrit amb el seu enllaç a la paleta
+
+<Excerpt region="palette" />
+
+A la 1.4.1 `colorPalette` arriba als estils de text però no als elements de disseny, així que `col()` escriu el valor hexadecimal de cada color al costat del seu `paletteId`, i aquest valor és el que pinten les signatures, les capçaleres i la coberta. Amb `main-color` en el color de la tinta, els valors per defecte que la configuració no redefineix surten en aquest color i no en el blau del motor, `#295AA3`.
+
+## Variants
+
+### Indicar on es va publicar cada assaig
+
+`toc.subtitle` imprimeix qualsevol atribut del títol, així que el mateix Markdown pot posar sota cada títol la revista on es va publicar per primera vegada.
+
+```diff
+-const authorLine = { enabled: true, attr: 'author', fontFamily: 'Spectral', fontSize: pt(10),
++const authorLine = { enabled: true, attr: 'source', fontFamily: 'Spectral', fontSize: pt(10),
+```
+
+### Posar el títol del llibre a la pàgina parella
+
+Molts llibres posen el seu propi títol a les pàgines parelles i el del capítol a les senars; `{title}` el pren del frontmatter del Markdown i imprimeix AFOOT.
+
+```diff
+-const versoAuthor = head('verso-author', '{attr.author}', 'even',
++const versoAuthor = head('verso-author', '{title}', 'even',
+```
+
+### Obrir cada assaig en pàgina senar
+
+Amb la paritat `'odd'`, Stevenson passa a la pàgina 9, després d'una pàgina 8 en blanc. Els dos estils dels preliminars necessiten llavors el seu propi `'any'`; si no, l'índex hereta `'odd'` i s'obre a la pàgina 3, després d'una pàgina parella en blanc.
+
+```diff
+-  breakBefore: { enabled: true, parity: 'any' } }; // 'any': each piece opens on the next page
++  breakBefore: { enabled: true, parity: 'odd' } };
+-const bare = { numbered: false, toc: false, header: { elements: [] }, footer: { elements: [] } };
++const bare = { numbered: false, toc: false, breakBefore: { enabled: true, parity: 'any' },
++  header: { elements: [] }, footer: { elements: [] } };
+```
+
+## Errors freqüents
+
+- Hazlitt cita versos enmig de les frases. Un paràgraf no conserva els salts de línia, així que cada vers és un paràgraf propi dins d'un contenidor `:::paragraphs{style="verse"}`, i la frase que continua després va en un estil `runon`, sense sagnat. Una cita en bloc de Markdown sortiria en cursiva d'un gris fix, `#666666`, amb el sagnat de primera línia del cos i sense sagnat lateral, i cap opció de configuració ho canvia a la 1.4.1.
+- Un atribut que falta en un títol no imprimeix res ni avisa. Sense `author="…"`, la signatura i la capçalera parella d'aquell assaig surten buides i la seva línia sota el títol desapareix de l'índex.
+- Els 14,4 pt del pas 2 només valen per a Gloock. Amb una altra font, esbrina a quina alçada sobre la línia de base posa Chrome el seu centre: `measureText('I').alphabeticBaseline` amb `textBaseline = 'middle'` la retorna en píxels, amb el signe canviat. Després dona a `numberFontSize` el valor de 0,3 vegades el cos de l'entrada dividit per aquesta distància en em (la de Hanken Grotesk és 0,2675 em).

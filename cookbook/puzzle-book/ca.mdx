@@ -1,0 +1,73 @@
+---
+title: "Passatemps: mots encreuats, sopa de lletres i laberint"
+summary: "Mots encreuats i sopa de lletres compostos com a taules a partir de línies de lletres: les caselles negres són emplenaments de cel·la; els números, superíndexs."
+plain: "Un quadern de passatemps d'estiu per a nens de 9 a 11 anys, amb mots encreuats, sopa de lletres i laberint. Ensenya a construir les quadrícules a partir de simples línies de lletres."
+description: "Un quadern infantil de passatemps compost amb Postext: mots encreuats i sopa de lletres en taules, un laberint generat amb una llavor i les solucions."
+question: "Com dono a cada taula el seu propi aspecte: filets, emplenaments de cel·la, tessel·les, marc arrodonit?"
+aliases: ["mots encreuats", "sopa de lletres", "laberint", "passatemps", "quadern d'estiu", "quadern d'activitats", "llibre infantil", "solucions", "graella a partir de text", "encreuats"]
+pageNotes: { "1": "La coberta: un cel groc clar amb un gran sol ataronjat que es pon en un mar blau amb ratlles d'onades blanques, un veler a l'horitzó, dues gavines i una tortuga que neda. Quadern d'estiu en lletres grans blau marí, Passatemps del mar, una etiqueta corall De 9 a 11 anys i un camp blanc per escriure-hi el nom.", "2": "Passatemps 1 sota una banda blau mar amb el peu ondulat: uns mots encreuats de nou per nou amb caselles blau marí i números petits en negreta a la cantonada de les caselles on comença una paraula; a sota, les definicions en un requadre groc clar, Horitzontals a l'esquerra i Verticals a la dreta.", "3": "Passatemps 2 sota una banda menta: dues files centrades de cinc xips amb les paraules, el primer, SOMBRILLA, en corall, sobre una graella de dotze per dotze majúscules en tessel·les groc clar amb juntes blanques i cantonades arrodonides; les lletres de SOMBRILLA són sobre tessel·les corall.", "4": "Passatemps 3 sota una banda corall: un laberint sobre sorra clara, des d'un niu a dalt a l'esquerra, on una tortuga acaba de sortir de l'ou al costat de dues closques buides, fins a una sortida al mar blau a baix a la dreta.", "5": "Les solucions, l'una al costat de l'altra, sota una banda groga: els mots encreuats resolts, la sopa de lletres amb totes les paraules sobre menta i el laberint sobre la sorra, amb la sortida en corall des del niu buit fins al mar, on neda la cria. A sota, un requadre Sabies que…? posa un dibuix en secció dels ous de tortuga enterrats a la sorra al costat d'un paràgraf sobre com nia la tortuga babaua. El colofó va al peu, al costat del foli." }
+---
+
+## Què compondràs
+
+Un quadern d'estiu per a nens de 9 a 11 anys: la coberta, tres passatemps sobre el mar i una pàgina de solucions. Les pàgines 2 a 5 s'obren sota un camp de color amb el peu ondulat (blau mar, menta, corall i groc) i un títol de 46 pt en Lilita One. El codi compon els mots encreuats i la sopa de lletres com a taules a partir de línies de lletres, cadascuna amb el seu estil: caselles amb filets als mots encreuats, tessel·les clares amb juntes blanques i cantonades arrodonides a la sopa. Les caselles negres i la paraula ja trobada són emplenaments de cel·la, i els números de les definicions, superíndexs a la cantonada. El laberint és un SVG generat amb una llavor. L'última pàgina reuneix les tres solucions, tretes de les mateixes dades, sobre un requadre que explica com nia la tortuga babaua.
+
+## Elaboració
+
+### 1 · Un estil de taula, tres aspectes
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `tableStyle` posa totes les graelles en Chivo Mono. Cada estil amb nom de `tableStyles` fixa el seu cos, el seu farciment interior i els seus filets, i la taula tria el seu amb `table.styleId`. L'amplada d'una columna és la seva part de l'amplada de la taula, però una fila mesura el que fan les seves línies més el farciment interior, de manera que és el farciment el que fixa l'alçada de cada casella. La sopa de lletres conserva la casella de 9,41 mm dels mots encreuats al voltant d'una línia de majúscules de 15 pt, i `pad()` calcula els 2,9 pt que deixa aquesta línia per sobre i per sota. Els seus filets, de 2,4 pt i del color del paper, tallen el fons clar en tessel·les, i `borderRadius` arrodoneix les cantonades del marc a 4 mm i retalla els emplenaments a la seva forma. A la pàgina de solucions, `key()` fa cabre nou o dotze caselles en 54 mm: caselles de 6 mm amb lletres de 8 pt als mots encreuats i de 4,5 mm amb lletres de 6 pt a la sopa de lletres. La solució del laberint es dibuixa en un quadrat de 54 mm, així que les tres solucions tenen la mateixa alçada i els seus peus comparteixen la línia de base, a 106,4 mm de la vora superior.
+
+### 2 · Nou caselles, quinze línies
+
+<Excerpt region="crossword" />
+
+Cada casella blanca porta dues línies de Chivo Mono de 8,9 pt (el número de la definició i una línia buida) dins d'1 pt de farciment interior, 26,7 pt en total: 9,41 mm, un novè de l'amplada de la taula. Nou caselles mesuren 84,7 mm, el mateix que quinze línies de 16 pt del text principal, i el requadre de les definicions comença a la retícula de base una línia més avall. Una casella porta número, en ordre de lectura, quan hi comença una paraula horitzontal o vertical. El número és un superíndex en negreta de 5,2 pt (el 58 % de 8,9 pt) pujat 3 pt (un terç de 8,9 pt), i això el col·loca a la cantonada superior de la casella. La línia buida és un caràcter d'unió de paraules (U+2060). Amb un espai de no separació al seu lloc, la 1.4.1 descarta aquesta línia i la graella es queda en 45,5 mm d'alçada. Una casella negra és una cel·la buida amb `background` propi, vinculat a `ink`.
+
+### 3 · El codi cerca les paraules a la graella
+
+<Excerpt region="search" />
+
+La graella són dotze línies de majúscules en el seu propi fitxer de contingut, després de la llista de paraules que cal cercar. `locate()` cerca cada paraula en les vuit direccions i llança un error si no hi apareix exactament una vegada, de manera que una errata a la graella o a la llista atura la composició abans que s'imprimeixi una paraula que ningú no podrà trobar. `setCellBackground` retorna un model de taula nou amb una casella més emplenada. L'emplenament va vinculat a una entrada de la paleta i tapa la tessel·la de l'estil: corall per a SOMBRILLA a la pàgina 3, menta per a les deu paraules a la pàgina 5. A la 1.4.1 els estils de taula amb nom no tenen cap opció per alternar el fons de les files, així que la primera variant crida `setCellBackground` a totes les cel·les d'una fila sí i una altra no. El banc de paraules damunt de la graella són dues files centrades de xips: el de SOMBRILLA va emplenat de corall, com les seves caselles, i els altres nou són blancs amb vora blau marí.
+
+### 4 · Una obertura, quatre colors
+
+<Excerpt region="openers" />
+
+Les pàgines de la 2 a la 5 comparteixen el mateix disseny. Un camp de color baixa 40 mm des de la vora superior i acaba en un peu ondulat dibuixat amb el color del paper; l'avanttítol, el títol i el tema, a la seva píndola blanca, surten de la línia del títol i dels seus atributs. El camp i el disc del foli estan vinculats a l'entrada `band` de la paleta, i l'estil de títol de cada pàgina li dona el seu propi valor, de manera que `# Sopa de letras {style="sopa"}` els torna menta a la pàgina 3. El nivell 1 porta `span: 'page'` tot i que el quadern té una sola columna: la 1.4.1 retalla pel marge superior de 16 mm un disseny que es queda a la columna, i això tallaria la part de dalt del camp i l'avanttítol. La caixa del camp compta en l'alçada que reserva l'obertura, de manera que el text comença a la línia següent de la retícula de base, a 44,2 mm de la vora superior i 4 mm per sota de les onades.
+
+### 5 · Les solucions surten de les mateixes dades
+
+<Excerpt region="answers" />
+
+La pàgina de solucions torna a cridar `crossword()` amb `solved` i `wordSearch()` amb les deu paraules, sobre els mateixos fitxers de contingut que els passatemps, de manera que si canvies una graella també en canvia la solució. Els passatemps i els dibuixos són del tipus Plain, el `captionPrefix` buit del qual no imprimeix peu en un recurs sense text de peu. Les solucions són del tipus Solució, numerades de l'1 al 3 en ordre de lectura perquè coincideixin amb els avanttítols, de Passatemps 1 a Passatemps 3. Van en un requadre sense fons ni vora que conté `:::columns{count=3 breaks="2,3"}`, on `breaks` obre una columna nova a la segona i a la tercera solució; cadascuna mesura 54 mm d'amplada en una columna de 55,3 mm. El requadre Sabies que…? fa el mateix amb `breaks="2"` per posar el dibuix del niu al costat del seu paràgraf.
+
+## Variants
+
+### Alterna el fons de les files de la sopa de lletres
+
+Un groc més intens en una fila sí i una altra no ajuda un lector petit a seguir la fila, i com que les paraules s'emplenen després, SOMBRILLA continua en corall i la solució conserva les seves paraules en menta.
+
+```diff
+   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
+     align: 'center' }))) };
++  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
++  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
++    model = setCellBackground(model, { row: r, col: c }, stripe);
++  }));
+   for (const [word, fill] of fills) {
+```
+
+### Dibuixa un laberint més difícil
+
+Amb 21 per 11 caselles en la mateixa amplada, cadascuna mesura 8,4 mm, i la solució de la pàgina 5 es dibuixa a partir del nou laberint.
+
+```diff
+-const theMaze = maze(17, 9, 2027);
++const theMaze = maze(21, 11, 2027);
+```
+
+## Errors freqüents
+
+- Els números de les definicions del requadre s'escriuen a mà al fitxer de contingut, i els de la graella es calculen. Després de canviar una graella, repassa-hi les definicions, perquè el codi no les compara.
+- La paleta d'un estil de títol canvia el color dels elements de disseny, del text i dels filets de les taules, però no el de l'interior d'un SVG, així que les onades del peu de cada camp es dibuixen amb el color del paper i un sol dibuix serveix per als quatre camps. A la 1.4.1 tampoc no arriba als emplenaments de les taules: una casella dels mots encreuats vinculada a `band` continuaria en blau mar a la pàgina groga de solucions.

@@ -1,0 +1,71 @@
+---
+title: "Xuleta d'ancoratges: un cartell d'elements encadenats"
+summary: "Un cartell A3 amb elements penjats de la sang, de la pàgina, de la ranura o els uns dels altres, i un segon full que emmarca cada element i en retola tretze."
+plain: "Un cartell de xerrades d'astronomia abans d'un eclipsi de sol. Ensenya a col·locar cada element mesurant des de la vora de la pàgina o des d'un altre element."
+description: "Un cartell A3 compost en Postext sense coordenades, amb el cel ancorat a la sang, el Sol a la pàgina i la resta encadenat, i el seu full de construcció."
+question: "Com col·loco els elements de disseny respecte a la pàgina, la sang o entre si, sense fer servir coordenades?"
+aliases: ["ancoratges", "ancoratge", "posicionament d'elements", "ranura", "cartell", "línies de construcció", "sense coordenades", "below", "above", "right-of", "align-bottom", "contenidor", "contenidor del peu", "banda a sang", "cartell de l'eclipsi"]
+pageNotes: { "1": "Un cartell A3 per a quatre xerrades abans de l'eclipsi total de Sol del 2 d'agost de 2027. Un cel blau ultramar ocupa els dos terços superiors, amb una Lluna negra que tapa un Sol groc llimona tallat per la vora dreta i una corona blanca al voltant; el títol Vuelve la sombra, en blanc, s'assenta al peu del cel, entre un avanttítol groc i una entradeta de tres línies. A sota, quatre dates en blau encapçalen quatre columnes de xerrades i ponents, segueixen dues columnes de lletra petita i, al peu del full, una banda blava porta l'emblema del club.", "2": "El mateix cartell amb la caixa de cada element emmarcada en rosa i tretze etiquetes roses que donen l'id d'un element, la seva vora, la seva àncora i el seu desplaçament, si n'hi ha, entre elles #deck · align-bottom #sky · x +18 y −14 i #day2 · right-of #day1 · x +7. Dues etiquetes més retolen els marcs dels contenidors de la capçalera i del peu, que recorren els marges superior i inferior, i el text sota les quatre tardes explica com llegir el full." }
+---
+
+## Què compondràs
+
+Cartell d'un club d'astronomia fictici per a quatre xerrades, els dijous d'abril, abans de l'eclipsi total de Sol del 2 d'agost de 2027. Un cel blau ultramar omple els dos terços superiors d'un A3. Una Lluna negra tapa un Sol groc llimona tallat per la vora dreta, i darrere de tots dos s'estén una corona dibuixada amb codi. El títol, *Vuelve la sombra* en Funnel Display de 120 pt, es recolza en la seva entradeta al peu del cel. Sota l'horitzó, quatre dates blaves encapçalen les xerrades, i la lletra petita va a dues columnes sobre una banda blava. Cada element penja de la sang, de la pàgina, de la seva ranura o d'un altre, i els seus desplaçaments es mesuren des d'allà. El segon full emmarca en rosa la caixa de cada element i els contenidors de capçalera i peu, i retola tretze elements amb el seu ancoratge.
+
+## Elaboració
+
+### 1 · Ancora dos elements al full i penja-hi els altres
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. En aquest codi, `anchor.to` diu de què penja un element: `'bleed'` i `'page'` són marcs del full (la mateixa caixa mentre `page.cutLines` estigui desactivat), `'container'` és la caixa de la ranura mateixa i `'#id'` és un altre element ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)). Una caixa sense amplada arriba fins a la vora oposada del seu marc, de manera que el cel ocupa la sang d'un costat a l'altre. Un element col·locat respecte al cel es mesura des de la vora esquerra del cel, que és la de la sang; per això la `x` de l'entradeta és `INSET`, 18 mm. El titular es munta de baix a dalt des de la vora inferior del cel. `'align-bottom'` deixa la base de la caixa de l'entradeta `AIR`, 14 mm, per sobre d'aquesta vora, i `'above'` recolza cada element sobre el de sota, de manera que un títol amb més línies fa pujar l'avanttítol en comptes de trepitjar l'entradeta. Sota el disseny, la lletra petita comença a la primera línia de la retícula de base de 16 pt que queda com a mínim 3,2 mm per sota de l'element més baix, la línia dels ponents; aquests 3,2 mm són el marge inferior que el títol porta per defecte.
+
+### 2 · Penja la Lluna i la corona del Sol
+
+<Excerpt region="eclipse" />
+
+El Sol és l'únic element ancorat a la pàgina, que és la caixa de tall. Comptada des de la cantonada `'top-right'`, una `x` positiva surt per la vora dreta, i 30 mm del disc queden fora. La Lluna i la corona pengen del Sol amb `'align-top'`, així que es mouen amb ell. Els seus desplaçaments es compten des de la cantonada superior esquerra del Sol: la Lluna es desplaça 2 mm a la dreta i 2,5 mm cap avall, cosa que deixa un fil de Sol a dalt a l'esquerra, i la corona comença `HALO`, 75 mm, més amunt i més a l'esquerra, cosa que centra el seu quadrat de 300 mm sobre el disc de 150 mm. La corona és un element d'imatge que pren la mida de la seva caixa ([elements d'imatge](/ca/docs/configuration#elements-dimatge)) i va a la llista abans que els discos per pintar-se darrere seu.
+
+### 3 · Encadena les quatre tardes en columnes
+
+<Excerpt region="programme" />
+
+Cada data, xerrada i ponent té un `size.width` fix de `COL`, i `'right-of'` més `GUT` posa la data següent una columna més enllà. Sense amplada, una data s'ajusta a les seves xifres (el «8» fa 17 mm), així que el «15» començaria 7 mm després i cada xerrada correria en una sola línia fins a ficar-se a la columna següent. `COL` reparteix l'amplada del text entre quatre amb el mateix espai entre columnes de 7 mm que les dues columnes de lletra petita de sota, de manera que la segona columna de lletra petita comença sota el 22. Cada xerrada penja `'below'` de la seva data i cada ponent de la seva xerrada, de manera que una xerrada que ocupés tres línies faria baixar el seu ponent i cap altre.
+
+### 4 · Porta la banda al peu, a totes les pàgines
+
+<Excerpt region="footer" />
+
+El que hagi de sortir a totes les pàgines, com aquesta banda, va a la ranura de la capçalera o del peu, i un estil de títol amb capçalera o peu propis la substitueix a les pàgines de la seva secció. El peu de l'estil de les guies repeteix aquests quatre elements amb els seus marcs i les seves etiquetes; per això la banda i l'emblema surten als dos fulls. El contenidor del peu és el marge inferior, del text al tall: `'bottom-left'` compta cap amunt des del tall i `'top-right'` cap avall des del text, i el −10 de l'emblema i el +10 de la línia «Entrada libre» cauen a la mateixa franja de 10 mm, al mig de la banda ([capçaleres i peus](/ca/docs/configuration#capçaleres-i-peus)). El peu es pinta després del text i no li treu lloc, de manera que `FOOT` és alhora el marge inferior i l'alçada de la banda, que així mai no trepitja les línies de sobre.
+
+### 5 · Dibuixa les línies de construcció des de la mateixa configuració
+
+<Excerpt region="guides" />
+
+`guides()` recorre els elements del cartell. Un text rep una vora a la seva caixa, i una caixa quadrada, una vora al seu estil; cap de les dues no mou res, perquè només el `padding` fa més gran una caixa. Una imatge o un disc rodó rep una caixa quadrada de la mateixa mida penjada de la seva cantonada superior esquerra, així que també queda dibuixada la cantonada del Sol de la qual pengen la Lluna i la corona. Cada etiqueta és un text penjat del seu element i escrit per `describe()` a partir del `placement` d'aquest element, de manera que cap etiqueta no pot contradir la configuració que retola. `{style="guides"}` al segon títol porta aquest disseny, amb una capçalera i un peu propis ([estils de capçalera](/ca/docs/configuration#estils-dencapçalament)). Una etiqueta sense amplada només disposa de l'espai entre la seva àncora i la vora dreta del contenidor; per això l'etiqueta de `#free` comença 30 mm a l'esquerra del seu text. `pageIndexOffset: 1`, a la `continuation` del contingut, converteix el cartell en pàgina parella, i així el visor posa els dos fulls l'un al costat de l'altre.
+
+## Variants
+
+### Afegeix 3 mm de sang i marques de tall
+
+Amb 3 mm de `BLEED` s'activen les marques de tall, i el cel i la banda del peu, que pengen de la sang, hi entren 3 mm mentre `INSET` deixa el text al marge; el Sol, la Lluna i la corona pengen de la pàgina, i com que la 1.4.1 no retalla els elements de disseny a la sang, continuen pel marge blanc fins a la vora del full.
+
+```diff
+-const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
++const BLEED = 3; // mm; 3 for the printer, which switches on page.cutLines below
+```
+
+### Puja l'horitzó
+
+Amb 20 mm menys de `SKY` puja la vora del cel, i amb ella l'entradeta, el títol, l'avanttítol i els dotze textos del programa, mentre la lletra petita passa a una línia més alta de la retícula de base; el Sol penja de la pàgina, així que el segon canvi el puja els mateixos 20 mm perquè mantingui la distància amb el títol, que a l'edició anglesa arribaria a tocar el fil de Sol.
+
+```diff
+-const SKY = 272; // mm from the trim's top edge to the horizon, the sky's lower edge
++const SKY = 252; // mm from the trim's top edge to the horizon, the sky's lower edge
+-  disc('sun', 'sun', at('page', 'top-right', 30, 25)), // 30 mm of it past the right edge
++  disc('sun', 'sun', at('page', 'top-right', 30, 5)), // 30 mm of it past the right edge
+```
+
+## Errors freqüents
+
+- En un pen, la versió 1.4.1 no avisa d'un ancoratge cíclic ni d'un de trencat. El tauler Revisió del Sandbox els assenyala a la capçalera, al peu, a les portadelles de part i als nivells de títol, però no als estils de títol com `guides`. Un element ancorat a un `#id` que no existeix es col·loca respecte al contenidor: una vora d'element com `'below'` cau a la cantonada superior esquerra del contenidor, amb el seu desplaçament, i una vora de contenidor com `'top-right'`, en aquesta cantonada. En un bucle, un element cau de la mateixa manera i els altres s'hi encadenen.
+- A la 1.4.1, `'align-left'` i `'align-top'` porten al mateix punt: tots dos posen la cantonada superior esquerra de l'element sobre la de la seva àncora.
+- Una vora es pinta centrada sobre el contorn de la caixa, així que cada marc rosa d'1 pt sobresurt 0,5 pt de la caixa que traça, tot i que la documentació de la configuració diu que els traços es pinten per dins.

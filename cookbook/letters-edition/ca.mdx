@@ -1,0 +1,68 @@
+---
+title: "Edició de cartes: dates i signatures"
+summary: "Cartes seguides, sense salt de pàgina: la data de cadascuna surt dels atributs del títol, i la salutació, la signatura i la postdata són estils de paràgraf."
+plain: "Un llibret amb tres cartes entre el rei de Prússia i Voltaire. Ensenya a compondre la data, la salutació i la signatura de cada carta, amb les cartes seguides sense començar pàgina nova."
+description: "Tres cartes de Frederic II i Voltaire compostes amb Postext en 14 × 21 cm, amb la data presa dels atributs del títol i la signatura alineada a la dreta."
+question: "Com componc la salutació, la signatura alineada a la dreta i la postdata de cada carta en un epistolari?"
+aliases: ["cartes", "epistolari", "correspondència", "data", "signatura", "firma", "salutació", "postdata", "encapçalament de carta"]
+pageNotes: { "2": "La nota inicial en cursiva i la carta I: LETTRE I en versaletes vermelles, Frédéric à Voltaire en cursiva Fell, la data À Charlottembourg, le 6 juin 1740 alineada a la dreta, la salutació «Mon cher ami,» i, al peu de la carta, la signatura FÉDÉRIC a la dreta.", "3": "La carta II obre la pàgina sota la capçalera 12 juin 1740, amb els divuit versos de Frederic sagnats.", "4": "La carta II acaba amb FÉDÉRIC i una postdata en un cos més petit; unes línies més avall comença la carta III, amb la data À Paris, le 1er avril 1778 i la salutació «Sire,».", "5": "La carta de Voltaire acaba amb VOLTAIRE a la dreta i a continuació va el colofó; la capçalera diu 1er avril 1778." }
+---
+
+## Què compondràs
+
+Cinc pàgines de *Mon sort est changé*, una edició de 14 × 21 cm amb tres cartes en francès: les dues que Frederic II va escriure a Voltaire sis i dotze dies després de pujar al tron de Prússia, el juny del 1740, i la que Voltaire li va enviar l'1 d'abril del 1778, dos mesos abans de morir. A la coberta, una fotografia generada amb models de difusió mostra dues cartes plegades i un segell de lacre vermell sobre un marroquí verd dibuixat amb codi, amb doble filet daurat. A dins, les cartes van seguides, sense salt de pàgina. L'encapçalament de cadascuna porta el número en versaletes vermelles i els noms dels corresponsals en cursiva Fell, amb el lloc i la data a sota, a la dreta. La salutació va en una línia a part, i la signatura, en versaletes, tanca la carta contra el marge dret; la postdata de Frederic segueix la signatura en un cos més petit. A les pàgines senars, la capçalera dona la data de la carta.
+
+## Elaboració
+
+### 1 · La data surt del títol
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada carta és un títol de nivell 1 els atributs del qual guarden el lloc i la data, i l'encapçalament els imprimeix com a `{attr.place}, le {attr.date}.` ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). La caixa de la data arriba fins al límit dret de la columna (`width: 'fill'`) i `align: 'right'` alinea el text amb aquest límit; sense aquest ajust, el text d'un disseny surt centrat. La salutació, la signatura i la postdata són [estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf) que s'apliquen amb `:::paragraphs{style="…"}`. A la 1.4.1 un estil de paràgraf no té opció de cursiva ni de caixa, així que la signatura fa servir IM Fell DW Pica SC, una família les minúscules de la qual estan dibuixades com a versaletes.
+
+### 2 · Cartes seguides
+
+<Excerpt region="letters" />
+
+Amb `breakBefore` desactivat, cada carta comença dues línies de la retícula (`marginTop`) per sota d'aquella en què acaba l'anterior. A la <PageRef page={4}>pàgina 4</PageRef>, la postdata, amb 12,6 pt d'interlineat, acaba entre dues línies de la retícula, i sobre la carta III queden unes tres línies en blanc. A la pàgina 2, la carta I arriba fins al peu i la II obre la pàgina 3. L'ajust va escrit encara que la 1.4.1 ja tregui el salt del nivell 1 tan bon punt la configuració té un objecte `headings`, perquè amb el motor corregit cada carta començaria en pàgina senar ([saltar abans](/ca/docs/configuration#saltar-abans)). `numberingTemplate: '{1:I}'` numera les cartes de la I a la III, i l'encapçalament imprimeix el numeral amb `{number}`.
+
+### 3 · La data de la carta a la capçalera senar
+
+<Excerpt region="running-heads" />
+
+En una capçalera, `{attr.date}` pren l'atribut de l'últim títol de nivell 1 que comença en aquella pàgina o abans. La pàgina 3 porta 12 juin 1740, i la 5, on continua la carta de Voltaire començada a la 4, porta 1er avril 1778 ([elements de text](/ca/docs/configuration#elements-de-text)). Les capçaleres van 12 mm per sota del límit superior de la pàgina, amb el foli al marge exterior i el text 8 mm més endins. `pages: 'body'` les treu de la coberta, que compta com a pàgina d'obertura perquè el seu títol abasta l'amplada de la pàgina. La data va en la mateixa cursiva de Crimson Pro que la de la carta, i els noms de la pàgina parella, en les versaletes dels números de carta.
+
+### 4 · La coberta: un títol i un salt de pàgina
+
+<Excerpt region="cover" />
+
+La coberta és el primer títol, amb l'[estil d'encapçalament](/ca/docs/configuration#estils-dencapçalament) `cover`: un element d'imatge ancorat al sagnat porta l'enquadernació dibuixada, un altre col·loca la fotografia a 72 mm del límit superior, i el títol, els noms i el subtítol surten del mateix títol i del frontmatter. `numbered: false` la deixa fora del compte, de manera que la primera carta de Frederic és la I. El disseny reserva lloc només fins al seu text més baix, el subtítol, i gens per a les imatges. Sense el `:::pagebreak` que segueix el títol, la nota inicial i la carta I començarien a la pàgina 1, a sobre de les cartes fotografiades i del segell.
+
+### 5 · Partició de mots en francès sense estrènyer els espais
+
+<Excerpt region="text" />
+
+`locale: 'fr'` parteix amb els patrons francesos (*ou-vrage* a la pàgina 2, *représen-tation* a la 4). La justificació, el tall de línies per paràgraf complet i les regles contra vídues, òrfenes i línies curtes vénen activats per defecte. `minWordSpacing: 0.75` impedeix que un espai entre paraules baixi de tres quarts del de Crimson Pro; amb el 0,6 per defecte, la línia justificada més atapeïda de la pàgina 5 deixaria els espais en 0,70 d'aquesta amplada. Amb 14,4 pt d'interlineat hi caben 33 línies per pàgina, i el marge inferior és el que queda a sota: 20,4 mm.
+
+### 6 · Cada color, enllaçat a la paleta
+
+<Excerpt region="palette" />
+
+`col()` escriu l'hexadecimal de cada color al costat del seu id de paleta. A la 1.4.1 la paleta arriba als estils de text però no als elements de disseny, que pinten aquest hexadecimal: els encapçalaments de les cartes, les capçaleres i la coberta. La cursiva de la nota inicial i la del colofó fan servir el color de cursiva per defecte, enllaçat a `main-color`; com que aquesta entrada porta el color de la tinta, s'imprimeixen en tinta i no en el blau del motor, #295AA3.
+
+## Variants
+
+### Posa també el lloc a la capçalera
+
+Amb els mateixos atributs, la capçalera senar pot portar el lloc i la data, *À Charlottembourg, le 12 juin 1740*.
+
+```diff
+-  head('recto-date', '{attr.date}', 'odd', at('page', 'top-right', -(MARGIN.outer + 8), HEAD_Y),
++  head('recto-date', '{attr.place}, le {attr.date}', 'odd',
++    at('page', 'top-right', -(MARGIN.outer + 8), HEAD_Y),
+```
+
+## Errors freqüents
+
+- La pàgina senar pren la data de l'última carta que *comença* en ella o abans. Una pàgina que acaba una carta i obre la següent porta la data de la nova, igual que la capçalera d'un diccionari dona l'última entrada de la pàgina.
+- Si a un títol li falta un atribut, no s'imprimeix res i no hi ha avís: una carta sense `place="…"` té una data que comença per una coma. Revisa el títol de cada carta.
+- Les cartes conserven els ; : ? i ! de la transcripció, sense espai al davant. La tipografia francesa hi posa un espai fi irrompible, però la 1.4.1 talla la línia en aquest espai com en qualsevol altre, i el signe podria quedar a principi de línia.
+- Crimson Pro no porta les lletres modificadores ᵉ (U+1D49) i ʳ (U+02B3), així que 1ᵉʳ escrit en Unicode sortiria en una altra font. La nota inicial, que és text de paràgraf, compon `1^er^` en superíndex; la data i la capçalera senar són text de disseny i imprimeixen 1er amb la terminació del mateix cos que la xifra.

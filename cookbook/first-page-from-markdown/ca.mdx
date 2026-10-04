@@ -1,0 +1,88 @@
+---
+title: "D'una cadena Markdown a una pàgina dissenyada"
+summary: "Una cadena Markdown amb frontmatter es compon en pàgines de revista a dues columnes i es pinta en canvas, amb sis colors en lloc del blau per defecte."
+plain: "Les dues primeres pàgines d'un reportatge de viatges en una revista petita, amb una banda de color i un dibuix. Ensenya com un text senzill amb uns quants títols es converteix en una pàgina dissenyada amb els teus colors."
+description: "El pen carrega les fonts abans de compondre, crea una configuració nova a cada composició, munta l'obertura amb el frontmatter i pinta en canvas."
+question: "Com passo una cadena Markdown a pàgines dissenyades, sense el blau per defecte en títols, negretes i pics?"
+aliases: ["primer document", "primers passos", "hola món", "inici ràpid", "markdown a canvas", "aspecte per defecte", "reportatge de viatges"]
+pageNotes: { "1": "Una fotografia ocupa la part alta de la pàgina: unes salines al vespre i una filera de petjades que puja per una duna de sorra fins a una fita a la carena; sobre el cel fosc, el títol La ruta de la sal, l'entradeta i la signatura.", "2": "La pàgina parella següent: el foli i el títol del reportatge com a capçalera, dues columnes justificades amb subtítols en anyil, una llista de guions amb les paraules inicials en negreta, un signe de fi i el colofó sota un filet." }
+---
+
+## Què compondràs
+
+Les primeres pàgines d'un reportatge de viatges en una revista petita, *Quadern de camp*. La pàgina 1 és una obertura en pàgina senar: una fotografia de salines i una duna al vespre que ocupa el 58 % superior, el títol en Young Serif de 54 punts i, a sota, dues columnes justificades que arrenquen amb una frase en negreta. La pàgina 2, al revers, continua sota una capçalera en majúscules espaiades i acaba amb un signe de fi i un colofó. Tot el disseny cap en una funció de configuració i una paleta de sis colors. El titular surt del títol de primer nivell, i l'entradeta, l'autora i la data, del frontmatter del Markdown, de manera que el mateix pen compon qualsevol article el títol del qual càpiga en dues línies; només la fotografia és pròpia d'aquest.
+
+## Elaboració
+
+### 1 · Totes les fonts, abans de la primera composició
+
+<Excerpt region="fonts" />
+
+Postext mesura el text amb les fonts que el navegador ja ha carregat i desa les mesures a la memòria cau, de manera que una composició que s'avança a les fonts conserva els talls de línia equivocats. El kit carrega aquests fitxers de Fontsource, els mateixos que incrustaria un PDF. Després, `buildWithFonts` repassa les fonts que fan servir les pàgines. Si un bloc o un element de disseny està compost en una font que no s'ha carregat, avisa a la consola, la carrega i torna a compondre; si Fontsource no té aquesta font, el pen s'atura amb un error (consulta «Errors freqüents»). Les negretes i cursives d'una font de text es carreguen sense avís, i només si la família les inclou.
+
+### 2 · Anomena els colors i apunta als noms
+
+<Excerpt region="palette" />
+
+Cada color de la configuració és `col('id')`, un identificador de la paleta amb el seu valor hexadecimal al costat. `bodyText.boldColor`, `italicColor`, `referenceColor` i `unorderedLists.color` apunten a `ink`, i `headings.color`, a l'accent. Els valors per defecte del motor per a títols, negretes, cursives i pics estan enllaçats a `main-color`, i aquesta paleta dona a aquesta entrada el color de l'accent, de manera que qualsevol d'ells que no fixis surt anyil i no blau. A Postext 1.4.1, els elements de capçaleres, peus i obertures, i també `referenceColor`, es pinten amb el valor hexadecimal, no amb l'identificador; per això els objectes de disseny són funcions que `config()` crida a cada composició, i `col()` copia cada vegada el valor vigent de `palette`. El signe de fi és una mostra de color en línia que anomena `band`, així que també canvia amb la paleta. La capçalera per defecte no llegeix la paleta i es queda blava fins que la substitueixis (pas 5).
+
+### 3 · Una fotografia retallada al seu marc
+
+<Excerpt region="art" />
+
+Les salines, la duna i la fita són una fotografia generada amb models de difusió, presa al vespre perquè el títol clar es llegeixi sobre un cel fosc. El JPEG està retallat al marc de la banda, `PAGE.width` × `BAND` mil·límetres, i el recurs declara els seus píxels, 1440 × 1120, de manera que a tota l'amplada la foto omple exactament la banda. Si la banda creix, cal una foto retallada al nou marc. L'obertura la mostra amb un element d'imatge que anomena el recurs pel seu identificador.
+
+### 4 · El frontmatter escriu l'obertura
+
+<Excerpt region="opener" />
+
+El títol de primer nivell abasta les dues columnes, i la seva obertura és una ranura d'elements: la fotografia a sang i quatre textos encadenats l'un sota l'altre. Un títol més llarg empeny cap avall l'entradeta i la signatura en lloc de superposar-s'hi, però a partir de la tercera línia la signatura cau sobre les salines clares. `{titleText}` és el text del títol; `{subtitle}`, `{author}` i `{publishDate}` surten del frontmatter. La `\\` del títol talla la línia on la posis ([salts de línia en els títols](/ca/docs/document-format#salts-de-línia-als-títols)). `minHeight` es compta des del marge superior, així que l'alçada reservada acaba 5 mm per sota de la banda.
+
+### 5 · Capçaleres en lloc del blau per defecte
+
+<Excerpt region="running-heads" />
+
+Si omets `header`, torna la capçalera per defecte del motor: Open Sans sobre un filet de banda a banda, a totes les pàgines. Aquí cada foli s'ancora a la pàgina física i es filtra per paritat, de manera que sempre queda a la vora exterior. El text que l'acompanya s'ancora al foli, a `GAP` mil·límetres, amb `right-of` o `left-of`, i un foli de tres o quatre xifres el desplaça en lloc de xocar-hi. `pages: 'body'` deixa els quatre elements fora de l'obertura. El peu de pàgina porta un únic foli, el de l'obertura, i com que `footer` està definit, les altres pàgines perden el foli centrat per defecte.
+
+### 6 · Compon amb una configuració nova i pinta
+
+<Excerpt region="build" />
+
+`config()` és una funció perquè el motor desa a la memòria cau cada configuració resolta segons la identitat de l'objecte, de manera que un ajust editat només té efecte si cada composició rep un objecte nou. `showPages` col·loca les pàgines com anirien en un llibre enquadernat, amb la pàgina 1 sola a la dreta, i pinta cadascuna amb `renderPageToCanvas`.
+
+## Variants
+
+### Mira què substitueix la configuració
+
+Compon amb una configuració buida i el mateix Markdown surt en una pàgina de 17 × 24 cm, en EB Garamond de 8 punts, amb títols blaus en Open Sans i una capçalera blava sobre un filet; el kit carrega aquestes fonts per tu, amb un avís a la consola.
+
+```diff
+-  () => buildDocument({ markdown, resources }, config()), markdown);
++  () => buildDocument({ markdown, resources }, {}), markdown);
+```
+
+### Canvia el color de tota la pàgina
+
+Canvia l'accent i la següent execució pinta amb el nou color els folis, els subtítols i el signe de fi, perquè `col()` copia el nou valor al costat de l'identificador cada vegada que es crida `config()`. La fotografia conserva els seus colors.
+
+```diff
+-  band: '#2b3a67', // the one accent (an indigo): the folios, the subheads, the end mark
++  band: '#3f5b3a', // the one accent (a pine green): the folios, the subheads, the end mark
+```
+
+### Pinta una pàgina en el teu propi canvas
+
+`renderPageToCanvas` dona al canvas la mida de la pàgina en píxels a la resolució del document (300 ppp per defecte) multiplicada per `scale`, així que `scale: 0.5` pinta a uns 150 ppp, i el CSS decideix com de gran es veu a la pantalla.
+
+```diff
+-showPages(doc, {
+-  title: t({ en: 'From a Markdown string to a designed page',
+-    es: 'De una cadena Markdown a una página diseñada' }),
+-});
++const canvas = document.body.appendChild(document.createElement('canvas'));
++renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+```
+
+## Errors freqüents
+
+- Young Serif només té un pes. Els títols van en negreta per defecte, així que aquí `headings.fontWeight: 400` és obligatori: sense això, el kit cerca una Young Serif negreta que Fontsource no té i el pen s'atura amb un error.

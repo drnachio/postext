@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
+import { DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { sampleChapterTexts } from '../book/chapterOps';
 import { DEFAULT_RESOURCE_IDS } from '../defaultResources';
 
-const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS } as const;
+const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS } as const;
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
 const h1s = (md: string): string[] => [...md.matchAll(/^# (.+?)(?:\s*\{.*\})?$/gm)].map((m) => m[1]!.trim());
 const HAN = /[㐀-鿿　-〿＀-￯]/;
 
-describe('the three editions of the guide', () => {
+describe('the four editions of the guide', () => {
   it('have the same chapters, headings levels and figure references', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
@@ -22,6 +22,7 @@ describe('the three editions of the guide', () => {
     const en = shape(DEFAULT_MARKDOWN_EN);
     expect(en.chapters).toBe(14);
     expect(shape(DEFAULT_MARKDOWN_ES)).toEqual(en);
+    expect(shape(DEFAULT_MARKDOWN_CA)).toEqual(en);
     expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
   });
 
@@ -54,6 +55,7 @@ describe('the three editions of the guide', () => {
   it('set no Chinese in the Latin editions, whose faces have no glyphs for it', () => {
     expect(DEFAULT_MARKDOWN_EN).not.toMatch(HAN);
     expect(DEFAULT_MARKDOWN_ES).not.toMatch(HAN);
+    expect(DEFAULT_MARKDOWN_CA).not.toMatch(HAN);
   });
 
   it('write the Chinese edition without spaces between Han and Latin and without underscore emphasis', () => {

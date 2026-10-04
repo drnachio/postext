@@ -1,0 +1,80 @@
+---
+title: "Article a dues columnes amb equacions numerades"
+summary: "Article de física a dues columnes amb set equacions numerades, compostes amb el MathJax de la versió ?bundle. Al PDF continuen sent vectorials."
+plain: "Un article de recerca de física a dues columnes, amb fórmules al text i set equacions numerades. Ensenya a compondre matemàtiques que es vegin nítides al PDF."
+description: "Article de física amb l'obertura dibuixada per un estil de títol, equacions MathJax numerades, una taula calculada i bibliografia amb sagnat francès."
+question: "Com componc un article amb fórmules i equacions numerades, i les mantinc vectorials al PDF?"
+aliases: ["article científic", "article de revista", "article de recerca", "preprint", "equacions", "equacions numerades", "numeració d'equacions", "LaTeX", "MathJax", "fórmules", "tag", "resum", "paraules clau", "bibliografia", "dues columnes"]
+pageNotes: { "1": "Una banda verd ampolla porta el nom de la revista, Measure, la imatge estroboscòpica d'un pèndol penjat del filet de la capçalera, amb l'última bola en vermell al final del recorregut, i el títol The period of a pendulum at large amplitudes. A sota van els autors, les dates de recepció, acceptació i publicació i la llicència; després, un resum sobre fons verd clar amb quatre paraules clau en chips, i les dues columnes amb la primera equació numerada.", "2": "La secció 2, Theory, amb les equacions 2 a 7 numerades a la vora dreta de la seva columna i la figura 1, el pèndol i els seus símbols, al capdamunt de la segona columna.", "3": "El final del mètode, Results, Discussion i el començament de Conclusions. La figura 2 representa el període davant l'amplitud al capdamunt de la segona columna, i la taula 1 recull les mesures al peu de la primera.", "4": "La figura 3, el pla de fases, ocupa el capdamunt de la pàgina a tota l'amplada; a sota, el final de les conclusions, les seccions finals i la bibliografia es reparteixen les dues columnes, que comencen i acaben a la mateixa altura." }
+---
+
+## Què compondràs
+
+Un article de recerca del número de setembre de *Measure*, revista fictícia de física experimental en accés obert, en A4 i a dues columnes. Una banda verd ampolla porta el nom de la revista, la imatge estroboscòpica d'un pèndol i el títol. A sota van els autors, les dates i la llicència, i un resum sobre fons verd clar, amb quatre paraules clau en chips, ocupa les dues columnes. Segueixen sis seccions numerades, amb set equacions amb número i 46 fórmules en línia; MathJax les compon totes, i també els rètols de les figures. La taula 1 i els punts de la figura 2 surten de les mateixes mesures. A l'última pàgina, el final de les conclusions, les seccions finals i la bibliografia ocupen, sota la figura 3, dues columnes que acaben a la mateixa altura. El PDF desa cada fórmula com a contorns vectorials, sense cap font matemàtica per incrustar.
+
+## Elaboració
+
+### 1 · Carrega el motor empaquetat i numera les equacions
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. A la 1.4.1 les [matemàtiques](/ca/docs/configuration#matemàtiques) necessiten la versió `?bundle` del motor. Tots els símbols s'han d'importar d'aquesta versió, perquè amb l'URL normal `initMathEngine()` llança un error, i cal esperar `initMathEngine()` abans de la primera composició; si no, cada fórmula surt com una caixa grisa i no salta cap avís. A partir d'aquí, `$…$` compon matemàtiques en línia i `$$…$$` fórmules destacades, i `renderToPdf` escriu cada fórmula com a traçats vectorials. Aquesta mateixa versió dibuixa amb amplada 0 la fórmula que porta `\tag`, i no s'imprimeix res. `numbered()` reescriu cada equació etiquetada com tres caixes `\mathmakebox` (3 em buits, la fórmula centrada i el número enganxat a la dreta en uns altres 3 em) que entre totes fan 0,1 em menys que la columna. Les amplades van en l'em de MathJax, que `MATH_EM` mesura component una caixa buida de 10 em.
+
+### 2 · Dibuixa el bloc del títol amb un estil de títol
+
+<Excerpt region="title" />
+
+El títol de l'article porta `#` (nivell 1), així que encapçala els marcadors del PDF, amb les seccions numerades a sota. El seu [estil de títol](/ca/docs/configuration#estils-dencapçalament) `article` el substitueix per una ranura d'elements de disseny: una banda a sang per dalt, el nom de la revista, la imatge estroboscòpica i el títol, partit en dos on el Markdown porta `\\`. Els autors i dues de les dates surten dels atributs del títol, i la de publicació, del `publishDate` del frontmatter. `minHeight` reserva 130 mm des del marge superior fins al peu dels autors, i el resum comença a sota.
+
+### 3 · Numera les seccions, no el títol
+
+<Excerpt region="numbering" />
+
+Cada nivell té la seva plantilla i la seva tipografia: `{2}` numera les sis seccions, de l'1 al 6, en 11,5 pt i el verd de la revista; `{2}.{3}`, les subseccions de «Theory», de la 2.1 a la 2.3, en seminegra de 10 pt i el color del text, i `numbered: false` deixa el títol i les seccions finals fora del compte. Cada títol torna a la retícula de base de 12,6 pt el text que el segueix, així que les línies de les dues columnes queden a la mateixa altura a banda i banda de l'espai entre columnes. Figures i taules es numeren seguides en tot l'article amb `{n}`. El `{h1}.{n}` per defecte imprimiria aquí els mateixos números, perquè el títol sense numerar deixa buit `{h1}` i un comptador buit desapareix amb el seu punt, però `{n}` no en depèn. El tipus taula, a més, col·loca el peu damunt de la taula, com fan les revistes.
+
+### 4 · Estén el resum sobre les dues columnes
+
+<Excerpt region="abstract" />
+
+Un requadre `span: 'page'` sota el bloc del títol compon el resum a tota l'amplada de la caixa, i les dues columnes comencen a sota. Un farciment de 22 mm a cada costat deixa les línies al voltant dels 90 caràcters. Les paraules clau són [chips](/ca/docs/configuration#estils-de-xip), que mai no es parteixen entre dues línies, i cadascuna porta `{style="keyword"}`. El seu estil de paràgraf, `keywords`, va en bandera, perquè en justificar una línia de chips els espais entre ells s'obren fins a deixar forats.
+
+### 5 · Tanca amb una bibliografia amb sagnat francès
+
+<Excerpt region="references" />
+
+Un contenidor `:::paragraphs` aplica a cada referència l'[estil de paràgraf](/ca/docs/configuration#estils-de-paràgraf) `references`, el `hangingIndent` del qual, de 5 mm, deixa el número al marge i sagna 5 mm les línies següents. L'equilibrat de columnes iguala l'última banda de l'article. A la <PageRef page={4}>pàgina 216</PageRef>, el final de les conclusions, les seccions finals i la bibliografia es reparteixen les dues columnes sota la figura 3. L'equilibrat només pot afegir espai i una referència de dues línies no es pot partir, així que les seccions finals es van reescriure amb dues línies menys fins que les dues columnes van acabar a la mateixa altura.
+
+### 6 · Calcula la taula i retola les figures amb MathJax
+
+<Excerpt region="figures" />
+
+Una sola llista, `runs`, alimenta la taula 1 i els punts de la figura 2, i la columna de valors previstos de la taula és l'equació (6) calculada per a cada amplitud. El text cita cada recurs amb `:ref{id="…" style="full"}`, que imprimeix «Figure 2» en negreta, en el color del text, i fa flotar el recurs fins al primer forat lliure després de la citació. A la 1.4.1 els peus i les cel·les no admeten matemàtiques, així que fan servir el marcatge normal `~sub~` i `^sup^` (`*T*~0~`), i els símbols dins del text continuen sent `$T_0$`. Una figura SVG es dibuixa com a imatge i no pot fer servir les fonts web de la pàgina, així que `tex()` crida `renderMath` per a cada rètol i n'escriu els contorns a l'SVG com a traçats. La *θ*₀ de la figura 1 és el mateix glif de les fórmules i continua sent vectorial al PDF.
+
+## Variants
+
+### Numera les figures dins de cada secció
+
+Els articles llargs compten les figures per seccions; així s'imprimeix «Figure 1.1» a la introducció i «Table 4.1» als resultats.
+
+```diff
+-  numberingTemplate: '{n}', resetOn: 'never',
++  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
+```
+
+### Porta els números d'equació a l'esquerra
+
+Intercanvia les dues caixes exteriors i els números passen a la vora esquerra de la columna.
+
+```diff
+-  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
+-  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
++  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
++  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+```
+
+## Errors freqüents
+
+- Una fórmula destacada no va unida a la línia que la introdueix. Una frase com «gives the period as» pot tancar una columna, o quedar damunt d'una figura, amb l'equació ja a la columna següent. Ajusta el text i envia les figures al capdamunt d'una columna (`position: 'top'`, com la figura 1) perquè mai no caiguin entre totes dues.
+- El paràgraf que segueix una fórmula destacada és un paràgraf nou i porta sagnat. Comença'l com una frase pròpia («Here *L* is…») en lloc de fer-ho amb un «where…» a la manera de LaTeX.
+- Un `~0~` normal baixa la xifra un terç d'em, per sota dels descendents, i un `^2^` darrere va a continuació del ₀ en lloc de quedar-hi a sobre. Al text corrent escriu `$T_0$` i `$T_0^2$`, i reserva el marcatge normal per als peus i les cel·les, que no admeten matemàtiques.
+- En una pàgina de tancament sota una figura a tota l'amplada, l'equilibrat pot afegir una línia damunt d'un títol que obre columna, i llavors les dues columnes comencen desfasades una línia; `stretchAfterFloats: false` no ho evita. Revisa l'última pàgina i ajusta el text en una línia.
+- A la 1.4.1 un títol dins de la columna no admet `letterSpacing`, i per això els títols de les seccions finals van en majúscules sense espaiar. Les majúscules espaiades funcionen al text de disseny i al títol d'un requadre, com a l'avanttítol i a l'etiqueta del resum.
+- Comprova que la font de rètols tingui ¹, ² i ±, i lletres gregues si algun peu les necessita. Instrument Sans, la primera que es va provar, no en porta cap de les tres als seus fitxers de Fontsource, i Schibsted Grotesk no té grec, així que el peu de la figura 1 anomena l'amplitud amb paraules en lloc de *θ*₀.

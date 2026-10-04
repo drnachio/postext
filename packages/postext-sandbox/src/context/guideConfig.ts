@@ -45,6 +45,7 @@ const COVER_ART_H = 168;
 const WORDING: Record<LatinLang, { book: string; kicker: string; partLabel: string; tocPart: string }> = {
   en: { book: 'The Postext Guide', kicker: 'Chapter {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
   es: { book: 'Guía de Postext', kicker: 'Capítulo {chapterNumber} · {partTitle}', partLabel: 'Parte', tocPart: 'Parte {number} · {titleText}' },
+  ca: { book: 'Guia de Postext', kicker: 'Capítol {chapterNumber} · {partTitle}', partLabel: 'Part', tocPart: 'Part {number} · {titleText}' },
 };
 
 /** How a small label is set: in capitals, spaced out (`tracking` in points). */
@@ -258,6 +259,7 @@ function paragraphStyles(): ParagraphStyleConfig[] {
 const CALLOUT_WORDS: Record<LatinLang, { try: [string, string]; note: [string, string]; quote: string; figures: [string, string] }> = {
   en: { try: ['Try it', 'Try it in the Sandbox'], note: ['Technical note', 'Technical note'], quote: 'Pull quote', figures: ['Key figures', 'In figures'] },
   es: { try: ['Pruébalo', 'Pruébalo en el Sandbox'], note: ['Nota técnica', 'Nota técnica'], quote: 'Cita destacada', figures: ['Cifras', 'En cifras'] },
+  ca: { try: ['Prova-ho', 'Prova-ho al Sandbox'], note: ['Nota tècnica', 'Nota tècnica'], quote: 'Cita destacada', figures: ['Xifres', 'En xifres'] },
 };
 
 function calloutStyles(lang: LatinLang): CalloutStyleConfig[] {
@@ -351,13 +353,13 @@ function toc(lang: LatinLang) {
   };
 }
 
-/** The Postext guide's configuration for `locale`: the English, Spanish or
- *  Chinese edition (any Chinese tag reads the Chinese one, set vertically). */
+/** The Postext guide's configuration for `locale`: the English, Spanish,
+ *  Catalan or Chinese edition (any Chinese tag reads the Chinese one, set vertically). */
 export function createPostextGuideConfig(locale = 'en'): PostextConfig {
   const lang = guideLang(locale);
   if (lang === 'zh-Hans') return createChineseGuideConfig();
   return {
-    locale: lang === 'es' ? 'es' : 'en-us',
+    locale: lang === 'en' ? 'en-us' : lang,
     page: {
       sizePreset: '21x28', width: mm(PAGE_W), height: mm(PAGE_H),
       margins: { top: mm(M_TOP), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(M_OUTER), mirror: true },
@@ -369,7 +371,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       firstLineIndent: mm(4), indentAfterHeading: false, paragraphSpacing: false,
       color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
       referenceColor: col('band'), referenceBold: true, referenceItalic: false,
-      hyphenation: { enabled: true, locale: lang === 'es' ? 'es' : 'en-us' },
+      hyphenation: { enabled: true, locale: lang === 'en' ? 'en-us' : lang },
       avoidWidows: true, avoidOrphans: true, avoidRunts: true, optimalLineBreaking: true,
     },
     headings: {

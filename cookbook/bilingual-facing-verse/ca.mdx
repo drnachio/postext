@@ -1,0 +1,70 @@
+---
+title: "Traducció acarada, estrofa a estrofa"
+summary: "Cada poema és un requadre sense marc amb dues columnes: un tall fix obre l'anglesa al títol i :::space deixa cada estrofa a l'altura de l'original."
+plain: "Un poemari amb l'original en castellà a un costat i la traducció anglesa a l'altre. Cada estrofa de la traducció comença a la mateixa altura que l'original."
+description: "Un quadern bilingüe compost amb Postext: poemes en castellà i la versió anglesa acarats en requadres de dues columnes, amb un tall fix entre totes dues."
+question: "Com poso un poema al costat de la seva traducció, començant a la mateixa línia i estrofa a estrofa?"
+aliases: ["traducció acarada", "text paral·lel", "edició bilingüe", "poesia bilingüe", "traducció al costat de l'original", "columnes dins d'un requadre", "atribut breaks", "salt de columna en un requadre", "alinear estrofes", "espai entre estrofes", "vers que no hi cap", "sagnat francès", "vers", "plaquette", "facing translation", "parallel text"]
+pageNotes: { "3": "L'aquarel·la de les salines baixa fins a 84 mm de la vora superior. A sota comença el poema I amb el seu número; LA SALINA AL ALBA encapçala la columna castellana i THE SALT PANS AT DAWN la cursiva anglesa. El quart vers anglès no hi cap i continua a la línia de sota, i la primera estrofa castellana acaba amb dues línies en blanc, de manera que les dues segones estrofes comencen a la mateixa línia.", "4": "Els poemes II i III, cadascun amb el seu número sobre dues columnes les estrofes de les quals s'acaren vers a vers." }
+---
+
+## Què compondràs
+
+Un quadern bilingüe de cinc poemes sobre una salina del sud d'Espanya, de 156 × 234 mm, amb el castellà a l'esquerra i la versió anglesa de la mateixa autora a la dreta, vers a vers. Obren el llibre una portada amb un flamenc i una nota de l'autora; els poemes comencen sota una aquarel·la de basses roses, munts de sal i flamencs a trenc d'alba. Cada poema va en un requadre sense marc, sota un número romà granat en Castoro Titling, amb el castellà en una columna i l'anglès en l'altra. L'anglès arrenca sempre a la mateixa línia que el castellà, i cada estrofa, a l'altura del seu original. Quan un vers anglès no cap a la seva columna, continua a la línia de sota sagnat 2 em, i l'estrofa castellana del davant acaba amb una línia en blanc més.
+
+## Elaboració
+
+### 1 · Un poema és un requadre amb un tall de columna fix
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `:::columns` només funciona dins d'un requadre, així que cada poema és un requadre l'estil del qual treu el fons i el farciment i imprimeix el `title` de la directiva, el número ([`:::columns`](/ca/docs/document-format#columns)). Sense `breaks`, el grup talla on les dues columnes queden igualades. En aquests poemes les dues meitats fan el mateix i el tall cau igualment al títol anglès, però si allargues dos versos de *The Rake* fins que no hi càpiguen, el tall baixa un bloc i THE RAKE es queda al peu de la columna castellana. `breaks="14"` fixa el bloc que obre la segona columna, així que el títol anglès l'encapçala facin el que facin les dues meitats.
+
+### 2 · Un paràgraf per vers, un :::space per salt d'estrofa
+
+<Excerpt region="verse" />
+
+Markdown uneix les línies d'un paràgraf, així que cada vers és un paràgraf a part amb l'estil `verse`, en bandera, al qual la versió 1.4.1 no aplica mai la partició de mots. Un `:::space` entre estrofes deixa una línia en blanc a cada columna. No és un bloc, així que `breaks` no el compta ([`:::space`](/ca/docs/document-format#space)). El vers anglès *each one standing on its own reflection.* no cap a la seva columna de 55 mm i continua a la línia de sota, sagnat 2 em; l'estrofa castellana del davant acaba amb `:::space{lines=2}`, així que les estrofes següents comencen a la mateixa línia.
+
+<PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="El poema I a la pàgina 3: reflection. passa a la línia següent en l'anglès, i l'estrofa castellana acaba amb dues línies en blanc en lloc d'una." />
+
+### 3 · La nota fa servir la partició de mots de la seva llengua
+
+<Excerpt region="note" />
+
+`locale` tria els patrons de partició de mots pel seu codi exacte. Amb `'es'`, la nota castellana talla *ori-ginal* i *Duna-liella*; amb els patrons anglesos les dues paraules passen senceres a la línia següent, i només *arras-traba* es talla amb tots dos ([llengües admeses](/ca/docs/justification#llengües-compatibles)). Els espais entre paraules es poden encongir fins a 0,8 i estirar fins a 1,35 de la seva amplada normal, i cap línia justificada de les dues notes no passa d'aquí. El títol de la nota és un disseny d'un sol element, situat 36 mm per sota de l'inici de la caixa de text, així que la nota comença a 73 mm de la vora superior de la seva pàgina.
+
+### 4 · La portada i l'aquarel·la són títols
+
+<Excerpt region="front" />
+
+Cadascun és un títol de nivell 1 amb un estil propi ([estils de títol](/ca/docs/configuration#estils-dencapçalament)): el disseny de la portada pren `{author}` del frontmatter, i els dos dissenys prenen `{attr.other}` dels atributs del títol. L'aquarel·la comença a la vora superior de la pàgina, per sobre de la caixa de text, i un disseny que es queda a la columna es retalla per dalt, així que el seu estil porta `span: 'page'`. Una imatge no reserva alçada: sense `minHeight`, el títol fa 25,6 mm i el poema I comença a 58 mm de la vora, damunt d'una aquarel·la que arriba a 84 mm. Amb un `minHeight` d'onze línies i el marge inferior del nivell, d'una línia, el títol acaba a 83,4 mm.
+
+### 5 · Les capçaleres anomenen les dues llengües
+
+<Excerpt region="heads" />
+
+La pàgina parella porta el títol castellà i la senar l'anglès, en l'ordre de les columnes. `pages: 'body'` les treu de les tres pàgines que comencen amb un títol. La nota i l'aquarel·la porten en lloc seu un foli al peu, i l'estil de la portada en deixa buides la capçalera i el peu ([elements de text](/ca/docs/configuration#elements-de-text)).
+
+## Variants
+
+### Eixampla l'espai entre columnes
+
+Amb 12 mm les columnes es queden en 53 mm, i *Los turistas paran y hacen fotos:* ja no cap al poema III, així que la seva segona estrofa comença una línia per sota de l'anglesa; acaba l'estrofa anglesa amb `:::space{lines=2}` per igualar-les.
+
+```diff
+-const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
++const GAP = 12; // mm between the original and the translation: each column is 53 mm wide
+```
+
+### Sagna més els versos que no hi caben
+
+Amb 3 em, *reflection.* comença a la pàgina 3 un em més endins.
+
+```diff
+-const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
++const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+```
+
+## Errors freqüents
+
+- Un `:::space` posat abans del títol anglès desapareix: la segona columna s'obre al bloc que indica `breaks`, i l'espai cau al tall. Posa'l després del títol, com el `:::space{lines=0.5}` que segueix aquí el títol de cada columna.
+- Compta `breaks` des del títol castellà: amb un títol i 12 versos, el títol anglès és el bloc 14. Cada vers és un bloc, així que un vers castellà més porta el títol anglès al bloc 15, i `breaks` ha de pujar amb ell.

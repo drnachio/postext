@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildDocument, resolveCjkConfig, type CjkRegion, type PostextConfig } from 'postext';
-import { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
+import { DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { createPostextGuideConfig } from '../context/guideConfig';
 import { GUIDE_FOLIO } from '../context/guideKit';
 import { SETTINGS_GROUPS, type SettingsGroupId } from '../sidebar/sections/registry';
@@ -16,9 +16,12 @@ import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride'
 const spanish = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/es.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
 };
+const catalan = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ca.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
 
-type Edition = 'en' | 'es' | 'zh-Hans';
-const EDITIONS: Record<Edition, string> = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS };
+type Edition = 'en' | 'es' | 'ca' | 'zh-Hans';
+const EDITIONS: Record<Edition, string> = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS };
 
 /** The first match of `re` in the edition, or a failure naming what is missing. */
 function claim(edition: Edition, re: RegExp): RegExpMatchArray {
@@ -48,6 +51,7 @@ describe('what the guide says about itself and the Sandbox', () => {
     const stated: Record<Edition, RegExp> = {
       en: /this book uses (\d+(?:\.\d+)?) points on (\d+(?:\.\d+)?)/,
       es: /este libro usa (\d+(?:,\d+)?) puntos sobre (\d+(?:,\d+)?)/,
+      ca: /aquest llibre fa servir (\d+(?:,\d+)?) punts sobre (\d+(?:,\d+)?)/,
       'zh-Hans': /本书用(\d+(?:\.\d+)?) ?pt的字号配(\d+(?:\.\d+)?) ?pt的行距/,
     };
     for (const edition of Object.keys(stated) as Edition[]) {
@@ -69,11 +73,13 @@ describe('what the guide says about itself and the Sandbox', () => {
     const names: Record<Edition, string[]> = {
       en: SETTINGS_GROUPS.map((g) => (DEFAULT_LABELS[g.labelKey] as string).replace(/&/g, 'and').toLowerCase()),
       es: SETTINGS_GROUPS.map((g) => spanish.default.Sandbox[g.labelKey]!.toLowerCase()),
+      ca: SETTINGS_GROUPS.map((g) => catalan.default.Sandbox[g.labelKey]!.toLowerCase()),
       'zh-Hans': SETTINGS_GROUPS.map((g) => zh[g.id]),
     };
     const lists: Record<Edition, RegExp> = {
       en: /The \*\*Design\*\* panel edits[^:]*: ([^.]*)\./,
       es: /El panel \*\*Diseño\*\* edita[^:]*: ([^.]*)\./,
+      ca: /El tauler \*\*Disseny\*\* edita[^:]*: ([^.]*)\./,
       'zh-Hans': /\*\*Design\*\*面板用来编辑[^：]*：([^。]*)。/,
     };
     for (const edition of Object.keys(lists) as Edition[]) {
@@ -97,12 +103,14 @@ describe('what the guide says about itself and the Sandbox', () => {
     const regions: Record<Edition, Record<CjkRegion, string>> = {
       en: { mainland: 'mainland', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
       es: { mainland: 'China continental', taiwan: 'Taiwán', hongkong: 'Hong Kong' },
+      ca: { mainland: 'Xina continental', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
       'zh-Hans': { mainland: '大陆', taiwan: '台湾', hongkong: '香港' },
     };
     // The sentence that says so, up to the mark that ends it.
     const sentences: Record<Edition, RegExp> = {
       en: /([^.]*)\bevery mark a full square\b/,
       es: /([^.]*)cada signo ocupa un cuadratín entero/,
+      ca: /([^.]*)cada signe ocupa un quadratí sencer/,
       'zh-Hans': /([^。]*)的标点一律占一个字/,
     };
     for (const edition of Object.keys(sentences) as Edition[]) {
@@ -126,18 +134,19 @@ describe('what the guide says about itself and the Sandbox', () => {
     };
     const features: [keyof typeof uses, RegExp][] = [
       ['grid', /\bgrid\b|retícula/],
-      ['pageNumbers', /page numbers|folios/],
-      ['chapters', /\bchapters\b|capítulos/],
+      ['pageNumbers', /page numbers|folios|folis/],
+      ['chapters', /\bchapters\b|capítulos|capítols/],
       ['figures', /\bfigures\b|figuras/],
     ];
     const sentences: Partial<Record<Edition, RegExp>> = {
       en: /The Chinese edition of this guide ([^.]*)\./,
       es: /La edición china de esta guía ([^.]*)\./,
+      ca: /L'edició xinesa d'aquesta guia ([^.]*)\./,
     };
     for (const edition of Object.keys(sentences) as Edition[]) {
       const said = claim(edition, sentences[edition]!)[1]!;
       // “All of it”: everything the paragraph lists.
-      if (/\ball of it\b|lo usa todo/.test(said)) expect(Object.values(uses).every(Boolean), `${edition}: “${said}”`).toBe(true);
+      if (/\ball of it\b|lo usa todo|ho fa servir tot/.test(said)) expect(Object.values(uses).every(Boolean), `${edition}: “${said}”`).toBe(true);
       for (const [feature, words] of features) {
         if (words.test(said)) expect(uses[feature], `${edition}: ${feature} in “${said}”`).toBe(true);
       }
@@ -150,6 +159,7 @@ describe('what the guide says about itself and the Sandbox', () => {
     const said: Record<Edition, [RegExp, RegExp, RegExp, RegExp, RegExp]> = {
       en: [/This guide is set as ([^.]*)\./, /saddle-stitched/, /coated gloss paper of (\d+) grams/, /felt/, /studio light/],
       es: [/Esta guía está montada como ([^.]*)\./, /grapado a caballete/, /estucado brillo de (\d+) gramos/, /fieltro/, /luz de estudio/],
+      ca: [/Aquesta guia està muntada com ([^.]*)\./, /grapat a cavall/, /estucat brillant de (\d+) grams/, /feltre/, /llum d'estudi/],
       'zh-Hans': [/本指南设为([^。]*)。/, /骑马钉/, /(\d+)g\/m²的光面铜版纸/, /毛毡/, /摄影棚光照/],
     };
     for (const edition of Object.keys(said) as Edition[]) {
@@ -190,6 +200,7 @@ describe('what the guide says about itself and the Sandbox', () => {
     const clauses: Record<Edition, [RegExp, RegExp, RegExp]> = {
       en: [new RegExp(`${vertical}the HTML view ([^;.]*)`), /\bheight\b/, /\bwidth\b/],
       es: [new RegExp(`${vertical}la vista HTML ([^;.]*)`), /\baltura\b/, /\bancho\b/],
+      ca: [new RegExp(`${vertical}la vista HTML ([^;.]*)`), /alçada/, /amplada/],
       'zh-Hans': [new RegExp(`${vertical}HTML视图([^；。，]*)`), /高度/, /宽度/],
     };
     for (const edition of Object.keys(clauses) as Edition[]) {

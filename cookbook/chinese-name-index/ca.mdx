@@ -1,0 +1,68 @@
+---
+title: "Un índex de noms xinesos, per pinyin i per traços"
+summary: "Les mateixes marques :index en dues edicions d'una antologia de 紅樓夢: index.groupBy agrupa els noms per la inicial en pinyin en zh-Hans i per traços en zh-Hant."
+plain: "Una antologia breu d'una gran novel·la xinesa amb un índex dels noms dels personatges. Les mateixes marques donen dues edicions: una ordenada per so i l'altra per nombre de traços."
+description: "Un índex onomàstic xinès amb Postext: les mateixes marques :index donen lletres de pinyin A–Z a l'edició simplificada i 三畫, 四畫 a la tradicional."
+question: "Com agrupo un índex de noms xinesos per pinyin, o per nombre de traços com als llibres de Taiwan?"
+aliases: ["índex xinès", "índex onomàstic xinès", "人名索引", "índex per pinyin", "拼音索引", "índex per traços", "笔画索引", "筆畫索引", "index.groupBy", "ordenació xinesa", "Somni del pavelló vermell", "紅樓夢", "xinès simplificat i tradicional"]
+pageNotes: { "7": "L'obertura de l'índex de l'edició simplificada: l'avanttítol 按汉语拼音排列 en vermell, el títol 人名索引 en una Kai de pinzell, una nota de tres frases curtes, una per línia, i a sota dues columnes amb les lletres F, H, J, K, L i M; a la J hi ha setze membres de la família Jia i Jia Yucun, que només en comparteix el cognom.", "8": "La resta de l'índex, des de l'últim nom de la M fins a la Z, i el colofó en castellà, amb la revisió de la font i els dos canvis fets al seu text, al peu de la segona columna.", "15": "L'obertura de l'índex de l'edició tradicional: l'avanttítol 依筆畫排列 en vermell, 人名索引, la mateixa nota en caràcters tradicionals i dues columnes amb els encapçalaments per nombre de traços, de 三畫 a 十三畫, on comencen els Jia, perquè 賈 té tretze traços.", "16": "La resta de l'índex per traços, des dels Jia fins a 二十八畫 (鸚哥), i el colofó en castellà de l'edició tradicional al peu de la segona columna." }
+---
+
+## Què compondràs
+
+Una antologia breu de 紅樓夢 (*Somni del pavelló vermell*) que recull, dels capítols 1 a 3, els passatges en què apareix cada personatge i acaba amb un índex dels seus 47 noms, més quatre remissions des d'altres noms. Surt en dues edicions amb les mateixes marques. La de la Xina continental, en caràcters simplificats, ordena els noms per la inicial en pinyin, F, H, J…; la de Taiwan, en caràcters tradicionals, pel nombre de traços del primer caràcter, 三畫, 四畫… Totes dues són llibres en rústica de 大32开, 140 × 203 mm, amb 26 caràcters per línia en Noto Serif, els títols de capítol en una Kai i els avanttítols, els folis i les lletres de l'índex en Noto Sans. La targeta amplia els primers grups de l'índex simplificat, de la F a la L. <RecipeLink slug="names-and-subjects-indexes">Un índex onomàstic i un índex de matèries</RecipeLink> fa el mateix tipus d'índex per a una monografia en anglès o en castellà.
+
+## Elaboració
+
+### 1 · Marca cada nom on el lector el troba
+
+La configuració és [la resposta curta](#la-resposta-curta) de més amunt; la resta és al Markdown. La marca arxiva el nom complet, tant si l'imprimeix el text com si no: `字:index[士隐]{term="甄士隐" main}` imprimeix 士隐 i anota la pàgina sota 甄士隐. `main` posa la pàgina en negreta, i la nota sota el títol de l'índex explica què vol dir aquí: la pàgina en què el personatge entra en escena. Jia Baoyu neix al capítol 2 sense que l'anomenin (又生了一位公子), així que la marca va sense text per imprimir, `:index{term="贾宝玉"}`, i la seva entrada diu 4, **6**. Els malnoms i els noms d'abans tenen la seva pròpia remissió, `:index[凤辣子]{term="凤辣子" see="王熙凤"}`, que Postext imprimeix a la manera xinesa, després d'un punt i sense espai: 凤辣子。见王熙凤 ([Marques d'índex](/ca/docs/document-format#marques-díndex)).
+
+### 2 · Deixa que la llengua decideixi l'ordre
+
+<Excerpt region="editions" />
+
+Les dues edicions comparteixen la configuració, i a l'índex n'hi ha prou de canviar `locale`: `groupBy: 'auto'` agrupa un índex `zh-Hans` per pinyin i un de `zh-Hant` per traços; la resposta curta escriu els dos valors perquè els vegis. Les entrades s'ordenen segons el mateix criteri que les lletres de grup, així que els mateixos noms canvien de lloc: 甄费 va abans que 甄士隐 a la Z (fèi abans que shì) i darrere a 十四畫 (士 té tres traços; 費, dotze); 宁国公 i 荣国公 se separen a la N i la R, mentre que 寧國公 i 榮國公 continuen junts entre els noms de catorze traços ([Índex analític](/ca/docs/configuration#índex-analític)). Les lectures i els traços surten de l'ordenació xinesa del navegador; un cognom que llegeix malament (曾, 单, 解) porta una clau `sort` escrita amb caràcters que tinguin la lectura correcta.
+
+### 3 · Carrega cada font amb els caràcters que compon
+
+<Excerpt region="voices" />
+
+Fontsource parteix cada pes d'una font xinesa en uns cent fitxers, i `loadCjkFonts` baixa els que toca el seu text. La Song rep el llibre sencer, així que les capçaleres no li costen res; la seva negreta, les xifres de les pàgines principals; la Hei, el text dels atributs `kicker`, les lletres de l'índex i les xifres dels folis, i la Kai, els tres dístics i 人名索引. El PDF segueix el mateix camí: `cjkPdfProvider` incrusta aquests fitxers, cadascun reduït als caràcters que fan servir les seves pàgines, i cap caràcter no surt com una caixa buida. La Kai canvia amb l'edició. LXGW WenKai TC, l'única Kai de text de Fontsource, dibuixa formes heretades, 冷 amb l'antic peu 卩 de 令, i centra comes i punts, així que els títols de l'edició simplificada van en Ma Shan Zheng, una Kai de pinzell amb les formes del continent ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration#fonts-xineses-japoneses-i-coreanes)).
+
+### 4 · Posa la nota a l'obertura de l'índex
+
+<Excerpt region="opener" />
+
+La nota és un atribut del títol, `# 人名索引 {style="index" kicker="按汉语拼音排列" note="…"}`, i ocupa tota la caixa per sobre de les dues columnes. Com a paràgraf dins de les columnes servia de palanca a l'equilibratge: per igualar l'última pàgina de l'edició tradicional, la maquetació l'afluixava a dotze caràcters per línia en una columna de catorze. El text de disseny no aplica les regles xineses de tall de línia i compon tots els signes a amplada completa, mentre que el text simplificat posa ，、； a mitja amplada, així que la nota són tres frases curtes, una per línia (`\n` a l'atribut), i cadascuna porta un punt com a únic signe. Les obertures de capítol fan servir el mateix disseny, amb `第{numberHan}回` com a avanttítol, que imprimeix 第一回 en l'escriptura del document.
+
+### 5 · Mostra les dues pàgines d'índex juntes
+
+<Excerpt region="side-by-side" />
+
+El codi compon les dues edicions i deixa la simplificada a la taula. Els botons 简体版 i 繁體版 canvien d'edició, i amb cada canvi s'ofereix el PDF de la que és a la vista, `chinese-name-index-hans.pdf` o `chinese-name-index-hant.pdf`. La captura registra totes dues (`capture.doc: ['first', 'last']`): les vuit primeres pàgines de més amunt són de l'edició simplificada, i les quatre següents, de la tradicional, la primera pàgina i l'índex per traços. La franja que hi ha a sobre de la taula mostra la primera pàgina d'índex de cada edició. El PDF que acompanya la recepta és el de l'edició simplificada.
+
+## Variants
+
+### Ordena per pinyin un índex en caràcters tradicionals
+
+Una edició tradicional per a lectors que cerquen els noms per la lectura pot ordenar-los per pinyin. Posa `groupBy: 'pinyin'` a les dues edicions: les lletres de grup són A–Z i les entrades conserven els caràcters tradicionals. L'avanttítol diu com s'ordena l'índex, així que canvia'l també al Markdown tradicional, a `kicker="依漢語拼音排列"`.
+
+```diff
+-  groupBy: e.locale === 'zh-Hans' ? 'pinyin' : 'stroke', // A B C… or 三畫 四畫…
++  groupBy: 'pinyin', // A B C… in both scripts
+```
+
+### Imprimeix els noms sense lletres de grup
+
+Una llista curta de noms es llegeix bé amb una línia en blanc entre grups i cap lletra a sobre. Conserva els grups i treu les lletres. `groupBy: 'none'` no serveix per a això: només separa símbols, números i paraules, i aquí tots els noms comencen per un caràcter xinès, així que els 47 anirien en un sol bloc.
+
+```diff
+-  groups: { fontFamily: e.sans, fontSize: pt(9.5), fontWeight: 700, color: col('cinnabar'),
+-    marginTop: pt(7) },
++  groups: { enabled: false, marginTop: pt(14) }, // no heads; a blank line between groups
+```
+
+## Errors freqüents
+
+- La configuració `index` és del document, així que un document imprimeix un sol ordre. Un llibre que vulgui un índex per pinyin i un altre per traços es compon dues vegades, com fa aquest codi.

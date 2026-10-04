@@ -1,0 +1,65 @@
+---
+title: "Canviar els colors d'un document amb una sola paleta"
+summary: "Cada color de la configuració porta un id de paleta, i una sola funció compon el programa d'un festival en vermell, verd blavós, violeta o sorra."
+plain: "Un fulletó quadrat per a un festival de música, en quatre combinacions de color. Ensenya a canviar tots els colors del document de cop triant una altra gamma."
+description: "El programa d'un festival en dues pàgines: títols, negretes, vinyetes, xips, mostres de color, cel·les, capçalera i foli prenen el color d'una paleta."
+question: "Com canvio el blau per defecte de títols, negretes i vinyetes pels colors de la meva paleta?"
+aliases: ["paleta de colors", "recolorir", "canviar els colors", "combinació de colors", "colors de marca", "main-color", "paletteId", "blau per defecte", "previsualització en directe", "memòria cau de configuració", "structuredClone"]
+pageNotes: { "1": "La portada del programa: una banda vermella ocupa la meitat superior, amb l'avanttítol Almarén · 12–18 de junio de 2027, el títol Música en la Ribera en blanc i una ona de barres arrodonides de color clar; a sota, dues columnes en bandera comencen amb una introducció i continuen del dissabte al dilluns, cada acte amb l'hora en negreta vermella i un xip: Gratis, amb vora vermella, o el preu en blanc sobre vermell.", "2": "El dors: el peu de taula en una barra vermella sobre una quadrícula de sis escenaris per set dies, amb els noms alineats a la dreta al costat de les caselles, vermelles per als concerts amb entrada i rosa pàl·lid per als actes gratuïts, i una llegenda amb mostres de color; després, del dimarts al divendres a dues columnes, el requadre d'Entradas sota una franja vermella, el colofó i el foli 2 en una píndola vermella." }
+---
+
+## Què compondràs
+
+El programa de *Música en la Ribera*, un festival inventat, imprès en un full quadrat de 200 mm. La portada porta a la meitat superior una banda de color amb el títol en Syne 800 a 46 pt i una ona de barres arrodonides clares; a sota, dues columnes en bandera recorren la setmana dia a dia, cada acte amb l'hora en negreta i un xip amb el preu. El dors resumeix la setmana en una quadrícula de caselles de color sota la barra del peu i continua de dimarts a divendres, amb un requadre d'entrades sota una franja i el colofó. Sobre les pàgines hi ha quatre proves, en vermell, verd blavós, violeta i sorra. Els seus colors surten de set entrades de paleta anomenades per la seva funció, més `main-color`, que pren el de la banda. En prémer-ne una, tot el document es torna a compondre amb la seva paleta.
+
+## Elaboració
+
+### 1 · Anomena els colors per la seva funció
+
+<Excerpt region="palette" />
+
+`band` omple les bandes de color, `onBand` acoloreix el text que hi va a sobre, `deep` és l'accent del text sobre paper blanc i `tint`, l'emplenament clar. Cada combinació fixa aquestes quatre entrades i comparteix els tres neutres. Davant del blanc, la banda verd blavosa dona 3,3:1 i la de sorra 2,1:1, un contrast escàs tant per a la lletra blanca sobre la banda com per a la lletra del color de la banda sobre el paper. Per això aquestes dues paletes posen `onBand` en tinta, i les quatre componen negretes i títols en `deep`, un to més fosc que dona entre 5,99:1 (sorra) i 8,40:1 (violeta) sobre blanc.
+
+### 2 · Enllaça tot el que el motor imprimiria en blau
+
+<Excerpt region="links" />
+
+El blau del motor és una entrada de la paleta, `main-color` (#295AA3), i [per defecte](/ca/docs/configuration#la-paleta-per-defecte) els títols, la negreta, la cursiva, les remissions, les vinyetes i la capçalera en prenen el color. Aquí cadascun porta un id de paleta: hores i termes clau en negreta `deep`, cursiva en tinta, vinyetes en `band` i, a la pàgina 2, la capçalera en `deep` i el foli en `onBand` sobre una píndola `band`. `retint()` dona a més a `main-color` el color de la banda; com que aquesta configuració fixa tots els colors, en aquestes pàgines no canvia res, però un estil que s'afegeixi després sense color prendrà la banda en lloc del blau. El requadre d'entrades no fixa un color propi per a la negreta, així que hereta `bodyText.boldColor` amb el seu id de paleta, i la seva negreta canvia amb cada combinació.
+
+### 3 · Dibuixa la il·lustració amb caixes de disseny
+
+<Excerpt region="opener" />
+
+L'obertura és una [ranura de disseny](/ca/docs/configuration#elements-de-caixa) amb una caixa a sang pel límit superior, 29 barres arrodonides per a l'ona i tres textos: el mateix títol, més l'avanttítol i l'entradeta, que surten dels seus atributs. Les barres són caixes i no un SVG, així que el seu emplenament és un altre enllaç a `tint` que `relink()` reescriu; un SVG caldria redibuixar-lo i registrar-lo de nou per a cada combinació. Amb la caixa de la banda sola, el text començaria a la línia de la retícula de base que queda 2,4 mm per sota; `minHeight`, 18 línies o 85,1 mm sota el marge superior, reserva més espai i baixa la primera línia a 7 mm de la banda.
+
+### 4 · Deixa que la paleta ompli la taula
+
+<Excerpt region="grid" />
+
+La quadrícula és un recurs de taula i queda fora de la configuració, així que `relink()` no la toca. Tot i això, els seus [emplenaments de cel·la](/ca/docs/document-format#inserció-en-bloc-opcional-collocació-en-línia-explícita) porten ids de paleta, i el motor els resol amb la paleta del document en compondre la taula; els `:swatch{color="band"}` i `:swatch{color="tint"}` de la llegenda, a la nota de la taula, es resolen igual. Els xips de la programació fan servir els mateixos dos ids, així que la casella plena, el xip al costat de cada hora i la mostra de la llegenda coincideixen en totes les combinacions.
+
+### 5 · Crea una configuració nova a cada clic
+
+<Excerpt region="live" />
+
+Cada botó crida `retint()`, que crida `config()`, així que cada composició rep un objecte nou, sense cap resolució desada a la memòria cau. El motor resol una configuració una sola vegada i [desa el resultat associat a aquest objecte](/ca/docs/configuration#estat-global-compartit-en-una-pàgina). Si conserves una configuració i canvies les seves entrades de paleta en el mateix objecte, la composició següent reutilitza la resolució anterior: en una prova amb la 1.4.1, els títols, les vinyetes, els xips i la barra del peu de taula van conservar el primer color, mentre que les mostres i els emplenaments de cel·la, que llegeixen la paleta durant la composició, van prendre el nou. Assignar un array `colorPalette` nou al mateix objecte no va canviar res. Un `structuredClone()` de la configuració modificada sí que rep una resolució nova, però les seves ranures de disseny i el color de les remissions continuen portant l'hex anterior, així que la banda, l'ona, la capçalera, el foli i la «tabla 1» van continuar en vermell; `retint()` reescriu aquests hex i retorna un objecte nou.
+
+## Variants
+
+### Deixa la negreta en tinta
+
+Reserva l'accent per als títols, les vinyetes i els xips, i posa les hores i els termes clau en el color del text.
+
+```diff
+-  boldColor: col('deep'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
++  boldColor: col('ink'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
+```
+
+### Dona a cada part d'un llibre el seu propi color
+
+Si el color canvia d'una part a una altra dins del mateix document, consulta <RecipeLink slug="parts-in-colour">Parts en color amb un sol atribut</RecipeLink>.
+
+## Errors freqüents
+
+- Esborra `relink()` i compon la combinació verd blavosa per veure què deixa postext 1.4.1 amb els colors de la vermella: la banda, l'ona, el títol blanc, la capçalera, la píndola del foli i la remissió «tabla 1». El text, les llistes, els xips, la barra del peu de taula, la taula i el requadre d'entrades sí que canvien amb la paleta.
+- Fixa `bodyText.boldColor` sempre que un requadre porti negreta. El requadre el copia amb el seu id de paleta; si no el fixes, la 1.4.1 copia el valor per defecte, i en la combinació verd blavosa la negreta de fora del requadre pren el color de la banda mentre que «abono de la semana», a dins, surt en #295AA3.

@@ -1,0 +1,65 @@
+---
+title: "Notes al peu de la columna que les cita"
+summary: "Les crides [^id] passen a notes numerades al peu de la columna que les cita, amb interruptors per a una columna, notes finals i numeració contínua."
+plain: "Una edició escolar del Lazarillo de Tormes, a dues columnes. Ensenya a col·locar cada nota al peu de la columna que la cita, perquè no calgui passar la pàgina per llegir-la."
+description: "Una edició escolar del Lazarillo de Tormes a dues columnes: cada nota al peu de la columna que la cita, sota un filet curt, amb el codi complet de Postext."
+question: "Com compono les notes al peu de la columna on es citen?"
+aliases: ["notes al peu", "notes a peu de pàgina", "[^1]", "crides de nota", "notes finals", "edició anotada", "edició escolar"]
+---
+
+## Què compondràs
+
+Una edició escolar del *Lazarillo de Tormes*, de 210 × 280 mm i a dues columnes d'EB Garamond: el pròleg i el començament del tractat primer, on Lázaro neix en un molí del Tormes i surt al món amb un cec. Les notes aclareixen el que un lector de 1554 sabia i un d'avui ignora: el llogaret de Tejares, l'armada contra els Gelves, el toro de pedra del pont de Salamanca. Cada nota va al peu de la columna que la cita, en un cos menor i sota un filet curt de color bordeus, de manera que la vista baixa del número a la nota i torna sense passar pàgina. Les notes de l'edició en castellà adapten les de Clements Markham, de 1908, i hi afegeixen algunes glosses de vocabulari.
+
+## Elaboració
+
+### 1 · Cita la nota on toca i defineix-la on vulguis
+
+La configuració és [la resposta curta](#la-resposta-curta) de més amunt; la resta és Markdown. `naturales de Tejares[^tejares]` imprimeix un número volat enganxat a la paraula, i un paràgraf que comença per `[^tejares]:` conté la nota. Les definicions surten del flux siguin on siguin, així que aquesta mostra les aplega al final del capítol. Els números segueixen l'ordre de les crides: els ids del Markdown poden ser paraules, i renumerar un capítol mai no obliga a tocar les notes.
+
+### 2 · Deixa lloc a la columna per a les seves notes
+
+Abans de col·locar una línia, la maquetació suma l'alçada de les notes que aquella línia cita per primera vegada, i la del filet si és la primera nota de la columna. Una línia la nota de la qual no hi cap a sota passa a la columna següent amb el seu paràgraf, segons les regles de vídues i òrfenes, de manera que un número mai no remet a una nota d'una altra columna. Les notes s'apilen des del peu amb el seu propi cos i interlineat, fora de la retícula de base, i el text de sobre hi continua; l'equilibrat de columnes només compta el text.
+
+### 3 · Enfonsa totes les obertures fins a la mateixa línia
+
+<Excerpt region="opener" />
+
+L'obertura ocupa les dues columnes i pren l'avanttítol de l'atribut `kicker` del títol. `minHeight` reserva deu línies de la retícula, l'espai d'un títol de dues línies en Bodoni amb el seu filet, així que el text de cada capítol comença a la mateixa línia i el filet mai no cau sobre la primera línia de text.
+
+### 4 · Posa el llibre a la pàgina parella i el capítol a la senar
+
+<Excerpt region="running-heads" />
+
+Les capçaleres s'ancoren a la pàgina segons la seva paritat, amb el foli a la vora exterior; `pages: 'body'` les treu de les obertures, que porten un foli centrat al peu. Un títol de capítol llarg acaba en punts suspensius als 120 mm en lloc de topar amb el foli.
+
+### 5 · Prova les altres posicions
+
+<Excerpt region="live" />
+
+Cada interruptor torna a compondre el capítol amb una opció canviada. **Una columna** posa les notes al peu de la pàgina, que allà és la columna. **Final del capítol** les compon després de l'últim paràgraf i les baixa al peu de la columna que tanquen, sota el mateix filet. **Contínua** segueix la numeració del pròleg al tractat en lloc de tornar a començar per l'1.
+
+## Variants
+
+### Deixa les notes finals sota el text
+
+Amb `placement: 'chapterEnd'` les notes queden per defecte al peu de l'última columna; `chapterEndAlign: 'text'` les posa just sota l'últim paràgraf.
+
+```diff
+   placement: options.placement,
++  chapterEndAlign: 'text',
+```
+
+### Treu el filet
+
+Sense filet, les notes continuen separades del text per `spaceAbove` i `spaceBelowRule`.
+
+```diff
+-  separator: { width: 0.25, lineWidth: pt(0.5), color: col('oxblood') },
++  separator: { enabled: false },
+```
+
+## Errors freqüents
+
+- Una crida en un peu de figura, una cel·la de taula o un títol s'imprimeix tal qual: les notes es llegeixen en paràgrafs, elements de llista, citacions i requadres.
+- Una nota mai no es parteix entre columnes: una de més alta que la seva columna la desborda. Mantén les notes en poques línies, com fan els editors.

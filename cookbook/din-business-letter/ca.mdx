@@ -1,0 +1,52 @@
+---
+title: "Carta comercial segons la DIN 5008"
+summary: "Un pressupost en alemany de dos fulls A4. L'assumpte és l'H1, i el seu disseny col·loca el membret, l'adreça i el bloc d'informació on mana la forma B."
+plain: "Un pressupost de dues pàgines d'un taller de finestres alemany. Ensenya a col·locar l'adreça i les altres parts d'una carta comercial on mana la norma alemanya, perquè encaixi en un sobre amb finestreta."
+description: "Codi d'una carta comercial DIN 5008 a Postext, amb l'adreça a la finestreta del sobre, el bloc d'informació, les marques de plec i «Seite 2 von 2»."
+question: "Com col·loco al mil·límetre l'adreça i el bloc d'informació d'una carta segons la DIN 5008?"
+aliases: ["carta comercial", "DIN 5008", "forma B", "finestreta del sobre", "sobre amb finestreta", "camp d'adreça", "membret", "línia de remitent", "bloc d'informació", "marques de plec", "marca de perforació", "pàgina 2 de 2", "signatura", "pressupost", "Geschäftsbrief"]
+pageNotes: { "1": "Primer full d'un pressupost en alemany de la Fensterwerkstatt Tessin. A dalt, una banda blau de Berlín porta el dibuix en blanc d'una finestra doble, el nom Tessin amb FENSTERWERKSTATT · BERLIN a sota i, a la dreta, les tres especialitats del taller. Sota la banda, la línia de remitent i una adreça de quatre línies queden dins de quatre petits escaires, i a la dreta baixa el bloc d'informació, amb la data separada de la resta. L'assumpte, en negreta, identifica el pressupost 2026-117 per a 24 finestres dobles. El text va justificat, amb la partició de mots de l'alemany (mundgebla-sene tanca la quarta línia del primer paràgraf), i acaba amb una llista de sis treballs. A la vora esquerra hi ha les marques grises de plec i de perforació; al peu, les dades de l'empresa en tres columnes.", "2": "Segon full: una franja blava fina a dalt i, a sota, una línia amb el nom del taller, la referència i la data, amb Seite 2 von 2 a la dreta. El text dona el preu i el calendari i ofereix portar una fulla de finestra restaurada a la junta de propietaris. Segueixen Mit freundlichen Grüßen, una signatura en bolígraf blau, el nom i el càrrec, i tres annexos sota Anlagen. Les marques i les dades de l'empresa es repeteixen com al primer full." }
+---
+
+## Què compondràs
+
+La Fensterwerkstatt Tessin, un taller berlinès inventat que restaura finestres dobles, envia un pressupost a l'administració d'una finca. Són dos fulls A4 en alemany, compostos segons la forma B de la DIN 5008. A dalt, una banda de blau de Berlín porta el logotip i el nom del taller. A sota, tot és on ho posa la norma: la línia de remitent i l'adreça, dins del camp de 85 × 45 mm que treu el cap per la finestreta d'un sobre DL; el bloc d'informació, a 125 mm de la vora esquerra; l'assumpte en negreta, dues línies en blanc sota el camp, i les marques de plec i perforació, a 105, 148,5 i 210 mm. Les dades de l'empresa ocupen tres columnes al peu de tots dos fulls. El segon repeteix la referència al costat de «Seite 2 von 2» i acaba amb una signatura dibuixada en codi.
+
+## Elaboració
+
+### 1 · Fixa la primera pàgina al full en mil·límetres
+
+<Excerpt region="answer" highlight="1-4" />
+
+`at()` ancora un element per la cantonada superior esquerra a `'page'`, la caixa de tall ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)). Cada `x` i cada `y` mesuren, per tant, la distància a la cantonada del full, i les xifres de la norma es copien tal qual: l'adreça, a 25 mm de la vora esquerra i a 62,7 mm de la superior; la primera etiqueta del bloc d'informació, a 125 i 50. Tots aquests elements formen el disseny de l'H1. El text del títol és l'assumpte (`{titleText}`), i l'adreça i les referències en són atributs, així que el paper de cartes queda a la configuració i la carta, al Markdown. L'assumpte, a 100,6 mm, és l'element més baix, de manera que el títol reserva el full fins al peu de l'assumpte. `marginBottom` hi afegeix les dues línies en blanc, i la salutació comença a la línia següent de la retícula de base, a 117 mm.
+
+L'adreça és un únic atribut amb `\n` entre les seves línies. A la 1.4.1, un text de disseny només converteix en salt de línia el `\n` d'un atribut si el seu `paragraphIndent` és més gran que zero. L'adreça fa servir 0,01 pt, un sagnat que no es veu; amb 0, la barra i la n surten impreses a l'adreça. Sense `span: 'page'`, el disseny es queda a la columna de text i es retalla al marge superior de 27 mm: el logotip i el nom desapareixen, i de la banda només en queden els 5 mm de baix.
+
+### 2 · Encadena el bloc d'informació des d'una etiqueta fixa
+
+<Excerpt region="info" />
+
+Només la primera etiqueta està fixada al full. Les altres pengen `'below'` de l'anterior, i cada valor penja de la seva etiqueta amb `'align-top'` i 29 mm de desplaçament, així que afegir una fila a `INFO` no obliga a calcular coordenades. El text de disseny situa la línia de base al 80 % de l'alçada de línia. L'etiqueta de 7 pt (`lineHeight: 12 / 7`) i el valor de 9 pt (`12 / 9`) tenen tots dos una línia de 12 pt, i per això comparteixen línia de base a cada fila de 4,23 mm.
+
+### 3 · Dibuixa el membret al mateix disseny
+
+<Excerpt region="letterhead" />
+
+La banda és una caixa fixada a la cantonada del full. `width: 'fill'` l'estén de vora a vora, i els seus 32 mm d'alçada la porten 5 mm per sota del marge superior, que és a 27 mm. El logotip és un element d'imatge que dibuixa un recurs de 18 mm d'alçada i pren l'amplada del mateix dibuix ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). El nom penja `'right-of'` del logotip, i la línia de l'ofici, `'below'` del nom. Vuit filets de 3 mm formen un escaire a cada cantonada del camp d'adreça, els 85 × 45 mm del full que treuen el cap per la finestreta del sobre.
+
+### 4 · Posa a la capçalera i al peu el que comparteixen tots els fulls
+
+<Excerpt region="furniture" />
+
+Qualsevol element del disseny de l'H1 fixat per sota de l'assumpte suma alçada a la reserva del títol. Amb la marca de plec de 210 mm al disseny, la salutació baixa a 222,8 mm i la carta passa a tres pàgines. La ranura de la capçalera es pinta a totes les pàgines sense reservar espai, i per això les tres marques hi van ([capçaleres i peus](/ca/docs/configuration#capçaleres-i-peus)). La pàgina 1 comença amb l'H1, cosa que la converteix en pàgina d'obertura (`'opener'`), així que `pages: 'body'` limita la franja blava, la línia de referència i `Seite {pageNumber} von {totalPages}` als fulls següents. La línia de referència pren els atributs de l'H1 amb `{attr.unser-zeichen}` i `{attr.datum}`.
+
+### 5 · Col·loca la signatura al flux del text
+
+<Excerpt region="signature" />
+
+`::resource{id="signature"}` posa el dibuix sota «Mit freundlichen Grüßen», i `width: 0.297` li dona 49 mm d'amplada i 21,1 mm d'alçada, una mica menys de quatre línies de 15 pt. El text que segueix un recurs al flux torna a la retícula de base. Amb `0.25`, el dibuix feia 17,8 mm d'alçada, i els 3,4 mm que la retícula hi afegia a sota allunyaven el nom de la signatura. El tipus de recurs té el `captionPrefix` buit, i la 1.4.1 no compon peu quan el prefix i el peu són buits, així que sota la signatura no apareix ni rètol ni número ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). El logotip és un recurs del mateix tipus, i només el dibuixa l'element d'imatge. Cap `:ref` ni `::resource` l'anomena, així que mai no entra al flux.
+
+## Errors freqüents
+
+- La targeta sobre `\n` als atributs diu que, amb `paragraphIndent` a 0, el text es queda en una sola línia. A la 1.4.1 l'adreça es parteix en omplir els seus 75 mm d'amplada, i els dos caràcters `\n` surten impresos on hi hauria d'haver un salt de línia.
+- `{totalPages}` compta les pàgines de tot el document: amb dues cartes en un mateix Markdown, el segon full de la primera diria «Seite 2 von 4». Compon cada carta per separat.

@@ -5,6 +5,7 @@
     "heading": {
       "en": "Page",
       "es": "Página",
+      "ca": "Pàgina",
       "zh": "页面"
     }
   },
@@ -13,6 +14,7 @@
     "heading": {
       "en": "Layout",
       "es": "Disposición",
+      "ca": "Disposició",
       "zh": "版式"
     }
   },
@@ -21,6 +23,7 @@
     "heading": {
       "en": "Body text",
       "es": "Texto de cuerpo",
+      "ca": "Text de cos",
       "zh": "正文"
     }
   },
@@ -29,6 +32,7 @@
     "heading": {
       "en": "Headings",
       "es": "Encabezados",
+      "ca": "Encapçalaments",
       "zh": "标题"
     }
   },
@@ -37,6 +41,7 @@
     "heading": {
       "en": "Table style",
       "es": "Estilo de tablas",
+      "ca": "Estil de taules",
       "zh": "表格样式"
     }
   },
@@ -45,6 +50,7 @@
     "heading": {
       "en": "Named table styles",
       "es": "Estilos de tabla con nombre",
+      "ca": "Estils de taula amb nom",
       "zh": "命名表格样式"
     }
   },
@@ -53,6 +59,7 @@
     "heading": {
       "en": "Caption style",
       "es": "Estilo de pies de recurso",
+      "ca": "Estil dels peus de recurs",
       "zh": "题注样式"
     }
   },
@@ -61,6 +68,7 @@
     "heading": {
       "en": "Diagram style",
       "es": "Estilo de diagramas",
+      "ca": "Estil dels diagrames",
       "zh": "图示样式"
     }
   },
@@ -69,6 +77,7 @@
     "heading": {
       "en": "Paragraph styles",
       "es": "Estilos de párrafo",
+      "ca": "Estils de paràgraf",
       "zh": "段落样式"
     }
   },
@@ -77,6 +86,7 @@
     "heading": {
       "en": "Callout styles",
       "es": "Estilos de aviso",
+      "ca": "Estils d'avís",
       "zh": "标注框样式"
     }
   },
@@ -85,6 +95,7 @@
     "heading": {
       "en": "Chip styles",
       "es": "Estilos de chip",
+      "ca": "Estils de xip",
       "zh": "行内标签样式"
     }
   },
@@ -93,6 +104,7 @@
     "heading": {
       "en": "Parts",
       "es": "Partes",
+      "ca": "Parts",
       "zh": "篇"
     }
   },
@@ -101,6 +113,7 @@
     "heading": {
       "en": "Heading styles",
       "es": "Estilos de encabezado",
+      "ca": "Estils d'encapçalament",
       "zh": "标题样式"
     }
   },
@@ -109,6 +122,7 @@
     "heading": {
       "en": "Table of contents",
       "es": "Índice de contenidos",
+      "ca": "Índex de continguts",
       "zh": "目录"
     }
   },
@@ -117,6 +131,7 @@
     "heading": {
       "en": "Unordered Lists",
       "es": "Listas no ordenadas",
+      "ca": "Llistes no ordenades",
       "zh": "无序列表"
     }
   },
@@ -125,6 +140,7 @@
     "heading": {
       "en": "Ordered Lists",
       "es": "Listas ordenadas",
+      "ca": "Llistes ordenades",
       "zh": "有序列表"
     }
   },
@@ -133,6 +149,7 @@
     "heading": {
       "en": "Math",
       "es": "Matemáticas",
+      "ca": "Matemàtiques",
       "zh": "数学公式"
     }
   },
@@ -141,6 +158,7 @@
     "heading": {
       "en": "East Asian typography",
       "es": "Tipografía de Asia oriental",
+      "ca": "Tipografia de l'Àsia oriental",
       "zh": "东亚排版"
     }
   },
@@ -149,6 +167,7 @@
     "heading": {
       "en": "Headers & footers",
       "es": "Encabezados y pies",
+      "ca": "Capçaleres i peus",
       "zh": "页眉与页脚"
     }
   },
@@ -157,6 +176,7 @@
     "heading": {
       "en": "Headers & footers",
       "es": "Encabezados y pies",
+      "ca": "Capçaleres i peus",
       "zh": "页眉与页脚"
     }
   },
@@ -165,6 +185,7 @@
     "heading": {
       "en": "Hyphenation",
       "es": "Separación silábica",
+      "ca": "Partició de mots",
       "zh": "断词"
     }
   },
@@ -173,6 +194,7 @@
     "heading": {
       "en": "Languages and scripts",
       "es": "Idiomas y escrituras",
+      "ca": "Llengües i escriptures",
       "zh": "语言与文字"
     }
   },
@@ -181,6 +203,7 @@
     "heading": {
       "en": "Document language",
       "es": "Idioma del documento",
+      "ca": "Llengua del document",
       "zh": "文档语言"
     }
   },
@@ -189,6 +212,7 @@
     "heading": {
       "en": "Debug",
       "es": "Depuración",
+      "ca": "Depuració",
       "zh": "调试"
     }
   },
@@ -197,6 +221,7 @@
     "heading": {
       "en": "HTML Viewer",
       "es": "Visor HTML",
+      "ca": "Visor HTML",
       "zh": "HTML查看器"
     }
   },
@@ -205,6 +230,7 @@
     "heading": {
       "en": "PDF generation (config)",
       "es": "Generación de PDF (configuración)",
+      "ca": "Generació de PDF (configuració)",
       "zh": "PDF生成（配置）"
     }
   },
@@ -213,6 +239,7 @@
     "heading": {
       "en": "Color Palette",
       "es": "Paleta de colores",
+      "ca": "Paleta de colors",
       "zh": "调色板"
     }
   },
@@ -221,6 +248,7 @@
     "heading": {
       "en": "Custom fonts",
       "es": "Fuentes personalizadas",
+      "ca": "Fonts personalitzades",
       "zh": "自定义字体"
     }
   },
@@ -229,6 +257,7 @@
     "heading": {
       "en": "Resource types",
       "es": "Tipos de recurso",
+      "ca": "Tipus de recurs",
       "zh": "资源类型"
     }
   },
@@ -237,6 +266,7 @@
     "heading": {
       "en": "Back-of-book index",
       "es": "Índice analítico",
+      "ca": "Índex analític",
       "zh": "索引"
     }
   },
@@ -245,6 +275,7 @@
     "heading": {
       "en": "Cross-references",
       "es": "Referencias cruzadas",
+      "ca": "Referències creuades",
       "zh": "交叉引用"
     }
   },
@@ -253,6 +284,7 @@
     "heading": {
       "en": "Citations",
       "es": "Citas",
+      "ca": "Cites",
       "zh": "引用"
     }
   }

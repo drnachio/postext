@@ -1,0 +1,67 @@
+---
+title: "Un llibre tècnic amb remissions entre capítols"
+summary: "Un manual solar de tres capítols on el text escriu @fig:sun, @tbl:loads i @sec:array-size, i buildBundle imprimeix cada número i pàgina entre capítols."
+plain: "Un manual breu per calcular els panells i les bateries d'una cabana. Quan el capítol 3 remet a una taula del capítol 1, o el capítol 1 a un apartat del 2, s'imprimeixen el número i la pàgina correctes, i són enllaços."
+description: "Un llibre tècnic amb Postext: remissions a la manera de pandoc-crossref a figures, taules i apartats d'altres capítols, resoltes per buildBundle."
+question: "Com remeto a una figura, una taula o un apartat d'un altre capítol amb els números sempre correctes?"
+aliases: ["pandoc-crossref", "referència creuada", "remissió", "@fig", "@tbl", "@sec", "vegeu capítol", "remissions entre capítols", "llibre tècnic", "manual", "numeració de figures", "numeració de taules", "referència a pàgina"]
+pageNotes: { "1": "Pàgina 1, la coberta: una banda blau nit sobre dos terços de la pàgina amb les trajectòries del sol al juny i al desembre dibuixades com a arcs ambre sobre un panell solar inclinat, la col·lecció CUADERNOS TÉCNICOS LARCH HILL · N.º 4, el títol Energía para una cabaña en lletra estreta blanca i gran i un subtítol en cursiva; l'autora i l'edició sota la banda.", "2": "Pàgina 2: l'índex sota la mateixa banda, tres capítols numerats amb els seus apartats i pàgines, i un colofó.", "3": "Pàgina 3: el capítol 1 s'obre sota la banda amb un 1 gran en ambre; el text remet al capítol 2, al capítol 3 i a l'apartat 1.3, amb les remissions en taronja i negreta.", "4": "Pàgina 4: la taula 1.1 de consums amb la capçalera blau nit, i els apartats 1.2 i 1.3 amb remissions a l'apartat 2.1 a la pàg. 6, a la figura 1.1 i a l'apartat 3.1.", "5": "Pàgina 5: la figura 1.1, un gràfic de barres del consum hora a hora amb les hores de llum ombrejades, i el final del capítol 1.", "6": "Pàgina 6: comença el capítol 2; la primera línia remet al capítol 1 i a la taula 1.1; la figura 2.1, hores de sol pic per mes amb el desembre en taronja.", "7": "Pàgina 7: els apartats 2.2 i 2.3, una remissió a l'apartat 3.2 a la pàg. 8, una fórmula centrada i la taula 2.1 de pèrdues.", "8": "Pàgina 8: s'obre el capítol 3; el text cita l'apartat 2.3, la figura 2.1, la taula 1.1, l'apartat 1.3 amb la seva pàgina, la taula 2.1 i les taules 2.1 i 3.1 només pel número.", "9": "Pàgina 9: la taula 3.1 que compara químiques de bateria, l'apartat 3.3 i la figura 3.1, una corba de l'estat de càrrega durant cinc dies de desembre." }
+---
+
+## Què compondràs
+
+Un manual tècnic breu, *Energía para una cabaña*, compost en IBM Plex sobre una pàgina de 178 × 233 mm: una coberta amb les trajectòries del sol dibuixades en codi, un índex i tres capítols sota una banda blau nit. El llibre dimensiona una instal·lació solar petita, així que cada capítol es recolza en els altres. El capítol 3 cita la taula de consums de l'1 i el gràfic d'hores de sol del 2; el capítol 1 envia el lector a l'apartat 2.3 i li dona la pàgina. Qui escriu posa `@tbl:loads` i `@sec:array-size`, tal com els llegeix pandoc-crossref, en quatre fitxers Markdown separats. `buildBundle` els compon com un sol llibre, així que cada remissió imprimeix el número que va rebre la seva destinació al seu propi capítol, la pàgina on va caure i un enllaç.
+
+## Elaboració
+
+### 1 · Anomena cada destinació una vegada, per a tot el llibre
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Els títols porten un identificador de Pandoc amb el seu prefix, `## El tamaño del campo {#sec:array-size}`. Les figures i les taules són recursos declarats a l'script, i els seus identificadors s'escriuen igual, `fig:sun` i `tbl:loads`, de manera que el text diu `@fig:sun` tant si la figura és dos paràgrafs enrere com dos capítols enrere. Cada identificador ha de ser únic en tot el llibre, no només al seu capítol.
+
+### 2 · Compon els capítols com un sol llibre
+
+<Excerpt region="answer" highlight="6" />
+
+`buildBundle` arrossega els comptadors de figures i taules d'un capítol al següent, així que la primera taula del capítol 3 és la 3.1 i `@tbl:loads` al capítol 3 continua imprimint *tabla 1.1*. Un capítol el text del qual anomena un títol que no conté es compon amb l'esquema del llibre sencer, i es torna a compondre (tres passades com a màxim) fins que les pàgines d'aquest esquema deixen de moure's. Per això el capítol 1 pot imprimir *apartado 2.1 … pág. 6* abans que el capítol 2 existeixi en paper.
+
+### 3 · Tria les paraules de cada remissió
+
+`crossRefs` fixa *capítulo*, *apartado* i *pág.* (en anglès, *chapter*, *section* i *p.*). Una remissió a una figura o una taula imprimeix el `shortLabel` del seu tipus, aquí en minúscula, *figura 2.1* i *tabla 1.1*, com s'escriuen enmig d'una frase. Una majúscula al prefix, `@Tbl:loads` o `@Sec:array`, posa en majúscula l'etiqueta a començament de frase, i `[-@tbl:losses]` imprimeix només el número per a *las tablas 2.1 y 3.1*.
+
+### 4 · Remet cap endavant a apartats i cap enrere a figures
+
+Una figura o una taula es numera, i es col·loca, on se cita per primera vegada. `@fig:soc` al capítol 1 la convertiria en la figura 1.2 i la posaria al capítol 1. Per això el capítol 1 remet cap endavant a `@sec:autonomy`, i cada figura i cada taula se citen primer al seu propi capítol; els capítols següents hi remeten sense problema. La pàgina va amb l'apartat, `:ref{id="sec:sun-hours" style=page}`: una remissió a un recurs imprimeix la seva etiqueta i el seu número, mai la seva pàgina.
+
+### 5 · Les obertures i la coberta surten de la mateixa banda
+
+<Excerpt region="opener" />
+
+La banda baixa 55 mm des de la vora superior a cada capítol i a l'índex, que reutilitza els mateixos elements; el número és `{chapterNumber}` i l'entradeta, un atribut del títol.
+
+<Excerpt region="cover" />
+
+## Variants
+
+### Escriu «Figura 2.1» al text
+
+Un llibre que escriu completes les seves remissions fa servir el nom del tipus en lloc de l'etiqueta curta.
+
+```diff
+-  shortLabel: type.id === 'table' ? t({ en: 'table', es: 'tabla' })
+-    : t({ en: 'fig.', es: 'figura' }),
++  shortLabel: type.id === 'table' ? t({ en: 'Table', es: 'Tabla' })
++    : t({ en: 'Figure', es: 'Figura' }),
+```
+
+### Numera els apartats amb el signe de paràgraf
+
+```diff
+-  section: t({ en: 'section {n}', es: 'apartado {n}' }), // @sec:losses → "section 2.2"
++  section: '§ {n}',
+```
+
+## Errors freqüents
+
+- Una remissió a un identificador que cap capítol no defineix imprimeix *?*. Revisa els identificadors després de canviar el nom d'un títol en un capítol: les remissions que hi apunten són als altres.
+- Compondre els capítols un per un amb `buildDocument` perd els comptadors i l'esquema del llibre: cada capítol numera les seves figures des d'1 i una remissió a un altre capítol imprimeix *?*. Fes servir `buildBundle`, o encadena `continuation` i passa tu mateix l'`outline`.
+- Les equacions no tenen numeració pròpia a Postext, així que `@eq:` només troba una àncora que hagis posat i n'imprimeix el text; aquest llibre escriu les seves dues fórmules sense número.

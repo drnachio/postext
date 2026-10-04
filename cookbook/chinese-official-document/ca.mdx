@@ -1,0 +1,78 @@
+---
+title: "Un document oficial xinès segons la GB/T 9704"
+summary: "Un avís de quatre pàgines en A4 segons la norma nacional: 28 × 22 caràcters de 三号, membret vermell, títols 一、（一）1.（1）, annex i folis «— 1 —»."
+plain: "Un avís oficial xinès de quatre pàgines. Segueix les normes nacionals per a aquests documents, amb un membret vermell, apartats numerats i números de pàgina amb un format fix."
+description: "Un document oficial xinès amb Postext segons la GB/T 9704—2012: A4, retícula de 28 × 22 caràcters, membret vermell, títols numerats, annex, 版记 i folis."
+question: "Com componc un document oficial xinès segons la GB/T 9704, amb el membret vermell, la retícula i els folis?"
+aliases: ["document oficial", "document oficial xinès", "avís oficial", "公文", "公文格式", "GB/T 9704", "党政机关公文格式", "capçalera vermella", "membret vermell", "红头文件", "发文字号", "版记", "三号", "仿宋", "一、（一）1.（1）", "retícula de caràcters en A4", "foli entre ratlles"]
+pageNotes: { "1": "Pàgina 1 d'un avís de l'associació fictícia 示例市出版协会. A dalt a la dreta, un segell amb vora vermella que diu 样张; a dalt a l'esquerra, el número d'exemplar 000001. De banda a banda, en caràcters vermells grans, el nom de l'emissor seguit de 文件; a sota, el número del document 示出协〔2026〕7号 centrat sobre un filet vermell que ocupa tota la caixa, i el títol en dues línies centrades de lletra negra gruixuda, la de dalt més curta. Després, el destinatari 各会员单位, el paràgraf d'obertura, el primer títol 一、培训时间 i tres línies de text. El foli — 1 — va a la dreta, sota el text.", "2": "Pàgina 2: títols de quatre nivells, 二、培训地点, （一）排版规范, 1.公文格式 i （1）版心与字体, cadascun a la seva línia i amb dos caràcters de sagnat, sobre paràgrafs de 28 caràcters per línia. Al final de la penúltima línia, una coma penja fora de la vora dreta del text. El foli — 2 — va a l'esquerra.", "3": "Pàgina 3: els últims títols de l'avís, la línia d'annex 附件：培训日程安排, el nom de l'emissor i la data cap a la dreta, la nota （此件公开发布） i el foli — 3 — a la dreta.", "4": "Pàgina 4: l'annex. 附件 a dalt a l'esquerra, el títol centrat 培训日程安排 i una taula amb filets dels tres dies del curs, cada data en dues files. Al peu, entre un filet gruixut, un de fi i un altre de gruixut, la línia de còpies 抄送 i l'oficina que l'expedeix amb 2026年9月28日印发. El foli — 4 — a l'esquerra i, a baix de tot, una línia petita amb les fonts." }
+---
+
+## Què compondràs
+
+Un avís d'una associació d'editors inventada, en una ciutat també inventada, 示例市 («Ciutat Exemple»), compost com compon els seus papers una oficina de la Xina continental segons la GB/T 9704—2012, 《党政机关公文格式》. Són quatre pàgines A4 de 28 caràcters per línia i 22 línies per pàgina. La primera s'obre amb el nom de l'emissor en vermell, el número del document sobre un filet vermell i un títol de dues línies en 二号. Els títols es numeren 一、（一）1.（1）, cada nivell amb la seva pròpia lletra. La signatura i la data van a la dreta, i un annex en pàgina pròpia porta al peu el 版记 entre filets. Els folis diuen «— 1 —», a la dreta a les pàgines senars i a l'esquerra a les parelles. Cada full avisa al marge superior que és una mostra. <RecipeLink slug="din-business-letter">Carta comercial DIN 5008</RecipeLink> fa la mateixa feina amb una norma europea.
+
+## Elaboració
+
+### 1 · Una caixa comptada en caselles
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. La GB/T 9704 fixa el marge de cap en 37 mm i el de llom en 28 mm, i omple una caixa de 156 × 225 mm amb 22 línies de 28 caràcters de cos 三号. `cjk.grid` pren aquestes xifres tal qual: 28 em de 15,75 pt donen 155,6 mm, i 22 línies de 29 pt, 225,1 mm ([Retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters)). A Word, el 三号 fa 16 pt, i amb aquest cos la línia tindria 158 mm, més ampla que la caixa de la norma; 15,75 pt és el valor de les taules dels caixistes. Amb la retícula activada, els marges són mínims. Aquests deixen 0,02 mm per repartir, així que la caixa es queda on la posa la norma. La norma demana 仿宋 per al text; Fontsource no té cap Fangsong, així que el text va en la Song de Noto Serif SC (mira Errors freqüents).
+
+Cada signe ocupa una casella sencera i no en cedeix res, de manera que, en una línia de xinès, els caràcters s'alineen a les columnes de la retícula que dibuixa la norma. Les xifres aràbigues són més estretes que una casella, així que en una línia com 版心156毫米×225毫米 els caràcters que segueixen les xifres cauen entre les columnes. Quan una coma cau a la casella 29, `hangingPunctuation: 'allow'` la deixa penjar al marge en lloc d'enviar un caràcter a la línia següent i espaiar la resta ([Puntuació penjada](/ca/docs/configuration#puntuació-penjada)).
+
+<PageShot page={2} crop="0.08,0.683,0.9,0.2" caption="Pàgina 2: la coma que segueix 各一份 omple la casella 28; la que segueix 可自愿报名 penja en una casella 29, fora de la caixa, i la línia següent comença al marge." />
+
+### 2 · Quatre nivells de títols, una línia cadascun
+
+<Excerpt region="levels" />
+
+La norma compon 一、 en 黑体, （一） en 楷体, i 1. i （1） en la lletra del text, tots al cos del text. `{2:一}` escriu el numeral xinès corrent en l'escriptura de `locale` ([Numeració](/ca/docs/configuration#numeració)). Amb el cos i l'interlineat del text i sense marges, cada títol ocupa una línia de la retícula, i el text que el segueix tampoc no en surt. Els títols no tenen sagnat propi, així que els dos espais ideogràfics amb què comença cada plantilla són les dues caselles que deixa la norma ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)).
+
+### 3 · El membret, línia a línia
+
+<Excerpt region="letterhead" />
+
+El membret és el disseny de l'H1, els atributs del qual porten el número d'exemplar, l'emissor i el número del document: la configuració guarda el paper timbrat i el Markdown, el document. `lineTop(n)` dona la vora superior de la línia *n* de la retícula, així que cada element queda on el compta la norma: el número, dues línies en blanc per sota del nom de l'emissor; el títol, dues línies en blanc per sota del filet vermell. A 46 pt, la tinta del nom va des de 35 mm per sota de la vora superior de la caixa fins al peu de la línia 5, de manera que les línies 6 i 7 queden en blanc i el número cau a la 8; a 48 pt entraria a la línia 6 i baixaria una línia tota la resta. El `\\` del títol el parteix després de 关于举办, una línia curta sobre una de llarga: un trapezi, una de les dues formes que admet la norma (l'altra és el rombe). `minHeight` reserva 13 línies i `marginBottom` una més, de manera que el destinatari comença a la línia 15 ([Span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)).
+
+### 4 · Folis sota la caixa
+
+<Excerpt region="folios" />
+
+Al peu, la vora superior del contenidor és el peu de la caixa, així que `offset.y` es mesura cap avall des del text ([Capçaleres i peus](/ca/docs/configuration#capçaleres-i-peus)). Les ratlles queden 7 mm per sota i a una casella de 四号 de la vora exterior: `parity` posa els folis senars a la dreta i els parells a l'esquerra. El marge superior imprimeix `{subtitle}`, del frontmatter. Aquesta línia i el colofó que va sota el 版记 són l'única cosa que canvia entre l'edició anglesa i la castellana.
+
+### 5 · L'annex i el 版记
+
+<Excerpt region="annex" />
+
+El títol de l'annex té un estil propi: pàgina nova, 附件 a la línia 1, el títol a la 3 i cap marge sota les tres línies que reserva. La línia 4 en blanc és l'espai que tot recurs en línia deixa a sobre (`inlineResourceGap`, a [Disposició](/ca/docs/configuration#disposició)), així que el filet superior de la taula cau a la línia 5. El 版记 forma part del mateix disseny i ocupa les dues línies de la retícula que acaben al peu de la caixa. Els seus elements porten `reserve: false`, així que no sumen res a l'espai que reserva el títol i no empenyen la taula cap avall. La norma posa el 版记 a l'última pàgina, darrere dels annexos; amb un annex d'una pàgina, aquesta és la de l'annex. Un annex més llarg demanaria que dibuixés el 版记 un títol de la seva última pàgina.
+
+### 6 · La signatura i la data
+
+<Excerpt region="styles" />
+
+Un avís sense segell posa el nom de l'emissor a dues caselles del marge dret i la data a sota, dues caselles més a la dreta. Si la data és més llarga que el nom, acaba a dues caselles del marge dret i el nom es desplaça a l'esquerra per conservar el graó de dues caselles. La nostra fa 6,9 em, una mica menys que els 7 del nom, així que, al peu de la lletra, començaria dues caselles a la dreta del nom i acabaria a 0,14 em del marge. Llegim la regla pel que busca, que la data no arribi mai a la vora, i apliquem el segon cas: la data acaba a poc més de dues caselles del marge. `indent` col·loca les dues línies en caselles senceres, a 17 i 19 em del marge ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
+
+## Variants
+
+### Comprimeix els signes que es toquen
+
+Parelles com ），i 》（ ocupen casella i mitja en lloc de dues, com a la majoria dels llibres; els caràcters que les segueixen surten de les columnes de la retícula.
+
+```diff
+-  punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false,
++  punctuationWidth: 'fullwidth', compressAdjacent: true, trimLineStart: true,
+```
+
+### Mostra la retícula mentre compons
+
+El llenç dibuixa un quadrat gris per cada casella de la retícula de 28 × 22, i el PDF no l'inclou llevat que `renderToPdf` rebi `characterGrid: true`.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+## Errors freqüents
+
+- A 150 ppp, una línia de 29 pt fa 60,41666… px. Quan un títol i un paràgraf de dues línies queien a les tres últimes línies d'una pàgina, la comprovació que manté el títol amb el seu text sumava les línies de la retícula 10⁻¹³ px per sota i enviava el títol a la pàgina següent, amb tres línies en blanc darrere. A 144 ppp un punt són dos píxels i les sumes surten exactes, així que la pàgina conserva les seves 22 línies.
+- Una línia justificada reparteix el que li sobra entre els caràcters xinesos i els espais que contingui, i l'espai s'emporta més del que li toca: a la pàgina 2, el de GB/T 15834 va arribar gairebé al doble d'amplada que el de GB/T 9704, més amunt. El contingut escriu els dos números amb un espai de no separació (U+00A0), que manté cada número d'una peça, i el sobrant va entre els caràcters.

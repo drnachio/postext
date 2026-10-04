@@ -1,0 +1,72 @@
+---
+title: "Full d'atles: mapes numerats i una carta girada"
+summary: "Mapes amb numeració pròpia i el peu sobre una barra blava, una llegenda de mostres en els colors dels mapes i una carta nàutica girada a la pàgina 3."
+plain: "Quatre pàgines d'un atles d'unes illes inventades. Ensenya a numerar els mapes per separat i a girar un mapa gran perquè ocupi tota la pàgina."
+description: "Quatre pàgines d'atles compostes amb Postext: mapes numerats amb el peu sobre una barra, una llegenda de mostres, un nomenclàtor i una carta apaïsada."
+question: "Com numero els mapes com un tipus de figura propi, amb el peu sobre una barra, i els cito al text?"
+aliases: ["atles", "mapes", "figures de mapa", "nomenclàtor", "llegenda", "mostres de color", "figura apaïsada", "figura girada", "barra de peu", "carta nàutica", "map", "gazetteer"]
+pageNotes: { "1": "L'obertura: una banda blau fosc al capdamunt de la pàgina amb l'avanttítol Hoja 1 · Las islas y sus aguas, el títol Las islas Solan i una rosa dels vents; dues columnes curtes de text, i al peu el mapa 1, el relleu de quatre illes en tintes de sorra i ocre sobre aigua blau clar i més fosc, amb carreteres vermelles i una llegenda de mostres que comença per En metros.", "2": "El mapa 2, l'extrem nord de Brannay amb corbes de nivell, els tres Hool Stacks davant la punta nord-oest i discos vermells numerats, i el mapa 3, el plànol del port de Kirkwick amb sondes i una clau de números en cercles, encapçalen les dues columnes; el text continua a sota.", "3": "El mapa 4, una carta de tot el grup i de la costa de terra ferma, girada un quart de volta amb el nord cap al llom; al marge, una quadrícula amb lletres de la A a la H i números de l'1 al 6; sondes en mar obert i disset discos vermells.", "4": "La taula 1, el nomenclàtor: disset files amb un disc vermell numerat, el lloc, què és, la seva illa i el seu quadre, i una fila de cada dues tenyida de blau; a sota, dues columnes de text de tancament i el colofó, i al capdavall el peu d'impremta sota un filet." }
+---
+
+## Què compondràs
+
+El primer full d'un atles de les illes Solan, un arxipèlag inventat i dibuixat en codi a partir d'un camp d'altures. La pàgina 1 s'obre amb una banda blau fosc, el nom de l'atles a 56 pt i una rosa dels vents, i el mapa 1, el relleu del grup, ocupa el peu de la pàgina. El nord de l'illa principal i el plànol del seu port encapçalen les dues columnes de la pàgina 2. A la pàgina 3, la carta va girada un quart de volta perquè la seva quadrícula de 8 km ompli la pàgina. La pàgina 4 recull el nomenclàtor, disset llocs en discos vermells amb el seu quadre de la carta, i a baix, el peu d'impremta. Cada mapa porta el peu a sobre, damunt d'una barra blava, i la llegenda del mapa 1 és una línia de mostres amb els seus colors.
+
+## Elaboració
+
+### 1 · Una paleta per a la pàgina i per als mapes
+
+<Excerpt region="palette" />
+
+Les sis tintes dels mapes són claus del mateix objecte que els colors de la pàgina, així que `colorPalette` les inclou com a entrades de la paleta i els dibuixos prenen de `palette[id]` els farcits del seu SVG. El blanc del paper té un contrast de 9,2:1 sobre `band`, el blau de l'obertura, de les barres dels peus i de la fila de capçalera de la taula. `road`, l'únic vermell, es reserva per a carreteres, fars i números de lloc, amb un contrast de 5,4:1 sobre el paper. `main-color` pren l'hex de `band`, i els valors per defecte enllacen amb aquest identificador els títols, les barres dels peus i les vinyetes de les llistes, així que qualsevol d'ells que la configuració no fixi surt en el blau de l'atles.
+
+### 2 · On va cada mapa
+
+El codi és [la resposta curta](#la-resposta-curta), més amunt. El mapa 1 és un flotant `bottom` perquè un flotant `top` a tota l'amplada mai no cau a la pàgina que el cita. Els mapes 2 i 3 són flotants `top` de columna citats a la pàgina 1, així que encapçalen les dues columnes de la pàgina 2 ([Col·locació](/ca/docs/document-format#collocació)). `rotate: 'ccw'` porta la part de dalt de la carta a la vora esquerra i li deixa la pàgina 3 tota sola. Girat, el dibuix fa 247,6 mm al llarg de la pàgina, les 53 línies de la retícula de base de la caixa menys una per a l'espai del flotant, i 182,2 mm d'ample, el que queda de l'amplada de 196 mm després de restar la barra del peu i la nota. Un dibuix més alt es reduiria i deixaria paper en blanc al capdamunt de la pàgina.
+
+### 3 · Una llegenda amb els mateixos identificadors
+
+<Excerpt region="legend" />
+
+`RELIEF` enumera les franges amb el seu identificador de paleta i l'altura on comença cadascuna. El dibuix omple cada franja amb `palette[id]` i la llegenda sota el mapa 1 escriu un `:swatch` amb el mateix identificador, així que un hex nou a la paleta canvia alhora el dibuix i la llegenda. La llegenda dona la unitat una sola vegada i amb totes les lletres, perquè la nota va en Alegreya Sans SC, que imprimeix una *m* minúscula com una M de versaleta. A la <PageRef page={2}>pàgina 2</PageRef>, el text posa les mateixes mostres al costat de les dues fondàries de l'aigua.
+
+### 4 · Els mapes són recursos, i la seva citació els numera i els col·loca
+
+<Excerpt region="resources" />
+
+Un recurs rep el seu número a la primera citació del text, i `:ref{id="north" case="lower"}` imprimeix l'etiqueta curta del tipus i aquest número en minúscula, «mapa 2», tant al text com en una nota. La carta i el nomenclàtor es citen per primera vegada a la pàgina 2, en aquest ordre, així que la carta ocupa la pàgina 3, i el nomenclàtor, el capdamunt de la pàgina 4. La rosa dels vents és un recurs del mateix tipus, però només la dibuixa l'obertura i el text no la cita mai, així que els mapes continuen numerats de l'1 al 4. Cada entrada de la clau del port és un sol chip sense fons, vora ni farciment, de manera que el número, el nom i el punt que va darrere queden a la mateixa línia; amb espais de no separació, la 1.4.1 parteix la clau de l'edició anglesa entre el 3 i *harbour office*.
+
+### 5 · Números que comparteixen els mapes i el nomenclàtor
+
+<Excerpt region="gazetteer" />
+
+`PLACES` va ordenada de nord a sud i numerada en aquest ordre; els mapes imprimeixen aquests números en discos vermells, i la taula, en chips vermells. `square()` calcula el quadre de la carta amb les mateixes coordenades en quilòmetres que situen cada marca als mapes, així que Kirkwick, el número 6, cau a D3 tant a la carta com a la taula. Un estil de taula té un sol farciment per al cos, així que una fila de cada dues s'omple cel·la a cel·la amb `setCellBackground`.
+
+### 6 · El nom de l'atles en una banda del seu propi blau
+
+<Excerpt region="opener" />
+
+La banda és una caixa ancorada a `'bleed'` i sense amplada, així que va de vora a vora. El títol gran és `{title}`, el nom de l'atles al frontmatter, i el títol del full passa a l'avanttítol, darrere del seu número. Per si sola, la banda reserva espai fins al seu peu, i el text començaria 3,9 mm per sota; `minHeight` amplia la reserva a 14 línies de la retícula de base sota el marge superior, i el text comença a 8,7 mm de la banda.
+
+## Variants
+
+### Gira la carta cap a l'altre costat
+
+Girada en el sentit de les agulles del rellotge, la carta té la part de dalt i la barra del peu al tall exterior de la pàgina 3, i el lector ha de girar el llibre en sentit contrari a l'habitual, el que segueix `'ccw'`.
+
+```diff
+-  chart: { rotate: 'ccw' }, // turned a quarter, top to the left, on a page of its own
++  chart: { rotate: 'cw' }, // turned a quarter, top to the right, on a page of its own
+```
+
+### Gira una taula
+
+Una taula gira amb la mateixa opció i, quan és massa ampla per a una pàgina, continua girada a la següent sota la fila de capçalera repetida: mira <RecipeLink slug="garden-almanac">l'almanac de l'hort</RecipeLink>.
+
+### Posa un mapa al marge
+
+En una maqueta de columna i mitja, la columna exterior es pot reservar per a les figures i els seus peus, sense text: mira <RecipeLink slug="textbook-margin-column">el llibre de text amb columna al marge</RecipeLink>.
+
+## Errors freqüents
+
+- El text de tancament de la <PageRef page={4}>pàgina 4</PageRef> es reparteix a mà amb un `:::columnbreak`. Postext 1.4.1 no equilibra les columnes d'una pàgina de tancament que segueix una pàgina ocupada sencera per un flotant, aquí la carta girada, i sense el salt tots els paràgrafs van a la columna esquerra i només el colofó comença la dreta. Mou el salt quan canviï el text.

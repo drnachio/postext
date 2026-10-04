@@ -1,0 +1,70 @@
+---
+title: "Fonts de marca a la composició, al PDF i al paquet"
+summary: "El manual d'identitat d'un metro fictici amb els fitxers de font de la marca, baixats un sol cop per a la composició, el PDF i un paquet .postext."
+plain: "Un manual d'identitat d'un metro inventat. Ensenya a baixar una sola vegada les fonts pròpies d'una marca i a fer-les servir a la previsualització, al PDF i al fitxer desat."
+description: "Registra els teus fitxers de font abans de compondre, passa els mateixos bytes al PDF amb un proveïdor de fonts i posa en un .postext els que puguis repartir."
+question: "Com componc amb els fitxers de font de la meva marca i els incrusto al PDF?"
+aliases: ["fonts corporatives", "fonts amb llicència", "tipografia de marca", "fonts allotjades al teu servidor", "FontFace des de bytes", "customFonts", "redistributable", "proveïdor de fonts", "manual de marca", "manual d'identitat", "mostres de color", "brand fonts"]
+pageNotes: { "1": "La coberta: Metro de Alba en lletra negra estreta, en una sola línia, amb Identity manual i l'edició a sota, i a la meitat inferior de la pàgina cinc línies gruixudes en vermell, turquesa, groc, morat i verd que comparteixen via des de baix a l'esquerra, travessen un riu gris i s'obren cap a la dreta, amb estacions blanques de vora negra.", "2": "Pàgina 2: una franja negra al capdamunt de la pàgina amb un quadrat vermell i el títol del manual, un 01 vermell enorme al costat del títol Colour i la seva entradeta, dues columnes sobre els colors de les línies amb quadradets de color dins el text i, al peu, una taula la primera columna de la qual són nou blocs de color, seguits de noms i de valors HEX, RGB i CMYK en lletra monoespaiada.", "3": "Pàgina 3: la franja amb un quadrat morat, un 02 morat enorme al costat del títol Type, text sobre els tres tipus de lletra sota els títols Big Shoulders Display, Public Sans, Weights i Spline Sans Mono, amb línies de mostra de Public Sans i Spline Sans Mono i, al peu, un rètol d'andana negre que diu Puerta del Mercado en blanc, amb quadrats turquesa, groc i verd davant de Lines 2, 3 and 5.", "4": "Pàgina 4: la franja amb un quadrat verd, un 03 verd enorme al costat del títol Usage, dues columnes de regles per al plànol de la xarxa (el traçat, els noms, la geografia, el gruix de línia i els fitxers per a proveïdors) que acaben amb el colofó i, al peu, dos dibuixos emmarcats l'un al costat de l'altre: Do, amb tres línies que giren juntes a 45 graus i estacions blanques, i Don't, amb les mateixes línies en angles lliures i punts de color." }
+---
+
+## Què compondràs
+
+Quatre pàgines, en anglès, del manual d'identitat del Metro de Alba, una xarxa fictícia de cinc línies. A la coberta, les cinc línies surten juntes de l'angle inferior esquerre i se separen cap a la dreta després de travessar un riu gris, sota el nom en Big Shoulders Display. Cada secció s'obre sota una franja negra, amb un número de dues xifres en el color d'una línia. A *01 Colour*, la primera columna de la taula és el color mateix; *02 Type* reuneix línies de mostra i un rètol d'andana, i *03 Usage* tanca amb dos plànols emmarcats, un dibuixat segons les regles (Do) i un altre que se les salta (Don't). Tot el text surt de sis fitxers de font que el codi baixa abans de compondre. El PDF es dibuixa amb aquests sis fitxers i el `.postext` en porta cinc, perquè la font de rètols està marcada com a no redistribuïble.
+
+## Elaboració
+
+### 1 · Registra les fonts de la marca, compon i dona al PDF els mateixos bytes
+
+<Excerpt region="build" />
+
+La composició mesura cada paraula amb les fonts de `document.fonts`, així que `loadBrandFonts()`, a [la resposta curta](#la-resposta-curta), baixa cada fitxer una sola vegada, en desa els bytes i hi registra un `FontFace` abans de cridar `buildDocument`. El `loadFonts` del kit només baixa de Fontsource, i una marca serveix els seus fitxers des del seu propi servidor. A postext-pdf 1.4.1, `renderToPdf` demana deu variants, quatre de les quals no apareixen en cap text (la cursiva de la font de rètols i la cursiva, la seminegreta i la seminegreta cursiva de la monoespaiada), i `brandFontProvider` respon cada petició amb el fitxer més proper de la mateixa família ([Per què un proveïdor de fonts?](/ca/docs/configuration#per-què-un-proveïdor-de-fonts)). Les pàgines només fan servir els sis fitxers que va mesurar el canvas, però la 1.4.1 hi escriu a més una còpia no utilitzada del fitxer substitut per cadascuna d'aquestes quatre peticions.
+
+### 2 · El sistema de color és una sola llista
+
+<Excerpt region="colours" />
+
+Com que la paleta i la taula 1.1 es construeixen amb les mateixes nou files, la taula no pot donar un valor que les pàgines no facin servir. `setCellBackground` omple la primera cel·la de cada fila, que va buida, amb el color d'aquella fila enllaçat a la paleta. Dins el text, `:swatch{color="line-2"}` rep l'identificador d'una entrada de la paleta i dibuixa un quadrat perfilat amb el color del text. `main-color` pren l'hex d'Ink, de manera que els títols, les negretes i les cursives, que hi estan enllaçats per defecte, surten en Ink i no en el blau del motor. A la 1.4.1 les remissions conserven aquest blau encara que canviïs `main-color`; per això `bodyText.referenceColor: col('ink')` les posa també en Ink ([Paleta de colors](/ca/docs/configuration#paleta-de-colors)).
+
+### 3 · Una obertura, tres colors de línia
+
+<Excerpt region="sections" />
+
+`numberingTemplate: '{1:01}'` escriu el comptador amb dues xifres, i `{number}` imprimeix 01, 02 i 03 a l'obertura; el títol de la coberta porta `numbered: false` i es queda sense número. Els tres estils de secció només es diferencien en l'entrada `section` de la paleta, a la qual cadascun dona el color de la seva línia. El número i el quadrat de la franja estan enllaçats a `section`, de manera que un únic disseny d'obertura serveix per a les tres seccions. `minHeight` reserva per a l'obertura deu línies de la retícula de base de 14 pt, i el text de cada secció comença a la mateixa línia de la seva pàgina.
+
+### 4 · Do i Don't són tipus de figura
+
+<Excerpt region="do-dont" />
+
+Un tipus de recurs admet un `captionStyle` parcial, i aquests dos només canvien el color de l'etiqueta: Signal green a Do i Signal red a Don't ([Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Els dos colors de senyal arriben a 5,1:1 i 5,5:1 sobre blanc, mentre que les línies 1, 2, 3 i 5 es queden per sota del 4,5:1 que demana el text petit. Els dos dibuixos floten amb `position: 'bottom'` i se citen al mateix paràgraf, el primer de Drawing the map, així que comparteixen el peu de la pàgina 4, Do a la columna esquerra i Don't a la dreta.
+
+### 5 · El paquet porta les fonts que pot compartir
+
+<Excerpt region="bundle" />
+
+`createBundle` llegeix `config.customFonts`, busca a `files` els bytes de cada variant pel seu `fileId` i els desa a `fonts/`, amb una entrada `fonts` al manifest. La família de rètols porta `redistributable: false`, que aquí simula una llicència que no deixa repartir els fitxers (la de Big Shoulders Display, l'OFL, sí que ho permet). El seu fitxer es queda fora i `warnings` anomena la família. El fitxer de 81 KB conté el capítol, la configuració, els tres dibuixos i cinc fitxers de font. La composició no llegeix mai `customFonts`, i sense ell les pàgines surten iguals ([Crear un paquet](/ca/docs/configuration#crear-un-paquet)).
+
+## Variants
+
+### Inclou també la font de rètols
+
+Si la llicència et permet repartir els fitxers, treu `redistributable` i el paquet portarà les tres famílies en 96 KB.
+
+```diff
+-  name, redistributable: name !== DISPLAY, // the display face reaches suppliers another way
++  name,
+```
+
+### Fes servir una negreta de debò
+
+Com que la marca no té negreta, `boldFontWeight: 600` compon en seminegreta les negretes, les capçaleres de taula i les etiquetes dels peus; si la teva família en té, afegeix-ne els fitxers a `FONTS`, esborra l'ajust i canvia la línia de mostra del text d'exemple i el seu «There is no Bold», que deixarien de ser certs.
+
+```diff
+-    boldFontWeight: 600, // the brand has no Bold: its SemiBold sets **emphasis**
+-  'Public Sans': ['400', '400i', '600', '600i'],
++  'Public Sans': ['400', '400i', '600', '600i', '700', '700i'],
+```
+
+## Errors freqüents
+
+Passa a `createBundle` els bytes de cada font amb el `fileId` que els dona `customFonts`. Una variant sense bytes es queda fora amb l'avís «missing file, skipped», i la família que es queda sense variants desapareix del manifest.

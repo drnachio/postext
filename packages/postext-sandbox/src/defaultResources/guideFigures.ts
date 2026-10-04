@@ -39,6 +39,7 @@ const COLUMN_LAYOUTS = byLang(
   { aria: 'available column structures', labels: ['Single', 'Two columns', 'One and a half', 'Float side column'] },
   { aria: 'estructuras de columnas disponibles', labels: ['Una columna', 'Dos columnas', 'Columna y media', 'Lateral de flotantes'] },
   { aria: '可用的分栏结构', labels: ['单栏', '双栏', '一栏半', '浮动体边栏'] },
+  { aria: 'estructures de columnes disponibles', labels: ['Una columna', 'Dues columnes', 'Columna i mitja', 'Lateral de flotants'] },
 );
 
 export function columnLayoutsSvg(lang: GuideLang): string {
@@ -75,6 +76,7 @@ const FLOAT_SLOTS = byLang(
   { aria: 'order of the slots offered to a float after its reference', ref: 'reference', taken: 'takes the first free slot', full: 'no room', next: 'next page' },
   { aria: 'orden de los huecos que se ofrecen a un flotante tras su referencia', ref: 'referencia', taken: 'ocupa el primer hueco libre', full: 'sin sitio', next: 'página siguiente' },
   { aria: '引用之后依次提供给浮动体的空位', ref: '引用处', taken: '占用第一个空位', full: '放不下', next: '下一页' },
+  { aria: 'ordre dels espais que s\'ofereixen a un flotant després de la seva referència', ref: 'referència', taken: 'ocupa el primer espai lliure', full: 'no hi cap', next: 'pàgina següent' },
 );
 
 export function floatSlotsSvg(lang: GuideLang): string {
@@ -131,6 +133,7 @@ const BALANCING = byLang(
   { aria: 'column balancing levers', before: 'Before', after: 'After', legend: ['Space above a heading', 'A line after a list', 'A looser paragraph'] },
   { aria: 'palancas del equilibrado de columnas', before: 'Antes', after: 'Después', legend: ['Espacio sobre el título', 'Línea tras la lista', 'Párrafo más suelto'] },
   { aria: '平衡分栏的调节手段', before: '平衡前', after: '平衡后', legend: ['标题上方加空', '列表后加一行', '段落排松一行'] },
+  { aria: 'palanques de l\'equilibri de columnes', before: 'Abans', after: 'Després', legend: ['Espai sobre el títol', 'Línia després de la llista', 'Paràgraf més solt'] },
 );
 
 export function balancingSvg(lang: GuideLang): string {
@@ -199,6 +202,7 @@ const BOOK_ANATOMY = byLang(
   { aria: 'anatomy of a book set with Postext', names: ['Cover', 'Contents', 'Part', 'Opener', 'Body', 'Body'] },
   { aria: 'anatomía de un libro compuesto con Postext', names: ['Cubierta', 'Índice', 'Parte', 'Apertura', 'Cuerpo', 'Cuerpo'] },
   { aria: '用Postext排出的一本竖排书的构成，从右向左读', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
+  { aria: 'anatomia d\'un llibre compost amb Postext', names: ['Coberta', 'Índex', 'Part', 'Obertura', 'Cos', 'Cos'] },
 );
 
 /** Vertical text-line bars: columns from `right` leftward to `left`, each
@@ -372,6 +376,12 @@ const CJK_COMPOSITION = byLang(
     vertical: '竖排', ems: (n: number) => `${n}格`,
     legend: ['全角标点空着的半格', '只占半格的标点'],
   },
+  {
+    aria: 'una línia en xinès a amplada completa, en estil Kaiming i en vertical',
+    full: 'Amplada completa: cada signe ocupa un quadratí', kaiming: 'Kaiming (Xina continental): parèntesis, signes de títol i punt final, mig quadratí',
+    vertical: 'En vertical', ems: (n: number) => `${String(n).replace('.', ',')} quadratins`,
+    legend: ['la meitat en blanc d\'un signe d\'amplada completa', 'un signe compost en mig quadratí'],
+  },
 );
 
 /** One character of the sample, in the Chinese body face, its em box's
@@ -486,6 +496,10 @@ const SANDBOX_UI = byLang(
     aria: 'Sandbox的界面布局', chapter: '3 · 排好每一行', scope: 'Whole book',
     panels: ['Books', 'Chapters', 'Text', 'Resources', 'Fonts', 'Design', 'Checks'],
   },
+  {
+    aria: 'disposició de la interfície del Sandbox', chapter: '3 · Compondre la línia', scope: 'Llibre complet',
+    panels: ['Llibres', 'Capítols', 'Text', 'Recursos', 'Fonts', 'Disseny', 'Revisió'],
+  },
 );
 
 /** The Sandbox interface: activity bar with its seven panels, the text
@@ -547,6 +561,7 @@ const ROSETTE = byLang(
   { aria: 'vector rosette of petals, rings and microtext', micro: 'Postext · vector · zoom · ' },
   { aria: 'roseta vectorial de pétalos, anillos y microtexto', micro: 'Postext · vector · zoom · ' },
   { aria: '由花瓣、圆环和微缩文字组成的矢量玫瑰花饰', micro: 'Postext · 矢量 · 缩放 · ' },
+  { aria: 'roseta vectorial de pètals, anells i microtext', micro: 'Postext · vector · zoom · ' },
 );
 
 export function vectorRosetteSvg(lang: GuideLang): string {
@@ -576,6 +591,7 @@ const CHART = byLang(
   { aria: 'vector area and line chart with axes and labels', months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'], pages: 'pages per second', chapters: 'chapters' },
   { aria: 'gráfico vectorial de área y línea con ejes y etiquetas', months: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago'], pages: 'páginas por segundo', chapters: 'capítulos' },
   { aria: '带坐标轴和标签的矢量面积图与折线图', months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'], pages: '每秒页数', chapters: '章数' },
+  { aria: 'gràfic vectorial d\'àrea i línia amb eixos i etiquetes', months: ['gen.', 'febr.', 'març', 'abr.', 'maig', 'juny', 'jul.', 'ag.'], pages: 'pàgines per segon', chapters: 'capítols' },
 );
 
 export function vectorChartSvg(lang: GuideLang): string {
@@ -611,6 +627,7 @@ const CLIP = byLang(
   { aria: 'vector composition with clip paths, reused elements and transparency', clip: 'clip path', opacity: 'opacity' },
   { aria: 'composición vectorial con recortes, elementos reutilizados y transparencias', clip: 'recorte', opacity: 'opacidad' },
   { aria: '带剪切路径、重复使用的元素和透明度的矢量构图', clip: '剪切路径', opacity: '不透明度' },
+  { aria: 'composició vectorial amb retalls, elements reutilitzats i transparències', clip: 'retall', opacity: 'opacitat' },
 );
 
 export function vectorClipSvg(lang: GuideLang): string {

@@ -29,8 +29,10 @@ guide needs a fix.
   body columns), the recipe shows the workaround and says so; it never fakes the feature.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
-- **Bilingual where it can be.** The site is in English and Spanish; both write-ups are
-  required, and most samples come in both languages.
+- **Bilingual where it can be.** Samples come in English and, most of them, Spanish; their
+  write-ups are required. The site is also in Catalan and Simplified Chinese: `ca.mdx` and
+  `zh.mdx` translate the Spanish and English write-ups, and their pages show the Spanish
+  (Catalan) or the first (Chinese) sample.
 
 A recipe is **not** a feature demo on placeholder text, a page in the engine's default look,
 or a copy of a third-party publication.
@@ -69,6 +71,7 @@ cookbook/
 └── <slug>/                   one folder per recipe; the folder name is the slug
     ├── recipe.json           metadata (§4)
     ├── en.mdx  es.mdx        the write-ups (§9); both are required
+    ├── ca.mdx  zh.mdx        their Catalan and Chinese translations (the lint asks for them)
     ├── script.js             the pen, with markers (§5)
     ├── content.en.md         the sample document, one file per sample language
     ├── [content.es.md]

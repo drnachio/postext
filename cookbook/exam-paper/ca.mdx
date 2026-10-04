@@ -1,0 +1,64 @@
+---
+title: "Examen amb full de respostes"
+summary: "Un examen d'història de quatre pàgines, amb bombolles i puntuacions fetes amb xips, preguntes numerades 1, a), i) i ratlles traçades amb una taula."
+plain: "Un examen d'història de quatre pàgines amb portada, bombolles per marcar i ratlles per escriure. Ensenya a numerar preguntes i apartats i a mostrar la puntuació de cadascun."
+description: "Examen compost amb Postext, amb caselles i plantilla de bombolles a la portada, preguntes 1, a), i), puntuacions en xips i ratlles fetes amb una taula."
+question: "Com componc un examen amb plantilla de bombolles, apartats a) i i), puntuacions i ratlles de resposta?"
+aliases: ["examen", "prova escrita", "simulacre d'examen", "full de respostes", "plantilla de respostes", "bombolles", "tipus test", "preguntes d'opció múltiple", "ratlles", "línies per escriure", "puntuació", "numeració de preguntes", "número d'examen", "gira el full"]
+pageNotes: { "1": "Una banda carmesí ocupa el terç superior amb la línia de la convocatòria, Història en lletra blanca molt gruixuda, Prova 2 · Fonts i interpretacions i, en cursiva, La guerra de Secessió, 1863, sobre l'any 1863 dibuixat en contorn blanc i tallat pel peu de la banda. A sota: la data i la durada, un formulari de cantonades arrodonides amb caselles per al nom, el grup, el número d'examen i la nota sobre 10, un requadre rosa clar amb les instruccions i la informació a dues columnes i, sota el rètol carmesí Part A: plantilla de respostes, un tauler rosa clar amb files numerades de l'1 al 10, cadascuna amb quatre bombolles carmesí de l'A a la D. Al peu, en majúscules carmesí: No giris el full fins que no t'ho indiquin.", "2": "Part A, 5 punts: deu preguntes tipus test sobre el 1863, cadascuna amb un número gran en negreta i un punt carmesí, i sota cada pregunta una línia amb quatre opcions que comencen per una bombolla amb la seva lletra.", "3": "Part B, 5 punts: el discurs de Gettysburg com a font A al costat d'una franja carmesí, signat Abraham Lincoln. 19 de novembre de 1863, amb una nota de procedència a sota; després, la pregunta 11 amb els apartats a) i), a) ii), b) i c), cadascun acabat en un xip rosa amb la seva puntuació, i Gira el full al peu.", "4": "La pàgina de respostes: grups de ratlles grises, una cada dues línies de text, amb l'apartat en carmesí a la primera fila de cada grup, des d'una ratlla per a l'11 a) i) fins a vuit per a l'11 c); Fi de les preguntes i el colofó tanquen la pàgina." }
+---
+
+## Què compondràs
+
+La prova 2 d'un simulacre d'examen d'història sobre la guerra de Secessió, en un quadernet de quatre pàgines en mida carta. La portada obre amb una banda carmesí i l'any 1863 dibuixat en contorn; a sota hi van les caselles de l'alumne, les instruccions a dues columnes i la plantilla de bombolles de la part A. A la pàgina 2 hi ha deu preguntes tipus test, cadascuna amb les seves quatre opcions a sota, i cada opció comença per una bombolla amb la seva lletra, com les de la plantilla. La pàgina 3 recull el discurs de Gettysburg com a font A i, després, les preguntes numerades 11, a), i), amb la puntuació de cada apartat en un xip. La pàgina 4 és per a les respostes: una ratlla cada dues línies de text, en grups que comencen pel número del seu apartat. Després de la portada, cada pàgina porta foli i un marge per al corrector, i l'única senar d'aquestes diu «Gira el full».
+
+## Elaboració
+
+### 1 · Numera les preguntes i posa'n les opcions a sota
+
+<Excerpt region="numbering" />
+
+Cada nivell d'`orderedLists` té el seu propi `numberFormat` i el seu `separator`; `separatorColor` posa en el color d'accent el punt i el parèntesi de tancament, i el número queda en negre ([llistes ordenades](/ca/docs/configuration#llistes-ordenades)). Els números d'una llista s'alineen a la dreta amb el més ample del seu tram, de manera que el text de totes les preguntes comença a 23 pt: els 17 pt de «10.» més `GAP`. Les quatre opcions formen un element niat de llista no ordenada, amb `bulletChar` buit. El seu text comença a l'`indent` del nivell, que és l'amplada de «10.» mesurada en la font dels números més `GAP`, i així les opcions queden sota la primera lletra de la pregunta amb qualsevol tipus de lletra. La separació depèn de l'element anterior: 5 pt després d'un element numerat, 15 pt després d'una línia d'opcions.
+
+### 2 · Fes les bombolles i les puntuacions amb xips
+
+<Excerpt region="chips" />
+
+Un xip és una caixa dins de la línia, i un salt de línia no hi cau mai a dins ([xips en línia](/ca/docs/document-format#xips-en-línia)). Amb una sola majúscula a dins, `paddingX: em(0.3)` deixa la caixa gairebé tan ampla com alta: a la plantilla, de 4,5 a 4,8 mm d'amplada per 4,7 mm d'alçada. `borderRadius: em(1)` supera la meitat de la caixa, i com que el radi d'un xip es limita a la meitat del seu costat menor, els extrems queden arrodonits del tot. Un xip sense `style` pren el primer estil de `chipStyles`, de manera que les vuitanta bombolles, quaranta a la plantilla i quaranta a les opcions, s'escriuen sense estil, com `:chip[A]`; només l'exemple omplert de les instruccions i les puntuacions n'indiquen un. Com que Postext 1.4.1 no té tabulacions, la puntuació no pot anar alineada a la dreta; cada xip tanca el seu apartat, com a mínim a 0,5 em (`gap`) de l'última paraula.
+
+### 3 · Dona a cada formulari el seu estil de taula
+
+<Excerpt region="forms" />
+
+Les caselles de l'alumne, la plantilla de bombolles i les ratlles són tres `tableStyles`, que cada taula tria amb `styleId` ([estils de taula amb nom](/ca/docs/configuration#estils-de-taula-amb-nom)). Les ratlles de [la resposta curta](#la-resposta-curta) fan servir `rules: 'horizontal'` i un farciment que dona a cada fila l'alçada de dues línies del text, de manera que cada filet cau 30 pt (10,6 mm) per sota de l'anterior, sobre una de cada dues línies de la retícula de base de 15 pt. Postext 1.4.1 descarta la línia d'una cel·la que és buida o només porta un espai no separable; per això la línia del centre de la casella NOTA, que va en blanc, porta un unidor de paraules (U+2060): aquesta cel·la ocupa tres línies i fixa l'alçada de tota la fila en 14,4 mm, enfront de 10,8 mm amb un espai no separable. Els filets de la plantilla van en el mateix rosa que el fons, perquè el llenç deixa fils clars entre cel·les emplenades. El rètol de la plantilla és un peu col·locat 1,6 mm per sobre ([estil dels peus de recurs](/ca/docs/configuration#estil-dels-peus-de-recurs)). Un títol quedaria com a mínim una línia de text (5,3 mm) més amunt, perquè tota taula col·locada amb 'here' deixa aquest espai al damunt. El tipus `form` té el `captionPrefix` buit, i per això el rètol no porta al davant una etiqueta «Form 1.».
+
+### 4 · Dibuixa la portada amb els atributs del títol
+
+<Excerpt region="cover" />
+
+La portada és un sol títol, `# Historia {style="cover" …}`, i el seu estil dibuixa la banda, l'any i quatre línies de text que pren dels atributs del títol. Amb `span: 'page'`, la pàgina compta com a obertura i la banda es pot pintar per sobre del marge superior de 22 mm. Sense això, el disseny queda retallat a dalt de la columna, de manera que la banda comença al marge i es perd la línia de la convocatòria. Els `margins` de l'estil eixamplen la columna de la portada fins als 168 mm per als formularis, i el títol següent, un de nivell 1 sense estil, torna les altres pàgines a la mesura de 134 mm.
+
+### 5 · Deixa la portada sense foli ni «Gira el full»
+
+<Excerpt region="furniture" />
+
+Tots els elements fixos de les pàgines de cos porten `pages: 'body'`, de manera que la portada, que és una obertura, només mostra el seu avís (`pages: 'opener'`). Per això cada part comença amb `:::pagebreak` i un títol sense `breakBefore`. Un títol que salta de pàgina converteix la seva en obertura, i les pàgines 2 i 3 perdrien el foli, la capçalera i el marge. `parity: 'odd'` deixa «Gira el full» a la pàgina senar, perquè la pàgina parella ja té al davant la següent.
+
+## Variants
+
+### Imprimeix-lo en A4
+
+La banda, l'any, el filet del marge i l'avís prenen les mides de `PAGE`, així que passar a A4 és canviar una línia. Els blocs de la portada no es mouen i el blanc sota la plantilla creix 17,6 mm en les dues edicions.
+
+```diff
+-const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 215.9, h: 279.4 }]; // US Letter
++const [TEXT, LABEL, PAGE] = ['PT Serif', 'Inter Tight', { w: 210, h: 297 }]; // A4
+```
+
+### Afegeix un banc de paraules o una llista de comprovació
+
+Els bancs de paraules, els buits i els cercles per pintar també són xips: <RecipeLink slug="worksheet-answer-boxes">la fitxa amb caixes de resposta i banc de paraules</RecipeLink> compon un banc de xips grocs dins d'un requadre niat i una llista de comprovació que obre cada línia amb un cercle buit.
+
+## Errors freqüents
+
+- Posar ratlles entre els apartats d'una pregunta en parteix la llista: la llista que segueix la taula comença un tram nou, i cada tram alinea els seus números amb el més ample dels seus, de manera que el text de ii) començaria 1 mm a la dreta del d'i). Aquí les respostes van en una pàgina pròpia i tots els apartats queden en una sola llista.

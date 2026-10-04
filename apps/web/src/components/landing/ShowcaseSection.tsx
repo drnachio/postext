@@ -52,16 +52,19 @@ function localizedThumbnail(dir: string, thumbnail: string, lang: string): strin
 /** Book titles and descriptions are in the `Showcase.books` and
  *  `Showcase.descriptions` messages, keyed by preset id (the index `name`
  *  mixes languages); a preset without them shows its index name and the
- *  index description, written "Spanish · English". */
+ *  index description, written "Spanish · English" (Catalan pages take the
+ *  Spanish one). */
 function indexDescription(description: string, locale: string): string {
   const [es, ...en] = description.split(" · ");
-  return locale.startsWith("es") ? es! : en.join(" · ") || es!;
+  return /^(es|ca)/.test(locale) ? es! : en.join(" · ") || es!;
 }
 
-/** The edition a book opens in: Spanish on Spanish pages, Simplified
- *  Chinese on Chinese pages when the bundle has it, else English. */
+/** The edition a book opens in: Catalan on Catalan pages when the bundle
+ *  has it, Spanish on Spanish and Catalan pages, Simplified Chinese on
+ *  Chinese pages when the bundle has it, else English. */
 function openLocale(locale: string, locales: readonly string[] | undefined): string {
-  if (locale.startsWith("es")) return "es";
+  if (locale.startsWith("ca") && locales?.includes("ca")) return "ca";
+  if (locale.startsWith("es") || locale.startsWith("ca")) return "es";
   if (locale.startsWith("zh") && locales?.includes("zh-Hans")) return "zh-Hans";
   return "en";
 }
@@ -99,7 +102,7 @@ export async function ShowcaseSection() {
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
   const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
-  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : "en";
+  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : locale.startsWith("ca") ? "ca" : "en";
 
   return (
     <section aria-labelledby="showcase-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">

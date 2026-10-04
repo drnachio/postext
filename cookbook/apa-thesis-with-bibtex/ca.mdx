@@ -1,0 +1,61 @@
+---
+title: "Un capítol de tesi citat en APA 7"
+summary: "Un capítol de tesi doctoral amb citacions [@clau, p. 33] que surten en APA 7 gràcies a citeproc-js, amb la llista de referències presa d'un bloc BibTeX."
+plain: "Un capítol d'una tesi doctoral. L'autora escriu una clau curta per a cada font; Postext imprimeix les citacions i la llista de referències del final en estil APA."
+description: "Un capítol de tesi amb Postext: citacions a la manera de Pandoc en APA 7 amb citeproc-js, referències des de BibTeX amb sagnat francès i enllaços a seccions."
+question: "Com cito en APA 7 i trec la llista de referències del meu fitxer BibTeX?"
+aliases: ["APA", "APA 7", "tesi", "tesi doctoral", "TFG", "BibTeX", "Zotero", "llista de referències", "autor-any", "citeproc"]
+pageNotes: { "1": "Pàgina 1: una banda blau pàl·lid al capdamunt amb l'etiqueta CAPÍTULO, el títol Leer en papel y en pantalla: el estado de la cuestión i un gran 2 de traç fi a la dreta; a sota, els primers paràgrafs amb citacions autor-any com (Tinker, 1963) i enllaços en blau a la Sección 2.1, 2.2 i 2.3.", "2": "Pàgina 2: les seccions 2.2 i 2.3 amb citacions narratives com Delgado et al. (2018), una citació amb pàgines (Ibáñez Roca, 2023, pp. 12–15) i el començament de la llista Referencias, sense número.", "3": "Pàgina 3: la resta de la llista Referencias en APA 7, cada entrada amb sagnat francès i el DOI complet." }
+---
+
+## Què compondràs
+
+El segon capítol d'una tesi doctoral en educació, l'estat de la qüestió: el que diuen vint anys d'estudis sobre llegir en paper i en pantalla. El capítol va en A4 enquadernat a l'esquerra, en Literata amb 16 pt d'interlineat, sota una banda pàl·lida en el blau de la universitat. L'autora desa les fonts a Zotero i enganxa l'exportació en BibTeX; al text, cada font és una clau. Postext compon cada citació en APA 7, amb l'autor, l'any i la pàgina quan n'hi ha, escriu «Delgado et al. (2018)» quan el nom forma part de la frase i munta la llista de referències en l'ordre i la forma que demana l'estil. Si el director de tesi demana Chicago, l'estil és l'única línia que canvia.
+
+## Elaboració
+
+### 1 · Un motor, un estil
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Postext llegeix les citacions i en deixa la redacció a un motor de citacions que es registra una vegada abans de la primera composició; `postext-citeproc` embolcalla citeproc-js, el motor de Zotero i Mendeley, amb setze estils CSL i els seus fitxers de llengua. `[@mangen2013]` dona «(Mangen et al., 2013)», `@delgado2018` sense claudàtors posa els autors dins de la frase i `[@ibanez2023, pp. 12–15]` porta l'interval de pàgines al parèntesi. Amb el document en castellà, les mateixes claus prenen els nexes i les abreviatures del fitxer de llengua castellana, perquè el motor segueix la llengua del document.
+
+### 2 · Les referències surten d'un bloc BibTeX
+
+L'últim bloc del capítol és `:::references{format=bibtex}`, amb l'exportació de Zotero enganxada a dins i els accents escrits com `{\'a}`. `:::bibliography`, a sobre, col·loca la llista sota el títol Referencias; sense aquest bloc, Postext afegeix la llista al final. Només hi apareixen les obres citades, ordenades com ordena APA, i cada citació del text enllaça amb la seva entrada.
+
+### 3 · Un títol sense número i referències amb paraules
+
+<Excerpt region="refs" />
+
+El títol de les referències porta l'estil `references`, que el deixa a l'índex però fora de la numeració, així que la llista no es converteix en la secció 2.4. `:ref{id="sec-speed"}` imprimeix «Sección 2.2» amb l'etiqueta de `crossRefs` i enllaça amb el títol; els números surten de `startAt=2` al títol del capítol, el mateix comptador que fan servir els títols.
+
+### 4 · L'obertura va en una banda
+
+<Excerpt region="opener" />
+
+La banda és una caixa ancorada al tall de la pàgina, i el text comença 10 mm per sota. El número va en Literata Light de 96 pt a la dreta, on es llegeix com una forma i deixa al títol tota la seva amplada.
+
+<Excerpt region="palette" />
+
+## Variants
+
+### Canvia l'estil
+
+El mateix capítol en Chicago autor-any treu la coma després del nom i posa l'any darrere dels autors.
+
+```diff
+-  style: 'apa', // 'chicago-author-date', 'ieee', 'vancouver'… change nothing else
++  style: 'chicago-author-date',
+```
+
+### Deixa la llista més petita que el text
+
+Moltes universitats admeten la llista de referències un cos per sota i a espai senzill.
+
+```diff
+-    fontSize: em(1), hangingIndent: mm(12.7), entrySpacing: pt(4),
++    fontSize: em(0.9), lineHeight: pt(13), hangingIndent: mm(12.7), entrySpacing: pt(3),
+```
+
+## Errors freqüents
+
+- APA escriu els títols d'articles i llibres amb majúscula només inicial, i citeproc-js imprimeix els títols tal com vénen a les dades. Zotero desa gairebé tots els títols amb majúscula a cada paraula, així que corregeix-los a Zotero o al BibTeX abans que arribin a la pàgina.

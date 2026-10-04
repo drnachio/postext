@@ -4,6 +4,7 @@
 export const LOCALE_INFO = {
   en: { name: "English", code: "EN", htmlLang: "en", ogLocale: "en_US" },
   es: { name: "Español", code: "ES", htmlLang: "es", ogLocale: "es_ES" },
+  ca: { name: "Català", code: "CA", htmlLang: "ca", ogLocale: "ca_ES" },
   zh: { name: "简体中文", code: "中", htmlLang: "zh-Hans", ogLocale: "zh_CN" },
 } as const;
 
@@ -14,6 +15,8 @@ export type SiteLocale = keyof typeof LOCALE_INFO;
 const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
   en: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
   es: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
+  // No Catalan cut: the Spanish playlist is the nearest.
+  ca: { video: "UFme-Yw6Q0k", list: "PLb9LUQYJSvyg" },
   zh: { video: "lFy_VLFuWqA", list: "PLIfpGQLFoR8k" },
 };
 
