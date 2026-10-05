@@ -24,14 +24,19 @@
  *   a descender at the other end of the line. Ink boxes are what the
  *   measurer gives (`TextMetrics.actualBoundingBox*`); without them (no
  *   canvas metrics) a word's box is estimated from its size and from the
- *   marks it holds.
+ *   marks it holds. Two words whose boxes meet are painted and compared
+ *   pixel column by pixel column (`profileNeed`, #445): a box only says
+ *   how high a word's tallest mark rises and how low its deepest
+ *   descender hangs, wherever they stand along it, and fully vocalised
+ *   text set at its face's own line spacing has boxes that meet on
+ *   nearly every line while its ink never does.
  *
  * A document without vowel marks is looked at once per line (one regular
  * expression test) and left as it was.
  */
 
 import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from './vdt';
-import { measureInkBox } from './measure/canvas';
+import { measureInkBox, measureInkProfile, type InkProfile } from './measure/canvas';
 import { fontEm } from './measure/vertical';
 import { segmentFont, segmentPositions } from './cjkMarks';
 
@@ -127,6 +132,11 @@ interface WordInk {
   ascent: number;
   descent: number;
   marked: boolean;
+  /** What is painted and in which font, and how far it is moved off the
+   *  baseline (up: positive), for its ink profile. */
+  text: string;
+  font: string;
+  shift: number;
 }
 
 type BlockLike = Parameters<typeof segmentPositions>[1];
@@ -139,7 +149,7 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
   if (!segments || segments.length === 0) {
     if (!line.text.trim()) return [];
     const ink = inkBoxOf(line.text, block.fontString);
-    return [{ x0: line.bbox.x, x1: line.bbox.x + line.bbox.width, ...ink, marked: hasArabicMarks(line.text) }];
+    return [{ x0: line.bbox.x, x1: line.bbox.x + line.bbox.width, ...ink, marked: hasArabicMarks(line.text), text: line.text, font: block.fontString, shift: 0 }];
   }
   const { xs, widths } = segmentPositions(line, block);
   const at = xs.slice();
@@ -153,7 +163,8 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
   const out: WordInk[] = [];
   segments.forEach((seg, i) => {
     if (seg.kind !== 'text' || !seg.text.trim()) return;
-    const ink = inkBoxOf(seg.text, segmentFont(seg, block));
+    const font = segmentFont(seg, block);
+    const ink = inkBoxOf(seg.text, font);
     const shift = seg.baselineShift ?? 0;
     out.push({
       x0: at[i]!,
@@ -161,12 +172,66 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
       ascent: ink.ascent - shift,
       descent: ink.descent + shift,
       marked: hasArabicMarks(seg.text),
+      text: seg.text,
+      font,
+      shift,
     });
   });
   return out;
 }
 
 const round = (v: number): number => Math.round(v * 1000) / 1000;
+
+/** Ink profiles painted, per font and text (`null`: none could be). */
+let profileCache = new Map<string, InkProfile | null>();
+const MAX_PROFILE_ENTRIES = 5_000;
+
+function profileOf(word: WordInk): InkProfile | null {
+  const key = `${word.font}\u0000${word.text}`;
+  let profile = profileCache.get(key);
+  if (profile === undefined) {
+    if (profileCache.size >= MAX_PROFILE_ENTRIES) profileCache = new Map();
+    profile = measureInkProfile(word.text, word.font);
+    profileCache.set(key, profile);
+  }
+  return profile;
+}
+
+/**
+ * How much room the ink of `lower` and of `upper` (the word over it on the
+ * line above) take together where they stand over each other, px: the
+ * largest sum, column by column, of what rises above the lower word's
+ * baseline and what hangs under the upper word's. A word's box only says
+ * how high its tallest mark rises and how low its deepest descender
+ * hangs, wherever they are along it: a shadda at one end of a word and a
+ * yāʾ's tail at the other end of the word above are no collision. Null
+ * when the words can't be painted (no canvas): their boxes decide.
+ */
+function profileNeed(lower: WordInk, upper: WordInk): number | null {
+  const lp = profileOf(lower);
+  const up = profileOf(upper);
+  if (!lp || !up) return null;
+  // A word painted wider or narrower than set (kashida, tracking) is
+  // stretched to its box.
+  const ls = lp.advance > 0 ? (lower.x1 - lower.x0) / lp.advance : 1;
+  const us = up.advance > 0 ? (upper.x1 - upper.x0) / up.advance : 1;
+  let need = -Infinity;
+  for (let c = 0; c < lp.above.length; c++) {
+    const a = lp.above[c]!;
+    if (a === -Infinity) continue;
+    const xa = lower.x0 + (lp.start + c) * ls;
+    const xb = xa + ls;
+    // The upper word's columns under this one.
+    const from = Math.max(0, Math.floor((xa - upper.x0) / us - up.start));
+    const to = Math.min(up.below.length - 1, Math.ceil((xb - upper.x0) / us - up.start));
+    for (let k = from; k <= to; k++) {
+      const b = up.below[k]!;
+      if (b === -Infinity) continue;
+      need = Math.max(need, a - lower.shift + b + upper.shift);
+    }
+  }
+  return need === -Infinity ? 0 : need;
+}
 
 /** Two lines' ink may touch by this much (px) before they are reported:
  *  antialiasing, not a collision. */
@@ -191,6 +256,7 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
   }
   if (!any) return [];
   inkCache = new Map();
+  profileCache = new Map();
   /** Lines of the columns that hold a marked line, with their words. */
   const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: WordInk[]; em: number }[]>();
   const marked = new Set<string>();
@@ -235,7 +301,12 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
         for (const upper of a.words) {
           if (!lower.marked && !upper.marked) continue;
           if (Math.min(lower.x1, upper.x1) - Math.max(lower.x0, upper.x0) <= 0) continue;
-          need = Math.max(need, lower.ascent + upper.descent);
+          const boxes = lower.ascent + upper.descent;
+          if (boxes <= pitch + TOUCH_PX) {
+            need = Math.max(need, boxes);
+            continue;
+          }
+          need = Math.max(need, profileNeed(lower, upper) ?? boxes);
         }
       }
       if (need <= pitch + TOUCH_PX) continue;
