@@ -1,5 +1,5 @@
 import type { VDTLine } from '../vdt';
-import type { TextAlign, WritingMode } from '../types';
+import type { CjkWordBreak, TextAlign, WritingMode } from '../types';
 import type { CjkLineBreakLevel } from './cjkClasses';
 import type { CjkComposition } from './cjkPunctuation';
 
@@ -168,6 +168,11 @@ export interface MeasureBlockOptions {
    *  `CjkLineBreakLevel`. Unset: the document's level, which the build sets
    *  (`setCjkLineBreak`); `gb` outside a build. Only CJK text reads it. */
   cjkLineBreak?: CjkLineBreakLevel;
+  /** Where CJK text breaks between characters, for this paragraph alone (a
+   *  paragraph style's `wordBreak`): `'keep-all'` only at spaces and next
+   *  to punctuation, `'normal'` between any two characters. Unset: the
+   *  composition's (`cjk.wordBreak`). Only CJK text reads it. */
+  cjkWordBreak?: CjkWordBreak;
   /** The writing mode the text is measured in: `'vertical-rl'` gives every
    *  character that stands in a cell of its own in vertical text its cell
    *  (CJK characters, Chinese marks, the signs Unicode sets upright: see

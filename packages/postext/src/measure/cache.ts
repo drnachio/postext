@@ -30,7 +30,9 @@ function cjkKey(text: string, options: MeasureBlockOptions | undefined): string 
   const digits = getMeasureUprightDigits();
   const v = vertical ? `:v:${getMeasureRegion()}${digits !== 2 ? `:d${digits}` : ''}` : '';
   if (!hasCJK(text)) return vertical ? `\x00${v}` : '';
-  return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}:${cjkCompositionKey(options?.cjkComposition ?? getCjkComposition())}${v}`;
+  // A paragraph's own word-break rule joins the key only when it sets one.
+  const wb = options?.cjkWordBreak !== undefined ? `:w${options.cjkWordBreak}` : '';
+  return `\x00cjk:${options?.cjkLineBreak ?? getCjkLineBreak()}:${cjkCompositionKey(options?.cjkComposition ?? getCjkComposition())}${wb}${v}`;
 }
 
 function buildPlainCacheKey(

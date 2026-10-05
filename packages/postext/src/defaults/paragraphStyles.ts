@@ -43,6 +43,8 @@ function resolveParagraphStyleConfig(
     marginBottom: partial.marginBottom ?? ZERO,
     snapToGrid: partial.snapToGrid ?? true,
     textTransform: partial.textTransform === 'uppercase' ? 'uppercase' : 'none',
+    // Absent unless set: the paragraphs follow `cjk.wordBreak`.
+    ...(partial.wordBreak === 'normal' || partial.wordBreak === 'keep-all' ? { wordBreak: partial.wordBreak } : {}),
   };
 }
 
@@ -86,6 +88,7 @@ export function stripParagraphStylesDefaults(
     if (s.marginBottom !== undefined && !isZero(s.marginBottom)) r.marginBottom = s.marginBottom;
     if (s.snapToGrid === false) r.snapToGrid = false;
     if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;
+    if (s.wordBreak !== undefined) r.wordBreak = s.wordBreak;
     return r;
   });
 }

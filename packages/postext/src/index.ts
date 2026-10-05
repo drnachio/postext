@@ -238,6 +238,7 @@ export type {
   CjkLineBreak,
   CjkPunctuationWidth,
   CjkHangingPunctuation,
+  CjkWordBreak,
   CjkGridConfig,
   CjkEmphasis,
   CjkBookTitleMark,

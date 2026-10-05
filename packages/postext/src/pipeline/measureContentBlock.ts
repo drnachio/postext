@@ -400,6 +400,9 @@ export function measureContentBlock(
     ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
     hyphenate: style.hyphenate,
+    // A paragraph style's own `wordBreak`: passed only when set, so the
+    // measurements of every other block keep their cache keys.
+    ...(style.cjkWordBreak !== undefined ? { cjkWordBreak: style.cjkWordBreak } : {}),
     firstLineIndentPx: effectiveFirstLineIndent,
     hangingIndent: measureHangingIndent,
     // A numbered bibliography entry (#290): its label in a column as wide

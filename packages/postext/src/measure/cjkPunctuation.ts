@@ -65,6 +65,11 @@ export interface CjkComposition {
   /** How an opening bracket that starts an indented paragraph is set
    *  (`cjk.paragraphStartBracket`); unset: as at any line start. */
   paragraphStartBracket?: CjkParagraphStartBracket;
+  /** Lines break only at spaces and next to punctuation, never between
+   *  two letters (`cjk.wordBreak: 'keep-all'`); unset: between any two
+   *  characters the line-break level allows. A paragraph may set its own
+   *  (`MeasureBlockOptions.cjkWordBreak`). */
+  keepAll?: boolean;
 }
 
 /** The composition outside a build: every mark at its full advance, no
@@ -110,6 +115,7 @@ export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number, locale?: s
     ...(language ? { language } : {}),
     ...(cjk.spaceAfterQuestion ? { spaceAfterQuestion: true } : {}),
     ...(cjk.paragraphStartBracket ? { paragraphStartBracket: cjk.paragraphStartBracket } : {}),
+    ...(cjk.wordBreak === 'keep-all' ? { keepAll: true } : {}),
   };
 }
 
@@ -162,7 +168,7 @@ export function cjkCompositionKey(c: CjkComposition): string {
   // in a paragraph with kana.
   const lang = japaneseOrKorean(c) ? ':jk' : c.language === 'zh' ? ':zh' : '';
   // Japanese settings only where set, so other keys stay as they were.
-  const ja = `${c.spaceAfterQuestion ? ':q' : ''}${c.paragraphStartBracket ? `:p${c.paragraphStartBracket}` : ''}`;
+  const ja = `${c.spaceAfterQuestion ? ':q' : ''}${c.paragraphStartBracket ? `:p${c.paragraphStartBracket}` : ''}${c.keepAll ? ':ka' : ''}`;
   return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}${ja}`;
 }
 

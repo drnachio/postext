@@ -28,9 +28,12 @@ const LINE_BREAK: Record<string, string> = { 'ja-very-strict': 'strict', 'ja-str
 
 /** The declarations of the Japanese text of a book (#428): kinsoku and,
  *  with burasagari (`cjk.hangingPunctuation`, on by default in Japan),
- *  、。，． hanging past the line end. None for other books. */
+ *  、。，． hanging past the line end; and, in any book that asks for it,
+ *  lines broken only between phrases (`cjk.wordBreak: 'keep-all'`, #463).
+ *  None for other books. */
 function japaneseDecls(cjk: ResolvedConfig['cjk']): string[] {
   const out: string[] = [];
+  if (cjk.wordBreak === 'keep-all') out.push('word-break: keep-all');
   const lineBreak = LINE_BREAK[cjk.lineBreak];
   if (lineBreak) out.push(`line-break: ${lineBreak}`, `-epub-line-break: ${lineBreak}`, `-webkit-line-break: ${lineBreak}`);
   if (cjk.region === 'japan' && cjk.hangingPunctuation !== 'none') {
@@ -395,6 +398,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       s.smallCaps && 'font-variant: small-caps',
       !s.hyphenation && 'hyphens: manual',
       s.textTransform === 'uppercase' && 'text-transform: uppercase',
+      // The style's own line breaking between CJK characters (#463).
+      s.wordBreak && `word-break: ${s.wordBreak}`,
       px(s.indent, sPx) > 0 && `margin-inline-start: ${round(px(s.indent, sPx) / sPx)}em`,
       // 地からN字上げ (#424).
       s.endIndent && px(s.endIndent, sPx) > 0 && `margin-inline-end: ${round(px(s.endIndent, sPx) / sPx)}em`,
