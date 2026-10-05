@@ -528,9 +528,11 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           transInk = ink * through;
           if (uShowThrough > 0.0) ink *= mix(vec3(1.0), through, uShowThrough);
           // The page lying under an open page: its print comes through the
-          // whole sheet, a little softer (the fibres spread it).
+          // whole sheet (the fibres spread it by a fraction of a millimetre,
+          // finer than the page's own texels: a softer sample would blur
+          // a page seen small to grey).
           if (uHasUnder > 0.5 && uUnderK > 0.0) {
-            vec3 under = texture2D(uUnder, front ? uvF : uvB, 1.0).rgb;
+            vec3 under = texture2D(uUnder, front ? uvF : uvB).rgb;
             ink *= mix(vec3(1.0), under, uUnderK);
           }
           diffuseColor.rgb *= ink;
@@ -1472,7 +1474,9 @@ export class PageFlipper {
     // An open page shows the page under it; a leaf in the air, what is
     // behind it (a block of leaves turning together is opaque).
     const open = mesh === this.left || mesh === this.right;
-    u.uUnderK.value = open ? spec.transmission * 0.75 : 0;
+    // As much as a leaf lifting off it lets through: nothing changes
+    // when the reader takes hold of it.
+    u.uUnderK.value = open ? spec.transmission : 0;
     u.uTransmit.value = open || mesh === this.blockMesh ? 0 : spec.transmission;
     m.needsUpdate = true;
   }
@@ -2708,8 +2712,8 @@ export class PageFlipper {
       this.renderer.render(this.shadowScene, this.shadowCamera);
       this.renderer.setRenderTarget(null);
     }
-    this.behind(air.map((a) => a.mesh));
     this.mirror(air.length > 0 || this.block !== null);
+    this.behind(air.map((a) => a.mesh));
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -2719,7 +2723,10 @@ export class PageFlipper {
    * screen's resolution: the sheet blurs what it lets through anyway),
    * colour and depth: each such leaf reads, at its own place on screen,
    * what lies behind it there and how far, and lets that light through.
-   * Nothing is drawn at rest or on opaque stock.
+   * They cast no shadow and take no sky from the pages in that picture:
+   * a page under a thin leaf is lit through it, and a leaf just taken
+   * hold of shows the page under it as it did lying on it. Nothing is
+   * drawn at rest or on opaque stock.
    */
   private behind(air: PageMesh[]) {
     const u = behindUniforms;
@@ -2736,14 +2743,20 @@ export class PageFlipper {
       this.behindTarget = target;
     } else if (target.width !== w || target.height !== h) target.setSize(w, h);
     for (const m of lit) m.visible = false;
-    // The key's shadow map as the main view drew it last.
+    // The key's shadow map drawn again without them (the main view draws
+    // it with them after), and the open pages' sky not cut by them.
     const shadows = this.renderer.shadowMap.autoUpdate;
     this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.needsUpdate = true;
+    const occ = [this.left, this.right].map((m) => m.material.userData.uniforms.uLeafOcc);
+    const was = occ.map((o) => o.value);
+    for (const o of occ) o.value = 0;
     this.renderer.setRenderTarget(target);
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
     this.renderer.setRenderTarget(null);
     this.renderer.shadowMap.autoUpdate = shadows;
+    occ.forEach((o, i) => (o.value = was[i]));
     for (const m of lit) m.visible = true;
     u.uBehind.value = target.texture;
     u.uBehindDepth.value = target.depthTexture;
