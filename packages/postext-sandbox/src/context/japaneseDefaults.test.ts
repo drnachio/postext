@@ -44,7 +44,7 @@ describe('japaneseDefaults', () => {
     expect(c.bodyText?.lineHeight).toEqual({ value: 1.75, unit: 'em' });
     expect(c.bodyText?.firstLineIndent).toEqual({ value: 1, unit: 'em' });
     expect(c.resourceTypes).toEqual(defaultResourceTypes('ja'));
-    expect(c.resourceTypes?.map((t) => t.name)).toEqual(['図', '表']);
+    expect(c.resourceTypes?.map((t) => t.name)).toEqual(['図', '表', '動画']);
     expect(c.captionStyle).toEqual({ labelNumberGap: '', labelSeparator: '　' });
     expect(c.headings?.levels).toEqual([
       { level: 1, numberingTemplate: '第{1:一}章', numberSeparator: '　', indent: { value: 4, unit: 'em' } },
@@ -155,7 +155,7 @@ describe('japaneseDefaults', () => {
     expect(change(r, 'footnotes')).toMatchObject({ from: { kind: 'footnotes', marker: '①', position: 'inline', numbering: 'page' }, to: { kind: 'japanAuto' } });
     expect(r.config.footnotes).toBeUndefined();
     expect(r.config.bodyText?.fontFamily).toBe('Noto Serif JP');
-    expect(change(r, 'resourceTypes')?.to).toEqual({ kind: 'text', text: '図、表' });
+    expect(change(r, 'resourceTypes')?.to).toEqual({ kind: 'text', text: '図、表、動画' });
     // 第一章 now counts in Japanese numerals: 第{1:一}章 stays as written.
     expect(r.config.headings?.levels?.[0]?.numberingTemplate).toBe('第{1:一}章');
   });
