@@ -47,8 +47,8 @@ export function isPristineArabicGuide(book: BookContent): boolean {
 }
 
 /** Whether `book` is the untouched Japanese guide: like the Chinese one, a
- *  vertical edition opened on purpose (the 日 button, a `lang=ja` link);
- *  the Sandbox has no Japanese interface for it to follow. */
+ *  vertical edition opened on purpose (the 日 button, a `lang=ja` link)
+ *  from another interface, or the Japanese interface's own guide. */
 export function isPristineJapaneseGuide(book: BookContent): boolean {
   return isPristineBook(book, [DEFAULT_MARKDOWN_JA]);
 }
@@ -67,9 +67,10 @@ function pristineScriptEdition(book: BookContent): GuideLang | null {
  *  for its language, `previousViewer` the interface language of the last
  *  visit (null when unknown). Storage is shared across interface languages,
  *  so an untouched guide in another language follows the interface — save
- *  the Chinese or Arabic guide opened on purpose from another interface,
- *  which stays. The Chinese or Arabic interface's own guide (the last
- *  visit was in that language) follows the next interface like the others. */
+ *  the Chinese, Arabic or Japanese guide opened on purpose from another
+ *  interface, which stays. The Chinese, Arabic or Japanese interface's own
+ *  guide (the last visit was in that language) follows the next interface
+ *  like the others. */
 export function pristineGuideFollowsViewer(book: BookContent, viewerMarkdown: string, previousViewer: string | null): boolean {
   // The viewer's own edition, whole or cut into its chapters, stays.
   if (!isPristineBook(book, GUIDE_SAMPLE_DOCUMENTS) || isPristineBook(book, [viewerMarkdown])) return false;

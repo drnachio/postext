@@ -798,6 +798,10 @@
         "ar": {
           "type": "string",
           "minLength": 1
+        },
+        "ja": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

@@ -1,0 +1,61 @@
+---
+title: "1冊の本から固定とリフロー型の2つのEPUB 3"
+summary: "postext-epubのrenderToEpubが、buildBundleで組んだ章を固定レイアウトとリフロー型のEPUBに書き出します。各ファイルの中身はreadEpubで一覧できます。"
+plain: "寓話の小さな本を印刷用に一度だけ組み、2つの電子書籍として保存します。1つは印刷したページをそのまま保ち、もう1つはスマートフォンや電子書籍リーダーが自分の文字サイズで組み直します。"
+description: "3章の本をbuildBundleで組み、postext-epubで固定レイアウトとリフロー型のEPUB 3に書き出して、それぞれをreadEpubで読み戻します。"
+question: "本を、ページを固定したまま、またはテキストをリフローさせてEPUBに書き出すには？"
+aliases: ["EPUB", "EPUB 3", "電子書籍", "イーブック", "固定レイアウト", "フィックス型", "リフロー型", "リフロー", "postext-epub", "renderToEpub", "readEpub", "Kindle", "Apple Books"]
+pageNotes: { "1": "扉。青い小さなスモールキャピタルで著者名、ディスプレイ用のセリフ書体で書名Fables of Aesop、短い罫とイタリックの副題。", "3": "第1巻The Lion’s Courtの扉と、その下に寓話The Lion and the Mouse。" }
+---
+
+## できあがり
+
+『Fables of Aesop』の寓話18編を3巻に分け、120 × 190 mmのページに組みます。扉とその裏の刊記、各巻の頭には天を大きく空けた章扉が付きます。スペイン語版では、同じページにクラリンの『¡Adiós, Cordera!』を3章で組みます。本は章ごとに一度だけ組まれ、そのレイアウトから2つのEPUB 3ファイルが生まれます。固定レイアウトは印刷したページをすべて保ちます。章扉、柱、改行位置まで、埋め込んだCaslonでそのまま再現します。リフロー型のファイルはテキストとその構造を保ち、スマートフォンや電子ペーパーの画面でリーディングシステムが組み直します。どちらもページからダウンロードでき、どちらもW3CのEPUBCheckを通ります。
+
+## 作り方
+
+### 1 · 本を章ごとに組む
+
+<Excerpt region="openers" />
+
+`buildBundle`は各章を独立した文書として組み、ページ番号と奇数・偶数の別を次の章へ引き継ぎます。そのため`docs`は、`renderToPdf`が印刷するのと同じ配列になります。EPUBの書き出し側も同じ配列を読みます。各章はナビゲーションの項目になり、リフロー型のファイルでは章ごとに1つのXHTML文書が書き出されます。扉と刊記は最初の章で、そのフロントマターが本の書名、副題、著者になります。
+
+### 2 · 書き出し側にフォントファイルを渡す
+
+<Excerpt region="embed" />
+
+ブラウザーが読み込んだ書体は、書き出し側が読めるファイルではありません。そこでCodePenのサンプルは、同じFontsourceのwoff2ファイルをもう一度取得します。ブラウザーのキャッシュに残っているので負担はわずかです。各ファイルはEPUBの中のフォントファイルと`@font-face`ルールになります。これがないと、固定レイアウトはCaslonで組んだテキストをリーダー側の書体で表示し、行が行長に収まらなくなります。
+
+### 3 · 2つの版を書き出す
+
+コードは上の[手短な答え](#手短な答え)にあります。`layout: 'fixed'`は印刷したページ1枚ごとに、仕上がりサイズのXHTML文書を1つ書き出します。テキストは本物の、選択できる文字です。`layout: 'reflowable'`は組まれた行から段落を組み立て直し、改行のために加えたハイフンを取り除き、設定からスタイルシートを導き出します。`modified`の日付を固定すると、何度実行しても同じバイト列になります。メタデータは最初の章のフロントマターから取るので、ファイルの書名と著者は扉に印刷されたものと一致します。
+
+### 4 · 各ファイルを読み戻す
+
+<Excerpt region="shelf" />
+
+`readEpub`はリーディングシステムと同じようにファイルを開きます。読む順のスパイン、目次、ページリスト、レイアウトです。固定レイアウトのファイルはページごとに1つ、リフロー型のファイルは章ごとに1つ、計4つのスパイン項目を持ちます。どちらも印刷したノンブルのページリストを持つので、どちらの版でも読者は9ページへの引用をたどれます。`<a download>`のリンクがバイト列にファイル名を与えます。サーバーを経由するものはありません。
+
+## アレンジ
+
+### 固定レイアウトに表紙画像を付ける
+
+扉をcanvasに描いて表紙として渡します。`showsFirstPage`を指定すると、書き出し側はそれを独立したページとして加えません。
+
+```diff
++const canvas = document.createElement('canvas');
++renderPageToCanvas(docs[0].pages[0], docs[0], canvas, { scale: 2 });
++const png = await new Promise((done) => canvas.toBlob(done, 'image/png'));
++const cover = { bytes: new Uint8Array(await png.arrayBuffer()), mediaType: 'image/png',
++  showsFirstPage: true };
+-const fixed = await renderToEpub(docs, { ...book, layout: 'fixed' });
++const fixed = await renderToEpub(docs, { ...book, layout: 'fixed', cover });
+```
+
+### 同じ章をPDFとして印刷する
+
+`postext-pdf`の`renderToPdf(docs, …)`は同じ配列を受け取るので、PDF、EPUB、画面表示が1つのレイアウトから生まれます。PDF側の例は<RecipeLink slug="catalan-pocket-novella">カタルーニャ語のポケット判小説</RecipeLink>にあります。
+
+## よくあるつまずき
+
+リフロー型のファイルは見出しのテキストを保ちますが、デザインは保ちません。各章扉の肩書き（「Book I」）はデザイン要素なので、テキストには含まれません。読者に必ず見せたい言葉は、見出しそのものか本文に入れてください。

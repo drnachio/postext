@@ -20,6 +20,7 @@ Draft of the bundle's CREDITS.md; build.py writes the final file.
   العربية تحت الصور من وضعنا، مستخلصة من العناوين الفارسية في المخطوط.
 - وليم هارفي (١٧٩٦–١٨٦٦)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين
   (لندن، ١٨٣٩–١٨٤١). عن ويكيميديا كومنز، في الملك العام.
+- صورتا الغلاف والكعب: Generated With Diffusion Models.
 
 ## الخطوط
 
@@ -51,6 +52,7 @@ the runs of short anecdotes, the edition's illustrations left out.
   captions are ours, after the Persian captions of the manuscript.
 - William Harvey (1796–1866): wood engravings for E. W. Lane's translation,
   London 1839–41. Wikimedia Commons, public domain.
+- The cover and spine pictures: Generated With Diffusion Models.
 
 ## Fonts
 

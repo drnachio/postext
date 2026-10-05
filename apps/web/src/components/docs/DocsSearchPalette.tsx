@@ -131,16 +131,17 @@ async function fetchJson<T>(url: string): Promise<T | null> {
  *  characters and pairs. */
 const docsTokenize = cjkAwareTokenizer(MiniSearch.getDefault("tokenize") as (text: string) => string[]);
 
-/** The docs' sections. Chinese has no spaces between words, so a zh index
- *  splits its text with the Cookbook's tokenizer (characters and character
- *  pairs). The other languages keep MiniSearch's word splitting and term
+/** The docs' sections. Chinese and Japanese have no spaces between words,
+ *  so a zh or ja index splits its text with the Cookbook's tokenizer
+ *  (characters and character pairs, kana folded, particles cut). The other languages keep MiniSearch's word splitting and term
  *  handling, except for the Chinese or Japanese a page quotes (縦中横,
  *  ルビ), which is cut the same way, so a query typed in kana or hanzi
  *  finds it on any locale's pages. */
 function docsIndex(sections: SearchSection[], locale: string): MiniSearch<SearchSection> {
-  const chinese = searchLocale(locale) === "zh";
+  const lang = searchLocale(locale);
+  const cjk = lang === "zh" || lang === "ja";
   const ms = new MiniSearch<SearchSection>({
-    ...(chinese ? { tokenize, processTerm: makeProcessTerm("zh") } : { tokenize: docsTokenize }),
+    ...(cjk ? { tokenize, processTerm: makeProcessTerm(lang) } : { tokenize: docsTokenize }),
     fields: ["sectionTitle", "docTitle", "breadcrumb", "body"],
     storeFields: ["id"],
     idField: "id",

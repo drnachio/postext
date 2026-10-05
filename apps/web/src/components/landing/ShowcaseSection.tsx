@@ -62,13 +62,15 @@ function indexDescription(description: string, locale: string): string {
 
 /** The edition a book opens in: Catalan on Catalan pages when the bundle
  *  has it, Spanish on Spanish and Catalan pages, Simplified Chinese on
- *  Chinese pages and Arabic on Arabic pages when the bundle has them, else
- *  English. */
+ *  Chinese pages, Arabic on Arabic pages and Japanese on Japanese pages
+ *  when the bundle has them, else English (こころ names its own `openLocale`,
+ *  Japanese, for every page). */
 function openLocale(locale: string, locales: readonly string[] | undefined): string {
   if (locale.startsWith("ca") && locales?.includes("ca")) return "ca";
   if (locale.startsWith("es") || locale.startsWith("ca")) return "es";
   if (locale.startsWith("zh") && locales?.includes("zh-Hans")) return "zh-Hans";
   if (locale.startsWith("ar") && locales?.some((l) => l === "ar" || l.startsWith("ar-"))) return "ar";
+  if (locale.startsWith("ja") && locales?.some((l) => l === "ja" || l.startsWith("ja-"))) return "ja";
   return "en";
 }
 
@@ -105,7 +107,7 @@ export async function ShowcaseSection() {
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
   const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
-  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : locale.startsWith("ca") ? "ca" : locale.startsWith("ar") ? "ar" : "en";
+  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : locale.startsWith("ca") ? "ca" : locale.startsWith("ar") ? "ar" : locale.startsWith("ja") ? "ja" : "en";
 
   return (
     <section aria-labelledby="showcase-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">

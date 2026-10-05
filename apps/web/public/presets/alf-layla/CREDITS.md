@@ -37,6 +37,8 @@ heading attribute; the edition's own illustrations left out.
   Lane's volume 2 (1840, `thousandandonen01lanegoog`) and volume 3 (1841,
   `thousandandonen01harvgoog`), chosen from Lane's lists of illustrations for
   the tales of the later Bulaq volumes, set in grey.
+- The cover and the spine: Generated With Diffusion Models
+  (`covers.py`); their lettering is set by the bundle.
 - The headpiece (سرلوح) and the rosettes are drawn for this bundle
   (`ornaments.py`), CC0.
 

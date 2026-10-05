@@ -17,7 +17,7 @@ describe("abbreviation dictionary", () => {
     const ids = ABBREVIATIONS.map((a) => a.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const a of ABBREVIATIONS) {
-      for (const l of ["en", "es", "zh"] as const) expect(a.expansion[l], `${a.id} ${l}`).toBeTruthy();
+      for (const l of ["en", "es", "zh", "ca", "ar", "ja"] as const) expect(a.expansion[l], `${a.id} ${l}`).toBeTruthy();
     }
   });
 
@@ -41,6 +41,7 @@ describe("rehypeAbbr through the docs pipeline", () => {
   it("uses the locale's expansion", async () => {
     expect(await html("Exporta a PDF.", "es")).toContain('title="Portable Document Format, formato de documento portátil"');
     expect(await html("导出为PDF。", "zh")).toContain('<abbr title="便携式文档格式">PDF</abbr>');
+    expect(await html("PDFを書き出します。", "ja")).toContain('<abbr title="Portable Document Format（ポータブル・ドキュメント・フォーマット）">PDF</abbr>');
   });
 
   it("never wraps inside code, headings, links or an existing abbr", async () => {

@@ -113,6 +113,9 @@ const HARD: Record<Locale, Rule[]> = {
     arRule("(?:إلى|الى) (?:المستوى|مستوى) (?:التالي|آخر)", "إلى المستوى التالي"),
     arRule("(?:عالم|عالمًا) من الإمكانيات", "عالم من الإمكانيات"),
   ],
+  // HARD_JA, below, checks Japanese prose (sentences with kana) in every
+  // locale, a ja write-up included.
+  ja: [],
 };
 
 const SOFT: Record<Locale, Rule[]> = {
@@ -167,6 +170,8 @@ const SOFT: Record<Locale, Rule[]> = {
     arRule("بلا شك|دون أدنى شك", "بلا شك"),
     arRule("رحلة", "رحلة"),
   ],
+  // SOFT_JA, below, checks Japanese prose in every locale.
+  ja: [],
 };
 
 /** Stock phrases of Chinese prose written by machine, in Simplified and
@@ -254,6 +259,7 @@ const SOFT_JA: Rule[] = [
   rule("単に[^。！？]{1,30}?(?:だけ|のみ)で(?:は)?なく", "単に…だけでなく"),
   rule("(?:その)?(?:答え|結果|秘密|秘訣|鍵|カギ)は[？?]", "その答えは？（種明かし）"),
   rule("奥深い世界|の奥深さ|の魅力に迫", "奥深い世界/魅力に迫る"),
+  rule("魔法の(?:よう|ように|ような)", "魔法のよう"),
   rule("まず、[^。！？]*[。！？][\\s\\S]{0,200}?次に、[\\s\\S]{0,200}?最後に、", "まず……次に……最後に"),
 ];
 

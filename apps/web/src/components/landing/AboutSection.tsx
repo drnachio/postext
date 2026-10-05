@@ -86,6 +86,23 @@ Postext **محرّك إخراج مفتوح
 غيّر كلمة واحدة: تُنضَّد
 الصفحة من جديد.
 :::`,
+  ja: `:::part{number="I" title="基礎"
+  palette="band=#2b4acb"}
+:::
+
+# なぜPostextか {lead="印刷の組版は
+五百年をかけて……"}
+
+Postextは**オープンソースの
+組版エンジン**です。
+:ref{id="fig-flow"}のように、
+印刷組版の技をウェブに
+もたらします。
+
+:::callout{type="try"}
+一語を変えれば、ページが
+組み直されます。
+:::`,
 };
 
 export async function AboutSection() {

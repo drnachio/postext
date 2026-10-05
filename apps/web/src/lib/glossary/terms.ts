@@ -13,8 +13,10 @@ export type GlossaryCategory = "type" | "cjk" | "japanese" | "arabic" | "web";
 export interface GlossaryTerm {
   id: string;
   category: GlossaryCategory;
-  /** [term, definition] per locale. */
-  text: Record<SiteLocale, readonly [string, string]>;
+  /** [term, definition] per locale. The Japanese entry adds the term's
+   *  reading in kana, which the Japanese glossary files it under (gojūon
+   *  order): kanji compounds do not collate by reading on their own. */
+  text: Record<SiteLocale, readonly [term: string, definition: string, reading?: string]>;
   /** The native name of a Chinese-, Japanese- or Arabic-layout term (中文,
    *  日本語 or العربية), shown beside the term in the locales that do not
    *  write it already. */
@@ -52,6 +54,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["行距", "相邻两行基线之间的距离。英文 leading 一词来自金属活字排版时插在行间的铅条。"],
     ca: ["Interlineat", "Distància entre la línia de base d'una línia i la de la següent. En anglès s'anomena leading per les tires de plom que el caixista posava entre les línies de tipus."],
     ar: ["تباعد الأسطر (leading)", "المسافة بين خط أساس سطر وخط أساس السطر الذي يليه. جاءت التسمية الإنجليزية leading من شرائط الرصاص التي كان المنضّدون يضعونها بين أسطر الحروف المعدنية."],
+    ja: ["行送り", "あるベースラインから次のベースラインまでの距離です。英語のleadingは、活版印刷の植字工が行と行のあいだに挟んだ鉛（lead）の薄板に由来します。", "ぎょうおくり"],
   }),
   term("kerning", "type", {
     en: ["Kerning", "A space adjustment between two particular letters, such as A and V, so the pair looks evenly spaced. The font carries the values."],
@@ -59,6 +62,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字偶距（kerning）", "对特定两个字母（如 A 和 V）之间间距的调整，使这一对字母看起来间距均匀。调整值由字体提供。"],
     ca: ["Kerning", "Ajust de l'espai entre dues lletres concretes, com A i V, perquè la parella es vegi tan espaiada com la resta. Els valors venen a la font."],
     ar: ["تقنين الأزواج (kerning)", "تعديل المسافة بين حرفين بعينهما، مثل A وV، ليبدو الزوج متناسق التباعد. والقيم يحملها الخط نفسه."],
+    ja: ["カーニング", "AとVのような特定の2文字のあいだの間隔を調整し、その組み合わせがほかと同じ字間に見えるようにすることです。調整値はフォントに収められています。", "かーにんぐ"],
   }),
   term("tracking", "type", {
     en: ["Tracking", "Extra space added or removed between every letter of a line or a word. Postext measures it in thousandths of an em and uses it sparingly, after word spacing."],
@@ -66,6 +70,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字距（tracking）", "在一行或一个词的所有字母之间统一增减的间距。Postext 以千分之一 em 为单位计量，只在调整词间距之后少量使用。"],
     ca: ["Tracking", "Espai que s'afegeix o es treu entre totes les lletres d'una línia o d'una paraula. Postext el mesura en mil·lèsimes de quadratí i l'usa amb mesura, després de l'espai entre paraules."],
     ar: ["التتبّع (tracking)", "مسافة تُزاد أو تُنقص بين جميع حروف سطر أو كلمة. يقيسها Postext بأجزاء من الألف من وحدة em، ويستعملها باعتدال بعد تعديل المسافات بين الكلمات."],
+    ja: ["トラッキング", "行や語のすべての文字のあいだに一律に加える、または詰める間隔です。Postextは1/1000em単位で測り、語間を調整したあとに控えめに使います。", "とらっきんぐ"],
   }),
   term("word-spacing", "type", {
     en: ["Word spacing", "The width of the spaces between words. A justified line stretches or shrinks them within limits set in the configuration."],
@@ -73,6 +78,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["词间距", "词与词之间空格的宽度。两端对齐的行在配置规定的范围内拉伸或压缩它们。"],
     ca: ["Espai entre paraules", "Amplada dels espais que separen les paraules. Una línia justificada els estira o els encongeix dins dels límits que fixa la configuració."],
     ar: ["المسافة بين الكلمات", "عرض الفراغات التي تفصل بين الكلمات. السطر المضبوط يمدّها أو يضغطها ضمن حدود تعيّنها الإعدادات."],
+    ja: ["語間", "単語と単語のあいだのスペースの幅です。両端そろえの行では、設定で決めた範囲内でこれを伸ばしたり縮めたりします。", "ごかん"],
   }),
   term("justification", "type", {
     en: ["Justification", "Setting text so every full line reaches both the left and the right edge of the column, by adjusting the space inside the line."],
@@ -80,6 +86,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["两端对齐", "调整行内间距，使每一整行都同时抵达栏的左右两边。"],
     ca: ["Justificació", "Composició en què cada línia completa arriba a la vora esquerra i a la dreta de la columna, ajustant l'espai dins de la línia."],
     ar: ["ضبط الأسطر", "تنضيد النص بحيث يبلغ كل سطر كامل حافتي العمود اليسرى واليمنى معًا، بتعديل المسافات داخل السطر."],
+    ja: ["両端そろえ", "行内の間隔を調整し、最後まで埋まった行がすべて段の左端と右端の両方に届くように組むことです。", "りょうたんそろえ"],
   }),
   term("ragged", "type", {
     en: ["Ragged right", "Text aligned on the left only, with lines of uneven length on the right. Word spacing stays constant."],
@@ -87,6 +94,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["齐左（参差右边）", "只在左边对齐、右边行长参差的排法。词间距保持不变。"],
     ca: ["Text en bandera", "Text alineat només a l'esquerra, amb línies de longitud desigual a la dreta. L'espai entre paraules no canvia."],
     ar: ["حافة يمنى حرّة (ragged right)", "نص محاذى من اليسار فقط، تتفاوت أطوال أسطره من جهة اليمين. وتبقى المسافة بين الكلمات ثابتة."],
+    ja: ["左寄せ（行末不ぞろい）", "左端だけをそろえ、右側では行の長さが不ぞろいになる組み方です。語間は一定のままです。", "ひだりよせ"],
   }),
   term("knuth-plass", "type", {
     en: ["Knuth–Plass algorithm", "The line-breaking method of the TeX typesetting system. It weighs every possible set of breaks in a paragraph and picks the one with the most even spacing, where a browser fills one line at a time."],
@@ -94,6 +102,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["Knuth-Plass 算法", "TeX 排版系统的断行方法。它权衡一个段落所有可能的断点组合，选出间距最均匀的一组；浏览器则是一行一行地填。"],
     ca: ["Algorisme de Knuth-Plass", "Mètode de tall de línies del sistema de composició TeX. Avalua tots els conjunts de talls possibles d'un paràgraf i tria el d'espaiat més regular, mentre que un navegador omple les línies d'una en una."],
     ar: ["خوارزمية Knuth–Plass", "طريقة تقسيم الأسطر في نظام التنضيد TeX. تزن كل مجموعات مواضع القطع الممكنة في الفقرة وتختار أكثرها انتظامًا في التباعد، في حين يملأ المتصفح سطرًا بعد سطر."],
+    ja: ["Knuth–Plassアルゴリズム", "組版システムTeXの改行方法です。ブラウザーが1行ずつ埋めていくのに対し、段落内で可能な改行位置の組み合わせをすべて比べ、間隔がもっとも均等になるものを選びます。", "くぬーすぷらすあるごりずむ"],
   }),
   term("greedy-breaking", "type", {
     en: ["Greedy line breaking", "Filling each line with as many words as fit before moving to the next, without looking ahead. It is what CSS does, and it leaves some lines much looser than others."],
@@ -101,6 +110,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["贪心断行", "每行尽量多放词，放满再换下一行，不考虑后面的行。CSS 就是这样做的，结果有些行会比别的行松得多。"],
     ca: ["Tall de línies voraç", "Omplir cada línia amb totes les paraules que hi càpiguen abans de passar a la següent, sense mirar endavant. És el que fa CSS, i deixa unes línies molt més fluixes que d'altres."],
     ar: ["تقسيم الأسطر الجشع", "ملء كل سطر بكل ما يتسع له من كلمات قبل الانتقال إلى التالي، من دون النظر إلى ما بعده. هذا ما تفعله CSS، ويترك بعض الأسطر أرخى بكثير من غيرها."],
+    ja: ["貪欲法による改行", "先の行を見ずに、各行に入るだけの単語を詰めてから次の行に移る方法です。CSSはこの方法をとるため、ほかの行よりずっとゆるい行ができることがあります。", "どんよくほうによるかいぎょう"],
   }),
   term("box-glue-penalty", "type", {
     en: ["Boxes, glue and penalties", "The model Knuth–Plass works on. Boxes are words or letters of fixed width, glue is space that can stretch or shrink, and penalties mark places where a break is allowed at a cost, such as a hyphen."],
@@ -108,6 +118,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["盒子、粘连与惩罚", "Knuth-Plass 算法的模型。盒子是宽度固定的词或字母，粘连是可以拉伸或压缩的空白，惩罚标出允许断行但要付出代价的位置，例如连字符处。"],
     ca: ["Caixes, cola i penalitzacions", "El model sobre el qual treballa Knuth-Plass. Les caixes són paraules o lletres d'amplada fixa, la cola és espai que s'estira o s'encongeix i les penalitzacions marquen on es pot tallar a canvi d'un cost, com en un guionet."],
     ar: ["الصناديق والغراء والجزاءات (boxes, glue, penalties)", "النموذج الذي تعمل عليه خوارزمية Knuth–Plass. الصناديق كلمات أو حروف ثابتة العرض، والغراء مسافة قابلة للمدّ أو الضغط، والجزاءات تحدّد مواضع يُسمح فيها بالقطع مقابل كلفة، كموضع الواصلة."],
+    ja: ["ボックス・グルー・ペナルティ", "Knuth–Plassが扱うモデルです。ボックスは幅の決まった単語や文字、グルーは伸び縮みできる空白です。ペナルティは、ハイフンの位置のように、コストと引き換えに改行してよい場所を示します。", "ぼっくすぐるーぺなるてぃ"],
   }),
   term("badness", "type", {
     en: ["Badness and demerits", "The scores Knuth–Plass gives a line: badness grows with how far its spaces are stretched or squeezed, and demerits add the cost of hyphens and of uneven neighbouring lines. The paragraph with the lowest total wins."],
@@ -115,6 +126,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["劣度与缺陷值", "Knuth-Plass 给每行打的分：劣度随空格拉伸或压缩的程度增大，缺陷值再加上连字符和相邻行松紧不一的代价。总分最低的排法胜出。"],
     ca: ["Lletjor i demèrits", "Les puntuacions que Knuth-Plass dona a una línia: la lletjor (badness) creix com més s'estiren o s'estrenyen els seus espais, i els demèrits sumen el cost dels guionets i de les línies veïnes desiguals. Guanya el paràgraf amb el total més baix."],
     ar: ["الرداءة ونقاط العيب (badness, demerits)", "الدرجات التي تمنحها Knuth–Plass للسطر: تزداد الرداءة بقدر ما تُمدّ مسافاته أو تُضغط، وتضيف نقاط العيب كلفة الواصلات وكلفة الأسطر المتجاورة المتفاوتة. وتفوز الفقرة صاحبة أدنى مجموع."],
+    ja: ["バッドネスとデメリット", "Knuth–Plassが行につける点数です。バッドネスはスペースを伸ばしたり詰めたりした度合いに応じて大きくなり、デメリットはそれにハイフンのコストと、隣り合う行の不ぞろいのコストを加えます。合計がもっとも小さい段落の組み方が選ばれます。", "ばっどねすとでめりっと"],
   }),
   term("hyphenation", "type", {
     en: ["Hyphenation", "Dividing a word at the end of a line, with a hyphen, at a point the language allows. Postext finds those points with TeX's patterns for each language."],
@@ -122,6 +134,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["断词（连字符）", "在行末按语言允许的位置把一个词断开并加上连字符。Postext 用 TeX 的各语言断词模式找出这些位置。"],
     ca: ["Partició de mots", "Partir una paraula a final de línia, amb un guionet, per un punt que la llengua permet. Postext troba aquests punts amb els patrons de TeX de cada llengua."],
     ar: ["تقسيم الكلمات بالواصلة", "قطع كلمة في آخر السطر بواصلة، في موضع تجيزه اللغة. يجد Postext هذه المواضع بأنماط TeX الخاصة بكل لغة."],
+    ja: ["ハイフネーション", "行末で、その言語が許す位置で単語を分割し、ハイフンを付けることです。Postextは言語ごとのTeXのパターンを使ってその位置を見つけます。", "はいふねーしょん"],
   }),
   term("soft-hyphen", "type", {
     en: ["Soft hyphen", "An invisible mark inside a word that shows where it may be divided. It prints as a hyphen only when the line actually breaks there."],
@@ -129,6 +142,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["软连字符", "词内不可见的标记，表示可以在此断开。只有真的在这里断行时才印出连字符。"],
     ca: ["Guionet discrecional", "Marca invisible dins d'una paraula que indica per on es pot partir. Només s'imprimeix com a guionet si la línia es talla just allà."],
     ar: ["الواصلة الاختيارية (soft hyphen)", "علامة غير مرئية داخل الكلمة تبيّن أين يجوز قطعها. ولا تُطبع واصلةً إلا إذا انقطع السطر عندها فعلًا."],
+    ja: ["ソフトハイフン", "単語の中に置く目に見えない記号で、分割してよい位置を示します。実際にそこで改行されたときだけハイフンとして印刷されます。", "そふとはいふん"],
   }),
   term("orphan", "type", {
     en: ["Orphan", "In Postext, the last line or lines of a paragraph carried alone to the top of the next column or page. Typographers disagree on the name; the rule is about lines stranded by a column break."],
@@ -136,6 +150,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["段末孤行", "在 Postext 中，指一个段落的最后一行或几行被单独挤到下一栏或下一页顶部。各家对这个名称的用法不一，这条规则针对的是被分栏隔开的零散行。"],
     ca: ["Òrfena", "A Postext, l'última o les últimes línies d'un paràgraf que passen soles a dalt de la columna o la pàgina següent. Els tipògrafs no coincideixen en el nom; la regla tracta de línies aïllades per un salt de columna."],
     ar: ["اليتيمة (orphan)", "في Postext، السطر الأخير أو الأسطر الأخيرة من فقرة حين تُنقل وحدها إلى أعلى العمود أو الصفحة التالية. يختلف أهل الطباعة في التسمية؛ والقاعدة تخص الأسطر التي يعزلها انقطاع العمود."],
+    ja: ["オーファン", "Postextでは、段落の最後の1行または数行だけが次の段やページの先頭に送られた状態を指します。この呼び名の使い方は組版者のあいだで一致していませんが、この規則が扱うのは段の区切りで孤立した行です。", "おーふぁん"],
   }),
   term("widow", "type", {
     en: ["Widow", "In Postext, the first line or lines of a paragraph left alone at the bottom of a column or page, with the rest of the paragraph overleaf."],
@@ -143,6 +158,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["段首孤行", "在 Postext 中，指一个段落的第一行或几行单独留在一栏或一页的底部，段落其余部分在下一栏或下一页。"],
     ca: ["Vídua", "A Postext, la primera o les primeres línies d'un paràgraf que es queden soles al peu d'una columna o pàgina, amb la resta del paràgraf a la següent."],
     ar: ["الأرملة (widow)", "في Postext، السطر الأول أو الأسطر الأولى من فقرة حين تبقى وحدها أسفل عمود أو صفحة، وبقية الفقرة على الصفحة التالية."],
+    ja: ["ウィドウ", "Postextでは、段落の最初の1行または数行だけが段やページの末尾に取り残され、段落の残りが次のページに回った状態を指します。", "うぃどう"],
   }),
   term("runt", "type", {
     en: ["Runt", "A paragraph's last line when it holds only a word or part of one. Postext penalises it and, when it can, sets the paragraph one line shorter."],
@@ -150,6 +166,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["孤字（末行过短）", "段落末行只剩一个词或半个词的情况。Postext 对此计入惩罚，能做到时会把段落排短一行。"],
     ca: ["Línia curta final", "Última línia d'un paràgraf que només conté una paraula o un tros d'una paraula (runt en anglès). Postext la penalitza i, quan pot, compon el paràgraf amb una línia menys."],
     ar: ["الكلمة المعزولة في آخر الفقرة (runt)", "السطر الأخير من الفقرة حين لا يحمل إلا كلمة واحدة أو جزءًا منها. يفرض Postext عليه جزاءً، ويجعل الفقرة أقصر بسطر حين يستطيع."],
+    ja: ["ラント", "段落の最終行に、1語または語の一部しか残っていない状態です。Postextはこれにペナルティを与え、可能なら段落を1行短く組みます。", "らんと"],
   }),
   term("baseline", "type", {
     en: ["Baseline", "The invisible line letters sit on. Descenders such as the tail of p go below it."],
@@ -157,6 +174,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["基线", "字母所坐落的那条看不见的线。p 的尾巴这类下伸部分位于基线以下。"],
     ca: ["Línia de base", "La línia invisible sobre la qual reposen les lletres. Els traços descendents, com la cua de la p, queden per sota."],
     ar: ["خط الأساس", "الخط غير المرئي الذي تستقر عليه الحروف. وتنزل تحته الأجزاء النازلة، مثل ذيل الحرف p."],
+    ja: ["ベースライン", "文字が乗る目に見えない線です。pの下に伸びる部分のようなディセンダーは、この線より下に出ます。", "べーすらいん"],
   }),
   term("baseline-grid", "type", {
     en: ["Baseline grid", "A set of equally spaced horizontal lines that every line of body text sits on, so lines in neighbouring columns and on facing pages line up."],
@@ -164,6 +182,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["基线网格", "一组等距的水平线，正文每一行都落在上面，使相邻栏和对页的行彼此对齐。"],
     ca: ["Retícula de base", "Sèrie de línies horitzontals equidistants sobre les quals reposa cada línia del text, perquè les línies de columnes veïnes i de pàgines encarades quedin alineades."],
     ar: ["شبكة خطوط الأساس", "مجموعة خطوط أفقية متساوية التباعد يستقر عليها كل سطر من أسطر المتن، فتتحاذى الأسطر في الأعمدة المتجاورة وفي الصفحتين المتقابلتين."],
+    ja: ["ベースライングリッド", "等間隔に並ぶ水平線の集まりで、本文のすべての行をその上に乗せます。これにより、隣り合う段や向かい合うページで行の位置がそろいます。", "べーすらいんぐりっど"],
   }),
   term("type-area", "type", {
     en: ["Type area", "The part of the page that holds the text, inside the margins. Running heads and folios usually sit outside it."],
@@ -171,6 +190,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["版心", "页面上页边距以内容纳正文的区域。书眉和页码通常在版心之外。"],
     ca: ["Caixa de text", "La part de la pàgina que ocupa el text, dins dels marges. Les capçaleres i els folis solen quedar-ne fora."],
     ar: ["مساحة النص", "جزء الصفحة الذي يحوي النص داخل الهوامش. وتقع الترويسات وأرقام الصفحات عادةً خارجه."],
+    ja: ["版面", "ページのうち、余白の内側にある文字を組む部分です。柱やノンブルはふつうその外に置きます。", "はんめん"],
   }),
   term("measure", "type", {
     en: ["Measure", "The length of a line of text, the width of the column. Comfortable reading needs roughly 45 to 75 characters."],
@@ -178,6 +198,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["行长", "一行文字的长度，也就是栏宽。西文阅读舒适的行长大约为 45 到 75 个字符。"],
     ca: ["Mesura", "La longitud d'una línia de text, és a dir, l'amplada de la columna. Per llegir còmodament convé una mesura d'uns 45 a 75 caràcters."],
     ar: ["طول السطر (measure)", "طول سطر النص، أي عرض العمود. تحتاج القراءة المريحة إلى ما بين 45 و75 حرفًا تقريبًا."],
+    ja: ["行長", "1行の長さ、つまり段の幅です。快適に読める目安は、おおむね45〜75文字です。", "ぎょうちょう"],
   }),
   term("gutter", "type", {
     en: ["Gutter", "The space between two columns of text. Some printers also call the inner margin by the spine the gutter."],
@@ -185,6 +206,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["栏间距", "两栏文字之间的空白。英文 gutter 有时也指靠近书脊的内侧页边。"],
     ca: ["Espai entre columnes", "Espai entre dues columnes de text. En anglès, gutter també pot referir-se al marge interior, al costat del llom."],
     ar: ["الفاصل بين الأعمدة (gutter)", "المسافة بين عمودين من النص. ويطلق بعض الطابعين الاسم الإنجليزي نفسه على الهامش الداخلي المجاور للكعب."],
+    ja: ["段間", "2つの段のあいだの空きです。印刷所によっては、背に近い内側の余白（のど）もgutterと呼びます。", "だんかん"],
   }),
   term("column-balancing", "type", {
     en: ["Column balancing", "Making the columns of a page end at the same height, typically on the last page of a chapter, by moving lines between them or adjusting spacing."],
@@ -192,6 +214,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["各栏齐底", "让一页上的各栏在同一高度结束（通常在章末页），办法是在栏间挪动行或调整间距。"],
     ca: ["Equilibri de columnes", "Fer que les columnes d'una pàgina acabin a la mateixa alçada, sobretot a l'última pàgina d'un capítol, movent línies d'una a l'altra o ajustant l'espaiat."],
     ar: ["موازنة الأعمدة", "جعل أعمدة الصفحة تنتهي على الارتفاع نفسه، عادةً في الصفحة الأخيرة من الفصل، بنقل أسطر بينها أو بتعديل التباعد."],
+    ja: ["段末そろえ", "ページの各段の終わりを同じ高さにそろえることです。ふつうは章の最後のページで、段のあいだで行を移したり間隔を調整したりして行います。", "だんまつそろえ"],
   }),
   term("keep-together", "type", {
     en: ["Keep together", "A rule that a block, such as a heading with its first lines or a short box, must not be split across columns or pages."],
@@ -199,6 +222,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["保持完整", "规定某个块（例如标题连同其后几行，或一个短框）不得跨栏或跨页拆开。"],
     ca: ["Mantenir unit", "Regla per la qual un bloc, com un títol amb les primeres línies o un requadre curt, no es pot partir entre columnes ni pàgines."],
     ar: ["منع التجزئة (keep together)", "قاعدة تمنع تقسيم كتلة، كعنوان مع أسطره الأولى أو إطار قصير، على أكثر من عمود أو صفحة."],
+    ja: ["分割禁止", "見出しとそれに続く数行や短い囲みのようなブロックを、段やページをまたいで分割してはならないという規則です。", "ぶんかつきんし"],
   }),
   term("folio", "type", {
     en: ["Folio", "The printed page number. A drop folio sits at the foot of the page."],
@@ -206,6 +230,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["页码", "印在页面上的页数编号，可以放在页面顶部或底部。"],
     ca: ["Foli", "El número de pàgina imprès. El foli baix va al peu de la pàgina."],
     ar: ["رقم الصفحة (folio)", "رقم الصفحة المطبوع. والرقم السفلي (drop folio) هو الذي يقع في أسفل الصفحة."],
+    ja: ["ノンブル（folio）", "印刷されたページ番号です。ページの地に置くものを、英語ではdrop folioと呼びます。", "のんぶる"],
   }),
   term("running-head", "type", {
     en: ["Running head", "A line repeated at the top of each page, usually the book or chapter title, to tell the reader where they are."],
@@ -213,6 +238,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书眉", "每页顶部重复出现的一行文字，通常是书名或章名，提示读者所在位置。"],
     ca: ["Capçalera (titolet)", "Línia que es repeteix a dalt de cada pàgina, normalment amb el títol del llibre o del capítol, perquè el lector sàpiga on és."],
     ar: ["الترويسة", "سطر يتكرر أعلى كل صفحة، هو عادةً عنوان الكتاب أو الفصل، ليعرف القارئ أين هو."],
+    ja: ["柱（running head）", "各ページの上部に繰り返し置く行で、ふつうは書名や章題です。読者に今どこを読んでいるかを示します。", "はしら"],
   }),
   term("recto", "type", {
     en: ["Recto", "The right-hand page of an open book in left-to-right binding, always odd-numbered. Chapters traditionally open on a recto."],
@@ -220,6 +246,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["奇数页（右页）", "左装书打开后右边的一页，页码总是奇数。传统上各章从奇数页开始。"],
     ca: ["Recto (pàgina senar)", "La pàgina dreta d'un llibre obert que s'enquaderna per l'esquerra; sempre porta número senar. Els capítols solen començar en pàgina senar."],
     ar: ["الصفحة الفردية (recto)", "الصفحة اليمنى من الكتاب المفتوح في التجليد من اليسار إلى اليمين، ورقمها فردي دائمًا. وجرت العادة أن تبدأ الفصول بصفحة فردية."],
+    ja: ["奇数ページ（recto）", "左綴じの本を開いたときの右側のページで、ノンブルは常に奇数です。章は伝統的に奇数ページから始めます。", "きすうぺーじ"],
   }),
   term("verso", "type", {
     en: ["Verso", "The left-hand page of an open book in left-to-right binding, always even-numbered. In a book bound on the right, as many vertical Chinese books are, the sides swap."],
@@ -227,6 +254,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["偶数页（左页）", "左装书打开后左边的一页，页码总是偶数。右装书（许多竖排中文书都是）左右正好相反。"],
     ca: ["Verso (pàgina parella)", "La pàgina esquerra d'un llibre obert que s'enquaderna per l'esquerra; sempre porta número parell. En un llibre enquadernat per la dreta, com molts llibres xinesos en vertical, els costats s'inverteixen."],
     ar: ["الصفحة الزوجية (verso)", "الصفحة اليسرى من الكتاب المفتوح في التجليد من اليسار إلى اليمين، ورقمها زوجي دائمًا. وفي الكتاب المجلّد من اليمين، كما في كثير من الكتب الصينية العمودية، يتبادل الجانبان."],
+    ja: ["偶数ページ（verso）", "左綴じの本を開いたときの左側のページで、ノンブルは常に偶数です。縦組みの中国語の本の多くのように右綴じの本では、左右が入れ替わります。", "ぐうすうぺーじ"],
   }),
   term("spread", "type", {
     en: ["Spread", "Two facing pages seen together, a verso and a recto. Designers plan a book spread by spread."],
@@ -234,6 +262,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["跨页（对页）", "并排展示的左右两页。设计书籍时通常以对页为单位来安排。"],
     ca: ["Doble pàgina", "Dues pàgines encarades que es veuen juntes, una parella i una senar. Un llibre es dissenya doble pàgina a doble pàgina."],
     ar: ["الصفحتان المتقابلتان (spread)", "صفحتان متقابلتان تُريان معًا، زوجية وفردية. ويخطط المصممون الكتاب زوجًا بعد زوج من الصفحات المتقابلة."],
+    ja: ["見開き", "向かい合う2ページ、つまり偶数ページと奇数ページを一緒に見た状態です。デザイナーは本を見開き単位で設計します。", "みひらき"],
   }),
   term("mirrored-margins", "type", {
     en: ["Mirrored margins", "Margins that swap sides between left and right pages, so the inner margin is always by the spine."],
@@ -241,6 +270,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["对称页边距", "左右页之间互换的页边距，使内侧页边始终靠近书脊。"],
     ca: ["Marges simètrics", "Marges que s'intercanvien entre pàgines parelles i senars, de manera que el marge interior sempre queda al costat del llom."],
     ar: ["الهوامش المتناظرة", "هوامش تتبادل جانبيها بين الصفحات اليسرى واليمنى، فيبقى الهامش الداخلي دائمًا بجانب الكعب."],
+    ja: ["左右対称の余白", "左ページと右ページで左右が入れ替わる余白です。これにより、内側の余白（のど）が常に背の側に来ます。", "さゆうたいしょうのよはく"],
   }),
   term("float", "type", {
     en: ["Float", "A figure, table or box that the layout may move away from its place in the text, to the top or bottom of a column or page, where it fits."],
@@ -248,6 +278,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["浮动体", "排版时可以离开其在正文中的位置、移到栏或页的顶部或底部放得下之处的图、表或框。"],
     ca: ["Flotant", "Figura, taula o requadre que la maquetació pot apartar del seu lloc al text i portar a dalt o al peu d'una columna o pàgina on càpiga."],
     ar: ["العنصر العائم", "شكل أو جدول أو إطار يجوز للإخراج أن ينقله من موضعه في النص إلى أعلى عمود أو صفحة أو أسفلهما، حيث يتسع له المكان."],
+    ja: ["フロート", "図・表・囲みのうち、レイアウトが本文中の位置から動かし、収まる段やページの上端または下端に置いてよいものです。", "ふろーと"],
   }),
   term("callout", "type", {
     en: ["Callout", "A boxed passage set apart from the running text, such as a note, a warning or a sidebar. Postext writes them with the :::callout directive."],
@@ -255,6 +286,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["标注框", "与正文分开、加框显示的段落，例如注释、警告或侧栏。Postext 用 :::callout 指令书写。"],
     ca: ["Requadre", "Passatge emmarcat que se separa del text corregut, com una nota, un avís o un desglossament. Postext els escriu amb la directiva :::callout."],
     ar: ["الإطار (callout)", "مقطع داخل إطار، مفصول عن النص الجاري، كملاحظة أو تحذير أو نص جانبي. والموجّه :::callout هو طريقة كتابته في Postext."],
+    ja: ["囲み", "注記、警告、コラムのように、本文から切り離して枠で囲んだ一節です。Postextでは:::calloutディレクティブで書きます。", "かこみ"],
   }),
   term("caption", "type", {
     en: ["Caption", "The text that labels a figure or table, usually with its number: Figure 3, Table 2."],
@@ -262,6 +294,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["图注 / 表题", "标明图或表的文字，通常带编号，如图 3、表 2。"],
     ca: ["Peu de figura", "Text que identifica una figura o una taula, normalment amb el número: Figura 3, Taula 2."],
     ar: ["التعليق", "النص الذي يعرّف شكلًا أو جدولًا، وغالبًا مع رقمه: الشكل 3، الجدول 2."],
+    ja: ["キャプション", "図や表に付ける説明文で、ふつうは「図3」「表2」のように番号を伴います。", "きゃぷしょん"],
   }),
   term("footnote", "type", {
     en: ["Footnote", "A note printed at the foot of the column or page where it is cited, linked to the text by a superscript number or mark."],
@@ -269,6 +302,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["脚注", "印在引用处所在栏或页底部的注释，用上标数字或符号与正文相连。"],
     ca: ["Nota a peu de pàgina", "Nota impresa al peu de la columna o la pàgina on se cita, unida al text amb un número volat o una crida."],
     ar: ["الحاشية السفلية", "ملاحظة تُطبع أسفل العمود أو الصفحة التي ذُكرت فيها، وترتبط بالنص برقم أو علامة مرفوعة."],
+    ja: ["脚注", "注を付けた段やページの下部に印刷する注で、上付きの数字や記号（合印）で本文と結び付けます。", "きゃくちゅう"],
   }),
   term("cross-reference", "type", {
     en: ["Cross-reference", "A mention of another place in the same book, such as “see Figure 4” or “page 12”, that stays correct when the layout changes."],
@@ -276,6 +310,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["交叉引用", "指向同一本书中其他位置的提示，例如“见图 4”或“第 12 页”，版面变化后仍保持正确。"],
     ca: ["Referència creuada", "Esment d'un altre lloc del mateix llibre, com «vegeu la figura 4» o «pàgina 12», que continua sent correcte encara que canviï la maquetació."],
     ar: ["الإحالة", "ذكرُ موضع آخر من الكتاب نفسه، مثل «انظر الشكل 4» أو «الصفحة 12»، يبقى صحيحًا حين يتغير الإخراج."],
+    ja: ["相互参照", "「図4を参照」「12ページ」のように同じ本の別の場所を指す記述で、レイアウトが変わっても正しい内容に保たれます。", "そうごさんしょう"],
   }),
   term("index", "type", {
     en: ["Back-of-book index", "The alphabetical list of subjects at the end of a book, each with the pages where it appears."],
@@ -283,6 +318,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["索引", "书末按字母（或拼音、笔画）排列的主题列表，每项附有出现的页码。"],
     ca: ["Índex analític", "Llista alfabètica de matèries al final d'un llibre, cadascuna amb les pàgines on apareix."],
     ar: ["الفهرس الأبجدي", "قائمة الموضوعات المرتبة أبجديًا في آخر الكتاب، مع الصفحات التي يرد فيها كل منها."],
+    ja: ["索引", "本の巻末で事項をアルファベット順（日本語の本では五十音順）に並べ、それぞれが出てくるページを示した一覧です。", "さくいん"],
   }),
   term("front-matter", "type", {
     en: ["Front matter", "The pages before the main text: title page, copyright page, dedication, contents, preface. They are often numbered in roman numerals."],
@@ -290,6 +326,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["前辅文", "正文之前的页面：书名页、版权页、献词、目录、前言等，常用罗马数字编页码。"],
     ca: ["Preliminars", "Les pàgines que precedeixen el text principal: portada, pàgina de crèdits, dedicatòria, índex i pròleg. Se solen numerar amb nombres romans."],
     ar: ["الصفحات التمهيدية", "الصفحات التي تسبق النص الرئيسي: صفحة العنوان، وصفحة حقوق النشر، والإهداء، والمحتويات، والمقدمة. وكثيرًا ما تُرقَّم بالأرقام الرومانية."],
+    ja: ["前付け", "本文の前に置くページで、扉、著作権表示のページ、献辞、目次、まえがきなどです。ノンブルにローマ数字を使うことがよくあります。", "まえづけ"],
   }),
   term("back-matter", "type", {
     en: ["Back matter", "The pages after the main text: appendices, notes, glossary, bibliography, index."],
@@ -297,6 +334,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["后辅文", "正文之后的页面：附录、注释、术语表、参考文献、索引等。"],
     ca: ["Pàgines finals", "Les pàgines que segueixen el text principal: apèndixs, notes, glossari, bibliografia i índex analític."],
     ar: ["الصفحات الختامية", "الصفحات التي تلي النص الرئيسي: الملاحق، والتعليقات، ومسرد المصطلحات، والمراجع، والفهرس الأبجدي."],
+    ja: ["後付け", "本文のあとに置くページで、付録、注、用語集、参考文献、索引などです。", "あとづけ"],
   }),
   term("colophon", "type", {
     en: ["Colophon", "A short note, usually at the end of a book, on how it was made: the typefaces, the paper, the printer."],
@@ -304,6 +342,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["版本记录（colophon）", "通常位于书末的简短说明，记录书的制作情况：所用字体、纸张、印刷厂等。"],
     ca: ["Colofó", "Nota breu, normalment al final del llibre, sobre com es va fer: les tipografies, el paper, la impremta."],
     ar: ["بيان الطبع (colophon)", "ملاحظة قصيرة، في آخر الكتاب عادةً، عن طريقة صنعه: المحارف والورق والمطبعة."],
+    ja: ["奥付", "本の作り方を記した短い文章で、ふつうは巻末に置き、使った書体、紙、印刷所などを記します。", "おくづけ"],
   }),
   term("opener", "type", {
     en: ["Opener", "The designed first page of a chapter or part, with its number, title and often a band of colour or an image."],
@@ -311,6 +350,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["章首页", "一章或一部分经过设计的首页，含编号、标题，常带色带或图片。"],
     ca: ["Obertura", "La primera pàgina dissenyada d'un capítol o d'una part, amb el número, el títol i sovint una banda de color o una imatge."],
     ar: ["صفحة الافتتاح", "الصفحة الأولى المصممة من فصل أو جزء، وعليها رقمه وعنوانه، وكثيرًا ما يكون فيها شريط ملوّن أو صورة."],
+    ja: ["章扉", "章や部の最初のページをデザインしたもので、番号と題を置き、色の帯や画像を添えることがよくあります。", "しょうとびら"],
   }),
   term("kicker", "type", {
     en: ["Kicker", "A short line set above a heading, such as “Chapter 3” or a section name, in smaller or spaced capitals."],
@@ -318,6 +358,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["眉题", "标题上方的一行短文字，例如“第 3 章”或栏目名，常用较小字号或加宽字距的大写字母。"],
     ca: ["Avanttítol", "Línia breu sobre un títol, com «Capítol 3» o el nom d'una secció, en lletra més petita o en versals espaiades."],
     ar: ["العنوان التمهيدي (kicker)", "سطر قصير يوضع فوق العنوان، مثل «الفصل 3» أو اسم قسم، بحروف كبيرة أصغر حجمًا أو متباعدة."],
+    ja: ["キッカー", "見出しの上に置く短い行で、「第3章」や節名などを、小さめの大文字や字間を空けた大文字で組みます。", "きっかー"],
   }),
   term("pull-quote", "type", {
     en: ["Pull quote", "A sentence from the text repeated in large type inside the page to catch the eye, common in magazines."],
@@ -325,6 +366,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["引文框（拉引）", "从正文中摘出一句话，用大字号在版面中重复排出以吸引注意，杂志中很常见。"],
     ca: ["Destacat", "Frase del text repetida en un cos gran dins de la pàgina per cridar l'atenció, molt habitual a les revistes."],
     ar: ["الاقتباس البارز", "جملة من النص تُكرَّر بحرف كبير داخل الصفحة لتلفت النظر، وهي شائعة في المجلات."],
+    ja: ["プルクオート", "本文の一文を抜き出し、ページの中に大きな文字で繰り返して目を引くもので、雑誌でよく使われます。", "ぷるくおーと"],
   }),
   term("epigraph", "type", {
     en: ["Epigraph", "A short quotation placed at the start of a book or chapter, with its source."],
@@ -332,6 +374,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["题记", "置于全书或一章开头的简短引文，并注明出处。"],
     ca: ["Epígraf", "Cita breu al començament d'un llibre o d'un capítol, amb la procedència."],
     ar: ["التصدير", "اقتباس قصير يوضع في مستهل الكتاب أو الفصل، مع مصدره."],
+    ja: ["エピグラフ", "本や章の冒頭に置く短い引用で、出典を添えます。", "えぴぐらふ"],
   }),
   term("byline", "type", {
     en: ["Byline", "The line that names the author of an article or a chapter in a collection."],
@@ -339,6 +382,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["署名行", "标明文章或文集中某一章作者的那一行。"],
     ca: ["Signatura", "La línia que dona el nom de l'autor d'un article o d'un capítol en una obra col·lectiva."],
     ar: ["سطر المؤلف (byline)", "السطر الذي يذكر كاتب المقال، أو كاتب الفصل في كتاب جماعي."],
+    ja: ["バイライン", "記事や論集の章の著者名を示す行です。", "ばいらいん"],
   }),
   term("drop-cap", "type", {
     en: ["Drop cap", "A large initial letter at the start of a paragraph that sinks several lines into the text beside it."],
@@ -346,6 +390,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["首字下沉", "段首放大的首字母，向下占据旁边正文的几行高度。"],
     ca: ["Caplletra", "Lletra inicial gran al començament d'un paràgraf que ocupa l'alçada de diverses línies del text contigu."],
     ar: ["الحرف الاستهلالي", "حرف أول كبير في بداية الفقرة ينزل عدة أسطر داخل النص المجاور له."],
+    ja: ["ドロップキャップ", "段落の冒頭に置く大きな頭文字で、隣の本文に数行分食い込ませて組みます。", "どろっぷきゃっぷ"],
   }),
   term("small-caps", "type", {
     en: ["Small caps", "Capital letters drawn at about the height of lowercase letters, used for abbreviations and running heads so they do not shout."],
@@ -353,6 +398,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["小型大写字母", "高度约与小写字母相当的大写字母，用于缩写和书眉，使其不显得突兀。"],
     ca: ["Versaletes", "Majúscules dibuixades a l'alçada aproximada de les minúscules, que s'usen en sigles i capçaleres perquè no destaquin massa."],
     ar: ["الحروف الكبيرة المصغّرة (small caps)", "حروف لاتينية كبيرة مرسومة بارتفاع الحروف الصغيرة تقريبًا، تُستعمل في الاختصارات والترويسات كي لا تبدو صارخة."],
+    ja: ["スモールキャピタル", "小文字とほぼ同じ高さに描いた大文字です。略語や柱に使うと、通常の大文字ほど目立ちすぎません。", "すもーるきゃぴたる"],
   }),
   term("ligature", "type", {
     en: ["Ligature", "Two or more letters drawn as one glyph, such as fi or ff, to avoid awkward collisions."],
@@ -360,6 +406,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["连字", "把两个或更多字母画成一个字形（如 fi、ff），避免笔画相撞。"],
     ca: ["Lligadura", "Dues o més lletres dibuixades com un sol glif, com fi o ff, per evitar xocs poc elegants."],
     ar: ["الحرف المركّب (ligature)", "حرفان أو أكثر يُرسمان شكلًا واحدًا، مثل fi أو ff، لتجنّب تصادم غير مستحب بينها."],
+    ja: ["合字（リガチャ）", "fiやffのように、2つ以上の文字を1つのグリフとして描いたもので、文字どうしの不格好なぶつかりを避けます。", "ごうじ"],
   }),
   term("glyph", "type", {
     en: ["Glyph", "One drawn shape in a font. A letter may have several glyphs (a ligature, a small cap, a vertical form)."],
@@ -367,6 +414,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字形", "字体中的一个具体图形。同一个字符可以有多个字形，例如连字、小型大写或竖排形式。"],
     ca: ["Glif", "Cada forma dibuixada d'una font. Una lletra pot tenir diversos glifs: una lligadura, una versaleta, una forma vertical."],
     ar: ["الرسم الحرفي (glyph)", "شكل واحد مرسوم في الخط. قد يكون للحرف الواحد عدة رسوم (حرف مركّب، أو حرف كبير مصغّر، أو صيغة عمودية)."],
+    ja: ["グリフ", "フォントに含まれる、描かれた1つの字形です。1つの文字が複数のグリフ（合字、スモールキャピタル、縦組み用の字形）を持つことがあります。", "ぐりふ"],
   }),
   term("typeface", "type", {
     en: ["Typeface and font", "A typeface is the design (Garamond); a font is one file or style of it (Garamond Italic)."],
@@ -374,6 +422,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字体家族与字体", "字体家族指一套设计（如 Garamond）；字体指其中的一个文件或样式（如 Garamond Italic）。"],
     ca: ["Tipografia i font", "La tipografia és el disseny (Garamond); la font és un fitxer o un estil concret d'aquest disseny (Garamond cursiva)."],
     ar: ["المحرف والخط", "المحرف هو التصميم (Garamond)، والخط ملف واحد أو أسلوب واحد منه (Garamond Italic)."],
+    ja: ["書体とフォント", "書体はデザインそのもの（Garamond）、フォントはその1ファイルまたは1スタイル（Garamond Italic）です。", "しょたいとふぉんと"],
   }),
   term("em", "type", {
     en: ["Em", "A unit equal to the type size: in 10 pt type, an em is 10 pt. Spacing in typesetting is often given in ems or fractions of an em."],
@@ -381,6 +430,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["em（全身）", "等于字号的长度单位：10 pt 的字，1 em 就是 10 pt。排版中的间距常以 em 或其分数表示。中文的一个全角字就是 1 em 宽。"],
     ca: ["Quadratí (ema)", "Unitat igual al cos de la lletra: en un cos de 10 pt, el quadratí fa 10 pt. Els espais tipogràfics se solen donar en quadratins o fraccions de quadratí."],
     ar: ["وحدة em", "وحدة تساوي حجم الحرف: في حرف بحجم 10 pt تساوي وحدة em عشر نقاط. وكثيرًا ما تُعطى المسافات في التنضيد بوحدة em أو بكسور منها."],
+    ja: ["em", "文字サイズと同じ長さの単位で、10ptの文字なら1emは10ptです。組版の間隔は、emやその分数で表すことがよくあります。", "えむ"],
   }),
   term("en", "type", {
     en: ["En", "Half an em. The en dash (–) is about this wide."],
@@ -388,6 +438,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["en（半身）", "em 的一半。西文的 en dash（–）大约这么宽。"],
     ca: ["Mig quadratí", "La meitat d'un quadratí. El guió (–) fa més o menys això."],
     ar: ["وحدة en", "نصف em. وعرض الشرطة القصيرة (–) يقارب ذلك."],
+    ja: ["en", "emの半分です。enダッシュ（–）はほぼこの幅です。", "えぬ"],
   }),
   term("dashes", "type", {
     en: ["En dash and em dash", "The en dash (–) joins ranges, as in 1914–1918; the em dash (—) sets off a phrase in English. Neither is a hyphen."],
@@ -395,6 +446,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["连接号与破折号", "西文 en dash（–）用于表示范围，如 1914–1918；em dash（—）用于插入语。两者都不是连字符。中文破折号（——）占两个字宽。"],
     ca: ["Guió i ratlla", "El guió (–) uneix intervals, com a 1914–1918; la ratlla (—) obre incisos i diàlegs en català. Cap dels dos no és un guionet."],
     ar: ["الشرطة القصيرة والشرطة الطويلة", "الشرطة القصيرة (–) تصل طرفي مدى، كما في 1914–1918؛ والشرطة الطويلة (—) تفصل عبارة اعتراضية في الإنجليزية. وليست أيّ منهما واصلة."],
+    ja: ["enダッシュとemダッシュ", "enダッシュ（–）は1914–1918のように範囲をつなぎ、emダッシュ（—）は英語で語句を挟んで区切ります。どちらもハイフンではありません。", "えぬだっしゅとえむだっしゅ"],
   }),
   term("point", "type", {
     en: ["Point and pica", "Typographic units. A point is 1/72 of an inch (about 0.35 mm); a pica is 12 points."],
@@ -402,6 +454,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["点与派卡", "排版单位。1 点为 1/72 英寸（约 0.35 毫米），1 派卡等于 12 点。"],
     ca: ["Punt i pica", "Unitats tipogràfiques. Un punt és 1/72 de polzada (uns 0,35 mm); una pica són 12 punts."],
     ar: ["النقطة والبايكا (point, pica)", "وحدتان طباعيتان. النقطة 1/72 من البوصة (نحو 0.35 ملم)، والبايكا 12 نقطة."],
+    ja: ["ポイントとパイカ", "活字の単位です。1ポイントは1/72インチ（約0.35mm）、1パイカは12ポイントです。", "ぽいんととぱいか"],
   }),
   term("trim-size", "type", {
     en: ["Trim size", "The final size of a printed page after it is cut, such as 140 × 210 mm."],
@@ -409,6 +462,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["成品尺寸", "印刷页裁切后的最终尺寸，例如 140 × 210 毫米。"],
     ca: ["Format (mida de tall)", "Mida final de la pàgina impresa un cop tallada, per exemple 140 × 210 mm."],
     ar: ["مقاس القص", "المقاس النهائي للصفحة المطبوعة بعد قصّها، مثل 140 × 210 ملم."],
+    ja: ["仕上がりサイズ", "断裁したあとの印刷ページの最終的な大きさで、たとえば140×210mmです。", "しあがりさいず"],
   }),
   term("bleed", "type", {
     en: ["Bleed", "Artwork that runs past the trim edge, a few millimetres beyond the page, so no white line shows if the cut is slightly off."],
@@ -416,6 +470,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["出血", "图片或底色超出裁切线几毫米的部分，裁切稍有偏差时也不会露出白边。"],
     ca: ["Sang", "Part de la il·lustració o del color que sobrepassa la vora de tall uns quants mil·límetres, perquè no quedi un filet blanc si el tall es desvia una mica."],
     ar: ["النزف", "رسوم تمتد إلى ما بعد حدّ القص، بضعة مليمترات خارج الصفحة، كي لا يظهر خط أبيض إذا انحرف القص قليلًا."],
+    ja: ["裁ち落とし（塗り足し）", "仕上がり線の外側まで数ミリ延ばした絵柄で、断裁が少しずれても白い線が出ないようにします。", "たちおとし"],
   }),
   term("crop-marks", "type", {
     en: ["Crop marks", "Thin lines printed outside the page corners that show the printer where to cut."],
@@ -423,6 +478,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["裁切标记", "印在页角外侧的细线，告诉印刷厂在哪里裁切。"],
     ca: ["Marques de tall", "Línies fines impreses fora de les cantonades de la pàgina que indiquen a la impremta per on cal tallar."],
     ar: ["علامات القص", "خطوط رفيعة تُطبع خارج زوايا الصفحة تبيّن للمطبعة موضع القص."],
+    ja: ["トンボ", "ページの角の外側に印刷する細い線で、どこで断裁するかを印刷所に示します。", "とんぼ"],
   }),
   term("signature", "type", {
     en: ["Signature", "A large sheet printed with several pages and folded into a gathering, such as 16 pages. Books are sewn signature by signature."],
@@ -430,6 +486,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["贴（折手）", "印有多个页面并折叠成一叠的大张纸，例如 16 页一贴。书籍按贴装订。"],
     ca: ["Plec", "Full gran imprès amb diverses pàgines i plegat en un quadernet, per exemple de 16 pàgines. Els llibres es cusen plec a plec."],
     ar: ["الملزمة", "فرخ كبير تُطبع عليه عدة صفحات ثم يُطوى في كرّاسة، من 16 صفحة مثلًا. وتُخاط الكتب ملزمةً ملزمة."],
+    ja: ["折丁", "何ページ分かを刷った大きな紙を折りたたみ、16ページなどのひとまとまりにしたものです。本は折丁ごとにかがります。", "おりちょう"],
   }),
   term("spot-colour", "type", {
     en: ["Spot colour and single ink", "A spot colour is one premixed ink printed on its own. A single-ink book prints everything in one such ink, with lighter tints for greys."],
@@ -437,6 +494,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["专色与单色印刷", "专色是单独印刷的预调油墨。单色书全部用一种这样的油墨印刷，以浅网代替灰色。"],
     ca: ["Tinta directa i tinta única", "Una tinta directa és una tinta premesclada que s'imprimeix per separat. Un llibre a una sola tinta ho imprimeix tot amb una d'aquestes tintes, amb trames més clares en lloc de grisos."],
     ar: ["اللون الخاص والحبر الواحد", "اللون الخاص (spot colour) حبر واحد ممزوج سلفًا يُطبع وحده. والكتاب ذو الحبر الواحد يُطبع كله بحبر واحد من هذا النوع، مع درجات أفتح منه بدل الرماديات."],
+    ja: ["特色と1色刷り", "特色は、あらかじめ調合して単独で刷るインキです。1色刷りの本はすべてをその1色で刷り、グレーの代わりに淡い濃度の網を使います。", "とくしょくといっしょくずり"],
   }),
   term("swatch", "type", {
     en: ["Swatch", "A named colour in a design's palette, reused by headings, rules and boxes so a change in one place reaches them all."],
@@ -444,6 +502,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["色板", "设计调色板中带名称的颜色，标题、线条和框都引用它，改一处即全部更新。"],
     ca: ["Mostra de color", "Color amb nom a la paleta d'un disseny, que comparteixen títols, filets i requadres, de manera que un canvi en un lloc arriba a tots."],
     ar: ["عيّنة اللون (swatch)", "لون مسمّى في لوحة ألوان التصميم، تعيد استعماله العناوين والخطوط الفاصلة والإطارات، فيصل التغيير في موضع واحد إليها جميعًا."],
+    ja: ["スウォッチ", "デザインのパレットに名前を付けて登録した色です。見出し、罫線、囲みが共通して使うため、1か所を変えればすべてに反映されます。", "すうぉっち"],
   }),
   term("rule", "type", {
     en: ["Rule", "A printed line, such as the thin line between columns or under a running head."],
@@ -451,6 +510,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["线（栏线、眉线）", "印出的直线，例如两栏之间的细线或书眉下的线。"],
     ca: ["Filet", "Línia impresa, com la línia fina entre columnes o sota una capçalera."],
     ar: ["الخط الفاصل", "خط مطبوع، كالخط الرفيع بين الأعمدة أو تحت الترويسة."],
+    ja: ["罫線", "段と段のあいだや柱の下に引く細い線のような、印刷される線です。", "けいせん"],
   }),
   term("gloss", "type", {
     en: ["Gloss", "A short explanation of a word or line, printed in the margin, between the lines or in notes, as in annotated classics."],
@@ -458,6 +518,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["旁注（gloss）", "对某个词或某行的简短解释，印在页边、行间或注释中，常见于注释本古籍。"],
     ca: ["Glossa", "Explicació breu d'una paraula o d'un vers, impresa al marge, entre línies o en notes, com a les edicions anotades dels clàssics."],
     ar: ["الشرح (gloss)", "تفسير قصير لكلمة أو سطر، يُطبع في الهامش أو بين الأسطر أو في التعليقات، كما في طبعات الكلاسيكيات المشروحة."],
+    ja: ["語釈", "語や行に付ける短い説明で、注釈付きの古典のように、余白、行間、注に印刷します。", "ごしゃく"],
   }),
 
   // ── Chinese layout ─────────────────────────────────────────────────────
@@ -467,6 +528,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["汉字", "中文使用的文字，也用于日文，历史上也用于朝鲜文。每个汉字占一个一 em 见方的格子。"],
     ca: ["Caràcters han", "Els caràcters xinesos (hanzi), que també s'usen en japonès i, històricament, en coreà. Cadascun ocupa una cel·la quadrada d'un quadratí."],
     ar: ["الحروف الصينية (هان)", "الحروف الصينية (hanzi)، وتُستعمل أيضًا في اليابانية، واستُعملت تاريخيًا في الكورية. يشغل كل منها خانة مربعة عرضها em واحد."],
+    ja: ["漢字（Han）", "中国の文字（漢字）で、日本語でも使われ、かつては朝鮮語でも使われました。1字が幅1emの正方形の枠を占めます。", "かんじ"],
   }, "汉字"),
   term("clreq", "cjk", {
     en: ["clreq", "Requirements for Chinese Text Layout, the W3C document that describes how Chinese text is set. The Postext docs cite it by section."],
@@ -474,6 +536,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["clreq", "W3C 的《中文排版需求》，描述中文文本的排版规则。Postext 文档按章节引用它。"],
     ca: ["clreq", "Requirements for Chinese Text Layout, el document del W3C que descriu com es compon el text xinès. La documentació de Postext el cita per apartats."],
     ar: ["clreq", "متطلبات تخطيط النص الصيني (Requirements for Chinese Text Layout)، وهي وثيقة W3C التي تصف طريقة تنضيد النص الصيني. ويستشهد بها توثيق Postext بأرقام أقسامها."],
+    ja: ["clreq", "Requirements for Chinese Text Layoutの略称で、中国語の組み方を記述したW3Cの文書です。Postextのドキュメントは節番号を挙げて引用します。", "しーえるりく"],
   }, "中文排版需求"),
   term("full-width", "cjk", {
     en: ["Full-width", "Occupying a whole em cell, like a Han character. Chinese punctuation and full-width digits (１２) are full-width; Latin letters are not."],
@@ -481,6 +544,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["全角", "占满一个 em 格子，与汉字同宽。中文标点和全角数字（１２）是全角的，拉丁字母不是。"],
     ca: ["Amplada completa", "Que ocupa una cel·la sencera d'un quadratí, com un caràcter han. La puntuació xinesa i les xifres d'amplada completa (１２) ho són; les lletres llatines no."],
     ar: ["كامل العرض", "يشغل خانة em كاملة، كالحرف الصيني. علامات الترقيم الصينية والأرقام كاملة العرض (１２) كاملة العرض، أما الحروف اللاتينية فلا."],
+    ja: ["全角", "漢字と同じく1em四方の枠をまるごと占めることです。中国語の約物や全角数字（１２）は全角で、ラテン文字は全角ではありません。", "ぜんかく"],
   }, "全角"),
   term("ideographic-space", "cjk", {
     en: ["Ideographic space", "A blank one em wide (U+3000), the width of a Han character, used for indents and after chapter numbers."],
@@ -488,6 +552,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["全角空格", "宽一个 em 的空白（U+3000），与一个汉字同宽，用于缩进和章节编号之后。"],
     ca: ["Espai ideogràfic", "Blanc d'un quadratí (U+3000), l'amplada d'un caràcter han, que s'usa en sagnats i després dels números de capítol."],
     ar: ["المسافة الإيديوغرافية", "فراغ عرضه em واحد (U+3000)، بعرض حرف صيني، يُستعمل في المسافات البادئة وبعد أرقام الفصول."],
+    ja: ["全角スペース", "幅1emの空白（U+3000）で、漢字1字分の幅です。字下げや章番号のあとに使います。", "ぜんかくすぺーす"],
   }, "全角空格"),
   term("line-start-end-rules", "cjk", {
     en: ["Line-start and line-end rules", "The rules that keep certain marks off the start of a line (a comma, a closing bracket) and others off the end (an opening bracket). Japanese calls them kinsoku."],
@@ -495,6 +560,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["避头尾", "规定某些标点不能出现在行首（如逗号、后括号），另一些不能出现在行末（如前括号）的规则。日文称为禁则。"],
     ca: ["Regles de principi i final de línia", "Normes que impedeixen que certs signes obrin una línia (una coma, un parèntesi de tancament) i que d'altres la tanquin (un parèntesi d'obertura). En japonès s'anomenen kinsoku."],
     ar: ["قواعد بداية السطر ونهايته", "القواعد التي تُبعد علامات معيّنة عن بداية السطر (الفاصلة، القوس الغالق) وأخرى عن نهايته (القوس الفاتح). وتسمّيها اليابانية kinsoku."],
+    ja: ["行頭・行末禁則", "特定の記号（読点、閉じ括弧）を行頭に、別の記号（開き括弧）を行末に置かないための規則です。日本語では禁則と呼びます。", "ぎょうとうぎょうまつきんそく"],
   }, "避头尾"),
   term("punctuation-compression", "cjk", {
     en: ["Punctuation width and compression", "A Chinese mark is half an em of glyph and half an em of blank. Compression removes some of that blank, for example where two marks meet, so 。」 takes one and a half ems instead of two."],
@@ -502,6 +568,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["标点挤压", "中文标点由半个 em 的字形和半个 em 的空白组成。挤压去掉部分空白，例如两个标点相邻时，“。」”只占一个半 em 而不是两个。"],
     ca: ["Amplada i compressió de la puntuació", "Un signe xinès ocupa mig quadratí de glif i mig de blanc. La compressió treu part d'aquest blanc, per exemple on s'ajunten dos signes, de manera que 。」 ocupa un quadratí i mig en lloc de dos."],
     ar: ["عرض علامات الترقيم وضغطها", "العلامة الصينية نصف em رسمًا ونصف em فراغًا. ويحذف الضغط بعض هذا الفراغ، عند التقاء علامتين مثلًا، فتشغل 。」 مسافة em ونصف بدل اثنين."],
+    ja: ["約物の幅と詰め", "中国語の約物は、半角分の字形と半角分の空きでできています。詰めはその空きの一部を削る処理で、約物が2つ隣り合う箇所などで行います。たとえば句点と閉じかぎ括弧の組（。」）は、2emではなく1.5emを占めます。", "やくもののはばとつめ"],
   }, "标点挤压"),
   term("hanging-punctuation", "cjk", {
     en: ["Hanging punctuation", "Letting a comma or full stop that does not fit sit just past the end of the line instead of pushing a character down."],
@@ -509,6 +576,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["标点悬挂", "让放不下的逗号或句号悬在行末之外，而不是把一个字挤到下一行。"],
     ca: ["Puntuació penjant", "Deixar que una coma o un punt que no hi cap quedi just fora del final de la línia en lloc de baixar un caràcter a la següent."],
     ar: ["تعليق علامات الترقيم", "السماح للفاصلة أو النقطة التي لا تتسع في السطر بأن تقع بعد نهايته مباشرةً، بدل أن تدفع حرفًا إلى السطر التالي."],
+    ja: ["句読点のぶら下げ", "行に収まらない読点や句点を、文字を次の行に送る代わりに、行末のすぐ外側に出して組むことです。", "くとうてんのぶらさげ"],
   }, "标点悬挂"),
   term("han-latin-spacing", "cjk", {
     en: ["Han–Latin spacing", "A quarter-em gap set between a Han character and a Latin letter or digit next to it, as in 1999 年."],
@@ -516,6 +584,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["中西文间距", "汉字与相邻拉丁字母或数字之间加的四分之一 em 间隙，例如“1999 年”。"],
     ca: ["Espai entre han i llatí", "Separació d'un quart de quadratí entre un caràcter han i la lletra llatina o la xifra contigua, com a 1999 年."],
     ar: ["المسافة بين الصينية واللاتينية", "فجوة بعرض ربع em توضع بين حرف صيني وحرف لاتيني أو رقم مجاور له، كما في 1999 年."],
+    ja: ["漢字と欧文のあいだの空き", "漢字と、それに隣り合うラテン文字や数字とのあいだに入れる1/4emの空きです。例：1999 年。", "かんじとおうぶんのあいだのあき"],
   }, "中西文间距"),
   term("character-grid", "cjk", {
     en: ["Character grid", "The Chinese way to specify a type area: so many characters per line and so many lines per page, every character on a square cell."],
@@ -523,6 +592,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字格（版心网格）", "中文定义版心的方式：每行多少字、每页多少行，每个字占一个方格。"],
     ca: ["Retícula de caràcters", "La manera xinesa de definir la caixa de text: tants caràcters per línia i tantes línies per pàgina, amb cada caràcter en una cel·la quadrada."],
     ar: ["شبكة الحروف", "الطريقة الصينية لتحديد مساحة النص: عدد معيّن من الحروف في السطر وعدد معيّن من الأسطر في الصفحة، ولكل حرف خانة مربعة."],
+    ja: ["文字グリッド", "版面を1行の字数と1ページの行数で指定する中国式の方法で、すべての文字が正方形の枠に乗ります。", "もじぐりっど"],
   }, "字格"),
   term("chinese-point-sizes", "cjk", {
     en: ["Chinese point sizes", "Named type sizes used in China: 五号 is 10.5 pt, the usual book size; 小五 is 9 pt; 四号 is 14 pt."],
@@ -530,6 +600,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字号", "中国使用的有名称的字号：五号为 10.5 pt，是书籍正文常用字号；小五为 9 pt；四号为 14 pt。"],
     ca: ["Cossos xinesos", "Mides de lletra amb nom que s'usen a la Xina: 五号 són 10,5 pt, el cos habitual dels llibres; 小五, 9 pt; 四号, 14 pt."],
     ar: ["أحجام الحرف الصينية", "أحجام حرف لها أسماء تُستعمل في الصين: 五号 تساوي 10.5 pt، وهو الحجم المعتاد في الكتب؛ 小五 تساوي 9 pt؛ 四号 تساوي 14 pt."],
+    ja: ["中国の号数", "中国で使われる名前付きの文字サイズです。五号は10.5ptで書籍の標準的なサイズ、小五は9pt、四号は14ptです。", "ちゅうごくのごうすう"],
   }, "字号"),
   term("vertical-writing", "cjk", {
     en: ["Vertical writing", "Text set in columns that run from top to bottom, read from right to left, as in Japanese novels and in many Taiwanese and classical Chinese books."],
@@ -537,6 +608,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["竖排", "文字自上而下排成列、从右往左阅读的排法，常见于日文小说、台湾书籍和古籍。"],
     ca: ["Escriptura vertical", "Text compost en columnes que van de dalt a baix i es llegeixen de dreta a esquerra, com en les novel·les japoneses, en molts llibres de Taiwan i en els clàssics xinesos."],
     ar: ["الكتابة العمودية", "نص منضّد في أعمدة تمتد من الأعلى إلى الأسفل، وتُقرأ من اليمين إلى اليسار، كما في الروايات اليابانية وفي كثير من الكتب التايوانية والصينية الكلاسيكية."],
+    ja: ["縦組み", "上から下へ進む行を、右から左へ読み進める組み方です。日本の小説や、台湾の本、中国の古典の多くで使われます。", "たてぐみ"],
   }, "竖排"),
   term("right-binding", "cjk", {
     en: ["Right binding", "A book bound on its right edge, opened from what a Western reader thinks of as the back. Vertical Chinese and Japanese books and Arabic books are bound this way."],
@@ -544,6 +616,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["右装（右翻）", "书脊在右侧的装订方式，从西方读者眼中的“封底”翻开。竖排的中文书和日文书，以及阿拉伯文书，都采用这种装订。"],
     ca: ["Enquadernació per la dreta", "Llibre enquadernat per la vora dreta, que s'obre pel que un lector occidental consideraria el final. Els llibres xinesos i japonesos en vertical i els llibres àrabs s'enquadernen així."],
     ar: ["التجليد من اليمين", "كتاب مجلّد من حافته اليمنى، يُفتح مما يعدّه القارئ الغربي ظهر الكتاب. هكذا تُجلّد الكتب الصينية واليابانية العمودية والكتب العربية."],
+    ja: ["右綴じ", "右端を綴じた本で、欧米の読者から見ると裏表紙にあたる側から開きます。縦組みの中国語や日本語の本、アラビア語の本はこの綴じ方です。", "みぎとじ"],
   }, "右装"),
   term("tier", "cjk", {
     en: ["Tier", "In vertical writing, one of the horizontal bands a page is divided into, the vertical counterpart of a column."],
@@ -551,6 +624,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["栏（竖排）", "竖排时页面上下划分出的横向区域，相当于横排中的栏。"],
     ca: ["Banda", "En l'escriptura vertical, cadascuna de les franges horitzontals en què es divideix la pàgina; equival a una columna en l'escriptura horitzontal."],
     ar: ["الطبقة (tier)", "في الكتابة العمودية، أحد الأشرطة الأفقية التي تُقسَم إليها الصفحة، وهو نظير العمود في الكتابة الأفقية."],
+    ja: ["段（縦組み）", "縦組みでページを横方向に区切った帯の1つで、横組みの段にあたります。", "だん"],
   }, "栏"),
   term("tate-chu-yoko", "cjk", {
     en: ["Tate-chū-yoko", "Setting a short number or acronym across the column, upright in a single cell, inside vertical text. The name is Japanese, 縦中横, “horizontal in vertical”."],
@@ -558,6 +632,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["纵中横", "在竖排文字中把短数字或缩写横着排在一个字格里。日文写作縦中横（tate-chū-yoko）。"],
     ca: ["Tate-chū-yoko", "Compondre un número curt o una sigla en horitzontal, dret en una sola cel·la, dins d'un text vertical. El nom és japonès, 縦中横, i significa «horitzontal dins de vertical»."],
     ar: ["الأفقي داخل العمودي (tate-chū-yoko)", "تنضيد رقم قصير أو اختصار بعرض العمود، قائمًا في خانة واحدة، داخل نص عمودي. والاسم ياباني، 縦中横، ومعناه «أفقي داخل عمودي»."],
+    ja: ["縦中横", "縦組みの行の中で、短い数字や略語を1字分の枠に収め、正立させて横に並べる組み方です。", "たてちゅうよこ"],
   }, "纵中横"),
   term("emphasis-dots", "cjk", {
     en: ["Emphasis dots", "Dots set under each character (beside it in vertical text) to stress a phrase. Chinese uses them where Latin text uses italics."],
@@ -565,6 +640,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["着重号", "加在每个字下方（竖排时在右侧）用于强调的圆点。中文用它代替西文的斜体。"],
     ca: ["Punts d'èmfasi", "Punts sota cada caràcter (al costat, en text vertical) per remarcar una expressió. El xinès els fa servir on el text llatí faria servir la cursiva."],
     ar: ["نقاط التوكيد", "نقاط توضع تحت كل حرف (وبجانبه في النص العمودي) لتوكيد عبارة. وتستعملها الصينية حيث يستعمل النص اللاتيني الحروف المائلة."],
+    ja: ["圏点（中国語）", "語句を強調するために各字の下（縦組みでは脇）に付ける点です。欧文でイタリックを使う場面で、中国語ではこれを使います。", "けんてん"],
   }, "着重号"),
   term("proper-name-mark", "cjk", {
     en: ["Proper-name mark", "A straight line under a personal or place name (beside it in vertical text), found in classical and Taiwanese editions."],
@@ -572,6 +648,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["专名号", "标在人名、地名下方（竖排时在左侧）的直线，见于古籍和台湾版书籍。"],
     ca: ["Marca de nom propi", "Línia recta sota un nom de persona o de lloc (al costat, en text vertical), pròpia de les edicions clàssiques i de Taiwan."],
     ar: ["علامة اسم العلم", "خط مستقيم تحت اسم شخص أو مكان (وبجانبه في النص العمودي)، يوجد في الطبعات الكلاسيكية والتايوانية."],
+    ja: ["専名号", "人名や地名の下（縦組みでは脇）に引く直線で、古典や台湾の版本に見られます。", "せんめいごう"],
   }, "专名号"),
   term("book-title-mark", "cjk", {
     en: ["Book-title mark", "The marks that set off the title of a book or article: 《》 in modern mainland text, or a wavy line under it in classical and Taiwanese editions."],
@@ -579,6 +656,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书名号", "标示书名、篇名的符号：现代大陆用《》，古籍和台湾版则在下方加波浪线。"],
     ca: ["Marca de títol", "Els signes que delimiten el títol d'un llibre o article: 《》 en el text actual de la Xina continental, o una línia ondulada a sota en les edicions clàssiques i de Taiwan."],
     ar: ["علامة عنوان الكتاب", "العلامات التي تميّز عنوان كتاب أو مقال: 《》 في النصوص الحديثة في البر الرئيسي، أو خط متموّج تحته في الطبعات الكلاسيكية والتايوانية."],
+    ja: ["書名号", "本や記事の題名を示す記号です。現代の中国大陸の文章では《》を使い、古典や台湾の版本では題名の下に波線を引きます。", "しょめいごう"],
   }, "书名号"),
   term("ruby", "cjk", {
     en: ["Ruby", "Small text set above or beside characters to give their reading, such as pinyin, zhuyin or Japanese furigana."],
@@ -586,6 +664,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["注音（ruby）", "排在字的上方或旁边、标明读音的小字，例如拼音、注音符号或日文的振假名。"],
     ca: ["Ruby", "Text petit que es posa damunt o al costat dels caràcters per indicar-ne la lectura, com el pinyin, el zhuyin o el furigana japonès."],
     ar: ["الروبي (ruby)", "نص صغير يوضع فوق الحروف أو بجانبها ليبيّن نطقها، مثل pinyin أو zhuyin أو الفوريغانا اليابانية."],
+    ja: ["ルビ", "文字の上や脇に小さく添えて読みを示す文字です。ピンイン、注音符号、日本語の振り仮名などがあります。", "るび"],
   }, "注音"),
   term("pinyin", "cjk", {
     en: ["Pinyin", "The official romanisation of Mandarin, with tone marks: hóng lóu."],
@@ -593,6 +672,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["拼音", "汉语普通话的官方拉丁字母拼写，带声调符号，如 hóng lóu。"],
     ca: ["Pinyin", "La romanització oficial del xinès mandarí, amb marques de to: hóng lóu."],
     ar: ["البينيين (pinyin)", "الكتابة الرسمية للماندرينية بالحروف اللاتينية، مع علامات النغمات: hóng lóu."],
+    ja: ["ピンイン", "中国語（普通話）の公式のローマ字表記で、声調符号を付けます。例：hóng lóu。", "ぴんいん"],
   }, "拼音"),
   term("zhuyin", "cjk", {
     en: ["Zhuyin (bopomofo)", "A phonetic alphabet for Mandarin used in Taiwan (ㄅㄆㄇㄈ), set in a column beside each character."],
@@ -600,6 +680,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["注音符号", "台湾使用的汉语注音字母（ㄅㄆㄇㄈ），排在每个字旁边的一列中。"],
     ca: ["Zhuyin (bopomofo)", "Alfabet fonètic del mandarí que s'usa a Taiwan (ㄅㄆㄇㄈ) i es col·loca en una columna al costat de cada caràcter."],
     ar: ["تشويين (zhuyin أو bopomofo)", "أبجدية صوتية للماندرينية تُستعمل في تايوان (ㄅㄆㄇㄈ)، وتوضع في عمود بجانب كل حرف."],
+    ja: ["注音符号（ボポモフォ）", "台湾で使われる普通話の表音文字（ㄅㄆㄇㄈ）で、各字の脇に縦に並べて組みます。", "ちゅういんふごう"],
   }, "注音符号"),
   term("warichu", "cjk", {
     en: ["Warichu", "A note set in two half-size rows inside the line, the form of commentary in classical Chinese editions and of short glosses in Japanese books. The name is Japanese, 割注."],
@@ -607,6 +688,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["双行夹注", "在行内用两行半号小字排出的注文，是古籍中评注的形式，日文书籍也用它排简短的注释。日文称割注（warichu）。"],
     ca: ["Warichu", "Nota composta en dues files de mig cos dins de la mateixa línia, la forma dels comentaris en les edicions clàssiques xineses i de les glosses breus en els llibres japonesos. El nom és japonès, 割注."],
     ar: ["الشرح ذو السطرين (warichu)", "تعليق منضّد في سطرين بنصف الحجم داخل السطر، وهو شكل الشروح في الطبعات الصينية الكلاسيكية والتعليقات القصيرة في الكتب اليابانية. والاسم ياباني، 割注."],
+    ja: ["割注", "行の中に、半分の大きさの文字で2行に分けて組み込む注です。中国の古典の版本では注釈の形式として、日本の本では短い語釈として使われます。", "わりちゅう"],
   }, "双行夹注"),
   term("kaiming", "cjk", {
     en: ["Kaiming style", "A punctuation style that sets pause marks (、，) half-width and stops (。) full-width, a compromise between full-width and half-width setting."],
@@ -614,6 +696,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["开明式", "一种标点排法：顿号、逗号等点号排半角，句号等排全角，介于全角式与半角式之间。"],
     ca: ["Estil kaiming", "Estil de puntuació que compon les pauses (、，) a mitja amplada i els punts (。) a amplada completa, a mig camí entre les dues opcions."],
     ar: ["أسلوب كايمينغ (Kaiming)", "أسلوب ترقيم يجعل علامات الوقف (、，) بنصف العرض وعلامات الانتهاء (。) بكامل العرض، وهو حلّ وسط بين التنضيد بكامل العرض والتنضيد بنصفه."],
+    ja: ["開明式", "句読点の組み方の一つで、句中の区切りの記号（、，）を半角、句点（。）を全角で組みます。全角組みと半角組みの折衷です。", "かいめいしき"],
   }, "开明式"),
   term("fore-edge-heads", "cjk", {
     en: ["Fore-edge heads", "In vertical books, the chapter title and folio set down the outer margin of the page rather than across its top."],
@@ -621,6 +704,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书口书眉", "竖排书中沿页面外侧页边竖排的章名和页码，而不是横排在页面顶部。"],
     ca: ["Capçaleres al tall", "En els llibres verticals, el títol del capítol i el foli compostos al llarg del marge exterior de la pàgina i no a dalt."],
     ar: ["ترويسات الحافة الخارجية", "في الكتب العمودية، عنوان الفصل ورقم الصفحة منضّدان نزولًا على الهامش الخارجي للصفحة بدل أن يمتدا عبر أعلاها."],
+    ja: ["小口に置く柱", "縦組みの本で、章題とノンブルをページの上部に横に組む代わりに、外側の余白（小口）に縦に組むものです。", "こぐちにおくはしら"],
   }, "书口"),
 
   // ── Japanese layout ────────────────────────────────────────────────────
@@ -630,6 +714,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["日文汉字", "日文中使用的汉字，在正文中与假名混排。多数汉字有日语固有的读法（训读）和一个或多个源自汉语的读法（音读）；常用汉字表收录 2136 字。"],
     ca: ["Kanji", "Els caràcters xinesos tal com s'escriuen en japonès, barrejats amb els kana en el text. La majoria tenen una lectura japonesa (kun) i una o més de preses del xinès (on); 2.136 figuren a la llista d'ús comú (jōyō kanji)."],
     ar: ["الكانجي (kanji)", "الحروف الصينية كما تُكتب في اليابانية، ممزوجة بالكانا في النص. لأغلبها قراءة يابانية أصيلة (kun) وقراءة أو أكثر مأخوذة من الصينية (on). وتضم قائمة الاستعمال اليومي 2136 حرفًا، وتُسمّى jōyō kanji."],
+    ja: ["漢字", "日本語で使う漢字で、本文では仮名とまぜて書きます。多くは日本固有の読み（訓）と、中国語から取り入れた1つ以上の読み（音）を持ちます。日常使用の目安として2,136字が常用漢字に定められています。", "かんじ"],
   }, "漢字"),
   term("kana", "japanese", {
     en: ["Kana", "The two Japanese syllabaries, hiragana and katakana, in which each sign stands for a syllable. Japanese text mixes them with kanji."],
@@ -637,6 +722,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["假名", "日文的两套音节文字，即平假名和片假名，每个符号代表一个音节。日文把假名与汉字混合书写。"],
     ca: ["Kana", "Els dos sil·labaris japonesos, l'hiragana i el katakana, en què cada signe representa una síl·laba. El text japonès els barreja amb els kanji."],
     ar: ["الكانا (kana)", "المقطعيّتان اليابانيّتان، الهيراغانا والكاتاكانا، ويمثّل كل رمز فيهما مقطعًا صوتيًا. ويمزج النص الياباني بينهما وبين الكانجي."],
+    ja: ["仮名", "日本語の2つの音節文字、平仮名と片仮名で、1字が1音節を表します。日本語の文章は仮名と漢字をまぜて書きます。", "かな"],
   }, "仮名"),
   term("hiragana", "japanese", {
     en: ["Hiragana", "The rounded kana. It writes grammatical endings and particles, native words with no kanji or a rare one, and furigana."],
@@ -644,6 +730,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["平假名", "字形圆转的假名，用来书写词尾、助词、没有汉字或汉字生僻的日语固有词，以及振假名。"],
     ca: ["Hiragana", "El kana de traç arrodonit. S'hi escriuen les terminacions gramaticals i les partícules, les paraules japoneses sense kanji o amb un kanji poc comú, i el furigana."],
     ar: ["الهيراغانا (hiragana)", "الكانا ذات الخط المستدير، وتُكتب بها اللواحق النحوية والأدوات، والكلمات اليابانية التي لا كانجي لها أو لها كانجي نادر، وكذلك الفوريغانا."],
+    ja: ["平仮名", "丸みのある仮名です。活用語尾や助詞、漢字のない語や漢字が難しい和語、振り仮名を書くのに使います。", "ひらがな"],
   }, "平仮名"),
   term("katakana", "japanese", {
     en: ["Katakana", "The angular kana. It writes words taken from other languages (コーヒー, coffee), foreign names and sound words, and sometimes stands in for italics to stress a word."],
@@ -651,6 +738,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["片假名", "字形方折的假名，用来书写外来语（コーヒー，咖啡）、外国人名地名和拟声词，有时也像西文斜体那样用来强调某个词。"],
     ca: ["Katakana", "El kana de traç angulós. S'hi escriuen les paraules preses d'altres llengües (コーヒー, cafè), els noms estrangers i les onomatopeies, i de vegades fa de cursiva per remarcar una paraula."],
     ar: ["الكاتاكانا (katakana)", "الكانا ذات الخط الزاوي، وتُكتب بها الكلمات المأخوذة من لغات أخرى (コーヒー، أي القهوة) والأسماء الأجنبية وألفاظ المحاكاة الصوتية، وقد تقوم مقام الحروف المائلة لتوكيد كلمة."],
+    ja: ["片仮名", "角ばった仮名です。外来語（コーヒー、coffee）、外国の固有名詞、擬音語を書き、語を強調するためにイタリックの代わりに使うこともあります。", "かたかな"],
   }, "片仮名"),
   term("romaji", "japanese", {
     en: ["Rōmaji", "Japanese written in Latin letters. Books mostly use Hepburn romanisation, which marks long vowels with a macron: Tōkyō, Sōseki."],
@@ -658,6 +746,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["罗马字", "用拉丁字母书写的日文。书籍多用黑本式拼写，在长元音上加长音符号，如 Tōkyō、Sōseki。"],
     ca: ["Rōmaji", "El japonès escrit amb lletres llatines. Els llibres solen fer servir la transcripció Hepburn, que marca les vocals llargues amb un macró: Tōkyō, Sōseki."],
     ar: ["الروماجي (rōmaji)", "كتابة اليابانية بالحروف اللاتينية. وتستعمل الكتب في الغالب نظام هيبورن (Hepburn)، الذي يضع خطًا فوق الصوائت الطويلة: Tōkyō وSōseki."],
+    ja: ["ローマ字", "ラテン文字で書いた日本語です。本ではおもにヘボン式を使い、長音をマクロンで示します。例：Tōkyō、Sōseki。", "ろーまじ"],
   }, "ローマ字"),
   term("furigana", "japanese", {
     en: ["Furigana", "Small kana set over kanji (to their right in vertical text) to give the reading: in children's books, over rare characters and over names. It is the Japanese use of ruby."],
@@ -665,6 +754,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["振假名", "排在汉字上方（竖排时在右侧）标明读音的小号假名，用于儿童读物、生僻字和人名。它是日文中的注音（ruby）。"],
     ca: ["Furigana", "Kana petits que es posen damunt dels kanji (a la seva dreta en text vertical) per indicar-ne la lectura: als llibres infantils, damunt dels caràcters poc comuns i damunt dels noms. És l'ús japonès del ruby."],
     ar: ["الفوريغانا (furigana)", "كانا صغيرة توضع فوق الكانجي (وعلى يمينه في النص العمودي) لتبيّن قراءته: في كتب الأطفال، وفوق الحروف النادرة والأسماء. وهي الاستعمال الياباني للروبي."],
+    ja: ["振り仮名", "漢字の上（縦組みでは右）に小さく添えて読みを示す仮名です。児童書や、難しい漢字、人名に付けます。ルビの日本語での使い方です。", "ふりがな"],
   }, "振り仮名"),
   term("jukugo-ruby", "japanese", {
     en: ["Jukugo ruby", "Ruby for a compound of two or more kanji. Each reading sits over its own kanji, a longer one may spread over its neighbour in the same word, and the word may still break between its kanji at a line end."],
@@ -672,6 +762,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["熟语注音", "为两个以上汉字组成的词语加的注音。每个字的读音排在该字上方，较长的读音可以伸到同一词内相邻的字上，词语在行末仍可在字与字之间断开。"],
     ca: ["Ruby de compost (jukugo)", "Ruby d'una paraula composta de dos o més kanji. Cada lectura va damunt del seu kanji, una de més llarga es pot estendre sobre el kanji veí de la mateixa paraula, i la paraula encara es pot partir entre els seus kanji al final de la línia."],
     ar: ["روبي الكلمة المركبة (jukugo ruby)", "روبي لكلمة مركبة من كانجي اثنين أو أكثر. تقع كل قراءة فوق الكانجي الخاص بها، ويجوز للقراءة الأطول أن تمتد فوق الكانجي المجاور في الكلمة نفسها، ويبقى ممكنًا أن تنقسم الكلمة بين حروفها في نهاية السطر."],
+    ja: ["熟語ルビ", "2字以上の漢字からなる熟語に付けるルビです。それぞれの読みは対応する漢字の上に付き、長い読みは同じ語の隣の漢字にかかってもかまいません。行末では、熟語を漢字と漢字のあいだで分割できます。", "じゅくごるび"],
   }, "熟語ルビ"),
   term("group-ruby", "japanese", {
     en: ["Group ruby", "Ruby whose reading belongs to the whole word and is spread evenly over it, as for a name or a word with a special reading (今日 read きょう). The word never breaks across lines."],
@@ -679,6 +770,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["整词注音", "读音属于整个词语、均匀分布在整个词上方的注音，用于人名或读法特殊的词（今日读作きょう）。该词不会跨行断开。"],
     ca: ["Ruby de grup", "Ruby la lectura del qual correspon a la paraula sencera i es reparteix per igual sobre ella, com en un nom o en una paraula de lectura especial (今日, que es llegeix きょう). La paraula mai no es parteix entre dues línies."],
     ar: ["روبي المجموعة (group ruby)", "روبي تخص قراءته الكلمة كلها وتتوزع فوقها بالتساوي، كما في الأسماء أو في كلمة ذات قراءة خاصة (今日 وتُقرأ きょう). ولا تنقسم الكلمة بين سطرين أبدًا."],
+    ja: ["グループルビ", "読みが語全体に属し、語全体に均等に配置するルビです。人名や、特別な読みをする語（今日をきょうと読むなど）に使います。この語は行をまたいで分割しません。", "ぐるーぷるび"],
   }, "グループルビ"),
   term("boten", "japanese", {
     en: ["Bōten (kenten)", "Marks set beside each character to stress a word, the Japanese counterpart of italics: usually a sesame dot (﹅), over each character in horizontal text and to its right in vertical text. Chinese puts its emphasis dots under the text."],
@@ -686,6 +778,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["傍点与圈点", "加在每个字旁边、用来强调词语的符号，相当于西文的斜体。通常是芝麻点（﹅），横排时在字上方，竖排时在字右侧；中文的着重号则排在字下方。"],
     ca: ["Bōten (kenten)", "Marques que es posen al costat de cada caràcter per remarcar una paraula, l'equivalent japonès de la cursiva: sol ser un punt en forma de sèsam (﹅), damunt de cada caràcter en text horitzontal i a la seva dreta en text vertical. El xinès posa els seus punts d'èmfasi a sota."],
     ar: ["نقاط التوكيد اليابانية (bōten / kenten)", "علامات توضع بجانب كل حرف لتوكيد كلمة، وهي نظير الحروف المائلة في اليابانية: غالبًا نقطة على شكل حبة سمسم (﹅) فوق كل حرف في النص الأفقي وعلى يمينه في النص العمودي. أما الصينية فتضع نقاط التوكيد تحت النص."],
+    ja: ["傍点・圏点", "語を強調するために各文字の脇に付ける記号で、欧文のイタリックにあたります。ふつうはゴマ点（﹅）を使い、横組みでは各文字の上、縦組みでは右に付けます。中国語では強調の点を文字の下に付けます。", "ぼうてん"],
   }, "傍点・圏点"),
   term("bosen", "japanese", {
     en: ["Bōsen", "A line drawn beside a run of text, to its right in vertical writing and under it in horizontal, to stress it or mark a passage. It can be single, double, dashed or wavy."],
@@ -693,6 +786,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["傍线", "画在一段文字旁边的线，竖排时在右侧，横排时在下方，用于强调或标示某段文字。可为单线、双线、虚线或波浪线。"],
     ca: ["Bōsen", "Línia que es traça al costat d'un tram de text, a la seva dreta en l'escriptura vertical i a sota en l'horitzontal, per remarcar-lo o assenyalar un passatge. Pot ser simple, doble, discontínua o ondulada."],
     ar: ["الخط الجانبي (bōsen)", "خط يُرسم بجانب مقطع من النص، على يمينه في الكتابة العمودية وتحته في الأفقية، لتوكيده أو لتمييز فقرة. وقد يكون مفردًا أو مزدوجًا أو متقطعًا أو متموّجًا."],
+    ja: ["傍線", "文字列の脇（縦組みでは右、横組みでは下）に引く線で、強調や箇所の指示に使います。一重線、二重線、破線、波線があります。", "ぼうせん"],
   }, "傍線"),
   term("yakumono", "japanese", {
     en: ["Yakumono", "Japanese punctuation and other marks: brackets, 、 and 。, the middle dot ・, dashes and ellipses. Most are a full em wide, half glyph and half blank, and that blank is what the spacing rules compress or keep."],
@@ -700,6 +794,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["约物", "日文的标点及其他符号：括号、、和。、中点・、破折号和省略号。大多占一个 em，一半是字形一半是空白，间距规则挤压或保留的正是这部分空白。"],
     ca: ["Yakumono", "Els signes de puntuació i altres marques del japonès: parèntesis i cometes, 、 i 。, el punt central ・, guions i punts suspensius. Gairebé tots fan un quadratí, meitat glif i meitat blanc, i aquest blanc és el que les regles d'espaiat comprimeixen o conserven."],
     ar: ["علامات الياكومونو (yakumono)", "علامات الترقيم اليابانية وما يشبهها: الأقواس، و、 و。، والنقطة الوسطى ・، والشرطات، ونقاط الحذف. وعرض أغلبها em كامل، نصفه رسم ونصفه فراغ، وهذا الفراغ هو ما تضغطه قواعد التباعد أو تُبقيه."],
+    ja: ["約物", "日本語の句読点などの記号類で、括弧類、読点（、）と句点（。）、中黒（・）、ダッシュ、リーダーなどがあります。多くは全角幅で、半分が字形、半分が空きです。字間の規則が詰めたり残したりするのは、この空きです。", "やくもの"],
   }, "約物"),
   term("kinsoku-shori", "japanese", {
     en: ["Kinsoku shori", "The Japanese line-breaking rules: closing brackets, 、 and 。, small kana, ー and iteration marks may not start a line, and opening brackets may not end one. Books follow a strict set; newspapers a looser one that lets small kana and ー start a line."],
@@ -707,6 +802,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["禁则处理", "日文的断行规则：后括号、、和。、小写假名、长音符ー和叠字符不能出现在行首，前括号不能出现在行末。书籍采用严格的一套，报纸采用较宽松的一套，允许小写假名和ー出现在行首。"],
     ca: ["Kinsoku shori", "Les regles japoneses de tall de línia: els tancaments de parèntesis i cometes, 、 i 。, els kana petits, ー i els signes de repetició no poden obrir una línia, i les obertures no la poden tancar. Els llibres segueixen un joc estricte; els diaris, un de més laxe que deixa obrir línia als kana petits i a ー."],
     ar: ["معالجة الكنسوكو (kinsoku shori)", "قواعد تقسيم الأسطر في اليابانية: لا يبدأ السطر بقوس غالق ولا بـ、 أو 。 ولا بكانا صغيرة ولا بـ ー ولا بعلامات التكرار، ولا ينتهي بقوس فاتح. وتتبع الكتب مجموعة صارمة، والصحف مجموعة أخفّ تسمح بأن يبدأ السطر بكانا صغيرة أو بـ ー."],
+    ja: ["禁則処理", "日本語の改行規則です。閉じ括弧、読点と句点、小書き仮名、長音符（ー）、繰り返し記号は行頭に置けず、開き括弧は行末に置けません。書籍は厳しい規則に従い、新聞は小書き仮名やーの行頭を認めるゆるい規則に従います。", "きんそくしょり"],
   }, "禁則処理"),
   term("oikomi-oidashi", "japanese", {
     en: ["Oikomi and oidashi", "The two ways to keep a forbidden mark off the start of a line: oikomi tightens the line so the mark fits at its end; oidashi sends the line's last character down with the mark and spaces out what remains. JLReq prefers oikomi."],
@@ -714,6 +810,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["追入与追出", "避免禁则符号落到行首的两种方法：追入压紧本行，把符号收进行末；追出把本行最后一个字连同符号移到下一行，再把本行剩下的部分拉开。JLReq 优先采用追入。"],
     ca: ["Oikomi i oidashi", "Les dues maneres d'evitar que un signe prohibit obri una línia: l'oikomi estreny la línia perquè el signe hi càpiga al final; l'oidashi baixa l'últim caràcter a la línia següent juntament amb el signe i reparteix l'espai en el que queda. JLReq prefereix l'oikomi."],
     ar: ["الإدخال والإخراج (oikomi وoidashi)", "طريقتان لمنع علامة ممنوعة من أن تبدأ السطر: الـoikomi يضغط السطر حتى تتسع العلامة في آخره، والـoidashi ينقل آخر حرف في السطر مع العلامة إلى السطر التالي ويوزّع الفراغ على ما بقي. ويفضّل JLReq الإدخال."],
+    ja: ["追い込み・追い出し", "行頭禁則の記号を行頭に来させないための2つの方法です。追い込みは行を詰めてその記号を行末に収め、追い出しは行の最後の文字を記号と一緒に次の行に送り、残りの字間を広げます。JLReqは追い込みを優先します。", "おいこみおいだし"],
   }, "追い込み・追い出し"),
   term("burasagari", "japanese", {
     en: ["Burasagari", "Hanging 、 or 。 just past the end of a full line instead of moving a character down. Japanese books do it only for these marks (and ， and ．), and only when the mark would otherwise start the next line."],
@@ -721,6 +818,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["行末悬挂", "把、或。悬在满行的行末之外，而不是把一个字移到下一行。日文书籍只对这几个符号（以及，和．）这样处理，而且只在符号否则会落到下一行行首时才用。"],
     ca: ["Burasagari", "Penjar 、 o 。 just fora del final d'una línia plena en lloc de baixar un caràcter. Els llibres japonesos només ho fan amb aquests signes (i amb ， i ．), i només quan el signe, si no, obriria la línia següent."],
     ar: ["التعليق (burasagari)", "تعليق 、 أو 。 بعد نهاية سطر ممتلئ مباشرةً بدل إنزال حرف إلى السطر التالي. ولا تفعل ذلك الكتب اليابانية إلا مع هذه العلامات (ومع ， و．)، وحين تكون العلامة ستبدأ السطر التالي لولا ذلك."],
+    ja: ["ぶら下げ", "行末の読点や句点を、文字を次の行に送る代わりに、行のすぐ外側にはみ出させて組むことです。日本の本では、これらの記号（と，や．）に限って、しかもその記号が次の行頭に来てしまう場合にだけ行います。", "ぶらさげ"],
   }, "ぶら下げ"),
   term("gyodori", "japanese", {
     en: ["Gyōdori", "Sizing a heading by the body lines it takes up: a heading set 3行取り is centred in the space of three lines, so the text after it stays on the line grid."],
@@ -728,6 +826,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["占行", "以正文行数确定标题所占的空间：“3行取り”（占三行）的标题在三行的空间里居中，后面的正文仍落在行网格上。"],
     ca: ["Gyōdori", "Mesurar l'espai d'un títol en línies de text: un títol a 3行取り es centra en l'espai de tres línies, de manera que el text que el segueix es manté a la retícula de línies."],
     ar: ["حجز الأسطر (gyōdori)", "تحديد المساحة التي يشغلها العنوان بعدد أسطر المتن: العنوان المنضّد 3行取り يتوسّط مساحة ثلاثة أسطر، فيبقى النص الذي يليه على شبكة الأسطر."],
+    ja: ["行取り", "見出しの大きさを、本文の何行分を占めるかで指定することです。3行取りの見出しは3行分の空きの中央に置かれるため、後続の本文は行のグリッドに乗ったままになります。", "ぎょうどり"],
   }, "行取り"),
   term("gojuon", "japanese", {
     en: ["Gojūon order", "The order of the kana table, あいうえお, かきくけこ and so on: one row per consonant, five vowels to a row. Japanese dictionaries and indexes sort by it, using each entry's reading in kana."],
@@ -735,6 +834,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["五十音顺序", "假名表的排列顺序，即あいうえお、かきくけこ等：每个辅音一行，每行五个元音。日文词典和索引按各条目的假名读音以此排序。"],
     ca: ["Ordre gojūon", "L'ordre de la taula dels kana, あいうえお, かきくけこ i així successivament: una fila per consonant, amb cinc vocals cadascuna. Els diccionaris i els índexs japonesos s'ordenen així, per la lectura en kana de cada entrada."],
     ar: ["ترتيب الغوجوأون (gojūon)", "ترتيب جدول الكانا: あいうえお ثم かきくけこ وهكذا، صفًا لكل حرف ساكن، في كل صف خمسة صوائت. وعليه تُرتَّب المعاجم والفهارس اليابانية، بحسب قراءة كل مدخل بالكانا."],
+    ja: ["五十音順", "あいうえお、かきくけこ…と続く仮名の表の順序で、子音ごとに1行、1行に5つの母音が並びます。日本語の辞書や索引は、各項目の仮名の読みを使ってこの順に並べます。", "ごじゅうおんじゅん"],
   }, "五十音"),
   term("yomi", "japanese", {
     en: ["Yomi", "The reading of a word written in kanji, spelled out in kana. An index files kanji entries by their yomi, and furigana prints it on the page."],
@@ -742,6 +842,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["读音", "用假名拼出的汉字词读法。索引按读音排列汉字条目，振假名则把读音印在页面上。"],
     ca: ["Yomi", "La lectura d'una paraula escrita amb kanji, lletrejada en kana. Els índexs ordenen les entrades amb kanji pel seu yomi, i el furigana la imprimeix a la pàgina."],
     ar: ["القراءة (yomi)", "قراءة كلمة مكتوبة بالكانجي، مكتوبةً بالكانا. وتُرتَّب مداخل الكانجي في الفهرس بحسب قراءتها، وتطبعها الفوريغانا على الصفحة."],
+    ja: ["読み", "漢字で書かれた語の読み方を仮名で書いたものです。索引は漢字の項目を読みで並べ、振り仮名は読みをページに印刷します。", "よみ"],
   }, "読み"),
   term("hashira", "japanese", {
     en: ["Hashira", "The running head of a Japanese book: the book, part or chapter title set small in a margin, often on only one page of each spread."],
@@ -749,6 +850,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书眉（hashira）", "日文书籍的书眉：以小字排在页边的书名、篇名或章名，常常每个跨页只排一页。"],
     ca: ["Hashira", "La capçalera d'un llibre japonès: el títol del llibre, de la part o del capítol en cos petit en un marge, sovint només en una pàgina de cada doble pàgina."],
     ar: ["الترويسة اليابانية (hashira)", "ترويسة الكتاب الياباني: عنوان الكتاب أو الجزء أو الفصل منضّدًا بحرف صغير في أحد الهوامش، وكثيرًا ما يُطبع في صفحة واحدة فقط من كل صفحتين متقابلتين."],
+    ja: ["柱", "日本の本で、書名や部・章の題を余白に小さく組んだものです。見開きのうち片方のページにだけ置くことがよくあります。", "はしら"],
   }, "柱"),
   term("nombre", "japanese", {
     en: ["Nombre", "The page number, in the words of Japanese printers, who took it from French. It is usually in Arabic numerals, even in vertical books; a folio set vertically uses kanji numerals (一, 二, 三)."],
@@ -756,6 +858,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["页码（nombre）", "日本印刷业对页码的叫法，借自法语。即使是竖排书，页码通常也用阿拉伯数字；竖排的页码则用汉字数字（一、二、三）。"],
     ca: ["Nombre", "El número de pàgina, en l'argot de la impremta japonesa, que va prendre la paraula del francès. Sol anar en xifres aràbigues, fins i tot als llibres verticals; un foli compost en vertical fa servir numerals kanji (一, 二, 三)."],
     ar: ["رقم الصفحة (nombre)", "رقم الصفحة بلغة الطباعة اليابانية، التي أخذت الكلمة من الفرنسية. ويُكتب عادةً بأرقام مثل 1 و2 و3 حتى في الكتب العمودية، أما الرقم المنضّد عموديًا فيُكتب بأرقام الكانجي (一، 二، 三)."],
+    ja: ["ノンブル", "ページ番号を指す日本の印刷用語で、フランス語から取り入れたものです。縦組みの本でもふつうはアラビア数字で、縦に組むノンブルには漢数字（一、二、三）を使います。", "のんぶる"],
   }, "ノンブル"),
   term("bunko", "japanese", {
     en: ["Bunko", "The Japanese pocket paperback, A6 (105 × 148 mm) and usually set vertically: the cheap edition a novel gets a few years after its first one (tankōbon)."],
@@ -763,6 +866,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["文库本", "日本的口袋平装书，A6 开本（105 × 148 mm），多为竖排，是小说在初版单行本之后几年推出的廉价版本。"],
     ca: ["Bunko", "El llibre de butxaca japonès, en A6 (105 × 148 mm) i gairebé sempre compost en vertical: l'edició barata que rep una novel·la uns anys després de la primera (tankōbon)."],
     ar: ["البونكو (bunko)", "كتاب الجيب الياباني بقطع A6 (105 × 148 mm)، ويُنضّد في الغالب عموديًا، وهو الطبعة الرخيصة التي تصدر للرواية بعد بضع سنوات من طبعتها الأولى (tankōbon)."],
+    ja: ["文庫", "日本のポケット判のペーパーバックで、A6判（105×148mm）、ふつうは縦組みです。小説の最初の版（単行本）から数年後に出る廉価版です。", "ぶんこ"],
   }, "文庫"),
   term("tankobon", "japanese", {
     en: ["Tankōbon", "A book published as a volume of its own, not in a magazine or a pocket series: the first edition of a novel, larger than a bunko (often 四六判, about 127 × 188 mm), and the collected volumes of a manga."],
@@ -770,6 +874,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["单行本", "单独成册出版的书，而非刊载于杂志或收入口袋丛书：小说的初版，开本比文库本大（常为四六判，约 127 × 188 mm），也指漫画的结集本。"],
     ca: ["Tankōbon", "Llibre publicat com a volum propi, no en una revista ni en una col·lecció de butxaca: la primera edició d'una novel·la, més gran que un bunko (sovint 四六判, uns 127 × 188 mm), i els volums recopilatoris d'un manga."],
     ar: ["التانكوبون (tankōbon)", "كتاب يصدر في مجلد مستقل، لا في مجلة ولا في سلسلة كتب الجيب: الطبعة الأولى للرواية، وهي أكبر من البونكو (غالبًا بقطع 四六判، نحو 127 × 188 mm)، وكذلك المجلدات التي تجمع فصول المانغا."],
+    ja: ["単行本", "雑誌や文庫のようなシリーズに入れず、独立した1冊として出版する本です。小説の最初の版は文庫より大きく（多くは四六判、約127×188mm）、マンガの連載をまとめた巻もこう呼びます。", "たんこうぼん"],
   }, "単行本"),
   term("genko-yoshi", "japanese", {
     en: ["Genkō yōshi", "Japanese manuscript paper with a grid of squares, usually 20 by 20, one character or mark to a square. Lengths are still counted in these 400-character sheets."],
@@ -777,6 +882,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["稿纸", "印有方格的日文稿纸，通常为 20 × 20 格，每格写一个字或一个符号。至今仍以这种 400 字的稿纸计算篇幅。"],
     ca: ["Genkō yōshi", "Paper de manuscrit japonès amb una quadrícula, normalment de 20 per 20, amb un caràcter o un signe a cada casella. Les extensions encara es compten en aquests fulls de 400 caràcters."],
     ar: ["ورق المخطوطات الياباني (genkō yōshi)", "ورق للكتابة اليابانية مقسّم إلى مربعات، عادةً 20 في 20، في كل مربع حرف أو علامة واحدة. وما زال طول النصوص يُحسب بعدد هذه الأوراق ذات الأربعمئة حرف."],
+    ja: ["原稿用紙", "マス目を格子状に印刷した日本の筆記用紙で、ふつうは20×20マス、1マスに1字または1記号を書きます。文章の長さは今もこの400字詰めの枚数で数えます。", "げんこうようし"],
   }, "原稿用紙"),
   term("aozora-notation", "japanese", {
     en: ["Aozora Bunko notation", "The plain-text markup of Aozora Bunko, the Japanese online library of out-of-copyright books: ruby written 漢字《かんじ》, and notes in ［＃…］ that call for emphasis marks, indents, headings, page breaks and characters outside the usual set."],
@@ -784,6 +890,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["青空文库标记", "日本网上公版书库青空文库使用的纯文本标记：注音写作 漢字《かんじ》，［＃…］中的注记则指定着重号、缩进、标题、换页以及常用字符集以外的字。"],
     ca: ["Notació d'Aozora Bunko", "El marcatge en text pla d'Aozora Bunko, la biblioteca japonesa en línia de llibres de domini públic: el ruby s'escriu 漢字《かんじ》, i unes notes entre ［＃…］ demanen marques d'èmfasi, sagnats, títols, salts de pàgina i caràcters fora del joc habitual."],
     ar: ["ترميز أوزورا بونكو (Aozora Bunko)", "الترميز بالنص الخام الذي تستعمله أوزورا بونكو، المكتبة اليابانية على الإنترنت لكتب الملك العام: يُكتب الروبي هكذا 漢字《かんじ》، وتطلب ملاحظات بين ［＃…］ نقاط التوكيد والمسافات البادئة والعناوين وفواصل الصفحات والحروف الخارجة عن المجموعة المعتادة."],
+    ja: ["青空文庫注記", "著作権の切れた本を公開する日本のオンライン図書館、青空文庫のプレーンテキスト用の記法です。ルビは漢字《かんじ》と書き、［＃…］の注記で傍点、字下げ、見出し、改ページ、通常の文字集合にない文字を指定します。", "あおぞらぶんこちゅうき"],
   }, "青空文庫注記"),
   term("gaiji", "japanese", {
     en: ["Gaiji", "A character outside the standard character set, such as a rare kanji variant. Aozora Bunko texts describe each one in a note and give its JIS X 0213 position or its Unicode code point when it has one."],
@@ -791,6 +898,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["外字", "标准字符集以外的字，例如罕见的汉字异体。青空文库的文本用注记描述每个外字，有对应时注明其 JIS X 0213 位置或 Unicode 码位。"],
     ca: ["Gaiji", "Caràcter que queda fora del joc de caràcters estàndard, com una variant rara d'un kanji. Els textos d'Aozora Bunko descriuen cadascun en una nota i en donen la posició a JIS X 0213 o el punt de codi Unicode quan en té."],
     ar: ["الحرف الخارجي (gaiji)", "حرف خارج مجموعة الحروف المعيارية، كصيغة نادرة من كانجي. وتصف نصوص أوزورا بونكو كل حرف منها في ملاحظة، وتذكر موضعه في JIS X 0213 أو رمزه في Unicode إن كان له رمز."],
+    ja: ["外字", "まれな漢字の異体字のように、標準の文字集合にない文字です。青空文庫のテキストは外字を1字ずつ注記で説明し、JIS X 0213の位置やUnicodeのコードポイントがあればそれも記します。", "がいじ"],
   }, "外字"),
   term("choon", "japanese", {
     en: ["Chōon mark", "The long-vowel mark ー, used mostly in katakana (コーヒー). In vertical text it turns to run down the column, and it may not start a line."],
@@ -798,6 +906,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["长音符", "表示长元音的符号ー，主要用于片假名（コーヒー）。竖排时转为竖向，且不能出现在行首。"],
     ca: ["Chōon", "El signe de vocal llarga ー, propi sobretot del katakana (コーヒー). En text vertical gira per córrer al llarg de la columna, i no pot obrir una línia."],
     ar: ["علامة المدّ (chōon)", "علامة الصائت الطويل ー، وتُستعمل غالبًا مع الكاتاكانا (コーヒー). وفي النص العمودي تدور لتمتد مع العمود، ولا يجوز أن يبدأ بها سطر."],
+    ja: ["長音符", "長音を表す記号ーで、おもに片仮名で使います（コーヒー）。縦組みでは向きを変えて行の方向に伸び、行頭には置けません。", "ちょうおんぷ"],
   }, "長音符"),
   term("small-kana", "japanese", {
     en: ["Small kana", "The reduced kana that attach to the sign before them: っ (sokuon) doubles the next consonant, ゃ ゅ ょ make contracted sounds, ァ ィ ゥ ェ ォ spell loanwords. Strict kinsoku keeps them off the start of a line; in vertical text they sit toward the upper right of their cell."],
@@ -805,6 +914,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["小写假名", "依附于前一个假名的缩小假名：っ（促音）使后一个辅音重叠，ゃゅょ构成拗音，ァィゥェォ用于书写外来语。严格的禁则不让它们出现在行首；竖排时它们偏向字格的右上方。"],
     ca: ["Kana petits", "Els kana reduïts que s'uneixen al signe anterior: っ (sokuon) dobla la consonant següent, ゃ ゅ ょ formen síl·labes contretes, ァ ィ ゥ ェ ォ serveixen per escriure manlleus. El kinsoku estricte no els deixa obrir línia; en text vertical es col·loquen cap a la part superior dreta de la seva cel·la."],
     ar: ["الكانا الصغيرة (small kana)", "كانا مصغّرة تلتصق بالرمز الذي قبلها: っ (sokuon) تضاعف الحرف الساكن التالي، وゃ وゅ وょ تكوّن المقاطع المدمجة، وァ وィ وゥ وェ وォ تُكتب بها الكلمات المقترضة. وتمنعها قواعد الكنسوكو الصارمة من بدء السطر، وفي النص العمودي تميل إلى أعلى يمين خانتها."],
+    ja: ["小書き仮名", "前の仮名に付く小さな仮名です。っ（促音）は次の子音を重ね、ゃゅょは拗音を作り、ァィゥェォは外来語を書くのに使います。厳しい禁則では行頭に置かず、縦組みでは枠の右上寄りに置きます。", "こがきかな"],
   }, "小書き仮名"),
   term("bochu", "japanese", {
     en: ["Bōchū", "Sidenotes in a vertical book: the notes of a spread gathered on the fore-edge side of its left-hand page, after the last line of text. They interrupt the reading least, though endnotes are more common."],
@@ -812,6 +922,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["旁注", "竖排书的边注：一个跨页的注释集中排在左页靠书口一侧、正文最后一行之后。对阅读的打扰最小，但不如后注常见。"],
     ca: ["Bōchū", "Notes laterals d'un llibre vertical: les notes d'una doble pàgina reunides al costat del tall de la seva pàgina esquerra, després de l'última línia de text. Són les que menys interrompen la lectura, tot i que les notes finals són més freqüents."],
     ar: ["الحواشي الجانبية (bōchū)", "حواشي الكتاب العمودي: تُجمع حواشي الصفحتين المتقابلتين على جهة الحافة الخارجية من الصفحة اليسرى، بعد آخر سطر من النص. وهي أقل الحواشي قطعًا للقراءة، وإن كانت الحواشي الختامية أكثر شيوعًا."],
+    ja: ["傍注", "縦組みの本で、見開きの注を左ページの小口側、本文の最終行のあとにまとめたものです。読書をもっとも妨げにくい形ですが、後注のほうが一般的です。", "ぼうちゅう"],
   }, "傍注"),
   term("kochu", "japanese", {
     en: ["Kōchū", "Notes gathered after the text they belong to: at the end of a paragraph, a section, a chapter or the book. They are the usual notes in vertical books, where footnotes are rare."],
@@ -819,6 +930,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["后注", "集中排在所属文字之后的注释：位于段落、节、章或全书末尾。是竖排书最常见的注释形式，竖排书很少用脚注。"],
     ca: ["Kōchū", "Notes reunides després del text a què pertanyen: al final d'un paràgraf, d'una secció, d'un capítol o del llibre. Són les notes habituals als llibres verticals, on les notes a peu de pàgina són rares."],
     ar: ["الحواشي الختامية (kōchū)", "حواشٍ تُجمع بعد النص الذي تخصه: في آخر الفقرة أو القسم أو الفصل أو الكتاب. وهي الحواشي المعتادة في الكتب العمودية، التي يندر فيها استعمال الحواشي السفلية."],
+    ja: ["後注", "注を、それが属する本文のあと、つまり段落・節・章・本の終わりにまとめたものです。脚注がまれな縦組みの本では、これが一般的な注です。", "こうちゅう"],
   }, "後注"),
   term("kunten", "japanese", {
     en: ["Kunten", "Reading marks added to classical Chinese (kanbun) so a Japanese reader can read it in Japanese order. In vertical text, kaeriten (レ, 一, 二, 上, 下) at the lower left of a character show where to jump back, and okurigana in small katakana at the lower right add the Japanese endings; the characters themselves are not reordered."],
@@ -826,6 +938,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["训点", "为汉文（文言文）加的阅读符号，使日本读者能按日语语序阅读。竖排时，返点（レ、一、二、上、下）标在字的左下方，指示回读的位置；送假名以小号片假名标在右下方，补出日语词尾。原文的字序不变。"],
     ca: ["Kunten", "Marques de lectura que s'afegeixen al xinès clàssic (kanbun) perquè un lector japonès el llegeixi en l'ordre del japonès. En text vertical, els kaeriten (レ, 一, 二, 上, 下), a baix a l'esquerra d'un caràcter, indiquen on cal tornar, i els okurigana, en katakana petit a baix a la dreta, hi afegeixen les terminacions japoneses; els caràcters no es reordenen."],
     ar: ["علامات القراءة (kunten)", "علامات تُضاف إلى النص الصيني الكلاسيكي (kanbun) ليقرأه القارئ الياباني بترتيب اليابانية. ففي النص العمودي تبيّن علامات الرجوع (kaeriten: レ و一 و二 و上 و下) أسفل يسار الحرف إلى أين يُرجع، وتضيف الـokurigana بالكاتاكانا الصغيرة أسفل يمينه اللواحق اليابانية، ولا يُعاد ترتيب الحروف نفسها."],
+    ja: ["訓点・返り点", "漢文（古典中国語）を日本語の語順で読めるように付ける記号です。縦組みでは、文字の左下に付ける返り点（レ、一、二、上、下）が戻って読む位置を示し、右下に小さな片仮名で付ける送り仮名が日本語の語尾を補います。文字そのものは並べ替えません。", "くんてん"],
   }, "訓点・返り点"),
   term("jlreq", "japanese", {
     en: ["JLReq", "Requirements for Japanese Text Layout, the W3C document, in Japanese and English, that describes how Japanese text is set. It follows JIS X 4051; the Postext docs cite it by section."],
@@ -833,6 +946,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["JLReq", "W3C 的《日文排版需求》，以日英两种语言描述日文文本的排版规则。它以 JIS X 4051 为基础，Postext 文档按章节引用它。"],
     ca: ["JLReq", "Requirements for Japanese Text Layout, el document del W3C, en japonès i en anglès, que descriu com es compon el text japonès. Segueix la norma JIS X 4051; la documentació de Postext el cita per apartats."],
     ar: ["JLReq", "متطلبات تخطيط النص الياباني (Requirements for Japanese Text Layout)، وهي وثيقة W3C باليابانية والإنجليزية تصف طريقة تنضيد النص الياباني. وتتبع معيار JIS X 4051، ويستشهد بها توثيق Postext بأرقام أقسامها."],
+    ja: ["JLReq（日本語組版処理の要件）", "日本語の組み方を記述したW3Cの文書で、日本語と英語で書かれています。JIS X 4051に基づいており、Postextのドキュメントは節番号を挙げて引用します。", "じぇいえるりく"],
   }, "日本語組版処理の要件"),
   term("jis-x-4051", "japanese", {
     en: ["JIS X 4051", "The Japanese Industrial Standard for the composition of Japanese documents, first issued in 1993 and last revised in 2004. JLReq describes the same rules in English."],
@@ -840,6 +954,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["JIS X 4051", "日本工业标准中关于日文文档排版方法的标准，1993 年首次发布，2004 年最近一次修订。JLReq 用英文阐述了同样的规则。"],
     ca: ["JIS X 4051", "La norma industrial japonesa sobre la composició de documents en japonès, publicada el 1993 i revisada per última vegada el 2004. JLReq descriu les mateixes regles en anglès."],
     ar: ["JIS X 4051", "المعيار الصناعي الياباني لتنضيد الوثائق اليابانية، صدر أول مرة سنة 1993 ونُقّح آخر مرة سنة 2004. ويعرض JLReq القواعد نفسها بالإنجليزية."],
+    ja: ["JIS X 4051（日本語文書の組版方法）", "日本語文書の組版方法を定めた日本産業規格で、1993年に制定され、2004年に最後に改正されました。JLReqは同じ規則を英語でも記述しています。", "じすえっくすよんまるごいち"],
   }, "日本語文書の組版方法"),
 
   // ── Arabic layout ──────────────────────────────────────────────────────
@@ -849,6 +964,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["双向文字", "从右到左书写的文字（如阿拉伯文）与从左到右阅读的数字和拉丁词混排的文本。每行中各段的顺序由Unicode双向算法决定。"],
     ca: ["Text bidireccional", "Text que barreja escriptures de dreta a esquerra, com l'àrab, amb nombres i paraules llatines que es llegeixen d'esquerra a dreta. L'algorisme bidireccional d'Unicode decideix l'ordre dels trams a cada línia."],
     ar: ["النص ثنائي الاتجاه", "نص يمزج كتابات تُكتب من اليمين إلى اليسار، كالعربية، بأرقام وكلمات لاتينية تُقرأ من اليسار إلى اليمين. وتحدد خوارزمية الاتجاه الثنائي في Unicode ترتيب القطع في كل سطر."],
+    ja: ["双方向テキスト", "アラビア語のように右から左へ書く文字と、左から右へ読む数字やラテン文字の単語がまじったテキストです。各行での並び順はUnicode双方向アルゴリズムが決めます。", "そうほうこうてきすと"],
   }),
   term("bidi-isolate", "arabic", {
     en: ["Isolate", "A run of text ordered on its own inside a paragraph of the other direction, which the paragraph treats as a single neutral character. In Postext it is written :ltr[…] or :rtl[…]."],
@@ -856,6 +972,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["隔离段", "在另一方向的段落中单独排序的一段文字，段落只把它当作一个中性字符。在Postext中写作:ltr[…]或:rtl[…]。"],
     ca: ["Aïllament", "Tram de text que s'ordena pel seu compte dins d'un paràgraf de l'altra direcció, i que el paràgraf tracta com un sol caràcter neutre. A Postext s'escriu :ltr[…] o :rtl[…]."],
     ar: ["المقطع المعزول (isolate)", "مقطع نصي يُرتَّب وحده داخل فقرة ذات اتجاه معاكس، وتعامله الفقرة كأنه حرف محايد واحد. ويُكتب في Postext هكذا: :ltr[…] أو :rtl[…]."],
+    ja: ["アイソレート", "反対方向の段落の中で独立して並び順が決まる文字列で、段落からは1つの中立文字として扱われます。Postextでは:ltr[…]または:rtl[…]と書きます。", "あいそれーと"],
   }),
   term("kashida", "arabic", {
     en: ["Kashida", "The lengthened join between two connected Arabic letters, used to stretch a justified line instead of spacing its letters apart. Postext inserts it as tatweel characters."],
@@ -863,6 +980,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["卡希达（kashida）", "两个相连的阿拉伯字母之间拉长的连笔，用来拉伸两端对齐的行，而不是拉开字母间距。Postext以tatweel字符插入它。"],
     ca: ["Caixida", "Enllaç allargat entre dues lletres àrabs unides, amb què s'estira una línia justificada en lloc de separar-ne les lletres. Postext la insereix com a caràcters tatweel."],
     ar: ["الكشيدة", "الوصلة الممدودة بين حرفين عربيين متصلين، تُستعمل لمدّ السطر المضبوط بدل تفريق حروفه. ويدرجها Postext على هيئة محارف تطويل (tatweel)."],
+    ja: ["カシーダ", "つながった2つのアラビア文字のあいだの接続を伸ばしたもので、文字の間隔を空ける代わりに、両端そろえの行を伸ばすのに使います。Postextはこれをタトウィール文字として挿入します。", "かしーだ"],
   }, "كشيدة"),
   term("tatweel", "arabic", {
     en: ["Tatweel", "The Arabic elongation character (U+0640, ـ), a stretch of baseline stroke between two joined letters. A run of them draws a kashida."],
@@ -870,6 +988,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["tatweel", "阿拉伯文的延长字符（U+0640，ـ），是两个相连字母之间的一段基线笔画。几个连在一起就画出一个卡希达。"],
     ca: ["Tatweel", "Caràcter àrab d'allargament (U+0640, ـ), un tros de traç de base entre dues lletres unides. Una sèrie de tatweels dibuixa una caixida."],
     ar: ["التطويل", "محرف المدّ العربي (U+0640، ـ)، وهو امتداد لخط الأساس بين حرفين متصلين. وسلسلة منه ترسم كشيدة."],
+    ja: ["タトウィール", "アラビア語の引き伸ばし文字（U+0640、ـ）で、つながった2文字のあいだでベースライン上の線を延ばします。これを連ねるとカシーダになります。", "たとうぃーる"],
   }, "تطويل"),
   term("harakat", "arabic", {
     en: ["Harakat", "The Arabic vowel marks written above and below the letters, such as fatḥa, kasra and shadda. Fully vocalised text needs more leading."],
@@ -877,6 +996,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["元音符号（harakat）", "写在阿拉伯字母上下的元音符号，如fatḥa、kasra和shadda。完全标注元音的文本需要更大的行距。"],
     ca: ["Harakat", "Signes vocàlics àrabs que s'escriuen damunt i davall de les lletres, com la fatḥa, la kasra i la shadda. El text vocalitzat del tot necessita més interlineat."],
     ar: ["الحركات", "علامات الحركات التي تُكتب فوق الحروف العربية وتحتها، كالفتحة والكسرة والشدّة. ويحتاج النص المشكول بالكامل إلى تباعد أسطر أكبر."],
+    ja: ["ハラカート", "文字の上下に書くアラビア語の母音記号で、ファトハ、カスラ、シャッダなどがあります。母音記号をすべて付けたテキストには、より大きな行送りが必要です。", "はらかーと"],
   }, "حركات"),
   term("tashkil", "arabic", {
     en: ["Tashkīl", "The vocalisation of an Arabic text, that is the set of vowel marks it carries. An edition may print it in full, in part or not at all."],
@@ -884,6 +1004,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["标音（tashkīl）", "阿拉伯文文本的元音标注，即它所带的全部元音符号。一个版本可以全部印出、部分印出或完全不印。"],
     ca: ["Tashkīl", "Vocalització d'un text àrab, és a dir, el conjunt de signes vocàlics que porta. Una edició la pot imprimir sencera, en part o gens."],
     ar: ["التشكيل", "ضبط النص العربي بالحركات، أي مجموعة علامات الحركات التي يحملها. وقد تطبعه الطبعة كاملًا أو جزئيًا أو لا تطبعه أبدًا."],
+    ja: ["タシュキール", "アラビア語のテキストの母音表記、つまりそのテキストに付けた母音記号の全体です。版によって、すべて付ける、一部だけ付ける、まったく付けないのいずれかになります。", "たしゅきーる"],
   }, "تشكيل"),
   term("abjad", "arabic", {
     en: ["Abjad numerals", "Numbers written with Arabic letters, each worth a fixed value (ا 1, ي 10, ق 100, غ 1000) and added up. Classical books use them for front matter and dates."],
@@ -891,6 +1012,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["阿布杰德数码", "用阿拉伯字母书写的数，每个字母代表固定数值（ا为1，ي为10，ق为100，غ为1000），相加得数。古典书籍用于前置部分页码和纪年。"],
     ca: ["Numeració abjad", "Nombres escrits amb lletres àrabs, cadascuna amb un valor fix (ا 1, ي 10, ق 100, غ 1000) que se sumen. Els llibres clàssics la fan servir als preliminars i a les dates."],
     ar: ["الأرقام الأبجدية (حساب الجمّل)", "أعداد تُكتب بالحروف العربية، لكل حرف قيمة ثابتة (ا 1، ي 10، ق 100، غ 1000) وتُجمع القيم. وتستعملها الكتب التراثية في الصفحات التمهيدية وفي التواريخ."],
+    ja: ["アブジャド数字", "アラビア文字で書く数で、各文字が決まった値（ا 1、ي 10、ق 100、غ 1000）を持ち、それを足し合わせます。古典籍では前付けや日付に使います。", "あぶじゃどすうじ"],
   }, "أبجد"),
   term("bayt", "arabic", {
     en: ["Bayt", "A verse of classical Arabic poetry, set on one line in two halves: the first (ṣadr) on the right and the second (ʿajuz) on the left."],
@@ -898,6 +1020,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["联（bayt）", "古典阿拉伯诗歌的一句诗，排在一行内，分为两半：前半（ṣadr）在右，后半（ʿajuz）在左。"],
     ca: ["Bayt", "Vers de la poesia àrab clàssica, compost en una línia en dues meitats: la primera (ṣadr) a la dreta i la segona (ʿajuz) a l'esquerra."],
     ar: ["البيت", "بيت من الشعر العربي الكلاسيكي، يُنضَّد في سطر واحد على شطرين: الأول (الصدر) في اليمين، والثاني (العجز) في اليسار."],
+    ja: ["バイト（詩行）", "古典アラビア詩の1詩行で、2つの半句に分けて1行に組みます。前半（サドル）が右、後半（アジュズ）が左です。", "ばいと"],
   }, "بيت"),
   term("hemistich", "arabic", {
     en: ["Hemistich", "One half of a verse. In an Arabic poem every hemistich is set to one common width, so the rhyme letters line up down the page."],
@@ -905,6 +1028,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["半行", "一句诗的一半。阿拉伯诗中每个半行都排成相同的宽度，使韵脚字母上下对齐。"],
     ca: ["Hemistiqui", "Cadascuna de les dues meitats d'un vers. En un poema àrab tots els hemistiquis es componen a una mateixa amplada, de manera que les lletres de la rima s'alineen al llarg de la pàgina."],
     ar: ["الشطر", "نصف البيت. في القصيدة العربية يُنضَّد كل شطر بعرض واحد مشترك، فتتحاذى حروف القافية عموديًا على طول الصفحة."],
+    ja: ["半句", "詩行の半分です。アラビア詩では、すべての半句を共通の幅にそろえて組むため、韻を踏む文字がページの上から下まで縦に並びます。", "はんく"],
   }, "شطر"),
   term("naskh", "arabic", {
     en: ["Naskh", "The rounded Arabic book hand on which most text typefaces are based, such as Amiri and Noto Naskh Arabic."],
@@ -912,6 +1036,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["纳斯赫体（Naskh）", "圆润的阿拉伯书籍字体，大多数正文字体以它为基础，如Amiri和Noto Naskh Arabic。"],
     ca: ["Naskh", "Lletra àrab arrodonida dels llibres, en què es basen la majoria dels tipus de text, com l'Amiri i la Noto Naskh Arabic."],
     ar: ["النسخ", "خط الكتب العربي المستدير الذي تقوم عليه معظم محارف المتن، مثل Amiri وNoto Naskh Arabic."],
+    ja: ["ナスフ体", "丸みのあるアラビア文字の書籍用書体で、AmiriやNoto Naskh Arabicなど、本文用書体の多くの基になっています。", "なすふたい"],
   }, "نسخ"),
 
   // ── Software and the web ───────────────────────────────────────────────
@@ -921,6 +1046,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["Markdown", "用纯文本书写带格式文本的方法：# 表示标题，* 表示强调，- 表示列表。Postext 读取用它写的书稿章节。"],
     ca: ["Markdown", "Manera d'escriure text amb format en text pla: # per als títols, * per a l'èmfasi, - per a les llistes. Postext llegeix capítols de llibre escrits així."],
     ar: ["Markdown", "طريقة لكتابة نص منسّق بنص عادي: # للعناوين، و* للتوكيد، و- للقوائم. ويقرأ Postext فصول الكتب المكتوبة بها."],
+    ja: ["Markdown", "書式付きの文章をプレーンテキストで書く方法で、見出しは#、強調は*、リストは-で書きます。Postextはこの形式で書かれた本の章を読み込みます。", "まーくだうん"],
   }),
   term("directive", "web", {
     en: ["Directive", "Postext's extension to Markdown for things Markdown lacks, written with colons: :::callout for a box, :ref[…] for a cross-reference."],
@@ -928,6 +1054,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["指令", "Postext 为 Markdown 补充的语法，用冒号书写，例如 :::callout 表示标注框，:ref[…] 表示交叉引用。"],
     ca: ["Directiva", "Extensió de Postext a Markdown per al que Markdown no té, escrita amb dos punts: :::callout per a un requadre, :ref[…] per a una referència creuada."],
     ar: ["الموجّه (directive)", "امتداد Postext للغة Markdown لما تفتقر إليه، ويُكتب بنقطتين رأسيتين: :::callout للإطار، و:ref[…] للإحالة."],
+    ja: ["ディレクティブ", "Markdownにない機能を補うPostextの拡張で、コロンを使って書きます。囲みは:::callout、相互参照は:ref[…]です。", "でぃれくてぃぶ"],
   }),
   term("frontmatter", "web", {
     en: ["Frontmatter", "A block of settings at the top of a file, between two lines of ---, such as the title and author of a chapter. Not the same as a book's front matter."],
@@ -935,6 +1062,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["前置元数据", "文件开头两行 --- 之间的一组设置，例如章的标题和作者。不同于书籍的前辅文。"],
     ca: ["Frontmatter", "Bloc de configuració al principi d'un fitxer, entre dues línies de ---, com el títol i l'autor d'un capítol. No s'ha de confondre amb els preliminars d'un llibre."],
     ar: ["رأس البيانات (frontmatter)", "كتلة إعدادات في أعلى الملف بين سطرين من ---، مثل عنوان الفصل ومؤلفه. وهي غير الصفحات التمهيدية للكتاب."],
+    ja: ["フロントマター", "ファイルの先頭で---の2行に挟んだ設定のブロックで、章のタイトルや著者などを書きます。本の前付け（front matter）とは別物です。", "ふろんとまたー"],
   }),
   term("vdt", "web", {
     en: ["Virtual Document Tree", "Postext's laid-out book: every page, line and glyph with its position, ready for a renderer to draw."],
@@ -942,6 +1070,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["虚拟文档树", "Postext 排好版的书：每一页、每一行、每个字形及其位置，可交给渲染器绘制。"],
     ca: ["Virtual Document Tree", "El llibre maquetat de Postext: cada pàgina, línia i glif amb la seva posició, a punt perquè un renderitzador el dibuixi."],
     ar: ["شجرة المستند الافتراضية (VDT)", "كتاب Postext بعد إخراجه: كل صفحة وسطر ورسم حرفي في موضعه، جاهزًا ليرسمه المُخرِج."],
+    ja: ["仮想文書ツリー（VDT）", "Postextがレイアウトを終えた本です。すべてのページ、行、グリフが位置を持ち、レンダラーがそのまま描画できます。", "かそうぶんしょつりー"],
   }),
   term("renderer", "web", {
     en: ["Renderer", "The part that draws the laid-out pages in one output: canvas, HTML or PDF. The layout is the same for all three."],
@@ -949,6 +1078,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["渲染器", "把排好版的页面绘制成某种输出（canvas、HTML 或 PDF）的部分。三种输出的版面完全相同。"],
     ca: ["Renderitzador", "La part que dibuixa les pàgines maquetades en una sortida concreta: canvas, HTML o PDF. La maquetació és la mateixa per a les tres."],
     ar: ["المُخرِج (renderer)", "الجزء الذي يرسم الصفحات المنضّدة في صيغة إخراج واحدة: اللوحة (Canvas) أو HTML أو PDF. وتخطيط الصفحات واحد في الثلاث."],
+    ja: ["レンダラー", "レイアウト済みのページを1つの出力形式（canvas、HTML、PDF）に描画する部分です。レイアウトは3つとも共通です。", "れんだらー"],
   }),
   term("canvas", "web", {
     en: ["Canvas", "The HTML element a web page draws pixels on with JavaScript. The Sandbox previews pages on it."],
@@ -956,6 +1086,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["canvas（画布）", "网页用 JavaScript 绘制像素的 HTML 元素。Sandbox 在上面预览页面。"],
     ca: ["Canvas", "L'element HTML sobre el qual una pàgina web dibuixa píxels amb JavaScript. El Sandbox hi mostra la previsualització de les pàgines."],
     ar: ["اللوحة (Canvas)", "عنصر HTML ترسم عليه صفحة الويب البكسلات بلغة JavaScript. وعليه يعرض Sandbox معاينة الصفحات."],
+    ja: ["Canvas", "WebページがJavaScriptでピクセルを描くためのHTML要素です。Sandboxはこの上でページをプレビューします。", "きゃんばす"],
   }),
   term("web-worker", "web", {
     en: ["Web Worker", "A script the browser runs in the background, apart from the page, so long work such as laying out a book does not freeze the interface."],
@@ -963,6 +1094,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["Web Worker", "浏览器在后台、独立于页面运行的脚本，使排版整本书这类耗时工作不会卡住界面。"],
     ca: ["Web Worker", "Script que el navegador executa en segon pla, a part de la pàgina, perquè una feina llarga, com maquetar un llibre, no bloquegi la interfície."],
     ar: ["العامل الخلفي (Web Worker)", "سكربت يشغّله المتصفح في الخلفية بمعزل عن الصفحة، فلا تتجمّد الواجهة أثناء عمل طويل كإخراج كتاب."],
+    ja: ["Web Worker", "ブラウザーがページとは別にバックグラウンドで実行するスクリプトです。本のレイアウトのような時間のかかる処理をしても、画面が固まりません。", "うぇぶわーかー"],
   }),
   term("wasm", "web", {
     en: ["WebAssembly (WASM)", "A compact binary format browsers run at near-native speed, used by libraries that need heavy computation, such as font decompression."],
@@ -970,6 +1102,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["WebAssembly（WASM）", "浏览器能以接近原生速度运行的紧凑二进制格式，供字体解压等计算密集的库使用。"],
     ca: ["WebAssembly (WASM)", "Format binari compacte que els navegadors executen gairebé a velocitat nativa; el fan servir biblioteques de càlcul intensiu, com la descompressió de fonts."],
     ar: ["WebAssembly (WASM)", "صيغة ثنائية مدمجة يشغّلها المتصفح بسرعة تقارب سرعة الشيفرة الأصلية، وتستعملها المكتبات التي تحتاج إلى حساب كثيف، مثل فك ضغط الخطوط."],
+    ja: ["WebAssembly（WASM）", "ブラウザーがネイティブに近い速度で実行するコンパクトなバイナリー形式で、フォントの展開のように重い計算が必要なライブラリーが使います。", "うぇぶあせんぶりー"],
   }),
   term("indexeddb", "web", {
     en: ["IndexedDB", "A database built into the browser. The Sandbox keeps your books and drafts in it, on your own device."],
@@ -977,6 +1110,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["IndexedDB", "浏览器内置的数据库。Sandbox 把你的书稿和草稿保存在其中，数据留在你自己的设备上。"],
     ca: ["IndexedDB", "Base de dades integrada al navegador. El Sandbox hi desa els teus llibres i esborranys, al teu propi dispositiu."],
     ar: ["IndexedDB", "قاعدة بيانات مدمجة في المتصفح. يحفظ فيها Sandbox كتبك ومسوداتك، على جهازك أنت."],
+    ja: ["IndexedDB", "ブラウザーに組み込まれたデータベースです。Sandboxは本と下書きを、利用者自身の端末にあるこのデータベースに保存します。", "いんでっくすとでぃーびー"],
   }),
   term("headless", "web", {
     en: ["Headless", "Running without a visible window, for example generating PDFs on a server or in a script."],
@@ -984,6 +1118,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["无界面（headless）", "在没有可见窗口的情况下运行，例如在服务器上或脚本中生成 PDF。"],
     ca: ["Sense interfície (headless)", "Que s'executa sense finestra visible, per exemple per generar PDF en un servidor o des d'un script."],
     ar: ["التشغيل بلا واجهة (headless)", "التشغيل من دون نافذة مرئية، كإنتاج ملفات PDF على خادم أو في سكربت."],
+    ja: ["ヘッドレス", "画面を表示せずに実行することです。たとえば、サーバーやスクリプトでPDFを生成する場合です。", "へっどれす"],
   }),
   term("opentype", "web", {
     en: ["OpenType", "The standard font format, which can hold features such as ligatures, small caps and vertical punctuation forms."],
@@ -991,6 +1126,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["OpenType", "标准字体格式，可包含连字、小型大写、竖排标点形式等特性。"],
     ca: ["OpenType", "El format estàndard de fonts, que pot incloure funcions com lligadures, versaletes i formes verticals de la puntuació."],
     ar: ["OpenType", "صيغة الخطوط القياسية، ويمكن أن تحمل ميزات مثل الحروف المركّبة والحروف الكبيرة المصغّرة وصيغ الترقيم العمودية."],
+    ja: ["OpenType", "標準的なフォント形式で、合字、スモールキャピタル、縦組み用の約物の字形といった機能を収められます。", "おーぷんたいぷ"],
   }),
   term("variable-font", "web", {
     en: ["Variable font", "One font file that holds a range of weights or widths, picked by a number instead of a separate file for each."],
@@ -998,6 +1134,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["可变字体", "一个字体文件包含一系列字重或字宽，用数值选择，而不必每种各用一个文件。"],
     ca: ["Font variable", "Un sol fitxer de font que conté una gamma de pesos o amplades, que es trien amb un número en lloc de fer servir un fitxer per a cadascun."],
     ar: ["الخط المتغيّر", "ملف خط واحد يحوي مدى من الأوزان أو العروض، يُختار منها برقم بدل ملف منفصل لكل منها."],
+    ja: ["バリアブルフォント", "ウェイトや幅の範囲を1つのファイルに収めたフォントで、スタイルごとに別のファイルを使う代わりに、数値で選びます。", "ばりあぶるふぉんと"],
   }),
   term("font-subset", "web", {
     en: ["Font subset", "A copy of a font that keeps only the characters a document uses, so the file is smaller. PDFs embed subsets."],
@@ -1005,6 +1142,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["字体子集", "只保留文档实际用到的字符的字体副本，文件更小。PDF 中嵌入的就是子集。"],
     ca: ["Subconjunt de font", "Còpia d'una font que conserva només els caràcters que fa servir el document, perquè el fitxer pesi menys. Els PDF incrusten subconjunts."],
     ar: ["الخط المجتزأ (font subset)", "نسخة من خط لا تحتفظ إلا بالحروف التي يستعملها المستند، فيصغر حجم الملف. وملفات PDF تضمّن خطوطًا مجتزأة."],
+    ja: ["フォントのサブセット", "文書で使う文字だけを残したフォントのコピーで、ファイルが小さくなります。PDFにはサブセットを埋め込みます。", "ふぉんとのさぶせっと"],
   }),
   term("vector-raster", "web", {
     en: ["Vector and raster", "A vector image is drawn from shapes and stays sharp at any size (SVG); a raster image is a grid of pixels (PNG, JPEG)."],
@@ -1012,6 +1150,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["矢量图与位图", "矢量图由图形构成，任意缩放都清晰（如 SVG）；位图是像素网格（如 PNG、JPEG）。"],
     ca: ["Vectorial i mapa de bits", "Una imatge vectorial es dibuixa amb formes i es veu nítida a qualsevol mida (SVG); una imatge de mapa de bits és una quadrícula de píxels (PNG, JPEG)."],
     ar: ["الصور المتجهة والنقطية", "الصورة المتجهة تُرسم من أشكال وتبقى حادة بأي حجم (SVG)؛ والصورة النقطية شبكة من البكسلات (PNG، JPEG)."],
+    ja: ["ベクターとラスター", "ベクター画像は図形から描かれ、どの大きさでも鮮明なままです（SVG）。ラスター画像はピクセルの格子です（PNG、JPEG）。", "べくたーとらすたー"],
   }),
   term("tagged-pdf", "web", {
     en: ["Tagged PDF", "A PDF that carries a structure tree of headings, paragraphs, lists and figures with alternative text, so screen readers can read it in order."],
@@ -1019,6 +1158,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["标签 PDF", "带有结构树（标题、段落、列表、带替代文本的图）的 PDF，屏幕阅读器可以按顺序朗读。"],
     ca: ["PDF etiquetat", "PDF que porta un arbre d'estructura amb títols, paràgrafs, llistes i figures amb text alternatiu, perquè els lectors de pantalla el llegeixin en ordre."],
     ar: ["ملف PDF موسوم (tagged PDF)", "ملف PDF يحمل شجرة بنية من العناوين والفقرات والقوائم والأشكال مع نصوصها البديلة، فتقرؤه قارئات الشاشة بترتيبه."],
+    ja: ["タグ付きPDF", "見出し、段落、リスト、代替テキスト付きの図からなる構造ツリーを持つPDFで、スクリーンリーダーが正しい順序で読み上げられます。", "たぐつきぴーでぃーえふ"],
   }),
   term("alt-text", "web", {
     en: ["Alternative text", "A short description of an image for people who cannot see it, read aloud by screen readers."],
@@ -1026,6 +1166,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["替代文本", "为看不到图片的人提供的简短描述，由屏幕阅读器朗读。"],
     ca: ["Text alternatiu", "Descripció breu d'una imatge per a qui no la pot veure, que els lectors de pantalla llegeixen en veu alta."],
     ar: ["النص البديل", "وصف قصير للصورة لمن لا يستطيع رؤيتها، تقرؤه قارئات الشاشة بصوت مسموع."],
+    ja: ["代替テキスト", "画像を見ることができない人のための短い説明で、スクリーンリーダーが読み上げます。", "だいたいてきすと"],
   }),
   term("bundle", "web", {
     en: ["Bundle (.postext)", "A single file that packs a book's chapters, configuration, fonts and images, so it opens the same anywhere."],
@@ -1033,6 +1174,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["书稿包（.postext）", "把一本书的章节、配置、字体和图片打包成的单个文件，在哪里打开都一样。"],
     ca: ["Paquet (.postext)", "Un sol fitxer que reuneix els capítols, la configuració, les fonts i les imatges d'un llibre, perquè s'obri igual a qualsevol lloc."],
     ar: ["الحزمة (.postext)", "ملف واحد يجمع فصول الكتاب وإعداداته وخطوطه وصوره، فيُفتح بالشكل نفسه في أي مكان."],
+    ja: ["バンドル（.postext）", "本の章、設定、フォント、画像をまとめた1つのファイルで、どこで開いても同じように表示されます。", "ばんどる"],
   }),
   term("preset", "web", {
     en: ["Preset", "A ready-made book in the Sandbox, with its design and sample text, to start from or study."],
@@ -1040,6 +1182,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["预设", "Sandbox 中现成的书，附带设计和示例文本，可直接以此为起点或用来学习。"],
     ca: ["Plantilla (preset)", "Llibre ja preparat al Sandbox, amb el seu disseny i un text de mostra, per partir-ne o estudiar-lo."],
     ar: ["الإعداد المسبق", "كتاب جاهز في Sandbox، بتصميمه ونصه النموذجي، تبدأ منه أو تدرسه."],
+    ja: ["プリセット", "Sandboxに用意された完成済みの本で、デザインと見本の文章が入っています。そこから始めることも、研究の材料にすることもできます。", "ぷりせっと"],
   }),
   term("sandbox", "web", {
     en: ["Sandbox", "Postext's editor in the browser: write a book, change its design and see the pages update."],
@@ -1047,5 +1190,6 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     zh: ["Sandbox", "Postext 的浏览器内编辑器：写书、修改设计，并即时看到页面更新。"],
     ca: ["Sandbox", "L'editor de Postext al navegador: escrius un llibre, en canvies el disseny i veus com s'actualitzen les pàgines."],
     ar: ["Sandbox", "بيئة التجربة: محرّر Postext في المتصفح، تكتب فيه كتابًا وتغيّر تصميمه وترى الصفحات تتحدّث."],
+    ja: ["Sandbox", "ブラウザーで動くPostextのエディターです。本を書き、デザインを変えると、ページがその場で更新されます。", "さんどぼっくす"],
   }),
 ];

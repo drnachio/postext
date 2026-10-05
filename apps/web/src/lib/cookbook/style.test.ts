@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, proseOf, styleFindings, styleMessages, textLength } from "./style";
 
-const phrases = (text: string, locale: "en" | "es" | "zh", options?: { emDashLimit?: number }) =>
+const phrases = (text: string, locale: "en" | "es" | "zh" | "ja", options?: { emDashLimit?: number }) =>
   styleFindings(text, locale, options).map((f) => `${f.severity}:${f.phrase}`);
 
 describe("style: machine-written phrasing", () => {
@@ -95,6 +95,10 @@ describe("style: machine-written phrasing", () => {
       expect.arrayContaining(["fail:まとめると、", "warn:奥深い世界", "warn:ではないでしょうか"]),
     );
     expect(styleFindings("こころの世界へようこそ。", "en").every((f) => f.severity === "fail")).toBe(true);
+    // A ja write-up gets the same lists.
+    expect(phrases("縦組みの世界へようこそ。魔法のように組み上がると言っても過言ではありません。", "ja")).toEqual(
+      expect.arrayContaining(["fail:の世界へようこそ", "fail:と言っても過言ではありません", "warn:魔法のよう"]),
+    );
   });
 
   it("leaves plain Japanese alone and judges shared kanji words by the Japanese list", () => {

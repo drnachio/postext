@@ -60,7 +60,7 @@ describe('hongloumeng in the Sandbox', () => {
     }
   }, 60_000);
 
-  it('keeps the vertical cover whole in the HTML view: four stitches on the cloth, the thread from the first to the last', () => {
+  it('keeps the vertical cover whole in the HTML view: the painted cloth at the leaf\'s shape, the slip where it sits on paper', () => {
     // Pages of the paged view 844 px wide and 812 tall, and 473 wide and
     // 1012 tall: the leaf's 210 mm run down the page.
     for (const [pageWidthPx, viewportHeightPx] of [[844, 860], [473, 1060]] as const) {
@@ -68,15 +68,21 @@ describe('hongloumeng in the Sandbox', () => {
       const els = out.headingStyles!.find((s) => s.id === 'cover')!.advancedDesign!.slot.elements;
       const px = (d: unknown) => dimensionToPx(d as Dimension, 144);
       const at = (id: string) => els.find((e) => e.id === id)!.placement;
-      const cloth = px(at('cloth').size!.width);
-      const holes = [0, 1, 2, 3].map((i) => px(at(`stitch-${i}`).offset!.x));
-      expect(holes[3]!, `${pageWidthPx}`).toBeLessThan(cloth);
-      expect(holes[3]! - holes[2]!).toBeCloseTo(holes[1]! - holes[0]!, 3);
-      const thread = at('stitch-line');
-      expect(px(thread.offset!.x)).toBeCloseTo(holes[0]!, 3);
-      expect(px(thread.offset!.x) + px(thread.size!.width)).toBeCloseTo(holes[3]!, 3);
-      // The cloth keeps the leaf's shape, 210 by 148.
-      expect(cloth / px(at('cloth').size!.height)).toBeCloseTo(210 / 148, 3);
+      const band = at('htmlViewerBand');
+      const [bandW, bandH] = [px(band.size!.width), px(band.size!.height)];
+      // The band keeps the leaf's shape, 210 by 148, and the picture fills it.
+      expect(bandW / bandH, `${pageWidthPx}`).toBeCloseTo(210 / 148, 3);
+      expect(px(at('art').size!.width)).toBeCloseTo(bandW, 3);
+      // The slip, 92 by 23 at 14 mm from the binding and 11 from the foot,
+      // shrinks with the leaf and stays on the cloth.
+      const slip = at('slip');
+      const scale = bandW / 210;
+      expect(px(slip.size!.width) / scale).toBeCloseTo(92, 3);
+      expect(px(slip.size!.height) / scale).toBeCloseTo(23, 3);
+      expect(px(slip.offset!.x) / scale).toBeCloseTo(14, 3);
+      expect(px(slip.offset!.y) / scale).toBeCloseTo(-11, 3);
+      expect(px(slip.offset!.x) + px(slip.size!.width)).toBeLessThan(bandW);
+      expect(bandH + px(slip.offset!.y) - px(slip.size!.height)).toBeGreaterThan(0);
     }
   });
 

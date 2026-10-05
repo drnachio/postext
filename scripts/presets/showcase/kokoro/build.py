@@ -322,33 +322,39 @@ def frontis_design(pid: str) -> dict:
     }
 
 
+COVER_ART = "cover-art"
+
+
+def cover_art_specs(rdir: str) -> list[dict]:
+    """The cover's painting (covers.py), copied from art/ into the bundle's
+    resources."""
+    from PIL import Image
+
+    src = os.path.join(HERE, "art", "cover.jpg")
+    shutil.copyfile(src, os.path.join(rdir, f"{COVER_ART}.jpg"))
+    w, h = Image.open(src).size
+    return [{"id": COVER_ART, "typeId": "design", "kind": "bitmap", "file": f"resources/{COVER_ART}.jpg", "width": w, "height": h, "caption": "表紙", "altText": "表紙の絵。晩夏の鎌倉の浜。右手の砂丘に傾く松、霞む海と岬、波打ち際に着物の人がひとり立って沖を見ている。"}]
+
+
 def cover_design() -> dict:
-    """The cover: the vermilion of the 1914 box and boards, the 題簽 Sōseki
-    copied from the Kangxi dictionary's entry for 心 in an ink frame, the
-    title and the author on paper-coloured columns under it."""
-    lw = 92.0  # the label across the cover
-    lh = lw / aspect(COVER_LABEL)
-    left, top = (G.width - lw) / 2, 30.0
-    pad = 2.2
-    title_pt, author_pt = 30, 13
-    els = [
-        box("cloth", anchor=at("bleed", "top-left"), fill="shu"),
-        box("label-ground", anchor=at("page", "top-left"), offset=(top - pad, sheet_to_flow(left - pad, lw + 2 * pad)), width=lh + 2 * pad, height=lw + 2 * pad, fill="paper"),
-        frame("label-frame", x=top - pad + 0.9, y=sheet_to_flow(left - pad + 0.9, lw + 2 * pad - 1.8), length=lh + 2 * pad - 1.8, across=lw + 2 * pad - 1.8, thickness=0.6),
-        fimage("label", COVER_LABEL, x=top, y=sheet_to_flow(left, lw), down=lh),
-    ]
-    # The title and the author side by side under the label, their feet
-    # level: the title right of the axis (read first), the author left.
+    """The cover: a painting of the beach at Kamakura where the story opens
+    (covers.py), full bleed, and in its empty sky a vermilion title slip,
+    the 朱 of the 1914 boards, with こころ and 夏目漱石 down it in the
+    paper's colour inside a hairline frame."""
+    sw, sl, top, left = 19.0, 86.0, 15.0, 13.0  # the slip: across, down, from the head, from the sheet's left
+    y = sheet_to_flow(left, sw)
+    title_pt, author_pt = 30, 12
     t_space, a_space = 10, 4
     t_len = 3 * pt_to_mm(title_pt) + 2 * pt_to_mm(t_space) + 1
     a_len = 4 * pt_to_mm(author_pt) + 3 * pt_to_mm(a_space) + 1
     t_across, a_across = pt_to_mm(title_pt) * 1.4, pt_to_mm(author_pt) * 1.5
-    tx = top + lh + 22
-    foot = tx + t_len
-    t_y = (G.width - (t_across + 4 + a_across)) / 2
-    els.append(ftext("cover-title", "こころ", x=tx, y=t_y, length=t_len, across=t_across, size_pt=title_pt, weight=700, color="paper", letterSpacing=pt(t_space)))
-    els.append(ftext("cover-author", "夏目漱石", x=foot - a_len, y=t_y + t_across + 4, length=a_len, across=a_across, size_pt=author_pt, weight=700, color="paper", letterSpacing=pt(a_space)))
-    return {"enabled": True, "minHeight": mm(G.width), "slot": {"elements": els}}
+    return {"enabled": True, "minHeight": mm(G.width), "slot": {"elements": [
+        fimage("art", COVER_ART, x=0, y=0, down=G.height, anchor=at("bleed", "top-left")),
+        box("slip", anchor=at("page", "top-left"), offset=(top, y), width=sl, height=sw, fill="shu"),
+        frame("slip-frame", x=top + 1.3, y=y + 1.3, length=sl - 2.6, across=sw - 2.6, color="paper", thickness=0.5),
+        ftext("cover-title", "こころ", x=top + 9, y=y + (sw - t_across) / 2, length=t_len, across=t_across, size_pt=title_pt, weight=700, color="paper", letterSpacing=pt(t_space)),
+        ftext("cover-author", "夏目漱石", x=top + sl - 7 - a_len, y=y + (sw - a_across) / 2, length=a_len, across=a_across, size_pt=author_pt, weight=700, color="paper", letterSpacing=pt(a_space)),
+    ]}}
 
 
 def back_cover_design() -> dict:
@@ -754,9 +760,9 @@ def credits_markdown(data: dict) -> str:
         parts.append(para_block("credits", [f"〔{label}〕"] + aozora_block(cr[key]["raw"])))
     parts.append(para_block("credits", [
         "〔図版〕",
-        "表紙の題簽、扉、扉裏の印は夏目漱石装幀『こゝろ』（岩波書店、大正三年）より。見返しと奥付の枠は同書大正六年刷より。国立国会図書館デジタルコレクション（info:ndljp/pid/945471、906330）、保護期間満了。",
+        "扉、扉裏の印は夏目漱石装幀『こゝろ』（岩波書店、大正三年）より。見返しと奥付の枠は同書大正六年刷より。国立国会図書館デジタルコレクション（info:ndljp/pid/945471、906330）、保護期間満了。",
         "口絵は夏目漱石画「山上有山図」「萩の粥図」「孤客入石門図」。『漱石遺墨集』（岩波書店、昭和十年）より。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970）、保護期間満了。",
-        "挿絵：Generated With Diffusion Models",
+        "表紙と挿絵：Generated With Diffusion Models",
         "図版は本書の紙の色に合わせて調子を整え、扉の蔵書印を除き、奥付の枠は中の記載を消して用いた。",
     ]))
     parts.append(para_block("credits", [
@@ -764,6 +770,14 @@ def credits_markdown(data: dict) -> str:
         "しっぽり明朝 B1、しっぽりアンチック B1（SIL Open Font License 1.1）。本書に用いる文字に絞って収める。",
     ]))
     return "\n".join(p for p in parts if p)
+
+
+# What the credits page (902-credits.md) changed when the painted cover
+# replaced the 1914 label (patch_covers.py applies it to a built bundle).
+CREDITS_CHANGES = [
+    ("表紙の題簽、扉、扉裏の印は夏目漱石装幀", "扉、扉裏の印は夏目漱石装幀"),
+    ("挿絵：Generated With Diffusion Models", "表紙と挿絵：Generated With Diffusion Models"),
+]
 
 
 def colophon_lines() -> tuple[list[str], list[str]]:
@@ -777,8 +791,8 @@ def colophon_lines() -> tuple[list[str], list[str]]:
         "本文　青空文庫（底本　集英社文庫、一九九一年）",
         "入力　j.utiyama　校正　伊藤時也",
         "序・予告・広告文　入力　砂場清隆　校正　小林繁雄",
-        "装幀・口絵　夏目漱石（国立国会図書館所蔵本より）",
-        "挿絵　Generated With Diffusion Models",
+        "扉・見返し・口絵　夏目漱石（国立国会図書館所蔵本より）",
+        "表紙・挿絵　Generated With Diffusion Models",
         "書体　しっぽり明朝 B1・しっぽりアンチック B1",
     ]
     return imprint, credits
@@ -794,7 +808,7 @@ def resources(out: str, scenes: list[dict]) -> list[dict]:
     os.makedirs(rdir, exist_ok=True)
     specs: list[dict] = []
     scene_ids = {s["id"] for s in scenes}
-    used = set(FRONTIS.values()) | {COVER_LABEL, TITLE_BLOCK, SEAL, COLOPHON_FRAME} | scene_ids
+    used = set(FRONTIS.values()) | {TITLE_BLOCK, SEAL, COLOPHON_FRAME} | scene_ids
     for pid, p in PICTURES.items():
         if pid not in used:
             continue
@@ -813,7 +827,7 @@ def resources(out: str, scenes: list[dict]) -> list[dict]:
     rel = f"resources/{ENDPAPER}.jpg"
     im.save(os.path.join(out, rel), quality=80, optimize=True, progressive=True)
     specs.append({"id": ENDPAPER, "typeId": "design", "kind": "bitmap", "file": rel, "width": im.width, "height": im.height, "caption": "見返し", "altText": PICTURES["kokoro-1917-endpaper"]["alt"]["ja"]})
-    return specs
+    return specs + cover_art_specs(rdir)
 
 
 # --- spine -------------------------------------------------------------------------------------------
@@ -823,8 +837,8 @@ SPINE_PAGES = 360
 
 
 def add_spine(out: str, shared: list[dict]) -> None:
-    """The spine: こころ and 夏目漱石 upright in the paper's colour on the
-    vermilion of the boards."""
+    """The spine: こころ and 夏目漱石 upright in the paper's colour on
+    vermilion cloth."""
     fonts = os.path.join(out, "fonts")
     paper = folio_config()["paper"]
     font = os.path.join(fonts, "ShipporiMinchoB1-Bold.woff2")
@@ -832,6 +846,8 @@ def add_spine(out: str, shared: list[dict]) -> None:
         "height_mm": G.height,
         "thickness_mm": _common.spine_thickness_mm(SPINE_PAGES, paper["grammage"], paper["bulk"], "hardcover"),
         "ground": PALETTE["shu"], "ink": PALETTE["paper"], "vertical": True,
+        # Vermilion book cloth (covers.py), its weave cropped to the spine.
+        "background": {"file": os.path.join(HERE, "art", "spine.jpg"), "fit": "cover", "shade": 0.35},
         "pieces": [
             {"text": "こころ", "font": font, "size": 0.42, "at": 0.24},
             {"text": "夏目漱石", "font": os.path.join(fonts, "ShipporiMinchoB1-Bold.woff2"), "size": 0.26, "at": 0.72},

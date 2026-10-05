@@ -25,6 +25,15 @@ describe('createBlankBookConfig', () => {
     expect(config.headings?.levels?.find((l) => l.level === 1)?.numberingTemplate).toBe('الفصل {1:ordinal}');
     expect(withDefaultResourceTypes(config, 'ar')).toBe(config);
   });
+
+  it('sets a new book up for Japanese, vertical, in the Japanese interface', () => {
+    const config = createBlankBookConfig('ja');
+    expect(config.locale).toBe('ja');
+    expect(config.layout?.writingMode).toBe('vertical-rl');
+    expect(config.bodyText?.fontFamily).toBe('Noto Serif JP');
+    expect(config.resourceTypes).toEqual(defaultResourceTypes('ja'));
+    expect(withDefaultResourceTypes(config, 'ja')).toBe(config);
+  });
 });
 
 describe('withDefaultResourceTypes', () => {

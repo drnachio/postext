@@ -70,7 +70,7 @@ const notoSerifSc = Noto_Serif_SC({
 });
 
 // Japanese fallbacks, switched on for text marked lang="ja" only (globals.css
-// `:lang(ja)`): a glossary term's native form or a sample in a docs page,
+// `:lang(ja)`): the ja pages, a glossary term's native form or a sample in a docs page,
 // whose kanji would otherwise take the Chinese forms of Noto SC on a
 // Chinese page. Sliced like the SC faces, so nothing loads on a page
 // without Japanese.

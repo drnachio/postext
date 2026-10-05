@@ -125,7 +125,10 @@ function pickKey(keys) {
 const chapterSpecs = manifest.version === 1
   ? [{ title: '', file: typeof manifest.markdown === 'string' ? manifest.markdown : manifest.markdown[pickKey(Object.keys(manifest.markdown))] }]
   : Array.isArray(manifest.chapters) ? manifest.chapters : manifest.chapters[pickKey(Object.keys(manifest.chapters))];
-const locKey = manifest.localized ? Object.keys(manifest.localized).find((k) => k.toLowerCase().split(/[-_]/)[0] === lang.toLowerCase().split(/[-_]/)[0]) : undefined;
+// The edition's own overrides: an exact tag first (zh-Hans, not zh-Hant), then its language.
+const locKeys = manifest.localized ? Object.keys(manifest.localized) : [];
+const locKey = locKeys.find((k) => k.toLowerCase() === lang.toLowerCase())
+  ?? locKeys.find((k) => k.toLowerCase().split(/[-_]/)[0] === lang.toLowerCase().split(/[-_]/)[0]);
 const overrides = locKey ? manifest.localized[locKey] : {};
 
 // ---- structure --------------------------------------------------------------

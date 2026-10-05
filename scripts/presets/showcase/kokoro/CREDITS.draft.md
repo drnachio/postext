@@ -42,10 +42,10 @@ Aozora blocks from `work/text.json`, the picture list from
 
 ## 図版
 
-- 夏目漱石装幀『こゝろ』（岩波書店、1914年）の扉（木版、伊上凡骨刻）、扉裏の印、表紙の題簽。国立国会図書館デジタルコレクション、info:ndljp/pid/945471（https://dl.ndl.go.jp/pid/945471）。保護期間満了（Public Domain Mark）。
+- 夏目漱石装幀『こゝろ』（岩波書店、1914年）の扉（木版、伊上凡骨刻）、扉裏の印。国立国会図書館デジタルコレクション、info:ndljp/pid/945471（https://dl.ndl.go.jp/pid/945471）。保護期間満了（Public Domain Mark）。
 - 同書1917年刷の見返しと奥付の枠。国立国会図書館デジタルコレクション、info:ndljp/pid/906330（https://dl.ndl.go.jp/pid/906330）。保護期間満了。
 - 夏目漱石「山上有山図」「孤客入石門図」「萩の粥図」。『漱石遺墨集』（岩波書店、1935年）より。国立国会図書館デジタルコレクション、info:ndljp/pid/1192970（https://dl.ndl.go.jp/pid/1192970）。保護期間満了。
-- 各章の場面の挿絵：Generated With Diffusion Models
+- 表紙の絵、背の布、各章の場面の挿絵：Generated With Diffusion Models
 
 図版は本書の紙色に合わせて調整し、図書館の蔵書印を除き、奥付の枠は中の記載を消して用いた。
 
@@ -76,13 +76,13 @@ two-cell repeat mark ／＼ as 〳〵.
 
 - Sōseki's own designs for the first edition of *Kokoro* (Iwanami Shoten,
   1914): the title-page woodblock (cut by Igami Bonkotsu), the seal facing
-  it and the cover label. National Diet Library Digital
+  it. National Diet Library Digital
   Collections, info:ndljp/pid/945471. Public Domain Mark.
 - The endpapers and the colophon frame of the 1917 printing. NDL,
   info:ndljp/pid/906330. Public Domain Mark.
 - Three paintings by Sōseki from *Sōseki ibokushū* (Iwanami Shoten, 1935).
   NDL, info:ndljp/pid/1192970. Public Domain Mark.
-- The scene plates: Generated With Diffusion Models.
+- The cover painting, the spine's cloth and the scene plates: Generated With Diffusion Models.
 
 The scans were toned to the book's paper; the library stamps on the 1914
 title page were removed, and the colophon frame's printed panel cleared for

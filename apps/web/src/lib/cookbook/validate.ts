@@ -749,10 +749,13 @@ const FRONTMATTER_KEYS = ["title", "summary", "plain", "description", "question"
 
 /** [min, max] characters of each frontmatter text. A Chinese character
  *  carries about what two to three Latin letters do, and search snippets
- *  cut Chinese at about half the Latin length, so zh gets its own bounds. */
-const FRONTMATTER_LENGTHS: Record<"latin" | "zh", Record<"title" | "summary" | "plain" | "description" | "question", [number, number]>> = {
+ *  cut Chinese at about half the Latin length, so zh gets its own bounds.
+ *  Japanese mixes kanji with kana, which carry less each, so ja's bounds
+ *  sit a little above zh's. */
+const FRONTMATTER_LENGTHS: Record<"latin" | "zh" | "ja", Record<"title" | "summary" | "plain" | "description" | "question", [number, number]>> = {
   latin: { title: [1, 60], summary: [60, 160], plain: [40, 240], description: [120, 160], question: [1, 110] },
   zh: { title: [1, 30], summary: [20, 90], plain: [15, 120], description: [40, 90], question: [1, 55] },
+  ja: { title: [1, 36], summary: [25, 110], plain: [20, 140], description: [50, 110], question: [1, 65] },
 };
 
 /** Problems with a write-up's parsed frontmatter (types.ts `RecipeFrontmatter`). */
@@ -775,7 +778,7 @@ export function validateFrontmatter(fm: unknown, locale: Locale): string[] {
       errors.push(`${file}: frontmatter "${key}" must have ${min > 1 ? `${min}–` : "at most "}${max} characters (has ${length})`);
     }
   };
-  const lengths = FRONTMATTER_LENGTHS[locale === "zh" ? "zh" : "latin"];
+  const lengths = FRONTMATTER_LENGTHS[locale === "zh" || locale === "ja" ? locale : "latin"];
   text("title", ...lengths.title, true);
   text("summary", ...lengths.summary, true);
   text("plain", ...lengths.plain, false);
@@ -945,7 +948,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (!FEATURE_GROUPS.includes(feature.group)) errors.push(`${at}.group: unknown group "${feature.group}"`);
     anchorErrors(feature.docs, `${at}.docs`, errors);
     if (feature.since !== undefined && !SEMVER.test(feature.since)) errors.push(`${at}.since: must be a version`);
-    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [], ca: [], zh: [], ar: [] }`);
+    if (feature.aliases !== undefined && !isObject(feature.aliases)) errors.push(`${at}.aliases: must be { en: [], es: [], ca: [], zh: [], ar: [], ja: [] }`);
     if (feature.detect !== undefined) {
       for (const [key, list] of Object.entries(feature.detect)) {
         if (!["config", "markdown", "api"].includes(key) || !Array.isArray(list)) errors.push(`${at}.detect.${key}: unknown rule`);
@@ -963,7 +966,7 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
     if (question.gap !== undefined && !registry.gaps?.[question.gap]) errors.push(`${at}.gap: unknown gap "${question.gap}"`);
   }
   for (const [id, gap] of Object.entries(registry.gaps ?? {})) {
-    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], ca: [], zh: [], ar: [] }`);
+    if (!isObject(gap.aliases)) errors.push(`gaps.${id}.aliases: must be { en: [], es: [], ca: [], zh: [], ar: [], ja: [] }`);
     if (gap.docs !== undefined) anchorErrors(gap.docs, `gaps.${id}.docs`, errors);
   }
   for (const [kind, warning] of Object.entries(registry.warnings ?? {})) {

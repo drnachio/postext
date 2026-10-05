@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
  *  and the summary in large text with a drop cap on the right. */
 export async function InShortSection() {
   const t = await getTranslations("PlainLanguage");
-  const cjk = siteLocale(await getLocale()) === "zh";
+  const locale = siteLocale(await getLocale());
+  const cjk = locale === "zh" || locale === "ja";
 
   return (
     <section aria-labelledby="in-short" className="border-b border-rule bg-surface">

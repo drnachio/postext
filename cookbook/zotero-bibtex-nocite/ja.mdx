@@ -1,0 +1,89 @@
+---
+title: "ZoteroのBibTeX書き出しから作る文献リスト"
+summary: "ゼミの文献リストです。文献はZoteroのBibTeX書き出しをそのまま貼り付け、シカゴ方式の著者年形式で引用し、本文で引かない文献はnociteで加えます。"
+plain: "大学のゼミの文献リストです。教員はZoteroが書き出したファイルをそのまま貼り付け、Postextが引用と、本文で触れない本も含めた一覧を刷ります。"
+description: "Postextで組む授業の文献リスト。ZoteroのBibTeX書き出しを手を加えずに貼り、シカゴ方式の著者年形式で引用し、本文で引かない参考書をnociteで加えます。"
+question: "ZoteroのBibTeX書き出しを使い、本文で引用しない文献も一覧に載せるには？"
+aliases: ["Zotero", "ゾテロ", "BibTeX", "nocite", "引用しない文献", "文献リスト", "リーディングリスト", "シラバス", "参考文献", "関連文献", "シカゴ方式", "著者年形式", "Chicago author-date"]
+pageNotes: { "1": "1ページ。上半分を深緑の帯が占め、キッカー「HPS 214 · Seminar reading list · Autumn term 2026」、大きな細いセリフ体の題「Science as a Social Practice」、イタリックのリードがあります。その下は2段組みで、導入と第1週から第3週、Kuhn (1970)や(Shapin 1984)のような引用が入っています。", "2": "2ページ。第4週から第6週と「Further reading」の節、続いて2段にまたがるシカゴ方式の著者年形式の参考文献。13の文献のうち5つは本文で引用されておらず、その中にFleck、Merton、López Piñeroがあります。" }
+---
+
+## できあがり
+
+科学史・科学社会学を扱う6週のゼミの文献リストを、210×280mmのページに2段組みで組みます。1ページの上半分を深緑の面が占め、50ptのSpectral Lightで授業の題を置きます。その下の本文は、担当教員による各週の手引きです。文献はゼミのZoteroコレクションで、BibTeXとして書き出し、1行も手を加えずに文書に貼り付けています。Zoteroの引用キー、大文字を守る波括弧、`{\"o}`のアクセント、`month = dec`、`file`、`keywords`、`urldate`のフィールドもそのままです。本文はそのうち8つの文献を引用します。残りの5つは、ゼミでは扱わない参考書で、`nocite`を通じて一覧に入ります。
+
+## 作り方
+
+### 1 · スタイルは一度だけ指定する
+
+コードは上の[手短な答え](#手短な答え)にあります。引用エンジンは最初のビルドの前に登録し、スタイルは1つの設定で決まります。シカゴ方式の著者年形式は、`[@shapin_pump_1984]`を「(Shapin 1984)」と、文中の`@shapin_leviathan_1985`を「Shapin and Schaffer (1985)」と書きます。キーはZoteroが第1著者、題の最初の主要な語、年から作ったものなので、`gieryn_boundary-work_1983`はハイフンを含んだままです。Postextはキーの中のハイフンやアンダースコアをキーの一部として読みます。
+
+### 2 · 書き出しをZoteroが書いたまま貼る
+
+文書の最後のブロックが書き出しで、文献1つにつき1項目、Zoteroが書くとおりタブで字下げされています。
+
+```bibtex
+@article{gieryn_boundary-work_1983,
+	title = {Boundary-{Work} and the {Demarcation} of {Science} from {Non}-{Science}: …},
+	url = {https://www.jstor.org/stable/2095325},
+	doi = {10.2307/2095325},
+	urldate = {2026-08-21},
+	journal = {American Sociological Review},
+	author = {Gieryn, Thomas F.},
+	month = dec,
+	year = {1983},
+	keywords = {demarcation, week 4},
+	pages = {781--795},
+	file = {JSTOR Full Text PDF:/Users/hps214/Zotero/storage/2HJ8M6PA/Gieryn - 1983 - ….pdf:application/pdf},
+}
+```
+
+読み込み処理は、大文字を守る波括弧を外し、`{\"o}`と`{\'e}`をöとéに合成し、`--`をenダッシュに変え、`month = dec`を素の月名として読みます。`urldate`は閲覧日に、`language`はその項目の言語になります。`file`、`keywords`、`abstract`、`shorttitle`は読み飛ばすので、ハードディスク上の情報がページに出ることはありません。
+
+### 3 · 本文で引かない文献を加える
+
+フロントマターにキーで列挙します。
+
+```yaml
+---
+title: "Science as a Social Practice"
+nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, @rheinberger_toward_1997, @lopez_pinero_ciencia_1979"
+---
+```
+
+一覧には、引用したすべての文献にこの5つを加え、シカゴ方式の求めるとおり著者順にまとめて並べます。引用していない項目に印は付きません。`nocite: "@*"`は書き出し全体を並べます。`bibliography.includeUncited: true`は同じことを設定の側から行うので、常にライブラリー全体を刷るデザインに向きます。
+
+### 4 · 案内カードの緑の面
+
+<Excerpt region="opener" />
+
+帯は仕上がりに固定した深さ132mmの箱で、2つの段はその9mm下から始まります。題、罫、リードは`below`のアンカーでつないであるので、授業の題が長くなるとリードは重ならずに下へ押し下げられます。
+
+<Excerpt region="palette" />
+
+## アレンジ
+
+### Zoteroのコレクション全体を並べる
+
+書き出しそのものが一覧になる場合は、キーを省きます。ブロックの項目は、引用の有無にかかわらずすべて刷られます。
+
+```diff
+-nocite: "@fleck_genesis_1979, @merton_sociology_1973, @latour_science_1987, …"
++nocite: "@*"
+```
+
+### スタイルを変える
+
+同じキーのまま、ほかに何も変えずにハーバード方式（Cite Them Right）の一覧になります。
+
+```diff
+-  style: 'chicago-author-date', // '(Gieryn 1983)', 'Shapin and Schaffer (1985)'
++  style: 'harvard-cite-them-right',
+```
+
+## よくあるつまずき
+
+- `nocite`のキーがどの項目にも一致しないと、警告なしに捨てられます。キーは手で入力せず書き出しからコピーし、ページ上の項目数を数えて確かめます。
+- Zoteroはデータからキーを作ります。Zoteroで著者名や題を直すと、次の書き出しでキーが変わることがあり、そのキーの引用がすべて壊れます。本文を書く前にキーを固定しておきます。Zoteroは項目の「その他」（Extra）フィールドの`Citation Key: …`という行を読みます。
+- Zoteroは既定ではUTF-8で書き出し、アクセントはそのままの文字になります。ここのブロックは西欧のエンコーディングのオプションで書き出したので`{\"o}`の形になっています。Postextはどちらも読めます。
+- シカゴ方式の第18版は出版地を省くので、`address`フィールドは刷られません。DOIのある論文はDOIを刷り、JSTORの`url`は刷りません。

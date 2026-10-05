@@ -67,5 +67,12 @@ digits. Openers under a headpiece drawn by `ornaments.py` (sarlawḥ and
 rosettes, plain SVG); nights as red headings in feminine ordinal words
 (`markup.py --night-title ordinal --night-level 0`); the six volumes as part
 pages; الفهرس, a tapering colophon and the sources at the end. The cover
-(`thumbnail.jpg` is its render) is oxblood and gold round a Sani ol-Molk
-panel. `CREDITS.draft.md` was the draft of the bundle's `CREDITS.md`.
+(`thumbnail.jpg` is its render, page 1 with `render.mjs --jpeg … --pages '#1'`
+at 600 px wide) is a painting of tooled oxblood morocco round a miniature of
+Shahrazad and Shahryar, the title stamped in gold Ruqʿa in its cartouche.
+The cover and the spine are paintings (GPT Image 2.5 through fal.ai, no
+lettering): `../covers.py generate` paints them from `../covers.json`,
+`../covers.py process` crops them into `art/` (committed); build.py sets the
+title over them. `../patch_covers.py` splices a changed design or spine into
+the committed bundle without a rebuild.
+`CREDITS.draft.md` was the draft of the bundle's `CREDITS.md`.

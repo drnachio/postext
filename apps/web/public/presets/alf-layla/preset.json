@@ -666,8 +666,9 @@
      "slot": {
       "elements": [
        {
-        "kind": "box",
-        "id": "leather",
+        "kind": "image",
+        "id": "c-art",
+        "resourceId": "cover-art",
         "placement": {
          "anchor": {
           "to": "bleed",
@@ -675,34 +676,29 @@
          },
          "offset": {
           "x": {
-           "value": 0,
+           "value": 0.0,
            "unit": "mm"
           },
           "y": {
-           "value": 0,
+           "value": 0.0,
            "unit": "mm"
           }
          },
          "size": {
-          "width": "fill",
-          "height": "fill"
-         }
-        },
-        "style": {
-         "backgroundColor": {
-          "hex": "#4a1d17",
-          "model": "hex",
-          "paletteId": "leather"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
+          "width": {
+           "value": 170.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 240.0,
+           "unit": "mm"
+          }
          }
         }
        },
        {
-        "kind": "box",
-        "id": "c-frame",
+        "kind": "text",
+        "id": "c-title-lip",
         "placement": {
          "anchor": {
           "to": "page",
@@ -710,114 +706,39 @@
          },
          "offset": {
           "x": {
-           "value": 11.0,
+           "value": -0.35,
            "unit": "mm"
           },
           "y": {
-           "value": 11.0,
+           "value": 23.484,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 148.0,
-           "unit": "mm"
-          },
-          "height": {
-           "value": 218.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "style": {
-         "borderColor": {
-          "hex": "#d2ad5c",
-          "model": "hex",
-          "paletteId": "gold"
-         },
-         "borderWidth": {
-          "value": 2.2,
-          "unit": "pt"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "box",
-        "id": "c-frame-in",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 14.0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 14.0,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 142.0,
-           "unit": "mm"
-          },
-          "height": {
-           "value": 212.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "style": {
-         "borderColor": {
-          "hex": "#d2ad5c",
-          "model": "hex",
-          "paletteId": "gold"
-         },
-         "borderWidth": {
-          "value": 0.6,
-          "unit": "pt"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "image",
-        "id": "c-head",
-        "resourceId": "headpiece-gold",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top"
-         },
-         "offset": {
-          "x": {
-           "value": 0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 20.0,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 122.0,
+           "value": 170.0,
            "unit": "mm"
           },
           "height": "auto"
          }
         },
-        "decorative": true
+        "content": "ألف ليلة وليلة",
+        "fontFamily": "Aref Ruqaa",
+        "fontSize": {
+         "value": 50,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.3,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#4a1d17",
+         "model": "hex",
+         "paletteId": "leather"
+        }
        },
        {
         "kind": "text",
@@ -829,17 +750,17 @@
          },
          "offset": {
           "x": {
-           "value": 11.0,
+           "value": 0.0,
            "unit": "mm"
           },
           "y": {
-           "value": 62,
+           "value": 23.134,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 148.0,
+           "value": 170.0,
            "unit": "mm"
           },
           "height": "auto"
@@ -848,7 +769,7 @@
         "content": "ألف ليلة وليلة",
         "fontFamily": "Aref Ruqaa",
         "fontSize": {
-         "value": 46,
+         "value": 50,
          "unit": "pt"
         },
         "fontWeight": 700,
@@ -864,8 +785,8 @@
         }
        },
        {
-        "kind": "box",
-        "id": "c-panel-rule",
+        "kind": "text",
+        "id": "c-sub-lip",
         "placement": {
          "anchor": {
           "to": "page",
@@ -873,67 +794,38 @@
          },
          "offset": {
           "x": {
-           "value": 25.0,
+           "value": -0.35,
            "unit": "mm"
           },
           "y": {
-           "value": 102,
+           "value": 203.393,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 120,
-           "unit": "mm"
-          },
-          "height": {
-           "value": 73.907,
-           "unit": "mm"
-          }
-         }
-        },
-        "style": {
-         "borderColor": {
-          "hex": "#d2ad5c",
-          "model": "hex",
-          "paletteId": "gold"
-         },
-         "borderWidth": {
-          "value": 0.9,
-          "unit": "pt"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "image",
-        "id": "c-panel",
-        "resourceId": "cover-panel",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top"
-         },
-         "offset": {
-          "x": {
-           "value": 0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 104,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 116,
+           "value": 170.0,
            "unit": "mm"
           },
           "height": "auto"
          }
+        },
+        "content": "في ستة أجزاء",
+        "fontFamily": "Amiri",
+        "fontSize": {
+         "value": 21,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.5,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#4a1d17",
+         "model": "hex",
+         "paletteId": "leather"
         }
        },
        {
@@ -946,17 +838,17 @@
          },
          "offset": {
           "x": {
-           "value": 11.0,
+           "value": 0.0,
            "unit": "mm"
           },
           "y": {
-           "value": 189,
+           "value": 203.043,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 148.0,
+           "value": 170.0,
            "unit": "mm"
           },
           "height": "auto"
@@ -965,49 +857,20 @@
         "content": "في ستة أجزاء",
         "fontFamily": "Amiri",
         "fontSize": {
-         "value": 17,
+         "value": 21,
          "unit": "pt"
         },
         "fontWeight": 700,
         "italic": false,
         "align": "center",
         "verticalAlign": "middle",
-        "lineHeight": 1.2,
+        "lineHeight": 1.5,
         "overflow": "wrap",
         "color": {
          "hex": "#d2ad5c",
          "model": "hex",
          "paletteId": "gold"
         }
-       },
-       {
-        "kind": "image",
-        "id": "c-rosette",
-        "resourceId": "rosette-gold",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top"
-         },
-         "offset": {
-          "x": {
-           "value": 0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 204,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 13,
-           "unit": "mm"
-          },
-          "height": "auto"
-         }
-        },
-        "decorative": true
        }
       ]
      }
@@ -8330,16 +8193,6 @@
    "altText": "رسم محفور على الخشب لوليم هارفي: معروف يحرث أرض الفلاح"
   },
   {
-   "id": "cover-panel",
-   "typeId": "ornament",
-   "kind": "bitmap",
-   "file": "resources/cover-panel.jpg",
-   "width": 1359,
-   "height": 819,
-   "caption": "شركان وإبريزة في ضوء القمر",
-   "altText": "لوحة مائية لصنيع الملك: شركان وإبريزة في ضوء القمر"
-  },
-  {
    "id": "headpiece",
    "typeId": "ornament",
    "kind": "svg",
@@ -8389,6 +8242,16 @@
     "width": 0.14,
     "align": "center"
    }
+  },
+  {
+   "id": "cover-art",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/cover-art.jpg",
+   "width": 1417,
+   "height": 2000,
+   "caption": "الغلاف",
+   "altText": "غلاف من الجلد الأحمر الداكن المذهَّب، في وسطه تصويرة لشهرزاد تحكي للملك شهريار في قاعة من قصره ليلًا، ومن ورائهما قباب المدينة ومآذنها تحت الهلال"
   },
   {
    "id": "spine",

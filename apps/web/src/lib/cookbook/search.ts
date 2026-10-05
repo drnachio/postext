@@ -214,13 +214,21 @@ const EN_STOP_WORDS = [
 /** About forty words per locale that carry no meaning in a recipe query
  *  (compared after lowercasing and stripping diacritics). Chinese drops
  *  the characters and pairs `HAN_BREAKS` leaves behind that say nothing
- *  alone, and the English list for the Latin words a Chinese text quotes. */
+ *  alone, and the English list for the Latin words a Chinese text quotes.
+ *  Japanese drops the kana words `KANA_BREAKS` leaves standing (as grams,
+ *  folded to hiragana: こと, ため, よう…), with the English list too. */
 export const STOP_WORDS: Record<Locale, ReadonlySet<string>> = {
   en: new Set(EN_STOP_WORDS),
   zh: new Set([
     ...EN_STOP_WORDS,
     "是", "在", "有", "这", "那", "这个", "那个", "个", "也", "都", "就", "还", "又", "要", "想", "能",
     "会", "请", "让", "用", "中", "上", "下", "时", "里", "并", "而", "但", "则", "即", "之", "其",
+  ]),
+  ja: new Set([
+    ...EN_STOP_WORDS,
+    "こと", "もの", "ため", "よう", "これ", "それ", "あれ", "この", "その", "あの", "どの", "どれ",
+    "どう", "なに", "ある", "いる", "なる", "ない", "して", "した", "され", "れる", "られ", "でき",
+    "たい", "とき", "など", "なら", "けど", "だけ", "ほど", "また", "さら", "おく", "いう", "みる",
   ]),
   es: new Set([
     "a", "al", "como", "con", "cual", "cuando", "de", "del", "donde", "e", "el", "en", "entre",
@@ -316,7 +324,7 @@ export function makeProcessTerm(locale: Locale): (term: string) => string | null
 
 /** The search locale of a site locale segment, English for anything else. */
 export function searchLocale(locale: string): Locale {
-  return locale === "es" || locale === "ca" || locale === "zh" || locale === "ar" ? locale : "en";
+  return locale === "es" || locale === "ca" || locale === "zh" || locale === "ja" || locale === "ar" ? locale : "en";
 }
 
 // ─── MiniSearch ─────────────────────────────────────────────────────────────
@@ -352,6 +360,7 @@ export const MINISEARCH_OPTIONS: Record<Locale, Options<SearchDocument>> = {
   es: miniSearchOptions("es"),
   ca: miniSearchOptions("ca"),
   zh: miniSearchOptions("zh"),
+  ja: miniSearchOptions("ja"),
   ar: miniSearchOptions("ar"),
 };
 

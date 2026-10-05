@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR } from "postext-sandbox";
+import { PostextSandbox, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA } from "postext-sandbox";
 import { useTranslations, useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompactLanguageSwitcher } from "@/components/sandbox/CompactLanguageSwitcher";
@@ -21,12 +21,14 @@ const PRESET_SOURCES: { url: string; private?: boolean }[] = [
 const RECIPE_SLUG = /^[a-z0-9-]+$/;
 
 /** The guide's text for each interface language: the Chinese interface
- *  opens its Simplified Chinese edition. */
+ *  opens its Simplified Chinese edition, the Japanese one its Japanese
+ *  edition (set vertically). */
 const GUIDE_MARKDOWN: Record<SiteLocale, string> = {
   en: DEFAULT_MARKDOWN_EN,
   es: DEFAULT_MARKDOWN_ES,
   ca: DEFAULT_MARKDOWN_CA,
   zh: DEFAULT_MARKDOWN_ZH_HANS,
+  ja: DEFAULT_MARKDOWN_JA,
   ar: DEFAULT_MARKDOWN_AR,
 };
 
@@ -36,7 +38,7 @@ const GUIDE_MARKDOWN: Record<SiteLocale, string> = {
  *  captured in one language only still opens from the other language's
  *  link: the sandbox tries the variants in order. Recipes are captured in
  *  English and Spanish only: a Catalan link (`lang=ca`) tries Spanish
- *  first, any other language (`lang=zh-Hans`) English. */
+ *  first, any other language (`lang=zh-Hans`, `lang=ja`) English. */
 const HASH_BUNDLES = {
   recipe: (slug: string, lang: string | null) => {
     if (!RECIPE_SLUG.test(slug)) return null;
@@ -50,7 +52,7 @@ const HASH_BUNDLES = {
 export function SandboxPage() {
   const t = useTranslations("Sandbox");
   // The package takes the page's BCP 47 tag ("zh-Hans" for the "zh"
-  // route): its guide editions, document languages and number formats
+  // route, "ja" for "ja"): its guide editions, document languages and number formats
   // all read it.
   const site = siteLocale(useLocale());
   const locale = htmlLang(site);
