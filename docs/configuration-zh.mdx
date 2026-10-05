@@ -431,7 +431,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
+      <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下（设了安全区<code>Resource.safeArea</code>的图片先在安全区以内按原宽度裁切，仍然放不下时才缩小）；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1948,9 +1948,10 @@ headings: {
 出版方要求每一栏都从页面顶部开始、在页面底部平齐结束。分页规则（段首孤行和段末孤行保护、标题与正文不分离、不可拆分的图）自然会留下短栏，即栏底空着一个或多个基线网格行。启用齐底后，引擎会像排版工人那样处理，按编辑上的优先顺序使用以下手段：
 
 1. **收尾的框**：结束一个短栏的标注框整体下移，下移量正好等于其底部下方的空余，使它的下边缘落在页面最后一个网格位置上，与相邻栏的最后一行平齐。即使空余不足一行，只要没有内容移入另一栏，它也会占满这段空余。默认情况下这一手段先于其他所有手段执行，并占用整段空余，所以一个注释上方段落的框可能最后落在该段落下方好几行处；`closingBox: 'last'`让标题、列表结尾和其他间距手段先占用整行，框只占它们剩下的部分；`closingBox: 'off'`则从不移动它。
-2. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
-3. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
-4. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在**`bodyText.maxWordSpacing`以下**时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
+2. **有安全区的图片**：设了安全区（`Resource.safeArea`，见[文档格式 › 安全区](/zh/docs/document-format#安全区)）的图片，如果以行内方式排在短栏里，或者作为只占这一栏的浮动体排在栏顶或栏底，就按整数个网格行增高，在安全区以内裁切，直到这一栏排满，或者裁切到了安全区为止。图片变高不会在页面上留下空洞，所以这一手段在增加任何空白之前执行；在栏首要保持平齐的页面或区段上（见下文），位于栏顶的浮动体不会增高。记录为`flexFigure`。这一手段没有单独的设置：只有资源标出了安全区的图片才会增高。
+3. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
+4. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
+5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在**`bodyText.maxWordSpacing`以下**时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
 
 只有当页面自然延续到下一页时，才会对该页最后一栏做齐底；一章的末页本来就可以短一截。这样的页面，以及由`trailing`截平的收尾区段，还会让各栏的栏首保持平齐：栏首为图或表时，不会在其下方加行（浮动体后手段）；在这样的图下方开栏的标题或框，无论`stretchAfterFloats`如何设置，都留在栏首。这样就不会为了让栏底对齐而让某一栏比旁边一栏起得更低。
 
@@ -2052,11 +2053,12 @@ headings: {
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // 通常只有一个：列表后的段落可能既占用列表结尾那一行，又多排一行
-  spaceAbove: number;     // 间距手段在块上方增加的px（只有looseParagraph起作用时为0）
+  spaceAbove: number;     // 间距手段在块上方增加的px（只有looseParagraph或flexFigure起作用时为0）
+  bodyGrowth?: number;    // flexFigure：图片增高的px，在安全区以内裁切
   extraLines?: number;    // looseParagraph：段落多出的行数
   tracking?: number;      // looseParagraph：多出这些行所用的字距，单位为千分之一em（0 = 仅靠词间距）
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2072,6 +2074,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>标注框的外框块</td>
       <td>结束该栏的框下移，下移量正好等于其底部下方的空余（<code>spaceAbove</code>；不足一行也可以）。</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>图片的块（行内）或浮动体</td>
+      <td>设了安全区的图片按整数个网格行增高了<code>bodyGrowth</code> px，在安全区以内裁切。资源块的<code>bodySource</code>是显示出来的部分，<code>bodyFlex.delta</code>是同一增量。</td>
     </tr>
     <tr>
       <td><code>heading</code></td>

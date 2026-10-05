@@ -182,6 +182,7 @@ You can also drag and drop files from disk onto the panel. They upload in bulk, 
   - **Width**: a width fraction with an alignment, for floats and inline embeds narrower than their column. The alignment also places a bitmap or SVG narrower than its slot at full width (a bitmap smaller than the column, or a figure `layout.fitFiguresToPage` shrank), so it stays enabled for pictures; for a table it needs a width under 100%. A turned resource has neither.
   - **Caption beside the figure**: a toggle for the side column of a column-and-a-half layout. It applies to column floats, so it is hidden when the position is `here`.
 - **Payload**: uploaders that replace the bitmap or SVG file
+- **Safe area**: for bitmaps and SVGs, the part of the picture that is always shown (`Resource.safeArea`; see [Document format › Safe area](/en/docs/document-format#safe-area)). The field shows a thumbnail with the area marked and its size in percent, or *None* when the picture has none, with **Mark safe area** / **Edit safe area** and **Remove safe area** buttons. The dialog shows the picture: drag outside the rectangle to draw a new one, inside it to move it, or from its handles to resize it; with the rectangle focused, the arrow keys move it and Shift with the arrows resizes it. *Left*, *Top*, *Width* and *Height* fields set it in percent, and two previews show the tallest and the shortest crop the area allows.
 - **SVG source**: for SVG figures, a source editor under the uploader. Only the text nodes accept edits: the content of `<text>` / `<tspan>` elements, tinted in the editor. Typing anywhere else is rejected, and `<`, `>` and `&` typed into a text node are escaped so the file stays well-formed. Each change is saved after a short pause as a **new** stored file, and the figure re-renders (single-ink recolouring included). The editor notes when the SVG has no text nodes.
 - **Preview**: a live mock-up of how the resource will look, with `#` standing in for the number (real numbers depend on where the resource lands in the document). The caption opens with the label the document sets: the type's caption prefix and the number (`Figure #.`), the prefix alone for a type numbered with an empty template (`Do.`), and nothing for a type with no caption prefix
 - **Delete**: asks for confirmation first, and warns how many `::resource` / `:ref` references in the text would be left pointing at nothing
@@ -773,6 +774,7 @@ Appendix. A preset source is a directory (served over HTTP) whose root holds an 
       "height": 180,                   // optional
       "caption": "Caption text",
       "altText": "Accessible description",            // optional
+      "safeArea": { "x": 0.18, "y": 0.25, "width": 0.5, "height": 0.6 }, // optional, svg/bitmap only: the part always shown, in fractions of the picture
       "placement": { "position": "top", "span": "column" },  // optional
       "note": "Source: ...",                          // optional
       "table": { "model": { "rows": [[{ "content": "A", "isHeader": true }]], "headerRowCount": 1 } }

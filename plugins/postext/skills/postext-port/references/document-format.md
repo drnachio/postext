@@ -408,6 +408,7 @@ Source: ; .
 Resources are JSON records in `PostextContent.resources` (in a preset: `preset.json → resources[]` plus the files). They are not Markdown. Main fields:
 - `id`, `typeId` (e.g. `figure`, `table`), `kind: bitmap|svg|table`, `caption`, `note`, `altText`, `placement`
 - the payload (`bitmap{fileId,…}`, `svg{fileId, pdfFileId?}`, `table{model, styleId?}`)
+- `safeArea` (bitmap/svg only, optional): `{x, y, width, height}` in fractions of the picture, top-left origin; the part always shown. With it the engine may crop outside it to make the figure taller or shorter (fit the room left, `fitFiguresToPage`, column balancing lever `flexFigure`); without it the picture is always whole
 
 The Markdown only cites them.
 

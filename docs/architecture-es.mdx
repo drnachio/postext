@@ -153,6 +153,7 @@ interface Resource {
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
   placement?: ResourcePlacement; // sobrescritura opcional de flotado por recurso
+  safeArea?: ResourceSafeArea;  // bitmap / svg: { x, y, width, height } en fracciones, la parte que siempre se ve
 }
 ```
 
@@ -345,6 +346,8 @@ interface ResolvedResourceBlock {
   number: string;             // número calculado, p. ej. "1.7"
   captionPrefix: string;      // p. ej. "Figura"
   bodyRect: BoundingBox;      // el área de la imagen / tabla
+  bodySource?: ResourceSafeArea; // la parte de la imagen que se ve en bodyRect cuando se recorta a su zona segura
+  bodyFlex?: { shrink: number; grow: number; delta: number }; // px que el cuerpo aún puede encoger / crecer, px aplicados
   fileId?: string;            // binario fuera de banda (bitmap / svg)
   captionLines: VDTLine[];    // pie medido, con prefijo + número incluidos
   table?: VDTResourceTableLayout; // geometría de celdas para recursos tabla

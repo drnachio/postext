@@ -44,43 +44,38 @@ const table = (placement: ResourcePlacement): Resource => ({
   placement,
 });
 
-/** The opening tag of the Align select, or null when it is not rendered. */
-const alignSelect = (html: string): string | null => {
-  const at = html.indexOf(`aria-label="${L.resourceTypePlacementAlign}"`);
-  if (at < 0) return null;
-  const start = html.lastIndexOf('<select', at);
-  return html.slice(start, html.indexOf('>', at) + 1);
-};
-const captionSide = (html: string): boolean => html.includes(`aria-label="${L.resourceTypePlacementCaptionSide}"`);
+/** Whether the placement row labelled `label` is rendered (#441: one
+ *  labelled row per key, the rows that cannot apply left out). */
+const row = (html: string, label: string): boolean =>
+  new RegExp(`<label[^>]*>(?:<span[^>]*></span>)?${label}<`).test(html);
+const align = (html: string): boolean => row(html, L.resourceTypePlacementAlign);
+const width = (html: string): boolean => row(html, L.resourceTypePlacementWidth);
+const captionSide = (html: string): boolean => row(html, L.resourceTypePlacementCaptionSide);
 
 describe('ResourceDetail placement: width and align', () => {
-  it('enables Align for a full-width picture (it places a picture narrower than the column)', () => {
-    const tag = alignSelect(render(bitmap({ position: 'auto' })));
-    expect(tag).not.toBeNull();
-    expect(tag).not.toMatch(/\sdisabled/);
+  it('offers Align for a full-width picture (it places a picture narrower than the column)', () => {
+    expect(align(render(bitmap({ position: 'auto' })))).toBe(true);
   });
 
-  it('keeps Align disabled for a full-width table (it fills its slot)', () => {
-    const tag = alignSelect(render(table({ position: 'auto' })));
-    expect(tag).not.toBeNull();
-    expect(tag).toMatch(/\sdisabled/);
+  it('leaves Align out for a full-width table (it fills its slot)', () => {
+    expect(align(render(table({ position: 'auto' })))).toBe(false);
     // Narrowed by Width, a table can be aligned.
-    expect(alignSelect(render(table({ position: 'auto', width: 0.5 })))).not.toMatch(/\sdisabled/);
+    expect(align(render(table({ position: 'auto', width: 0.5 })))).toBe(true);
   });
 
   it('offers Width and Align for an inline embed, without the caption-beside switch', () => {
     const html = render(bitmap({ position: 'here', align: 'center' }));
-    expect(html).toContain(`aria-label="${L.resourceTypePlacementWidth}"`);
-    const tag = alignSelect(html);
-    expect(tag).not.toBeNull();
-    expect(tag).not.toMatch(/\sdisabled/);
+    expect(width(html)).toBe(true);
+    expect(align(html)).toBe(true);
     expect(captionSide(html)).toBe(false);
     // A column float keeps the switch.
     expect(captionSide(render(bitmap({ position: 'auto' })))).toBe(true);
   });
 
   it('hides Width and Align for a turned resource (a page of its own)', () => {
-    expect(alignSelect(render(bitmap({ position: 'auto', rotate: 'ccw' })))).toBeNull();
+    const html = render(bitmap({ position: 'auto', rotate: 'ccw' }));
+    expect(width(html)).toBe(false);
+    expect(align(html)).toBe(false);
   });
 
   it('says in the tooltip that Align also places a picture narrower than its slot', () => {

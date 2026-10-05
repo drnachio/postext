@@ -152,6 +152,7 @@ interface Resource {
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
   placement?: ResourcePlacement; // optional per-resource float override
+  safeArea?: ResourceSafeArea;  // bitmap / svg: { x, y, width, height } in fractions, the part always shown
 }
 ```
 
@@ -344,6 +345,8 @@ interface ResolvedResourceBlock {
   number: string;             // computed number, e.g. "1.7"
   captionPrefix: string;      // e.g. "Figure"
   bodyRect: BoundingBox;      // the image / table area
+  bodySource?: ResourceSafeArea; // the part of the picture shown in bodyRect when cropped to its safe area
+  bodyFlex?: { shrink: number; grow: number; delta: number }; // px the body can still shrink / grow, px applied
   fileId?: string;            // out-of-band binary (bitmap / svg)
   captionLines: VDTLine[];    // measured caption, prefix + number included
   table?: VDTResourceTableLayout; // cell geometry for table resources

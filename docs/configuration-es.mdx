@@ -431,7 +431,7 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella, y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. La imagen reducida se sitúa en su hueco según <code>placement.align</code>. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
+      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella (una imagen con zona segura, <code>Resource.safeArea</code>, se recorta antes dentro de ella a todo su ancho, y solo se reduce si sigue sin caber), y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. La imagen reducida se sitúa en su hueco según <code>placement.align</code>. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1951,9 +1951,10 @@ Un objeto `headings` conserva todos los valores por defecto de nivel que no repi
 Las editoriales esperan que cada columna empiece en la parte superior de la página y termine alineada con su parte inferior. Las reglas de ruptura (protección de huérfanas y viudas, títulos unidos a su texto, figuras indivisibles) dejan columnas cortas de forma natural — una o más líneas de rejilla base vacías al final. Con el equilibrado activado, el motor hace lo que haría un maquetista, aplicando sus palancas en orden de prioridad editorial:
 
 1. **Una caja que cierra la columna** — un callout que termina una columna corta baja exactamente el espacio que queda bajo su pie, de modo que su borde inferior cae en la última casilla de rejilla de la página, a nivel con la última línea de la columna contigua. Ocupa ese espacio aunque sea menor que una línea, siempre que nada pase a otra columna. Por defecto actúa antes que cualquier otra palanca y se queda con todo el hueco, de modo que un recuadro que comenta el párrafo de encima puede acabar varias líneas por debajo de él; con `closingBox: 'last'` los encabezados, los finales de lista y las demás palancas de espacio toman antes las líneas enteras, y el recuadro solo lo que dejan, y con `closingBox: 'off'` no se mueve nunca.
-2. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior — salvo un encabezado justo bajo una figura o tabla que encabeza su columna en una página que fluye hacia la siguiente: el espacio va sobre ese encabezado, bajo la figura.
-3. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
-4. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
+2. **Imágenes con zona segura** — una imagen con zona segura (`Resource.safeArea`, véase [Formato del documento › Zona segura](/es/docs/document-format#zona-segura)) colocada en línea en la columna corta, o flotada en su cabeza o su pie y solo sobre ella, crece en líneas enteras de rejilla, recortada dentro de su zona segura, hasta llenar la columna o hasta que el recorte llega a la zona segura. Una imagen más alta no deja ningún hueco en la página, así que actúa antes de añadir ningún espacio; un flotante en la cabeza de una columna de una página o banda cuyas cabezas de columna quedan a nivel (véase más abajo) no crece. Se anota como `flexFigure`. No tiene ajuste propio: solo crece una imagen cuyo recurso marca una zona segura.
+3. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior — salvo un encabezado justo bajo una figura o tabla que encabeza su columna en una página que fluye hacia la siguiente: el espacio va sobre ese encabezado, bajo la figura.
+4. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
+5. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
 
 La última columna de una página solo se equilibra cuando la página fluye de forma natural hacia la siguiente — la página final de un capítulo termina corta de forma legítima. Esa página, y una banda de cierre cortada a nivel por `trailing`, mantienen además las cabezas de sus columnas a la misma altura: no se añade ninguna línea bajo una figura o tabla que encabece una de sus columnas (la palanca tras flotantes), y un encabezado o una caja que abre una columna bajo esa figura se queda en su cabeza, diga lo que diga `stretchAfterFloats`, de modo que ninguna columna empieza más abajo que su vecina solo para igualar los pies.
 
@@ -2055,11 +2056,12 @@ La maquetación deja constancia de cada palanca que aplica, en el bloque sobre e
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // normalmente una: un párrafo tras una lista puede tomar la línea de final de lista y además ganar una línea
-  spaceAbove: number;     // px que las palancas de espaciado añadieron sobre el bloque (0 si solo actuó looseParagraph)
+  spaceAbove: number;     // px que las palancas de espaciado añadieron sobre el bloque (0 si solo actuó looseParagraph o flexFigure)
+  bodyGrowth?: number;    // flexFigure: px que creció la imagen, recortada dentro de su zona segura
   extraLines?: number;    // looseParagraph: líneas que ganó el párrafo
   tracking?: number;      // looseParagraph: el tracking con que las ganó, en milésimas de eme (0 = solo con el espaciado entre palabras)
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2075,6 +2077,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>el bloque del marco del aviso</td>
       <td>Una caja que cierra la columna bajó exactamente el espacio que quedaba bajo su pie (<code>spaceAbove</code>; puede ser una fracción de línea).</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>el bloque de la imagen (en línea) o el flotante</td>
+      <td>Una imagen con zona segura compuesta <code>bodyGrowth</code> px más alta, en líneas enteras de rejilla, recortada dentro de la zona segura. El <code>bodySource</code> del bloque del recurso es la parte que se ve, y <code>bodyFlex.delta</code> el mismo crecimiento.</td>
     </tr>
     <tr>
       <td><code>heading</code></td>

@@ -19,6 +19,7 @@ import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
+import { SafeAreaField } from './SafeAreaEditor';
 import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
 import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
@@ -485,6 +486,17 @@ export function ResourceDetail({
           <Field label={labels.resourceSvgLabel}>
             <SvgUploader onUploaded={applySvg} compact={!!resource.svg} />
           </Field>
+        )}
+        {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId)) && (
+          <SafeAreaField
+            resource={resource}
+            onChange={(safeArea) => {
+              const next = touch({});
+              if (safeArea) next.safeArea = safeArea;
+              else delete next.safeArea;
+              onChange(next);
+            }}
+          />
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
           <Field label={labels.resourcePdfMasterLabel} hint={labels.resourcePdfMasterHint}>

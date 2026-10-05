@@ -431,7 +431,7 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it, and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. A shrunk image sits in its slot per <code>placement.align</code>. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
+      <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it (a picture with a safe area, <code>Resource.safeArea</code>, is first cropped within it at its full width, and only shrunk if it still does not fit), and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. A shrunk image sits in its slot per <code>placement.align</code>. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1951,9 +1951,10 @@ Passing a `headings` object keeps every level default you do not restate, the H1
 Publishers expect every column to start at the top of the page and end flush with its bottom. Break rules (orphan/widow protection, headings kept with their text, unsplittable figures) naturally leave short columns — one or more empty baseline-grid lines at the bottom. When balancing is enabled, the engine does what a compositor would, applying its levers in editorial priority order:
 
 1. **A box closing the column** — a callout that ends a short column is pushed down by the exact room under its foot, so its bottom edge lands on the last grid slot of the page, level with the last line of the column beside it. It takes that room even when it is less than a line, as long as nothing moves into another column. By default it runs before every other lever and takes the whole gap, so a box that annotates the paragraph above it can end up several lines below it; `closingBox: 'last'` lets the headings, the list ends and the other spacing levers take the whole lines first, and the box only what they leave, and `closingBox: 'off'` never moves it.
-2. **Headings** — whole grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top — except a heading right under a figure or table that heads its column on a page that flows on: the room goes above that heading, under the figure.
-3. **List ends** — when the headings cannot absorb the whole gap, a grid line is added where a list/enumeration ends (space after a list reads naturally), capped per list end.
-4. **Loose paragraphs** — as a last resort, one paragraph of the column is re-broken one line longer (TeX's `\looseness=+1`), choosing the longest paragraph so the extra word spacing dilutes invisibly. The loose solution is only accepted when every line stays **below `bodyText.maxWordSpacing`** — type colour never exceeds the limit you already configured. Requires `bodyText.optimalLineBreaking`.
+2. **Pictures with a safe area** — a picture with a safe area (`Resource.safeArea`, see [Document format › Safe area](/en/docs/document-format#safe-area)) set inline in the short column, or floated at its head or its foot over that column alone, grows by whole grid lines, cropped within its safe area, until the column is full or the crop reaches the safe area. A taller picture leaves no hole on the page, so it runs before any space is added; a float at the head of a column on a page or band whose column heads stay level (see below) does not grow. Recorded as `flexFigure`. It has no setting of its own: only a picture whose resource marks a safe area can grow.
+3. **Headings** — whole grid lines are added to the top margin of the headings inside the short column. When several lines are needed and the column holds several headings, the lines are distributed among them, always giving the largest share to the most important heading (an `h2` receives more than an `h3`). Headings sitting at the very top of a column never receive extra space, so columns keep starting at the page top — except a heading right under a figure or table that heads its column on a page that flows on: the room goes above that heading, under the figure.
+4. **List ends** — when the headings cannot absorb the whole gap, a grid line is added where a list/enumeration ends (space after a list reads naturally), capped per list end.
+5. **Loose paragraphs** — as a last resort, one paragraph of the column is re-broken one line longer (TeX's `\looseness=+1`), choosing the longest paragraph so the extra word spacing dilutes invisibly. The loose solution is only accepted when every line stays **below `bodyText.maxWordSpacing`** — type colour never exceeds the limit you already configured. Requires `bodyText.optimalLineBreaking`.
 
 The last column of a page is only balanced when the page flows naturally into the next one — a chapter's closing page legitimately ends short. Such a page, and a closing band cut level by `trailing`, also keeps its column heads level: no line is added under a figure or table heading one of its columns (the after-float lever), and a heading or a box that opens a column under such a figure stays at its head, whatever `stretchAfterFloats` says, so a column never starts lower than the one beside it just to line the feet up.
 
@@ -2055,11 +2056,12 @@ The layout records every lever it applied, on the block it applied to: `block.ba
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // usually one: a paragraph after a list can take the list-end line and run a line long too
-  spaceAbove: number;     // px the spacing levers added above the block (0 when only looseParagraph fired)
+  spaceAbove: number;     // px the spacing levers added above the block (0 when only looseParagraph or flexFigure fired)
+  bodyGrowth?: number;    // flexFigure: px the picture grew, cropped within its safe area
   extraLines?: number;    // looseParagraph: lines the paragraph gained
   tracking?: number;      // looseParagraph: the tracking that gained them, in thousandths of an em (0 = word spacing alone)
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2075,6 +2077,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>the callout's frame block</td>
       <td>A box closing the column moved down by the exact room under its foot (<code>spaceAbove</code>; a fraction of a line is fine).</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>the picture's block (inline) or float</td>
+      <td>A picture with a safe area set <code>bodyGrowth</code> px taller, by whole grid lines, cropped within the safe area. The resource block's <code>bodySource</code> is the part shown and <code>bodyFlex.delta</code> the same growth.</td>
     </tr>
     <tr>
       <td><code>heading</code></td>

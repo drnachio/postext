@@ -1237,6 +1237,30 @@ All three backends — the canvas preview, the HTML viewer, and the PDF output �
 - A paragraph that runs from one page onto the next counts from its citing line too. When the paragraph begins at the foot of page 5 and the reference falls on page 6 — or the whole paragraph moves to page 6, because not enough of its lines fit at the foot of page 5 — the reference is on page 6: a `top` float opens page 7, and an `auto` one takes the foot of page 6 when there is room for it. The same holds between the columns of a page, and for a box split across pages: a figure its second part cites waits for that part.
 - **Changed in postext 1.5.** Up to postext 1.4 a float was queued when the layout reached the paragraph that cites it, so the page such a paragraph ran onto (or moved to) could open with the float, above the line holding the reference. Such a figure now lands a page later, or at the foot of the page when it asks for `auto`; a page-count change can follow.
 
+### Safe area
+
+A bitmap or SVG resource can mark a **safe area**: the rectangle of the picture that holds what matters (a person and a strip of the landscape behind them, the plotted part of a chart) and is always shown. It is the resource's `safeArea`, four fractions (0–1) of the picture's intrinsic size measured from its top-left corner: `x` and `width` are fractions of its width, `y` and `height` of its height. The name says what has to be kept; a crop box would say where to cut.
+
+```ts
+const harbour: Resource = {
+  id: 'harbour', typeId: 'figure', kind: 'bitmap', caption: 'The harbour at dawn.',
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'harbour.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  // the boats and the quay: 18–68 % of the width, 25–85 % of the height
+  safeArea: { x: 0.18, y: 0.25, width: 0.5, height: 0.6 },
+};
+```
+
+Only a picture with a safe area is ever cropped. The engine may then show it at any aspect ratio between the whole picture and the safe area: taller than the picture's own ratio by cropping the sides, at most down to the safe area's width, or shorter by cropping top and bottom, at most down to its height. The width of the figure never changes, only its height. What lies outside the safe area is cropped on both sides in proportion to the margins there, so a subject left of centre stays left of centre. Set 60 mm wide, the harbour above is 40 mm tall when whole, and can be shown anywhere from 24 mm tall (top and bottom cropped down to 60 % of the height) to 80 mm tall (the sides cropped down to half the width). Values past the picture's edges are clamped to it; an area with a value that is not a number or a side under 2 % of the picture, or one that covers the whole picture, is ignored, and so is the field on a table. Without a safe area a picture is always shown whole, as before.
+
+The engine uses that room in three places:
+
+- **The room left in a column.** An inline picture (`position: 'here'`) a little too tall for the room left in its column, including one whose caption would run past the foot of the page, is cropped within its safe area to stay there, instead of moving on to the next column or page and leaving this one short.
+- **Pages shorter than the figure.** With `layout.fitFiguresToPage`, a picture too tall for the page is first cropped within its safe area, keeping its width, and only scaled down if it is still too tall (see [Configuration › Layout](/en/docs/configuration#layout)).
+- **Column balancing.** A picture with a safe area set inline in a short column, or floated at the head or the foot of that column over that column alone, grows by whole baseline-grid lines to fill the column's empty lines. A taller picture leaves no visible hole, so this lever, `flexFigure`, is tried right after the box closing the column and before any space is added above headings or after lists. A float at the head of a column on a chapter's closing page or in a closing band does not grow, since those column heads stay level (see [Configuration › Column balancing](/en/docs/configuration#column-balancing)).
+
+The VDT records the crop on the resource block: `bodySource` is the part of the picture shown in `bodyRect`, in the same fractions (absent when the whole picture fills it), and `bodyFlex` gives the px the body could still shrink and grow and the px the levers already changed it by (`{ shrink, grow, delta }`). The canvas preview and the PDF clip to the body and draw the whole picture at its uncropped size; the HTML viewer and fixed-layout EPUB set the image with `object-fit: cover` and a matching `object-position`; a reflowable EPUB, which has no page to fill, shows the whole picture. A host that draws pictures itself can use the helpers `postext` exports: `resourceSafeArea` and `normalizeSafeArea` (the area as the engine reads it, or `undefined`), `safeAreaHeightRange` (the shortest and tallest body at a width), `safeAreaSource` (the part shown at a given height) and `uncroppedPictureBox` (where to draw the whole picture before clipping), with the type `ResourceSafeArea`. In the Sandbox the field is **Safe area** on a picture in the [Resources panel](/en/docs/sandbox#resources-panel).
+
 
 ## What is NOT supported
 

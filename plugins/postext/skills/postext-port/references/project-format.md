@@ -135,6 +135,7 @@ embeds them with `::resource{id="…"}` (placement `here`).
   "caption": "Dark spot on *Neptune*.",          // inline markup allowed; the label/number is added
   "note": "Credit: ESO/P. Irwin et al.",         // credit line under the caption; `\\` (or `\` at a line end) starts a new line, in captions too
   "altText": "A blue planet with a dark oval",   // always write it (tagged PDF)
+  "safeArea": { "x": 0.3, "y": 0.2, "width": 0.4, "height": 0.6 }, // optional: the part always shown (fractions); lets the engine crop the rest to fit or balance a column
   "placement": { "position": "top", "span": "page" } }
 
 // svg — size read from width/height/viewBox if omitted; optional vector print master

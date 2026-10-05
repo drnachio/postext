@@ -947,23 +947,26 @@ export function renderResourceBlock(
   }
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    tagContent(ctx, owner);
     const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
     const src = rb.bodySource;
     if (embedded && src) {
       // A picture cropped within its safe area (#442): the whole picture at
-      // its uncropped box, clipped to the body; on a mirrored page the box
-      // is reflected about the body, as the picture is turned back in it.
+      // its uncropped box, clipped to the body (the figure's content opened
+      // inside the clip, which closes marked content); on a mirrored page
+      // the box is reflected about the body, as the picture is turned back
+      // in it.
       let full = uncroppedPictureBox(bx, by, bw, bh, src);
       if (ctx.mirror) full = { ...full, x: 2 * bx + bw - full.x - full.width };
       pushClipRect(ctx, bx, by, bw, bh);
       tagContent(ctx, owner);
       drawEmbeddedResource(ctx, embedded, full.x, full.y, full.width, full.height);
       popClip(ctx);
-      tagContent(ctx, owner);
+      tagArtifact(ctx, { type: 'Layout' });
     } else if (embedded) {
+      tagContent(ctx, owner);
       drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
     } else {
+      tagContent(ctx, owner);
       if (rb.fileId) ctx.onMissingImage?.(rb.fileId, rb.resource.id);
       drawPlaceholder(ctx, rb, bx, by);
     }

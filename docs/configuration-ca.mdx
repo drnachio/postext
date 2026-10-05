@@ -429,7 +429,7 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Redueix una figura (mapa de bits o SVG) la imatge, el peu i la nota de la qual quedarien més alts que l'àrea de contingut fins que hi càpiguen, i compon més petita una figura en línia que per poc no cap en el que queda de la seva columna (fins a la meitat de la seva amplada; el peu conserva la mida de la columna) perquè continuï al costat del seu text. La imatge reduïda se situa en el seu buit segons <code>placement.align</code>. El visor HTML l'activa, perquè les seves pàgines són tan altes com la pantalla; les pàgines impreses es dimensionen per a les seves figures.</td>
+      <td>Redueix una figura (mapa de bits o SVG) la imatge, el peu i la nota de la qual quedarien més alts que l'àrea de contingut fins que hi càpiguen (una imatge amb zona segura, <code>Resource.safeArea</code>, primer es retalla dins d'aquesta zona a tota l'amplada, i només es redueix si encara no hi cap), i compon més petita una figura en línia que per poc no cap en el que queda de la seva columna (fins a la meitat de la seva amplada; el peu conserva la mida de la columna) perquè continuï al costat del seu text. La imatge reduïda se situa en el seu buit segons <code>placement.align</code>. El visor HTML l'activa, perquè les seves pàgines són tan altes com la pantalla; les pàgines impreses es dimensionen per a les seves figures.</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1944,9 +1944,10 @@ Un objecte `headings` conserva tots els valors per defecte de nivell que no repe
 Les editorials esperen que cada columna comenci a la part superior de la pàgina i acabi alineada amb la part inferior. Les regles de ruptura (protecció d'òrfenes i vídues, títols units al seu text, figures indivisibles) deixen columnes curtes de manera natural — una o més línies de retícula de base buides al final. Amb l'equilibratge activat, el motor fa el que faria un maquetista, aplicant les seves palanques en ordre de prioritat editorial:
 
 1. **Una caixa que tanca la columna** — un callout que acaba una columna curta baixa exactament l'espai que queda sota el seu peu, de manera que la seva vora inferior cau a l'última casella de retícula de la pàgina, a nivell amb l'última línia de la columna contigua. Ocupa aquest espai encara que sigui menor que una línia, sempre que res no passi a una altra columna. Per defecte actua abans que qualsevol altra palanca i es queda tot el buit, de manera que un requadre que comenta el paràgraf de damunt pot acabar diverses línies per sota d'aquest; amb `closingBox: 'last'` els encapçalaments, els finals de llista i les altres palanques d'espai prenen abans les línies senceres, i el requadre només el que deixen, i amb `closingBox: 'off'` no es mou mai.
-2. **Encapçalaments** — s'afegeixen línies completes de retícula al marge superior dels encapçalaments de la columna curta. Quan calen diverses línies i la columna conté diversos encapçalaments, les línies es reparteixen entre ells, deixant sempre la major part a l'encapçalament més important (un `h2` en rep més que un `h3`). Els encapçalaments situats al principi d'una columna no reben mai espai addicional, de manera que les columnes continuen començant a la part superior — llevat d'un encapçalament just sota una figura o taula que encapçala la seva columna en una pàgina que flueix cap a la següent: l'espai va damunt d'aquest encapçalament, sota la figura.
-3. **Finals de llista** — quan els encapçalaments no poden absorbir tot el buit, s'afegeix una línia de retícula on acaba una llista o enumeració (l'aire després d'una llista es llegeix amb naturalitat), amb un màxim per llista.
-4. **Paràgrafs correguts** — com a últim recurs, es recompon un paràgraf de la columna amb una línia més (el `\looseness=+1` de TeX), triant el paràgraf més llarg perquè l'espaiat addicional es dilueixi de manera invisible. La solució correguda només s'accepta quan totes les seves línies queden **per sota de `bodyText.maxWordSpacing`** — el color tipogràfic mai no supera el límit que ja tinguis configurat. Requereix `bodyText.optimalLineBreaking`.
+2. **Imatges amb zona segura** — una imatge amb zona segura (`Resource.safeArea`, vegeu [Format del document › Zona segura](/ca/docs/document-format#zona-segura)) col·locada en línia a la columna curta, o flotada al seu cap o al seu peu i només sobre ella, creix en línies senceres de retícula, retallada dins de la zona segura, fins a omplir la columna o fins que el retall arriba a la zona segura. Una imatge més alta no deixa cap forat a la pàgina, així que actua abans d'afegir cap espai; un flotant al cap d'una columna d'una pàgina o banda on els caps de columna queden anivellats (vegeu més avall) no creix. S'anota com a `flexFigure`. No té cap ajust propi: només creix una imatge el recurs de la qual marca una zona segura.
+3. **Encapçalaments** — s'afegeixen línies completes de retícula al marge superior dels encapçalaments de la columna curta. Quan calen diverses línies i la columna conté diversos encapçalaments, les línies es reparteixen entre ells, deixant sempre la major part a l'encapçalament més important (un `h2` en rep més que un `h3`). Els encapçalaments situats al principi d'una columna no reben mai espai addicional, de manera que les columnes continuen començant a la part superior — llevat d'un encapçalament just sota una figura o taula que encapçala la seva columna en una pàgina que flueix cap a la següent: l'espai va damunt d'aquest encapçalament, sota la figura.
+4. **Finals de llista** — quan els encapçalaments no poden absorbir tot el buit, s'afegeix una línia de retícula on acaba una llista o enumeració (l'aire després d'una llista es llegeix amb naturalitat), amb un màxim per llista.
+5. **Paràgrafs correguts** — com a últim recurs, es recompon un paràgraf de la columna amb una línia més (el `\looseness=+1` de TeX), triant el paràgraf més llarg perquè l'espaiat addicional es dilueixi de manera invisible. La solució correguda només s'accepta quan totes les seves línies queden **per sota de `bodyText.maxWordSpacing`** — el color tipogràfic mai no supera el límit que ja tinguis configurat. Requereix `bodyText.optimalLineBreaking`.
 
 L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de manera natural cap a la següent — la pàgina final d'un capítol acaba curta de manera legítima. Aquesta pàgina, i una banda de tancament tallada a nivell per `trailing`, mantenen a més els caps de les seves columnes a la mateixa altura: no s'afegeix cap línia sota una figura o taula que encapçali una de les seves columnes (la palanca després de flotants), i un encapçalament o una caixa que obre una columna sota aquesta figura es queda al seu cap, digui el que digui `stretchAfterFloats`, de manera que cap columna no comença més avall que la veïna només per igualar els peus.
 
@@ -2048,11 +2049,12 @@ La maquetació deixa constància de cada palanca que aplica, al bloc sobre el qu
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // normalment una: un paràgraf després d'una llista pot prendre la línia de final de llista i a més guanyar una línia
-  spaceAbove: number;     // px que les palanques d'espaiat han afegit damunt del bloc (0 si només ha actuat looseParagraph)
+  spaceAbove: number;     // px que les palanques d'espaiat han afegit damunt del bloc (0 si només ha actuat looseParagraph o flexFigure)
+  bodyGrowth?: number;    // flexFigure: px que ha crescut la imatge, retallada dins de la zona segura
   extraLines?: number;    // looseParagraph: línies que ha guanyat el paràgraf
   tracking?: number;      // looseParagraph: el tracking amb què les ha guanyades, en mil·lèsimes d'em (0 = només amb l'espaiat entre paraules)
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2068,6 +2070,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>el bloc del marc de l'avís</td>
       <td>Una caixa que tanca la columna ha baixat exactament l'espai que quedava sota el seu peu (<code>spaceAbove</code>; pot ser una fracció de línia).</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>el bloc de la imatge (en línia) o el flotant</td>
+      <td>Una imatge amb zona segura composta <code>bodyGrowth</code> px més alta, en línies senceres de retícula, retallada dins de la zona segura. El <code>bodySource</code> del bloc del recurs és la part que es veu, i <code>bodyFlex.delta</code> el mateix creixement.</td>
     </tr>
     <tr>
       <td><code>heading</code></td>

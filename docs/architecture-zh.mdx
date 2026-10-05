@@ -152,6 +152,7 @@ interface Resource {
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
   placement?: ResourcePlacement; // 可选：单个资源覆盖浮动设置
+  safeArea?: ResourceSafeArea;  // 位图 / svg：{ x, y, width, height }，以比例表示，始终显示的部分
 }
 ```
 
@@ -344,6 +345,8 @@ interface ResolvedResourceBlock {
   number: string;             // 计算出的编号，例如"1.7"
   captionPrefix: string;      // 例如"Figure"
   bodyRect: BoundingBox;      // 图片 / 表格区域
+  bodySource?: ResourceSafeArea; // 按安全区裁切时，图片在bodyRect中显示的部分
+  bodyFlex?: { shrink: number; grow: number; delta: number }; // 主体还能缩短 / 增高的px，已改变的px
   fileId?: string;            // 带外的二进制数据（位图 / svg）
   captionLines: VDTLine[];    // 经过测量的题注，含前缀和编号
   table?: VDTResourceTableLayout; // 表格资源的单元格几何信息
