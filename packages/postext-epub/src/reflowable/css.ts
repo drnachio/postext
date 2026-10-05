@@ -14,6 +14,44 @@ export interface StylesheetOptions {
   vertical: boolean;
   /** The book sets a `:::verse` poem (its rules are written only then). */
   verse?: boolean;
+  /** Classes of emphasis marks the text uses beyond `pt-dots` (the
+   *  filled dot on the default side): their rules are written only then
+   *  (`inline.ts` `dotsClasses`, #428). */
+  dots?: readonly string[];
+}
+
+/** CSS `line-break` for a Japanese kinsoku level (`cjk.lineBreak`, #417):
+ *  JLReq's strictest rules are CSS `strict` (no small kana, ー or 々 at a
+ *  line start), the general books' rules CSS `normal` (they may), the
+ *  newspapers' CSS `loose`. Chinese levels write none, as before. */
+const LINE_BREAK: Record<string, string> = { 'ja-very-strict': 'strict', 'ja-strict': 'normal', 'ja-loose': 'loose' };
+
+/** The declarations of the Japanese text of a book (#428): kinsoku and,
+ *  with burasagari (`cjk.hangingPunctuation`, on by default in Japan),
+ *  、。，． hanging past the line end. None for other books. */
+function japaneseDecls(cjk: ResolvedConfig['cjk']): string[] {
+  const out: string[] = [];
+  const lineBreak = LINE_BREAK[cjk.lineBreak];
+  if (lineBreak) out.push(`line-break: ${lineBreak}`, `-epub-line-break: ${lineBreak}`, `-webkit-line-break: ${lineBreak}`);
+  if (cjk.region === 'japan' && cjk.hangingPunctuation !== 'none') {
+    out.push(`hanging-punctuation: ${cjk.hangingPunctuation === 'force' ? 'force-end' : 'allow-end'}`);
+  }
+  return out;
+}
+
+/** The emphasis-mark rule of a class `dotsClasses` gives: a shape and fill
+ *  (`pt-dots-filled-sesame`), or a side (`pt-dots-over`: over horizontal
+ *  text and right of vertical text; `pt-dots-under`: under and left). */
+function dotsRule(cls: string): CssRule | '' {
+  const side = /^pt-dots-(over|under)$/.exec(cls);
+  if (side) {
+    const pos = side[1] === 'over' ? 'over right' : 'under left';
+    return rule(`.pt-dots.${cls}`, [`text-emphasis-position: ${pos}`, `-webkit-text-emphasis-position: ${pos}`]);
+  }
+  const shape = /^pt-dots-(filled|open)-(dot|circle|sesame)$/.exec(cls);
+  if (!shape) return '';
+  const style = `${shape[1]} ${shape[2]}`;
+  return rule(`.pt-dots.${cls}`, [`text-emphasis-style: ${style}`, `-epub-text-emphasis-style: ${style}`, `-webkit-text-emphasis-style: ${style}`]);
 }
 
 const SANS = /\b(sans|grotesk|grotesque|gothic|helvetica|arial|inter|roboto|lato|montserrat|open sans|source sans|fira sans|heiti|hei\b|黑)/i;
@@ -106,6 +144,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     body.avoidWidows && `widows: ${Math.max(1, body.widowMinLines)}`,
     'margin: 0',
     'padding: 0 1em',
+    ...japaneseDecls(config.cjk),
   ]));
   const indent = px(body.firstLineIndent);
   const ratio = round(dimensionToPx(body.lineHeight, dpi, bodyPx) / bodyPx);
@@ -425,6 +464,9 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   }
   out.push(rule('.pt-sc', ['font-variant: small-caps']));
   out.push(rule('.pt-dots', ['font-style: normal', 'text-emphasis: filled dot', '-epub-text-emphasis-style: filled dot', '-webkit-text-emphasis-style: filled dot', 'text-emphasis-position: under right', '-webkit-text-emphasis-position: under right']));
+  // Other shapes and sides (the Japanese sesame over the text, #428),
+  // sorted so the stylesheet is the same whatever order they were read in.
+  for (const cls of [...(options.dots ?? [])].sort()) out.push(dotsRule(cls));
   out.push(rule('.pt-proper', ['text-decoration: underline']));
   out.push(rule('.pt-book', ['text-decoration: underline wavy']));
   // Side lines (傍線): under horizontal text and left of vertical text, or

@@ -105,6 +105,9 @@ export function buildOpf(pub: EpubPublication, identifier = bookIdentifier(pub.m
     add(`<meta property="rendition:spread">${pub.fixed?.spread ?? 'landscape'}</meta>`);
     if (pub.fixed?.orientation && pub.fixed.orientation !== 'auto') add(`<meta property="rendition:orientation">${pub.fixed.orientation}</meta>`);
   }
+  // Kindle and some Japanese reading systems take the writing mode from
+  // the package rather than from the stylesheet (#428).
+  if (pub.writingMode) add(`<meta name="primary-writing-mode" content="${pub.writingMode}"/>`);
   const cover = pub.items.find((i) => i.properties?.includes('cover-image'));
   // EPUB 2 readers (and some current ones) look the cover picture up here.
   if (cover) add(`<meta name="cover" content="${escapeAttr(cover.id)}"/>`);

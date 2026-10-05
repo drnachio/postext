@@ -65,6 +65,9 @@ export interface BookModel {
   maths: boolean;
   /** Whether a `:::verse` poem was read. */
   verse: boolean;
+  /** The classes of emphasis marks other than the filled dot on the
+   *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
+  dots: Set<string>;
   /** First entry of a back-of-book index, of a bibliography, and the
    *  contents a `:::toc` prints. */
   index?: Loc;
@@ -141,6 +144,7 @@ export function walkBook(docs: readonly VDTDocument[], options: WalkOptions): Bo
     missingAlt: false,
     maths: false,
     verse: false,
+    dots: new Set(),
   };
   const counters = { heading: 0, block: 0 };
   docs.forEach((doc, i) => new DocWalker(book, doc, i, options, counters).walk());
@@ -385,10 +389,18 @@ class DocWalker {
   // --- blocks --------------------------------------------------------------
 
   private ctx(block: Pick<VDTBlock, 'fontString'>): InlineContext {
+    const cjk = this.config.cjk;
+    const vertical = this.config.layout.writingMode === 'vertical-rl';
     return {
       doc: this.index,
       lang: this.lang,
       basePx: fontPx(block.fontString),
+      ...(vertical ? { vertical } : {}),
+      // Japanese only (#428): what Chinese vertical books export stays as
+      // it was.
+      ...(vertical && cjk?.region === 'japan' ? { tcy: { region: cjk.region, uprightDigits: cjk.uprightDigits } } : {}),
+      ...(cjk?.spaceAfterQuestion ? { spaceAfterQuestion: true } : {}),
+      dotsClass: (cls) => this.book.dots.add(cls),
       noteRef: (id) => {
         const key = `${this.index}:${id}`;
         if (!this.book.notes.has(key)) this.book.notes.set(key, { file: this.file!, id: idOf('fn-', id) });

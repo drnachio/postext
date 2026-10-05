@@ -144,3 +144,34 @@ export function videoSampleBook(overrides: PostextConfig = {}): VDTDocument[] {
   const markdown = ['# Videos', '', `The lamp in :ref{id=clip}, the keeper in :ref{id=remote} and a talk in :ref{id=talk}. ${para.repeat(2)}`, '', para.repeat(6)].join('\n');
   return buildBundle({ chapters: [{ markdown }], config: { ...config, ...overrides }, resources: videoResources });
 }
+
+/** A vertical Japanese book (#428), right-bound: furigana (mono, group),
+ *  sesame 傍点, side lines, numbers set upright, a !? pair, an author's
+ *  tate-chū-yoko, a warichu note, a book title, the space after ？, and
+ *  notes. Measured with the stub (no Japanese face is embedded). */
+export const JAPANESE_CHAPTERS = [
+  [
+    '# 第一章　先生と私',
+    '',
+    `私はその人を常に{先生|せん|せい}と呼んでいた。:ruby[鎌倉]{rt="かまくら" group}の海岸で、*知り合い*になったのは${'明治の末、十二月の頃である。'.repeat(2)}`,
+    '',
+    `なぜ？それは:sideline[誰にも分からない]。なに!?と言って、:book[こころ]を第:tcy[100]号の雑誌で読んだのは12月のことだった[^1]。`,
+    '',
+    `私は:warichu[注記]{open="（" close="）"}先生の家を訪ねた。${'先生は静かに笑っていた。'.repeat(8)}`,
+    '',
+    '[^1]: 注の本文、2026年。',
+  ].join('\n'),
+  ['# 第二章　両親と私', '', '家に帰ると、父は病床にあった。'.repeat(12)].join('\n'),
+];
+
+export function japaneseSampleBook(): VDTDocument[] {
+  return buildBundle({
+    chapters: JAPANESE_CHAPTERS.map((markdown) => ({ markdown })),
+    config: {
+      ...config,
+      locale: 'ja',
+      layout: { writingMode: 'vertical-rl' },
+      page: { ...config.page, binding: 'right' },
+    },
+  });
+}

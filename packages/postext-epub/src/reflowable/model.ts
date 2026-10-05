@@ -30,6 +30,9 @@ export interface Format {
   label?: boolean;
   /** Chinese emphasis dots / proper-name line / book-title line. */
   dots?: boolean;
+  /** The classes emphasis marks other than the filled dot on the default
+   *  side add to `pt-dots` (`inline.ts` `dotsClasses`, #428). */
+  dotsStyle?: string;
   proper?: boolean;
   book?: boolean;
   /** A side line (傍線, `:sideline[…]`): how it is drawn and on which
@@ -61,8 +64,10 @@ export interface Format {
  *  letters or their neighbours. */
 export type InlineItem =
   | { t: 'text'; text: string; fmt: Format; link?: LinkTarget; lvl?: number }
-  /** Markup written as is (maths, ruby, chips, swatches). */
-  | { t: 'raw'; xhtml: string; link?: LinkTarget; lvl?: number }
+  /** Markup written as is (maths, ruby, chips, swatches). `ruby`: the
+   *  annotation a `<ruby>` holds (`VDTRuby.id`), which the next base of
+   *  the same annotation joins, on this line or the next (#428). */
+  | { t: 'raw'; xhtml: string; link?: LinkTarget; lvl?: number; ruby?: string }
   /** The start of a printed page (`epub:type="pagebreak"`). */
   | { t: 'page'; bookIndex: number }
   /** An anchor set in the text (an empty element carrying its id). */

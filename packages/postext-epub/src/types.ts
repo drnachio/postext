@@ -176,6 +176,10 @@ export interface EpubPublication {
   pageList: EpubPageTarget[];
   landmarks: EpubLandmark[];
   pageProgression: 'ltr' | 'rtl';
+  /** A reflowable book set in vertical lines (Chinese, Japanese): the
+   *  package names its writing mode (`primary-writing-mode`), which some
+   *  reading systems read before they open a content document (#428). */
+  writingMode?: 'vertical-rl';
   /** Fixed-layout rendition properties. */
   fixed?: {
     spread: 'none' | 'landscape' | 'both' | 'auto';

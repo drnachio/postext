@@ -5,7 +5,8 @@
 // (which goes) or one the text carries (which stays), and with nothing
 // between Chinese, Japanese or Thai characters, which break without spaces.
 
-import type { MathRender, VDTLine, VDTLineSegment } from 'postext';
+import type { CjkRegion, MathRender, VDTLine, VDTLineSegment, VDTRuby } from 'postext';
+import { graphemesOf, verticalRuns } from 'postext';
 import type { Format, InlineItem, LinkTarget } from './model';
 import { escapeAttr, escapeXml, stripInvalidXmlChars } from '../shared/xml';
 
@@ -20,6 +21,22 @@ export interface InlineContext {
   basePx: number;
   /** A footnote marker was read: whether it is the note's first. */
   noteRef(id: string): boolean;
+  /** The document is set in vertical lines: emphasis marks on the right
+   *  of the text are the default side (`under right`, see `.pt-dots`). */
+  vertical?: boolean;
+  /** Vertical Japanese text (#428): the short numbers (`uprightDigits`)
+   *  and the !? pairs the print sets in one upright cell, which carry no
+   *  `tcy` flag (the renderers find them with `verticalRuns`), are
+   *  written as `.pt-tcy` too. */
+  tcy?: { region: CjkRegion; uprightDigits: number };
+  /** The one-em space after a Japanese ？ or ！ (`cjk.spaceAfterQuestion`,
+   *  #418) is on: the empty `autospace` segment after such a mark, which
+   *  the print paints as space, is written as an ideographic space. */
+  spaceAfterQuestion?: boolean;
+  /** Emphasis marks other than the filled dot on the default side were
+   *  read: the classes they need (`pt-dots-filled-sesame`, `pt-dots-over`…),
+   *  for the stylesheet to define. */
+  dotsClass?(cls: string): void;
 }
 
 /** Characters set without spaces between words: a line may break right
@@ -75,16 +92,39 @@ function linkOf(seg: VDTLineSegment, ctx: InlineContext): LinkTarget | undefined
   return undefined;
 }
 
-function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegment, lang?: string): Format {
+/**
+ * The classes beyond `pt-dots` that emphasis marks need (#428), '' for the
+ * filled dot on the writing mode's default side (under horizontal text,
+ * right of vertical text: the `.pt-dots` rule, Chinese practice). The
+ * shape and fill: `pt-dots-<fill>-<shape>` (`pt-dots-filled-sesame`, the
+ * Japanese 傍点). The side, in the flow frame as the layout gives it:
+ * `pt-dots-over` (over horizontal text, right of vertical text) in a
+ * horizontal document, `pt-dots-under` (under, left) in a vertical one.
+ */
+export function dotsClasses(dots: NonNullable<NonNullable<VDTLineSegment['cjkMarks']>['dots']>, vertical: boolean): string {
+  const out: string[] = [];
+  if (dots.style !== 'dot' || dots.fill !== 'filled') out.push(`pt-dots-${dots.fill}-${dots.style}`);
+  if (dots.position !== (vertical ? 'over' : 'under')) out.push(`pt-dots-${dots.position}`);
+  return out.join(' ');
+}
+
+function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegment, ctx?: InlineContext): Format {
   const fmt: Format = {};
   if (seg.bold) fmt.bold = true;
   if (seg.italic) fmt.italic = true;
   if (!full) return fmt;
-  if (full.lang !== undefined && full.lang !== lang) fmt.lang = full.lang;
+  if (full.lang !== undefined && full.lang !== ctx?.lang) fmt.lang = full.lang;
   if (full.script) fmt.script = full.script;
   if (full.fontString?.includes('small-caps')) fmt.smallCaps = true;
   if (full.captionLabel) fmt.label = true;
-  if (full.cjkMarks?.dots) fmt.dots = true;
+  if (full.cjkMarks?.dots) {
+    fmt.dots = true;
+    const classes = dotsClasses(full.cjkMarks.dots, ctx?.vertical === true);
+    if (classes) {
+      fmt.dotsStyle = classes;
+      for (const cls of classes.split(' ')) ctx?.dotsClass?.(cls);
+    }
+  }
   if (full.cjkMarks?.properName !== undefined) fmt.proper = true;
   if (full.cjkMarks?.bookTitle !== undefined) fmt.book = true;
   if (full.cjkMarks?.sideline) fmt.side = { style: full.cjkMarks.sideline.style, position: full.cjkMarks.sideline.position };
@@ -138,9 +178,66 @@ function rawOf(seg: VDTLineSegment, ctx: InlineContext): string | undefined {
     const pos = seg.ruby.position === 'under' ? ' class="pt-ruby-under"' : seg.ruby.position === 'right' ? ' class="pt-ruby-right"' : '';
     // No <rp> fallback brackets: EPUB 3.3 discourages them (EPUBCheck
     // HTM_055), every EPUB 3 reading system lays ruby out.
-    return `<ruby${pos}>${wrapFormat(xmlText(seg.text), formatOf(seg, seg))}<rt>${xmlText(seg.ruby.text)}</rt></ruby>`;
+    return `<ruby${pos}>${rubyPair(seg, ctx)}</ruby>`;
   }
   return undefined;
+}
+
+/** A ruby base and its reading, inside a `<ruby>`. */
+function rubyPair(seg: VDTLineSegment, ctx: InlineContext): string {
+  return `${wrapFormat(xmlText(seg.text), formatOf(seg, seg, { ...ctx, lang: '' }))}<rt>${xmlText(seg.ruby!.text)}</rt>`;
+}
+
+/** The annotation a ruby base belongs to, when the layout names it
+ *  (`VDTRuby.id`, #422): the bases of one jukugo reading share it and go
+ *  in one `<ruby>`, their readings alternating with them, so a reading
+ *  system can let a reading run over its neighbour base. Without it,
+ *  every base is a `<ruby>` of its own. */
+function rubyGroupOf(ruby: VDTRuby): string | undefined {
+  const id = (ruby as VDTRuby & { id?: unknown }).id;
+  return typeof id === 'string' || typeof id === 'number' ? String(id) : undefined;
+}
+
+type RawItem = Extract<InlineItem, { t: 'raw' }>;
+
+/** Joins `next`, a `<ruby>` of one base, to `last` when it holds bases of
+ *  the same annotation with the same link: the bases of a jukugo word, on
+ *  one line or across a line break (the ids are a block's, and a sink
+ *  reads one block). Whether it did. */
+function joinRuby(last: RawItem, next: RawItem): boolean {
+  if (next.ruby === undefined || last.ruby !== next.ruby || linkKey(last.link) !== linkKey(next.link) || last.lvl !== next.lvl) return false;
+  last.xhtml = last.xhtml.replace(/<\/ruby>$/, next.xhtml.replace(/^<ruby[^>]*>/, ''));
+  return true;
+}
+
+/** Japanese marks a one-em space follows (`cjk.spaceAfterQuestion`). */
+const QUESTION = /[？！‼⁇⁈⁉]$/u;
+/** What takes no space after a ？ or ！: a closing bracket or another mark. */
+const NO_AKI_BEFORE = /^[」』）〕］｝〉》】〙〗”’？！‼⁇⁈⁉]/u;
+
+/** Whether the segment before `i` (a footnote marker glued to the mark
+ *  aside) ends with a ？ or ！. */
+function afterQuestion(segs: readonly VDTLineSegment[], i: number): boolean {
+  for (let j = i - 1; j >= 0; j--) {
+    const prev = segs[j]!;
+    if (prev.footnoteId !== undefined) continue;
+    return prev.kind === 'text' && QUESTION.test(prev.text);
+  }
+  return false;
+}
+
+/** `text` split at the runs vertical Japanese sets in one upright cell
+ *  (see {@link InlineContext.tcy}): `[text, tcy][]`, in order. */
+function tcyRuns(text: string, tcy: NonNullable<InlineContext['tcy']>): [string, boolean][] {
+  if (!/[0-9!?！？]/.test(text)) return [[text, false]];
+  const out: [string, boolean][] = [];
+  for (const run of verticalRuns(graphemesOf(text), tcy.region, tcy.uprightDigits)) {
+    const cell = run.glyph.orient === 'tcy';
+    const last = out[out.length - 1];
+    if (last && !cell && !last[1]) last[0] += run.text;
+    else out.push([run.text, cell]);
+  }
+  return out;
 }
 
 /** `inner` inside the elements and classes of `fmt`. */
@@ -149,6 +246,7 @@ export function wrapFormat(inner: string, fmt: Format): string {
     fmt.smallCaps && 'pt-sc',
     fmt.label && 'pt-label',
     fmt.dots && 'pt-dots',
+    fmt.dots && fmt.dotsStyle,
     fmt.proper && 'pt-proper',
     fmt.book && 'pt-book',
     fmt.side && 'pt-side',
@@ -202,16 +300,25 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
   // line decides: `segments` may be a part of it, a poem's hemistich.)
   const offsets = (line.segments ?? segs).some((s) => s.kashida !== undefined && s.kashida.length > 0);
   let first = true;
-  for (const seg of segs) {
+  for (const [i, seg] of segs.entries()) {
     const link = linkOf(seg, ctx);
     const raw = rawOf(seg, ctx);
     if (raw !== undefined) {
-      out.push({ t: 'raw', xhtml: raw, ...(link ? { link } : {}), ...lvlOf(seg) });
+      // The bases of one annotation share a `<ruby>`, their readings
+      // alternating with them (#428).
+      const group = seg.ruby && raw.startsWith('<ruby') ? rubyGroupOf(seg.ruby) : undefined;
+      const item: RawItem = { t: 'raw', xhtml: raw, ...(link ? { link } : {}), ...lvlOf(seg), ...(group !== undefined ? { ruby: group } : {}) };
+      const last = out[out.length - 1];
+      if (!(last?.t === 'raw' && joinRuby(last, item))) out.push(item);
       first = false;
       continue;
     }
     if (seg.kind === 'space') {
-      const text = seg.labelTab ? ' ' : seg.text.length > 0 ? seg.text : seg.autospace ? '' : ' ';
+      // The one-em space after a Japanese ？ or ！ (#418) is space the
+      // text needs; a Han–Latin space or a ruby gap is the print's
+      // spacing, which a reading system makes itself.
+      const aki = ctx.spaceAfterQuestion === true && seg.autospace === true && afterQuestion(segs, i) ? '\u3000' : '';
+      const text = seg.labelTab ? ' ' : seg.text.length > 0 ? seg.text : seg.autospace ? aki : ' ';
       if (text) out.push({ t: 'text', text, fmt: {}, ...(link ? { link } : {}), ...lvlOf(seg) });
       continue;
     }
@@ -233,7 +340,14 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       if (first && line.repeatedHyphen) text = text.replace(/^-/, '');
       first = false;
       if (!text) continue;
-      out.push({ t: 'text', text, fmt: formatOf(run, seg, ctx.lang), ...(link ? { link } : {}), ...lvlOf(seg) });
+      const fmt = formatOf(run, seg, ctx);
+      if (ctx.tcy && !fmt.tcy && !fmt.orientation) {
+        for (const [part, cell] of tcyRuns(text, ctx.tcy)) {
+          out.push({ t: 'text', text: part, fmt: cell ? { ...fmt, tcy: true } : fmt, ...(link ? { link } : {}), ...lvlOf(seg) });
+        }
+        continue;
+      }
+      out.push({ t: 'text', text, fmt, ...(link ? { link } : {}), ...lvlOf(seg) });
     }
   }
   return out;
@@ -287,9 +401,15 @@ export function appendLine(sink: TextSink, line: VDTLine, ctx: InlineContext, be
       const next = firstChar(items);
       if (next && !/\s/.test(next) && !UNSPACED.test(tail) && !UNSPACED.test(next)) {
         sink.inl.push({ t: 'text', text: ' ', fmt: {} });
+      } else if (next && ctx.spaceAfterQuestion && QUESTION.test(tail) && !NO_AKI_BEFORE.test(next)) {
+        // A ？ or ！ that ended a printed line, where its space went (#418).
+        sink.inl.push({ t: 'text', text: '\u3000', fmt: {} });
       }
     }
   }
+  // A jukugo word the line break cut goes on in the same `<ruby>`.
+  const last = sink.inl[sink.inl.length - 1];
+  if (before.length === 0 && last?.t === 'raw' && items[0]?.t === 'raw' && joinRuby(last, items[0])) items.shift();
   sink.inl.push(...before, ...items);
   sink.prev = line;
 }
@@ -347,7 +467,7 @@ export function linkKey(link: LinkTarget | undefined): string {
 export function formatKey(fmt: Format): string {
   return [
     fmt.bold ? 'b' : '', fmt.italic ? 'i' : '', fmt.script ?? '', fmt.smallCaps ? 'c' : '', fmt.label ? 'l' : '',
-    fmt.dots ? 'd' : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.side ? `s${fmt.side.style}${fmt.side.position}` : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
+    fmt.dots ? `d${fmt.dotsStyle ?? ''}` : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.side ? `s${fmt.side.style}${fmt.side.position}` : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
     fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '',
   ].join('|');
 }
