@@ -33,4 +33,15 @@ describe('annotation highlighting', () => {
       ['delim', ']{style="wavy" pos="over"}'],
     ]);
   });
+
+  it('marks kanbun reading marks and their attributes, a ruby inside them too', () => {
+    const line = '學而時:kunten[:ruby[未]{rt="いま"}]{kaeri="レ" okuri="ダ"}嘗';
+    const kinds = annotationRanges(line).map((r) => [r.kind, line.slice(r.from, r.to)]);
+    expect(kinds).toContainEqual(['delim', ':kunten[']);
+    expect(kinds).toContainEqual(['kunten', '未']);
+    expect(kinds).toContainEqual(['ruby', '未']);
+    expect(kinds).toContainEqual(['delim', ']{rt="いま"}']);
+    expect(kinds).toContainEqual(['delim', ']{kaeri="レ" okuri="ダ"}']);
+    expect(kinds.some(([, t]) => t.includes('嘗') || t.includes('學'))).toBe(false);
+  });
 });

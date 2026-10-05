@@ -340,6 +340,40 @@
       }
     }
   },
+  "kuntenExceedsLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Kanbun marks crowd the next line",
+      "es": "Las marcas de kanbun invaden la línea vecina",
+      "ca": "Les marques de kanbun envaeixen la línia veïna",
+      "zh": "训点碰到相邻的行",
+      "ar": "علامات الكانبون تلامس السطر المجاور"
+    },
+    "cause": {
+      "en": "A paragraph of kanbun has okurigana beside its characters (or return marks in the line gap, `cjk.kunten.placement: 'interlinear'`) in a line gap narrower than the marks: they sit in the leading and touch the line next to them.",
+      "es": "Un párrafo de kanbun lleva okurigana junto a sus caracteres (o marcas de retorno en el interlineado, `cjk.kunten.placement: 'interlinear'`) en un hueco entre líneas más estrecho que las marcas: ocupan el interlineado y tocan la línea vecina.",
+      "ca": "Un paràgraf de kanbun porta okurigana al costat dels seus caràcters (o marques de retorn a l'interlineat, `cjk.kunten.placement: 'interlinear'`) en un buit entre línies més estret que les marques: ocupen l'interlineat i toquen la línia veïna.",
+      "zh": "汉文段落在字旁带送假名（或用`cjk.kunten.placement: 'interlinear'`把返点排在行间），行间空隙却比这些训点还窄：训点位于行距之中，碰到相邻的行。",
+      "ar": "فقرة كانبون فيها أوكوريغانا بجانب حروفها (أو علامات رجوع في الفراغ بين الأسطر، `cjk.kunten.placement: 'interlinear'`) وفراغها بين الأسطر أضيق من العلامات: فهي تقع في تباعد الأسطر وتلامس السطر المجاور."
+    },
+    "fix": {
+      "en": "Set the paragraph with more leading (at least the text size plus `cjk.kunten.fontSize`), or make the marks smaller.",
+      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.kunten.fontSize`), o reduce las marcas.",
+      "ca": "Compon el paràgraf amb més interlineat (com a mínim el cos més `cjk.kunten.fontSize`), o redueix les marques.",
+      "zh": "给该段落设更大的行距（至少为正文字号加上`cjk.kunten.fontSize`），或把训点缩小。",
+      "ar": "انضد الفقرة بتباعد أسطر أكبر (حجم النص مضافًا إليه `cjk.kunten.fontSize` على الأقل)، أو صغّر العلامات."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu",
+        "ca": "Marques, ruby i warichu",
+        "zh": "着重号、注音与夹注",
+        "ar": "العلامات والروبي والواريتشو"
+      }
+    }
+  },
   "arabicMarksExceedLeading": {
     "source": "engine",
     "label": {

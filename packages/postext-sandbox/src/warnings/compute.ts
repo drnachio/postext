@@ -111,10 +111,11 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   (doc.contentWarnings ?? []).forEach((w, i) => {
     // …the justified CJK lines set short at their tracking cap, the
     // paragraphs whose leading is too tight for their Chinese marks, ruby
-    // readings or Arabic vowel marks, the Arabic-script words wider than
-    // their line and the styles whose letter-spacing such words do not take.
+    // readings, kanbun marks or Arabic vowel marks, the Arabic-script words
+    // wider than their line and the styles whose letter-spacing such words
+    // do not take.
     if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'indexReadingMissing' && w.kind !== 'cjkLooseLine'
-      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
+      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'kuntenExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
       && w.kind !== 'unbreakableWordOverflow' && w.kind !== 'joiningScriptLetterSpacing') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;

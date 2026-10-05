@@ -226,6 +226,8 @@ export interface SandboxLabels {
   warningsCjkMarksLeadingDetail: string;
   warningsRubyLeadingTitle: string;
   warningsRubyLeadingDetail: string;
+  warningsKuntenLeadingTitle: string;
+  warningsKuntenLeadingDetail: string;
   warningsArabicMarksLeadingTitle: string;
   warningsArabicMarksLeadingDetail: string;
   warningsHeadingHierarchyTitle: string;
@@ -638,6 +640,16 @@ export interface SandboxLabels {
   cjkWarichuOpenTooltip: string;
   cjkWarichuClose: string;
   cjkWarichuCloseTooltip: string;
+  cjkKunten: string;
+  cjkKuntenDescription: string;
+  cjkKuntenSize: string;
+  cjkKuntenSizeTooltip: string;
+  cjkKuntenColor: string;
+  cjkKuntenColorTooltip: string;
+  cjkKuntenPlacement: string;
+  cjkKuntenPlacementTooltip: string;
+  cjkKuntenInline: string;
+  cjkKuntenInterlinear: string;
 
   // Body text section
   bodyText: string;

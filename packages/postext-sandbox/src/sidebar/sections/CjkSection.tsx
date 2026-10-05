@@ -22,7 +22,7 @@ import {
   isCjkLanguage,
   resolveBodyTextConfig,
 } from 'postext';
-import type { CjkBracketPair, CjkConfig, CjkEmphasisMarkConfig, CjkGridConfig, CjkRubyConfig, CjkWarichuConfig } from 'postext';
+import type { CjkBracketPair, CjkConfig, CjkEmphasisMarkConfig, CjkGridConfig, CjkKuntenConfig, CjkRubyConfig, CjkWarichuConfig } from 'postext';
 import { CollapsibleSection, ColorPicker, DimensionInput, FieldGroup, FontPicker, NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../controls';
 import { Button } from '../../ui';
 import { useSettingsSearch } from '../search/SearchContext';
@@ -36,7 +36,7 @@ import { defaultDocumentLocale } from '../../controls/hyphenation';
  * they hang, where a bracket that opens a paragraph goes, the space between
  * Han and Latin and after ？！, the numbers set upright in
  * vertical text, what emphasis and book-title markup print, the look of
- * ruby readings and warichu notes, and the character grid.
+ * ruby readings, warichu notes and kanbun marks, and the character grid.
  * `Auto` follows the document language; the option shows what it resolves
  * to. In a document whose language is not Chinese, Japanese or Korean and
  * that sets none of these, a line says so instead of the fields (a button
@@ -70,7 +70,7 @@ export const CjkSection = memo(function CjkSection() {
     write(next);
   };
   /** Merge `partial` into `cjk[key]`, dropping fields set back to unset. */
-  const writeNested = <K extends 'ruby' | 'warichu' | 'emphasisMark'>(key: K, partial: Partial<NonNullable<CjkConfig[K]>>) => {
+  const writeNested = <K extends 'ruby' | 'warichu' | 'kunten' | 'emphasisMark'>(key: K, partial: Partial<NonNullable<CjkConfig[K]>>) => {
     const next = { ...raw?.[key], ...partial } as Record<string, unknown>;
     for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
     const cjk: CjkConfig = { ...raw, [key]: next };
@@ -79,6 +79,7 @@ export const CjkSection = memo(function CjkSection() {
   };
   const writeRuby = (partial: Partial<CjkRubyConfig>) => writeNested('ruby', partial);
   const writeWarichu = (partial: Partial<CjkWarichuConfig>) => writeNested('warichu', partial);
+  const writeKunten = (partial: Partial<CjkKuntenConfig>) => writeNested('kunten', partial);
   /** An emphasis-mark field; `auto` leaves it unset. */
   const writeMark = <K extends keyof CjkEmphasisMarkConfig>(key: K, value: string) =>
     writeNested('emphasisMark', { [key]: value === 'auto' ? undefined : value } as Partial<CjkEmphasisMarkConfig>);
@@ -167,6 +168,7 @@ export const CjkSection = memo(function CjkSection() {
   const markColor = raw?.annotationColor ?? body.color;
   const ruby = raw?.ruby;
   const warichu = raw?.warichu;
+  const kunten = raw?.kunten;
   const auto = (name: string) => labels.cjkAuto.replace('__value__', name);
   // Ruby overhang and alignment (#422): Japan's by name, else the clreq
   // quarter em and centring.
@@ -570,6 +572,40 @@ export const CjkSection = memo(function CjkSection() {
                 onReset={() => writeWarichu({ [side]: undefined })}
               />
             ))}
+          </FieldGroup>
+          <FieldGroup title={labels.cjkKunten} description={labels.cjkKuntenDescription}>
+            <DimensionInput
+              label={labels.cjkKuntenSize}
+              value={kunten?.fontSize ?? DEFAULT_CJK_CONFIG.kunten.fontSize!}
+              onChange={(dim) => writeKunten({ fontSize: dim })}
+              min={0.1}
+              step={0.05}
+              units={['em', 'pt', 'mm']}
+              tooltip={labels.cjkKuntenSizeTooltip}
+              isDefault={kunten?.fontSize === undefined || dimensionsEqual(kunten.fontSize, DEFAULT_CJK_CONFIG.kunten.fontSize!)}
+              onReset={() => writeKunten({ fontSize: undefined })}
+            />
+            <ColorPicker
+              label={labels.cjkKuntenColor}
+              value={kunten?.color ?? markColor}
+              onChange={(v) => writeKunten({ color: v })}
+              tooltip={labels.cjkKuntenColorTooltip}
+              isDefault={kunten?.color === undefined}
+              onReset={() => writeKunten({ color: undefined })}
+              fieldId="cjk-kunten-color"
+            />
+            <SelectInput
+              label={labels.cjkKuntenPlacement}
+              value={kunten?.placement ?? 'inline'}
+              options={[
+                { value: 'inline', label: labels.cjkKuntenInline },
+                { value: 'interlinear', label: labels.cjkKuntenInterlinear },
+              ]}
+              onChange={(v) => writeKunten({ placement: v === 'inline' ? undefined : (v as CjkKuntenConfig['placement']) })}
+              tooltip={labels.cjkKuntenPlacementTooltip}
+              isDefault={(kunten?.placement ?? 'inline') === 'inline'}
+              onReset={() => writeKunten({ placement: undefined })}
+            />
           </FieldGroup>
           <FieldGroup title={labels.cjkGrid} description={labels.cjkGridDescription}>
             <ToggleSwitch
