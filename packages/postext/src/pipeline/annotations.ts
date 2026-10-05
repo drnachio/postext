@@ -16,7 +16,10 @@
  *   title's run for the wavy line; `'none'` drops it.
  * - Ruby readings and warichu notes get their font (at their size, in the
  *   text's face unless `cjk.ruby.fontFamily` names one) and colour; a note
- *   gets the brackets `cjk.warichu` gives it unless it names its own.
+ *   gets the brackets `cjk.warichu` gives it unless it names its own. In
+ *   Japan (and where `cjk.ruby` asks for them) readings also take their
+ *   overhang and alignment rules, and a reading per character of a word
+ *   becomes a jukugo ruby (#422).
  *
  * Spans without any of these marks pass through untouched (the same
  * array), so text without them measures and caches as before.
@@ -153,6 +156,23 @@ function definedFields(mark: EmphasisMark): EmphasisMark {
   return out;
 }
 
+/** The rubies a Japanese document sets as jukugo ruby (熟語ルビ, JLReq
+ *  §3.3.7, #422): those with a reading per character over two characters
+ *  or more (`{東京|とう|きょう}`, `:ruby[東京]{rt="とう きょう"}`) that do
+ *  not say `mode=mono`. One reading over the whole base (`{東京|とうきょう}`,
+ *  the Aozora 《》) stays a group ruby. */
+function jukugoRubies(spans: readonly InlineSpan[]): Set<number> | undefined {
+  const count = new Map<number, number>();
+  for (const s of spans) {
+    const r = s.ruby;
+    if (!r || r.group || r.mono) continue;
+    count.set(r.id, (count.get(r.id) ?? 0) + 1);
+  }
+  let out: Set<number> | undefined;
+  for (const [id, n] of count) if (n > 1) (out ??= new Set()).add(id);
+  return out;
+}
+
 /** The hex of a resolved colour, if any. */
 const hexOf = (c: { hex: string } | undefined): string | undefined => c?.hex;
 
@@ -195,6 +215,8 @@ export function resolveAnnotationSpans(spans: InlineSpan[], ctx: AnnotationConte
     const noteColor = hexOf(cjk.warichu.color ?? cjk.annotationColor);
     const notes = new Map<InlineWarichu, InlineWarichu>();
     const position = cjk.ruby.position === 'auto' ? undefined : cjk.ruby.position;
+    const { overhang, align, smallKana } = cjk.ruby;
+    const jukugo = cjk.region === 'japan' ? jukugoRubies(out) : undefined;
     out = out.map((s) => {
       if (!s.ruby && !s.warichu) return s;
       const next: InlineSpan = { ...s };
@@ -204,6 +226,11 @@ export function resolveAnnotationSpans(spans: InlineSpan[], ctx: AnnotationConte
           ...(s.ruby.position === undefined && position ? { position } : {}),
           fontString: rubyFont,
           ...(rubyColor ? { color: rubyColor } : {}),
+          // The Japanese rules (#422), present only where they apply.
+          ...(jukugo?.has(s.ruby.id) ? { jukugo: true as const } : {}),
+          ...(s.ruby.align === undefined && align ? { align } : {}),
+          ...(overhang ? { overhang } : {}),
+          ...(smallKana === 'full' ? { fullKana: true as const } : {}),
         };
       }
       if (s.warichu) {

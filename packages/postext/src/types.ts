@@ -3893,7 +3893,49 @@ export interface CjkRubyConfig {
    *  right of each character, anything else (pinyin) over the base in
    *  horizontal text and right of it in vertical text. */
   position?: 'auto' | CjkRubyPosition;
+  /** What a reading longer than its base may run onto (肩掛け, JLReq
+   *  §3.3.8) before the base is spread (see {@link CjkRubyOverhang}).
+   *  `'auto'` (the default): `kana` in Japan (`region`); elsewhere a
+   *  quarter of the ruby em onto any neighbour without a reading
+   *  (clreq). */
+  overhang?: 'auto' | CjkRubyOverhang;
+  /** Where a reading sits on its base (see {@link CjkRubyAlign}).
+   *  `'auto'` (the default): `jis` in Japan; elsewhere centred, as
+   *  `center`. */
+  align?: 'auto' | CjkRubyAlign;
+  /** Small kana in readings (ゃゅょっ…): `keep` (the default) paints them
+   *  as written, as modern books do; `full` paints them full size
+   *  (がつこう for がっこう), as letterpress books did (JLReq §3.3.3
+   *  note). The text read and copied keeps the small kana. */
+  smallKana?: 'keep' | 'full';
 }
+
+/** What a ruby reading longer than its base may run onto, past the
+ *  base's edge, before the base is spread (JLReq §3.3.8):
+ *  - `none`: nothing; the base is spread to the reading;
+ *  - `kana`: up to one ruby character (half an em of the text) onto
+ *    hiragana, katakana, small kana and ー, onto the blank of a mark (the
+ *    half em after 、。」 before the reading, an ideographic space, a
+ *    middle dot's quarter, …… and ――), at most half a ruby character
+ *    onto an opening bracket; never onto kanji, Latin text or another
+ *    base; two readings never share a kana from both sides (the later one
+ *    keeps to its base);
+ *  - `any`: up to half a ruby character onto any neighbour without a
+ *    reading.
+ *  Never past the line's start or end: a reading at a line edge is set
+ *  flush with it and its base moves in. */
+export type CjkRubyOverhang = 'none' | 'kana' | 'any';
+
+/** Where a ruby reading sits on its base (JIS X 4051 §12, JLReq §3.3.6):
+ *  - `center`: centred; a longer reading centred over its base, which is
+ *    centred in the box the reading needs;
+ *  - `jis`: a shorter reading spread 1:2:1 (half a unit before the first
+ *    character and after the last, one between characters; `ruby-align:
+ *    space-around`), or flush with both ends of the base (`space-between`)
+ *    when the half unit would exceed one ruby character; a longer reading
+ *    set solid over a base spread 1:2:1;
+ *  - `start`: from the base's start (肩付き, a vertical-text practice). */
+export type CjkRubyAlign = 'center' | 'jis' | 'start';
 
 /** `cjk.warichu`: the look of warichu notes (双行夹注). */
 export interface CjkWarichuConfig {
@@ -3917,6 +3959,14 @@ export interface ResolvedCjkRubyConfig {
   fontSize: Dimension;
   color?: ColorValue;
   position: 'auto' | CjkRubyPosition;
+  /** Set only when it is not clreq's quarter em (Japan, or set): absent,
+   *  a longer reading passes its base by a quarter of the ruby em onto a
+   *  neighbour without a reading. */
+  overhang?: CjkRubyOverhang;
+  /** Set only when it is not the plain centring (Japan, or set). */
+  align?: CjkRubyAlign;
+  /** Set only when on. */
+  smallKana?: 'full';
 }
 
 export interface ResolvedCjkWarichuConfig {

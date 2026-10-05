@@ -11,7 +11,9 @@ import type {
   CjkParagraphStartBracket,
   CjkPunctuationWidth,
   CjkRegion,
+  CjkRubyAlign,
   CjkRubyConfig,
+  CjkRubyOverhang,
   CjkRubyPosition,
   CjkWarichuConfig,
   ColorValue,
@@ -47,7 +49,7 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   emphasisMark: { style: 'auto', fill: 'auto', position: 'auto' },
   bookTitleMark: 'auto',
   bookTitleBrackets: 'auto',
-  ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+  ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'auto', align: 'auto', smallKana: 'keep' },
   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' },
 };
 
@@ -118,14 +120,41 @@ function isColor(c: unknown): c is ColorValue {
   return !!c && typeof c === 'object' && typeof (c as ColorValue).hex === 'string';
 }
 
-function resolveRuby(ruby: CjkRubyConfig | undefined): ResolvedCjkRubyConfig {
+const RUBY_OVERHANGS: readonly CjkRubyOverhang[] = ['none', 'kana', 'any'];
+const RUBY_ALIGNS: readonly CjkRubyAlign[] = ['center', 'jis', 'start'];
+
+/** What a reading longer than its base may run onto by default (#422):
+ *  in Japan up to one ruby character onto kana and the blanks of marks,
+ *  never onto kanji (`kana`, JLReq §3.3.8); undefined elsewhere, where a
+ *  quarter of the ruby em passes onto any neighbour without a reading
+ *  (clreq, as before). */
+export function defaultCjkRubyOverhang(region: CjkRegion): CjkRubyOverhang | undefined {
+  return region === 'japan' ? 'kana' : undefined;
+}
+
+/** Where a reading sits on its base by default (#422): JIS X 4051's 1:2:1
+ *  in Japan (`jis`); undefined elsewhere (centred, as before). */
+export function defaultCjkRubyAlign(region: CjkRegion): CjkRubyAlign | undefined {
+  return region === 'japan' ? 'jis' : undefined;
+}
+
+function resolveRuby(ruby: CjkRubyConfig | undefined, region: CjkRegion): ResolvedCjkRubyConfig {
   const d = DEFAULT_CJK_CONFIG.ruby;
   const family = typeof ruby?.fontFamily === 'string' && ruby.fontFamily.trim() !== '' ? ruby.fontFamily.trim() : undefined;
+  const overhang = ruby?.overhang && RUBY_OVERHANGS.includes(ruby.overhang as CjkRubyOverhang)
+    ? (ruby.overhang as CjkRubyOverhang)
+    : defaultCjkRubyOverhang(region);
+  const align = ruby?.align && RUBY_ALIGNS.includes(ruby.align as CjkRubyAlign) ? (ruby.align as CjkRubyAlign) : defaultCjkRubyAlign(region);
   return {
     ...(family ? { fontFamily: family } : {}),
     fontSize: isLength(ruby?.fontSize) && ruby.fontSize.value > 0 ? { value: ruby.fontSize.value, unit: ruby.fontSize.unit } : { ...d.fontSize! },
     ...(isColor(ruby?.color) ? { color: ruby.color } : {}),
     position: ruby?.position && RUBY_POSITIONS.includes(ruby.position as CjkRubyPosition) ? ruby.position : 'auto',
+    // Present only when they change something, so a Chinese document's
+    // resolved config is what it was before they existed.
+    ...(overhang ? { overhang } : {}),
+    ...(align ? { align } : {}),
+    ...(ruby?.smallKana === 'full' ? { smallKana: 'full' as const } : {}),
   };
 }
 
@@ -274,7 +303,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
       ? partial.bookTitleBrackets.map((p) => ({ open: p.open, close: p.close }))
       : defaultCjkBookTitleBrackets(region),
     ...(isColor(partial?.annotationColor) ? { annotationColor: partial.annotationColor } : {}),
-    ruby: resolveRuby(partial?.ruby),
+    ruby: resolveRuby(partial?.ruby, region),
     warichu: resolveWarichu(partial?.warichu, region),
   };
 }
@@ -289,6 +318,9 @@ function stripRubyDefaults(ruby: CjkRubyConfig | undefined): CjkRubyConfig | und
   if (ruby.fontSize !== undefined && !dimensionsEqual(ruby.fontSize, d.fontSize!)) result.fontSize = ruby.fontSize;
   if (ruby.color !== undefined) result.color = ruby.color;
   if (ruby.position !== undefined && ruby.position !== d.position) result.position = ruby.position;
+  if (ruby.overhang !== undefined && ruby.overhang !== d.overhang) result.overhang = ruby.overhang;
+  if (ruby.align !== undefined && ruby.align !== d.align) result.align = ruby.align;
+  if (ruby.smallKana !== undefined && ruby.smallKana !== d.smallKana) result.smallKana = ruby.smallKana;
   return Object.keys(result).length > 0 ? result : undefined;
 }
 

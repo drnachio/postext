@@ -68,7 +68,12 @@ function annotationCacheKey(s: InlineSpan): string {
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
   if (s.bookTitle) key += `|bt:${s.bookTitle.id}.${s.bookTitle.depth}`;
-  if (s.ruby) key += `|rb:${s.ruby.text}|${s.ruby.group ? 'g' : 'm'}|${s.ruby.position ?? ''}|${s.ruby.fontString ?? ''}|${s.ruby.color ?? ''}|${s.ruby.id}`;
+  if (s.ruby) {
+    const r = s.ruby;
+    key += `|rb:${r.text}|${r.group ? 'g' : 'm'}|${r.position ?? ''}|${r.fontString ?? ''}|${r.color ?? ''}|${r.id}`;
+    // The Japanese rules (#422): absent on other rubies, whose key stays.
+    if (r.jukugo || r.mono || r.align || r.overhang || r.fullKana) key += `|${r.jukugo ? 'j' : ''}${r.mono ? 'o' : ''}:${r.align ?? ''}:${r.overhang ?? ''}:${r.fullKana ? 'f' : ''}`;
+  }
   if (s.warichu) key += `|wc:${s.warichu.id}|${s.warichu.fontString ?? ''}|${s.warichu.open ?? ''}|${s.warichu.close ?? ''}|${s.warichu.color ?? ''}`;
   if (s.inserted) key += '|ins';
   for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;

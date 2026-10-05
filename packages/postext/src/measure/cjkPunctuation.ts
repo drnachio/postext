@@ -261,12 +261,12 @@ export function boxCut(box: PunctuationBox): number {
 }
 
 /** The blank a mark still holds on each side. */
-function blankStart(box: PunctuationBox): number {
+export function blankStart(box: PunctuationBox): number {
   if (box.side === 'start') return box.blank - box.cutStart;
   if (box.side === 'both') return box.blank / 2 - box.cutStart;
   return 0;
 }
-function blankEnd(box: PunctuationBox): number {
+export function blankEnd(box: PunctuationBox): number {
   if (box.side === 'end') return box.blank - box.cutEnd;
   if (box.side === 'both') return box.blank / 2 - box.cutEnd;
   return 0;

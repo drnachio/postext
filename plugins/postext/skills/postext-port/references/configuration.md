@@ -1020,7 +1020,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `emphasis` | `'dots'` in a Chinese document | what `*…*` does to Chinese characters (`'italic'` fakes a slant) |
 | `bookTitleMark` | brackets / wavy / wavy | `:book[…]` prints 《》, a wavy line under it, or `'none'` |
 | `annotationColor` | text colour | dots and name/title lines |
-| `ruby` | `{fontSize: 0.5em, position: 'auto'}` | `fontFamily`, `fontSize`, `color`, `position`: zhuyin right of each character, pinyin over (right in vertical) |
+| `ruby` | `{fontSize: 0.5em, position: 'auto', overhang: 'auto', align: 'auto', smallKana: 'keep'}` | `fontFamily`, `fontSize`, `color`, `position`: zhuyin right of each character, pinyin over (right in vertical); `overhang` `'none'\|'kana'\|'any'` (auto: `kana` in Japan = ≤ 1 ruby character onto kana and mark blanks, ½ onto 「, never onto kanji; elsewhere ¼ ruby em onto any neighbour); `align` `'center'\|'jis'\|'start'` (auto: `jis` 1:2:1 in Japan, centred elsewhere); `smallKana: 'full'` paints ゃっ full size (≥ 1.16) |
 | `warichu` | `{fontSize: 0.5em}` | `fontSize`, `color`, `open`, `close` (brackets around each note) |
 
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set

@@ -57,7 +57,7 @@ export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefault
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
-export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkParagraphStartBracket } from './cjk';
+export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkParagraphStartBracket, defaultCjkRubyOverhang, defaultCjkRubyAlign } from './cjk';
 
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };

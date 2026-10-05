@@ -288,6 +288,28 @@ export interface InlineRuby {
   /** The ruby this span belongs to (the characters of a mono ruby share
    *  it). */
   id: number;
+  /** Jukugo ruby (熟語ルビ, JLReq §3.3.7, #422): the per-character
+   *  readings of one word. Each character keeps its reading while every
+   *  reading fits its base; a reading that does not may run onto the next
+   *  base of the word, and the word shares its reading as a group ruby
+   *  when that is not enough. The word may break between its characters,
+   *  each part laid out again. Set by `mode=jukugo`, and in a Japanese
+   *  document (`japan` region) on any per-character ruby of two
+   *  characters or more that does not say `mode=mono`. */
+  jukugo?: true;
+  /** `mode=mono` was written: the readings stay per character (モノルビ)
+   *  in a Japanese document too. */
+  mono?: true;
+  /** `align=` as written: where a reading shorter than its base sits
+   *  (`center`, `jis` 1:2:1, `start`); unset follows `cjk.ruby.align`. */
+  align?: 'center' | 'jis' | 'start';
+  /** Resolved by the layout before measuring (`cjk.ruby.overhang`, set
+   *  only when it is not the clreq quarter em): what a longer reading may
+   *  run onto. */
+  overhang?: 'none' | 'kana' | 'any';
+  /** Resolved by the layout (`cjk.ruby.smallKana: 'full'`): the reading's
+   *  small kana are painted full size (がつこう for がっこう). */
+  fullKana?: true;
   /** Resolved by the layout before measuring: the reading's font (CSS
    *  shorthand at the ruby size) and colour (hex; unset: the text's). */
   fontString?: string;

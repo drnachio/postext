@@ -99,6 +99,21 @@ export interface RubyGeometry {
   /** What the reading could pass the box by on each side (the input's). */
   allowLeft: number;
   allowRight: number;
+  /** Space after each base character, px, counted in `width`: a base of
+   *  several characters spread 1:2:1 under a longer reading (Japanese
+   *  ruby, `rubyJis.ts`). Unset: the base keeps its own spacing. */
+  tracking?: number;
+}
+
+/** The baseline (`dy`) of a reading over or under its base, px from the
+ *  line's baseline: against the base's em box, a Latin reading over the
+ *  base lifted clear of the base (`rubyLift.ts`). */
+export function readingBaseline(reading: string, fontString: string, position: 'over' | 'under', em: number): number {
+  const rtEm = fontEm(fontString);
+  const side = position === 'under' ? 1 : -1;
+  const rtAxis = -CENTRAL * em + side * (em / 2 + rtEm / 2);
+  const lift = side < 0 ? latinReadingLift(reading, fontString, em) : 0;
+  return baselineOf(rtAxis, rtEm) - lift;
 }
 
 /** Gap between a base and its zhuyin column, in em of the text. */

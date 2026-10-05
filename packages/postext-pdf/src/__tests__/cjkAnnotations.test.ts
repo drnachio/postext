@@ -86,4 +86,17 @@ describe('Chinese annotations in the PDF', () => {
     expect(texts).toContain('紅樓夢寶玉甲戌側批道');
     expect(texts.some((t) => t.includes('hóng'))).toBe(false);
   }, 60_000);
+
+  it('Japanese furigana (#422): one Ruby per base, a spread base with its character spacing, the line read as its base', async () => {
+    const doc = buildDocument({ markdown: '日{紅茶|こうちゃかな}本の{東京|とう|きょう}日' }, { ...config(), locale: 'ja' });
+    const { content, pdf } = await render(doc);
+    // 紅茶, 東 and 京: three Ruby elements, each with its RB and RT.
+    expect(pdf.match(/\/S \/Ruby\b/g)).toHaveLength(3);
+    expect(pdf.match(/\/S \/RT\b/g)).toHaveLength(3);
+    // The base 紅茶 spread 1:2:1: 10 px after each character.
+    expect(content).toMatch(/\b10 Tc\b/);
+    const texts = actualTexts(content);
+    expect(texts).toContain('日紅茶本の東京日');
+    expect(texts.some((t) => t.includes('こう'))).toBe(false);
+  }, 60_000);
 });

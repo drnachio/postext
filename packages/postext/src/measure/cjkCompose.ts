@@ -74,11 +74,14 @@ import { hasCJK } from './cjk';
 import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
-import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
+import { cellAdvance, flowTextWidth, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
 import { isUprightMarkPair, verticalRuns } from '../writingMode';
-import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
+import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, readingBaseline, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
+import { boxesWidth, fullSizeKana, layoutJisRuby, layoutJukugo, type JisRubyAlign, type JisRubyAllow, type JisRubyBase, type JisRubyBox } from './rubyJis';
 import {
   applyLineEdges,
+  blankEnd,
+  blankStart,
   boxCut,
   carryStopBlank,
   compositionFor,
@@ -251,8 +254,22 @@ interface Unit {
   cellStart?: boolean;
   cellEnd?: boolean;
   /** A ruby base (#194): the span's reading and, once sized
-   *  ({@link sizeRubies}), its geometry; `width` is then the base's box. */
-  ruby?: { span: InlineRuby; position: 'over' | 'under' | 'right'; geometry?: RubyGeometry };
+   *  ({@link sizeRubies}), its geometry; `width` is then the base's box.
+   *  `base` is the base's own advance. A ruby set by the Japanese rules
+   *  (#422, {@link isJisRuby}) also has its reading's characters as
+   *  painted (`chars`) and the word it is laid out with (`jis`). */
+  ruby?: {
+    span: InlineRuby;
+    position: 'over' | 'under' | 'right';
+    geometry?: RubyGeometry;
+    base?: number;
+    chars?: { text: string; width: number }[];
+    jis?: JisRubyWord;
+  };
+  /** A base of a Japanese ruby (#422): how much wider the line gets when
+   *  it opens a line (`start`: the reading flush with the line's start,
+   *  a jukugo word laid out again from there) or closes one (`end`). */
+  rubyGrow?: { start: number; end: number };
   /** A character of a warichu note (#195): `width` is its advance at the
    *  note size; a line folds the note's characters it holds into two rows
    *  ({@link foldNotes}). */
@@ -452,6 +469,7 @@ function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, v
   const lastG = graphemes[graphemes.length - 1] ?? '';
   let position: 'over' | 'under' | 'right' = ruby.position ?? (isZhuyin(ruby.text) ? 'right' : 'over');
   if (vertical && position === 'right') position = 'over';
+  const jis = isJisRuby(ruby, position);
   return {
     kind: 'text',
     text: span.text,
@@ -463,8 +481,191 @@ function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, v
     lastCjk: isCjkGrapheme(lastG),
     style,
     at: 0,
-    ruby: { span: ruby, position },
+    ruby: { span: ruby, position, ...(jis ? { base: width } : {}) },
   };
+}
+
+/** Whether a ruby is set by the Japanese rules (#422, `rubyJis.ts`): one
+ *  over or under its base, not zhuyin, that has an alignment, an overhang
+ *  rule, a jukugo word, a `mode=mono` or full-size kana (in Japan every
+ *  reading has the first two). Others keep the clreq geometry. */
+function isJisRuby(ruby: InlineRuby, position: 'over' | 'under' | 'right'): boolean {
+  if (position === 'right' || isZhuyin(ruby.text)) return false;
+  return !!(ruby.align || ruby.overhang || ruby.jukugo || ruby.mono || ruby.fullKana);
+}
+
+/** How a Japanese ruby is laid out (#422): as a jukugo word (several
+ *  bases) or one base, what the neighbours outside let the reading pass
+ *  onto, and the alignment. The units of one word share the object. */
+interface JisRubyWord {
+  jukugo: boolean;
+  align: JisRubyAlign;
+  rubyEm: number;
+  allow: JisRubyAllow;
+}
+
+/** Hiragana, katakana (small kana, half-width forms and ー too): what a
+ *  reading may pass onto under `cjk.ruby.overhang: 'kana'`. */
+const KANA_RE = /^[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u31F0-\u31FF\uFF66-\uFF9F]/u;
+
+/** How far a Japanese reading may pass its base (or its jukugo word)
+ *  onto the unit `v` beside it (`before`: `v` precedes it), px (JLReq
+ *  §3.3.8, see `CjkRubyOverhang`); 0 at the paragraph's edge. `prev` is
+ *  the unit before `v`, whose reading may already run onto it. */
+function rubyOverhangOnto(v: Unit | undefined, before: boolean, prev: Unit | undefined, mode: InlineRuby['overhang'], rubyEm: number): number {
+  if (!v || mode === 'none') return 0;
+  if (mode === undefined) {
+    // clreq: a quarter of the ruby em onto a neighbour without a reading,
+    // as the other rubies of the paragraph (`sizeRubies`).
+    if (v.kind !== 'text' || v.note) return 0;
+    if (!v.ruby) return rubyEm / 4;
+    const theirs = v.ruby.geometry?.rtWidth ?? readingAdvance(v.ruby.span.text, v.ruby.span.fontString ?? v.style.font, v.ruby.position);
+    return Math.max(0, Math.min(rubyEm / 4, (v.width - theirs) / 2 - rubyEm / 4));
+  }
+  if (v.kind === 'atomic' || v.note || v.warichu) return 0;
+  // A space: its width; never the space between Japanese and Latin text,
+  // whose other side is a Western letter.
+  if (v.kind === 'space') return v.auto ? 0 : Math.min(mode === 'any' ? rubyEm / 2 : rubyEm, v.width);
+  if (v.ruby) {
+    // Another base: only its reading's free room, and none in kana mode.
+    if (mode !== 'any') return 0;
+    const theirs = v.ruby.chars ? v.ruby.chars.reduce((w, c) => w + c.width, 0) : readingAdvance(v.ruby.span.text, v.ruby.span.fontString ?? v.style.font, v.ruby.position);
+    return Math.max(0, Math.min(rubyEm / 2, (v.width - theirs) / 2));
+  }
+  if (mode === 'any') return rubyEm / 2;
+  // `kana`: two readings never share a kana from both sides; the later
+  // one keeps to its base (JLReq §3.3.8 note).
+  if (before && prev?.ruby?.geometry && prev.ruby.jis) {
+    const g = prev.ruby.geometry;
+    const reach = g.runs.reduce((hi, r) => Math.max(hi, r.dx + flowTextWidth(r.text, r.fontString)), -Infinity);
+    if (reach > g.width + 1e-6) return 0;
+  }
+  const box = v.punct;
+  const cls = before ? v.last : v.first;
+  if (box) {
+    // A mark: its blank on the reading's side, never its glyph; at most
+    // half a ruby character onto an opening bracket. …… and ―― take a
+    // ruby character.
+    if (box.cls === 'opening') return rubyEm / 2;
+    if (box.cls === 'dash' || box.cls === 'ellipsis') return rubyEm;
+    return Math.min(rubyEm, before ? blankEnd(box) : blankStart(box));
+  }
+  if (cls === 'opening') return rubyEm / 2;
+  if (cls === 'ideoSpace' || cls === 'dash' || cls === 'ellipsis') return rubyEm;
+  // Kana, ー; never kanji, nor a Western run.
+  return !v.run && v.graphemes === 1 && KANA_RE.test(v.text) ? rubyEm : 0;
+}
+
+/** The bases of a Japanese ruby's units (see {@link JisRubyBase}). */
+function jisBases(us: readonly Unit[]): JisRubyBase[] {
+  return us.map((u) => ({ width: u.ruby!.base!, graphemes: u.graphemes, reading: u.ruby!.chars! }));
+}
+
+/** Lay out the bases of one Japanese ruby word (or one base). */
+function layoutJisWord(word: JisRubyWord, bases: readonly JisRubyBase[], allow: JisRubyAllow): JisRubyBox[] {
+  return word.jukugo ? layoutJukugo(bases, word.align, word.rubyEm, allow) : [layoutJisRuby(bases[0]!, word.align, word.rubyEm, allow)];
+}
+
+/** `u` with the box `box` of its Japanese ruby: its geometry and width. */
+function withJisBox(u: Unit, box: JisRubyBox, word: JisRubyWord): Unit {
+  const ruby = u.ruby!;
+  const font = ruby.span.fontString ?? withFontSize(u.style.font, emOfFont(u.style.font) / 2);
+  const dy = readingBaseline(ruby.span.text, font, ruby.position === 'under' ? 'under' : 'over', emOfFont(u.style.font));
+  const geometry: RubyGeometry = {
+    width: box.width,
+    inset: box.inset,
+    rtWidth: ruby.chars!.reduce((w, c) => w + c.width, 0),
+    runs: box.pieces.map((p) => ({ text: p.text, dx: p.dx, dy, fontString: font })),
+    allowLeft: word.allow.start,
+    allowRight: word.allow.end,
+    ...(box.tracking > 0 ? { tracking: box.tracking } : {}),
+  };
+  return { ...u, width: box.width, ruby: { ...ruby, geometry } };
+}
+
+/**
+ * Lay out the Japanese rubies of a paragraph (#422, `rubyJis.ts`): each
+ * jukugo word, or each base, with what its neighbours let its reading pass
+ * onto, in order (a reading that runs onto a kana keeps the next one off
+ * it). Each base also learns how much wider it gets at a line edge
+ * (`rubyGrow`), for the breaker. Units are replaced in place.
+ */
+function sizeJisRubies(units: Unit[]): void {
+  const n = units.length;
+  for (let k = 0; k < n; k++) {
+    const u = units[k]!;
+    if (!u.ruby || u.ruby.base === undefined || u.ruby.geometry) continue;
+    const span = u.ruby.span;
+    let e = k;
+    if (span.jukugo) {
+      while (e + 1 < n) {
+        const v = units[e + 1]!.ruby;
+        if (!v || v.base === undefined || !v.span.jukugo || v.span.id !== span.id || v.position !== u.ruby.position) break;
+        e++;
+      }
+    }
+    const font = span.fontString ?? withFontSize(u.style.font, emOfFont(u.style.font) / 2);
+    const rubyEm = fontEm(font);
+    for (let q = k; q <= e; q++) {
+      const r = units[q]!.ruby!;
+      const painted = r.span.fullKana ? fullSizeKana(r.span.text) : r.span.text;
+      r.chars = graphemesOf(painted).map((g) => ({ text: g, width: flowTextWidth(g, font) }));
+    }
+    const word: JisRubyWord = {
+      jukugo: e > k,
+      align: span.align ?? 'center',
+      rubyEm,
+      allow: {
+        start: rubyOverhangOnto(units[k - 1], true, units[k - 2], span.overhang, rubyEm),
+        end: rubyOverhangOnto(units[e + 1], false, undefined, span.overhang, rubyEm),
+      },
+    };
+    const members = units.slice(k, e + 1);
+    const bases = jisBases(members);
+    const boxes = layoutJisWord(word, bases, word.allow);
+    for (let q = k; q <= e; q++) {
+      units[q] = withJisBox(units[q]!, boxes[q - k]!, word);
+      units[q]!.ruby!.jis = word;
+    }
+    // What the line gains when the word (or the base) opens it from that
+    // unit on, or closes it with that unit: the reading flush with the
+    // edge, the part of a word laid out alone.
+    for (let i = 0; i < boxes.length; i++) {
+      const head = boxesWidth(boxes.slice(0, i + 1));
+      const tail = boxesWidth(boxes.slice(i));
+      units[k + i]!.rubyGrow = {
+        start: boxesWidth(layoutJisWord(word, bases.slice(i), { start: 0, end: word.allow.end })) - tail,
+        end: boxesWidth(layoutJisWord(word, bases.slice(0, i + 1), { start: word.allow.start, end: 0 })) - head,
+      };
+    }
+    k = e;
+  }
+}
+
+/**
+ * A line's Japanese rubies at its edges (#422, JLReq §3.3.8): a word or
+ * base that opens or closes the line is laid out again with nothing to
+ * pass onto on that side, so a longer reading is set flush with the edge
+ * and its base moves in; a jukugo word the line breaks inside is laid
+ * out again with the characters the line holds, each keeping its reading.
+ * The breaker counted what this adds (`rubyGrow`). Units that change are
+ * replaced by copies in `us`.
+ */
+function relayJisEdges(us: Unit[]): void {
+  for (let j = 0; j < us.length; j++) {
+    const word = us[j]!.ruby?.jis;
+    if (!word) continue;
+    let e = j;
+    while (e + 1 < us.length && us[e + 1]!.ruby?.jis === word) e++;
+    const atStart = j === 0;
+    const atEnd = e === us.length - 1;
+    if (atStart || atEnd) {
+      const allow = { start: atStart ? 0 : word.allow.start, end: atEnd ? 0 : word.allow.end };
+      const boxes = layoutJisWord(word, jisBases(us.slice(j, e + 1)), allow);
+      for (let q = j; q <= e; q++) us[q] = withJisBox(us[q]!, boxes[q - j]!, word);
+    }
+    j = e;
+  }
 }
 
 /**
@@ -475,6 +676,8 @@ function rubyBaseUnit(span: InlineSpan, fonts: Fonts, letterSpacingPx: number, v
  * the symbols' em). Run once the units are final.
  */
 function sizeRubies(units: Unit[]): void {
+  // Japanese rubies first (#422): the others read their geometry.
+  if (units.some((u) => u.ruby?.base !== undefined)) sizeJisRubies(units);
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
     if (!u.ruby || u.ruby.geometry) continue;
@@ -1321,6 +1524,8 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
  *  one and after the other), never next to 、，。．・：；？！ or U+3000. */
 function gapStretches(a: Unit, b: Unit, jlreq = false): boolean {
   if (a.kind !== 'text' || b.kind === 'space') return false;
+  // Never inside a jukugo word (JLReq §3.3.7).
+  if (a.ruby?.jis && a.ruby.jis === b.ruby?.jis) return false;
   if (b.glueBefore || a.stacked) return false;
   if (a.last === 'connector' || a.last === 'solidus' || b.first === 'connector' || b.first === 'solidus') return false;
   if (!a.lastCjk && !b.firstCjk) return false;
@@ -1593,11 +1798,18 @@ function breakUnits(
     }
     return foldWidth(widths, splitNote(widths, startNo, endNo));
   };
+  // A Japanese ruby base at a line edge widens the line (`rubyGrow`): at
+  // its start, and at its end when the line may end after it.
+  const endGrow = (k: number): number => {
+    const g = unitAt(k).rubyGrow;
+    if (!g || g.end <= 0) return 0;
+    return k + 1 >= n || breaks[k + 1] || units[k + 1]!.kind === 'space' ? g.end : 0;
+  };
   for (let li = 0; ; li++) {
     while (i < n && unitAt(i).kind === 'space') i++;
     if (i >= n) break;
     const max = measureOf(li) - reserve;
-    let w = 0;
+    let w = Math.max(0, unitAt(i).rubyGrow?.start ?? 0);
     let lastBreak = -1;
     let end = -1;
     let head: Unit | undefined;
@@ -1630,7 +1842,7 @@ function breakUnits(
         // line may end with was one that folded).
       }
       const lead = fit && k === i ? fit.lead(u) : 0;
-      if (!u.note && w + u.width - lead - (fit ? fit.tail(u) : 0) <= max + FIT_EPS) {
+      if (!u.note && w + u.width - lead - (fit ? fit.tail(u) : 0) + endGrow(k) <= max + FIT_EPS) {
         w += u.width - lead;
         if (fit) give += fit.give(u, k === i, false);
         continue;
@@ -1657,7 +1869,7 @@ function breakUnits(
           let room = give;
           for (let q = k; q <= m; q++) {
             const uq = unitAt(q);
-            const t = q === m ? fit.tail(uq) : 0;
+            const t = q === m ? fit.tail(uq) - endGrow(q) : 0;
             width += uq.width - t;
             room += fit.give(uq, false, q === m);
           }
@@ -1869,7 +2081,7 @@ function alignEdgeRubies(us: Unit[]): void {
   const align = (j: number, start: boolean): void => {
     const u = us[j]!;
     const g = u.ruby?.geometry;
-    if (!g || u.ruby!.position === 'right' || g.runs.length === 0) return;
+    if (!g || u.ruby!.position === 'right' || u.ruby!.jis || g.runs.length === 0) return;
     const base = u.width - 2 * g.inset;
     const rt = g.rtWidth;
     const wide = rt > base;
@@ -1901,7 +2113,8 @@ function clampReadings(segments: readonly VDTLineSegment[]): void {
   let x = 0;
   for (const s of segments) {
     const ruby = s.ruby;
-    if (ruby && ruby.position !== 'right' && ruby.runs.length > 0) {
+    // A Japanese reading (`id`) was set inside the line already (#422).
+    if (ruby && ruby.position !== 'right' && ruby.id === undefined && ruby.runs.length > 0) {
       const lo = ruby.runs[0]!.dx;
       const hi = lo + ruby.rtWidth;
       let shift = 0;
@@ -2047,7 +2260,9 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   const measure = ctx.measureOf(li);
   // A warichu note's characters fold into their two rows (#195).
   if (us.some((u) => u.note)) foldNotes(us, ctx.level, ctx.em);
-  // A ruby base at either edge aligns to it with its reading (#194).
+  // A ruby base at either edge aligns to it with its reading (#194); a
+  // Japanese one is laid out again there (#422).
+  if (us.some((u) => u.ruby?.jis)) relayJisEdges(us);
   alignEdgeRubies(us);
   const hang = ctx.fit ? fitLine(us, units, range, lastK, isLast, measure, ctx.fit) : undefined;
   const justify = ctx.textAlign === 'justify' && !isLast;
@@ -2207,18 +2422,25 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       // after each of its characters.
       const g = u.ruby.geometry;
       const gapAfter = gap > 0 && u.graphemes > 1;
+      // A Japanese ruby (#422) names its annotation (`id`), so renderers
+      // can set one `<ruby>` for a word.
+      const jis = u.ruby.jis !== undefined;
       const seg: PendingSegment = {
         ...segmentOf(u, gapAfter ? u.width : u.width + gap, gap > 0 && !gapAfter ? gap : undefined),
         text: u.text,
         ...(g.inset > 1e-9 ? { inkOffset: g.inset } : {}),
+        // A base spread 1:2:1 under a longer Japanese reading.
+        ...(g.tracking ? { tracking: g.tracking } : {}),
         ruby: {
           text: u.ruby.span.text,
           fontString: u.ruby.span.fontString ?? g.runs[0]?.fontString ?? u.style.font,
-          baseWidth: u.width - g.inset * 2 - (u.ruby.position === 'right' ? g.rtWidth : 0),
+          baseWidth: u.ruby.base ?? u.width - g.inset * 2 - (u.ruby.position === 'right' ? g.rtWidth : 0),
           rtWidth: g.rtWidth,
           position: u.ruby.position,
           ...(u.ruby.span.group ? { group: true } : {}),
           ...(u.ruby.span.color ? { color: u.ruby.span.color } : {}),
+          ...(jis ? { id: u.ruby.span.id } : {}),
+          ...(jis && u.ruby.span.jukugo ? { jukugo: true as const } : {}),
           runs: g.runs,
         },
       };

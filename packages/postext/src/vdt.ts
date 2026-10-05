@@ -447,9 +447,26 @@ export interface VDTRuby {
   position: 'over' | 'under' | 'right';
   /** Group ruby: one reading over the whole base. */
   group?: boolean;
+  /** The annotation the reading belongs to (#422): segments of one line
+   *  with the same id are one ruby (a jukugo word, or a mono ruby written
+   *  as one), adjacent in `segments`, so a renderer can set them as one
+   *  `<ruby>` with a reading per base. Unique within a block (a word cut
+   *  by a line break keeps its id on both lines). Set on rubies laid out by
+   *  the Japanese rules (`cjk.ruby.overhang` / `align` other than the
+   *  clreq defaults, as in every Japanese document, or `mode` / `align`
+   *  written on the ruby); absent elsewhere: each segment's reading is an
+   *  annotation of its own. */
+  id?: number;
+  /** One character of a jukugo ruby (熟語ルビ, JLReq §3.3.7, #422): its
+   *  reading is its own (`text`), painted by its base or, when the word
+   *  shares its reading, as part of the word's. */
+  jukugo?: true;
   /** Colour of the reading (hex); unset: the text colour. */
   color?: string;
-  /** What is painted: the reading, or its zhuyin symbols one by one. */
+  /** What is painted: the reading, or its zhuyin symbols one by one; a
+   *  Japanese reading spread 1:2:1 one run per character. `dx` is from the
+   *  base segment's start and may fall before it or past its width (a
+   *  reading running onto a neighbour). */
   runs: VDTAnnotationRun[];
 }
 

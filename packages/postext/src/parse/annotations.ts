@@ -2,7 +2,7 @@
  * Chinese and Japanese inline annotations (#193, #194, #195, #421):
  * emphasis dots (`:dots[…]`), the proper-name and book-title marks
  * (`:name[…]`, `:book[…]`), side lines (傍線, `:sideline[…]{style pos}`),
- * ruby (`:ruby[…]{rt="…"}` and the compact `{紅樓|hóng|lóu}`)
+ * ruby (`:ruby[…]{rt="…" mode align}` and the compact `{紅樓|hóng|lóu}`)
  * and warichu notes (`:warichu[…]{open close}`); and the directional
  * isolates (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which
  * set a run in its own direction inside text of the other.
@@ -166,8 +166,11 @@ function nextAnnotation(text: string, from: number, end: number): FoundAnnotatio
       const close = closingBracket(text, open, end);
       if (close < 0 || close === open + 1) continue;
       // A compact ruby right after the bracket is text, not attributes
-      // (`:name[賈寶玉]{紅|hóng}`).
-      const blob = compactRubyAt(text, close + 1, end) ? -1 : attrBlobEnd(text, close + 1, end);
+      // (`:name[賈寶玉]{紅|hóng}`); a brace whose "base" assigns a value is
+      // attributes (`:ruby[東京]{rt="とう|きょう"}`, kana readings split
+      // on bars, #422).
+      const compact = compactRubyAt(text, close + 1, end);
+      const blob = compact && !text.slice(close + 2, compact.bar).includes('=') ? -1 : attrBlobEnd(text, close + 1, end);
       return {
         name: m[1] as AnnotationName,
         start: i,
@@ -310,14 +313,36 @@ function flag(value: string | undefined): boolean {
   return value !== undefined && value !== 'false' && value !== 'no';
 }
 
+const RUBY_MODES = new Set(['mono', 'group', 'jukugo']);
+const RUBY_ALIGNS = new Set(['center', 'jis', 'start']);
+
+/** A ruby's `mode` (#422): `mono`, `group` or `jukugo` as written (the
+ *  `group` flag is `mode=group`); undefined when it says none. */
+function rubyMode(attrs: DirectiveAttrs): 'mono' | 'group' | 'jukugo' | undefined {
+  if (flag(attrs.group)) return 'group';
+  const mode = attrs.mode?.trim();
+  return mode && RUBY_MODES.has(mode) ? (mode as 'mono' | 'group' | 'jukugo') : undefined;
+}
+
+/** The fields `mode` and `align` give each span of a ruby (#422). */
+function rubyFlags(attrs: DirectiveAttrs, perCharacter: boolean, count: number): Pick<InlineRuby, 'jukugo' | 'mono' | 'align'> {
+  const mode = rubyMode(attrs);
+  const align = attrs.align?.trim();
+  return {
+    ...(perCharacter && mode === 'jukugo' && count > 1 ? { jukugo: true as const } : {}),
+    ...(perCharacter && mode === 'mono' ? { mono: true as const } : {}),
+    ...(align && RUBY_ALIGNS.has(align) ? { align: align as InlineRuby['align'] } : {}),
+  };
+}
+
 /**
  * The readings of a ruby, one per base character when they pair up (a mono
- * ruby), else undefined (a group ruby): the `rt` attribute split on `|` or
- * spaces, or the readings of a compact ruby (one `|` each; a single one
- * split on spaces).
+ * ruby, or a jukugo ruby), else undefined (a group ruby): the `rt`
+ * attribute split on `|` or spaces, or the readings of a compact ruby (one
+ * `|` each; a single one split on spaces).
  */
 function monoReadings(entry: QueuedAnnotation, count: number): string[] | undefined {
-  if (flag(entry.attrs.group)) return undefined;
+  if (rubyMode(entry.attrs) === 'group') return undefined;
   let readings: string[];
   if (entry.readings) {
     readings = entry.readings.length === 1 ? entry.readings[0]!.split(/\s+/) : entry.readings;
@@ -453,13 +478,14 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
     const pos = frame.entry.attrs.pos ?? frame.entry.attrs.position;
     const position = pos && RUBY_SIDES.has(pos) ? (pos as InlineRuby['position']) : undefined;
     const readings = monoReadings(frame.entry, graphemes.length);
+    const flags = rubyFlags(frame.entry.attrs, readings !== undefined, graphemes.length);
     if (readings) {
       let r = 0;
       for (const i of pieces) {
         const span = out[i]!;
         const parts: InlineSpan[] = [];
         for (const g of graphemesOf(span.text)) {
-          parts.push({ ...span, text: g, ruby: { text: readings[r++]!, id: frame.id, ...(position ? { position } : {}) } });
+          parts.push({ ...span, text: g, ruby: { text: readings[r++]!, id: frame.id, ...(position ? { position } : {}), ...flags } });
         }
         replace.set(i, parts);
       }
@@ -469,7 +495,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
       replace.set(pieces[0]!, [{
         ...first,
         text: base,
-        ...(reading.length > 0 ? { ruby: { text: reading, group: true, id: frame.id, ...(position ? { position } : {}) } } : {}),
+        ...(reading.length > 0 ? { ruby: { text: reading, group: true, id: frame.id, ...(position ? { position } : {}), ...flags } } : {}),
       }]);
       for (const i of pieces.slice(1)) drop.add(i);
     }
