@@ -138,7 +138,8 @@
     },
     "recipes": [
       "bunko-novel-furigana", "two-tier-tankobon", "haiku-and-tanka", "genko-yoshi-manuscript", "vertical-notes-and-sidenotes", "kanbun-kundoku",
-      "japanese-technical-manual", "jukugo-furigana-textbook", "sist02-research-paper", "gojuon-index"
+      "japanese-technical-manual", "jukugo-furigana-textbook", "sist02-research-paper", "gojuon-index",
+      "hiragana-picture-book", "katakana-majiri-proclamation", "kanji-numerals-and-dates", "romaji-nikki"
     ]
   }
 }

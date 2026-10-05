@@ -1,0 +1,68 @@
+---
+title: "Una proclama Meiji en kanji i katakana"
+summary: "La Constitució de 1889 en vertical, en kanji i katakana: articles 第一條 amb un comptador japanese-informal, un marc de filets i els refrendaments al peu."
+plain: "La constitució japonesa de 1889, escrita en kanji i katakana, en línies de dalt a baix com la va imprimir el butlletí oficial, amb els articles numerats en kanji."
+description: "Un document Meiji en Postext: text en kanji i katakana en vertical sobre una retícula de 40 caràcters, articles 第一條 d'un comptador, marc doble i segell."
+question: "Com componc un text Meiji en kanji i katakana i numero els articles 第一條, 第二條?"
+aliases: ["katakana", "kanji katakana majiri", "漢字カタカナ交じり文", "Constitució Meiji", "大日本帝國憲法", "官報", "articles numerats en kanji", "第一條", "text legal vertical", "formes antigues de kanji"]
+pageNotes: { "1": "La portada: 大日本帝國憲法 en Mincho gruixut pel centre d'un filet gruixut i un altre de prim, la data en vermelló a la dreta, 官報號外 a l'esquerra i la línia en castellà girada al peu.", "2": "Les notes de l'editor, quatre punts oberts cadascun amb el caràcter 一; després el títol 上諭 i les primeres línies de l'edicte, tot en kanji i katakana.", "4": "御名　御璽 en vermelló, la data i els deu refrendaments, al peu de les seves línies.", "5": "El capítol primer: 第一章　天皇 dos caràcters més avall, els articles 第一條 a 第八條 en negreta i la segona clàusula de l'article 8 un caràcter més avall." }
+---
+
+## Què compondràs
+
+Una reimpressió de vuit pàgines de la Constitució Meiji tal com la va publicar el Butlletí Oficial (官報) l'11 de febrer de 1889: l'edicte imperial, els refrendaments dels ministres i els dos primers capítols, trenta-dos articles. El text és en 漢字カタカナ交じり文 (kanji-katakana majiri-bun), la llengua escrita del dret Meiji: els kanji porten les paraules i els katakana les terminacions, sense marques de sonorització, sense kana petits i sense puntuació. Les pàgines són A5, en vertical i enquadernades per la dreta, amb una retícula de 40 × 15 caràcters dins d'un filet gruixut i un altre de prim. Els articles es numeren amb un comptador de llista en kanji, de 第一條 a 第三十二條, i el segell i els refrendaments queden on els va posar el Butlletí.
+
+## Elaboració
+
+### 1 · Deixa que un comptador de llista escrigui 第十八條
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada article és un element d'una llista ordenada de Markdown, i `orderedLists` dona al seu número la forma del Butlletí: `numberFormat: 'japanese-informal'` escriu 十八, no 一十八; `prefix: '第'` i `separator: '條'` l'envolten, i `gap: em(1)` deixa l'espai d'amplada completa de l'original. Amb `hangingIndent: false` les línies següents tornen al capdamunt de la línia en lloc de penjar sota el text, com al Butlletí. El capítol segon comença la llista a `18.`, de manera que el comptador continua d'un capítol a l'altre, i els capítols es numeren 第一章 i 第二章 amb la plantilla de títol `第{2:一}章`, en el mateix estil ([llistes ordenades](/ca/docs/configuration#llistes-ordenades)).
+
+<PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="Pàgina 5: 第一章　天皇 dos caràcters més avall, els articles 第一條 a 第八條 en negreta i la segona clàusula de l'article 8 un caràcter més avall." />
+
+### 2 · Deixa els katakana com els va escriure el Butlletí
+
+`locale: 'ja'` aplica les regles japoneses, i cap no reescriu el text. 侵スヘカラス es queda sense les marques de sonorització (es llegeix *okasu bekarazu*), 行フ conserva el kana històric i 奪ハルヽ la marca de repetició en katakana. Sense kana petits ni puntuació, la línia es pot tallar entre dos caràcters qualssevol; el kinsoku continua impedint que ヽ i 々 obrin una línia. Les notes de l'editor, en japonès modern amb hiragana, queden al costat de l'edicte a la pàgina 2, i així es comparen en una mateixa pàgina les dues maneres d'escriure el japonès.
+
+### 3 · Dibuixa el marc a totes les pàgines
+
+<Excerpt region="frame" />
+
+La ranura de la capçalera dibuixa en mil·límetres del full, no en el flux vertical, així que el marc són dues caixes col·locades amb els mateixos números que col·loquen la caixa de text: `HEAD` des de dalt i `SIDE` des de cada vora. Els marges es calculen a partir de la retícula en lloc de deixar-los-hi, i la caixa de text queda just 6 mm dins del filet prim. El foli, en kanji gràcies a `pageNumbering.format: 'japanese-informal'`, va sota el marc.
+
+### 4 · Compon la portada sobre l'eix
+
+<Excerpt region="cover" />
+
+En un flux vertical `x` baixa pel full i `y` avança cap a l'esquerra, així que la columna del títol es col·loca per la seva distància a la vora dreta de la caixa de text. La data, en el color d'accent, i el nom del Butlletí flanquegen el títol a 18 mm de l'eix.
+
+### 5 · Carrega cada font amb el text que compon
+
+<Excerpt region="voices" />
+
+Shippori Mincho B1, un Mincho amb les formes antigues 國, 條 i 權, carrega els fitxers del text i dels títols; Noto Sans JP carrega només les notes de l'editor, els folis i la línia en castellà. Una font que rep menys text del que compon fa fallar la captura (C12).
+
+## Variants
+
+### Penja les línies següents sota el text
+
+Els codis d'avui alineen la segona línia d'un article amb el primer caràcter de text, no amb 第.
+
+```diff
+-  indent: em(0), hangingIndent: false, fontFamily: MINCHO, fontWeight: 800,
++  indent: em(0), hangingIndent: true, fontFamily: MINCHO, fontWeight: 800,
+```
+
+### Numera els articles en daiji
+
+Alguns textos legals i comptables escriuen 壱, 弐, 参: el token 壱 o l'estil `japanese-formal` donen 第壱條, 第弐條.
+
+```diff
+-  numberFormat: 'japanese-informal', prefix: '第', separator: '條', gap: em(1),
++  numberFormat: 'japanese-formal', prefix: '第', separator: '條', gap: em(1),
+```
+
+## Errors freqüents
+
+- El Butlletí compon els katakana de les terminacions més petits que els kanji i reparteix els càrrecs dels ministres a una mateixa amplada (字取り). Postext compon tots els caràcters al cos del text, i el seu espaiat uniforme, `jidori`, només val per a títols, així que aquí els refrendaments només s'alineen al peu de la línia.
+- El japonès i el xinès no entenen igual aquest comptador: en un document `ja` el token `一` i `{2:一}` volen dir `japanese-informal` (百一, 十八); en un de xinès, l'estil xinès (一百零一, 十八). El llibre xinès <RecipeLink slug="chinese-dates-upright">Dates i sigles dretes en text vertical</RecipeLink> escriu els seus 第一條 a mà.

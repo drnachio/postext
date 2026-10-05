@@ -1,0 +1,57 @@
+---
+title: "A hiragana picture book, spaced by phrase"
+summary: "A vertical picture book in hiragana with a space between phrases (wakachigaki): keep-all keeps each phrase whole, so lines break only at the spaces."
+plain: "A Japanese picture book for small children, all in hiragana, with a space after each group of words and lines that never split one, under a picture on every page."
+description: "A Japanese picture book in Postext: hiragana set vertically at 20 pt with wakachigaki spaces, phrases kept whole by keep-all, a picture tier on every page."
+question: "How do I space a Japanese picture book by phrases (wakachigaki) and break its lines only at the spaces?"
+aliases: ["wakachigaki", "分かち書き", "わかち書き", "picture book", "絵本", "hiragana", "ひらがな", "children's book Japanese", "word-break", "cjk.wordBreak", "keep-all", "break only at spaces", "Klee One"]
+pageNotes: { "1": "The cover: the river scene across the whole page, a red paper boat on blue water, the title かみの ふね in red down the sky on the right.", "2": "Page 2: a girl at a table folding the red boat, under it six short vertical lines of hiragana, each break at a space between phrases.", "3": "Page 3: the boat set on the river, the girl waving from the bank; the text starts with 「いって らっしゃい。」.", "8": "Page 8: night, the moon and its reflection on the water; the text tells how the moon lights the boat's way.", "10": "The last page: the girl at a window looking at the sea, the text, おしまい in red at the foot of its line, and the colophon on its side." }
+---
+
+## What you'll build
+
+A ten-page picture book, かみの ふね (*The Paper Boat*), written and drawn for the recipe: a girl folds a red paper boat after the rain, and the boat travels down the river past a frog, a heron and the moon to the sea. It is set the way Japanese books for the youngest readers are set: hiragana only, 20 pt in Klee One, a hand modelled on the school textbook face, and a space between phrases, 分かち書き (wakachigaki), so a child reads one phrase at a time. The pages are landscape, 260 × 200 mm, vertical and bound on the right: the picture across the top of the page, short lines of eight characters under it, and the boat travelling leftward, as the pages turn.
+
+## Method
+
+### 1 · Keep each phrase whole
+
+The code is [the short answer](#the-short-answer) above. Japanese text may break between any two kana, so a space between phrases only adds room; on its own it does not stop a line from ending inside あか|い. `cjk.wordBreak: 'keep-all'` keeps only the breaks at a space and next to punctuation, after 、。」 or before 「, as CSS `word-break: keep-all` does, and the kinsoku rules still apply ([East Asian typography](/en/docs/configuration#east-asian-typography)). The space is an ordinary U+0020, 0.35 em in Klee One, and a line drops it at its end. A U+3000 is a phrase break too, but a fixed character one em wide, kept at the end of the line.
+
+<PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Page 3: eight lines, each ending at a space or after 」 and 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
+
+The text is set ragged. Justified, a short line would stretch its spaces and the gaps between its kana to reach the foot of the tier; a picture book sets each line where its last phrase ends.
+
+### 2 · Put the pictures in a tier above the text
+
+<Excerpt region="layout" />
+
+In vertical text `'left'` is the top of the page, so a column-and-a-half layout with its side column on the left is two tiers: the pictures float into the upper tier (14 characters deep), and the text runs in the lower one (8 characters). Each page cites its picture with `::resource{id="…"}` and ends with `:::pagebreak`. The picture type has no caption prefix, and the drawings are 2.186 times as wide as they are tall, the shape of the tier, so each fills it ([vertical writing](/en/docs/configuration#vertical-writing)).
+
+### 3 · Make the cover a full-page picture
+
+<Excerpt region="cover" />
+
+The cover is a page-wide heading design: the picture is anchored to the bleed with the page's own size (in the vertical flow its `width` runs down the sheet), and the title is set down the sky on the right in Zen Maru Gothic, 60 pt.
+
+### 4 · Draw the scenes in code
+
+<Excerpt region="art" />
+
+The ten scenes are SVG drawn from a few shapes, the boat, the girl, the frog, the heron, with a seeded generator for the waves and stars, so every capture is identical. They are vector pictures in the PDF too.
+
+## Variations
+
+### Justify the lines
+
+Justified, every line reaches the foot of the tier: the spaces between phrases stretch first, up to half an em, then the gaps between the kana (JLReq §3.8). A short line of 20 pt kana then shows wide gaps, which is why the recipe leaves its lines ragged.
+
+```diff
+-  textAlign: 'left', firstLineIndent: em(0),
++  textAlign: 'justify', firstLineIndent: em(0),
+```
+
+## Pitfalls
+
+- `keep-all` keeps the breaks the text already has: Postext does not find the phrases, so the author types the spaces. A phrase longer than the line still breaks inside, at the last place the kinsoku rules allow.
+- Chinese never spaces its words, and the Chinese primer <RecipeLink slug="zhuyin-vertical-reader">A vertical reader with zhuyin to the right</RecipeLink> helps its young readers with readings instead; a Japanese picture book uses no kanji, so it needs no furigana, and the phrase spaces carry the reading.

@@ -2651,5 +2651,59 @@
       "ar": "الروايات اليابانية، عمودية مجلّدة من اليمين (bunko)"
     },
     "theme": "page"
+  },
+  "Q148": {
+    "kind": "how",
+    "text": {
+      "en": "How do I space a Japanese picture book by phrases (wakachigaki), with lines that break only at the spaces?",
+      "es": "¿Cómo separo por frases un libro ilustrado japonés (wakachigaki), con líneas que solo se cortan en los espacios?",
+      "ca": "Com separo per frases un llibre il·lustrat japonès (wakachigaki), amb línies que només es tallen als espais?",
+      "zh": "怎样给日文图画书按词组加空格（分かち書き），让行只在空格处断开？",
+      "ar": "كيف أفصل عبارات كتاب مصوّر ياباني بفراغات (wakachigaki)، بأسطر لا تنكسر إلا عند الفراغات؟"
+    },
+    "index": {
+      "en": "Wakachigaki, Japanese spaced by phrase",
+      "es": "Wakachigaki, japonés separado por frases",
+      "ca": "Wakachigaki, japonès separat per frases",
+      "zh": "分かち書き，按词组分写的日文",
+      "ar": "الـ wakachigaki، اليابانية مفصولة بالعبارات"
+    },
+    "theme": "type"
+  },
+  "Q149": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a Meiji text in kanji and katakana, with its old forms, and number its articles 第一條?",
+      "es": "¿Cómo compongo un texto Meiji en kanji y katakana, con sus formas antiguas, y numero sus artículos 第一條?",
+      "ca": "Com componc un text Meiji en kanji i katakana, amb les formes antigues, i numero els articles 第一條?",
+      "zh": "怎样排汉字片假名混写、保留旧字形的明治文献，并把条文编为第一條？",
+      "ar": "كيف أنضّد نصًّا من عهد ميجي بالكانجي والكاتاكانا بأشكاله القديمة، وأرقّم مواده 第一條؟"
+    },
+    "index": {
+      "en": "Katakana-majiri texts, Meiji documents",
+      "es": "Textos en kanji y katakana, documentos Meiji",
+      "ca": "Textos en kanji i katakana, documents Meiji",
+      "zh": "汉字片假名混写文，明治文献",
+      "ar": "نصوص الكانجي والكاتاكانا، وثائق عهد ميجي"
+    },
+    "theme": "type"
+  },
+  "Q150": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set Japanese written in rōmaji: which language tag, what hyphenation, and macrons in the PDF?",
+      "es": "¿Cómo compongo japonés en rōmaji: qué etiqueta de idioma, qué separación silábica, macrones en el PDF?",
+      "ca": "Com componc japonès en rōmaji: quina etiqueta d'idioma, quina partició de mots, macrons al PDF?",
+      "zh": "用罗马字写的日文怎么排：用哪个语言标记，怎样断词，PDF里的长音符号怎么办？",
+      "ar": "كيف أنضّد اليابانية المكتوبة بالروماجي: أي وسم للغة، وأي تقسيم للكلمات، والمدّات في PDF؟"
+    },
+    "index": {
+      "en": "Rōmaji, Japanese in Latin letters",
+      "es": "Rōmaji, japonés en letras latinas",
+      "ca": "Rōmaji, japonès en lletres llatines",
+      "zh": "罗马字，拉丁字母书写的日文",
+      "ar": "الروماجي، اليابانية بالحروف اللاتينية"
+    },
+    "theme": "type"
   }
 }

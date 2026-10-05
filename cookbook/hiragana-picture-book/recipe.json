@@ -1,0 +1,60 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 127,
+  "status": "draft",
+  "chapter": "type",
+  "order": 320,
+  "level": 2,
+  "genres": ["novel", "photobook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["kana-scripts", "vertical-writing", "japanese-kinsoku"],
+    "also": [
+      "right-binding", "character-grid", "cjk-fonts", "column-and-a-half", "side-column-floats",
+      "resource-types", "design-images", "covers", "heading-styles",
+      "heading-attributes", "paragraph-styles", "page-breaks", "page-background", "color-palette",
+      "pdf-export", "pdf-fonts"
+    ]
+  },
+  "answers": ["Q148", "Q136", "Q145"],
+  "gaps": [],
+  "gotchas": [
+    "ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break",
+    "config-cache-identity", "fonts-first"
+  ],
+  "explainsWarnings": [],
+  "related": ["zhuyin-vertical-reader", "pinyin-primer", "storybook-chapter-vignettes"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "pages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "expect": { "pages": [10, 10] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "coatedMatte", "grammage": 157, "texture": "smooth", "textureStrength": 0.3, "shade": "#fdfaf3"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "paper", "coverColor": "#cf4430"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "かみの ふね (The Paper Boat), a picture-book story in hiragana written for this recipe",
+          "es": "かみの ふね (El barco de papel), un cuento ilustrado en hiragana escrito para esta receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Klee One", "license": "OFL-1.1" },
+      { "family": "Zen Maru Gothic", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

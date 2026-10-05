@@ -1,0 +1,57 @@
+---
+title: "Un libro ilustrado en hiragana, con espacios entre frases"
+summary: "Un libro ilustrado vertical en hiragana con espacios entre frases (wakachigaki): con keep-all, la línea solo se corta en los espacios."
+plain: "Un libro ilustrado japonés para niños pequeños, todo en hiragana, con un espacio tras cada grupo de palabras y líneas que nunca lo parten, bajo un dibujo en cada página."
+description: "Un libro ilustrado japonés en Postext: hiragana en vertical a 20 pt con espacios wakachigaki, frases enteras con keep-all y un dibujo en cada página."
+question: "¿Cómo separo por frases un libro ilustrado japonés (wakachigaki) y corto las líneas solo en los espacios?"
+aliases: ["wakachigaki", "分かち書き", "わかち書き", "libro ilustrado", "álbum ilustrado", "絵本", "hiragana", "ひらがな", "libro infantil japonés", "word-break", "cjk.wordBreak", "keep-all", "cortar solo en los espacios", "Klee One"]
+pageNotes: { "1": "La portada: la escena del río a toda página, un barco de papel rojo sobre el agua azul y el título かみの ふね en rojo bajando por el cielo, a la derecha.", "2": "Página 2: una niña dobla el barco rojo en una mesa; debajo, seis líneas verticales cortas de hiragana, cada corte en un espacio entre frases.", "3": "Página 3: el barco ya en el río y la niña que lo despide desde la orilla; el texto empieza con 「いって らっしゃい。」.", "8": "Página 8: de noche, la luna y su reflejo en el agua; el texto cuenta cómo la luna alumbra el camino del barco.", "10": "La última página: la niña en una ventana mirando el mar, el texto, おしまい en rojo al pie de su línea y el colofón girado." }
+---
+
+## Lo que vas a componer
+
+Un libro ilustrado de diez páginas, かみの ふね (*El barco de papel*), escrito y dibujado para la receta: después de la lluvia una niña dobla un barco de papel rojo, y el barco baja por el río, deja atrás una rana, una garza y la luna, y llega al mar. Está compuesto como los libros japoneses para los lectores más pequeños: solo hiragana, a 20 pt en Klee One, una letra hecha a partir del modelo de los libros de texto escolares, y un espacio entre frases, 分かち書き (wakachigaki), para que el niño lea frase a frase. Las páginas son apaisadas, de 260 × 200 mm, en vertical y encuadernadas por la derecha: el dibujo arriba, debajo líneas cortas de ocho caracteres, y el barco avanza hacia la izquierda, al ritmo de las páginas.
+
+## Elaboración
+
+### 1 · Mantén entera cada frase
+
+El código está en [la respuesta corta](#la-respuesta-corta). El japonés puede cortarse entre dos kana cualesquiera, así que un espacio entre frases no hace más que añadir aire: no impide que la línea acabe dentro de あか|い. `cjk.wordBreak: 'keep-all'` conserva únicamente los cortes en un espacio y junto a la puntuación, tras 、。」 o delante de 「, como el `word-break: keep-all` de CSS, y el kinsoku sigue valiendo ([tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)). El espacio es un U+0020 corriente, de 0,35 cuadratines en Klee One, y la línea lo suprime cuando cae al final. Un U+3000 también separa frases, pero es un carácter fijo de un cuadratín que se queda al final de la línea.
+
+<PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Página 3: ocho líneas, cada una termina en un espacio o tras 」 y 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
+
+El texto va en bandera. Justificada, una línea corta estiraría sus espacios y los huecos entre sus kana hasta llegar al pie de la franja; un libro ilustrado deja cada línea donde acaba su última frase.
+
+### 2 · Pon los dibujos en una franja sobre el texto
+
+<Excerpt region="layout" />
+
+En el texto vertical `'left'` es lo alto de la página, así que una maqueta de columna y media con la columna lateral a la izquierda son dos franjas: los dibujos flotan en la de arriba (14 caracteres de alto) y el texto corre por la de abajo (8 caracteres). Cada página cita su dibujo con `::resource{id="…"}` y acaba con `:::pagebreak`. El tipo de recurso de los dibujos no lleva prefijo en el pie, y los dibujos son 2,186 veces más anchos que altos, la forma de la franja, así que la llenan ([escritura vertical](/es/docs/configuration#escritura-vertical)).
+
+### 3 · Haz de la portada un dibujo a toda página
+
+<Excerpt region="cover" />
+
+La portada es un diseño de título a toda la página: el dibujo se ancla al sangrado con el tamaño de la página (en el flujo vertical su `width` baja por la hoja), y el título baja por el cielo, a la derecha, en Zen Maru Gothic de 60 pt.
+
+### 4 · Dibuja las escenas en código
+
+<Excerpt region="art" />
+
+Las diez escenas son SVG hechos con unas pocas formas, el barco, la niña, la rana, la garza, y un generador con semilla para las olas y las estrellas, así que todas las capturas son idénticas. En el PDF también son dibujos vectoriales.
+
+## Variantes
+
+### Justifica las líneas
+
+Justificada, cada línea llega al pie de la franja: primero se estiran los espacios entre frases, hasta medio cuadratín, y después los huecos entre los kana (JLReq §3.8). Una línea corta de kana de 20 pt muestra entonces huecos anchos; por eso la receta deja las líneas en bandera.
+
+```diff
+-  textAlign: 'left', firstLineIndent: em(0),
++  textAlign: 'justify', firstLineIndent: em(0),
+```
+
+## Errores frecuentes
+
+- `keep-all` solo conserva los cortes que el texto ya trae: Postext no busca las frases, así que los espacios los escribe el autor. Una frase más larga que la línea se sigue cortando por dentro, en el último punto que permite el kinsoku.
+- El chino nunca separa sus palabras, y el libro de lectura chino <RecipeLink slug="zhuyin-vertical-reader">Un libro de lectura vertical con zhuyin a la derecha</RecipeLink> ayuda a sus lectores con lecturas sobre los caracteres; un libro ilustrado japonés no usa kanji, así que no necesita furigana, y los espacios entre frases guían la lectura.

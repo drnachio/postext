@@ -732,7 +732,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `features.json` | about 150 user-facing features: label, definition, search aliases, group, docs anchor, research ids, optional detect rules | kebab-case id |
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
-| `questions.json` | the reader questions Q01–Q144, how/why, index form, theme, gap | `Qnn` |
+| `questions.json` | the reader questions Q01–Q150, how/why, index form, theme, gap | `Qnn` |
 | `gaps.json` | what Postext does not do, with aliases and the workaround | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |

@@ -1,0 +1,57 @@
+---
+title: "Un llibre il·lustrat en hiragana, amb espais entre frases"
+summary: "Un llibre il·lustrat vertical en hiragana amb espais entre frases (wakachigaki): amb keep-all, la línia només es talla als espais."
+plain: "Un llibre il·lustrat japonès per a infants, tot en hiragana, amb un espai després de cada grup de paraules i línies que no el parteixen mai, sota un dibuix a cada pàgina."
+description: "Un llibre il·lustrat japonès en Postext: hiragana en vertical a 20 pt amb espais wakachigaki, frases senceres amb keep-all i un dibuix a cada pàgina."
+question: "Com separo per frases un llibre il·lustrat japonès (wakachigaki) i tallo les línies només als espais?"
+aliases: ["wakachigaki", "分かち書き", "わかち書き", "llibre il·lustrat", "àlbum il·lustrat", "絵本", "hiragana", "ひらがな", "llibre infantil japonès", "word-break", "cjk.wordBreak", "keep-all", "tallar només als espais", "Klee One"]
+pageNotes: { "1": "La portada: l'escena del riu a tota pàgina, un vaixell de paper vermell sobre l'aigua blava i el títol かみの ふね en vermell baixant pel cel, a la dreta.", "2": "Pàgina 2: una nena plega el vaixell vermell en una taula; a sota, sis línies verticals curtes d'hiragana, cada tall en un espai entre frases.", "3": "Pàgina 3: el vaixell ja al riu i la nena que l'acomiada des de la riba; el text comença amb 「いって らっしゃい。」.", "8": "Pàgina 8: de nit, la lluna i el seu reflex a l'aigua; el text explica com la lluna il·lumina el camí del vaixell.", "10": "L'última pàgina: la nena en una finestra mirant el mar, el text, おしまい en vermell al peu de la seva línia i el colofó girat." }
+---
+
+## Què compondràs
+
+Un llibre il·lustrat de deu pàgines, かみの ふね (*El vaixell de paper*), escrit i dibuixat per a la recepta: després de la pluja una nena plega un vaixell de paper vermell, i el vaixell baixa pel riu, deixa enrere una granota, un bernat i la lluna, i arriba al mar. Està compost com els llibres japonesos per als lectors més petits: només hiragana, a 20 pt en Klee One, una lletra feta a partir del model dels llibres de text escolars, i un espai entre frases, 分かち書き (wakachigaki), perquè l'infant llegeixi frase a frase. Les pàgines són apaïsades, de 260 × 200 mm, en vertical i enquadernades per la dreta: el dibuix a dalt, a sota línies curtes de vuit caràcters, i el vaixell avança cap a l'esquerra, al ritme de les pàgines.
+
+## Elaboració
+
+### 1 · Mantén sencera cada frase
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El japonès es pot tallar entre dos kana qualssevol, així que un espai entre frases no fa més que afegir aire: no impedeix que la línia acabi dins de あか|い. `cjk.wordBreak: 'keep-all'` només conserva els talls en un espai i al costat de la puntuació, després de 、。」 o davant de 「, com el `word-break: keep-all` de CSS, i el kinsoku continua valent ([tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)). L'espai és un U+0020 corrent, de 0,35 quadratins en Klee One, i la línia el suprimeix quan cau al final. Un U+3000 també separa frases, però és un caràcter fix d'un quadratí que es queda al final de la línia.
+
+<PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Pàgina 3: vuit línies, cadascuna acaba en un espai o després de 」 i 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
+
+El text va en bandera. Justificada, una línia curta estiraria els espais i els buits entre els kana fins a arribar al peu de la franja; un llibre il·lustrat deixa cada línia on acaba la seva última frase.
+
+### 2 · Posa els dibuixos en una franja sobre el text
+
+<Excerpt region="layout" />
+
+En el text vertical `'left'` és el capdamunt de la pàgina, així que una maqueta de columna i mitja amb la columna lateral a l'esquerra són dues franges: els dibuixos floten a la de dalt (14 caràcters d'alt) i el text corre per la de baix (8 caràcters). Cada pàgina cita el seu dibuix amb `::resource{id="…"}` i acaba amb `:::pagebreak`. El tipus de recurs dels dibuixos no porta prefix al peu, i els dibuixos són 2,186 vegades més amples que alts, la forma de la franja, així que l'omplen ([escriptura vertical](/ca/docs/configuration#escriptura-vertical)).
+
+### 3 · Fes de la portada un dibuix a tota pàgina
+
+<Excerpt region="cover" />
+
+La portada és un disseny de títol a tota la pàgina: el dibuix s'ancora al sagnat amb la mida de la pàgina (en el flux vertical el seu `width` baixa pel full), i el títol baixa pel cel, a la dreta, en Zen Maru Gothic de 60 pt.
+
+### 4 · Dibuixa les escenes en codi
+
+<Excerpt region="art" />
+
+Les deu escenes són SVG fets amb unes poques formes, el vaixell, la nena, la granota, el bernat, i un generador amb llavor per a les ones i les estrelles, de manera que totes les captures són idèntiques. Al PDF també són dibuixos vectorials.
+
+## Variants
+
+### Justifica les línies
+
+Justificada, cada línia arriba al peu de la franja: primer s'estiren els espais entre frases, fins a mig quadratí, i després els buits entre els kana (JLReq §3.8). Una línia curta de kana de 20 pt mostra llavors buits amples; per això la recepta deixa les línies en bandera.
+
+```diff
+-  textAlign: 'left', firstLineIndent: em(0),
++  textAlign: 'justify', firstLineIndent: em(0),
+```
+
+## Errors freqüents
+
+- `keep-all` només conserva els talls que el text ja porta: Postext no busca les frases, així que els espais els escriu l'autor. Una frase més llarga que la línia es continua tallant per dins, en l'últim punt que permet el kinsoku.
+- El xinès no separa mai les paraules, i el llibre de lectura xinès <RecipeLink slug="zhuyin-vertical-reader">Un llibre de lectura vertical amb zhuyin a la dreta</RecipeLink> ajuda els lectors amb lectures als caràcters; un llibre il·lustrat japonès no fa servir kanji, així que no necessita furigana, i els espais entre frases guien la lectura.

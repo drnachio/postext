@@ -1,0 +1,68 @@
+---
+title: "A Meiji proclamation in kanji and katakana"
+summary: "The 1889 Constitution set vertically in kanji and katakana: articles 第一條 from a japanese-informal list counter, a ruled frame, countersignatures at the foot."
+plain: "The Japanese constitution of 1889, written in kanji and katakana, printed in top-to-bottom lines as the official gazette printed it, with its articles numbered in kanji."
+description: "A Meiji document in Postext: kanji-katakana text set vertically on a 40-character grid, articles 第一條 from a list counter, a double frame and a seal block."
+question: "How do I set a Meiji text in kanji and katakana and number its articles 第一條, 第二條?"
+aliases: ["katakana", "kanji katakana majiri", "漢字カタカナ交じり文", "Meiji Constitution", "大日本帝國憲法", "官報", "article numbers in kanji", "第一條", "legal text vertical", "old kanji forms"]
+pageNotes: { "1": "The title page: 大日本帝國憲法 in heavy Mincho down the middle of a thick and a thin rule, the date in vermilion to its right, 官報號外 to its left, the English line on its side at the foot.", "2": "The editor's notes, four items each opened by the character 一, then the heading 上諭 and the first lines of the edict, all in kanji and katakana.", "4": "御名　御璽 in vermilion, the date, and ten countersignatures set at the foot of their lines.", "5": "Chapter one: 第一章　天皇 two characters down, then articles 第一條 to 第八條 in bold, the second clause of article 8 one character down." }
+---
+
+## What you'll build
+
+An eight-page reprint of the Meiji Constitution as the Official Gazette (官報) printed it on 11 February 1889: the imperial edict, the ministers' countersignatures and the first two chapters, thirty-two articles. The text is 漢字カタカナ交じり文 (kanji-katakana majiri-bun), the written language of Meiji law: kanji carry the words, katakana carry the endings, and there are no voicing marks, no small kana and no punctuation at all. The pages are A5, vertical and bound on the right, with a 40 × 15 character grid inside a thick and a thin rule. The articles are numbered by a list counter in kanji, 第一條 to 第三十二條, and the seal and the countersignatures sit where the Gazette put them.
+
+## Method
+
+### 1 · Let a list counter write 第十八條
+
+The code is [the short answer](#the-short-answer) above. Each article is an item of a Markdown ordered list, and `orderedLists` turns its number into the Gazette's form: `numberFormat: 'japanese-informal'` writes 十八, not 一十八, `prefix: '第'` and `separator: '條'` wrap it, and `gap: em(1)` leaves the full-width space of the original. With `hangingIndent: false` the turnover lines go back to the head of the line instead of hanging under the text, as in the Gazette. Chapter two starts its list at `18.`, so the counter runs on across the chapters, and the chapters themselves are numbered 第一章 and 第二章 by the heading template `第{2:一}章`, the same counter style ([ordered lists](/en/docs/configuration#ordered-lists)).
+
+<PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="Page 5: 第一章　天皇 two characters down, articles 第一條 to 第八條 in bold, the second clause of article 8 one character down." />
+
+### 2 · Leave the katakana as the Gazette wrote them
+
+`locale: 'ja'` sets the Japanese rules, and none of them rewrites the text. 侵スヘカラス stays without its voicing marks (it reads *okasu bekarazu*), 行フ keeps its historical kana and 奪ハルヽ its katakana iteration mark. With no small kana and no punctuation in the text, the line breaks fall between any two characters; the kinsoku rules still keep ヽ and 々 off the head of a line. The editor's notes, in modern Japanese with hiragana, sit beside the edict on page 2, so the two ways of writing Japanese can be compared on one page.
+
+### 3 · Draw the frame on every page
+
+<Excerpt region="frame" />
+
+The header slot draws in plain page millimetres, not in the vertical flow, so the frame is two boxes placed by the same numbers that place the type area: `HEAD` from the top, `SIDE` from each edge. The margins are computed from the grid, not left to it, so the type area sits exactly 6 mm inside the thin rule. The folio, in kanji from `pageNumbering.format: 'japanese-informal'`, sits under the frame.
+
+### 4 · Set the title page down the axis
+
+<Excerpt region="cover" />
+
+In a vertical flow `x` runs down the sheet and `y` leftward across it, so the title's column is placed by its distance from the right edge of the type area. The date, in the accent, and the Gazette's name stand on either side of the title, 18 mm off the axis.
+
+### 5 · Load each face with the text it sets
+
+<Excerpt region="voices" />
+
+Shippori Mincho B1, a Mincho with the old forms 國, 條 and 權, loads the files for the text and the headings; Noto Sans JP loads only the editor's notes, the folios and the English line. A face given less than it sets fails the capture (C12).
+
+## Variations
+
+### Hang the turnover lines under the text
+
+Modern law books set the second line of an article under its first character of text, not under 第.
+
+```diff
+-  indent: em(0), hangingIndent: false, fontFamily: MINCHO, fontWeight: 800,
++  indent: em(0), hangingIndent: true, fontFamily: MINCHO, fontWeight: 800,
+```
+
+### Number the articles in daiji
+
+Some legal and financial texts write 壱, 弐, 参: the token 壱 or the style `japanese-formal` gives 第壱條, 第弐條.
+
+```diff
+-  numberFormat: 'japanese-informal', prefix: '第', separator: '條', gap: em(1),
++  numberFormat: 'japanese-formal', prefix: '第', separator: '條', gap: em(1),
+```
+
+## Pitfalls
+
+- The Gazette sets the katakana of the endings smaller than the kanji, and spaces the ministers' titles evenly to one width (字取り). Postext sets every character at the body size, and its even spacing, `jidori`, applies to headings only, so the countersignatures here are only aligned at the foot of the line.
+- Japanese and Chinese differ on this counter: in a `ja` document the token `一` and `{2:一}` mean `japanese-informal` (百一, 十八), in a Chinese one they mean the Chinese style (一百零一, 十八). The Chinese reader <RecipeLink slug="chinese-dates-upright">Dates and acronyms upright in vertical text</RecipeLink> types its 第一條 by hand.

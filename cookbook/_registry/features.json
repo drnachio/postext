@@ -9864,7 +9864,13 @@
         "romaji",
         "ローマ字",
         "Hepburn",
-        "Japanese scripts"
+        "Japanese scripts",
+        "wakachigaki",
+        "分かち書き",
+        "katakana-majiri",
+        "漢字カタカナ交じり文",
+        "ja-Latn",
+        "Nippon-shiki"
       ],
       "es": [
         "kana",
@@ -9876,7 +9882,13 @@
         "漢字",
         "rōmaji",
         "romaji",
-        "escrituras japonesas"
+        "escrituras japonesas",
+        "wakachigaki",
+        "分かち書き",
+        "kanji y katakana",
+        "漢字カタカナ交じり文",
+        "ja-Latn",
+        "Hepburn"
       ],
       "ca": [
         "kana",
@@ -9888,7 +9900,13 @@
         "漢字",
         "rōmaji",
         "romaji",
-        "escriptures japoneses"
+        "escriptures japoneses",
+        "wakachigaki",
+        "分かち書き",
+        "kanji i katakana",
+        "漢字カタカナ交じり文",
+        "ja-Latn",
+        "Hepburn"
       ],
       "zh": [
         "假名",
@@ -9898,7 +9916,12 @@
         "カタカナ",
         "日文汉字",
         "罗马字",
-        "ローマ字"
+        "ローマ字",
+        "分かち書き",
+        "汉字片假名混写",
+        "漢字カタカナ交じり文",
+        "ja-Latn",
+        "赫本式罗马字"
       ],
       "ar": [
         "الكانا",
@@ -9907,7 +9930,12 @@
         "الكانجي",
         "الروماجي",
         "ひらがな",
-        "カタカナ"
+        "カタカナ",
+        "wakachigaki",
+        "分かち書き",
+        "漢字カタカナ交じり文",
+        "ja-Latn",
+        "هيبورن"
       ]
     },
     "group": "languages",
