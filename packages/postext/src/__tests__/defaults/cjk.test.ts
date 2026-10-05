@@ -46,9 +46,13 @@ describe('cjk config', () => {
     expect(stripConfigDefaults({ cjk: { region: 'auto' } }).cjk).toBeUndefined();
     expect(stripConfigDefaults({ cjk: { region: 'hongkong' } }).cjk).toEqual({ region: 'hongkong' });
     expect(stripCjkDefaults({
-      punctuationWidth: 'auto', compressAdjacent: 'auto', trimLineStart: 'auto', hangingPunctuation: 'none',
+      punctuationWidth: 'auto', compressAdjacent: 'auto', trimLineStart: 'auto', hangingPunctuation: 'auto',
+      spaceAfterQuestion: 'auto', paragraphStartBracket: 'auto',
       latinSpacing: { value: 0.25, unit: 'em' }, grid: { enabled: false, show: false },
     })).toBeUndefined();
+    // 'none' is no default since Japan hangs by default (#418).
+    expect(stripCjkDefaults({ hangingPunctuation: 'none', spaceAfterQuestion: false, paragraphStartBracket: 'indent' }))
+      .toEqual({ hangingPunctuation: 'none', spaceAfterQuestion: false, paragraphStartBracket: 'indent' });
     expect(stripCjkDefaults({ punctuationWidth: 'halfwidth', compressAdjacent: false, hangingPunctuation: 'allow', latinSpacing: { value: 0, unit: 'em' }, grid: { enabled: true, charsPerLine: 28 } }))
       .toEqual({ punctuationWidth: 'halfwidth', compressAdjacent: false, hangingPunctuation: 'allow', latinSpacing: { value: 0, unit: 'em' }, grid: { enabled: true, charsPerLine: 28 } });
   });

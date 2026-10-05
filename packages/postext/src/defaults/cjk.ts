@@ -5,6 +5,7 @@ import type {
   CjkGridConfig,
   CjkHangingPunctuation,
   CjkLineBreak,
+  CjkParagraphStartBracket,
   CjkPunctuationWidth,
   CjkRegion,
   CjkRubyConfig,
@@ -20,8 +21,9 @@ import type {
 import { cjkRegionOf, isJapaneseLanguage, languageOf } from '../locale';
 import { dimensionsEqual } from './shared';
 
-/** `cjk` as written when nothing is set: everything follows the locale,
- *  nothing hangs, a quarter em between Han and Latin, no grid; readings
+/** `cjk` as written when nothing is set: everything follows the locale
+ *  (marks hang in Japan only), a quarter em between Han and Latin, no
+ *  grid; readings
  *  and warichu notes at half the text size, warichu brackets by region
  *  (none but in Japan, `defaultCjkWarichuBrackets`), marks in the text
  *  colour (`annotationColor` unset). */
@@ -31,7 +33,9 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   punctuationWidth: 'auto',
   compressAdjacent: 'auto',
   trimLineStart: 'auto',
-  hangingPunctuation: 'none',
+  hangingPunctuation: 'auto',
+  spaceAfterQuestion: 'auto',
+  paragraphStartBracket: 'auto',
   latinSpacing: { value: 0.25, unit: 'em' },
   uprightDigits: 2,
   grid: { enabled: false, show: false },
@@ -101,6 +105,7 @@ const REGIONS: readonly CjkRegion[] = ['mainland', 'taiwan', 'hongkong', 'japan'
 const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict', 'ja-very-strict', 'ja-strict', 'ja-loose'];
 const PUNCTUATION_WIDTHS: readonly CjkPunctuationWidth[] = ['fullwidth', 'kaiming', 'lineEndHalf', 'halfwidth'];
 const HANGING: readonly CjkHangingPunctuation[] = ['none', 'allow', 'force'];
+const PARAGRAPH_START_BRACKETS: readonly CjkParagraphStartBracket[] = ['indent', 'half', 'flush'];
 const LENGTH_UNITS = new Set(['cm', 'mm', 'in', 'pt', 'px', 'em', 'rem']);
 
 /** The line-break level a region's text is set with by default: GB/T
@@ -118,9 +123,33 @@ export function defaultCjkLineBreak(region: CjkRegion): CjkLineBreak {
  *  and in Japan, where 、。 keep their whole em inside the line (JLReq
  *  §3.1.2: half a glyph and half an em of blank). */
 export function defaultCjkPunctuationWidth(region: CjkRegion): CjkPunctuationWidth {
-  // J3 (#418): Japan's pair compression and line-end rules (JLReq §3.1.4,
-  // §3.1.9) refine how this full width gives up its blank.
+  // Japan's full width follows JLReq's pair compression, line-end and
+  // reduction rules (`cjkPunctuation.ts`, `isJlreqSpacing`).
   return region === 'mainland' ? 'kaiming' : 'fullwidth';
+}
+
+/** Whether marks hang by default: in Japan, where many books hang 、。
+ *  past the line end when they would otherwise open the next line
+ *  (ぶら下げ, JLReq §2.5.1, bunko in particular; `'allow'`, which sets the
+ *  mark inside the line when the line can take it in); never in the
+ *  Chinese regions. */
+export function defaultCjkHangingPunctuation(region: CjkRegion): CjkHangingPunctuation {
+  return region === 'japan' ? 'allow' : 'none';
+}
+
+/** Whether ？！ take a full-width space after them by default: in Japan
+ *  (JLReq §3.1.6), not in the Chinese regions. */
+export function defaultCjkSpaceAfterQuestion(region: CjkRegion): boolean {
+  return region === 'japan';
+}
+
+/** How an opening bracket that starts a paragraph is set by default:
+ *  pattern ③ (`'half'`) in Japan, the convention of literary books
+ *  (Kodansha, Shinchōsha, Bungei Shunjū, Chikuma: JLReq §3.1.5);
+ *  undefined in the Chinese regions, which set it as at any line start
+ *  (`trimLineStart`). */
+export function defaultCjkParagraphStartBracket(region: CjkRegion): CjkParagraphStartBracket | undefined {
+  return region === 'japan' ? 'half' : undefined;
 }
 
 /** Whether a region compresses adjacent marks and trims brackets at line
@@ -169,9 +198,13 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
   const compression = defaultCjkCompression(region);
   const compressAdjacent = typeof partial?.compressAdjacent === 'boolean' ? partial.compressAdjacent : compression;
   const trimLineStart = typeof partial?.trimLineStart === 'boolean' ? partial.trimLineStart : compression;
-  const hangingPunctuation = partial?.hangingPunctuation && HANGING.includes(partial.hangingPunctuation)
-    ? partial.hangingPunctuation
-    : 'none';
+  const hangingPunctuation = partial?.hangingPunctuation && HANGING.includes(partial.hangingPunctuation as CjkHangingPunctuation)
+    ? (partial.hangingPunctuation as CjkHangingPunctuation)
+    : defaultCjkHangingPunctuation(region);
+  const spaceAfterQuestion = typeof partial?.spaceAfterQuestion === 'boolean' ? partial.spaceAfterQuestion : defaultCjkSpaceAfterQuestion(region);
+  const paragraphStartBracket = partial?.paragraphStartBracket && PARAGRAPH_START_BRACKETS.includes(partial.paragraphStartBracket as CjkParagraphStartBracket)
+    ? (partial.paragraphStartBracket as CjkParagraphStartBracket)
+    : defaultCjkParagraphStartBracket(region);
   const latinSpacing = isLength(partial?.latinSpacing) && partial.latinSpacing.value >= 0
     ? { value: partial.latinSpacing.value, unit: partial.latinSpacing.unit }
     : { ...DEFAULT_CJK_CONFIG.latinSpacing };
@@ -184,6 +217,10 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     compressAdjacent,
     trimLineStart,
     hangingPunctuation,
+    // Present only when they change something, so a Chinese document's
+    // resolved config is what it was before they existed.
+    ...(spaceAfterQuestion ? { spaceAfterQuestion: true as const } : {}),
+    ...(paragraphStartBracket ? { paragraphStartBracket } : {}),
     latinSpacing,
     uprightDigits,
     grid: resolveGrid(partial?.grid),
@@ -239,9 +276,8 @@ function stripGridDefaults(grid: CjkGridConfig | undefined): CjkGridConfig | und
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-/** `cjk` without the fields at their default (`'auto'`, `'none'`, a
- *  quarter em, half-size readings and notes); undefined when nothing is
- *  left. */
+/** `cjk` without the fields at their default (`'auto'`, a quarter em,
+ *  half-size readings and notes); undefined when nothing is left. */
 export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (!cjk) return undefined;
   const d = DEFAULT_CJK_CONFIG;
@@ -252,6 +288,8 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (cjk.compressAdjacent !== undefined && cjk.compressAdjacent !== d.compressAdjacent) result.compressAdjacent = cjk.compressAdjacent;
   if (cjk.trimLineStart !== undefined && cjk.trimLineStart !== d.trimLineStart) result.trimLineStart = cjk.trimLineStart;
   if (cjk.hangingPunctuation !== undefined && cjk.hangingPunctuation !== d.hangingPunctuation) result.hangingPunctuation = cjk.hangingPunctuation;
+  if (cjk.spaceAfterQuestion !== undefined && cjk.spaceAfterQuestion !== d.spaceAfterQuestion) result.spaceAfterQuestion = cjk.spaceAfterQuestion;
+  if (cjk.paragraphStartBracket !== undefined && cjk.paragraphStartBracket !== d.paragraphStartBracket) result.paragraphStartBracket = cjk.paragraphStartBracket;
   if (cjk.latinSpacing !== undefined && !dimensionsEqual(cjk.latinSpacing, d.latinSpacing)) result.latinSpacing = cjk.latinSpacing;
   if (cjk.uprightDigits !== undefined && cjk.uprightDigits !== d.uprightDigits) result.uprightDigits = cjk.uprightDigits;
   const grid = stripGridDefaults(cjk.grid);

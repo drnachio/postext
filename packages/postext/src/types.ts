@@ -3628,7 +3628,13 @@ export interface CjkConfig {
   /** How wide the full-width marks are set (see
    *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for
    *  the mainland, `fullwidth` for Taiwan, Hong Kong and Japan (JLReq
-   *  §3.1.2: 、。 inside a Japanese line keep their whole em). */
+   *  §3.1.2: 、。 inside a Japanese line keep their whole em). Japanese
+   *  full-width text follows JLReq throughout: ・：； take a quarter em
+   *  on each side, ？！ none, 、 and ・ between kanji numerals none
+   *  (二、三日, 三・一四); a line that takes one more character gives up
+   *  the half em at its end first, then the blank of 、・「」 inside it,
+   *  never the half em after a 。 (JLReq §3.8.3); a justified line is
+   *  never spread inside a bracket or next to 、。・？！. */
   punctuationWidth?: 'auto' | CjkPunctuationWidth;
   /** Two marks that meet (`。」`, `》（`, `：“`) give up the half em of
    *  blank between them, so the pair takes 1.5 em instead of 2 (clreq
@@ -3638,18 +3644,40 @@ export interface CjkConfig {
   /** An opening bracket or quote that starts a line gives up its leading
    *  half em, so its ink lines up with the text edge, and a closing one
    *  that ends a line its trailing half (clreq §6.3.2.3, JLReq §3.1.5).
-   *  `'auto'` (the default): on for the mainland, Hong Kong and Japan,
-   *  off for Taiwan. */
+   *  Japanese full-width text keeps the half em after a closing mark at
+   *  the end of a line: it is the first blank the line gives up, all of
+   *  it, when it takes in one more character (JLReq §3.8.3). `'auto'` (the
+   *  default): on for the mainland, Hong Kong and Japan, off for
+   *  Taiwan. */
   trimLineStart?: 'auto' | boolean;
   /** Whether a pause or stop mark may hang past the end of the line
-   *  (clreq §6.1.3; ぶら下げ, JLReq §2.5.1). `'none'` (the default):
-   *  never. `'allow'`: one of 、，。． (on the mainland also ；：？！) hangs
-   *  when it would otherwise open the next line and compressing the line
-   *  cannot take it in; never in horizontal Taiwan and Hong Kong text
-   *  (Japan: 、，。． only, in both writing modes). `'force'`: such a mark
-   *  hangs whenever it ends a line (but the paragraph's last). Never after
-   *  or before another mark. */
-  hangingPunctuation?: CjkHangingPunctuation;
+   *  (clreq §6.1.3; ぶら下げ, JLReq §2.5.1, §3.8.2). `'none'`: never.
+   *  `'allow'`: one of 、，。． (on the mainland also ；：？！) hangs when it
+   *  would otherwise open the next line and compressing the line cannot
+   *  take it in; never in horizontal Taiwan and Hong Kong text (Japan:
+   *  、，。． only, in both writing modes). `'force'`: such a mark hangs
+   *  whenever it ends a line (but the paragraph's last). Never after or
+   *  before another mark. `'auto'` (the default): `'allow'` for Japan,
+   *  where many books hang 、。 (bunko in particular), `'none'` for the
+   *  Chinese regions. */
+  hangingPunctuation?: 'auto' | CjkHangingPunctuation;
+  /** The full-width space after ？ and ！ (JLReq §3.1.6): one em of blank
+   *  after a ？ or ！ that ends a sentence inside a paragraph, none when a
+   *  closing bracket or another ？！ follows it, at the end of the
+   *  paragraph or at the end of a line (it does not carry over to the next
+   *  line). A space the author typed after the mark (U+3000 or a word
+   *  space) is replaced, not added to. The space neither stretches nor
+   *  shrinks when the line is justified. `'auto'` (the default): on for
+   *  Japan, off for the Chinese regions, whose ？！ take no space. */
+  spaceAfterQuestion?: 'auto' | boolean;
+  /** Where an opening bracket that starts a paragraph is set (JLReq
+   *  §3.1.5, 起こしの括弧), see {@link CjkParagraphStartBracket}. Applies
+   *  to a paragraph with a first-line indent (`bodyText.firstLineIndent`)
+   *  that opens with 「『（〔 and the other opening brackets and quotes.
+   *  `'auto'` (the default): `'half'` for Japan (pattern ③, the
+   *  convention of literary books), and for the Chinese regions the
+   *  bracket is set as at any line start (`trimLineStart`). */
+  paragraphStartBracket?: 'auto' | CjkParagraphStartBracket;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
    *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
@@ -3781,6 +3809,21 @@ export type CjkPunctuationWidth = 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'hal
 /** See {@link CjkConfig.hangingPunctuation}. */
 export type CjkHangingPunctuation = 'none' | 'allow' | 'force';
 
+/** An opening bracket at the start of an indented paragraph (JLReq
+ *  §3.1.5, with an indent of one em):
+ *  - `indent` (pattern ①, JIS X 4051's default): the indent, then the
+ *    bracket without the half em of blank before its glyph; the text
+ *    after it starts at 1.5 em;
+ *  - `half` (pattern ③, most literary publishers): the bracket's glyph
+ *    sits in the second half of the indent, so the text after it starts
+ *    where the indent ends; with a one-em indent it reads as the bracket
+ *    filling the indent cell with its half em of blank;
+ *  - `flush` (天付き): no indent; the bracket's glyph at the start of the
+ *    line.
+ *  A bracket that opens a later line of the paragraph follows
+ *  `trimLineStart`. */
+export type CjkParagraphStartBracket = 'indent' | 'half' | 'flush';
+
 /** The character grid of `cjk.grid`: the type area is derived from the
  *  body size, not authored as margins. Each column is `charsPerLine` ems
  *  wide and holds `linesPerPage` lines of the body's line height; with two
@@ -3818,6 +3861,11 @@ export interface ResolvedCjkConfig {
   compressAdjacent: boolean;
   trimLineStart: boolean;
   hangingPunctuation: CjkHangingPunctuation;
+  /** Set (true) only when on: absent, ？！ take no space after them. */
+  spaceAfterQuestion?: true;
+  /** Set only when it differs from a line start: absent, a bracket that
+   *  opens a paragraph is set as at any line start. */
+  paragraphStartBracket?: CjkParagraphStartBracket;
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;

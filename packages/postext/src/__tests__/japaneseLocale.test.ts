@@ -73,14 +73,16 @@ describe('Japanese locale tags', () => {
 });
 
 describe('cjk defaults for Japan', () => {
-  it('resolves auto: JIS X 4051 breaks (ja-very-strict), full-width marks with compression and trimming, emphasis dots, bare titles, （） warichu', () => {
+  it('resolves auto: JIS X 4051 breaks (ja-very-strict), full-width marks with compression and trimming, hanging 、。, emphasis dots, bare titles, （） warichu', () => {
     expect(resolveCjkConfig(undefined, 'ja')).toMatchObject({
       region: 'japan',
       lineBreak: 'ja-very-strict',
       punctuationWidth: 'fullwidth',
       compressAdjacent: true,
       trimLineStart: true,
-      hangingPunctuation: 'none',
+      hangingPunctuation: 'allow',
+      spaceAfterQuestion: true,
+      paragraphStartBracket: 'half',
       emphasis: 'dots',
       bookTitleMark: 'none',
       warichu: { open: '（', close: '）' },
@@ -121,9 +123,10 @@ describe('Japanese marks', () => {
   it('、。 keep their blank after the glyph, as on the mainland', () => {
     for (const g of ['、', '。']) expect(punctuationSide(g, cjkClassOf(g), 'japan'), g).toBe('end');
     expect(punctuationAdvance('、', cjkClassOf('、'), em, em, japan).advance).toBe(em);
-    // Brackets at a line edge give up their outer half (天付き).
+    // An opening bracket at a line start gives up its outer half (天付き);
+    // a closing one at a line end keeps it (JLReq §3.1.9, #418).
     expect(punctuationAdvance('「', cjkClassOf('「'), em, em, japan, { lineStart: true }).advance).toBe(em / 2);
-    expect(punctuationAdvance('」', cjkClassOf('」'), em, em, japan, { lineEnd: true }).advance).toBe(em / 2);
+    expect(punctuationAdvance('」', cjkClassOf('」'), em, em, japan, { lineEnd: true }).advance).toBe(em);
   });
 
   it('・ keeps its whole em (JLReq §3.1.2), the mainland interpunct half of it', () => {

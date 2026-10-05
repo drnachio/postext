@@ -21,7 +21,11 @@
  * segment of its own. A line that needs more than the cap (½ em, or
  * `bodyText.maxJustifyTracking` when set) is set with the cap and flagged
  * `cjkLoose` and `ragged`; a line with no CJK character on it (the head of
- * a long web address) is set `ragged` without the flag.
+ * a long web address) is set `ragged` without the flag. Japanese
+ * full-width text (`isJlreqSpacing`) follows JLReq §3.8 instead where it
+ * differs: a line takes one more character by giving up blank in Table 3's
+ * order (`fitLine`), and is never spread inside a bracket or next to
+ * 、。・？！, a hyphen or U+3000 (`gapStretches`, JLReq §3.1.11).
  *
  * Segments: a Western run keeps one of its own, and single characters
  * share one only when they have one style, link and spacing and advance
@@ -81,7 +85,9 @@ import {
   getCjkComposition,
   isLatinSpacingHan,
   isLatinSpacingLatin,
+  isJlreqSpacing,
   isPlainComposition,
+  jlreqShrinkStep,
   latinSpacingPx,
   lineEdgeCut,
   mayHang,
@@ -216,6 +222,14 @@ interface Unit {
   /** A space between Han and Latin (`cjk.latinSpacing`): inserted (`text`
    *  empty) or replacing the space the author typed. */
   auto?: boolean;
+  /** The one-em space after a ？ or ！ that ends a sentence inside the
+   *  paragraph (`cjk.spaceAfterQuestion`, JLReq §3.1.6): inserted, or
+   *  replacing the space the author typed there. It never stretches or
+   *  shrinks, and goes at a line end as any space does. */
+  aki?: boolean;
+  /** A 、 or ・ set solid between kanji numerals (二、三日, 三・一四,
+   *  JLReq §3.1.3): the line never breaks after it. */
+  solid?: boolean;
   /** A mark Latin text shares with Chinese (“ ” ‘ ’ … — ·) set in a
    *  Chinese mark's box (see {@link routeSharedMarks}): where each of its
    *  graphemes' glyph starts in its one-em cell, px. Set only when a glyph
@@ -940,6 +954,20 @@ function isMarkUnit(u: Unit | undefined): boolean {
   }
 }
 
+/** Kanji numerals a 、 or ・ is set solid between (二、三日 "two or three
+ *  days", 三・一四 "3.14", JLReq §3.1.3). */
+const KANJI_DIGITS = new Set('〇一二三四五六七八九十');
+
+/** ？ and ！ (and their doubles) as Japanese sets them: full-width marks
+ *  with a full-width space after them inside a paragraph. */
+const QUESTION_MARKS = new Set(['？', '！', '‼', '⁇', '⁈', '⁉']);
+
+/** A single character unit (not a run, a ruby base, a note…) whose text is
+ *  in `set`. */
+function charUnitIn(u: Unit | undefined, set: ReadonlySet<string>): boolean {
+  return !!u && u.kind === 'text' && !u.run && u.graphemes === 1 && !u.ruby && !u.note && !u.orient && !u.style.script && set.has(u.text);
+}
+
 /**
  * The punctuation widths and Han–Latin spaces of a paragraph's units, as
  * the composition sets them (see `cjkPunctuation.ts`): each full-width mark
@@ -950,7 +978,9 @@ function isMarkUnit(u: Unit | undefined): boolean {
  * edges (and the reduction a line makes to take one more character) are
  * the breaker's and the line's business. A plain composition changes
  * nothing but the mainland interpunct, half an em under every style
- * (`punctuationBox`), as its cell is in vertical text.
+ * (`punctuationBox`), as its cell is in vertical text. In Japan, a 、 or
+ * ・ between kanji numerals is set solid (`Unit.solid`), and with
+ * `spaceAfterQuestion` a ？ or ！ takes its one-em space (`Unit.aki`).
  */
 function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number): Unit[] {
   const plain = isPlainComposition(c);
@@ -967,20 +997,39 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
     u.width -= boxCut(box);
   }
   if (plain) return units;
+  if (c.region === 'japan') {
+    // 二、三日, 三・一四: the mark between two kanji numerals is its glyph
+    // alone (JLReq §3.1.3), and the number is not broken there.
+    for (let k = 1; k + 1 < units.length; k++) {
+      const u = units[k]!;
+      if (!u.punct || (u.text !== '、' && u.text !== '・')) continue;
+      if (!charUnitIn(units[k - 1], KANJI_DIGITS) || !charUnitIn(units[k + 1], KANJI_DIGITS) || units[k + 1]!.glueBefore) continue;
+      shrinkPunctuation(u.punct, u.punct.blank);
+      u.width = full.get(u)! - boxCut(u.punct);
+      u.solid = true;
+    }
+  }
   // Kaiming sets a stop's blank after the closing mark that follows it (。”␣).
   const carry = c.punctuationWidth === 'kaiming';
+  const jlreq = isJlreqSpacing(c);
   if ((c.compressAdjacent || carry) && full.size > 1) {
     for (let k = 1; k < units.length; k++) {
       const a = units[k - 1]!;
       const b = units[k]!;
-      if (!a.punct || !b.punct || b.zwspBefore) continue;
-      if (c.compressAdjacent) compressPair(a.punct, b.punct);
+      if (!a.punct || !b.punct || b.zwspBefore || a.solid || b.solid) continue;
+      if (c.compressAdjacent) compressPair(a.punct, b.punct, jlreq);
       if (carry) carryStopBlank(a.punct, b.punct);
       a.width = full.get(a)! - boxCut(a.punct);
       b.width = full.get(b)! - boxCut(b.punct);
     }
   }
-  if ((c.latinSpacing.px ?? c.latinSpacing.em ?? 0) <= 0) return units;
+  const spaced = (c.latinSpacing.px ?? c.latinSpacing.em ?? 0) > 0 ? latinSpaces(units, c) : units;
+  return c.spaceAfterQuestion ? questionSpaces(spaced) : spaced;
+}
+
+/** `units` with the Han–Latin spaces of `cjk.latinSpacing` (see
+ *  {@link prepareUnits}). */
+function latinSpaces(units: Unit[], c: CjkComposition): Unit[] {
   const out: Unit[] = [];
   const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
     !!u && u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
@@ -1021,6 +1070,55 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
       });
     }
     out.push(u);
+  }
+  return out;
+}
+
+/**
+ * `units` with the one-em space JLReq §3.1.6 sets after a ？ or ！ that
+ * ends a sentence inside the paragraph (`cjk.spaceAfterQuestion`,
+ * `Unit.aki`): after the mark and what keeps to it (a note marker), unless
+ * the paragraph ends there or a closing bracket or another ？！ follows. A
+ * space the author typed there (U+3000, or a run of word spaces) becomes
+ * the aki, keeping its text. A line may break after it, and it goes at the
+ * line end, as any space does.
+ */
+function questionSpaces(units: Unit[]): Unit[] {
+  const out: Unit[] = [];
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    out.push(u);
+    if (!charUnitIn(u, QUESTION_MARKS)) continue;
+    // A note marker or a superscript keeps to the mark: the space follows it.
+    while (k + 1 < units.length && units[k + 1]!.glueBefore) out.push(units[++k]!);
+    const next = units[k + 1];
+    if (!next || charUnitIn(next, QUESTION_MARKS)) continue;
+    if (next.kind === 'text' && next.first === 'closing') continue;
+    const aki: Unit = {
+      kind: 'space',
+      text: '',
+      width: emOfFont(u.style.font),
+      graphemes: 0,
+      first: 'western',
+      last: 'western',
+      firstCjk: false,
+      lastCjk: false,
+      style: u.style,
+      at: u.at + u.text.length,
+      aki: true,
+    };
+    if (next.kind === 'space' && !next.auto) {
+      // A typed space is replaced: the aki keeps its text.
+      if (units[k + 2] === undefined) continue;
+      out.push({ ...aki, text: next.text, at: next.at });
+      k++;
+    } else if (next.kind === 'text' && next.first === 'ideoSpace' && next.graphemes === 1) {
+      if (units[k + 2] === undefined) continue;
+      out.push({ ...aki, text: next.text, at: next.at });
+      k++;
+    } else {
+      out.push(aki);
+    }
   }
   return out;
 }
@@ -1081,7 +1179,8 @@ function endProhibited(a: Unit, level: CjkLineBreakLevel): boolean {
 /** Whether a line may break before each unit (index 0 is never a break).
  *  A word space is a break unless the unit after it may not open a line,
  *  the last one before it may not close one, or they are a number and its
- *  sign; a zero-width space is a break at every level. */
+ *  sign; a zero-width space is a break at every level. A kanji number
+ *  never breaks at the 、 or ・ set solid inside it (`Unit.solid`). */
 function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): Uint8Array {
   const out = new Uint8Array(units.length);
   // The last unit before `k` that is not a space.
@@ -1110,7 +1209,7 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
       if (!p.noteSpace && !numberGlue(p, b) && !startProhibited(b, level) && !endProhibited(p, level)) out[k] = 1;
       continue;
     }
-    if (b.glueBefore) continue;
+    if (b.glueBefore || a.solid || b.solid) continue;
     if (numberGlue(a, b) || fullwidthGlue(units, k)) continue;
     if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level, edgeGrapheme(a, 'last', level), edgeGrapheme(b, 'first', level))) out[k] = 1;
   }
@@ -1121,14 +1220,24 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
  *  line: between characters, never inside a Western run or a 2-em mark
  *  (those are single units), never between two Western runs, next to a
  *  connector or a solidus, after an atomic box, or before a mark that
- *  keeps to the text before it. Spaces take their own share. */
-function gapStretches(a: Unit, b: Unit): boolean {
+ *  keeps to the text before it. Spaces take their own share. With `jlreq`
+ *  (Japanese full-width text) also JLReq §3.1.11's inseparable places:
+ *  never after an opening bracket or before a closing one (but before the
+ *  one and after the other), never next to 、，。．・：；？！ or U+3000. */
+function gapStretches(a: Unit, b: Unit, jlreq = false): boolean {
   if (a.kind !== 'text' || b.kind === 'space') return false;
   if (b.glueBefore || a.stacked) return false;
   if (a.last === 'connector' || a.last === 'solidus' || b.first === 'connector' || b.first === 'solidus') return false;
   if (!a.lastCjk && !b.firstCjk) return false;
   if (a.last === b.first && (a.last === 'dash' || a.last === 'ellipsis')) return false;
+  if (jlreq && (a.last === 'opening' || b.first === 'closing' || jlreqFixed(a.last) || jlreqFixed(b.first))) return false;
   return true;
+}
+
+/** The classes JLReq never spreads next to (§3.1.11): pause and stop
+ *  marks, middle dots and the ideographic space. */
+function jlreqFixed(cls: CjkClass): boolean {
+  return cls === 'pause' || cls === 'stop' || cls === 'interpunct' || cls === 'ideoSpace';
 }
 
 /** One line as the breaker found it: units `start` to `end` (exclusive),
@@ -1165,15 +1274,21 @@ interface LineFit {
    *  the composition lets hang, with no other mark before or after it. */
   hangs(units: readonly Unit[], k: number, unitAt: (k: number) => Unit): boolean;
   hanging: 'none' | 'allow' | 'force';
+  /** JLReq spacing (`isJlreqSpacing`): the line gives up blank in JLReq's
+   *  order, the half em at its end all or nothing, and is never spread at
+   *  JLReq's inseparable places. */
+  jlreq: boolean;
 }
 
 function lineFitOf(c: CjkComposition): LineFit | undefined {
   if (isPlainComposition(c)) return undefined;
+  const jlreq = isJlreqSpacing(c);
   return {
     lead: (u) => (u.punct ? lineEdgeCut(u.punct, c, true, false) : 0),
     tail: (u) => (u.punct ? lineEdgeCut(u.punct, c, false, true) : 0),
     give(u, atStart, atEnd) {
       if (u.kind === 'space') {
+        if (u.aki) return 0;
         const em = emOfFont(u.style.font);
         return Math.max(0, u.width - (u.auto ? em / 8 : em / 4));
       }
@@ -1181,7 +1296,9 @@ function lineFitOf(c: CjkComposition): LineFit | undefined {
       if (!atStart && !atEnd) return punctuationShrink(u.punct, c);
       const box = { ...u.punct };
       applyLineEdges(box, c, atStart, atEnd);
-      return punctuationShrink(box, c);
+      // JLReq: a mark ending the line gives up the blank after its glyph
+      // (and, a middle dot, nothing before it: §3.8.3 steps 2–3).
+      return punctuationShrink(box, c, jlreq && atEnd);
     },
     edge: (u, start, end) => (u.punct ? applyLineEdges(u.punct, c, start, end) : 0),
     hangs(units, k, unitAt) {
@@ -1191,6 +1308,7 @@ function lineFitOf(c: CjkComposition): LineFit | undefined {
       return k + 1 >= units.length || !isMarkUnit(units[k + 1]);
     },
     hanging: c.hangingPunctuation,
+    jlreq,
   };
 }
 
@@ -1323,7 +1441,9 @@ function divideRun(u: Unit, room: number, letterSpacingPx: number): { head: Unit
  * unit). A space never overflows: the line ends before it, when the line
  * may break after it. A unit wider
  * than the whole line is divided when it is a Western run (a web address
- * at a joint first), else set on a line of its own.
+ * at a joint first), else set on a line of its own. `pull` names a line
+ * that takes in the rest of the paragraph when the line can give up the
+ * blank for it (push-in, to save a last line of one character).
  */
 function breakUnits(
   units: readonly Unit[],
@@ -1335,6 +1455,8 @@ function breakUnits(
   level: CjkLineBreakLevel = getCjkLineBreak(),
   /** End line `line` before unit `at` (a break), whatever else fits. */
   stop?: { line: number; at: number },
+  /** Line `pull` takes every unit left when it can give up the blank. */
+  pull?: number,
 ): LineRange[] {
   const out: LineRange[] = [];
   const n = units.length;
@@ -1417,7 +1539,7 @@ function breakUnits(
           hang = true;
           break;
         }
-        const m = breaks[k] ? -1 : groupEnd(units, breaks, k);
+        const m = pull === li ? n - 1 : breaks[k] ? -1 : groupEnd(units, breaks, k);
         if (m >= k) {
           let width = w;
           let room = give;
@@ -1703,9 +1825,16 @@ function spread(amount: number, caps: readonly number[]): number[] {
  * character that may not open a line, clreq §6.2.2.3) gives up
  * blank in clreq's order — word spaces to a quarter em, interpuncts,
  * brackets, pause marks, Han–Latin spaces to an eighth of an em, stop marks
- * last — each step shared equally, until it fits. `us` holds the line's
- * units and is changed in place; a unit that changes is replaced by a copy,
- * since the paragraph's units serve every attempt at breaking it.
+ * last — each step shared equally, until it fits. Japanese full-width text
+ * takes JLReq §3.8.3's order instead (`jlreqShrinkStep`): word spaces, the
+ * half em after the line's last mark and then a middle dot's quarter (each
+ * all or nothing: what it gives beyond the need is spread back when the
+ * line is justified), the middle dots' quarters inside the line, the half
+ * ems of brackets and 、， inside it, Han–Latin spaces; never the half em
+ * after a 。 inside the line. A mark that hangs keeps its glyph alone. `us`
+ * holds the line's units and is changed in place; a unit that changes is
+ * replaced by a copy, since the paragraph's units serve every attempt at
+ * breaking it.
  */
 function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: number, isLast: boolean, measure: number, fit: LineFit): Unit | undefined {
   const copy = (j: number): Unit => {
@@ -1722,6 +1851,8 @@ function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: nu
       hang = copy(us.length - 1);
       us.pop();
       hang.width -= fit.edge(hang, false, true);
+      // ぶら下げ: the hung mark is its glyph, past the measure.
+      if (fit.jlreq && hang.punct) hang.width -= shrinkPunctuation(hang.punct, hang.punct.blank, true);
       while (us.length > 0 && us[us.length - 1]!.kind === 'space') us.pop();
     }
   }
@@ -1740,27 +1871,37 @@ function fitLine(us: Unit[], units: readonly Unit[], range: LineRange, lastK: nu
   for (const u of us) over += u.width;
   if (over <= FIT_EPS) return hang;
   // Steps of the reduction order: word spaces (1), interpuncts (2),
-  // brackets (3), pause marks (4), Han–Latin spaces (5), stop marks (6).
-  const stepOf = (u: Unit): number => (u.kind === 'space' ? (u.auto ? 5 : 1) : u.punct ? shrinkStep(u.punct) : 0);
+  // brackets (3), pause marks (4), Han–Latin spaces (5), stop marks (6);
+  // in JLReq spacing, word spaces (1), the line end (2, 3), middle dots
+  // (4), brackets and 、， (5), Han–Latin spaces (6).
+  const last = us.length - 1;
+  const atEnd = (j: number): boolean => fit.jlreq && j === last;
+  const stepOf = (u: Unit, j: number): number => {
+    if (u.kind === 'space') return u.aki ? 0 : u.auto ? (fit.jlreq ? 6 : 5) : 1;
+    if (!u.punct) return 0;
+    return fit.jlreq ? jlreqShrinkStep(u.punct, atEnd(j)) : shrinkStep(u.punct);
+  };
   for (let step = 1; step <= 6 && over > FIT_EPS; step++) {
     const members: number[] = [];
     const caps: number[] = [];
     for (let j = 0; j < us.length; j++) {
       const u = us[j]!;
-      if (stepOf(u) !== step) continue;
+      if (stepOf(u, j) !== step) continue;
       // The marks at the edges already gave up their lead and tail.
-      const cap = fit.give(u, false, false);
+      const cap = fit.give(u, false, atEnd(j));
       if (cap <= 0) continue;
       members.push(j);
       caps.push(cap);
     }
     if (members.length === 0) continue;
-    const takes = spread(over, caps);
+    // The blank at a JLReq line end goes whole or not at all (§3.1.9).
+    const takes = fit.jlreq && (step === 2 || step === 3) ? caps : spread(over, caps);
     for (let m = 0; m < members.length; m++) {
       const take = takes[m]!;
       if (take <= 0) continue;
-      const c = copy(members[m]!);
-      const given = c.punct ? shrinkPunctuation(c.punct, take) : take;
+      const j = members[m]!;
+      const c = copy(j);
+      const given = c.punct ? shrinkPunctuation(c.punct, take, atEnd(j)) : take;
       c.width -= given;
       over -= given;
     }
@@ -1813,16 +1954,22 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     // Han–Latin spaces (`cjk.latinSpacing`): they flex apart from word
     // spaces, and the renderers leave them as set.
     const autos: number[] = [];
+    const jlreq = ctx.fit?.jlreq === true;
     for (let j = 0; j < us.length; j++) {
       const u = us[j]!;
       content += u.width;
+      // The space after ？！ keeps its em (JLReq §3.1.6).
+      if (u.kind === 'space' && u.aki) {
+        stretches.push(false);
+        continue;
+      }
       if (u.kind === 'space' && u.auto) autos.push(j);
       else if (u.kind === 'space') {
         spaces++;
         natural += u.width;
         widest = Math.max(widest, u.width);
       }
-      const s = j < us.length - 1 && gapStretches(u, us[j + 1]!);
+      const s = j < us.length - 1 && gapStretches(u, us[j + 1]!, jlreq);
       stretches.push(s);
       if (s) gaps++;
     }
@@ -1917,7 +2064,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
   };
   for (let j = 0; j < us.length; j++) {
     const u = us[j]!;
-    if (u.kind === 'space' && u.auto) {
+    if (u.kind === 'space' && (u.auto || u.aki)) {
       pieces.push({ seg: { kind: 'space', text: u.text, width: u.width, autospace: true }, parts: [u.text], key: undefined });
       continue;
     }
@@ -2020,6 +2167,37 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
 }
 
 /**
+ * The first line's indent of a paragraph that opens with an opening
+ * bracket, as `cjk.paragraphStartBracket` sets it (JLReq §3.1.5), with the
+ * bracket's blank before its glyph given up (it is `units`' own unit,
+ * replaced): pattern ① (`indent`) keeps the indent, ③ (`half`) sets the
+ * bracket's glyph inside the indent so the text after it starts where the
+ * indent ends (the bracket and its half em of blank fill a one-em indent),
+ * 天付き (`flush`) drops the indent. `indentPx` when the composition leaves
+ * the bracket to the line-start rules, the paragraph has no indent or
+ * does not open with a bracket.
+ */
+function paragraphStartIndent(units: Unit[], indentPx: number, c: CjkComposition): number {
+  const pattern = c.paragraphStartBracket;
+  if (!pattern || indentPx <= 0) return indentPx;
+  const f = units.findIndex((u) => u.kind !== 'space');
+  const u = units[f];
+  if (!u?.punct || u.first !== 'opening') return indentPx;
+  // Its blank before the glyph, whatever `trimLineStart` says.
+  const box = { ...u.punct };
+  const lead = box.blank - box.cutStart;
+  const trimmed: Unit = { ...u, punct: box };
+  if (lead > 0 && box.side === 'start') {
+    box.cutStart += lead;
+    trimmed.width -= lead;
+  }
+  units[f] = trimmed;
+  if (pattern === 'flush') return 0;
+  if (pattern === 'half') return Math.max(0, indentPx - trimmed.width);
+  return indentPx;
+}
+
+/**
  * Set a Chinese, Japanese or Korean paragraph (see the module comment):
  * `options.cjkLineBreak` (else the document's level) decides where lines
  * may break; `textAlign: 'justify'` spreads every line but the last to the
@@ -2070,7 +2248,8 @@ export function composeCjkParagraph(
   const breaks = breakOpportunities(units, level);
   const indentPx = options?.firstLineIndentPx ?? 0;
   const hanging = options?.hangingIndent ?? false;
-  const indentOf = (li: number): number => (indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? indentPx : 0)) : 0);
+  const firstIndent = hanging ? 0 : paragraphStartIndent(units, indentPx, composition);
+  const indentOf = (li: number): number => (indentPx > 0 ? (hanging ? (li === 0 ? 0 : indentPx) : (li === 0 ? firstIndent : 0)) : 0);
   const measureOf = (li: number): number => lineMeasure(maxWidthPx, options?.restWidths, li) - indentOf(li);
   const sizeMatch = FONT_SIZE_RE.exec(normalFont);
   const em = sizeMatch ? parseFloat(sizeMatch[1]!) : 16;
@@ -2099,7 +2278,17 @@ export function composeCjkParagraph(
   // gives it a runt penalty): a last line that holds one character, alone
   // or with its closing marks, takes the last character the line above may
   // give up (push-out), and that line is spread to the measure. When it
-  // would need more than the tracking cap, the runt stays.
+  // would need more than the tracking cap, the runt stays. Japanese text
+  // (泣き別れ) first tries the other way JLReq prefers (§3.8.2): the line
+  // above takes the character in by giving up blank (push-in), and the
+  // paragraph is a line shorter.
+  if ((options?.runtPenalty ?? 0) > 0 && endsOnOneCharacter(lines) && fit?.jlreq) {
+    const pulled = breakUnits(units, breaks, measureOf, 0, letterSpacingPx, fit, level, undefined, ranges.length - 2);
+    if (pulled.length === ranges.length - 1) {
+      const set = compose(pulled);
+      if (!set.some((l) => l.cjkLoose) && !endsOnOneCharacter(set)) lines = set;
+    }
+  }
   if ((options?.runtPenalty ?? 0) > 0 && endsOnOneCharacter(lines)) {
     const li = ranges.length - 2;
     const above = ranges[li]!;

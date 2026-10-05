@@ -316,7 +316,9 @@ export interface VDTLineSegment {
    *  author typed there (which it replaces). Also set, with empty `text`,
    *  on the gap a justified CJK line leaves after a ruby base of several
    *  characters (#194): the base is painted at its natural spacing, so the
-   *  gap cannot be its `tracking`. */
+   *  gap cannot be its `tracking`; and on the one-em space after a
+   *  Japanese ？ or ！ (`cjk.spaceAfterQuestion`, #418), whose `text` is
+   *  empty or the space typed there. */
   autospace?: boolean;
   /** Vertical text: the segment is one tate-chu-yoko cell set by
    *  `:tcy[…]`: its characters side by side in one upright cell, `width`
