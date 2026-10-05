@@ -98,7 +98,7 @@ describe('the built-in guide in six languages', () => {
       expect(config.bodyText?.fontFamily).toBe('Noto Serif JP');
       expect(config.headings?.fontFamily).toBe('Noto Sans JP');
       expect(config.headings?.levels?.find((l) => l.level === 1)?.numberingTemplate).toBe('第{1:一}章');
-      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['図', '表']);
+      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['図', '表', '動画']);
       expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ja'))).toBe(true);
       const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
       expect(table.caption).toBe('定義済みの判型と主な用途。');
