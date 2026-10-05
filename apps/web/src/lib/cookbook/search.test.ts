@@ -73,7 +73,7 @@ describe("processTerm", () => {
   });
 
   it("maps site locales to search locales", () => {
-    expect(["en", "es", "zh", "fr"].map(searchLocale)).toEqual(["en", "es", "zh", "en"]);
+    expect(["en", "es", "zh", "ja", "fr"].map(searchLocale)).toEqual(["en", "es", "zh", "ja", "en"]);
   });
 
   it("lowercases and strips diacritics", () => {
@@ -260,6 +260,18 @@ describe("processTerm in Catalan", () => {
   });
 });
 
+describe("processTerm in Japanese", () => {
+  const ja = (term: string) => processTerm(term, "ja");
+  it("keeps kana and kanji grams and drops the kana words that carry nothing", () => {
+    expect(ja("るび")).toBe("るび");
+    expect(ja("縦")).toBe("縦");
+    expect(ja("こと")).toBeNull();
+    expect(ja("ため")).toBeNull();
+    expect(ja("the")).toBeNull();
+    expect(ja("Captions")).toBe("caption");
+  });
+});
+
 describe("processTerm in Arabic", () => {
   const ar = (term: string) => processTerm(term, "ar");
   it("folds the article, the vowel marks and the sound plurals", () => {
@@ -390,7 +402,7 @@ describe("Japanese", () => {
     }),
   ];
 
-  for (const locale of ["en", "es", "ca", "zh", "ar"] as const) {
+  for (const locale of ["en", "es", "ca", "zh", "ar", "ja"] as const) {
     it(`finds recipes by their Japanese words in the ${locale} index`, () => {
       const mini = new MiniSearch<SearchDocument>(MINISEARCH_OPTIONS[locale]);
       mini.addAll(RECIPES_JA.map((r) => searchDocument(r, FACETS)));

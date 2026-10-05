@@ -28,16 +28,16 @@ import { parseWriteup, readWriteup, writeupRefs } from "./writeup.ts";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
-const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`) => ({ en, es, ca, zh, ar });
+const L = (en: string, es = `${en} (es)`, zh = `${en} (zh)`, ca = `${en} (ca)`, ar = `${en} (ar)`, ja = `${en} (ja)`) => ({ en, es, ca, zh, ar, ja });
 const HEADINGS = {
-  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده"),
-  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر"),
-  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات"),
-  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير"),
-  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة"),
-  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات"),
-  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة"),
-  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق"),
+  build: L("What you'll build", "Lo que vas a componer", "成品一览", "Què compondràs", "ما الذي ستنضده", "できあがり"),
+  short: L("The short answer", "La respuesta corta", "简短回答", "La resposta curta", "الجواب المختصر", "手短な答え"),
+  ingredients: L("Ingredients", "Ingredientes", "用料", "Ingredients", "المكونات", "材料"),
+  method: L("Method", "Elaboración", "做法", "Elaboració", "طريقة التحضير", "作り方"),
+  whole: L("The whole recipe", "La receta completa", "完整食谱", "La recepta completa", "الوصفة كاملة", "レシピの全体"),
+  variations: L("Variations", "Variantes", "变化", "Variants", "تنويعات", "アレンジ"),
+  pitfalls: L("Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき"),
+  credits: L("Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット"),
 } satisfies Record<SectionId, Record<Locale, string>>;
 
 /** Just the registry tables validateRecipeMeta reads. */
@@ -385,6 +385,14 @@ describe("write-ups", () => {
       'zh.mdx: frontmatter "summary" must have 20–90 characters (has 19)',
     ]);
     expect(validateFrontmatter({ title: "标题", summary: "字".repeat(40), description: "字".repeat(60) }, "zh")).toEqual([]);
+    // Japanese mixes kanji and kana: bounds a little above the Chinese ones.
+    expect(validateFrontmatter({ title: "字".repeat(37), summary: "字".repeat(24), question: "字".repeat(66) }, "ja")).toEqual([
+      'ja.mdx: frontmatter "title" must have at most 36 characters (has 37)',
+      'ja.mdx: frontmatter "summary" must have 25–110 characters (has 24)',
+      'ja.mdx: frontmatter "question" must have at most 65 characters (has 66)',
+    ]);
+    expect(validateFrontmatter({ title: "見出し", summary: "字".repeat(60), plain: "字".repeat(140), description: "字".repeat(50) }, "ja")).toEqual([]);
+    expect(sectionFor("作り方", HEADINGS, "ja")).toBe("method");
   });
 });
 

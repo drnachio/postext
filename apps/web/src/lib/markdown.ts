@@ -10,6 +10,7 @@ import es from "../../messages/es.json";
 import ca from "../../messages/ca.json";
 import ar from "../../messages/ar.json";
 import zh from "../../messages/zh.json";
+import ja from "../../messages/ja.json";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
 import { glossarySections } from "@/lib/glossary/glossary";
@@ -28,7 +29,7 @@ import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registr
 import { localizedText } from "@/lib/cookbook/types";
 
 type Messages = typeof en;
-const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages, ar: ar as Messages };
+const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages, ja: ja as Messages, ar: ar as Messages };
 
 const REPO_URL = "https://github.com/drnachio/postext";
 const NPM_URL = "https://www.npmjs.com/package/postext";
@@ -315,6 +316,75 @@ const LABELS = {
     licenseOriginal: "原创",
     licensePD: "公有领域",
     licenseAuthorised: "经许可转载",
+  },
+  ja: {
+    docs: "ドキュメント",
+    optional: "Optional",
+    lastUpdated: "最終更新",
+    readingTime: "読了時間",
+    canonical: "HTML版",
+    otherLanguages: "他の言語",
+    figure: "図",
+    example: "実行できる例",
+    exampleSource: "ソースコード",
+    home: "ホーム",
+    sandbox: "Sandbox",
+    sandboxDesc: "ブラウザーで動く対話型エディター。Markdownを書き、設定を調整し、印刷用のPDFとEPUB 3の電子書籍を書き出せます。",
+    fullText: "すべてのドキュメントページを1つのファイルにまとめた全文",
+    install: "インストール",
+    fullDocs: "ドキュメント全文",
+    links: "リンク",
+    localeDocs: "日本語のドキュメント",
+    cookbook: "レシピ集",
+    cookbookTitle: "Postextレシピ集",
+    cookbookDesc: "そのままコピーして使えるPostextの例。章扉から1冊の本まで、それぞれが組むページと全コードを添えています。",
+    cookbookIntro:
+      "各レシピはpenです。esm.shからpostextを読み込み、自分でページを組むJavaScriptモジュール（必要ならHTMLページとCSSも添えます）です。下の各リンクはレシピのMarkdown版で、解説と全コードを収めています。",
+    allRecipes: "全レシピ（章ごと）",
+    noRecipes: "レシピはまだありません。",
+    part: "部",
+    chapter: "章",
+    recipe: "レシピ",
+    numberSign: "No.",
+    level: "難易度",
+    outputs: "出力",
+    genres: "ジャンル",
+    draft: "下書き",
+    requires: "必要なもの",
+    testedWith: "テスト環境",
+    testedOn: "／テスト日",
+    pages: "ページ",
+    pdf: "PDF",
+    openInSandbox: "Sandboxで開く",
+    answers: "このレシピが答える問い",
+    teaches: "学べること",
+    alsoUses: "ほかに使うもの",
+    configAtAGlance: "設定の一覧",
+    apis: "API",
+    typefaces: "書体",
+    lines: "行",
+    wholeRecipe:
+      "下のファイルはレシピのフォルダーから合成したもので、サンプルのテキストとレシピ集の共通キットを埋め込んであります。1つのページとして動かすには、HTMLを`<body>`に、CSSを`<style>`要素に、スクリプトを`<script type=\"module\">`に入れます。新しいCodePenのpenの各パネルに貼り付けてもかまいません（JSはモジュールとして）。スクリプトはesm.shからpostextを読み込むので、インストールもビルドも要りません。",
+    wholeRecipeScript:
+      "レシピのフォルダーから合成した1つのファイルで、サンプルのテキストとレシピ集の共通キットを埋め込んであり、自分でページを組み立てます。動かすには、空のページの`<script type=\"module\">`に入れるか、新しいCodePenのpenのJSパネルに貼り付けます（モジュールとして）。esm.shからpostextを読み込むので、インストールもビルドも要りません。",
+    externals: "ページが読み込むリソース",
+    sourceFolder: "レシピのフォルダー",
+    notComposed: "このレシピのコードを合成できませんでした",
+    pitfall: "よくあるつまずき",
+    warning: "組版の警告",
+    fix: "解決策",
+    fixedIn: "修正済み：",
+    recipeBy: "レシピ",
+    creditText: "テキスト",
+    creditImages: "画像",
+    creditType: "書体",
+    creditCode: "コード",
+    creditContent: "サンプルの内容",
+    source: "出典",
+    related: "関連レシピ",
+    licenseOriginal: "オリジナル",
+    licensePD: "パブリックドメイン",
+    licenseAuthorised: "許可を得て転載",
   },
   ar: {
     docs: "التوثيق",

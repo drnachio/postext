@@ -1,0 +1,63 @@
+---
+title: "OSCOLAで引用する判例評釈"
+summary: "4ページの判例評釈。[@robinson2018, para 21]形式の引用がOSCOLAの脚注になります。判例名はイタリック、ニュートラル・サイテーション、ibid、(n 1)の相互参照。"
+plain: "警察をめぐるイングランドの裁判所の判決についての短い評釈です。よりどころにした判例、法律、論文はすべて、英国の法学部で使われる方式で、ページ下の番号付きの注に引用されます。"
+description: "Postextで組む判例評釈：判例、法律、論文をOSCOLAの脚注で引用。参照箇所、ibid、(n 1)の相互参照、修正したCSLスタイル。"
+question: "判例と法令を、OSCOLA方式の脚注で引用するには？"
+aliases: ["OSCOLA", "法律文献の引用", "判例の引用", "ロー・レビュー", "法学雑誌", "判例評釈", "判例研究", "判例一覧", "ニュートラル・サイテーション", "neutral citation", "判例集", "ibid", "Bluebook", "英国法", "ピンポイント"]
+pageNotes: { "1": "1ページ。上半分にクラレット色の帯があり、シリーズ名の行、大きなイタリックの判例名「Robinson」、「v Chief Constable of West Yorkshire Police」、引用「[2018] UKSC 4, [2018] AC 736」、続いて表題「Acts, Omissions and the Police」。その下に事案の概要と注1・2があり、注2は「ibid [21]」。", "2": "2ページ。節「There is no Caparo test」と「Acts and omissions」の始まり、注3から10。Donoghue v Stevenson、Anns、Murphy、Caparoの完全な引用、丸括弧に入ったオーストラリアの判例集、そして「Robinson (n 1) [26–27]」。", "3": "3ページ。「Acts and omissions」の続き。Stovin v Wise、Hill、Michaelについての注、Cambridge Law JournalとLaw Quarterly Reviewの2本の論文、そして「The statutory route」の始まり。", "4": "4ページ。条を挙げて引用したHuman Rights Act 1998、「ibid s 7」、Compensation Act 2006、結びの「Comment」、小さな奥付、注18から23。" }
+---
+
+## できあがり
+
+法学雑誌の判例評釈シリーズの抜き刷りです。警察がどんなときに注意義務を負うかを扱った2018年の英国最高裁判所の判決、*Robinson v Chief Constable of West Yorkshire Police*についての4ページです。判型は162 × 240mmで左右対称、書体はLibre Baskervilleの9.4/13.6pt。1ページ目はクラレット色の帯で始まり、判例名を60ptのイタリックで組みます。著者は典拠をそれぞれ参照箇所付きのキー`[@caparo1990, 617–18]`で書き、PostextはそれをOSCOLAで23の脚注に組みます。OSCOLAは英国の法学部の引用基準です。判例名はイタリック、法律はローマン、AC、HL、ednのあとにピリオドを打たず、直前の注と同じ典拠には*ibid*、それより後では「*Robinson (n 1) [55]*」と書きます。典拠は実在のものですが、著者と雑誌は架空です。
+
+## 作り方
+
+### 1 · 典拠ごとにOSCOLAの注
+
+コードは上の[手短な答え](#手短な答え)にあります。OSCOLAは注の方式なので、`[@robinson2018, para 21]`はピリオドのあとに上付きの番号を残し、その文言はページの地に送られます。注1は判例を完全な形で示します（*Robinson v Chief Constable of West Yorkshire Police [2018] UKSC 4, [2018] AC 736*）。直後に同じ判例を引く注2は「*ibid [21]*」、ほかの判例が間に入ったあとの注8は「*Robinson (n 1) [26–27]*」となります。ロー・レビューの論文は注の中でしか引用しないので、`bibliography.auto: false`で最終ページに文献一覧を出さないようにします。
+
+### 2 · 判例はデータ。判例集の印字どおりに書く
+
+判例は`type: legal_case`のCSL項目です。事件名は`title`、裁判所は`authority`、判例集のシリーズは`container-title`、最初のページは`page`に入れます。Appeal Casesのように年が巻を特定する場合、OSCOLAは判例集の年を角括弧に入れるので、このレシピではその年を`volume`に書き、巻の番号をそのあとに続けます。`volume: "[1990] 2"`で「*[1990] 2 AC 605 (HL)*」となります。2001年より後の判決にはニュートラル・サイテーションもあります。`authority: UKSC`、`number: "4"`、`issued: 2018`で「*[2018] UKSC 4*」となり、そのあとに判例集が続きます。法律は`type: legislation`で、年を題に入れて`issued`は付けないので、年が二度印字されません。`[@hra1998, § 6]`は条を「*s 6*」として引用します。
+
+### 3 · 同梱スタイルへの2つの修正
+
+<Excerpt region="oscola" />
+
+同梱の`oscola.csl`が段落の参照箇所を角括弧で囲むのは、判例の最初の注だけです。それより後の注では「*para 55*」や「*ibid 27*」と印字され、同じ法律への2回目の注では「*s*」が落ちていました。修正では、ビルドの前にスタイルのXMLのマクロ1つと1行を置き換え、その結果をカスタムスタイルとして渡すので、本文と文献データは変わりません。
+
+### 4 · 帯の上の判例名
+
+<Excerpt region="opener" />
+
+帯は仕上がり線から124mm下まで伸びます。判例名、当事者、引用は見出しの属性なので、シリーズの別の評釈ではMarkdownを変えるだけですみます。OSCOLAは判例名をイタリックにするので、*Robinson*はLibre Baskerville Italicの60ptで組み、その下の引用は注の中と同じくローマンのままにします。
+
+<Excerpt region="palette" />
+
+## アレンジ
+
+### 同梱のままのスタイルで印字する
+
+修正前の出力と比べるには、同梱のidを使います。すると、それより後の注の段落の参照箇所は「*para 55*」となります。
+
+```diff
+-  style: 'custom', customStyle: OSCOLA, // the bundled 'oscola', patched above
++  style: 'oscola',
+```
+
+### 注を末尾にまとめる
+
+本文のあとに注を印字する雑誌もあります。引用は完全形と短縮形、そして番号をそのまま保ちます。
+
+```diff
+-  placement: 'column', numbering: 'chapter',
++  placement: 'chapterEnd', numbering: 'chapter',
+```
+
+## よくあるつまずき
+
+- 巻が単なる数字の判例集（`volume: "2"`）は年を丸括弧で印字し、「*(1990) 2 AC*」となります。OSCOLAがこの形を使うのは、Commonwealth Law Reportsのように年をまたいで巻番号を通すシリーズです（注7）。Appeal CasesとWeekly Law Reportsでは、角括弧付きの年を`volume`に書いてください。
+- ロケーターの前の`s`はページ（ドイツ語の*Seite*）を意味し、条ではありません。`§ 6`と書きます。`6(1)`のような項はロケーターとして読まれないので、項は文中で示し、条を引用します。
+- OSCOLAでは論文に参考文献を付けず、このスタイルには判例一覧と法令一覧を分けて出す機能もありません。そうした一覧が必要な学位論文では、`:::bibliography`から1つにソートした一覧が得られ、二次文献が先に、続いて判例と法律が混ざって並びます。

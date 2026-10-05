@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { htmlLang } from "@/i18n/locales";
+import { htmlLang, siteLocale } from "@/i18n/locales";
 import {
   TRANSCRIPTS,
   type TranscriptLocale,
@@ -18,15 +18,11 @@ export async function VideoTranscript({
   locale: string;
 }) {
   const t = await getTranslations("Transcript");
-  const lang: TranscriptLocale = locale.startsWith("es")
-    ? "es"
-    : locale.startsWith("ca")
-      ? "ca"
-      : locale.startsWith("zh")
-      ? "zh"
-      : locale.startsWith("ar")
-        ? "ar"
-        : "en";
+  // Each site locale reads its own transcript (Catalan, Arabic and Japanese
+  // ones timed against the Spanish or English cut they play), English when
+  // a video has none in that language.
+  const site = siteLocale(locale);
+  const lang: TranscriptLocale = TRANSCRIPTS[video][site]?.length ? site : "en";
   const blocks = TRANSCRIPTS[video][lang];
   if (!blocks?.length) return null;
 

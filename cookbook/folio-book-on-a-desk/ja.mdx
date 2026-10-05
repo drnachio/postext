@@ -1,0 +1,54 @@
+---
+title: "組版した本を机の上に3Dで開く"
+summary: "postext-folioパッケージのcreateFolioFromDocumentが、組版した章をクロス装の本としてクルミ材の机の上に開きます。見た目はconfig.folioで決めます。"
+plain: "短い小説の第1章を、机の上に開いて置かれた本物の本として見せます。ページはマウスでめくり、紙、表紙、机は設定で選びます。"
+description: "postextで組んだ一般書の章を、postext-folioで3Dの本として開きます。紙、製本、机、光はconfig.folioで設定し、最小限のCodePenのサンプルで示します。"
+question: "組版した文書を、読者が手でページをめくる3Dの本として見せるには？"
+aliases: ["Folio", "postext-folio", "フリップブック", "flipbook", "ページめくり", "3Dの本", "本のプレビュー", "ページをめくる"]
+pageNotes: { "1": "章扉。緑の小さなキッカー、題のThe Last Crossingと短い罫、続いて両端そろえの本文の最初のページ。", "2": "柱に著者名とノンブルを入れた偶数ページ。緑のイタリックの小見出しがあります。" }
+---
+
+## できあがり
+
+129 × 198mmのページの短い小説『The Ferryman’s Ledger』の第1章を、クルミ材の机の上の本として開きます。表紙はボトルグリーンのクロス装、本文用紙はかさ高のクリーム色の小説用紙です。読者は右ページの端をつまんでめくり、紙は丸まりながら下のページに影を落とします。本文は`buildDocument`で一度だけ組み、`postext-folio`パッケージを1回呼び出せば、そのレイアウトが本になります。紙、製本、机、光、視点の角度と、本を形づくるものはすべて設定の一部なので、同じ文書はSandboxのFolioタブでも同じ見た目になります。
+
+## 作り方
+
+### 1 · 本の材料を指定する
+
+<Excerpt region="folio" />
+
+`config.folio`を読むのは3Dビューアーだけです。レイアウト、Canvas、PDF、HTMLの出力はこれを無視するので、紙を変えても行は1本も動きません。`bookWove`はかさ高の小説用紙で、このかさ高で70g/m²なら1枚の厚さは約112µmです。ビューアーはこれにページ数を掛けて束の厚さを決めます。クロスの色はパレットのアクセントにつながっていて、キッカー（題の上の小さな文字）やノンブルと同じ緑です。
+
+### 2 · 控えめな章扉と柱
+
+<Excerpt region="opener" />
+
+章は奇数ページの上から3分の1下がった位置で、見出しの属性から取ったキッカーの下で始まります。3Dでも、下げて組んだ章扉は印刷された小説と同じように読めます。表紙を開いたとき読者が最初に目にするのは、ページの上部の余白です。
+
+<Excerpt region="running-heads" />
+
+### 3 · 文書を本として開く
+
+コードは上の[手短な答え](#手短な答え)にあります。`createFolioFromDocument`はコンテナーと組版済みの文書を受け取ります。開いている見開きの周辺だけ、各ページを`renderPageToCanvas`でページ枠ちょうどの大きさに描画し、本をコンテナーに合わせて収めます。コンテナーには独自の高さが必要で、ないと本を置く場所がありません。`textureBaseUrl`はpostext.devにある机の写真を指します。これがないと、クルミ材はプロシージャルなマップで描かれます。
+
+## アレンジ
+
+### 昼の光の中、オーク材の机にペーパーバック
+
+設定を3つ変えると、同じ章が淡い色の机の上のソフトカバーになります。組み直しは起こりません。
+
+```diff
+-  binding: { type: 'hardcover', cover: 'case', coverMaterial: 'cloth',
+-    coverColor: col('accent') }, // the case wraps the pages; boards a little larger
+-  surface: { type: 'walnut' },
+-  lighting: { environment: 'studio', intensity: 1, shadows: true },
++  binding: { type: 'paperback', cover: 'case', coverMaterial: 'paper',
++    coverColor: col('accent') },
++  surface: { type: 'oak' },
++  lighting: { environment: 'daylight', intensity: 1, shadows: true },
+```
+
+### 丁ごとに別の紙
+
+<RecipeLink slug="paper-swatch-book">紙の見本帳</RecipeLink>は`:::paper`で丁ごとに別の用紙に刷り、<RecipeLink slug="folio-settings-bench">設定の試験台</RecipeLink>は`setAppearance`ですべての設定をその場で変えます。

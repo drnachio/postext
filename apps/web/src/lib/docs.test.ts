@@ -21,7 +21,7 @@ describe("docs table of contents", () => {
       "skill",
     ]);
     for (const doc of docs) {
-      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["ar", "ca", "en", "es", "zh"]);
+      expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["ar", "ca", "en", "es", "ja", "zh"]);
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.es!.order);
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.zh!.order);
       expect(doc.locales.zh!.lang, doc.slug).toBe("zh");
@@ -29,6 +29,8 @@ describe("docs table of contents", () => {
       expect(doc.locales.ca!.lang, doc.slug).toBe("ca");
       expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.ar!.order);
       expect(doc.locales.ar!.lang, doc.slug).toBe("ar");
+      expect(doc.locales.en!.order, doc.slug).toBe(doc.locales.ja!.order);
+      expect(doc.locales.ja!.lang, doc.slug).toBe("ja");
     }
   });
 
@@ -66,7 +68,7 @@ describe("docs table of contents", () => {
   });
 
   it.each(["chinese-layout", "arabic-layout", "japanese-layout"])("gives every heading of the %s page its own title", (slug) => {
-    for (const locale of ["en", "es", "ca", "zh", "ar"] as const) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"] as const) {
       const texts = extractToc(getDocSource(slug, locale)!.source).map((t) => t.text);
       expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
     }
@@ -77,7 +79,7 @@ describe("docs table of contents", () => {
     // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
     // <code>{'*…*'}</code> prints nothing. A character reference stays
     // literal in both the page and its Markdown rendition: <code>&#42;…&#42;</code>.
-    for (const locale of ["en", "es", "ca", "zh", "ar"] as const) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"] as const) {
       const { source } = getDocSource(slug, locale)!;
       for (const m of source.matchAll(/<code>([^<]*)<\/code>/g)) {
         expect(m[1], m[0]).not.toMatch(/[*~^{]|(?<![\w])_|_(?![\w])/);
@@ -90,7 +92,7 @@ describe("docs table of contents", () => {
     (page, locale) => {
       const { source } = getDocSource(page, locale)!;
       const own = new Set(extractToc(source).map((t) => t.id));
-      for (const m of source.matchAll(/\]\(\/(en|es|ca|zh|ar)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
+      for (const m of source.matchAll(/\]\(\/(en|es|ca|zh|ja|ar)\/docs\/([a-z-]+)(?:#([^)]+))?\)/g)) {
         const [, lang, slug, anchor] = m;
         expect(lang, m[0]).toBe(locale);
         const doc = getDocSource(slug!, locale);

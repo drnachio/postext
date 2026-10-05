@@ -1,0 +1,75 @@
+---
+title: "2言語の.postextの往復"
+summary: "両面のDLリーフレットをコードで.postextファイルに書き出し、そのバイト列から組み直します。各版が持つ書体、図、キャプションのラベルもいっしょです。"
+plain: "古い潮力水車小屋を紹介する両面のリーフレットを、英語とスペイン語で作ります。文書をフォントや絵といっしょに1つのファイルに保存し、そのファイルから同じページを取り戻す方法を示します。"
+description: "createBundleでリーフレットを.postextファイルに書き出し、openBundleでフォントと図ごと読み戻します。英語版とスペイン語版の2つです。"
+question: ".postextファイルを、中のフォント、画像、設定ごと組むには？"
+aliases: ["postextファイル", "バンドル", "createBundle", "openBundle", "loadBundleFonts", "往復", "書き出しと読み込み", "2言語のリーフレット", "Sandboxに渡す", "DLリーフレット", "潮力水車"]
+pageNotes: { "1": "DLリーフレットのおもて面。砂色の地にキッカーArenal estuary · Visitor leaflet 3と、青のイタリックの表題The Tide Millが入り、その下に水車があります。水車の下半分は青い入り江の水面下で淡く見えます。上端の青いタブにはENとあります。イタリックのリード文とOpen all year · Free on Sundaysの1行が水の中に置かれています。", "2": "裏面。上部に水車小屋の断面図があり、左に貯水池、右に破線の満潮線の下の入り江が描かれ、Figure 1のキャプションが付いています。両端そろえのDM Sansで組んだTwo tides a dayの節、青い見出し行の付いたTable 1の開館時間表、交通とチケットについての3行、奥付、発行者名の入った青い帯が続きます。" }
+---
+
+## できあがり
+
+架空の入り江にある潮力水車小屋の来館者用DLリーフレット（99 × 210 mm）の両面です。おもて面は1枚の絵です。水際に水車があり、上半分は砂の上、下半分は青い水の下で淡く描かれます。表題は50 ptのDM Serif Displayイタリック、青いタブには版の言語（ENまたはES）が入ります。裏面は水車小屋の断面図で始まり、両端そろえのDM Sansの本文、青い見出し行の付いた開館時間の表、Instrument Sansのキャプション、奥付、発行者名の入った青い帯と続きます。各版は`.postext`ファイルに書き出され、ここに載せたページはすべて、そのファイルのバイト列から、ファイルに入った書体と図で組んだものです。
+
+## 作り方
+
+### 1 · 版を書き出し、バイト列だけを読み戻す
+
+<Excerpt region="answer" highlight="14-17" />
+
+`createBundle`は章、設定、リソース、そしてそれらが参照するすべてのファイルをzipにまとめます。`openBundle`が受け取るのはそのバイト列だけです。書体は`loadBundleFonts`から、図は`registerBundleImages`から、デザインは`bundle.config`から取ります。`files`に入れ忘れた書体はブラウザーの代替フォントで印字され、入れ忘れた図は警告とともに省かれ、その参照は(?)と印字されます。zipの中では各`fileId`がパスになり（`mill.svg`は`resources/mill.svg`になります）、`openBundle`が返すリソースと`customFonts`はすでに新しい名前を使っています（[バンドルを開く](/ja/docs/configuration#バンドルを開く)）。
+
+### 2 · 書体をファイルに入れる
+
+<Excerpt region="faces" />
+
+バンドルが書体を持つのは、`customFonts`がその書体を指定し、`files`にそのバリエーションの`fileId`でバイト列が入っているときです。`createBundle`はDM Sans 400を`fonts/dm-sans-400-normal.woff2`として格納します。CodePenのサンプルはFontsourceから7つのwoff2ファイルをダウンロードしますが、どれも登録しません。`buildBundle`が行を測る前に`loadBundleFonts`がバンドル内の複製を`document.fonts`に加え、PDFも同じ7ファイルから書体を取ります。
+
+### 3 · どのファイルもfileIdで名付ける
+
+<Excerpt region="resources" />
+
+2点の図はCodePenのサンプルが生成するSVGマークアップで、それぞれのリソースの`svg.fileId`の名前で`files`に渡します。表はデータなので、キャプションといっしょに`preset.json`に入って運ばれます。断面図と表は`position: 'here'`で配置します。断面図は裏面の先頭に、開館時間の表はそれを引用する段落の下に置かれます。1.4.1では行内のリソースの下に間隔がとられないので、表のあとに`:::space{lines=0.5}`の行を入れて、キャプションの下に3.7 mmをあけています。これがないと、次の段落はキャプションの1.4 mm下から始まります。
+
+### 4 · ラベルをファイルに書き込む
+
+<Excerpt region="labels" />
+
+ファイルに`resourceTypes`がないと、`openBundle`はファイルの言語ではなく、読み手が求めた言語でそれを組み立てます。スペイン語のリーフレットを`{ locale: 'en' }`で開いたり、/en/sandboxのSandboxに読み込んだりすると、スペイン語の本文の上にFigure 1.1と印字されます。設定に書き込んだ種類はこの既定を置き換えるので、スペイン語のファイルはどこで開いてもFigura 1とTabla 1を印字します。`'{n}'`は章番号を落とします。2ページのリーフレットに章番号は不要です（[リソースの種類](/ja/docs/configuration#リソースの種類)）。同じ`config()`で`locale`も設定し、これでスペイン語のハイフネーションパターン（裏面のcompuer-tas）と、PDFが宣言する言語が決まります。
+
+### 5 · 同じバイト列を渡す
+
+<Excerpt region="handoff" />
+
+リンクからは、ページを組んだのと同じ`bytes`、フォント込みで132 KBのファイルを取得できます。Sandboxで読み込むと（**本 → 新規 → .postextファイルを開く…**）、ファイルはスペイン語または英語の本になり、`thumbnail`から取った水車の絵がその本の画像になります。PDFは書体を`bundleFontProvider`から取ります。これはバンドル内でウェイトが最も近い書体を、同じスタイルがあればそのスタイルで返します。図は`bundleResourceBytes`から取るので、フォントも画像も2度ダウンロードされることはありません（[バンドルを組んで描画する](/ja/docs/configuration#バンドルを組んで描画する)）。
+
+### 6 · おもて面を見出しひとつで描く
+
+<Excerpt region="cover" />
+
+おもて面は表紙用の見出しのデザインです。図を原寸でページに固定し、見出しの文字は`{titleText}`で、キッカー、リード文、案内の1行は見出しの属性から取り、言語のタブはボックス付きのテキスト要素で描きます。H1のレベルは`span: 'page'`なので、図は用紙の端から始まります。見出しのデザインを段の中に置いたままにすると、版面の上端と下端で切られます。図は上から12 mm下がった位置で始まり、下端の13 mm手前で止まり、言語のタブは文字の入らない細い帯に縮んでしまいます。
+
+## アレンジ
+
+### 2言語のバンドルを読む
+
+Postextガイドは、英語とスペイン語の章、設定、キャプションを1つのファイルに収めています。`{ locale }`で版を選ぶと、どちらの言語でも48ページ、12章として開きます。このときリンクから取得できるのはリーフレットのファイルのままで、PDFボタンはガイドを組みます。
+
+```diff
+-const bundle = await openBundle(bytes);
++const guide = await fetch('https://postext.dev/bundles/postext-guide.postext');
++const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
+```
+
+### ラベルを読み手に選ばせる
+
+種類を指定しないと、ラベルはファイルを開いた言語に従い、図は表紙の見出しから数えられます。スペイン語版はここではFigura 1.1と印字し、/en/sandboxのSandboxに読み込むとFigure 1.1になります。
+
+```diff
+-  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
+```
+
+## よくあるつまずき
+
+- postext 1.4.1の`createBundle`は、1ファイルに1言語しか書き出しません。[多言語のバンドル](/ja/docs/configuration#多言語のバンドル)で説明している`localized`の入力はこのリリースにはありません。ただし`openBundle` 1.4.1はそうしたファイルを読めます。

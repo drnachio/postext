@@ -1,0 +1,192 @@
+{/* docs/skill-ja.mdx */}
+
+export const metadata = {
+  title: 'エージェントスキル：出版物をPostextに移植する',
+  sidebarTitle: 'スキル',
+  description: 'Claude Code、Codexなどのエージェントにpostext-portスキルを入れ、PDF、Word、PowerPoint、EPUB、InDesign、HTMLの原稿を、元のレイアウトに沿ったPostextプロジェクトに変換させます',
+  lang: 'ja',
+  lastUpdated: '2026-10-05',
+  readingTime: '8分',
+  order: 11,
+  plainSummary: "このページは、PDF、Word、InDesignなど別の形式の本や文書をすでに持っていて、それをPostextに移したい人のためのものです。エージェントと呼ばれるAIの助手に、スキルという小さな追加機能を渡せば、作業の大部分を任せられます。スキルは、元の文章を写し、デザインを組み直す方法をエージェントに教えます。このページでは、スキルの入れ方、頼み方、結果の確かめ方を説明します。約5分の動画で、すべての手順を見られます。",
+};
+
+# エージェントスキル
+
+**コーディングエージェントを使って、既存の出版物をPostextのプロジェクトにします。**
+
+Postextを使い始める人の多くは、すでにある本を抱えています。印刷用PDFの教科書、Wordの報告書、PowerPointの講義資料、InDesignのカタログ、EPUBなどです。移植には2つの作業があります。
+
+- **コンテンツ**：各章の拡張Markdown。ディレクティブとマイクロフォーマットを含みます。
+- **デザイン**：元のレイアウトの規則（ページの幾何、ベースライングリッド、書体、章扉、柱、囲み、フロート、表、部）を再現する設定マニフェスト。
+
+この作業の多くはLLMにできますが、それはPostextのしくみを知っている場合に限ります。PostextのMarkdownはCommonMarkではなく、設定には、ページが正しく描画されないときに初めて表に出る落とし穴があります。
+**`postext-port`スキル**は、その知識を、Sandboxのすべてのプリセットを作るのに使ったツールと一緒にまとめたものです。これを使えば、エージェントが移植をきちんとこなせます。
+
+スキルはオープンな[Agent Skills](https://agentskills.io)形式に従っているので、Claude Code、Codex、Cursor、Gemini CLI、GitHub Copilot、OpenCode、そのほか[多くのエージェント](https://skills.sh)で動きます。
+
+## チュートリアルを見る
+
+5分、コードは不要です。フォルダーを用意し、ベクター形式の原稿を持ち込み、参照用のPDFを加え、エージェントに頼み、結果をSandboxで確かめます。
+
+<TutorialVideo />
+
+YouTubeでも見られます。[YouTubeで見る](https://youtu.be/iiqeWdm9sQE)か、[Postextの再生リスト](https://www.youtube.com/playlist?list=PLXV_YSL9ROv0)からどうぞ。
+
+## スキルの中身
+
+- **作業の流れ**：
+  1. 要件を取り決める
+  2. 原稿の内容を一覧にする
+  3. デザインを測って仕様書にまとめる
+  4. プロジェクトのひな形を作る
+  5. コンテンツを抽出する
+  6. PostextのMarkdownに整える
+  7. フォントと画像を用意する
+  8. ページごとに確かめる
+  9. パッケージにまとめる
+- **リファレンス**：
+  - 文書形式と設定マニフェスト。どちらもエンジンと照合済みです。
+  - プロジェクト（バンドル）の形式。
+  - 原稿の形式ごとの手順書。
+  - デザインを分析する方法。
+  - 解決済みのレイアウト事例集：部ごとの色、章扉、韻文、欄外の注、脚注、索引、フロート・分割・入れ子の囲み、
+    印刷用のベクター原稿、文字をテキストのまま残した図、表のセル内の画像、横向きの表、対訳版など。
+  - 横組み、または縦組みで右綴じにした中国語の本：要件で何を尋ねるか（文字、地域、組み方向、綴じ）、
+    字詰めのグリッドの測り方、縦組みのPDFの読み取り方、InDesignのルビと割注、Wordの東アジア言語のレイアウトと
+    右から左のEPUB、CJKフォントを本に必要な文字だけにサブセット化する方法（[中国語の組版](/ja/docs/chinese-layout)を参照）。
+  - 右綴じで縦組みの文庫・単行本の小説、または横組みの技術書といった日本語の本：日本語の規則を有効にするロケール
+    （`ja`。中国語のタグは使いません）、何を尋ねるか（組み方向、グリッド、ふりがな、注、その版の表記）、
+    版面を字数と行数で測る方法、ふりがなと傍点のマークアップ、`aozora.py`で変換する青空文庫のテキスト、
+    国立国会図書館が公開するパブリックドメインの版のスキャン、かなと縦組み用字形を保ったままサブセット化した
+    日本語フォント（[日本語の組版](/ja/docs/japanese-layout)を参照）。
+  - 右から左に組み、右綴じにするアラビア語の本（現代語でも古典語でも、母音記号付きでも）：本の向きを反転させるロケール、
+    何を尋ねるか（地域と数字、母音記号、韻文、巻末の目次）、左右反転したページの測り方、PDF、Word、Wikisourceからの
+    アラビア語の読み取り方、`:::verse`で組む詩、ページごとの«(١)»形式の注、連結用のテーブルを保ったまま
+    サブセット化したアラビア語フォント（[アラビア語の組版](/ja/docs/arabic-layout)を参照）。
+  - 物としての本：原本の用紙、綴じ、表紙、背を読み取り、[Folioビューアー](/ja/docs/sandbox#folioタブ)が表示する
+    `folio`設定として指定する方法。リンターで検査されます。
+- **スクリプト**（PythonとNode）。次の節で説明します。
+
+## スクリプト
+
+<table>
+  <thead>
+    <tr>
+      <th>スクリプト</th>
+      <th>役割</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>inventory.py</code></td><td>どんな原稿でもまず目を通す：幾何、フォント、使われているスタイル、メディア、OCRが必要なページ</td></tr>
+    <tr><td><code>measure_layout.py</code></td><td>PDFの余白、段、段間、行送り（ベースライングリッド）</td></tr>
+    <tr><td><code>pdf_extract.py</code></td><td>PDF → <em>書体の役割</em>（フォント、サイズ、色）ごとの章の下書き：読む順序、段落、ハイフネーションの解除、太字とイタリック、上付きと下付き、リスト、キャプション</td></tr>
+    <tr><td><code>pdf_figures.py</code></td><td>PDFから図を切り出す：写真は元の解像度で、SVGのプレビュー、印刷用のベクターPDF原稿</td></tr>
+    <tr><td><code>extract_tables.py</code></td><td>PDFの表 → Postextの<code>TableModel</code></td></tr>
+    <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX、PPTX、ODT、EPUB、HTML、LaTeX、Markdown、JATS、DocBook → 章の下書き。Wordのスタイルは囲みと段落スタイルに対応づけます</td></tr>
+    <tr><td><code>idml_extract.py</code></td><td>InDesignのIDML → 段落スタイルごとの章の下書き、表、アンカー付きの画像。ルビ、縦中横、圏点、割注は<code>:ruby</code>、<code>:tcy</code>、<code>:dots</code>、<code>:warichu</code>になり、縦組みのストーリーと右から左の綴じは報告されます</td></tr>
+    <tr><td><code>aozora.py</code></td><td>青空文庫のテキスト（CP932のzipまたは<code>.txt</code>）→ PostextのMarkdown：ふりがな、傍点と傍線、字下げ付きの見出し、段落スタイルとしての字下げと地付きのブロック、改ページ、JIS X 0213で解決する外字、漢文の訓点。クレジットのブロックと、表現できなかった箇所の報告も返します</td></tr>
+    <tr><td><code>index_marks.py</code></td><td>印刷された索引を<code>:index</code>のマークとして作り直す：PDFの索引ページを読み、各語をそのページで見つけ、章の中の同じ語に印を付けます</td></tr>
+    <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>フォントのインスタンス化、サブセット化、拡大縮小、分割（本の文字だけに絞った中国語や日本語の書体は縦組み用字形とメトリクスを、アラビア語の書体は連結形とタトウィールを保ちます）。画像をsRGBに変換し、余白を切り詰め、つなぎ合わせます。<code>.ai</code>/<code>.pdf</code>のアートワークをSVGにします</td></tr>
+    <tr><td><code>preset_kit.py</code></td><td>プロジェクトとその生成スクリプトのひな形を作り、<code>preset.json</code>を組み立て、<code>.postext</code>ファイルにまとめます</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>パーサーとローダーが黙って誤って処理するものをすべて検出します。中国語、日本語、韓国語のテキストでは、同梱フォントで組めない文字。日本語のテキストでは、中国語ロケールの下のかな、中国語の書体や設定、章に残った青空文庫の注記、読みのない漢字の索引項目。アラビア語のテキストでは、アラビア語ロケールの欠落、ラテン文字専用または連結しない書体、字間、強制的なハイフネーション、イタリックによる強調</td></tr>
+    <tr><td><code>render.mjs</code></td><td>プロジェクト（フォルダーまたは<code>.postext</code>ファイル）を、本物のエンジンでヘッドレスにレイアウトします。設定はSandboxと同じように読み込み、警告を出力します。<code>--jpeg</code>を付けると、指定したページ（<code>--pages 12-15</code>）をエンジン自身のcanvasレンダラーでJPEGファイルに描画します。1、2秒で済むので、エージェントはPDFを作らずに自分のページを見られます。<code>--out</code>はPDFを書き出します</td></tr>
+    <tr><td><code>compare_pages.py</code></td><td>原本のページとPostextのページを並べて表示します。描画結果のPDFからでも、JPEGのフォルダーからでも使えます</td></tr>
+  </tbody>
+</table>
+
+## インストール
+
+### どのエージェントでも（skills.sh）
+
+[`skills`](https://skills.sh) CLIが使っているエージェントを検出し、それぞれにスキルをインストールします。
+
+```bash
+npx skills add drnachio/postext --skill postext-port
+```
+
+エージェントを明示するには`-a`を、グローバル（すべてのプロジェクト）にインストールするには`-g`を使います。
+
+```bash
+npx skills add drnachio/postext --skill postext-port -a codex -a claude-code -g
+```
+
+同じスキルはWebサイトからも公開されているので、次の方法でも入れられます。
+
+```bash
+npx skills add https://postext.dev
+```
+
+### Claude Codeプラグイン
+
+PostextのリポジトリはClaude Codeのプラグインマーケットプレイスでもあります。Claude Codeの中で次のように入力します。
+
+```text
+/plugin marketplace add drnachio/postext
+/plugin install postext@postext
+```
+
+シェルからなら次のとおりです。
+
+```bash
+claude plugin marketplace add drnachio/postext
+```
+
+```bash
+claude plugin install postext@postext
+```
+
+### エージェントにインストールさせる
+
+エージェントに頼むこともできます。たとえば「Postextの移植スキル（`npx skills add drnachio/postext --skill postext-port`）をインストールして、このPDFの移植に使って」と伝えます。`https://postext.dev/llms.txt`を読むエージェントは、そこからこのページとインストールコマンドを見つけます。
+
+### スクリプトが使うツール
+
+```bash
+python3 -m pip install pymupdf pillow fonttools brotli
+```
+
+```bash
+brew install pandoc poppler
+```
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas
+```
+
+Pandocは、Word、PowerPoint、EPUB、HTMLの原稿に必要です。popplerは原稿のページ画像に使います。Nodeのパッケージはヘッドレスレンダラーを動かします（Node 22.15以降）。`@napi-rs/canvas`はビルド済みのcanvasで、これがあれば本のページを直接JPEGに描画できます。任意のツールとして、スキャン原稿には`ocrmypdf`、ほかにImageMagick、PDF/UAの検査にはveraPDFがあります。
+
+## 使い方
+
+原稿のファイルを作業フォルダーに置き、移植を頼みます。たとえば次のように頼みます。
+
+- 「`manual.pdf`の1〜3章をPostextに移植して。2段組みのレイアウト、章扉、囲みを再現してほしい」
+- 「`course.docx`をPostextの本に変換して。スタイル'Nota'と'Actividad'は囲み」
+- 「`deck.pptx`をPostextの配布資料にして。スライドは節に、スピーカーノートは本文にする」
+- 「この教科書のInDesignパッケージ（IDMLと印刷用PDF）がある。第1章のPostextプリセットをスペイン語と英語で作って」
+
+エージェントは次の流れで作業します。
+
+1. **要件**。推測できないことを尋ねます。忠実な再現か作り直しか、見本の1章か本全体か、言語、印刷用か画面用か、そして本文、画像、フォントの権利です。
+2. **一覧と測定**。原稿を読み、測った事実を仕様書にまとめます。仕上がりサイズ、余白、段、行送り、書体の役割、配色、章扉、柱、囲みの種類、配置の傾向です。
+3. **プロジェクト**。`my-book/`のひな形を作ります。その中の`build_preset.py`という生成スクリプトが仕様を定数として持ち、`preset.json`を作ります。
+4. **コンテンツ**。適切な抽出スクリプトで章の下書きを取り出し、PostextのMarkdownに整えます。囲み、段落スタイル、部、章扉のための見出し属性、`:ref`による参照、表と図のリソースです。
+5. **確認**。プロジェクトをリンターにかけ、ヘッドレスでレイアウトし、作業中のページをJPEGに描画して目で確かめ、改ページ、図、囲みが一致するまで原稿とページごとに比べます。PDFは印刷向けの検査のために作るもので、見るたびに作るわけではありません。
+6. **納品**。Folioビューアー用に本の用紙、綴じ、表紙を設定し、`my-book.postext`にまとめます。
+
+結果は[Sandbox](/ja/sandbox)で開きます：**本 → 新規 → .postextファイルを開く…**。読み込まれるのは、Sandboxの言語に対応する章と文言です。Postextのローカルコピーでプロジェクトのフォルダーを扱うには、`POSTEXT_PRIVATE_PRESETS_DIR`を設定します（[Sandbox](/ja/docs/sandbox)を参照）。
+
+### 結果をコードから読み込む
+
+納品されたファイルはSandboxに縛られません。`postext`パッケージは`openBundle`でファイルを開き、`buildBundle`で本をレイアウトし、canvas、HTML、PDFに描画します（[バンドル](/ja/docs/configuration#バンドルpostextファイル)を参照）。つまり移植の結果をそのままプログラムに渡せます。そのプログラムの出力に調整が必要なときは、`createBundle`で`.postext`ファイルに書き出し、Sandboxで微調整して、直したファイルを読み込み直します。スキルのヘッドレスな`render.mjs`も、プロジェクトのフォルダーだけでなく、まとめた`.postext`ファイルを受け付けます。
+
+## 期待できること
+
+- **抽出スクリプトが作るのは下書きで、仕上げるのはエージェントです**。章ごとに、元のページと照らし合わせる見直しが1回入ると考えてください。品質はその見直しから生まれます。
+- **変えるのは設定とMarkdownだけ**。スキルが1冊の本に合わせてエンジンを変えることはありません。Postextで表現できないものがあれば、エージェントは最も近い表現を選び、既知の差異として一覧にします。
+- **権利の判断はあなたが行います**。ライセンスがはっきりしない画像やフォントを複製する前に、エージェントは確認を求めます。ライセンス付きのフォントには`redistributable: false`が付くので、書き出したプロジェクトには含まれません。
+- **大事なところで忠実に**。目標は、ほとんどのページで同じグリッド、書体、章扉、囲み、図の配置、改ページを得ることです（ずれは1章につき1ページ以内）。改行位置まで同じにすることではありません。
+
+## スキルの置き場所
+
+スキルはリポジトリの[`plugins/postext/skills/postext-port`](https://github.com/drnachio/postext/tree/main/plugins/postext/skills/postext-port)にあります。Sandboxのプリセットを作るなかで出会ったすべての事例を扱っています。公開のものも非公開のものも含みます。まだ扱っていない事例に移植で出会ったら、スキルを改善するissueかプルリクエストをぜひ出してください。次の移植ではその改善が自然に生かされます。

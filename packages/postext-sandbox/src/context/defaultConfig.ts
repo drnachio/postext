@@ -1,7 +1,8 @@
 import type { PostextConfig, ResourceType } from 'postext';
-import { chineseScriptOf, cloneDefaultColorPalette, defaultResourceTypes } from 'postext';
+import { chineseScriptOf, cloneDefaultColorPalette, defaultResourceTypes, isJapaneseLanguage } from 'postext';
 import { arabicDefaults, isArabicScriptLanguage } from './arabicDefaults';
 import { chineseDefaults } from './chineseDefaults';
+import { japaneseDefaults } from './japaneseDefaults';
 
 /** The sandbox's pristine configuration: the default colour palette plus the
  *  built-in resource types localised to `locale`. Lives in its own module so
@@ -19,10 +20,14 @@ export function createDefaultConfig(locale = 'en'): PostextConfig {
  *  Arabic interface likewise sets the document language and the Arabic
  *  defaults (right to left, Amiri, 1.75 leading, kashida, Arabic-Indic
  *  digits, شكل/جدول captions, الفصل الأول numbering: what "Arabic
- *  defaults" sets with its classical faces). */
+ *  defaults" sets with its classical faces). A Japanese interface sets the
+ *  Japanese defaults of a vertical book (縦組, right-bound, Noto Serif JP,
+ *  図/表 captions, 第一章 numbering: what "Japanese defaults" sets with its
+ *  first choice). */
 export function createBlankBookConfig(locale = 'en'): PostextConfig {
   const config = createDefaultConfig(locale);
   if (isArabicScriptLanguage(locale)) return arabicDefaults({ ...config, locale }, { locale }).config;
+  if (isJapaneseLanguage(locale)) return japaneseDefaults(config, { book: 'vertical', fallbackLocale: locale }).config;
   if (!chineseScriptOf(locale)) return config;
   return chineseDefaults(config, { locale, fallbackLocale: locale }).config;
 }

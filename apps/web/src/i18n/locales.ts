@@ -7,6 +7,7 @@ export const LOCALE_INFO = {
   es: { name: "Español", code: "ES", htmlLang: "es", dir: "ltr", ogLocale: "es_ES" },
   ca: { name: "Català", code: "CA", htmlLang: "ca", dir: "ltr", ogLocale: "ca_ES" },
   zh: { name: "简体中文", code: "中", htmlLang: "zh-Hans", dir: "ltr", ogLocale: "zh_CN" },
+  ja: { name: "日本語", code: "日", htmlLang: "ja", dir: "ltr", ogLocale: "ja_JP" },
   ar: { name: "العربية", code: "ع", htmlLang: "ar", dir: "rtl", ogLocale: "ar_AR" },
 } as const;
 
@@ -22,6 +23,8 @@ const YOUTUBE_PLAYLIST: Record<SiteLocale, { video: string; list: string }> = {
   zh: { video: "lFy_VLFuWqA", list: "PLIfpGQLFoR8k" },
   // No Arabic cut: the English playlist, with Arabic transcripts on the site.
   ar: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
+  // No Japanese cut: the English playlist, with Japanese transcripts on the site.
+  ja: { video: "js4vQSNhbEs", list: "PLXV_YSL9ROv0" },
 };
 
 /** The header's YouTube link for a route locale. */

@@ -83,7 +83,7 @@
 
 /* Japanese: Noto Serif JP and Noto Sans JP (then the system's Japanese
    faces) behind the Latin ones, on whatever carries lang="ja", the page
-   (a future ja locale) or a part of it (a glossary native term, a sample
+   (the ja locale) or a part of it (a glossary native term, a sample
    in a docs page), so kanji take their Japanese forms and do not fall to
    Noto SC on a Chinese page or to Naskh on an Arabic one. A custom
    property is resolved where it is declared, so the font stacks are
@@ -106,16 +106,25 @@
 /* Japanese emphasis is set upright with sesame dots over the letters
    (to their right in vertical text), JLReq §3.3.9; kanji and kana have no
    italic. Matched on the element, so an <em> inside a Japanese sample on a
-   Chinese page takes sesame dots, not the Chinese dots under. */
-:is(em, i):lang(ja) {
+   Chinese page takes sesame dots, not the Chinese dots under.
+   `:root` lifts these over `.docs-content em` and the other Latin italics,
+   which come later in the sheet. */
+:root :is(em, i):lang(ja) {
   font-style: normal;
   text-emphasis: filled sesame;
   text-emphasis-position: over right;
 }
 
-:is(code, pre, kbd) em:lang(ja),
-:is(.hero-title em, .hero-em):lang(ja) {
+:root :is(code, pre, kbd) em:lang(ja),
+:root :is(.hero-title em, .hero-em):lang(ja) {
   text-emphasis: none;
+}
+
+/* A Latin italic class (the hero's lead, pull quotes) or the hero's
+   italic accent word would slant kanji and kana with a synthesised
+   oblique: Japanese text stays upright. */
+:is(.italic, .hero-title em, .hero-em):lang(ja) {
+  font-style: normal;
 }
 
 :root,

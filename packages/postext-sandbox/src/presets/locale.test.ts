@@ -178,6 +178,15 @@ describe('Japanese editions', () => {
     expect(presetReaderLocale(both, 'zh-Hans')).toBe('en');
     expect(activeLocaleTag(both.locales, 'ja-JP')).toBe('ja');
   });
+
+  it('opens a book in Japanese for a Japanese interface when it has the edition, else in English', () => {
+    const guide = { id: 'postext-guide', locales: ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja'] };
+    const showcase = { id: 'deep-sky', locale: 'es', locales: ['es', 'en'] };
+    expect(choosePresetOpen({ summary: guide, viewer: 'ja', drafts: [] }).locale).toBe('ja');
+    expect(choosePresetOpen({ summary: both, viewer: 'ja', drafts: [] }).locale).toBe('ja');
+    expect(presetReaderLocale(showcase, 'ja')).toBe('en');
+    expect(choosePresetOpen({ summary: showcase, viewer: 'ja', drafts: [] })).toEqual({ locale: 'en', draft: null });
+  });
 });
 
 describe('bundleContentLocales', () => {

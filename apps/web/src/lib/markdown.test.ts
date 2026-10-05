@@ -202,7 +202,7 @@ describe("page renditions", () => {
   });
 
   it("renders the Japanese layout guide as plain Markdown", () => {
-    for (const locale of ["en", "es", "ca", "zh", "ar"]) {
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar"]) {
       const md = pageMarkdown(locale, "/docs/japanese-layout")!;
       expect(md).toMatch(/^# /);
       expect(md).toMatch(/^> \*\*[^*]+: /m);

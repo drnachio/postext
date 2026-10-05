@@ -121,6 +121,7 @@ describe("composePen", () => {
   it("shows a Chinese page the sample's first edition", () => {
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "zh")).toBe("en");
     expect(variantFor({ sample: { locales: ["es", "en"] } }, "zh")).toBe("es");
+    expect(variantFor({ sample: { locales: ["en", "es"] } }, "ja")).toBe("en");
     expect(variantFor({ sample: { locales: ["en", "es"] } }, "es")).toBe("es");
   });
 
