@@ -38,8 +38,11 @@ describe('a chip on a composed line', () => {
     const block = doc.blocks.find((b) => b.type === 'paragraph') as VDTBlock;
     const line = block.lines.find((l) => l.segments?.some((s) => s.chip))!;
     expect(line.cjkComposed).toBe(true);
-    // A justified line spreads its characters: the run before the chip tracked.
-    const before = line.segments!.findIndex((s) => s.chip) - 1;
+    // A justified line spreads its characters: the run before the chip
+    // tracked (the Han–Latin space, #462, lies between them).
+    const chipAt = line.segments!.findIndex((s) => s.chip);
+    let before = chipAt - 1;
+    while (line.segments![before]!.kind !== 'text') before--;
     line.segments![before] = { ...line.segments![before]!, tracking: 2 };
     const painted: [string, string][] = [];
     const ctx = {

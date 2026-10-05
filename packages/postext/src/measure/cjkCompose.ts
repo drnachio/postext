@@ -1404,18 +1404,50 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   return c.spaceAfterQuestion ? questionSpaces(spaced) : spaced;
 }
 
+/** The character a chip's words open (`first`) or close (`last`) with, in
+ *  their logical order; undefined for a unit that is not a chip, or a chip
+ *  in a superscript or a subscript. */
+function chipEdgeGrapheme(u: Unit, edge: 'first' | 'last'): string | undefined {
+  const runs = u.kind === 'atomic' && !u.style.script ? u.token?.chip?.runs : undefined;
+  if (!runs) return undefined;
+  const text = runs.map((r) => r.text).join('');
+  if (text === '') return undefined;
+  return edge === 'first' ? String.fromCodePoint(text.codePointAt(0)!) : lastGrapheme(text);
+}
+
 /** `units` with the Han–Latin spaces of `cjk.latinSpacing` (see
- *  {@link prepareUnits}). */
+ *  {@link prepareUnits}).
+ *
+ *  A chip (`:chip[…]`) is a box of text: on each side it takes the space
+ *  its own words would (#462). `:chip[unicodedata]` between kana is Latin
+ *  on both sides and gets the quarter em JLReq §3.2.2 puts between
+ *  Japanese and Western text, as `unicodedata` set plain would;
+ *  `:chip[漢字]` is Han on both sides, so a Latin word touching it gets
+ *  the space and a kana does not. Its line-break class stays that of an
+ *  inline box. The rest follows from the rule for plain text: the space
+ *  goes at a line end and is dropped at a line start like any space, and
+ *  a bracket, a mark or a sign next to the chip is neither Han nor Latin,
+ *  so 「:chip[x]」 takes none. Down a vertical line the chip is set
+ *  sideways, as a Latin run is, and the same rule holds. */
 function latinSpaces(units: Unit[], c: CjkComposition): Unit[] {
   const out: Unit[] = [];
-  const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  const han = (u: Unit | undefined, edge: 'first' | 'last'): boolean => {
+    if (!u) return false;
+    const chipEdge = chipEdgeGrapheme(u, edge);
+    if (chipEdge !== undefined) return isLatinSpacingHan(chipEdge);
+    return u.kind === 'text' && !u.run && !u.note && u.firstCjk && u[edge] === 'ideograph' && !u.style.script && isLatinSpacingHan(u.text);
+  };
   // A run whose edge is a number set in one upright cell (vertical text)
   // takes no Han–Latin space on that side; neither does a unit the author
-  // set upright or in one cell.
-  const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean =>
-    !!u && u.kind === 'text' && !!u.run && !u.note && !u.style.script && !(edge === 'first' ? u.cellStart : u.cellEnd)
-    && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+  // set upright or in one cell. A chip's edge is Latin when its character
+  // is a letter or a digit that is not CJK (a full-width Ａ is not).
+  const latin = (u: Unit | undefined, edge: 'first' | 'last'): boolean => {
+    if (!u) return false;
+    const chipEdge = chipEdgeGrapheme(u, edge);
+    if (chipEdge !== undefined) return !isCjkGrapheme(chipEdge) && !isLatinSpacingHan(chipEdge) && isLatinSpacingLatin(chipEdge);
+    return u.kind === 'text' && !!u.run && !u.note && !u.style.script && !(edge === 'first' ? u.cellStart : u.cellEnd)
+      && isLatinSpacingLatin(edge === 'first' ? String.fromCodePoint(u.text.codePointAt(0)!) : lastGrapheme(u.text));
+  };
   const spaceOf = (h: Unit): number => latinSpacingPx(c, emOfFont(h.style.font));
   for (let k = 0; k < units.length; k++) {
     const u = units[k]!;
