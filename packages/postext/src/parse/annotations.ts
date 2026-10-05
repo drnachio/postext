@@ -628,21 +628,3 @@ export function withBookBrackets(spans: readonly InlineSpan[], pairs: readonly B
   close(0);
   return out;
 }
-
-/** `spans` without their Chinese and Japanese annotations: the text as
- *  written, set plain (captions, table cells and notes, which do not draw
- *  them). The same array when none has one. With `bookBrackets` (the
- *  `cjk.bookTitleBrackets` when `cjk.bookTitleMark` is `'brackets'`; `true`
- *  for 《》) a book title keeps its brackets, which are then punctuation of
- *  the text, not a mark. Directional isolates (`:rtl[…]`, `:ltr[…]`)
- *  stay: they decide the order of the text, which no setting drops. */
-export function dropAnnotations(spans: InlineSpan[], bookBrackets: boolean | readonly BracketPair[] = false): InlineSpan[] {
-  if (bookBrackets && spans.some((s) => s.bookTitle)) spans = withBookBrackets(spans, bookBrackets === true ? undefined : bookBrackets);
-  if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.sideline)) return spans;
-  return spans.map((s) => {
-    if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.sideline) return s;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { emphasisMark: _e, properName: _p, bookTitle: _b, ruby: _r, warichu: _w, sideline: _l, ...rest } = s;
-    return rest;
-  });
-}

@@ -26,6 +26,7 @@ import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { uncroppedPictureBox } from '../pipeline/safeArea';
 import { mirroredPaintActive } from './mirrorFrame';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -313,7 +314,9 @@ function pickFont(
  *  to `linkColor`. */
 /** A caption, note or cell line. A tracked line (a table header set with
  *  `headerLetterSpacing`) was measured with the tracking in its widths, so
- *  it is painted with the same canvas `letterSpacing`, reset afterwards. */
+ *  it is painted with the same canvas `letterSpacing`, reset afterwards.
+ *  Ruby readings, warichu rows and the marks of the line are painted as
+ *  on a body line (#429). */
 function paintLine(
   ctx: CanvasRenderingContext2D,
   line: VDTLine,
@@ -382,12 +385,19 @@ function paintLineRuns(
         x += seg.width;
         continue;
       }
+      if (composed && seg.warichu) {
+        // A warichu note's part: its two rows, not its text (#195, #429).
+        paintWarichu(ctx, seg.warichu, x, line.baseline, color);
+        x += seg.width;
+        continue;
+      }
       ctx.font = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-      ctx.fillStyle = seg.refResourceId !== undefined
+      const fill = seg.refResourceId !== undefined
         ? linkColor
         : seg.captionLabel
           ? labelColor
           : color;
+      ctx.fillStyle = fill;
       if (!composed) {
         // A word of a joining script untracked, a word in several styles
         // painted as one shaped word (`fillSegmentWord`).
@@ -399,8 +409,13 @@ function paintLineRuns(
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking + seg.tracking}px`;
       fillSegmentText(ctx, seg, x, line.baseline, cuts);
       if (seg.tracking !== undefined) ctx.letterSpacing = `${tracking}px`;
+      // A ruby base's reading (#194, #429).
+      if (seg.ruby) paintRuby(ctx, seg.ruby, x, line.baseline, fill);
       x += seg.width;
     }
+    // Emphasis marks, side lines, the proper-name and book-title lines
+    // the layout set on the line (#193, #421, #429).
+    if (line.marks) paintLineMarks(ctx, line, color);
     return;
   }
   ctx.font = font;

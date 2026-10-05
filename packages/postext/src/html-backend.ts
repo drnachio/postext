@@ -1454,7 +1454,8 @@ function pickResourceFont(seg: VDTLineSegment, fonts: ResourceLineFonts): string
 /** Render one already-positioned rich-text line (caption or table cell).
  *  Alignment and justification are baked into the measured geometry, so
  *  segments paint sequentially from the line origin — `:ref` segments in the
- *  link colour, `captionLabel` segments in the label colour. */
+ *  link colour, `captionLabel` segments in the label colour — with ruby
+ *  readings, warichu rows and the line's marks as on a body line (#429). */
 function renderResourceLine(
   line: VDTLine,
   fonts: ResourceLineFonts,
@@ -1522,6 +1523,12 @@ function renderResourceLine(
         x += seg.width;
         continue;
       }
+      if (composed && seg.warichu) {
+        // A warichu note's part: its two rows (#195, #429).
+        parts.push(warichuHtml(seg.warichu, x, color, quoteFontString));
+        x += seg.width;
+        continue;
+      }
       if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
         const group = renderRefRuns(segs, i, x, linkColor, (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
         parts.push(group.html);
@@ -1530,10 +1537,15 @@ function renderResourceLine(
         continue;
       }
       parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
+      // A ruby base's reading (#194, #429).
+      if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, segColorOf(seg), quoteFontString));
       x += seg.width;
     }
     parts.push(links.end());
     parts.push(lineEndHtml(end, x));
+    // Emphasis marks, side lines, the proper-name and book-title lines
+    // (#193, #421, #429).
+    if (line.marks) parts.push(lineMarksHtml(line, color));
   } else {
     parts.push(`<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`);
     parts.push(lineEndHtml(end, line.bbox.width));

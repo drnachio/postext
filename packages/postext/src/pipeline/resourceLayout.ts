@@ -39,9 +39,9 @@ import { suffixJoiner } from '../parse/inlineFormatting';
 import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeArea';
 import { layoutVideo } from './videoOverlay';
 import type {
-  CjkBracketPair,
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
+  ResolvedCjkConfig,
   Resource,
   ResourceSafeArea,
   ResourceRotation,
@@ -75,7 +75,7 @@ import { dimensionToPx } from '../units';
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
-import { dropAnnotations } from '../parse/annotations';
+import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
@@ -86,17 +86,29 @@ import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
-/** A caption's, a note's or a cell's spans. The Chinese annotations
- *  (#193–#195) are set as plain text there: resource lines draw no marks,
- *  readings or warichu rows; a book title keeps its brackets (《》, 『』)
- *  when they are the document's book-title mark (`bookBrackets`: the
- *  pairs). */
-const parseRefAwareSpans = (text: string, bookBrackets: readonly CjkBracketPair[] | undefined) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets ?? false);
+/**
+ * A caption's, a note's or a cell's spans with their Chinese and Japanese
+ * annotations resolved as the running text resolves them (#429; the
+ * marks of #193, #421, ruby #194, warichu #195): `*…*` on CJK characters
+ * set with emphasis marks under `cjk.emphasis: 'dots'`, the region's mark
+ * where a mark leaves it unset, book titles as `cjk.bookTitleMark` sets
+ * them (brackets in the text, the wavy line, or plain), and the faces of
+ * ruby readings and warichu notes at the size of `fontString` (the cell's,
+ * the caption's or the note's). The measurer then sets readings and notes
+ * and flags the marked segments; the marks are placed once the document is
+ * laid out (`annotateDocument`), as on body lines. The same array when the
+ * spans hold none of them, so plain captions and cells measure as before.
+ */
+function annotatedSpans(spans: InlineSpan[], scope: AnnotationScope, fontString: string): InlineSpan[] {
+  if (!hasAnnotations(spans, scope.cjk)) return spans;
+  return resolveAnnotationSpans(spans, { cjk: scope.cjk, dpi: scope.dpi, fontString, fontSizePx: fontSizePxOf(fontString) });
+}
 
-/** The brackets book titles keep in captions, notes and cells: the
- *  document's, when brackets are its book-title mark. */
-const bookBracketsOf = (resolved: ResolvedConfig): readonly CjkBracketPair[] | undefined =>
-  resolved.cjk.bookTitleMark === 'brackets' ? resolved.cjk.bookTitleBrackets : undefined;
+/** What {@link annotatedSpans} reads of the document. */
+interface AnnotationScope {
+  cjk: ResolvedCjkConfig;
+  dpi: number;
+}
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */
@@ -387,9 +399,9 @@ interface TableLayoutStyle {
   palette?: ColorPaletteEntry[];
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
-  /** Book titles in cells print these brackets (`cjk.bookTitleBrackets`
-   *  under `cjk.bookTitleMark: 'brackets'`). */
-  bookBrackets?: readonly CjkBracketPair[];
+  /** The document's CJK settings, for the annotations of cells
+   *  ({@link annotatedSpans}). */
+  annotations: AnnotationScope;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -876,14 +888,14 @@ function layoutTableIn(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets);
-      const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
+      const parsed = parseInlineSnippetSpans(cell.content);
+      const spans = annotatedSpans(resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
         resourceTypes,
         resources,
         refStyle,
-      ), style.palette), style.chips, set);
+      ), style.palette), style.chips, set), style.annotations, set.fontString);
       const align = cellAlignOf(cell.align, opposite);
       const m = measureCellContent(
         spans,
@@ -1205,7 +1217,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
       chips: chipContextOf(resolved),
-      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: resolved.cjk.bookTitleBrackets } : {}),
+      annotations: { cjk: resolved.cjk, dpi },
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1260,13 +1272,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   if (hasCaption) {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
     const prefixText = captionLabelText(captionPrefix, number, cs);
-    const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(captionText, bookBracketsOf(resolved)),
+    // The annotations are resolved on the spans as written, before the
+    // style slants the description: a caption set in italics is no
+    // emphasis.
+    const resolvedSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
+      parseInlineSnippetSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette), chipContextOf(resolved), captionFontPx);
+    ), palette), chipContextOf(resolved), captionFontPx), { cjk: resolved.cjk, dpi }, captionFontString);
     // Description spans pick up the configured slant on top of their own markup.
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
@@ -1309,13 +1324,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // The note closes the table: a slice that continues holds it back for
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(noteText, bookBracketsOf(resolved)),
+    const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
+      parseInlineSnippetSpans(noteText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette), chipContextOf(resolved), noteFontPx);
+    ), palette), chipContextOf(resolved), noteFontPx), { cjk: resolved.cjk, dpi }, noteFontString);
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;

@@ -429,6 +429,62 @@ function lineReach(line: VDTLine, em: number): LineReach {
   return reach;
 }
 
+/** Lines measured as one text: a paragraph, a table cell, a caption, a
+ *  resource's note. */
+interface TextGroup {
+  lines: VDTLine[];
+  /** Where its lines are painted from (fonts, alignment, tracking). */
+  like: BlockLike;
+  /** Its page, `-1` when unplaced. */
+  pageIndex: number;
+  /** Its column on the page (shared gaps are checked down a column). */
+  columnKey?: string;
+  /** Dedupes the warnings of one text. */
+  where: string;
+  /** Where a warning points. */
+  at: { sourceStart?: number; sourceEnd?: number; pageIndex?: number };
+}
+
+/** A resource block's texts (#429): each table cell, the caption and the
+ *  note, painted from their own fonts. Their lines carry their alignment
+ *  (the measurer pushed a centred or right-aligned line over by its
+ *  slack), so they are read flush from their start. The "continued"
+ *  marker of a table slice holds no annotations. */
+function resourceTextGroups(block: VDTBlock, at: TextGroup['at']): TextGroup[] {
+  const rb = block.resourceBlock;
+  if (!rb) return [];
+  const groups: TextGroup[] = [];
+  const add = (lines: VDTLine[], fonts: { fontString: string; boldFontString: string; italicFontString: string; boldItalicFontString: string }, key: string): void => {
+    const first = lines[0];
+    if (!first || !lines.some((l) => l.segments?.some((s) => s.cjkMarks || s.ruby))) return;
+    groups.push({
+      lines,
+      like: { bbox: first.bbox, textAlign: 'left', ...fonts },
+      pageIndex: block.pageIndex,
+      where: `${block.id}:${key}`,
+      at,
+    });
+  };
+  const t = rb.table;
+  if (t) {
+    t.cells.forEach((cell, i) => add(cell.lines, cell.isHeader
+      ? { fontString: t.headerFontString, boldFontString: t.headerBoldFontString, italicFontString: t.headerItalicFontString, boldItalicFontString: t.headerBoldItalicFontString }
+      : { fontString: t.fontString, boldFontString: t.boldFontString, italicFontString: t.italicFontString, boldItalicFontString: t.boldItalicFontString }, `c${i}`));
+  }
+  add(rb.captionLines, { fontString: rb.captionFontString, boldFontString: rb.captionBoldFontString, italicFontString: rb.captionItalicFontString, boldItalicFontString: rb.captionBoldItalicFontString }, 'caption');
+  add(rb.noteLines, { fontString: rb.noteFontString, boldFontString: rb.noteBoldFontString, italicFontString: rb.noteItalicFontString, boldItalicFontString: rb.noteBoldItalicFontString }, 'note');
+  return groups;
+}
+
+/** The blocks of a document that hold a resource: in the flow and floated
+ *  (`VDTPage.floats`), each once. */
+function resourceBlocksOf(doc: VDTDocument): VDTBlock[] {
+  const seen = new Set<VDTBlock>();
+  for (const block of doc.blocks) if (block.resourceBlock) seen.add(block);
+  for (const page of doc.pages) for (const block of page.floats ?? []) if (block.resourceBlock) seen.add(block);
+  return [...seen];
+}
+
 /**
  * Set `VDTLine.marks` on every line of the document that holds Chinese
  * marks, and report the paragraphs whose line gap is narrower than their
@@ -442,32 +498,50 @@ function lineReach(line: VDTLine, em: number): LineReach {
  * together. Where they do not, the lower line's paragraph is reported
  * (`rubyExceedsLeading` when readings take part, else
  * `cjkMarksExceedLeading`).
+ *
+ * The cells, captions and notes of resource blocks (#429) are texts of
+ * their own: their marks are set and their leading checked the same way,
+ * each text's lines sharing their gaps only with one another (a table's
+ * cells sit apart, a caption under its figure). A resource's text is set
+ * horizontally on every page, a vertical one turning the whole block.
  */
 export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | undefined): ContentWarning[] {
   const warnings: ContentWarning[] = [];
   const color = cjk?.annotationColor?.hex;
   const reported = new Set<string>();
-  const whereOf = (block: VDTBlock): string => `${block.sourceStart ?? block.lines[0]?.sourceStart ?? block.id}`;
   const atOf = (block: VDTBlock) => ({
     ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : block.lines[0]?.sourceStart !== undefined ? { sourceStart: block.lines[0].sourceStart } : {}),
     ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
     ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
   });
-  /** The lines of each column's annotated paragraphs, in order, with
-   *  their reach. */
-  const columns = new Map<string, { line: VDTLine; block: VDTBlock; em: number; reach: LineReach }[]>();
+  const groups: TextGroup[] = [];
   for (const block of doc.blocks) {
     if (block.type === 'resource' || block.designOverlay) continue;
+    groups.push({
+      lines: block.lines,
+      like: block,
+      pageIndex: block.pageIndex,
+      columnKey: `${block.pageIndex}:${block.columnIndex}`,
+      where: `${block.sourceStart ?? block.lines[0]?.sourceStart ?? block.id}`,
+      at: atOf(block),
+    });
+  }
+  for (const block of resourceBlocksOf(doc)) groups.push(...resourceTextGroups(block, atOf(block)));
+
+  /** The lines of each column's annotated paragraphs (of each resource
+   *  text), in order, with their reach. */
+  const columns = new Map<string, { line: VDTLine; group: TextGroup; em: number; reach: LineReach }[]>();
+  for (const group of groups) {
     let marked = false;
     let ruby = false;
-    for (const line of block.lines) {
+    for (const line of group.lines) {
       const segs = line.segments;
       if (!segs) continue;
       if (segs.some((s) => s.cjkMarks)) {
         marked = true;
-        const flow = block.pageIndex >= 0 ? doc.pages[block.pageIndex]?.flow : undefined;
+        const flow = group.columnKey !== undefined && group.pageIndex >= 0 ? doc.pages[group.pageIndex]?.flow : undefined;
         const vertical = flow?.writingMode === 'vertical-rl' ? { region: cjk?.region ?? 'mainland', uprightDigits: cjk?.uprightDigits ?? 2 } : undefined;
-        const marks = lineMarks(line, block, color, vertical);
+        const marks = lineMarks(line, group.like, color, vertical);
         if (marks.length > 0) line.marks = marks;
       }
       // Only the CJK composer sets ruby (#194). A footnote marker in the
@@ -476,29 +550,28 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
       if (segs.some((s) => s.sideMarker)) ruby = true;
     }
     if (!marked && !ruby) continue;
-    const em = fontEm(block.fontString);
-    const first = block.lines[0];
+    const em = fontEm(group.like.fontString);
+    const first = group.lines[0];
     if (!first || em <= 0) continue;
-    if (block.pageIndex >= 0) {
+    if (group.pageIndex >= 0) {
       // Lines of plain paragraphs between two annotated ones are left
       // out: the gap is then measured across them, and is wide.
-      const key = `${block.pageIndex}:${block.columnIndex}`;
+      const key = group.columnKey ?? group.where;
       let column = columns.get(key);
       if (!column) columns.set(key, (column = []));
-      for (const line of block.lines) column.push({ line, block, em, reach: lineReach(line, em) });
+      for (const line of group.lines) column.push({ line, group, em, reach: lineReach(line, em) });
     }
     const gapEm = (first.bbox.height - em) / em;
-    const at = atOf(block);
-    const where = whereOf(block);
+    const { at, where } = group;
     if (marked) {
-      const need = Math.max(...block.lines.map(marksNeed));
+      const need = Math.max(...group.lines.map(marksNeed));
       if (need > 0 && gapEm < need - 1e-6 && !reported.has(`m${where}`)) {
         reported.add(`m${where}`);
         warnings.push({ kind: 'cjkMarksExceedLeading', text: first.text, gapEm: round(gapEm), neededEm: need, ...at });
       }
     }
     if (ruby) {
-      const need = Math.max(...block.lines.map((l) => rubyNeed(l, em)));
+      const need = Math.max(...group.lines.map((l) => rubyNeed(l, em)));
       if (need > 0 && gapEm < need - 1e-6 && !reported.has(`r${where}`)) {
         reported.add(`r${where}`);
         warnings.push({ kind: 'rubyExceedsLeading', text: first.text, gapEm: round(gapEm), neededEm: round(need), ...at });
@@ -515,7 +588,7 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
       const gap = (b.line.baseline - (CENTRAL + 0.5) * b.em) - (a.line.baseline + (0.5 - CENTRAL) * a.em);
       if (need <= gap + 1e-6) continue;
       const ruby = a.reach.footRuby || b.reach.headRuby;
-      const key = `${ruby ? 'r' : 'm'}${whereOf(b.block)}`;
+      const key = `${ruby ? 'r' : 'm'}${b.group.where}`;
       if (reported.has(key)) continue;
       reported.add(key);
       warnings.push({
@@ -523,7 +596,7 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         text: b.line.text,
         gapEm: round(gap / b.em),
         neededEm: round(need / b.em),
-        ...atOf(b.block),
+        ...b.group.at,
       });
     }
   }
