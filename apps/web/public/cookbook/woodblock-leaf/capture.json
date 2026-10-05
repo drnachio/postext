@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "woodblock-leaf",
-  "sourceHash": "d6e8a444e2226f16baaa323dc4f0cc4d57cbab9c53afca890e72b2f9015decab",
+  "sourceHash": "5a7ae9a5d2b3ae1fd828edb9ad03d78d634f1ab361250ba6c905baefd428648f",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:22.039Z",
+  "capturedAt": "2026-10-05T14:43:27.389Z",
   "variants": {
     "en": {
-      "hash8": "9f006e61",
+      "hash8": "3a8f6fa5",
       "vdtHash": "91ea12b4e4b739496a275ae667b92b4fef3b7255",
       "timings": {
-        "importMs": 118,
-        "fontsMs": 175,
-        "buildMs": 9,
-        "totalMs": 908,
+        "importMs": 180,
+        "fontsMs": 194,
+        "buildMs": 10,
+        "totalMs": 1021,
         "builds": 2
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1764,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 32978,
+          "bytes": 32968,
           "alt": "Opening page 1: 論語集註."
         },
         {
@@ -131,7 +131,7 @@
       },
       "sandbox": {
         "file": "woodblock-leaf.postext",
-        "bytes": 25768,
+        "bytes": 25760,
         "folio": "64761808"
       },
       "detected": {
@@ -300,13 +300,13 @@
       }
     },
     "es": {
-      "hash8": "712715b8",
+      "hash8": "ce8ee859",
       "vdtHash": "644b1ce8232fdd9b1350f719fe85772a763d0d2d",
       "timings": {
-        "importMs": 117,
-        "fontsMs": 165,
-        "buildMs": 9,
-        "totalMs": 912,
+        "importMs": 150,
+        "fontsMs": 207,
+        "buildMs": 10,
+        "totalMs": 953,
         "builds": 2
       },
       "specimen": {
@@ -338,7 +338,7 @@
           "h": 1764,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33752,
+          "bytes": 33770,
           "alt": "Página de apertura 1: 論語集註."
         },
         {
@@ -420,7 +420,7 @@
       },
       "sandbox": {
         "file": "woodblock-leaf.postext",
-        "bytes": 25805,
+        "bytes": 25797,
         "folio": "64761808"
       },
       "detected": {

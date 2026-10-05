@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "catalan-pocket-novella",
-  "sourceHash": "e6e66d7fd6f1419d89d2f86a7161b1090c20efd65443304826412cea37e18688",
+  "sourceHash": "c7d1a4af01f7e8c763c17d90880d5c26cf95ead70702ae56fdf7ef1e000dd4d4",
   "engine": {
-    "postext": "1.14.0",
-    "postextPdf": "1.14.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-04T12:44:49.101Z",
+  "capturedAt": "2026-10-05T14:43:27.452Z",
   "variants": {
     "en": {
-      "hash8": "0d3b4499",
+      "hash8": "8e835a26",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 445,
-        "fontsMs": 3528,
-        "buildMs": 899,
-        "totalMs": 6496,
+        "importMs": 195,
+        "fontsMs": 94,
+        "buildMs": 2611,
+        "totalMs": 6187,
         "builds": 2
       },
       "specimen": {
@@ -172,7 +172,7 @@
       },
       "sandbox": {
         "file": "catalan-pocket-novella.postext",
-        "bytes": 1492592,
+        "bytes": 1492583,
         "folio": "8e6f438d"
       },
       "detected": {
@@ -244,7 +244,6 @@
           "headingStyles[].header.elements",
           "headingStyles[].id",
           "headingStyles[].marginBottom",
-          "headingStyles[].minHeight",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -272,7 +271,6 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].italicColor",
-          "paragraphStyles[].letterSpacing",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
@@ -299,7 +297,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 332,
+        "configLeaves": 330,
         "designElements": 17,
         "directives": [
           ":::paragraphs"
@@ -372,18 +370,23 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.01 MB (warning at 0.9 MB for 8 pages)"
+          },
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the build took 2611 ms (warning at 1.5 s)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "348f4303",
+      "hash8": "e4040fa0",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 184,
+        "importMs": 201,
         "fontsMs": 87,
-        "buildMs": 931,
-        "totalMs": 2912,
+        "buildMs": 983,
+        "totalMs": 2994,
         "builds": 2
       },
       "specimen": {
@@ -538,7 +541,7 @@
       },
       "sandbox": {
         "file": "catalan-pocket-novella.postext",
-        "bytes": 1492607,
+        "bytes": 1492598,
         "folio": "8e6f438d"
       },
       "detected": {
@@ -610,7 +613,6 @@
           "headingStyles[].header.elements",
           "headingStyles[].id",
           "headingStyles[].marginBottom",
-          "headingStyles[].minHeight",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -638,7 +640,6 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].italicColor",
-          "paragraphStyles[].letterSpacing",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
@@ -665,7 +666,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 332,
+        "configLeaves": 330,
         "designElements": 17,
         "directives": [
           ":::paragraphs"

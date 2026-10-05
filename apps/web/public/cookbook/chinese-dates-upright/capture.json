@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dates-upright",
-  "sourceHash": "548f3d224008630acd203580295d2b61b8597c129f5c429e2cb0fc28537acd9a",
+  "sourceHash": "4e29a4c6c2fb4845afdc82d2dee8fab44c34d952cb6408ce710abe0f6b90c3f9",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:21.990Z",
+  "capturedAt": "2026-10-05T14:43:49.850Z",
   "variants": {
     "en": {
-      "hash8": "461ceb96",
+      "hash8": "5598c74e",
       "vdtHash": "ec36a99bb1848c89d578e641ede8f72b6d77ab73",
       "timings": {
-        "importMs": 140,
-        "fontsMs": 2193,
-        "buildMs": 12,
-        "totalMs": 2979,
+        "importMs": 586,
+        "fontsMs": 2275,
+        "buildMs": 10,
+        "totalMs": 3481,
         "builds": 2
       },
       "specimen": {
@@ -153,12 +153,12 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311142,
+        "bytes": 311140,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 13114,
+        "bytes": 13097,
         "folio": "90be425d"
       },
       "detected": {
@@ -354,13 +354,13 @@
       }
     },
     "es": {
-      "hash8": "ccb26109",
+      "hash8": "a14259cc",
       "vdtHash": "a7ee20363f99c4ac3349d778e006dd3f48f0873f",
       "timings": {
-        "importMs": 124,
-        "fontsMs": 320,
-        "buildMs": 9,
-        "totalMs": 1024,
+        "importMs": 226,
+        "fontsMs": 435,
+        "buildMs": 11,
+        "totalMs": 1364,
         "builds": 2
       },
       "specimen": {
@@ -496,12 +496,12 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311177,
+        "bytes": 311174,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 13191,
+        "bytes": 13172,
         "folio": "90be425d"
       },
       "detected": {

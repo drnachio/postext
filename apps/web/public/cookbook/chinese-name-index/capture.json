@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "406de4d474a2a8521b9646f366b81640156f9524bae6c8c69ad56e3a79fb7336",
+  "sourceHash": "d13b04be07a9b39f817df65b4919fd2b9ac899b7be949214b12aefcfdd08544c",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T05:31:41.586Z",
+  "capturedAt": "2026-10-05T14:43:27.204Z",
   "variants": {
     "en": {
-      "hash8": "2e6e4b3a",
+      "hash8": "d10ae163",
       "vdtHash": "3d6700b81d644051f452c8a8a34fae97a9444c3a",
       "timings": {
-        "importMs": 369,
-        "fontsMs": 2947,
-        "buildMs": 92,
-        "totalMs": 4035,
+        "importMs": 159,
+        "fontsMs": 508,
+        "buildMs": 107,
+        "totalMs": 1413,
         "builds": 2
       },
       "specimen": {
@@ -226,12 +226,12 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 306876,
+        "bytes": 306875,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20910,
+        "bytes": 20903,
         "folio": "8948df8d"
       },
       "detected": {
@@ -463,13 +463,13 @@
       }
     },
     "es": {
-      "hash8": "0463260a",
+      "hash8": "46b51be3",
       "vdtHash": "3e1da01925ffe042b2ce2f1485d41af6294281c0",
       "timings": {
-        "importMs": 134,
-        "fontsMs": 485,
-        "buildMs": 78,
-        "totalMs": 1361,
+        "importMs": 207,
+        "fontsMs": 497,
+        "buildMs": 97,
+        "totalMs": 1432,
         "builds": 2
       },
       "specimen": {
@@ -678,12 +678,12 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307323,
+        "bytes": 307322,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20954,
+        "bytes": 20946,
         "folio": "8948df8d"
       },
       "detected": {

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "red-ink-commentary",
-  "sourceHash": "672202ebf71aedbefc72b85e5ba167c6e91337fa9dcf9677ee4d73e2d8706f0c",
+  "sourceHash": "7c57552972f28994bd062c8769ca7992b37d8ddeb92f42bb85eb41e9573d1f91",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:23:14.597Z",
+  "capturedAt": "2026-10-05T14:43:27.301Z",
   "variants": {
     "en": {
-      "hash8": "b87864bf",
+      "hash8": "9a8a9d24",
       "vdtHash": "cb5419a1491f7c61c6e139e4041ee857e8876006",
       "timings": {
-        "importMs": 133,
-        "fontsMs": 364,
-        "buildMs": 10,
-        "totalMs": 1137,
+        "importMs": 148,
+        "fontsMs": 2880,
+        "buildMs": 12,
+        "totalMs": 3651,
         "builds": 2
       },
       "specimen": {
@@ -143,12 +143,12 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 513284,
+        "bytes": 513286,
         "pages": 6
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38191,
+        "bytes": 38184,
         "folio": "941f3254"
       },
       "detected": {
@@ -358,13 +358,13 @@
       }
     },
     "es": {
-      "hash8": "44b8032f",
+      "hash8": "9b3df602",
       "vdtHash": "edaa0e1f2d45fb28b7512b355be1a6fc17ad8df5",
       "timings": {
-        "importMs": 139,
-        "fontsMs": 341,
-        "buildMs": 9,
-        "totalMs": 1072,
+        "importMs": 165,
+        "fontsMs": 411,
+        "buildMs": 11,
+        "totalMs": 1240,
         "builds": 2
       },
       "specimen": {
@@ -490,12 +490,12 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 513367,
+        "bytes": 513362,
         "pages": 6
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38220,
+        "bytes": 38213,
         "folio": "941f3254"
       },
       "detected": {

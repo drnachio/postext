@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-newspaper-tiers",
-  "sourceHash": "b165fc90c70e0c7f72f7ebe270efdd535a7b1b9d1cb7791b1c644dc93277040f",
+  "sourceHash": "37bf4e1eecc1e4a5d086b9b2238859ac69caaabc5d18a4e49ab1a56a26c91faf",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T04:14:22.023Z",
+  "capturedAt": "2026-10-05T14:43:27.338Z",
   "variants": {
     "en": {
-      "hash8": "7e5ea71b",
+      "hash8": "6c65e7c1",
       "vdtHash": "4314e230195b458784bb410c7c41cdfa6b4d9cf0",
       "timings": {
-        "importMs": 117,
-        "fontsMs": 24223,
-        "buildMs": 63,
-        "totalMs": 24958,
+        "importMs": 167,
+        "fontsMs": 409,
+        "buildMs": 48,
+        "totalMs": 1187,
         "builds": 1
       },
       "specimen": {
@@ -96,7 +96,7 @@
       },
       "sandbox": {
         "file": "vertical-newspaper-tiers.postext",
-        "bytes": 22416,
+        "bytes": 22405,
         "folio": "e5cb273f"
       },
       "detected": {
@@ -341,13 +341,13 @@
       }
     },
     "es": {
-      "hash8": "0f45160f",
+      "hash8": "b1c1d7a5",
       "vdtHash": "b3f782d917419cebafda94a9a128694b3d931d07",
       "timings": {
-        "importMs": 144,
-        "fontsMs": 2105,
-        "buildMs": 51,
-        "totalMs": 2849,
+        "importMs": 188,
+        "fontsMs": 392,
+        "buildMs": 46,
+        "totalMs": 1185,
         "builds": 1
       },
       "specimen": {
@@ -426,7 +426,7 @@
       },
       "sandbox": {
         "file": "vertical-newspaper-tiers.postext",
-        "bytes": 22445,
+        "bytes": 22433,
         "folio": "e5cb273f"
       },
       "detected": {

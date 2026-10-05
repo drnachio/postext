@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "proper-name-marks",
-  "sourceHash": "f5273e727769f25ecfeab413893407e967cf7dbb8f2047311c06eb5f80a63d26",
+  "sourceHash": "9009460ff2f0833afd85fb0e6f2f2a41b7fd04500c3dddb37e9f413549815923",
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0",
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-09-30T05:29:06.813Z",
+  "capturedAt": "2026-10-05T14:43:27.279Z",
   "variants": {
     "en": {
-      "hash8": "7e6ae7b9",
+      "hash8": "034176ba",
       "vdtHash": "666b14ae1706626f3a5dda2a0371d7dcbd4dd76e",
       "timings": {
-        "importMs": 626,
-        "fontsMs": 7664,
-        "buildMs": 6,
-        "totalMs": 8959,
+        "importMs": 172,
+        "fontsMs": 2588,
+        "buildMs": 25,
+        "totalMs": 11847,
         "builds": 2
       },
       "specimen": {
@@ -106,7 +106,7 @@
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22682,
+        "bytes": 22673,
         "folio": "dd71612a"
       },
       "detected": {
@@ -308,13 +308,13 @@
       }
     },
     "es": {
-      "hash8": "0206b86b",
+      "hash8": "340a0f7f",
       "vdtHash": "4ef88f23fb888f40f39312aab00daabe9b7c9bf4",
       "timings": {
-        "importMs": 617,
-        "fontsMs": 2870,
-        "buildMs": 11,
-        "totalMs": 7326,
+        "importMs": 167,
+        "fontsMs": 360,
+        "buildMs": 8,
+        "totalMs": 1168,
         "builds": 2
       },
       "specimen": {
@@ -403,7 +403,7 @@
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22782,
+        "bytes": 22776,
         "folio": "dd71612a"
       },
       "detected": {
