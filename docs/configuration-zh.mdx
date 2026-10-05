@@ -3675,7 +3675,7 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 行距从不改变：着重号、线标和注音都位于行间空白中。如果一个段落的行间空白（行距减去字号）在一侧有标注时不足半个em，或在两侧都有标注时不足八分之五em（clreq §5.6.1），会报告一条`cjkMarksExceedLeading`内容警告；注音高于行间空白（拼音注音连同其升高量一起计算）的段落报告`rubyExceedsLeading`。请给这样的段落一个行距更大的段落样式。
 
-在VDT中，带标注的片段带有`cjkMarks`，排版把着重号和线标作为`VDTLine.marks`放在各行上（点、圆圈、芝麻点、直线和波浪线，位于该行的排版方向坐标系中），Canvas、HTML和PDF按原样绘制（PDF：`Artifact /Layout`；HTML：`aria-hidden`框，带着重号的文字放在`<em>`中）。注音基字的片段带有`ruby`（注音及其各段），注音把基字拉开时在`inkOffset`处绘制基字；夹注在一行上的部分是一个片段，其`text`先是上一行、再是下一行，其`warichu`保存渲染器实际绘制的两行。带标签的PDF把注音放进其基字`Ruby`的`RT`中，把夹注放进`Warichu`中，该行的`/ActualText`读出基字文字，夹注只读一次。着重号、注音和夹注在正文、标题、列表和标注框中绘制；题注、表格单元格和设计元素中的文字保留原文，但不绘制这些标注。
+在VDT中，带标注的片段带有`cjkMarks`，排版把着重号和线标作为`VDTLine.marks`放在各行上（点、圆圈、芝麻点、直线和波浪线，位于该行的排版方向坐标系中），Canvas、HTML和PDF按原样绘制（PDF：`Artifact /Layout`；HTML：`aria-hidden`框，带着重号的文字放在`<em>`中）。注音基字的片段带有`ruby`（注音及其各段），注音把基字拉开时在`inkOffset`处绘制基字；夹注在一行上的部分是一个片段，其`text`先是上一行、再是下一行，其`warichu`保存渲染器实际绘制的两行。带标签的PDF把注音放进其基字`Ruby`的`RT`中，把夹注放进`Warichu`中，该行的`/ActualText`读出基字文字，夹注只读一次。着重号、注音和夹注在正文、标题、列表和标注框中绘制，也在资源的题注、表格单元格和注释中绘制，其行与正文行一样带有`marks`和`ruby`；设计元素中的文字保留原文，但不绘制这些标注。
 
 解析函数和精简函数与其他部分一致；`setCjkLineBreak`和`setCjkComposition`为在`buildDocument`之外进行的测量设定级别和排版方式（标点宽度、悬挂、汉字与拉丁字母间距；`cjkCompositionOf(resolved.cjk, dpi)`），`buildDocument`则根据配置设定它们。在构建之外，标点保留完整的前进宽度，也不加汉字与拉丁字母间距：
 

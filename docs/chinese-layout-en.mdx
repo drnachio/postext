@@ -304,7 +304,7 @@ Chinese editions mark text between the lines rather than with italics or underli
 
 ### Room in the leading
 
-The line pitch never changes: dots, lines and readings live in the gap between lines. The build warns when a paragraph's gap is too narrow for what it carries: under half an em with marks on one side, five eighths with marks on both (clreq §5.6.1), reported as `cjkMarksExceedLeading`, and `rubyExceedsLeading` for readings taller than the gap. Give annotated paragraphs a paragraph style with more leading. Marks and readings are drawn in paragraphs, headings, list items, quotes and boxes; captions, table cells, notes and running heads print the text without them.
+The line pitch never changes: dots, lines and readings live in the gap between lines. The build warns when a paragraph's gap is too narrow for what it carries: under half an em with marks on one side, five eighths with marks on both (clreq §5.6.1), reported as `cjkMarksExceedLeading`, and `rubyExceedsLeading` for readings taller than the gap. Give annotated paragraphs a paragraph style with more leading. Marks and readings are drawn in paragraphs, headings, list items, quotes and boxes, and in captions, table cells and notes, whose gaps are checked the same way; running heads print the text without them.
 
 ## Fonts
 
@@ -414,7 +414,7 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
 - **Sizes in points.** There are no 号 or Q units.
 - **Vertical metrics.** Every upright character advances one em; proportional vertical metrics (`vpal`) and vertical kerning are not used.
-- **Ruby and warichu**: no double-sided ruby, no automatic readings, no single-row notes; notes and readings in captions, cells and design text print as plain text.
+- **Ruby and warichu**: no double-sided ruby, no automatic readings, no single-row notes; notes and readings in design text print as plain text.
 - **Fonts**: no fallback from one family to another, no italics in Chinese faces, CFF fonts embedded whole.
 - **Index**: a character with several readings takes the collator's usual one unless its entry has a `sort` key; radical order is not available.
 

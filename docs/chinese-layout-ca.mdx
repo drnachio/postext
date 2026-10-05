@@ -303,7 +303,7 @@ Les edicions xineses marquen el text entre les línies en lloc de fer-ho amb cur
 
 ### Lloc a la interlínia
 
-L'interlineat no canvia mai: els punts, les línies i les lectures viuen al buit entre línies. La composició avisa quan la interlínia d'un paràgraf és massa estreta per al que porta: menys de mig quadratí amb marques per un costat, cinc vuitens amb marques pels dos (clreq §5.6.1), amb l'avís `cjkMarksExceedLeading`, i `rubyExceedsLeading` quan les lectures són més altes que el buit. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques i les lectures es dibuixen en paràgrafs, títols, elements de llista, citacions i requadres; els peus, les cel·les de taula, les notes i les capçaleres imprimeixen el text sense elles.
+L'interlineat no canvia mai: els punts, les línies i les lectures viuen al buit entre línies. La composició avisa quan la interlínia d'un paràgraf és massa estreta per al que porta: menys de mig quadratí amb marques per un costat, cinc vuitens amb marques pels dos (clreq §5.6.1), amb l'avís `cjkMarksExceedLeading`, i `rubyExceedsLeading` quan les lectures són més altes que el buit. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques i les lectures es dibuixen en paràgrafs, títols, elements de llista, citacions i requadres, i també als peus, les cel·les de taula i les notes, la interlínia dels quals es comprova igual; les capçaleres imprimeixen el text sense elles.
 
 ## Fonts
 
@@ -413,7 +413,7 @@ Al Sandbox, **Disseny › Escriptura** reuneix la llengua del document, el mode 
 - **Un mode d'escriptura per pàgina.** No hi ha requadres horitzontals dins d'una pàgina vertical, ni taules verticals amb la fila de capçalera a la dreta, ni peus al costat d'una figura dreta. Les fórmules, les etiquetes i les mostres de color en línia s'ajeuen amb la línia vertical.
 - **Cossos en punts.** No hi ha unitats 号 ni Q.
 - **Mètriques verticals.** Cada caràcter dret avança un quadratí; no es fan servir les mètriques verticals proporcionals (`vpal`) ni el crenatge vertical.
-- **Ruby i warichu**: no hi ha ruby pels dos costats, ni lectures automàtiques, ni notes d'una sola fila; les notes i lectures de peus, cel·les i textos de disseny s'imprimeixen com a text normal.
+- **Ruby i warichu**: no hi ha ruby pels dos costats, ni lectures automàtiques, ni notes d'una sola fila; les notes i lectures dels textos de disseny s'imprimeixen com a text normal.
 - **Fonts**: no es recorre d'una família a una altra, les fonts xineses no tenen cursiva i les fonts CFF s'incrusten senceres.
 - **Índex**: un caràcter amb diverses lectures pren la que li dona l'ordenació de CLDR llevat que la seva entrada porti una clau `sort`; no hi ha ordre per radicals.
 
