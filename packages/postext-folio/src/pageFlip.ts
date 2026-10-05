@@ -4,6 +4,7 @@ import {
   BufferGeometry,
   Color,
   CustomBlending,
+  DepthTexture,
   DirectionalLight,
   DoubleSide,
   Group,
@@ -336,6 +337,22 @@ function occluded<T extends MeshStandardMaterial>(m: T, sign: number): T {
   return m;
 }
 
+/** What lies behind the leaves in the air (#484): the scene drawn without
+ *  the translucent leaves (colour, mipmapped, and depth), shared by every
+ *  page. `uBehindSize`: the screen in device px; `uBehindClip`: the
+ *  camera's near and far planes; `uBehindScale`: texels of that picture
+ *  per book unit at a view depth of 1; `uBehindFloor`: how far (book
+ *  units) the sheet's fibres spread even what touches it. */
+const behindUniforms = {
+  uBehind: { value: null as Texture | null },
+  uBehindDepth: { value: null as Texture | null },
+  uBehindOn: { value: 0 },
+  uBehindSize: { value: new Vector2(1, 1) },
+  uBehindClip: { value: new Vector2(1, 2) },
+  uBehindScale: { value: 1 },
+  uBehindFloor: { value: 1 },
+};
+
 type PageUniforms = {
   uFront: { value: Texture | null };
   uBack: { value: Texture | null };
@@ -343,6 +360,13 @@ type PageUniforms = {
   uHasBack: { value: number };
   uMirror: { value: number };
   uShowThrough: { value: number };
+  /** The page lying under an open page (the next leaf's face under it)
+   *  and how much of its print comes through (#484). */
+  uUnder: { value: Texture | null };
+  uHasUnder: { value: number };
+  uUnderK: { value: number };
+  /** How much of the light behind a leaf in the air comes through it. */
+  uTransmit: { value: number };
   uPaper: { value: Color };
   /** 1 on the open pages: lifted leaves occlude them. A leaf in the air
    *  does not read that map (it holds the leaf itself, and its own roll
@@ -390,6 +414,10 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uHasBack: { value: 0 },
     uMirror: { value: mirror ? 1 : 0 },
     uShowThrough: { value: 0 },
+    uUnder: { value: null },
+    uHasUnder: { value: 0 },
+    uUnderK: { value: 0 },
+    uTransmit: { value: 0 },
     uPaper: { value: new Color(1, 1, 1) },
     uLeafOcc: { value: 0.45 },
     uOccBias: { value: 6 },
@@ -405,7 +433,7 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
-    Object.assign(shader.uniforms, occlusionUniforms, uniforms, { uSign: { value: sign } });
+    Object.assign(shader.uniforms, occlusionUniforms, behindUniforms, uniforms, { uSign: { value: sign } });
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
@@ -432,6 +460,20 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform float uHasBack;
         uniform float uMirror;
         uniform float uShowThrough;
+        uniform sampler2D uUnder;
+        uniform float uHasUnder;
+        uniform float uUnderK;
+        uniform float uTransmit;
+        uniform sampler2D uBehind;
+        uniform sampler2D uBehindDepth;
+        uniform float uBehindOn;
+        uniform vec2 uBehindSize;
+        uniform vec2 uBehindClip;
+        uniform float uBehindScale;
+        uniform float uBehindFloor;
+        // The print of both faces at this point: what light coming
+        // through the sheet passes on its way.
+        vec3 transInk = vec3(1.0);
         uniform vec3 uPaper;
         uniform float uLeafOcc;
         uniform float uSign;
@@ -475,9 +517,17 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           // The other side's print, seen through the sheet (the same point
           // of paper, so mirrored as it should be).
           float other = front ? uHasBack : uHasFront;
-          if (uShowThrough > 0.0 && other > 0.5 && other < 1.5) {
-            vec3 through = front ? texture2D(uBack, uvB).rgb : texture2D(uFront, uvF).rgb;
-            ink *= mix(vec3(1.0), through, uShowThrough);
+          vec3 through = vec3(1.0);
+          if ((uShowThrough > 0.0 || uTransmit > 0.0) && other > 0.5 && other < 1.5) {
+            through = front ? texture2D(uBack, uvB).rgb : texture2D(uFront, uvF).rgb;
+          }
+          transInk = ink * through;
+          if (uShowThrough > 0.0) ink *= mix(vec3(1.0), through, uShowThrough);
+          // The page lying under an open page: its print comes through the
+          // whole sheet, a little softer (the fibres spread it).
+          if (uHasUnder > 0.5 && uUnderK > 0.0) {
+            vec3 under = texture2D(uUnder, front ? uvF : uvB, 1.0).rgb;
+            ink *= mix(vec3(1.0), under, uUnderK);
           }
           diffuseColor.rgb *= ink;
         }`,
@@ -513,7 +563,25 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           reflectedLight.indirectSpecular = reflectedLight.indirectSpecular * (1.0 - a)
             + leaf * EnvironmentBRDF(geometryNormal, geometryViewDir, material.specularColor, material.specularF90, material.roughness);
         }
-        #endif`,
+        #endif
+        if (uBehindOn > 0.5 && uTransmit > 0.0) {
+          // Thin paper in the air lets through the light behind it (#484):
+          // what lies there on screen, seen through the print of both
+          // faces. The sheet scatters what it lets through about evenly,
+          // so a thing a gap behind it is spread over about that gap:
+          // sharp where the leaf touches the page under it, a soft glow
+          // of the desk further off. What it lets through it does not
+          // reflect.
+          vec2 st = gl_FragCoord.xy / uBehindSize;
+          float depth = texture2D(uBehindDepth, st).x;
+          float zBehind = uBehindClip.x * uBehindClip.y / (uBehindClip.y - depth * (uBehindClip.y - uBehindClip.x));
+          float gap = max(0.0, zBehind - vViewPosition.z);
+          float spread = (uBehindFloor + 0.7 * gap) * uBehindScale / vViewPosition.z;
+          vec4 seen = textureLod(uBehind, st, log2(max(1.0, 2.0 * spread)));
+          float lost = uTransmit * seen.a;
+          reflectedLight.directDiffuse *= 1.0 - lost;
+          reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse * (1.0 - lost) + uTransmit * seen.rgb * transInk;
+        }`,
       );
   };
   return m;
@@ -1021,6 +1089,8 @@ export class PageFlipper {
   private mirrors: { left: WebGLRenderTarget | null; right: WebGLRenderTarget | null } = { left: null, right: null };
   private mirrorCamera = new PerspectiveCamera();
   private mirrorOk = false;
+  /** What lies behind the translucent leaves in the air (#484). */
+  private behindTarget: WebGLRenderTarget | null = null;
   /** The drawing buffer (device px) and the device pixel ratio. */
   private buffer = new Vector2(1, 1);
   private dpr = 1;
@@ -1371,7 +1441,13 @@ export class PageFlipper {
     const coated = p.finish !== "uncoated";
     const s = p.textureStrength * (coated ? 0.35 : 1) * 0.6;
     m.normalScale.set(s, s);
-    m.userData.uniforms.uShowThrough.value = spec.showThrough;
+    const u = m.userData.uniforms;
+    u.uShowThrough.value = spec.showThrough;
+    // An open page shows the page under it; a leaf in the air, what is
+    // behind it (a block of leaves turning together is opaque).
+    const open = mesh === this.left || mesh === this.right;
+    u.uUnderK.value = open ? spec.transmission * 0.75 : 0;
+    u.uTransmit.value = open || mesh === this.blockMesh ? 0 : spec.transmission;
     m.needsUpdate = true;
   }
 
@@ -1993,7 +2069,7 @@ export class PageFlipper {
       this.assign(mesh, "Back", book[k + 1]?.[0] ?? null);
     }
     const used = new Set<PageSource>(book.flat());
-    for (const mesh of [this.left, this.right]) used.add(mesh.userData.Front).add(mesh.userData.Back);
+    for (const mesh of [this.left, this.right]) used.add(mesh.userData.Front).add(mesh.userData.Back).add(mesh.userData.Under);
     for (const [src, tex] of this.ready) {
       if (used.has(src)) continue;
       tex.dispose();
@@ -2003,7 +2079,7 @@ export class PageFlipper {
     this.redraw();
   }
 
-  private assign(mesh: PageMesh, face: "Front" | "Back", src: PageSource) {
+  private assign(mesh: PageMesh, face: "Front" | "Back" | "Under", src: PageSource) {
     const u = mesh.material.userData.uniforms;
     if (mesh.userData[face] === src) return;
     mesh.userData[face] = src;
@@ -2583,6 +2659,11 @@ export class PageFlipper {
     // What shows through an open page: the other side of its leaf.
     this.assign(this.left, "Front", l >= 0 ? (this.book[l]?.[1] ?? null) : null);
     this.assign(this.right, "Back", this.book[r + 1]?.[0] ?? null);
+    // And through the whole sheet, the page lying under it: the next
+    // leaf's face on the same side.
+    const lying = (j: number, left: boolean) => j >= 0 && j < n && this.turned[j] === left && !this.turns.has(j) && !this.inBlock(j);
+    this.assign(this.left, "Under", lying(l - 1, true) ? (this.book[l]?.[0] ?? null) : null);
+    this.assign(this.right, "Under", lying(r + 1, false) ? (this.book[r + 1]?.[1] ?? null) : null);
     const extra = this.appearance.extraLeaves;
     this.left.visible = leftSrc !== null || (extra?.before ?? 0) > 0;
     this.right.visible = rightSrc !== null || (extra?.after ?? 0) > 0;
@@ -2601,8 +2682,51 @@ export class PageFlipper {
       this.renderer.render(this.shadowScene, this.shadowCamera);
       this.renderer.setRenderTarget(null);
     }
+    this.behind(air.map((a) => a.mesh));
     this.mirror(air.length > 0 || this.block !== null);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Thin paper lets light through (#484). While translucent leaves are in
+   * the air, the scene is drawn once more without them (at half the
+   * screen's resolution: the sheet blurs what it lets through anyway),
+   * colour and depth: each such leaf reads, at its own place on screen,
+   * what lies behind it there and how far, and lets that light through.
+   * Nothing is drawn at rest or on opaque stock.
+   */
+  private behind(air: PageMesh[]) {
+    const u = behindUniforms;
+    u.uBehindOn.value = 0;
+    u.uBehind.value = u.uBehindDepth.value = null;
+    const lit = air.filter((m) => m.visible && m.material.userData.uniforms.uTransmit.value > 0);
+    if (!this.mirrorOk || !lit.length) return;
+    const w = Math.max(1, Math.round(this.buffer.x / 2));
+    const h = Math.max(1, Math.round(this.buffer.y / 2));
+    let target = this.behindTarget;
+    if (!target) {
+      target = new WebGLRenderTarget(w, h, { type: HalfFloatType, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, generateMipmaps: true });
+      target.depthTexture = new DepthTexture(w, h);
+      this.behindTarget = target;
+    } else if (target.width !== w || target.height !== h) target.setSize(w, h);
+    for (const m of lit) m.visible = false;
+    // The key's shadow map as the main view drew it last.
+    const shadows = this.renderer.shadowMap.autoUpdate;
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.setRenderTarget(target);
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
+    this.renderer.setRenderTarget(null);
+    this.renderer.shadowMap.autoUpdate = shadows;
+    for (const m of lit) m.visible = true;
+    u.uBehind.value = target.texture;
+    u.uBehindDepth.value = target.depthTexture;
+    u.uBehindSize.value.copy(this.buffer);
+    u.uBehindClip.value.set(this.camera.near, this.camera.far);
+    u.uBehindScale.value = (h / 2) * this.camera.projectionMatrix.elements[5];
+    // Light spreads about a quarter of a millimetre in the sheet.
+    u.uBehindFloor.value = 0.25 * this.pxPerMm();
+    u.uBehindOn.value = 1;
   }
 
   /**
@@ -2689,11 +2813,16 @@ export class PageFlipper {
     // own faces under them are not lit by the key anyway.
     const shadows = this.renderer.shadowMap.autoUpdate;
     this.renderer.shadowMap.autoUpdate = false;
+    // The picture behind the leaves lies on the main view's screen, not
+    // this one's.
+    const behind = behindUniforms.uBehindOn.value;
+    behindUniforms.uBehindOn.value = 0;
     this.renderer.setRenderTarget(target);
     this.renderer.clear();
     this.renderer.render(this.scene, cam);
     this.renderer.setRenderTarget(null);
     this.renderer.shadowMap.autoUpdate = shadows;
+    behindUniforms.uBehindOn.value = behind;
     for (const c of hidden) c.visible = true;
   }
 
@@ -2729,6 +2858,8 @@ export class PageFlipper {
     this.shadowTarget?.dispose();
     this.mirrors.left?.dispose();
     this.mirrors.right?.dispose();
+    this.behindTarget?.depthTexture?.dispose();
+    this.behindTarget?.dispose();
     this.leafCaster.dispose();
     this.staticCaster.dispose();
     for (const c of this.staticCasters) c.geometry.dispose();
