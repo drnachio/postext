@@ -124,6 +124,18 @@ describe("C25: characters the PDF cannot set", () => {
     const kana = [{ ch: "𛀁", code: "U+1B001", where: "page 3" }];
     expect(of("C25", runChecks(input({ facts: facts({ nonLatin: kana }) })))[0].detail).toBe("outside the latin subset: 𛀁 U+1B001");
   });
+
+  it("trusts the cjk block's provider with the latin-ext letters of a Latin face (#466)", () => {
+    // ō from the latin-ext file loadFonts added to Newsreader: cjkPdfProvider adds that file too.
+    const romaji = [{ ch: "ō", code: "U+014D", where: "page 2", ownFile: true }];
+    expect(of("C25", runChecks(input({ facts: facts({ nonLatin: romaji }) })))).toEqual([]);
+    // fontsourceProvider (the pdf block alone) embeds the latin file only.
+    const latinKit = meta({ kit: ["core", "fonts", "viewer", "pdf"] });
+    expect(of("C25", runChecks(input({ meta: latinKit, facts: facts({ nonLatin: romaji }) })))[0].detail).toBe("outside the latin subset: ō U+014D");
+    // A Greek letter from a greek file the recipe loaded itself: the provider adds latin-ext only.
+    const greek = [...romaji, { ch: "λ", code: "U+03BB", where: "page 3", ownFile: true }];
+    expect(of("C25", runChecks(input({ facts: facts({ nonLatin: greek }) })))[0].detail).toBe("outside the latin subset: λ U+03BB");
+  });
 });
 
 describe("C14: a PDF shaped without HarfBuzz", () => {

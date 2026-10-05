@@ -91,7 +91,9 @@ export interface ProbeFacts {
     late?: (ProbeFace & { chars: string })[];
   };
   garbage?: { text: string; where: string }[];
-  nonLatin?: { ch: string; code: string; where: string }[];
+  /** Characters outside Fontsource's latin subset. `ownFile`: a loaded
+   *  file of the face that sets it holds it (latin-ext, from loadFonts). */
+  nonLatin?: { ch: string; code: string; where: string; ownFile?: boolean }[];
   defaultSkin?: {
     body: boolean;
     headingLevels: number[];
@@ -457,6 +459,13 @@ function dedupe(findings: Finding[]): Finding[] {
   return [...counts.values()].map(({ finding, n }) => (n > 1 ? { ...finding, detail: `${finding.detail} (×${n})` } : finding));
 }
 
+/** Whether a code point is in Fontsource's latin-ext file and not in its
+ *  latin file (the cjk kit block's cjkLatinExtOnly). */
+function latinExtOnly(cp: number): boolean {
+  if (!((cp >= 0x100 && cp <= 0x2ff) || (cp >= 0x1e00 && cp <= 0x1eff))) return false;
+  return ![0x131, 0x152, 0x153, 0x2bb, 0x2bc, 0x2c6, 0x2da, 0x2dc].includes(cp);
+}
+
 export function runChecks(input: CheckInput): Finding[] {
   return dedupe(collect(input));
 }
@@ -720,10 +729,14 @@ function collect(input: CheckInput): Finding[] {
   // Fontsource's latin subset that no loaded face covers (a CJK face the
   // cjk block loads by slices covers its own, an Arabic face the arabic
   // block completes covers the Arabic letters), and what postext-pdf drew
-  // with no glyph (its missingGlyph warning, printed to the console).
+  // with no glyph (its missingGlyph warning, printed to the console). The
+  // cjk block's provider also embeds a Latin face's latin-ext file (#466),
+  // so there a latin-ext letter that file holds on screen is in the PDF.
   const pdfRecipe = meta.outputs.includes("pdf") || !!meta.downloads?.pdf;
-  if (pdfRecipe && facts.nonLatin?.length) {
-    add("C25", "warn", `outside the latin subset: ${facts.nonLatin.map((c) => `${c.ch} ${c.code}`).join(", ")}`);
+  const latinExtInPdf = meta.kit.includes("cjk");
+  const outside = (facts.nonLatin ?? []).filter((c) => !(latinExtInPdf && c.ownFile && latinExtOnly(c.ch.codePointAt(0) ?? 0)));
+  if (pdfRecipe && outside.length) {
+    add("C25", "warn", `outside the latin subset: ${outside.map((c) => `${c.ch} ${c.code}`).join(", ")}`);
   }
   if (pdfRecipe) {
     const MISSING = /^postext-pdf: "(.+?)" (\d+(?: italic)?) has no glyph for [^(]*\((.+?)\); the PDF draws them/;

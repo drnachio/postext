@@ -171,6 +171,14 @@ function isArabic(code: number): boolean {
   return ARABIC_BLOCKS.some(([lo, hi]) => code >= lo && code <= hi);
 }
 
+/** Whether a code point is in Fontsource's `latin-ext` file and not in its
+ *  `latin` file: what the cjk block's PDF provider adds for a Latin face
+ *  (#466). */
+function isLatinExtOnly(code: number): boolean {
+  if (!((code >= 0x100 && code <= 0x2ff) || (code >= 0x1e00 && code <= 0x1eff))) return false;
+  return !isLatin(code);
+}
+
 /** Characters outside Fontsource's `latin` subset (what a PDF recipe
  *  embeds), split into those in the CJK blocks, those in the Arabic blocks
  *  and the rest. */
@@ -550,11 +558,15 @@ export function lintPen(
           "loadArabicFonts(FONTS, markdown) after loadFonts (gotcha arabic-fonts-subset)");
       }
     }
-    if (pdfOutput && odd.other.length) {
-      const shown = odd.other.slice(0, 8).join(" ");
+    // cjkPdfProvider adds a Latin face's latin-ext file for the letters only
+    // it has (ō ǎ), so with the cjk block those reach the PDF as they reach
+    // the screen; the capture's C25 names any face that still lacks one.
+    const beyond = cjkKit ? odd.other.filter((ch) => !isLatinExtOnly(ch.codePointAt(0) ?? 0)) : odd.other;
+    if (pdfOutput && beyond.length) {
+      const shown = beyond.slice(0, 8).join(" ");
       warns.push(cjkKit
-        ? `${file}: characters outside Fontsource latin and the CJK blocks (${shown}) reach the PDF only in a face that has them: ` +
-          "a CJK face (cjkPdfProvider takes every file it needs) or a latin-ext file"
+        ? `${file}: characters outside Fontsource latin, latin-ext and the CJK blocks (${shown}) reach the PDF only in a CJK face ` +
+          "(cjkPdfProvider takes every file it needs) or a face the pen's own provider serves"
         : `${file}: characters outside Fontsource latin (${shown}) need latin-ext faces in the PDF`);
     }
   }

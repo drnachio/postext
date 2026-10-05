@@ -331,11 +331,14 @@ describe("lintPen (a Chinese recipe)", () => {
     expect(lintCjk(undefined, fits).fails.filter((f) => f.includes("words"))).toEqual([]);
   });
 
-  it("leaves Han to the CJK faces in the PDF, but not the Latin letters beyond latin", () => {
+  it("leaves Han and latin-ext letters to the cjk block's PDF provider, but not other scripts", () => {
+    // cjkPdfProvider adds a Latin face's latin-ext file for ǎ ā (#466).
     const pinyin = { en: `# 一\n\n${OPENING} Zhì yǎn zhāi.\n`, es: "# 一\n" };
-    const warns = lintCjk(undefined, pinyin).warns.filter((w) => w.includes("latin"));
+    expect(lintCjk(undefined, pinyin).warns.filter((w) => w.includes("latin"))).toEqual([]);
+    const greek = { en: `# 一\n\n${OPENING} Zhì yǎn zhāi, λόγος.\n`, es: "# 一\n" };
+    const warns = lintCjk(undefined, greek).warns.filter((w) => w.includes("latin"));
     expect(warns).toHaveLength(1);
-    expect(warns[0]).toMatch(/^content\.en\.md: characters outside Fontsource latin and the CJK blocks \(ǎ ā\)/);
+    expect(warns[0]).toMatch(/^content\.en\.md: characters outside Fontsource latin, latin-ext and the CJK blocks \(λ ό γ ο ς\)/);
     // Without the block, the Chinese is reported with the kit block to use.
     const plain = lint((s) => s, { sources: { content: cjkContent } }).warns;
     expect(plain.filter((w) => w.includes("outside Fontsource latin"))).toEqual([]);
