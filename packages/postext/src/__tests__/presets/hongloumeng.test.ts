@@ -127,7 +127,7 @@ describe('hongloumeng bundle', () => {
     expect(manifest.view?.canvasScope).toBe('book');
   });
 
-  it('ships every file it names, within 30 MB', () => {
+  it('ships every file it names, within 32 MB', () => {
     const files = [
       ...Object.values(manifest.chapters).flat().map((c: any) => c.file),
       ...manifest.resources.map((r: any) => r.file),
@@ -137,7 +137,8 @@ describe('hongloumeng bundle', () => {
     for (const f of files) expect(existsSync(join(BUNDLE, f)), f).toBe(true);
     const size = (dir: string): number => readdirSync(dir, { withFileTypes: true })
       .reduce((n, e) => n + (e.isDirectory() ? size(join(dir, e.name)) : statSync(join(dir, e.name)).size), 0);
-    expect(size(BUNDLE)).toBeLessThanOrEqual(30e6);
+    // The painted covers and spines (#472) take it past 30 MB.
+    expect(size(BUNDLE)).toBeLessThanOrEqual(32e6);
   });
 
   it('names an existing plate in every chapter', () => {
