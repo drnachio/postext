@@ -1,0 +1,73 @@
+---
+title: "A Japanese technical manual: kana, kanji and Latin"
+summary: "A5 chapter of a Japanese programming book: JLReq line breaking and punctuation spacing, a quarter em between Japanese and Latin, code, 図3-1, page notes."
+plain: "A chapter from a Japanese programming book, where Japanese sentences are full of English words, code and numbers. Postext sets the punctuation and the line breaks by the Japanese rules and adds a thin space where Japanese meets Latin."
+description: "A Japanese technical chapter in Postext: locale 'ja' sets JLReq kinsoku and punctuation spacing, a quarter em before Latin, 図3-1 captions and page notes."
+question: "How do I set a Japanese technical book with Latin words, code and the Japanese punctuation rules?"
+aliases: ["Japanese technical book", "技術書", "横組み", "horizontal Japanese", "kinsoku", "禁則処理", "yakumono", "約物", "四分アキ", "Japanese–Latin space", "和欧間", "JLReq", "JIS X 4051", "ぶら下げ", "hanging punctuation", "図3-1", "Japanese footnotes", "inline code", "Unicode normalization"]
+pageNotes: { "1": "The chapter opener, page 41: a pale teal band over the top third with CHAPTER in small tracked capitals, a large teal 3 and the title 文字列の正規化 in bold gothic. Below, a lead paragraph in gothic, the first paragraph in mincho and section 3.1 under a heading three lines deep; the folio 41 dropped to the foot.", "3": "Page 43: the four normalization forms as a list with teal bullets, a paragraph citing 表3-1, the table with a teal header row 入力 NFC NFD NFKC and five rows (が, ｶﾞ, ＡＢＣ, ①, ㍻), its caption 表3-1 in teal gothic, then section 3.3 with the function names unicodedata and normalize() in a teal monospaced face." }
+---
+
+## What you'll build
+
+Five pages from chapter 3 of an invented Japanese programming book, 実践 日本語テキスト処理 (Practical Japanese Text Processing), on Unicode normalization. It is set as Japanese computer books are: A5, one column of 36 characters by 29 lines of Noto Serif JP at 9 pt, heads in Noto Sans JP, code in BIZ UDGothic. The text is the hard case for Japanese composition, because every other sentence holds a Latin word, a code point, a number or a function name: the line breaks follow JLReq’s strictest 禁則処理 (kinsoku shori), the punctuation keeps its full-width spacing, and a quarter em separates Japanese from Latin without anyone typing a space. A figure, a table, a code listing and page notes come with Japanese labels: 図3-1, 表3-1, superscript note numbers counted per page. <RecipeLink slug="code-listings-and-keycaps">Code listings and keycaps</RecipeLink> is the same kind of page in English.
+
+## Method
+
+### 1 · The Japanese rules come with the tag
+
+The code is [the short answer](#the-short-answer) above. `locale: 'ja'` switches on the rules of JLReq, the W3C’s *Requirements for Japanese Text Layout*, and the values written out under `cjk` are the ones `'auto'` picks for Japanese ([East Asian typography](/en/docs/configuration#east-asian-typography)). At `ja-very-strict`, no line starts with ー, a small kana, 々 or a closing mark, and no line ends with an opening bracket. The punctuation (約物, yakumono) keeps its full em inside the line, and two marks that meet, such as 」、, share one em. On <PageRef page={1}>page 41</PageRef> the line that ends 実際に変換し、 sets its 、 past the right edge of the measure: that is ぶら下げ (burasage), and the engine uses it only when the line would otherwise have to push the mark to the next line. `latinSpacing` puts a quarter em (四分アキ, shibun aki) between Unicode and では, and between U+304C and を, though the Markdown has no space there.
+
+<PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Page 41: a quarter em around Unicode and Python, typed with no space; the 、 at the end of the second line hangs past the measure." />
+
+The difference from Chinese is in the marks. A mainland Chinese book sets 、 and ， at half width by default and 。 full (Kaiming); a Japanese one keeps every mark full width and squeezes only where two meet. Chinese line breaking has no small kana or ー to keep off a line start, so `ja-very-strict` is a level of its own.
+
+### 2 · Code in a monospaced face that has kana
+
+<Excerpt region="listing" />
+
+Postext sets no fenced code blocks, so the pen rewrites the Markdown before the build. Each line of a fence becomes a paragraph of a tinted box, and each `` `name` `` becomes a chip in BIZ UDGothic. The face matters: the example’s string ｶﾞｲﾄﾞ ＡＢＣ ① needs half-width katakana, full-width letters and circled digits, which a Western code face lacks. BIZ UDGothic sets half-width Latin and full-width kana at fixed pitch, so the listing keeps its columns ([Inline chips](/en/docs/document-format#inline-chips)).
+
+### 3 · 図3-1 and 表3-1
+
+<Excerpt region="resources" />
+
+`defaultResourceTypes('ja')` names the types 図 and 表 and numbers them by chapter with a hyphen, and `continuation.headings` makes this chapter 3, so the first figure is 図3-1. A `ja` document sets the label and the number solid and puts an ideographic space after the number, as Japanese books print 図3-1　「が」の二つの表し方, so the caption style only picks the face and the colours. The table is placed `'here'`, under the paragraph that cites it. The figure’s labels are Latin only, U+304C and E3 81 8C, drawn with the code face’s latin file embedded in the SVG.
+
+### 4 · Notes per page, the Japanese way
+
+<Excerpt region="notes" />
+
+The notes need no setting beyond their size: in a horizontal Japanese document the defaults are the ones JLReq describes for horizontal books, a note at the foot of the column where it is cited, numbered from 1 on each page, a superscript marker and a rule a third of the measure long ([Footnotes](/en/docs/configuration#footnotes)). The marker goes before the full stop, `保存していた[^hfs]。`, so the 。 never starts the next line apart from it.
+
+### 5 · A three-line section head
+
+<Excerpt region="opener" />
+
+The chapter opener is a design on the H1: a teal band, the chapter number at 64 pt from `{numberDecimal}` and the title. The section heads use `lineSpan: 3`, 行取り (gyōdori): each takes exactly three body lines, its text centred in them, so the text after it goes on in step with the grid. `headings.balancing.enabled: false` keeps the engine from adding lines above heads to even out a page.
+
+## Variations
+
+### Let small kana and ー start a line
+
+`ja-strict` is JLReq’s rule for general books: っ, ゃ and ー may open a line, which gives the breaker more places to cut and fewer spread lines.
+
+```diff
+-  lineBreak: 'ja-very-strict', // no line starts with ー, small kana, 々, 」、。？・ or ：
++  lineBreak: 'ja-strict', // small kana, ー and 々 may open a line
+```
+
+### No space between Japanese and Latin
+
+Some publishers set Latin words solid against the kana, with no quarter em.
+
+```diff
+-  latinSpacing: em(0.25), // 四分アキ between kana or kanji and Latin letters or digits
++  latinSpacing: em(0), // Unicodeでは, set solid
+```
+
+## Pitfalls
+
+- A Latin word cannot be broken inside a Japanese line, so a long one at the end of a line leaves the line before it spread between its characters. The first draft of this chapter glossed its terms in English, 正準等価（canonical equivalence）, and two lines came out loose; the English terms were dropped where they did not help the reader.
+- Choose the code face by the characters the code holds. M PLUS 1 Code, the first face tried here, has no half-width katakana: the screen fell back to a system face for ｶﾞｲﾄﾞ and the PDF lacked the glyphs.
+- A listing is one box, kept together by default. On page 43 the four lines left under 3.3 could not hold it, so it opens page 44.

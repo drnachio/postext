@@ -137,7 +137,8 @@
       "ar": "اليابانية منضَّدة كما تنضدها الكتب اليابانية: kinsoku وتباعد الترقيم، والنص العمودي المجلَّد من اليمين، والفوريغانا وعلامات التوكيد، والأعداد الكانجية، والحواشي وفهرس gojūon، من رواية bunko إلى كتاب مدرسي ورسالة وصفحة من الكانبون."
     },
     "recipes": [
-      "bunko-novel-furigana", "two-tier-tankobon", "haiku-and-tanka", "genko-yoshi-manuscript", "vertical-notes-and-sidenotes", "kanbun-kundoku"
+      "bunko-novel-furigana", "two-tier-tankobon", "haiku-and-tanka", "genko-yoshi-manuscript", "vertical-notes-and-sidenotes", "kanbun-kundoku",
+      "japanese-technical-manual", "jukugo-furigana-textbook", "sist02-research-paper", "gojuon-index"
     ]
   }
 }

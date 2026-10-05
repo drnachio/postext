@@ -1,0 +1,68 @@
+---
+title: "A school reader with furigana over every kanji"
+summary: "Niimi Nankichi’s “Gon the Fox” on a reader page: per-character, word and jukugo furigana, spaced 1:2:1 and running onto kana but never onto kanji."
+plain: "A page from a Japanese school reader, with small kana printed over every kanji so a child can read it aloud. Postext places each reading over its characters and lets a long one lean on the kana beside it, never on another kanji."
+description: "Furigana in Postext: {漢字|かん|じ} jukugo ruby, {百舌鳥|もず} group ruby, JIS 1:2:1 alignment and kana-only overhang on a Japanese school reader page."
+question: "How do I add furigana over kanji, one reading per character or one for the whole word?"
+aliases: ["furigana", "振り仮名", "ルビ", "ruby", "jukugo ruby", "熟語ルビ", "group ruby", "グループルビ", "mono ruby", "モノルビ", "熟字訓", "1:2:1", "JIS X 4051 ruby", "肩掛け", "ruby overhang", "総ルビ", "school reader", "教科書", "ごんぎつね", "Niimi Nankichi"]
+pageNotes: { "1": "Page 24, a verso: a straw band over the top third with a red rounded badge 4, the series name よみもの　四年 and the title ごんぎつね in large rounded gothic, the author’s name in kana and 新美南吉　作. Below, the section number 一 in red and the opening of the story in a textbook hand at 14 pt, small kana readings over every kanji.", "3": "Page 26: the end of section one, then a straw box titled ふりがなの つけかた with three rows: one reading per kanji (村 城 森 穴), one reading for a word (百舌鳥 一人 黒子) and a reading per kanji kept as one word (兵十 小川 菜種). A small colophon in Latin type below." }
+---
+
+## What you'll build
+
+The first pages of Niimi Nankichi’s “Gon the Fox” (ごんぎつね, 1932) as a fourth-year school reader prints them, the story every Japanese child meets at nine or ten. A B5 page holds 28 characters by 21 lines of Klee One, a face drawn after the hand of school textbooks, at 14 pt on a 28 pt line, with a reading in small kana over every kanji. The readings are the subject: one per character over 村 and 森, one for the whole word over 百舌鳥 (mozu), whose kanji have no reading of their own, and jukugo readings over 兵十 (Hyōjū), each over its own kanji until one is too long. A box at the end shows the three cases for the teacher. <RecipeLink slug="pinyin-primer">The pinyin primer</RecipeLink> sets Chinese readings over every character in the same way.
+
+## Method
+
+### 1 · Three ways to write a reading
+
+The code is [the short answer](#the-short-answer) above. In the Markdown, `{村|むら}` puts むら over 村; `{兵十|ひょう|じゅう}` gives each kanji its own reading, and in a document tagged `'ja'` that is jukugo ruby: the readings stay over their kanji when they fit, and a longer one may lean onto the next kanji of the same word, never onto another word’s. `{百舌鳥|もず}`, one reading for three kanji, is group ruby, spread over the word as one. `:ruby[菜種]{rt="な たね" mode=jukugo}` writes the box’s last example in the directive form, which also takes `mode=mono` and `align` ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)).
+
+<PageShot page={3} crop="0.1,0.53,0.8,0.15" caption="Page 26: one reading per kanji, one for the word, and jukugo readings, which stay with their kanji." />
+
+### 2 · 1:2:1, and readings that lean only on kana
+
+The two settings under `cjk.ruby` are what `'ja'` picks by itself. `align: 'jis'` sets a reading shorter than its base the JIS X 4051 way: half a unit of space at each end and a whole one between the kana, so も and ず sit over the joins of 百舌鳥 on <PageRef page={2}>page 25</PageRef> instead of bunching in its middle. `overhang: 'kana'` lets a reading longer than its base run up to one ruby character onto a kana or a mark’s blank beside it, never onto a kanji: ぎつね over the 狐 of 「ごん狐」 leans on ん and on the bracket after it, and the じゅう of 兵十だな on だ. Where there is no kana to lean on, the kanji are spread to the reading’s width. At a line’s edge the reading stays inside the measure.
+
+<PageShot page={1} crop="0.08,0.63,0.84,0.09" caption="Page 24: ぎつね over 狐 runs onto ん and 」, and こぎつね over 小狐 stays with its two kanji." />
+
+### 3 · A line gap that holds the readings
+
+The readings are 7 pt, half the 14 pt text, and the line is 28 pt, so the 14 pt between two lines takes them with room to spare and every line of the grid stays where it is. Set the pitch tighter than the text plus its readings and the build warns `rubyExceedsLeading`.
+
+### 4 · The opener prints no readings
+
+<Excerpt region="opener" />
+
+The title and the author’s name are design text, which sets no ruby, so the reading of 新美南吉 is a line of its own above the name, in kana, as readers print it. The title itself is in kana, ごんぎつね, as the readers write it, though the Aozora text heads it ごん狐.
+
+### 5 · One accent, and readings a shade lighter
+
+<Excerpt region="palette" />
+
+The readings take `reading`, a brown a step lighter than the ink, so the eye can tell the two layers apart without the kana growing faint. The red of the higanbana that bloom in the story marks the badge, the section number and the box’s title.
+
+## Variations
+
+### Full-size kana in the readings
+
+Older books printed っ and ょ full size in ruby, がつこう for がっこう; `smallKana: 'full'` does the same and leaves the text read aloud and copied unchanged.
+
+```diff
+-    smallKana: 'keep', // ひょう with its small ょ, as today's books print it
++    smallKana: 'full', // ひよう: the small kana at full size, as letterpress books printed them
+```
+
+### Centre every reading
+
+`align: 'center'` puts a short reading in the middle of its base, as most Chinese books do; 1:2:1 is the Japanese default.
+
+```diff
+-    align: 'jis', // a reading shorter than its base: ½ unit at each end, 1 between (1:2:1)
++    align: 'center', // も ず together in the middle of 百舌鳥
+```
+
+## Pitfalls
+
+- Aozora Bunko writes one reading for a whole word, 兵十《ひょうじゅう》, and the converter keeps it as group ruby, `{兵十|ひょうじゅう}`. For jukugo ruby, split the reading by kanji by hand: `{兵十|ひょう|じゅう}`.
+- A reading is split at the bar into one part per character only when the parts match the base; `{一人|ひ|と|り}` has three parts for two kanji and is set as one reading for the word, which is what 一人 needs anyway.

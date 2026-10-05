@@ -1,0 +1,69 @@
+---
+title: "A Japanese research paper cited to SIST 02"
+summary: "A two-column A4 research note in Japanese: [@key] citations numbered (1), (2, 3) to SIST 02, a 参考文献 list in Japanese, page notes, 表1 and 図1."
+plain: "A short research article from a Japanese journal. The author writes a code for each source; Postext numbers them in the order they are cited and prints the reference list the way Japanese science journals ask for it."
+description: "A Japanese journal article in Postext cited to SIST 02 with the ja-JP locale: numbered citations, a 参考文献 list with Japanese names, page notes, 表1 and 図1."
+question: "How do I cite works in a Japanese paper to SIST 02 and print a 参考文献 list?"
+aliases: ["SIST 02", "SIST02", "参照文献の書き方", "参考文献", "Japanese references", "Japanese bibliography", "ja-JP", "CSL", "citeproc", "研究ノート", "Japanese journal article", "学会誌", "two-column Japanese", "号数活字", "Japanese footnotes", "と ほか"]
+pageNotes: { "1": "Page 23, the first page of a research note in a fictitious journal, 活字と組版の研究: a deep green band over the top quarter carries the journal’s name, the volume and issue, the label 研究ノート, the two-line title in white mincho and its English translation. Under the band the author 森川 啓 and her affiliation, an abstract across both columns under a green stripe with the labels 要　旨 and キーワード, then two columns of text: sections 1 to 3 with citations such as (1), (2, 3) and (4, 5), a table of the nine type sizes with a green header row, and a page note at the foot of the left column.", "2": "Page 24: in the left column, three rows of squares drawn to scale, 42 to 5.25 pt, 27.5 and 13.75 pt, 16 to 4 pt, captioned 図1; sections 4 and 5; the heading 参考文献 and entries (1) and (2). In the right column, entries (3) to (9), Japanese books and two articles from 日本印刷学会誌, and a colophon in Latin type." }
+---
+
+## What you'll build
+
+Two pages of a research note, 号数活字の三つの系列 (“Three series of gōsū type sizes”), from an invented journal of type and typesetting, set as Japanese academic societies set their journals: A4, two columns of 25 characters by 45 lines of Noto Serif JP at 9 pt, the title in Shippori Mincho B1 on the journal’s green band. The citations follow SIST 02, the guide to references that Japanese science and technology journals use: each work is numbered in the order it is first cited, (1), (2, 3), and the list under 参考文献 gives Japanese names family first, the place before the publisher and the year last. A table of the nine type sizes, a figure drawing them to scale and two page notes come with Japanese labels. <RecipeLink slug="gbt7714-chinese-paper">The Chinese paper cited to GB/T 7714</RecipeLink> is its Chinese counterpart.
+
+## Method
+
+### 1 · The style, the locale and the notes
+
+The code is [the short answer](#the-short-answer) above. `postext-citeproc` ships SIST 02 as `'sist02'` and the CSL locale `ja-JP`, which writes the list’s terms in Japanese and joins two Japanese authors with と and more with ほか in a narrative citation ([Citations](/en/docs/configuration#citations)). In the text, `[@kawada1949; @suzuki2015]` prints (2, 3), and `高橋[@takahashi2012]が` puts the number after the name, 高橋(8)が. The style differs from the Chinese GB/T 7714 in the marker: SIST 02 sets the number in parentheses on the line, GB/T 7714 in square brackets raised. The notes need nothing: `locale: 'ja'` gives a horizontal document notes at the foot of the column, numbered from 1 on each page, with a superscript marker and a rule a third of the column long.
+
+### 2 · The references in a CSL-YAML block
+
+The works are listed at the end of the Markdown in `:::references{format=csl-yaml}`, the format Zotero exports as CSL YAML ([Citing](/en/docs/document-format#citing)). Japanese names go in as `family` and `given`, `{family: 鈴木, given: 広光}`, and SIST 02 prints them solid, 鈴木広光, while Kornicki keeps his comma: Kornicki, Peter. A book series goes in `collection-title` and prints in parentheses after the year; the two articles from 日本印刷学会誌 give volume, issue and pages as vol. 49, no. 2, p. 76–80. Every work is real; their entries can be checked in CiNii.
+
+<PageShot page={2} crop="0.5,0.08,0.45,0.25" caption="Page 24: entries (3) to (9), Japanese names family first, place before publisher, the year last." />
+
+### 3 · The title on the journal’s band
+
+<Excerpt region="masthead" />
+
+The title block is the design of the H1, a heading style across both columns. The band is a box anchored to the trim; the label, the title and its English translation sit on it, each placed under the one before, so a three-line title pushes the English line down. The author and her affiliation come from heading attributes and sit under the band.
+
+### 4 · The abstract and its labels
+
+<Excerpt region="abstract" />
+
+The abstract is a callout across the page under a green top stripe, its labels chips in bold gothic in the journal’s colour. An ideographic space after each label, typed in the Markdown, keeps 要　旨 apart from the text.
+
+### 5 · 表1 and 図1 where they are cited
+
+<Excerpt region="resources" />
+
+`defaultResourceTypes('ja')` gives 図 and 表; the paper numbers them through, 表1 and 図1, not by chapter, so the template is `'{n}'`. Both are placed `'here'`, under the paragraph that cites them, inside the column. The squares of the figure are drawn at the size of the type they stand for, 42 pt for 初号 down to 4 pt for 八号, so the halving can be seen on the page.
+
+## Variations
+
+### Superscript citation numbers
+
+Many Japanese journals raise the number above the line. `marker: 'superscript'` prints it raised, with no parentheses, and leaves the list alone.
+
+```diff
+   locale: 'ja-JP',
++  marker: 'superscript',
+```
+
+### Notes numbered through the paper
+
+A paper of a few pages may count its notes from 1 to the end instead of per page.
+
+```diff
+-const footnotes = { fontSize: pt(7.5), lineHeight: pt(11.5), color: col('ink'),
++const footnotes = { numbering: 'document', fontSize: pt(7.5), lineHeight: pt(11.5),
++  color: col('ink'),
+```
+
+## Pitfalls
+
+- Write a Japanese name as `family` and `given`, or as one `literal` with no space. A name typed as one string with a space between family and given name, as BibTeX often carries it (`author = {夏目 漱石}`), is read family first, but a romanised one, `Natsume Soseki`, is read as given name then family name, as English names are.
+- The bundled SIST 02 prints no DOI; an article whose DOI matters needs it in the text or a note.

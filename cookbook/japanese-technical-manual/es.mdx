@@ -1,0 +1,73 @@
+---
+title: "Un manual técnico japonés: kana, kanji y latín"
+summary: "Un capítulo A5 de un libro japonés de programación: cortes y puntuación según JLReq, un cuarto de cuadratín ante el latín, código, 図3-1 y notas por página."
+plain: "Un capítulo de un libro japonés de programación, lleno de palabras inglesas, código y números. Postext compone la puntuación y los cortes de línea con las reglas japonesas y añade un espacio fino donde el japonés toca el latín."
+description: "Un capítulo técnico japonés en Postext: locale 'ja' activa el kinsoku y la puntuación de JLReq, el cuarto de cuadratín ante el latín y los pies 図3-1."
+question: "¿Cómo compongo un libro técnico japonés con palabras latinas, código y las reglas de puntuación japonesas?"
+aliases: ["libro técnico japonés", "技術書", "横組み", "japonés horizontal", "kinsoku", "禁則処理", "yakumono", "約物", "四分アキ", "espacio entre japonés y latín", "和欧間", "JLReq", "JIS X 4051", "ぶら下げ", "puntuación colgada", "図3-1", "notas al pie japonesas", "código en línea", "normalización Unicode"]
+pageNotes: { "1": "La apertura del capítulo, página 41: una banda verde azulado pálido ocupa el tercio superior, con CHAPTER en versalitas espaciadas, un 3 grande verde azulado y el título 文字列の正規化 en gótica negrita. Debajo, una entradilla en gótica, el primer párrafo en mincho y el apartado 3.1 bajo un título de tres líneas; el folio 41, al pie.", "3": "Página 43: las cuatro formas de normalización en una lista con topos verde azulado, un párrafo que cita 表3-1, la tabla con la cabecera verde azulado 入力 NFC NFD NFKC y cinco filas (が, ｶﾞ, ＡＢＣ, ①, ㍻), su pie 表3-1 en gótica, y el apartado 3.3 con los nombres de función unicodedata y normalize() en una letra monoespaciada verde azulado." }
+---
+
+## Lo que vas a componer
+
+Cinco páginas del capítulo 3 de un libro japonés de programación inventado, 実践 日本語テキスト処理 (Procesamiento práctico de texto japonés), sobre la normalización Unicode. Va compuesto como los libros japoneses de informática: A5, una columna de 36 caracteres por 29 líneas de Noto Serif JP a 9 pt, títulos en Noto Sans JP y código en BIZ UDGothic. Es el caso difícil de la composición japonesa, porque casi cada frase lleva una palabra latina, un punto de código, una cifra o un nombre de función: los cortes de línea siguen el 禁則処理 (kinsoku shori) más estricto de JLReq, la puntuación conserva su espaciado de ancho completo y un cuarto de cuadratín separa el japonés del latín sin que nadie teclee un espacio. Una figura, una tabla, un listado y notas al pie llevan rótulos japoneses: 図3-1, 表3-1 y números volados que se cuentan por página. <RecipeLink slug="code-listings-and-keycaps">Listados de código y teclas</RecipeLink> es la misma clase de página en inglés.
+
+## Elaboración
+
+### 1 · Las reglas japonesas vienen con la etiqueta
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `locale: 'ja'` activa las reglas de JLReq, los *Requirements for Japanese Text Layout* del W3C, y los valores escritos bajo `cjk` son los que `'auto'` elige para el japonés ([Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)). Con `ja-very-strict`, ninguna línea empieza por ー, un kana pequeño, 々 o un signo de cierre, y ninguna acaba en un signo de apertura. La puntuación (約物, yakumono) conserva su cuadratín dentro de la línea, y dos signos que se juntan, como 」、, comparten uno. En la <PageRef page={1}>página 41</PageRef>, la línea que acaba en 実際に変換し、 saca su 、 más allá del margen derecho: es la ぶら下げ (burasage), y el motor solo la usa cuando, sin ella, tendría que pasar el signo a la línea siguiente. `latinSpacing` pone un cuarto de cuadratín (四分アキ, shibun aki) entre Unicode y では, y entre U+304C y を, aunque el Markdown no lleva espacio ahí.
+
+<PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Página 41: un cuarto de cuadratín alrededor de Unicode y Python, escritos sin espacio; el 、 del final de la segunda línea cuelga fuera de la medida." />
+
+La diferencia con el chino está en los signos. Un libro chino del continente pone 、 y ， a medio ancho por omisión y 。 a ancho completo (Kaiming); uno japonés deja todos los signos a ancho completo y solo los aprieta donde se juntan dos. Los cortes del chino no tienen kana pequeños ni ー que apartar del principio de línea, así que `ja-very-strict` es un nivel propio.
+
+### 2 · Código en una letra monoespaciada con kana
+
+<Excerpt region="listing" />
+
+Postext no compone bloques de código cercados, así que el pen reescribe el Markdown antes de componer. Cada línea de la valla pasa a ser un párrafo de un recuadro tintado, y cada `` `nombre` `` un chip en BIZ UDGothic. La letra importa: la cadena del ejemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, necesita katakana de medio ancho, letras de ancho completo y cifras en círculo, que una letra de código occidental no tiene. BIZ UDGothic compone el latín de medio ancho y el kana de ancho completo con paso fijo, así que el listado conserva sus columnas ([Chips en línea](/es/docs/document-format#chips-en-línea)).
+
+### 3 · 図3-1 y 表3-1
+
+<Excerpt region="resources" />
+
+`defaultResourceTypes('ja')` llama a los tipos 図 y 表 y los numera por capítulo con un guion, y `continuation.headings` hace de este el capítulo 3, así que la primera figura es 図3-1. Un documento `ja` junta rótulo y número y pone un espacio ideográfico tras el número, como imprimen los libros japoneses 図3-1　「が」の二つの表し方, así que el estilo de pie solo elige la letra y los colores. La tabla va en `'here'`, debajo del párrafo que la cita. Los rótulos de la figura son solo latinos, U+304C y E3 81 8C, dibujados con el archivo latin de la letra de código incrustado en el SVG.
+
+### 4 · Notas por página, a la japonesa
+
+<Excerpt region="notes" />
+
+Las notas no necesitan más ajuste que su cuerpo: en un documento japonés horizontal, los valores por omisión son los que JLReq describe para los libros horizontales, la nota al pie de la columna donde se cita, numerada desde 1 en cada página, con la llamada volada y un filete de un tercio de la medida ([Notas al pie](/es/docs/configuration#notas-al-pie)). La llamada va antes del punto, `保存していた[^hfs]。`, así que el 。 nunca abre la línea siguiente separado de ella.
+
+### 5 · Un título de apartado de tres líneas
+
+<Excerpt region="opener" />
+
+La apertura del capítulo es un diseño sobre el H1: una banda verde azulado, el número del capítulo a 64 pt tomado de `{numberDecimal}` y el título. Los títulos de apartado usan `lineSpan: 3`, el 行取り (gyōdori): cada uno ocupa exactamente tres líneas del texto, con su texto centrado en ellas, así que el texto que sigue va al paso de la retícula. `headings.balancing.enabled: false` impide que el motor añada líneas sobre los títulos para igualar una página.
+
+## Variantes
+
+### Deja que el kana pequeño y ー abran línea
+
+`ja-strict` es la regla de JLReq para los libros generales: っ, ゃ y ー pueden abrir línea, lo que da al cortador más sitios donde cortar y menos líneas espaciadas.
+
+```diff
+-  lineBreak: 'ja-very-strict', // no line starts with ー, small kana, 々, 」、。？・ or ：
++  lineBreak: 'ja-strict', // small kana, ー and 々 may open a line
+```
+
+### Sin espacio entre japonés y latín
+
+Algunas editoriales componen las palabras latinas pegadas al kana, sin el cuarto de cuadratín.
+
+```diff
+-  latinSpacing: em(0.25), // 四分アキ between kana or kanji and Latin letters or digits
++  latinSpacing: em(0), // Unicodeでは, set solid
+```
+
+## Errores frecuentes
+
+- Una palabra latina no se puede cortar dentro de una línea japonesa, así que una larga al final de la línea deja la anterior espaciada entre sus caracteres. El primer borrador de este capítulo glosaba los términos en inglés, 正準等価（canonical equivalence）, y dos líneas salieron flojas; se quitaron los términos ingleses donde no ayudaban al lector.
+- Elige la letra del código por los caracteres que lleva. M PLUS 1 Code, la primera que se probó aquí, no tiene katakana de medio ancho: la pantalla recurrió a una letra del sistema para ｶﾞｲﾄﾞ y al PDF le faltaban los glifos.
+- Un listado es un recuadro, y por omisión no se parte. En la página 43, las cuatro líneas que quedaban bajo 3.3 no bastaban, así que abre la página 44.
