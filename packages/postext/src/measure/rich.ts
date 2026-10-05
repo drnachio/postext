@@ -868,7 +868,7 @@ const LOOKED_PAST = '\u200B';
  */
 export function sidewaysNumberSpans(spans: InlineSpan[], digits: number, region: CjkRegion): InlineSpan[] {
   if (!(digits > 0)) return spans;
-  const numbered = (s: InlineSpan): boolean => /[0-9]/.test(s.text) && !setsObject(s) && !s.ruby && !s.warichu && !s.combineUpright && !s.orientation && !s.script;
+  const numbered = (s: InlineSpan): boolean => /[0-9]/.test(s.text) && !setsObject(s) && !s.ruby && !s.kunten && !s.warichu && !s.combineUpright && !s.orientation && !s.script;
   if (!spans.some(numbered)) return spans;
   // The paragraph as graphemes; a note marker or a reference is looked
   // past, and a span that sets something else than its text (a formula, a
@@ -879,7 +879,7 @@ export function sidewaysNumberSpans(spans: InlineSpan[], digits: number, region:
   for (const s of spans) {
     firsts.push(all.length);
     if (s.footnote !== undefined || s.ref !== undefined) all.push(LOOKED_PAST);
-    else if (setsObject(s) || s.ruby || s.warichu || s.combineUpright || s.orientation === 'upright') all.push(NOT_LATIN);
+    else if (setsObject(s) || s.ruby || s.kunten || s.warichu || s.combineUpright || s.orientation === 'upright') all.push(NOT_LATIN);
     else for (const g of graphemesOf(s.text)) all.push(g);
   }
   const latin = latinReader(all, region);
@@ -1605,12 +1605,12 @@ function measureRichText(
   // justified lines between them — also text with no two CJK letters in a
   // row (价¥5,999。好, 第1条、第2条). A Latin paragraph that only quotes a
   // few CJK words stays here, with a break allowed next to their characters.
-  // So is a paragraph with ruby or a warichu note (#194, #195), which the
-  // composer alone lays out.
+  // So is a paragraph with ruby, a warichu note or kanbun marks (#194,
+  // #195, #430), which the composer alone lays out.
   // The paragraph is looked at for CJK text once (`cjkText`); a Latin one
   // then never looks into its words.
   const cjkText = hasCJK(plainText);
-  if ((cjkText && composesAsCjk(plainText)) || spans.some((s) => s.ruby || s.warichu)) {
+  if ((cjkText && composesAsCjk(plainText)) || spans.some((s) => s.ruby || s.warichu || s.kunten)) {
     return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   }
 

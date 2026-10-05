@@ -34,7 +34,7 @@ import type { CjkRegion, ResourceSafeArea } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
-import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf } from './htmlAnnotations';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf, kuntenHtml, verticalKuntenTateHtml } from './htmlAnnotations';
 import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
 import type { VDTResourceVideo } from './vdt';
@@ -1012,6 +1012,12 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     if (seg.ruby) parts.push(ruby.open(seg));
     parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
     if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString), ruby.after(seg));
+    if (seg.kunten) {
+      // Kanbun marks (#430), after the character's `<ruby>`; the 送り仮名
+      // read and copy after their character, as transparent text.
+      parts.push(ruby.end(), kuntenHtml(seg.kunten, x, pickSegmentColor(seg, block), quoteFontString));
+      if (seg.kunten.okuri) parts.push(lineEndHtml(seg.kunten.okuri, x + seg.width));
+    }
     x += seg.width;
   }
   parts.push(ruby.end(), links.end());
@@ -1394,6 +1400,13 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
     if (seg.ruby) inner.push(ruby.open(seg));
     inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
     if (seg.ruby) inner.push(RT_OPEN, verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf, false), '</rt>', ruby.after(seg));
+    if (seg.kunten) {
+      // Kanbun marks beside the character (#430), after its `<ruby>`; its
+      // 送り仮名 read and copy after it, as transparent text.
+      inner.push(ruby.end(), verticalAnnotationRuns(seg.kunten.runs, x, seg.kunten.color ?? color, v, axisOf));
+      if (seg.kunten.tate) sideways.push(verticalKuntenTateHtml(seg.kunten, x, line, color));
+      if (seg.kunten.okuri) inner.push(verticalSpan(x + seg.width, spaceAxis, esc(seg.kunten.okuri), LINE_END_DECL));
+    }
     x += seg.width;
   }
   inner.push(ruby.end());

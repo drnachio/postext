@@ -7,6 +7,8 @@ import type {
   CjkEmphasisMarkStyle,
   CjkGridConfig,
   CjkHangingPunctuation,
+  CjkKuntenConfig,
+  CjkKuntenPlacement,
   CjkLineBreak,
   CjkParagraphStartBracket,
   CjkPunctuationWidth,
@@ -21,6 +23,7 @@ import type {
   ResolvedCjkConfig,
   ResolvedCjkEmphasisMarkConfig,
   ResolvedCjkGridConfig,
+  ResolvedCjkKuntenConfig,
   ResolvedCjkRubyConfig,
   ResolvedCjkWarichuConfig,
 } from '../types';
@@ -29,10 +32,10 @@ import { dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale
  *  (marks hang in Japan only), a quarter em between Han and Latin, no
- *  grid; readings
- *  and warichu notes at half the text size, warichu brackets by region
- *  (none but in Japan, `defaultCjkWarichuBrackets`), marks in the text
- *  colour (`annotationColor` unset). */
+ *  grid; readings, warichu notes and kanbun marks at half the text size
+ *  (the 返り点 after their character, JIS X 4051 §5.5), warichu brackets
+ *  by region (none but in Japan, `defaultCjkWarichuBrackets`), marks in
+ *  the text colour (`annotationColor` unset). */
 export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & Pick<CjkConfig, 'annotationColor'> = {
   region: 'auto',
   lineBreak: 'auto',
@@ -51,6 +54,7 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   bookTitleBrackets: 'auto',
   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'auto', align: 'auto', smallKana: 'keep' },
   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' },
+  kunten: { fontSize: { value: 0.5, unit: 'em' }, placement: 'inline' },
 };
 
 const EMPHASES: readonly CjkEmphasis[] = ['italic', 'dots'];
@@ -155,6 +159,17 @@ function resolveRuby(ruby: CjkRubyConfig | undefined, region: CjkRegion): Resolv
     ...(overhang ? { overhang } : {}),
     ...(align ? { align } : {}),
     ...(ruby?.smallKana === 'full' ? { smallKana: 'full' as const } : {}),
+  };
+}
+
+const KUNTEN_PLACEMENTS: readonly CjkKuntenPlacement[] = ['inline', 'interlinear'];
+
+function resolveKunten(kunten: CjkKuntenConfig | undefined): ResolvedCjkKuntenConfig {
+  const d = DEFAULT_CJK_CONFIG.kunten;
+  return {
+    fontSize: isLength(kunten?.fontSize) && kunten.fontSize.value > 0 ? { value: kunten.fontSize.value, unit: kunten.fontSize.unit } : { ...d.fontSize! },
+    ...(isColor(kunten?.color) ? { color: kunten.color } : {}),
+    placement: kunten?.placement && KUNTEN_PLACEMENTS.includes(kunten.placement) ? kunten.placement : d.placement!,
   };
 }
 
@@ -305,6 +320,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     ...(isColor(partial?.annotationColor) ? { annotationColor: partial.annotationColor } : {}),
     ruby: resolveRuby(partial?.ruby, region),
     warichu: resolveWarichu(partial?.warichu, region),
+    kunten: resolveKunten(partial?.kunten),
   };
 }
 
@@ -336,6 +352,18 @@ function stripWarichuDefaults(warichu: CjkWarichuConfig | undefined): CjkWarichu
   // brackets (Japan's （）, `defaultCjkWarichuBrackets`).
   if (warichu.open !== undefined) result.open = warichu.open;
   if (warichu.close !== undefined) result.close = warichu.close;
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/** `cjk.kunten` without the fields at their default; undefined when
+ *  nothing is left. */
+function stripKuntenDefaults(kunten: CjkKuntenConfig | undefined): CjkKuntenConfig | undefined {
+  if (!kunten) return undefined;
+  const d = DEFAULT_CJK_CONFIG.kunten;
+  const result: CjkKuntenConfig = {};
+  if (kunten.fontSize !== undefined && !dimensionsEqual(kunten.fontSize, d.fontSize!)) result.fontSize = kunten.fontSize;
+  if (kunten.color !== undefined) result.color = kunten.color;
+  if (kunten.placement !== undefined && kunten.placement !== d.placement) result.placement = kunten.placement;
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
@@ -390,5 +418,7 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (ruby) result.ruby = ruby;
   const warichu = stripWarichuDefaults(cjk.warichu);
   if (warichu) result.warichu = warichu;
+  const kunten = stripKuntenDefaults(cjk.kunten);
+  if (kunten) result.kunten = kunten;
   return Object.keys(result).length > 0 ? result : undefined;
 }

@@ -3,7 +3,7 @@
  * #421): emphasis dots (着重号, 傍点), the proper-name line (专名号), the
  * wavy book-title line (书名号甲式) and side lines (傍線), as
  * `VDTLine.marks` — primitives the renderers draw as they are — and the
- * leading checks of marks and ruby (#194).
+ * leading checks of marks, ruby (#194) and kanbun marks (#430).
  *
  * The measurer flags the segments (`VDTLineSegment.cjkMarks`); the marks are
  * placed once the document is laid out, where the renderers paint each
@@ -373,14 +373,33 @@ function rubyNeed(line: VDTLine, em: number): number {
   return need;
 }
 
+/** How far a line's kanbun marks (#430) reach out of its em box, in em
+ *  of the text: the 送り仮名 beside it, 返り点 set in the line gap. */
+function kuntenNeed(line: VDTLine, em: number): number {
+  const top = -(CENTRAL + 0.5) * em;
+  const bottom = (0.5 - CENTRAL) * em;
+  let need = 0;
+  for (const seg of line.segments ?? []) {
+    for (const run of seg.kunten?.runs ?? []) {
+      const runEm = fontEm(run.fontString);
+      const centre = run.dy - CENTRAL * runEm;
+      need = Math.max(need, top - (centre - runEm / 2), centre + runEm / 2 - bottom);
+    }
+  }
+  return need / em;
+}
+
 /** How far a line's marks and readings reach out of its em box, px: over
  *  it (`head`: above in horizontal text, right in vertical text) and
- *  under it (`foot`), and whether readings reach that far on each side. */
+ *  under it (`foot`), and whether readings (or kanbun marks, #430) reach
+ *  that far on each side. */
 interface LineReach {
   head: number;
   foot: number;
   headRuby: boolean;
   footRuby: boolean;
+  headKunten?: boolean;
+  footKunten?: boolean;
 }
 
 /** The {@link LineReach} of a line whose text is `em` px (its em box
@@ -423,6 +442,25 @@ function lineReach(line: VDTLine, em: number): LineReach {
         extend(axis - w / 2, axis + w / 2, true);
       } else {
         extend(run.dy - (CENTRAL + 0.5) * runEm, run.dy + (0.5 - CENTRAL) * runEm, true);
+      }
+    }
+  }
+  // Kanbun marks, by their em box: the side they reach furthest out on is
+  // theirs when nothing else reaches as far.
+  for (const seg of line.segments ?? []) {
+    for (const run of seg.kunten?.runs ?? []) {
+      const runEm = fontEm(run.fontString);
+      const lo = run.dy - (CENTRAL + 0.5) * runEm;
+      const hi = run.dy + (0.5 - CENTRAL) * runEm;
+      if (top - lo > reach.head + 1e-9) {
+        reach.head = top - lo;
+        reach.headRuby = false;
+        reach.headKunten = true;
+      }
+      if (hi - bottom > reach.foot + 1e-9) {
+        reach.foot = hi - bottom;
+        reach.footRuby = false;
+        reach.footKunten = true;
       }
     }
   }
@@ -488,16 +526,16 @@ function resourceBlocksOf(doc: VDTDocument): VDTBlock[] {
 /**
  * Set `VDTLine.marks` on every line of the document that holds Chinese
  * marks, and report the paragraphs whose line gap is narrower than their
- * marks or readings need (`cjkMarksExceedLeading`, `rubyExceedsLeading`),
- * once per paragraph. `cjk` is the resolved configuration (its
- * `annotationColor`).
+ * marks, readings or kanbun marks need (`cjkMarksExceedLeading`,
+ * `rubyExceedsLeading`, `kuntenExceedsLeading`), once per paragraph. `cjk`
+ * is the resolved configuration (its `annotationColor`).
  *
  * The gap between two lines of a column is shared: what the upper line
  * sets under it and the lower one over it (dots under one line and the
  * readings over the next, in one paragraph or across two) must fit in it
  * together. Where they do not, the lower line's paragraph is reported
- * (`rubyExceedsLeading` when readings take part, else
- * `cjkMarksExceedLeading`).
+ * (`rubyExceedsLeading` when readings take part, `kuntenExceedsLeading`
+ * when kanbun marks do, else `cjkMarksExceedLeading`).
  *
  * The cells, captions and notes of resource blocks (#429) are texts of
  * their own: their marks are set and their leading checked the same way,
@@ -534,6 +572,7 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
   for (const group of groups) {
     let marked = false;
     let ruby = false;
+    let kunten = false;
     for (const line of group.lines) {
       const segs = line.segments;
       if (!segs) continue;
@@ -548,8 +587,9 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
       // line gap is checked as a reading is, in any line.
       if (line.cjkComposed && segs.some((s) => s.ruby && s.ruby.position !== 'right')) ruby = true;
       if (segs.some((s) => s.sideMarker)) ruby = true;
+      if (line.cjkComposed && segs.some((s) => s.kunten)) kunten = true;
     }
-    if (!marked && !ruby) continue;
+    if (!marked && !ruby && !kunten) continue;
     const em = fontEm(group.like.fontString);
     const first = group.lines[0];
     if (!first || em <= 0) continue;
@@ -577,6 +617,13 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         warnings.push({ kind: 'rubyExceedsLeading', text: first.text, gapEm: round(gapEm), neededEm: round(need), ...at });
       }
     }
+    if (kunten) {
+      const need = Math.max(...group.lines.map((l) => kuntenNeed(l, em)));
+      if (need > 0 && gapEm < need - 1e-6 && !reported.has(`k${where}`)) {
+        reported.add(`k${where}`);
+        warnings.push({ kind: 'kuntenExceedsLeading', text: first.text, gapEm: round(gapEm), neededEm: round(need), ...at });
+      }
+    }
   }
   // The gaps two lines of a column share.
   for (const column of columns.values()) {
@@ -588,11 +635,12 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
       const gap = (b.line.baseline - (CENTRAL + 0.5) * b.em) - (a.line.baseline + (0.5 - CENTRAL) * a.em);
       if (need <= gap + 1e-6) continue;
       const ruby = a.reach.footRuby || b.reach.headRuby;
-      const key = `${ruby ? 'r' : 'm'}${b.group.where}`;
+      const kanbun = !ruby && (a.reach.footKunten === true || b.reach.headKunten === true);
+      const key = `${ruby ? 'r' : kanbun ? 'k' : 'm'}${b.group.where}`;
       if (reported.has(key)) continue;
       reported.add(key);
       warnings.push({
-        kind: ruby ? 'rubyExceedsLeading' : 'cjkMarksExceedLeading',
+        kind: ruby ? 'rubyExceedsLeading' : kanbun ? 'kuntenExceedsLeading' : 'cjkMarksExceedLeading',
         text: b.line.text,
         gapEm: round(gap / b.em),
         neededEm: round(need / b.em),

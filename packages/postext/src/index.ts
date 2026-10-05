@@ -250,10 +250,13 @@ export type {
   CjkRubyOverhang,
   CjkRubyAlign,
   CjkWarichuConfig,
+  CjkKuntenConfig,
+  CjkKuntenPlacement,
   ResolvedCjkConfig,
   ResolvedCjkGridConfig,
   ResolvedCjkRubyConfig,
   ResolvedCjkWarichuConfig,
+  ResolvedCjkKuntenConfig,
   FootnotePlacement,
   FootnoteNumbering,
   FootnoteMarkerPosition,
@@ -328,6 +331,7 @@ export type {
   VDTSegmentMarks,
   VDTAnnotationRun,
   VDTRuby,
+  VDTKunten,
   VDTWarichu,
   VDTLineMark,
   VDTChip,
@@ -391,7 +395,7 @@ export type { BidiClass, BaseDirection, BidiParagraph, BidiIsolate, BidiRun, Joi
 export { computeColumnEdges } from './pipeline/resourceLayout';
 export { findAnnotations } from './parse/annotations';
 export type { FoundAnnotation, AnnotationName } from './parse/annotations';
-export type { ContentBlock, ContentBlockType, DirectiveAttrs, VerseInfo, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline } from './parse';
+export type { ContentBlock, ContentBlockType, DirectiveAttrs, VerseInfo, DirectiveName, ContainerName, RefCase, InlineSpan, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten } from './parse';
 export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES } from './parse';
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
 export type { OrientationMark } from './parse';

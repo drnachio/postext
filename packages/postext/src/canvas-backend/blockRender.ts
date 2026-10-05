@@ -12,7 +12,7 @@ import { counterFlipBox } from './mirrorFrame';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
-import { paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { joiningScriptIn } from '../measure/joining';
 
@@ -308,6 +308,8 @@ function renderComposedSegments(
     fillSegmentText(ctx, seg, x, baseline, cuts);
     // A ruby base's reading (#194).
     if (seg.ruby) paintRuby(ctx, seg.ruby, x, baseline, fill);
+    // Kanbun marks (#430).
+    if (seg.kunten) paintKunten(ctx, seg.kunten, x, baseline, fill);
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -319,7 +321,7 @@ function composedSegmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
     || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
-    || s.ruby !== undefined || s.warichu !== undefined || s.labelTab !== undefined || s.sideMarker !== undefined;
+    || s.ruby !== undefined || s.kunten !== undefined || s.warichu !== undefined || s.labelTab !== undefined || s.sideMarker !== undefined;
 }
 
 /**

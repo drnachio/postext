@@ -223,6 +223,12 @@ export interface InlineSpan {
    *  across every character of the run, punctuation and spaces included,
    *  in any script. Every span of one line shares the object. */
   sideline?: InlineSideline;
+  /** Kanbun reading marks (訓点, `:kunten[字]{kaeri okuri tate}`, #430):
+   *  the 返り点 and 送り仮名 (and a 竪点 to the next character) that go
+   *  with the span's last character, in the line gap and the space after
+   *  it as JIS X 4051 §5 sets them. Every span of one directive shares the
+   *  object; the marks go with the last character of the last one. */
+  kunten?: InlineKunten;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never
@@ -258,6 +264,29 @@ export interface InlineSideline {
    *  right side, under the left). Unset: under in horizontal text, over
    *  (right) in vertical text, where Japanese books set 傍線. */
   position?: 'over' | 'under';
+}
+
+/** The kanbun reading marks of a character (see {@link InlineSpan.kunten}). */
+export interface InlineKunten {
+  /** Tells directives apart. Ids count from 1 in each parse of a text. */
+  id: number;
+  /** The 返り点 as written (`kaeri`): レ, 一 二 三 四, 上 中 下, 甲 乙 丙
+   *  丁, 天 地 人, or one of them with レ (一レ, 上レ, 甲レ, 天レ). The
+   *  kanbun code points (㆑ ㆒ … ㆟, U+3191–319F) read as the characters
+   *  they stand for. Unset: none. */
+  kaeri?: string;
+  /** The 送り仮名 (`okuri`), small kana right of the character in vertical
+   *  text, over it in horizontal text. Unset: none. */
+  okuri?: string;
+  /** A 竪点 (`tate`): the character is read with the next one as one word,
+   *  and a short rule joins them (JIS X 4051 §5.7). */
+  tate?: true;
+  /** Resolved by the layout before measuring (`cjk.kunten`): the marks'
+   *  font (CSS shorthand at their size), colour (hex; unset: the text's)
+   *  and where the 返り点 go. */
+  fontString?: string;
+  color?: string;
+  placement?: 'inline' | 'interlinear';
 }
 
 /** An emphasis-dot mark: its shape, whether it is filled, and its side. */

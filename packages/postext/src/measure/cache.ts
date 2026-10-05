@@ -58,12 +58,12 @@ function mathCacheKey(span: InlineSpan): string {
   return `|m:${span.math!.tex}${render ? `|${render.widthPx}x${render.heightPx}` : ''}`;
 }
 
-/** The Chinese and Japanese annotations of a span (#193–#195, #421):
+/** The Chinese and Japanese annotations of a span (#193–#195, #421, #430):
  *  marks set on the same text change its segments, a reading or a note its
  *  measure. A directional isolate (#367) changes the order of its line.
  *  Empty for a span without any, so its key is unchanged. */
 function annotationCacheKey(s: InlineSpan): string {
-  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction && !s.sideline) return '';
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction && !s.sideline && !s.kunten) return '';
   let key = '';
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
@@ -78,6 +78,7 @@ function annotationCacheKey(s: InlineSpan): string {
   if (s.inserted) key += '|ins';
   for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;
   if (s.sideline) key += `|sl:${s.sideline.id}:${s.sideline.style ?? ''}:${s.sideline.position ?? ''}`;
+  if (s.kunten) key += `|kt:${s.kunten.id}:${s.kunten.kaeri ?? ''}:${s.kunten.okuri ?? ''}:${s.kunten.tate ? 't' : ''}:${s.kunten.fontString ?? ''}:${s.kunten.color ?? ''}:${s.kunten.placement ?? ''}`;
   return key;
 }
 

@@ -1,14 +1,15 @@
 /**
  * Chinese annotations on the canvas (#193, #194, #195): the marks the
  * layout set on a line (`VDTLine.marks`: emphasis dots, proper-name and
- * book-title lines), a ruby base's reading and a warichu note's rows. All
+ * book-title lines), a ruby base's reading, a warichu note's rows and the
+ * kanbun marks of a character (#430). All
  * of it is placed by the layout in the flow frame of the line, so on a
  * vertical page it is painted inside the page's flow transform as the text
  * is, and text runs go through {@link fillFlowText} (cells upright, Latin
  * sideways).
  */
 
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt';
+import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt';
 import { fillFlowText, verticalPaintActive, type TextPaintMode } from './verticalText';
 import type { MarkCutRule } from '../measure/markCuts';
 
@@ -151,6 +152,20 @@ function paintRuns(ctx: Ctx, runs: readonly VDTAnnotationRun[], x: number, basel
 /** Paint a ruby base's reading; `x` is where the base's segment starts. */
 export function paintRuby(ctx: Ctx, ruby: VDTRuby, x: number, baseline: number, textColor: string): void {
   paintRuns(ctx, ruby.runs, x, baseline, ruby.color ?? textColor, 'text');
+}
+
+/** Paint a character's kanbun marks (返り点, 送り仮名, 竪点, #430); `x` is
+ *  where its segment starts. */
+export function paintKunten(ctx: Ctx, kunten: VDTKunten, x: number, baseline: number, textColor: string): void {
+  const color = kunten.color ?? textColor;
+  paintRuns(ctx, kunten.runs, x, baseline, color, 'text');
+  const t = kunten.tate;
+  if (t) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect(x + t.dx, baseline + t.dy - t.thickness / 2, t.length, t.thickness);
+    ctx.restore();
+  }
 }
 
 /** Paint a warichu note's rows; `x` is where the note's segment starts. */

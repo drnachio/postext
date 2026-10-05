@@ -686,6 +686,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'rubyExceedsLeading':
       text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
       break;
+    case 'kuntenExceedsLeading':
+      text = `The kanbun "${w.text}" has reading marks ${w.neededEm} em out of its lines in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
+      break;
     case 'arabicMarksExceedLeading':
       text = `The vowel marks of "${w.text}" meet the next line: the two lines' ink takes ${w.neededEm} em, and their baselines are ${w.lineHeightEm} em apart; set the paragraph with more leading`;
       break;

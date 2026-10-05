@@ -595,8 +595,8 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
  *  marks, side lines) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before
  *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
- *  references, swatches, ruby and warichu notes keep their own spans, and
- *  so do characters the layout added (a book title's 《》). */
+ *  references, swatches, ruby, kanbun marks and warichu notes keep their
+ *  own spans, and so do characters the layout added (a book title's 《》). */
 export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
@@ -607,9 +607,9 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
     // A run set upright or sideways in vertical text keeps its span: the
     // mark is about how it stands, not a style. So does a directional
     // isolate: it decides the order of the text.
-    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation || plain.ruby || plain.warichu || plain.inserted || plain.direction;
+    const special = plain.math || plain.mathRender || plain.swatch || plain.ref || plain.chip || plain.captionLabel || plain.footnote || plain.combineUpright || plain.orientation || plain.ruby || plain.kunten || plain.warichu || plain.inserted || plain.direction;
     const last = out[out.length - 1];
-    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation || last.ruby || last.warichu || last.inserted || last.direction);
+    const lastSpecial = last && (last.math || last.mathRender || last.swatch || last.ref || last.chip || last.captionLabel || last.footnote || last.combineUpright || last.orientation || last.ruby || last.kunten || last.warichu || last.inserted || last.direction);
     if (!special && last && !lastSpecial) {
       out[out.length - 1] = { ...last, text: last.text + plain.text };
       changed = true;
@@ -842,7 +842,7 @@ function linkDestinationRanges(text: string): Array<readonly [number, number]> {
 /** The `{…}` attributes of an inline directive — `:ref{…}`, `:swatch{…}`,
  *  a chip's `:chip[…]{…}`, an annotation's `:ruby[…]{…}` — in group 1:
  *  data, never text to break. */
-const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu|ltr|rtl|sideline)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
+const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})

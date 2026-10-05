@@ -3,13 +3,17 @@
  * #428): the marks of a line (`VDTLine.marks`) as positioned `aria-hidden`
  * boxes and small SVG paths, a ruby base and its reading as a semantic
  * `<ruby>` whose reading runs are positioned text (see {@link RUBY_OPEN}),
- * and a warichu note's rows as two positioned runs inside a `role="note"`
- * box that reads the note once. Everything sits in the line's box (its
- * left edge and top are the line's `bbox.x` / `bbox.y`), at the geometry
- * the layout gave it: the same the canvas and PDF backends draw.
+ * a warichu note's rows as two positioned runs inside a `role="note"` box
+ * that reads the note once, and a character's kanbun marks (#430) as
+ * positioned `aria-hidden` text and a rule (the backend adds the 送り仮名
+ * as transparent text after the character, which reads and copies as
+ * `學ビテ`; the 返り点 are reading-order marks, not read). Everything sits
+ * in the line's box (its left edge and top are the line's `bbox.x` /
+ * `bbox.y`), at the geometry the layout gave it: the same the canvas and
+ * PDF backends draw.
  */
 
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from './vdt';
+import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from './vdt';
 import { dottedCentres, sesamePath, wavePoints } from './canvas-backend/annotations';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -135,6 +139,31 @@ export function rubyGroupOf(ruby: VDTRuby): string | undefined {
  *  and is read (and copied) as such. */
 export function sideMarkerHtml(marker: NonNullable<VDTLineSegment['sideMarker']>, x: number, color: string, quote: FontQuoter): string {
   return marker.runs.map((r) => runHtml(r, x, color, quote, false)).join('');
+}
+
+/** A 竪点 (`VDTKunten.tate`) as a line mark of its line, its segment
+ *  starting at `x`. */
+function tateMark(t: NonNullable<VDTKunten['tate']>, x: number): VDTLineMark {
+  return { kind: 'line', x: x + t.dx, y: t.dy, length: t.length, thickness: t.thickness };
+}
+
+/** A character's kanbun marks, from its segment's `x`: the runs, and the
+ *  竪点 hung from the line's baseline as the line's marks are. */
+export function kuntenHtml(kunten: VDTKunten, x: number, color: string, quote: FontQuoter): string {
+  const ink = kunten.color ?? color;
+  const runs = kunten.runs.map((r) => runHtml(r, x, ink, quote)).join('');
+  if (!kunten.tate) return runs;
+  return runs + `<span aria-hidden="true" style="position:absolute;left:0;top:0;white-space:pre;">`
+    + `<span style="display:inline-block;position:relative;width:0;height:0;vertical-align:baseline;">${markHtml(tateMark(kunten.tate, x), 0, ink)}</span></span>`;
+}
+
+/** The 竪点 of a character on a vertical line, inside the line's box of the
+ *  turned flow (see {@link verticalLineMarksHtml}); '' when it has none. */
+export function verticalKuntenTateHtml(kunten: VDTKunten, x: number, line: VDTLine, color: string): string {
+  if (!kunten.tate) return '';
+  const baseline = line.baseline - line.bbox.y;
+  return `<span aria-hidden="true" style="position:absolute;left:0;top:${n(baseline)}px;width:0;height:0;">`
+    + markHtml(tateMark(kunten.tate, x), 0, kunten.color ?? color, true) + '</span>';
 }
 
 /** A warichu note's part: its rows, in a box that reads the note once. */

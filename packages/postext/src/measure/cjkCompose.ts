@@ -33,8 +33,8 @@
  * and a Markdown link covers only its own.
  */
 
-import type { InlineRuby, InlineSpan, InlineWarichu } from '../parse';
-import type { VDTAnnotationRun, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
+import type { InlineKunten, InlineRuby, InlineSpan, InlineWarichu } from '../parse';
+import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { isJapaneseLanguage } from '../locale';
 import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
@@ -76,7 +76,7 @@ import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
 import { cellAdvance, flowTextWidth, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
 import { isUprightMarkPair, verticalRuns } from '../writingMode';
-import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, readingBaseline, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
+import { foldWidth, isZhuyin, kuntenGeometry, noteRowBaselines, readingAdvance, readingBaseline, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
 import { boxesWidth, fullSizeKana, layoutJisRuby, layoutJukugo, type JisRubyAlign, type JisRubyAllow, type JisRubyBase, type JisRubyBox } from './rubyJis';
 import {
   applyLineEdges,
@@ -270,6 +270,10 @@ interface Unit {
    *  it opens a line (`start`: the reading flush with the line's start,
    *  a jukugo word laid out again from there) or closes one (`end`). */
   rubyGrow?: { start: number; end: number };
+  /** The character kanbun marks go with (#430): the marks and, once sized
+   *  ({@link sizeKunten}), what they paint and the advance they add after
+   *  the character (part of `width`). */
+  kunten?: { mark: InlineKunten; extra?: number; vdt?: VDTKunten };
   /** A character of a warichu note (#195): `width` is its advance at the
    *  note size; a line folds the note's characters it holds into two rows
    *  ({@link foldNotes}). */
@@ -657,6 +661,12 @@ function relayJisEdges(us: Unit[]): void {
     if (!word) continue;
     let e = j;
     while (e + 1 < us.length && us[e + 1]!.ruby?.jis === word) e++;
+    // A word with kanbun marks (#430) keeps its layout: the marks were set
+    // against its readings (`sizeKunten`).
+    if (us.slice(j, e + 1).some((u) => u.kunten?.vdt)) {
+      j = e;
+      continue;
+    }
     const atStart = j === 0;
     const atEnd = e === us.length - 1;
     if (atStart || atEnd) {
@@ -801,9 +811,12 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   // Which units open a span and hold all of it (the candidates for stacked
   // scripts), by index.
   const wholeSpan = new Set<number>();
+  // Where each span's units start, for the kanbun marks (#430).
+  const spanStarts: number[] = [];
 
   for (let si = 0; si < spans.length; si++) {
     const span = spans[si]!;
+    spanStarts.push(units.length);
     // A ruby base: one unit, sized with its reading once its neighbours
     // are known (`sizeRubies`).
     if (span.ruby && span.text.length > 0) {
@@ -995,6 +1008,8 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
     if (units.length === spanFirst + 1 && units[spanFirst]!.kind === 'text') wholeSpan.add(spanFirst);
   }
 
+  if (spans.some((s) => s.kunten)) attachKunten(spans, spanStarts, units);
+
   // A subscript and a superscript that touch are set one over the other
   // (EF-80): the first advances nothing, the second the pair's advance, and
   // the two never part.
@@ -1021,9 +1036,73 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
   return units;
 }
 
+/** Give each kanbun mark (#430) to the last unit its spans made (a space
+ *  aside): the marks go with the base's last character. `starts[i]` is
+ *  where span `i`'s units start. */
+function attachKunten(spans: readonly InlineSpan[], starts: readonly number[], units: Unit[]): void {
+  const last = new Map<InlineKunten, number>();
+  spans.forEach((span, i) => {
+    if (!span.kunten) return;
+    const end = i + 1 < starts.length ? starts[i + 1]! : units.length;
+    for (let k = end - 1; k >= starts[i]!; k--) {
+      if (units[k]!.kind === 'space') continue;
+      last.set(span.kunten, k);
+      break;
+    }
+  });
+  for (const [mark, k] of last) units[k]!.kunten = { mark };
+}
+
+/**
+ * Lay out the kanbun marks of each unit that carries some (see
+ * `kuntenGeometry`): their runs, and the advance they add after the
+ * character, which joins the unit's width. Run once the units are final
+ * and the ruby readings sized (a 送り仮名 follows a reading on its side).
+ * A character inside a warichu note keeps no marks.
+ */
+function sizeKunten(units: Unit[], letterSpacingPx: number): void {
+  for (const u of units) {
+    if (!u.kunten || u.kunten.vdt || u.note || u.kind !== 'text') continue;
+    const mark = u.kunten.mark;
+    if (!mark.kaeri && !mark.okuri && !mark.tate) continue;
+    const em = emOfFont(u.style.font);
+    const g = u.ruby?.geometry;
+    // Where the character ends: the base inside a ruby box (a Japanese
+    // one, #422, spread by `tracking` after each character but its last),
+    // else the unit less the tracking after its last character.
+    const baseEnd = !g ? u.width - letterSpacingPx
+      : u.ruby!.base !== undefined ? g.inset + u.ruby!.base + (g.tracking ?? 0) * (u.graphemes - 1)
+        : u.ruby!.position === 'right' ? u.width - g.rtWidth : u.width - g.inset;
+    let readingEnd: number | undefined;
+    if (g && u.ruby!.position !== 'right') {
+      for (const r of g.runs) readingEnd = Math.max(readingEnd ?? -Infinity, r.dx + flowTextWidth(r.text, r.fontString));
+    }
+    const over = u.ruby && u.ruby.position !== 'under';
+    const { extra, kunten } = kuntenGeometry({
+      ...(mark.kaeri ? { kaeri: mark.kaeri } : {}),
+      ...(mark.okuri ? { okuri: mark.okuri } : {}),
+      ...(mark.tate ? { tate: true } : {}),
+      fontString: mark.fontString ?? withFontSize(u.style.font, em / 2),
+      ...(mark.color ? { color: mark.color } : {}),
+      placement: mark.placement ?? 'inline',
+      em,
+      baseEnd,
+      width: u.width,
+      ...(readingEnd !== undefined && over ? { readingOverEnd: readingEnd } : {}),
+      ...(readingEnd !== undefined && !over ? { readingUnderEnd: readingEnd } : {}),
+    });
+    u.kunten = { mark, extra, vdt: kunten };
+    u.width += extra;
+    // Its Japanese ruby word is not laid out again at a line edge
+    // (`relayJisEdges`), so it widens no line there.
+    const word = u.ruby?.jis;
+    if (word) for (const v of units) if (v.ruby?.jis === word) delete v.rubyGrow;
+  }
+}
+
 /** A unit's characters (a mark pair's possible neighbour). */
 function isPlainTextUnit(u: Unit | undefined): u is Unit {
-  return u !== undefined && u.kind === 'text' && !u.token && !u.orient && !u.ruby && !u.note && !u.stacked && !u.place;
+  return u !== undefined && u.kind === 'text' && !u.token && !u.orient && !u.ruby && !u.kunten && !u.note && !u.stacked && !u.place;
 }
 
 /**
@@ -1263,7 +1342,7 @@ const QUESTION_MARKS = new Set(['？', '！', '‼', '⁇', '⁈', '⁉']);
 /** A single character unit (not a run, a ruby base, a note…) whose text is
  *  in `set`. */
 function charUnitIn(u: Unit | undefined, set: ReadonlySet<string>): boolean {
-  return !!u && u.kind === 'text' && !u.run && u.graphemes === 1 && !u.ruby && !u.note && !u.orient && !u.style.script && set.has(u.text);
+  return !!u && u.kind === 'text' && !u.run && u.graphemes === 1 && !u.ruby && !u.kunten && !u.note && !u.orient && !u.style.script && set.has(u.text);
 }
 
 /**
@@ -1286,7 +1365,7 @@ function prepareUnits(units: Unit[], c: CjkComposition, letterSpacingPx: number)
   if (plain && (c.region !== 'mainland' || c.vertical)) return units;
   const full = new Map<Unit, number>();
   for (const u of units) {
-    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked || u.orient || u.ruby || u.note) continue;
+    if (u.kind !== 'text' || u.run || u.graphemes !== 1 || !u.firstCjk || u.style.script || u.stacked || u.orient || u.ruby || u.kunten || u.note) continue;
     if (plain && u.first !== 'interpunct') continue;
     const box = punctuationBox(u.text, u.first, u.width - letterSpacingPx, emOfFont(u.style.font), c);
     if (!box) continue;
@@ -1620,7 +1699,7 @@ function lineFitOf(c: CjkComposition): LineFit | undefined {
     edge: (u, start, end) => (u.punct ? applyLineEdges(u.punct, c, start, end) : 0),
     hangs(units, k, unitAt) {
       const u = unitAt(k);
-      if (u.kind !== 'text' || u.run || u.graphemes !== 1 || u.note || u.ruby || !mayHang(u.text, u.first, c)) return false;
+      if (u.kind !== 'text' || u.run || u.graphemes !== 1 || u.note || u.ruby || u.kunten || !mayHang(u.text, u.first, c)) return false;
       if (k > 0 && isMarkUnit(unitAt(k - 1))) return false;
       return k + 1 >= units.length || !isMarkUnit(units[k + 1]);
     },
@@ -2081,7 +2160,9 @@ function alignEdgeRubies(us: Unit[]): void {
   const align = (j: number, start: boolean): void => {
     const u = us[j]!;
     const g = u.ruby?.geometry;
-    if (!g || u.ruby!.position === 'right' || u.ruby!.jis || g.runs.length === 0) return;
+    // A base with kanbun marks keeps its reading where the marks were set
+    // against it (#430).
+    if (!g || u.ruby!.position === 'right' || u.ruby!.jis || g.runs.length === 0 || u.kunten) return;
     const base = u.width - 2 * g.inset;
     const rt = g.rtWidth;
     const wide = rt > base;
@@ -2390,6 +2471,35 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(u.shift !== undefined ? { baselineShift: u.shift } : {}),
     };
   };
+  /** The segment of a ruby base `width` px wide, `t` its tracking. */
+  const rubySegment = (u: Unit, width: number, t: number | undefined): PendingSegment => {
+    const ruby = u.ruby!;
+    const g = ruby.geometry!;
+    // The box less the advance kanbun marks add after it (#430).
+    const box = u.width - (u.kunten?.extra ?? 0);
+    // A Japanese ruby (#422) names its annotation (`id`), so renderers
+    // can set one `<ruby>` for a word.
+    const jis = ruby.jis !== undefined;
+    return {
+      ...segmentOf(u, width, t),
+      text: u.text,
+      ...(g.inset > 1e-9 ? { inkOffset: g.inset } : {}),
+      // A base spread 1:2:1 under a longer Japanese reading.
+      ...(g.tracking ? { tracking: g.tracking } : {}),
+      ruby: {
+        text: ruby.span.text,
+        fontString: ruby.span.fontString ?? g.runs[0]?.fontString ?? u.style.font,
+        baseWidth: ruby.base ?? box - g.inset * 2 - (ruby.position === 'right' ? g.rtWidth : 0),
+        rtWidth: g.rtWidth,
+        position: ruby.position,
+        ...(ruby.span.group ? { group: true } : {}),
+        ...(ruby.span.color ? { color: ruby.span.color } : {}),
+        ...(jis ? { id: ruby.span.id } : {}),
+        ...(jis && ruby.span.jukugo ? { jukugo: true as const } : {}),
+        runs: g.runs,
+      },
+    };
+  };
   for (let j = 0; j < us.length; j++) {
     const u = us[j]!;
     if (u.kind === 'space' && (u.auto || u.aki)) {
@@ -2413,6 +2523,20 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       pieces.push({ seg: { kind: 'text', text: u.text, width: u.width + gap, warichu: u.warichu }, parts: [u.text], key: undefined });
       continue;
     }
+    if (u.kunten?.vdt) {
+      // A character with kanbun marks (#430): a segment of its own, the
+      // marks painted from its start; the room they take after it (inline
+      // 返り点, a 竪点, 送り仮名 that run past it) and the gap follow as a
+      // space of their own, so the character is painted at its natural
+      // spacing (a ruby base in it centred under its reading).
+      const extra = u.kunten.extra ?? 0;
+      const own = u.width - extra;
+      const seg: PendingSegment = u.ruby?.geometry ? rubySegment(u, own, undefined) : { ...segmentOf(u, own, undefined), text: u.text };
+      seg.kunten = u.kunten.vdt;
+      pieces.push({ seg, parts: [u.text], key: undefined });
+      if (extra + gap > 0) pieces.push({ seg: { kind: 'space', text: '', width: extra + gap, autospace: true }, parts: [''], key: undefined });
+      continue;
+    }
     if (u.ruby?.geometry) {
       // A ruby base: centred in its box, its reading placed from the box's
       // start (#194). One character takes the gap after it as tracking; a
@@ -2420,30 +2544,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       // reading, and the gap follows the box as a space of its own (its
       // width final, as a Han–Latin space's is): tracking would be added
       // after each of its characters.
-      const g = u.ruby.geometry;
       const gapAfter = gap > 0 && u.graphemes > 1;
-      // A Japanese ruby (#422) names its annotation (`id`), so renderers
-      // can set one `<ruby>` for a word.
-      const jis = u.ruby.jis !== undefined;
-      const seg: PendingSegment = {
-        ...segmentOf(u, gapAfter ? u.width : u.width + gap, gap > 0 && !gapAfter ? gap : undefined),
-        text: u.text,
-        ...(g.inset > 1e-9 ? { inkOffset: g.inset } : {}),
-        // A base spread 1:2:1 under a longer Japanese reading.
-        ...(g.tracking ? { tracking: g.tracking } : {}),
-        ruby: {
-          text: u.ruby.span.text,
-          fontString: u.ruby.span.fontString ?? g.runs[0]?.fontString ?? u.style.font,
-          baseWidth: u.ruby.base ?? u.width - g.inset * 2 - (u.ruby.position === 'right' ? g.rtWidth : 0),
-          rtWidth: g.rtWidth,
-          position: u.ruby.position,
-          ...(u.ruby.span.group ? { group: true } : {}),
-          ...(u.ruby.span.color ? { color: u.ruby.span.color } : {}),
-          ...(jis ? { id: u.ruby.span.id } : {}),
-          ...(jis && u.ruby.span.jukugo ? { jukugo: true as const } : {}),
-          runs: g.runs,
-        },
-      };
+      const seg = rubySegment(u, gapAfter ? u.width : u.width + gap, gap > 0 && !gapAfter ? gap : undefined);
       pieces.push({ seg, parts: [u.text], key: undefined });
       if (gapAfter) pieces.push({ seg: { kind: 'space', text: '', width: gap, autospace: true }, parts: [''], key: undefined });
       continue;
@@ -2579,6 +2681,8 @@ export function composeCjkParagraph(
   }
   // Ruby readings (#194), laid out once their neighbours are known.
   if (units.some((u) => u.ruby)) sizeRubies(units);
+  // Kanbun marks (#430), beside the readings.
+  if (units.some((u) => u.kunten)) sizeKunten(units, letterSpacingPx);
   if (!units.some((u) => u.kind !== 'space')) return { lines: [], totalHeight: 0 };
   const fit = lineFitOf(composition);
   const level = options?.cjkLineBreak ?? getCjkLineBreak();

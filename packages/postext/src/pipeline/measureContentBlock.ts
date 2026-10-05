@@ -290,7 +290,7 @@ export function measureContentBlock(
   // text, which is measured as before them.
   const vertical = measuringVertically();
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
-    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline
+    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline || s.kunten
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
     || s.direction !== undefined
     || (vertical && (s.combineUpright || s.orientation)));

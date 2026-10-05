@@ -1,11 +1,12 @@
 /**
- * Chinese and Japanese inline annotations (#193, #194, #195, #421):
+ * Chinese and Japanese inline annotations (#193, #194, #195, #421, #430):
  * emphasis dots (`:dots[…]`), the proper-name and book-title marks
  * (`:name[…]`, `:book[…]`), side lines (傍線, `:sideline[…]{style pos}`),
- * ruby (`:ruby[…]{rt="…" mode align}` and the compact `{紅樓|hóng|lóu}`)
- * and warichu notes (`:warichu[…]{open close}`); and the directional
- * isolates (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which
- * set a run in its own direction inside text of the other.
+ * kanbun reading marks (訓点, `:kunten[字]{kaeri okuri tate}`), ruby
+ * (`:ruby[…]{rt="…" mode align}` and the compact `{紅樓|hóng|lóu}`) and
+ * warichu notes (`:warichu[…]{open close}`); and the directional isolates
+ * (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which set a
+ * run in its own direction inside text of the other.
  *
  * They preserve their text, as `:smallcaps[…]` does: the characters between
  * the brackets stay in the paragraph's plain text (search, the contents,
@@ -18,12 +19,12 @@
  * nested annotations included (`:warichu[甲戌側批：:name[寶玉]…]`).
  */
 
-import type { DirectiveAttrs, EmphasisMark, InlineDirection, InlineRuby, InlineSideline, InlineSpan, InlineWarichu } from './types';
+import type { DirectiveAttrs, EmphasisMark, InlineDirection, InlineKunten, InlineRuby, InlineSideline, InlineSpan, InlineWarichu } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { graphemesOf } from '../measure/graphemes';
 
 /** The inline annotation directives, by name. */
-export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline'] as const;
+export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten'] as const;
 export type AnnotationName = (typeof ANNOTATION_NAMES)[number];
 
 /** Private-use marks opening each kind of annotation while the emphasis
@@ -38,11 +39,12 @@ const OPEN: Record<AnnotationName, string> = {
   ltr: '',
   rtl: '',
   sideline: '',
+  kunten: '',
 };
 const CLOSE = '';
 const KIND_OF_OPEN = new Map<string, AnnotationName>(ANNOTATION_NAMES.map((n) => [OPEN[n], n]));
-const MARK_RE = /[-]/;
-const MARKS_RE = /[-]/g;
+const MARK_RE = /[-]/;
+const MARKS_RE = /[-]/g;
 
 /** One annotation as written: its kind, its attributes, and (a compact
  *  ruby) its readings. Queued in the order of the marks in the text. */
@@ -54,7 +56,7 @@ export interface QueuedAnnotation {
 }
 
 /** `:dots[`, `:name[`… at the start of a match. */
-const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline)\[/y;
+const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[/y;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
@@ -279,6 +281,8 @@ interface Frame {
   direction?: InlineDirection;
   /** The object every span of a side line shares. */
   sideline?: InlineSideline;
+  /** The object every span of a kanbun mark shares. */
+  kunten?: InlineKunten;
   /** Indices (in the output) of the spans a ruby holds. */
   pieces?: number[];
 }
@@ -306,6 +310,28 @@ function sidelineOf(id: number, attrs: DirectiveAttrs): InlineSideline {
   const pos = attrs.pos ?? attrs.position;
   if (pos && SIDES.has(pos)) line.position = pos as InlineSideline['position'];
   return line;
+}
+
+/** The kanbun code points (U+3191–319F, ㆑ ㆒ … ㆟): the 返り点 they
+ *  stand for, set as ordinary characters at the marks' size (the fonts
+ *  that have these glyphs draw them small and placed, differently from
+ *  each other). U+3190 ㆐ is the 竪点. */
+const KANBUN_MARKS: Record<string, string> = {
+  '㆑': 'レ', '㆒': '一', '㆓': '二', '㆔': '三', '㆕': '四', '㆖': '上', '㆗': '中', '㆘': '下',
+  '㆙': '甲', '㆚': '乙', '㆛': '丙', '㆜': '丁', '㆝': '天', '㆞': '地', '㆟': '人',
+};
+
+/** A kanbun mark as written: `kaeri` (返り点, kanbun code points read as
+ *  the characters they stand for), `okuri` (送り仮名, `（ヲ）` read as
+ *  ヲ) and the flag `tate` (竪点); empty values are left unset. */
+function kuntenOf(id: number, attrs: DirectiveAttrs): InlineKunten {
+  const k: InlineKunten = { id };
+  const kaeri = (attrs.kaeri ?? '').replace(/[㆑-㆟]/g, (c) => KANBUN_MARKS[c] ?? c).trim();
+  if (kaeri.length > 0) k.kaeri = kaeri;
+  const okuri = (attrs.okuri ?? '').trim().replace(/^[（(](.*)[）)]$/, '$1');
+  if (okuri.length > 0) k.okuri = okuri;
+  if (flag(attrs.tate)) k.tate = true;
+  return k;
 }
 
 /** A flag attribute: present, and not written `false` or `no`. */
@@ -402,6 +428,9 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
           // The innermost line: a span takes one.
           fields.sideline = f.sideline!;
           break;
+        case 'kunten':
+          fields.kunten = f.kunten!;
+          break;
         case 'ruby':
           break;
       }
@@ -442,6 +471,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
           rubies.push(frame);
         }
         if (kind === 'sideline') frame.sideline = sidelineOf(frame.id, entry.attrs);
+        if (kind === 'kunten') frame.kunten = kuntenOf(frame.id, entry.attrs);
         if (kind === 'ltr' || kind === 'rtl') {
           let outer: InlineDirection | undefined;
           for (let i = stack.length - 1; i >= 0 && !outer; i--) outer = stack[i]!.direction;
@@ -521,6 +551,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
   if (span.warichu) out.warichu = span.warichu;
   if (span.direction) out.direction = span.direction;
   if (span.sideline) out.sideline = span.sideline;
+  if (span.kunten) out.kunten = span.kunten;
   if (withRuby && span.ruby) out.ruby = span.ruby;
   if (span.inserted) out.inserted = true;
   return out;
@@ -537,7 +568,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
 export function annotationSourceSkips(markdown: string, from: number, end: number): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   const slice = markdown.slice(from, end);
-  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline)\[|\{[^{}\n|]*\|/.test(slice)) return out;
+  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\|/.test(slice)) return out;
   // Inline code spans, which the parser protects.
   const code: Array<[number, number]> = [];
   const codeRe = /(?<!\\)`[^`\n]+?`/g;

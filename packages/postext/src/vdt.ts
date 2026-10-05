@@ -350,6 +350,12 @@ export interface VDTLineSegment {
    *  `x + inkOffset` when the reading is wider than it, and the reading's
    *  runs follow. Absent otherwise. */
   ruby?: VDTRuby;
+  /** Kanbun reading marks on the segment's last character (訓点,
+   *  `:kunten[…]`, #430): 返り点, 送り仮名 and a 竪点, painted from where
+   *  the segment starts. The room the marks take after the character
+   *  (`cjk.kunten.placement: 'inline'`) is the space segment that follows
+   *  (`autospace`), never this segment's width. Absent otherwise. */
+  kunten?: VDTKunten;
   /** The segment is the part of a warichu note (双行夹注, #195) set on this
    *  line: its `text` is the upper row then the lower one (so the plain
    *  text, search and the source map read the note once, in order), and
@@ -468,6 +474,28 @@ export interface VDTRuby {
    *  base segment's start and may fall before it or past its width (a
    *  reading running onto a neighbour). */
   runs: VDTAnnotationRun[];
+}
+
+/** The kanbun marks of a segment (see {@link VDTLineSegment.kunten}). */
+export interface VDTKunten {
+  /** The 返り点 and the 送り仮名 as written (the 送り仮名 are read after
+   *  the character: accessible and copied text read `學ビテ`); unset when
+   *  the directive gives none. */
+  kaeri?: string;
+  okuri?: string;
+  /** The marks' font (CSS shorthand at their size). */
+  fontString: string;
+  /** Colour of the marks (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: the 返り点 (`role: 'kaeri'`, a combined form such as
+   *  一レ as two runs) and the 送り仮名 (`role: 'okuri'`), each a vertical
+   *  run on a vertical line. */
+  runs: (VDTAnnotationRun & { role: 'kaeri' | 'okuri' })[];
+  /** The 竪点 joining the character to the next one (JIS X 4051 §5.7): a
+   *  thin rule along the line from `dx` (from where the segment starts),
+   *  `length` px long, centred `dy` px from the line's baseline (flow
+   *  frame, as a run's `dy`), `thickness` px across. */
+  tate?: { dx: number; dy: number; length: number; thickness: number };
 }
 
 /** One line's part of a warichu note (see {@link VDTLineSegment.warichu}). */
@@ -2107,6 +2135,11 @@ export type ContentWarning = ContentWarningBase & (
    *  line gap is narrower than the readings: they overlap the next line.
    *  `gapEm` and `neededEm` in em of the text. */
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph of kanbun with 送り仮名 (or 返り点 set in the line gap,
+   *  `cjk.kunten.placement: 'interlinear'`) whose line gap is narrower than
+   *  the marks (#430): they overlap the next line. `gapEm` and `neededEm`
+   *  in em of the text. */
+  | { kind: 'kuntenExceedsLeading'; text: string; gapEm: number; neededEm: number }
   /** A paragraph of vocalised Arabic (#376) whose vowel marks meet the
    *  ink of the line above or below it in its column: a mark over a word
    *  reaches down-hanging letters or marks of the line above, or a kasra

@@ -20,12 +20,14 @@
  *   Japan (and where `cjk.ruby` asks for them) readings also take their
  *   overhang and alignment rules, and a reading per character of a word
  *   becomes a jukugo ruby (#422).
+ * - Kanbun marks (`:kunten[…]`, #430) get their font (`cjk.kunten.fontSize`
+ *   in the text's face), colour and placement.
  *
  * Spans without any of these marks pass through untouched (the same
  * array), so text without them measures and caches as before.
  */
 
-import type { EmphasisMark, InlineSpan, InlineWarichu } from '../parse';
+import type { EmphasisMark, InlineKunten, InlineSpan, InlineWarichu } from '../parse';
 import type { ResolvedCjkConfig } from '../types';
 import { sliceSpan } from '../parse/links';
 import { withBookBrackets } from '../parse/annotations';
@@ -72,7 +74,7 @@ function emphasisMarkDefaults(cjk: Pick<ResolvedCjkConfig, 'emphasisMark'>): Emp
 export function hasAnnotations(spans: readonly InlineSpan[], cjk: ResolvedCjkConfig): boolean {
   const marks = emphasisMarkDefaults(cjk) !== undefined;
   for (const s of spans) {
-    if (s.ruby || s.warichu || s.bookTitle) return true;
+    if (s.ruby || s.warichu || s.bookTitle || s.kunten) return true;
     if (marks && s.emphasisMark) return true;
     if (cjk.emphasis === 'dots' && s.italic && !s.math && !s.chip && !s.swatch && !s.ref && CJK_ANY_RE.test(s.text)) return true;
   }
@@ -248,6 +250,23 @@ export function resolveAnnotationSpans(spans: InlineSpan[], ctx: AnnotationConte
         next.warichu = note;
       }
       return next;
+    });
+  }
+
+  // Kanbun marks: font, colour and placement, one object per directive.
+  if (out.some((s) => s.kunten)) {
+    const size = dimensionToPx(cjk.kunten.fontSize, ctx.dpi, ctx.fontSizePx);
+    const font = fontAtSize(ctx.fontString, size);
+    const color = hexOf(cjk.kunten.color ?? cjk.annotationColor);
+    const marks = new Map<InlineKunten, InlineKunten>();
+    out = out.map((s) => {
+      if (!s.kunten) return s;
+      let k = marks.get(s.kunten);
+      if (!k) {
+        k = { ...s.kunten, fontString: font, ...(color ? { color } : {}), placement: cjk.kunten.placement };
+        marks.set(s.kunten, k);
+      }
+      return { ...s, kunten: k };
     });
   }
   return out;

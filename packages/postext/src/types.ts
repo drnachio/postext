@@ -3824,6 +3824,10 @@ export interface CjkConfig {
   /** Warichu (双行夹注): how the two-row notes of `:warichu[…]` look (see
    *  {@link CjkWarichuConfig}, #195). */
   warichu?: CjkWarichuConfig;
+  /** Kanbun reading marks (訓点): how the 返り点 and 送り仮名 of
+   *  `:kunten[字]{kaeri okuri tate}` look and where they go (see
+   *  {@link CjkKuntenConfig}, #430). */
+  kunten?: CjkKuntenConfig;
 }
 
 /** See {@link CjkConfig.emphasis}. */
@@ -3954,6 +3958,37 @@ export interface CjkWarichuConfig {
   close?: string;
 }
 
+/** Where the 返り点 of a kanbun text go (see {@link CjkKuntenConfig}):
+ *  - `inline` (JIS X 4051 §5.5): right after their character, in the
+ *    left half of a vertical line (the lower half of a horizontal one),
+ *    taking their own advance; a 竪点 takes half an em between the two
+ *    characters it joins, and 送り仮名 longer than the room beside their
+ *    character push the next one on (§5.6.4);
+ *  - `interlinear`: in the line gap left of the character's lower half
+ *    (under it in horizontal text), taking no advance, as many school
+ *    editions set them; the characters keep an even pitch and 送り仮名 run
+ *    on beside the next character. */
+export type CjkKuntenPlacement = 'inline' | 'interlinear';
+
+/** `cjk.kunten`: the look of kanbun reading marks (`:kunten[…]`). */
+export interface CjkKuntenConfig {
+  /** Size of the 返り点 and 送り仮名, in em of the text (or any length).
+   *  Default `{ value: 0.5, unit: 'em' }` (JIS X 4051 §5.5, §5.6). */
+  fontSize?: Dimension;
+  /** Colour of the marks. Unset: `cjk.annotationColor`, else the text
+   *  colour. */
+  color?: ColorValue;
+  /** Where the 返り点 go (see {@link CjkKuntenPlacement}). Default
+   *  `inline`. */
+  placement?: CjkKuntenPlacement;
+}
+
+export interface ResolvedCjkKuntenConfig {
+  fontSize: Dimension;
+  color?: ColorValue;
+  placement: CjkKuntenPlacement;
+}
+
 export interface ResolvedCjkRubyConfig {
   fontFamily?: string;
   fontSize: Dimension;
@@ -4062,6 +4097,7 @@ export interface ResolvedCjkConfig {
   annotationColor?: ColorValue;
   ruby: ResolvedCjkRubyConfig;
   warichu: ResolvedCjkWarichuConfig;
+  kunten: ResolvedCjkKuntenConfig;
 }
 
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
