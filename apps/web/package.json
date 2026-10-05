@@ -9,7 +9,8 @@
     "lint": "eslint",
     "check-types": "tsc --noEmit",
     "test": "vitest run",
-    "cookbook": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/cookbook/cli.ts"
+    "cookbook": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/cookbook/cli.ts",
+    "wiki": "pnpm dlx --allow-build=esbuild tsx scripts/wiki/sync.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
