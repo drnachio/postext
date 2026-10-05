@@ -1,0 +1,772 @@
+{
+  "schemaVersion": 1,
+  "slug": "nights-ordinal-headings",
+  "sourceHash": "a8cbd08077b344dbc3784349371cc424c3c37be443f1107925718966e24deb79",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:48.126Z",
+  "variants": {
+    "en": {
+      "hash8": "1deb45e9",
+      "vdtHash": "1263d254e9c26061a2984eef19642b79c11d18e7",
+      "timings": {
+        "importMs": 466,
+        "fontsMs": 1913,
+        "buildMs": 116,
+        "totalMs": 3074,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 26
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa",
+          "Noto Kufi Arabic"
+        ],
+        "pages": 10,
+        "ownLines": 157
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 11198,
+          "alt": "Opening page ١: ألف ليلة وليلة."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 72698,
+          "alt": "Opening page ٢: حكاية التاجر مع العفريت."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 101872,
+          "alt": "Page ٣: حكاية الشيخ الأول صاحب الغزالة."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 105178,
+          "alt": "Page ٤."
+        },
+        {
+          "n": 5,
+          "label": "٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 91570,
+          "alt": "Page ٥: الليلة الثانية."
+        },
+        {
+          "n": 6,
+          "label": "٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 97216,
+          "alt": "Page ٦: حكاية الشيخ الثاني صاحب الكلبتين."
+        },
+        {
+          "n": 7,
+          "label": "٧",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 109384,
+          "alt": "Page ٧."
+        },
+        {
+          "n": 8,
+          "label": "٨",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 105602,
+          "alt": "Page ٨."
+        },
+        {
+          "n": 9,
+          "label": "٩",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 96840,
+          "alt": "Page ٩: الليلة الثالثة."
+        },
+        {
+          "n": 10,
+          "label": "١٠",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 87614,
+          "alt": "Page ١٠."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "nights-ordinal-headings.pdf",
+        "bytes": 158038,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "nights-ordinal-headings.postext",
+        "bytes": 32623
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberPosition",
+          "headings.levels[].numberingTemplate",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].hyphenation.locale",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 312,
+        "designElements": 19,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.33
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.06 MB (warning at 1.0 MB for 10 pages)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "189e4125",
+      "vdtHash": "a866cc528ab650667eb2c6765f54e9df295c4b66",
+      "timings": {
+        "importMs": 193,
+        "fontsMs": 98,
+        "buildMs": 112,
+        "totalMs": 1040,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Amiri",
+          "sizePt": 13,
+          "leadingPt": 26
+        },
+        "families": [
+          "Amiri",
+          "Aref Ruqaa",
+          "Noto Kufi Arabic"
+        ],
+        "pages": 10,
+        "ownLines": 157
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 10776,
+          "alt": "Página de apertura ١: ألف ليلة وليلة."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 72370,
+          "alt": "Página de apertura ٢: حكاية التاجر مع العفريت."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 101872,
+          "alt": "Página ٣: حكاية الشيخ الأول صاحب الغزالة."
+        },
+        {
+          "n": 4,
+          "label": "٤",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 105178,
+          "alt": "Página ٤."
+        },
+        {
+          "n": 5,
+          "label": "٥",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 91570,
+          "alt": "Página ٥: الليلة الثانية."
+        },
+        {
+          "n": 6,
+          "label": "٦",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 97216,
+          "alt": "Página ٦: حكاية الشيخ الثاني صاحب الكلبتين."
+        },
+        {
+          "n": 7,
+          "label": "٧",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 109384,
+          "alt": "Página ٧."
+        },
+        {
+          "n": 8,
+          "label": "٨",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 105602,
+          "alt": "Página ٨."
+        },
+        {
+          "n": 9,
+          "label": "٩",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 96840,
+          "alt": "Página ٩: الليلة الثالثة."
+        },
+        {
+          "n": 10,
+          "label": "١٠",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 88598,
+          "alt": "Página ١٠."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "nights-ordinal-headings.pdf",
+        "bytes": 158584,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "nights-ordinal-headings.postext",
+        "bytes": 32676
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].runningChapter",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].numberPosition",
+          "headings.levels[].numberingTemplate",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].hyphenation.locale",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 312,
+        "designElements": 19,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Amiri",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Amiri",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Aref Ruqaa",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Kufi Arabic",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "section-running-heads",
+          "text-direction",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.43
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "warn",
+            "detail": "the edition's images weigh 1.06 MB (warning at 1.0 MB for 10 pages)"
+          }
+        ]
+      }
+    }
+  }
+}

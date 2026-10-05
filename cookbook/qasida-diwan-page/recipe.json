@@ -1,0 +1,131 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 110,
+  "status": "published",
+  "chapter": "type",
+  "order": 190,
+  "level": 2,
+  "genres": [
+    "poetry"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "arabic-verse",
+      "kashida",
+      "text-direction"
+    ],
+    "also": [
+      "arabic-fonts",
+      "arabic-language",
+      "right-binding",
+      "document-digits",
+      "opener-design",
+      "heading-attributes",
+      "heading-styles",
+      "covers",
+      "running-heads",
+      "page-role-filters",
+      "page-background",
+      "paragraph-styles",
+      "block-direction",
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q125"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "spread",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The qasida ʿAlā qadri ahli l-ʿazmi taʾtī l-ʿazāʾimu, as ar.wikisource gives it (revision 447620), with its vowels",
+          "es": "La casida ʿAlā qadri ahli l-ʿazmi taʾtī l-ʿazāʾimu, tal como la da ar.wikisource (revisión 447620), con sus vocales"
+        },
+        "who": "al-Mutanabbī",
+        "source": "https://ar.wikisource.org/wiki/على_قدر_أهل_العزم_تأتي_العزائم",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The headnote in Arabic, the note on the text and the colophon",
+          "es": "El encabezamiento en árabe, la nota sobre el texto y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "tang-poems-facing-english",
+    "poetry-collection"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}

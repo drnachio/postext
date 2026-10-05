@@ -1,0 +1,146 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 108,
+  "status": "published",
+  "chapter": "page",
+  "order": 125,
+  "level": 2,
+  "genres": [
+    "newsletter"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "column-layouts",
+      "text-direction"
+    ],
+    "also": [
+      "column-rule",
+      "span-boxes",
+      "callout-columns",
+      "floated-callouts",
+      "opener-design",
+      "heading-styles",
+      "heading-attributes",
+      "design-elements",
+      "arabic-fonts",
+      "arabic-language",
+      "document-digits",
+      "running-heads",
+      "color-palette",
+      "callout-styles",
+      "paragraph-styles",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q123"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "callout-columns",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "crop",
+    "focus": {
+      "page": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.5625
+    },
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Two pages of an imaginary Arabic daily, الساحل, and its city, written in Arabic for the recipe",
+          "es": "Dos páginas de un diario árabe imaginario, الساحل, y su ciudad, escritas en árabe para la receta"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Naskh Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "newspaper-front-page",
+    "arabic-novel-right-bound",
+    "bilingual-arabic-english-report",
+    "vertical-newspaper-tiers"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "newsprint",
+      "grammage": 45,
+      "shade": "#fcfbf8"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+---
+title: "An Arabic research article with notes, citations, index"
+summary: "An Arabic journal article: notes «(١)» numbered per page, CSL citations among them in the Arabic locale, and an index sorted without the article ال."
+plain: "Five pages of an Arabic academic journal: the article, its footnotes, its list of references and an index. The index files الكشيدة under ك, as Arabic indexes do, not under the article ال."
+description: "An Arabic journal article in Postext: footnotes «(١)» per page, Chicago notes in the ar locale, a bibliography, and an index with index.ignoreArticle."
+question: "How do I cite sources in an Arabic article, with footnotes and a bibliography?"
+aliases: ["Arabic article", "Arabic journal", "Arabic footnotes", "Arabic citations", "CSL Arabic", "Arabic index", "ignoreArticle", "article al-", "ال", "hijāʾī order", "Amiri", "فهرس", "حواشي", "المراجع"]
+pageNotes: { "1": "The first page of the article: the journal's name in dark red and the issue, a hairline, the title in two centred lines of bold Amiri, the author and her university, a pink abstract box headed ملخص, then the section head ١- المقدمة and the first lines of text.", "5": "The index on its own page: the title فهرس الأعلام والموضوعات across the page, then two columns of entries starting on the right, grouped under red letters ا, ب, ت, ج…; الكشيدة stands under ك with its page in bold and a see-also reference." }
+---
+
+## What you'll build
+
+Five pages from an issue of an imaginary Arabic journal, on 17 × 24 cm, starting at page 87: an article on whether kashida justification slows readers down, set in Amiri at 12 pt with section heads in Noto Kufi Arabic. Its notes sit at the foot of each page and are numbered «(١)», «(٢)» from one on every page, as Arabic journals number them; the citations, written as `[@ayalon2016]` in the Markdown, are notes too, formatted by the Chicago note style with the Arabic CSL locale. A list of references follows, Arabic works first, and a two-column index closes the piece. The index files الكشيدة under ك and الصحف اليومية under ص: the article ال does not count. <RecipeLink slug="history-essay-chicago-notes">The history essay with Chicago notes</RecipeLink> does the same in English.
+
+## Method
+
+### 1 · Notes, citations and the index in one place
+
+The code is [the short answer](#the-short-answer) above. The footnote settings are the three that Arabic books want: `markerTemplate: '({n})'` for the parentheses, `numbering: 'page'` to start again on every page, and `noteNumberPosition: 'inline'` so the note opens with «(١)» on its line; the digits are the document's, and the rule stands on the right ([Footnotes](/en/docs/arabic-layout#footnotes)). The citations share the notes' numbering. `citations.locale: 'ar'` gives the CSL terms in Arabic, such as عدد for an issue number. `index.ignoreArticle` sorts each entry by the word after ال and folds the hamza forms, so أميري and الأعمدة both go under ا ([Contents and index](/en/docs/arabic-layout#contents-and-index)); it is on by default for an Arabic index and is written out here to be seen.
+
+<PageShot page={5} crop="0,0.12,1,0.6" caption="The index: two columns from the right, letters in red, الكشيدة under ك with a see-also." />
+
+### 2 · A masthead without a band
+
+<Excerpt region="masthead" />
+
+The article's title is the first-level heading, drawn by a design: the journal's name and issue, a hairline, the title in two centred lines and the author. The issue line is typed in Arabic-Indic digits, because a design's attribute is the author's text and the engine does not rewrite it. The page numbering starts at 87 (`page.pageNumbering.startAt`), so the folios show where the article sits in the issue.
+
+### 3 · Running heads from the outer corner
+
+<Excerpt region="heads" />
+
+The right-hand pages carry the journal's name and the left-hand ones the author and a short title, each with its folio at the outer corner. Header elements keep their physical sides, so the even page, which is on the right in this binding, anchors to `top-right`.
+
+## Variations
+
+### Number the notes through the article
+
+Modern Arabic journals often number notes per article instead of per page.
+
+```diff
+-  numbering: 'page', // from (١) again on every page, as Arabic journals number them
++  numbering: 'chapter',
+```
+
+### Cite in author and date
+
+```diff
+-  style: 'chicago-notes-bibliography', notes: 'footnote', locale: 'ar',
++  style: 'apa', locale: 'ar',
+```
+
+## Pitfalls
+
+- The punctuation a CSL style writes is the style's: commas, semicolons and quotation marks between the parts of a note are Latin, as in الهاشمي, الحرف العربي. Dates and numbers come from the data, so the Arabic works carry `issued: {literal: "٢٠١٩"}` and locators such as `[@hashimi2019, ٧٧]`; the Latin works keep 0–9.
+- A note or a reference to a Latin work runs in the direction of the Arabic page: its final full stop stands at the left end of the line.

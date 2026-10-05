@@ -1,0 +1,68 @@
+---
+title: "Títols amb ordinals àrabs en lletres: la primera nit…"
+summary: "Una plantilla de nivell escriu cada nit com a الليلة i un ordinal femení, الليلة الأولى, الثانية, الثالثة, sense que el Markdown porti cap número."
+plain: "El començament de Les mil i una nits, on cada nit porta el seu número escrit amb paraules àrabs, «la primera nit», «la segona nit», en la forma femenina que concorda amb la paraula àrab per a nit."
+description: "Les primeres nits d'Alf layla wa-layla amb Postext: una plantilla amb {2:ordinal-feminine}, títols de nit en ruqʿa, obertures de conte i capçaleres."
+question: "Com numero els capítols amb ordinals àrabs en lletres, com الليلة الأولى?"
+aliases: ["Les mil i una nits", "Mil i una nits", "Alf layla wa-layla", "ألف ليلة وليلة", "Xahrazad", "ordinals en lletres", "ordinals àrabs", "ordinal femení", "nombres en lletres", "títols de nit", "الليلة الأولى", "El mercader i el geni", "Hindawi"]
+pageNotes: { "2": "L'obertura d'El mercader i el geni: una banda pàl·lida entre filets daurats amb el títol del conte en ruqʿa verd, un avanttítol gris petit a sobre i una línia llatina a sota; després les paraules فلما كانت en cúfica petita sobre الليلة الأولى en ruqʿa verd i un filet daurat curt, i el text de la primera nit." }
+---
+
+## Què compondràs
+
+Deu pàgines del començament de *Les mil i una nits*: una portadella i El mercader i el geni, el primer conte que explica Xahrazad, que ocupa tres nits. Cada nit s'obre amb la fórmula d'Hindawi, فلما كانت, en cúfica petita sobre el seu número en ruqʿa verd, الليلة الأولى, الليلة الثانية, الليلة الثالثة, escrit amb lletres com l'imprimeixen els llibres. Cap d'aquests números no és al Markdown: el nivell de títol compta les nits i escriu cada número com a ordinal femení, que concorda amb ليلة. El conte s'obre sota una capçalera entre filets daurats, els relats dels tres vells porten els seus títols petits, i les capçaleres de pàgina porten el llibre i el conte. El text és l'edició del 2022 de la Fundació Hindawi, amb llicència CC BY 4.0.
+
+## Elaboració
+
+### 1 · Nits comptades amb lletres
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Una nit és un títol de nivell 2, `## الليلة`, i el `numberingTemplate` del nivell és `'الليلة {2:ordinal-feminine}'`: el modificador `-feminine` escriu الأولى, الثانية, الحادية عشرة, الحادية بعد الألف ([Ordinals i cardinals en lletres](/ca/docs/arabic-layout#ordinals-i-cardinals-en-lletres), [Nombres en lletres](/ca/docs/configuration#nombres-en-lletres)). Amb `numberPosition: 'replace'` el número és el títol sencer: el que el Markdown escrigui després de `##` es descarta, i el títol, els marcadors del PDF i el text alternatiu diuen الليلة الثانية. El disseny imprimeix aquest títol, `{titleText}`, en gran i, a sobre i en petit, la fórmula فلما كانت d'Hindawi, un text fix. Els títols dels contes fan servir un estil amb `numbered: false`: un nivell 1 numerat reiniciaria el compte de nits a cada conte, mentre que un sense número deixa en pau els comptadors inferiors, i les nits continuen per tot el llibre.
+
+<PageShot page={5} crop="0,0.15,1,0.35" caption="Pàgina 5: la segona nit, amb el número escrit per la plantilla i imprès com a títol sencer." />
+
+### 2 · Una capçalera per a cada conte
+
+<Excerpt region="opener" />
+
+El títol de nivell 1 és una banda tenyida entre dos filets daurats, amb el títol del conte en ruqʿa al damunt i un avanttítol i una línia llatina presos d'atributs del títol, `{kicker="…" latin="…"}`. La línia llatina és l'única part de l'obertura que canvia amb l'edició.
+
+### 3 · Capçaleres que arriben amb el conte
+
+<Excerpt region="heads" />
+
+Les capçaleres pertanyen a l'estil de títol `tale`, així que cada conte porta les seves; la portadella no en té. La pàgina parella porta el títol del llibre i la senar `{chapterTitle}`, el conte. En un llibre enquadernat per la dreta la pàgina parella queda a la dreta, així que el seu foli va a dalt a la dreta ([Ordre de les pàgines i enquadernació per la dreta](/ca/docs/arabic-layout#ordre-de-les-pàgines-i-enquadernació-per-la-dreta)).
+
+### 4 · Una portadella en ruqʿa
+
+<Excerpt region="title" />
+
+La portadella és un estil de títol amb `span: 'page'`, `numbered: false` i capçalera i peu buits, de manera que ni compta ni porta capçalera.
+
+## Variants
+
+### Comença a la nit mil i una
+
+`{startAt=1001}` en un títol de nit en fixa el comptador, i la plantilla escriu الليلة الحادية بعد الألف ([Atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)).
+
+```diff
+-## الليلة
++## الليلة {startAt=1001}
+```
+
+### Escriu les centenes a la manera de Bulaq
+
+`-classical` escriu مائة en lloc de مئة, i la nit dos-cents es llegeix الليلة المائتان.
+
+```diff
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine-classical}', numberPosition: 'replace',
+```
+
+### Numera capítols en masculí
+
+Sense modificador l'ordinal és masculí, per a un substantiu com الفصل: الفصل الأول، الفصل الثاني.
+
+```diff
+-  level: 2, numberingTemplate: 'الليلة {2:ordinal-feminine}', numberPosition: 'replace',
++  level: 2, numberingTemplate: 'الفصل {2:ordinal}', numberPosition: 'replace',
+```

@@ -1,0 +1,129 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 113,
+  "status": "published",
+  "chapter": "structure",
+  "order": 230,
+  "level": 3,
+  "genres": [
+    "textbook"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "footnotes",
+      "arabic-numerals",
+      "roman-front-matter"
+    ],
+    "also": [
+      "document-digits",
+      "text-direction",
+      "right-binding",
+      "arabic-fonts",
+      "arabic-language",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "running-heads",
+      "page-role-filters",
+      "back-of-book-index",
+      "index-article-sorting",
+      "paragraph-styles",
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": [
+    "Q128",
+    "Q129"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "numbering-next-page",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      4,
+      5
+    ],
+    "card": "spread",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The opening section of the Muqaddima, “On the excellence of history”, as ar.wikisource gives it (revision 610595), without its notes",
+          "es": "La sección inicial de la Muqaddima, «Sobre la excelencia de la historia», tal como la da ar.wikisource (revisión 610595), sin sus notas"
+        },
+        "who": "Ibn Khaldūn",
+        "source": "https://ar.wikisource.org/wiki/مقدمة_ابن_خلدون/القسم_الأول_من_المقدمة",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The editor’s introduction in Arabic, the notes, the index and the imprint",
+          "es": "La introducción del editor en árabe, las notas, el índice y la página de créditos"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "front-matter-roman-to-arabic",
+    "qasida-diwan-page"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}

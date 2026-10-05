@@ -1,0 +1,59 @@
+---
+title: "Una casida en una página de diván, en dos hemistiquios"
+summary: "Un bloque :::verse compone los cuarenta y seis versos de al-Mutanabbī en dos columnas de hemistiquios, cada mitad estirada con cachidas hasta un mismo ancho."
+plain: "Un poema árabe clásico impreso como lo imprimen los libros de poesía antiguos: cada verso partido en dos mitades, una junto a otra, estiradas hasta el mismo ancho para que sus finales queden alineados a lo largo de la página."
+description: "El Diván de al-Mutanabbī con Postext: :::verse para versos en dos hemistiquios, cachidas, una cabecera en ruqʿa y encuadernación por la derecha."
+question: "¿Cómo compongo verso árabe clásico con cada bayt en dos hemistiquios?"
+aliases: ["casida", "qaṣīda", "diván", "dīwān", "bayt", "hemistiquio", "ṣadr", "ʿajuz", "poesía árabe", "verso árabe clásico", "al-Mutanabbī", "Sayf al-Dawla", "cachida", "tatweel", "قصيدة", "ديوان", "شطر"]
+pageNotes: { "2": "La página que abre la casida: arriba, una banda pálida con filetes rojos lleva el título على قدر أهل العزم en ruqʿa rojo, debajo el metro من البحر الطويل en cúfica gris pequeña, dos líneas de prosa que cuentan la ocasión y después los versos en dos columnas: la mitad derecha y la izquierda de cada verso estiradas hasta el mismo ancho." }
+---
+
+## Lo que vas a componer
+
+Cuatro páginas de un diván, la poesía reunida de al-Mutanabbī, como las componían los impresores de El Cairo hace un siglo: una portadilla con ديوان en ruqʿa rojo y, bajo una cabecera con filetes rojos, la casida que recitó ante Sayf al-Dawla en el año 954. Cada uno de sus cuarenta y seis bayts ocupa una línea con dos hemistiquios, el ṣadr a la derecha y el ʿajuz a la izquierda, estirados con cachidas hasta un mismo ancho, de modo que las rimas en ‑mu bajan en línea recta por el borde izquierdo. El libro se encuaderna por la derecha y los folios cuentan con cifras arábigo-índicas. Solo la nota sobre el texto, al final, cambia con la edición. <RecipeLink slug="tang-poems-facing-english">Poemas Tang frente a su versión inglesa</RecipeLink> compone verso chino clásico sobre su propia retícula.
+
+## Elaboración
+
+### 1 · Un bayt por línea y sus dos mitades al mismo ancho
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Dentro de `:::verse` cada línea es un bayt y `||` separa los dos hemistiquios, así que el Markdown se lee como el texto de Wikisource del que procede ([:::verse](/es/docs/document-format#verse)). El poema mide cada hemistiquio, toma la mitad más ancha como ancho de las dos columnas (hasta la mitad de la medida menos el hueco central) y llena cada mitad hasta ese ancho, primero con cachidas y después con los espacios entre palabras ([Verso clásico](/es/docs/arabic-layout#verso-clásico)). El estilo `bayt` va a 14 pt con un interlineado de 26,6 pt, 1,9 veces el cuerpo, para que las šaddas y las kasras de dos líneas seguidas no se toquen ([Signos vocálicos](/es/docs/arabic-layout#signos-vocálicos)). El formato es de 17 × 24 cm: a 14 × 21 cm un tercio de los versos no cabía en su mitad de los 104 mm de la medida y pasaba a la composición escalonada, con el ṣadr y el ʿajuz en líneas propias.
+
+<PageShot page={2} crop="0,0.45,1,0.55" caption="Página 2: cada hemistiquio se estira hasta el ancho del más largo. Una mitad corta recibe más cachidas, y todas las rimas acaban en el mismo borde izquierdo." />
+
+### 2 · Una banda de cabecera en ruqʿa
+
+<Excerpt region="opener" />
+
+El título de nivel 1 lo dibuja su diseño: una caja tintada con un filete rojo arriba y otro abajo, el título centrado encima en Aref Ruqaa y, debajo, el metro tomado de un atributo del título, `{metre="من البحر الطويل"}`. La tipografía de exhibición en ruqʿa no lleva cachida, así que el título conserva su ancho natural ([Justificación y cachida](/es/docs/arabic-layout#justificación-y-cachida)).
+
+### 3 · Cabeceras en los lados de la hoja
+
+<Excerpt region="heads" />
+
+El texto corre de derecha a izquierda, y en él izquierda y derecha significan principio y final. Las cabeceras, en cambio, son físicas. En un libro encuadernado por la derecha la página par queda a la derecha del pliego, así que su folio va arriba a la derecha y el de la impar arriba a la izquierda: los dos en el borde exterior ([Orden de las páginas y encuadernación por la derecha](/es/docs/arabic-layout#orden-de-las-páginas-y-encuadernación-por-la-derecha)). La etiqueta `locale: 'ar'` basta para fijar la dirección, la encuadernación y las cifras arábigo-índicas.
+
+### 4 · Una portadilla sin nada en el flujo
+
+<Excerpt region="title" />
+
+La portadilla es un estilo de título con `span: 'page'` y una cabecera y un pie vacíos. Su texto es el nombre del poeta, de modo que la palabra ديوان es texto del diseño, a 64 pt encima de él, y la línea latina bajo la rima sale del atributo `latin`, que cada edición escribe en su idioma.
+
+## Variantes
+
+### Marca el hueco con un adorno
+
+Algunos divanes imprimen una estrella pequeña entre los hemistiquios. `ornament` pone una marca en el centro del hueco sin añadirla al texto.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" ornament="٭"}
+```
+
+### Da a todos los hemistiquios el mismo ancho
+
+Un `width` fijo da a las dos columnas la misma medida en todas las páginas del diván, sea cual sea la mitad más ancha de cada poema.
+
+```diff
+-:::verse{style="bayt"}
++:::verse{style="bayt" width=58mm}
+```

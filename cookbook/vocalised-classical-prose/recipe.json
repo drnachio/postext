@@ -1,0 +1,132 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 111,
+  "status": "published",
+  "chapter": "type",
+  "order": 200,
+  "level": 1,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "arabic-fonts",
+      "body-typography"
+    ],
+    "also": [
+      "text-direction",
+      "arabic-language",
+      "paragraph-indents",
+      "kashida",
+      "arabic-verse",
+      "right-binding",
+      "block-direction",
+      "heading-typography",
+      "page-size",
+      "mirrored-margins",
+      "page-background",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q126"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "fonts-first"
+  ],
+  "explainsWarnings": [
+    "arabicMarksExceedLeading"
+  ],
+  "engine": {
+    "postext": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      2,
+      3
+    ],
+    "card": "crop",
+    "focus": {
+      "page": 2,
+      "x": 0.08,
+      "y": 0.155,
+      "w": 0.84,
+      "h": 0.42
+    },
+    "pages": "all",
+    "expect": {
+      "pages": [
+        4,
+        4
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "Al-Maqāma al-Māristāniyya, fully vocalised, as ar.wikisource gives it (revision 601165), with twenty typing slips corrected, its paragraphs divided and its Qurʾān quotations set between ﴿ ﴾",
+          "es": "Al-Maqāma al-Māristāniyya, con todas sus vocales, tal como la da ar.wikisource (revisión 601165), con veinte erratas corregidas, dividida en párrafos y con sus citas del Corán entre ﴿ ﴾"
+        },
+        "who": "Badīʿ al-Zamān al-Hamadhānī",
+        "source": "https://ar.wikisource.org/wiki/مقامات_بديع_الزمان_الهمذاني/المقامة_المارستانية",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The note on the text, the Latin title line and the colophon",
+          "es": "La nota sobre el texto, la línea del título en latín y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Aref Ruqaa",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "MIT"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "qasida-diwan-page"
+  ]
+}

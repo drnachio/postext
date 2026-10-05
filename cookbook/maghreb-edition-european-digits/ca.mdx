@@ -1,0 +1,51 @@
+---
+title: "Una edició magribina d'un text àrab, amb xifres europees"
+summary: "Un capítol d'un llibre àrab imprès per al Marroc: locale 'ar-MA' manté el text de dreta a esquerra i escriu cada número generat com 1, 2, 3."
+plain: "Al Marroc, Algèria i Tunísia els llibres en àrab imprimeixen els números amb les xifres que fa servir Europa, 1, 2, 3, i no amb ١، ٢، ٣. Un sol ajust, la llengua i el país del document, dona aquestes xifres a tot el llibre."
+description: "Un capítol àrab per a una edició marroquina amb Postext: ar-MA dona xifres europees a folis, títols, llistes, notes i figures, i conserva el llom a la dreta."
+question: "Com imprimeixo xifres europees (1, 2, 3) en un llibre àrab per a una edició magribina?"
+aliases: ["Magrib", "Marroc", "ar-MA", "xifres europees", "nombres aràbics", "xifres àrabs", "numeració", "latn", "Fes", "zellige", "أرقام", "المغرب"]
+pageNotes: { "1": "L'obertura del capítol, pàgina 41: الفصل 3: أبواب فاس en lletres cúfiques verdes, dos paràgrafs d'àrab justificat amb els anys 789 i 809 en xifres europees i, a sota, una franja de zellige, estrelles cobalt de vuit puntes sobre verd amb quadrats ocre, amb el peu شكل 3-1." }
+---
+
+## Què compondràs
+
+Un capítol d'una guia de les ciutats antigues del Marroc, dedicat a les portes de Fes, tal com l'imprimiria una editorial marroquina: 13,5 × 21 cm, Noto Naskh Arabic de 12,5 pt i títols en Noto Kufi Arabic amb el verd de les rajoles de Fes. El text va de dreta a esquerra i el llibre s'enquaderna per la dreta, com qualsevol llibre àrab, però tots els números de la pàgina s'escriuen 1, 2, 3: els folis del 41 al 44, الفصل 3, els apartats 3-1 i 3-2, la llista de portes de l'1- al 5-, les crides de nota (1) i el número de figura شكل 3-1. És l'ús del Magrib, del Marroc a Tunísia, i la pàgina ho aconsegueix amb un sol ajust. <RecipeLink slug="arabic-novel-right-bound">Una novel·la àrab enquadernada per la dreta</RecipeLink> mostra el mateix llibre amb les xifres ١٢ del Màixriq.
+
+## Elaboració
+
+### 1 · El país tria les xifres
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `numerals` es queda en `'auto'` i el motor treu les xifres de l'etiqueta: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` i `ar-EH` donen xifres europees; `ar` sol i les regions del Màixriq donen ١٢٣ ([Xifres i estils de numeració](/ca/docs/arabic-layout#xifres-i-estils-de-numeració)). Només canvien els números que escriu el motor: el foli, els comptadors dels títols, els números de la llista, les crides de nota i els números de figura. Els anys del text, 789 i 1913, són de l'autor, teclejats amb les xifres de l'edició, i el motor no els reescriu mai. El `{startAt=3}` del títol llegeix tant ٣ com 3, de manera que el mateix Markdown serveix per a les dues edicions.
+
+### 2 · Els signes que envolten els números
+
+<Excerpt region="marks" />
+
+Els llibres àrabs escriuen el número de llista seguit d'un guionet, 1-, i la crida de nota entre parèntesis, (1); totes dues plantilles prenen les xifres del document, així que l'edició del Màixriq imprimeix ١- i (١) amb els mateixos ajustos ([Notes a peu de pàgina](/ca/docs/arabic-layout#notes-a-peu-de-pàgina)). L'etiqueta del peu acaba en dos punts, شكل 3-1:, perquè un punt darrere d'un número es llegeix com a separador decimal. Les notes tornen a començar per (1) a cada pàgina, com les numeren gairebé tots els llibres àrabs.
+
+### 3 · Una franja de rajoles dibuixada amb codi
+
+<Excerpt region="art" />
+
+La figura és un SVG generat al mateix script: estrelles de vuit puntes fetes amb dos quadrats girats 45° i quadrats petits entre elles, en el verd, el cobalt i l'ocre de la paleta. El seu peu és en àrab a les dues edicions i es numera per capítol, `{h1}-{n}`, com numeren les figures els tipus de recurs àrabs.
+
+## Variants
+
+### Imprimeix les xifres del Màixriq
+
+L'edició egípcia o llevantina del mateix capítol: canvia l'etiqueta, no el Markdown.
+
+```diff
+-  locale: 'ar-MA',
++  locale: 'ar-EG',
+```
+
+### Mantén l'etiqueta marroquina i imprimeix ١٢٣
+
+Un ajust escrit guanya al valor per defecte de la regió.
+
+```diff
+   locale: 'ar-MA',
++  numerals: 'arab',
+```

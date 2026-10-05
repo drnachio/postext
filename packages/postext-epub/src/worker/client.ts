@@ -6,6 +6,7 @@ import type { VDTDocument } from 'postext';
 import { placedFileIds } from '../shared/assets';
 import type { EpubResourceBytes, EpubSource, RenderToEpubOptions } from '../types';
 import type { EpubRequestMessage, EpubResourcePayload, EpubResponseMessage } from './protocol';
+import { cdnWorkerEntryUrl } from './entryUrl';
 
 export type { EpubResourcePayload } from './protocol';
 export type { EpubProgress, EpubWarning, EpubLayout, EpubMetadata, EpubFontFile, EpubCover } from '../types';
@@ -32,6 +33,16 @@ export interface CreateEpubWorkerOptions {
    *  ends the worker at once and the next render starts a fresh one; a
    *  given worker is only asked to stop. */
   worker?: Worker | (() => Worker);
+  /**
+   * URL of the worker entry module (`postext-epub/worker/entry`) to start,
+   * when it is not the file next to this module — a copy on your server,
+   * or a CDN build such as `https://esm.sh/postext-epub@0.1.1/worker/entry`.
+   * A URL on another origin is started through a same-origin blob module
+   * that imports it (a worker script must be same-origin; the CDN must
+   * allow CORS). Ignored when `worker` is given. Loaded from esm.sh, the
+   * client finds the CDN's entry by itself.
+   */
+  url?: string | URL;
 }
 
 /** A failure of the worker itself (it could not load or it crashed), as
@@ -77,11 +88,49 @@ export function transferablesOf(options: Pick<EpubWorkerRenderOptions, 'fonts' |
   return [...buffers];
 }
 
-const defaultWorker = (): Worker => new Worker(new URL('./epub.worker.js', import.meta.url), { type: 'module' });
+function pageLocation(): { origin?: string; href?: string } | undefined {
+  return (globalThis as { location?: { origin?: string; href?: string } }).location;
+}
+
+/** Start a module worker at `url`, wrapped in a same-origin blob module when
+ *  the page is on another origin. */
+function startModuleWorker(url: string, pageOrigin: string | undefined): { worker: Worker; objectUrl?: string } {
+  if (pageOrigin === undefined || new URL(url).origin === pageOrigin) {
+    return { worker: new Worker(url, { type: 'module' }) };
+  }
+  const objectUrl = URL.createObjectURL(new Blob([`import ${JSON.stringify(url)};\n`], { type: 'text/javascript' }));
+  return { worker: new Worker(objectUrl, { type: 'module' }), objectUrl };
+}
+
+function spawnEpubWorker(url: string | URL | undefined): { worker: Worker; objectUrl?: string } {
+  const location = pageLocation();
+  const pageOrigin = location?.origin && location.origin !== 'null' ? location.origin : undefined;
+  if (url !== undefined) return startModuleWorker(new URL(String(url), location?.href).href, pageOrigin);
+  // Loaded from a CDN (esm.sh): the file next to this module is not served
+  // there, and would be cross-origin anyway; start the CDN's worker entry.
+  const cdnEntry = cdnWorkerEntryUrl(import.meta.url, pageOrigin);
+  if (cdnEntry) return startModuleWorker(cdnEntry, pageOrigin);
+  // Bundlers (Vite, webpack, Next.js) recognise this exact expression and
+  // emit the worker as a chunk of its own: keep it inline.
+  return { worker: new Worker(new URL('./epub.worker.js', import.meta.url), { type: 'module' }) };
+}
 
 export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerHandle {
   const given = options?.worker;
-  const make = typeof given === 'function' ? given : given ? null : defaultWorker;
+  /** The blob wrapper's URL, revoked once the worker has answered (it has
+   *  loaded the module by then), failed or is disposed. */
+  let objectUrl: string | undefined;
+  const releaseObjectUrl = () => {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = undefined;
+  };
+  const spawn = (): Worker => {
+    releaseObjectUrl();
+    const spawned = spawnEpubWorker(options?.url);
+    objectUrl = spawned.objectUrl;
+    return spawned.worker;
+  };
+  const make = typeof given === 'function' ? given : given ? null : spawn;
   let worker: Worker | null = null;
   let nextId = 1;
   let disposed = false;
@@ -95,6 +144,7 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
 
   const listen = (w: Worker): void => {
     w.addEventListener('message', (event: MessageEvent<EpubResponseMessage>) => {
+      releaseObjectUrl();
       const msg = event.data;
       switch (msg.kind) {
         case 'progress':
@@ -118,6 +168,7 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
     w.addEventListener('error', (event) => {
       // A script that fails to load or throws at the top level.
       event.preventDefault();
+      releaseObjectUrl();
       fail(w, new EpubWorkerError(event.message || 'EPUB worker error'));
     });
     w.addEventListener('messageerror', () => fail(w, new EpubWorkerError('EPUB worker could not read a message')));
@@ -202,6 +253,7 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
     dispose() {
       if (disposed) return;
       disposed = true;
+      releaseObjectUrl();
       const w = worker;
       worker = null;
       if (w) {

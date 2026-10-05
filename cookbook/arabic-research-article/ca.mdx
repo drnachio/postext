@@ -1,0 +1,56 @@
+---
+title: "Un article acadèmic àrab amb notes, cites i índex"
+summary: "Article de revista àrab: notes «(١)» per pàgina, cites CSL entre elles amb la configuració regional àrab i un índex que ordena sense l'article ال."
+plain: "Cinc pàgines d'una revista acadèmica àrab: l'article, les notes a peu de pàgina, la llista de referències i un índex. L'índex posa الكشيدة sota ك, com els índexs àrabs, i no sota l'article ال."
+description: "Un article de revista àrab amb Postext: notes «(١)» per pàgina, notes Chicago amb la configuració regional ar, bibliografia i índex amb index.ignoreArticle."
+question: "Com cito les fonts en un article àrab, amb notes a peu de pàgina i bibliografia?"
+aliases: ["article àrab", "revista àrab", "notes a peu de pàgina en àrab", "cites en àrab", "CSL àrab", "índex àrab", "ignoreArticle", "article al-", "ال", "ordre hijaí", "Amiri", "فهرس", "حواشي", "المراجع"]
+pageNotes: { "1": "La primera pàgina de l'article: el nom de la revista en vermell fosc i el número, un filet prim, el títol en dues línies centrades d'Amiri negreta, l'autora i la seva universitat, un requadre rosa amb el resum sota ملخص i després el títol de secció ١- المقدمة i les primeres línies.", "5": "L'índex a la seva pròpia pàgina: el títol فهرس الأعلام والموضوعات a tota pàgina i dues columnes d'entrades que comencen per la dreta, agrupades sota lletres vermelles ا, ب, ت, ج…; الكشيدة és sota ك amb la pàgina en negreta i una remissió." }
+---
+
+## Què compondràs
+
+Cinc pàgines d'un número d'una revista àrab imaginària, en 17 × 24 cm i a partir de la pàgina 87: un article sobre si la justificació amb caixida fa més lenta la lectura, compost en Amiri de 12 pt amb els títols de secció en Noto Kufi Arabic. Les notes van al peu de cada pàgina i es numeren «(١)», «(٢)» des d'u a cada pàgina, com les numeren les revistes àrabs; les cites, escrites `[@ayalon2016]` al Markdown, també són notes, amb l'estil de notes de Chicago i la configuració regional àrab de CSL. Segueix la llista de referències, primer les obres àrabs, i tanca un índex a dues columnes. L'índex posa الكشيدة sota ك i الصحف اليومية sota ص: l'article ال no compta. <RecipeLink slug="history-essay-chicago-notes">L'assaig d'història amb notes de Chicago</RecipeLink> fa el mateix en anglès.
+
+## Elaboració
+
+### 1 · Notes, cites i índex en un mateix lloc
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Els ajustos de les notes són els tres que demanen els llibres àrabs: `markerTemplate: '({n})'` per als parèntesis, `numbering: 'page'` per tornar a començar a cada pàgina i `noteNumberPosition: 'inline'` perquè la nota comenci amb «(١)» a la seva línia; les xifres són les del document i el filet queda a la dreta ([Notes a peu de pàgina](/ca/docs/arabic-layout#notes-a-peu-de-pàgina)). Les cites comparteixen la numeració de les notes. `citations.locale: 'ar'` dona els termes de CSL en àrab, com عدد per al número d'una revista. `index.ignoreArticle` ordena cada entrada per la paraula que segueix ال i unifica les formes de la hamza, de manera que أميري i الأعمدة van totes dues sota ا ([Índex general i índex analític](/ca/docs/arabic-layout#índex-general-i-índex-analític)); ve activat per a un índex àrab i aquí s'escriu perquè es vegi.
+
+<PageShot page={5} crop="0,0.12,1,0.6" caption="L'índex: dues columnes des de la dreta, lletres en vermell i الكشيدة sota ك amb una remissió." />
+
+### 2 · Una capçalera d'article sense franja
+
+<Excerpt region="masthead" />
+
+El títol de l'article és el títol de primer nivell, dibuixat per un disseny: el nom i el número de la revista, un filet prim, el títol en dues línies centrades i l'autora. La línia del número està teclejada amb xifres arabicoíndiques, perquè l'atribut d'un disseny és text de l'autor i el motor no el reescriu. La numeració comença a la 87 (`page.pageNumbering.startAt`), de manera que els folis diuen on és l'article dins del número.
+
+### 3 · Capçaleres des de la cantonada exterior
+
+<Excerpt region="heads" />
+
+Les pàgines dretes porten el nom de la revista i les esquerres l'autora i un títol abreujat, cadascuna amb el foli a la cantonada exterior. Els elements de la capçalera conserven els costats físics, així que la pàgina parella, que en aquesta enquadernació queda a la dreta, s'ancora a `top-right`.
+
+## Variants
+
+### Numera les notes al llarg de l'article
+
+Moltes revistes àrabs modernes numeren les notes per article en lloc de per pàgina.
+
+```diff
+-  numbering: 'page', // from (١) again on every page, as Arabic journals number them
++  numbering: 'chapter',
+```
+
+### Cita amb autor i any
+
+```diff
+-  style: 'chicago-notes-bibliography', notes: 'footnote', locale: 'ar',
++  style: 'apa', locale: 'ar',
+```
+
+## Errors freqüents
+
+- La puntuació que escriu un estil CSL és la de l'estil: les comes, els punts i comes i les cometes entre les parts d'una nota són llatines, com a الهاشمي, الحرف العربي. Les dates i els números surten de les dades, així que les obres àrabs porten `issued: {literal: "٢٠١٩"}` i localitzadors com `[@hashimi2019, ٧٧]`; les obres llatines conserven 0–9.
+- Una nota o una referència a una obra llatina va en la direcció de la pàgina àrab: el seu punt final queda a l'extrem esquerre de la línia.

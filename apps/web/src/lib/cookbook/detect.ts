@@ -38,6 +38,8 @@ export const POSTEXT_CITEPROC_URL = "https://esm.sh/postext-citeproc";
 export const POSTEXT_FOLIO_URL = "https://esm.sh/postext-folio";
 /** The EPUB 3 writer (EPUB recipes). */
 export const POSTEXT_EPUB_URL = "https://esm.sh/postext-epub";
+/** The EPUB writer on a worker (`createEpubWorker`). */
+export const POSTEXT_EPUB_WORKER_URL = "https://esm.sh/postext-epub/worker";
 /** The layout worker's client (worker recipes, `engine.worker`). */
 export const POSTEXT_WORKER_URL = "https://esm.sh/postext/worker";
 

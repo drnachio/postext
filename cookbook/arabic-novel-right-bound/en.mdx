@@ -1,0 +1,63 @@
+---
+title: "An Arabic novel set right to left, bound on the right"
+summary: "The opening of an Arabic novel on a 14 × 21 cm page: locale 'ar' sets the text right to left, binds the book on the right and prints ١٢ for its folios."
+plain: "The first pages of a novel written in Arabic, laid out as an Arab publisher would print it: the lines run from right to left, the book opens from what a Latin reader calls the back, and the page numbers use Arabic digits."
+description: "An Arabic trade novel in Postext: locale 'ar' gives right-to-left text, right binding and Arabic-Indic folios; kashida justification, chapter numbers in words."
+question: "How do I set an Arabic book right to left and bind it on the right?"
+aliases: ["Arabic novel", "right to left", "RTL", "right-bound book", "Arabic-Indic digits", "kashida", "tatweel", "Markazi Text", "رواية", "الفصل الأول", "14 × 21 cm"]
+pageNotes: { "1": "A right-hand page in deep blue, edge to edge, under a lattice of eight-pointed stars drawn in lighter blue lines. A large star outlined in brass holds the part's label القسم الأول, the word الدرب in white Kufi letters and a quotation in white.", "2": "The left-hand page facing it: a small brass star, the chapter number in words, الفصل الأول, the title الباب الأزرق in Kufi letters, then justified Arabic text from the right margin and the folio ١١ centred at the foot." }
+---
+
+## What you'll build
+
+The opening of *حروف من رصاص* (Letters of Lead), a novel about a grandson who reopens his grandfather's print shop in a Cairo alley, set as an Arab trade paperback: 14 × 21 cm, Markazi Text at 13.5 pt on a 22 pt line, justified, with the first-line indent on the right. The excerpt starts on page 10 with a part page in the blue of the shop's door, a lattice of eight-pointed stars drawn in code, and the part's name in Reem Kufi at 64 pt. The chapter opener faces it on the left-hand page, numbered in words, الفصل الأول. Folios print ١٠, ١١, ١٢; the book title runs over the right-hand pages and the chapter over the left. <RecipeLink slug="trade-paperback-novel">A trade paperback novel</RecipeLink> sets the same kind of book left to right.
+
+## Method
+
+### 1 · One locale, three decisions
+
+The code is [the short answer](#the-short-answer) above. `locale: 'ar'` is all the configuration says, and the engine takes three things from it: the text runs right to left (`direction: 'auto'`), the book is bound on the right (`page.binding: 'auto'`), and every number the engine writes uses the Arabic-Indic digits (`numerals: 'auto'`), the folios included ([Starting an Arabic book](/en/docs/arabic-layout#starting-an-arabic-book)). Margins and alignments keep the words `left` and `right`, but in a right-to-left book they mean the sides of the flow: `margins.left` is the spine side, and the first-line indent stands on the right. Justified lines open their spaces first and then lengthen joined letters with the tatweel, the kashida of Arabic books; the text is never hyphenated ([Justification and kashida](/en/docs/arabic-layout#justification-and-kashida)).
+
+<PageShot page={3} crop="0.1,0.12,0.8,0.3" caption="Page 12: justified lines widened by kashida, the indent on the right, the folio ١٢ at the outer edge." />
+
+### 2 · A chapter number in words
+
+<Excerpt region="opener" />
+
+The level's `numberingTemplate` writes الفصل and the number as a masculine ordinal, so the second chapter is الفصل الثاني with no change to the Markdown; `{1:ordinal-feminine}` gives الأولى, الثانية for a feminine noun such as الليلة ([Ordinal and cardinal words](/en/docs/arabic-layout#ordinal-and-cardinal-words)). The opener prints it with `{number}` above the title. Arabic openers are usually centred, so `align: 'center'` avoids any question of which side the design starts on.
+
+### 3 · Running heads stay on their pages
+
+<Excerpt region="heads" />
+
+Body text follows the flow, but running heads and folios keep their physical sides. Page 12 is an even page and a right-hand page in this book, so its folio goes top right with the book's title beside it; page 13 is on the left and carries the chapter. Read a spread from the right, as an Arab reader does, and the book's title comes first. `showBook` lays the pages out mirrored, page 11 to the left of page 10, so the screen shows the spreads as the book opens.
+
+### 4 · A part page drawn in code
+
+<Excerpt region="plate" />
+
+The part page is a first-level heading, `# الدرب {style="plate" …}`, whose style paints the whole sheet and clears its head and folio. The lattice is an SVG generated in the pen from two squares turned 45°, the khātam star of Islamic geometric ornament, in the palette's blue and brass, so the PDF keeps it as vector paths. `numbered: false` keeps the part page out of the chapter count, and the opener that follows is الفصل الأول.
+
+## Variations
+
+### Print European digits
+
+A Maghreb edition prints 1, 2, 3; `locale: 'ar-MA'` does it by itself, and <RecipeLink slug="maghreb-edition-european-digits">the Maghreb edition</RecipeLink> shows the whole book.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'ar', numerals: 'latn',
+```
+
+### Justify with spaces alone
+
+Some publishers keep the tatweel out of running text: the spaces take the whole difference.
+
+```diff
+   textAlign: 'justify', optimalLineBreaking: true,
++  kashida: 'none',
+```
+
+## Pitfalls
+
+- A colophon in English or Spanish at the end of an Arabic book needs `{dir=ltr}` on its block: without it the Latin line is aligned and punctuated as a right-to-left paragraph, with its full stop on the left.

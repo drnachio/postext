@@ -1771,5 +1771,86 @@
         "ar": "الخط الفاصل بين الأعمدة"
       }
     }
+  },
+  "surrounding-commentary": {
+    "label": {
+      "en": "Commentary set around the text",
+      "es": "Comentario alrededor del texto",
+      "ca": "Comentari al voltant del text",
+      "zh": "环绕正文的注释",
+      "ar": "شرح يحيط بالمتن"
+    },
+    "aliases": {
+      "en": [
+        "hashiya",
+        "ḥāshiya",
+        "hamish",
+        "margin commentary",
+        "commentary around the text",
+        "Bulaq page",
+        "frame commentary",
+        "sharh in the margin",
+        "glossed page",
+        "Talmud page"
+      ],
+      "es": [
+        "ḥāshiya",
+        "hamish",
+        "comentario al margen",
+        "comentario alrededor del texto",
+        "página de Bulaq",
+        "glosa enmarcada",
+        "página glosada",
+        "página del Talmud"
+      ],
+      "ca": [
+        "ḥāshiya",
+        "hamix",
+        "comentari al marge",
+        "comentari al voltant del text",
+        "pàgina de Bulaq",
+        "glossa emmarcada",
+        "pàgina glossada",
+        "pàgina del Talmud"
+      ],
+      "zh": [
+        "边注",
+        "眉批",
+        "环绕注释",
+        "布拉克版式",
+        "页边评注",
+        "hashiya",
+        "Bulaq",
+        "塔木德版式"
+      ],
+      "ar": [
+        "حاشية",
+        "ḥāshiya",
+        "هامش",
+        "شرح في الهامش",
+        "شرح يحيط بالمتن",
+        "صفحة بولاق",
+        "طبعة بولاق",
+        "متن وشرح",
+        "صفحة التلمود"
+      ]
+    },
+    "explanation": {
+      "en": "A second text cannot run round three or four sides of the main one, as the ḥāshiya of a Bulaq print or the commentaries of a Talmud page do: body text flows in one column, two, or a column and a half. Set the commentary in the side column of a oneAndHalf layout, as boxes fenced with span=\"side\" beside the passages they explain, and draw the frame and the band with page design elements.",
+      "es": "Un segundo texto no puede rodear el principal por tres o cuatro lados, como la ḥāshiya de un impreso de Bulaq o los comentarios de una página del Talmud: el texto va a una columna, a dos o en columna y media. Pon el comentario en la columna lateral de un diseño oneAndHalf, como recuadros con span=\"side\" junto a los pasajes que explican, y dibuja el marco y la banda con elementos de diseño de página.",
+      "ca": "Un segon text no pot envoltar el principal per tres o quatre costats, com la ḥāshiya d'un imprès de Bulaq o els comentaris d'una pàgina del Talmud: el text va a una columna, a dues o en columna i mitja. Posa el comentari a la columna lateral d'un disseny oneAndHalf, com a requadres amb span=\"side\" al costat dels passatges que expliquen, i dibuixa el marc i la banda amb elements de disseny de pàgina.",
+      "zh": "第二种文本不能像布拉克印本的页边注（ḥāshiya）或《塔木德》页面上的注释那样，从三面或四面环绕正文：正文只能排成一栏、两栏或一栏半。可以把注释放进oneAndHalf版式的边栏，作为用span=\"side\"标记的框，排在所解释的段落旁边，再用页面设计元素画出边框和书眉带。",
+      "ar": "لا يمكن أن يلتف نص ثانٍ حول المتن من ثلاث جهات أو أربع، كما تفعل الحاشية في مطبوعات بولاق أو الشروح في صفحة التلمود: يجري المتن في عمود واحد أو عمودين أو عمود ونصف. ضع الشرح في العمود الجانبي لتخطيط oneAndHalf، في إطارات معلَّمة بـ span=\"side\" بجانب المواضع التي تشرحها، وارسم الإطار والشريط بعناصر تصميم الصفحة."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Layout",
+        "es": "Disposición",
+        "ca": "Disposició",
+        "zh": "版式",
+        "ar": "التخطيط"
+      }
+    }
   }
 }

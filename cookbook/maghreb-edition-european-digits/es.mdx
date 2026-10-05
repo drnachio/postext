@@ -1,0 +1,51 @@
+---
+title: "Una edición magrebí de un texto árabe, con cifras europeas"
+summary: "Un capítulo de un libro árabe impreso para Marruecos: locale 'ar-MA' mantiene el texto de derecha a izquierda y escribe cada número generado como 1, 2, 3."
+plain: "En Marruecos, Argelia y Túnez los libros en árabe imprimen los números con las cifras que usa Europa, 1, 2, 3, y no con ١، ٢، ٣. Un solo ajuste, el idioma y el país del documento, da esas cifras a todo el libro."
+description: "Un capítulo árabe para una edición marroquí en Postext: ar-MA da cifras europeas a folios, títulos, listas, notas y figuras, y conserva el lomo a la derecha."
+question: "¿Cómo imprimo cifras europeas (1, 2, 3) en un libro árabe para una edición magrebí?"
+aliases: ["Magreb", "Marruecos", "ar-MA", "cifras europeas", "números arábigos", "cifras árabes", "numeración", "latn", "Fez", "zellige", "أرقام", "المغرب"]
+pageNotes: { "1": "La apertura del capítulo, página 41: الفصل 3: أبواب فاس en letras cúficas verdes, dos párrafos de árabe justificado con los años 789 y 809 en cifras europeas y, debajo, una franja de zellige, estrellas cobalto de ocho puntas sobre verde con cuadrados ocre, con el pie شكل 3-1." }
+---
+
+## Lo que vas a componer
+
+Un capítulo de una guía de las ciudades antiguas de Marruecos, dedicado a las puertas de Fez, tal como lo imprimiría una editorial marroquí: 13,5 × 21 cm, Noto Naskh Arabic de 12,5 pt y títulos en Noto Kufi Arabic con el verde de los azulejos de Fez. El texto va de derecha a izquierda y el libro se encuaderna por la derecha, como cualquier libro árabe, pero todos los números de la página se escriben 1, 2, 3: los folios del 41 al 44, الفصل 3, los apartados 3-1 y 3-2, la lista de puertas del 1- al 5-, las llamadas de nota (1) y el número de figura شكل 3-1. Es el uso del Magreb, de Marruecos a Túnez, y la página lo consigue con un solo ajuste. <RecipeLink slug="arabic-novel-right-bound">Una novela árabe encuadernada por la derecha</RecipeLink> enseña el mismo libro con las cifras ١٢ del Mashreq.
+
+## Elaboración
+
+### 1 · El país elige las cifras
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `numerals` se queda en `'auto'` y el motor saca las cifras de la etiqueta: `ar-MA`, `ar-DZ`, `ar-TN`, `ar-LY`, `ar-MR` y `ar-EH` dan cifras europeas; `ar` a secas y las regiones del Mashreq dan ١٢٣ ([Cifras y estilos de numeración](/es/docs/arabic-layout#cifras-y-estilos-de-numeración)). Solo cambian los números que escribe el motor: el folio, los contadores de los títulos, los números de la lista, las llamadas de nota y los números de figura. Los años del texto, 789 y 1913, son del autor, tecleados con las cifras de la edición, y el motor nunca los reescribe. El `{startAt=3}` del título lee tanto ٣ como 3, así que el mismo Markdown sirve para las dos ediciones.
+
+### 2 · Los signos que rodean los números
+
+<Excerpt region="marks" />
+
+Los libros árabes escriben el número de lista seguido de un guion, 1-, y la llamada de nota entre paréntesis, (1); las dos plantillas toman las cifras del documento, así que la edición del Mashreq imprime ١- y (١) con los mismos ajustes ([Notas al pie](/es/docs/arabic-layout#notas-al-pie)). La etiqueta del pie termina en dos puntos, شكل 3-1:, porque un punto detrás de un número se lee como separador decimal. Las notas vuelven a empezar en (1) en cada página, como las numeran casi todos los libros árabes.
+
+### 3 · Una franja de azulejos dibujada con código
+
+<Excerpt region="art" />
+
+La figura es un SVG generado en el propio script: estrellas de ocho puntas hechas con dos cuadrados girados 45° y cuadrados pequeños entre ellas, en el verde, el cobalto y el ocre de la paleta. Su pie está en árabe en las dos ediciones y se numera por capítulo, `{h1}-{n}`, como numeran sus figuras los tipos de recurso árabes.
+
+## Variantes
+
+### Imprime las cifras del Mashreq
+
+La edición egipcia o levantina del mismo capítulo: cambia la etiqueta, no el Markdown.
+
+```diff
+-  locale: 'ar-MA',
++  locale: 'ar-EG',
+```
+
+### Mantén la etiqueta marroquí e imprime ١٢٣
+
+Un ajuste escrito gana al valor por defecto de la región.
+
+```diff
+   locale: 'ar-MA',
++  numerals: 'arab',
+```

@@ -1,0 +1,46 @@
+---
+title: "Un informe bilingüe árabe-inglés"
+summary: "Memoria anual árabe con su traducción al lado: {dir=ltr} en cada bloque traducido, :ltr[…] para los nombres latinos y una tabla de izquierda a derecha."
+plain: "La memoria anual de una fundación escrita en árabe, con cada párrafo seguido de su versión en español. La página mezcla las dos direcciones sin que se desordenen las palabras, los números ni las tablas."
+description: "Un informe bilingüe árabe-inglés en Postext: bloques marcados {dir=ltr}, aislamientos :ltr[…] en línea, texto en bandera alineado al principio y dos tablas."
+question: "¿Cómo mezclo párrafos, números y tablas en árabe y en inglés en una misma página?"
+aliases: ["informe bilingüe", "árabe y español", "árabe e inglés", "dirección mixta", "bidi", "bidireccional", "dir=ltr", "aislamiento", "bloque LTR en RTL", "dirección de la tabla", "memoria anual", "IBM Plex Sans Arabic", "تقرير سنوي"]
+pageNotes: { "1": "La portada: una franja verde azulado arriba con el nombre de la fundación y el título التقرير السنوي ٢٠٢٥ en blanco, en árabe, a la derecha, y el título en español, alineado a la izquierda, debajo. Más abajo, la carta de la directora: un título árabe a la derecha, su rótulo en español a la izquierda, y párrafos árabes alineados a la derecha, cada uno seguido de un párrafo en español más pequeño y gris, alineado a la izquierda." }
+---
+
+## Lo que vas a componer
+
+La memoria de 2025 de una fundación de traducción imaginaria, Dar al-Dad, en una página de 210 × 280 mm con IBM Plex Sans Arabic e IBM Plex Sans, las dos mitades de una misma familia. La memoria es árabe: va de derecha a izquierda y numera sus páginas ٢, ٣. Cada párrafo árabe va seguido de su versión en español, más pequeña y en gris pizarra, compuesta de izquierda a derecha y en bandera por la derecha; cada título árabe lleva un rótulo en español en el otro margen. Los nombres latinos dentro de las frases árabes conservan su orden, y las cifras del año aparecen dos veces, en una tabla árabe que se lee desde la derecha y en otra que se lee desde la izquierda. En la edición inglesa, la segunda lengua es el inglés.
+
+## Elaboración
+
+### 1 · La segunda lengua, en bloques marcados
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. El documento es árabe, así que todos los bloques van de derecha a izquierda mientras el Markdown no diga otra cosa: `{dir=ltr}` en una valla `:::paragraphs` o en un título da la vuelta a ese bloque, y `textAlign: 'start'` lleva cada bloque al lado por el que empieza, la derecha en árabe y la izquierda en español ([Dirección del documento, del bloque y del texto en línea](/es/docs/arabic-layout#dirección-del-documento-del-bloque-y-del-texto-en-línea)). Un nombre latino dentro de una línea árabe, :ltr[Harbour Modern Classics], es un aislamiento: el algoritmo bidireccional lo trata como una sola pieza neutra, y las palabras árabes y la coma que lo rodean no se mueven ([Aislamientos](/es/docs/arabic-layout#aislamientos)). `emphasis: 'italic'` deja *Middlemarch* en cursiva en el texto español; el motor nunca inclina una letra árabe, sea cual sea el ajuste.
+
+### 2 · Una tabla para cada dirección
+
+<Excerpt region="tables" />
+
+La tabla árabe va con el documento: su primera columna, el programa, queda a la derecha, y `align: 'end'` pega los números al borde izquierdo de sus celdas. La tabla en español declara `direction: 'ltr'`, así que su primera columna queda a la izquierda y `'end'` es el borde derecho ([Qué significan izquierda, derecha, principio y final](/es/docs/arabic-layout#qué-significan-izquierda-derecha-principio-y-final)). Las cifras árabes están tecleadas en ٠–٩ y las españolas en 0–9: las cifras del documento solo se aplican a los números que escribe el motor, como el número de la tabla en su pie, جدول ١-١. Por eso la segunda tabla tiene un tipo propio sin contador: un número ahí saldría como ٢.
+
+### 3 · Dos títulos en una franja
+
+<Excerpt region="cover" />
+
+La portada es el diseño del título de primer nivel. El texto de diseño toma la dirección del documento, así que el nombre y el título árabes no necesitan nada; el título en español declara `direction: 'ltr'` y se ancla al borde izquierdo de la página. La franja es una caja anclada al sangrado, de 86 mm, y el `minHeight` de la apertura deja la carta de la directora justo debajo.
+
+## Variantes
+
+### Pon primero la otra lengua
+
+Una memoria para un patronato que no lee árabe cambia los papeles: un documento en español, sus bloques sin marcar, y los árabes marcados `{dir=rtl}`.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'es', // Arabic blocks then carry {dir=rtl}
+```
+
+## Errores frecuentes
+
+- Un número que escribe el motor dentro de un bloque en español, un número de lista o la etiqueta de un pie, sigue tomando las cifras del documento (٢ en una memoria árabe). Da a esas tablas un tipo de recurso sin contador, o escribe tú los números.

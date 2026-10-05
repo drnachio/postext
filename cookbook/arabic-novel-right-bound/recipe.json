@@ -1,0 +1,145 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 105,
+  "status": "published",
+  "chapter": "type",
+  "order": 160,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "text-direction",
+      "right-binding",
+      "document-digits"
+    ],
+    "also": [
+      "kashida",
+      "arabic-fonts",
+      "arabic-language",
+      "arabic-number-words",
+      "body-typography",
+      "paragraph-indents",
+      "opener-design",
+      "heading-styles",
+      "heading-numbering",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "design-images",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q119"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "cjk-spread-order",
+    "headings-drop-h1-break",
+    "style-inherits-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": [
+      1,
+      2
+    ],
+    "card": "spread",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The opening of a novel, حروف من رصاص (Letters of Lead), written in Arabic for the recipe; its author and its people are invented",
+          "es": "El comienzo de una novela, حروف من رصاص (Letras de plomo), escrito en árabe para la receta; su autora y sus personajes son inventados"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Markazi Text",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Reem Kufi",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "trade-paperback-novel",
+    "vertical-novel-right-bound",
+    "maghreb-edition-european-digits",
+    "running-heads-by-parity"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 70,
+      "shade": "#fdfcf8"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#2b4766"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  }
+}

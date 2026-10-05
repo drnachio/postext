@@ -30,6 +30,7 @@ import {
   type ViewHashBook,
 } from '../storage/viewHash';
 import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, loadEpubLayout, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale, saveEpubLayout } from '../storage/persistence';
+import { defaultEpubLayout } from '../epub/defaultLayout';
 import { loadResources, saveResource, deleteResource } from '../storage/resources';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader';
 import { pruneFontFiles } from '../storage/fontStorage';
@@ -1229,7 +1230,7 @@ export function SandboxProvider({
       activeChapterId: book.activeChapterId,
       pdfScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
-      epubLayout: loadEpubLayout() ?? 'reflowable',
+      epubLayout: loadEpubLayout() ?? defaultEpubLayout(),
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config,

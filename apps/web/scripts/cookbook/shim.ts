@@ -67,6 +67,7 @@ export const SHIM_PATHS = {
   "https://esm.sh/postext-citeproc": "/__shim/postext-citeproc.js",
   "https://esm.sh/postext-folio": "/__shim/postext-folio.js",
   "https://esm.sh/postext-epub": "/__shim/postext-epub.js",
+  "https://esm.sh/postext-epub/worker": "/__shim/postext-epub-worker.js",
 } as const;
 
 /** Where the local engine's modules are served (`packages/<name>/dist`). */
@@ -333,6 +334,48 @@ export async function renderToEpub(docs, options = {}) {
 `;
 }
 
+/** createEpubWorker recorded: each file its handle writes is read back
+ *  with the package's readEpub (`main`), as renderToEpub's are (check C30). */
+function epubWorkerShim(url: string, main: string): string {
+  return `export * from '${url}';
+import * as real from '${url}';
+import { readEpub } from '${main}';
+import { cb } from '/__shim/recorder.js';
+
+export function createEpubWorker(...args) {
+  const handle = real.createEpubWorker(...args);
+  const render = handle.render;
+  handle.render = async function (docs, options = {}) {
+    const entry = { layout: options.layout ?? null, bytes: 0, ms: 0, documents: 0, pages: 0, toc: 0,
+      readLayout: null, warnings: [], error: null, worker: true };
+    cb.epubs.push(entry);
+    const onWarning = (w) => {
+      entry.warnings.push(w.kind + ': ' + (w.fileId ?? w.family ?? w.detail ?? ''));
+      options.onWarning?.(w);
+    };
+    const t0 = performance.now();
+    let bytes;
+    try {
+      bytes = await render.call(this, docs, { ...options, onWarning });
+    } catch (error) {
+      entry.error = String(error?.stack ?? error);
+      throw error;
+    }
+    entry.ms = performance.now() - t0;
+    entry.bytes = bytes.length;
+    try {
+      const book = readEpub(bytes);
+      Object.assign(entry, { documents: book.spine.length, pages: book.pageList.length, toc: book.toc.length, readLayout: book.layout });
+    } catch (error) {
+      entry.error = 'readEpub: ' + String(error?.message ?? error);
+    }
+    return bytes;
+  };
+  return handle;
+}
+`;
+}
+
 /** The shim modules of one run, keyed by the path the server answers. */
 export function shimModules(engine: EngineSpec): Record<string, string> {
   const V = engine.postext;
@@ -348,6 +391,7 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
       "/__shim/postext-citeproc.js": `export * from '${local("postext-citeproc/index.js")}';\n`,
       "/__shim/postext-folio.js": `export * from '${local("postext-folio/index.js")}';\n`,
       "/__shim/postext-epub.js": epubShim(local("postext-epub/index.js")),
+      "/__shim/postext-epub-worker.js": epubWorkerShim(local("postext-epub/worker/client.js"), local("postext-epub/index.js")),
     };
   }
   return {
@@ -359,5 +403,9 @@ export function shimModules(engine: EngineSpec): Record<string, string> {
     "/__shim/postext-citeproc.js": `export * from 'https://esm.sh/postext-citeproc@${engine.postextCiteproc}?deps=postext@${V}';\n`,
     "/__shim/postext-folio.js": `export * from 'https://esm.sh/postext-folio@${engine.postextFolio}?deps=postext@${V}';\n`,
     "/__shim/postext-epub.js": epubShim(`https://esm.sh/postext-epub@${engine.postextEpub}?deps=postext@${V}`),
+    "/__shim/postext-epub-worker.js": epubWorkerShim(
+      `https://esm.sh/postext-epub@${engine.postextEpub}/worker?deps=postext@${V}`,
+      `https://esm.sh/postext-epub@${engine.postextEpub}?deps=postext@${V}`,
+    ),
   };
 }

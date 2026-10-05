@@ -270,8 +270,11 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   ```js
   const fixed = await renderToEpub(docs, { layout: 'fixed', metadata: { title, language: LANG }, fonts });
   ```
-  Offer each file through an `<a download>` link. `epub-fixed-and-reflowable` is the model (in
-  `cookbook/_pending/` until postext-epub is on npm).
+  Offer each file through an `<a download>` link. `epub-fixed-and-reflowable` (Nº 115) is the
+  model. To keep the page free while a long book is written, import `createEpubWorker` from
+  `https://esm.sh/postext-epub/worker` instead and call `createEpubWorker().render(docs, …)`
+  with the same options; the capture records its files like `renderToEpub`'s (needs
+  postext-epub ≥ 0.1.1, which starts its worker from esm.sh).
 
 ### 5.4 The kit
 

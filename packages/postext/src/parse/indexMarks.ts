@@ -17,12 +17,13 @@ import { stripInlineFormatting } from './inlineFormatting';
  *  colon (the `:::index` directive) or a backslash (an escaped mark). The
  *  text is one line and takes `\]` for a literal bracket. */
 const INDEX_MARK_RE = /(?<![:\\]):index(?:\[((?:\\.|[^\]\\\n])*)\])?(?:\{([^}\n]*)\})?/g;
-/** An inline anchor (#261): `:anchor{#id}` / `:anchor{id="…"}`, and
- *  Pandoc's bracketed span `[text]{#id}` whose text stays. Not after a
- *  colon, a backslash, or a `]`/`!` (a link or an image). */
+/** An inline anchor (#261): `:anchor{#id}` / `:anchor{id="…"}`, not after
+ *  a colon or a backslash, and Pandoc's bracketed span `[text]{#id}` whose
+ *  text stays, not after a backslash or a `]`/`!` (a link or an image). */
 const ANCHOR_MARK_RE = /(?<![:\\]):anchor\{([^}\n]*)\}/g;
 const SPAN_ANCHOR_RE = /(?<![\]\\!])\[((?:\\.|[^\]\\\n^])(?:\\.|[^\]\\\n])*)\]\{#([\p{L}\p{N}_][\p{L}\p{N}_.:-]*)\}/gu;
-/** Inline code on one line: its marks stay literal. */
+/** Inline code on one line: its marks stay literal, and no mark may start
+ *  or end inside it (#413). */
 const CODE_SPAN_RE = /`[^`\n]+`/g;
 
 /** A removal from the markdown: `length` characters that sat just before
@@ -111,11 +112,33 @@ function anchorFrom(id: string, text: string | undefined, sourceStart: number, s
   return { anchorId: id, ...(plain ? { text: plain } : {}), sourceStart, sourceEnd, anchor: -1, attach: 'after' };
 }
 
+/** The inline code spans of a line, as `[start, end)` ranges. */
+function codeSpans(line: string): [number, number][] {
+  const code: [number, number][] = [];
+  CODE_SPAN_RE.lastIndex = 0;
+  for (let m = CODE_SPAN_RE.exec(line); m; m = CODE_SPAN_RE.exec(line)) code.push([m.index, m.index + m[0].length]);
+  return code;
+}
+
+/** Whether a match starts or ends inside a code span. A match that holds a
+ *  whole code span (`:index[`code`]`) keeps it. When it cuts one, the
+ *  search goes on from the next character, so a mark after its start is
+ *  still found. */
+function cutsCode(re: RegExp, m: RegExpExecArray, code: [number, number][]): boolean {
+  const start = m.index;
+  const end = start + m[0].length;
+  if (!code.some(([s, e]) => (start > s && start < e) || (end > s && end < e))) return false;
+  re.lastIndex = start + 1;
+  return true;
+}
+
 /** The marks of one line, in order, none overlapping. */
 function lineMatches(line: string): LineMatch[] {
   const out: LineMatch[] = [];
+  const code = codeSpans(line);
   INDEX_MARK_RE.lastIndex = 0;
   for (let m = INDEX_MARK_RE.exec(line); m; m = INDEX_MARK_RE.exec(line)) {
+    if (cutsCode(INDEX_MARK_RE, m, code)) continue;
     const [whole, visible, attrs] = m;
     if (visible === undefined && attrs === undefined) continue;
     out.push({
@@ -127,12 +150,14 @@ function lineMatches(line: string): LineMatch[] {
   }
   ANCHOR_MARK_RE.lastIndex = 0;
   for (let m = ANCHOR_MARK_RE.exec(line); m; m = ANCHOR_MARK_RE.exec(line)) {
+    if (cutsCode(ANCHOR_MARK_RE, m, code)) continue;
     const id = parseDirectiveAttrs(m[1]!).id?.trim();
     if (!id) continue;
     out.push({ index: m.index, whole: m[0], make: (start, end) => anchorFrom(id, undefined, start, end) });
   }
   SPAN_ANCHOR_RE.lastIndex = 0;
   for (let m = SPAN_ANCHOR_RE.exec(line); m; m = SPAN_ANCHOR_RE.exec(line)) {
+    if (cutsCode(SPAN_ANCHOR_RE, m, code)) continue;
     const text = m[1]!;
     const id = m[2]!;
     out.push({ index: m.index, whole: m[0], visible: { text, offset: 1 }, make: (start, end) => anchorFrom(id, text, start, end) });
@@ -166,16 +191,12 @@ export function extractIndexMarks(markdown: string): IndexMarkExtraction | null 
       if (nl === -1) break;
       continue;
     }
-    const code: [number, number][] = [];
-    CODE_SPAN_RE.lastIndex = 0;
-    for (let m = CODE_SPAN_RE.exec(line); m; m = CODE_SPAN_RE.exec(line)) code.push([m.index, m.index + m[0].length]);
     const lineOut = out.length;
     const lineRemovals: Removal[] = [];
     const linePending: typeof pending = [];
     let kept = '';
     let last = 0;
     for (const m of lineMatches(line)) {
-      if (code.some(([s, e]) => m.index >= s && m.index < e)) continue;
       const { whole, visible } = m;
       kept += line.slice(last, m.index);
       const start = lineStart + m.index;

@@ -1,0 +1,59 @@
+---
+title: "A two-column Arabic newspaper page"
+summary: "An Arabic daily in locale 'ar': the first column is the right one, headlines span both, and the In brief strip sets three columns right to left."
+plain: "The front page and an inside page of an Arabic newspaper. The story starts in the right-hand column and carries on in the left one, the way Arabic readers read a page."
+description: "An Arabic newspaper in Postext: two body columns ordered right to left, page-span headline boxes, a three-column In brief strip and a prayer-times table."
+question: "Which column comes first on an Arabic page, and how do I set a two-column newspaper?"
+aliases: ["Arabic newspaper", "newspaper columns", "right-to-left columns", "column order", "nameplate", "masthead", "Aref Ruqaa", "prayer times", "صحيفة", "عمود", "مواقيت الصلاة"]
+pageNotes: { "1": "The front page: the name الساحل in large blue Ruqʿa letters between two small ears, under it a heavy and a thin rule, the kicker النقل, a two-line headline in black Kufi across the page, a standfirst, a map of a tram line along a coast, the story in two columns starting on the right, and a sand-coloured In brief strip in three columns at the foot.", "2": "The inside page: a blue flag محليات over a heavy rule, a headline across the page, four stories in two columns from the right, and a table of prayer times across the foot, its first column, الفجر, on the right." }
+---
+
+## What you'll build
+
+Two pages of *الساحل*, an imaginary daily of an imaginary port city, on a 246 × 328 mm compact. The front page carries the paper's name in Aref Ruqaa at 84 pt, the lead story on the town's new tram under a headline across the page and a map drawn in code, and a strip of three briefs at the foot. Page 2 opens the local section under a blue flag, with four stories and the day's prayer times. Everything reads from the right: the first body column, the briefs, the table's columns, the ears of the nameplate. <RecipeLink slug="newspaper-front-page">The English front page</RecipeLink> sets the same furniture left to right.
+
+## Method
+
+### 1 · Two columns, the first on the right
+
+The code is [the short answer](#the-short-answer) above. `layoutType: 'double'` and the column rule are the same settings as in an English paper; `locale: 'ar'` turns the page, so the story fills the right-hand column first and carries on at the head of the left one ([Page order and right binding](/en/docs/arabic-layout#page-order-and-right-binding)). A headline across both columns is a page-span box with no frame, and the columns under it start level. The In brief strip is a page-span box floated to the foot with `:::columns{count=3}` inside, and its columns run right to left too, as does the prayer-times table on page 2: a table set in the document's direction puts its first column on the right.
+
+### 2 · A nameplate between two ears
+
+<Excerpt region="nameplate" />
+
+The front page's first-level heading is the paper's name, painted by a heading style. Its design is drawn in the mirrored page, so `top-right` is the start of the line: the issue and the date go there, the city and the price at the other end ([What left, right, start and end mean](/en/docs/arabic-layout#what-left-right-start-and-end-mean)). Ruqʿa is a display hand for a few words at a large size; it has no kashida and the body never uses it.
+
+### 3 · Section flags and folio lines
+
+<Excerpt region="inside" />
+
+An inside page opens with a first-level heading drawn as a flag on a heavy rule. The folio line is a header, so it keeps its physical sides: page 2, an even page, has its number at the right-hand corner, the outer one in a paper that opens from the right. The front page clears the header in its heading style.
+
+### 4 · A map drawn in code
+
+<Excerpt region="art" />
+
+The tram map is an SVG of paths and circles in the palette's colours, with no text in it: a drawing's words would be set in a system face, so the place names stay in the caption. The picture type has no counter and no label, because newspapers do not number their pictures.
+
+## Variations
+
+### Three columns in the briefs, four on a wider page
+
+The strip is a box with its own columns, so it can have more than the body's two.
+
+```diff
+-:::columns{count=3 breaks="2,3"}
++:::columns{count=4 breaks="2,3,4"}
+```
+
+### European digits for a Maghreb paper
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag): rtl, digits ٠–٩
++  locale: 'ar-MA', // rtl, digits 0–9
+```
+
+## Pitfalls
+
+- The prayer times are typed in Arabic-Indic digits in the table's cells: `locale` changes only the numbers the engine writes, so a Maghreb edition retypes them.

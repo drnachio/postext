@@ -6,6 +6,7 @@ import type { EpubProgress, EpubWarning } from '../types';
 import { LORA, PNG, sampleBook } from '../__tests__/sampleBook';
 import { createEpubWorker, gatherResourceBytes, transferablesOf, EpubWorkerError } from './client';
 import { serveEpubRequests, type EpubWorkerPort } from './serve';
+import { cdnWorkerEntryUrl } from './entryUrl';
 
 const MODIFIED = new Date(Date.UTC(2026, 9, 4));
 const metadata = { title: 'Sample book', creators: ['Ada Lovelace'], language: 'en-US', modified: MODIFIED };
@@ -183,5 +184,31 @@ describe('createEpubWorker', () => {
     const handle = createEpubWorker({ worker: asWorker(new ChannelWorker()) });
     handle.dispose();
     await expect(handle.render(book(), { layout: 'fixed', metadata })).rejects.toThrow(/disposed/);
+  });
+});
+
+describe('cdnWorkerEntryUrl', () => {
+  it('finds the worker entry of an esm.sh build on another origin', () => {
+    expect(cdnWorkerEntryUrl('https://esm.sh/postext-epub@0.1.0/es2022/worker.mjs', 'https://app.example'))
+      .toBe('https://esm.sh/postext-epub@0.1.0/worker/entry');
+    expect(cdnWorkerEntryUrl('https://cdn.example/esm/postext-epub@1.0.0-beta.1/esnext/dist/worker/client.js', undefined))
+      .toBe('https://cdn.example/esm/postext-epub@1.0.0-beta.1/worker/entry');
+  });
+
+  it('handles the esm.sh URLs of ?deps= and the external-all *postext-epub form', () => {
+    // `?deps=postext@…` (what a pen pins) adds an `X-…` segment after the version.
+    expect(cdnWorkerEntryUrl('https://esm.sh/postext-epub@0.1.0/X-ZHBvc3RleHRAMS4xNS4w/es2022/worker.mjs', 'https://app.example'))
+      .toBe('https://esm.sh/postext-epub@0.1.0/worker/entry');
+    expect(cdnWorkerEntryUrl('https://esm.sh/*postext-epub@0.1.0/es2022/worker.mjs', 'https://app.example'))
+      .toBe('https://esm.sh/postext-epub@0.1.0/worker/entry');
+    // postext's own modules, and another package ending in the name, are not this one.
+    expect(cdnWorkerEntryUrl('https://esm.sh/postext@1.15.0/es2022/worker.mjs', 'https://app.example')).toBeNull();
+    expect(cdnWorkerEntryUrl('https://esm.sh/my-postext-epub@1.0.0/es2022/worker.mjs', 'https://app.example')).toBeNull();
+  });
+
+  it('leaves bundled, same-origin and unrecognised module URLs to the default', () => {
+    expect(cdnWorkerEntryUrl('file:///repo/node_modules/postext-epub/dist/worker/client.js', 'https://app.example')).toBeNull();
+    expect(cdnWorkerEntryUrl('https://app.example/_next/static/chunks/postext-epub@0.1.0/es2022/x.js', 'https://app.example')).toBeNull();
+    expect(cdnWorkerEntryUrl('https://cdn.jsdelivr.net/npm/postext-epub@0.1.0/dist/worker/client.js', 'https://app.example')).toBeNull();
   });
 });

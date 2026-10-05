@@ -23,6 +23,18 @@ export function ogTextLocale(locale: string): string {
   return /^ar(?:-|$)/.test(locale) ? "en" : locale;
 }
 
+/** Arabic-script characters other than the Arabic-Indic digits (which
+ *  render, unjoined as they are anyway): the Arabic words an English text
+ *  quotes (الليلة الأولى) make next/og fetch the face that breaks the
+ *  build (see {@link ogTextLocale}). */
+const ARABIC_SCRIPT = /\p{Script=Arabic}/u;
+const ARABIC_INDIC_DIGITS = /[٠-٩۰-۹]/g;
+
+/** Whether a card can draw `text`: it holds no Arabic letters. */
+export function ogDrawable(text: string | undefined): boolean {
+  return !!text && !ARABIC_SCRIPT.test(text.replace(ARABIC_INDIC_DIGITS, ""));
+}
+
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
@@ -104,6 +116,11 @@ export async function generateOgImage({
    *  top of the card from x = 620. */
   art?: { src: string; width: number; height: number };
 }) {
+  // Last guard for the build: a text with Arabic letters is left out (a
+  // title loses those words), as Satori cannot draw them.
+  if (!ogDrawable(title)) title = title.replace(/[\p{Script=Arabic}]+/gu, "").replace(/\s{2,}/g, " ").trim();
+  if (!ogDrawable(description)) description = undefined;
+  if (!ogDrawable(kicker)) kicker = "Programmable typesetter · postext.dev";
   const plainTitle = title.replace(/<\/?em>/g, "");
   const [latin, cjk] = await Promise.all([
     loadOgFonts(),

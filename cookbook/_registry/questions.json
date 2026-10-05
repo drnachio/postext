@@ -2343,7 +2343,8 @@
       "zh": "布拉克版式，注释环绕正文",
       "ar": "صفحات بولاق، المتن يحيط به شرحه"
     },
-    "theme": "page"
+    "theme": "page",
+    "gap": "surrounding-commentary"
   },
   "Q131": {
     "kind": "how",

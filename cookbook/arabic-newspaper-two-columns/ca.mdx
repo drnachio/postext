@@ -1,0 +1,59 @@
+---
+title: "Una pàgina de diari àrab a dues columnes"
+summary: "Un diari àrab amb locale 'ar': la primera columna és la dreta, els titulars ocupen les dues i els breus van en tres columnes de dreta a esquerra."
+plain: "La portada i una pàgina interior d'un diari àrab. La notícia comença a la columna de la dreta i continua a la de l'esquerra, com llegeixen la pàgina els lectors àrabs."
+description: "Diari àrab amb Postext: dues columnes de dreta a esquerra, titulars a tota pàgina, breus a tres columnes i una taula d'horaris de pregària."
+question: "Quina columna va primer en una pàgina àrab i com componc un diari a dues columnes?"
+aliases: ["diari àrab", "columnes de diari", "columnes de dreta a esquerra", "ordre de les columnes", "capçalera del diari", "Aref Ruqaa", "horaris de pregària", "صحيفة", "عمود", "مواقيت الصلاة"]
+pageNotes: { "1": "La portada: el nom الساحل en grans lletres ruqʿa blaves entre dues orelles petites, a sota un filet gruixut i un de prim, l'avanttítol النقل, un titular de dues línies en cúfica negra a tota pàgina, una entradeta, un mapa d'una línia de tramvia vora la costa, la notícia en dues columnes començant per la dreta i, al peu, una franja color sorra amb tres breus.", "2": "La pàgina interior: una pestanya blava محليات sobre un filet gruixut, un titular a tota pàgina, quatre notícies en dues columnes des de la dreta i, al peu, una taula d'horaris de pregària amb la primera columna, الفجر, a la dreta." }
+---
+
+## Què compondràs
+
+Dues pàgines de *الساحل*, un diari imaginari d'una ciutat portuària imaginària, en un format compacte de 246 × 328 mm. La portada porta el nom del diari en Aref Ruqaa de 84 pt, la notícia principal sobre el nou tramvia amb un titular a tota pàgina i un mapa dibuixat amb codi, i al peu una franja de tres breus. La pàgina 2 obre la secció local sota una pestanya blava, amb quatre notícies i els horaris de pregària del dia. Tot es llegeix des de la dreta: la primera columna de text, els breus, les columnes de la taula, les orelles de la capçalera. <RecipeLink slug="newspaper-front-page">La portada anglesa</RecipeLink> compon els mateixos elements d'esquerra a dreta.
+
+## Elaboració
+
+### 1 · Dues columnes, la primera a la dreta
+
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `layoutType: 'double'` i el filet de columna són els mateixos ajustos que en un diari anglès; `locale: 'ar'` gira la pàgina, de manera que la notícia omple primer la columna de la dreta i continua a dalt de la de l'esquerra ([Ordre de les pàgines i enquadernació per la dreta](/ca/docs/arabic-layout#ordre-de-les-pàgines-i-enquadernació-per-la-dreta)). Un titular sobre les dues columnes és un requadre a tota pàgina sense marc, i les columnes de sota comencen a la mateixa altura. La franja de breus és un requadre a tota pàgina flotat al peu amb `:::columns{count=3}` a dins, i les seves columnes també van de dreta a esquerra, igual que la taula d'horaris de la pàgina 2: una taula en la direcció del document posa la primera columna a la dreta.
+
+### 2 · Una capçalera entre dues orelles
+
+<Excerpt region="nameplate" />
+
+El títol de primer nivell de la portada és el nom del diari, pintat per un estil de títol. El seu disseny es dibuixa a la pàgina en mirall, de manera que `top-right` és el principi de la línia: el número i la data hi van, i la ciutat i el preu a l'altre extrem ([Què volen dir esquerra, dreta, inici i final](/ca/docs/arabic-layout#què-volen-dir-esquerra-dreta-inici-i-final)). La ruqʿa és una lletra de rètol per a poques paraules en cos gran; no admet caixida i el text no la fa servir mai.
+
+### 3 · Pestanyes de secció i línies de foli
+
+<Excerpt region="inside" />
+
+Una pàgina interior s'obre amb un títol de primer nivell dibuixat com una pestanya sobre un filet gruixut. La línia de foli és una capçalera, així que conserva els costats físics: la pàgina 2, parella, porta el número a la cantonada dreta, l'exterior en un diari que s'obre per la dreta. La portada buida la capçalera en el seu estil de títol.
+
+### 4 · Un mapa dibuixat amb codi
+
+<Excerpt region="art" />
+
+El mapa del tramvia és un SVG de traçats i cercles en els colors de la paleta, sense text: les paraules d'un dibuix sortirien en una font del sistema, així que els noms de lloc es queden al peu. El tipus d'imatge no té comptador ni etiqueta, perquè els diaris no numeren les fotos.
+
+## Variants
+
+### Tres columnes als breus, quatre en una pàgina més ampla
+
+La franja és un requadre amb columnes pròpies, així que en pot tenir més que les dues del text.
+
+```diff
+-:::columns{count=3 breaks="2,3"}
++:::columns{count=4 breaks="2,3,4"}
+```
+
+### Xifres europees per a un diari magribí
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag): rtl, digits ٠–٩
++  locale: 'ar-MA', // rtl, digits 0–9
+```
+
+## Errors freqüents
+
+- Els horaris de pregària estan teclejats amb xifres arabicoíndiques a les cel·les de la taula: `locale` només canvia els números que escriu el motor, així que una edició magribina els ha de tornar a teclejar.

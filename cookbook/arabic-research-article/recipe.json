@@ -1,0 +1,135 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 107,
+  "status": "published",
+  "chapter": "structure",
+  "order": 220,
+  "level": 3,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "arabic-language",
+      "index-article-sorting",
+      "note-citations"
+    ],
+    "also": [
+      "footnotes",
+      "citation-styles",
+      "generated-bibliography",
+      "back-of-book-index",
+      "text-direction",
+      "arabic-fonts",
+      "document-digits",
+      "heading-numbering",
+      "heading-styles",
+      "opener-design",
+      "running-heads",
+      "callout-styles",
+      "pdf-export"
+    ]
+  },
+  "answers": [
+    "Q121",
+    "Q122"
+  ],
+  "gotchas": [
+    "arabic-locale-tag",
+    "arabic-fonts-subset",
+    "headings-drop-h1-break",
+    "style-inherits-break",
+    "fonts-first"
+  ],
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "arabic",
+    "book"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "A research article written in Arabic for the recipe; its journal, author, experiment and Arabic sources are invented",
+          "es": "Un artículo académico escrito en árabe para la receta; su revista, su autora, su experimento y sus fuentes árabes son inventados"
+        },
+        "who": "Postext Cookbook",
+        "license": "original"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Amiri",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-04",
+  "updated": "2026-10-04",
+  "related": [
+    "history-essay-chicago-notes",
+    "back-of-book-index",
+    "maghreb-edition-european-digits",
+    "gbt7714-chinese-paper"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "uncoated",
+      "grammage": 90,
+      "shade": "#fffefb"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#7d2028"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp"
+    }
+  }
+}

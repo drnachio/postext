@@ -1,0 +1,63 @@
+---
+title: "Una novela árabe compuesta de derecha a izquierda"
+summary: "Una novela árabe en 14 × 21 cm: con locale 'ar' el texto va de derecha a izquierda, el libro se encuaderna por la derecha y los folios dicen ١٢."
+plain: "Las primeras páginas de una novela escrita en árabe, como las imprimiría una editorial árabe: las líneas van de derecha a izquierda, el libro se abre por lo que un lector occidental llama el final y los números de página usan cifras árabes."
+description: "Novela árabe en Postext: locale 'ar' da texto de derecha a izquierda, encuadernación por la derecha y folios arábigo-índicos; cachida y capítulos en letras."
+question: "¿Cómo compongo un libro árabe de derecha a izquierda y lo encuaderno por la derecha?"
+aliases: ["novela árabe", "derecha a izquierda", "RTL", "encuadernación por la derecha", "cifras arábigo-índicas", "cachida", "kashida", "tatweel", "Markazi Text", "رواية", "الفصل الأول", "14 × 21 cm"]
+pageNotes: { "1": "Una página derecha en azul oscuro, a sangre, bajo una celosía de estrellas de ocho puntas en líneas de un azul más claro. Una gran estrella perfilada en latón encierra el rótulo de la parte, القسم الأول, la palabra الدرب en letras cúficas blancas y una cita en blanco.", "2": "La página izquierda, enfrente: una pequeña estrella de latón, el número del capítulo en letras, الفصل الأول, el título الباب الأزرق en letra cúfica y debajo texto árabe justificado desde el margen derecho, con el folio ١١ centrado al pie." }
+---
+
+## Lo que vas a componer
+
+El comienzo de *حروف من رصاص* (Letras de plomo), una novela sobre un nieto que vuelve a abrir la imprenta de su abuelo en un callejón de El Cairo, compuesta como una edición árabe en rústica: 14 × 21 cm, Markazi Text de 13,5 pt sobre 22 pt de interlineado, justificado, con la sangría a la derecha. El fragmento empieza en la página 10 con una portadilla de parte en el azul de la puerta de la imprenta, una celosía de estrellas de ocho puntas dibujada con código y el nombre de la parte en Reem Kufi de 64 pt. Enfrente, en la página izquierda, se abre el capítulo, numerado en letras: الفصل الأول. Los folios dicen ١٠, ١١, ١٢; el título del libro va sobre las páginas derechas y el del capítulo sobre las izquierdas. <RecipeLink slug="trade-paperback-novel">Una novela en rústica</RecipeLink> compone el mismo tipo de libro de izquierda a derecha.
+
+## Elaboración
+
+### 1 · Un idioma, tres decisiones
+
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. La configuración solo dice `locale: 'ar'`, y el motor saca de ahí tres cosas: el texto va de derecha a izquierda (`direction: 'auto'`), el libro se encuaderna por la derecha (`page.binding: 'auto'`) y todos los números que escribe el motor, folios incluidos, usan las cifras arábigo-índicas (`numerals: 'auto'`) ([Empezar un libro en árabe](/es/docs/arabic-layout#empezar-un-libro-en-árabe)). Márgenes y alineaciones siguen diciendo `left` y `right`, pero en un libro de derecha a izquierda nombran los lados del flujo: `margins.left` es el lado del lomo y la sangría queda a la derecha. Las líneas justificadas abren primero los espacios y después alargan las letras enlazadas con el tatweel, la cachida de los libros árabes; el texto nunca se divide con guiones ([Justificación y cachida](/es/docs/arabic-layout#justificación-y-cachida)).
+
+<PageShot page={3} crop="0.1,0.12,0.8,0.3" caption="Página 12: líneas justificadas con cachida, la sangría a la derecha y el folio ١٢ en el borde exterior." />
+
+### 2 · El número del capítulo en letras
+
+<Excerpt region="opener" />
+
+El `numberingTemplate` del nivel escribe الفصل y el número como ordinal masculino, así que el segundo capítulo es الفصل الثاني sin tocar el Markdown; `{1:ordinal-feminine}` da الأولى, الثانية para un nombre femenino como الليلة ([Ordinales y cardinales con letras](/es/docs/arabic-layout#ordinales-y-cardinales-con-letras)). La apertura lo imprime con `{number}` sobre el título. Las aperturas árabes suelen ir centradas, y con `align: 'center'` no hace falta pensar en qué lado empieza el diseño.
+
+### 3 · Las cabeceras se quedan en su página
+
+<Excerpt region="heads" />
+
+El texto sigue el flujo, pero las cabeceras y los folios conservan sus lados físicos. La página 12 es par y, en este libro, página derecha: su folio va arriba a la derecha y el título del libro a su lado; la 13 queda a la izquierda y lleva el capítulo. Si lees el pliego desde la derecha, como un lector árabe, el título del libro llega primero. `showBook` coloca las páginas en espejo, la 11 a la izquierda de la 10, y la pantalla enseña los pliegos tal como se abre el libro.
+
+### 4 · Una portadilla dibujada con código
+
+<Excerpt region="plate" />
+
+La portadilla es un título de primer nivel, `# الدرب {style="plate" …}`, cuyo estilo pinta la hoja entera y le quita cabecera y folio. La celosía es un SVG generado en el propio script con dos cuadrados girados 45°, la estrella *jatam* de la ornamentación geométrica islámica, en el azul y el latón de la paleta, y el PDF la conserva como trazados vectoriales. `numbered: false` deja la portadilla fuera de la cuenta de capítulos, y la apertura que sigue es الفصل الأول.
+
+## Variantes
+
+### Imprime cifras europeas
+
+Una edición magrebí imprime 1, 2, 3; `locale: 'ar-MA'` lo hace por sí solo, y <RecipeLink slug="maghreb-edition-european-digits">la edición magrebí</RecipeLink> enseña el libro entero.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'ar', numerals: 'latn',
+```
+
+### Justifica solo con los espacios
+
+Algunas editoriales no ponen tatweel en el texto corrido: los espacios absorben toda la diferencia.
+
+```diff
+   textAlign: 'justify', optimalLineBreaking: true,
++  kashida: 'none',
+```
+
+## Errores frecuentes
+
+- Un colofón en inglés o en español al final de un libro árabe necesita `{dir=ltr}` en su bloque: sin él, la línea latina se alinea y se puntúa como un párrafo de derecha a izquierda, con el punto final a la izquierda.

@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "slug": "bilingual-arabic-english-report",
+  "sourceHash": "16705e1be6659c6d72b6af35e6a7c1f3328bf33d38dde7acaa27f2da82f950b4",
+  "engine": {
+    "postext": "1.15.0",
+    "postextPdf": "1.15.0",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-04T21:44:18.288Z",
+  "variants": {
+    "en": {
+      "hash8": "887ebc6d",
+      "vdtHash": "4bceb305cd96b95e4ecc6e961222346b21659658",
+      "timings": {
+        "importMs": 458,
+        "fontsMs": 1201,
+        "buildMs": 17,
+        "totalMs": 2322,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Sans Arabic",
+          "sizePt": 11,
+          "leadingPt": 18
+        },
+        "families": [
+          "IBM Plex Sans",
+          "IBM Plex Sans Arabic"
+        ],
+        "pages": 3,
+        "ownLines": 140
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 76122,
+          "alt": "Opening page ١: التقرير السنوي ٢٠٢٥."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 59180,
+          "alt": "Page ٢: البرامج. جدول ١-١: أرقام البرامج في عامي ٢٠٢٤ و٢٠٢٥."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 37160,
+          "alt": "Page ٣."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "bilingual-arabic-english-report.pdf",
+        "bytes": 82782,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "bilingual-arabic-english-report.postext",
+        "bytes": 16478,
+        "folio": "3c25eba8"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.emphasis",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.labelSeparator",
+          "captionStyle.position",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headingStyles[].marginTop",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].bodyColor",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].headerBackground",
+          "tableStyles[].headerFontFamily",
+          "tableStyles[].id"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles"
+        ],
+        "configLeaves": 185,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-styles",
+          "inline-direction",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "right-binding",
+          "table-styles",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "bfcf1e2b",
+      "vdtHash": "5566b29fc623b9305db2e752679458380661b1bf",
+      "timings": {
+        "importMs": 176,
+        "fontsMs": 76,
+        "buildMs": 26,
+        "totalMs": 989,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          280
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Sans Arabic",
+          "sizePt": 11,
+          "leadingPt": 18
+        },
+        "families": [
+          "IBM Plex Sans",
+          "IBM Plex Sans Arabic"
+        ],
+        "pages": 3,
+        "ownLines": 140
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "١",
+          "role": "opener",
+          "w": 1000,
+          "h": 1333,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 77950,
+          "alt": "Página de apertura ١: التقرير السنوي ٢٠٢٥."
+        },
+        {
+          "n": 2,
+          "label": "٢",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 59972,
+          "alt": "Página ٢: البرامج. جدول ١-١: أرقام البرامج في عامي ٢٠٢٤ و٢٠٢٥."
+        },
+        {
+          "n": 3,
+          "label": "٣",
+          "role": "body",
+          "w": 1000,
+          "h": 1333,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 38506,
+          "alt": "Página ٣."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "bilingual-arabic-english-report.pdf",
+        "bytes": 83719,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "bilingual-arabic-english-report.postext",
+        "bytes": 16759,
+        "folio": "3c25eba8"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.emphasis",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.labelSeparator",
+          "captionStyle.position",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].lineHeight",
+          "headingStyles[].marginBottom",
+          "headingStyles[].marginTop",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].bodyColor",
+          "tableStyles[].bodyFontFamily",
+          "tableStyles[].bodyFontSize",
+          "tableStyles[].headerBackground",
+          "tableStyles[].headerFontFamily",
+          "tableStyles[].id"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle",
+          "tableStyles"
+        ],
+        "configLeaves": 185,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs",
+          "::resource"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Arabic",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 300,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "block-direction",
+          "document-digits",
+          "heading-attributes",
+          "heading-styles",
+          "inline-direction",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "right-binding",
+          "table-styles",
+          "text-direction"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "findings": []
+      }
+    }
+  }
+}

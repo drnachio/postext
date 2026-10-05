@@ -1,0 +1,59 @@
+---
+title: "Un taḥqīq: notes per pàgina i preliminars en abjad"
+summary: "Preliminars foliats أ ب ج د, el text des de ١, notes de l'editor numerades (١) de nou a cada pàgina i un índex que ordena els noms sense l'article ال."
+plain: "El començament de la Muqaddima d'Ibn Khaldun com a edició crítica àrab moderna: la introducció numerada amb lletres, el text amb xifres i notes al peu que tornen a començar per u a cada pàgina."
+description: "Una edició crítica àrab amb Postext: folis en abjad, :::numbering per al text, notes per pàgina com a (١) i índex amb ignoreArticle."
+question: "Com numero els preliminars d'un llibre àrab amb lletres abjad (أ، ب، ج)?"
+aliases: ["taḥqīq", "tahqiq", "edició crítica", "edició crítica àrab", "abjad", "numerals abjad", "أبجد", "numeració de preliminars", "notes per pàgina", "(١)", "notes a peu de pàgina en àrab", "Ibn Khaldun", "Muqaddima", "مقدمة ابن خلدون", "índex onomàstic", "فهرس الأعلام", "تحقيق"]
+pageNotes: { "4": "L'última pàgina de la introducció de l'editor, amb el foli د al peu.", "5": "La pàgina que obre el text, foli ١: el títol de la secció en nasquí negreta, el seu subtítol llarg sota un filet curt, el text amb crides de nota volades entre parèntesis i tres notes al peu sota un filet a la dreta, cadascuna amb el seu número (١), (٢), (٣)." }
+---
+
+## Què compondràs
+
+Onze pàgines d'una edició crítica àrab moderna, un taḥqīq, de la primera secció de la *Muqaddima* d'Ibn Khaldun, sobre l'excel·lència de la història. Els preliminars es folien amb lletres abjad, com fan les edicions del Caire i de Beirut: una portada أ, la seva pàgina de crèdits ب i la introducció de l'editor ج i د. El text torna a començar a ١ a la pàgina senar següent. Les notes de l'editor van al peu de cada pàgina, numerades (١), (٢), (٣) i reiniciades a cada pàgina, sota un filet curt a la dreta; glossen paraules rares, identifiquen les persones i els llocs que anomena Ibn Khaldun i donen la sura i el verset de cada cita de l'Alcorà. Un índex de noms tanca el llibre, ordenat com s'ordenen els índexs àrabs, sense l'article ال. Les notes i la introducció s'han escrit per a aquesta recepta.
+
+## Elaboració
+
+### 1 · Dues sèries de folis i notes per pàgina
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `page.pageNumbering` comença el llibre en `'abjad'`, les lletres en l'ordre abjad, amb هـ per al cinc. Abans del text, dues directives reinicien el compte a la pàgina senar següent amb les xifres del document ([`:::numbering`](/ca/docs/document-format#numbering), [Xifres i estils de numeració](/ca/docs/arabic-layout#xifres-i-estils-de-numeració)). Les notes porten `numbering: 'page'`, un `markerTemplate` de `'({n})'` i `noteNumberPosition: 'inline'`, de manera que la crida va volada al text i la nota comença amb el seu número a la línia ([Notes a peu de pàgina](/ca/docs/arabic-layout#notes-a-peu-de-pàgina)).
+
+<PageShot page={5} crop="0,0.62,1,0.33" caption="Pàgina ١: les notes tornen a començar a (١), sota un filet al costat on comença la línia." />
+
+### 2 · Un índex que se salta l'article
+
+<Excerpt region="index" />
+
+Els noms es marquen al text, `:index[المسعودي]`, i `:::index` els imprimeix al final. Amb `ignoreArticle`, المسعودي va sota م i الطبري sota ط, mentre que ابن إسحاق es queda sota ا; una remissió porta d'إسرائيل a يعقوب ([Índex general i índex analític](/ca/docs/arabic-layout#índex-general-i-índex-analític)). Els números de pàgina de l'índex són les etiquetes de les pàgines, així que un nom de la introducció remet a ج.
+
+### 3 · Capçaleres sobre un filet
+
+<Excerpt region="furniture" />
+
+La pàgina parella porta el títol del llibre i la senar la secció, sobre un filet fi de l'amplada de la caixa, amb el foli a l'extrem exterior. En un llibre enquadernat per la dreta la pàgina parella queda a la dreta, així que el seu foli va a dalt a la dreta ([Ordre de les pàgines i enquadernació per la dreta](/ca/docs/arabic-layout#ordre-de-les-pàgines-i-enquadernació-per-la-dreta)). Les obertures i els preliminars porten en canvi el foli centrat al peu.
+
+### 4 · Una portada i la seva pàgina de crèdits
+
+<Excerpt region="title" />
+
+La portada i la pàgina de crèdits del seu dors són estils de títol sense res al flux: les seves línies surten d'atributs del títol, així que les línies llatines dels crèdits, que canvien amb l'edició, són un atribut al Markdown.
+
+## Variants
+
+### Fes servir els numerals abjad
+
+`'arabic-abjad'` escriu els numerals abjad additius en lloc de la sèrie simple de lletres: la pàgina onze és يا, no ك.
+
+```diff
+-const pageNumbering = { format: 'abjad', startAt: 1 }; // أ ب ج د هـ و ز ح…
++const pageNumbering = { format: 'arabic-abjad', startAt: 1 }; // … ط ي يا يب
+```
+
+### Numera les notes al llarg de la secció
+
+`numbering: 'chapter'` continua comptant les notes d'una pàgina a l'altra, com fan algunes edicions antigues.
+
+```diff
+-  numbering: 'page', markerTemplate: '({n})', noteNumberPosition: 'inline',
++  numbering: 'chapter', markerTemplate: '({n})', noteNumberPosition: 'inline',
+```

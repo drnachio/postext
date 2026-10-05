@@ -45,6 +45,26 @@ describe('inline anchors (#261)', () => {
     expect(p!.anchorMarks).toBeUndefined();
   });
 
+  it('leaves a span anchor that runs into inline code as text (#413)', () => {
+    // From the `[` of the directive label, the span pattern reaches into the code.
+    const [p] = parseMarkdown('عبارة :ltr[`[هذه الكلمات]{#key}`] هنا');
+    expect(p!.anchorMarks).toBeUndefined();
+    expect(p!.text).toBe('عبارة [هذه الكلمات]{#key} هنا');
+  });
+
+  it('finds an anchor after a match that starts in inline code (#413)', () => {
+    const [p] = parseMarkdown('`x [y` [z]{#z} end');
+    expect(p!.text).toBe('x [y z end');
+    expect(p!.anchorMarks!.map((m) => [m.anchorId, m.text])).toEqual([['z', 'z']]);
+  });
+
+  it('keeps a mark that holds a whole code span (#413)', () => {
+    const [p] = parseMarkdown('The [the `key` word]{#k} and :index[`foo`] here');
+    expect(p!.text).toBe('The the key word and foo here');
+    expect(p!.anchorMarks!.map((m) => [m.anchorId, m.text])).toEqual([['k', 'the key word']]);
+    expect(p!.indexMarks!.map((m) => m.path)).toEqual([['foo']]);
+  });
+
   it('makes a container identifier an anchor on its first text block', () => {
     const blocks = parseMarkdown(':::callout{#box title="Note"}\nInside.\n:::');
     const p = blocks.find((b) => b.type === 'paragraph')!;

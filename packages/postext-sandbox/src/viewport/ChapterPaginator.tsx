@@ -66,6 +66,15 @@ export function ChapterPaginator() {
   // request (their own print chain), so under those the active chapter is
   // handled here.
   const pending = plan.pendingChapterId ? plan.byId[plan.pendingChapterId] : undefined;
+
+  // Whether the whole book is paginated, on the root element: the script
+  // that ships a showcase bundle's pagination (scripts/presets/layouts.mjs)
+  // waits for `done` before it reads the stored records.
+  const paginationState = !storeReady ? 'loading' : plan.pendingChapterId ? 'pending' : 'done';
+  useEffect(() => {
+    document.documentElement.dataset.postextPagination = paginationState;
+  }, [paginationState]);
+
   const printPreview = activeViewport === 'canvas' || activeViewport === 'folio';
   const wholeBookOnCanvas = printPreview && canvasScope === 'book';
   const leftToPreview = wholeBookOnCanvas || (printPreview && pending?.chapterId === activeChapterId);

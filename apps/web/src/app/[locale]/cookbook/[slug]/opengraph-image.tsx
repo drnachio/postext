@@ -7,7 +7,7 @@ import { ogImageFile } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import type { Locale } from "@/lib/cookbook/types";
-import { generateOgImage, ogContentType, ogSize, ogTextLocale } from "@/lib/og-image";
+import { generateOgImage, ogContentType, ogDrawable, ogSize, ogTextLocale } from "@/lib/og-image";
 
 export const alt = "Postext Cookbook";
 export const size = ogSize;
@@ -44,9 +44,14 @@ export default async function OgImage({ params }: { params: Promise<{ locale: st
       ? { src: `data:image/jpeg;base64,${fs.readFileSync(file).toString("base64")}`, width: 580, height: 622 }
       : undefined;
 
+  // The lead: the summary, or the first of the texts that quote no Arabic
+  // words, which the card cannot draw (an Arabic recipe's English summary).
+  const { summary, description, plain } = writeup.frontmatter;
+  const lead = [summary, description, plain].find(ogDrawable);
+
   return generateOgImage({
     title: writeup.frontmatter.title,
-    description: writeup.frontmatter.summary,
+    description: lead,
     kicker: t("ogKicker", { number: String(recipe.meta.number).padStart(3, "0"), chapter: chapter?.title[textLocale as Locale] ?? "" }),
     accent: PART_INK[part?.color ?? "blue"],
     art,

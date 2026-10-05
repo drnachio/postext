@@ -1,0 +1,46 @@
+---
+title: "A bilingual Arabic–English report"
+summary: "An Arabic annual report with its English beside it: {dir=ltr} on each English block, :ltr[…] for Latin names in Arabic lines, a table set left to right."
+plain: "A foundation's annual report written in Arabic, with each paragraph followed by its English version. The page mixes the two directions without the words, numbers or tables getting out of order."
+description: "A bilingual Arabic–English report in Postext: blocks marked {dir=ltr}, inline :ltr[…] isolates, start-aligned ragged text and an Arabic and an English table."
+question: "How do I mix Arabic and English paragraphs, numbers and tables on one page?"
+aliases: ["bilingual report", "Arabic and English", "mixed direction", "bidi", "bidirectional", "dir=ltr", "isolate", "LTR block in RTL", "table direction", "annual report", "IBM Plex Sans Arabic", "تقرير سنوي"]
+pageNotes: { "1": "The cover page: a teal band across the top with the foundation's name and the title التقرير السنوي ٢٠٢٥ in white Arabic on the right, and the English title, left-aligned, under them. Below, the director's note: an Arabic heading on the right, its English label on the left, and Arabic paragraphs aligned right, each followed by a smaller grey English paragraph aligned left." }
+---
+
+## What you'll build
+
+The 2025 annual report of an imaginary translation foundation, Dar al-Dad, on an A4-wide 210 × 280 mm page in IBM Plex Sans Arabic and IBM Plex Sans, the two halves of one type family. The report is Arabic: it runs right to left and numbers its pages ٢, ٣. Each Arabic paragraph is followed by its English version, smaller and in slate grey, set left to right and ragged on the right; each Arabic heading carries an English label at the other margin. Latin names inside Arabic sentences keep their own order, and the year's figures appear twice, in an Arabic table that reads from the right and an English one that reads from the left. In the Spanish edition the second language is Spanish.
+
+## Method
+
+### 1 · The second language as marked blocks
+
+The code is [the short answer](#the-short-answer) above. The document is Arabic, so every block is right to left until the Markdown says otherwise: `{dir=ltr}` on a `:::paragraphs` fence or on a heading turns that block around, and `textAlign: 'start'` sends each block to the side it starts on, right for Arabic and left for English ([Document, block and inline direction](/en/docs/arabic-layout#document-block-and-inline-direction)). A Latin name inside an Arabic line, :ltr[Harbour Modern Classics], is an isolate: the bidi algorithm treats it as one neutral piece, so the Arabic words and the comma around it keep their places ([Isolates](/en/docs/arabic-layout#isolates)). `emphasis: 'italic'` keeps *Middlemarch* in italics in the English text; the engine never slants an Arabic letter, whatever the setting.
+
+### 2 · One table for each direction
+
+<Excerpt region="tables" />
+
+The Arabic table runs with the document: its first column, the programme, is on the right, and `align: 'end'` puts the numbers against the left edge of their cells. The English table sets `direction: 'ltr'`, so its first column is on the left and `'end'` means the right edge ([What left, right, start and end mean](/en/docs/arabic-layout#what-left-right-start-and-end-mean)). The Arabic figures are typed in ٠–٩, the English ones in 0–9: the document's digits apply only to the numbers the engine writes, such as the table's number in its caption, جدول ١-١. That is also why the English table has a type of its own with no counter, since a number there would print as ٢.
+
+### 3 · Two titles on one band
+
+<Excerpt region="cover" />
+
+The cover is the first-level heading's design. Design text takes the document's direction, so the Arabic name and title need nothing; the English title sets `direction: 'ltr'` and anchors to the page's left edge. The band is a box anchored to the bleed, 86 mm deep, and the opener's `minHeight` brings the director's note under it.
+
+## Variations
+
+### Put the English first
+
+A report for a board that does not read Arabic swaps the roles: an English document, its blocks unmarked, and the Arabic ones marked `{dir=rtl}`.
+
+```diff
+-  locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
++  locale: 'en-us', // Arabic blocks then carry {dir=rtl}
+```
+
+## Pitfalls
+
+- A number the engine writes inside an English block, a list number or a caption label, still takes the document's digits (٢ in an Arabic report). Give such tables a resource type without a counter, or write the numbers yourself.
