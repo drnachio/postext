@@ -116,6 +116,10 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks: the widest a figure's image may be set, its caption
    *  keeping the column's width (`layout.fitFiguresToPage`). */
   figureMaxBodyWidth?: number;
+  /** Resource blocks: px a picture with a safe area is set taller (or
+   *  shorter, when negative) by cropping outside it (the fit and balancing
+   *  levers, #442). */
+  figureHeightDelta?: number;
   /** Resource blocks on a vertical page: set upright, the frame at most
    *  this wide (see `ResourceLayoutInput.upright`). */
   uprightMaxLength?: number;
@@ -190,6 +194,7 @@ export function measureContentBlock(
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
       ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
     });
     if (!resourceBlock) return null;

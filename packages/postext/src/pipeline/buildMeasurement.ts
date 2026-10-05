@@ -37,6 +37,9 @@ export interface MeasurementInput {
   resourceNumber?: string;
   /** Widest the figure's image may be set (`ResourceLayoutInput.maxBodyWidth`). */
   maxBodyWidth?: number;
+  /** Px a picture with a safe area is set taller (or shorter)
+   *  (`ResourceLayoutInput.bodyHeightDelta`). */
+  bodyHeightDelta?: number;
   /** A resource on a vertical page: set upright (`ResourceLayoutInput.upright`). */
   upright?: { maxLength: number };
 }
@@ -69,6 +72,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       resourceTypes: input.resourceTypes ?? [],
       resources: input.resources ?? [],
       ...(input.maxBodyWidth !== undefined ? { maxBodyWidth: input.maxBodyWidth } : {}),
+      ...(input.bodyHeightDelta ? { bodyHeightDelta: input.bodyHeightDelta } : {}),
       ...(input.upright ? { upright: input.upright } : {}),
     });
     const measured: MeasuredBlock = {

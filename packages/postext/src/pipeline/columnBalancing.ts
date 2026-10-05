@@ -23,6 +23,11 @@
  *
  * When the column's headings cannot absorb the whole gap, further levers
  * apply in editorial priority order:
+ *  - a picture with a safe area (`Resource.safeArea`, #442) set inline in
+ *    the column, or floated at its head or foot over that column alone,
+ *    grows by whole grid lines, cropped within its safe area: a taller
+ *    picture leaves no hole anywhere, so it is tried right after the
+ *    closing box and before any space is added;
  *  - first of all, a callout box closing the column takes the room under
  *    its foot as space above it, so the foot lands on the last grid slot of
  *    the page, level with the last line of the column beside it (with
@@ -107,7 +112,7 @@ export function boxRoomIn(gaps: readonly ColumnGap[], range: PageRange): number 
 export function boxLeverKeys(gaps: readonly ColumnGap[]): Set<number> {
   const keys = new Set<number>();
   for (const g of gaps) {
-    for (const c of g.candidates) if (c.kind === 'trailingCallout') keys.add(balanceKey(c.contentIndex, c.part ?? 0));
+    for (const c of g.candidates) if (c.kind === 'trailingCallout') keys.add(candidateKey(c));
   }
   return keys;
 }
@@ -136,6 +141,33 @@ interface BalanceCandidate {
    *  under a float band — share a content index and are levered on their
    *  own (see {@link balanceKey}). */
   part?: number;
+  /** `flexFigure`: the lever's own key ({@link flexFigureKey} /
+   *  {@link flexFloatKey}), apart from the spacing keys of the blocks. */
+  key?: number;
+  /** `flexFigure`: whole grid lines the picture can still grow. */
+  maxLines?: number;
+}
+
+/** The key a candidate's adjustment is stored under. */
+export function candidateKey(c: { contentIndex: number; part?: number; key?: number }): number {
+  return c.key ?? balanceKey(c.contentIndex, c.part ?? 0);
+}
+
+/** Key of the `flexFigure` lever of an inline picture: its lines are body
+ *  growth, not space above (a part no split block reaches). */
+export function flexFigureKey(contentIndex: number): number {
+  return -(contentIndex * 1024 + 1023);
+}
+
+/** Key of the `flexFigure` lever of a floated picture, from its resource
+ *  id (floats carry no content index): below every block key. */
+export function flexFloatKey(resourceId: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < resourceId.length; i++) {
+    h ^= resourceId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return -(2 ** 42 + h);
 }
 
 /** Key of a balancing adjustment: the content index of the block, or, for a
@@ -422,12 +454,48 @@ export function collectColumnGaps(
       }
       if (gapLines < 1 && candidates.length === 0) continue;
 
+      // Pictures with a safe area floated over this column alone, at its
+      // head (not in a closing band, whose column heads stay level, as for
+      // the after-float lever) or at its foot: grown, they take the gap.
+      for (const f of page.floats ?? []) {
+        const rb = f.resourceBlock;
+        const grow = rb?.bodyFlex?.grow ?? 0;
+        if (!rb || grow < doc.baselineGrid - EPS) continue;
+        if (!(f.bbox.x >= col.bbox.x - 0.5 && f.bbox.x + f.bbox.width <= col.bbox.x + col.bbox.width + 0.5)) continue;
+        const atHead = f.bbox.y + f.bbox.height <= col.bbox.y + 0.5;
+        const atFoot = f.bbox.y >= col.bbox.y + col.bbox.height - 0.5;
+        if (!atFoot && !(atHead && !closingBand)) continue;
+        candidates.push({
+          contentIndex: -1,
+          key: flexFloatKey(rb.resource.id),
+          kind: 'flexFigure',
+          level: 0,
+          order: atHead ? -1 : col.blocks.length,
+          lineCount: 0,
+          maxLines: Math.floor(grow / doc.baselineGrid + EPS),
+        });
+      }
+
       for (let i = 0; i < col.blocks.length; i++) {
         const b = col.blocks[i]!;
         if (b.hidden || b.contentIndex === undefined) continue;
         // Callout frames and their children form one unbreakable unit whose
         // interior is off-grid by design — never a stretch point.
         if (b.containerId !== undefined) continue;
+
+        // An inline picture with a safe area grows into the gap.
+        const grow = b.type === 'resource' ? b.resourceBlock?.bodyFlex?.grow ?? 0 : 0;
+        if (grow >= doc.baselineGrid - EPS) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            key: flexFigureKey(b.contentIndex),
+            kind: 'flexFigure',
+            level: 0,
+            order: i,
+            lineCount: 0,
+            maxLines: Math.floor(grow / doc.baselineGrid + EPS),
+          });
+        }
 
         // A heading opening a column under a float band is a heading lever
         // (its cap and priority), not an after-float point: the room goes
@@ -661,7 +729,7 @@ export function proposeBalanceLines(
       progress = false;
       for (const cand of cands) {
         if (remaining <= 0) break;
-        const key = balanceKey(cand.contentIndex, cand.part ?? 0);
+        const key = candidateKey(cand);
         if (options.failedLines?.has(key)) continue;
         const cur = lines.get(key) ?? 0;
         if (cur >= cap) continue;
@@ -685,7 +753,7 @@ export function proposeBalanceLines(
     const takeBoxRoom = (used: number): void => {
       for (const cand of gap.candidates) {
         if (cand.kind !== 'trailingCallout' || cand.gapPx === undefined) continue;
-        const key = balanceKey(cand.contentIndex, cand.part ?? 0);
+        const key = candidateKey(cand);
         if (options.failedLines?.has(key)) continue;
         const px = cand.gapPx - used * doc.baselineGrid;
         if (!(px > doc.baselineGrid * 0.1)) continue;
@@ -696,6 +764,20 @@ export function proposeBalanceLines(
       }
     };
     if (boxOrder === 'first') takeBoxRoom(0);
+
+    // Pictures with a safe area grow first among the line levers, each by
+    // as many lines as its crop still allows (on top of what earlier passes
+    // gave it), in reading order.
+    for (const cand of gap.candidates) {
+      if (remaining <= 0) break;
+      if (cand.kind !== 'flexFigure' || !cand.maxLines) continue;
+      const key = candidateKey(cand);
+      if (options.failedLines?.has(key)) continue;
+      const take = Math.min(remaining, cand.maxLines);
+      lines.set(key, (lines.get(key) ?? 0) + take);
+      remaining -= take;
+      changed = true;
+    }
 
     const headings = gap.candidates
       .filter((c) => c.kind === 'heading')

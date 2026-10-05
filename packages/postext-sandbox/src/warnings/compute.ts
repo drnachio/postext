@@ -846,8 +846,11 @@ function collectResourceWarnings(
     for (const block of doc.blocks) {
       const rb = block.resourceBlock;
       if (!rb || rb.kind !== 'bitmap') continue;
-      const bitmapWidth = rb.resource.bitmap?.width;
-      if (!bitmapWidth || bitmapWidth <= 0) continue;
+      // A picture cropped within its safe area shows only part of its
+      // pixels across the body.
+      const naturalWidth = rb.resource.bitmap?.width;
+      if (!naturalWidth || naturalWidth <= 0) continue;
+      const bitmapWidth = Math.round(naturalWidth * (rb.bodySource?.width ?? 1));
       const renderedWidth = rb.bodyRect.width;
       if (renderedWidth > bitmapWidth * BITMAP_UPSCALE_THRESHOLD) {
         const key = rb.resource.id;

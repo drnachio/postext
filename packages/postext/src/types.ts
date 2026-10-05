@@ -209,6 +209,16 @@ export interface TableModel {
   columnWidths?: number[];
 }
 
+/** A rectangle of a picture in fractions of its intrinsic size: `x` and
+ *  `width` of its width, `y` and `height` of its height (0–1, top-left
+ *  origin). */
+export interface ResourceSafeArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** A user-managed resource instance. Binary payloads (bitmaps, SVGs) are
  *  stored out-of-band (IndexedDB in the sandbox) and referenced by
  *  `fileId`; table resources carry their model inline. */
@@ -278,6 +288,15 @@ export interface Resource {
      *  the document. */
     direction?: 'ltr' | 'rtl';
   };
+  /** The safe area of a bitmap or SVG: the rectangle of the picture that
+   *  holds what matters (a person and part of the landscape). With one, the
+   *  engine may show the picture at any aspect ratio between the whole
+   *  picture and this rectangle, cropping what lies outside it, to make the
+   *  figure taller or shorter where the page needs it (fill a column left
+   *  short, fit the room left); the outer margins are cropped in proportion
+   *  to their sizes and the safe area always stays in view. Without one the
+   *  picture is always shown whole. Ignored for tables. */
+  safeArea?: ResourceSafeArea;
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
    *  `'bottom'` floats the resource to a band on the page near its first

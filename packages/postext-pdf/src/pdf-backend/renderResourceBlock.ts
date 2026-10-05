@@ -35,7 +35,7 @@ import type {
   ResolvedResourceBlock,
   VDTResourceTableCell,
 } from 'postext';
-import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline } from 'postext';
+import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import { widthOfTextAtSize } from '../faceFiles';
@@ -59,6 +59,7 @@ import {
   pushFrame,
   quarterTurnMatrix,
   pushClipOutline,
+  pushClipRect,
   popClip,
   strokeOutlinePx,
   counterFlipPx,
@@ -318,7 +319,8 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
   };
   for (const block of blocks) {
     const rb = block.resourceBlock;
-    if (rb?.fileId) note(rb.fileId, rb.bodyRect.width, rb.bodyRect.height);
+    // A cropped picture is drawn at its uncropped size.
+    if (rb?.fileId) note(rb.fileId, rb.bodyRect.width / (rb.bodySource?.width ?? 1), rb.bodyRect.height / (rb.bodySource?.height ?? 1));
     for (const cell of rb?.table?.cells ?? []) {
       if (cell.image) note(cell.image.fileId, cell.image.rect.width, cell.image.rect.height);
     }
@@ -947,7 +949,19 @@ export function renderResourceBlock(
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     tagContent(ctx, owner);
     const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
-    if (embedded) {
+    const src = rb.bodySource;
+    if (embedded && src) {
+      // A picture cropped within its safe area (#442): the whole picture at
+      // its uncropped box, clipped to the body; on a mirrored page the box
+      // is reflected about the body, as the picture is turned back in it.
+      let full = uncroppedPictureBox(bx, by, bw, bh, src);
+      if (ctx.mirror) full = { ...full, x: 2 * bx + bw - full.x - full.width };
+      pushClipRect(ctx, bx, by, bw, bh);
+      tagContent(ctx, owner);
+      drawEmbeddedResource(ctx, embedded, full.x, full.y, full.width, full.height);
+      popClip(ctx);
+      tagContent(ctx, owner);
+    } else if (embedded) {
       drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
     } else {
       if (rb.fileId) ctx.onMissingImage?.(rb.fileId, rb.resource.id);

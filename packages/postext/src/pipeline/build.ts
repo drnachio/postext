@@ -166,7 +166,7 @@ import { pickTableStyle } from '../defaults/tableStyle';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
-import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey } from './columnBalancing';
+import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -964,6 +964,9 @@ function placeDocumentPass(
   ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
+    // Column balancing: a picture with a safe area grown by whole lines
+    // (`flexFigure`, #442).
+    const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
     return layoutResourceBlock({
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
@@ -976,6 +979,7 @@ function placeDocumentPass(
       ...(slice ? { slice } : {}),
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
+      ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
     });
   };
 
@@ -1119,6 +1123,9 @@ function placeDocumentPass(
     blk.dirty = false;
     blk.snappedToGrid = false;
     blk.bbox = createBoundingBox(x, 0, width, totalHeight);
+    if ((rb.bodyFlex?.delta ?? 0) > 0.01 && balanceExtraPx?.has(flexFloatKey(resourceId))) {
+      blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: rb.bodyFlex!.delta };
+    }
     blk.lines = [];
     if (rb.rotation) {
       // The upright frame's origin: for a counter-clockwise turn the frame's
@@ -4470,9 +4477,27 @@ function placeDocumentPass(
     const upright = pageIsVertical(blockPage) && rawBlock.type === 'resourceBlock'
       ? { uprightMaxLength: uprightOn(blockPage).length }
       : {};
+    // Column balancing: an inline picture with a safe area grown by whole
+    // lines (`flexFigure`, #442).
+    const figureGrowPx = rawBlock.type === 'resourceBlock' ? balanceExtraPx?.get(flexFigureKey(blockIdx)) ?? 0 : 0;
+    const figureDelta = figureGrowPx > 0 ? { figureHeightDelta: figureGrowPx } : {};
     let measuredBlock = tryLoose
       ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
-      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright });
+      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright, ...figureDelta });
+    // An inline picture with a safe area a little too tall for the room
+    // left in its column is cropped within its safe area to stay there
+    // rather than move on and leave the column short (#442).
+    if (measuredBlock?.kind.vdtType === 'resource' && measuredBlock.resourceBlock?.bodyFlex) {
+      const flex = measuredBlock.resourceBlock.bodyFlex;
+      const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
+      const over = measuredBlock.measured.totalHeight - room;
+      if (over > 0.01 && room > 0 && over <= flex.shrink + 0.01) {
+        const cropped = measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, {
+          styleOverride, ...upright, figureHeightDelta: flex.delta - over,
+        });
+        if (cropped && cropped.measured.totalHeight <= room + 0.01) measuredBlock = cropped;
+      }
+    }
     // Screen pages (`layout.fitFiguresToPage`): an inline figure a little
     // too tall for the room left in its column — under an opener band, say
     // — is set smaller to stay with its text rather than leave the rest of
@@ -4552,6 +4577,11 @@ function placeDocumentPass(
       // resource's own caption/table lines live on `resourceBlock` and must be
       // offset to absolute page coordinates here using the placed bbox origin.
       offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
+      const grown = figureGrowPx > 0 ? resourceBlock.bodyFlex?.delta ?? 0 : 0;
+      if (grown > 0.01) {
+        blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: grown };
+        addBalanceExtra(currentColumn(doc, cursor), grown);
+      }
       doc.blocks.push(blk);
       // Snap the flow position after the resource to the baseline grid (the
       // group height is arbitrary), baking in at least marginBottom — same
@@ -6080,7 +6110,7 @@ function* buildDocumentBalanced(
     for (const g of gaps) {
       const si = segmentAt(g.pageIndex);
       if (si < 0) continue;
-      for (const c of g.candidates) owner.set(balanceKey(c.contentIndex, c.part ?? 0), si);
+      for (const c of g.candidates) owner.set(candidateKey(c), si);
     }
     return owner;
   };
@@ -6182,7 +6212,7 @@ function* buildDocumentBalanced(
       return hit;
     };
     const keysOf = (pick: (g: ColumnGap) => boolean): Set<number> =>
-      new Set(gaps.filter(pick).flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0))));
+      new Set(gaps.filter(pick).flatMap((g) => g.candidates.map((c) => candidateKey(c))));
     if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex))) return true;
     if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex))) return true;
     return blacklist(null);

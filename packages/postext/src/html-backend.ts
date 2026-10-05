@@ -30,7 +30,7 @@ import { renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
 import { joiningScriptIn } from './measure/joining';
 import { DEFAULT_CENTRAL_BASELINE, verticalFlowOf } from './vdt';
-import type { CjkRegion } from './types';
+import type { CjkRegion, ResourceSafeArea } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
@@ -1523,12 +1523,13 @@ function renderFittedImage(
   h: number,
   paint?: HtmlPaint,
   svg?: boolean,
+  source?: ResourceSafeArea,
 ): string {
   if (url) {
     const filter = paint ? inkFilterDecl(paint, svg, url) : '';
     return (
       `<img src="${esc(url)}" alt="${esc(alt)}" style="position:absolute;` +
-      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${filter}" />`
+      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${source ? croppedFitDecl(source) : ''}${filter}" />`
     );
   }
   const labelSize = Math.max(10, Math.min(16, h * 0.1));
@@ -1540,6 +1541,16 @@ function renderFittedImage(
     `font:${labelSize}px sans-serif;color:rgba(120,120,120,0.8);` +
     `">${label}</div>`
   );
+}
+
+/** The `object-fit` of a picture cropped within its safe area (#442): the
+ *  shown part spans the picture's whole width or whole height and has the
+ *  box's ratio, so `cover` scales the picture as the crop does, and the
+ *  position puts the shown part in the box. */
+function croppedFitDecl(source: ResourceSafeArea): string {
+  const px = source.width < 1 ? (source.x / (1 - source.width)) * 100 : 0;
+  const py = source.height < 1 ? (source.y / (1 - source.height)) * 100 : 0;
+  return `object-fit:cover;object-position:${+px.toFixed(3)}% ${+py.toFixed(3)}%;`;
 }
 
 /** Wrap absolutely positioned page markup in a box clipped to a rounded
@@ -1674,7 +1685,7 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? imageUrl(options, rb.fileId, rb.resource.id) : undefined;
     // `<img>`, or a neutral placeholder matching the canvas backend's colours.
-    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg'));
+    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg', rb.bodySource));
   } else if (rb.kind === 'table') {
     parts.push(renderResourceTable(rb, bx, by, options));
   }

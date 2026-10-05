@@ -36,10 +36,12 @@ import { measuringVertically, withMeasureWritingMode } from '../measure/vertical
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
+import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeArea';
 import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
   Resource,
+  ResourceSafeArea,
   ResourceRotation,
   ResourceType,
   TableCell,
@@ -124,6 +126,12 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Make a picture with a safe area (`Resource.safeArea`) this many px
+   *  taller (or shorter, when negative) than it would be set, by cropping
+   *  outside its safe area; clamped to the range the safe area allows (see
+   *  `bodyFlex` in the result). Ignored for pictures without one, tables
+   *  and turned blocks. */
+  bodyHeightDelta?: number;
   /** Set the block upright on a vertical page (`VDTPage.flow`): laid out
    *  in an upright frame counter-rotated in the flow (`rotation.direction:
    *  'ccw'`, which the page's clockwise frame turns back), so the picture
@@ -1335,6 +1343,20 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // A rotated figure must also fit the band's width with its caption and
   // note: scale the image down when the stack would run past it (a table
   // is cut between rows by the placer instead).
+  // Intrinsic size and safe area of a picture that may be cropped to make
+  // it taller or shorter (#442); `flexRange` gives its body height range at
+  // a width.
+  const safeArea = resourceSafeArea(resource);
+  const intrinsic = resource.kind === 'bitmap' && resource.bitmap
+    ? { width: resource.bitmap.width, height: resource.bitmap.height }
+    : resource.kind === 'svg' && resource.svg?.width && resource.svg.height
+      ? { width: resource.svg.width, height: resource.svg.height }
+      : undefined;
+  const flexRange = safeArea && intrinsic && intrinsic.width > 0 && intrinsic.height > 0 && !rotate
+    ? (w: number) => safeAreaHeightRange(intrinsic.width, intrinsic.height, safeArea, w)
+    : undefined;
+  // The content area's room for the body, when `fitFiguresToPage` caps it.
+  let pageRoom: number | undefined;
   if (rotate && (resource.kind === 'bitmap' || resource.kind === 'svg')) {
     const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
     if (bodyHeight > room && bodyHeight > 0) {
@@ -1354,11 +1376,30 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const areaHeight = dimensionToPx(resolved.page.height, dpi)
       - dimensionToPx(m.top, dpi) - dimensionToPx(m.bottom, dpi);
     const room = areaHeight - captionHeight - noteHeight - continuesHeight - bodyStyle.lineHeightPx;
+    // A picture with a safe area is cropped first, keeping its width.
+    if (bodyHeight > room && bodyHeight > 0 && room > 0 && flexRange) {
+      bodyHeight = Math.max(room, flexRange(bodyWidth).min);
+    }
     if (bodyHeight > room && bodyHeight > 0 && room > 0) {
       const k = room / bodyHeight;
       bodyWidth *= k;
       bodyHeight *= k;
     }
+    pageRoom = room;
+  }
+
+  // A picture with a safe area set taller or shorter than its own ratio:
+  // the lever's delta, within what the safe area (and the page) allows.
+  let bodySource: ResourceSafeArea | undefined;
+  let bodyFlex: { shrink: number; grow: number; delta: number } | undefined;
+  if (flexRange && safeArea && intrinsic && !rotate) {
+    const range = flexRange(bodyWidth);
+    const max = pageRoom !== undefined ? Math.max(range.min, Math.min(range.max, pageRoom)) : range.max;
+    const delta = input.bodyHeightDelta ?? 0;
+    const before = bodyHeight;
+    if (delta !== 0) bodyHeight = Math.max(range.min, Math.min(max, bodyHeight + delta));
+    bodySource = safeAreaSource(intrinsic.width, intrinsic.height, safeArea, bodyWidth, bodyHeight);
+    bodyFlex = { shrink: Math.max(0, bodyHeight - range.min), grow: Math.max(0, max - bodyHeight), delta: bodyHeight - before };
   }
 
   // --- Vertical stacking -------------------------------------------------
@@ -1424,6 +1465,8 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     number,
     captionPrefix,
     bodyRect,
+    ...(bodySource ? { bodySource } : {}),
+    ...(bodyFlex ? { bodyFlex } : {}),
     fileId,
     format,
     captionLines,

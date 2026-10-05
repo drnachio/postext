@@ -3,6 +3,7 @@ import type {
   DocumentMetadata,
   PostextResource,
   Resource,
+  ResourceSafeArea,
   TableCellAlign,
   TableCellVerticalAlign,
   ResolvedPageConfig,
@@ -1124,6 +1125,17 @@ export interface ResolvedResourceBlock {
   /** Pixel rect of the figure body (image / table area) relative to the block
    *  origin. Caption is laid out below it. */
   bodyRect: BoundingBox;
+  /** For bitmap/svg: the part of the picture shown in `bodyRect`, in
+   *  fractions of its intrinsic size, when the engine cropped it within its
+   *  safe area (`Resource.safeArea`). Absent: the whole picture fills
+   *  `bodyRect`. Renderers scale the picture so this rectangle maps onto
+   *  `bodyRect` and clip to `bodyRect`. */
+  bodySource?: ResourceSafeArea;
+  /** For a picture with a safe area: how many px its body could still
+   *  shrink or grow from the height it is set at, by cropping outside the
+   *  safe area (the room the fit and balancing levers have), and the px
+   *  the levers already set it taller (`delta`, negative when shorter). */
+  bodyFlex?: { shrink: number; grow: number; delta: number };
   /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
   fileId?: string;
   /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */
@@ -1407,7 +1419,7 @@ export interface ResolvedCalloutBlock {
  *  - `afterFloat` — a grid line under a float band heading the column;
  *  - `looseParagraph` — a paragraph re-broken a line long (plus tracking
  *    when word spacing alone could not gain the line). */
-export type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+export type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 
 /** What column balancing did to one block (`VDTBlock.balancing`). */
 export interface VDTBalancing {
@@ -1422,6 +1434,9 @@ export interface VDTBalancing {
   spaceAbove: number;
   /** `looseParagraph`: lines the paragraph gained. */
   extraLines?: number;
+  /** `flexFigure`: px the picture was set taller, cropped within its safe
+   *  area (`Resource.safeArea`); `spaceAbove` is then `0`. */
+  bodyGrowth?: number;
   /** `looseParagraph`: tracking that gained the line, in thousandths of an
    *  em (`0` when word spacing alone did); the block's `letterSpacing` is
    *  the same value in px. */

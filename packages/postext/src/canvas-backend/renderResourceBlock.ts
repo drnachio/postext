@@ -23,6 +23,8 @@ import { paintSwatch } from './swatch';
 import { paintChip } from './chip';
 import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk';
 import { fillSegmentWord, type WordRun } from './wordRuns';
+import { uncroppedPictureBox } from '../pipeline/safeArea';
+import { mirroredPaintActive } from './mirrorFrame';
 
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
@@ -590,7 +592,23 @@ export function renderResourceBlock(
   const bh = rb.bodyRect.height;
 
   if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    const drawn = rb.fileId ? drawResourceImage(ctx, rb.fileId, bx, by, bw, bh, { inkHex, svg: rb.kind === 'svg' }, rb.resource.id) : false;
+    // A picture cropped within its safe area (#442): the whole picture is
+    // drawn at its uncropped box, clipped to the body.
+    const src = rb.bodySource;
+    let full = src ? uncroppedPictureBox(bx, by, bw, bh, src) : null;
+    // On a mirrored page `drawImage` turns the picture back about its own
+    // box: reflect that box about the body so the same part shows.
+    if (full && mirroredPaintActive()) full = { ...full, x: 2 * bx + bw - full.x - full.width };
+    if (full) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(bx, by, bw, bh);
+      ctx.clip();
+    }
+    const drawn = rb.fileId
+      ? drawResourceImage(ctx, rb.fileId, full?.x ?? bx, full?.y ?? by, full?.width ?? bw, full?.height ?? bh, { inkHex, svg: rb.kind === 'svg' }, rb.resource.id)
+      : false;
+    if (full) ctx.restore();
     if (!drawn) {
       drawPlaceholder(ctx, bx, by, bw, bh, rb.kind === 'svg' ? 'SVG' : 'Image');
     }

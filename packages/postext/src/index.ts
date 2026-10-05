@@ -30,6 +30,7 @@ export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, se
 export type { CellPos, CellRange, ParseTSVOptions, TableGridIssue } from './table/model';
 export { collectContentWarnings, formatWarning } from './pipeline/contentWarnings';
 export { collectHeadingDesignCuts } from './pipeline/headingDesignCuts';
+export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox } from './pipeline/safeArea';
 export type { HeadingDesignCut } from './pipeline/headingDesignCuts';
 export { extractFrontmatter, metadataText } from './frontmatter';
 export type { ParsedFrontmatter } from './frontmatter';
@@ -77,6 +78,7 @@ export type {
   ResourceFloatSpan,
   ResourceRotation,
   ResourcePlacement,
+  ResourceSafeArea,
   Resource,
   TableCell,
   TableCellAlign,
