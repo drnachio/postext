@@ -15,6 +15,8 @@ import {
   defaultCjkLineBreak,
   defaultCjkParagraphStartBracket,
   defaultCjkPunctuationWidth,
+  defaultCjkRubyAlign,
+  defaultCjkRubyOverhang,
   defaultCjkSpaceAfterQuestion,
   dimensionsEqual,
   isCjkLanguage,
@@ -166,6 +168,14 @@ export const CjkSection = memo(function CjkSection() {
   const ruby = raw?.ruby;
   const warichu = raw?.warichu;
   const auto = (name: string) => labels.cjkAuto.replace('__value__', name);
+  // Ruby overhang and alignment (#422): Japan's by name, else the clreq
+  // quarter em and centring.
+  const overhangNames = { kana: labels.cjkRubyOverhangKana, any: labels.cjkRubyOverhangAny, none: labels.cjkRubyOverhangNone };
+  const alignNames = { jis: labels.cjkRubyAlignJis, center: labels.cjkRubyAlignCenter, start: labels.cjkRubyAlignStart };
+  const autoOverhang = defaultCjkRubyOverhang(resolvedRegion);
+  const autoAlign = defaultCjkRubyAlign(resolvedRegion);
+  const rubyOverhang = ruby?.overhang ?? 'auto';
+  const rubyAlign = ruby?.align ?? 'auto';
   const onOff = (v: boolean) => (v ? labels.cjkOn : labels.cjkOff);
   const tri = (v: 'auto' | boolean) => (v === 'auto' ? 'auto' : v ? 'on' : 'off');
   const fromTri = (v: string): 'auto' | boolean => (v === 'auto' ? 'auto' : v === 'on');
@@ -482,6 +492,46 @@ export const CjkSection = memo(function CjkSection() {
               tooltip={labels.cjkRubyPositionTooltip}
               isDefault={(ruby?.position ?? 'auto') === 'auto'}
               onReset={() => writeRuby({ position: undefined })}
+            />
+            <SelectInput
+              label={labels.cjkRubyOverhang}
+              value={rubyOverhang}
+              options={[
+                { value: 'auto', label: auto(autoOverhang ? overhangNames[autoOverhang] : labels.cjkRubyOverhangQuarter) },
+                { value: 'kana', label: overhangNames.kana },
+                { value: 'any', label: overhangNames.any },
+                { value: 'none', label: overhangNames.none },
+              ]}
+              onChange={(v) => writeRuby({ overhang: v === 'auto' ? undefined : (v as CjkRubyConfig['overhang']) })}
+              tooltip={labels.cjkRubyOverhangTooltip}
+              isDefault={rubyOverhang === 'auto'}
+              onReset={() => writeRuby({ overhang: undefined })}
+            />
+            <SelectInput
+              label={labels.cjkRubyAlign}
+              value={rubyAlign}
+              options={[
+                { value: 'auto', label: auto(alignNames[autoAlign ?? 'center']) },
+                { value: 'jis', label: alignNames.jis },
+                { value: 'center', label: alignNames.center },
+                { value: 'start', label: alignNames.start },
+              ]}
+              onChange={(v) => writeRuby({ align: v === 'auto' ? undefined : (v as CjkRubyConfig['align']) })}
+              tooltip={labels.cjkRubyAlignTooltip}
+              isDefault={rubyAlign === 'auto'}
+              onReset={() => writeRuby({ align: undefined })}
+            />
+            <SelectInput
+              label={labels.cjkRubySmallKana}
+              value={ruby?.smallKana ?? 'keep'}
+              options={[
+                { value: 'keep', label: labels.cjkRubySmallKanaKeep },
+                { value: 'full', label: labels.cjkRubySmallKanaFull },
+              ]}
+              onChange={(v) => writeRuby({ smallKana: v === 'keep' ? undefined : 'full' })}
+              tooltip={labels.cjkRubySmallKanaTooltip}
+              isDefault={(ruby?.smallKana ?? 'keep') === 'keep'}
+              onReset={() => writeRuby({ smallKana: undefined })}
             />
           </FieldGroup>
           <FieldGroup title={labels.cjkWarichu} description={labels.cjkWarichuDescription}>
