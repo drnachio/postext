@@ -262,6 +262,13 @@ function renderComposedSegments(
       continue;
     }
     if (seg.chip) {
+      // A chip was measured at the block's tracking, never at the spacing a
+      // justified run before it added between its characters: painted with
+      // that spacing still set, its words ran into the text after it.
+      if (spacing !== tracking) {
+        ctx.letterSpacing = `${tracking}px`;
+        spacing = tracking;
+      }
       paintChip(ctx, seg.chip, x, baseline, (run) =>
         pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor));
       x += seg.width;
