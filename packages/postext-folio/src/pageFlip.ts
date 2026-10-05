@@ -392,6 +392,8 @@ type PageUniforms = {
   uReflection: { value: Texture | null };
   uReflectionOn: { value: number };
   uReflectionSize: { value: Vector2 };
+  /** The mirror plane's normal (world). */
+  uReflectionNormal: { value: Vector3 };
 };
 
 type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUniforms; spec?: PaperSpec | null } };
@@ -430,6 +432,7 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uReflection: { value: null },
     uReflectionOn: { value: 0 },
     uReflectionSize: { value: new Vector2(1, 1) },
+    uReflectionNormal: { value: new Vector3(0, 0, 1) },
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -486,6 +489,7 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform sampler2D uReflection;
         uniform float uReflectionOn;
         uniform vec2 uReflectionSize;
+        uniform vec3 uReflectionNormal;
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
@@ -552,10 +556,10 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           // The leaves in the air, mirrored in a gloss page: where one is
           // seen, it takes the place of the environment it hides, through
           // the coating's Fresnel and the paper's own. A plane holds only
-          // where the page lies flat: the mirror fades up the gutter.
+          // where the page lies in it: the mirror fades up the gutter.
           vec2 st = gl_FragCoord.xy / uReflectionSize;
           vec4 seen = texture2D(uReflection, vec2(1.0 - st.x, st.y));
-          float lies = smoothstep(0.97, 0.995, abs((vec4(normalize(vNormal), 0.0) * viewMatrix).z));
+          float lies = smoothstep(0.97, 0.995, abs(dot((vec4(normalize(vNormal), 0.0) * viewMatrix).xyz, uReflectionNormal)));
           float a = seen.a * lies;
           vec3 leaf = seen.rgb * lies;
           clearcoatSpecularIndirect = clearcoatSpecularIndirect * (1.0 - a)
@@ -1028,6 +1032,22 @@ interface Airborne {
   fold: Fold | null;
   mesh: PageMesh;
   spec: PaperSpec;
+}
+
+/**
+ * The plane an open page lies in past the gutter's shoulder (world,
+ * normal up), its side running out from the spine along world x as
+ * `out` (±1): level on a block lying on the desk, sloping down to it on
+ * the thin side of a thick book, which hangs from the top of the spine.
+ * A gloss page mirrors the leaves in the air in it (#483).
+ */
+export function pagePlane(p: Profile, W: number, out: number): Plane {
+  const [x0, z0] = along(p, W * 0.55);
+  const [x1, z1] = along(p, W);
+  const dx = out * (x1 - x0);
+  const dz = z1 - z0;
+  const normal = new Vector3(-dz * Math.sign(dx || 1), 0, Math.abs(dx)).normalize();
+  return new Plane().setFromNormalAndCoplanarPoint(normal, new Vector3(out * x0, 0, z0));
 }
 
 /**
@@ -2745,20 +2765,23 @@ export class PageFlipper {
       { side: "left" as const, page: this.left },
       { side: "right" as const, page: this.right },
     ];
-    let last: { z: number; target: WebGLRenderTarget } | null = null;
+    let last: { plane: Plane; target: WebGLRenderTarget } | null = null;
     for (const { side, page } of sides) {
       const u = page.material.userData.uniforms;
       const on = this.mirrorOk && airborne && page.visible && page.material.userData.spec?.paper.finish === "gloss";
       u.uReflectionOn.value = on ? 1 : 0;
       if (!on) continue;
-      const z = this.topZ(side);
-      if (!last || Math.abs(last.z - z) > 0.25) {
+      // Stage x runs out from the spine, to the left on the left page,
+      // and the stage is mirrored for a right-bound book.
+      const plane = pagePlane(this.surfaces![side], this.W, (side === "left" ? -1 : 1) * this.sign);
+      if (!last || last.plane.normal.dot(plane.normal) < 0.99999 || Math.abs(last.plane.constant - plane.constant) > 0.25) {
         const target = this.mirrorTarget(side);
-        this.drawMirror(target, z);
-        last = { z, target };
+        this.drawMirror(target, plane);
+        last = { plane, target };
       }
       u.uReflection.value = last.target.texture;
       u.uReflectionSize.value.copy(this.buffer);
+      u.uReflectionNormal.value.copy(plane.normal);
     }
   }
 
@@ -2776,22 +2799,28 @@ export class PageFlipper {
     return target;
   }
 
-  /** Draws the leaves in the air as the plane z = `z` (stage units, the
-   *  open page) mirrors them. */
-  private drawMirror(target: WebGLRenderTarget, z: number) {
+  /** Draws the leaves in the air as `plane` (an open page's) mirrors them. */
+  private drawMirror(target: WebGLRenderTarget, plane: Plane) {
     const cam = this.mirrorCamera;
     // The eye mirrored in the plane, turned round its up axis so it is
     // still a camera (no mirror in it): its picture is the reflection
     // turned left for right, and its frustum the main one turned so too.
-    const reflect = new Matrix4().set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 2 * z, 0, 0, 0, 1);
+    const { x, y, z } = plane.normal;
+    const d = -plane.constant;
+    const reflect = new Matrix4().set(
+      1 - 2 * x * x, -2 * x * y, -2 * x * z, 2 * d * x,
+      -2 * y * x, 1 - 2 * y * y, -2 * y * z, 2 * d * y,
+      -2 * z * x, -2 * z * y, 1 - 2 * z * z, 2 * d * z,
+      0, 0, 0, 1,
+    );
     cam.matrix.copy(reflect).multiply(this.camera.matrixWorld).multiply(new Matrix4().makeScale(-1, 1, 1));
     cam.updateMatrixWorld(true);
     const p = cam.projectionMatrix.copy(this.camera.projectionMatrix);
     p.elements[8] *= -1;
     // Its near plane laid along the page (an oblique frustum): nothing
     // under the page shows in its mirror.
-    const plane = new Plane(new Vector3(0, 0, 1), -(z - 0.2)).applyMatrix4(cam.matrixWorldInverse);
-    const clip = new Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.constant);
+    const near = new Plane(plane.normal.clone(), plane.constant + 0.2).applyMatrix4(cam.matrixWorldInverse);
+    const clip = new Vector4(near.normal.x, near.normal.y, near.normal.z, near.constant);
     const e = p.elements;
     const q = new Vector4((Math.sign(clip.x) + e[8]) / e[0], (Math.sign(clip.y) + e[9]) / e[5], -1, (1 + e[10]) / e[14]);
     clip.multiplyScalar(2 / clip.dot(q));
