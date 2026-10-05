@@ -63,3 +63,24 @@ describe('compileMatcher', () => {
     expect(m.test(normalizeText('Cuerpo'))).toBe(false);
   });
 });
+
+describe('Chinese and Japanese labels', () => {
+  const n = normalizeText;
+  it('keeps the voicing marks of kana, at the same length', () => {
+    expect(n('ガ')).toBe('ガ');
+    expect(n('ぱ')).toBe('ぱ');
+    expect(n('ルビの位置')).toHaveLength(5);
+    expect(matchesTokens(n('ガイド'), tokenize('カイド'))).toBe(false);
+    expect(matchesTokens(n('はっぱ'), tokenize('はっは'))).toBe(false);
+    expect(matchesTokens(n('ガイド'), tokenize('ガイ'))).toBe(true);
+  });
+  it('finds a word inside a label written without spaces', () => {
+    expect(matchesTokens(n('ルビの位置'), tokenize('位置'))).toBe(true);
+    expect(matchesTokens(n('ルビの位置'), tokenize('ルビ 位置'))).toBe(true);
+    expect(matchesTokens(n('行取り（3行）'), tokenize('取り'))).toBe(true);
+    expect(matchRanges('ルビの位置', tokenize('位置'))).toEqual([[3, 5]]);
+    expect(matchesTokens(n('标点宽度'), tokenize('宽度'))).toBe(true);
+    // Latin words still match from their start only.
+    expect(matchesTokens(n('Ruby position 位置'), tokenize('osition'))).toBe(false);
+  });
+});
