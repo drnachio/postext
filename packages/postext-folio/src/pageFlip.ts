@@ -1,6 +1,7 @@
 import {
   BoxGeometry,
   BufferAttribute,
+  BufferGeometry,
   Color,
   CustomBlending,
   DirectionalLight,
@@ -36,7 +37,6 @@ import {
   VideoTexture,
   WebGLRenderer,
   WebGLRenderTarget,
-  type BufferGeometry,
   type Material,
   type Object3D,
   type WebGLProgramParametersWithUniforms,
@@ -280,6 +280,26 @@ function keySpecular(occlusion = "1.0") {
 /** Gives a material the key's shadow on its own plane. */
 function keyShadowed(fragmentShader: string): string {
   return fragmentShader.replace("#include <shadowmap_pars_fragment>", SHADOW_PARS);
+}
+
+/** A caster's own copy of a mesh's shape. The height map is drawn before
+ *  the main view, and three.js uploads a geometry once per frame number,
+ *  which the key's shadow pass at the end of the last main view had
+ *  already taken: a caster sharing a leaf's geometry drew the leaf where
+ *  it lay a frame before, and a leaf moving down was shaded by its own
+ *  old self, moving up it was not (#488). */
+function casterGeometry(source: BufferGeometry): BufferGeometry {
+  const g = new BufferGeometry();
+  g.setAttribute("position", source.attributes.position.clone());
+  if (source.index) g.setIndex(source.index.clone());
+  return g;
+}
+
+/** Brings a caster's copy to its mesh's shape as laid out this frame. */
+function syncCaster(caster: Mesh, source: BufferGeometry) {
+  const to = caster.geometry.attributes.position as BufferAttribute;
+  (to.array as Float32Array).set(source.attributes.position.array as Float32Array);
+  to.needsUpdate = true;
 }
 
 function casterMaterial(leaf: boolean) {
@@ -911,6 +931,7 @@ function disposeLeaf(mesh: PageMesh) {
     parts.slab.geometry.dispose();
     parts.slab.material.dispose();
   }
+  (mesh.userData.caster as Mesh | undefined)?.geometry.dispose();
   mesh.geometry.dispose();
   mesh.material.dispose();
 }
@@ -1607,9 +1628,12 @@ export class PageFlipper {
       tex.repeat.set(W / k / tile, H / k / tile);
     }
     // The book at rest in the height map.
-    for (const c of this.staticCasters) c.removeFromParent();
+    for (const c of this.staticCasters) {
+      c.removeFromParent();
+      c.geometry.dispose();
+    }
     this.staticCasters = [this.left, this.right, ...this.stacks, ...(this.covers.children as Mesh[])].map((m) => {
-      const c = new Mesh(m.geometry, this.staticCaster);
+      const c = new Mesh(casterGeometry(m.geometry), this.staticCaster);
       c.position.copy(m.position);
       c.frustumCulled = false;
       this.shadowScene.add(c);
@@ -2020,7 +2044,7 @@ export class PageFlipper {
     mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
     mesh.castShadow = mesh.receiveShadow = true;
     mesh.frustumCulled = false;
-    const caster = new Mesh(mesh.geometry, this.leafCaster);
+    const caster = new Mesh(casterGeometry(mesh.geometry), this.leafCaster);
     caster.frustumCulled = false;
     caster.visible = false;
     this.shadowScene.add(caster);
@@ -2565,7 +2589,9 @@ export class PageFlipper {
     this.dressPage(this.left, l >= 0 ? this.specOf(l) : this.bookSpec);
     this.dressPage(this.right, r < n ? this.specOf(r) : this.bookSpec);
 
-    // The height map lifted leaves occlude the sky from.
+    // The height map lifted leaves occlude the sky from, with the leaves
+    // where they lie this frame.
+    for (const mesh of [...this.leaves.values(), this.blockMesh]) if (mesh?.visible) syncCaster(mesh.userData.caster as Mesh, mesh.geometry);
     for (const c of this.staticCasters) c.visible = true;
     this.staticCasters[0].visible = this.left.visible;
     this.staticCasters[1].visible = this.right.visible;
@@ -2705,6 +2731,7 @@ export class PageFlipper {
     this.mirrors.right?.dispose();
     this.leafCaster.dispose();
     this.staticCaster.dispose();
+    for (const c of this.staticCasters) c.geometry.dispose();
     this.scene.environment?.dispose();
     this.pmrem?.dispose();
     for (const mesh of this.leaves.values()) disposeLeaf(mesh);
