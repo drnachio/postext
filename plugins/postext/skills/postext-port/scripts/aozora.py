@@ -18,6 +18,8 @@ module reads that notation and writes the Postext dialect:
   tate-chū-yoko ［＃「X」は縦中横］                         → :tcy[X]
   warichu       ［＃割り注］…［＃割り注終わり］             → :warichu[…]
   kunten        字［＃（ヲ）］［＃レ］                       → :kunten[字]{kaeri="レ" okuri="ヲ"}
+                (a 竪点 ‐ after the character: 敬‐［＃二］祭 → :kunten[敬]{tate kaeri="二"}祭;
+                one between two kanji on a line with kunten: 讀‐書 → :kunten[讀]{tate}書)
   headings      大/中/小見出し (forward and block forms)    → #, ##, ### with {indent="N"}
   indents       字下げ, 地付き, 字上げ blocks and lines      → :::paragraphs{style="aozora-…"}
   breaks        改ページ / 改丁 / 改見開き / 改段            → :::pagebreak / {parity="odd"} / {parity="even"} / :::columnbreak
@@ -892,37 +894,88 @@ class InlineParser:
             node.attrs["eatClose"] = True
 
     def kunten(self, kaeri: str | None = None, okuri: str | None = None) -> None:
-        """返り点 and 送り仮名 belong to the character before them (a 竪点 ‐
-        in between stays in the text)."""
+        """返り点 and 送り仮名 belong to the character before them; a 竪点 ‐
+        between it and the note (Aozora writes 敬‐［＃二］祭) joins it to the
+        next character, and becomes the mark's `tate` flag."""
         self.report.counts["kunten"] += 1
         kids = self.top.children
         if kids and isinstance(kids[-1], Mark) and kids[-1].kind == "kunten":
             target = kids[-1]
         elif len(kids) >= 2 and isinstance(kids[-1], Text) and kids[-1].text == "‐" and isinstance(kids[-2], Mark) and kids[-2].kind == "kunten":
-            target = kids[-2]
+            kids.pop()
+            target = kids[-1]
+            target.attrs["tate"] = True
         else:
             if not kids:
                 self.report.unmatched.append({"line": self.lineno, "note": f"kunten {kaeri or okuri} with no character"})
                 return
             last = kids.pop()
-            tail = []
+            tate = False
             if isinstance(last, Text):
                 t = last.text
                 if t.endswith("‐") and len(t) > 1:
-                    tail = [Text("‐")]
+                    tate = True
                     t = t[:-1]
                 if len(t) > 1:
                     kids.append(Text(t[:-1]))
                 base = [Text(t[-1])]
             else:
                 base = [last]
-            target = Mark("kunten", {}, base)
+            target = Mark("kunten", {"tate": True} if tate else {}, base)
             kids.append(target)
-            kids.extend(tail)
         if kaeri:
             target.attrs["kaeri"] = kaeri
         if okuri:
             target.attrs["okuri"] = target.attrs.get("okuri", "") + okuri
+
+
+_HAN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003ffff々〇]")
+
+
+def _has_kunten(nodes: list) -> bool:
+    return any(isinstance(n, Mark) and (n.kind == "kunten" or _has_kunten(n.children)) for n in nodes)
+
+
+def _tateten(nodes: list) -> list:
+    """On a line of kanbun (one that carries kunten), a 竪点 ‐ between two
+    kanji that no note follows: the first becomes a kunten mark with the
+    `tate` flag (讀‐書 → :kunten[讀]{tate}書), or takes the flag when it is
+    one already."""
+    out: list = []
+    for k, n in enumerate(nodes):
+        if isinstance(n, Mark):
+            n.children = _tateten(n.children)
+            out.append(n)
+            continue
+        if not isinstance(n, Text) or "‐" not in n.text:
+            out.append(n)
+            continue
+        t = n.text
+        # The character after the text: the next node's first.
+        after = _raw_plain(nodes[k + 1 : k + 2])[:1]
+        buf = ""
+        i = 0
+        while i < len(t):
+            c = t[i]
+            nxt = t[i + 1] if i + 1 < len(t) else after
+            if c == "‐" and _HAN.match(nxt):
+                prev_mark = not buf and out and isinstance(out[-1], Mark) and out[-1].kind == "kunten"
+                if prev_mark:
+                    out[-1].attrs["tate"] = True
+                    i += 1
+                    continue
+                if buf and _HAN.match(buf[-1]):
+                    if len(buf) > 1:
+                        out.append(Text(buf[:-1]))
+                    out.append(Mark("kunten", {"tate": True}, [Text(buf[-1])]))
+                    buf = ""
+                    i += 1
+                    continue
+            buf += c
+            i += 1
+        if buf:
+            out.append(Text(buf))
+    return out
 
 
 def _eat_warichu_close(nodes: list) -> list:
@@ -1101,6 +1154,8 @@ def parse(text: str, *, editorial_ruby: str = "keep") -> AozoraDocument:
 
         parser = InlineParser(report, editorial, lineno, editorial_ruby)
         nodes = _eat_warichu_close(parser.parse(rest))
+        if "‐" in rest and _has_kunten(nodes):
+            nodes = _tateten(nodes)
         for name in reversed(block_styles):
             kind = SIMPLE.get(re.sub(r"[0-9０-９]+段階", "", name), "size")
             nodes = [Mark(kind, {"aozora": name}, nodes)]
@@ -1316,8 +1371,8 @@ def _render_mark(n: Mark, opts: RenderOptions, in_brackets: bool, report) -> str
         if k == "sideline" and attrs.get("style") == "solid":
             del attrs["style"]
         if k == "kunten":
-            attrs = {kk: n.attrs[kk] for kk in ("kaeri", "okuri") if kk in n.attrs}
-            return f":kunten[{inner}]" + "{" + " ".join(f"{kk}={attr(v)}" for kk, v in attrs.items()) + "}"
+            parts = (["tate"] if n.attrs.get("tate") else []) + [f"{kk}={attr(n.attrs[kk])}" for kk in ("kaeri", "okuri") if kk in n.attrs]
+            return f":kunten[{inner}]" + "{" + " ".join(parts) + "}"
         if k == "warichu" and "open" in attrs:
             return f":warichu[{inner}]{{open={attr(attrs['open'])} close={attr(attrs['close'])}}}"
         return f":{k}[{inner}]" + _attrs(attrs)

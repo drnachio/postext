@@ -131,7 +131,14 @@ class Marks(unittest.TestCase):
             ':::paragraphs{style="aozora-f0"}\n\n:kunten[自]{kaeri="二"}女王:kunten[國]{kaeri="一"}東:kunten[度]{kaeri="レ"}海千餘里。\n\n:::',
         )
         self.assertIn(':kunten[噛]{kaeri="二" okuri="テ"}古人', md("噛［＃（テ）］［＃二］古人"))
-        self.assertIn('而:kunten[敬]{kaeri="二"}‐祭', md("而敬‐［＃二］祭天神地祇［＃一］。"))
+        # A 竪点 before the note joins the character to the next one.
+        self.assertIn('而:kunten[敬]{tate kaeri="二"}祭', md("而敬‐［＃二］祭天神地祇［＃一］。"))
+        self.assertIn(':kunten[敬]{tate kaeri="二" okuri="テ"}祭', md("敬［＃（テ）］‐［＃二］祭天［＃一］"))
+        # One between two kanji that no note follows, on a line of kanbun.
+        self.assertIn(':kunten[讀]{tate}:kunten[書]{kaeri="レ"}', md("讀‐書［＃レ］之"))
+        # Elsewhere a hyphen stays text.
+        self.assertIn("ジャン‐ポール", md("ジャン‐ポール"))
+        self.assertIn("大‐小", md("大‐小"))
         self.assertIn(
             ':kunten[:ruby[未]{rt="ザル" group pos=under}]{kaeri="レ" okuri="ダ"}若',
             md("未［＃「未」の左に「ザル」のルビ］［＃（ダ）］［＃レ］若"),
