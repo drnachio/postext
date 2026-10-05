@@ -1,8 +1,8 @@
-# こころ · Kokoro
+# Credits — こころ · Kokoro
 
-Draft of the bundle's CREDITS.md; build.py writes the final file (the
-Aozora blocks from `work/text.json`, the picture list from
-`work/pictures.json`).
+Showcase preset for the Postext sandbox: Natsume Sōseki's *Kokoro* (1914) in Japanese,
+set vertically and bound on the right. The editorial matter written for the preset
+(the edition note, the colophon, this file) is dedicated to the public domain (CC0 1.0).
 
 ## 本文
 
@@ -93,3 +93,32 @@ this edition's colophon.
 Shippori Mincho B1 (Copyright 2021 The Shippori Mincho Project Authors) and
 Shippori Antique B1 (Copyright 2020 The Shippori Antique Project Authors),
 SIL Open Font License 1.1, subset to the characters of this book.
+
+## Picture list
+
+| id | caption | source | credit |
+| --- | --- | --- | --- |
+| `kokoro-1914-title` | 扉　漱石自装・伊上凡骨刻 | https://dl.ndl.go.jp/pid/945471/1/4 | 夏目漱石装幀、伊上凡骨刻。『こゝろ』岩波書店、1914年、扉。国立国会図書館デジタルコレクション（info:ndljp/pid/945471） |
+| `kokoro-1914-seal` | — | https://dl.ndl.go.jp/pid/945471/1/4 | 夏目漱石装幀。『こゝろ』岩波書店、1914年。国立国会図書館デジタルコレクション（info:ndljp/pid/945471） |
+| `kokoro-1914-cover-label` | 表紙　題簽 | https://dl.ndl.go.jp/pid/945471/1/2 | 夏目漱石装幀。『こゝろ』岩波書店、1914年、表紙。国立国会図書館デジタルコレクション（info:ndljp/pid/945471） |
+| `kokoro-1917-colophon-frame` | — | https://dl.ndl.go.jp/pid/906330/1/225 | 夏目漱石装幀。『こゝろ』岩波書店、1917年、奥付。国立国会図書館デジタルコレクション（info:ndljp/pid/906330） |
+| `soseki-sanjo-yusan` | 夏目漱石「山上有山図」 | https://dl.ndl.go.jp/pid/1192970/1/11 | 夏目漱石「山上有山図」（大正3年）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970） |
+| `soseki-hagi-no-kayu` | 夏目漱石「萩の粥図」 | https://dl.ndl.go.jp/pid/1192970/1/43 | 夏目漱石「萩の粥図」（大正3年、原画焼失）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970） |
+| `soseki-kokaku-sekimon` | 夏目漱石「孤客入石門図」 | https://dl.ndl.go.jp/pid/1192970/1/19 | 夏目漱石「孤客入石門図」（大正3年）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970） |
+| `scene-kami-2` | 鎌倉の掛茶屋 | — | Generated With Diffusion Models |
+| `scene-kami-3` | 沖に浮かぶ二人 | — | Generated With Diffusion Models |
+| `scene-kami-5` | 雑司ヶ谷の銀杏 | — | Generated With Diffusion Models |
+| `scene-kami-9` | 先生の宅 | — | Generated With Diffusion Models |
+| `scene-naka-5` | 門の旗 | — | Generated With Diffusion Models |
+| `scene-naka-12` | 病床の父 | — | Generated With Diffusion Models |
+| `scene-naka-16` | 厚い封書 | — | Generated With Diffusion Models |
+| `scene-shimo-12` | お嬢さんの琴 | — | Generated With Diffusion Models |
+| `scene-shimo-28` | 房州の岩の上 | — | Generated With Diffusion Models |
+| `scene-shimo-48` | 開いた襖 | — | Generated With Diffusion Models |
+| `scene-shimo-56` | 御大葬の夜 | — | Generated With Diffusion Models |
+
+## Build
+
+`scripts/presets/showcase/kokoro/` in the Postext repository: `fetch.py` downloads the
+sources, `text.py` converts the Aozora files with the postext-port skill's `aozora.py`,
+`plates.py` prepares the pictures, `build.py` writes this bundle.

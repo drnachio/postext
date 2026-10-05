@@ -87,7 +87,6 @@ NDL_TITLES = {
 GOOGLE_FONTS = [
     "shipporiminchob1/ShipporiMinchoB1-Regular.ttf",
     "shipporiminchob1/ShipporiMinchoB1-Bold.ttf",
-    "shipporiminchob1/ShipporiMinchoB1-ExtraBold.ttf",
     "shipporiminchob1/OFL.txt",
     "shipporiantiqueb1/ShipporiAntiqueB1-Regular.ttf",
     "shipporiantiqueb1/OFL.txt",

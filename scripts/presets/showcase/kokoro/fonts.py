@@ -4,7 +4,7 @@
 Shippori Mincho B1 (FONTDASH, OFL) sets the text: its kana and kanji follow
 the 東京築地活版製造所 五号明朝, the type of Meiji and Taishō books, and B1
 adds the rounded corners and ink pooling of letterpress. Regular for the
-text, Bold and ExtraBold for part and section titles. Shippori Antique B1
+text, Bold for part and section titles (and any bold the text takes). Shippori Antique B1
 (the same family's antique, 築地体後期五号仮名) sets running heads and folios.
 
 Each face is subset to the characters of the book (`work/charset.txt`,
@@ -22,8 +22,8 @@ from Noto Serif JP (same 1000-unit em, same vertical origin).
 
     python3 scripts/presets/showcase/kokoro/fonts.py      # work/fonts/*.woff2 + report
 
-The bold weights and the antique are display faces, subset to the
-headings, the design's words and the plate captions (`work/display.txt`
+The antique is a display face, subset to the headings, the design's
+words and the plate captions (`work/display.txt`
 from text.py, plus plates.json); Regular carries the whole text.
 
 build.py imports `build_faces(text, display, out_dir)`, `plate_text()` and
@@ -55,8 +55,9 @@ DONOR = "notoserifjp/NotoSerifJP[wght].ttf"
 
 FACES: list[dict] = [
     {"family": "Shippori Mincho B1", "weight": 400, "src": "shipporiminchob1/ShipporiMinchoB1-Regular.ttf", "stem": "ShipporiMinchoB1"},
-    {"family": "Shippori Mincho B1", "weight": 700, "src": "shipporiminchob1/ShipporiMinchoB1-Bold.ttf", "stem": "ShipporiMinchoB1", "scope": "display"},
-    {"family": "Shippori Mincho B1", "weight": 800, "src": "shipporiminchob1/ShipporiMinchoB1-ExtraBold.ttf", "stem": "ShipporiMinchoB1", "scope": "display"},
+    # Bold carries the whole text too: headings and part titles, and any
+    # `**…**` an editor sets in the Sandbox.
+    {"family": "Shippori Mincho B1", "weight": 700, "src": "shipporiminchob1/ShipporiMinchoB1-Bold.ttf", "stem": "ShipporiMinchoB1"},
     {"family": "Shippori Antique B1", "weight": 400, "src": "shipporiantiqueb1/ShipporiAntiqueB1-Regular.ttf", "stem": "ShipporiAntiqueB1", "scope": "display"},
 ]
 

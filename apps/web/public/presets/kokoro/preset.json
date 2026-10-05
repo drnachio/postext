@@ -1,0 +1,3045 @@
+{
+ "version": 2,
+ "configVersion": 8,
+ "id": "kokoro",
+ "name": "こころ · Kokoro",
+ "description": "La novela de Natsume Sōseki (1914) en japonés, compuesta en vertical y encuadernada a la derecha como la primera edición de Iwanami, con la cubierta, las guardas y la portada que diseñó Sōseki, tres de sus pinturas y furigana sobre las palabras difíciles · Natsume Sōseki’s 1914 novel in Japanese, set vertically and bound on the right after the Iwanami first edition, with the cover, endpapers and title page Sōseki designed, three of his paintings and furigana over the harder words",
+ "locale": "ja",
+ "locales": [
+  "ja"
+ ],
+ "openLocale": "ja",
+ "thumbnail": "thumbnail.jpg",
+ "license": "Public domain · OFL fonts",
+ "credits": "夏目漱石 · 青空文庫 · 国立国会図書館 · 岩波書店 1914",
+ "tags": [
+  "book",
+  "japanese",
+  "vertical",
+  "right-bound",
+  "ruby",
+  "plates",
+  "parts",
+  "front-matter"
+ ],
+ "view": {
+  "canvasScope": "book"
+ },
+ "chapters": {
+  "ja": [
+   {
+    "title": "表紙",
+    "file": "chapters/ja/000a-cover.md"
+   },
+   {
+    "title": "序",
+    "file": "chapters/ja/000b-jijo.md"
+   },
+   {
+    "title": "目次",
+    "file": "chapters/ja/000c-contents.md"
+   },
+   {
+    "title": "上　先生と私",
+    "file": "chapters/ja/01-kami.md"
+   },
+   {
+    "title": "中　両親と私",
+    "file": "chapters/ja/02-naka.md"
+   },
+   {
+    "title": "下　先生と遺書",
+    "file": "chapters/ja/03-shimo.md"
+   },
+   {
+    "title": "予告と広告文",
+    "file": "chapters/ja/900-yokoku.md"
+   },
+   {
+    "title": "本書について",
+    "file": "chapters/ja/901-edition.md"
+   },
+   {
+    "title": "底本と図版",
+    "file": "chapters/ja/902-credits.md"
+   },
+   {
+    "title": "奥付",
+    "file": "chapters/ja/903-colophon.md"
+   },
+   {
+    "title": "裏表紙",
+    "file": "chapters/ja/904-back-cover.md"
+   }
+  ]
+ },
+ "config": {
+  "locale": "ja",
+  "page": {
+   "sizePreset": "custom",
+   "width": {
+    "value": 127,
+    "unit": "mm"
+   },
+   "height": {
+    "value": 188,
+    "unit": "mm"
+   },
+   "margins": {
+    "top": {
+     "value": 26.45,
+     "unit": "mm"
+    },
+    "bottom": {
+     "value": 24.043,
+     "unit": "mm"
+    },
+    "left": {
+     "value": 16.95,
+     "unit": "mm"
+    },
+    "right": {
+     "value": 13.994,
+     "unit": "mm"
+    },
+    "mirror": true
+   },
+   "backgroundColor": {
+    "hex": "#f4ebd8",
+    "model": "hex",
+    "paletteId": "paper"
+   },
+   "pageNumbering": {
+    "format": "japanese-informal",
+    "startAt": 1
+   }
+  },
+  "layout": {
+   "layoutType": "single",
+   "writingMode": "vertical-rl"
+  },
+  "cjk": {
+   "grid": {
+    "enabled": true,
+    "charsPerLine": 41,
+    "linesPerPage": 16
+   }
+  },
+  "bodyText": {
+   "fontFamily": "Shippori Mincho B1",
+   "fontSize": {
+    "value": 9.5,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 17,
+    "unit": "pt"
+   },
+   "textAlign": "justify",
+   "firstLineIndent": {
+    "value": 1,
+    "unit": "em"
+   },
+   "indentAfterHeading": true,
+   "paragraphSpacing": false,
+   "color": {
+    "hex": "#1d1916",
+    "model": "hex",
+    "paletteId": "main-color"
+   },
+   "boldColor": {
+    "hex": "#1d1916",
+    "model": "hex",
+    "paletteId": "main-color"
+   },
+   "italicColor": {
+    "hex": "#1d1916",
+    "model": "hex",
+    "paletteId": "main-color"
+   }
+  },
+  "headings": {
+   "fontFamily": "Shippori Mincho B1",
+   "color": {
+    "hex": "#1d1916",
+    "model": "hex",
+    "paletteId": "main-color"
+   },
+   "keepWithNext": true,
+   "keepWithNextSpread": true,
+   "levels": [
+    {
+     "level": 1,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 14,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "span": "page",
+     "breakBefore": {
+      "enabled": true,
+      "parity": "odd"
+     },
+     "marginBottom": {
+      "value": 0,
+      "unit": "pt"
+     },
+     "advancedDesign": {
+      "enabled": true,
+      "minHeight": {
+       "value": 17.992,
+       "unit": "mm"
+      },
+      "slot": {
+       "elements": [
+        {
+         "kind": "text",
+         "id": "front-title",
+         "placement": {
+          "anchor": {
+           "to": "container",
+           "edge": "top-left"
+          },
+          "offset": {
+           "x": {
+            "value": 10.054,
+            "unit": "mm"
+           },
+           "y": {
+            "value": 0,
+            "unit": "mm"
+           }
+          },
+          "size": {
+           "width": {
+            "value": 127.353,
+            "unit": "mm"
+           },
+           "height": {
+            "value": 11.994,
+            "unit": "mm"
+           }
+          }
+         },
+         "content": "{titleText}",
+         "fontFamily": "Shippori Mincho B1",
+         "fontSize": {
+          "value": 14,
+          "unit": "pt"
+         },
+         "fontWeight": 700,
+         "italic": false,
+         "align": "left",
+         "verticalAlign": "middle",
+         "lineHeight": 1.2,
+         "overflow": "clip",
+         "color": {
+          "hex": "#1d1916",
+          "model": "hex",
+          "paletteId": "main-color"
+         },
+         "letterSpacing": {
+          "value": 7,
+          "unit": "pt"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "level": 2,
+     "numberingTemplate": "",
+     "fontSize": {
+      "value": 12.0,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 17,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "lineSpan": 3,
+     "indent": {
+      "value": 5,
+      "unit": "em"
+     },
+     "marginTop": {
+      "value": 0,
+      "unit": "pt"
+     },
+     "marginBottom": {
+      "value": 0,
+      "unit": "pt"
+     },
+     "letterSpacing": {
+      "value": 2,
+      "unit": "pt"
+     }
+    }
+   ]
+  },
+  "headingStyles": [
+   {
+    "id": "cover",
+    "name": "表紙",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "cloth",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#b8472d",
+          "model": "hex",
+          "paletteId": "shu"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "label-ground",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 27.8,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 15.3,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 73.147,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 96.4,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#f4ebd8",
+          "model": "hex",
+          "paletteId": "paper"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "label-frame",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 28.7,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 16.2,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 71.347,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 94.6,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "borderColor": {
+          "hex": "#1d1916",
+          "model": "hex",
+          "paletteId": "main-color"
+         },
+         "borderWidth": {
+          "value": 0.6,
+          "unit": "pt"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "label",
+        "resourceId": "kokoro-1914-cover-label",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 30.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 17.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 68.747,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "cover-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 120.747,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 50.652,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 39.806,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 14.817,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "こころ",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#f4ebd8",
+         "model": "hex",
+         "paletteId": "paper"
+        },
+        "letterSpacing": {
+         "value": 10,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "cover-author",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 136.975,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 69.469,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 23.578,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 6.879,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "夏目漱石",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 13,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#f4ebd8",
+         "model": "hex",
+         "paletteId": "paper"
+        },
+        "letterSpacing": {
+         "value": 4,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "endpaper",
+    "name": "見返し",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "endpaper",
+        "resourceId": "endpaper",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 188,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "seal",
+    "name": "扉裏の印",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "seal",
+        "resourceId": "kokoro-1914-seal",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 52.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 48.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 43.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "titlepage",
+    "name": "扉",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "woodblock",
+        "resourceId": "kokoro-1914-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 40.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 31.527,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 112.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 40.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 15.885,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 31.339,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 11.642,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "こころ",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 22,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 10,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-author",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 132.303,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 105.473,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 19.697,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 5.821,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "夏目漱石",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 11,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 3,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "tp-imprint",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 166.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 61.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 20,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 4,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "Postext",
+        "fontFamily": "Shippori Antique B1",
+        "fontSize": {
+         "value": 7.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "center",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#6f655a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "preface",
+    "name": "序",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 17.992,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "front-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 10.054,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 127.353,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 11.994,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 7,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "toc": false
+   },
+   {
+    "id": "contents",
+    "name": "目次",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 17.992,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "front-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 10.054,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 127.353,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 11.994,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 7,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "toc": false
+   },
+   {
+    "id": "back",
+    "name": "後付",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 17.992,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "front-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 10.054,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 127.353,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 11.994,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 7,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "credits",
+    "name": "底本と図版",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 17.992,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "front-title",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 10.054,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 127.353,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 11.994,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 14,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 7,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "layout": {
+     "layoutType": "double",
+     "gutterWidth": {
+      "value": 6.703,
+      "unit": "mm"
+     }
+    }
+   },
+   {
+    "id": "colophon",
+    "name": "奥付",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "odd"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "colophon-frame",
+        "resourceId": "kokoro-1917-colophon-frame",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 7.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 16.191,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 174.0,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       },
+       {
+        "kind": "text",
+        "id": "colophon-title",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 49.448,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 35.318,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 94.316,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 6.421,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "こころ",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 13,
+         "unit": "pt"
+        },
+        "fontWeight": 700,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        },
+        "letterSpacing": {
+         "value": 6,
+         "unit": "pt"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "colophon-imprint",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 55.448,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 44.739,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 94.316,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 13.891,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "著者　夏目漱石\n初版　大正三年九月二十日　岩波書店\n本版　二〇二六年十月　Postext",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 7.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.75,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1d1916",
+         "model": "hex",
+         "paletteId": "main-color"
+        }
+       },
+       {
+        "kind": "text",
+        "id": "colophon-credits",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 55.448,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 61.63,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 94.316,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 27.781,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "本文　青空文庫（底本　集英社文庫、一九九一年）\n入力　j.utiyama　校正　伊藤時也\n序・予告・広告文　入力　砂場清隆　校正　小林繁雄\n装幀・口絵　夏目漱石（国立国会図書館所蔵本より）\n挿絵　Generated With Diffusion Models\n書体　しっぽり明朝 B1・しっぽりアンチック B1",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 7.5,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.75,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#6f655a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "back-cover",
+    "name": "裏表紙",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 127,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "box",
+        "id": "cloth",
+        "placement": {
+         "anchor": {
+          "to": "bleed",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": "fill",
+          "height": "fill"
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#b8472d",
+          "model": "hex",
+          "paletteId": "shu"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "seal-ground",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 117.333,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 51.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 32.667,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 24.0,
+           "unit": "mm"
+          }
+         }
+        },
+        "style": {
+         "backgroundColor": {
+          "hex": "#f4ebd8",
+          "model": "hex",
+          "paletteId": "paper"
+         },
+         "borderRadius": {
+          "value": 0,
+          "unit": "mm"
+         }
+        }
+       },
+       {
+        "kind": "image",
+        "id": "seal",
+        "resourceId": "kokoro-1914-seal",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 119.333,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 53.5,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 28.667,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "decorative": true
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "frontis-kami",
+    "name": "口絵（上）",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 95.956,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "frontis",
+        "resourceId": "soseki-sanjo-yusan",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 24.695,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 12.522,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 141.017,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontis-caption",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 132.668,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 116.978,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 33.044,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 4.233,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "夏目漱石「山上有山図」",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#6f655a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "frontis-naka",
+    "name": "口絵（中）",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 95.956,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "frontis",
+        "resourceId": "soseki-hagi-no-kayu",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 45.688,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 145.407,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontis-caption",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 137.685,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 83.812,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 30.222,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 4.233,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "夏目漱石「萩の粥図」",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#6f655a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "frontis-shimo",
+    "name": "口絵（下）",
+    "numbered": false,
+    "toc": false,
+    "span": "page",
+    "runningChapter": false,
+    "breakBefore": {
+     "enabled": true,
+     "parity": "even"
+    },
+    "header": {
+     "elements": []
+    },
+    "footer": {
+     "elements": []
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 95.956,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "image",
+        "id": "frontis",
+        "resourceId": "soseki-kokaku-sekimon",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 22.5,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 46.172,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 145.407,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "text",
+        "id": "frontis-caption",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 132.04,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 83.328,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 35.867,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 4.233,
+           "unit": "mm"
+          }
+         }
+        },
+        "content": "夏目漱石「孤客入石門図」",
+        "fontFamily": "Shippori Mincho B1",
+        "fontSize": {
+         "value": 8,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": false,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.2,
+        "overflow": "clip",
+        "color": {
+         "hex": "#6f655a",
+         "model": "hex",
+         "paletteId": "muted"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "paragraphStyles": [
+   {
+    "id": "aozora-i2-f0",
+    "name": "Aozora 2字下げ・天付き",
+    "indent": {
+     "value": 2,
+     "unit": "em"
+    },
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "em"
+    }
+   },
+   {
+    "id": "notice",
+    "name": "予告・広告文",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "indent": {
+     "value": 2,
+     "unit": "em"
+    },
+    "firstLineIndent": {
+     "value": 1,
+     "unit": "em"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "source",
+    "name": "出典",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "textAlign": "end",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "em"
+    },
+    "color": {
+     "hex": "#6f655a",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "marginBottom": {
+     "value": 17,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "credits",
+    "name": "底本",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "indent": {
+     "value": 1,
+     "unit": "em"
+    },
+    "hangingIndent": {
+     "value": 3,
+     "unit": "em"
+    },
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "em"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 13,
+     "unit": "pt"
+    }
+   }
+  ],
+  "parts": {
+   "page": true,
+   "breakBefore": {
+    "parity": "odd"
+   },
+   "breakAfter": {
+    "enabled": true,
+    "parity": "any"
+   },
+   "design": {
+    "elements": [
+     {
+      "kind": "text",
+      "id": "part-number",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 36.554,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 56.162,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 12.841,
+         "unit": "mm"
+        },
+        "height": {
+         "value": 14.676,
+         "unit": "mm"
+        }
+       }
+      },
+      "content": "{number}",
+      "fontFamily": "Shippori Mincho B1",
+      "fontSize": {
+       "value": 26,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "clip",
+      "color": {
+       "hex": "#b8472d",
+       "model": "hex",
+       "paletteId": "shu"
+      }
+     },
+     {
+      "kind": "text",
+      "id": "part-title",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 55.781,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 56.162,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 137.407,
+         "unit": "mm"
+        },
+        "height": {
+         "value": 14.676,
+         "unit": "mm"
+        }
+       }
+      },
+      "content": "{titleText}",
+      "fontFamily": "Shippori Mincho B1",
+      "fontSize": {
+       "value": 17,
+       "unit": "pt"
+      },
+      "fontWeight": 700,
+      "italic": false,
+      "align": "left",
+      "verticalAlign": "middle",
+      "lineHeight": 1.2,
+      "overflow": "clip",
+      "color": {
+       "hex": "#1d1916",
+       "model": "hex",
+       "paletteId": "main-color"
+      },
+      "letterSpacing": {
+       "value": 9,
+       "unit": "pt"
+      }
+     },
+     {
+      "kind": "rule",
+      "id": "part-rule",
+      "direction": "horizontal",
+      "placement": {
+       "anchor": {
+        "to": "page",
+        "edge": "top-left"
+       },
+       "offset": {
+        "x": {
+         "value": 96.294,
+         "unit": "mm"
+        },
+        "y": {
+         "value": 63.5,
+         "unit": "mm"
+        }
+       },
+       "size": {
+        "width": {
+         "value": 12,
+         "unit": "mm"
+        }
+       }
+      },
+      "color": {
+       "hex": "#b8472d",
+       "model": "hex",
+       "paletteId": "shu"
+      },
+      "thickness": {
+       "value": 0.8,
+       "unit": "pt"
+      }
+     }
+    ]
+   }
+  },
+  "toc": {
+   "levels": [
+    {
+     "level": 1,
+     "fontFamily": "Shippori Mincho B1",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 34,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1d1916",
+      "model": "hex",
+      "paletteId": "main-color"
+     },
+     "indent": {
+      "value": 4,
+      "unit": "em"
+     },
+     "numberWidth": {
+      "value": 0,
+      "unit": "em"
+     },
+     "numberGap": {
+      "value": 0,
+      "unit": "em"
+     }
+    }
+   ],
+   "unnumbered": {
+    "fontFamily": "Shippori Mincho B1",
+    "color": {
+     "hex": "#1d1916",
+     "model": "hex",
+     "paletteId": "main-color"
+    }
+   },
+   "pageNumber": {
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1916",
+     "model": "hex",
+     "paletteId": "main-color"
+    },
+    "width": {
+     "value": 3.5,
+     "unit": "em"
+    }
+   },
+   "leader": {
+    "enabled": true,
+    "char": "…",
+    "gap": {
+     "value": 1,
+     "unit": "em"
+    }
+   },
+   "parts": {
+    "enabled": true,
+    "height": {
+     "value": 34,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "design": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "toc-part",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 6.703,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 82.444,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 11.994,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{number}　{titleText}",
+       "fontFamily": "Shippori Mincho B1",
+       "fontSize": {
+        "value": 10.5,
+        "unit": "pt"
+       },
+       "fontWeight": 700,
+       "italic": false,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1d1916",
+        "model": "hex",
+        "paletteId": "main-color"
+       },
+       "letterSpacing": {
+        "value": 2,
+        "unit": "pt"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "toc-part-page",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 124.001,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 13.406,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 11.994,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "{pageNumber}",
+       "fontFamily": "Shippori Mincho B1",
+       "fontSize": {
+        "value": 10.5,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1d1916",
+        "model": "hex",
+        "paletteId": "main-color"
+       }
+      },
+      {
+       "kind": "text",
+       "id": "toc-part-leader",
+       "placement": {
+        "anchor": {
+         "to": "container",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 32.928,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 0,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 72.965,
+          "unit": "mm"
+         },
+         "height": {
+          "value": 11.994,
+          "unit": "mm"
+         }
+        }
+       },
+       "content": "………………………………………………………………………………",
+       "fontFamily": "Shippori Mincho B1",
+       "fontSize": {
+        "value": 10.5,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": false,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "clip",
+       "color": {
+        "hex": "#1d1916",
+        "model": "hex",
+        "paletteId": "main-color"
+       }
+      }
+     ]
+    }
+   }
+  },
+  "header": {
+   "elements": [
+    {
+     "kind": "text",
+     "id": "head-odd",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "top-right"
+      },
+      "offset": {
+       "x": {
+        "value": -4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 4,
+        "unit": "em"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 105.657,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{partNumber}　{partTitle}",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#6f655a",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "odd",
+     "pages": "body",
+     "writingMode": "vertical-rl",
+     "letterSpacing": {
+      "value": 1.2,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "folio-odd-body",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "bottom-right"
+      },
+      "offset": {
+       "x": {
+        "value": -4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 13.229,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1d1916",
+      "model": "hex",
+      "paletteId": "main-color"
+     },
+     "parity": "odd",
+     "pages": "body",
+     "writingMode": "vertical-rl"
+    },
+    {
+     "kind": "text",
+     "id": "folio-odd-opener",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "bottom-right"
+      },
+      "offset": {
+       "x": {
+        "value": -4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 13.229,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1d1916",
+      "model": "hex",
+      "paletteId": "main-color"
+     },
+     "parity": "odd",
+     "pages": "opener",
+     "writingMode": "vertical-rl"
+    },
+    {
+     "kind": "text",
+     "id": "head-even",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "top-left"
+      },
+      "offset": {
+       "x": {
+        "value": 4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 4,
+        "unit": "em"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 105.657,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "こころ",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "left",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "ellipsis-end",
+     "color": {
+      "hex": "#6f655a",
+      "model": "hex",
+      "paletteId": "muted"
+     },
+     "parity": "even",
+     "pages": "body",
+     "writingMode": "vertical-rl",
+     "letterSpacing": {
+      "value": 1.2,
+      "unit": "pt"
+     }
+    },
+    {
+     "kind": "text",
+     "id": "folio-even-body",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "bottom-left"
+      },
+      "offset": {
+       "x": {
+        "value": 4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 13.229,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1d1916",
+      "model": "hex",
+      "paletteId": "main-color"
+     },
+     "parity": "even",
+     "pages": "body",
+     "writingMode": "vertical-rl"
+    },
+    {
+     "kind": "text",
+     "id": "folio-even-opener",
+     "placement": {
+      "anchor": {
+       "to": "outer",
+       "edge": "bottom-left"
+      },
+      "offset": {
+       "x": {
+        "value": 4.5,
+        "unit": "mm"
+       },
+       "y": {
+        "value": 0,
+        "unit": "mm"
+       }
+      },
+      "size": {
+       "width": "auto",
+       "height": {
+        "value": 13.229,
+        "unit": "mm"
+       }
+      }
+     },
+     "content": "{pageNumber}",
+     "fontFamily": "Shippori Antique B1",
+     "fontSize": {
+      "value": 7.5,
+      "unit": "pt"
+     },
+     "fontWeight": 400,
+     "italic": false,
+     "align": "right",
+     "verticalAlign": "middle",
+     "lineHeight": 1.2,
+     "overflow": "clip",
+     "color": {
+      "hex": "#1d1916",
+      "model": "hex",
+      "paletteId": "main-color"
+     },
+     "parity": "even",
+     "pages": "opener",
+     "writingMode": "vertical-rl"
+    }
+   ]
+  },
+  "footer": {
+   "elements": []
+  },
+  "captionStyle": {
+   "fontFamily": "Shippori Mincho B1",
+   "fontSize": {
+    "value": 8,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#6f655a",
+    "model": "hex",
+    "paletteId": "muted"
+   },
+   "align": "center",
+   "labelBold": false,
+   "labelNumberGap": "",
+   "labelSeparator": "　"
+  },
+  "colorPalette": [
+   {
+    "id": "main-color",
+    "name": "墨",
+    "value": {
+     "hex": "#1d1916",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "shu",
+    "name": "朱",
+    "value": {
+     "hex": "#b8472d",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "paper",
+    "name": "紙",
+    "value": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "muted",
+    "name": "鼠",
+    "value": {
+     "hex": "#6f655a",
+     "model": "hex"
+    }
+   }
+  ],
+  "resourceTypes": [
+   {
+    "id": "scene",
+    "name": "挿絵",
+    "namePlural": "挿絵",
+    "shortLabel": "挿絵",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal",
+    "defaultPlacement": {
+     "position": "auto",
+     "span": "page",
+     "width": 1,
+     "align": "center"
+    }
+   },
+   {
+    "id": "plate",
+    "name": "口絵",
+    "namePlural": "口絵",
+    "shortLabel": "口絵",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal"
+   },
+   {
+    "id": "design",
+    "name": "装幀",
+    "namePlural": "装幀",
+    "shortLabel": "装幀",
+    "captionPrefix": "",
+    "numberingTemplate": "",
+    "resetOn": "never",
+    "counterFormat": "decimal"
+   },
+   {
+    "id": "figure",
+    "name": "図",
+    "namePlural": "図",
+    "shortLabel": "図",
+    "captionPrefix": "図",
+    "numberingTemplate": "{n}",
+    "resetOn": "never",
+    "counterFormat": "japanese-informal"
+   }
+  ],
+  "pdfGeneration": {
+   "outlines": true
+  },
+  "folio": {
+   "paper": {
+    "type": "uncoated",
+    "grammage": 70,
+    "bulk": 1.3,
+    "texture": "wove",
+    "shade": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    }
+   },
+   "binding": {
+    "type": "hardcover",
+    "cover": "pages",
+    "spineImage": "spine"
+   },
+   "surface": {
+    "type": "walnut"
+   },
+   "lighting": {
+    "environment": "daylight"
+   }
+  }
+ },
+ "localized": {
+  "ja": {}
+ },
+ "resources": [
+  {
+   "id": "kokoro-1914-title",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/kokoro-1914-title.jpg",
+   "width": 815,
+   "height": 1305,
+   "caption": "扉　漱石自装・伊上凡骨刻",
+   "altText": "黒地の木版画。雲と樹々の下に横たわる人物が、枠の中の篆書の「心」の字を見上げている。"
+  },
+  {
+   "id": "kokoro-1914-seal",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/kokoro-1914-seal.jpg",
+   "width": 300,
+   "height": 430,
+   "caption": "",
+   "altText": "印影「ars longa, vita brevis」。"
+  },
+  {
+   "id": "kokoro-1914-cover-label",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/kokoro-1914-cover-label.jpg",
+   "width": 910,
+   "height": 680,
+   "caption": "表紙　題簽",
+   "altText": "表紙の題簽。康熙字典の「心」の項を写した文字の枠。"
+  },
+  {
+   "id": "kokoro-1917-colophon-frame",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/kokoro-1917-colophon-frame.jpg",
+   "width": 1180,
+   "height": 2170,
+   "caption": "",
+   "altText": "奥付の木版の枠。大きな葉の模様が中央の空白を囲む。"
+  },
+  {
+   "id": "soseki-sanjo-yusan",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/soseki-sanjo-yusan.jpg",
+   "width": 2169,
+   "height": 3000,
+   "caption": "夏目漱石「山上有山図」",
+   "altText": "漱石の山水画。青い山の手前に柳と赤い屋根の家、川辺の舟。右上に自作の詩。"
+  },
+  {
+   "id": "soseki-hagi-no-kayu",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/soseki-hagi-no-kayu.jpg",
+   "width": 735,
+   "height": 3000,
+   "caption": "夏目漱石「萩の粥図」",
+   "altText": "墨画。自在鉤に吊るした粥の鍋と、萩の枝。"
+  },
+  {
+   "id": "soseki-kokaku-sekimon",
+   "typeId": "plate",
+   "kind": "bitmap",
+   "file": "resources/soseki-kokaku-sekimon.jpg",
+   "width": 715,
+   "height": 3000,
+   "caption": "夏目漱石「孤客入石門図」",
+   "altText": "縦長の山水画。切り立つ岩山と谷の小道を、一人の旅人が石門へ向かう。"
+  },
+  {
+   "id": "scene-kami-2",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-kami-2.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "鎌倉の掛茶屋",
+   "altText": "夏の鎌倉の浜。葦簀の掛茶屋の前を、浴衣の男と背の高い西洋人が歩き、茶屋の床几から書生が見ている。"
+  },
+  {
+   "id": "scene-kami-3",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-kami-3.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "沖に浮かぶ二人",
+   "altText": "真夏の日の下、広く青い海。遠い沖に二人の泳ぎ手が並んで仰向けに浮かんでいる。"
+  },
+  {
+   "id": "scene-kami-5",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-kami-5.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "雑司ヶ谷の銀杏",
+   "altText": "雑司ヶ谷の墓地。空を隠すような大銀杏の下に墓石が並び、和服の男が背を向けて木を見上げている。"
+  },
+  {
+   "id": "scene-kami-9",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-kami-9.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "先生の宅",
+   "altText": "夕方の座敷。洋灯のともる卓の前で和服の男が襖の方を振り向き、半ば開いた襖のきわに妻が膝をついている。"
+  },
+  {
+   "id": "scene-naka-5",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-naka-5.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "門の旗",
+   "altText": "田舎の家の藁葺きの門。門の脇から往来へ斜めに出した日の丸の旗と黒い喪の吹き流しが、風のない空気の中に垂れている。"
+  },
+  {
+   "id": "scene-naka-12",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-naka-12.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "病床の父",
+   "altText": "夏の田舎家の一室。床に就いた老人が枕にもたれて新聞を読み、開け放した障子の外に緑の庭が見える。"
+  },
+  {
+   "id": "scene-naka-16",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-naka-16.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "厚い封書",
+   "altText": "畳の上の厚く重い封書。白い半紙に包まれ、端から四つ折りの原稿用紙がのぞく。かたわらに硯と筆。"
+  },
+  {
+   "id": "scene-shimo-12",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-shimo-12.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "お嬢さんの琴",
+   "altText": "開いた襖の向こうの座敷。日本髪の娘が琴の前に座り、床の間には少しぎこちない活花。手前に書生の机と本。"
+  },
+  {
+   "id": "scene-shimo-28",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-shimo-28.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "房州の岩の上",
+   "altText": "夏の房州の岩浜。浜に小舟が引き上げられた漁村。大きな岩の上に浴衣の青年が二人座り、一人は本を読み、一人は黙って海を見ている。"
+  },
+  {
+   "id": "scene-shimo-48",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-shimo-48.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "開いた襖",
+   "altText": "夜の二間続きの座敷。仕切りの襖が二尺ほど開き、奥の部屋の机の上で洋灯が暗くともっている。人の姿はない。"
+  },
+  {
+   "id": "scene-shimo-56",
+   "typeId": "scene",
+   "kind": "bitmap",
+   "file": "resources/scene-shimo-56.jpg",
+   "width": 1664,
+   "height": 2496,
+   "caption": "御大葬の夜",
+   "altText": "明治天皇の御大葬の夜。暗い書斎で和服の男が机に向かい、そばに書きためた原稿の束。開いた窓の外、東京の屋根の上の夜空に遠い光。"
+  },
+  {
+   "id": "endpaper",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/endpaper.jpg",
+   "width": 1220,
+   "height": 1806,
+   "caption": "見返し",
+   "altText": "見返しの模様。立ち姿の人物と蓮の葉を描いた円紋が並ぶ。"
+  },
+  {
+   "id": "spine",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/spine-ja.jpg",
+   "width": 302,
+   "height": 2632,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.2,
+    "align": "center"
+   },
+   "caption": "",
+   "altText": ""
+  }
+ ],
+ "fonts": [
+  {
+   "name": "Shippori Mincho B1",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/ShipporiMinchoB1-Regular.woff2"
+    },
+    {
+     "weight": 700,
+     "style": "normal",
+     "file": "fonts/ShipporiMinchoB1-Bold.woff2"
+    }
+   ]
+  },
+  {
+   "name": "Shippori Antique B1",
+   "variants": [
+    {
+     "weight": 400,
+     "style": "normal",
+     "file": "fonts/ShipporiAntiqueB1-Regular.woff2"
+    }
+   ]
+  }
+ ]
+}

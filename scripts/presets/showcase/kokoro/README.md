@@ -4,7 +4,8 @@ The Japanese showcase book (issue #438): Natsume Sōseki's *Kokoro* (1914)
 from Aozora Bunko, set vertically and bound on the right, with Sōseki's own
 designs and paintings and a set of scene plates painted to match. The
 source pipeline produces the chapter Markdown, the fonts and the pictures;
-`build.py` (to come) lays them out as the bundle `apps/web/public/presets/kokoro/`.
+`build.py` lays them out as the bundle `apps/web/public/presets/kokoro/` and
+registers it on the home shelf (`apps/web/public/presets/index.json`).
 
 ```sh
 python3 fetch.py             # source/: Aozora zips, NDL scans (IIIF), fonts, manifest.json
@@ -14,7 +15,12 @@ python3 plates.py check      # each scene's anchor phrase is in its section
 python3 plates.py generate   # source/generated/<scene>.png through fal.ai (FAL_KEY; skips existing)
 python3 plates.py process    # work/plates/*.jpg + work/pictures.json
 python3 plates.py sheet      # work/plates-sheet.jpg
+python3 build.py             # the bundle (--out DIR: a draft elsewhere, not registered;
+                             # --keep-fonts: a design change, fonts of the last build)
 ```
+
+`thumbnail.jpg` is the cover as laid out: page 1 rendered with the
+postext-port skill's `render.mjs --jpeg … --pages '#1' --dpi 96`.
 
 `source/` and `work/` are git-ignored. Python 3.10+ with Pillow, NumPy and
 fontTools.
@@ -51,10 +57,10 @@ every change, in Japanese.
 ## Fonts
 
 Shippori Mincho B1 Regular for the text (the Tsukiji No. 5 Mincho lineage,
-with letterpress ink pooling), Bold and ExtraBold for headings, Shippori
+with letterpress ink pooling), Bold for headings and part titles, Shippori
 Antique B1 for running heads and folios; all OFL. fonts.py subsets the
-Regular to the book's characters plus a Japanese reserve, and the display
-faces to the headings, the design's words and the plate captions. Every
+Regular and the Bold to the book's characters plus a Japanese reserve, and
+the antique to the headings, the design's words and the plate captions. Every
 layout feature is kept; `check()` fails the build if a subset loses `vert`,
 `vhea` or `vmtx`, or a vertical form of 、。「」（）ー〜…― or the small kana.
 

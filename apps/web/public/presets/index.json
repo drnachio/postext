@@ -116,6 +116,32 @@
       "shelfOrder": 2
     },
     {
+      "id": "kokoro",
+      "dir": "kokoro",
+      "name": "こころ · Kokoro",
+      "description": "La novela de Natsume Sōseki (1914) en japonés, compuesta en vertical y encuadernada a la derecha como la primera edición de Iwanami, con la cubierta, las guardas y la portada que diseñó Sōseki, tres de sus pinturas y furigana sobre las palabras difíciles · Natsume Sōseki’s 1914 novel in Japanese, set vertically and bound on the right after the Iwanami first edition, with the cover, endpapers and title page Sōseki designed, three of his paintings and furigana over the harder words",
+      "locale": "ja",
+      "locales": [
+        "ja"
+      ],
+      "openLocale": "ja",
+      "thumbnail": "thumbnail.jpg",
+      "license": "Public domain · OFL fonts",
+      "credits": "夏目漱石 · 青空文庫 · 国立国会図書館 · 岩波書店 1914",
+      "tags": [
+        "book",
+        "japanese",
+        "vertical",
+        "right-bound",
+        "ruby",
+        "plates",
+        "parts",
+        "front-matter"
+      ],
+      "binding": "right",
+      "shelfOrder": 3
+    },
+    {
       "id": "openstax-fisica",
       "dir": "openstax-fisica",
       "name": "Física universitaria · Physics (OpenStax)",
