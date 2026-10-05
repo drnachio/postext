@@ -69,6 +69,7 @@ import {
 } from './primitives';
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
+import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import {
@@ -562,7 +563,9 @@ interface PaintFonts {
 /** A caption, note or cell line. A tracked line (a table header set with
  *  `headerLetterSpacing`) was measured with the tracking in its widths, so
  *  it is painted with the matching character spacing (`Tc`, in points at
- *  the page scale), reset afterwards. */
+ *  the page scale), reset afterwards. Ruby readings, warichu rows and the
+ *  marks of the line are painted as on a body line (#429): a reading in
+ *  the `RT` of a `Ruby` whose `RB` is its base, the marks as artifacts. */
 function paintLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -579,6 +582,7 @@ function paintLine(
   if (tracking !== 0) setTrackingPx(ctx, tracking);
   paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
   if (tracking !== 0) setTrackingPx(ctx, 0);
+  if (line.marks) paintLineMarks(ctx, line, color);
 }
 
 function paintLineRuns(
@@ -658,6 +662,15 @@ function paintLineRuns(
         x += seg.width;
         continue;
       }
+      if (composed && seg.warichu) {
+        // A warichu note's part: its two rows, not its text (#195), with
+        // no character spacing.
+        if (tracking !== 0) setTrackingPx(ctx, 0);
+        paintWarichu(ctx, seg.warichu, x, line.baseline, color, fontCache, baseFont, textElem);
+        if (tracking !== 0) setTrackingPx(ctx, tracking);
+        x += seg.width;
+        continue;
+      }
       const fontStr = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
@@ -667,7 +680,10 @@ function paintLineRuns(
       // (small capitals) is one link —, a Markdown link's words to its URL.
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
       const link = refId !== undefined ? refRun.enter(seg, x, textElem, refId, seg.width) : undefined;
-      tagContent(ctx, link ?? uriElem ?? textElem);
+      // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading.
+      const holder = link ?? uriElem ?? textElem;
+      const rubyElem = composed && seg.ruby && holder ? holder.child('Ruby') : undefined;
+      tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
       const baseline = line.baseline + (seg.baselineShift ?? 0);
       const direction = seg.rtl ? 'rtl' : 'ltr';
       if (seg.runs && drawStyledWordPx(ctx, seg.text, x, baseline, font, size, segColor, wordParts(seg, font, segColor, ctx, (bold, italic) => ({ font: fontCache.get(pickFont(bold, italic, fonts)) ?? undefined, color: segColor })), { direction })) {
@@ -687,6 +703,11 @@ function paintLineRuns(
         drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
         ctx.page.pushOperators(...stretch.after);
         if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+        if (seg.ruby) {
+          if (tracking !== 0) setTrackingPx(ctx, 0);
+          paintRuby(ctx, seg.ruby, x, line.baseline, segColor, fontCache, baseFont, rubyElem);
+          if (tracking !== 0) setTrackingPx(ctx, tracking);
+        }
       }
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {

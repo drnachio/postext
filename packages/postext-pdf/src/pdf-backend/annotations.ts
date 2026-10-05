@@ -151,16 +151,21 @@ export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color): void {
   }
 }
 
-/** Paint text runs from `x` on `baseline` (px) in `colorHex`, each in its
- *  run's face (the block's when the cache has none). On a vertical page
- *  they go down the column through the vertical painter, a zhuyin tone
- *  mark standing upright in its cell (`VDTAnnotationRun.upright`). */
+/** A text colour as a hex (a body block's) or as resolved (a resource
+ *  line's, #429). */
+type TextColor = string | Color;
+
+/** Paint text runs from `x` on `baseline` (px) in `textColor`, each in its
+ *  run's face (the block's when the cache has none) and its own colour
+ *  when it has one. On a vertical page they go down the column through the
+ *  vertical painter, a zhuyin tone mark standing upright in its cell
+ *  (`VDTAnnotationRun.upright`). */
 function paintRuns(
   ctx: PageCtx,
   runs: readonly VDTAnnotationRun[],
   x: number,
   baseline: number,
-  colorHex: string,
+  textColor: TextColor,
   fontCache: FontCache,
   fallback: PDFFont,
 ): void {
@@ -168,7 +173,9 @@ function paintRuns(
     const font = fontCache.get(run.fontString) ?? fallback;
     const size = parseFontString(run.fontString)?.sizePx ?? 0;
     if (!(size > 0)) continue;
-    drawTextPx(ctx, run.text, x + run.dx, baseline + run.dy, font, size, colorFromHex(run.color ?? colorHex, ctx.colorSpace), undefined, undefined, run.upright && ctx.vertical ? 'upright' : undefined);
+    const ink = run.color ?? textColor;
+    const color = typeof ink === 'string' ? colorFromHex(ink, ctx.colorSpace) : ink;
+    drawTextPx(ctx, run.text, x + run.dx, baseline + run.dy, font, size, color, undefined, undefined, run.upright && ctx.vertical ? 'upright' : undefined);
   }
 }
 
@@ -181,14 +188,14 @@ export function paintRuby(
   ruby: VDTRuby,
   x: number,
   baseline: number,
-  textHex: string,
+  textColor: TextColor,
   fontCache: FontCache,
   fallback: PDFFont,
   elem: StructElem | undefined,
 ): void {
   if (elem) tagContent(ctx, elem.child('RT'));
   else tagArtifact(ctx, { type: 'Layout' });
-  paintRuns(ctx, ruby.runs, x, baseline, ruby.color ?? textHex, fontCache, fallback);
+  paintRuns(ctx, ruby.runs, x, baseline, ruby.color ?? textColor, fontCache, fallback);
 }
 
 /**
@@ -200,13 +207,13 @@ export function paintWarichu(
   warichu: VDTWarichu,
   x: number,
   baseline: number,
-  textHex: string,
+  textColor: TextColor,
   fontCache: FontCache,
   fallback: PDFFont,
   elem: StructElem | undefined,
 ): void {
   if (elem) tagContent(ctx, elem.child('Warichu').child('WT'));
-  paintRuns(ctx, warichu.runs, x, baseline, warichu.color ?? textHex, fontCache, fallback);
+  paintRuns(ctx, warichu.runs, x, baseline, warichu.color ?? textColor, fontCache, fallback);
 }
 
 /**
