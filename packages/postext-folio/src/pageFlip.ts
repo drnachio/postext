@@ -788,8 +788,16 @@ export function layLeaf(geometry: BufferGeometry, fold: Fold | null, forward: bo
         y += (v - y) * r;
         pz += (hinge + lift + u * Math.sin(phi) + offset * Math.cos(phi) - pz) * r;
       }
-      // Thin paper ripples in the air, more towards its free edge.
-      if (flutter > 0) pz += flutter * W * (u / W) * (u / W) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
+      // Thin paper ripples in the air, more towards its free edge. Never
+      // down into the pages under it: the ripple dies away where the leaf
+      // lies close over them (it stays at least `lift` above them), or a
+      // leaf held low over its stack dipped into the page under it, whose
+      // print then showed through (#447).
+      if (flutter > 0) {
+        const amp = flutter * W * (u / W) * (u / W);
+        const clear = pz - surfaceAt(book, px)[1] - lift;
+        if (amp > 1e-6) pz += amp * smooth(0, 2 * amp, clear) * Math.sin(2 * Math.PI * (time / 520) - (3 * u) / W + (2 * v) / H);
+      }
       pos.setXYZ(iy * (NX + 1) + ix, px, y, pz);
     }
   }

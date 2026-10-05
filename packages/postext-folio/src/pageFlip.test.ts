@@ -258,6 +258,49 @@ describe("the page flipper", () => {
     expect(c.z - a.z).toBeGreaterThan(50);
   });
 
+  it("never ripples a thin leaf held low down into the page under it", async () => {
+    const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
+    const W = 650;
+    const H = 920;
+    const book = profiles("hardcover", W, 4, 60, 60);
+    // The page's height under x (the profile runs by arc length).
+    const under = (x: number) => {
+      let s = x;
+      for (let i = 0; i < 4; i++) s += x - along(book.right, s)[0];
+      return along(book.right, s)[1];
+    };
+    const lift = 0.5;
+    let lowest = Infinity;
+    let swayed = 0;
+    for (const reach of [0.97, 0.9, 0.8]) {
+      const G = { u: 0.92 * W, v: -0.4 * H };
+      const P = { u: reach * G.u, v: G.v };
+      const q = progressFrom(G, P);
+      const fold = foldOf(G, P, W, H, 0.4);
+      const geometry = new PlaneGeometry(W, H, 96, 120);
+      const rest = new PlaneGeometry(W, H, 96, 120);
+      layLeaf(rest, fold, true, W, H, lift, book, 0, q);
+      // Bible paper: a floppy leaf, rippling (as `draw` sets it for roll 0.4).
+      const flutter = 0.012 * (1 / 0.4 - 0.75) * Math.sin(Math.PI * q);
+      for (let time = 0; time < 1040; time += 65) {
+        layLeaf(geometry, fold, true, W, H, lift, book, 0, q, flutter, time);
+        const pos = geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const x = pos.getX(i);
+          if (x < 0.1 * W) continue;
+          lowest = Math.min(lowest, pos.getZ(i) - under(x));
+          swayed = Math.max(swayed, Math.abs(pos.getZ(i) - rest.attributes.position.getZ(i)));
+        }
+      }
+      geometry.dispose();
+      rest.dispose();
+    }
+    // It stays over the page by its lift (it used to dip into it, and the
+    // page's print showed through it), and its curl still sways.
+    expect(lowest).toBeGreaterThan(lift - 0.05);
+    expect(swayed).toBeGreaterThan(2);
+  });
+
   it("keeps the paper curled up over the gutter free of creases", async () => {
     const { foldOf, layLeaf, progressFrom } = await import("./pageFlip");
     // The middle of a thick book: a deep gutter between two level pages.
