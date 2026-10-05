@@ -1288,7 +1288,7 @@ Recipe Nº 116 in the Cookbook, [Photos that grow to fill a short column](/en/co
 
 ### Videos
 
-A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video file of your own (MP4, WebM). It is placed, captioned, floated and cited like a picture, and numbered in a sequence of its own: the built-in `video` type prints *Video 1.1*, *Video 1.2*… beside *Figure 1.1* and *Table 1.1* (see [Configuration › Resource types](/en/docs/configuration#resource-types)). Each output shows it as it can:
+A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video of your own: a file kept in the book (MP4, WebM) or one at a web address, a file on a server or an **HLS stream** (an `.m3u8` playlist). It is placed, captioned, floated and cited like a picture, and numbered in a sequence of its own: the built-in `video` type prints *Video 1.1*, *Video 1.2*… beside *Figure 1.1* and *Table 1.1* (see [Configuration › Resource types](/en/docs/configuration#resource-types)). Each output shows it as it can:
 
 <table>
   <thead>
@@ -1299,16 +1299,20 @@ A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video f
   </thead>
   <tbody>
     <tr>
-      <td>Canvas, PDF, Folio</td>
+      <td>Canvas, PDF</td>
       <td>The <strong>poster</strong>, a frame of the video, with a play mark and a QR code that opens the video (<a href="/en/docs/configuration#video-style">Configuration › Video style</a>). In the PDF the poster is also a link to the video.</td>
     </tr>
     <tr>
+      <td>Folio</td>
+      <td>The poster, as printed. A click on it plays the video <strong>on the page itself</strong>, and it goes on playing while the leaf turns (see <a href="#videos-on-folios-pages">Videos on Folio's pages</a> below). YouTube and Vimeo videos stay posters.</td>
+    </tr>
+    <tr>
       <td>HTML viewer</td>
-      <td>The video's <strong>player</strong>: YouTube's or Vimeo's, or the browser's HTML5 player for a file. With <code>videoStyle.html: 'poster'</code> it shows the printed poster instead.</td>
+      <td>The video's <strong>player</strong>: YouTube's or Vimeo's, or the browser's HTML5 player for a file or an address. An HLS stream plays natively in Safari and in recent Chrome; elsewhere the host attaches a player such as hls.js, as the Sandbox does. With <code>videoStyle.html: 'poster'</code> it shows the printed poster instead.</td>
     </tr>
     <tr>
       <td>EPUB</td>
-      <td>A file plays in the reading system's own player, packed in the book or read from its production address. A YouTube or Vimeo video is its poster, linked to the video: an EPUB may not embed a web page's player.</td>
+      <td>A file plays in the reading system's own player, packed in the book or read from its production address. A YouTube or Vimeo video is its poster, linked to the video: an EPUB may not embed a web page's player. An HLS stream is its linked poster too: an HLS playlist is no media type an EPUB may play.</td>
     </tr>
   </tbody>
 </table>
@@ -1342,17 +1346,17 @@ The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Vi
     <tr>
       <td><code>source</code></td>
       <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>Where the video plays from.</td>
+      <td>Where the video plays from: a YouTube or Vimeo page, or a video of your own (<code>'file'</code>), uploaded or at an address.</td>
     </tr>
     <tr>
       <td><code>url</code></td>
       <td><code>string</code></td>
-      <td>YouTube or Vimeo: the video's address, in any form (a watch page, <code>youtu.be</code>, Shorts, an embed link, <code>youtube-nocookie.com</code>; a Vimeo page, channel page or unlisted link with its hash). A file: its <strong>production address</strong>, where the published book will find it.</td>
+      <td>YouTube or Vimeo: the video's address, in any form (a watch page, <code>youtu.be</code>, Shorts, an embed link, <code>youtube-nocookie.com</code>; a Vimeo page, channel page or unlisted link with its hash). A file: its <strong>production address</strong>, where the published book will find it. A video of your own with no file of its own plays from this address: an MP4 or WebM on a server, or an HLS stream (<code>…/master.m3u8</code>).</td>
     </tr>
     <tr>
       <td><code>fileId</code>, <code>format</code></td>
       <td><code>string</code></td>
-      <td>A file: the uploaded video, stored out of band like a bitmap, and its format (<code>'mp4'</code>, the default, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+      <td>A file: the uploaded video, stored out of band like a bitmap, and its format: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>, or <code>'hls'</code> for an HLS stream. Without a format, the address's extension tells it (<code>.m3u8</code> is <code>'hls'</code>), else <code>'mp4'</code>.</td>
     </tr>
     <tr>
       <td><code>poster</code></td>
@@ -1384,13 +1388,34 @@ The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Vi
 
 **The poster.** It is set at the measure of its slot (or the `placement.width` fraction of it), in its own ratio, whatever its pixel size: a screen-sized frame is enlarged rather than printed small. Like a bitmap it can carry a [safe area](#safe-area) and follow `placement.align`. A video without a poster prints a dark box in the video's ratio (16:9 when nothing says) with its overlays, and raises a `videoWithoutPoster` content warning. In the Sandbox the poster of a YouTube or Vimeo video is fetched from the platform when its address is entered, and a file's is a frame you pick in the video.
 
-**The address.** The QR code and the PDF link open the video's page, `https://youtu.be/<id>` or `https://vimeo.com/<id>`, from `start`. A file has no page: they open its production address. Without one, print gets no QR code and no link (`videoWithoutUrl`), and an HTML or EPUB output that does not carry the file shows the poster. A YouTube or Vimeo address that names no video of that platform raises `videoUrlInvalid`; the poster is shown in place of a player.
+**The address.** The QR code and the PDF link open the video's page, `https://youtu.be/<id>` or `https://vimeo.com/<id>`, from `start`. A file has no page: they open its production address, which is also where a video with no file of its own plays from (an MP4 on a server, an HLS stream). Without one, print gets no QR code and no link (`videoWithoutUrl`), and an HTML or EPUB output that does not carry the file shows the poster. A YouTube or Vimeo address that names no video of that platform raises `videoUrlInvalid`; the poster is shown in place of a player.
 
-**The players.** The player options (controls, download button, full screen, speed menu, picture in picture, casting, autoplay, a muted start, loop, preload, privacy-enhanced embeds) are set for the whole book in `videoStyle.player` and for one video in `video.player`; each player honours what it can (see [Configuration › Video style](/en/docs/configuration#video-style)). The HTML backend takes the playable URL of a file through the `resourceVideoUrl(fileId)` option, as it takes pictures through `resourceImageUrl`, and falls back to the production address. Its `videos: { files, streams }` option chooses between player and poster per source, over `videoStyle.html`; the EPUB writer uses it. In a right-to-left book the player and the poster's overlays are turned back like a picture, so the QR code reads.
+**The players.** The player options (controls, download button, full screen, speed menu, picture in picture, casting, autoplay, a muted start, loop, preload, privacy-enhanced embeds) are set for the whole book in `videoStyle.player` and for one video in `video.player`; each player honours what it can (see [Configuration › Video style](/en/docs/configuration#video-style)). The HTML backend takes the playable URL of a file through the `resourceVideoUrl(fileId)` option, as it takes pictures through `resourceImageUrl`, and falls back to the production address. Its `videos: { files, streams, hls }` option chooses between player and poster per source, over `videoStyle.html` (`hls`, a video played from an HLS address, follows `files` unless set); the EPUB writer uses it. A `<video>` that plays an HLS address carries `data-pt-hls`, so a host can give it a player in browsers without native HLS (Safari and recent Chrome play it as it is). In a right-to-left book the player and the poster's overlays are turned back like a picture, so the QR code reads.
 
-**In the VDT.** The resource block of a video has `kind: 'video'`, its poster as `fileId` / `format` (drawn like a bitmap), and `video` (`VDTResourceVideo`): the `link` a reader is sent to, the YouTube or Vimeo `embedUrl` with the player options applied, a file's `fileId` and `mimeType`, the `start` / `end` range, the resolved `player`, `linkPoster`, `html`, and the overlays `playMark` and `qr` (the QR modules as rows of `'0'` / `'1'`), with rects relative to the body's top-left corner. A host drawing videos itself can use the helpers `postext` exports: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` and `qrModuleRuns`.
+**In the VDT.** The resource block of a video has `kind: 'video'`, its poster as `fileId` / `format` (drawn like a bitmap), and `video` (`VDTResourceVideo`): the `link` a reader is sent to, the YouTube or Vimeo `embedUrl` with the player options applied, a file's `fileId`, the `mimeType` of a video of your own (of its file or of its address alone, `application/vnd.apple.mpegurl` for HLS), the `start` / `end` range, the resolved `player`, `linkPoster`, `html`, and the overlays `playMark` and `qr` (the QR modules as rows of `'0'` / `'1'`), with rects relative to the body's top-left corner. A host drawing videos itself can use the helpers `postext` exports: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` and `qrModuleRuns`.
 
-**In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files.
+**In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files. A video played from an address alone carries no file: its entry has only the poster. In a bilingual bundle a language can give a video its own `poster` and `video` (another cut, at its own address) in `localized[…].resources`.
+
+#### Videos on Folio's pages
+
+In the [3D book](/en/docs/configuration#a-3d-book-postext-folio) a video of your own plays on the page it is printed on. With the pointer turning pages (`interaction: 'hand'`), a click on the poster starts it there: the page's shader draws the video's frames over the poster, so the picture bends and curls with the paper while the leaf is turned, and it goes on playing during the turn. A click on a playing video pauses it, a click on a paused one resumes it, and Space or Enter does the same for the first video on the open spread. Starting another video stops the one playing (it goes back to its poster), and a video stops when the book comes to rest on a spread that no longer shows it, or at its `end`. The pointer turns into a hand over a video it can play; a drag that starts on one still turns the page.
+
+- **What plays.** A file (the host turns its `fileId` into a URL with the `videoUrl` option, an object URL in the Sandbox) or, without one, its address: MP4, WebM or an HLS stream. Safari and recent Chrome play HLS themselves; other browsers get [hls.js](https://github.com/video-dev/hls.js), loaded on the first play (an optional peer dependency of `postext-folio`), capped at the variant nearest the picture's size on screen. YouTube and Vimeo play in iframes, which WebGL cannot draw: a click on their poster turns the page as anywhere else.
+- **Cross-origin reads.** WebGL draws a video only when its server allows the read (CORS, `Access-Control-Allow-Origin`). A video that cannot be read stays a poster, and `onVideo` hears `error`.
+- **Sound.** The click lets the video play with its sound; a browser that still refuses gets it muted. `video.player.muted` starts it muted, `loop` plays it again, and `start` / `end` give the part that plays.
+- **On every page.** The picture is drawn where the layout puts it: turned with a rotated resource, upright on a vertical page, and unmirrored in a right-to-left book, like the poster. A poster cropped within its [safe area](#safe-area) crops the video the same way.
+- **Without WebGL2**, or with reduced motion, the video plays in an HTML `<video>` laid over the page.
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  // An uploaded video's playable URL (an object URL over its bytes).
+  videoUrl: (fileId) => urls.get(fileId),
+  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
+});
+book.stopVideo();
+```
+
+`videos: false` turns it off. `toggleVideoAt({ page, x, y })` does what a click there does, and `pageVideoSpots(page, doc)` lists where each video lies on a page, for a host that draws its own controls.
 
 Two Cookbook recipes set videos: Nº 131, [A film club programme with QR codes on the posters](/en/cookbook/film-club-video-qr), prints each film as a title card with a play mark and a QR code, and Nº 132, [A lab sheet whose clips play on screen and in the EPUB](/en/cookbook/pendulum-lab-video-players), sets the player options for the HTML edition and packs its own clips in a fixed-layout EPUB.
 

@@ -1290,7 +1290,7 @@ VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示�
 
 ### 视频
 
-**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频文件（MP4、WebM）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
+**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频：保存在书中的文件（MP4、WebM），或者位于某个网址的视频，即服务器上的文件或**HLS流**（`.m3u8`播放列表）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
 
 <table>
   <thead>
@@ -1301,16 +1301,20 @@ VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示�
   </thead>
   <tbody>
     <tr>
-      <td>Canvas、PDF、Folio</td>
+      <td>Canvas、PDF</td>
       <td><strong>封面</strong>，即视频中的一帧，上面有播放标记和一个打开视频的二维码（<a href="/zh/docs/configuration#视频样式">配置 › 视频样式</a>）。在PDF中，封面同时是指向视频的链接。</td>
     </tr>
     <tr>
+      <td>Folio</td>
+      <td>封面，与印刷版相同。点击封面，视频就<strong>在页面上</strong>播放，翻动这一叶时也不停（见下文<a href="#folio视图中的视频">Folio视图中的视频</a>）。YouTube和Vimeo视频仍只显示封面。</td>
+    </tr>
+    <tr>
       <td>HTML查看器</td>
-      <td>视频的<strong>播放器</strong>：YouTube或Vimeo的播放器，文件则用浏览器的HTML5播放器。设置<code>videoStyle.html: 'poster'</code>时改为显示印刷封面。</td>
+      <td>视频的<strong>播放器</strong>：YouTube或Vimeo的播放器，文件或网址则用浏览器的HTML5播放器。HLS流在Safari和较新的Chrome中可以直接播放；在其他浏览器中，由宿主接上hls.js之类的播放器，沙盒就是这样做的。设置<code>videoStyle.html: 'poster'</code>时改为显示印刷封面。</td>
     </tr>
     <tr>
       <td>EPUB</td>
-      <td>文件在阅读系统自己的播放器中播放，文件打包在书中，或从正式发布地址读取。YouTube或Vimeo视频显示为封面，链接到视频：EPUB不能嵌入网页的播放器。</td>
+      <td>文件在阅读系统自己的播放器中播放，文件打包在书中，或从正式发布地址读取。YouTube或Vimeo视频显示为封面，链接到视频：EPUB不能嵌入网页的播放器。HLS流同样显示为带链接的封面：HLS播放列表不属于EPUB可以播放的媒体类型。</td>
     </tr>
   </tbody>
 </table>
@@ -1344,17 +1348,17 @@ const talk: Resource = {
     <tr>
       <td><code>source</code></td>
       <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>视频从哪里播放。</td>
+      <td>视频从哪里播放：YouTube或Vimeo的页面，或者你自己的视频（<code>'file'</code>），上传的文件或某个网址均可。</td>
     </tr>
     <tr>
       <td><code>url</code></td>
       <td><code>string</code></td>
-      <td>YouTube或Vimeo：视频的地址，任何形式均可（观看页、<code>youtu.be</code>、Shorts、嵌入链接、<code>youtube-nocookie.com</code>；Vimeo的视频页、频道页，或带哈希的不公开链接）。文件：它的<strong>正式发布地址</strong>，即出版后的书找到它的位置。</td>
+      <td>YouTube或Vimeo：视频的地址，任何形式均可（观看页、<code>youtu.be</code>、Shorts、嵌入链接、<code>youtube-nocookie.com</code>；Vimeo的视频页、频道页，或带哈希的不公开链接）。文件：它的<strong>正式发布地址</strong>，即出版后的书找到它的位置。自己的视频如果没有上传文件，就从这个地址播放：服务器上的MP4或WebM，或者HLS流（<code>…/master.m3u8</code>）。</td>
     </tr>
     <tr>
       <td><code>fileId</code>、<code>format</code></td>
       <td><code>string</code></td>
-      <td>文件：上传的视频，像位图一样在带外存储，以及它的格式（<code>'mp4'</code>为默认值，另有<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>）。</td>
+      <td>文件：上传的视频，像位图一样在带外存储，以及它的格式：<code>'mp4'</code>、<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>，HLS流则为<code>'hls'</code>。不写格式时由地址的扩展名判断（<code>.m3u8</code>即<code>'hls'</code>），否则为<code>'mp4'</code>。</td>
     </tr>
     <tr>
       <td><code>poster</code></td>
@@ -1386,13 +1390,34 @@ const talk: Resource = {
 
 **封面。**封面按所在空位的行长（或其`placement.width`比例）排版，保持自身的宽高比，与像素尺寸无关：屏幕大小的帧会被放大，而不是印得很小。和位图一样，它可以带[安全区](#安全区)，也遵循`placement.align`。没有封面的视频印出一个按视频宽高比（没有说明时为16:9）的深色方框，上面照样有叠加元素，并发出`videoWithoutPoster`内容警告。在沙盒中，填入YouTube或Vimeo视频的地址时会从平台获取封面；文件的封面则是你在视频中选取的一帧。
 
-**地址。**二维码和PDF链接打开视频的页面，即`https://youtu.be/<id>`或`https://vimeo.com/<id>`，从`start`开始。文件没有页面，所以打开它的正式发布地址。没有这个地址时，印刷版既没有二维码也没有链接（`videoWithoutUrl`），不携带文件的HTML或EPUB输出则显示封面。YouTube或Vimeo地址不指向该平台的任何视频时，发出`videoUrlInvalid`，并以封面代替播放器。
+**地址。**二维码和PDF链接打开视频的页面，即`https://youtu.be/<id>`或`https://vimeo.com/<id>`，从`start`开始。文件没有页面，所以打开它的正式发布地址；没有自带文件的视频（服务器上的MP4、HLS流）也从这个地址播放。没有这个地址时，印刷版既没有二维码也没有链接（`videoWithoutUrl`），不携带文件的HTML或EPUB输出则显示封面。YouTube或Vimeo地址不指向该平台的任何视频时，发出`videoUrlInvalid`，并以封面代替播放器。
 
-**播放器。**播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`；EPUB写入器就使用这个选项。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
+**播放器。**播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams, hls }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`（`hls`指从HLS地址播放的视频，不设置时随`files`）；EPUB写入器就使用这个选项。播放HLS地址的`<video>`带有`data-pt-hls`，宿主可以据此在不能原生播放HLS的浏览器中为它接上播放器（Safari和较新的Chrome直接就能播放）。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
 
-**在VDT中。**视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`和`mimeType`、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
+**在VDT中。**视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`、自己的视频的`mimeType`（取自它的文件，或仅取自它的地址；HLS为`application/vnd.apple.mpegurl`）、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`videoFormatOfUrl`、`resourceVideoFormat`、`isHlsMimeType`、`HLS_MIME_TYPE`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
 
-**在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。
+**在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。只从网址播放的视频不携带文件，它的条目中只有封面。在双语文件包中，一种语言可以在`localized[…].resources`中给视频指定自己的`poster`和`video`（另一个剪辑版本，放在它自己的地址）。
+
+#### Folio视图中的视频
+
+在[3D书本](/zh/docs/configuration#3d书本postext-folio)中，你自己的视频就在印着它的那一页上播放。指针用于翻页时（`interaction: 'hand'`），点击封面，视频就在那里开始播放：页面的着色器把视频画面画在封面之上，所以翻动这一叶时，画面随纸张一起弯曲卷起，翻页过程中也照常播放。点击正在播放的视频会暂停，再点击则继续；空格键或回车键对打开的跨页上的第一个视频起同样的作用。开始播放另一个视频时，正在播放的那个会停止，回到封面；书停在不再显示某个视频的跨页上，或播到它的`end`时，这个视频也会停止。指针移到可以播放的视频上时变成手形；从视频上开始的拖动仍然翻页。
+
+- **能播放什么。** 文件（宿主用`videoUrl`选项把它的`fileId`换成URL，沙盒中是一个对象URL），没有文件时则用它的地址：MP4、WebM或HLS流。Safari和较新的Chrome能自己播放HLS；其他浏览器在第一次播放时加载[hls.js](https://github.com/video-dev/hls.js)（`postext-folio`的可选对等依赖），清晰度以最接近画面在屏幕上尺寸的那一档为上限。YouTube和Vimeo在iframe中播放，WebGL无法绘制iframe，所以点击它们的封面和点击页面其他地方一样会翻页。
+- **跨源读取。** 只有视频所在的服务器允许读取时（CORS，`Access-Control-Allow-Origin`），WebGL才能绘制它。无法读取的视频仍显示为封面，`onVideo`会收到`error`。
+- **声音。** 点击之后视频带声音播放；仍然拒绝的浏览器则让它静音播放。`video.player.muted`让它静音开始，`loop`让它循环播放，`start` / `end`给出播放的片段。
+- **在每一种页面上。** 画面画在版面安排的位置：资源转向时它也转向，在竖排页面上保持正立，在从右到左的书中不作镜像，都和封面一样。封面按[安全区](#安全区)裁切时，视频也以同样的方式裁切。
+- **没有WebGL2**，或要求减少动画时，视频在叠放于页面之上的HTML `<video>`中播放。
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  // 上传视频可播放的URL（基于其字节的对象URL）。
+  videoUrl: (fileId) => urls.get(fileId),
+  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
+});
+book.stopVideo();
+```
+
+`videos: false`关闭这项功能。`toggleVideoAt({ page, x, y })`的作用与在该处点击相同；`pageVideoSpots(page, doc)`列出一页上每个视频的位置，供自己绘制控件的宿主使用。
 
 排版食谱中有两篇用到视频：第131号[封面印有二维码的电影俱乐部节目单](/zh/cookbook/film-club-video-qr)把每部影片印成带播放标记和二维码的片名卡；第132号[视频在屏幕和EPUB里都能播放的实验报告单](/zh/cookbook/pendulum-lab-video-players)为HTML版设定播放器选项，并把自己的视频片段打包进固定版式EPUB。
 

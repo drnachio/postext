@@ -1287,7 +1287,7 @@ La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna]
 
 ### Vídeos
 
-Un recurs de **vídeo** (`kind: 'video'`) és un vídeo de YouTube o de Vimeo, o un fitxer de vídeo propi (MP4, WebM). Es col·loca, porta peu, flota i es cita com una imatge, i es numera en una seqüència pròpia: el tipus integrat `video` imprimeix *Vídeo 1.1*, *Vídeo 1.2*… al costat de *Figura 1.1* i *Taula 1.1* (vegeu [Configuració › Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Cada sortida el mostra com pot:
+Un recurs de **vídeo** (`kind: 'video'`) és un vídeo de YouTube o de Vimeo, o un vídeo propi: un fitxer desat dins del llibre (MP4, WebM) o un vídeo en una adreça web, sigui un fitxer en un servidor o un **flux HLS** (una llista de reproducció `.m3u8`). Es col·loca, porta peu, flota i es cita com una imatge, i es numera en una seqüència pròpia: el tipus integrat `video` imprimeix *Vídeo 1.1*, *Vídeo 1.2*… al costat de *Figura 1.1* i *Taula 1.1* (vegeu [Configuració › Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Cada sortida el mostra com pot:
 
 <table>
   <thead>
@@ -1298,16 +1298,20 @@ Un recurs de **vídeo** (`kind: 'video'`) és un vídeo de YouTube o de Vimeo, o
   </thead>
   <tbody>
     <tr>
-      <td>Canvas, PDF, Folio</td>
+      <td>Canvas, PDF</td>
       <td>La <strong>portada</strong>, un fotograma del vídeo, amb una marca de reproducció i un codi QR que obre el vídeo (<a href="/ca/docs/configuration#estil-de-vídeo">Configuració › Estil de vídeo</a>). Al PDF la portada també és un enllaç al vídeo.</td>
     </tr>
     <tr>
+      <td>Folio</td>
+      <td>La portada, tal com s'imprimeix. Un clic a sobre reprodueix el vídeo <strong>a la mateixa pàgina</strong>, i el vídeo continua mentre el full passa (vegeu <a href="#vídeos-a-les-pàgines-de-folio">Vídeos a les pàgines de Folio</a>, més avall). Els vídeos de YouTube i de Vimeo es queden en portada.</td>
+    </tr>
+    <tr>
       <td>Visor HTML</td>
-      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador per a un fitxer. Amb <code>videoStyle.html: 'poster'</code> mostra en el seu lloc la portada impresa.</td>
+      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador per a un fitxer o una adreça. Safari i les versions recents de Chrome reprodueixen un flux HLS pel seu compte; en els altres navegadors l'amfitrió hi posa un reproductor com hls.js, com fa el Sandbox. Amb <code>videoStyle.html: 'poster'</code> mostra en el seu lloc la portada impresa.</td>
     </tr>
     <tr>
       <td>EPUB</td>
-      <td>Un fitxer es reprodueix al reproductor del mateix lector, empaquetat dins del llibre o llegit des de la seva adreça de producció. Un vídeo de YouTube o de Vimeo és la seva portada, enllaçada amb el vídeo: un EPUB no pot inserir el reproductor d'una pàgina web.</td>
+      <td>Un fitxer es reprodueix al reproductor del mateix lector, empaquetat dins del llibre o llegit des de la seva adreça de producció. Un vídeo de YouTube o de Vimeo és la seva portada, enllaçada amb el vídeo: un EPUB no pot inserir el reproductor d'una pàgina web. Un flux HLS també és la seva portada enllaçada: una llista HLS no és cap tipus de mitjà que un EPUB pugui reproduir.</td>
     </tr>
   </tbody>
 </table>
@@ -1341,17 +1345,17 @@ El text cita un vídeo com cita una figura: `:ref{id="keeper-talk"}` imprimeix *
     <tr>
       <td><code>source</code></td>
       <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>D'on es reprodueix el vídeo.</td>
+      <td>D'on es reprodueix el vídeo: una pàgina de YouTube o de Vimeo, o un vídeo propi (<code>'file'</code>), pujat o en una adreça.</td>
     </tr>
     <tr>
       <td><code>url</code></td>
       <td><code>string</code></td>
-      <td>YouTube o Vimeo: l'adreça del vídeo, en qualsevol forma (una pàgina de visualització, <code>youtu.be</code>, Shorts, un enllaç d'inserció, <code>youtube-nocookie.com</code>; una pàgina de Vimeo, una pàgina de canal o un enllaç ocult amb el seu hash). Un fitxer: la seva <strong>adreça de producció</strong>, on el trobarà el llibre publicat.</td>
+      <td>YouTube o Vimeo: l'adreça del vídeo, en qualsevol forma (una pàgina de visualització, <code>youtu.be</code>, Shorts, un enllaç d'inserció, <code>youtube-nocookie.com</code>; una pàgina de Vimeo, una pàgina de canal o un enllaç ocult amb el seu hash). Un fitxer: la seva <strong>adreça de producció</strong>, on el trobarà el llibre publicat. Un vídeo propi sense fitxer es reprodueix des d'aquesta adreça: un MP4 o un WebM en un servidor, o un flux HLS (<code>…/master.m3u8</code>).</td>
     </tr>
     <tr>
       <td><code>fileId</code>, <code>format</code></td>
       <td><code>string</code></td>
-      <td>Un fitxer: el vídeo pujat, desat fora de banda com un bitmap, i el seu format (<code>'mp4'</code>, el valor per defecte, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+      <td>Un fitxer: el vídeo pujat, desat fora de banda com un bitmap, i el seu format: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code> o <code>'hls'</code> per a un flux HLS. Sense format, el dedueix l'extensió de l'adreça (<code>.m3u8</code> és <code>'hls'</code>), i si no, <code>'mp4'</code>.</td>
     </tr>
     <tr>
       <td><code>poster</code></td>
@@ -1383,13 +1387,34 @@ El text cita un vídeo com cita una figura: `:ref{id="keeper-talk"}` imprimeix *
 
 **La portada.** Es compon a la mesura del seu espai (o a la fracció `placement.width` d'aquest espai), amb la seva proporció i sigui quina sigui la seva mida en píxels: un fotograma de la mida d'una pantalla s'amplia en lloc d'imprimir-se petit. Com un bitmap, pot portar una [zona segura](#zona-segura) i seguir `placement.align`. Un vídeo sense portada imprimeix un requadre fosc amb la proporció del vídeo (16:9 si no se'n sap res) i les marques a sobre, i genera l'avís de contingut `videoWithoutPoster`. Al Sandbox, la portada d'un vídeo de YouTube o de Vimeo es baixa de la plataforma en introduir-ne l'adreça, i la d'un fitxer és un fotograma que tries dins del vídeo.
 
-**L'adreça.** El codi QR i l'enllaç del PDF obren la pàgina del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, des de `start`. Un fitxer no té pàgina: obren la seva adreça de producció. Sense adreça, la versió impresa no porta codi QR ni enllaç (`videoWithoutUrl`), i una sortida HTML o EPUB que no porti el fitxer mostra la portada. Una adreça de YouTube o de Vimeo que no anomena cap vídeo d'aquesta plataforma genera `videoUrlInvalid`, i es mostra la portada en lloc d'un reproductor.
+**L'adreça.** El codi QR i l'enllaç del PDF obren la pàgina del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, des de `start`. Un fitxer no té pàgina: obren la seva adreça de producció, que és també d'on es reprodueix un vídeo sense fitxer propi (un MP4 en un servidor, un flux HLS). Sense adreça, la versió impresa no porta codi QR ni enllaç (`videoWithoutUrl`), i una sortida HTML o EPUB que no porti el fitxer mostra la portada. Una adreça de YouTube o de Vimeo que no anomena cap vídeo d'aquesta plataforma genera `videoUrlInvalid`, i es mostra la portada en lloc d'un reproductor.
 
-**Els reproductors.** Les opcions de reproductor (controls, botó de baixada, pantalla completa, menú de velocitat, imatge en imatge, enviament a una altra pantalla, reproducció automàtica, començar sense so, repetició, precàrrega, insercions amb més privadesa) es fixen per a tot el llibre a `videoStyle.player` i per a un sol vídeo a `video.player`; cada reproductor respecta les que pot (vegeu [Configuració › Estil de vídeo](/ca/docs/configuration#estil-de-vídeo)). El backend HTML rep la URL reproduïble d'un fitxer per l'opció `resourceVideoUrl(fileId)`, com rep les imatges per `resourceImageUrl`, i si no n'hi ha fa servir l'adreça de producció. La seva opció `videos: { files, streams }` tria entre reproductor i portada per a cada origen, per sobre de `videoStyle.html`; l'escriptor EPUB la fa servir. En un llibre de dreta a esquerra el reproductor i les marques de la portada es tornen a girar com una imatge, perquè el codi QR es pugui llegir.
+**Els reproductors.** Les opcions de reproductor (controls, botó de baixada, pantalla completa, menú de velocitat, imatge en imatge, enviament a una altra pantalla, reproducció automàtica, començar sense so, repetició, precàrrega, insercions amb més privadesa) es fixen per a tot el llibre a `videoStyle.player` i per a un sol vídeo a `video.player`; cada reproductor respecta les que pot (vegeu [Configuració › Estil de vídeo](/ca/docs/configuration#estil-de-vídeo)). El backend HTML rep la URL reproduïble d'un fitxer per l'opció `resourceVideoUrl(fileId)`, com rep les imatges per `resourceImageUrl`, i si no n'hi ha fa servir l'adreça de producció. La seva opció `videos: { files, streams, hls }` tria entre reproductor i portada per a cada origen, per sobre de `videoStyle.html` (`hls`, un vídeo que es reprodueix des d'una adreça HLS, segueix `files` si no s'indica); l'escriptor EPUB la fa servir. Un `<video>` que reprodueix una adreça HLS porta `data-pt-hls`, perquè l'amfitrió li pugui donar un reproductor en els navegadors sense HLS propi (Safari i les versions recents de Chrome el reprodueixen tal com és). En un llibre de dreta a esquerra el reproductor i les marques de la portada es tornen a girar com una imatge, perquè el codi QR es pugui llegir.
 
-**Al VDT.** El bloc de recurs d'un vídeo té `kind: 'video'`, la portada com a `fileId` / `format` (es dibuixa com un bitmap) i `video` (`VDTResourceVideo`): l'enllaç `link` al qual s'envia el lector, l'`embedUrl` de YouTube o de Vimeo amb les opcions de reproductor aplicades, el `fileId` i el `mimeType` d'un fitxer, l'interval `start` / `end`, el `player` resolt, `linkPoster`, `html`, i les marques `playMark` i `qr` (els mòduls del QR com a files de `'0'` / `'1'`), amb rectangles relatius a l'angle superior esquerre del cos. Un amfitrió que dibuixi els vídeos pel seu compte té les funcions que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` i `qrModuleRuns`.
+**Al VDT.** El bloc de recurs d'un vídeo té `kind: 'video'`, la portada com a `fileId` / `format` (es dibuixa com un bitmap) i `video` (`VDTResourceVideo`): l'enllaç `link` al qual s'envia el lector, l'`embedUrl` de YouTube o de Vimeo amb les opcions de reproductor aplicades, el `fileId` d'un fitxer, el `mimeType` d'un vídeo propi (del seu fitxer o només de la seva adreça, `application/vnd.apple.mpegurl` per a HLS), l'interval `start` / `end`, el `player` resolt, `linkPoster`, `html`, i les marques `playMark` i `qr` (els mòduls del QR com a files de `'0'` / `'1'`), amb rectangles relatius a l'angle superior esquerre del cos. Un amfitrió que dibuixi els vídeos pel seu compte té les funcions que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` i `qrModuleRuns`.
 
-**En un paquet.** Un `.postext` porta el fitxer (`resources/<id>.mp4`) i la portada (`resources/<id>.poster.jpg`): l'entrada del manifest els anomena a `file` i `poster`, dona la mida de la portada a `width` / `height` i desa la resta a `video` sense identificadors de fitxer. `bundleVideoUrl(bundle)` és el resolutor `resourceVideoUrl` sobre els fitxers d'un paquet.
+**En un paquet.** Un `.postext` porta el fitxer (`resources/<id>.mp4`) i la portada (`resources/<id>.poster.jpg`): l'entrada del manifest els anomena a `file` i `poster`, dona la mida de la portada a `width` / `height` i desa la resta a `video` sense identificadors de fitxer. `bundleVideoUrl(bundle)` és el resolutor `resourceVideoUrl` sobre els fitxers d'un paquet. Un vídeo que es reprodueix només des d'una adreça no porta cap fitxer: la seva entrada només té la portada. En un paquet bilingüe, una llengua pot donar a un vídeo la seva pròpia `poster` i el seu propi `video` (un altre muntatge, a la seva adreça) a `localized[…].resources`.
+
+#### Vídeos a les pàgines de Folio
+
+Al [llibre en 3D](/ca/docs/configuration#un-llibre-en-3d-postext-folio), un vídeo propi es reprodueix a la pàgina on està imprès. Amb el punter passant pàgines (`interaction: 'hand'`), un clic a la portada l'engega allà mateix: el shader de la pàgina dibuixa els fotogrames del vídeo damunt de la portada, de manera que la imatge es doblega i es corba amb el paper mentre el full passa, i el vídeo no s'atura durant el gir. Un clic sobre un vídeo en marxa el posa en pausa, un clic sobre un vídeo en pausa el reprèn, i la barra d'espai o la tecla de retorn fan el mateix amb el primer vídeo del plec obert. Engegar un altre vídeo atura el que es reprodueix (torna a la seva portada), i un vídeo s'atura quan el llibre queda quiet en un plec on ja no apareix, o quan arriba al seu `end`. Damunt d'un vídeo que es pot reproduir, el punter es converteix en una mà; un arrossegament que comença sobre el vídeo continua passant la pàgina.
+
+- **Què es reprodueix.** Un fitxer (l'amfitrió converteix el seu `fileId` en una URL amb l'opció `videoUrl`; al Sandbox, una URL d'objecte) o, si no n'hi ha, la seva adreça: MP4, WebM o un flux HLS. Safari i les versions recents de Chrome reprodueixen HLS pel seu compte; els altres navegadors fan servir [hls.js](https://github.com/video-dev/hls.js), que es carrega en la primera reproducció (una dependència *peer* opcional de `postext-folio`) i es limita a la variant més propera a la mida que la imatge té a la pantalla. YouTube i Vimeo es reprodueixen en iframes, que WebGL no pot dibuixar: un clic a la seva portada passa la pàgina com a qualsevol altre lloc.
+- **Lectures des d'un altre origen.** WebGL només dibuixa un vídeo si el seu servidor en permet la lectura (CORS, `Access-Control-Allow-Origin`). Un vídeo que no es pot llegir es queda en portada, i `onVideo` rep `error`.
+- **So.** El clic permet que el vídeo es reprodueixi amb so; si el navegador encara s'hi nega, sona silenciat. `video.player.muted` l'engega sense so, `loop` el torna a reproduir, i `start` / `end` delimiten el fragment que es reprodueix.
+- **A qualsevol pàgina.** La imatge es dibuixa on la posa la composició: girada en un recurs girat, dreta en una pàgina vertical i sense invertir en un llibre de dreta a esquerra, igual que la portada. Una portada retallada dins de la seva [zona segura](#zona-segura) retalla el vídeo de la mateixa manera.
+- **Sense WebGL2**, o amb menys moviment, el vídeo es reprodueix en un `<video>` HTML posat damunt de la pàgina.
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  // La URL reproduïble d'un vídeo pujat (una URL d'objecte sobre els seus bytes).
+  videoUrl: (fileId) => urls.get(fileId),
+  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
+});
+book.stopVideo();
+```
+
+`videos: false` ho desactiva. `toggleVideoAt({ page, x, y })` fa el mateix que un clic en aquell punt, i `pageVideoSpots(page, doc)` llista on és cada vídeo d'una pàgina, per a un amfitrió que dibuixi els seus propis controls.
 
 Dues receptes del Receptari posen vídeos: la núm. 131, [Programa de cineclub amb codis QR a les portades](/ca/cookbook/film-club-video-qr), imprimeix cada pel·lícula com una cartel·la amb la marca de reproducció i un codi QR, i la núm. 132, [Full de pràctiques amb vídeos per a la pantalla i l'EPUB](/ca/cookbook/pendulum-lab-video-players), fixa les opcions de reproductor de l'edició HTML i empaqueta els seus propis vídeos en un EPUB de maquetació fixa.
 
