@@ -26,7 +26,7 @@ import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
-import { renderLangOf } from './locale';
+import { isJapaneseLanguage, renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
 import { joiningScriptIn } from './measure/joining';
 import { DEFAULT_CENTRAL_BASELINE, verticalFlowOf } from './vdt';
@@ -34,7 +34,7 @@ import type { CjkRegion, ResourceSafeArea } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
-import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml } from './htmlAnnotations';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf } from './htmlAnnotations';
 import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
 import type { VDTResourceVideo } from './vdt';
@@ -173,8 +173,8 @@ interface HtmlPaint extends RenderHtmlOptions {
   /** The direction the document's root declares (`dir`, #379): a box of
    *  text running the other way declares its own. */
   dir?: TextDirection;
-  /** The language a right-to-left document's root and pages declare
-   *  (`renderLangOf`). */
+  /** The language the pages of a right-to-left or a Japanese document
+   *  declare, as its root does (`renderLangOf`). */
   lang?: string;
   /** The language the document's root declares, whatever its direction: a
    *  word in another one named by the author (`VDTLineSegment.lang`)
@@ -640,6 +640,39 @@ function linkRuns(): { at: (href: string | undefined) => string; space: (next: s
   };
 }
 
+/**
+ * The `<ruby>` elements of a line (#428, see {@link RUBY_OPEN}): `open`
+ * returns the markup before a ruby base (the `<ruby>`, unless the base
+ * goes on in the one already open), `after` the markup after its reading
+ * (`</ruby>`, unless the base names its annotation: the next base may go
+ * on in it), `before` the markup to emit before any segment (closing a
+ * `<ruby>` the segment does not go on in), `end` the markup that closes
+ * the line. The bases of one annotation (`rubyGroupOf`) share a `<ruby>`
+ * while they follow each other with the same link, so the element never
+ * straddles an `<a>` of {@link linkRuns}.
+ */
+function rubyRuns(): { open: (seg: VDTLineSegment) => string; after: (seg: VDTLineSegment) => string; before: (seg: VDTLineSegment) => string; end: () => string } {
+  let open: { group: string | undefined; href: string | undefined } | undefined;
+  const end = (): string => {
+    const close = open !== undefined ? '</ruby>' : '';
+    open = undefined;
+    return close;
+  };
+  const continues = (seg: VDTLineSegment): boolean =>
+    open?.group !== undefined && seg.kind === 'text' && seg.ruby !== undefined && !seg.warichu && !seg.chip
+    && seg.refResourceId === undefined && rubyGroupOf(seg.ruby) === open.group && segmentHref(seg) === open.href;
+  return {
+    before: (seg) => (continues(seg) ? '' : end()),
+    open(seg) {
+      if (open !== undefined) return '';
+      open = { group: seg.ruby ? rubyGroupOf(seg.ruby) : undefined, href: segmentHref(seg) };
+      return RUBY_OPEN;
+    },
+    after: (seg) => (open?.group === undefined || seg.refResourceId !== undefined ? end() : ''),
+    end,
+  };
+}
+
 /** A segment's link, unless it is a `:ref` (which links to its resource):
  *  a Markdown link's URL, a footnote marker's note, an index page number's
  *  page (#264). */
@@ -925,8 +958,11 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     const dir = dirAttr(seg.rtl ? 'rtl' : 'ltr', rootDir);
     return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir ? { attrs: dir, decl: '' } : PLAIN_BOX);
   };
+  // The `<ruby>` open across the bases of one annotation (#428).
+  const ruby = rubyRuns();
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
+    parts.push(ruby.before(seg));
     if (seg.kind === 'space') {
       // The space as text, for copying (#403): a Han–Latin gap only where
       // the author typed one (its `text`).
@@ -972,12 +1008,13 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       i = group.end - 1;
       continue;
     }
+    // A ruby base and its reading (#194), in a `<ruby>` (#428).
+    if (seg.ruby) parts.push(ruby.open(seg));
     parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
-    // A ruby base's reading (#194).
-    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString));
+    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString), ruby.after(seg));
     x += seg.width;
   }
-  parts.push(links.end());
+  parts.push(ruby.end(), links.end());
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
@@ -1240,7 +1277,8 @@ function verticalSpan(at: number, axis: number, inner: string, decl = ''): strin
 
 /** A run of vertical text whose em boxes are centred `axis` px from the
  *  box's flow top, on either side of it (a ruby reading or a warichu row
- *  sits outside the line's own box). */
+ *  sits outside the line's own box); `hidden` from assistive technology
+ *  (a warichu row, which its note box reads). */
 function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = '', hidden = true): string {
   const lh = Math.max(1, 2 * size);
   return `<span${hidden ? ' aria-hidden="true"' : ''} style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
@@ -1249,7 +1287,9 @@ function verticalSpanAt(at: number, axis: number, size: number, inner: string, d
 /** Annotation runs of a vertical line (a ruby reading, a warichu note's
  *  rows, #194, #195) from `x` along it: set down the column in their own
  *  face, centred across it on their baseline (`dy`) less their face's
- *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`). */
+ *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`).
+ *  `hidden` from assistive technology unless they are a ruby reading's,
+ *  which its `<rt>` holds (#428). */
 function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number, hidden = true): string {
   return runs.map((run) => {
     const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
@@ -1287,7 +1327,10 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
   const spaceAxis = axisOf(block.fontString);
+  // The `<ruby>` open across the bases of one annotation (#428).
+  const ruby = rubyRuns();
   for (const seg of segs) {
+    inner.push(ruby.before(seg));
     if (seg.kind === 'space') {
       // The space as text, for copying (#403).
       if (seg.text) inner.push(verticalSpan(x, spaceAxis, esc(seg.text)));
@@ -1347,11 +1390,13 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       ? (refLinks(refKey(seg), targets) ? refAnchorHref(refKey(seg)) : undefined)
       : segmentHref(seg);
     if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
+    // A ruby base and its reading beside it (#194), in a `<ruby>` (#428).
+    if (seg.ruby) inner.push(ruby.open(seg));
     inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
-    // A ruby base's reading, beside the base (#194).
-    if (seg.ruby) inner.push(verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf));
+    if (seg.ruby) inner.push(RT_OPEN, verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf, false), '</rt>', ruby.after(seg));
     x += seg.width;
   }
+  inner.push(ruby.end());
   // Emphasis dots, proper-name and book-title lines (#193), in the turned
   // flow with the line's box.
   if (line.marks) sideways.push(verticalLineMarksHtml(line, block.color));
@@ -2224,8 +2269,10 @@ function renderPageDetailed(
       ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
       : flowHtml) + slotParts.join('');
   // A right-to-left document's pages say so, with its language, for a host
-  // that mounts them apart from the document's root (#379).
-  const pageAttrs = options.dir === 'rtl' ? ` dir="rtl"${options.lang ? ` lang="${options.lang}"` : ''}` : '';
+  // that mounts them apart from the document's root (#379); so do a
+  // Japanese document's, whose glyph forms (a pan-CJK face's `locl`) and
+  // vertical forms the browser picks by language (#428).
+  const pageAttrs = (options.dir === 'rtl' ? ' dir="rtl"' : '') + (options.lang ? ` lang="${options.lang}"` : '');
   const outerHtml =
     `<div class="pt-page" id="${pageElementId((options.pageIndexOffset ?? 0) + page.index)}" data-page="${page.index}"${pageAttrs} style="` +
     `position:relative;` +
@@ -2352,7 +2399,7 @@ export function renderToHtmlIndexed(
     ...(doc.anchors ? { anchors: doc.anchors } : {}),
     pageIndexOffset: doc.pageIndexOffset ?? 0,
     ...(docLang ? { rootLang: docLang } : {}),
-    ...(rtl ? { dir: 'rtl' as const, ...(docLang ? { lang: docLang } : {}) } : {}),
+    ...(rtl ? { dir: 'rtl' as const, ...(docLang ? { lang: docLang } : {}) } : isJapaneseLanguage(docLang) ? { lang: docLang } : {}),
   };
   const bleedInset = doc.trimOffset > 0
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))

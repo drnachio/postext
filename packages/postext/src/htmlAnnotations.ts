@@ -1,11 +1,12 @@
 /**
- * Chinese annotations in the HTML backend (#193, #194, #195): the marks of
- * a line (`VDTLine.marks`) as positioned `aria-hidden` boxes and small SVG
- * paths, a ruby base's reading as positioned `aria-hidden` text, and a
- * warichu note's rows as two positioned runs inside a `role="note"` box
- * that reads the note once. Everything sits in the line's box (its left
- * edge and top are the line's `bbox.x` / `bbox.y`), at the geometry the
- * layout gave it: the same the canvas and PDF backends draw.
+ * Chinese and Japanese annotations in the HTML backend (#193, #194, #195,
+ * #428): the marks of a line (`VDTLine.marks`) as positioned `aria-hidden`
+ * boxes and small SVG paths, a ruby base and its reading as a semantic
+ * `<ruby>` whose reading runs are positioned text (see {@link RUBY_OPEN}),
+ * and a warichu note's rows as two positioned runs inside a `role="note"`
+ * box that reads the note once. Everything sits in the line's box (its
+ * left edge and top are the line's `bbox.x` / `bbox.y`), at the geometry
+ * the layout gave it: the same the canvas and PDF backends draw.
  */
 
 import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from './vdt';
@@ -88,16 +89,45 @@ export type FontQuoter = (font: string) => string;
 /** A run of annotation text at its place from `x` (px in the line box), on
  *  the line's baseline moved by the run's `dy`: an outer box that takes
  *  the line's baseline, an inner one in the run's face with no line height
- *  (as a segment in another face is set). */
+ *  (as a segment in another face is set). `hidden`: kept from assistive
+ *  technology (a warichu row, which its note box reads). */
 function runHtml(run: VDTAnnotationRun, x: number, color: string, quote: FontQuoter, hidden = true): string {
   const ink = run.color ?? color;
   return `<span${hidden ? ' aria-hidden="true"' : ''} style="position:absolute;left:${n(x + run.dx)}px;top:${n(run.dy)}px;white-space:pre;">`
     + `<span style="font:${quote(run.fontString)};line-height:0;color:${ink};">${esc(run.text)}</span></span>`;
 }
 
-/** A ruby base's reading, from the base segment's `x`. */
+/**
+ * The `<ruby>` that holds ruby bases and their readings (#428), and the
+ * `<rt>` of each reading. The layout places every base and every run of a
+ * reading itself, as absolutely positioned boxes of the line; these
+ * elements only say what the boxes are, so a screen reader and the
+ * browser's ruby semantics see a base with its reading (one `<ruby>` per
+ * annotation: a jukugo reading's bases and readings alternate in it).
+ *
+ * `display:contents` makes them generate no box, so the positioned runs
+ * keep the line box as their containing block, and `all:inherit` undoes
+ * what the user agent's stylesheet gives `<rt>` (half the font size, line
+ * height `normal`, `text-indent:0`, `font-variant-east-asian:ruby`): the
+ * runs inherit what they inherited before, and their baselines (an outer
+ * box's strut, see {@link runHtml}) land where the canvas and the PDF put
+ * them. The page paints exactly as without the elements.
+ */
+export const RUBY_OPEN = '<ruby style="all:inherit;display:contents;">';
+export const RT_OPEN = '<rt style="all:inherit;display:contents;">';
+
+/** A ruby base's reading, from the base segment's `x`: the runs of one
+ *  `<rt>` (see {@link RUBY_OPEN}), read by assistive technology. */
 export function rubyHtml(ruby: VDTRuby, x: number, color: string, quote: FontQuoter): string {
-  return ruby.runs.map((r) => runHtml(r, x, ruby.color ?? color, quote)).join('');
+  return `${RT_OPEN}${ruby.runs.map((r) => runHtml(r, x, ruby.color ?? color, quote, false)).join('')}</rt>`;
+}
+
+/** The annotation a ruby base belongs to, when the layout names it
+ *  (`VDTRuby.id`, #422): the bases of one jukugo reading share it and
+ *  go in one `<ruby>`. Without it, every base is a `<ruby>` of its own. */
+export function rubyGroupOf(ruby: VDTRuby): string | undefined {
+  const id = (ruby as VDTRuby & { id?: unknown }).id;
+  return typeof id === 'string' || typeof id === 'number' ? String(id) : undefined;
 }
 
 /** A footnote marker in the line gap (`VDTLineSegment.sideMarker`, JLReq

@@ -116,8 +116,11 @@ describe('annotations in HTML', () => {
     expect(html.match(/border-radius:50%/g)).toHaveLength(2);
     // The wavy title line is an SVG path.
     expect(html).toMatch(/<svg aria-hidden="true"[^>]*><path d="M/);
-    // The reading, hidden from assistive technology.
-    expect(html).toMatch(/aria-hidden="true" style="position:absolute;left:[\d.]+px;top:-[\d.]+px;white-space:pre;"><span style="font:[^";]*10px[^";]*;line-height:0;[^"]*">hóng</);
+    // The reading, at its place, in the <rt> of its base's <ruby> (#428):
+    // one <ruby> per base of a mono reading.
+    expect(html).toMatch(/<ruby style="all:inherit;display:contents;"><span style="position:absolute;left:([\d.]+)px;top:0;white-space:pre;">紅<\/span><rt style="all:inherit;display:contents;"><span style="position:absolute;left:\1px;top:-[\d.]+px;white-space:pre;"><span style="font:[^";]*10px[^";]*;line-height:0;[^"]*">hóng<\/span><\/span><\/rt><\/ruby><ruby /);
+    expect(html.match(/<ruby\b/g)).toHaveLength(2);
+    expect(html.match(/<\/ruby>/g)).toHaveLength(2);
     // The note reads once, in a note box.
     expect(html).toContain('role="note" aria-label="甲戌側批此是第一首標題"');
     expect(html).toContain('role="note" aria-label="詩"');
