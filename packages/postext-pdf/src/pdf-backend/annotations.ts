@@ -33,11 +33,14 @@ import { tagArtifact, tagContent, type StructElem } from './tagging';
 
 /** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
  *  leaning a third of a right angle (as the canvas draws it). Two
- *  quadratic curves, each `[start, control, end]`. */
-function sesameCurves(size: number): { x: number; y: number }[][] {
+ *  quadratic curves, each `[start, control, end]`. On a vertical page
+ *  (`vertical`) the lens turns a quarter turn back against the flow's, so
+ *  it stands on the sheet as in horizontal text: U+FE45 has no vertical
+ *  form. */
+function sesameCurves(size: number, vertical: boolean): { x: number; y: number }[][] {
   const l = size / 2;
   const w = size * 0.6;
-  const a = -Math.PI / 6;
+  const a = -Math.PI / 6 - (vertical ? Math.PI / 2 : 0);
   const rot = (x: number, y: number) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) });
   return [
     [rot(0, -l), rot(w, 0), rot(0, l)],
@@ -72,7 +75,7 @@ function markOps(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number): { ops:
       return { ops: circleOps(X(cx), Y(cy), (m.open ? Math.max(0, r - m.thickness / 2) : r) * scale), filled: !m.open };
     }
     case 'sesame': {
-      const [a, b] = sesameCurves(m.size ?? 0);
+      const [a, b] = sesameCurves(m.size ?? 0, !!ctx.vertical);
       const P = (q: { x: number; y: number }) => ({ x: X(cx + q.x), y: Y(cy + q.y) });
       const cubic = (p0: { x: number; y: number }, q: { x: number; y: number }, p2: { x: number; y: number }): PDFOperator => {
         const c1 = { x: p0.x + (2 / 3) * (q.x - p0.x), y: p0.y + (2 / 3) * (q.y - p0.y) };
@@ -87,6 +90,27 @@ function markOps(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number): { ops:
     }
     case 'line':
       return { ops: [moveTo(X(cx), Y(cy)), lineTo(X(cx + (m.length ?? 0)), Y(cy))], filled: false };
+    case 'double': {
+      const half = (m.gap ?? 0) / 2;
+      const end = cx + (m.length ?? 0);
+      return {
+        ops: [moveTo(X(cx), Y(cy - half)), lineTo(X(end), Y(cy - half)), moveTo(X(cx), Y(cy + half)), lineTo(X(end), Y(cy + half))],
+        filled: false,
+      };
+    }
+    case 'dotted': {
+      // The dots of the line (as the canvas sets them, `dottedCentres`).
+      const size = m.size ?? 0;
+      const span = Math.max(0, (m.length ?? 0) - size);
+      const gap = m.gap ?? 0;
+      const count = gap > 0 ? Math.round(span / gap) : 0;
+      const ops: PDFOperator[] = [];
+      for (let i = 0; i <= count; i++) {
+        const x = cx + size / 2 + (count > 0 ? (span * i) / count : span / 2);
+        ops.push(...circleOps(X(x), Y(cy), (size / 2) * scale));
+      }
+      return { ops, filled: true };
+    }
     case 'wavy': {
       const length = m.length ?? 0;
       const wl = m.wavelength ?? 4;
