@@ -74,7 +74,7 @@ import { graphemeCount, graphemesOf, lastGrapheme } from './graphemes';
 import { isBreakingSpace } from './spaces';
 import { trimChipLineEdges } from './chipEdges';
 import { cellAdvance, fontEm, fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measureCentralBaseline, verticalTrackCount, withMeasureWritingMode } from './vertical';
-import { verticalRuns } from '../writingMode';
+import { isUprightMarkPair, verticalRuns } from '../writingMode';
 import { foldWidth, isZhuyin, noteRowBaselines, readingAdvance, rubyGeometry, splitNote, withFontSize, ZHUYIN_SIZE_RATIO, type RubyGeometry } from './cjkAnnotate';
 import {
   applyLineEdges,
@@ -781,8 +781,71 @@ function buildUnits(spans: readonly InlineSpan[], fonts: Fonts, letterSpacingPx:
       b.glueBefore = true;
     }
   }
+  if (vertical && getMeasureRegion() === 'japan') combineMarkPairs(units, letterSpacingPx);
   if (route) routeSharedMarks(units, letterSpacingPx, vertical);
   return units;
+}
+
+/** A unit's characters (a mark pair's possible neighbour). */
+function isPlainTextUnit(u: Unit | undefined): u is Unit {
+  return u !== undefined && u.kind === 'text' && !u.token && !u.orient && !u.ruby && !u.note && !u.stacked && !u.place;
+}
+
+/**
+ * Japanese vertical text: each pair of exclamation and question marks
+ * (!! !? ?! ?? and ！！ ！？ ？！ ？？, JLReq §3.1.10) becomes one upright cell
+ * of one em, as an author's `:tcy[…]` (`Unit.orient`), which breaks like a
+ * single ！ and keeps a segment of its own (`VDTLineSegment.tcy`). The rule
+ * is `isUprightMarkPair`, read over what a segment would hold: a Western
+ * run that is the pair alone (`Wow!!` and `(!?)` stay one sideways run),
+ * or two full-width marks of one style and link, a mark beside them of the
+ * same style and link leaving all three as they are. The painters then
+ * read the segment as the measurer did.
+ */
+function combineMarkPairs(units: Unit[], letterSpacingPx: number): void {
+  const fullwidth = (g: string): string => String.fromCodePoint(g.codePointAt(0)! + 0xFEE0);
+  const pairUnit = (u: Unit, text: string, cls: CjkClass): Unit => {
+    const out: Unit = {
+      ...u,
+      text,
+      width: fontEm(u.style.font) + (letterSpacingPx === 0 ? 0 : letterSpacingPx),
+      graphemes: 1,
+      first: cls,
+      last: cls,
+      firstCjk: true,
+      lastCjk: true,
+      orient: 'tcy',
+    };
+    delete out.run;
+    delete out.cellStart;
+    delete out.cellEnd;
+    delete out.url;
+    return out;
+  };
+  const sameSegment = (a: Unit, b: Unit | undefined): b is Unit => isPlainTextUnit(b) && !b.run && b.style.key === a.style.key && b.link === a.link;
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    if (!isPlainTextUnit(u)) continue;
+    if (u.run) {
+      // A Western run that is the pair alone: its own segment.
+      if (u.graphemes === 2 && /^[!?]{2}$/.test(u.text) && isUprightMarkPair([...u.text], 0, 'japan')) {
+        units[k] = pairUnit(u, u.text, cjkClassOf(fullwidth(u.text[0]!)));
+      }
+      continue;
+    }
+    const v = units[k + 1];
+    if (u.graphemes !== 1 || !sameSegment(u, v) || v.graphemes !== 1) continue;
+    const prev = units[k - 1];
+    const next = units[k + 2];
+    const context = [
+      ...(sameSegment(u, prev) ? [lastGrapheme(prev.text)] : []),
+      u.text,
+      v.text,
+      ...(sameSegment(u, next) ? [graphemesOf(next.text)[0]!] : []),
+    ];
+    if (!isUprightMarkPair(context, sameSegment(u, prev) ? 1 : 0, 'japan')) continue;
+    units.splice(k, 2, pairUnit(u, u.text + v.text, cjkClassOf(u.text)));
+  }
 }
 
 /** The marks Latin text shares with Chinese (East Asian Width ambiguous):

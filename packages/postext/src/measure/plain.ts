@@ -22,7 +22,7 @@ import { measureRichBlock } from './rich';
 import { hasCJK, hasCJKRun } from './cjk';
 import { composesAsCjk } from './cjkCompose';
 import { markCuts } from './markCuts';
-import { getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical';
+import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical';
 import { holdsVerticalCell } from '../writingMode';
 import { WORDS_AND_SPACES_RE } from './spaces';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules';
@@ -239,7 +239,7 @@ export function measureBlock(
   // that meet (`本）》录`): pretext would measure it with the browser's
   // trimming, where the renderers paint such marks apart (`markCuts`).
   // Each of the three CJK tests needs CJK text (`hasCJK`), looked for once.
-  if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits()))) {
+  if ((hasCJK(text) && (hasCJKRun(text) || composesAsCjk(text) || markCuts(text, 'words').length > 0)) || (measuringVertically() && holdsVerticalCell(text, getMeasureUprightDigits(), getMeasureRegion()))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   // A paragraph set right to left, or holding right-to-left text: the

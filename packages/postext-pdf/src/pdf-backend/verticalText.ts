@@ -19,7 +19,7 @@
  *   (`VDTFlowFrame.centralBaselines`);
  * - marks with no vertical form in the font as the canvas draws them:
  *   brackets and quotes turned about their em box, a mainland pause mark
- *   moved to the top right of its cell;
+ *   or a Japanese small kana moved to the top right of its cell;
  * - dashes, ellipses and the interpunct turned about their em box (a dash
  *   stretched to its cell);
  * - a number set in one cell (tate-chu-yoko) upright, squeezed across to
@@ -136,7 +136,7 @@ export function drawVerticalTextPx(
   const Y = (py: number): number => pageHeightPt - py * scale;
   const sizePt = sizePx * scale;
   const graphemes = graphemesOf(text);
-  const runs = orient ? forcedVerticalRuns(graphemes, orient) : verticalRuns(graphemes, v.region, v.uprightDigits);
+  const runs = orient ? forcedVerticalRuns(graphemes, orient, v.region) : verticalRuns(graphemes, v.region, v.uprightDigits);
 
   const body: PDFOperator[] = [];
   let currentKey: PDFName | undefined;
@@ -222,16 +222,20 @@ export function drawVerticalTextPx(
       continue;
     }
     const cell = em * run.cell;
-    const kind = cellKind(run.glyph, run.text, font);
-    if ((kind === 'upright' || kind === 'alternate' || kind === 'dash') && shapesApart(font, run.text, kind !== 'upright')) {
+    // What is painted (a Japanese “ as 〝, whose vertical form is looked
+    // for; a full-width ！？ in one cell as !?): the line's `/ActualText`
+    // reads the text as written.
+    const text = run.glyph.paintAs ?? run.text;
+    const kind = cellKind(run.glyph, text, font);
+    if ((kind === 'upright' || kind === 'alternate' || kind === 'dash') && shapesApart(font, text, kind !== 'upright')) {
       // A cluster of several glyphs (a combining mark the font does not
       // compose, an emoji sequence it does not ligate): in a show each
       // glyph would advance one em down the column. Set as the canvas sets
       // it: the cluster shaped horizontally, stood upright, centred on its
       // cell.
       flushUpright();
-      const w = textAdvancePx(font, run.text, sizePx).advance;
-      drawHorizontal(run.text, [0, 1, -1, 0, X(cx + cell / 2) + centralPx * scale, Y(axis) - (w * scale) / 2], 0);
+      const w = textAdvancePx(font, text, sizePx).advance;
+      drawHorizontal(text, [0, 1, -1, 0, X(cx + cell / 2) + centralPx * scale, Y(axis) - (w * scale) / 2], 0);
       cx += cell + tracking;
       continue;
     }
@@ -242,7 +246,7 @@ export function drawVerticalTextPx(
       // A dash is shaped alone: `fwid` with `vert` would join two of them
       // into one long glyph where the canvas sets one per cell.
       if (kind === 'dash') flushUpright();
-      queueUpright(run.text, cx, kind !== 'upright');
+      queueUpright(text, cx, kind !== 'upright');
       if (kind === 'dash') flushUpright();
       cx += cell + tracking;
       continue;
@@ -250,25 +254,26 @@ export function drawVerticalTextPx(
     flushUpright();
     if (kind === 'tcy') {
       // Upright, side by side, squeezed across to the em.
-      const w = textAdvancePx(font, run.text, sizePx).advance;
+      const w = textAdvancePx(font, text, sizePx).advance;
       const k = w > em ? em / w : 1;
-      drawHorizontal(run.text, [0, k, -1, 0, X(cx + em / 2) + centralPx * scale, Y(axis) - (k * w * scale) / 2], 0);
+      drawHorizontal(text, [0, k, -1, 0, X(cx + em / 2) + centralPx * scale, Y(axis) - (k * w * scale) / 2], 0);
     } else if (kind === 'rotate') {
       // Turned with the frame; a dash stretched to fill its cell. A bracket
       // or a quote turns about the em box's centre, so it hugs the character
       // it belongs to; a dash, an ellipsis, an interpunct is centred on the
       // axis by its ink, as on the canvas.
-      const char = run.glyph.orient === 'alternate' && run.glyph.substitute ? run.glyph.substitute : run.text;
+      const char = run.glyph.orient === 'alternate' && run.glyph.substitute ? run.glyph.substitute : text;
       const w = textAdvancePx(font, char, sizePx).advance;
       const k = run.glyph.stretch && w > 0 && w < cell ? cell / w : 1;
       const lift = run.glyph.orient === 'rotate' ? inkLiftPx(font, char, sizePx) ?? centralPx : centralPx;
       drawHorizontal(char, [k, 0, 0, 1, X(cx + cell / 2 - (k * w) / 2), Y(axis + lift)], 0);
     } else {
-      // A mainland pause mark the font has no vertical form for: the
-      // upright glyph moved to the top right of its cell.
+      // A mainland pause mark or a Japanese small kana the font has no
+      // vertical form for: the upright glyph moved to the top right of its
+      // cell.
       const offset = run.glyph.offset ?? CORNER_OFFSET_EM;
       const penOffset = em * (0.5 - (VERTICAL_ORIGIN / 1000 - central));
-      for (const { font: file, text: part } of fileRuns(font, run.text)) {
+      for (const { font: file, text: part } of fileRuns(font, text)) {
         const twin = verticalTwinOf(file);
         if (!twin) continue;
         useFont(twinKeyOn(ctx.page, file, twin));

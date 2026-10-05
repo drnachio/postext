@@ -147,12 +147,12 @@ describe('Japanese marks', () => {
     expect(mayHang('。', cjkClassOf('。'), { ...japan, region: 'taiwan' })).toBe(false);
   });
 
-  it('vertical text: 、。 in the corner, ！？ upright, “” in the font’s vertical form, never as 『』', () => {
+  it('vertical text: 、。 in the corner, ！？ upright, “” as 〝〟 (#419), never as 『』', () => {
     expect(verticalOrientation('。', 'japan')).toMatchObject({ orient: 'alternate', fallback: 'corner' });
     expect(verticalOrientation('、', 'japan')).toMatchObject({ orient: 'alternate', fallback: 'corner' });
     expect(verticalOrientation('！', 'japan')).toEqual({ orient: 'upright' });
     expect(verticalOrientation('？', 'japan')).toEqual({ orient: 'upright' });
-    expect(verticalOrientation('“', 'japan')).toEqual({ orient: 'alternate', fallback: 'rotate' });
+    expect(verticalOrientation('“', 'japan')).toEqual({ orient: 'alternate', fallback: 'rotate', paintAs: '〝' });
     expect(verticalOrientation('“', 'mainland').substitute).toBe('『');
     for (const g of ['あ', 'カ', '漢', 'ー']) expect(verticalOrientation(g, 'japan').orient, g).not.toBe('sideways');
   });

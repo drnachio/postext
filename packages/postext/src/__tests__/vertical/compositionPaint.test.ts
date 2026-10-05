@@ -438,8 +438,9 @@ function expectedChars(doc: VDTDocument, region: CjkRegion, vertical: boolean): 
                   }
                 } else {
                   // Without a vertical twin face the painter draws the
-                  // mainland's quotes as corner brackets.
-                  out.push({ ch: run.glyph.substitute ?? run.text, at: p + (run.cell * EM) / 2, cell: true, line, hangs });
+                  // mainland's quotes as corner brackets; Japanese “ ” are
+                  // painted as 〝 〟 with or without one.
+                  out.push({ ch: run.glyph.substitute ?? run.glyph.paintAs ?? run.text, at: p + (run.cell * EM) / 2, cell: true, line, hangs });
                   p += run.cell * EM + t;
                 }
               }

@@ -20,7 +20,7 @@ import { directChipRuns } from '../design/bidiText';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount, graphemesOf } from './graphemes';
-import { fontEm, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
+import { fontEm, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, mayHoldVerticalCell, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { latinReader, uprightDigitCandidates } from '../writingMode';
 import { sliceSpan } from '../parse/links';
 import type { CjkRegion } from '../types';
@@ -312,9 +312,10 @@ export function smallCapsWidth(text: string, font: string): number {
  *  In vertical text (`measuringVertically`) a character that stands in a
  *  cell of its own advances its cell (`verticalTextWidth`), as the
  *  renderers paint it, and so does a short number set in one cell
- *  (`cjk.uprightDigits`); no other ASCII text holds one. */
+ *  (`cjk.uprightDigits`) and a Japanese pair of !? marks
+ *  (`mayHoldVerticalCell`). */
 export function textWidth(text: string, font: string, smallCaps: boolean | undefined): number {
-  if (measuringVertically() && (/[^\u0000-\u007F]/.test(text) || (getMeasureUprightDigits() > 0 && /[0-9]/.test(text)))) {
+  if (measuringVertically() && mayHoldVerticalCell(text)) {
     return verticalTextWidth(text, font, (run) => (smallCaps ? smallCapsWidth(run, font) : measureTextWidth(run, font)));
   }
   return smallCaps ? smallCapsWidth(text, font) : measureTextWidth(text, font);

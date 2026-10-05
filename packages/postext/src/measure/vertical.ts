@@ -132,12 +132,21 @@ export function verticalTrackCount(text: string): number {
  * The advance of text painted in the page's flow (design text, list
  * markers, contents rows, box titles): `measureTextWidth`, except in
  * vertical text, where what stands in a cell advances its cell
- * ({@link verticalTextWidth}), as the renderers paint it. ASCII text reads
- * the same either way.
+ * ({@link verticalTextWidth}), as the renderers paint it. ASCII text with
+ * no cell reads the same either way ({@link mayHoldVerticalCell}).
  */
 export function flowTextWidth(text: string, font: string): number {
-  if (measureWritingMode === 'vertical-rl' && (/[^\u0000-\u007F]/.test(text) || (measureUprightDigits > 0 && /[0-9]/.test(text)))) return verticalTextWidth(text, font);
+  if (measureWritingMode === 'vertical-rl' && mayHoldVerticalCell(text)) return verticalTextWidth(text, font);
   return measureTextWidth(text, font);
+}
+
+/** Whether `text` may hold a cell in vertical text (see `verticalRuns`):
+ *  any non-ASCII character, a digit when short numbers stand in one cell
+ *  (`cjk.uprightDigits`), two exclamation or question marks in Japanese
+ *  text (`isUprightMarkPair`). ASCII text with none of them runs sideways
+ *  whole. */
+export function mayHoldVerticalCell(text: string): boolean {
+  return /[^\u0000-\u007F]/.test(text) || (measureUprightDigits > 0 && /[0-9]/.test(text)) || (measureRegion === 'japan' && /[!?][!?]/.test(text));
 }
 
 /** A font string's first family, unquoted: the key of

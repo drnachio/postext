@@ -1141,24 +1141,33 @@ function centralOf(v: VerticalHtml, fontString: string): number {
   return v.axes?.[fontFamilyOf(fontString)] ?? DEFAULT_CENTRAL_BASELINE;
 }
 
+/** Characters of Japanese vertical text the HTML sets otherwise than the
+ *  browser would: “ ” (set as 〝 〟) and the marks of a pair set in one
+ *  cell (`isUprightMarkPair`). */
+const JAPANESE_VERTICAL_RE = /[“”!?！？]/;
+
 /** Escaped text of a vertical run, with its tate-chu-yoko cells, the
  *  orientation its author forced, and each turned mark in a box of its
  *  cell ({@link turnedCellHtml}). `font` is the run's font string (whose
  *  family's `dashes` stretch a dash) and `tracking` the letter spacing it
- *  is set with, px, which follows each cell. */
+ *  is set with, px, which follows each cell. A Japanese “ ” is written as
+ *  the 〝 〟 the canvas and the PDF paint (`VerticalGlyph.paintAs`), whose
+ *  vertical form the browser takes; a pair of ！？ in one cell is combined
+ *  as written, the browser fitting it to the cell. */
 function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation, font?: string, tracking = 0): string {
   if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
   if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
   if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
   const digits = v.uprightDigits > 0 && /[0-9]/.test(text);
-  if (!digits && !holdsTurnedMark(text)) return esc(text);
+  const japanese = v.region === 'japan' && JAPANESE_VERTICAL_RE.test(text);
+  if (!digits && !japanese && !holdsTurnedMark(text)) return esc(text);
   const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
-  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate')) return esc(text);
+  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate' || r.glyph.paintAs !== undefined)) return esc(text);
   const advances = font !== undefined ? v.dashes?.[fontFamilyOf(font)] : undefined;
   // A number in one cell combined upright; a turned mark in its cell.
   return runs.map((r) => (r.glyph.orient === 'tcy'
     ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>`
-    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.text))).join('');
+    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.glyph.paintAs ?? r.text))).join('');
 }
 
 /**
