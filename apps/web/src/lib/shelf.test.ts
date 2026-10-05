@@ -15,17 +15,20 @@ describe("the showcase shelf", () => {
     expect(shelfOrder(books).map((b) => b.id)).toEqual(["a", "b", "c", "z"]);
   });
 
-  it("stands the two right-bound books last, ألف ليلة وليلة then 紅樓夢, each opening in its own language", () => {
+  it("stands the three right-bound books last, ألف ليلة وليلة, 紅樓夢 then こころ, each opening in its own language", () => {
     const presets = shelfOrder((presetIndex as { presets: { id: string; shelfOrder?: number; binding?: string; openLocale?: string }[] }).presets);
-    const [nights, dream] = presets.slice(-2);
+    const [nights, dream, kokoro] = presets.slice(-3);
     expect(nights!.id).toBe("alf-layla");
     expect(nights!.binding).toBe("right");
     expect(nights!.openLocale).toBe("ar");
     expect(dream!.id).toBe("hongloumeng");
     expect(dream!.binding).toBe("right");
     expect(dream!.openLocale).toBe("zh-Hant");
+    expect(kokoro!.id).toBe("kokoro");
+    expect(kokoro!.binding).toBe("right");
+    expect(kokoro!.openLocale).toBe("ja");
     // Every other book is left-bound and stands before them.
-    expect(presets.slice(0, -2).every((p) => p.binding !== "right" && p.shelfOrder === undefined)).toBe(true);
+    expect(presets.slice(0, -3).every((p) => p.binding !== "right" && p.shelfOrder === undefined)).toBe(true);
   });
 
   it("describes 紅樓夢 by its vertical, right-bound edition", () => {
@@ -43,6 +46,16 @@ describe("the showcase shelf", () => {
     expect(entry.tags).toEqual(expect.arrayContaining(["arabic", "right-to-left", "right-bound"]));
     const [es, en] = entry.description.split(" · ");
     expect(es).toContain("encuadernado a la derecha");
+    expect(en).toContain("bound on the right");
+  });
+
+  it("describes こころ as a Japanese-only book, vertical and bound on the right", () => {
+    const entry = (presetIndex as { presets: { id: string; description: string; tags: string[]; locales: string[]; locale: string }[] }).presets.find((p) => p.id === "kokoro")!;
+    expect(entry.locale).toBe("ja");
+    expect(entry.locales).toEqual(["ja"]);
+    expect(entry.tags).toEqual(expect.arrayContaining(["japanese", "vertical", "right-bound", "ruby"]));
+    const [es, en] = entry.description.split(" · ");
+    expect(es).toContain("encuadernada a la derecha");
     expect(en).toContain("bound on the right");
   });
 

@@ -25,7 +25,7 @@ interface PresetEntry {
   binding?: "left" | "right";
   /** Where the book stands on the shelf: the books without one keep the
    *  index order (by id) and come first, the others follow by this number
-   *  (ألف ليلة وليلة and 紅樓夢, the two right-bound books, stand last). */
+   *  (ألف ليلة وليلة, 紅樓夢 and こころ, the right-bound books, stand last). */
   shelfOrder?: number;
 }
 
