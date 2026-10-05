@@ -19,7 +19,9 @@ Fix every ERROR. Common ones:
 - `em` in page, gutter, body size or heading sizes (the layout throws);
 - `config.customFonts` written by hand;
 - Chinese, Japanese or Korean characters a bundled face has no glyph for, or set in a Latin face such as the
-  default EB Garamond or Open Sans (checked with fontTools; they would print as empty boxes).
+  default EB Garamond or Open Sans (checked with fontTools; they would print as empty boxes);
+- kana under a `zh-*` locale (a Japanese book set with Chinese rules) and `locale: 'jp'`;
+- Aozora Bunko notation left in a chapter (`X《よみ》`, `｜`, `［＃…］`).
 
 Read every WARN:
 
@@ -28,7 +30,10 @@ Read every WARN:
 - font families that are not bundled;
 - odd `$`;
 - a `here` resource that is never embedded;
-- Chinese text with no `config.locale`, or `locale: 'zh'` with no script;
+- Chinese text with no `config.locale`, or `locale: 'zh'` with no script; Japanese text (kana) with no locale;
+- a Japanese book with a Chinese `cjk.region` or `lineBreak`, italic `cjk.emphasis`, a left binding on a vertical
+  page, or a Chinese (SC/TC) face setting its kana; kanji index entries without `yomi` (`indexReadingMissing`);
+- Aozora's ／＼ くの字点 left as typed;
 - markup typed with an input method (`：：：`, `＃`, `［＾…］`, `＊＊`);
 - a CFF font over 2 MB, a variable font, a vertical book whose Chinese face lacks `vert`.
 
@@ -99,8 +104,11 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
 - `PROBLEM font families used but not bundled`: add the files to `fonts[]`.
 - `WARN cjkLooseLine` (Chinese): a justified line could not be spread to the measure without more than half
   an em between its characters and was set short. Usually a long Latin word or URL: reword, or let it be.
-- `WARN cjkMarksExceedLeading|rubyExceedsLeading`: emphasis dots, name lines or ruby readings do not fit in
-  the line gap. Give the paragraph (or the book) more leading.
+- `WARN cjkMarksExceedLeading|rubyExceedsLeading|kuntenExceedsLeading`: emphasis dots, side lines, name lines,
+  ruby readings, interlinear note markers or 送り仮名 do not fit in the line gap. Give the paragraph (or the book)
+  more leading (Japanese bunko: about 1.7 em).
+- `WARN indexReadingMissing` (Japanese): an index entry with kanji has no reading and files after the kana.
+  Add `yomi="…"` to its marks.
 - `WARN rotateIgnoredVertical`: a figure with `placement.rotate` is cited in vertical text, where figures
   already stand upright. Remove the rotation.
 - `CONFIG cjkGridClamped`: `cjk.grid` asked for more characters or lines than the margins leave room for.
@@ -148,6 +156,16 @@ Chinese books, page by page:
 - vertical text: brackets and quotes in their vertical forms, short numbers upright, Latin sideways, the
   running heads where the source has them (horizontal, fore-edge, outer foot).
 
+Japanese books, page by page (the Chinese checks, plus):
+- no line opens with っ ゃ ー 々 (unless the source allows it: `ja-strict`), 、。 hang past the column foot
+  where the source hangs them, ―― and …… never split;
+- a paragraph opening with 「 sets the bracket as the source does (③ in the indent cell, ① after it);
+- furigana: right of the column (over the line in horizontal text), half size, a long reading running onto kana
+  but never onto kanji; jukugo words split between characters at a line break;
+- bōten as sesame ﹅ right of the column; no 1-character last line; headings on their lines (行取り) and
+  indented as in the source; notes where the source sets them;
+- small kana sit up and right in their cells, ー is a vertical stroke, “” print as 〝〟.
+
 ## 4. The real viewer
 
 Open the project in the sandbox: import the `.postext` (`preset_kit.py pack`),
@@ -192,6 +210,9 @@ the page images instead of claiming the port is visually verified.
 | Page count differs by one per chapter | a copy-fitted source (`compact` style), or accept it and note it |
 | Chinese lines a character longer or shorter than the source's | `cjk.grid` `charsPerLine`; the region's `punctuationWidth` (Kaiming vs full width) and `compressAdjacent` |
 | Chinese punctuation in the wrong corner | the region (`locale` / `cjk.region`) and a face of that region (SC/TC/HK) must agree |
+| Japanese kanji in Chinese shapes (直 骨 角) | a SC/TC face, or a pan-CJK face without `locale: 'ja'`: use Noto Serif JP (playbooks E8) |
+| Japanese lines open with っ or ー, 、 is half width inside the line (Kaiming), no space after a mid-paragraph ？ | `locale` is not `ja` (`lint_project.py` says so) or `cjk.region`/`lineBreak` set to a Chinese value |
+| Furigana or 送り仮名 overlap the next line | more leading (`rubyExceedsLeading`, `kuntenExceedsLeading`) |
 | Empty boxes in the PDF | `missingGlyph`: the face lacks the character; rebuild the subset from the final text (playbooks E6) |
 | Bold Chinese headings print regular | a variable font: cut a static 700 instance (`variableFontDefaultInstance`) |
 | Vertical brackets turned instead of vertical forms | the face lost `vert` in subsetting: use `fonts.py subset`, which keeps it |

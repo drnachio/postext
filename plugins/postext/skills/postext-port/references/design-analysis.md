@@ -112,6 +112,49 @@ would an English book, but read every side from the start (right) of the text.
 - **Notes**: «(١)» in the text, numbering per page or per chapter, the rule on the right.
 - **Digits**: ٠–٩ (Mashriq) or 0–9 (Maghreb) on folios and lists → `numerals` / the locale's region.
 
+## 2c. Japanese books: the hanmen (版面) in characters and lines
+
+A Japanese designer builds the type area from the inside out (JLReq §2.4): the size, characters per line
+(字詰め), lines per page (行数) and the line feed (行送り); the margins are what is left. Measure it that way and
+set `cjk.grid`, as for Chinese (§2a).
+
+- **字詰め**: count the cells of a full line (a justified line that is not a paragraph's last), marks
+  included; in a vertical book, down a column. A 、 or 。 hanging below the column's foot (ぶら下げ) is not
+  counted: its presence means `cjk.hangingPunctuation` (on by default in Japanese). Bunko 38–42, 四六判
+  novels 42–43, A5 two-tier pages 24–26 a tier; JLReq's limits: about 52 down, 40 across.
+- **行数**: the columns of a full page, right to left (lines, top to bottom, in a horizontal book). Bunko
+  16–18 (新潮文庫 38 × 16, 講談社・中公文庫 40 × 16, 角川文庫 40 × 18), 四六判 17–18.
+- **Size**: line length ÷ 字詰め, in pt or **Q** (級, 0.25 mm): 12 Q = 8.5 pt, 13 Q = 9.2 pt, 14 Q = 9.9 pt.
+  Bunko bodies are 8.5–9.25 pt, hardcover novels 9–9.5 pt; 8 pt is the floor outside dictionaries.
+- **行送り** (line feed, in pt or **H**/歯, 0.25 mm): the distance between two line centres → `bodyText.lineHeight`
+  in pt. 行間 (the gap) = feed − size, between ½ and 1 em; ruby and bōten live in it and need half an em
+  (bunko feeds are about 1.7–1.8 em). `rubyExceedsLeading` says when it is short.
+- **Where the hanmen sits**: centred on the page, or placed by the foot (地) in vertical books with the
+  running head in a taller head (天) margin. `cjk.grid` centres the area in the room the margins leave; to
+  place it by the foot, give the measured bottom margin and a top margin of trim height − bottom − the
+  grid's length (字詰め × size), so no slack is left to share.
+- **Headings**: count the body lines a heading takes with its space (行取り: a 中見出し often takes 3 lines,
+  centred in them → `lineSpan: 3`) and the cells it is lowered by from the head of the column (字下げ, 4/6/8
+  by level → `indent` in body ems). A two- or three-character heading spread to a fixed width (序　章)
+  is `jidori`.
+- **Indents and blocks**: the paragraph indent (1 cell), a quotation's or a letter's indent (2 cells),
+  dates and signatures flush with the foot (地付き) or raised N cells (地からN字上げ → `endIndent`).
+- **Line edges**: a column that opens with っ, ゃ, ー or 々 → `ja-strict` (none in many pages → the default
+  `ja-very-strict`). A paragraph opening with 「: the bracket inside the indent cell with the text at the
+  second cell is JLReq ③ (`paragraphStartBracket: 'half'`, the default), a full blank before 「 is ①
+  (`'indent'`), 「 flush with the column head is 天付き (`'flush'`). A blank after ？！ inside a paragraph
+  is the default.
+- **Annotations**: ruby on one side (right in vertical text), half size, over a whole word (group) or
+  per character; bōten shape (sesame ﹅, the default, or dots); side lines; warichu; note markers beside
+  the line (（1） right of the column, or small interlinear marks) and where the notes go (after the
+  chapter, the page foot, the left page of the spread).
+- **Running heads and folios**: in vertical books usually horizontal, in the head margin about one body
+  em above the hanmen at its fore-edge side, often on odd (left) pages only; folios in Arabic digits at the
+  foot, fore-edge side. A folio set vertically uses kanji (一〇五: `page.pageNumbering.format: 'cjk-decimal'`).
+- **Horizontal Japanese books**: the same counts across the page (JLReq's example: 9 pt × 35 字 × 28 行,
+  8 pt feed gap); headings centred or flush, numbered 第1章 with Arabic digits; ，． in technical books
+  (keep the source's), 、。 in general ones.
+
 ## 3. Type
 
 `pdf_extract.py roles` / `inventory.py` list every (font, size, colour) with

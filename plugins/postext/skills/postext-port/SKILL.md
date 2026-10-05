@@ -1,6 +1,6 @@
 ---
 name: postext-port
-description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically and Arabic books set right to left (Modern Standard or classical, vocalised verse included); when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
+description: Port an existing publication into a Postext project (config manifest + enriched Markdown chapters + resources + fonts) that reproduces the original's layout rules; typically a publisher or author migrating their own titles. Use when the user wants to convert, adapt, migrate, re-typeset or rebuild a book, textbook, magazine, catalogue, report, manual, course or deck in Postext from a PDF, Word (.docx), PowerPoint (.pptx), EPUB, HTML, InDesign (IDML), LaTeX, Markdown, XML or scanned pages, Chinese books set horizontally or vertically, Japanese books (vertical bunko and tankōbon novels, horizontal technical books, Aozora Bunko texts with furigana) and Arabic books set right to left (Modern Standard or classical, vocalised verse included); when writing or fixing Postext preset.json/config/chapters; or when asked how to express a source layout (columns, openers, parts, boxes, floats, tables, running heads) in Postext.
 license: MIT
 metadata:
   homepage: https://postext.dev/en/docs/skill
@@ -97,7 +97,8 @@ Config traps:
   own size, postext ≥ 1.9).
 - Never write `config.customFonts`; fonts come from the manifest's `fonts`.
 
-Chinese, Japanese and Korean traps (postext ≥ 1.9; playbooks F5–F6):
+Chinese and Korean traps (postext ≥ 1.9; playbooks F5–F6; the markup, fonts and
+punctuation ones hold for Japanese too, whose own list follows):
 
 - **`config.locale` in full**: `zh-Hans` or `zh-Hant`, with the region when
   known (`zh-Hans-CN`, `zh-Hant-TW`, `zh-Hant-HK`). A bare `zh` reads as
@@ -127,6 +128,55 @@ Chinese, Japanese and Korean traps (postext ≥ 1.9; playbooks F5–F6):
 - **Vertical books** (`layout.writingMode: 'vertical-rl'`) are bound on the
   right by default (`page.binding: 'auto'`); page 1 is the recto and sits on
   the left of its spread. `page.margins` keep their names on the sheet.
+
+Japanese traps (postext ≥ 1.16; playbooks E8, F9–F10; configuration.md §19c2):
+
+- **`config.locale: 'ja'`** (or `ja-JP`), never a `zh-*` tag and never `jp`
+  (a country code). Kana in the text mean Japanese, even where kanji
+  dominate. `ja` selects the `japan` region: JLReq line breaking and
+  spacing, sesame bōten for `*…*`, 『』 for `:book[…]`, jukugo furigana,
+  （） warichu, 図/表, 第{1:一}章 as 第百一章 (not 一百零一), gojūon index,
+  Japanese note defaults. `lint_project.py` errors on kana under a Chinese
+  locale.
+- **Fonts must carry kana and Japanese forms**: Noto Serif JP / Noto Sans
+  JP, Shippori Mincho, BIZ UDMincho, never the SC/TC builds (Chinese forms
+  of 直 骨 角). A pan-CJK face (Source Han, Noto CJK) gets its Japanese forms
+  in the PDF from `locale: 'ja'` (JAN `locl`). Prefer TrueType: those faces'
+  CFF `.otf` files are embedded whole (`cffEmbeddedWhole`, well over 10 MB a
+  weight). Subset with `--ranges latin,latin-ext,punct,cjk-punct,kana`.
+- **Furigana**: one reading over a word is `{麦藁帽|むぎわらぼう}` (group
+  ruby, what Aozora's 《》 means); one per character is `{東京|とう|きょう}`
+  (jukugo: it may break between characters). Never leave `X《よみ》`,
+  `｜`, `［＃…］` in a chapter: convert Aozora files with
+  `scripts/aozora.py` (sources.md, "Japanese sources").
+- **Vertical books**: `layout.writingMode: 'vertical-rl'`, bound on the right
+  (`page.binding: 'auto'`); two-digit numbers stand upright by themselves
+  (`cjk.uprightDigits: 2`), `!!` `!?` too. Keep full-width Ｋ, ＧＮＰ, １２ as
+  typed (upright, one per cell); never NFKC the text (only half-width kana
+  become full width). Traditional texts write numbers in kanji: keep them.
+- **Kinsoku and hanging**: auto is `ja-very-strict` (JIS X 4051: no っ, ー,
+  々 at a line start); a source whose lines open with small kana or ー is
+  `ja-strict`, a newspaper `ja-loose`. Hanging 、。 past the line end
+  (burasagari) is on by default (`hangingPunctuation: 'auto'`); a source
+  whose line ends are all flush is `'none'`.
+- **Indents**: 1 em (`firstLineIndent: {value: 1, unit: 'em'}`), not the
+  Chinese 2 em. A paragraph opening with 「 sets the bracket in the indent
+  (`cjk.paragraphStartBracket` auto). In Aozora a leading U+3000 is the
+  indent, 「 has none, and a paragraph with neither is flush: aozora.py
+  keeps that distinction.
+- **Notes**: unset fields take Japanese defaults that differ by direction:
+  vertical = notes after the chapter (後注) with （1） beside the line;
+  horizontal = foot of the column, numbered per page, superscript, ⅓ rule.
+  The marker goes before a sentence-final 。 (`先生[^1]。`).
+- **Index**: every kanji entry needs its reading: `:index[漱石]{yomi="そうせき"}`
+  or kana ruby on the marked text; without it the entry files after the
+  kana (`indexReadingMissing`). Citations: `citations.style: 'sist02'` for
+  science and technology (the CSL locale is ja-JP by itself).
+- **Glyph forms as the source prints them**: keep 旧字体 and 歴史的仮名遣い
+  (國, ゐ, いふ) when the edition has them; an IVS selector after a kanji
+  (葛 + U+E0100, a variant the name needs) stays. The engine never modernises.
+- **Never repair unbalanced 「**: a quotation of several paragraphs (a
+  letter in a novel) opens every paragraph with 「 and closes once.
 
 Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configuration.md §19d):
 
@@ -178,9 +228,10 @@ Full references (load the one you need):
   back-of-book indexes,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
-  horizontally and vertically, CJK fonts, Arabic books (modern and classical
-  vocalised editions) and Arabic fonts, the printed object for the Folio
-  3D viewer…) and which public preset shows each.
+  horizontally and vertically, CJK fonts, Japanese books (horizontal, and
+  vertical bunko or tankōbon) and Japanese fonts, Arabic books (modern and
+  classical vocalised editions) and Arabic fonts, the printed object for the
+  Folio 3D viewer…) and which public preset shows each.
 - [references/verification.md](references/verification.md): lint, headless
   render, page JPEGs, page-by-page comparison, and a symptom → lever table.
 
@@ -221,6 +272,12 @@ Ask only what you cannot infer:
   vertical) and the binding edge (a vertical book is bound on the right).
   Keep the source's; a redesign may change the direction, never the script
   without being asked.
+- For Japanese sources: vertical (縦組, bound on the right) or horizontal
+  (横組); the grid (字詰め × 行数); the ruby policy (every reading the source
+  prints, or only hard words); where the notes go (after the chapter, page
+  foot, spread sidenotes); bōten or bold for emphasis; and the edition's
+  orthography (新字新仮名 or 旧字旧仮名, kept as it is). For a public-domain
+  text: which edition (底本) and its credits.
 - For Arabic sources: Modern Standard or classical, the region's digits
   (٠–٩ or 0–9), how much of the text is vocalised (sets the leading),
   whether the poems are set as two-hemistich bayts, and where the contents
@@ -258,6 +315,12 @@ as its 号 in pt, the line gap as a fraction of the size, the tiers of a
 vertical page, and where the punctuation sits (in the corner or centred,
 full width or Kaiming). Then set `cjk.grid` (design-analysis.md §2a).
 
+Japanese books: measure the hanmen (版面) as its designer set it:
+characters per line × lines per page (字詰め × 行数, a bunko 38–42 × 16–18),
+the size in pt or Q (13 Q ≈ 9.2 pt), the line feed (行送り), the indent of
+each heading level in body characters and the lines it takes (行取り)
+(design-analysis.md §2c).
+
 Arabic books: measure inner/outer margins, not left/right; column 1 is the
 right one; note the folio position, the kashida (long elongated joins or
 none), the verse hemistich width and gap (design-analysis.md §2b).
@@ -292,6 +355,16 @@ Pick the path per [sources.md](references/sources.md):
   Japanese and Korean sources". `idml_extract.py` turns InDesign ruby,
   tate-chu-yoko, kenten and warichu into `:ruby`, `:tcy`, `:dots` and
   `:warichu`, and reports vertical stories and a right-to-left binding.
+- **Japanese sources**: an Aozora Bunko text converts with
+  `python3 scripts/aozora.py 773_ruby_5968.zip -o draft/01.md --styles styles.json --credits credits.json --report report.json`
+  (CP932 zip or text: furigana, bōten, side lines, headings, indents,
+  page breaks, 外字, kunten); merge `styles.json` into `paragraphStyles`,
+  read the report's gaps, and print the credits block (底本, 入力, 校正) in
+  the colophon. Public domain: in Japan an author who died in 1967 or
+  earlier; check the country of publication too (EU: life + 70; US:
+  published before 1931). Scans of public-domain editions (covers,
+  illustrations, the first edition's text) come from the NDL Digital
+  Collections. See sources.md, "Japanese sources".
 - **Arabic sources**: see sources.md, "Arabic sources" (visual-order PDF
   text, presentation forms, Word `w:bidi`/`w:cs` runs, Wikisource `{{أبيات}}`
   poems → `:::verse`).
@@ -332,6 +405,8 @@ list deliberate deviations.
   (`fonts.py subset NotoSerifTC[wght].ttf --out work/ --text-from chapters/ --ranges latin,punct,cjk-punct`),
   then cut static weights (`fonts.py instance`). Layout features (`vert`)
   and vertical metrics survive (playbooks E6).
+- Japanese faces: `fonts.py subset NotoSerifJP[wght].ttf --out work/ --text-from . --ranges latin,latin-ext,punct,cjk-punct,kana`,
+  then `fonts.py instance` for the weights (playbooks E8).
 - Arabic faces: `fonts.py subset Amiri-Regular.ttf --out fonts/ --text-from . --ranges latin,punct,arabic`
   (keeps the joining tables and the tatweel); cut static weights of variable
   faces such as Noto Naskh Arabic (playbooks E7).

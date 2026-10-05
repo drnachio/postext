@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Instal·la la skill postext-port a Claude Code, Codex o qualsevol agent i deixa que converteixi un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un projecte de Postext que segueix la maquetació original',
   lang: 'ca',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-05',
   readingTime: '8 min',
   order: 10,
   plainSummary: "Aquesta pàgina és per a qui ja té un llibre o un document en un altre format, com ara PDF, Word o InDesign, i el vol passar a Postext. Un assistent d'intel·ligència artificial, que s'anomena agent, pot fer gairebé tota la feina si li dones un petit complement anomenat skill. La skill ensenya l'agent a copiar el text i a reconstruir el disseny de l'original. La pàgina explica com instal·lar-la, què demanar-li i com revisar el resultat. Un vídeo d'uns cinc minuts mostra cada pas.",
@@ -77,6 +77,15 @@ També a YouTube: [mira'l allà](https://youtu.be/6lXSY7A72VA) o a la
     verticals, el ruby i el warichu d'InDesign, la maquetació d'Àsia
     oriental de Word i els EPUB de dreta a esquerra, i com retallar les
     fonts CJK al llibre (vegeu [Composició xinesa](/ca/docs/chinese-layout));
+  - llibres japonesos, novel·les de bunko i tankōbon en vertical i
+    enquadernades per la dreta o llibres tècnics en horitzontal: la llengua
+    que activa les regles japoneses (`ja`, mai una etiqueta xinesa), què
+    preguntar (direcció, retícula, furigana, notes, l'ortografia de
+    l'edició), com mesurar la caixa en caràcters i línies, el marcatge de
+    furigana i bōten, els textos d'Aozora Bunko convertits amb `aozora.py`,
+    els escanejos d'edicions de domini públic de la Biblioteca Nacional de
+    la Dieta i les fonts japoneses retallades amb els seus kana i les seves
+    formes verticals;
   - llibres àrabs, moderns o clàssics i vocalitzats, compostos de dreta a
     esquerra i enquadernats per la dreta: la llengua que gira el llibre,
     què preguntar (regió i xifres, vocalització, vers, índex al final), com
@@ -106,10 +115,11 @@ També a YouTube: [mira'l allà](https://youtu.be/6lXSY7A72VA) o a la
     <tr><td><code>extract_tables.py</code></td><td>Taules de PDF → <code>TableModel</code> de Postext</td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX, PPTX, ODT, EPUB, HTML, LaTeX, Markdown, JATS, DocBook → capítols en esborrany, amb els estils de Word assignats a requadres i estils de paràgraf</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>IDML d'InDesign → capítols en esborrany per estil de paràgraf, taules i imatges ancorades; el ruby, el tate-chu-yoko, els punts d'èmfasi i el warichu passen a <code>:ruby</code>, <code>:tcy</code>, <code>:dots</code> i <code>:warichu</code>, i avisa de les històries verticals i de l'enquadernació de dreta a esquerra</td></tr>
+    <tr><td><code>aozora.py</code></td><td>Text d'Aozora Bunko (un zip o un <code>.txt</code> en CP932) → Markdown de Postext: furigana, bōten i línies laterals, títols amb el seu sagnat, blocs 字下げ i 地付き com a estils de paràgraf, salts de pàgina, 外字 resolts amb JIS X 0213, marques de kanbun; retorna el bloc de crèdits i un informe del que no ha pogut expressar</td></tr>
     <tr><td><code>index_marks.py</code></td><td>Reconstrueix un índex analític imprès com a marques <code>:index</code>: llegeix les pàgines de l'índex al PDF, cerca cada terme a la seva pàgina i marca les mateixes paraules als capítols</td></tr>
-    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, fer subconjunts, escalar i separar fonts (una font xinesa retallada als caràcters del llibre conserva les seves formes i mètriques verticals, i una d'àrab, les formes d'enllaç i el tatweel); passar imatges a sRGB, retallar-les i unir-les; convertir il·lustracions <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
+    <tr><td><code>fonts.py</code>, <code>images.py</code>, <code>convert_assets.py</code></td><td>Instanciar, fer subconjunts, escalar i separar fonts (una font xinesa o japonesa retallada als caràcters del llibre conserva les seves formes i mètriques verticals, i una d'àrab, les formes d'enllaç i el tatweel); passar imatges a sRGB, retallar-les i unir-les; convertir il·lustracions <code>.ai</code>/<code>.pdf</code> en SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>Crea el projecte i el seu script generador, construeix <code>preset.json</code> i empaqueta el <code>.postext</code></td></tr>
-    <tr><td><code>lint_project.py</code></td><td>Detecta tot el que el parser i el carregador fan malament en silenci i, en text xinès, japonès o coreà, els caràcters que les fonts del projecte no poden compondre; en text àrab, la manca d'una llengua àrab, les fonts només llatines o sense enllaços, l'espaiat entre lletres, la partició de mots forçada i l'èmfasi en cursiva</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>Detecta tot el que el parser i el carregador fan malament en silenci i, en text xinès, japonès o coreà, els caràcters que les fonts del projecte no poden compondre; en text japonès, els kana sota una llengua xinesa, les fonts o els ajustos xinesos, la notació d'Aozora que ha quedat als capítols i les entrades d'índex amb kanji sense lectura; en text àrab, la manca d'una llengua àrab, les fonts només llatines o sense enllaços, l'espaiat entre lletres, la partició de mots forçada i l'èmfasi en cursiva</td></tr>
     <tr><td><code>render.mjs</code></td><td>Compon el projecte (una carpeta o un fitxer <code>.postext</code>) sense navegador amb el motor real, llegint-ne la configuració igual que el Sandbox, i mostra els avisos. Amb <code>--jpeg</code> pinta les pàgines que li demanis (<code>--pages 12-15</code>) com a fitxers JPEG amb el renderitzador de canvas del mateix motor, en un o dos segons, així que l'agent mira les seves pàgines sense generar un PDF; <code>--out</code> escriu el PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>Posa les pàgines de la font i de Postext l'una al costat de l'altra, a partir del PDF de la composició o de la seva carpeta de JPEG</td></tr>
   </tbody>

@@ -27,6 +27,7 @@ geometry, media and scan pages, and names the next command.
 | Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, fences, `---` are not Postext (`[^n]` footnotes are) |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
+| Aozora Bunko (青空文庫) text | `aozora.py` (CP932 zip or .txt) | the base edition (底本) named in its credits, or a design of your own | furigana, bōten, headings, indents, 外字 converted; "Japanese sources" |
 | Pages / Keynote / .doc / .ppt | export to .docx / .pptx first (`soffice --headless --convert-to docx`) | PDF export | |
 | Google Docs / Slides | File → Download → .docx / .pptx | PDF download | |
 
@@ -204,7 +205,7 @@ Gotchas:
 ## Chinese, Japanese and Korean sources
 
 Postext sets Chinese horizontally and vertically (postext ≥ 1.9; playbooks F5–F6). What each source says
-about it:
+about it (Japanese: the same, plus the next section):
 
 - **PDF, horizontal**: the PDF path works; PyMuPDF gives the characters in reading order. Chinese has no
   end-of-line hyphens to join, but lines that end mid-sentence must be joined with no space: Postext drops a
@@ -244,6 +245,96 @@ about it:
   `第X回　上聯　下聯` (split into the heading and its couplet, `\\` between the halves).
 - **Script**: never convert Simplified ↔ Traditional unless asked; when asked, use OpenCC (`t2s`, `s2t`,
   `s2twp` for Taiwan phrasing) and switch the quotes (「」 ↔ “”) with the region.
+
+## Japanese sources
+
+Postext sets Japanese after JLReq, horizontally and vertically (postext ≥ 1.16; playbooks F9–F10). The
+formats above read the same way; what differs:
+
+- **Aozora Bunko** (青空文庫, https://www.aozora.gr.jp/): public-domain texts typed by volunteers in their own
+  notation. Take the ruby file (`<id>_ruby_<n>.zip` on the work's 図書カード, `card<id>.html`): one `.txt` in
+  **Shift_JIS read as CP932** (CRLF). iconv's `SHIFT_JIS` turns ―― into U+2014 and drops NEC characters;
+  read it as `cp932`. Convert it with the skill's converter:
+
+  ```bash
+  python3 scripts/aozora.py 773_ruby_5968.zip -o draft/ja/01.md --styles styles.json \
+    --credits credits.json --report report.json [--ruby directive] [--heading-levels 1,2,3] [--blank-lines drop]
+  ```
+
+  As a library: `from aozora import convert; r = convert(path)` → `r.markdown`, `r.styles` (ParagraphStyle
+  configs for `paragraphStyles`), `r.doc.credits` (the bibliographic block), `r.doc.editorial` (notes not
+  printed), `r.report`. Lower level: `parse`, `render_blocks` and `render_heading` (to split a book into
+  chapter files and give headings ids). Read the report: `unknownAnnotations`, `unresolvedGaiji`,
+  `unmatchedTargets` and `gaps` (notation Postext cannot express yet) carry line numbers.
+- **What the converter writes** (Appendix A of the Japanese reference, as implemented):
+
+  | Aozora | Postext |
+  |---|---|
+  | header (title, author), `-----` legend | dropped from the text; title and author in `credits` |
+  | footer from `底本：` (or after ［＃本文終わり］) | `credits` (底本, 初出, 入力, 校正, dates): print it in the colophon |
+  | `漢字《かんじ》` (base = the run of one script before 《), `｜base《よみ》` | `{漢字\|かんじ}`: one group reading (Aozora never splits a reading per character) |
+  | reading with spaces, a base of Latin or marks, `--ruby directive` | `:ruby[base]{rt="…" group}` |
+  | ［＃「X」の左に「r」のルビ］, ［＃「X」に「r」の注記］ (ママ) | `:ruby[X]{rt="r" group pos=under}` / reading over X |
+  | 《〔r〕》 (the edition's added reading) | kept as ruby without 〔〕 (`editorial_ruby="drop"` removes it) |
+  | ［＃「X」に傍点］, ［＃傍点］…［＃傍点終わり］; 白ゴマ, 丸, 白丸; `の左に` | `:dots[X]{style=sesame}`, `{… fill=open}`, `{style=circle fill=filled}`, `{style=circle fill=open}`; left side `pos=under` |
+  | 黒三角, 白三角, 二重丸, 蛇の目, ばつ傍点 | `:dots{style=triangle…}` etc., kept but drawn as dots (reported gap) |
+  | 傍線, 二重傍線, 鎖線, 破線, 波線 | `:sideline[X]`, `{style=double}`, `{style=dotted}`, `{style=dashed}` (gap: drawn solid), `{style=wavy}` |
+  | ［＃「X」は縦中横］, ［＃「X」は横組み］ | `:tcy[X]`, `:sideways[X]` |
+  | 太字, 斜体 | `**X**`, `*X*` (in a `ja` book `*…*` is bōten: reported) |
+  | 上付き小文字, 行右小書き / 下付き小文字, 行左小書き | `^X^` / `~X~` |
+  | ［＃割り注］…［＃割り注終わり］ | `:warichu[…]` (source （） consumed into `open`/`close`); ［＃改行］ inside → U+3000 (gap) |
+  | `字［＃（ヲ）］［＃レ］`, ［＃一レ］, 竪点 `敬‐［＃二］` | `:kunten[字]{kaeri="レ" okuri="ヲ"}`, `{tate kaeri="二"}` |
+  | 大/中/小見出し (forward, block, ここから), 同行/窓 | `#` `##` `###` (`--heading-levels`), `{indent="N"}` from ［＃N字下げ］ (set the level's `indent` from it), `kind="runin"`/`"window"` (gap) |
+  | ［＃改ページ］, ［＃改丁］, ［＃改見開き］, ［＃改段］ | `:::pagebreak`, `{parity="odd"}`, `{parity="even"}`, `:::columnbreak` |
+  | a paragraph's leading U+3000 / 「 with none / neither | dropped (the body's 1-em indent) / plain (the engine's bracket rule) / `:::paragraphs{style="aozora-f0"}` (flush) |
+  | ［＃N字下げ］, ここからN字下げ, 折り返してM字下げ, 改行天付き | `aozora-iN-fK`, `aozora-iN-hM`, `aozora-hN` styles |
+  | 地付き, 地からN字上げ (line, block, mid-line) | `aozora-end` (`textAlign: 'end'`), `aozora-endN` (+ `endIndent: N em`) |
+  | N字詰め, ページの左右中央 (paragraphs) | `-wN`, `-center` style suffixes, reported (use `:::pagebreak{center}` for a centred page) |
+  | `※［＃「てへん＋劣」、第3水準1-84-77］`, `第4水準2-…`, `U+XXXX`, `［＃二の字点、1-2-22］` | the character (JIS X 0213); unresolved → 〓 and listed |
+  | `／＼`, `／″＼` after kana | 〳〵, 〴〵 |
+  | CP932 ～ (U+FF5E), half-width katakana | 〜 (U+301C); full width. Full-width Latin (Ｋ) untouched |
+  | 〔E'tude〕 accent decomposition | Étude |
+  | ［＃「X」は底本では「Y」］, ［＃「X」はママ］, ［＃ルビの…］ | not printed; in `editorial` |
+  | ［＃…（fig.png、横W×縦H）入る］ + キャプション | `::resource{id="fig"}`, an image block with its caption |
+  | blank lines between paragraphs | `:::space{lines=N}` (`--blank-lines drop`) |
+
+- **Rights and credits.** Aozora publishes works whose copyright has expired (and a few its rights holders
+  released). In Japan the term is life + 70 years since 2018-12-30, and works whose term had ended before then
+  stayed free: an author who died in **1967 or earlier** is in the public domain there. The book must also be
+  free where it is published: the EU counts life + 70 (in 2026, died 1955 or earlier); the US counts
+  publication (in 2026, published before 1931). A translation or a modern editor's additions (notes, added
+  readings) have their own author. Aozora asks that a redistributed file keep its bibliographic block and the
+  notice that volunteers typed and proofread it (「このファイルは、インターネットの図書館、青空文庫で作られました。…」):
+  print `credits` in the colophon, with the card URL, and say what the port changed (notation turned into
+  markup, 外字 set as characters, ～ as 〜, ／＼ as 〳〵).
+- **NDL Digital Collections** (国立国会図書館デジタルコレクション, https://dl.ndl.go.jp/): scans of first
+  editions, covers, frontispieces and illustrations. Items marked インターネット公開（保護期間満了） are free to
+  reuse; credit the collection and the item's `pid`. Images come through IIIF:
+  `https://dl.ndl.go.jp/api/iiif/<pid>/manifest.json`, then
+  `https://dl.ndl.go.jp/api/iiif/<pid>/R<canvas, 7 digits>/full/full/0/default.jpg`. Pace the requests.
+  For a text not on Aozora the item's OCR text, where NDL has made one, is a draft to proofread (ruby is lost,
+  old kanji are misread).
+- **PDF, vertical**: as Chinese vertical PDFs (columns right to left, `dir` (0, 1)). Readings come out as
+  small separate spans beside their base: rebuild them as `{base|reading}` from their position, or take
+  the text from another source. A hung 、。 sits outside the column's last cell.
+- **Scans**: `ocrmypdf --language jpn` (`jpn_vert` for vertical pages); ruby and bōten do not survive OCR.
+- **InDesign (IDML)**: `idml_extract.py` reads Japanese ruby (`RubyType` GroupRuby → one reading, PerCharacterRuby
+  → per character; in a `ja` book a per-character ruby of a word is jukugo), kenten, tate-chu-yoko and warichu
+  as for Chinese. Read the paragraph styles' composition settings by hand: the kinsoku set
+  (`KinsokuSet`: 強い禁則 Hard → `ja-very-strict`, 弱い禁則 Soft → `ja-strict` or `ja-loose`), the hanging
+  (`BurasagariType` `BurasagariNone` / `BurasagariStandard` / `BurasagariForced` → `cjk.hangingPunctuation`
+  `'none'` / `'allow'` / `'force'`) and the mojikumi set (the punctuation spacing; JLReq's defaults match
+  the usual 行末約物半角 sets).
+- **Word (.docx)**: `w:ruby` (group or per character), `w:em` (bōten: `comma` = sesame, `dot`, `circle`,
+  `underDot` = a dot under), `w:eastAsianLayout` as for Chinese; a Japanese paragraph indented with one U+3000 is
+  the 1-em indent.
+- **EPUB** (Japanese publishers follow the 電書協 production guide): `<ruby>` per word, emphasis classes
+  (`em-sesame` and the like) or `text-emphasis` → `:dots[…]`, `.tcy` / `text-combine-upright` → `:tcy[…]`,
+  `page-progression-direction="rtl"` and `writing-mode: vertical-rl` → a vertical right-bound book.
+- **Text as written**: keep the edition's kanji forms and kana usage (旧字旧仮名 stays), its numbers in kanji,
+  full-width Ｋ and １２ (upright one per cell in vertical text). Never NFKC the whole text: only half-width
+  katakana become full width. Keep IVS selectors after names. Japanese writes no spaces between words: a space
+  typed inside Japanese text is usually a typo, except between Latin words.
 
 ## Arabic sources
 
