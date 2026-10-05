@@ -3496,6 +3496,7 @@ interface CjkConfig {
   hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
   spaceAfterQuestion?: 'auto' | boolean;    // 段落中？！之后加一个字宽（日本）。
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // 有缩进的段落开头的括号。
+  wordBreak?: 'normal' | 'keep-all';        // keep-all：只在空格处断行（分かち書き、韩文）。
   latinSpacing?: Dimension;                 // 汉字与拉丁字母之间；默认0.25 em。
   uprightDigits?: 0 | 2 | 3 | 4;            // 竖排：数字直立排进一个字格；默认2。
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -3577,6 +3578,12 @@ interface CjkConfig {
       <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
       <td><code>'auto'</code></td>
       <td>有首行缩进的段落以开括号起头时括号怎样排（JLReq §3.1.5）：<code>'indent'</code>保留缩进，括号在其后占一个字宽（第①种）；<code>'half'</code>让括号去掉字形之前的空白，填满一个字宽缩进的后半部分，文字从其他段落文字开始的位置开始（第③种）；<code>'flush'</code>把括号放在边缘，不缩进（天付き）。没有缩进或悬挂缩进的段落保持原样。<code>'auto'</code>：日本为<code>'half'</code>；其他地区与过去一样，按一般行首处理括号。</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>行在两个字符之间的断开方式。<code>'keep-all'</code>只在空格（U+0020、U+3000）处，以及<code>lineBreak</code>允许时在标点旁（、。」之后，「之前）断开，两个文字（假名、汉字、韩文、拉丁字母）之间从不断开：用于词组之间加空格的假名文本（分かち書き，如绘本和识字课本）和韩文。比一行还长的词组仍按<code>'normal'</code>的方式在内部断开。段落样式可以单独设置（<code>wordBreak</code>）。自postext 1.16起。</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3789,7 +3796,7 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 在VDT中，带标注的片段带有`cjkMarks`，排版把着重号和线标作为`VDTLine.marks`放在各行上（点、圆圈、芝麻点、直线、双线、点线和波浪线，位于该行的排版方向坐标系中），Canvas、HTML和PDF按原样绘制（PDF：`Artifact /Layout`；HTML：`aria-hidden`框，带着重号的文字放在`<em>`中）。注音基字的片段带有`ruby`（注音及其各段；日文读音还带有它与熟语中其他字共用的注音`id`以及`jukugo`），注音把基字拉开时在`inkOffset`处并按`tracking`绘制基字；带汉文训读记号的字带有`kunten`（各段及其竖点）；夹注在一行上的部分是一个片段，其`text`先是上一行、再是下一行，其`warichu`保存渲染器实际绘制的两行。带标签的PDF把注音放进其基字`Ruby`的`RT`中，把夹注放进`Warichu`中，该行的`/ActualText`读出基字文字，夹注只读一次。着重号、注音和夹注在正文、标题、列表和标注框中绘制，也在资源的题注、表格单元格和注释中绘制，其行与正文行一样带有`marks`和`ruby`；设计元素中的文字保留原文，但不绘制这些标注。
 
-解析函数和精简函数与其他部分一致。`spaceAfterQuestion`和`paragraphStartBracket`，以及注音的`overhang`、`align`和`smallKana`，只在它们改变了什么时（在日本，或者明确设置时）才出现在解析后的配置中。`setCjkLineBreak`和`setCjkComposition`为在`buildDocument`之外进行的测量设定级别和排版方式（标点宽度、悬挂、汉字与拉丁字母间距；`cjkCompositionOf(resolved.cjk, dpi)`），`buildDocument`则根据配置设定它们。在构建之外，标点保留完整的前进宽度，也不加汉字与拉丁字母间距：
+解析函数和精简函数与其他部分一致。`spaceAfterQuestion`、`paragraphStartBracket`和`wordBreak`，以及注音的`overhang`、`align`和`smallKana`，只在它们改变了什么时（在日本，或者明确设置时）才出现在解析后的配置中。`setCjkLineBreak`和`setCjkComposition`为在`buildDocument`之外进行的测量设定级别和排版方式（标点宽度、悬挂、汉字与拉丁字母间距；`cjkCompositionOf(resolved.cjk, dpi)`），`buildDocument`则根据配置设定它们。在构建之外，标点保留完整的前进宽度，也不加汉字与拉丁字母间距：
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -4908,6 +4915,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
       <td>段落的大小写：<code>'uppercase'</code>把段落排成大写（演员表、一行舞台动作说明），行内标签中的文字和<code>:ref</code>的标签也包括在内。转换逐字等长，使编辑器的源映射保持一一对应：大写形式更长的字母（<code>ß</code>）保持原样。数学公式不受影响；把段落当作标记读取的书眉（<code>&#123;firstMark.<em>style</em>&#125;</code>）取原文；设计文本用自己的<code>textTransform</code>排成大写。</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>这些段落的中日韩文行在字符之间的断开方式（见<code>cjk.wordBreak</code>）：普通散文书里引用的一段词组间加空格的假名课文用<code>'keep-all'</code>，反过来用<code>'normal'</code>。自postext 1.16起。</td>
     </tr>
   </tbody>
 </table>

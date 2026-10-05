@@ -100,6 +100,8 @@ At every Japanese level no line ends with an opening bracket or quote, a currenc
 
 When the next character may not open a line, the composer first tries to take it in by giving up space in the line (oikomi, push-in), in the JLReq order below, and only then carries the character before it down (oidashi, push-out). `々` is never replaced by the kanji it repeats at a line start (JLReq mentions the practice; it changes the text).
 
+Picture books and first readers set in kana put a space between phrases (<span lang="ja" className="font-body">分かち書き</span>, <span lang="ja" className="font-body">むかし むかし、 ある ところに</span>) and break lines only there. `cjk.wordBreak: 'keep-all'` breaks them so: at a space (U+0020 or U+3000) and next to punctuation where the level allows it (after <span lang="ja" className="font-body">、。」</span>, before <span lang="ja" className="font-body">「</span>), never between two letters, kana, kanji or Latin. The rules of the level still apply at the spaces, and a phrase longer than the line is broken inside it as the level would break it. A paragraph style sets its own with `wordBreak`, for a primer quoted in a book of ordinary prose. A justified line takes the slack in its spaces first, up to half an em each, then between its characters. The reflowable EPUB writes `word-break: keep-all`. Korean, whose words (어절) are spaced, takes the same setting.
+
 ### Yakumono: punctuation spacing
 
 Japanese punctuation (yakumono, 約物) is set full width: the glyph takes half an em and the other half is space, before an opening bracket, after a closing one and after 、。. ・：； sit in the middle of their em with a quarter em on each side, and ？！ fill their em. What Japanese typesetting adjusts is that space (JLReq §3.1):

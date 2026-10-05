@@ -3,7 +3,7 @@
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type { BodyTextConfig, ColorValue, Dimension, DimensionUnit, ParagraphContainerSpacing, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
-import { DEFAULT_BODY_TEXT_CONFIG, resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
+import { DEFAULT_BODY_TEXT_CONFIG, DEFAULT_CJK_CONFIG, isCjkLanguage, resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
   CollapsibleSection,
@@ -18,6 +18,7 @@ import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { defaultDocumentLocale } from '../../controls/hyphenation';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -91,6 +92,11 @@ function ParagraphStyleCard({
   const textSide = flowSideLabels(useRightToLeftFlow(), labels.bodyTextAlignLeft, labels.headingsTextAlignRight);
   // Ragged styles hyphenate too once the body turns ragged hyphenation on.
   const raggedHyphenation = useSandboxSelector((s) => s.config.bodyText?.hyphenation?.ragged === true);
+  // Line breaking between CJK characters (#463): shown in a Chinese,
+  // Japanese or Korean document, or when the style sets it; unset, the
+  // style follows the document's `cjk.wordBreak`.
+  const cjkDocument = useSandboxSelector((s) => isCjkLanguage(s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale)));
+  const documentWordBreak = useSandboxSelector((s) => s.config.cjk?.wordBreak ?? DEFAULT_CJK_CONFIG.wordBreak);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -288,6 +294,20 @@ function ParagraphStyleCard({
         isDefault={unset('textAlign')}
         onReset={() => onResetField('textAlign')}
       />
+      {(cjkDocument || style.wordBreak !== undefined) && (
+        <SelectInput
+          label={labels.cjkWordBreak}
+          value={resolved.wordBreak ?? documentWordBreak}
+          options={[
+            { value: 'normal', label: labels.cjkWordBreakNormal },
+            { value: 'keep-all', label: labels.cjkWordBreakKeepAll },
+          ]}
+          onChange={(v) => onChange({ wordBreak: v as ParagraphStyleConfig['wordBreak'] })}
+          tooltip={labels.cjkWordBreakTooltip}
+          isDefault={unset('wordBreak')}
+          onReset={() => onResetField('wordBreak')}
+        />
+      )}
       {(resolved.textAlign === 'justify' || raggedHyphenation) && (
         <ToggleSwitch
           label={labels.bodyHyphenation}

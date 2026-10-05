@@ -3499,6 +3499,7 @@ interface CjkConfig {
   hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
   spaceAfterQuestion?: 'auto' | boolean;    // Un cuadratín tras ？！ dentro de un párrafo (Japón).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un paréntesis que abre un párrafo sangrado.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: cortar solo en los espacios (分かち書き, coreano).
   latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Texto vertical: números en una casilla; por defecto 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -3580,6 +3581,12 @@ interface CjkConfig {
       <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
       <td><code>'auto'</code></td>
       <td>Cómo se compone un paréntesis de apertura que empieza un párrafo con sangría de primera línea (JLReq §3.1.5): <code>'indent'</code> conserva la sangría y da al paréntesis su cuadratín tras ella (patrón ①); <code>'half'</code> deja que el paréntesis ceda el blanco que hay delante de su dibujo, que llena entonces la segunda mitad de una sangría de un cuadratín, y el texto empieza donde empieza el de los demás párrafos (patrón ③); <code>'flush'</code> pone el paréntesis en el borde, sin sangría (天付き). Un párrafo sin sangría o con sangría francesa se queda como está. <code>'auto'</code>: <code>'half'</code> en Japón; en las demás regiones el paréntesis se compone como al principio de cualquier línea, igual que antes.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>Dónde se corta una línea entre dos caracteres. <code>'keep-all'</code> corta solo en un espacio (U+0020, U+3000) y junto a la puntuación donde <code>lineBreak</code> lo permite (tras 、。」, antes de 「), nunca entre dos letras (kana, kanji, hangul, latinas): para kana escrito con un espacio entre frases (分かち書き), como en los libros ilustrados y las cartillas, y para el coreano. Una frase más larga que la línea se corta por dentro como la cortaría <code>'normal'</code>. Un estilo de párrafo puede fijar el suyo (<code>wordBreak</code>). Desde postext 1.16.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3792,7 +3799,7 @@ El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado. U
 
 En el VDT un segmento marcado lleva `cjkMarks`, y la composición coloca los puntos y las líneas de sus líneas en `VDTLine.marks` (puntos, círculos, sésamos, líneas rectas, dobles, de puntos y onduladas, en el marco de flujo de la línea), que el canvas, el HTML y el PDF dibujan tal cual (PDF: `Artifact /Layout`; HTML: cajas `aria-hidden` y el texto con puntos en `<em>`). El segmento de la base de un ruby lleva `ruby` (la lectura y sus trozos; en una lectura japonesa, también el `id` que su anotación comparte con los demás caracteres de una palabra jukugo, y `jukugo`) y pinta la base en `inkOffset`, con `tracking`, cuando la lectura la ensanchó; un carácter con marcas de kanbun lleva `kunten` (sus trozos y su tatesen); el fragmento de una nota warichu en una línea es un segmento cuyo `text` es la fila de arriba y luego la de abajo, y cuyo `warichu` guarda las filas que los renderizadores pintan en su lugar. El PDF etiquetado pone la lectura en el `RT` del `Ruby` de su base y la nota en un `Warichu`, y el `/ActualText` de la línea lee el texto de la base y la nota una sola vez. Las marcas, lecturas y notas se dibujan en el texto, los títulos, las listas y los recuadros, y en los pies de figura, las celdas de tabla y las notas de los recursos, cuyas líneas llevan `marks` y `ruby` como las del texto; el texto de diseño conserva el texto sin ellas.
 
-El resolutor y el depurador siguen el patrón de las demás secciones. `spaceAfterQuestion` y `paragraphStartBracket`, y el `overhang`, el `align` y el `smallKana` del ruby, solo están en la configuración resuelta cuando cambian algo (en Japón, o cuando se fijan). `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
+El resolutor y el depurador siguen el patrón de las demás secciones. `spaceAfterQuestion`, `paragraphStartBracket` y `wordBreak`, y el `overhang`, el `align` y el `smallKana` del ruby, solo están en la configuración resuelta cuando cambian algo (en Japón, o cuando se fijan). `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -4911,6 +4918,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
       <td>Caja de los párrafos: <code>'uppercase'</code> los compone en mayúsculas (un reparto, una acotación), también las palabras de un chip y la etiqueta de una <code>:ref</code>. Conserva la longitud letra a letra, para que el mapa de posiciones del editor siga siendo uno a uno: una letra cuya mayúscula es más larga (<code>ß</code>) se queda tal cual. Las fórmulas no cambian, y un titulillo que lee el párrafo como marca (<code>&#123;firstMark.<em>estilo</em>&#125;</code>) toma el texto tal como está escrito; el <code>textTransform</code> propio de un texto de diseño lo pasa a mayúsculas.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>Dónde se cortan entre caracteres las líneas CJK de los párrafos (ver <code>cjk.wordBreak</code>): <code>'keep-all'</code> para una cartilla en kana con espacios entre frases citada en un libro de prosa corriente, <code>'normal'</code> para lo contrario. Desde postext 1.16.</td>
     </tr>
   </tbody>
 </table>
