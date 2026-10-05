@@ -91,6 +91,10 @@ function formatOf(seg: { bold?: boolean; italic?: boolean }, full?: VDTLineSegme
   if (full.tcy) fmt.tcy = true;
   if (full.orientation) fmt.orientation = full.orientation;
   if (full.warichu) fmt.warichu = true;
+  // A marker in the line gap, or one the layout moved to the right of a
+  // vertical line (reduced, shifted, on the line: no superscript).
+  if (full.sideMarker) fmt.note = 'side';
+  else if (full.footnoteId !== undefined && full.baselineShift !== undefined && !full.script) fmt.note = 'right';
   return fmt;
 }
 
@@ -156,6 +160,10 @@ export function wrapFormat(inner: string, fmt: Format): string {
     fmt.done && 'pt-done',
   ].filter(Boolean);
   let out = classes.length > 0 ? `<span class="${classes.join(' ')}">${inner}</span>` : inner;
+  // A marker in the line gap: a box of no advance from which it runs back
+  // over the character it marks (see `.pt-note-side`).
+  if (fmt.note === 'side') out = `<span class="pt-note-side"><span>${out}</span></span>`;
+  else if (fmt.note === 'right') out = `<span class="pt-note-right">${out}</span>`;
   if (fmt.script) out = `<${fmt.script}>${out}</${fmt.script}>`;
   if (fmt.italic) out = `<em>${out}</em>`;
   if (fmt.bold) out = `<strong>${out}</strong>`;

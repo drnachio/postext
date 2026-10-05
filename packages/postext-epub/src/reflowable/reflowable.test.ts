@@ -533,3 +533,31 @@ describe('reflowable rendition: stylesheets per chapter and part', () => {
     expect(files.get('text/chapter-003.xhtml')).not.toContain('book-2.css');
   });
 });
+
+describe('reflowable rendition: Japanese note markers (JLReq §4.2.3)', () => {
+  const md = '先生[^a]と呼んでいた。\n\n[^a]: 注の本文。';
+
+  it('sets a side marker in a box of no advance over the text, linked to its note', async () => {
+    const doc = layOut(md, { ...baseConfig, locale: 'ja', footnotes: { placement: 'column', markerPosition: 'side' } });
+    const { pub, files, all } = await render([doc]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-side"><span>1<\/span><\/span><\/a>/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/\.pt-note-side \{[^}]*inline-size: 0;[^}]*font-size: 0\.6em;/);
+    expect(css).not.toContain('.pt-note-right');
+  });
+
+  it('sets a right marker of a vertical book reduced against the line\'s right side', async () => {
+    const doc = layOut(md, { ...baseConfig, locale: 'ja', layout: { writingMode: 'vertical-rl' }, footnotes: { placement: 'column' } });
+    const { pub, all } = await render([doc]);
+    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-right">（1）<\/span><\/a>/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/\.pt-note-right \{[^}]*font-size: 0\.7em;/);
+  });
+
+  it('writes no marker rule for other books', async () => {
+    const { pub } = await render([layOut(`${para}[^a]\n\n[^a]: Note.`)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).not.toContain('pt-note-');
+  });
+});

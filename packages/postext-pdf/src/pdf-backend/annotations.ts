@@ -25,7 +25,7 @@ import {
   type PDFFont,
   type PDFOperator,
 } from 'pdf-lib';
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTRuby, VDTWarichu } from 'postext';
+import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
 import { parseFontString } from '../fontString';
 import type { FontCache } from '../fontCache';
 import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx } from './primitives';
@@ -207,4 +207,22 @@ export function paintWarichu(
 ): void {
   if (elem) tagContent(ctx, elem.child('Warichu').child('WT'));
   paintRuns(ctx, warichu.runs, x, baseline, warichu.color ?? textHex, fontCache, fallback);
+}
+
+/**
+ * Paint a footnote marker set in the line gap (`VDTLineSegment.sideMarker`,
+ * JLReq §4.2.3) from its segment's `x`. It is the marker's text: in a
+ * tagged render it joins the content the caller tagged (the marker's
+ * `Link`).
+ */
+export function paintSideMarker(
+  ctx: PageCtx,
+  marker: NonNullable<VDTLineSegment['sideMarker']>,
+  x: number,
+  baseline: number,
+  textHex: string,
+  fontCache: FontCache,
+  fallback: PDFFont,
+): void {
+  paintRuns(ctx, marker.runs, x, baseline, textHex, fontCache, fallback);
 }

@@ -77,3 +77,23 @@ describe('footnotes in the PDF', () => {
     }
   });
 });
+
+// Japanese markers (#423): a side marker (in the line gap) and a right
+// one are linked and tagged as any marker; the side marker's link covers
+// its run, which ends where its segment starts.
+describe('side markers in the PDF', () => {
+  it('links a marker set in the line gap where it is painted', async () => {
+    const doc = buildDocument({ markdown: md, metadata: { title: 'Notes' } }, { ...config, layout: { layoutType: 'single' }, footnotes: { markerPosition: 'side' } });
+    const seg = doc.blocks.flatMap((b) => b.lines).flatMap((l) => l.segments ?? []).find((s) => s.footnoteId === 'wick')!;
+    expect(seg.sideMarker).toBeDefined();
+    const run = seg.sideMarker!.runs[0]!;
+    const side = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: true }));
+    const page = side.getPages()[0]!;
+    const annots = page.node.lookup(PDFName.of('Annots'), PDFArray);
+    const links = annots.asArray().map((r) => side.context.lookup(r, PDFDict)).filter((a) => a.get(PDFName.of('Subtype')) === PDFName.of('Link'));
+    expect(links).toHaveLength(2);
+    const rect = links[0]!.lookup(PDFName.of('Rect'), PDFArray).asArray().map((n) => Number(n.toString()));
+    expect(rect[2]! - rect[0]!).toBeGreaterThan(0);
+    expect(rect[2]! - rect[0]!).toBeCloseTo((-run.dx * 72) / doc.config.page.dpi, 2);
+  }, 60_000);
+});

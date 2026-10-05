@@ -40,6 +40,10 @@ export interface Format {
   orientation?: 'upright' | 'sideways';
   /** A warichu note (two small rows in print, one small run here). */
   warichu?: boolean;
+  /** A footnote marker set apart from the line (`footnotes.markerPosition`,
+   *  JLReq §4.2.3): in the line gap (`'side'`) or flush right of a
+   *  vertical line (`'right'`). */
+  note?: 'side' | 'right';
   /** A completed task's text. */
   done?: boolean;
   /** The language of the run when it differs from its document's: the

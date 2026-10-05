@@ -15,7 +15,7 @@ import {
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { inkScaleOperators } from './inkScale';
 import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
 import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
@@ -290,7 +290,10 @@ function renderSegments(
     // A footnote marker links to its note, like a `:ref` to its resource
     // and a cross-reference to its anchor (#264).
     const target = refTarget(seg) ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
-    const link = refRun.enter(seg, x, textElem, target, seg.width);
+    // A marker in the line gap (JLReq §4.2.3) links where its run is:
+    // before its segment, which takes no advance.
+    const side = seg.sideMarker?.runs[0];
+    const link = side ? refRun.enter(seg, x + side.dx, textElem, target, -side.dx) : refRun.enter(seg, x, textElem, target, seg.width);
     // A page number of the index links to its page.
     const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;
     // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
@@ -302,9 +305,14 @@ function renderSegments(
     // On a line with directions each segment is one run: HarfBuzz shapes a
     // right-to-left one (and any complex text), and a word set in several
     // styles. The kashidas justification inserted are painted, not read.
-    const shaped = (seg.runs !== undefined || (directed && (seg.rtl || needsComplexShaping(seg.text))))
+    const shaped = !seg.sideMarker && (seg.runs !== undefined || (directed && (seg.rtl || needsComplexShaping(seg.text))))
       && paintShapedSegment(ctx, seg, x, baseline + (seg.baselineShift ?? 0), font, size, color, block, fontCache, actualText, kashidaOf(seg, line));
-    if (shaped) {
+    if (seg.sideMarker) {
+      // Its run, not its text, with no character spacing.
+      if (tracking !== 0) setTrackingPx(ctx, 0);
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, colorHex, fontCache, blockFont);
+      if (tracking !== 0) setTrackingPx(ctx, tracking);
+    } else if (shaped) {
       // Painted by HarfBuzz.
     } else {
       withShapingLanguage(seg.lang === undefined ? shapingLanguage() : openTypeLanguageOf(seg.lang), () => {
@@ -505,7 +513,7 @@ function renderLineText(
  *  the block's plain text, or is linked; an orientation mark (`:tcy`,
  *  `:upright`, `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
-  return s.bold || s.italic || s.runs !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
+  return s.bold || s.italic || s.runs !== undefined || s.sideMarker !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
     || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
 }
 

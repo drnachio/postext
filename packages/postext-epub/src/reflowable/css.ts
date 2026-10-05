@@ -440,6 +440,23 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('ruby.pt-ruby-under', ['ruby-position: under', '-epub-ruby-position: under', '-webkit-ruby-position: after']));
   out.push(rule('ruby.pt-ruby-right', ['ruby-position: inter-character']));
   out.push(rule('.pt-marker', ['height: 0']));
+  // Japanese note markers (JLReq §4.2.3), only in a book that sets them.
+  // In the line gap: a box of no advance, its text running back from it
+  // (right to left, inline-start being the end), its baseline raised past
+  // the text's em box (0.88 em over its baseline) without growing the
+  // line. Right of a vertical line: reduced, its box against
+  // the line's right side.
+  const marker = config.footnotes.markerPosition;
+  if (marker === 'side' || marker === 'right') {
+    const size = config.footnotes.markerSize;
+    const em = size.unit === 'em' || size.unit === 'rem' ? size.value : px(size) / bodyPx;
+    if (marker === 'side') {
+      out.push(rule('.pt-note-side', ['display: inline-block', 'inline-size: 0', 'direction: rtl', 'white-space: nowrap', 'line-height: 0', `font-size: ${round(em)}em`, `vertical-align: ${round(0.88 / em + 0.12)}em`]));
+      out.push(rule('.pt-note-side > span', ['direction: ltr', 'unicode-bidi: isolate']));
+    } else {
+      out.push(rule('.pt-note-right', [`font-size: ${round(em)}em`, 'vertical-align: text-top', 'line-height: 0']));
+    }
+  }
 
   // --- classical verse -----------------------------------------------------
   // A bayt is a row of two equal hemistich columns (and the ornament's,
