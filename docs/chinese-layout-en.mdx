@@ -63,7 +63,7 @@ Write the whole tag: `zh-Hans` or `zh-Hant`, and the region when you know it (`z
 
 The last two rows follow the script, not the region. A classic in Traditional characters printed in Beijing (`zh-Hant-CN`) takes the mainland's line breaking and punctuation, and 圖, （續）, 見 and stroke-count groups; a Simplified book tagged for Hong Kong (`zh-Hans-HK`) takes 图 and pinyin groups.
 
-Japanese and Korean documents get the no-hyphenation rule and the CJK composer, but no rules of their own yet: they are set with the mainland Chinese defaults, and a paragraph in kana or hangul keeps the font's own quotes and dashes.
+Japanese documents have a region of their own, `japan`, since postext 1.16: see [Japanese layout](/en/docs/japanese-layout). Korean documents get the no-hyphenation rule and the CJK composer, but no rules of their own yet: they are set with the mainland Chinese defaults, and a paragraph in hangul keeps the font's own quotes and dashes.
 
 ### The Markdown of a Chinese chapter
 
@@ -409,7 +409,7 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 
 ## Known limits
 
-- **Japanese and Korean** are set with the mainland Chinese defaults. Their own rules ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) are not implemented.
+- **Korean** is set with the mainland Chinese defaults; its own rules (KLREQ) are not implemented. Japanese follows its own rules since postext 1.16 ([Japanese layout](/en/docs/japanese-layout)).
 - **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
 - **Sizes in points.** There are no 号 or Q units.

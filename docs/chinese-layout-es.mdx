@@ -63,7 +63,7 @@ Escribe la etiqueta completa: `zh-Hans` o `zh-Hant`, y la región cuando se sepa
 
 Las dos últimas filas siguen a la escritura, no a la región. Un clásico en caracteres tradicionales impreso en Pekín (`zh-Hant-CN`) toma el corte de líneas y la puntuación de China continental, y 圖, （續）, 見 y grupos por número de trazos; un libro en caracteres simplificados etiquetado para Hong Kong (`zh-Hans-HK`) toma 图 y grupos por pinyin.
 
-Los documentos en japonés y en coreano reciben la regla de no dividir palabras y el compositor CJK, pero todavía no tienen reglas propias: se componen con los valores por defecto de China continental, y un párrafo en kana o en hangul conserva las comillas y las rayas de la fuente.
+Los documentos en japonés tienen una región propia, `japan`, desde postext 1.16: véase [Composición japonesa](/es/docs/japanese-layout). Los documentos en coreano reciben la regla de no dividir palabras y el compositor CJK, pero todavía no tienen reglas propias: se componen con los valores por defecto de China continental, y un párrafo en hangul conserva las comillas y las rayas de la fuente.
 
 ### El Markdown de un capítulo en chino
 
@@ -409,7 +409,7 @@ En el Sandbox, **Diseño › Escritura** reúne el idioma del documento, el modo
 
 ## Límites conocidos
 
-- **El japonés y el coreano** se componen con los valores por defecto de China continental. Sus reglas propias ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) no están implementadas.
+- **El coreano** se compone con los valores por defecto de China continental; sus reglas propias (KLREQ) no están implementadas. El japonés sigue sus propias reglas desde postext 1.16 ([Composición japonesa](/es/docs/japanese-layout)).
 - **El texto de los diseños** (cabeceras, aperturas, títulos de recuadro) corta el chino entre dos caracteres cualesquiera, sin las reglas de principio y final de línea ni el ancho de la puntuación. Esos títulos se ajustan a mano.
 - **Un modo de escritura por página.** No hay recuadros horizontales dentro de una página vertical, ni tablas verticales con la fila de cabecera a la derecha, ni pies al lado de una figura derecha. Las fórmulas, las etiquetas y las muestras de color en línea se tumban con la línea vertical.
 - **Cuerpos en puntos.** No hay unidades 号 ni Q.

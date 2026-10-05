@@ -63,7 +63,7 @@ Escriu l'etiqueta completa: `zh-Hans` o `zh-Hant`, i la regió quan se sàpiga (
 
 Les dues últimes files segueixen l'escriptura, no la regió. Un clàssic en caràcters tradicionals imprès a Pequín (`zh-Hant-CN`) pren el tall de línies i la puntuació de la Xina continental, i 圖, （續）, 見 i grups per nombre de traços; un llibre en caràcters simplificats etiquetat per a Hong Kong (`zh-Hans-HK`) pren 图 i grups per pinyin.
 
-Els documents en japonès i en coreà reben la regla de no dividir paraules i el compositor CJK, però encara no tenen regles pròpies: es componen amb els valors per defecte de la Xina continental, i un paràgraf en kana o en hangul conserva les cometes i els guions llargs de la font.
+Els documents en japonès tenen una regió pròpia, `japan`, des de postext 1.16: vegeu [Composició japonesa](/ca/docs/japanese-layout). Els documents en coreà reben la regla de no dividir paraules i el compositor CJK, però encara no tenen regles pròpies: es componen amb els valors per defecte de la Xina continental, i un paràgraf en hangul conserva les cometes i els guions llargs de la font.
 
 ### El Markdown d'un capítol en xinès
 
@@ -408,7 +408,7 @@ Al Sandbox, **Disseny › Escriptura** reuneix la llengua del document, el mode 
 
 ## Límits coneguts
 
-- **El japonès i el coreà** es componen amb els valors per defecte de la Xina continental. Les seves regles pròpies ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) no estan implementades.
+- **El coreà** es compon amb els valors per defecte de la Xina continental; les seves regles pròpies (KLREQ) no estan implementades. El japonès segueix les seves pròpies regles des de postext 1.16 ([Composició japonesa](/ca/docs/japanese-layout)).
 - **El text dels dissenys** (capçaleres, obertures, títols de requadre) talla el xinès entre dos caràcters qualssevol, sense les regles de principi i final de línia ni l'amplada de la puntuació. Aquests títols s'ajusten a mà.
 - **Un mode d'escriptura per pàgina.** No hi ha requadres horitzontals dins d'una pàgina vertical, ni taules verticals amb la fila de capçalera a la dreta, ni peus al costat d'una figura dreta. Les fórmules, les etiquetes i les mostres de color en línia s'ajeuen amb la línia vertical.
 - **Cossos en punts.** No hi ha unitats 号 ni Q.
