@@ -253,3 +253,126 @@ describe.skipIf(!python)("postext-port lint on Arabic text", () => {
     expect(out).not.toMatch(/unknown directive|unknownDirective|verse/i);
   });
 });
+
+/** A Japanese chapter (kana and kanji, Latin marker word) in a one-locale project. */
+const JA_CHAPTER = [
+  "# 上　先生と私",
+  "",
+  "私はその人を常に先生と呼んでいた。だからここでもただ先生と書くだけで本名は打ち明けない。MARK これは世間を憚かる遠慮というよりも、その方が私にとって自然だからである。",
+  "",
+].join("\n");
+
+function japaneseProject(config: object, text = JA_CHAPTER): string {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ja-"));
+  mkdirSync(path.join(dir, "chapters/ja"), { recursive: true });
+  writeFileSync(path.join(dir, "chapters/ja/01.md"), text);
+  const manifest = {
+    version: 2, configVersion: 8, id: "t", name: "T",
+    chapters: { ja: [{ title: "上", file: "chapters/ja/01.md" }] },
+    config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
+    resources: [], fonts: [],
+  };
+  writeFileSync(path.join(dir, "preset.json"), JSON.stringify(manifest));
+  return dir;
+}
+
+describe.skipIf(!python)("postext-port lint on Japanese text", () => {
+  const faces = { bodyText: { fontFamily: "Noto Serif JP" }, headings: { fontFamily: "Noto Sans JP", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("calls a kana text tagged Chinese an error and asks for ja", () => {
+    for (const locale of ["zh-Hans", "zh-Hant-TW", "zh"]) {
+      const { out, status } = lint(japaneseProject({ locale, ...faces }));
+      expect(out, locale).toMatch(/ERROR config \(ja\): the chapters hold \d+ kana, so they are Japanese, but config.locale is 'zh[^']*': .*set 'ja'/);
+      expect(status, locale).toBe(1);
+    }
+  });
+
+  it("suggests ja for untagged kana and refuses the country code jp", () => {
+    const untagged = lint(japaneseProject({ ...faces })).out;
+    expect(untagged).toMatch(/WARN  config \(ja\): the chapters hold \d+ kana, so they are Japanese, but config.locale is not set: set 'ja'/);
+    expect(untagged).not.toContain("'zh-Hans' or 'zh-Hant'");
+    expect(lint(japaneseProject({ locale: "jp", ...faces })).out).toContain("'jp' is Japan's country code, not a language; Japanese is 'ja'");
+    expect(lint(japaneseProject({ locale: "en", ...faces })).out).toMatch(/the chapters are mostly Japanese \(\d+ kana, \d+ kanji\) but config.locale is 'en'/);
+    for (const locale of ["ja", "ja-JP"]) {
+      expect(lint(japaneseProject({ locale, ...faces })).out, locale).not.toMatch(/config.locale|kana, so they are Japanese/);
+    }
+  });
+
+  it("keeps the Chinese advice for a Chinese text quoting a little kana", () => {
+    const text = CHAPTER + "\n日本人稱之為ひらがな，又有カタカナ。\n";
+    const zh = lint(project({ locale: "zh-Hant-TW", bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC" } }, text)).out;
+    expect(zh).not.toMatch(/Japanese|'ja'/);
+    expect(lint(project({}, text)).out).toContain("set 'zh-Hans' or 'zh-Hant'");
+  });
+
+  it("points kana set in a Latin face to Japanese faces, and warns on a Chinese build", () => {
+    const latin = lint(japaneseProject({ locale: "ja" })).out;
+    expect(latin).toMatch(/ERROR fonts \(ja\): \d+ CJK characters .* set in EB Garamond, which has none: set bodyText.fontFamily to a Japanese face \(Noto Serif JP/);
+    const chinese = lint(japaneseProject({ locale: "ja", bodyText: { fontFamily: "Noto Serif SC" }, headings: { fontFamily: "Noto Sans JP" } })).out;
+    expect(chinese).toContain("Noto Serif SC sets kana (Japanese text): a Chinese build draws its kanji in Chinese forms");
+    expect(chinese).not.toContain("Noto Sans JP sets kana");
+  });
+
+  it("flags Aozora Bunko notation left in a chapter", () => {
+    const text = [
+      "# 一",
+      "",
+      "私《わたくし》は｜麦藁帽《むぎわらぼう》を被った。いよ／＼です。",
+      "",
+      "自然だからである。［＃「自然」に傍点］※［＃「てへん＋劣」、第3水準1-84-77］",
+      "",
+      "《石頭記》と{私|わたくし}は書名と読みです。",
+      "",
+    ].join("\n");
+    const { out, status } = lint(japaneseProject({ locale: "ja", ...faces }, text));
+    expect(out).toContain("ERROR chapters/ja/01.md:3: Aozora reading 《わたくし》 prints as text: write it as {base|reading}");
+    expect(out).toContain("ERROR chapters/ja/01.md:3: Aozora reading ｜麦藁帽《むぎわらぼう》 prints as text");
+    expect(out).toContain("WARN  chapters/ja/01.md:3: ／＼ after kana is Aozora's くの字点: write 〳〵");
+    expect(out).toContain("ERROR chapters/ja/01.md:5: Aozora note ［＃「自然」に傍点］ prints as text");
+    expect(out).toContain("ERROR chapters/ja/01.md:5: Aozora note ※［＃「てへん＋劣」、第3水準1-84-");
+    expect(out).not.toContain("01.md:7");
+    expect(status).toBe(1);
+  });
+
+  it("asks a Japanese index for readings", () => {
+    const text = JA_CHAPTER + [
+      "",
+      "先生は:index[鎌倉]にいた。:index[{東京|とう|きょう}]から来た。:index[海]{yomi=\"うみ\"}と:index[漱石]{reading=\"そうせき\"}。",
+      "",
+      ":index{term=\"作家!鷗外\" yomi=\"おうがい\"}:index[ことば]",
+      "",
+      "# 索引",
+      "",
+      ":::index",
+      "",
+    ].join("\n");
+    const ja = lint(japaneseProject({ locale: "ja", ...faces }, text)).out;
+    expect(ja).toMatch(/WARN  chapters\/ja\/01\.md:5: 2 entries of the main index hold kanji and have no reading \((鎌倉、作家|作家、鎌倉)\)/);
+    expect(ja).toContain("(indexReadingMissing)");
+    expect(lint(japaneseProject({ locale: "zh-Hans", ...faces }, text)).out).not.toContain("indexReadingMissing");
+  });
+
+  it("warns on Chinese settings in a Japanese book", () => {
+    const { out } = lint(japaneseProject({
+      locale: "ja", ...faces,
+      layout: { layoutType: "single", writingMode: "vertical-rl" }, page: { binding: "left" },
+      cjk: { region: "mainland", lineBreak: "gb", emphasis: "italic" },
+    }));
+    expect(out).toContain("cjk.region 'mainland' sets this Japanese book with that Chinese region's rules");
+    expect(out).toContain("cjk.lineBreak 'gb' is a Chinese level");
+    expect(out).toContain("cjk.emphasis 'italic' slants kana and kanji");
+    expect(out).toContain("page.binding 'left' in a vertical Japanese book");
+    const clean = lint(japaneseProject({ locale: "ja", ...faces, cjk: { lineBreak: "ja-strict", region: "japan" } })).out;
+    expect(clean).not.toMatch(/cjk\.|page\.binding/);
+  });
+
+  // fonts.py needs fontTools to import.
+  it.skipIf(spawnSync("python3", ["-c", "import fontTools"]).status !== 0)("subsets kana with the kana range", () => {
+    const r = spawnSync("python3", ["-c", [
+      "import sys; sys.path.insert(0, sys.argv[1]); import fonts",
+      "cps = {c for lo, hi in fonts.RANGES['kana'] for c in range(lo, hi + 1)}",
+      "print(all(ord(c) in cps for c in 'あっゃアッヵヶㇰｶﾞー・〳〵〝〟―…'))",
+    ].join("\n"), path.dirname(LINT)], { encoding: "utf8" });
+    expect(r.stdout.trim() || r.stderr).toBe("True");
+  });
+});

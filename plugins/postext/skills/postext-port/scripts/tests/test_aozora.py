@@ -213,7 +213,11 @@ class Blocks(unittest.TestCase):
         self.assertEqual(md("［＃地付き］（この日記終り）"), ':::paragraphs{style="aozora-end"}\n\n（この日記終り）\n\n:::')
         r = result("［＃地から２字上げ］長谷川辰之助")
         self.assertEqual(r.markdown.strip(), ':::paragraphs{style="aozora-end2"}\n\n長谷川辰之助\n\n:::')
-        self.assertTrue(r.style_gaps)
+        self.assertEqual(r.styles, [{
+            "id": "aozora-end2", "name": "Aozora 地から2字上げ", "textAlign": "end",
+            "firstLineIndent": {"value": 0, "unit": "em"}, "endIndent": {"value": 2, "unit": "em"},
+        }])
+        self.assertEqual(r.style_gaps, [])
         out = md("　二人は風呂へはいった。［＃地付き］（『十番随筆』所収）")
         self.assertEqual(out, '二人は風呂へはいった。\n\n:::paragraphs{style="aozora-end"}\n\n（『十番随筆』所収）\n\n:::')
         out = md("［＃ここから地付き］\n（一）\n（二）\n［＃ここで地付き終わり］")

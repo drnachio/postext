@@ -1496,10 +1496,12 @@ def style_config(sid: str, *, name_prefix: str = "") -> tuple[dict, list[str]]:
         elif p.startswith("h"):
             cfg["hangingIndent"] = em(int(p[1:]))
         elif p.startswith("end"):
+            # 地付き / 地からN字上げ: flush with the line end, raised N body
+            # ems from it (ParagraphStyle.endIndent, postext >= 1.16).
             cfg["textAlign"] = "end"
             cfg["firstLineIndent"] = em(0)
             if p[3:]:
-                gaps.append(f"{sid}: raised {p[3:]} em from the line end (地から{p[3:]}字上げ) — no end indent in ParagraphStyle")
+                cfg["endIndent"] = em(int(p[3:]))
         elif p.startswith("w"):
             gaps.append(f"{sid}: short measure of {p[1:]} characters (字詰め) — no measure in ParagraphStyle")
         elif p == "center":
