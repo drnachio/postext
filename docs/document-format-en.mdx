@@ -1392,6 +1392,8 @@ The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Vi
 
 **In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files.
 
+Two Cookbook recipes set videos: Nº 131, [A film club programme with QR codes on the posters](/en/cookbook/film-club-video-qr), prints each film as a title card with a play mark and a QR code, and Nº 132, [A lab sheet whose clips play on screen and in the EPUB](/en/cookbook/pendulum-lab-video-players), sets the player options for the HTML edition and packs its own clips in a fixed-layout EPUB.
+
 ## What is NOT supported
 
 Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:

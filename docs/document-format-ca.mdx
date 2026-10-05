@@ -1391,6 +1391,8 @@ El text cita un vídeo com cita una figura: `:ref{id="keeper-talk"}` imprimeix *
 
 **En un paquet.** Un `.postext` porta el fitxer (`resources/<id>.mp4`) i la portada (`resources/<id>.poster.jpg`): l'entrada del manifest els anomena a `file` i `poster`, dona la mida de la portada a `width` / `height` i desa la resta a `video` sense identificadors de fitxer. `bundleVideoUrl(bundle)` és el resolutor `resourceVideoUrl` sobre els fitxers d'un paquet.
 
+Dues receptes del Receptari posen vídeos: la núm. 131, [Programa de cineclub amb codis QR a les portades](/ca/cookbook/film-club-video-qr), imprimeix cada pel·lícula com una cartel·la amb la marca de reproducció i un codi QR, i la núm. 132, [Full de pràctiques amb vídeos per a la pantalla i l'EPUB](/ca/cookbook/pendulum-lab-video-players), fixa les opcions de reproductor de l'edició HTML i empaqueta els seus propis vídeos en un EPUB de maquetació fixa.
+
 ## Què NO s'admet
 
 Postext no reconeix les característiques següents de CommonMark. O es tracten com a text pla (i per tant apareixeran literalment a la sortida) o es descarten silenciosament:

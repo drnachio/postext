@@ -1394,6 +1394,8 @@ const talk: Resource = {
 
 **在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。
 
+排版食谱中有两篇用到视频：第131号[封面印有二维码的电影俱乐部节目单](/zh/cookbook/film-club-video-qr)把每部影片印成带播放标记和二维码的片名卡；第132号[视频在屏幕和EPUB里都能播放的实验报告单](/zh/cookbook/pendulum-lab-video-players)为HTML版设定播放器选项，并把自己的视频片段打包进固定版式EPUB。
+
 ## 不支持的内容
 
 Postext不识别以下CommonMark功能。它们要么被当作普通文本（因此会原样出现在输出中），要么被悄悄丢弃：

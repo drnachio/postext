@@ -1392,6 +1392,8 @@ El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime
 
 **En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete.
 
+Dos recetas del Recetario ponen vídeos: la nº 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una cartela con la marca de reproducción y un código QR, y la nº 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.
+
 ## Qué NO se soporta
 
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
