@@ -216,7 +216,7 @@ describe('pristine guide detection with six languages', () => {
     expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_AR, 'en')).toBe(false);
   });
 
-  it('keeps the Japanese guide opened on purpose: there is no Japanese interface for it to follow', () => {
+  it('keeps the Japanese guide opened on purpose, like the Chinese and Arabic ones', () => {
     const ja = sampleBook(DEFAULT_MARKDOWN_JA, ids, 'Guide');
     const en = sampleBook(DEFAULT_MARKDOWN_EN, ids, 'Guide');
     expect(isPristineJapaneseGuide(ja)).toBe(true);
@@ -225,6 +225,12 @@ describe('pristine guide detection with six languages', () => {
     for (const [viewer, previous] of [[DEFAULT_MARKDOWN_EN, 'en'], [DEFAULT_MARKDOWN_ES, null], [DEFAULT_MARKDOWN_ZH_HANS, 'zh-Hans'], [DEFAULT_MARKDOWN_AR, 'ar']] as const) {
       expect(pristineGuideFollowsViewer(ja, viewer, previous)).toBe(false);
     }
+    // The Japanese interface's own follows the next interface…
+    expect(pristineGuideFollowsViewer(ja, DEFAULT_MARKDOWN_EN, 'ja')).toBe(true);
+    expect(pristineGuideFollowsViewer(ja, DEFAULT_MARKDOWN_AR, 'ja-JP')).toBe(true);
+    // …and the Japanese interface swaps another edition for its own.
+    expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_JA, 'en')).toBe(true);
+    expect(pristineGuideFollowsViewer(ja, DEFAULT_MARKDOWN_JA, 'en')).toBe(false);
     // An edited Japanese guide is the reader's.
     const edited = { ...ja, chapters: ja.chapters.map((c, i) => (i === 4 ? { ...c, markdown: `${c.markdown}\n\n一文を足した。` } : c)) };
     expect(isPristineJapaneseGuide(edited)).toBe(false);

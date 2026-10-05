@@ -27,6 +27,12 @@ const chinese = (await import(/* @vite-ignore */ new URL('../../../../apps/web/m
 const arabic = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ar.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };
 };
+const japanese = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/ja.json', import.meta.url).href)) as {
+  default: { Sandbox: Record<string, string> };
+};
+const siteLocales = (await import(/* @vite-ignore */ new URL('../../../../apps/web/src/i18n/locales.ts', import.meta.url).href)) as {
+  LOCALE_INFO: Record<string, unknown>;
+};
 
 type Edition = 'en' | 'es' | 'ca' | 'zh-Hans' | 'ar' | 'ja';
 const EDITIONS: Record<Edition, string> = {
@@ -115,20 +121,13 @@ describe('what the guide says about itself and the Sandbox', () => {
       figures: '图与表', callouts: '标注框', running: '页眉页脚', parts: '篇', output: '导出', folio: 'folio', advanced: '高级',
     };
     expect(Object.keys(zh)).toEqual(SETTINGS_GROUPS.map((g) => g.id));
-    // Nor are there Japanese labels: the Japanese edition names the groups
-    // in its own words.
-    const ja: Record<SettingsGroupId, string> = {
-      page: 'ページと段組', writing: '表記体系', colors: '色', text: '文字組み', headings: '見出しと目次', lists: 'リスト',
-      figures: '図と表', callouts: '囲み', running: '柱とノンブル', parts: '部', output: '書き出し', folio: 'folio', advanced: '詳細設定',
-    };
-    expect(Object.keys(ja)).toEqual(SETTINGS_GROUPS.map((g) => g.id));
     const names: Record<Edition, string[]> = {
       en: SETTINGS_GROUPS.map((g) => (DEFAULT_LABELS[g.labelKey] as string).replace(/&/g, 'and').toLowerCase()),
       es: SETTINGS_GROUPS.map((g) => spanish.default.Sandbox[g.labelKey]!.toLowerCase()),
       ca: SETTINGS_GROUPS.map((g) => catalan.default.Sandbox[g.labelKey]!.toLowerCase()),
       'zh-Hans': SETTINGS_GROUPS.map((g) => zh[g.id]),
       ar: SETTINGS_GROUPS.map((g) => arabic.default.Sandbox[g.labelKey]!.toLowerCase()),
-      ja: SETTINGS_GROUPS.map((g) => ja[g.id]),
+      ja: SETTINGS_GROUPS.map((g) => japanese.default.Sandbox[g.labelKey]!.toLowerCase()),
     };
     const lists: Record<Edition, RegExp> = {
       en: /The \*\*Design\*\* panel edits[^:]*: ([^.]*)\./,
@@ -136,7 +135,7 @@ describe('what the guide says about itself and the Sandbox', () => {
       ca: /El tauler \*\*Disseny\*\* edita[^:]*: ([^.]*)\./,
       'zh-Hans': /\*\*Design\*\*面板用来编辑[^：]*：([^。]*)。/,
       ar: /تحرّر لوحة \*\*التصميم\*\*[^:]*: ([^.]*)\./,
-      ja: /\*\*Design\*\*パネルは[^：]*：([^。]*)。/,
+      ja: /\*\*デザイン\*\*パネルは[^：]*：([^。]*)。/,
     };
     for (const edition of Object.keys(lists) as Edition[]) {
       const list = claim(edition, lists[edition])[1]!.toLowerCase();
@@ -156,9 +155,7 @@ describe('what the guide says about itself and the Sandbox', () => {
       ca: catalan.default.Sandbox,
       'zh-Hans': chinese.default.Sandbox,
       ar: arabic.default.Sandbox,
-      // The Sandbox speaks no Japanese: the edition names the tabs as the
-      // English interface shows them.
-      ja: { canvas: 'Canvas', pdf: 'PDF', folio: 'Folio', html: 'HTML', epub: 'EPUB 3' },
+      ja: japanese.default.Sandbox,
     };
     const COUNT: Record<Edition, string[]> = {
       en: ['four', 'five', 'six'],
@@ -280,6 +277,66 @@ describe('what the guide says about itself and the Sandbox', () => {
     expect(config.page?.pageNumbering?.format).toBe('decimal');
     // One-em paragraph indent.
     expect(config.bodyText?.firstLineIndent).toEqual({ value: 1, unit: 'em' });
+  });
+
+  it('lists every language the interface comes in', () => {
+    // The site's locales, as its language switcher offers them.
+    const site = Object.keys(siteLocales.LOCALE_INFO);
+    const names: Record<Edition, Record<string, string>> = {
+      en: { en: 'English', es: 'Spanish', ca: 'Catalan', zh: 'Simplified Chinese', ja: 'Japanese', ar: 'Arabic' },
+      es: { en: 'inglés', es: 'español', ca: 'catalán', zh: 'chino simplificado', ja: 'japonés', ar: 'árabe' },
+      ca: { en: 'anglès', es: 'castellà', ca: 'català', zh: 'xinès simplificat', ja: 'japonès', ar: 'àrab' },
+      'zh-Hans': { en: '英文', es: '西班牙文', ca: '加泰罗尼亚文', zh: '简体中文', ja: '日文', ar: '阿拉伯文' },
+      ar: { en: 'الإنجليزية', es: 'الإسبانية', ca: 'الكتالانية', zh: 'الصينية المبسّطة', ja: 'اليابانية', ar: 'العربية' },
+      ja: { en: '英語', es: 'スペイン語', ca: 'カタルーニャ語', zh: '簡体字中国語', ja: '日本語', ar: 'アラビア語' },
+    };
+    const lists: Record<Edition, RegExp> = {
+      en: /The interface speaks ([^;.]*)/,
+      es: /La interfaz está en ([^;.]*)/,
+      ca: /La interfície està en ([^;.]*)/,
+      'zh-Hans': /界面有([^，。]*)种语言/,
+      ar: /والواجهة متاحة (ب[^،.]*)/,
+      ja: /画面の言語は([^。]*?)で、/,
+    };
+    for (const edition of Object.keys(lists) as Edition[]) {
+      const list = claim(edition, lists[edition])[1]!;
+      expect(Object.keys(names[edition]).sort(), edition).toEqual([...site].sort());
+      for (const locale of site) expect(list, `${edition}: ${locale}`).toContain(names[edition][locale]);
+    }
+  });
+
+  it('names the Japanese interface’s panels, groups and controls by their labels', () => {
+    const md = DEFAULT_MARKDOWN_JA;
+    const ja = japanese.default.Sandbox;
+    const en = DEFAULT_LABELS as unknown as Record<string, string>;
+    // The activity bar's panels, in its order (`ActivityBar.tsx`).
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
+    const tour = claim('ja', /七つのパネルを切り替える。([^。]*)で、最後のパネル/)[1]!;
+    expect(tour.split('、').map((name) => name.replace(/\*\*/g, ''))).toEqual(panels.map((key) => ja[key]));
+    // Every “**…**パネル” is a panel and every “**…**グループ” a group of
+    // the Design panel.
+    const panelNames = new Set(panels.map((key) => ja[key]));
+    for (const [, name] of md.matchAll(/\*\*([^*]+)\*\*パネル/g)) expect(panelNames.has(name!), name).toBe(true);
+    const groupNames = new Set(SETTINGS_GROUPS.map((g) => ja[g.labelKey]));
+    for (const [, name] of md.matchAll(/\*\*([^*]+)\*\*グループ/g)) expect(groupNames.has(name!), name).toBe(true);
+    // The controls the tries and the tour name, in bold as the interface
+    // writes them (a label's closing … stays outside the bold, where
+    // CommonMark lets the emphasis close).
+    const controls = [
+      'presetReloadActive', 'settingsGroupWriting', 'settingsGroupAdvanced', 'debugLooseLines', 'settingsGroupHeadings', 'balanceColumns',
+      'citationsSection', 'settingsOverriddenOnly', 'projectsGroupMine', 'presetsGroup', 'presetDuplicate', 'folioResetView', 'folioSaveView',
+    ];
+    for (const key of controls) {
+      const label = ja[key]!;
+      const bold = label.endsWith('…') ? `**${label.slice(0, -1)}**…` : `**${label}**`;
+      expect(md, key).toContain(bold);
+    }
+    expect(md).toContain(`「${ja.warningsCjkLooseLineTitle}」`);
+    // And none of them, nor a panel, under its English name.
+    for (const key of [...panels, ...controls, 'warningsCjkLooseLineTitle']) {
+      const english = en[key]!.replace(/…$/, '');
+      expect(md.includes(`**${english}`) || md.includes(`${english}（`), `${key}: “${english}”`).toBe(false);
+    }
   });
 
   it('describes the book in 3D as the Folio settings set it', () => {
