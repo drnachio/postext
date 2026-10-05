@@ -3338,10 +3338,12 @@ export interface ResolvedFootnotesConfig {
   separator: ResolvedFootnoteSeparatorConfig;
 }
 
-/** The conventions Chinese text follows, after the regions clreq
+/** The conventions CJK text follows. Chinese, after the regions clreq
  *  describes: `mainland` (China and Singapore: simplified characters,
- *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters). */
-export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong';
+ *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters).
+ *  Japanese: `japan` (JIS X 4051, W3C JLReq), which every `ja` tag
+ *  resolves to. */
+export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong' | 'japan';
 
 /** How strictly lines of CJK text avoid starting or ending with a mark
  *  (clreq §6.1.1):
@@ -3369,32 +3371,37 @@ export interface CjkConfig {
   /** The regional conventions to follow. `'auto'` (the default) reads them
    *  from `locale`: `zh`, `zh-Hans`, `zh-CN` and `zh-SG` → `mainland`;
    *  `zh-Hant` and `zh-TW` → `taiwan`; `zh-HK` and `zh-MO` → `hongkong`;
-   *  any other language → `mainland`. */
+   *  `ja` and every `ja-*` tag → `japan`; any other language →
+   *  `mainland`. */
   region?: 'auto' | CjkRegion;
   /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
-   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong. */
+   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong,
+   *  `strict` for Japan. */
   lineBreak?: 'auto' | CjkLineBreak;
   /** How wide the full-width marks are set (see
    *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for
-   *  the mainland, `fullwidth` for Taiwan and Hong Kong. */
+   *  the mainland, `fullwidth` for Taiwan, Hong Kong and Japan (JLReq
+   *  §3.1.2: 、。 inside a Japanese line keep their whole em). */
   punctuationWidth?: 'auto' | CjkPunctuationWidth;
   /** Two marks that meet (`。」`, `》（`, `：“`) give up the half em of
    *  blank between them, so the pair takes 1.5 em instead of 2 (clreq
-   *  §6.3.2.2). `'auto'` (the default): on for the mainland and Hong
-   *  Kong, off for Taiwan. */
+   *  §6.3.2.2, JLReq §3.1.4). `'auto'` (the default): on for the
+   *  mainland, Hong Kong and Japan, off for Taiwan. */
   compressAdjacent?: 'auto' | boolean;
   /** An opening bracket or quote that starts a line gives up its leading
    *  half em, so its ink lines up with the text edge, and a closing one
-   *  that ends a line its trailing half (clreq §6.3.2.3). `'auto'` (the
-   *  default): on for the mainland and Hong Kong, off for Taiwan. */
+   *  that ends a line its trailing half (clreq §6.3.2.3, JLReq §3.1.5).
+   *  `'auto'` (the default): on for the mainland, Hong Kong and Japan,
+   *  off for Taiwan. */
   trimLineStart?: 'auto' | boolean;
   /** Whether a pause or stop mark may hang past the end of the line
-   *  (clreq §6.1.3). `'none'` (the default): never. `'allow'`: one of
-   *  、，。． (on the mainland also ；：？！) hangs when it would otherwise
-   *  open the next line and compressing the line cannot take it in; never
-   *  in horizontal Taiwan and Hong Kong text. `'force'`: such a mark hangs
-   *  whenever it ends a line (but the paragraph's last). Never after or
-   *  before another mark. */
+   *  (clreq §6.1.3; ぶら下げ, JLReq §2.5.1). `'none'` (the default):
+   *  never. `'allow'`: one of 、，。． (on the mainland also ；：？！) hangs
+   *  when it would otherwise open the next line and compressing the line
+   *  cannot take it in; never in horizontal Taiwan and Hong Kong text
+   *  (Japan: 、，。． only, in both writing modes). `'force'`: such a mark
+   *  hangs whenever it ends a line (but the paragraph's last). Never after
+   *  or before another mark. */
   hangingPunctuation?: CjkHangingPunctuation;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
@@ -3422,14 +3429,16 @@ export interface CjkConfig {
    *  letters inside the same emphasis keep their italics; `'italic'` slants
    *  them as any text (a CJK face has no italic, so the slant is
    *  synthesised). `'auto'` (the default): `'dots'` when the document
-   *  language (`locale`) is Chinese, `'italic'` otherwise (#193). */
+   *  language (`locale`) is Chinese or Japanese (傍点: Japanese has no
+   *  italics either), `'italic'` otherwise (#193). */
   emphasis?: 'auto' | CjkEmphasis;
   /** What a book title marked `:book[…]` prints (#193): `'brackets'` sets
    *  《》 around it (〈〉 for a title inside another), as text the lines
    *  are broken with; `'wavy'` draws the wavy book-title line (书名号甲式)
    *  under it (left of it in vertical text); `'none'` prints the bare
    *  title. `'auto'` (the default): brackets for the mainland, the wavy
-   *  line for Taiwan and Hong Kong (`region`). */
+   *  line for Taiwan and Hong Kong, the bare title for Japan, whose books
+   *  set 『』 the author types (`region`). */
   bookTitleMark?: 'auto' | CjkBookTitleMark;
   /** Colour of the emphasis dots and of the proper-name and book-title
    *  lines. Unset: the colour of the text they mark (#193). The default of
@@ -3486,8 +3495,9 @@ export interface CjkWarichuConfig {
    *  vermilion). Unset: `cjk.annotationColor`, else the text colour. */
   color?: ColorValue;
   /** Brackets set at the text size before the first row and after the
-   *  last one (`〔` `〕`, `（` `）`). Default: none. A note's own
-   *  `open` / `close` attributes win. */
+   *  last one (`〔` `〕`, `（` `）`). Default: none, but `（` `）` for
+   *  Japan (`region`; JLReq §3.4.2). An empty string sets none. A note's
+   *  own `open` / `close` attributes win. */
   open?: string;
   close?: string;
 }

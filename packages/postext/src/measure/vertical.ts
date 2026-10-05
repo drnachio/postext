@@ -28,8 +28,9 @@ let measureWritingMode: WritingMode = 'horizontal-tb';
 let measureRegion: CjkRegion = 'mainland';
 let measureUprightDigits: UprightDigits = 2;
 
-/** Set the writing mode text is measured in, and the Chinese region whose
- *  cells it uses (the mainland interpunct takes half a cell). The build
+/** Set the writing mode text is measured in, and the CJK region whose
+ *  cells it uses (the mainland interpunct takes half a cell, Japan sets
+ *  ！？ upright). The build
  *  does, from the layout of the pages it is placing (a styled section may
  *  change it), and puts back what it found when it is done. */
 export function setMeasureWritingMode(mode: WritingMode, region: CjkRegion = measureRegion): void {
@@ -55,7 +56,8 @@ export function getMeasureUprightDigits(): UprightDigits {
   return measureUprightDigits;
 }
 
-/** The Chinese region vertical cells are measured for. */
+/** The CJK region (Chinese or Japanese) vertical cells are measured
+ *  for. */
 export function getMeasureRegion(): CjkRegion {
   return measureRegion;
 }

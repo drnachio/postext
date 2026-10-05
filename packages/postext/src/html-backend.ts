@@ -273,7 +273,7 @@ function kashidaTextHtml(text: string, offsets: readonly number[] | undefined, b
 /** Inserted tatweels: painted, never selected or copied. */
 const KASHIDA_DECL = '-webkit-user-select:none;user-select:none;';
 
-/** What vertical lines need: the Chinese region, the central axis of each
+/** What vertical lines need: the CJK region, the central axis of each
  *  family (`VDTFlowFrame.centralBaselines`), `cjk.uprightDigits`, and the
  *  advance of each dash stretched to its cell (`VDTFlowFrame.dashAdvances`). */
 interface VerticalHtml {

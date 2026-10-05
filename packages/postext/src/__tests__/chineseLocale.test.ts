@@ -74,7 +74,10 @@ describe('Chinese locale tags', () => {
     expect(stringsKeyOf('es-ES')).toBe('es');
     expect(stringsKeyOf('en-us')).toBe('en');
     expect(stringsKeyOf('pt_BR')).toBe('pt');
-    expect(cjkRegionOf('ja')).toBeUndefined();
+    // Japanese has a region of its own (japaneseLocale.test.ts); Korean
+    // and the other languages none.
+    expect(cjkRegionOf('ja')).toBe('japan');
+    expect(cjkRegionOf('ko')).toBeUndefined();
     expect(cjkRegionOf('en')).toBeUndefined();
     expect(localeScript('')).toBeUndefined();
     expect(localeScript('not a tag!')).toBeUndefined();
@@ -101,6 +104,7 @@ describe('Chinese locale tags', () => {
     const table = { en: 'Figure', 'zh-hans': '图' };
     expect(stringsFor(table, 'zh-Hant')).toBe('图');
     expect(stringsFor(table, 'zh-CN')).toBe('图');
+    // Japanese never borrows a Chinese entry.
     expect(stringsFor(table, 'ja')).toBe('Figure');
     expect(stringsFor({ en: 'Figure', 'zh-hant': '圖' }, 'zh-Hans')).toBe('Figure');
   });
@@ -113,7 +117,7 @@ describe('Chinese locale tags', () => {
   });
 
   it('lists the document languages with built-in strings', () => {
-    expect(DOCUMENT_LANGUAGES.map((l) => l.tag)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK', 'ar', 'ar-EG', 'ar-MA']);
+    expect(DOCUMENT_LANGUAGES.map((l) => l.tag)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK', 'ja', 'ar', 'ar-EG', 'ar-MA']);
     expect(DOCUMENT_LANGUAGES.slice(8, 11).map((l) => l.name)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）']);
   });
 });
@@ -127,9 +131,10 @@ describe('Chinese built-in strings', () => {
       expect(figure!.numberingTemplate).toBe('{h1}-{n}');
       expect(table!.numberingTemplate).toBe('{h1}-{n}');
     }
-    // Other languages keep the dotted template.
-    expect(defaultResourceTypes('ja')[0]!.numberingTemplate).toBe('{h1}.{n}');
-    expect(defaultResourceTypes('ja')[0]!.name).toBe('Figure');
+    // Other languages keep the dotted template (Japanese has its own
+    // strings: japaneseLocale.test.ts).
+    expect(defaultResourceTypes('ko')[0]!.numberingTemplate).toBe('{h1}.{n}');
+    expect(defaultResourceTypes('ko')[0]!.name).toBe('Figure');
   });
 
   it('continuation strings of tables and boxes', () => {

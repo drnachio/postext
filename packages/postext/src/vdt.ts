@@ -1601,7 +1601,7 @@ export interface VDTDesignTextBlock {
 }
 
 /** How the text of a vertical design block ({@link VDTDesignTextBlock.vertical})
- *  is set: the Chinese region whose punctuation it takes, how many digits a
+ *  is set: the CJK region whose punctuation it takes, how many digits a
  *  number set in one cell may have (`cjk.uprightDigits`), and the central
  *  axis of each family it is set in (em above the baseline, as
  *  {@link VDTFlowFrame.centralBaselines}). */

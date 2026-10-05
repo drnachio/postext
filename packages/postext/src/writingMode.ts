@@ -18,16 +18,19 @@
  *   through `vert` (、。，． in the top-right corner, ！？：； in the right
  *   half); Taiwan and Hong Kong fonts centre them and have no such form
  *   (their U+FE10–FE16 are the mainland shapes, so the vertical
- *   presentation forms must not be substituted there).
+ *   presentation forms must not be substituted there). Japanese text
+ *   (the `japan` region) sets 、。，． in the corner as the mainland does
+ *   and ！？ upright in the centre of the cell (JLReq §3.1.10, Appendix A).
  * - brackets and quotes take the vertical form, which is the horizontal
  *   glyph turned about the em box's centre when the font gives none;
  *   “ ” ‘ ’ in mainland text read as the corner brackets 『』「」
- *   (UAX #50 §3.2.4, the Hans vertical convention).
+ *   (UAX #50 §3.2.4, the Hans vertical convention); Japanese text keeps
+ *   them and takes the font's vertical form.
  * - dashes, ellipses, the wave dash and the interpunct are turned about
  *   the em box's centre (Noto CJK gives —— a vertical form only with
  *   `fwid`): a dash is stretched to fill its cell. The mainland interpunct
- *   takes half a cell (clreq §5.1), the Taiwan and Hong Kong one
- *   a whole cell.
+ *   takes half a cell (clreq §5.1), the Taiwan, Hong Kong and Japanese
+ *   one a whole cell (JLReq §3.1.2: ・ is a full em).
  * - an apostrophe or an interpunct inside a Latin word ("don’t", "l·l")
  *   runs sideways with the word, as the composer keeps it in the word.
  *
@@ -135,7 +138,7 @@ const CORNER_MARKS = new Set(['、', '。', '，', '．', '﹐', '﹑', '﹒']);
 const EXCLAIM_MARKS = new Set(['！', '？', '﹖', '﹗']);
 const COLON_MARKS = new Set(['：', '；', '﹔', '﹕']);
 
-/** Marks turned about their em box in every Chinese region: dashes,
+/** Marks turned about their em box in every CJK region: dashes,
  *  ellipses, the interpunct, connectors and the wave dash. */
 const TURNED = new Set([
   '—', '―', '⸺', '⸻', // — ― ⸺ ⸻
@@ -186,24 +189,33 @@ const ALT_COLON: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offs
 const TCY: VerticalGlyph = { orient: 'tcy' };
 
 /**
- * How a grapheme is set in a vertical line of `region`'s Chinese (see the
- * module comment). Reads the grapheme's first code point; a sequence with
- * a combining mark or a variation selector follows its base.
+ * How a grapheme is set in a vertical line of `region`'s Chinese or
+ * Japanese (see the module comment). Reads the grapheme's first code
+ * point; a sequence with a combining mark or a variation selector follows
+ * its base.
  */
 export function verticalOrientation(grapheme: string, region: CjkRegion = 'mainland'): VerticalGlyph {
   const cp = grapheme.codePointAt(0);
   if (cp === undefined) return SIDEWAYS;
   if (cp < 0x80) return SIDEWAYS;
   const ch = String.fromCodePoint(cp);
-  if (CORNER_MARKS.has(ch)) return region === 'mainland' ? ALT_CORNER : UPRIGHT;
+  // Japan sets 、。，． in the corner too, and ！？ upright and centred: a
+  // Japanese font has no vertical form for them to move to the right.
+  if (CORNER_MARKS.has(ch)) return region === 'mainland' || region === 'japan' ? ALT_CORNER : UPRIGHT;
   if (EXCLAIM_MARKS.has(ch)) return region === 'mainland' ? ALT_EXCLAIM : UPRIGHT;
-  if (COLON_MARKS.has(ch)) return region === 'mainland' ? ALT_COLON : UPRIGHT;
+  // J4 (#419): Japan turns ：； (UAX #50 `Tr`); until then, the mainland's
+  // form, which a Japanese font's `vert` turns.
+  if (COLON_MARKS.has(ch)) return region === 'mainland' || region === 'japan' ? ALT_COLON : UPRIGHT;
   if (TURNED.has(ch)) return STRETCHED.has(ch) ? ROTATE_STRETCH : ROTATE;
   const hans = HANS_QUOTES[ch];
+  // Japanese “ ” are no corner brackets: the font's vertical form (J4,
+  // #419, adds 〝〟 where it has none).
   if (hans !== undefined) return region === 'mainland' ? { orient: 'alternate', fallback: 'rotate', substitute: hans } : ALT_ROTATE;
   switch (uaxVerticalOrientation(cp)) {
     case 'U': return UPRIGHT;
-    case 'Tu': return UPRIGHT; // small kana and the like: upright, the vertical form when the font has one
+    // Small kana and the like: upright, the vertical form when the font
+    // has one. J4 (#419): `alternate` with an offset fallback for Japan.
+    case 'Tu': return UPRIGHT;
     case 'Tr': return ALT_ROTATE;
     default: return SIDEWAYS;
   }
@@ -220,12 +232,14 @@ export function isVerticalCell(grapheme: string, region: CjkRegion = 'mainland')
  *  quadrant, the vertical one in the top-right). Measured against the
  *  `vert` glyphs of Noto Serif SC: within 0.07 em for 、。，．. ！？ and ：；
  *  carry their own `offset` (half an em to the right, 0.08 and 0.22 em up),
- *  within 0.02 em of the font's. */
+ *  within 0.02 em of the font's. Japanese 、。，． use it too (J4, #419:
+ *  check it against Noto Serif JP). */
 export const CORNER_OFFSET_EM = { x: 0.6, y: -0.62 };
 
 /** The size of a character's cell in a vertical line, in ems: half an em
  *  for the mainland interpunct (· ・, clreq §5.1), one em for
- *  every other character that stands in a cell. `cls`, when the caller has
+ *  every other character that stands in a cell (the Japanese ・ too,
+ *  JLReq §3.1.2). `cls`, when the caller has
  *  it, is the grapheme's `cjkClassOf`. */
 export function verticalCellEms(grapheme: string, region: CjkRegion = 'mainland', cls = cjkClassOf(grapheme)): number {
   return region === 'mainland' && cls === 'interpunct' ? 0.5 : 1;

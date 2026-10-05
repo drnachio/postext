@@ -168,11 +168,11 @@ const COLON_SEMICOLON = new Set(['：', '；', '﹕', '﹔', '︓', '︔']);
 /**
  * The side of a mark's blank along the line (clreq §6.3.2.1): opening
  * brackets and quotes before their glyph, closing ones after it; the
- * mainland's pause and stop marks (、，。．；：？！, in the corner of their
- * box) after it; the marks Taiwan and Hong Kong centre (、，。．；：) and
- * interpuncts on both sides. ？！ are fixed at one em in horizontal Taiwan
- * and Hong Kong text, and ：；？！ in vertical text everywhere. Any other
- * character has no blank.
+ * pause and stop marks of the mainland and Japan (、，。．；：？！, in the
+ * corner of their box) after it; the marks Taiwan and Hong Kong centre
+ * (、，。．；：) and interpuncts on both sides. ？！ are fixed at one em in
+ * horizontal Taiwan and Hong Kong text, and ：；？！ in vertical text
+ * everywhere. Any other character has no blank.
  */
 export function punctuationSide(grapheme: string, cls: CjkClass, region: CjkRegion, vertical = false): PunctuationSide {
   switch (cls) {
@@ -185,7 +185,9 @@ export function punctuationSide(grapheme: string, cls: CjkClass, region: CjkRegi
     case 'pause':
     case 'stop':
       if (vertical && (QUESTION_EXCLAMATION.has(grapheme) || COLON_SEMICOLON.has(grapheme))) return 'none';
-      if (region === 'mainland') return 'end';
+      // J3 (#418): Japan sets 、。，． as the mainland does (JLReq §3.1.2),
+      // but ？！ solid and ：； with a quarter em on each side.
+      if (region === 'mainland' || region === 'japan') return 'end';
       return QUESTION_EXCLAMATION.has(grapheme) ? 'none' : 'both';
     default:
       return 'none';
@@ -272,8 +274,9 @@ function isStop(box: PunctuationBox): boolean {
  * half an em under every style (GB/T 15834, clreq §5.1), centred, in either
  * writing mode: a full-width glyph gives up its blank here, and in vertical
  * text its cell is half an em already (`verticalCellEms`), so it is no
- * adjustable mark there. Undefined for a character that is no adjustable
- * mark.
+ * adjustable mark there. The Japanese ・ keeps its em (half a glyph and a
+ * quarter em each side, JLReq §3.1.2), as in Taiwan and Hong Kong.
+ * Undefined for a character that is no adjustable mark.
  */
 export function punctuationBox(grapheme: string, cls: CjkClass, advance: number, em: number, c: CjkComposition): PunctuationBox | undefined {
   const side = punctuationSide(grapheme, cls, c.region, c.vertical);
@@ -516,12 +519,14 @@ const HANG_ANYWHERE = new Set(['、', '，', '。', '．', '､', '｡']);
  * (`cjk.hangingPunctuation`, clreq §6.1.3): 、，。． everywhere and, on the
  * mainland (whose marks sit at the start of their box), every pause and
  * stop mark; under `'allow'`, never in horizontal Taiwan and Hong Kong
- * text, whose centred marks look cut off.
+ * text, whose centred marks look cut off. Japan hangs 、，。． only, in
+ * either writing mode (ぶら下げ, JLReq §2.5.1: closing brackets and ？！
+ * never hang).
  */
 export function mayHang(grapheme: string, cls: CjkClass, c: CjkComposition): boolean {
   if (c.hangingPunctuation === 'none') return false;
   if (cls !== 'pause' && cls !== 'stop') return false;
-  if (c.hangingPunctuation === 'allow' && c.region !== 'mainland' && !c.vertical) return false;
+  if (c.hangingPunctuation === 'allow' && c.region !== 'mainland' && c.region !== 'japan' && !c.vertical) return false;
   return HANG_ANYWHERE.has(grapheme) || c.region === 'mainland';
 }
 

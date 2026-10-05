@@ -17,13 +17,14 @@ import type {
   ResolvedCjkRubyConfig,
   ResolvedCjkWarichuConfig,
 } from '../types';
-import { cjkRegionOf, languageOf } from '../locale';
+import { cjkRegionOf, isJapaneseLanguage, languageOf } from '../locale';
 import { dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale,
  *  nothing hangs, a quarter em between Han and Latin, no grid; readings
- *  and warichu notes at half the text size, no warichu brackets, marks in
- *  the text colour (`annotationColor` unset). */
+ *  and warichu notes at half the text size, warichu brackets by region
+ *  (none but in Japan, `defaultCjkWarichuBrackets`), marks in the text
+ *  colour (`annotationColor` unset). */
 export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & Pick<CjkConfig, 'annotationColor'> = {
   region: 'auto',
   lineBreak: 'auto',
@@ -45,15 +46,29 @@ const BOOK_TITLE_MARKS: readonly CjkBookTitleMark[] = ['brackets', 'wavy', 'none
 const RUBY_POSITIONS: readonly CjkRubyPosition[] = ['over', 'under', 'right'];
 
 /** What `*…*` does to Chinese characters by default: emphasis dots when the
- *  document language is Chinese, italics otherwise. */
+ *  document language is Chinese or Japanese, italics otherwise. Japanese
+ *  has no italics: emphasis is 傍点 (JLReq §3.3.9). The mark's shape and
+ *  side are still the Chinese dot under the text in horizontal lines;
+ *  the Japanese sesame over it comes with `cjk.emphasisMark` (J6, #421). */
 export function defaultCjkEmphasis(locale: string | undefined): CjkEmphasis {
-  return languageOf(locale) === 'zh' ? 'dots' : 'italic';
+  return languageOf(locale) === 'zh' || isJapaneseLanguage(locale) ? 'dots' : 'italic';
 }
 
 /** What `:book[…]` prints by default: 《》 on the mainland, the wavy line
- *  in Taiwan and Hong Kong. */
+ *  in Taiwan and Hong Kong, the bare title in Japan. Japanese titles take
+ *  『』 (「」 inside them), which the author types until the brackets are
+ *  configurable (`cjk.bookTitleBrackets`, J6 #421); 《》 would be wrong
+ *  there and the wavy line is Chinese. */
 export function defaultCjkBookTitleMark(region: CjkRegion): CjkBookTitleMark {
+  if (region === 'japan') return 'none';
   return region === 'mainland' ? 'brackets' : 'wavy';
+}
+
+/** The brackets a warichu note is set between by default: （ ） in Japan
+ *  (JLReq §3.4.2: 割注 is normally bracketed), none elsewhere (Chinese
+ *  双行夹注 is set bare). */
+export function defaultCjkWarichuBrackets(region: CjkRegion): { open: string; close: string } {
+  return region === 'japan' ? { open: '（', close: '）' } : { open: '', close: '' };
 }
 
 function isColor(c: unknown): c is ColorValue {
@@ -71,38 +86,49 @@ function resolveRuby(ruby: CjkRubyConfig | undefined): ResolvedCjkRubyConfig {
   };
 }
 
-function resolveWarichu(warichu: CjkWarichuConfig | undefined): ResolvedCjkWarichuConfig {
+function resolveWarichu(warichu: CjkWarichuConfig | undefined, region: CjkRegion): ResolvedCjkWarichuConfig {
   const d = DEFAULT_CJK_CONFIG.warichu;
+  const brackets = defaultCjkWarichuBrackets(region);
   return {
     fontSize: isLength(warichu?.fontSize) && warichu.fontSize.value > 0 ? { value: warichu.fontSize.value, unit: warichu.fontSize.unit } : { ...d.fontSize! },
     ...(isColor(warichu?.color) ? { color: warichu.color } : {}),
-    open: typeof warichu?.open === 'string' ? warichu.open : '',
-    close: typeof warichu?.close === 'string' ? warichu.close : '',
+    open: typeof warichu?.open === 'string' ? warichu.open : brackets.open,
+    close: typeof warichu?.close === 'string' ? warichu.close : brackets.close,
   };
 }
 
-const REGIONS: readonly CjkRegion[] = ['mainland', 'taiwan', 'hongkong'];
+const REGIONS: readonly CjkRegion[] = ['mainland', 'taiwan', 'hongkong', 'japan'];
 const LINE_BREAKS: readonly CjkLineBreak[] = ['none', 'basic', 'gb', 'strict'];
 const PUNCTUATION_WIDTHS: readonly CjkPunctuationWidth[] = ['fullwidth', 'kaiming', 'lineEndHalf', 'halfwidth'];
 const HANGING: readonly CjkHangingPunctuation[] = ['none', 'allow', 'force'];
 const LENGTH_UNITS = new Set(['cm', 'mm', 'in', 'pt', 'px', 'em', 'rem']);
 
 /** The line-break level a region's text is set with by default: GB/T
- *  15834's for the mainland, clreq's basic set for Taiwan and Hong Kong. */
+ *  15834's for the mainland, clreq's basic set for Taiwan and Hong Kong,
+ *  the strict set for Japan (iteration marks and ー stay off the line
+ *  start, as JIS X 4051 asks; no solidus rule, which is GB/T's). */
 export function defaultCjkLineBreak(region: CjkRegion): CjkLineBreak {
+  // J2 (#417): Japan moves to the JLReq levels (ja-very-strict, with the
+  // small kana and hyphen classes) once they exist.
+  if (region === 'japan') return 'strict';
   return region === 'mainland' ? 'gb' : 'basic';
 }
 
 /** The punctuation width style a region's text is set with by default:
  *  Kaiming (开明式) on the mainland, where most books use it; full width
- *  in Taiwan and Hong Kong, whose marks sit in the middle of their box. */
+ *  in Taiwan and Hong Kong, whose marks sit in the middle of their box,
+ *  and in Japan, where 、。 keep their whole em inside the line (JLReq
+ *  §3.1.2: half a glyph and half an em of blank). */
 export function defaultCjkPunctuationWidth(region: CjkRegion): CjkPunctuationWidth {
+  // J3 (#418): Japan's pair compression and line-end rules (JLReq §3.1.4,
+  // §3.1.9) refine how this full width gives up its blank.
   return region === 'mainland' ? 'kaiming' : 'fullwidth';
 }
 
 /** Whether a region compresses adjacent marks and trims brackets at line
- *  edges by default: the mainland and Hong Kong do, many Taiwan books set
- *  every mark a full em (clreq §6.3.2). */
+ *  edges by default: the mainland, Hong Kong and Japan do (JLReq §3.1.4,
+ *  §3.1.5: 天付き), many Taiwan books set every mark a full em (clreq
+ *  §6.3.2). */
 export function defaultCjkCompression(region: CjkRegion): boolean {
   return region !== 'taiwan';
 }
@@ -171,7 +197,7 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
       : defaultCjkBookTitleMark(region),
     ...(isColor(partial?.annotationColor) ? { annotationColor: partial.annotationColor } : {}),
     ruby: resolveRuby(partial?.ruby),
-    warichu: resolveWarichu(partial?.warichu),
+    warichu: resolveWarichu(partial?.warichu, region),
   };
 }
 
@@ -196,8 +222,10 @@ function stripWarichuDefaults(warichu: CjkWarichuConfig | undefined): CjkWarichu
   const result: CjkWarichuConfig = {};
   if (warichu.fontSize !== undefined && !dimensionsEqual(warichu.fontSize, d.fontSize!)) result.fontSize = warichu.fontSize;
   if (warichu.color !== undefined) result.color = warichu.color;
-  if (warichu.open !== undefined && warichu.open !== '') result.open = warichu.open;
-  if (warichu.close !== undefined && warichu.close !== '') result.close = warichu.close;
+  // An empty bracket is kept: it is no default where the region sets
+  // brackets (Japan's （）, `defaultCjkWarichuBrackets`).
+  if (warichu.open !== undefined) result.open = warichu.open;
+  if (warichu.close !== undefined) result.close = warichu.close;
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
