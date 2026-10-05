@@ -3701,7 +3701,7 @@ resolveCjkConfig(undefined, 'zh-HK');
 
 **نوع المورد** فئة يحدّدها المستخدم — *شكل*، *جدول*، *مخطط*، *شيفرة*… — تتحكم في طريقة ترقيم موارد هذا النوع ووضع تعليقاتها والإحالة إليها. تقع القائمة في `config.resourceTypes`؛ ويحرّرها Sandbox في **التصميم › الأشكال والجداول › الترقيم والموضع**.
 
-حين لا يُضبط `config.resourceTypes`، يأتي Postext بنوعين افتراضيين مدمجين: **شكل** و**جدول**، يُرقَّم كلاهما `{h1}.{n}` (ويُعاد العدّ عند كل عنوان من المستوى 1) بعدّادات عشرية. ويُسمَّيان بلغة المستند: `config.locale`، وإلا `bodyText.hyphenation.locale`، وإلا الإنجليزية (انظر [لغة المستند](#لغة-المستند)).
+حين لا يُضبط `config.resourceTypes`، يأتي Postext بثلاثة أنواع افتراضية مدمجة: **شكل** و**جدول** و**فيديو**، يُرقَّم كل منها في تسلسله الخاص `{h1}.{n}` (ويُعاد العدّ عند كل عنوان من المستوى 1) بعدّادات عشرية. والقائمة التي ليس فيها نوع `video`، ككتاب حُفظ قبل وجود مقاطع الفيديو، تظل ترقّم موارد الفيديو ذات النوع `video`: يُضاف إليها نوع الفيديو المدمج من أجلها (`effectiveResourceTypes(config, resources)`)، وتعيده `defaultVideoResourceType(locale)` وحده. وتُسمّى الأنواع بلغة المستند: `config.locale`، وإلا `bodyText.hyphenation.locale`، وإلا الإنجليزية (انظر [لغة المستند](#لغة-المستند)).
 
 الأنواع الافتراضية المدمجة تراعي اللغة. فالدالة المصدَّرة `defaultResourceTypes(locale = 'en')` تترجم أسماء الأنواع والتسميات المختصرة وبادئات التعليقات إلى لغة المستند — تعطي الإنجليزية *Figure*/*Fig.* و*Table*/*Tab.*؛ وتعطي الإسبانية *Figura*/*Fig.* و*Tabla*/*Tabla*؛ وللفرنسية والألمانية والإيطالية والبرتغالية والكتالونية والهولندية تسمياتها أيضًا (يسردها الجدول في [لغة المستند](#لغة-المستند)). وتُحلّ الوسوم الإقليمية مثل `es-ES` بحسب اللغة، وأي لغة بلا ترجمات تعود إلى الإنجليزية. أما سلوك الترقيم (`numberingTemplate: '{h1}.{n}'`، `resetOn: 'h1'`، العدّادات العشرية) فمستقل عن اللغة. وكل استدعاء يعيد كائنات جديدة، فيمكنك تعديل النتيجة بحرية:
 
@@ -3711,7 +3711,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4458,6 +4459,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 
 لكل لون تعيد تمريرة الشيفرة كتابته (القيم الست عشرية، وقيم `rgb()` و`hsl()`، و`white` و`black`؛ انظر [كيف يعمل الحبر الواحد](#كيف-يعمل-الحبر-الواحد))، يعطي تحويل البكسلات النتيجة نفسها، بما في ذلك الحواف المنعَّمة والتدرجات. ويختلفان حيث تترك تمريرة الشيفرة اللون كما هو: الألوان المسمّاة غير `white` و`black`، و`currentColor`، والأشكال والنصوص التي بلا تعبئة (المرسومة بالأسود الافتراضي)، والصور النقطية المضمّنة في SVG، فهذه تُلوَّن على الشاشة وتحتفظ بلونها في PDF. أعطِ كل عنصر في المخطط لونًا صريحًا بصيغة ست عشرية أو `rgb()` أو `hsl()` لتحصل على مُخرَج متطابق. وحين لا تستطيع اللوحة قراءة البكسلات من جديد (`<img>` من أصل آخر، محمّلة دون CORS)، تُرسم الصورة دون تلوين.
 
+
+## نمط الفيديو
+
+تحدّد الخاصية `videoStyle` كيف تُطبع [موارد الفيديو](/ar/docs/document-format#مقاطع-الفيديو)، أي علامة التشغيل ورمز QR فوق الغلاف، وهل يكون الغلاف رابطًا إلى الفيديو، وما تقدّمه مشغّلاتها في عارض HTML وفي EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>انظر أدناه</td>
+      <td>العلامة المطبوعة على الغلاف للدلالة على أنه يُشغَّل.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>انظر أدناه</td>
+      <td>رمز QR المطبوع على الغلاف: يفتح صفحة الفيديو على يوتيوب أو فيميو، أو عنوان نشر الملف.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>اجعل الغلاف رابطًا إلى الفيديو: تعليق رابط (link annotation) فوقه في PDF، وعنصر <code>&lt;a&gt;</code> يحيط به في HTML وEPUB حيثما يُعرض الغلاف.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>ما يضعه مُخرَج HTML مكان الفيديو: مشغّله، أو الغلاف المطبوع بعلامة التشغيل ورمز QR.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>انظر أدناه</td>
+      <td>خيارات المشغّل لكل مقاطع الفيديو؛ وتُطبَّق فوقها <code>video.player</code> الخاصة بكل فيديو.</td>
+    </tr>
+  </tbody>
+</table>
+
+### علامة التشغيل
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>طباعة العلامة.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>قرص فيه مثلث، أو مستطيل مدوّر الزوايا فيه مثلث (عرضه 1.45 مرة قدر ارتفاعه)، أو المثلث وحده محدَّدًا بلون الخلفية.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>، أو زاوية (<code>'top-left'</code>، <code>'top-right'</code>، <code>'bottom-left'</code>، <code>'bottom-right'</code>)، أو منتصف أحد الجوانب (<code>'top'</code>، <code>'bottom'</code>، <code>'left'</code>، <code>'right'</code>). المواضع مادية: الزاوية العليا اليمنى هي الزاوية العليا اليمنى في الكتاب الذي يُقرأ من اليمين إلى اليسار أيضًا.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>ارتفاع العلامة؛ ولا يتجاوز أبدًا 40% من الضلع الأقصر للغلاف.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>المسافة من حواف الغلاف حين تقع العلامة في زاوية أو على جانب.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>أبيض</td><td>المثلث.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>اللون الرئيسي</td><td>القرص أو المستطيل خلف المثلث؛ وحدّ المثلث حين يكون وحده. مرتبط بلوحة الألوان افتراضيًا.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>عتامة الخلفية، من 0 إلى 1.</td></tr>
+  </tbody>
+</table>
+
+### رمز QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>طباعة الرمز. والملف الذي بلا عنوان نشر لا يأخذ رمزًا.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>كما في علامة التشغيل. أعطِ الاثنين موضعين مختلفين.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>ضلع الرمز مع هامشه؛ ولا يتجاوز أبدًا 45% من الضلع الأقصر للغلاف. تقرأ كاميرات الهواتف الوحدات التي لا تقل عن ثلث مليمتر: العنوان المؤلف من 30 حرفًا يعطي رمزًا من 29 وحدة، فبضلع 18 مم وهامش من وحدتين تكون الوحدة 0.55 مم.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>المسافة من حواف الغلاف.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>مقدار ما يمكن أن يتلف من الرمز أو يُغطّى ويبقى مقروءًا: نحو 7% أو 15% أو 25% أو 30%. ويُرفع تلقائيًا ما دام الرمز يحتفظ بعدد وحداته نفسه.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>الوحدات الفاتحة حول الرمز على لوحته (من 0 إلى 8). فاللوحة تبرز من الغلاف، فلا حاجة إلى الوحدات الأربع التي يطلبها المعيار على الورق المكشوف.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>أسود</td><td>الوحدات الداكنة. أبقِها داكنة على لوحة فاتحة: فأغلب القارئات لا تقرأ الرموز المعكوسة.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>أبيض</td><td>اللوحة.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>نصف قطر زوايا اللوحة.</td></tr>
+  </tbody>
+</table>
+
+يرمّز المحرّك نفسه الرمز (`encodeQr(text, level)`: وضع البايت، وUTF-8، والإصدارات من 1 إلى 40، والقناع ذو أدنى عقوبة) ويرسمه متجهات: تملأ اللوحة (Canvas) مسارًا واحدًا من سلاسل الوحدات، ويرسمه PDF باستدعاء `drawSvgPath` واحد، وHTML بعنصر `<path>` واحد مع `shape-rendering="crispEdges"`، فيبقى حادًّا بأي حجم طباعة.
+
+### خيارات المشغّل
+
+`VideoPlayerOptions`، في `videoStyle.player` وفي `video.player` لكل فيديو. يراعيها مشغّل HTML5 للملف كلها؛ ويراعي مشغّلا يوتيوب وفيميو ما تسمح به معاملات التضمين فيهما.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th style={{ width: '170px' }}>يراعيها</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>يوتيوب، فيميو، الملفات</td><td>إظهار أدوات التحكم في المشغّل.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>الملفات</td><td>إتاحة زر التنزيل في المتصفح (<code>controlslist="nodownload"</code> عند إيقافه). يخفي الزر ولا يحمي الملف. ولا يتيح يوتيوب ولا فيميو التنزيل أبدًا.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>يوتيوب، فيميو، الملفات</td><td>إتاحة ملء الشاشة (<code>fs=0</code>، و<code>allowfullscreen</code> في iframe، و<code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>فيميو، الملفات</td><td>إتاحة قائمة السرعة (<code>speed=0</code>، <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>فيميو، الملفات</td><td>إتاحة صورة داخل صورة (<code>pip=0</code>، <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>الملفات</td><td>إتاحة الإرسال إلى شاشة أخرى (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>يوتيوب، فيميو، الملفات</td><td>يبدأ التشغيل وحده، مكتوم الصوت دائمًا كما تشترط المتصفحات.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>يوتيوب، فيميو، الملفات</td><td>يبدأ والصوت مُطفأ.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>يوتيوب، فيميو، الملفات</td><td>يُعاد من البداية عند الانتهاء.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>الملفات</td><td>مقدار ما يحمّله المتصفح قبل التشغيل: <code>'none'</code> أو <code>'metadata'</code> أو <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>يوتيوب، فيميو</td><td>تضمين مع خصوصية معزَّزة: يوتيوب من <code>youtube-nocookie.com</code>، وفيميو مع <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+لا يحتفظ EPUB إلا بالسمات التي يعرفها مخططه: يُشغَّل الملف مع <code>controls</code> و<code>autoplay</code> و<code>muted</code> و<code>loop</code> و<code>playsinline</code> و<code>preload</code>، ويقرّر نظام القراءة الباقي.
+
+دالة الحسم ودالة الحذف تماثلان مثيلاتهما في الأقسام الأخرى، إلى جانب النوعين `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined when all defaults
+```
 
 ## أنماط الفقرات
 
@@ -8016,7 +8169,7 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 أربع أدوات مساعدة تصل الحزمة المفتوحة بالمحرّك وبالمُخرِجات:
 
 - **`loadBundleFonts(bundle)`** يسجّل أوجه خطوط الحزمة في `document.fonts`. انتظر اكتماله (await) قبل الإخراج، لأن الإخراج يقيس النص بالخطوط المتاحة في المتصفح. أما العائلات التي تسمّيها الحزمة ولا تحملها (Google Fonts) فعليك تحميلها بنفسك، كما في أي مستند آخر.
-- **`registerBundleImages(bundle)`** يفكّ ترميز الصور لمُخرِج Canvas (`renderPage` و`renderToCanvas`). و**`bundleImageUrl(bundle)`** هو المحلِّل `resourceImageUrl` الذي يحتاجه `renderToHtml`. وكلاهما يعيد تلوين أشكال SVG حين يكون `diagramStyle.singleInk` مفعَّلًا، مرة واحدة: يعيدان تلوين الشيفرة ويعلّمان الصور كي لا يلوّنها أي مُخرِج مرة أخرى (انظر [الحبر الواحد على Canvas وفي HTML](#الحبر-الواحد-على-اللوحة-canvas-وفي-html)).
+- **`registerBundleImages(bundle)`** يفكّ ترميز الصور لمُخرِج Canvas (`renderPage` و`renderToCanvas`)، ومنها أغلفة مقاطع الفيديو. و**`bundleImageUrl(bundle)`** هو المحلِّل `resourceImageUrl` الذي يحتاجه `renderToHtml`، و**`bundleVideoUrl(bundle)`** محلِّله `resourceVideoUrl` لملفات الفيديو التي تحملها الحزمة. وكلاهما يعيد تلوين أشكال SVG حين يكون `diagramStyle.singleInk` مفعَّلًا، مرة واحدة: يعيدان تلوين الشيفرة ويعلّمان الصور كي لا يلوّنها أي مُخرِج مرة أخرى (انظر [الحبر الواحد على Canvas وفي HTML](#الحبر-الواحد-على-اللوحة-canvas-وفي-html)).
 - **`buildBundle(bundle)`** يُخرج الفصول بالترتيب ويعيد `VDTDocument` لكل فصل. كل فصل يتابع ما قبله: عدّادات العناوين والموارد، والجزء المفتوح، وزوجية الصفحة، وترقيم الصفحات. والفصل الذي يطبع المحتويات (`:::toc`) أو الفهرس الأبجدي (`:::index`) يتلقى مخطط الكتاب كله. ويقبل الخيارات نفسها التي يقبلها `buildDocument`، إضافةً إلى `config` لتجاوز إعدادات الحزمة، و`cache` لمشاركة ذاكرة تخزين مؤقت للقياسات، و`metadata` (انظر أدناه).
 - **`bundleResourceBytes(bundle)`** و**`bundleFontProvider(bundle, { decodeWoff2, fallback })`** هما الخياران `resourceBytes` و`fontProvider` للدالة `renderToPdf` في `postext-pdf`. يختار مزوّد الخطوط من الحزمة أقرب وزن للنمط المطلوب. ويحتاج لوجه `.woff2` إلى `decompressWoff2`، وللعائلة التي لا تحملها الحزمة يستدعي `fallback` بمعاملات المُخرِج، بما فيها `request`، ويمرّر ما تعيده كما هو. والبديل الذي لا يجلب إلا ملف `latin` للعائلة يطبع العائلة الصينية التي لا تضمّنها الحزمة مربعاتٍ فارغة؛ أما البديل الذي يجيب بشرائح، مثل `sliceFontProvider` في [خطوط الصينية واليابانية والكورية](#خطوط-الصينية-واليابانية-والكورية)، فيطبعها كاملة.
 

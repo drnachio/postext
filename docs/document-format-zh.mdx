@@ -1042,7 +1042,7 @@ where $g$ is the acceleration of free fall.
 
 ## 资源
 
-图片、SVG和表格不直接写在正文里。它们作为**资源**声明一次（在沙盒的[“资源”面板](/zh/docs/sandbox#资源面板)中管理，这个面板负责上传图片和SVG，提供交互式表格编辑器，也用来编辑题注和位置），再通过id与正文关联。**引用一个资源就足以把它放进文档**：你只需用行内的`:ref{id="…"}`提到它一次，引擎就会把这幅图或这张表浮动到该引用之后的第一个空位，可能是提到它的那一栏的栏底、下一栏的栏顶，或者下一页的一个横带，和印刷排版师的做法一样。你不需要再摆放它第二次。
+图片、SVG、表格和视频不直接写在正文里。它们作为**资源**声明一次（在沙盒的[“资源”面板](/zh/docs/sandbox#资源面板)中管理，这个面板负责上传图片和SVG，提供交互式表格编辑器，处理YouTube、Vimeo和上传的视频，也用来编辑题注和位置），再通过id与正文关联。**引用一个资源就足以把它放进文档**：你只需用行内的`:ref{id="…"}`提到它一次，引擎就会把这幅图或这张表浮动到该引用之后的第一个空位，可能是提到它的那一栏的栏底、下一栏的栏顶，或者下一页的一个横带，和印刷排版师的做法一样。你不需要再摆放它第二次。
 
 下面两种写法都是新增的语法，不与CommonMark冲突，所以用到它们的文档在其他任何Markdown查看器里仍然能当作普通文本阅读。
 
@@ -1195,7 +1195,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 
 在一章（以及整个文档）的最后一页，排在最后一段文字下方的通栏图和表后面再没有内容，所以它们会上移，依次叠放在文字下方一个浮动间距处，而不是在文字与页面底部的图之间留出空白。`position: 'bottom'`的浮动体也是如此。要让它们像其他页面一样留在页面底部，设置`layout.hugClosingFloats: false`（见[配置 › 版面](/zh/docs/configuration#版式)）。有侧栏的页面从不移动它们。
 
-三个后端，即Canvas预览、HTML查看器和PDF输出，都会渲染资源。在HTML后端中，图片数据不随版面一起传递，所以由宿主通过`resourceImageUrl(fileId)`解析器选项提供；缺少解析器（或它对某个文件没有返回内容）时，资源会渲染成一个中性的占位框，使版面保持稳定。
+三个后端，即Canvas预览、HTML查看器和PDF输出，都会渲染资源。在HTML后端中，图片数据不随版面一起传递，所以由宿主通过`resourceImageUrl(fileId)`解析器选项提供；缺少解析器（或它对某个文件没有返回内容）时，资源会渲染成一个中性的占位框，使版面保持稳定。视频自身的文件同样通过`resourceVideoUrl(fileId)`提供（见[视频](#视频)）。
 
 #### 浮动体可以落在哪里
 
@@ -1263,6 +1263,112 @@ const harbour: Resource = {
 
 VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示出来的部分，用同样的比例表示（完整显示时不出现）；`bodyFlex`给出图片主体还能缩短和增高的px数，以及各个手段已经改变的px数（`{ shrink, grow, delta }`）。Canvas预览和PDF把绘制范围限定在图片主体内，按未裁切的尺寸画出整幅图片；HTML查看器和固定版式EPUB用`object-fit: cover`加上相应的`object-position`显示图片；流式EPUB没有要填满的页面，显示整幅图片。自己绘制图片的宿主可以使用`postext`导出的函数：`resourceSafeArea`和`normalizeSafeArea`（引擎读到的安全区，或`undefined`）、`safeAreaHeightRange`（某一宽度下主体的最小和最大高度）、`safeAreaSource`（某一高度下显示的部分）和`uncroppedPictureBox`（裁切前整幅图片应画在哪里），以及类型`ResourceSafeArea`。在Sandbox中，这个字段是[资源面板](/zh/docs/sandbox#资源面板)里图片的**安全区**。
 
+
+### 视频
+
+**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频文件（MP4、WebM）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>输出</th>
+      <th>显示的内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas、PDF、Folio</td>
+      <td><strong>封面</strong>，即视频中的一帧，上面有播放标记和一个打开视频的二维码（<a href="/zh/docs/configuration#视频样式">配置 › 视频样式</a>）。在PDF中，封面同时是指向视频的链接。</td>
+    </tr>
+    <tr>
+      <td>HTML查看器</td>
+      <td>视频的<strong>播放器</strong>：YouTube或Vimeo的播放器，文件则用浏览器的HTML5播放器。设置<code>videoStyle.html: 'poster'</code>时改为显示印刷封面。</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>文件在阅读系统自己的播放器中播放，文件打包在书中，或从正式发布地址读取。YouTube或Vimeo视频显示为封面，链接到视频：EPUB不能嵌入网页的播放器。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const talk: Resource = {
+  id: 'keeper-talk', typeId: 'video', kind: 'video',
+  caption: '看守人讲解灯具。',
+  altText: '灯塔看守人站在灯旁',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // 从0:30开始播放；印出的链接也从这里开始
+  },
+};
+```
+
+正文引用视频的方式与引用图相同：`:ref{id="keeper-talk"}`印出*Video 1.1*，并把封面浮动到该引用之后的第一个空位；`::resource{id="keeper-talk"}`配合`placement.position: 'here'`则把它行内嵌入。`Resource.video`（`ResourceVideo`）的字段：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>字段</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>视频从哪里播放。</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube或Vimeo：视频的地址，任何形式均可（观看页、<code>youtu.be</code>、Shorts、嵌入链接、<code>youtube-nocookie.com</code>；Vimeo的视频页、频道页，或带哈希的不公开链接）。文件：它的<strong>正式发布地址</strong>，即出版后的书找到它的位置。</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>、<code>format</code></td>
+      <td><code>string</code></td>
+      <td>文件：上传的视频，像位图一样在带外存储，以及它的格式（<code>'mp4'</code>为默认值，另有<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>封面帧，一张位图。</td>
+    </tr>
+    <tr>
+      <td><code>width</code>、<code>height</code>、<code>duration</code></td>
+      <td><code>number</code></td>
+      <td>视频画面的px尺寸（没有封面时用它的宽高比）和以秒计的时长。</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>文件中用作封面的那一帧所在的秒数，保留下来以便重新选取。</td>
+    </tr>
+    <tr>
+      <td><code>start</code>、<code>end</code></td>
+      <td><code>number</code></td>
+      <td>从第<code>start</code>秒播放到第<code>end</code>秒。二维码和PDF链接也从<code>start</code>开始。</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>这个视频的播放器选项，覆盖在<code>videoStyle.player</code>之上。</td>
+    </tr>
+  </tbody>
+</table>
+
+**封面。**封面按所在空位的行长（或其`placement.width`比例）排版，保持自身的宽高比，与像素尺寸无关：屏幕大小的帧会被放大，而不是印得很小。和位图一样，它可以带[安全区](#安全区)，也遵循`placement.align`。没有封面的视频印出一个按视频宽高比（没有说明时为16:9）的深色方框，上面照样有叠加元素，并发出`videoWithoutPoster`内容警告。在沙盒中，填入YouTube或Vimeo视频的地址时会从平台获取封面；文件的封面则是你在视频中选取的一帧。
+
+**地址。**二维码和PDF链接打开视频的页面，即`https://youtu.be/<id>`或`https://vimeo.com/<id>`，从`start`开始。文件没有页面，所以打开它的正式发布地址。没有这个地址时，印刷版既没有二维码也没有链接（`videoWithoutUrl`），不携带文件的HTML或EPUB输出则显示封面。YouTube或Vimeo地址不指向该平台的任何视频时，发出`videoUrlInvalid`，并以封面代替播放器。
+
+**播放器。**播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`；EPUB写入器就使用这个选项。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
+
+**在VDT中。**视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`和`mimeType`、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
+
+**在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。
 
 ## 不支持的内容
 

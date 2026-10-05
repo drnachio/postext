@@ -319,5 +319,15 @@
       "zh": "引用",
       "ar": "الاستشهادات"
     }
+  },
+  "videoStyle": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Video style",
+      "es": "Estilo de vídeo",
+      "ca": "Estil de vídeo",
+      "zh": "视频样式",
+      "ar": "نمط الفيديو"
+    }
   }
 }

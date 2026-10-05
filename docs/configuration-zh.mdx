@@ -3698,7 +3698,7 @@ resolveCjkConfig(undefined, 'zh-HK');
 
 **资源类型**是可由用户定义的类别，如*图*、*表*、*示意图*、*代码清单*……它决定该类资源如何编号、如何加题注、如何被引用。类型列表存放在`config.resourceTypes`中；沙盒在**设计 → 图与表 → 编号与位置**中编辑它。
 
-未设置`config.resourceTypes`时，Postext提供两个内置默认类型：**图**和**表**，二者都按`{h1}.{n}`编号（每遇到一级标题重新计数），计数器为十进制。它们的名称采用文档语言：先取`config.locale`，没有则取`bodyText.hyphenation.locale`，再没有则用英语（见[文档语言](#文档语言)）。
+未设置`config.resourceTypes`时，Postext提供三个内置默认类型：**图**、**表**和**视频**，各自独立按`{h1}.{n}`编号（每遇到一级标题重新计数），计数器为十进制。列表中没有`video`类型时（例如在有视频之前保存的书），类型为`video`的视频资源照样编号：引擎为它们补上内置的视频类型（`effectiveResourceTypes(config, resources)`），`defaultVideoResourceType(locale)`则单独返回这个类型。它们的名称采用文档语言：先取`config.locale`，没有则取`bodyText.hyphenation.locale`，再没有则用英语（见[文档语言](#文档语言)）。
 
 内置默认类型会随语言区域变化。导出的`defaultResourceTypes(locale = 'en')`把类型名称、简写标签和题注前缀本地化为文档的语言区域：英语得到*Figure*/*Fig.*和*Table*/*Tab.*；西班牙语得到*Figura*/*Fig.*和*Tabla*/*Tabla*；法语、德语、意大利语、葡萄牙语、加泰罗尼亚语和荷兰语也各有对应名称（列在[文档语言](#文档语言)的表中）。`es-ES`这类带地区的标签按语言解析，没有译名的语言区域回退到英语。编号行为（`numberingTemplate: '{h1}.{n}'`、`resetOn: 'h1'`、十进制计数器）与语言无关。每次调用都返回新对象，因此可以随意修改结果：
 
@@ -3708,7 +3708,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4455,6 +4456,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 
 对于标记层面处理会改写的每种颜色（十六进制、`rgb()`和`hsl()`值、`white`和`black`；见[单色模式的工作原理](#单色模式的工作原理)），像素映射给出相同的结果，抗锯齿边缘和渐变也不例外。两者的差别在于标记处理不改动的颜色：`white`和`black`以外的命名颜色、`currentColor`、没有填充的形状和文本（以默认黑色绘制），以及嵌入SVG中的位图，在屏幕上会着色，在PDF中却保留原色。给图示的每个元素指定明确的十六进制、`rgb()`或`hsl()`颜色，就能得到完全一致的输出。Canvas无法读回像素时（来自其他源、未启用CORS加载的`<img>`），图片不着色绘制。
 
+
+## 视频样式
+
+`videoStyle`属性设定[视频资源](/zh/docs/document-format#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML查看器和EPUB中提供哪些功能。
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>见下文</td>
+      <td>印在封面上、表明它可以播放的标记。</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>见下文</td>
+      <td>印在封面上的二维码：打开视频的YouTube或Vimeo页面，或文件的正式发布地址。</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>让封面链接到视频：PDF中在封面上加一个链接注释，HTML和EPUB中凡显示封面处都用<code>&lt;a&gt;</code>包住它。</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>HTML输出为视频放什么：它的播放器，或带叠加元素的印刷封面。</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>见下文</td>
+      <td>所有视频的播放器选项；单个视频自己的<code>video.player</code>覆盖在它上面。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 播放标记
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>印出标记。</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>圆盘加三角形，圆角矩形加三角形（宽为高的1.45倍），或只有三角形，以背景色描边。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>、一个角（<code>'top-left'</code>、<code>'top-right'</code>、<code>'bottom-left'</code>、<code>'bottom-right'</code>）或一条边的中点（<code>'top'</code>、<code>'bottom'</code>、<code>'left'</code>、<code>'right'</code>）。位置是物理方位：在从右到左的书中，右上角也还是右上角。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>标记的高度；最多占封面短边的40%。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>标记位于角落或边上时，与封面边缘的距离。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>白色</td><td>三角形。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>调色板主色</td><td>三角形后面的圆盘或矩形；只有三角形时则是它的描边。默认与调色板关联。</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>背景的不透明度，0–1。</td></tr>
+  </tbody>
+</table>
+
+### 二维码
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>印出二维码。没有正式发布地址的文件不印。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>同播放标记。两者要设在不同的位置。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>含留白的二维码边长；最多占封面短边的45%。手机摄像头能读出三分之一毫米及以上的模块：30个字符的地址生成29个模块的码，所以18 mm加2个模块的留白，模块为0.55 mm。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>与封面边缘的距离。</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>二维码受损或被遮住多少仍能读出：约7%、15%、25%或30%。只要模块数不变，会自动提高。</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>二维码周围、底板上的浅色模块数（0–8）。底板与封面区分开来，所以不需要标准为直接印在纸上的码规定的四个模块。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>黑色</td><td>深色模块。浅色底板上的模块要保持深色：大多数读码器读不了反色的码。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>白色</td><td>底板。</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>底板的圆角半径。</td></tr>
+  </tbody>
+</table>
+
+二维码由引擎自己编码（`encodeQr(text, level)`：字节模式、UTF-8、版本1到40，选罚分最低的掩码），并以矢量绘制：Canvas填充一条由模块段组成的路径，PDF用一次`drawSvgPath`，HTML用一个带`shape-rendering="crispEdges"`的`<path>`，所以无论印多大都保持清晰。
+
+### 播放器选项
+
+`VideoPlayerOptions`，用在`videoStyle.player`和每个视频的`video.player`中。文件的HTML5播放器支持全部选项；YouTube和Vimeo的播放器支持其嵌入参数所允许的那些。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th style={{ width: '170px' }}>适用于</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube、Vimeo、文件</td><td>显示播放器控件。</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>文件</td><td>提供浏览器的下载按钮（关闭时为<code>controlslist="nodownload"</code>）。它只隐藏按钮，并不保护文件。YouTube和Vimeo从不提供下载。</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube、Vimeo、文件</td><td>允许全屏（<code>fs=0</code>、iframe的<code>allowfullscreen</code>、<code>nofullscreen</code>）。</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo、文件</td><td>提供倍速菜单（<code>speed=0</code>、<code>noplaybackrate</code>）。</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo、文件</td><td>允许画中画（<code>pip=0</code>、<code>disablepictureinpicture</code>）。</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>文件</td><td>允许投屏到其他屏幕（<code>disableremoteplayback</code>）。</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>自动开始播放，按浏览器的要求始终静音。</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>开始时关闭声音。</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>播完后从头再播。</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>文件</td><td>播放前浏览器预先加载多少：<code>'none'</code>、<code>'metadata'</code>或<code>'auto'</code>。</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>增强隐私的嵌入：YouTube从<code>youtube-nocookie.com</code>加载，Vimeo带<code>dnt=1</code>。</td></tr>
+  </tbody>
+</table>
+
+EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，其余由阅读系统决定。
+
+解析函数和精简函数与其他各节一致，另有`VideoStyleConfig` / `ResolvedVideoStyleConfig`类型：
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // 全部与默认值相同时为undefined
+```
 
 ## 段落样式
 
@@ -8011,7 +8164,7 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 有四个辅助函数把打开的文件包接到引擎和各个后端上：
 
 - **`loadBundleFonts(bundle)`**把文件包的字面注册到`document.fonts`。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
-- **`registerBundleImages(bundle)`**为Canvas后端（`renderPage`、`renderToCanvas`）解码图片。**`bundleImageUrl(bundle)`**是`renderToHtml`的`resourceImageUrl`解析器。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
+- **`registerBundleImages(bundle)`**为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。**`bundleImageUrl(bundle)`**是`renderToHtml`的`resourceImageUrl`解析器，**`bundleVideoUrl(bundle)`**则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
 - **`buildBundle(bundle)`**按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`，以及`metadata`（见下文）。
 - **`bundleResourceBytes(bundle)`**和**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体家族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。
 

@@ -3701,7 +3701,7 @@ En el Sandbox estos ajustes están en **Diseño › Escritura › Tipografía de
 
 Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el Sandbox la edita en **Diseño → Figuras y tablas → Numeración y colocación**.
 
-Cuando `config.resourceTypes` no está definido, Postext incluye dos valores por defecto integrados: **Figura** y **Tabla**, ambos numerados como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales. Se nombran en el idioma del documento: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, el inglés (ver [Idioma del documento](#idioma-del-documento)).
+Cuando `config.resourceTypes` no está definido, Postext incluye tres valores por defecto integrados: **Figura**, **Tabla** y **Vídeo**, cada uno numerado por su cuenta como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales. Una lista sin tipo `video` —la de un libro guardado antes de que existieran los vídeos— sigue numerando los recursos de vídeo con `typeId` `video`: se le añade para ellos el tipo integrado Vídeo (`effectiveResourceTypes(config, resources)`), y `defaultVideoResourceType(locale)` lo devuelve por separado. Se nombran en el idioma del documento: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, el inglés (ver [Idioma del documento](#idioma-del-documento)).
 
 Los valores por defecto integrados se adaptan al idioma. La función exportada `defaultResourceTypes(locale = 'en')` localiza los nombres de tipo, las etiquetas cortas y los prefijos de pie al idioma del documento — el inglés produce *Figure*/*Fig.* y *Table*/*Tab.*; el español produce *Figura*/*Fig.* y *Tabla*/*Tabla*; el francés, el alemán, el italiano, el portugués, el catalán y el neerlandés tienen los suyos (la tabla de [Idioma del documento](#idioma-del-documento) los recoge). Las etiquetas regionales como `es-ES` se resuelven por idioma, y cualquier idioma sin traducción cae al inglés. El comportamiento de numeración (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, contadores decimales) es independiente del idioma. Cada llamada devuelve objetos nuevos, así que puedes mutar el resultado libremente:
 
@@ -3711,7 +3711,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4458,6 +4459,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 
 Para cada color que reescribe la pasada sobre el marcado (valores hexadecimales, `rgb()` y `hsl()`, `white` y `black`; consulta [Cómo funciona la tinta única](#cómo-funciona-la-tinta-única)), el mapeo por píxeles da el mismo resultado, incluidos los bordes suavizados y los degradados. Los dos difieren donde la pasada sobre el marcado deja un color como está: los colores con nombre distintos de `white` y `black`, `currentColor`, las formas y los textos sin relleno (dibujados en el negro por defecto) y los mapas de bits incrustados en el SVG se tiñen en pantalla pero conservan su color en el PDF. Da a cada elemento del diagrama un color explícito en hexadecimal, `rgb()` o `hsl()` para obtener la misma salida. Cuando el canvas no puede leer los píxeles de vuelta (un `<img>` de otro origen, cargado sin CORS), la imagen se pinta sin teñir.
 
+
+## Estilo de vídeo
+
+La propiedad `videoStyle` fija cómo se imprimen los [recursos de vídeo](/es/docs/document-format#vídeos) —la marca de reproducción y el código QR sobre la portada, y si la portada enlaza con el vídeo— y qué ofrecen sus reproductores en el visor HTML y en EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>ver abajo</td>
+      <td>La marca impresa sobre la portada que indica que se reproduce.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>ver abajo</td>
+      <td>El código QR impreso sobre la portada: abre la página del vídeo en YouTube o Vimeo, o la dirección de producción de un archivo.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Hace de la portada un enlace al vídeo: una anotación de enlace sobre ella en el PDF, y un <code>&lt;a&gt;</code> que la rodea en HTML y EPUB allí donde se muestre la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Qué pone la salida HTML en lugar de un vídeo: su reproductor, o la portada impresa con sus elementos superpuestos.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>ver abajo</td>
+      <td>Las opciones de reproductor de todos los vídeos; el <code>video.player</code> de cada vídeo se aplica sobre ellas.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducción
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disco con un triángulo, un rectángulo redondeado con un triángulo (1,45 veces más ancho que alto) o el triángulo solo, perfilado con el color de fondo.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, una esquina (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el centro de un lado (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Las posiciones son físicas: la esquina superior derecha es la superior derecha también en un libro de derecha a izquierda.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Altura de la marca; nunca más del 40 % del lado menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distancia a los bordes de la portada en una esquina o un lado.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanco</td><td>El triángulo.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disco o el rectángulo de detrás; el perfil del triángulo cuando va solo. Vinculado a la paleta por defecto.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacidad del fondo, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Código QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime el código. Un archivo sin dirección de producción no lo lleva.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Como en la marca de reproducción. Da a las dos posiciones distintas.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Lado del código con su margen; nunca más del 45 % del lado menor de la portada. Las cámaras de los móviles leen módulos a partir de un tercio de milímetro: una dirección de 30 caracteres da un código de 29 módulos, así que 18 mm con un margen de 2 dan módulos de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distancia a los bordes de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Cuánto del código puede estar dañado o tapado sin que deje de leerse: alrededor de un 7 %, un 15 %, un 25 % o un 30 %. Sube por sí sola mientras el código conserve el mismo número de módulos.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Módulos claros alrededor del código, sobre su placa (de 0 a 8). La placa se distingue de la portada, así que no hacen falta los cuatro módulos que pide la norma sobre papel en blanco.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negro</td><td>Los módulos oscuros. Mantenlos oscuros sobre una placa clara: la mayoría de los lectores no leen códigos invertidos.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanco</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radio de las esquinas de la placa.</td></tr>
+  </tbody>
+</table>
+
+El propio motor codifica el código (`encodeQr(text, level)`: modo byte, UTF-8, versiones 1 a 40, la máscara con menor penalización) y lo dibuja como vectores: el canvas rellena un solo trazado con las series de módulos, el PDF un `drawSvgPath` y el HTML un `<path>` con `shape-rendering="crispEdges"`, así que sale nítido a cualquier tamaño de impresión.
+
+### Opciones del reproductor
+
+`VideoPlayerOptions`, en `videoStyle.player` y en el `video.player` de cada vídeo. El reproductor HTML5 de un archivo las respeta todas; los de YouTube y Vimeo, las que permiten sus parámetros de inserción.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th style={{ width: '170px' }}>La respetan</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Muestra los controles del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece el botón de descarga del navegador (<code>controlslist="nodownload"</code> cuando está desactivado). Oculta el botón; no protege el archivo. YouTube y Vimeo nunca ofrecen descarga.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Ofrece la pantalla completa (<code>fs=0</code>, el <code>allowfullscreen</code> del iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece el menú de velocidad (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece la imagen en imagen (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece enviar el vídeo a otra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza a reproducirse solo, siempre sin sonido, como exigen los navegadores.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza con el sonido apagado.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Vuelve a empezar al terminar.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>archivos</td><td>Cuánto carga el navegador antes de reproducir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Inserciones con más privacidad: YouTube desde <code>youtube-nocookie.com</code>, Vimeo con <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB conserva solo los atributos que conoce su esquema: un archivo se reproduce con <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> y <code>preload</code>, y el sistema de lectura decide el resto.
+
+El resolutor y el depurador siguen el patrón de las demás secciones, junto a los tipos `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined si todo está por defecto
+```
 
 ## Estilos de párrafo
 
@@ -8018,7 +8171,7 @@ migrateConfig(config, CONFIG_VERSION); // reglas actuales: el propio `config`
 Cuatro utilidades conectan un paquete abierto con el motor y los backends:
 
 - **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
-- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
+- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`), portadas de vídeo incluidas. **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`, y **`bundleVideoUrl(bundle)`** su resolvedor `resourceVideoUrl` para los archivos de vídeo que lleva un paquete. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
 - **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice de contenidos (`:::toc`) o el analítico (`:::index`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
 - **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback` con los argumentos del renderizador, `request` incluido, y entrega lo que devuelva. Un `fallback` que solo descarga el archivo `latin` de la familia imprime como cajas vacías una familia china que el paquete no incrusta; uno que responde con los fragmentos, como `sliceFontProvider` en [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas), la imprime completa.
 

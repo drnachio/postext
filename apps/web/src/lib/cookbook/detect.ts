@@ -14,7 +14,7 @@ import type { ComposedPen, Level } from "./types.ts";
 /** Top-level keys of `PostextConfig` (packages/postext/src/types.ts). */
 export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
-  "diagramStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
+  "diagramStyle", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
   "htmlViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes",
 ];

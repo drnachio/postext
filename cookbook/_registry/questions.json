@@ -2381,5 +2381,41 @@
       "ar": "الصور، تُقَصّ لتملأ العمود"
     },
     "theme": "figures"
+  },
+  "Q133": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a video in a printed book so that a reader can open it from the page?",
+      "es": "¿Cómo pongo un vídeo en un libro impreso para que el lector pueda abrirlo desde la página?",
+      "ca": "Com poso un vídeo en un llibre imprès perquè el lector el pugui obrir des de la pàgina?",
+      "zh": "怎样把视频放进印刷书里，让读者能从页面上打开它？",
+      "ar": "كيف أضع فيديو في كتاب مطبوع بحيث يستطيع القارئ فتحه من الصفحة؟"
+    },
+    "index": {
+      "en": "Videos, printed with a QR code",
+      "es": "Vídeos, impresos con código QR",
+      "ca": "Vídeos, impresos amb codi QR",
+      "zh": "视频，印出二维码",
+      "ar": "الفيديو، يُطبع مع رمز QR"
+    },
+    "theme": "figures"
+  },
+  "Q134": {
+    "kind": "how",
+    "text": {
+      "en": "How do the HTML edition and the EPUB play the book's videos, and how do I hide the download button?",
+      "es": "¿Cómo reproducen la edición HTML y el EPUB los vídeos del libro, y cómo oculto el botón de descarga?",
+      "ca": "Com reprodueixen l'edició HTML i l'EPUB els vídeos del llibre, i com amago el botó de baixada?",
+      "zh": "HTML版和EPUB怎样播放书中的视频？怎样隐藏下载按钮？",
+      "ar": "كيف يشغّل إصدار HTML وملف EPUB مقاطع الفيديو في الكتاب، وكيف أخفي زر التنزيل؟"
+    },
+    "index": {
+      "en": "Videos, played on screen",
+      "es": "Vídeos, reproducidos en pantalla",
+      "ca": "Vídeos, reproduïts a la pantalla",
+      "zh": "视频，在屏幕上播放",
+      "ar": "الفيديو، يُشغَّل على الشاشة"
+    },
+    "theme": "output"
   }
 }

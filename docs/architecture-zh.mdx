@@ -641,7 +641,7 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
+由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。视频资源绘制为它的封面，和其他位图一样；HTML后端还接收一个`resourceVideoUrl(fileId)`解析函数，用于它要播放的视频文件，EPUB写入器则把这些文件存放在`media/`下。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
 
 `renderToHtmlIndexed`值得单独说明：除了完整的HTML字符串，它还返回按页、按块的分解结果（`HtmlRenderIndex`），调用方可以与上一次渲染做差异比较，只修补HTML确实发生变化的DOM子树。沙盒的实时预览走的就是这条路径。
 

@@ -1040,7 +1040,7 @@ donde $g$ es la aceleración de la caída libre.
 
 ## Recursos
 
-Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla al primer hueco libre tras esa referencia — el final de la columna donde la mencionas, el principio de la siguiente, una banda de la página siguiente —, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
+Las imágenes, los SVG, las tablas y los vídeos no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas, vídeos de YouTube y Vimeo o subidos, y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla al primer hueco libre tras esa referencia — el final de la columna donde la mencionas, el principio de la siguiente, una banda de la página siguiente —, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
 
 Ambas formas de abajo son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
 
@@ -1193,7 +1193,7 @@ Las bandas de flotantes se corrigen contra la rejilla base para que el texto cir
 
 En la página de cierre de un capítulo —y del documento— nada sigue a las figuras y tablas a lo ancho de la página que quedan bajo la última banda de texto, así que suben hasta quedar a un hueco de flotante bajo ella, apiladas en su orden, en lugar de dejar blanco entre el texto y una figura al pie de la página. Vale también para un flotante `position: 'bottom'`. Para dejarlas al pie, como en cualquier otra página, pon `layout.hugClosingFloats: false` (consulta [Configuración › Disposición](/es/docs/configuration#disposición)). En las páginas con columna lateral nunca se mueven.
 
-Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable.
+Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable. El archivo propio de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](#vídeos)).
 
 #### Dónde puede caer un flotante
 
@@ -1261,6 +1261,112 @@ El motor aprovecha ese margen en tres casos:
 
 El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la imagen que se ve en `bodyRect`, en las mismas fracciones (no aparece cuando se ve la imagen entera), y `bodyFlex` da los px que el cuerpo aún podría encoger y crecer y los px que ya le cambiaron las palancas (`{ shrink, grow, delta }`). La previsualización en canvas y el PDF recortan al cuerpo y dibujan la imagen entera a su tamaño sin recortar; el visor HTML y el EPUB de maquetación fija ponen la imagen con `object-fit: cover` y el `object-position` correspondiente; un EPUB adaptable, que no tiene página que llenar, muestra la imagen entera. Un anfitrión que dibuje las imágenes por su cuenta tiene las funciones que exporta `postext`: `resourceSafeArea` y `normalizeSafeArea` (la zona tal como la lee el motor, o `undefined`), `safeAreaHeightRange` (el cuerpo más bajo y el más alto a una anchura), `safeAreaSource` (la parte que se ve a una altura dada) y `uncroppedPictureBox` (dónde dibujar la imagen entera antes de recortar), con el tipo `ResourceSafeArea`. En el Sandbox el campo es **Zona segura**, en una imagen del [panel de Recursos](/es/docs/sandbox#panel-de-recursos).
 
+
+### Vídeos
+
+Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un archivo de vídeo propio (MP4, WebM). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Cada salida lo muestra como puede:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Salida</th>
+      <th>Qué muestra</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas, PDF, Folio</td>
+      <td>La <strong>portada</strong>, un fotograma del vídeo, con una marca de reproducción y un código QR que abre el vídeo (<a href="/es/docs/configuration#estilo-de-vídeo">Configuración › Estilo de vídeo</a>). En el PDF la portada es además un enlace al vídeo.</td>
+    </tr>
+    <tr>
+      <td>Visor HTML</td>
+      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo. Con <code>videoStyle.html: 'poster'</code> muestra en su lugar la portada impresa.</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o Vimeo es su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const charla: Resource = {
+  id: 'charla-farero', typeId: 'video', kind: 'video',
+  caption: 'El farero explica la lámpara.',
+  altText: 'Un farero junto a la lámpara',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'charla.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // empieza en 0:30; el enlace impreso también
+  },
+};
+```
+
+El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime *Vídeo 1.1* y hace flotar la portada al primer hueco libre tras la referencia, y `::resource{id="charla-farero"}` con `placement.position: 'here'` la coloca en línea. Los campos de `Resource.video` (`ResourceVideo`):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Campo</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>Desde dónde se reproduce el vídeo.</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado.</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>, <code>format</code></td>
+      <td><code>string</code></td>
+      <td>Un archivo: el vídeo subido, guardado fuera de banda como un bitmap, y su formato (<code>'mp4'</code>, el valor por defecto, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>El fotograma de portada, un bitmap.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
+      <td><code>number</code></td>
+      <td>El tamaño del fotograma del vídeo en px (su proporción cuando no hay portada) y su duración en segundos.</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>El segundo del archivo cuyo fotograma se usa como portada, guardado para poder volver a elegirlo.</td>
+    </tr>
+    <tr>
+      <td><code>start</code>, <code>end</code></td>
+      <td><code>number</code></td>
+      <td>Reproduce desde el segundo <code>start</code> hasta el <code>end</code>. El código QR y el enlace del PDF también empiezan en <code>start</code>.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>Las opciones de reproductor de este vídeo, que se aplican sobre <code>videoStyle.player</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+**La portada.** Se compone a la medida de su hueco (o a la fracción `placement.width` de ella), con su propia proporción y sea cual sea su tamaño en píxeles: un fotograma del tamaño de una pantalla se amplía en lugar de imprimirse pequeño. Como un bitmap, puede llevar una [zona segura](#zona-segura) y seguir `placement.align`. Un vídeo sin portada imprime un recuadro oscuro con la proporción del vídeo (16:9 si nada la indica) y sus elementos superpuestos, y genera un aviso de contenido `videoWithoutPoster`. En el Sandbox, la portada de un vídeo de YouTube o Vimeo se descarga de la plataforma al escribir su dirección, y la de un archivo es un fotograma que eliges en el vídeo.
+
+**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, desde `start`. Un archivo no tiene página: abren su dirección de producción. Sin ella, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no lleva el archivo muestra la portada. Una dirección de YouTube o Vimeo que no nombra ningún vídeo de esa plataforma genera `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
+
+**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, empezar sin sonido, repetición, precarga, inserción con más privacidad) se fijan para todo el libro en `videoStyle.player` y para un vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html`; el escritor EPUB la usa. En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada recuperan su orientación, como una imagen, para que el código QR se pueda leer.
+
+**En el VDT.** El bloque de recurso de un vídeo lleva `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un bitmap) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o Vimeo con las opciones del reproductor aplicadas, el `fileId` y el `mimeType` de un archivo, el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda del cuerpo. Un anfitrión que dibuje los vídeos por su cuenta tiene las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
+
+**En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete.
 
 ## Qué NO se soporta
 

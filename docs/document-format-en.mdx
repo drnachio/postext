@@ -1040,7 +1040,7 @@ where $g$ is the acceleration of free fall.
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the Sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
+Images, SVGs, tables and videos are not written inline. They are declared once as **resources** (managed in the Sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, YouTube, Vimeo and uploaded videos, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -1193,7 +1193,7 @@ Float bands are corrected against the baseline grid so the surrounding text keep
 
 On the closing page of a chapter — and of the document — nothing follows the page-wide figures and tables set below the last band of text, so they move up to sit one float gap under it, stacked in their order, instead of leaving white between the text and a figure at the page foot. That holds for a `position: 'bottom'` float too. To keep them at the foot, as on every other page, set `layout.hugClosingFloats: false` (see [Configuration › Layout](/en/docs/configuration#layout)). Pages with a side column never move them.
 
-All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable.
+All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable. A video's own file comes through `resourceVideoUrl(fileId)` the same way (see [Videos](#videos)).
 
 #### Where a float can land
 
@@ -1261,6 +1261,112 @@ The engine uses that room in three places:
 
 The VDT records the crop on the resource block: `bodySource` is the part of the picture shown in `bodyRect`, in the same fractions (absent when the whole picture fills it), and `bodyFlex` gives the px the body could still shrink and grow and the px the levers already changed it by (`{ shrink, grow, delta }`). The canvas preview and the PDF clip to the body and draw the whole picture at its uncropped size; the HTML viewer and fixed-layout EPUB set the image with `object-fit: cover` and a matching `object-position`; a reflowable EPUB, which has no page to fill, shows the whole picture. A host that draws pictures itself can use the helpers `postext` exports: `resourceSafeArea` and `normalizeSafeArea` (the area as the engine reads it, or `undefined`), `safeAreaHeightRange` (the shortest and tallest body at a width), `safeAreaSource` (the part shown at a given height) and `uncroppedPictureBox` (where to draw the whole picture before clipping), with the type `ResourceSafeArea`. In the Sandbox the field is **Safe area** on a picture in the [Resources panel](/en/docs/sandbox#resources-panel).
 
+
+### Videos
+
+A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video file of your own (MP4, WebM). It is placed, captioned, floated and cited like a picture, and numbered in a sequence of its own: the built-in `video` type prints *Video 1.1*, *Video 1.2*… beside *Figure 1.1* and *Table 1.1* (see [Configuration › Resource types](/en/docs/configuration#resource-types)). Each output shows it as it can:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Output</th>
+      <th>What it shows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas, PDF, Folio</td>
+      <td>The <strong>poster</strong>, a frame of the video, with a play mark and a QR code that opens the video (<a href="/en/docs/configuration#video-style">Configuration › Video style</a>). In the PDF the poster is also a link to the video.</td>
+    </tr>
+    <tr>
+      <td>HTML viewer</td>
+      <td>The video's <strong>player</strong>: YouTube's or Vimeo's, or the browser's HTML5 player for a file. With <code>videoStyle.html: 'poster'</code> it shows the printed poster instead.</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>A file plays in the reading system's own player, packed in the book or read from its production address. A YouTube or Vimeo video is its poster, linked to the video: an EPUB may not embed a web page's player.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const talk: Resource = {
+  id: 'keeper-talk', typeId: 'video', kind: 'video',
+  caption: 'The keeper explains the lamp.',
+  altText: 'A lighthouse keeper beside the lamp',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // plays from 0:30; the printed link starts there too
+  },
+};
+```
+
+The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Video 1.1* and floats the poster to the first free slot after the reference, and `::resource{id="keeper-talk"}` with `placement.position: 'here'` sets it inline. The fields of `Resource.video` (`ResourceVideo`):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Field</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>Where the video plays from.</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube or Vimeo: the video's address, in any form (a watch page, <code>youtu.be</code>, Shorts, an embed link, <code>youtube-nocookie.com</code>; a Vimeo page, channel page or unlisted link with its hash). A file: its <strong>production address</strong>, where the published book will find it.</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>, <code>format</code></td>
+      <td><code>string</code></td>
+      <td>A file: the uploaded video, stored out of band like a bitmap, and its format (<code>'mp4'</code>, the default, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>The poster frame, a bitmap.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
+      <td><code>number</code></td>
+      <td>The video's frame size in px (its ratio when there is no poster) and length in seconds.</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>The second of a file's frame used as the poster, kept so it can be picked again.</td>
+    </tr>
+    <tr>
+      <td><code>start</code>, <code>end</code></td>
+      <td><code>number</code></td>
+      <td>Play from <code>start</code> to <code>end</code> seconds. The QR code and the PDF link start at <code>start</code> too.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>This video's player options, laid over <code>videoStyle.player</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+**The poster.** It is set at the measure of its slot (or the `placement.width` fraction of it), in its own ratio, whatever its pixel size: a screen-sized frame is enlarged rather than printed small. Like a bitmap it can carry a [safe area](#safe-area) and follow `placement.align`. A video without a poster prints a dark box in the video's ratio (16:9 when nothing says) with its overlays, and raises a `videoWithoutPoster` content warning. In the Sandbox the poster of a YouTube or Vimeo video is fetched from the platform when its address is entered, and a file's is a frame you pick in the video.
+
+**The address.** The QR code and the PDF link open the video's page, `https://youtu.be/<id>` or `https://vimeo.com/<id>`, from `start`. A file has no page: they open its production address. Without one, print gets no QR code and no link (`videoWithoutUrl`), and an HTML or EPUB output that does not carry the file shows the poster. A YouTube or Vimeo address that names no video of that platform raises `videoUrlInvalid`; the poster is shown in place of a player.
+
+**The players.** The player options (controls, download button, full screen, speed menu, picture in picture, casting, autoplay, a muted start, loop, preload, privacy-enhanced embeds) are set for the whole book in `videoStyle.player` and for one video in `video.player`; each player honours what it can (see [Configuration › Video style](/en/docs/configuration#video-style)). The HTML backend takes the playable URL of a file through the `resourceVideoUrl(fileId)` option, as it takes pictures through `resourceImageUrl`, and falls back to the production address. Its `videos: { files, streams }` option chooses between player and poster per source, over `videoStyle.html`; the EPUB writer uses it. In a right-to-left book the player and the poster's overlays are turned back like a picture, so the QR code reads.
+
+**In the VDT.** The resource block of a video has `kind: 'video'`, its poster as `fileId` / `format` (drawn like a bitmap), and `video` (`VDTResourceVideo`): the `link` a reader is sent to, the YouTube or Vimeo `embedUrl` with the player options applied, a file's `fileId` and `mimeType`, the `start` / `end` range, the resolved `player`, `linkPoster`, `html`, and the overlays `playMark` and `qr` (the QR modules as rows of `'0'` / `'1'`), with rects relative to the body's top-left corner. A host drawing videos itself can use the helpers `postext` exports: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` and `qrModuleRuns`.
+
+**In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files.
 
 ## What is NOT supported
 

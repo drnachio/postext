@@ -3688,7 +3688,7 @@ Al Sandbox aquesta configuració és a **Disseny › Escriptura › Tipografia d
 
 Un **tipus de recurs** és una categoria definible per l'usuari — *Figura*, *Taula*, *Diagrama*, *Llistat*… — que determina com es numeren, com es retola el peu i com es referencien els recursos d'aquella classe. La llista viu a `config.resourceTypes`; el Sandbox l'edita a **Disseny → Figures i taules → Numeració i col·locació**.
 
-Quan `config.resourceTypes` no està definit, Postext inclou dos valors per defecte integrats: **Figura** i **Taula**, tots dos numerats com `{h1}.{n}` (es reinicien a cada encapçalament de nivell 1) amb comptadors decimals. S'anomenen en la llengua del document: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, l'anglès (vegeu [Llengua del document](#llengua-del-document)).
+Quan `config.resourceTypes` no està definit, Postext inclou tres valors per defecte integrats: **Figura**, **Taula** i **Vídeo**, cadascun numerat per separat com `{h1}.{n}` (es reinicien a cada encapçalament de nivell 1) amb comptadors decimals. Una llista sense cap tipus `video`, la d'un llibre desat abans que existissin els vídeos, continua numerant els recursos de vídeo de tipus `video`: s'hi afegeix per a ells el tipus Vídeo integrat (`effectiveResourceTypes(config, resources)`), i `defaultVideoResourceType(locale)` el retorna tot sol. S'anomenen en la llengua del document: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, l'anglès (vegeu [Llengua del document](#llengua-del-document)).
 
 Els valors per defecte integrats s'adapten a la llengua. La funció exportada `defaultResourceTypes(locale = 'en')` localitza els noms de tipus, les etiquetes curtes i els prefixos de peu a la llengua del document — l'anglès produeix *Figure*/*Fig.* i *Table*/*Tab.*; el castellà produeix *Figura*/*Fig.* i *Tabla*/*Tabla*; el francès, l'alemany, l'italià, el portuguès, el català i el neerlandès tenen els seus (la taula de [Llengua del document](#llengua-del-document) els recull). Les etiquetes regionals com `es-ES` es resolen per llengua, i qualsevol llengua sense traducció passa a l'anglès. El comportament de numeració (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, comptadors decimals) és independent de la llengua. Cada crida retorna objectes nous, de manera que pots mutar el resultat lliurement:
 
@@ -3698,7 +3698,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4444,6 +4445,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 
 Per a cada color que reescriu la passada sobre el marcatge (valors hexadecimals, `rgb()` i `hsl()`, `white` i `black`; consulta [Com funciona la tinta única](#com-funciona-la-tinta-única)), el mapatge per píxels dona el mateix resultat, inclosos les vores suavitzades i els degradats. Tots dos difereixen on la passada sobre el marcatge deixa un color com està: els colors amb nom diferents de `white` i `black`, `currentColor`, les formes i els textos sense emplenament (dibuixats en el negre per defecte) i els mapes de bits incrustats a l'SVG es tenyeixen en pantalla però conserven el seu color al PDF. Dona a cada element del diagrama un color explícit en hexadecimal, `rgb()` o `hsl()` per obtenir la mateixa sortida. Quan el canvas no pot tornar a llegir els píxels (un `<img>` d'un altre origen, carregat sense CORS), la imatge es pinta sense tenyir.
 
+
+## Estil de vídeo
+
+La propietat `videoStyle` defineix com s'imprimeixen els [recursos de vídeo](/ca/docs/document-format#vídeos) (la marca de reproducció i el codi QR sobre la portada, i si la portada enllaça amb el vídeo) i què ofereixen els seus reproductors al visor HTML i a l'EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>La marca impresa sobre la portada que indica que es reprodueix.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>El codi QR imprès sobre la portada: obre la pàgina del vídeo a YouTube o a Vimeo, o l'adreça de producció d'un fitxer.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Fa de la portada un enllaç al vídeo: una anotació d'enllaç a sobre al PDF, i un <code>&lt;a&gt;</code> que l'envolta a HTML i a EPUB allà on es mostri la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Què posa la sortida HTML per a un vídeo: el seu reproductor, o la portada impresa amb les marques que porta a sobre.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>vegeu més avall</td>
+      <td>Les opcions de reproductor de tots els vídeos; el <code>video.player</code> de cada vídeo s'hi aplica per sobre.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducció
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disc amb un triangle, un rectangle arrodonit amb un triangle (1,45 vegades més ample que alt) o només el triangle, perfilat amb el color de fons.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, un cantó (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el mig d'un costat (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Les posicions són físiques: el cantó de dalt a la dreta també ho és en un llibre de dreta a esquerra.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Alçada de la marca; mai més del 40 % del costat menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distància a les vores de la portada quan la marca és en un cantó o en un costat.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanc</td><td>El triangle.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disc o el rectangle de darrere; el perfil del triangle quan va sol. Per defecte està enllaçat a la paleta.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacitat del fons, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Codi QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix el codi. Un fitxer sense adreça de producció no en porta.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Com a la marca de reproducció. Dona'ls posicions diferents.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Costat del codi amb el seu marge; mai més del 45 % del costat menor de la portada. Les càmeres dels mòbils llegeixen mòduls a partir d'un terç de mil·límetre: una adreça de 30 caràcters dona un codi de 29 mòduls, de manera que 18 mm amb un marge de 2 fan mòduls de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distància a les vores de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Quina part del codi es pot malmetre o tapar sense que deixi de llegir-se: un 7 %, un 15 %, un 25 % o un 30 %, aproximadament. Puja tota sola mentre el codi conservi el mateix nombre de mòduls.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Mòduls clars al voltant del codi, sobre la seva placa (0–8). La placa ja es destaca de la portada, així que no calen els quatre mòduls que demana la norma sobre paper lliure.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negre</td><td>Els mòduls foscos. Mantén-los foscos sobre una placa clara: la majoria de lectors no llegeixen codis invertits.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanc</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radi dels cantons de la placa.</td></tr>
+  </tbody>
+</table>
+
+El codi el codifica el mateix motor (`encodeQr(text, level)`: mode byte, UTF-8, versions de l'1 al 40, la màscara amb menys penalització) i es dibuixa com a vectors: el canvas omple un sol camí de tirades de mòduls, el PDF fa un sol `drawSvgPath` i l'HTML un sol `<path>` amb `shape-rendering="crispEdges"`, de manera que es manté nítid a qualsevol mida d'impressió.
+
+### Opcions del reproductor
+
+`VideoPlayerOptions`, a `videoStyle.player` i al `video.player` de cada vídeo. El reproductor HTML5 d'un fitxer les respecta totes; els reproductors de YouTube i de Vimeo, les que permeten els seus paràmetres d'inserció.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th style={{ width: '170px' }}>La respecten</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Mostra els controls del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix el botó de baixada del navegador (<code>controlslist="nodownload"</code> quan és desactivat). Amaga el botó, no protegeix el fitxer. YouTube i Vimeo no ofereixen mai la baixada.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Ofereix la pantalla completa (<code>fs=0</code>, l'<code>allowfullscreen</code> de l'iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix el menú de velocitat (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix la imatge en imatge (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix enviar el vídeo a una altra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença a reproduir-se sol, sempre sense so, com exigeixen els navegadors.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença amb el so apagat.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Torna a començar en acabar.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>fitxers</td><td>Quant carrega el navegador abans de reproduir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Insercions amb més privadesa: YouTube des de <code>youtube-nocookie.com</code>, Vimeo amb <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB només conserva els atributs que coneix el seu esquema: un fitxer es reprodueix amb <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> i <code>preload</code>, i la resta la decideix el lector.
+
+El resolutor i el depurador segueixen el patró de les altres seccions, juntament amb els tipus `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined quan tot és per defecte
+```
 
 ## Estils de paràgraf
 
@@ -7995,7 +8148,7 @@ migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
 Quatre utilitats connecten un paquet obert amb el motor i els backends:
 
 - **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`. Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
-- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
+- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
 - **`buildBundle(bundle)`** compon els capítols en ordre i retorna un `VDTDocument` per capítol. Cada capítol continua l'anterior: comptadors d'encapçalaments i de recursos, la part oberta, la paritat de pàgina i la numeració. Un capítol que imprimeix l'índex de continguts (`:::toc`) o l'analític (`:::index`) rep l'esquema del llibre sencer. Admet les mateixes opcions que `buildDocument`, més `config` per substituir la configuració del paquet, `cache` per compartir una memòria cau de mesures i `metadata` (vegeu més avall).
 - **`bundleResourceBytes(bundle)`** i **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** són les opcions `resourceBytes` i `fontProvider` de `renderToPdf` de `postext-pdf`. El proveïdor de fonts tria del paquet el pes més proper de l'estil demanat. Per a una variant `.woff2` necessita `decompressWoff2`, i per a una família que el paquet no inclou crida `fallback` amb els arguments del renderitzador, `request` inclòs, i lliura el que retorni. Un `fallback` que només baixa el fitxer `latin` de la família imprimeix com a caixes buides una família xinesa que el paquet no incrusta; un que respon amb els fragments, com `sliceFontProvider` a [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes), la imprimeix completa.
 

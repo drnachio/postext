@@ -61,8 +61,8 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
   },
   {
     page: "Configuration-Resources",
-    title: "Configuration: resources, tables, captions and diagrams",
-    sections: ["Resource types", "Table style", "Caption style", "Diagram style"],
+    title: "Configuration: resources, tables, captions, diagrams and videos",
+    sections: ["Resource types", "Table style", "Caption style", "Diagram style", "Video style"],
   },
   {
     page: "Configuration-Styles",

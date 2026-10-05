@@ -2515,5 +2515,77 @@
         "ar": "تحذيرات الإعدادات"
       }
     }
+  },
+  "videoWithoutPoster": {
+    "source": "engine",
+    "label": {
+      "en": "Video without a poster",
+      "es": "Vídeo sin portada",
+      "ca": "Vídeo sense portada",
+      "zh": "视频没有封面",
+      "ar": "فيديو بلا غلاف"
+    },
+    "cause": {
+      "en": "A video resource the text uses has no `video.poster`, so print shows a dark box in the video's ratio with its play mark and QR code.",
+      "es": "Un recurso de vídeo que usa el texto no tiene `video.poster`, así que el impreso muestra un recuadro oscuro con la proporción del vídeo, su marca de reproducción y su código QR.",
+      "ca": "Un recurs de vídeo que fa servir el text no té `video.poster`, de manera que l'imprès mostra un requadre fosc amb la proporció del vídeo, la marca de reproducció i el codi QR.",
+      "zh": "正文用到的视频资源没有`video.poster`，印刷版显示一个按视频比例的深色方框，带播放标记和二维码。",
+      "ar": "مورد فيديو يستعمله النص ليس له `video.poster`، فيظهر في المطبوع مربع داكن بنسبة الفيديو مع علامة التشغيل ورمز QR."
+    },
+    "fix": {
+      "en": "Give the video a poster: a frame of the video or a picture of your own (`{ fileId, format, width, height }`), and register its bitmap like any picture.",
+      "es": "Dale una portada al vídeo: un fotograma suyo o una imagen propia (`{ fileId, format, width, height }`), y registra su mapa de bits como cualquier imagen.",
+      "ca": "Dona una portada al vídeo: un fotograma seu o una imatge pròpia (`{ fileId, format, width, height }`), i registra'n el mapa de bits com qualsevol imatge.",
+      "zh": "给视频一张封面：视频中的一帧或自己的图片（`{ fileId, format, width, height }`），并像其他图片一样注册它的位图。",
+      "ar": "أعطِ الفيديو غلافًا: إطارًا منه أو صورة خاصة بك (`{ fileId, format, width, height }`)، وسجّل صورته النقطية كأي صورة."
+    }
+  },
+  "videoWithoutUrl": {
+    "source": "engine",
+    "label": {
+      "en": "Video without a production address",
+      "es": "Vídeo sin dirección de producción",
+      "ca": "Vídeo sense adreça de producció",
+      "zh": "视频没有正式发布地址",
+      "ar": "فيديو بلا عنوان نشر"
+    },
+    "cause": {
+      "en": "A self-hosted video (`source: 'file'`) has no http(s) `video.url`, so its printed poster gets no QR code or link, and an HTML or EPUB output without the file shows the poster.",
+      "es": "Un vídeo propio (`source: 'file'`) no tiene un `video.url` http(s), así que su portada impresa no lleva código QR ni enlace, y una salida HTML o EPUB sin el archivo muestra la portada.",
+      "ca": "Un vídeo propi (`source: 'file'`) no té un `video.url` http(s), de manera que la portada impresa no porta codi QR ni enllaç, i una sortida HTML o EPUB sense el fitxer mostra la portada.",
+      "zh": "自有视频（`source: 'file'`）没有 http(s) 的`video.url`，印刷封面因此没有二维码和链接；不带文件的 HTML 或 EPUB 输出只显示封面。",
+      "ar": "فيديو خاص (`source: 'file'`) ليس له `video.url` بعنوان http(s)، فلا يحمل غلافه المطبوع رمز QR ولا رابطًا، وتعرض مخرجات HTML أو EPUB التي لا تحمل الملف الغلافَ."
+    },
+    "fix": {
+      "en": "Set `video.url` to the address the published video will have.",
+      "es": "Pon en `video.url` la dirección que tendrá el vídeo publicado.",
+      "ca": "Posa a `video.url` l'adreça que tindrà el vídeo publicat.",
+      "zh": "把`video.url`设为视频发布后的地址。",
+      "ar": "اجعل `video.url` العنوانَ الذي سيكون للفيديو بعد نشره."
+    }
+  },
+  "videoUrlInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Video link not recognized",
+      "es": "Enlace de vídeo no reconocido",
+      "ca": "Enllaç de vídeo no reconegut",
+      "zh": "无法识别的视频链接",
+      "ar": "رابط فيديو غير معروف"
+    },
+    "cause": {
+      "en": "A YouTube or Vimeo video's `video.url` is no link to a video of that platform, so no player is embedded and the poster is shown instead.",
+      "es": "El `video.url` de un vídeo de YouTube o Vimeo no enlaza un vídeo de esa plataforma, así que no se inserta reproductor y se muestra la portada.",
+      "ca": "El `video.url` d'un vídeo de YouTube o Vimeo no enllaça un vídeo d'aquesta plataforma, de manera que no s'insereix reproductor i es mostra la portada.",
+      "zh": "YouTube 或 Vimeo 视频的`video.url`不是该平台的视频链接，因此不嵌入播放器，改为显示封面。",
+      "ar": "`video.url` لفيديو من يوتيوب أو فيميو ليس رابطًا لفيديو على تلك المنصة، فلا يُضمَّن مشغّل ويُعرض الغلاف بدلًا منه."
+    },
+    "fix": {
+      "en": "Paste the video's own link (a watch page, a short link or an embed link), or change `video.source` to the platform it belongs to.",
+      "es": "Pega el enlace del propio vídeo (la página del vídeo, un enlace corto o uno de inserción), o cambia `video.source` a su plataforma.",
+      "ca": "Enganxa l'enllaç del vídeo (la pàgina del vídeo, un enllaç curt o un d'inserció), o canvia `video.source` a la seva plataforma.",
+      "zh": "粘贴视频本身的链接（观看页、短链接或嵌入链接），或把`video.source`改为它所属的平台。",
+      "ar": "الصق رابط الفيديو نفسه (صفحة المشاهدة أو رابطًا مختصرًا أو رابط تضمين)، أو غيّر `video.source` إلى منصته."
+    }
   }
 }

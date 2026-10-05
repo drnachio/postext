@@ -3701,7 +3701,7 @@ In the Sandbox these settings are in **Design › Writing system › East Asian 
 
 A **resource type** is a user-definable category — *Figure*, *Table*, *Diagram*, *Listing*… — that drives how the resources of that kind are numbered, captioned, and referenced. The list lives on `config.resourceTypes`; the Sandbox edits it in **Design → Figures & tables → Numbering & placement**.
 
-When `config.resourceTypes` is unset, Postext ships two built-in defaults: **Figure** and **Table**, both numbered `{h1}.{n}` (resetting on every level-1 heading) with decimal counters. They are named in the document language: `config.locale`, else `bodyText.hyphenation.locale`, else English (see [Document language](#document-language)).
+When `config.resourceTypes` is unset, Postext ships three built-in defaults: **Figure**, **Table** and **Video**, each numbered on its own `{h1}.{n}` (resetting on every level-1 heading) with decimal counters. A list that has no `video` type — a book saved before videos existed — still numbers video resources typed `video`: the built-in Video type is added for them (`effectiveResourceTypes(config, resources)`), and `defaultVideoResourceType(locale)` returns it on its own. They are named in the document language: `config.locale`, else `bodyText.hyphenation.locale`, else English (see [Document language](#document-language)).
 
 The built-in defaults are locale-aware. The exported `defaultResourceTypes(locale = 'en')` localizes the type names, short labels, and caption prefixes to the document's locale — English yields *Figure*/*Fig.* and *Table*/*Tab.*; Spanish yields *Figura*/*Fig.* and *Tabla*/*Tabla*; French, German, Italian, Portuguese, Catalan and Dutch have theirs too (the table in [Document language](#document-language) lists them). Regional tags such as `es-ES` resolve by language, and any locale without translations falls back to English. The numbering behaviour (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, decimal counters) is language-independent. Each call returns fresh objects, so you can mutate the result freely:
 
@@ -3711,7 +3711,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4458,6 +4459,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 
 For every colour the markup pass rewrites (hex, `rgb()` and `hsl()` values, `white` and `black`; see [How single ink works](#how-single-ink-works)), the pixel mapping gives the same result, antialiased edges and gradients included. The two differ where the markup pass leaves a colour alone: named colours other than `white` and `black`, `currentColor`, shapes and text with no fill (drawn in the default black), and bitmaps embedded in the SVG are tinted on screen but keep their colour in the PDF. Give every element of a diagram an explicit hex, `rgb()` or `hsl()` colour to get identical output. When the canvas cannot read the pixels back (an `<img>` from another origin, loaded without CORS), the picture is painted untinted.
 
+
+## Video style
+
+The `videoStyle` property sets how [video resources](/en/docs/document-format#videos) are printed — the play mark and the QR code over the poster, and whether the poster links to the video — and what their players offer in the HTML viewer and in EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>see below</td>
+      <td>The mark printed on the poster to say it plays.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>see below</td>
+      <td>The QR code printed on the poster: it opens the video's YouTube or Vimeo page, or a file's production address.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Make the poster a link to the video: a link annotation over it in the PDF, and an <code>&lt;a&gt;</code> around it in HTML and EPUB wherever the poster is shown.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>What the HTML output sets for a video: its player, or the printed poster with its overlays.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>see below</td>
+      <td>The player options of every video; a video's own <code>video.player</code> is laid over them.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Play mark
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Print the mark.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>A disc with a triangle, a rounded rectangle with a triangle (1.45 times as wide as it is tall), or the triangle alone, outlined in the background colour.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, a corner (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) or the middle of a side (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). The positions are physical: the top right corner is the top right corner in a right-to-left book too.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Height of the mark; never more than 40% of the poster's shorter side.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distance from the poster's edges at a corner or a side.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>white</td><td>The triangle.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Main Color</td><td>The disc or rectangle behind it; the triangle's outline when it stands alone. Palette-linked by default.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacity of the background, 0–1.</td></tr>
+  </tbody>
+</table>
+
+### QR code
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Print the code. A file without a production address gets none.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>As for the play mark. Give the two different positions.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Side of the code with its quiet zone; never more than 45% of the poster's shorter side. Phone cameras read modules of a third of a millimetre and up: a 30-character address makes a 29-module code, so 18 mm with a quiet zone of 2 gives modules of 0.55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distance from the poster's edges.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>How much of the code may be damaged or covered and still read: about 7%, 15%, 25% or 30%. Raised on its own while the code keeps the same number of modules.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Light modules around the code, on its plate (0–8). The plate stands out from the poster, so the four modules the standard asks for on open paper are not needed.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>black</td><td>The dark modules. Keep them dark on a light plate: most readers do not read inverted codes.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>white</td><td>The plate.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Corner radius of the plate.</td></tr>
+  </tbody>
+</table>
+
+The code is encoded by the engine itself (`encodeQr(text, level)`: byte mode, UTF-8, versions 1 to 40, the mask with the lowest penalty) and drawn as vectors: the canvas fills one path of module runs, the PDF one `drawSvgPath`, and HTML one `<path>` with `shape-rendering="crispEdges"`, so it stays sharp at any print size.
+
+### Player options
+
+`VideoPlayerOptions`, in `videoStyle.player` and in each video's `video.player`. The HTML5 player of a file honours them all; the YouTube and Vimeo players honour what their embed parameters allow.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th style={{ width: '170px' }}>Honoured by</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, files</td><td>Show the player's controls.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>files</td><td>Offer the browser's download button (<code>controlslist="nodownload"</code> when off). It hides the button; it does not protect the file. YouTube and Vimeo never offer a download.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, files</td><td>Offer full screen (<code>fs=0</code>, the iframe's <code>allowfullscreen</code>, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, files</td><td>Offer the speed menu (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, files</td><td>Offer picture in picture (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>files</td><td>Offer casting to another screen (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, files</td><td>Start playing on its own, always muted, as browsers require.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, files</td><td>Start with the sound off.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, files</td><td>Play again from the start at the end.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>files</td><td>How much the browser loads before play: <code>'none'</code>, <code>'metadata'</code> or <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Privacy-enhanced embeds: YouTube from <code>youtube-nocookie.com</code>, Vimeo with <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+An EPUB keeps only the attributes its schema knows: a file plays with <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> and <code>preload</code>, and the reading system decides the rest.
+
+Resolver and stripper match the other sections, alongside the `VideoStyleConfig` / `ResolvedVideoStyleConfig` types:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined when all defaults
+```
 
 ## Paragraph styles
 
@@ -8016,7 +8169,7 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 Four helpers connect an opened bundle to the engine and the backends:
 
 - **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
-- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
+- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`), video posters included. **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`, and **`bundleVideoUrl(bundle)`** its `resourceVideoUrl` resolver for the video files a bundle carries. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
 - **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
 - **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback` with the renderer's arguments, `request` included, and passes on whatever it returns. A fallback that fetches only a family's `latin` file prints a Chinese family the bundle does not embed as empty boxes; one that answers with slices, such as `sliceFontProvider` in [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts), prints it whole.
 

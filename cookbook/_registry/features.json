@@ -10473,5 +10473,144 @@
         "renderToEpub"
       ]
     }
+  },
+  "video-resources": {
+    "label": {
+      "en": "Videos as resources",
+      "es": "Vídeos como recursos",
+      "ca": "Vídeos com a recursos",
+      "zh": "作为资源的视频",
+      "ar": "الفيديو بوصفه موردًا"
+    },
+    "definition": {
+      "en": "YouTube, Vimeo or self-hosted videos placed, captioned and numbered like figures (Video 1.1); print shows the poster, the HTML viewer and EPUB play them.",
+      "es": "Vídeos de YouTube, de Vimeo o propios que se colocan, se rotulan y se numeran como figuras (Vídeo 1.1); el impreso muestra la portada y el visor HTML y el EPUB los reproducen.",
+      "ca": "Vídeos de YouTube, de Vimeo o propis que es col·loquen, es retolen i es numeren com les figures (Vídeo 1.1); l'imprès mostra la portada i el visor HTML i l'EPUB els reprodueixen.",
+      "zh": "YouTube、Vimeo或自有视频像图一样放置、加题注和编号（视频1-1）；印刷版显示封面，HTML查看器和EPUB中可以播放。",
+      "ar": "مقاطع فيديو من يوتيوب أو فيميو أو ملفات خاصة تُوضع وتُعنوَن وتُرقَّم كالأشكال (فيديو 1-1)؛ يعرض المطبوع غلافها، ويشغّلها عارض HTML وملف EPUB."
+    },
+    "aliases": {
+      "en": [
+        "video",
+        "YouTube",
+        "Vimeo",
+        "MP4",
+        "poster frame",
+        "kind: 'video'"
+      ],
+      "es": [
+        "vídeo",
+        "video",
+        "YouTube",
+        "Vimeo",
+        "MP4",
+        "fotograma de portada"
+      ],
+      "ca": [
+        "vídeo",
+        "YouTube",
+        "Vimeo",
+        "MP4",
+        "fotograma de portada"
+      ],
+      "zh": [
+        "视频",
+        "YouTube",
+        "Vimeo",
+        "MP4",
+        "封面帧"
+      ],
+      "ar": [
+        "فيديو",
+        "يوتيوب",
+        "فيميو",
+        "MP4",
+        "إطار الغلاف"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Videos",
+        "es": "Vídeos",
+        "ca": "Vídeos",
+        "zh": "视频",
+        "ar": "مقاطع الفيديو"
+      }
+    },
+    "detect": {
+      "api": [
+        "youtubePosterUrls",
+        "parseVideoUrl",
+        "resourceVideoLink",
+        "bundleVideoUrl"
+      ]
+    }
+  },
+  "video-style": {
+    "label": {
+      "en": "Video posters: play mark and QR code",
+      "es": "Portadas de vídeo: marca de reproducción y código QR",
+      "ca": "Portades de vídeo: marca de reproducció i codi QR",
+      "zh": "视频封面：播放标记和二维码",
+      "ar": "أغلفة الفيديو: علامة التشغيل ورمز QR"
+    },
+    "definition": {
+      "en": "videoStyle: the play mark and the QR code printed on a video's poster, the poster's link, and the player options of the HTML and EPUB outputs.",
+      "es": "videoStyle: la marca de reproducción y el código QR que se imprimen sobre la portada de un vídeo, el enlace de la portada y las opciones del reproductor en HTML y EPUB.",
+      "ca": "videoStyle: la marca de reproducció i el codi QR que s'imprimeixen sobre la portada d'un vídeo, l'enllaç de la portada i les opcions del reproductor en HTML i EPUB.",
+      "zh": "videoStyle：印在视频封面上的播放标记和二维码、封面的链接，以及HTML和EPUB输出的播放器选项。",
+      "ar": "videoStyle: علامة التشغيل ورمز QR المطبوعان على غلاف الفيديو، ورابط الغلاف، وخيارات المشغّل في مخرجات HTML وEPUB."
+    },
+    "aliases": {
+      "en": [
+        "videoStyle",
+        "QR code",
+        "play button",
+        "nodownload",
+        "controls"
+      ],
+      "es": [
+        "videoStyle",
+        "código QR",
+        "botón de reproducción",
+        "sin descarga"
+      ],
+      "ca": [
+        "videoStyle",
+        "codi QR",
+        "botó de reproducció",
+        "sense baixada"
+      ],
+      "zh": [
+        "videoStyle",
+        "二维码",
+        "播放按钮",
+        "禁止下载"
+      ],
+      "ar": [
+        "videoStyle",
+        "رمز QR",
+        "زر التشغيل",
+        "منع التنزيل"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Video style",
+        "es": "Estilo de vídeo",
+        "ca": "Estil de vídeo",
+        "zh": "视频样式",
+        "ar": "نمط الفيديو"
+      }
+    },
+    "detect": {
+      "config": [
+        "videoStyle"
+      ]
+    }
   }
 }
