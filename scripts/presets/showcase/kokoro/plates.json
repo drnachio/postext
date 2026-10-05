@@ -1,0 +1,382 @@
+{
+ "paper": "#f4ebd8",
+ "ink": "#1d1916",
+ "maxSide": 3000,
+ "jpegQuality": 80,
+ "scans": [
+  {
+   "id": "kokoro-1914-title",
+   "source": "ndl/945471/R0000004.jpg",
+   "box": [
+    800,
+    680,
+    1615,
+    1985
+   ],
+   "kind": "woodblock",
+   "levels": [
+    60,
+    125
+   ],
+   "use": "frontispiece or title-page vignette; strongest cover art",
+   "caption": "扉　漱石自装・伊上凡骨刻",
+   "alt": {
+    "ja": "黒地の木版画。雲と樹々の下に横たわる人物が、枠の中の篆書の「心」の字を見上げている。",
+    "en": "A black-ground woodblock: under clouds and trees a reclining figure looks up at the seal-script character 心 in a frame."
+   },
+   "credit": "夏目漱石装幀、伊上凡骨刻。『こゝろ』岩波書店、1914年、扉。国立国会図書館デジタルコレクション（info:ndljp/pid/945471）"
+  },
+  {
+   "id": "kokoro-1914-seal",
+   "source": "ndl/945471/R0000004.jpg",
+   "box": [
+    2320,
+    1070,
+    2620,
+    1500
+   ],
+   "kind": "document",
+   "use": "the seal facing the title woodblock: title verso or colophon",
+   "caption": "",
+   "alt": {
+    "ja": "印影「ars longa, vita brevis」。",
+    "en": "A seal reading “ars longa, vita brevis”."
+   },
+   "credit": "夏目漱石装幀。『こゝろ』岩波書店、1914年。国立国会図書館デジタルコレクション（info:ndljp/pid/945471）"
+  },
+  {
+   "id": "kokoro-1914-cover-label",
+   "source": "ndl/945471/R0000002.jpg",
+   "box": [
+    730,
+    590,
+    1640,
+    1270
+   ],
+   "kind": "document",
+   "use": "the cover label (康熙字典 「心」 entry): centrepiece of a redrawn cover",
+   "caption": "表紙　題簽",
+   "alt": {
+    "ja": "表紙の題簽。康熙字典の「心」の項を写した文字の枠。",
+    "en": "The cover label: the entry for 心 from the Kangxi dictionary, in a frame."
+   },
+   "credit": "夏目漱石装幀。『こゝろ』岩波書店、1914年、表紙。国立国会図書館デジタルコレクション（info:ndljp/pid/945471）"
+  },
+  {
+   "id": "kokoro-1917-endpaper",
+   "source": "ndl/906330/R0000002.jpg",
+   "box": [
+    380,
+    180,
+    1600,
+    2480
+   ],
+   "kind": "document",
+   "use": "endpapers, part-page grounds (pattern of roundels)",
+   "caption": "見返し",
+   "alt": {
+    "ja": "見返しの模様。立ち姿の人物と蓮の葉を描いた円紋が並ぶ。",
+    "en": "The endpaper pattern: roundels of standing figures and of lotus leaves."
+   },
+   "credit": "夏目漱石装幀。『こゝろ』岩波書店、1917年、見返し。国立国会図書館デジタルコレクション（info:ndljp/pid/906330）"
+  },
+  {
+   "id": "kokoro-1917-colophon-frame",
+   "source": "ndl/906330/R0000225.jpg",
+   "box": [
+    345,
+    375,
+    1525,
+    2545
+   ],
+   "kind": "woodblock",
+   "levels": [
+    70,
+    150
+   ],
+   "clear": [
+    [
+     590,
+     709,
+     1311,
+     2090
+    ]
+   ],
+   "use": "the leaf frame of the colophon, panel cleared, for this edition's own colophon",
+   "caption": "",
+   "alt": {
+    "ja": "奥付の木版の枠。大きな葉の模様が中央の空白を囲む。",
+    "en": "The colophon's woodblock frame: large leaves around an empty panel."
+   },
+   "credit": "夏目漱石装幀。『こゝろ』岩波書店、1917年、奥付。国立国会図書館デジタルコレクション（info:ndljp/pid/906330）"
+  },
+  {
+   "id": "kokoro-1914-colophon",
+   "source": "ndl/945471/R0000221.jpg",
+   "box": [
+    560,
+    460,
+    1810,
+    2255
+   ],
+   "kind": "document",
+   "use": "the 1914 colophon as printed, with the 漱石 inspection seal: a document plate",
+   "caption": "初版奥付",
+   "alt": {
+    "ja": "初版の奥付。葉の模様の枠の中に発行の記載と「漱石」の検印。",
+    "en": "The first edition's colophon: the imprint and Sōseki's inspection seal inside the leaf frame."
+   },
+   "credit": "夏目漱石装幀。『こゝろ』岩波書店、1914年、奥付。国立国会図書館デジタルコレクション（info:ndljp/pid/945471）"
+  },
+  {
+   "id": "soseki-sanjo-yusan",
+   "source": "ndl/1192970/R0000011.jpg",
+   "box": [
+    940,
+    1150,
+    4100,
+    5520
+   ],
+   "kind": "painting",
+   "paperSample": [
+    1000,
+    600,
+    3800,
+    1100
+   ],
+   "use": "part opener 上 先生と私",
+   "part": "上",
+   "caption": "夏目漱石「山上有山図」",
+   "alt": {
+    "ja": "漱石の山水画。青い山の手前に柳と赤い屋根の家、川辺の舟。右上に自作の詩。",
+    "en": "Sōseki's landscape: a blue mountain, willows and a red-roofed house by the water, his own poem at the top."
+   },
+   "credit": "夏目漱石「山上有山図」（大正3年）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970）"
+  },
+  {
+   "id": "soseki-hagi-no-kayu",
+   "source": "ndl/1192970/R0000043.jpg",
+   "box": [
+    1900,
+    860,
+    3100,
+    5500
+   ],
+   "kind": "painting",
+   "trim": true,
+   "paperSample": [
+    700,
+    1500,
+    1700,
+    4000
+   ],
+   "use": "part opener 中 両親と私 (the father's illness)",
+   "part": "中",
+   "caption": "夏目漱石「萩の粥図」",
+   "alt": {
+    "ja": "墨画。自在鉤に吊るした粥の鍋と、萩の枝。",
+    "en": "Ink painting: a pot of gruel hanging from the hearth hook, and bush clover."
+   },
+   "credit": "夏目漱石「萩の粥図」（大正3年、原画焼失）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970）"
+  },
+  {
+   "id": "soseki-kokaku-sekimon",
+   "source": "ndl/1192970/R0000019.jpg",
+   "box": [
+    1935,
+    905,
+    3020,
+    5460
+   ],
+   "kind": "painting",
+   "paperSample": [
+    700,
+    1500,
+    1700,
+    4000
+   ],
+   "use": "part opener 下 先生と遺書",
+   "part": "下",
+   "caption": "夏目漱石「孤客入石門図」",
+   "alt": {
+    "ja": "縦長の山水画。切り立つ岩山と谷の小道を、一人の旅人が石門へ向かう。",
+    "en": "A tall landscape: sheer rocks and a valley path where a lone traveller heads for a stone gate."
+   },
+   "credit": "夏目漱石「孤客入石門図」（大正3年）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970）"
+  },
+  {
+   "id": "soseki-sansui",
+   "source": "ndl/1192970/R0000055.jpg",
+   "box": [
+    1160,
+    860,
+    4045,
+    5490
+   ],
+   "kind": "painting",
+   "trim": true,
+   "paperSample": [
+    600,
+    1500,
+    1100,
+    4000
+   ],
+   "use": "spare: a closing plate before the colophon",
+   "caption": "夏目漱石「山水図」",
+   "alt": {
+    "ja": "墨の山水画。木立の陰の小さな家と、背後の岩山。",
+    "en": "Ink landscape: a small house in the shade of trees, a rocky peak behind."
+   },
+   "credit": "夏目漱石「山水図」（大正5年）。『漱石遺墨集』岩波書店、1935年。国立国会図書館デジタルコレクション（info:ndljp/pid/1192970）"
+  }
+ ],
+ "generator": {
+  "endpoint": "openai/gpt-image-2.5/sunburst/text-to-image",
+  "size": [
+   1664,
+   2496
+  ],
+  "quality": "high",
+  "credit": "Generated With Diffusion Models"
+ },
+ "style": "A Japanese nanga (literati) painting in sumi ink and light colour on paper, as the novelist Natsume Soseki painted for himself in 1914 and 1915, in the line of Ike no Taiga and Uragami Gyokudo. Not a Western watercolour and not realistic: dry, slightly wobbly brush outlines in black ink of varying weight; simplified, amateurish forms; foliage as clusters of ink dots and short strokes; rocks and hills built from texture strokes; flat, pale, transparent washes of mineral colour laid inside the lines; no atmospheric perspective, no modelling, no cast shadows. Sparse composition: large areas of bare paper, few details, the brush economical. Figures small and drawn with a few lines, faces barely indicated or turned away. Late Meiji Japan, about 1912. Painted on plain white paper with wide untouched white margins all round, the painting ending softly in the white. Portrait format, an illustration plate for a novel. Anything that could carry writing (grave markers, tablets, signs, lanterns, papers, books, newspapers) is left blank. No text, no letters, no pseudo-characters, no calligraphy, no inscription, no signature, no seal stamp, no border, no frame.",
+ "palettes": {
+  "上": "Palette: sea blue, pale green and a touch of ochre.",
+  "中": "Palette: summer greens and dry ochre, a little vermilion.",
+  "下": "Palette: dusky grey, indigo and faded brown."
+ },
+ "scenes": [
+  {
+   "id": "scene-kami-2",
+   "part": "上",
+   "section": "kami-2",
+   "anchor": "一人の西洋人を伴れていた",
+   "caption": "鎌倉の掛茶屋",
+   "alt": {
+    "ja": "夏の鎌倉の浜。葦簀の掛茶屋の前を、浴衣の男と背の高い西洋人が歩き、茶屋の床几から書生が見ている。",
+    "en": "Kamakura beach in summer: a man in a yukata walks past the reed-screened tea stall with a tall Westerner, watched by a student from the bench."
+   },
+   "prompt": "Kamakura beach in summer, 1912. Two thatched tea stalls with reed screens stand on the sand; bathers' dark heads dot the shallow sea. In front, a Japanese gentleman of about thirty-five in a white cotton yukata walks beside a tall, pale Western man in an old-fashioned long striped bathing costume. A young student in a dark kasuri kimono sits on a bench in the tea stall and watches them. Pine trees on a low green headland behind."
+  },
+  {
+   "id": "scene-kami-3",
+   "part": "上",
+   "section": "kami-3",
+   "anchor": "広い蒼い海の表面に浮いているもの",
+   "caption": "沖に浮かぶ二人",
+   "alt": {
+    "ja": "真夏の日の下、広く青い海。遠い沖に二人の泳ぎ手が並んで仰向けに浮かんでいる。",
+    "en": "A wide blue sea under the high summer sun; far out, two swimmers float side by side on their backs."
+   },
+   "prompt": "A vast, calm blue sea under a high summer sun, seen from a little above the shore. Far out on the water two tiny swimmers float on their backs side by side, only their heads and arms showing. Low horizon, a few soft white clouds, a great deal of empty water and sky."
+  },
+  {
+   "id": "scene-kami-5",
+   "part": "上",
+   "section": "kami-5",
+   "anchor": "大きな銀杏が一本空を隠すように",
+   "caption": "雑司ヶ谷の銀杏",
+   "alt": {
+    "ja": "雑司ヶ谷の墓地。空を隠すような大銀杏の下に墓石が並び、和服の男が背を向けて木を見上げている。",
+    "en": "Zoshigaya cemetery: under a huge ginkgo that hides the sky, rows of gravestones; a man in kimono, his back to us, looks up at the tree."
+   },
+   "prompt": "Zoshigaya cemetery in Tokyo in autumn. An enormous old ginkgo tree spreads its yellow leaves across the whole upper half of the picture, as if hiding the sky. Below it, a few plain grey stone grave markers, blank and uninscribed, along a narrow path. A man in a dark kimono and a felt hat stands under the tree, seen from behind, looking up at it."
+  },
+  {
+   "id": "scene-kami-9",
+   "part": "上",
+   "section": "kami-9",
+   "anchor": "おい静",
+   "caption": "先生の宅",
+   "alt": {
+    "ja": "夕方の座敷。洋灯のともる卓の前で和服の男が襖の方を振り向き、半ば開いた襖のきわに妻が膝をついている。",
+    "en": "A sitting room in the evening: by a low table with a lit oil lamp, a man in kimono turns toward the sliding door, where his wife kneels at the half-open door."
+   },
+   "prompt": "Evening in a modest Tokyo house of 1912. A tatami sitting room with sliding fusuma doors; a lit oil lamp and two teacups on a low table. A man in a grey kimono sits by the table and turns his head toward the fusuma. At the half-open fusuma a young woman in a plain kimono kneels, about to come in. Through an open shoji, a small dark garden with a stone lantern."
+  },
+  {
+   "id": "scene-naka-5",
+   "part": "中",
+   "section": "naka-5",
+   "anchor": "旗も黒いひらひらも、風のない空気のなかにだらりと下がった",
+   "caption": "門の旗",
+   "alt": {
+    "ja": "田舎の家の藁葺きの門。門の脇から往来へ斜めに出した日の丸の旗と黒い喪の吹き流しが、風のない空気の中に垂れている。",
+    "en": "The thatched gate of a country house: a Japanese flag with a black mourning streamer leans out over the road and hangs limp in the still air."
+   },
+   "prompt": "A country house in summer, 1912. An old thatched roof over a wooden gate, the straw weathered grey and uneven. From beside the gate a bamboo flagpole leans out over the empty dirt road; a white flag with a red disc and a long, thin black mourning streamer hang limp in the windless air. Rice fields and low green hills behind. No people."
+  },
+  {
+   "id": "scene-naka-12",
+   "part": "中",
+   "section": "naka-12",
+   "anchor": "父は寝ながら新聞を読んでいた",
+   "caption": "病床の父",
+   "alt": {
+    "ja": "夏の田舎家の一室。床に就いた老人が枕にもたれて新聞を読み、開け放した障子の外に緑の庭が見える。",
+    "en": "A room in a country house in summer: an old man lying ill on a futon reads a newspaper, propped on a pillow; beyond the open shoji, a green garden."
+   },
+   "prompt": "A farmhouse room in late summer, 1912. An old man with a thin grey beard lies on a futon, propped up on a pillow, holding up a newspaper with both hands and reading it. Beside the futon a round fan and a tray with a teapot. The shoji are open onto a veranda and a green garden with tall trees full of summer light."
+  },
+  {
+   "id": "scene-naka-16",
+   "part": "中",
+   "section": "naka-16",
+   "anchor": "普通の手紙に比べるとよほど目方の重い",
+   "caption": "厚い封書",
+   "alt": {
+    "ja": "畳の上の厚く重い封書。白い半紙に包まれ、端から四つ折りの原稿用紙がのぞく。かたわらに硯と筆。",
+    "en": "A thick, heavy letter on the tatami, wrapped in white paper, the corners of ruled manuscript sheets folded in four showing; an ink stone and a brush beside it."
+   },
+   "prompt": "Still life on a tatami floor in soft daylight. A thick, heavy letter packet wrapped in white hanshi paper and tied with thin string; at one corner the edges of ruled manuscript sheets folded in four show through. Beside it an ink stone, a brush on a rest, and a lacquered tray. Nothing written is legible. No people."
+  },
+  {
+   "id": "scene-shimo-12",
+   "part": "下",
+   "section": "shimo-12",
+   "anchor": "そのお嬢さんの下手な活花",
+   "caption": "お嬢さんの琴",
+   "alt": {
+    "ja": "開いた襖の向こうの座敷。日本髪の娘が琴の前に座り、床の間には少しぎこちない活花。手前に書生の机と本。",
+    "en": "Through an open sliding door, a young woman with her hair dressed in the Japanese style sits at a koto; a slightly awkward flower arrangement in the alcove; a student's desk with books in the foreground."
+   },
+   "prompt": "A room in a Tokyo boarding house of the 1890s, seen through an open fusuma from the next room. A young woman in a kimono, her hair dressed in the Japanese style, kneels at a koto laid on the tatami. In the tokonoma alcove, a simple and slightly awkward flower arrangement in a vase. In the foreground, a student's low desk with books, its owner unseen."
+  },
+  {
+   "id": "scene-shimo-28",
+   "part": "下",
+   "section": "shimo-28",
+   "anchor": "Ｋと私はよく海岸の岩の上に坐って",
+   "caption": "房州の岩の上",
+   "alt": {
+    "ja": "夏の房州の岩浜。浜に小舟が引き上げられた漁村。大きな岩の上に浴衣の青年が二人座り、一人は本を読み、一人は黙って海を見ている。",
+    "en": "The rocky shore of Boshu in summer, small boats drawn up at a fishing village; two young men in yukata sit on a big rock, one reading, the other silently looking at the sea."
+   },
+   "prompt": "The rocky shore of the Boso peninsula in summer, 1890s. A poor fishing village of low thatched huts, small boats drawn up on a pebble beach. On a big rock above clear water two young men in plain yukata sit apart: one reads an open book, the other sits silent, looking out at the distant sea. Clear water over stones in the foreground."
+  },
+  {
+   "id": "scene-shimo-48",
+   "part": "下",
+   "section": "shimo-48",
+   "anchor": "仕切の襖が、この間の晩と同じくらい開いています",
+   "caption": "開いた襖",
+   "alt": {
+    "ja": "夜の二間続きの座敷。仕切りの襖が二尺ほど開き、奥の部屋の机の上で洋灯が暗くともっている。人の姿はない。",
+    "en": "Two adjoining rooms at night: the sliding door between them stands open about two feet, and in the far room an oil lamp burns low on a desk. No one is in sight."
+   },
+   "prompt": "Night, early winter, a quiet interior with no people at all. Two adjoining tatami rooms; the sliding fusuma between them stands open about two feet. In the far room a dim oil lamp still burns on a low writing desk next to a folded letter, its light weak and yellow. In the near room a futon with its quilt thrown back toward the foot. Cold, still, mostly dark grey and indigo washes, the lamp the only warm spot. No figure, no body, nothing frightening, only the rooms and the light."
+  },
+  {
+   "id": "scene-shimo-56",
+   "part": "下",
+   "section": "shimo-56",
+   "anchor": "御大葬の夜私はいつもの通り書斎に坐って",
+   "caption": "御大葬の夜",
+   "alt": {
+    "ja": "明治天皇の御大葬の夜。暗い書斎で和服の男が机に向かい、そばに書きためた原稿の束。開いた窓の外、東京の屋根の上の夜空に遠い光。",
+    "en": "The night of the Meiji Emperor's funeral: a man in kimono sits at his desk in a dark study beside a thick stack of written pages; through the open window, a far light in the night sky over Tokyo's roofs."
+   },
+   "prompt": "Night of the Emperor Meiji's funeral, Tokyo, September 1912. A man in a dark kimono sits at a low writing desk in a dim study, seen from behind, an oil lamp lit beside him and a thick stack of written pages at his side. Through the open window, the night sky over the dark tiled roofs of Tokyo, a faint distant glow and a few lanterns. Quiet and still."
+  }
+ ]
+}
