@@ -1227,8 +1227,11 @@ export interface VDTResourceVideo {
   link?: string;
   /** The YouTube or Vimeo player's `src` (the player options applied). */
   embedUrl?: string;
-  /** A self-hosted file: its out-of-band id and media type. */
+  /** A self-hosted file: its out-of-band id. */
   fileId?: string;
+  /** A self-hosted video's media type, of its file or of its address alone
+   *  (`application/vnd.apple.mpegurl` for an HLS stream, see
+   *  `isHlsMimeType`). */
   mimeType?: string;
   /** Play range in seconds. */
   start?: number;

@@ -1288,7 +1288,7 @@ La receta nº 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/
 
 ### Vídeos
 
-Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un archivo de vídeo propio (MP4, WebM). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Cada salida lo muestra como puede:
+Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un vídeo propio: un archivo guardado en el libro (MP4, WebM) o uno que está en una dirección web, sea un archivo en un servidor o un **flujo HLS** (una lista de reproducción `.m3u8`). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Cada salida lo muestra como puede:
 
 <table>
   <thead>
@@ -1299,16 +1299,20 @@ Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un
   </thead>
   <tbody>
     <tr>
-      <td>Canvas, PDF, Folio</td>
+      <td>Canvas, PDF</td>
       <td>La <strong>portada</strong>, un fotograma del vídeo, con una marca de reproducción y un código QR que abre el vídeo (<a href="/es/docs/configuration#estilo-de-vídeo">Configuración › Estilo de vídeo</a>). En el PDF la portada es además un enlace al vídeo.</td>
     </tr>
     <tr>
+      <td>Folio</td>
+      <td>La portada, tal como se imprime. Un clic sobre ella reproduce el vídeo <strong>en la propia página</strong>, y el vídeo sigue en marcha mientras la hoja pasa (consulta <a href="#vídeos-en-las-páginas-de-folio">Vídeos en las páginas de Folio</a> más abajo). Los vídeos de YouTube y Vimeo se quedan en su portada.</td>
+    </tr>
+    <tr>
       <td>Visor HTML</td>
-      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo. Con <code>videoStyle.html: 'poster'</code> muestra en su lugar la portada impresa.</td>
+      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo o una dirección. Un flujo HLS se reproduce de forma nativa en Safari y en las versiones recientes de Chrome; en los demás navegadores el anfitrión le pone un reproductor como hls.js, igual que hace el Sandbox. Con <code>videoStyle.html: 'poster'</code> muestra en su lugar la portada impresa.</td>
     </tr>
     <tr>
       <td>EPUB</td>
-      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o Vimeo es su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web.</td>
+      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o Vimeo es su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web. Un flujo HLS también es su portada enlazada: una lista de reproducción HLS no es ninguno de los tipos de medio que un EPUB puede reproducir.</td>
     </tr>
   </tbody>
 </table>
@@ -1342,17 +1346,17 @@ El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime
     <tr>
       <td><code>source</code></td>
       <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>Desde dónde se reproduce el vídeo.</td>
+      <td>Desde dónde se reproduce el vídeo: una página de YouTube o Vimeo, o un vídeo propio (<code>'file'</code>), subido o en una dirección.</td>
     </tr>
     <tr>
       <td><code>url</code></td>
       <td><code>string</code></td>
-      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado.</td>
+      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado. Un vídeo propio sin archivo se reproduce desde esta dirección: un MP4 o WebM en un servidor, o un flujo HLS (<code>…/master.m3u8</code>).</td>
     </tr>
     <tr>
       <td><code>fileId</code>, <code>format</code></td>
       <td><code>string</code></td>
-      <td>Un archivo: el vídeo subido, guardado fuera de banda como un bitmap, y su formato (<code>'mp4'</code>, el valor por defecto, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+      <td>Un archivo: el vídeo subido, guardado fuera de banda como un bitmap, y su formato: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>, o <code>'hls'</code> para un flujo HLS. Si no se indica, lo da la extensión de la dirección (<code>.m3u8</code> es <code>'hls'</code>) y, en su defecto, es <code>'mp4'</code>.</td>
     </tr>
     <tr>
       <td><code>poster</code></td>
@@ -1384,13 +1388,34 @@ El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime
 
 **La portada.** Se compone a la medida de su hueco (o a la fracción `placement.width` de ella), con su propia proporción y sea cual sea su tamaño en píxeles: un fotograma del tamaño de una pantalla se amplía en lugar de imprimirse pequeño. Como un bitmap, puede llevar una [zona segura](#zona-segura) y seguir `placement.align`. Un vídeo sin portada imprime un recuadro oscuro con la proporción del vídeo (16:9 si nada la indica) y sus elementos superpuestos, y genera un aviso de contenido `videoWithoutPoster`. En el Sandbox, la portada de un vídeo de YouTube o Vimeo se descarga de la plataforma al escribir su dirección, y la de un archivo es un fotograma que eliges en el vídeo.
 
-**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, desde `start`. Un archivo no tiene página: abren su dirección de producción. Sin ella, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no lleva el archivo muestra la portada. Una dirección de YouTube o Vimeo que no nombra ningún vídeo de esa plataforma genera `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
+**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, desde `start`. Un archivo no tiene página: abren su dirección de producción, que es también desde donde se reproduce un vídeo sin archivo propio (un MP4 en un servidor, un flujo HLS). Sin ella, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no lleva el archivo muestra la portada. Una dirección de YouTube o Vimeo que no nombra ningún vídeo de esa plataforma genera `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
 
-**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, empezar sin sonido, repetición, precarga, inserción con más privacidad) se fijan para todo el libro en `videoStyle.player` y para un vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html`; el escritor EPUB la usa. En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada recuperan su orientación, como una imagen, para que el código QR se pueda leer.
+**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, empezar sin sonido, repetición, precarga, inserción con más privacidad) se fijan para todo el libro en `videoStyle.player` y para un vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams, hls }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html` (`hls`, un vídeo que se reproduce desde una dirección HLS, sigue a `files` si no se indica); el escritor EPUB la usa. Un `<video>` que reproduce una dirección HLS lleva `data-pt-hls`, para que un anfitrión pueda darle un reproductor en los navegadores sin HLS nativo (Safari y las versiones recientes de Chrome lo reproducen tal cual). En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada recuperan su orientación, como una imagen, para que el código QR se pueda leer.
 
-**En el VDT.** El bloque de recurso de un vídeo lleva `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un bitmap) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o Vimeo con las opciones del reproductor aplicadas, el `fileId` y el `mimeType` de un archivo, el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda del cuerpo. Un anfitrión que dibuje los vídeos por su cuenta tiene las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
+**En el VDT.** El bloque de recurso de un vídeo lleva `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un bitmap) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o Vimeo con las opciones del reproductor aplicadas, el `fileId` de un archivo, el `mimeType` de un vídeo propio (el de su archivo o, si solo tiene dirección, el de esta; `application/vnd.apple.mpegurl` para HLS), el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda del cuerpo. Un anfitrión que dibuje los vídeos por su cuenta tiene las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
 
-**En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete.
+**En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete. Un vídeo que se reproduce solo desde una dirección no lleva archivo: su entrada tiene únicamente la portada. En un paquete bilingüe, cada idioma puede dar a un vídeo su propia `poster` y su propio `video` (otro montaje, en su propia dirección) en `localized[…].resources`.
+
+#### Vídeos en las páginas de Folio
+
+En el [libro en 3D](/es/docs/configuration#un-libro-en-3d-postext-folio), un vídeo propio se reproduce en la página en la que está impreso. Un clic en la portada lo pone en marcha ahí mismo, haga lo que haga el puntero sobre el libro (pasar páginas, orbitar la vista o seleccionar texto): el shader de la página dibuja los fotogramas del vídeo sobre la portada, de modo que la imagen se dobla y se curva con el papel cuando se pasa la hoja, y el vídeo sigue reproduciéndose durante el paso. Un clic en un vídeo en marcha lo pausa, otro en un vídeo en pausa lo reanuda, y la barra espaciadora o Intro hacen lo mismo con el primer vídeo del pliego abierto. Al poner en marcha otro vídeo se detiene el que estaba sonando (vuelve a su portada), y un vídeo se detiene cuando el libro se queda quieto en un pliego donde ya no aparece, o al llegar a su `end`. Sobre un vídeo que puede reproducir, el puntero toma forma de mano; un arrastre que empieza sobre él sigue pasando la página o girando la vista. Un vídeo que debe reproducirse solo (`video.player.autoplay`) arranca por sí mismo la primera vez que el libro se queda quieto en su pliego, cuando el libro ya se ha asentado (también si el anfitrión lo compone por etapas), y no vuelve a hacerlo en ese visor.
+
+- **Qué se reproduce.** Un archivo (el anfitrión convierte su `fileId` en una URL con la opción `videoUrl`; en el Sandbox es una URL de objeto) o, si no lo hay, su dirección: MP4, WebM o un flujo HLS. Un flujo HLS se reproduce con [hls.js](https://github.com/video-dev/hls.js) en todo navegador que tenga Media Source Extensions (se carga la primera vez que se reproduce un vídeo; es una *peer dependency* opcional de `postext-folio`), limitado a la variante más cercana al tamaño que tiene la imagen en pantalla, de modo que una imagen de unos cientos de píxeles de alto nunca descarga una variante 4K; si no, se usa el HLS propio del navegador. Sus peticiones llevan un parámetro `pt-cors` propio, para que la caché del navegador nunca les entregue una copia que otro reproductor descargó sin CORS. YouTube y Vimeo se reproducen en iframes, que WebGL no puede dibujar: un clic en su portada pasa la página como en cualquier otro punto.
+- **Lecturas entre orígenes.** WebGL solo dibuja un vídeo si su servidor permite leerlo (CORS, `Access-Control-Allow-Origin`). Un vídeo que no se puede leer se queda en su portada, y `onVideo` recibe `error`.
+- **Sonido.** El clic permite que el vídeo se reproduzca con sonido; si el navegador aun así lo impide, se reproduce silenciado. Un vídeo que arranca solo tiene sonido si el lector ya ha hecho clic o ha escrito en la página (pasar hasta ella cuenta); si no, empieza silenciado, y un clic sobre él le da sonido antes de que el siguiente lo pause. `video.player.muted` lo hace empezar sin sonido, `loop` lo repite, y `start` / `end` delimitan la parte que se reproduce.
+- **En cualquier página.** La imagen se dibuja donde la pone la composición: girada en un recurso rotado, derecha en una página vertical y sin reflejar en un libro de derecha a izquierda, igual que la portada. Una portada recortada dentro de su [zona segura](#zona-segura) recorta el vídeo del mismo modo.
+- **Sin WebGL2**, o con la preferencia de menos movimiento, el vídeo se reproduce en un `<video>` HTML colocado sobre la página.
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  // La URL reproducible de un vídeo subido (una URL de objeto sobre sus bytes).
+  videoUrl: (fileId) => urls.get(fileId),
+  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
+});
+book.stopVideo();
+```
+
+`videos: false` lo desactiva. `toggleVideoAt({ page, x, y })` hace lo mismo que un clic en ese punto, y `pageVideoSpots(page, doc)` indica dónde está cada vídeo de una página, para el anfitrión que dibuja sus propios controles.
 
 Dos recetas del Recetario ponen vídeos: la nº 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una cartela con la marca de reproducción y un código QR, y la nº 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.
 

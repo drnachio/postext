@@ -24,12 +24,15 @@ interface SelectInputProps {
   onReset?: () => void;
   /** `segmented` shows every option at once (two to four short choices). */
   variant?: 'dropdown' | 'segmented';
-  /** Put the control under the label, full width. */
+  /** Put the control under the label, full width. Default: a segmented
+   *  control whose options are words goes under its label (beside it, the
+   *  words run over the label in a narrow panel); icons stay beside it. */
   stacked?: boolean;
 }
 
-export function SelectInput({ label, value, options, onChange, tooltip, isDefault, onReset, variant = 'dropdown', stacked }: SelectInputProps) {
+export function SelectInput({ label, value, options, onChange, tooltip, isDefault, onReset, variant = 'dropdown', stacked: stackedProp }: SelectInputProps) {
   const muted = isDefault ?? false;
+  const stacked = stackedProp ?? (variant === 'segmented' && options.some((o) => !o.icon));
   return (
     <FieldRow
       label={label}

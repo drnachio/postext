@@ -164,7 +164,7 @@ Manages the book's resources: bitmap images, SVG figures, tables and videos. The
 - **Upload image**: PNG, JPEG, WebP or GIF
 - **Upload SVG**
 - **New table**: starts as a 2×2 grid with one header row
-- **Add video**: a YouTube or Vimeo video, or a video file (see *Video* below). A book whose resource types predate videos gets the built-in *Video* type when it adds its first one.
+- **Add video**: a YouTube or Vimeo video, a video file, or the address of one (an MP4 or an HLS stream; see *Video* below). A book whose resource types predate videos gets the built-in *Video* type when it adds its first one.
 
 You can also drag and drop files from disk onto the panel, video files (MP4, WebM, Ogg, QuickTime) included. They upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many were skipped.
 
@@ -187,6 +187,7 @@ You can also drag and drop files from disk onto the panel, video files (MP4, Web
   - **Source**: *YouTube*, *Vimeo* or *File*.
   - **Video address** (YouTube, Vimeo): any link of the video. When it names a new video, its poster, frame size and title are fetched from the platform (the title becomes the alt text when that is empty); **Fetch the poster again** repeats it. A link that names no video of the platform is flagged under the field.
   - **Video file** (File): the uploader of an MP4, WebM, Ogg or QuickTime file, with its format, size and length. A first poster is taken a tenth of the way in. **Poster frame** plays the file: stop or scrub on the frame you want printed and press **Use this frame as the poster**. **Production address**: where the published video will be (`https://…`), opened by the QR code and the PDF link; without it print gets no QR code or link.
+  - **Video address** (File, with no file uploaded): the video plays from its address alone, an MP4 or WebM on a server or an HLS stream (`.m3u8`, marked *HLS stream* above the field). Entering an address reads the video's size and length, and **Poster frame** plays it from there, HLS included. Picking a frame needs a server that allows cross-origin reads (CORS); otherwise the panel says so, and the poster is uploaded instead. The QR code and the PDF link open this address.
   - **Poster**: the printed picture with its size, and an uploader to replace it with a picture of your own.
   - **Start (s)** / **End (s)**: the part that plays; 0 leaves the start or the end as it is.
   - **Player**: this video's switches (controls, download button, full screen, speed menu, picture in picture, autoplay, muted start, loop), each *Book setting*, *Yes* or *No*. Only the switches the video's player honours are listed.
@@ -464,6 +465,7 @@ Shows the book as a printed object: the pages laid out by the engine, bound and 
 - **The toolbar.** A floating bar like the canvas's: **Recalculate**, **Reset view**, **Save as default view**, the three pointer modes, the pin, ‹ › and the page field, which takes a book page number and turns to its spread. The page on the right of the open spread is the one the permalink names (`view=folio&page=N`).
 - **Settings apply at once.** The Folio settings are not part of the layout: changing the paper, the binding or the light redraws the book without laying a page out again.
 - **Where it is offered.** The tab needs WebGL2 and a screen whose short side is at least 600 px: on a phone the 3D book takes more memory than the browser gives a tab, so the tab is not shown there (nor in a browser without WebGL2). In a pane narrower than 560 px the book shows one page at a time; the leaf still turns over the spine. With reduced motion asked for by the system, the spreads change without turning.
+- **Videos on the page.** A click on a video's poster plays it on the page, in any of the three pointer modes, and the picture keeps moving while the leaf turns and curls. Another click pauses it; starting another stops the first; the video stops when the book comes to rest on a spread that no longer shows it. Space plays or pauses the video on the open spread. A video with *Autoplay* on starts by itself the first time its spread is shown, with its sound once you have clicked on the page (muted before, and a click unmutes it); the guide's two videos do. Uploaded files and videos at an address (MP4, HLS) play this way when their server allows cross-origin reads; YouTube and Vimeo videos turn the page as before (see [Document format › Videos on Folio's pages](/en/docs/document-format#videos-on-folios-pages)).
 - **Text alternatives.** Each page is drawn as an image; its accessible name points to the HTML tab and the Text panel for its text.
 
 #### HTML tab
@@ -472,7 +474,7 @@ Renders the postext output inside a Shadow DOM container, ensuring complete styl
 
 Markdown links are live here and in the PDF (see [Document format › Links](/en/docs/document-format#links)). In this tab, clicking one opens its target in a new browser tab, so the Sandbox stays open; `:ref` citations still jump within the document.
 
-Videos play here: a YouTube or Vimeo video in the platform's player, a file in the browser's player, with the player options of the Design panel's *Video style* and of each video. Clicks on a player go to the player, not to the editor. With **In the HTML viewer** set to *Poster*, the tab shows the printed poster, linked to the video.
+Videos play here: a YouTube or Vimeo video in the platform's player, a file or an address in the browser's player (an HLS stream through hls.js where the browser has no HLS of its own), with the player options of the Design panel's *Video style* and of each video. Clicks on a player go to the player, not to the editor. With **In the HTML viewer** set to *Poster*, the tab shows the printed poster, linked to the video.
 
 A toolbar at the top of the viewport provides:
 

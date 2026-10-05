@@ -358,15 +358,15 @@ function calloutStyles(): CalloutStyleConfig[] {
 function toc() {
   return {
     levels: [{
-      level: 1, fontFamily: AR_HEAD, fontSize: pt(11.5), lineHeight: pt(19), fontWeight: 600, color: col('ink'),
-      numberWidth: mm(9), numberGap: mm(2), numberFontFamily: AR_SANS, numberFontSize: pt(10), numberColor: col('band'), marginTop: pt(5),
+      level: 1, fontFamily: AR_HEAD, fontSize: pt(11.5), lineHeight: pt(17), fontWeight: 600, color: col('ink'),
+      numberWidth: mm(9), numberGap: mm(2), numberFontFamily: AR_SANS, numberFontSize: pt(10), numberColor: col('band'), marginTop: pt(4),
     }],
     unnumbered: { fontFamily: AR_TEXT, fontWeight: 400, color: col('ink') },
     pageNumber: { fontFamily: AR_SANS, fontSize: pt(10), fontWeight: 700, color: col('ink'), width: mm(10) },
     leader: { enabled: true, char: '.', gap: mm(1.5) },
     subtitle: { enabled: true, attr: 'summary', fontFamily: AR_TEXT, fontSize: pt(9.5), color: col('muted'), indent: mm(11) },
     parts: {
-      enabled: true, height: pt(20), marginTop: pt(16), marginBottom: pt(2),
+      enabled: true, height: pt(20), marginTop: pt(14), marginBottom: pt(2),
       design: slot(
         box('tocPartBand', 'band', { anchor: at('container', 'left'), width: 8, height: 8 }),
         t('tocPart', TOC_PART, {

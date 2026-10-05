@@ -42,13 +42,20 @@
   },
   "peerDependencies": {
     "postext": "workspace:^",
-    "three": ">=0.160.0"
+    "three": ">=0.160.0",
+    "hls.js": ">=1.5.0"
+  },
+  "peerDependenciesMeta": {
+    "hls.js": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@postext/typescript-config": "workspace:*",
     "@types/node": "^26.5.0",
     "@types/three": "^0.186.0",
     "eslint": "^9.39.4",
+    "hls.js": "^1.7.3",
     "postext": "workspace:*",
     "three": "^0.186.1",
     "typescript": "^6.0.3",

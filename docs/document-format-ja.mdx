@@ -1288,7 +1288,7 @@ VDTはトリミングをリソースのブロックに記録します。`bodySou
 
 ### 動画
 
-**動画**リソース（`kind: 'video'`）は、YouTubeまたはVimeoの動画、あるいは自分の動画ファイル（MP4、WebM）です。画像と同じように配置、キャプション付け、フロート、参照ができ、独自の系列で番号が付きます。組み込みの`video`の種類は、*Figure 1.1*や*Table 1.1*と並んで*Video 1.1*、*Video 1.2*…と表示します（[設定 › リソースの種類](/ja/docs/configuration#リソースの種類)を参照）。各出力は、それぞれ可能な形で動画を表示します。
+**動画**リソース（`kind: 'video'`）は、YouTubeまたはVimeoの動画、あるいは自前の動画です。自前の動画は、本の中に持つファイル（MP4、WebM）でも、Webのアドレスにあるもの、つまりサーバー上のファイルや**HLSストリーム**（`.m3u8`のプレイリスト）でもかまいません。画像と同じように配置、キャプション付け、フロート、参照ができ、独自の系列で番号が付きます。組み込みの`video`の種類は、*Figure 1.1*や*Table 1.1*と並んで*Video 1.1*、*Video 1.2*…と表示します（[設定 › リソースの種類](/ja/docs/configuration#リソースの種類)を参照）。各出力は、それぞれ可能な形で動画を表示します。
 
 <table>
   <thead>
@@ -1299,16 +1299,20 @@ VDTはトリミングをリソースのブロックに記録します。`bodySou
   </thead>
   <tbody>
     <tr>
-      <td>Canvas、PDF、Folio</td>
+      <td>Canvas、PDF</td>
       <td>動画の1フレームである<strong>ポスター画像</strong>に、再生マークと動画を開くQRコードを重ねて表示します（<a href="/ja/docs/configuration#動画スタイル">設定 › 動画スタイル</a>）。PDFでは、ポスター画像は動画へのリンクにもなります。</td>
     </tr>
     <tr>
+      <td>Folio</td>
+      <td>印刷物と同じポスター画像を表示します。クリックすると動画は<strong>そのページの上で</strong>再生され、丁をめくっている間も再生が続きます（後述の<a href="#folioのページで再生する動画">Folioのページで再生する動画</a>を参照）。YouTubeやVimeoの動画はポスター画像のままです。</td>
+    </tr>
+    <tr>
       <td>HTMLビューアー</td>
-      <td>動画の<strong>プレーヤー</strong>を表示します。YouTubeやVimeoのプレーヤー、ファイルの場合はブラウザーのHTML5プレーヤーです。<code>videoStyle.html: 'poster'</code>を指定すると、代わりに印刷用のポスター画像を表示します。</td>
+      <td>動画の<strong>プレーヤー</strong>を表示します。YouTubeやVimeoのプレーヤー、ファイルやアドレスの場合はブラウザーのHTML5プレーヤーです。HLSストリームはSafariと最近のChromeではそのまま再生され、それ以外のブラウザーでは、Sandboxがしているように、ホストがhls.jsなどのプレーヤーを付けます。<code>videoStyle.html: 'poster'</code>を指定すると、代わりに印刷用のポスター画像を表示します。</td>
     </tr>
     <tr>
       <td>EPUB</td>
-      <td>ファイルは本に同梱されるか公開先のアドレスから読み込まれ、リーディングシステム自身のプレーヤーで再生されます。YouTubeやVimeoの動画は、動画にリンクしたポスター画像になります。EPUBにはWebページのプレーヤーを埋め込めないためです。</td>
+      <td>ファイルは本に同梱されるか公開先のアドレスから読み込まれ、リーディングシステム自身のプレーヤーで再生されます。YouTubeやVimeoの動画は、動画にリンクしたポスター画像になります。EPUBにはWebページのプレーヤーを埋め込めないためです。HLSストリームも、動画にリンクしたポスター画像になります。HLSのプレイリストは、EPUBが再生してよいメディアタイプではないためです。</td>
     </tr>
   </tbody>
 </table>
@@ -1342,17 +1346,17 @@ const talk: Resource = {
     <tr>
       <td><code>source</code></td>
       <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>動画の再生元。</td>
+      <td>動画の再生元。YouTubeやVimeoのページ、または自前の動画（<code>'file'</code>）で、自前の動画はアップロードしたものでもアドレスにあるものでもかまいません。</td>
     </tr>
     <tr>
       <td><code>url</code></td>
       <td><code>string</code></td>
-      <td>YouTubeまたはVimeo：動画のアドレス。形式は問いません（視聴ページ、<code>youtu.be</code>、ショート、埋め込みリンク、<code>youtube-nocookie.com</code>。Vimeoのページ、チャンネルのページ、ハッシュ付きの限定公開リンク）。ファイル：その<strong>公開先のアドレス</strong>、つまり公開された本がファイルを見つける場所。</td>
+      <td>YouTubeまたはVimeo：動画のアドレス。形式は問いません（視聴ページ、<code>youtu.be</code>、ショート、埋め込みリンク、<code>youtube-nocookie.com</code>。Vimeoのページ、チャンネルのページ、ハッシュ付きの限定公開リンク）。ファイル：その<strong>公開先のアドレス</strong>、つまり公開された本がファイルを見つける場所。ファイルを持たない自前の動画は、このアドレスから再生されます。サーバー上のMP4やWebM、あるいはHLSストリーム（<code>…/master.m3u8</code>）です。</td>
     </tr>
     <tr>
       <td><code>fileId</code>, <code>format</code></td>
       <td><code>string</code></td>
-      <td>ファイル：アップロードした動画（ビットマップと同じく本体とは別に保存されます）とその形式（既定値の<code>'mp4'</code>、<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>）。</td>
+      <td>ファイル：アップロードした動画（ビットマップと同じく本体とは別に保存されます）とその形式。形式は<code>'mp4'</code>、<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>、HLSストリームなら<code>'hls'</code>です。形式を指定しなければアドレスの拡張子で決まり（<code>.m3u8</code>は<code>'hls'</code>）、それもなければ<code>'mp4'</code>になります。</td>
     </tr>
     <tr>
       <td><code>poster</code></td>
@@ -1384,13 +1388,34 @@ const talk: Resource = {
 
 **ポスター画像**。その位置の行長（またはその`placement.width`の割合）で、ピクセルサイズにかかわらず自身の縦横比で組まれます。画面サイズのフレームは、小さく印刷されるのではなく拡大されます。ビットマップと同じく[セーフエリア](#セーフエリア)を持つことができ、`placement.align`に従います。ポスター画像のない動画は、動画の縦横比（指定がなければ16:9）の暗い枠をオーバーレイ付きで印刷し、`videoWithoutPoster`の内容の警告を出します。Sandboxでは、YouTubeやVimeoの動画のポスター画像はアドレスを入力したときにプラットフォームから取得され、ファイルの場合は動画の中から選んだフレームになります。
 
-**アドレス**。QRコードとPDFのリンクは、動画のページ`https://youtu.be/<id>`または`https://vimeo.com/<id>`を`start`の位置から開きます。ファイルにはページがないので、公開先のアドレスを開きます。それがない場合、印刷物にはQRコードもリンクも付かず（`videoWithoutUrl`）、ファイルを含まないHTMLやEPUBの出力はポスター画像を表示します。YouTubeやVimeoのアドレスがそのプラットフォームの動画を指していない場合は`videoUrlInvalid`が出て、プレーヤーの代わりにポスター画像が表示されます。
+**アドレス**。QRコードとPDFのリンクは、動画のページ`https://youtu.be/<id>`または`https://vimeo.com/<id>`を`start`の位置から開きます。ファイルにはページがないので、公開先のアドレスを開きます。ファイルを持たない動画（サーバー上のMP4、HLSストリーム）も、このアドレスから再生されます。それがない場合、印刷物にはQRコードもリンクも付かず（`videoWithoutUrl`）、ファイルを含まないHTMLやEPUBの出力はポスター画像を表示します。YouTubeやVimeoのアドレスがそのプラットフォームの動画を指していない場合は`videoUrlInvalid`が出て、プレーヤーの代わりにポスター画像が表示されます。
 
-**プレーヤー**。プレーヤーのオプション（コントロール、ダウンロードボタン、全画面表示、速度メニュー、ピクチャーインピクチャー、キャスト、自動再生、ミュートでの開始、ループ、プリロード、プライバシー強化モードの埋め込み）は、本全体には`videoStyle.player`で、1つの動画には`video.player`で設定します。各プレーヤーは対応できる範囲でこれに従います（[設定 › 動画スタイル](/ja/docs/configuration#動画スタイル)を参照）。HTMLバックエンドは、画像を`resourceImageUrl`で受け取るのと同じように、ファイルの再生可能なURLを`resourceVideoUrl(fileId)`オプションで受け取り、なければ公開先のアドレスを使います。その`videos: { files, streams }`オプションは、`videoStyle.html`に優先して、再生元ごとにプレーヤーかポスター画像かを選びます。EPUBライターもこれを使います。右から左の本では、QRコードが読めるように、プレーヤーとポスター画像のオーバーレイは画像と同じく向きが元に戻されます。
+**プレーヤー**。プレーヤーのオプション（コントロール、ダウンロードボタン、全画面表示、速度メニュー、ピクチャーインピクチャー、キャスト、自動再生、ミュートでの開始、ループ、プリロード、プライバシー強化モードの埋め込み）は、本全体には`videoStyle.player`で、1つの動画には`video.player`で設定します。各プレーヤーは対応できる範囲でこれに従います（[設定 › 動画スタイル](/ja/docs/configuration#動画スタイル)を参照）。HTMLバックエンドは、画像を`resourceImageUrl`で受け取るのと同じように、ファイルの再生可能なURLを`resourceVideoUrl(fileId)`オプションで受け取り、なければ公開先のアドレスを使います。その`videos: { files, streams, hls }`オプションは、`videoStyle.html`に優先して、再生元ごとにプレーヤーかポスター画像かを選びます（`hls`はHLSのアドレスから再生する動画のためのもので、指定しなければ`files`に従います）。EPUBライターもこれを使います。HLSのアドレスを再生する`<video>`には`data-pt-hls`が付くので、HLSにネイティブ対応していないブラウザーでは、ホストがプレーヤーを付けられます（Safariと最近のChromeはそのまま再生します）。右から左の本では、QRコードが読めるように、プレーヤーとポスター画像のオーバーレイは画像と同じく向きが元に戻されます。
 
-**VDTでの表現**。動画のリソースのブロックは`kind: 'video'`、ポスター画像としての`fileId` / `format`（ビットマップと同じように描画されます）、そして`video`（`VDTResourceVideo`）を持ちます。その中身は、読者を送る`link`、プレーヤーオプションを適用したYouTubeまたはVimeoの`embedUrl`、ファイルの`fileId`と`mimeType`、`start` / `end`の範囲、解決済みの`player`、`linkPoster`、`html`、そしてオーバーレイの`playMark`と`qr`（QRのモジュールを`'0'` / `'1'`の行として表したもの）で、矩形は本体の左上の角からの相対位置です。動画を自前で描くホストは、`postext`がエクスポートするヘルパー`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`、`qrModuleRuns`を使えます。
+**VDTでの表現**。動画のリソースのブロックは`kind: 'video'`、ポスター画像としての`fileId` / `format`（ビットマップと同じように描画されます）、そして`video`（`VDTResourceVideo`）を持ちます。その中身は、読者を送る`link`、プレーヤーオプションを適用したYouTubeまたはVimeoの`embedUrl`、ファイルの`fileId`、自前の動画の`mimeType`（ファイルのもの、またはアドレスだけの場合はアドレスのもの。HLSなら`application/vnd.apple.mpegurl`）、`start` / `end`の範囲、解決済みの`player`、`linkPoster`、`html`、そしてオーバーレイの`playMark`と`qr`（QRのモジュールを`'0'` / `'1'`の行として表したもの）で、矩形は本体の左上の角からの相対位置です。動画を自前で描くホストは、`postext`がエクスポートするヘルパー`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`videoFormatOfUrl`、`resourceVideoFormat`、`isHlsMimeType`、`HLS_MIME_TYPE`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`、`qrModuleRuns`を使えます。
 
-**バンドルでの表現**。`.postext`は動画ファイル（`resources/<id>.mp4`）とポスター画像（`resources/<id>.poster.jpg`）を含みます。マニフェストの項目は`file`と`poster`でそれらを指定し、`width` / `height`でポスター画像のサイズを示し、残りはファイルIDを除いて`video`に保持します。`bundleVideoUrl(bundle)`は、バンドルのファイルを対象とする`resourceVideoUrl`リゾルバーです。
+**バンドルでの表現**。`.postext`は動画ファイル（`resources/<id>.mp4`）とポスター画像（`resources/<id>.poster.jpg`）を含みます。マニフェストの項目は`file`と`poster`でそれらを指定し、`width` / `height`でポスター画像のサイズを示し、残りはファイルIDを除いて`video`に保持します。`bundleVideoUrl(bundle)`は、バンドルのファイルを対象とする`resourceVideoUrl`リゾルバーです。アドレスだけから再生する動画はファイルを持たないので、その項目にはポスター画像しかありません。多言語のバンドルでは、言語ごとに`localized[…].resources`で動画に独自の`poster`と`video`（別の編集版を、それ自身のアドレスで）を与えられます。
+
+#### Folioのページで再生する動画
+
+[3Dの本](/ja/docs/configuration#3dの本postext-folio)では、自前の動画は、それが印刷されているページの上で再生されます。ポスター画像をクリックすると、ポインターが本に対して何をするモード（ページをめくる、視点を回す、テキストを選択する）であっても、その場で再生が始まります。ページのシェーダーがポスター画像の上に動画のフレームを描くので、丁をめくると映像も紙と一緒にしなって丸まり、めくっている間も再生は続きます。再生中の動画をクリックすると一時停止し、一時停止中の動画をクリックすると再開します。SpaceキーかEnterキーは、開いている見開きの最初の動画に同じことをします。別の動画を再生すると、再生中の動画は止まってポスター画像に戻ります。動画は、本がその動画の見えない見開きで静止したとき、または`end`に達したときにも止まります。再生できる動画の上ではポインターが手の形になります。動画の上から始めたドラッグでも、ページはめくれ、視点は回ります。ひとりでに再生するよう設定した動画（`video.player.autoplay`）は、本が初めてその見開きで静止したときに、本の状態が落ち着くのを待って（レイアウトを段階的に進めるホストの場合も含めて）ひとりでに再生を始めます。そのビューアーで2度目に自動再生されることはありません。
+
+- **再生されるもの**。ファイル（ホストが`videoUrl`オプションでその`fileId`をURLに変えます。SandboxではオブジェクトURLです）、ファイルがなければそのアドレスで、MP4、WebM、HLSストリームのいずれかです。HLSストリームは、ブラウザーにMedia Source Extensionsがあればどこでも[hls.js](https://github.com/video-dev/hls.js)を通して再生されます（最初の再生時に読み込まれます。`postext-folio`の省略可能なピア依存関係です）。画面上の映像の大きさに最も近いバリアントまでに抑えるので、高さ数百ピクセルの映像のために4Kのバリアントを読み込むことはありません。ブラウザー自身のHLSは、その代わりの手段として使われます。そのリクエストには専用の`pt-cors`クエリーが付くので、ほかのプレーヤーがCORSなしで取得したコピーをブラウザーのキャッシュが返すことはありません。YouTubeとVimeoはiframeの中で再生され、iframeはWebGLでは描けないので、そのポスター画像をクリックしても、ほかの場所と同じくページがめくれるだけです。
+- **クロスオリジンの読み込み**。WebGLが動画を描けるのは、動画のサーバーが読み込みを許可している場合（CORS、`Access-Control-Allow-Origin`）だけです。読み込めない動画はポスター画像のままで、`onVideo`は`error`を受け取ります。
+- **音声**。クリックによって、動画は音声付きで再生できるようになります。それでもブラウザーが拒んだ場合は、ミュートで再生されます。ひとりでに再生を始める動画は、読者がページ上でクリックかキー入力をした後なら（そのページまでめくったことも数えます）音声付きで再生されます。それより前はミュートで始まり、動画をクリックすると、まずミュートが解除され、次のクリックで一時停止します。`video.player.muted`はミュートで再生を始め、`loop`は繰り返し再生し、`start` / `end`は再生する部分を決めます。
+- **どのページでも**。映像はレイアウトが置いた場所に、ポスター画像と同じように描かれます。回転したリソースでは回転し、縦組みのページでは正立し、右から左の本では左右反転されません。[セーフエリア](#セーフエリア)の範囲内で切り抜かれたポスター画像は、動画も同じように切り抜きます。
+- **WebGL2がない場合**、または動きを減らす設定の場合は、ページの上に重ねたHTMLの`<video>`で再生されます。
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  // An uploaded video's playable URL (an object URL over its bytes).
+  videoUrl: (fileId) => urls.get(fileId),
+  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
+});
+book.stopVideo();
+```
+
+`videos: false`でこの機能をオフにします。`toggleVideoAt({ page, x, y })`はその位置をクリックしたときと同じ動作をし、`pageVideoSpots(page, doc)`はページ上の各動画の位置を一覧にします。独自のコントロールを描くホストのためのものです。
 
 レシピ集の2つのレシピが動画を組んでいます。No. 131「[ポスター画像にQRコードを刷った映画クラブのプログラム](/ja/cookbook/film-club-video-qr)」は、映画ごとに再生マークとQRコードの付いたタイトルカードを刷ります。No. 132「[画面とEPUBで動画が再生される実験シート](/ja/cookbook/pendulum-lab-video-players)」は、HTML版のプレーヤーオプションを設定し、自前の動画を固定レイアウトのEPUBに同梱します。
 

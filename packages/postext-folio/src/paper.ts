@@ -13,6 +13,9 @@ export interface PaperSpec {
   rigidity: number;
   /** 0 … 1: how much of the print on the other side shows through. */
   showThrough: number;
+  /** 0 … 1: how much of the light from behind the sheet comes through it
+   *  (the page under an open page, what lies behind a leaf in the air). */
+  transmission: number;
   /** Opacity (ISO 2471 style, 0 … 1). */
   opacity: number;
   /** The page follows the hand this much per frame (heavier = later). */
@@ -55,7 +58,10 @@ const smooth = (a: number, b: number, x: number) => {
  * the caliper, so the length over which a leaf bends under its own weight
  * (the elastica's ℓ = (EI / ρg)^⅓) grows as caliper^⅔: that scales the
  * roll a turning leaf makes. Well past card weight the leaf no longer
- * bends at all. Opacity follows 1 − e^(−k·grammage).
+ * bends at all. Opacity follows 1 − e^(−k·grammage). A sheet lets
+ * through about twice the light its opacity loses (opacity is a contrast
+ * over a black backing; diffuse transmittance runs 15–20 % for 80 g/m²
+ * offset, a third and more for bible paper).
  */
 export function paperSpec(paper: ResolvedPaper): PaperSpec {
   const caliperUm = paper.grammage * paper.bulk;
@@ -69,6 +75,7 @@ export function paperSpec(paper: ResolvedPaper): PaperSpec {
     rigidity: smooth(1.3, 4, ratio),
     opacity,
     showThrough: paper.showThrough ? Math.min(0.4, (1 - opacity) * 1.25) : 0,
+    transmission: paper.showThrough ? Math.min(0.5, (1 - opacity) * 2) : 0,
     follow: 0.35 / (1 + 0.35 * Math.max(0, Math.log(ratio))),
     spring: 0.0085 * Math.min(1.6, Math.max(0.75, Math.sqrt(ratio))),
     roughness: finish === "gloss" ? 0.32 : finish === "silk" ? 0.5 : finish === "matte" ? 0.7 : 0.88,

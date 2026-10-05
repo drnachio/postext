@@ -36,7 +36,7 @@ import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
 import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf, kuntenHtml, verticalKuntenTateHtml } from './htmlAnnotations';
 import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
-import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
+import { isHlsMimeType, mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
 import type { VDTResourceVideo } from './vdt';
 
 /**
@@ -123,8 +123,12 @@ export interface RenderHtmlOptions {
   /** What a video resource is set as (#454): its player, or the printed
    *  poster with its play mark and QR code (linked to the video when
    *  `videoStyle.linkPoster`). `files` covers self-hosted videos, `streams`
-   *  YouTube and Vimeo. Each defaults to `videoStyle.html`. */
-  videos?: { files?: 'player' | 'poster'; streams?: 'player' | 'poster' };
+   *  YouTube and Vimeo, `hls` a self-hosted video played from an HLS
+   *  address (#476; default: as `files`). Each defaults to
+   *  `videoStyle.html`. An HLS `<video>` carries `data-pt-hls`: Safari
+   *  plays it natively, other browsers need the host to attach a player
+   *  such as hls.js (see `attachHls` in the Sandbox). */
+  videos?: { files?: 'player' | 'poster'; streams?: 'player' | 'poster'; hls?: 'player' | 'poster' };
   /** Told of what the render could not produce as asked: an image with no
    *  URL (no `resourceImageUrl`, or one that returns nothing for its
    *  `fileId`) is emitted as a placeholder and reported once per `fileId`
@@ -1686,7 +1690,10 @@ function renderVideoHtml(
   const label = alt || 'Video';
   if (video) {
     const stream = video.source !== 'file';
-    const mode = (stream ? paint.videos?.streams : paint.videos?.files) ?? video.html;
+    const own = !stream && video.fileId ? paint.resourceVideoUrl?.(video.fileId) : undefined;
+    // Played from an HLS address (no file of its own resolved).
+    const hls = !stream && !own && isHlsMimeType(video.mimeType);
+    const mode = (stream ? paint.videos?.streams : hls ? (paint.videos?.hls ?? paint.videos?.files) : paint.videos?.files) ?? video.html;
     if (mode === 'player') {
       if (stream && video.embedUrl) {
         return (
@@ -1696,11 +1703,11 @@ function renderVideoHtml(
           ` style="${box}border:0;background:#000;"></iframe>`
         );
       }
-      const src = !stream ? (video.fileId ? paint.resourceVideoUrl?.(video.fileId) : undefined) ?? video.link : undefined;
+      const src = !stream ? own ?? video.link : undefined;
       if (src) {
         const poster = posterFileId ? paint.resourceImageUrl?.(posterFileId) : undefined;
         return (
-          `<video class="pt-video" src="${esc(src + mediaFragment(video))}"${poster ? ` poster="${esc(poster)}"` : ''}` +
+          `<video class="pt-video" src="${esc(src + mediaFragment(video))}"${hls ? ' data-pt-hls=""' : ''}${poster ? ` poster="${esc(poster)}"` : ''}` +
           `${htmlAttrs(videoElementAttributes(video.player))} aria-label="${esc(label)}"` +
           ` style="${box}object-fit:cover;background:#000;"></video>`
         );

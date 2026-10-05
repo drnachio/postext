@@ -59,7 +59,7 @@ CSS resol el primer cas de manera brillant. Per al segon, la plataforma no ha of
 2. **Defectes de final de paràgraf i de columna.** Les _òrfenes_ i les _vídues_ existeixen en CSS, però el seu suport és desigual i no veuen la geometria de la pàgina sencera; i no hi ha cap regla per a la _línia curta_, la paraula que es queda sola a l'última línia d'un paràgraf.
 3. **Tall de línies per paràgraf complet.** Els navegadors tallen les línies de manera voraç, una a una, i només poden repartir l'espai sobrant dins de cada línia, mentre que una justificació equilibrada necessita sospesar el paràgraf sencer alhora.
 4. **Un ritme vertical compartit.** Llibres i revistes assenten cada línia en una retícula de línia de base comuna a totes les columnes de la pàgina, i CSS no té cap primitiva que ajusti les línies a una retícula entre columnes i pàgines.
-5. **L'aparell d'un llibre.** Capçaleres que coneixen el capítol, folis en seqüències romanes o aràbigues, salts de capítol que respecten la paritat i un índex amb números de pàgina reals: res d'això no existeix en un document que es desplaça sense fi per la pantalla.
+5. **L'aparell d'un llibre.** Capçaleres que coneixen el capítol, folis en seqüències romanes o aràbigues, salts de capítol que respecten la paritat i un índex amb números de pàgina reals: res d'això no existeix en un document que es desplaça sense fi per la pantalla. Tampoc no hi ha notes que baixin al peu de la pàgina on es citen, ni figures que surin fins al primer espai lliure després de la seva menció.
 
 :::callout{type="quote" placement="top"}
 _La tipografia editorial és un problema de satisfacció de restriccions. Al navegador no se li va donar mai el llenguatge per enunciar-les._
@@ -432,11 +432,17 @@ Els diagrames SVG es dibuixen com a vectors a tot arreu. El PDF converteix el su
 
 El text d'un SVG continua sent text. Al PDF es compon amb fonts reals i es pot seleccionar i cercar, i al Sandbox es pot editar al seu lloc: el tauler Recursos obre el codi del diagrama amb només el text editable —el dibuix en si queda bloquejat tret que el desbloquegis—, de manera que una etiqueta es pot corregir o traduir sense obrir un programa de dibuix. Els diagrames d'aquest llibre es generen per a cada llengua, i per això les seves etiquetes són en català a l'edició catalana, en castellà a la castellana, en anglès a l'anglesa, en xinès a la xinesa i en àrab a l'edició àrab.
 
-Tres figures compostes aquí ho demostren. La roseta de :ref{id="vector-rosette"} està feta de corbes de Bézier, traços finíssims i una línia de microtext de dos punts i mig d'alçada; el gràfic de :ref{id="vector-chart"} combina una àrea emplenada, una línia discontínua i etiquetes de text; i :ref{id="vector-clip"} fa servir un traçat de retall, un grup dibuixat amb transparència i una mateixa forma reutilitzada cinc vegades. Obre el PDF, amplia'l fins a diverses vegades la seva mida i mira'n les vores: continuen tan nítides com el text que les envolta, perquè es dibuixen amb els mateixos operadors i no s'enganxen com a imatges. Prova de seleccionar les etiquetes del gràfic, o de cercar-les: són text. El mateix val per al microtext de la roseta, llegible a qualsevol ampliació.
+Tres figures compostes aquí ho demostren. La roseta de :ref{id="vector-rosette"} està feta de corbes de Bézier, traços finíssims i una línia de microtext de dos punts i mig d'alçada; el gràfic de :ref{id="vector-chart"} combina una àrea emplenada, una línia discontínua i etiquetes de text; i :ref{id="vector-clip"} fa servir un traçat de retall, un grup dibuixat amb transparència i una mateixa forma reutilitzada cinc vegades. Obre el PDF, amplia'l fins a diverses vegades la seva mida i mira'n les vores: continuen tan nítides com el text que les envolta, perquè es dibuixen amb els mateixos operadors i no s'enganxen com a imatges. Prova de seleccionar les etiquetes del gràfic, o de cercar-les: són text. El mateix val per al microtext de la roseta, llegible a qualsevol ampliació; en paper, aquesta línia de dos punts i mig només es llegeix amb lupa.
 
 :::callout{type="try"}
 Fes clic al peu de qualsevol figura del canvas: el tauler Recursos s'obre en aquell recurs, amb el camp del peu a punt. Canvia'n la col·locació d'_auto_ a _top_ i mira com es mou.
 :::
+
+## Vídeos
+
+Un vídeo és un recurs més. Es menciona, es numera a part (Vídeo 1.1 al costat de Figura 1.1) i flota fins al primer buit lliure, com una figura. Pot venir de YouTube o de Vimeo, d'un fitxer desat al llibre o d'una adreça web: un MP4 o un WebM en un servidor, o un flux HLS, la llista \`.m3u8\` amb què se serveix un vídeo llarg a trossos i en diverses qualitats.
+
+En paper s'imprimeix la seva portada, un fotograma triat, amb una marca de reproducció i un codi QR que obre el vídeo; al PDF la portada també és un enllaç. La vista HTML i l'EPUB el reprodueixen amb el seu propi reproductor, llevat dels de YouTube i Vimeo i dels fluxos HLS, que un llibre electrònic només pot enllaçar. A la vista Folio, un clic a la portada el reprodueix a la mateixa pàgina, i el vídeo continua mentre es passa el full.
 
 # Llibres, parts i capçaleres {lead="Un llibre és més que els seus capítols: una coberta, un índex que es manté al dia, portadelles de part, obertures que anuncien cada capítol i capçaleres que saben on és el lector. Tot això és configuració." summary="Capítols, estils de títol, dissenys, parts, índex i folis"}
 
@@ -603,9 +609,9 @@ El tauler **Revisió** llista tot el que el motor ha detectat en compondre el ll
 
 La teva feina es desa al navegador mentre escrius. Els **projectes** són llibres desats localment, a **Els meus llibres** dins del tauler **Llibres**, cadascun amb el seu nom, la seva descripció i la seva imatge de coberta; es poden duplicar, exportar i importar. Els **presets** són llibres de només lectura des dels quals començar, a **Llibres d'exemple**: aquesta guia i una galeria d'edicions de mostra —una revista d'astronomia, un _Quixot_ il·lustrat, una revista de medi ambient, un catàleg d'exposició, dos manuals universitaris, _Somni del pavelló vermell_ en xinès, _Les mil i una nits_ en àrab, enquadernat per la dreta, i _El paradís perdut_ anotat, amb les làmines de Doré—, cadascuna amb un disseny propi. **Fer una còpia pròpia** en converteix un en un projecte teu.
 
-Els presets segueixen el seu origen. Quan un paquet de preset canvia al servidor, el Sandbox ho detecta en qüestió de segons: un preset sense tocar es recarrega sol, i un que has editat mostra un avís que ofereix recarregar-lo, de manera que la feina en curs no se sobreescriu mai. Els presets es poden amagar de la llista i tornar a mostrar, i cadascun es pot obrir en qualsevol de les seves llengües quan en té més d'una, com aquesta guia, que es pot llegir en anglès, castellà, català, xinès simplificat, àrab i japonès.
+Els presets segueixen el seu origen. Quan un paquet de preset canvia al servidor, el Sandbox ho detecta en qüestió de segons: un preset sense tocar es recarrega sol, i un que has editat mostra un avís que ofereix recarregar-lo, de manera que la feina en curs no se sobreescriu mai. Cada preset es pot obrir en qualsevol de les seves llengües quan en té més d'una, com aquesta guia, que es pot llegir en anglès, castellà, català, xinès simplificat, àrab i japonès.
 
-Un llibre viatja com un únic fitxer **.postext**: els seus capítols, la seva configuració, els seus recursos i les seves fonts, a més de la paginació ja calculada, de manera que s'obre paginat. Les receptes del Receptari s'obren al Sandbox de la mateixa manera, com a llibres teus; una recepta que ja havies obert abans et pregunta si vols **Obrir la meva còpia**, amb els teus canvis, o **Substituir per la versió publicada**, que pot haver estat corregida després. I la barra d'adreces conté sempre un enllaç permanent al que estàs veient: el llibre, la llengua, el visor, el capítol i la pàgina.
+Un llibre viatja com un únic fitxer **.postext**: els seus capítols, la seva configuració, els seus recursos i les seves fonts, a més de la paginació ja calculada, de manera que s'obre paginat. Les receptes del Receptari s'obren al Sandbox de la mateixa manera, com a llibres teus; una recepta que ja havies obert abans et pregunta si vols **Obrir la meva còpia**, amb els teus canvis, o **Substituir per la versió publicada**. I la barra d'adreces conté sempre un enllaç permanent al que estàs veient: el llibre, la llengua, el visor, el capítol i la pàgina.
 
 :::callout{type="try"}
 Ves fins a una pàgina que t'agradi i copia l'adreça del navegador: en obrir aquest enllaç veuràs el mateix llibre, al mateix visor, a la mateixa pàgina.
@@ -613,7 +619,7 @@ Ves fins a una pàgina que t'agradi i copia l'adreça del navegador: en obrir aq
 
 ## Incrustar el Sandbox
 
-El Sandbox també és un paquet, _postext-sandbox_, un component de React que qualsevol aplicació web pot incrustar. Qui l'allotja decideix el Markdown i la configuració inicials, l'idioma de la interfície i cada etiqueta, els orígens dels presets que ofereix, i el selector de tema, el selector d'idioma i l'enllaç d'inici que mostra. El Sandbox que fas servir és exactament aquest component, incrustat al lloc web de Postext.
+El Sandbox també és un paquet, _postext-sandbox_, un component de React que qualsevol aplicació web pot incrustar. Qui l'allotja decideix el Markdown i la configuració inicials, l'idioma i les etiquetes de la interfície i els presets que ofereix. El Sandbox que fas servir és exactament aquest component, incrustat al lloc web de Postext.
 
 # Sortida: canvas, HTML, PDF i EPUB {lead="Un arbre, quatre sortides. El canvas previsualitza, l'HTML es llegeix en pantalla, el PDF va a impremta i l'EPUB va al dispositiu de qui llegeix, i totes surten de la mateixa maquetació." summary="Els renderitzadors, el PDF accessible, els llibres EPUB i l'ús de la biblioteca"}
 
@@ -714,6 +720,8 @@ La vista també es mou. Arrossegar amb el botó dret del ratolí gira al voltant
 
 Tres botons de la barra d'eines trien què fa el punter sobre el llibre: passar les pàgines a mà, orbitar la vista, que és el que necessita un trackpad o una tauleta en lloc de l'arrossegament amb el botó dret, o seleccionar text. La selecció funciona sobre les pàgines tal com es veuen, inclinades o girades, igual que a la vista canvas: un clic porta el cursor de l'editor a aquella paraula, un arrossegament selecciona, un doble clic agafa una paraula i un enllaç se segueix. També funciona a l'inrevés: el cursor i la selecció de l'editor es dibuixen sobre les pàgines, i portar el cursor a una pàgina que no és a la vista passa el llibre fins allà.
 
+Els vídeos es reprodueixen a la pàgina. En el mode de passar pàgines, un clic a la portada d'un vídeo el posa en marxa allà mateix, i continua mentre el full gira. Un altre clic el posa en pausa, començar-ne un altre atura l'anterior, i el vídeo s'atura quan el llibre queda obert per un plec que ja no el mostra. Els de YouTube i Vimeo no es poden dibuixar dins de la pàgina: un clic sobre ells passa el full.
+
 :::callout{type="try"}
 Obre la pestanya Folio amb aquesta guia, passa unes quantes pàgines arrossegant-ne les cantonades i després gira el llibre arrossegant amb el botó dret per veure'n el plec grapat. Restablir la vista el torna al seu lloc.
 :::
@@ -752,13 +760,13 @@ Aquesta guia està muntada com un fullet grapat a cavall, en paper estucat brill
 
 ## On funciona Folio
 
-Folio dibuixa amb WebGL2, els gràfics tridimensionals del navegador, amb una textura per cada cara de cada pàgina pintada. Pintar només els plecs que envolten el que està obert redueix la memòria d'un llibre llarg a la d'unes poques pàgines, però un mòbil continua donant a una pestanya del navegador menys memòria de la que necessita un llibre, així que el Sandbox ofereix la pestanya Folio en ordinadors i tauletes i l'omet als mòbils i als navegadors sense WebGL2.
+Folio dibuixa amb WebGL2, els gràfics tridimensionals del navegador, amb una textura per cada cara de cada pàgina pintada. Un mòbil dona a una pestanya del navegador menys memòria de la que necessita un llibre, així que el Sandbox ofereix la pestanya Folio en ordinadors i tauletes i l'omet als mòbils i als navegadors sense WebGL2.
 
 :::callout{type="note" title="En codi"}
 El visor és un paquet propi, _postext-folio_, construït sobre three.js. \`createFolioFromDocument(container, doc)\` mostra un document maquetat com un llibre; \`setDocument\` mostra la maquetació següent a la mateixa pàgina, \`setAppearance\` canvia el paper, l'enquadernació o la llum, i \`resetView\` torna la vista al seu lloc. \`createFolio\` fa el mateix amb qualsevol conjunt d'imatges de pàgina.
 :::
 
-El mateix paquet passa les pàgines de les receptes del Receptari, i pot anar a qualsevol pàgina web que vulgui presentar un llibre com un llibre: el catàleg d'una editorial, una prova enviada a un autor, una previsualització abans que la comanda vagi a la impremta.
+El mateix paquet passa les pàgines de les receptes del Receptari, i pot anar a qualsevol pàgina web que vulgui presentar un llibre com un llibre: el catàleg d'una editorial, una prova enviada a un autor o una previsualització abans d'imprimir.
 # Full de ruta i comunitat {lead="Postext és jove i obert. La cadena principal, el format del document i el sistema de configuració ja estan fets; el que vindrà després es decideix en públic." summary="On és el projecte i com participar-hi"}
 
 Postext no aspira a ser una plataforma documental universal. Aspira a ser un motor de maquetació editorial molt bo per al web, i manté un abast estret perquè el nucli continuï esmolat. La seva ambició a llarg termini és esdevenir el motor de maquetació de referència per al contingut editorial al web: una eina que editorials, revistes, plataformes de llibres i equips de desenvolupament puguin adoptar i sobre la qual puguin construir.

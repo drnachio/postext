@@ -5,12 +5,16 @@ import {
   defaultResourceTypes,
   effectiveResourceTypes,
   encodeQr,
+  isHlsMimeType,
   openBundle,
   parseVideoUrl,
   renderToHtml,
   resolveVideoStyleConfig,
+  resourceVideoFormat,
   resourceVideoLink,
   stripConfigDefaults,
+  videoFormatOfUrl,
+  videoMimeType,
   videoElementAttributes,
   videoEmbedUrl,
   videoWatchUrl,
@@ -137,6 +141,20 @@ describe('video addresses', () => {
     expect(resourceVideoLink(ownFile())).toBeUndefined();
     expect(resourceVideoLink(ownFile({ url: 'https://cdn.example.org/clip.mp4' }))).toBe('https://cdn.example.org/clip.mp4');
     expect(resourceVideoLink(youtube())).toBe('https://youtu.be/dQw4w9WgXcQ');
+  });
+
+  it('reads the format of a video at an address: files and HLS streams (#476)', () => {
+    expect(videoFormatOfUrl('https://media.example.org/showreel/v1/en/master.m3u8')).toBe('hls');
+    expect(videoFormatOfUrl('https://cdn.example.org/clip.MP4?token=1#t=3')).toBe('mp4');
+    expect(videoFormatOfUrl('https://cdn.example.org/clip.webm')).toBe('webm');
+    expect(videoFormatOfUrl('https://cdn.example.org/watch')).toBeUndefined();
+    expect(videoFormatOfUrl(undefined)).toBeUndefined();
+    expect(resourceVideoFormat({ url: 'https://x.org/a/master.m3u8' })).toBe('hls');
+    expect(resourceVideoFormat({ format: 'webm', url: 'https://x.org/a/master.m3u8' })).toBe('webm');
+    expect(resourceVideoFormat({})).toBe('mp4');
+    expect(videoMimeType('hls')).toBe('application/vnd.apple.mpegurl');
+    expect(isHlsMimeType('application/x-mpegURL')).toBe(true);
+    expect(isHlsMimeType('video/mp4')).toBe(false);
   });
 });
 
@@ -370,6 +388,22 @@ describe('video resources in HTML', () => {
     const poster = html([ownFile()]);
     expect(poster).not.toContain('<video');
     expect(poster).toContain('src="blob:clip.jpg"');
+  });
+
+  it('plays a video from its address alone, an HLS stream marked for the host (#476)', () => {
+    const hls = ownFile({ fileId: undefined, format: undefined, url: 'https://media.example.org/reel/master.m3u8' });
+    const [block] = resourceBlocks(buildDocument({ markdown: '::resource{id="clip"}', resources: [hls] }, PAGE));
+    expect(block!.resourceBlock!.video!.mimeType).toBe('application/vnd.apple.mpegurl');
+    expect(block!.resourceBlock!.video!.fileId).toBeUndefined();
+    const out = html([hls]);
+    expect(out).toContain('src="https://media.example.org/reel/master.m3u8" data-pt-hls=""');
+    // A host that cannot play HLS (an EPUB) prints the poster instead.
+    const poster = html([hls], PAGE, { videos: { files: 'player', hls: 'poster' } });
+    expect(poster).not.toContain('<video');
+    expect(poster).toContain('href="https://media.example.org/reel/master.m3u8"');
+    // An MP4 at an address is no HLS stream.
+    const mp4 = html([ownFile({ fileId: undefined, url: 'https://cdn.example.org/clip.mp4' })]);
+    expect(mp4).not.toContain('data-pt-hls');
   });
 
   it('sets the poster with its overlays, linked, when asked to', () => {

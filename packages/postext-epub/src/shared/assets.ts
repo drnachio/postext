@@ -1,6 +1,6 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import { applySingleInkToSvg, resolveColorValue, type VDTDocument } from 'postext';
+import { applySingleInkToSvg, isHlsMimeType, resolveColorValue, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubWarning } from '../types';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media';
 import { uuidV5 } from './uuid';
@@ -138,7 +138,8 @@ export function remoteVideoItems(docs: readonly VDTDocument[], carried: ImageAss
     for (const page of doc.pages) {
       for (const b of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
         const v = b.resourceBlock?.video;
-        if (!v || v.source !== 'file' || !v.link || out.has(v.link)) continue;
+        // An HLS stream is shown as its linked poster, no resource of the book.
+        if (!v || v.source !== 'file' || !v.link || out.has(v.link) || isHlsMimeType(v.mimeType)) continue;
         if (v.fileId && carried.hrefOf(v.fileId)) continue;
         out.set(v.link, { id: `remote-${out.size + 1}`, href: v.link, mediaType: v.mimeType ?? 'video/mp4', data: '', remote: true });
       }

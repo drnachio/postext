@@ -63,6 +63,27 @@ export const FOLIO_CSS = `
 .postext-folio.is-select.is-over-page .postext-folio-spread > .postext-folio-page {
   cursor: text;
 }
+/* Over something a click acts on (a video that plays on the page), in
+   every pointer mode. */
+.postext-folio.is-over-action,
+.postext-folio.is-over-action.is-select,
+.postext-folio.is-over-action.is-orbit,
+.postext-folio.is-over-action .postext-folio-spread > .postext-folio-page:not(.is-empty),
+.postext-folio.is-over-action.is-select .postext-folio-spread > .postext-folio-page:not(.is-empty),
+.postext-folio.is-over-action.is-orbit .postext-folio-spread > .postext-folio-page:not(.is-empty) {
+  cursor: pointer;
+}
+/* A video on a page of the DOM spread (no WebGL): laid over its poster. */
+.postext-folio-page > .postext-folio-video {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  object-fit: cover;
+  background: #000;
+  pointer-events: none;
+}
 .postext-folio-spread,
 .postext-folio-page {
   user-select: none;

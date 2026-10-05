@@ -1,13 +1,14 @@
 export { PageFlipper, canFlip } from "./pageFlip";
 export { FlatPageFlipper } from "./pageFlipFlat";
-export type { PageSource, SpreadSrc } from "./pageFlip";
+export type { PageSource, PageVideoFrame, SpreadSrc } from "./pageFlip";
 export { spreadsOf, spreadOfPage } from "./spreads";
 export type { Spread } from "./spreads";
 export { createFolio } from "./viewer";
-export type { FolioAppearance, FolioInteraction, FolioLabels, FolioOptions, FolioPage, FolioPagePoint, FolioState, FolioViewer } from "./viewer";
+export type { FolioAppearance, FolioInteraction, FolioLabels, FolioOptions, FolioPage, FolioPagePoint, FolioPageVideo, FolioState, FolioViewer } from "./viewer";
 export type { FlipAppearance } from "./pageFlip";
 export { paperSpec, type PaperSpec } from "./paper";
 export { loadDeskMaps, type DeskMaps } from "./deskTextures";
 export { createFolioFromDocument, firstPageIsRecto } from "./postext";
 export type { FolioDocumentOptions, FolioDocumentViewer } from "./postext";
 export { FOLIO_CSS } from "./styles";
+export { attachVideoSource, hlsLevelCap, pageVideoSpots, spotContains, isHlsVideo, type PageVideoSpot } from "./videos";

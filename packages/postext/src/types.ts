@@ -140,7 +140,8 @@ export interface ResourceType {
 export type ResourceKind = 'bitmap' | 'svg' | 'table' | 'video';
 
 /** Where a video resource plays from (#454): a YouTube or Vimeo page, or a
- *  self-hosted file (an uploaded MP4 or WebM). */
+ *  self-hosted file (an uploaded MP4 or WebM, or one at a web address: a
+ *  file on a server or an HLS stream, #476). */
 export type VideoSource = 'youtube' | 'vimeo' | 'file';
 
 /** What a video's player offers in the interactive outputs (the HTML viewer,
@@ -201,14 +202,16 @@ export interface ResourceVideo {
   /** YouTube or Vimeo: the video's address (any watch, short, Shorts or
    *  embed link). A self-hosted file: its production address, where the
    *  published book finds it — printed in the QR code, linked from the PDF,
-   *  and played by the HTML and EPUB outputs when the file itself is not
-   *  available to them. */
+   *  and played by the HTML and EPUB outputs and on Folio's pages when the
+   *  file itself is not available to them. It may be the only source: an
+   *  MP4 or WebM on a server, or an HLS stream (`.m3u8`). */
   url?: string;
   /** A self-hosted file: the uploaded video, stored out-of-band like a
    *  bitmap (part of a `.postext` bundle). */
   fileId?: string;
-  /** A self-hosted file's format: `'mp4'` (the default), `'webm'`, `'ogv'`,
-   *  `'mov'`. */
+  /** A self-hosted file's format: `'mp4'`, `'webm'`, `'ogv'`, `'mov'`, or
+   *  `'hls'` for an HLS stream (an `.m3u8` playlist, #476). Unset: the one
+   *  the address's extension tells, else `'mp4'`. */
   format?: string;
   /** Frame size of the video in px, for its aspect ratio when there is no
    *  poster. */

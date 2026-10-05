@@ -73,13 +73,14 @@ export interface BundleChapterSpec {
  *  and `resources`: top-level config keys replaced wholesale for that
  *  locale, and the wording of resources — caption, note, alt text, a
  *  table's cells — merged by id. A resource whose artwork carries words may
- *  also name its own `file` for the locale. */
+ *  also name its own `file` for the locale, and a video its own `poster`
+ *  and `video` (the cut in that language, at its own address, #478). */
 export interface BundleLocaleOverrides {
   config?: Partial<PostextConfig>;
   /** How this language's edition opens, over the manifest's `view` (a
    *  vertical edition read whole, its translation a chapter at a time). */
   view?: BundleViewSpec;
-  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'width' | 'height'>>)[];
+  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'poster' | 'video' | 'width' | 'height'>>)[];
 }
 
 /** What a canvas lays out: the active chapter (continued after the ones

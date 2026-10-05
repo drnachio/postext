@@ -36,6 +36,8 @@ Este libro es su propia demostración. La cubierta, el índice que se numera sol
 Abre el panel **Texto** y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.
 :::
 
+Si prefieres verlo antes de leerlo, :ref{id="postext-showreel"} lo recorre en dos minutos; en la vista Folio se reproduce sobre la propia página.
+
 ## Cómo leer este libro
 
 El libro se organiza en tres partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, los cuatro formatos de salida y el proyecto que los rodea.
@@ -65,7 +67,7 @@ CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma n
 _La tipografía editorial es un problema de satisfacción de restricciones. Al navegador nunca se le dio el lenguaje para enunciarlas._
 :::
 
-CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada.
+CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada. Un navegador decide cada línea y cada salto de columna o de página en el momento en que llega a él, y no vuelve atrás aunque lo que viene después hubiera pedido otra decisión.
 
 ## Lo que no resuelven las herramientas existentes
 
@@ -97,9 +99,9 @@ Lo que comparten es la preferencia por describir el resultado en lugar de coloca
 
 ## Lo que Postext no es
 
-Tener claro el alcance mantiene afilado el núcleo. Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; los generadores de PDF y de EPUB, en cambio, también funcionan en Node.
+Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; los generadores de PDF y de EPUB, en cambio, también funcionan en Node.
 
-La misma modestia se aplica al contenido. Postext no intenta entender el texto que compone; aplica reglas a la estructura que recibe. Un título tiene que estar marcado como título, una figura tiene que declararse como recurso y una tabla tiene que ser una tabla. A cambio, nunca enmienda al autor: nada se mueve, se renombra ni se reescribe, y cada decisión que toma el motor es visible en la maquetación y puede rastrearse hasta una regla de la configuración.
+La misma modestia se aplica al contenido. Postext no intenta entender el texto que compone; aplica reglas a la estructura que recibe. A cambio, nunca enmienda al autor: nada se mueve, se renombra ni se reescribe, y cada decisión que toma el motor es visible en la maquetación y puede rastrearse hasta una regla de la configuración.
 
 # Cómo funciona el motor {lead="Entran Markdown y un objeto de configuración; sale un árbol en el que cada línea tiene una posición en unidades reales. En medio, una tubería breve que mide el texto sin tocar el DOM e itera hasta que la página se asienta." summary="Analizar, medir, maquetar, converger"}
 
@@ -310,13 +312,13 @@ $$
 f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}
 $$
 
-Las definiciones por casos cierran la serie. Una llave agrupa las ramas de la definición, cada una con su condición alineada a la derecha, y la altura de la llave crece con el número de casos. Es un recurso frecuente en los textos de matemáticas y de informática, y también un buen ejemplo de fórmula que no cabría dentro de una línea de texto.
+Las definiciones por casos cierran la serie. Una llave agrupa las ramas de la definición, cada una con su condición alineada a la derecha, y la altura de la llave crece con el número de casos.
 
 $$
 |x| = \\begin{cases} x & \\text{si } x \\ge 0 \\\\ -x & \\text{si } x < 0 \\end{cases}
 $$
 
-Las fórmulas en línea siguen otras reglas, porque tienen que convivir con las palabras que las rodean. Las raíces de $ax^2+bx+c=0$ son $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$, el producto de Euler se escribe $\\prod_p (1-p^{-s})^{-1} = \\zeta(s)$ y la transformada de Fourier $\\hat f(\\xi) = \\int f(x)\\,e^{-2\\pi i x \\xi}\\,dx$ también se queda en su línea. En los tres casos el motor mide la altura de la fórmula y, si supera la que permite el interlineado, la reduce solo lo necesario, de modo que las líneas de alrededor conservan su posición en la rejilla y el párrafo mantiene su textura. Ninguna fórmula rompe el ritmo de la página.
+Las fórmulas en línea siguen otras reglas, porque tienen que convivir con las palabras que las rodean. Las raíces de $ax^2+bx+c=0$ son $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$, el producto de Euler se escribe $\\prod_p (1-p^{-s})^{-1} = \\zeta(s)$ y la transformada de Fourier $\\hat f(\\xi) = \\int f(x)\\,e^{-2\\pi i x \\xi}\\,dx$ también se queda en su línea. En los tres casos el motor mide la altura de la fórmula y, si supera la que permite el interlineado, la reduce solo lo necesario, de modo que las líneas de alrededor conservan su posición en la rejilla y el párrafo mantiene su textura.
 
 # La página y sus columnas {lead="Las páginas son fijas, las columnas son finitas y cada línea debería asentarse en un ritmo compartido por todo el pliego. Este capítulo trata del marco: la geometría de la página, las estructuras de columnas, la rejilla de línea base y el arte de terminar las columnas a la par." summary="Geometría de página, columnas, rejilla de línea base y equilibrado"}
 
@@ -434,11 +436,17 @@ Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el 
 
 El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en catalán en la catalana, en inglés en la inglesa, en chino en la china y en árabe en la árabe.
 
-Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto. Lo mismo vale para el microtexto de la roseta, legible a cualquier ampliación.
+Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto. Lo mismo vale para el microtexto de la roseta, legible a cualquier ampliación; en papel, esa línea de dos puntos y medio solo se lee con lupa.
 
 :::callout{type="try"}
 Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
 :::
+
+## Vídeos
+
+Un vídeo es un recurso más. Se menciona, se numera aparte (Vídeo 1.1 junto a Figura 1.1) y flota hasta el primer hueco libre, como una figura. Puede venir de YouTube o de Vimeo, de un archivo guardado en el libro o de una dirección web: un MP4 o un WebM en un servidor, o un flujo HLS, la lista \`.m3u8\` con la que se sirve un vídeo largo por fragmentos y en varias calidades.
+
+En papel se imprime su portada, un fotograma elegido, con una marca de reproducción y un código QR que abre el vídeo; en el PDF la portada también es un enlace. La vista HTML y el EPUB lo reproducen en su propio reproductor, salvo los de YouTube y Vimeo y los flujos HLS, que un libro electrónico solo puede enlazar. En la vista Folio, un clic en la portada lo reproduce en la página, y el vídeo sigue mientras se pasa la hoja. Los vídeos de este libro, como :ref{id="postext-showreel"}, son flujos HLS servidos desde una red de distribución de contenidos.
 
 # Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
 
@@ -620,7 +628,7 @@ El Sandbox es a su vez un paquete, _postext-sandbox_, un componente de React que
 
 # Salida: canvas, HTML, PDF y EPUB {lead="Un árbol, cuatro salidas. El canvas previsualiza, el HTML se lee en pantalla, el PDF va a imprenta y el EPUB va al dispositivo de quien lee, y todas se escriben a partir de la misma maquetación." summary="Los renderizadores, el PDF accesible, los libros EPUB y el uso de la biblioteca"}
 
-Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en el canvas, el HTML y el PDF, y un EPUB de maquetación fija los conserva también. Un EPUB fluido renuncia a la página a propósito y conserva todo lo demás que resolvió la maquetación: los números, las notas, las referencias y los folios impresos.
+Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en el canvas, el HTML y el PDF, y un EPUB de maquetación fija los conserva también. Un EPUB fluido renuncia a la página a propósito y conserva todo lo demás que resolvió la maquetación: los números, las notas, las referencias y los folios impresos. El skill de agente que pasa libros existentes a Postext revisa su trabajo con estas salidas, como muestra :ref{id="skill-tutorial"}.
 
 ## Canvas
 
@@ -638,7 +646,7 @@ El renderizador recibe una función que convierte el identificador de archivo de
 
 El paquete _postext-pdf_ convierte el VDT en un PDF real, de un documento o de un libro entero. Nunca vuelve a medir: las métricas del canvas son la referencia y el PDF solo las transporta, por eso las líneas se cortan exactamente en los mismos sitios. Incrusta fuentes reales, una estática por peso, así que la negrita es negrita, la cursiva es cursiva y el texto se puede seleccionar. Sobre las páginas añade marcadores a partir de los títulos y las partes, etiquetas de página que coinciden con los folios impresos, referencias pulsables, figuras SVG como vectores y una elección de espacio de color —RGB, CMYK o escala de grises— para la imprenta.
 
-Las fuentes llegan al PDF a través de un **proveedor de fuentes**, una función que devuelve los bytes de una familia en un peso y un estilo dados. El proveedor del Sandbox descarga caras estáticas de Fontsource, un archivo por peso, y las descomprime desde WOFF2; las fuentes propias vienen del panel Fuentes. Los bytes de los recursos se entregan de la misma manera, por identificador de archivo. El renderizado informa de su progreso, se ejecuta en un worker propio cuando se le pide y acepta un libro entero como una lista de documentos de capítulo, del que produce un único PDF con etiquetas de página continuas, marcadores y enlaces.
+Las fuentes llegan al PDF a través de un **proveedor de fuentes**, una función que devuelve los bytes de una familia en un peso y un estilo dados. El proveedor del Sandbox descarga caras estáticas de Fontsource, un archivo por peso, y las descomprime desde WOFF2; las fuentes propias vienen del panel Fuentes. Los bytes de los recursos se entregan de la misma manera, por identificador de archivo. El renderizado informa de su progreso, se ejecuta en un worker propio cuando se le pide y acepta un libro entero como una lista de documentos de capítulo, del que produce un único PDF con etiquetas de página continuas, marcadores y enlaces. El Sandbox muestra ese progreso en una barra mientras se genera el archivo.
 
 ## Accesible por defecto
 
@@ -688,7 +696,7 @@ El motor se distribuye en npm como _postext_, para la maquetación y los renderi
 
 El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ y _postext-epub_ también se ejecutan en el navegador, y además en Node, de modo que un PDF o un EPUB pueden producirse en un servidor a partir de una maquetación calculada en otro sitio. Un libro entero viaja igual: \`openBundle\` lee un archivo .postext, \`buildBundle\` maqueta sus capítulos en orden y el resultado pasa directamente a \`renderToPdf\` o a \`renderToEpub\`. Los paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
 
-:::callout{type="note" title="Cuatro pasos"}
+:::callout{type="note" title="Cuatro pasos" placement="top"}
 1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
 2. Compila el documento con \`buildDocument(content, config)\`
 3. Dibuja sus páginas con \`renderPage\` o genéralas con \`renderToHtml\`
@@ -700,6 +708,8 @@ El motor y su renderizador de PDF se publican juntos, con el mismo número de ve
 ## Páginas como imágenes, desde un script
 
 Una página no necesita un navegador para convertirse en imagen. El renderizador de canvas dibuja en cualquier canvas que hable la interfaz de dibujo del navegador, y en Node lo hace un canvas precompilado: se maqueta el libro, se dibuja la página y se codifica como JPEG o PNG. Así revisa su propio trabajo el skill de agente que adapta libros existentes a Postext. Tras cada cambio en la configuración o en el texto vuelve a maquetar el libro, dibuja solo las páginas en las que está trabajando y las lee como imágenes, en un segundo o dos, sin generar un PDF ni recortar imágenes de él. El PDF se genera al final, para las comprobaciones que solo un PDF puede responder: las fuentes incrustadas, las imágenes a su resolución, la estructura etiquetada.
+
+En :ref{id="skill-tutorial"} se ve el skill de principio a fin: recibe el PDF de referencia, las fuentes y las ilustraciones originales, propone una ficha de especificaciones, compone el primer capítulo y revisa cada página que compone.
 
 # El libro en 3D {lead="Una maquetación es un conjunto de páginas, pero un libro es un objeto: un papel de cierto gramaje y color, una encuadernación que abre de cierta manera, un grosor que nota la mano. La vista Folio muestra las páginas como ese objeto antes de imprimir nada." summary="La vista Folio, los papeles, las encuadernaciones, las cubiertas y la luz"}
 
@@ -716,6 +726,8 @@ Cada hoja se curva según su papel. El papel biblia, fino, se enrolla en una cur
 La vista también se mueve. Arrastrar con el botón derecho del ratón gira alrededor del libro, hasta un ángulo rasante, para ver el lomo, el corte delantero o el grosor del bloque, y se puede hacer mientras las hojas aún están girando. La vista se queda donde se dejó hasta que **Restablecer la vista** la devuelve al ángulo que fijan los ajustes. En una ventana estrecha el libro muestra una página cada vez, y sigue pasando la hoja por encima del lomo; cuando el sistema pide movimiento reducido, los pliegos cambian sin el giro.
 
 Tres botones de la barra de herramientas eligen qué hace el puntero sobre el libro: pasar las páginas a mano, orbitar la vista, que es lo que necesita un trackpad o una tableta en lugar del arrastre con el botón derecho, o seleccionar texto. La selección funciona sobre las páginas tal como se ven, inclinadas o giradas, igual que en la vista canvas: un clic lleva el cursor del editor a esa palabra, un arrastre selecciona, un doble clic toma una palabra y un enlace se sigue. También funciona al revés: el cursor y la selección del editor se dibujan sobre las páginas, y llevar el cursor a una página que no está a la vista pasa el libro hasta ella.
+
+Los vídeos se reproducen en la página. En el modo de pasar páginas, un clic en la portada de un vídeo lo pone en marcha allí mismo, y sigue mientras la hoja gira. Otro clic lo pausa, empezar otro detiene el anterior, y el vídeo se detiene cuando el libro queda abierto por un pliego que ya no lo muestra. Los de YouTube y Vimeo no se pueden dibujar dentro de la página: un clic en ellos pasa la hoja.
 
 :::callout{type="try"}
 Abre la pestaña Folio con esta guía, pasa unas cuantas páginas arrastrando sus esquinas y luego gira el libro arrastrando con el botón derecho para ver su pliegue grapado. Restablecer la vista lo devuelve a su sitio.
@@ -761,7 +773,7 @@ Folio dibuja con WebGL2, los gráficos tridimensionales del navegador, con una t
 El visor es un paquete propio, _postext-folio_, construido sobre three.js. \`createFolioFromDocument(container, doc)\` muestra un documento maquetado como un libro; \`setDocument\` muestra la maquetación siguiente en la misma página, \`setAppearance\` cambia el papel, la encuadernación o la luz, y \`resetView\` devuelve la vista a su sitio. \`createFolio\` hace lo mismo con cualquier conjunto de imágenes de página.
 :::
 
-El mismo paquete pasa las páginas de las recetas del Recetario, y puede ir en cualquier página web que quiera presentar un libro como un libro: el catálogo de una editorial, una prueba enviada a un autor, una vista previa antes de que el pedido vaya a la imprenta.
+El mismo paquete pasa las páginas de las recetas del Recetario, y puede ir en cualquier página web que quiera presentar un libro como un libro: el catálogo de una editorial, una prueba enviada a un autor, una vista previa antes de que el pedido vaya a la imprenta. Como el visor recibe la maquetación ya hecha, cada cambio en el texto o en el diseño llega al libro en cuanto Postext vuelve a componer sus páginas.
 
 # Hoja de ruta y comunidad {lead="Postext es joven y abierto. La tubería principal, el formato del documento y el sistema de configuración ya están hechos; lo que viene después se decide en público." summary="Dónde está el proyecto y cómo participar"}
 

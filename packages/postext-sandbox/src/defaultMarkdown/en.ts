@@ -36,6 +36,8 @@ This book is its own demonstration. Its cover, the contents page that numbers it
 Open the **Text** panel and pick this chapter in the chapter switcher at its head. Change a word in this paragraph, or delete a sentence: the page sets itself again, the columns rebalance and the page numbers of the following chapters follow.
 :::
 
+If you would rather watch first, :ref{id="postext-showreel"} covers it in two minutes; in the Folio view it plays on the page itself.
+
 ## How to read this book
 
 The book is organised in three parts. **Foundations**, the part you are in, explains the problem Postext solves and how the engine is built: what goes in, what comes out and what happens in between. **The craft** is about typography: how a line is set, how a page is framed, where figures and tables go and how a set of chapters becomes a book. **In practice** turns to the tools: the document format, the Sandbox, the four output formats — canvas, HTML, PDF and EPUB — and the project around them.
@@ -97,9 +99,9 @@ What they share is a preference for describing the result instead of placing it 
 
 ## What Postext is not
 
-Being clear about scope keeps the core sharp. Postext does not replace CSS for interfaces; it is a specialised engine for long-form, structured content. It is not a WYSIWYG editor: you write Markdown and describe the design, and the engine sets the pages. It does not manage responsive breakpoints — choosing a configuration per screen size is the host application's decision. It does not load fonts for you: the engine measures with the fonts the browser already has, so a page must load its faces before laying out. And the layout engine is browser-only for now, because its measurements come from the canvas font metrics of a real browser; the PDF and EPUB writers, on the other hand, also run in Node.
+Postext does not replace CSS for interfaces; it is a specialised engine for long-form, structured content. It is not a WYSIWYG editor: you write Markdown and describe the design, and the engine sets the pages. It does not manage responsive breakpoints: choosing a configuration per screen size is up to the host application. It does not load fonts for you: the engine measures with the fonts the browser already has, so a page must load its faces before laying out. And the layout engine is browser-only for now, because its measurements come from the canvas font metrics of a real browser; the PDF and EPUB writers, on the other hand, also run in Node.
 
-The same modesty applies to the content. Postext does not try to understand the text it sets; it applies rules to the structure it is given. A heading must be marked as a heading, a figure must be declared as a resource and a table must be a table. In exchange, it never second-guesses the author: nothing is moved, renamed or rewritten, and every decision the engine takes is visible in the layout and traceable to a rule in the configuration.
+The same modesty applies to the content. Postext does not try to understand the text it sets; it applies rules to the structure it is given. In exchange, it never second-guesses the author: nothing is moved, renamed or rewritten, and every decision the engine takes is visible in the layout and traceable to a rule in the configuration.
 
 # How the engine works {lead="Markdown and a configuration object go in; a tree in which every line has a position in real units comes out. In between is a short pipeline that measures text without touching the DOM and iterates until the page settles." summary="Parsing, measuring, laying out, converging"}
 
@@ -440,6 +442,12 @@ Three figures set here to prove the point. The rosette of :ref{id="vector-rosett
 Click the caption of any figure in the canvas: the Resources panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
 :::
 
+## Videos
+
+A video is one more resource. It is mentioned, numbered on its own (Video 1.1 next to Figure 1.1) and floats to the first free slot like a figure. It can come from YouTube or Vimeo, from a file kept in the book, or from a web address: an MP4 or WebM file on a server, or an HLS stream, the \`.m3u8\` playlist that serves a long video in segments and at several qualities.
+
+Print carries its poster, a chosen frame, with a play mark and a QR code that opens the video; in the PDF the poster is also a link. The HTML view and the EPUB play it in their own player, except YouTube and Vimeo videos and HLS streams, which an e-book can only link to. In the Folio view a click on the poster plays it on the page, and the video keeps playing while the leaf is turned. The videos in this book, such as :ref{id="postext-showreel"}, are HLS streams served from a content delivery network.
+
 # Books, parts and running heads {lead="A book is more than its chapters: a cover, a contents page that keeps itself up to date, part dividers, openers that announce each chapter and running heads that know where the reader is. All of it is configuration." summary="Chapters, heading styles, design slots, parts, contents and page numbers"}
 
 This guide is a book of thirteen chapters, and each chapter is a Markdown document of its own. A project in the Sandbox is always a book: the configuration, the resources and the fonts are shared, and the chapters follow each other, as :ref{id="book-anatomy"} shows.
@@ -620,7 +628,7 @@ The Sandbox is itself a package, _postext-sandbox_, a React component that any w
 
 # Output: canvas, HTML, PDF and EPUB {lead="One tree, four outputs. The canvas previews, the HTML reads on screen, the PDF goes to press and the EPUB goes to the reader's device, and all of them are written from the same layout." summary="The renderers, accessible PDF, EPUB books and using the library"}
 
-Because every renderer reads the same VDT, the promise _what you see is what you get_ is literal: line breaks, page boundaries and the position of every figure match across the canvas, the HTML and the PDF, and a fixed-layout EPUB keeps them too. A reflowable EPUB gives up the page on purpose and keeps everything else the layout resolved: the numbers, the notes, the references and the printed page numbers.
+Because every renderer reads the same VDT, the promise _what you see is what you get_ is literal: line breaks, page boundaries and the position of every figure match across the canvas, the HTML and the PDF, and a fixed-layout EPUB keeps them too. A reflowable EPUB gives up the page on purpose and keeps everything else the layout resolved: the numbers, the notes, the references and the printed page numbers. The agent skill that brings existing books into Postext checks its work with these outputs, as :ref{id="skill-tutorial"} shows.
 
 ## Canvas
 
@@ -701,6 +709,8 @@ The engine and its PDF renderer are released together, with the same version num
 
 A page does not need a browser to become a picture. The canvas renderer draws on any canvas that speaks the browser's drawing interface, and in Node a prebuilt canvas does: lay the book out, draw the page, and encode it as a JPEG or a PNG. That is how the agent skill that ports books to Postext looks at its work. After each change to the configuration or the text it lays the book out again, draws only the pages it is working on and reads them as images, in a second or two, with no PDF to generate. The PDF is built at the end, for the checks that only a PDF can answer: fonts embedded, images at their resolution, the tagged structure.
 
+:ref{id="skill-tutorial"} shows the skill from start to finish: it is given the reference PDF, the fonts and the original illustrations, proposes a specification sheet, sets the first chapter and checks every page it sets.
+
 # The book in 3D {lead="A layout is a set of pages, but a book is an object: paper of a certain weight and colour, a binding that opens a certain way, a thickness the hand feels. The Folio view shows the pages as that object, before anything is printed." summary="The Folio view, paper stocks, bindings, covers and the light"}
 
 Proofs on a screen are flat. A spread seen as two rectangles says nothing about how the book will feel open on a desk: whether the gutter swallows the inner margin, whether a plate on gloss paper catches the light, whether three hundred pages of cream paper make a block too thick for the binding. The **Folio** view answers those questions with the pages Postext has already set. It shows the book bound, lying open on a surface, lit, with leaves that bend and turn under the hand.
@@ -716,6 +726,8 @@ Each leaf bends according to its paper. Thin bible paper rolls in a tight curve 
 The view itself can move. A drag with the right mouse button orbits round the book, down to a grazing angle, to look at the spine, the fore-edge or the thickness of the block, and it can be done while leaves are still turning. The view stays where it was left until **Reset view** brings it back to the angle the settings give. In a narrow window the book shows one page at a time, still turning its leaf over the spine; when the system asks for reduced motion, the spreads change without the turn.
 
 Three buttons of the toolbar choose what the pointer does on the book: turn the pages by hand, orbit the view, which is what a trackpad or a tablet needs in place of a right-drag, or select text. Selection works on the pages as they are seen, tilted or orbited, the way it works on the Canvas view: a click puts the caret in the editor at that word, a drag selects, a double click takes a word, and a link is followed. It also works the other way: the caret and the selection of the editor are drawn on the pages, and moving the caret to a page that is not on show turns the book to it.
+
+Videos play on the page. In page-turning mode a click on a video's poster starts it there, and it keeps playing while the leaf turns. Another click pauses it, starting another stops the first, and a video stops when the book comes to rest on a spread that no longer shows it. YouTube and Vimeo videos cannot be drawn inside a page: a click on one turns the leaf.
 
 :::callout{type="try"}
 Open the Folio tab on this guide, turn a few pages by dragging their corners, then orbit the book with a right-drag to see its stapled fold. Reset view brings it back.

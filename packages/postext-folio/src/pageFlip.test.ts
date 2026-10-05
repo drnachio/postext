@@ -23,7 +23,7 @@ vi.mock("three", async (importOriginal) => {
   return { ...three, WebGLRenderer };
 });
 
-const { PageFlipper } = await import("./pageFlip");
+const { PageFlipper, pagePlane } = await import("./pageFlip");
 type FlipAppearance = import("./pageFlip").FlipAppearance;
 type Flipper = InstanceType<typeof PageFlipper>;
 
@@ -403,4 +403,36 @@ describe("the page flipper", () => {
     expect(most).toBeGreaterThan(0);
     expect(settled).toEqual([27]);
   }, 30_000); // a 40-leaf book flipped tick by tick: 5.8 s on the CI runner
+});
+
+describe("pagePlane (#483)", () => {
+  const W = 600;
+  // A thick book opened near its front: the thin left side hangs from the
+  // top of the spine down to the desk, the right block lies level.
+  const book = profiles("hardcover", W, 4, 6, 300);
+
+  it("holds the page past the gutter's shoulder on a sloping side", () => {
+    expect(book.left.rise).toBeGreaterThan(0);
+    const plane = pagePlane(book.left, W, -1);
+    expect(plane.normal.z).toBeGreaterThan(0);
+    expect(plane.normal.x).toBeLessThan(0);
+    for (const s of [0.4, 0.6, 0.8, 1].map((f) => f * W)) {
+      const [x, z] = along(book.left, s);
+      expect(Math.abs(plane.distanceToPoint(new Vector3(-x, 0, z)))).toBeLessThan(0.5);
+    }
+  });
+
+  it("is level on a block lying flat, at the page's height", () => {
+    const plane = pagePlane(book.right, W, 1);
+    expect(plane.normal.z).toBeCloseTo(1, 6);
+    const [, z] = along(book.right, W * 0.8);
+    expect(-plane.constant).toBeCloseTo(z, 3);
+  });
+
+  it("follows the stage mirrored for a right-bound book", () => {
+    const left = pagePlane(book.left, W, -1);
+    const mirrored = pagePlane(book.left, W, 1);
+    expect(mirrored.normal.x).toBeCloseTo(-left.normal.x, 9);
+    expect(mirrored.constant).toBeCloseTo(left.constant, 9);
+  });
 });
