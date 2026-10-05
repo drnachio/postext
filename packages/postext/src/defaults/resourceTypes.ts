@@ -12,10 +12,11 @@ interface ResourceTypeStrings {
 }
 
 /** Per-language strings for the two built-in types, one per bundled
- *  hyphenation language plus Chinese in each script and Arabic (keyed by
- *  `stringsKeyOf`). English is the fallback for any locale not listed here.
- *  Add a language by adding a key. A language may also number its figures
- *  its own way (`numberingTemplate`, the house style being `{h1}.{n}`). */
+ *  hyphenation language plus Chinese in each script, Japanese and Arabic
+ *  (keyed by `stringsKeyOf`). English is the fallback for any locale not
+ *  listed here. Add a language by adding a key. A language may also number
+ *  its figures its own way (`numberingTemplate`, the house style being
+ *  `{h1}.{n}`). */
 const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table: ResourceTypeStrings; numberingTemplate?: string }> = {
   en: {
     figure: { name: 'Figure', namePlural: 'Figures', shortLabel: 'Fig.', captionPrefix: 'Figure' },
@@ -60,6 +61,14 @@ const BUILTIN_TYPE_STRINGS: Record<string, { figure: ResourceTypeStrings; table:
     table: { name: '表', namePlural: '表', shortLabel: '表', captionPrefix: '表' },
     numberingTemplate: '{h1}-{n}',
   },
+  // Japanese books name them 図 and 表 and number them by chapter with a
+  // hyphen too (図1-1, 表2-3; JLReq §4.3, ja-typography §12): a vertical
+  // book's horizontal captions read the same.
+  ja: {
+    figure: { name: '図', namePlural: '図', shortLabel: '図', captionPrefix: '図' },
+    table: { name: '表', namePlural: '表', shortLabel: '表', captionPrefix: '表' },
+    numberingTemplate: '{h1}-{n}',
+  },
   // Arabic numbers by chapter with a hyphen too (شكل ٢-٣, «الجدول ١-٢»):
   // a full stop between two Arabic-Indic digits reads as the decimal
   // separator ٫ at a glance.
@@ -86,8 +95,9 @@ export function documentLocale(config: PostextConfig | undefined): string {
 /** Built-in resource types provided when a config does not define its own,
  *  localised to `locale` (defaults to English). Both reset their counter on
  *  every `h1` and number as `{h1}.{n}` (e.g. "Figure 2.3"), or `{h1}-{n}` in
- *  Chinese ("图 2-3") and Arabic ("شكل 2-3"), using decimal counters. New objects are returned on
- *  every call so callers may freely mutate the result. */
+ *  Chinese ("图 2-3"), Japanese ("図 2-3") and Arabic ("شكل 2-3"), using
+ *  decimal counters. New objects are returned on every call so callers may
+ *  freely mutate the result. */
 export function defaultResourceTypes(locale = 'en'): ResourceType[] {
   const s = stringsForLocale(locale);
   const numberingTemplate = s.numberingTemplate ?? '{h1}.{n}';

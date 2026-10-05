@@ -107,6 +107,9 @@ const CROSS_REF_STRINGS: Readonly<Record<string, CrossRefStrings>> = {
   nl: { chapter: `hoofdstuk${NBSP}{n}`, section: `paragraaf${NBSP}{n}`, page: `p.${NBSP}{n}` },
   'zh-hans': { chapter: '第{n}章', section: '第{n}节', page: '第{n}页' },
   'zh-hant': { chapter: '第{n}章', section: '第{n}節', page: '第{n}頁' },
+  // 「第3章」, 「2.3節」 (a dotted section number takes no 第: 第2.3節 reads
+  // oddly in Japanese), 「45ページ」.
+  ja: { chapter: '第{n}章', section: '{n}節', page: '{n}ページ' },
   // «انظر الفصل ٣», «القسم ٢-١», «ص ١٢» (ص for صفحة).
   ar: { chapter: `الفصل${NBSP}{n}`, section: `القسم${NBSP}{n}`, page: `ص${NBSP}{n}` },
 };

@@ -1,5 +1,5 @@
 import type { Dimension, IndexConfig, IndexGroupBy, ResolvedBodyTextConfig, ResolvedIndexConfig } from '../types';
-import { languageOf, localeScript, presentTag } from '../locale';
+import { isJapaneseLanguage, languageOf, localeScript, presentTag } from '../locale';
 
 const ONE_EM: Dimension = { value: 1, unit: 'em' };
 const TWO_EM: Dimension = { value: 2, unit: 'em' };
@@ -28,12 +28,15 @@ const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke',
  *  Arabic script separates with the Arabic comma `،` and sets its
  *  cross-reference labels upright (Arabic fonts have no italics; a slanted
  *  Arabic word is a distortion, not an emphasis); an Arabic one ignores the
- *  article `ال`. Every other language takes the static defaults. */
+ *  article `ال`. A Japanese index sets its labels (→, も見よ) upright too:
+ *  Japanese has no italics. Every other language takes the static
+ *  defaults. */
 function languageDefaults(locale: string | undefined): { separator: string; italicSee: boolean; ignoreArticle: boolean } {
   const arabicScript = locale !== undefined && localeScript(locale) === 'Arab';
   return {
+    // J10 (#425): the Japanese page-number separator (、 or ，).
     separator: arabicScript ? '، ' : DEFAULT_INDEX_CONFIG.separator,
-    italicSee: arabicScript ? false : DEFAULT_INDEX_CONFIG.see.italic,
+    italicSee: arabicScript || isJapaneseLanguage(locale) ? false : DEFAULT_INDEX_CONFIG.see.italic,
     ignoreArticle: languageOf(locale) === 'ar',
   };
 }

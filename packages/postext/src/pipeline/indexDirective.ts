@@ -63,6 +63,11 @@ const newNode = (text: string): IndexNode => ({
 interface IndexLabels {
   see: string;
   seeAlso: string;
+  /** Words after the targets of a cross-reference whose verb follows its
+   *  object (the Japanese →鷗外も見よ), set only with the built-in label;
+   *  unset: none. */
+  seeAfter?: string;
+  seeAlsoAfter?: string;
   symbols: string;
   /** The head of the entries that open with a digit; `0–9` where not
    *  given. */
@@ -74,6 +79,11 @@ interface IndexLabels {
 
 /** Chinese cross-references: 贾琏 12。见贾政；王熙凤 */
 const CHINESE_REF_PUNCTUATION = { lead: '。', gap: '', join: '；' };
+
+/** Japanese cross-references: 夏目漱石 12, 45　→漱石 (見よ) and
+ *  漱石 3　→鷗外、子規も見よ (をも見よ), set off by an ideographic space,
+ *  the targets joined by the enumeration comma 、. */
+const JAPANESE_REF_PUNCTUATION = { lead: '\u3000', gap: '', join: '、' };
 
 /** Arabic cross-references: the Arabic semicolon between two targets
  *  (الجاحظ ١٢. انظر أيضًا البصرة؛ الكوفة). */
@@ -92,6 +102,9 @@ const LABELS: Record<string, IndexLabels> = {
   de: { see: 'Siehe', seeAlso: 'Siehe auch', symbols: 'Symbole' },
   'zh-hans': { see: '见', seeAlso: '另见', symbols: '符号', numbers: '数字', refPunctuation: CHINESE_REF_PUNCTUATION },
   'zh-hant': { see: '見', seeAlso: '另見', symbols: '符號', numbers: '數字', refPunctuation: CHINESE_REF_PUNCTUATION },
+  // The arrow is the see reference of Japanese indexes; a see-also ends in
+  // も見よ, which follows the targets (をも見よ参照).
+  ja: { see: '→', seeAlso: '→', seeAlsoAfter: 'も見よ', symbols: '記号', numbers: '数字', refPunctuation: JAPANESE_REF_PUNCTUATION },
   ar: { see: 'انظر', seeAlso: 'انظر أيضًا', symbols: 'رموز', numbers: 'أرقام', refPunctuation: ARABIC_REF_PUNCTUATION },
 };
 
@@ -321,6 +334,10 @@ function indexBlocksFor(
   const labels = {
     see: cfg.see.label ?? localized.see,
     seeAlso: cfg.see.alsoLabel ?? localized.seeAlso,
+    // The trailing words belong to the built-in label: an author's own
+    // label stands alone.
+    ...(cfg.see.label === undefined && localized.seeAfter ? { seeAfter: localized.seeAfter } : {}),
+    ...(cfg.see.alsoLabel === undefined && localized.seeAlsoAfter ? { seeAlsoAfter: localized.seeAlsoAfter } : {}),
     symbols: cfg.groups.symbolsLabel ?? localized.symbols,
     numbers: cfg.groups.numbersLabel ?? localized.numbers ?? '0–9',
     ...(localized.refPunctuation ? { refPunctuation: localized.refPunctuation } : {}),
@@ -405,7 +422,7 @@ function indexBlocksFor(
 function entrySpans(
   node: IndexNode,
   cfg: ResolvedIndexConfig,
-  labels: { see: string; seeAlso: string; refPunctuation?: IndexLabels['refPunctuation'] },
+  labels: Pick<IndexLabels, 'see' | 'seeAlso' | 'seeAfter' | 'seeAlsoAfter' | 'refPunctuation'>,
 ): InlineSpan[] {
   const spans: InlineSpan[] = parseInlineFormatting(node.text);
   const plain = (text: string): void => {
@@ -424,7 +441,7 @@ function entrySpans(
     });
   });
   const punctuation = labels.refPunctuation ?? { lead: '. ', gap: ' ', join: '; ' };
-  const refs = (label: string, targets: readonly string[]): void => {
+  const refs = (label: string, targets: readonly string[], after = ''): void => {
     if (targets.length === 0) return;
     plain(punctuation.lead);
     spans.push({ text: label, bold: false, italic: cfg.see.italic });
@@ -433,9 +450,10 @@ function entrySpans(
       if (i > 0) plain(punctuation.join);
       for (const s of parseInlineFormatting(targetLevels(target).join(': '))) spans.push(s);
     });
+    if (after) spans.push({ text: after, bold: false, italic: cfg.see.italic });
   };
-  refs(labels.see, node.see);
-  refs(labels.seeAlso, node.seeAlso);
+  refs(labels.see, node.see, labels.seeAfter);
+  refs(labels.seeAlso, node.seeAlso, labels.seeAlsoAfter);
   return spans;
 }
 
