@@ -15,6 +15,7 @@ describe("docs table of contents", () => {
       "document-format",
       "chinese-layout",
       "arabic-layout",
+      "japanese-layout",
       "contributing",
       "sandbox",
       "skill",
@@ -41,16 +42,18 @@ describe("docs table of contents", () => {
     }
   });
 
-  it("puts Chinese and Arabic layout in Part II at orders 6 and 7 and the practice pages after them", () => {
+  it("puts Chinese, Arabic and Japanese layout in Part II at orders 6 to 8 and the practice pages after them", () => {
     expect(order("chinese-layout")).toBe(6);
     expect(order("arabic-layout")).toBe(7);
+    expect(order("japanese-layout")).toBe(8);
     expect(docPart(6).key).toBe("craft");
     expect(docPart(7).key).toBe("craft");
+    expect(docPart(8).key).toBe("craft");
     expect(docPart(order("document-format")!).key).toBe("craft");
     for (const slug of ["contributing", "sandbox", "skill"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([8, 9, 10]);
+    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([9, 10, 11]);
   });
 
   it("gives the language sections h3 headings that anchors can target", () => {
@@ -62,14 +65,14 @@ describe("docs table of contents", () => {
     expect(es).toContain("3 idiomas-y-escrituras");
   });
 
-  it.each(["chinese-layout", "arabic-layout"])("gives every heading of the %s page its own title", (slug) => {
+  it.each(["chinese-layout", "arabic-layout", "japanese-layout"])("gives every heading of the %s page its own title", (slug) => {
     for (const locale of ["en", "es", "ca", "zh", "ar"] as const) {
       const texts = extractToc(getDocSource(slug, locale)!.source).map((t) => t.text);
       expect(texts.filter((t, i) => texts.indexOf(t) !== i), locale).toEqual([]);
     }
   });
 
-  it.each(["chinese-layout", "arabic-layout"])("keeps Markdown markers literal in the %s page's code spans", (slug) => {
+  it.each(["chinese-layout", "arabic-layout", "japanese-layout"])("keeps Markdown markers literal in the %s page's code spans", (slug) => {
     // MDX reads Markdown inside JSX, so <code>*…*</code> prints an italic
     // "…", and the docs pipeline drops JavaScript expressions (blockJS), so
     // <code>{'*…*'}</code> prints nothing. A character reference stays

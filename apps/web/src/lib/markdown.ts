@@ -438,7 +438,7 @@ function inlineHtmlToMarkdown(html: string, pageUrl: string): string {
           `[${label}](${href.startsWith("#") ? pageUrl + href : href})`
         )
         .replace(/<br\s*\/?>/g, " ")
-        .replace(/<\/?(?:span|p|div|small|sup|sub)\b[^>]*>/g, "");
+        .replace(/<\/?(?:span|bdi|p|div|small|sup|sub)\b[^>]*>/g, "");
       out = decodeEntities(out).replace(/\|/g, "\\|");
       return out;
     })
@@ -567,12 +567,15 @@ export function mdxToMarkdown(
   type BufferKind = "table" | "meta" | "comment" | "tag" | "note";
   let bufferKind: BufferKind | null = null;
 
-  // An authored `<abbr title="…">PDF</abbr>` keeps its text only.
+  // An authored `<abbr title="…">PDF</abbr>` keeps its text only, and so
+  // does a language span or isolate around a sample (`<span lang="ja"
+  // className="font-body">縦書き</span>`, `<bdi dir="ltr">`).
   const prose = (line: string) =>
     decodeEntities(
       unwrapJsxStrings(
         inlineComponents(line, renderers)
           .replace(/<abbr\b[^>]*>(.*?)<\/abbr>/g, "$1")
+          .replace(/<\/?(?:span|bdi)\b[^>]*>/g, "")
           .replace(/\\([{}])/g, "$1")
       )
     );

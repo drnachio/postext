@@ -30,6 +30,9 @@ import { PunctuationPositions } from "./chinese-layout/PunctuationPositions";
 import { PunctuationWidths } from "./chinese-layout/PunctuationWidths";
 import { ArabicSpread } from "./arabic-layout/ArabicSpread";
 import { BaytLayout } from "./arabic-layout/BaytLayout";
+import { YakumonoSpacing } from "./japanese-layout/YakumonoSpacing";
+import { BracketPatterns } from "./japanese-layout/BracketPatterns";
+import { RubyPlacement } from "./japanese-layout/RubyPlacement";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registry: Record<string, React.ComponentType<{ labels: any }>> = {
@@ -65,6 +68,9 @@ const registry: Record<string, React.ComponentType<{ labels: any }>> = {
   PunctuationWidths,
   ArabicSpread,
   BaytLayout,
+  YakumonoSpacing,
+  BracketPatterns,
+  RubyPlacement,
 };
 
 interface IllustrationProps {
