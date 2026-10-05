@@ -1,0 +1,664 @@
+{
+  "schemaVersion": 1,
+  "slug": "two-tier-tankobon",
+  "sourceHash": "802eb874c455403839b76bdb1eebdf52c3f0800351baf2ab56f605fa950f308b",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.875Z",
+  "variants": {
+    "en": {
+      "hash8": "acb26906",
+      "vdtHash": "09d7d319dbab446fd8b42929455865cf6ede7689",
+      "timings": {
+        "importMs": 14280,
+        "fontsMs": 474,
+        "buildMs": 23,
+        "totalMs": 15519,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif JP",
+          "sizePt": 9,
+          "leadingPt": 15.8
+        },
+        "families": [
+          "Noto Sans JP",
+          "Noto Serif JP"
+        ],
+        "pages": 7,
+        "ownLines": 136
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "211",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 95382,
+          "alt": "Opening page 211: 蜘蛛の糸."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 146710,
+          "alt": "Page 212: 二."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 144928,
+          "alt": "Page 213."
+        },
+        {
+          "n": 4,
+          "label": "214",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 70854,
+          "alt": "Page 214: 三."
+        },
+        {
+          "n": 5,
+          "label": "215",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 92682,
+          "alt": "Opening page 215: 尾生の信."
+        },
+        {
+          "n": 6,
+          "label": "216",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 140630,
+          "alt": "Page 216."
+        },
+        {
+          "n": 7,
+          "label": "217",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 26866,
+          "alt": "Page 217."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "two-tier-tankobon.pdf",
+        "bytes": 281134,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "two-tier-tankobon.postext",
+        "bytes": 24445,
+        "folio": "95c7420e"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.balancing.trailing",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 146,
+        "designElements": 6,
+        "directives": [
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "column-rule",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "ruby",
+          "section-running-heads",
+          "vertical-space",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "35b0d746",
+      "vdtHash": "b9cfdc8c7358f549f9c08cb0fb706c7ac4927e57",
+      "timings": {
+        "importMs": 168,
+        "fontsMs": 346,
+        "buildMs": 26,
+        "totalMs": 1180,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6.300000000000001,
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif JP",
+          "sizePt": 9,
+          "leadingPt": 15.8
+        },
+        "families": [
+          "Noto Sans JP",
+          "Noto Serif JP"
+        ],
+        "pages": 7,
+        "ownLines": 136
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "211",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 95446,
+          "alt": "Página de apertura 211: 蜘蛛の糸."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 146710,
+          "alt": "Página 212: 二."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 144928,
+          "alt": "Página 213."
+        },
+        {
+          "n": 4,
+          "label": "214",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 70854,
+          "alt": "Página 214: 三."
+        },
+        {
+          "n": 5,
+          "label": "215",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 92682,
+          "alt": "Página de apertura 215: 尾生の信."
+        },
+        {
+          "n": 6,
+          "label": "216",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 140630,
+          "alt": "Página 216."
+        },
+        {
+          "n": 7,
+          "label": "217",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 26866,
+          "alt": "Página 217."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "two-tier-tankobon.pdf",
+        "bytes": 281282,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "two-tier-tankobon.postext",
+        "bytes": 24468,
+        "folio": "95c7420e"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.balancing.trailing",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].span",
+          "layout",
+          "layout.columnRule",
+          "layout.columnRule.color",
+          "layout.columnRule.enabled",
+          "layout.columnRule.lineWidth",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page"
+        ],
+        "configLeaves": 146,
+        "designElements": 6,
+        "directives": [
+          ":::paragraphs",
+          ":::space"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "column-rule",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-styles",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "ruby",
+          "section-running-heads",
+          "vertical-space",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.06
+        },
+        "findings": []
+      }
+    }
+  }
+}

@@ -1,0 +1,588 @@
+{
+  "schemaVersion": 1,
+  "slug": "kanbun-kundoku",
+  "sourceHash": "a34cb1f3409fe3deb7dc95a91f91a43164532b72a47a707597c63b830a6969a4",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.931Z",
+  "variants": {
+    "en": {
+      "hash8": "4627ced8",
+      "vdtHash": "cea294344d4ba3029b117bd33687c965b41d48c7",
+      "timings": {
+        "importMs": 146,
+        "fontsMs": 300,
+        "buildMs": 42,
+        "totalMs": 1041,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 10.5,
+          "leadingPt": 21
+        },
+        "families": [
+          "Klee One",
+          "Noto Sans JP",
+          "Zen Old Mincho"
+        ],
+        "pages": 3,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 39878,
+          "alt": "Opening page 一: 論語."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 22964,
+          "alt": "Page 二: 学而第三."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 22806,
+          "alt": "Opening page 三: 唐詩."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "kanbun-kundoku.pdf",
+        "bytes": 138104,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "kanbun-kundoku.postext",
+        "bytes": 15723,
+        "folio": "bdf12d3d"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.kunten",
+          "cjk.kunten.color",
+          "cjk.kunten.fontSize",
+          "cjk.kunten.placement",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 147,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Old Mincho",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Old Mincho",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-styles",
+          "kanbun-kunten",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "ruby",
+          "section-running-heads",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.1
+        },
+        "findings": []
+      }
+    },
+    "es": {
+      "hash8": "913ff90e",
+      "vdtHash": "eeffa96ae9ff865139c37006dc7fc4599bc7e1e1",
+      "timings": {
+        "importMs": 185,
+        "fontsMs": 258,
+        "buildMs": 45,
+        "totalMs": 1039,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Klee One",
+          "sizePt": 10.5,
+          "leadingPt": 21
+        },
+        "families": [
+          "Klee One",
+          "Noto Sans JP",
+          "Zen Old Mincho"
+        ],
+        "pages": 3,
+        "ownLines": 132
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "一",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 40302,
+          "alt": "Página de apertura 一: 論語."
+        },
+        {
+          "n": 2,
+          "label": "二",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 22964,
+          "alt": "Página 二: 学而第三."
+        },
+        {
+          "n": 3,
+          "label": "三",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 22806,
+          "alt": "Página de apertura 三: 唐詩."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "binding": "right",
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "kanbun-kundoku.pdf",
+        "bytes": 138020,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "kanbun-kundoku.postext",
+        "bytes": 15770,
+        "folio": "bdf12d3d"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "loadVerticalAlternates",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.kunten",
+          "cjk.kunten.color",
+          "cjk.kunten.fontSize",
+          "cjk.kunten.placement",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].placement",
+          "header.elements[].writingMode",
+          "headingStyles",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].id",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].indent",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "layout",
+          "layout.layoutType",
+          "layout.writingMode",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.format",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].indent",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 147,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Klee One",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Old Mincho",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Zen Old Mincho",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "furigana",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-styles",
+          "kanbun-kunten",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "right-binding",
+          "roman-front-matter",
+          "ruby",
+          "section-running-heads",
+          "vertical-writing"
+        ],
+        "suggestedLevel": 2
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.1
+        },
+        "findings": []
+      }
+    }
+  }
+}

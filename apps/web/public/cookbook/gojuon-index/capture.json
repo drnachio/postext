@@ -1,0 +1,644 @@
+{
+  "schemaVersion": 1,
+  "slug": "gojuon-index",
+  "sourceHash": "9ec65882d95630e0eb265d272440fd9ae0e364ad8e7ef39e4d928d7a0896635b",
+  "engine": {
+    "postext": "1.16.1",
+    "postextPdf": "1.16.1",
+    "source": "npm"
+  },
+  "chrome": "131.0.6778.204",
+  "capturedAt": "2026-10-05T14:41:16.972Z",
+  "variants": {
+    "en": {
+      "hash8": "270505d3",
+      "vdtHash": "18dce1d881f62362350eea00b62c2c3a43f7b67d",
+      "timings": {
+        "importMs": 181,
+        "fontsMs": 258,
+        "buildMs": 71,
+        "totalMs": 1085,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif JP",
+          "sizePt": 9,
+          "leadingPt": 16
+        },
+        "families": [
+          "Noto Sans JP",
+          "Noto Serif JP"
+        ],
+        "pages": 3,
+        "ownLines": 122
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 78820,
+          "alt": "Opening page 9: 紙面を呼ぶ言葉."
+        },
+        {
+          "n": 2,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 118614,
+          "alt": "Page 10: 1.3 約物と組版の規則."
+        },
+        {
+          "n": 3,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 35240,
+          "alt": "Opening page 11: 索引."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gojuon-index.pdf",
+        "bytes": 136977,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "gojuon-index.postext",
+        "bytes": 15347,
+        "folio": "3266640a"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groupBy",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.lineHeight",
+          "index.locatorSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.separator",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 230,
+        "designElements": 12,
+        "directives": [
+          ":::index",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "furigana",
+          "gojuon-index",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.03
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 8 dropped (even: same page sides)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "5d3dc89d",
+      "vdtHash": "9e2635e46d6bd57c2923e851e08a119457806369",
+      "timings": {
+        "importMs": 256,
+        "fontsMs": 254,
+        "buildMs": 65,
+        "totalMs": 1152,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Noto Serif JP",
+          "sizePt": 9,
+          "leadingPt": 16
+        },
+        "families": [
+          "Noto Sans JP",
+          "Noto Serif JP"
+        ],
+        "pages": 3,
+        "ownLines": 122
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 78820,
+          "alt": "Página de apertura 9: 紙面を呼ぶ言葉."
+        },
+        {
+          "n": 2,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 118614,
+          "alt": "Página 10: 1.3 約物と組版の規則."
+        },
+        {
+          "n": 3,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 35772,
+          "alt": "Página de apertura 11: 索引."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gojuon-index.pdf",
+        "bytes": 136937,
+        "pages": 3
+      },
+      "sandbox": {
+        "file": "gojuon-index.postext",
+        "bytes": 15417,
+        "folio": "3266640a"
+      },
+      "detected": {
+        "apis": [
+          "buildDocument",
+          "clearMeasurementCache",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "cjk",
+          "cjk.grid",
+          "cjk.grid.charsPerLine",
+          "cjk.grid.enabled",
+          "cjk.grid.linesPerPage",
+          "cjk.ruby",
+          "cjk.ruby.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].layout",
+          "headingStyles[].layout.gutterWidth",
+          "headingStyles[].layout.layoutType",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineSpan",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
+          "index",
+          "index.fontFamily",
+          "index.fontSize",
+          "index.groupBy",
+          "index.groups",
+          "index.groups.color",
+          "index.groups.fontFamily",
+          "index.groups.fontSize",
+          "index.groups.fontWeight",
+          "index.groups.marginTop",
+          "index.lineHeight",
+          "index.locatorSeparator",
+          "index.see",
+          "index.see.italic",
+          "index.separator",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "cjk",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "index",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 230,
+        "designElements": 12,
+        "directives": [
+          ":::index",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Noto Sans JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Sans JP",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Noto Serif JP",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "back-of-book-index",
+          "character-grid",
+          "cjk-line-breaking",
+          "column-balancing",
+          "furigana",
+          "gojuon-index",
+          "gyodori-headings",
+          "heading-attributes",
+          "heading-numbering",
+          "heading-styles",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "ruby",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "cjkLooseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0.03
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation.pageIndexOffset 8 dropped (even: same page sides)"
+          }
+        ]
+      }
+    }
+  }
+}
