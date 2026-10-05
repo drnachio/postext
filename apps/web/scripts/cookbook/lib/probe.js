@@ -555,8 +555,12 @@ export function facts({ select = 'last', hero = [] } = {}) {
 
   // C11: images the pages place but nobody registered (grey placeholders).
   const placed = new Map();
+  // A video's own file is no picture: the pages draw its poster.
+  const videoFiles = new Set(source.resources.map((r) => r.video?.fileId).filter(Boolean));
   for (const { page, n } of pages) {
-    for (const { value } of collectKeys(page, /^(fileId|iconFileId|markerFileId)$/)) if (!placed.has(value)) placed.set(value, n);
+    for (const { value } of collectKeys(page, /^(fileId|iconFileId|markerFileId)$/)) {
+      if (!placed.has(value) && !videoFiles.has(value)) placed.set(value, n);
+    }
   }
   const registered = (fileId) => (typeof engine.getResourceImage === 'function'
     ? !!engine.getResourceImage(fileId) : (cb.images ?? []).includes(fileId));
