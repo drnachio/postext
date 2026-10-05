@@ -276,7 +276,9 @@ describe('buildReflowablePublication', () => {
     expect(box.match(/<p>/g)).toHaveLength(2);
     expect(box).toContain('epub:type="pagebreak"');
     expect(box).toContain('<strong>in the</strong>');
-  }, 30_000);
+    // About 2.5 s alone, but past 30 s on the CI runner while turbo runs
+    // every package's tests at once.
+  }, 90_000);
 
   it('links the rows of a printed contents to their headings, without page numbers', async () => {
     const md = ['# Contents', '', ':::toc', ':::', '', '# Alpha', '', para.repeat(10), '', '## Beta', '', para].join('\n');
