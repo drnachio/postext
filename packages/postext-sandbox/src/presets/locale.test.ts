@@ -155,6 +155,31 @@ describe('a Chinese interface', () => {
   });
 });
 
+describe('Japanese editions', () => {
+  // A book only in Japanese (the こころ showcase) and one in Japanese and English.
+  const kokoro = { id: 'kokoro', locale: 'ja', locales: ['ja'], openLocale: 'ja' };
+  const both = { id: 'jp', locale: 'ja', locales: ['ja', 'en'] };
+
+  it('opens a Japanese-only book in Japanese for every viewer', () => {
+    for (const viewer of ['en', 'es', 'ca', 'zh-Hans', 'ar']) {
+      expect(choosePresetOpen({ summary: kokoro, viewer, drafts: [] }).locale, viewer).toBe('ja');
+    }
+    expect(presetLocaleFor(kokoro, 'en')).toBe('ja');
+  });
+
+  it('serves a lang=ja link by language, region aside, and never as Chinese', () => {
+    expect(resolvePresetLocale(both, 'ja-JP')).toBe('ja');
+    expect(presetLocaleFor(both, 'JA')).toBe('ja');
+    expect(choosePresetOpen({ summary: both, requested: 'ja-JP', viewer: 'es', drafts: [d('jp', 'ja')] }).draft?.key).toBe('jp::ja');
+    expect(resolvePresetLocale(both, 'zh-Hant')).toBeNull();
+    expect(sameContentLocale('ja', 'ja-JP')).toBe(true);
+    expect(sameContentLocale('ja', 'zh-Hant')).toBe(false);
+    // A Chinese viewer of a book in Japanese and English reads the English.
+    expect(presetReaderLocale(both, 'zh-Hans')).toBe('en');
+    expect(activeLocaleTag(both.locales, 'ja-JP')).toBe('ja');
+  });
+});
+
 describe('bundleContentLocales', () => {
   it('lists the locales of a multi-language bundle and the one it is written in', () => {
     const chapters = (l: string) => [{ title: l, file: `${l}.md` }];

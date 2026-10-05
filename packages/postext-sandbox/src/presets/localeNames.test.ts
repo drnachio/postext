@@ -31,4 +31,14 @@ describe('localeShortTag', () => {
     expect(localeShortTag('ar-EG', ['ar-EG', 'en'])).toEqual({ text: 'ع', lang: 'ar' });
     expect(localeShortTag('ar-EG', ['ar-EG', 'ar-MA'])).toEqual({ text: 'ar-EG' });
   });
+
+  it('shows 日 for the only Japanese edition, the tag when there are two', () => {
+    expect(localeShortTag('ja', ['ja'])).toEqual({ text: '日', lang: 'ja' });
+    expect(localeShortTag('ja-JP', ['en', 'ja-JP', 'zh-Hant'])).toEqual({ text: '日', lang: 'ja' });
+    expect(localeShortTag('ja', ['ja', 'ja-Latn'])).toEqual({ text: 'ja' });
+    // Japanese is not a Chinese script.
+    expect(localeShortTag('zh-Hant', ['ja', 'zh-Hant'])).toEqual({ text: '繁', lang: 'zh-Hant' });
+    expect(localeDisplayName('ja', 'en')).toBe('Japanese');
+    expect(localeDisplayName('ja', 'es')).toBe('japonés');
+  });
 });
