@@ -64,9 +64,11 @@ const PLAYER_SWITCHES: { key: Exclude<PlayerKey, 'preload'>; label: (l: SandboxL
   { key: 'fullscreen', label: (l) => l.videoPlayerFullscreen, help: (l) => l.videoPlayerFullscreenHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'playbackRate', label: (l) => l.videoPlayerPlaybackRate, help: (l) => l.videoPlayerPlaybackRateHelp, sources: ['vimeo', 'file'] },
   { key: 'pictureInPicture', label: (l) => l.videoPlayerPictureInPicture, help: (l) => l.videoPlayerPictureInPictureHelp, sources: ['vimeo', 'file'] },
+  { key: 'remotePlayback', label: (l) => l.videoPlayerRemotePlayback, help: (l) => l.videoPlayerRemotePlaybackHelp, sources: ['file'] },
   { key: 'autoplay', label: (l) => l.videoPlayerAutoplay, help: (l) => l.videoPlayerAutoplayHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'muted', label: (l) => l.videoPlayerMuted, help: (l) => l.videoPlayerMutedHelp, sources: ['youtube', 'vimeo', 'file'] },
   { key: 'loop', label: (l) => l.videoPlayerLoop, help: (l) => l.videoPlayerLoopHelp, sources: ['youtube', 'vimeo', 'file'] },
+  { key: 'privacy', label: (l) => l.videoPlayerPrivacy, help: (l) => l.videoPlayerPrivacyHelp, sources: ['youtube', 'vimeo'] },
 ];
 
 interface VideoEditorProps {
@@ -388,9 +390,9 @@ function PlayerOverrides({ video, setVideo }: PartProps) {
   const player = video.player ?? {};
   const set = (key: PlayerKey, value: string) => {
     const next: VideoPlayerOptions = { ...player };
-    if (value === 'on') (next as Record<string, unknown>)[key] = true;
-    else if (value === 'off') (next as Record<string, unknown>)[key] = false;
-    else delete next[key];
+    if (value === 'inherit') delete next[key];
+    else if (key === 'preload') next.preload = value as VideoPlayerOptions['preload'];
+    else (next as Record<string, unknown>)[key] = value === 'on';
     setVideo({ player: Object.keys(next).length > 0 ? next : undefined });
   };
   const options = [
@@ -413,6 +415,22 @@ function PlayerOverrides({ video, setVideo }: PartProps) {
             onChange={(v) => set(s.key, v)}
           />
         ))}
+        {video.source === 'file' && (
+          <SelectInput
+            label={labels.videoPlayerPreload}
+            tooltip={labels.videoPlayerPreloadHelp}
+            value={player.preload ?? 'inherit'}
+            options={[
+              { value: 'inherit', label: labels.resourceVideoInherit },
+              { value: 'none', label: labels.videoPlayerPreloadNone },
+              { value: 'metadata', label: labels.videoPlayerPreloadMetadata },
+              { value: 'auto', label: labels.videoPlayerPreloadAuto },
+            ]}
+            isDefault={player.preload === undefined}
+            onReset={() => set('preload', 'inherit')}
+            onChange={(v) => set('preload', v)}
+          />
+        )}
       </div>
     </FieldRow>
   );
