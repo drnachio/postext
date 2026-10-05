@@ -13,6 +13,7 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   LinearFilter,
+  Matrix4,
   NeutralToneMapping,
   OneFactor,
   OrthographicCamera,
@@ -37,6 +38,7 @@ import {
   WebGLRenderTarget,
   type BufferGeometry,
   type Material,
+  type Object3D,
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
@@ -167,12 +169,17 @@ const OCCLUSION = /* glsl */ `
   // How far the reflection seen at p runs under paper: its ray marched
   // out through the height map (a lifted leaf hides what it would mirror,
   // and so does the leaf's own roll over the inside of its curl). The
-  // march starts a few px out, past the paper round p itself.
+  // march starts a few px out, past the paper round p itself. Its steps
+  // are shifted a little from pixel to pixel: at fixed steps the leaf's
+  // outline was cut in at each of them, a row of teeth (#483).
   float reflectionOcclusion(vec3 p, vec3 r, float channel) {
     if (uShadowOn < 0.5) return 0.0;
+    // Interleaved gradient noise: neighbours take evenly spread shifts.
+    float spin = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
     float hidden = 0.0;
-    for (int i = 1; i <= 6; i++) {
-      float t = 6.0 + float(i * i) / 36.0 * uOccRadius * 2.0;
+    for (int i = 0; i < 8; i++) {
+      float s = (float(i) + spin) / 8.0;
+      float t = 6.0 + s * s * uOccRadius * 2.0;
       vec3 q = p + r * t;
       hidden = max(hidden, smoothstep(0.0, 4.0, casterAt(q.xy, channel) - q.z - uOccBias));
     }
@@ -333,6 +340,14 @@ type PageUniforms = {
   uVidA: { value: Vector2 };
   uVidB: { value: Vector2 };
   uVidCrop: { value: Vector4 };
+  /** The leaves in the air as a gloss open page mirrors them (#483): the
+   *  picture (drawn from the camera mirrored in the page's plane, so a
+   *  point of the page finds what it mirrors at its own place on screen,
+   *  turned left for right), whether it is on, and the size of the screen
+   *  in device px. */
+  uReflection: { value: Texture | null };
+  uReflectionOn: { value: number };
+  uReflectionSize: { value: Vector2 };
 };
 
 type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUniforms; spec?: PaperSpec | null } };
@@ -364,6 +379,9 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uVidA: { value: new Vector2(1, 0) },
     uVidB: { value: new Vector2(0, 1) },
     uVidCrop: { value: new Vector4(0, 0, 1, 1) },
+    uReflection: { value: null },
+    uReflectionOn: { value: 0 },
+    uReflectionSize: { value: new Vector2(1, 1) },
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -403,6 +421,9 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         uniform vec2 uVidA;
         uniform vec2 uVidB;
         uniform vec4 uVidCrop;
+        uniform sampler2D uReflection;
+        uniform float uReflectionOn;
+        uniform vec2 uReflectionSize;
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
@@ -454,7 +475,25 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         // The reflection's ray, in book coordinates.
         vec3 reflected = (vec4(reflect(-geometryViewDir, normal), 0.0) * viewMatrix).xyz;
         reflected.x *= uSign;
-        ${keySpecular("1.0 - 0.85 * reflectionOcclusion(vBookPos, reflected, 1.0)")}`,
+        // A mirrored leaf stands for what it hides itself.
+        ${keySpecular("1.0 - 0.85 * (uReflectionOn > 0.5 ? 0.0 : reflectionOcclusion(vBookPos, reflected, 1.0))")}
+        #ifdef USE_CLEARCOAT
+        if (uReflectionOn > 0.5) {
+          // The leaves in the air, mirrored in a gloss page: where one is
+          // seen, it takes the place of the environment it hides, through
+          // the coating's Fresnel and the paper's own. A plane holds only
+          // where the page lies flat: the mirror fades up the gutter.
+          vec2 st = gl_FragCoord.xy / uReflectionSize;
+          vec4 seen = texture2D(uReflection, vec2(1.0 - st.x, st.y));
+          float lies = smoothstep(0.97, 0.995, abs((vec4(normalize(vNormal), 0.0) * viewMatrix).z));
+          float a = seen.a * lies;
+          vec3 leaf = seen.rgb * lies;
+          clearcoatSpecularIndirect = clearcoatSpecularIndirect * (1.0 - a)
+            + leaf * EnvironmentBRDF(geometryClearcoatNormal, geometryViewDir, material.clearcoatF0, material.clearcoatF90, material.clearcoatRoughness);
+          reflectedLight.indirectSpecular = reflectedLight.indirectSpecular * (1.0 - a)
+            + leaf * EnvironmentBRDF(geometryNormal, geometryViewDir, material.specularColor, material.specularF90, material.roughness);
+        }
+        #endif`,
       );
   };
   return m;
@@ -956,6 +995,14 @@ export class PageFlipper {
   private shadowScene = new Scene();
   private shadowCamera = new OrthographicCamera(-1, 1, 1, -1, 1, 4000);
   private shadowTarget: WebGLRenderTarget | null = null;
+  /** The leaves in the air mirrored in each gloss open page (#483), and
+   *  the camera that sees them so (the view mirrored in the page). */
+  private mirrors: { left: WebGLRenderTarget | null; right: WebGLRenderTarget | null } = { left: null, right: null };
+  private mirrorCamera = new PerspectiveCamera();
+  private mirrorOk = false;
+  /** The drawing buffer (device px) and the device pixel ratio. */
+  private buffer = new Vector2(1, 1);
+  private dpr = 1;
   /** Draw the leaves in the air, and the rest of the book, into the
    *  height map. */
   private leafCaster: ShaderMaterial;
@@ -1071,7 +1118,9 @@ export class PageFlipper {
         depthBuffer: false,
         generateMipmaps: false,
       });
+      this.mirrorOk = true;
     }
+    this.mirrorCamera.matrixAutoUpdate = false;
     // A mirror turns three.js's face culling round with it (the front of a
     // page stays its front).
     this.stage.scale.x = this.sign;
@@ -1600,6 +1649,8 @@ export class PageFlipper {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
+    this.buffer.set(Math.round(cw * dpr), Math.round(ch * dpr));
+    this.dpr = dpr;
     const spread = this.spread.getBoundingClientRect();
     const W = spread.width / 2 || 1;
     const H = spread.height || 1;
@@ -2524,7 +2575,100 @@ export class PageFlipper {
       this.renderer.render(this.shadowScene, this.shadowCamera);
       this.renderer.setRenderTarget(null);
     }
+    this.mirror(air.length > 0 || this.block !== null);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Gloss paper mirrors the leaves turning over it (#483). For each open
+   * page on gloss stock, while anything is in the air, the leaves in the
+   * air are drawn from the camera mirrored in that page's plane: a
+   * camera under the page looking up at the leaves as they are, so each
+   * is lit, shadowed and occluded as it is and shows the face the page
+   * sees. Turned left for right, that picture lies on the page's own
+   * place on screen; the page reads it as its reflection. Two pages at
+   * the same height share one picture. Nothing is drawn at rest or on
+   * any other finish.
+   */
+  private mirror(airborne: boolean) {
+    const sides = [
+      { side: "left" as const, page: this.left },
+      { side: "right" as const, page: this.right },
+    ];
+    let last: { z: number; target: WebGLRenderTarget } | null = null;
+    for (const { side, page } of sides) {
+      const u = page.material.userData.uniforms;
+      const on = this.mirrorOk && airborne && page.visible && page.material.userData.spec?.paper.finish === "gloss";
+      u.uReflectionOn.value = on ? 1 : 0;
+      if (!on) continue;
+      const z = this.topZ(side);
+      if (!last || Math.abs(last.z - z) > 0.25) {
+        const target = this.mirrorTarget(side);
+        this.drawMirror(target, z);
+        last = { z, target };
+      }
+      u.uReflection.value = last.target.texture;
+      u.uReflectionSize.value.copy(this.buffer);
+    }
+  }
+
+  /** A side's mirror picture, about as sharp as the screen (in CSS px
+   *  up to 1.5 device px each: a gloss coat is never a perfect mirror). */
+  private mirrorTarget(side: "left" | "right"): WebGLRenderTarget {
+    const f = Math.min(1, 1.5 / this.dpr);
+    const w = Math.max(1, Math.round(this.buffer.x * f));
+    const h = Math.max(1, Math.round(this.buffer.y * f));
+    let target = this.mirrors[side];
+    if (!target) {
+      target = new WebGLRenderTarget(w, h, { type: HalfFloatType, minFilter: LinearFilter, magFilter: LinearFilter, generateMipmaps: false, samples: 4 });
+      this.mirrors[side] = target;
+    } else if (target.width !== w || target.height !== h) target.setSize(w, h);
+    return target;
+  }
+
+  /** Draws the leaves in the air as the plane z = `z` (stage units, the
+   *  open page) mirrors them. */
+  private drawMirror(target: WebGLRenderTarget, z: number) {
+    const cam = this.mirrorCamera;
+    // The eye mirrored in the plane, turned round its up axis so it is
+    // still a camera (no mirror in it): its picture is the reflection
+    // turned left for right, and its frustum the main one turned so too.
+    const reflect = new Matrix4().set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 2 * z, 0, 0, 0, 1);
+    cam.matrix.copy(reflect).multiply(this.camera.matrixWorld).multiply(new Matrix4().makeScale(-1, 1, 1));
+    cam.updateMatrixWorld(true);
+    const p = cam.projectionMatrix.copy(this.camera.projectionMatrix);
+    p.elements[8] *= -1;
+    // Its near plane laid along the page (an oblique frustum): nothing
+    // under the page shows in its mirror.
+    const plane = new Plane(new Vector3(0, 0, 1), -(z - 0.2)).applyMatrix4(cam.matrixWorldInverse);
+    const clip = new Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.constant);
+    const e = p.elements;
+    const q = new Vector4((Math.sign(clip.x) + e[8]) / e[0], (Math.sign(clip.y) + e[9]) / e[5], -1, (1 + e[10]) / e[14]);
+    clip.multiplyScalar(2 / clip.dot(q));
+    e[2] = clip.x;
+    e[6] = clip.y;
+    e[10] = clip.z + 1;
+    e[14] = clip.w;
+    cam.projectionMatrixInverse.copy(p).invert();
+    // Only the leaves in the air (and the light on them).
+    const keep = new Set<Object3D>([this.key, this.key.target, ...this.leaves.values()]);
+    if (this.blockMesh) keep.add(this.blockMesh);
+    const hidden: Object3D[] = [];
+    for (const c of this.stage.children) {
+      if (keep.has(c) || !c.visible) continue;
+      c.visible = false;
+      hidden.push(c);
+    }
+    // The key's shadow map as the main view drew it last: the leaves'
+    // own faces under them are not lit by the key anyway.
+    const shadows = this.renderer.shadowMap.autoUpdate;
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.setRenderTarget(target);
+    this.renderer.clear();
+    this.renderer.render(this.scene, cam);
+    this.renderer.setRenderTarget(null);
+    this.renderer.shadowMap.autoUpdate = shadows;
+    for (const c of hidden) c.visible = true;
   }
 
   /** Back to a transparent canvas (the DOM spread shows), unless leaves
@@ -2557,6 +2701,8 @@ export class PageFlipper {
     cancelAnimationFrame(this.orbitFrame);
     for (const tex of this.ready.values()) tex.dispose();
     this.shadowTarget?.dispose();
+    this.mirrors.left?.dispose();
+    this.mirrors.right?.dispose();
     this.leafCaster.dispose();
     this.staticCaster.dispose();
     this.scene.environment?.dispose();
