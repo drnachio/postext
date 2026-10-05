@@ -23,8 +23,10 @@ import { invalidateResourceImage } from '../controls/resourceImages';
 import { putBlobAt } from '../storage/blobStore';
 import { COVER_VH, COVER_VW, COVER_ZH_VH, COVER_ZH_VW, coverArtSvg, coverArtVerticalSvg } from './cover';
 import { GUIDE_LANGS, byLang, guideLang, type ByLang, type GuideLang } from './lang';
+import { guideVideoPosters, guideVideoResources, guideVideosSignature } from './videos';
 
 export { GUIDE_LANGS, guideLang, type GuideLang } from './lang';
+export { GUIDE_VIDEO_IDS, guideHasVideos, guideVideoPosters } from './videos';
 
 /** Stable ids referenced by the default markdown (en.ts, es.ts, zh-Hans.ts…).
  *  Keys are internal; the string *values* are the ids the markdown's
@@ -1547,7 +1549,7 @@ export function figureBlobId(fileId: string, lang: GuideLang): string {
  *  built-in preset's fingerprint (no blob is written). */
 export function defaultResourcesSignature(): string {
   // `blob-ids-by-locale`: each language's figures moved to ids of their own.
-  const parts: unknown[] = ['blob-ids-by-locale'];
+  const parts: unknown[] = ['blob-ids-by-locale', guideVideosSignature()];
   for (const lang of GUIDE_LANGS) {
     for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(lang));
     for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, figurePlacement(f.placement, lang), f.caption[lang], f.altText[lang]);
@@ -1600,6 +1602,21 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
     };
   });
 
+  // The videos (#478), in the editions they were cut in: their posters
+  // stored like the figures.
+  const posters = await guideVideoPosters(lang).catch(() => ({} as Record<string, Uint8Array>));
+  await Promise.all(
+    Object.entries(posters).map(async ([blobId, bytes]) => {
+      try {
+        await putBlobAt(blobId, bytes.buffer as ArrayBuffer, 'image/jpeg');
+        invalidateResourceImage(blobId);
+      } catch {
+        // as for the figures
+      }
+    }),
+  );
+  const videos: Resource[] = guideVideoResources(lang, now).map((r) => ({ ...r, placement: figurePlacement(r.placement!, lang) }));
+
   const tables: Resource[] = TABLE_SPECS.map((spec) => ({
     id: spec.id,
     typeId: 'table',
@@ -1611,5 +1628,5 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
     updatedAt: now,
   }));
 
-  return [...figures, ...tables];
+  return [...figures, ...videos, ...tables];
 }

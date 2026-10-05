@@ -123,7 +123,7 @@ describe('the Japanese guide laid out as a book', () => {
     const pitch = docs[2]!.blocks.find((b) => b.type === 'paragraph')!.lines[0]!.bbox.height;
     const body = (9.25 / 72) * 300;
     const headings = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 2));
-    expect(headings.length).toBe(91);
+    expect(headings.length).toBe(92);
     for (const h of headings) {
       // The band: three lines of the tier, whatever the heading's own pitch.
       expect(h.bbox.height / pitch, h.lines[0]?.text).toBeCloseTo(3, 1);

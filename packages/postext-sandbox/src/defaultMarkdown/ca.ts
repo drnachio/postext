@@ -438,6 +438,12 @@ Tres figures compostes aquí ho demostren. La roseta de :ref{id="vector-rosette"
 Fes clic al peu de qualsevol figura del canvas: el tauler Recursos s'obre en aquell recurs, amb el camp del peu a punt. Canvia'n la col·locació d'_auto_ a _top_ i mira com es mou.
 :::
 
+## Vídeos
+
+Un vídeo és un recurs més. Es menciona, es numera a part (Vídeo 1.1 al costat de Figura 1.1) i flota fins al primer buit lliure, com una figura. Pot venir de YouTube o de Vimeo, d'un fitxer desat al llibre o d'una adreça web: un MP4 o un WebM en un servidor, o un flux HLS, la llista \`.m3u8\` amb què se serveix un vídeo llarg a trossos i en diverses qualitats.
+
+En paper s'imprimeix la seva portada, un fotograma triat, amb una marca de reproducció i un codi QR que obre el vídeo; al PDF la portada també és un enllaç. La vista HTML i l'EPUB el reprodueixen amb el seu propi reproductor, llevat dels de YouTube i Vimeo i dels fluxos HLS, que un llibre electrònic només pot enllaçar. A la vista Folio, un clic a la portada el reprodueix a la mateixa pàgina, i el vídeo continua mentre es passa el full.
+
 # Llibres, parts i capçaleres {lead="Un llibre és més que els seus capítols: una coberta, un índex que es manté al dia, portadelles de part, obertures que anuncien cada capítol i capçaleres que saben on és el lector. Tot això és configuració." summary="Capítols, estils de títol, dissenys, parts, índex i folis"}
 
 Aquesta guia és un llibre de tretze capítols, i cada capítol és un document Markdown propi. Un projecte del Sandbox és sempre un llibre: la configuració, els recursos i les fonts es comparteixen, i els capítols se succeeixen, com mostra :ref{id="book-anatomy"}.
@@ -713,6 +719,8 @@ Cada full es corba segons el seu paper. El paper bíblia, fi, s'enrotlla en una 
 La vista també es mou. Arrossegar amb el botó dret del ratolí gira al voltant del llibre, fins a un angle rasant, per veure el llom, el tall davanter o el gruix del bloc, i es pot fer mentre els fulls encara giren. La vista es queda on la vas deixar fins que **Restablir la vista** la torna a l'angle que fixa la configuració. En una finestra estreta el llibre mostra una pàgina cada vegada, i continua passant el full per sobre del llom; quan el sistema demana moviment reduït, els plecs canvien sense el gir.
 
 Tres botons de la barra d'eines trien què fa el punter sobre el llibre: passar les pàgines a mà, orbitar la vista, que és el que necessita un trackpad o una tauleta en lloc de l'arrossegament amb el botó dret, o seleccionar text. La selecció funciona sobre les pàgines tal com es veuen, inclinades o girades, igual que a la vista canvas: un clic porta el cursor de l'editor a aquella paraula, un arrossegament selecciona, un doble clic agafa una paraula i un enllaç se segueix. També funciona a l'inrevés: el cursor i la selecció de l'editor es dibuixen sobre les pàgines, i portar el cursor a una pàgina que no és a la vista passa el llibre fins allà.
+
+Els vídeos es reprodueixen a la pàgina. Amb el punter en mode de passar pàgines, un clic a la portada d'un vídeo el posa en marxa allà mateix, i la imatge continua movent-se mentre el full gira i es corba. Un altre clic el posa en pausa, començar-ne un altre atura l'anterior, i el vídeo s'atura quan el llibre queda obert per un plec que ja no el mostra; la barra espaiadora fa el mateix amb el vídeo del plec obert. Funciona amb els vídeos d'un fitxer o d'una adreça; els de YouTube i Vimeo no es poden dibuixar dins de la pàgina, de manera que un clic sobre ells passa el full com a qualsevol altre lloc.
 
 :::callout{type="try"}
 Obre la pestanya Folio amb aquesta guia, passa unes quantes pàgines arrossegant-ne les cantonades i després gira el llibre arrossegant amb el botó dret per veure'n el plec grapat. Restablir la vista el torna al seu lloc.

@@ -36,6 +36,8 @@ Este libro es su propia demostración. La cubierta, el índice que se numera sol
 Abre el panel **Texto** y elige este capítulo en el selector de capítulos de su cabecera. Cambia una palabra de este párrafo o borra una frase: la página vuelve a componerse, las columnas se reequilibran y los folios de los capítulos siguientes se actualizan.
 :::
 
+Si prefieres verlo antes de leerlo, :ref{id="postext-showreel"} lo recorre en dos minutos. Es un vídeo, y el libro lo coloca como cualquier figura: impreso, lleva su primer fotograma con un código QR que lo abre; en la vista Folio se reproduce sobre la propia página.
+
 ## Cómo leer este libro
 
 El libro se organiza en tres partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras y las tablas y cómo un conjunto de capítulos se convierte en un libro. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, los cuatro formatos de salida y el proyecto que los rodea.
@@ -440,6 +442,12 @@ Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosett
 Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
 :::
 
+## Vídeos
+
+Un vídeo es un recurso más. Se menciona, se numera aparte (Vídeo 1.1 junto a Figura 1.1) y flota hasta el primer hueco libre, como una figura. Puede venir de YouTube o de Vimeo, de un archivo guardado en el libro o de una dirección web: un MP4 o un WebM en un servidor, o un flujo HLS, la lista \`.m3u8\` con la que se sirve un vídeo largo por fragmentos y en varias calidades.
+
+En papel se imprime su portada, un fotograma elegido, con una marca de reproducción y un código QR que abre el vídeo; en el PDF la portada también es un enlace. La vista HTML y el EPUB lo reproducen en su propio reproductor, salvo los de YouTube y Vimeo y los flujos HLS, que un libro electrónico solo puede enlazar. En la vista Folio, un clic en la portada lo reproduce en la página, y el vídeo sigue mientras se pasa la hoja. Los dos vídeos de este libro, :ref{id="postext-showreel"} y :ref{id="skill-tutorial"}, son flujos HLS servidos desde una red de distribución de contenidos.
+
 # Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
 
 Esta guía es un libro de trece capítulos, y cada capítulo es un documento Markdown propio. Un proyecto del Sandbox es siempre un libro: la configuración, los recursos y las fuentes se comparten, y los capítulos se suceden, como muestra :ref{id="book-anatomy"}.
@@ -701,6 +709,8 @@ El motor y su renderizador de PDF se publican juntos, con el mismo número de ve
 
 Una página no necesita un navegador para convertirse en imagen. El renderizador de canvas dibuja en cualquier canvas que hable la interfaz de dibujo del navegador, y en Node lo hace un canvas precompilado: se maqueta el libro, se dibuja la página y se codifica como JPEG o PNG. Así revisa su propio trabajo el skill de agente que adapta libros existentes a Postext. Tras cada cambio en la configuración o en el texto vuelve a maquetar el libro, dibuja solo las páginas en las que está trabajando y las lee como imágenes, en un segundo o dos, sin generar un PDF ni recortar imágenes de él. El PDF se genera al final, para las comprobaciones que solo un PDF puede responder: las fuentes incrustadas, las imágenes a su resolución, la estructura etiquetada.
 
+En :ref{id="skill-tutorial"} se ve el skill de principio a fin: recibe el PDF de referencia, las fuentes y las ilustraciones originales, propone una ficha de especificaciones, compone el primer capítulo y revisa cada página que compone.
+
 # El libro en 3D {lead="Una maquetación es un conjunto de páginas, pero un libro es un objeto: un papel de cierto gramaje y color, una encuadernación que abre de cierta manera, un grosor que nota la mano. La vista Folio muestra las páginas como ese objeto antes de imprimir nada." summary="La vista Folio, los papeles, las encuadernaciones, las cubiertas y la luz"}
 
 Las pruebas en pantalla son planas. Un pliego visto como dos rectángulos no dice nada de cómo será el libro abierto sobre una mesa: si el lomo se traga el margen interior, si una lámina en papel de brillo recoge la luz, si trescientas páginas de papel ahuesado forman un bloque demasiado grueso para la encuadernación. La vista **Folio** responde a esas preguntas con las páginas que Postext ya ha compuesto. Muestra el libro encuadernado, abierto sobre una superficie, iluminado, con hojas que se curvan y se pasan con la mano.
@@ -716,6 +726,8 @@ Cada hoja se curva según su papel. El papel biblia, fino, se enrolla en una cur
 La vista también se mueve. Arrastrar con el botón derecho del ratón gira alrededor del libro, hasta un ángulo rasante, para ver el lomo, el corte delantero o el grosor del bloque, y se puede hacer mientras las hojas aún están girando. La vista se queda donde se dejó hasta que **Restablecer la vista** la devuelve al ángulo que fijan los ajustes. En una ventana estrecha el libro muestra una página cada vez, y sigue pasando la hoja por encima del lomo; cuando el sistema pide movimiento reducido, los pliegos cambian sin el giro.
 
 Tres botones de la barra de herramientas eligen qué hace el puntero sobre el libro: pasar las páginas a mano, orbitar la vista, que es lo que necesita un trackpad o una tableta en lugar del arrastre con el botón derecho, o seleccionar texto. La selección funciona sobre las páginas tal como se ven, inclinadas o giradas, igual que en la vista canvas: un clic lleva el cursor del editor a esa palabra, un arrastre selecciona, un doble clic toma una palabra y un enlace se sigue. También funciona al revés: el cursor y la selección del editor se dibujan sobre las páginas, y llevar el cursor a una página que no está a la vista pasa el libro hasta ella.
+
+Los vídeos se reproducen en la página. Con el puntero en modo de pasar páginas, un clic en la portada de un vídeo lo pone en marcha allí mismo, y la imagen sigue moviéndose mientras la hoja gira y se curva. Otro clic lo pausa, empezar otro detiene el anterior, y el vídeo se detiene cuando el libro queda abierto por un pliego que ya no lo muestra; la barra espaciadora hace lo mismo con el vídeo del pliego abierto. Funciona con los vídeos de un archivo o de una dirección; los de YouTube y Vimeo no se pueden dibujar dentro de la página, así que un clic en ellos pasa la hoja como en cualquier otro sitio.
 
 :::callout{type="try"}
 Abre la pestaña Folio con esta guía, pasa unas cuantas páginas arrastrando sus esquinas y luego gira el libro arrastrando con el botón derecho para ver su pliegue grapado. Restablecer la vista lo devuelve a su sitio.

@@ -33,7 +33,7 @@ const load = (path) => import(new URL(path, sandbox).href);
 const { createPostextGuideConfig } = await load('context/guideConfig.ts');
 const { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } = await load('defaultMarkdown/index.ts');
 const { sampleBook } = await load('book/chapterOps.ts');
-const { buildDefaultResources, SVG_FIGURES, figureBlobId } = await load('defaultResources/index.ts');
+const { buildDefaultResources, SVG_FIGURES, figureBlobId, guideVideoPosters } = await load('defaultResources/index.ts');
 const { coverThumbnailSvg } = await load('defaultResources/cover.ts');
 const { createBundle, zipBundle } = await import(new URL('../../../packages/postext/dist/bundle/index.js', import.meta.url).href);
 
@@ -111,6 +111,8 @@ for (const locale of LOCALES) {
   // Each language's figures live under blob ids of their own (`-en`, `-es`),
   // the ids its resources point at.
   for (const [fileId, fig] of Object.entries(SVG_FIGURES)) files[figureBlobId(fileId, locale)] = fig.generate(locale);
+  // The videos' posters (#478): the videos stream from the media CDN.
+  Object.assign(files, await guideVideoPosters(locale));
   const { chapters } = sampleBook(MARKDOWN[locale], () => 'chapter', NAME[locale]);
   const bundle = await createBundle({
     id: 'postext-guide',
@@ -157,7 +159,7 @@ for (const key of new Set([...Object.keys(en.manifest.config ?? {}), ...Object.k
   if (!same(en.manifest.config?.[key], es.manifest.config?.[key])) configOverrides[key] = es.manifest.config?.[key];
 }
 
-const WORDING = ['caption', 'note', 'altText', 'table'];
+const WORDING = ['caption', 'note', 'altText', 'table', 'video'];
 const resourceOverrides = [];
 for (const spec of es.manifest.resources ?? []) {
   const base = en.manifest.resources.find((r) => r.id === spec.id);
@@ -167,6 +169,12 @@ for (const spec of es.manifest.resources ?? []) {
     const file = spec.file.replace(/^resources\//, 'resources/es/');
     files[file] = es.files[spec.file];
     override.file = file;
+  }
+  // A video's poster in this language (its own cut).
+  if (spec.poster && !sameBytes(es.files[spec.poster], en.files[spec.poster])) {
+    const file = spec.poster.replace(/^resources\//, 'resources/es/');
+    files[file] = es.files[spec.poster];
+    override.poster = file;
   }
   if (Object.keys(override).length > 1) resourceOverrides.push(override);
 }

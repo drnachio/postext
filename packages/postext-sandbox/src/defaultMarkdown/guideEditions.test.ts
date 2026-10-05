@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_ZH_HANS } from '.';
 import { sampleChapterTexts } from '../book/chapterOps';
-import { DEFAULT_RESOURCE_IDS } from '../defaultResources';
+import { DEFAULT_RESOURCE_IDS, GUIDE_VIDEO_IDS } from '../defaultResources';
 
 const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR, ja: DEFAULT_MARKDOWN_JA } as const;
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
+const VIDEO_IDS = new Set<string>(Object.values(GUIDE_VIDEO_IDS));
 const h1s = (md: string): string[] => [...md.matchAll(/^# (.+?)(?:\s*\{.*\})?$/gm)].map((m) => m[1]!.trim());
 /** Han, kana and the CJK marks and full-width forms. */
 const HAN = /[㐀-鿿　-〿぀-ヿ＀-￯]/;
@@ -16,7 +17,8 @@ describe('the six editions of the guide', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
       h2: (md.match(/^## /gm) ?? []).length,
-      refs: refsOf(md),
+      // The videos are in the editions they were cut in (#478).
+      refs: refsOf(md).filter((id) => !VIDEO_IDS.has(id)),
       directives: (md.match(/^:::[a-z]+/gm) ?? []).join(' '),
       maths: (md.match(/\$\$/g) ?? []).length,
     });
@@ -30,10 +32,18 @@ describe('the six editions of the guide', () => {
   });
 
   it('mention only resources the guide ships, the Chinese composition figure among them', () => {
-    const ids = new Set<string>(Object.values(DEFAULT_RESOURCE_IDS));
+    const ids = new Set<string>([...Object.values(DEFAULT_RESOURCE_IDS), ...VIDEO_IDS]);
     for (const md of Object.values(EDITIONS)) {
       for (const id of refsOf(md)) expect(ids.has(id), id).toBe(true);
       expect(refsOf(md)).toContain('cjk-composition');
+    }
+  });
+
+  it('show the videos in English, Spanish and Chinese only, the languages they were cut in', () => {
+    for (const [lang, md] of Object.entries(EDITIONS)) {
+      const videos = refsOf(md).filter((id) => VIDEO_IDS.has(id));
+      if (lang === 'en' || lang === 'es' || lang === 'zh-Hans') expect(new Set(videos), lang).toEqual(VIDEO_IDS);
+      else expect(videos, lang).toEqual([]);
     }
   });
 
