@@ -36,6 +36,7 @@
 import type { InlineRuby, InlineSpan, InlineWarichu } from '../parse';
 import type { VDTAnnotationRun, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
 import { createBoundingBox } from '../vdt';
+import { isJapaneseLanguage } from '../locale';
 import { lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { measureInkBox, measureInkExtent, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import {
@@ -177,6 +178,10 @@ interface UnitStyle {
   inserted?: boolean;
   /** Colour of the unit's text (a warichu note's brackets), hex. */
   color?: string;
+  /** The language the unit's isolate names (`:ltr[…]{lang=en}`), carried
+   *  to its segment (`VDTLineSegment.lang`) in Japanese text: see
+   *  {@link spanLanguageHere}. */
+  lang?: string;
 }
 
 /** What the composer breaks and spreads. */
@@ -298,12 +303,28 @@ function marksKey(marks: VDTSegmentMarks | undefined, inserted: boolean | undefi
   return `|m:${d ? `${d.style}${d.fill}${d.position}` : ''}:${marks?.properName ?? ''}:${marks?.bookTitle ?? ''}${inserted ? ':ins' : ''}`;
 }
 
+/**
+ * The language a span's isolate names (the innermost that names one,
+ * `:ltr[…]{lang=en}`), which its segments carry (`VDTLineSegment.lang`)
+ * so the renderers declare it (a PDF `Span` with its `/Lang`) and shape it
+ * in its own forms (#427): in a Japanese document (the `japan` region), or
+ * for an isolate in Japanese. A segment then never holds text of two
+ * languages. Other composed text carries none, as before.
+ */
+function spanLanguageHere(span: InlineSpan): string | undefined {
+  let lang: string | undefined;
+  for (let d = span.direction; d && lang === undefined; d = d.outer) lang = d.lang;
+  if (lang === undefined) return undefined;
+  return getMeasureRegion() === 'japan' || isJapaneseLanguage(lang) ? lang : undefined;
+}
+
 function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitStyle {
   const script = spanScriptFields(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
   const font = script.scriptFont ?? pickSpanFont(span.bold, span.italic, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
   const marks = spanMarks(span, vertical);
+  const lang = spanLanguageHere(span);
   return {
-    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}${marksKey(marks, span.inserted)}`,
+    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}${marksKey(marks, span.inserted)}${lang !== undefined ? `|lang:${lang}` : ''}`,
     bold: span.bold,
     italic: span.italic,
     ...(span.captionLabel ? { captionLabel: true } : {}),
@@ -312,6 +333,7 @@ function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitStyle {
     font,
     ...(marks ? { marks } : {}),
     ...(span.inserted ? { inserted: true } : {}),
+    ...(lang !== undefined ? { lang } : {}),
   };
 }
 
@@ -2114,6 +2136,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
       ...(s.marks ? { cjkMarks: s.marks } : {}),
       ...(s.inserted ? { inserted: true } : {}),
       ...(s.color ? { color: s.color } : {}),
+      ...(s.lang !== undefined ? { lang: s.lang } : {}),
       ...(t !== undefined ? { tracking: t } : {}),
       // Every mark that gave up blank carries its ink offset (0 when only
       // the blank after its glyph went), and so does a shared mark set in

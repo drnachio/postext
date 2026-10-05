@@ -1,5 +1,5 @@
 import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
-import { lineTextAlign, segmentOrientation } from 'postext';
+import { isJapaneseLanguage, lineTextAlign, segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
@@ -20,6 +20,7 @@ import { inkScaleOperators } from './inkScale';
 import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
 import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
 import { needsComplexShaping } from '../complexShaping';
+import { openTypeLanguageOf, shapingLanguage, withShapingLanguage } from '../shapingLanguage';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -153,7 +154,14 @@ function paintComposedText(
  * the marked-content sequences and the structure tree read the line as it
  * was written, and readers that order text by position (Poppler) place it
  * by its glyphs. A run of such a line in another language than the
- * document's ({@link segmentLanguages}) is a `Span` with its own `/Lang`.
+ * document's ({@link segmentLanguages}) is a `Span` with its own `/Lang`,
+ * and so is one of a composed line of a Japanese document, or of a
+ * composed line holding Japanese text (#427).
+ *
+ * A segment in a language of its own (`VDTLineSegment.lang`) is shaped in
+ * that language's OpenType language system (`shapingLanguage.ts`): a
+ * Japanese word in a Chinese book takes the Japanese forms of a pan-CJK
+ * face, a Chinese quotation in a Japanese book the font's default ones.
  *
  * A word set in several styles (`VDTLineSegment.runs`, a bold letter in an
  * Arabic word) is shaped whole and each glyph painted in its run's style
@@ -187,8 +195,10 @@ function renderSegments(
   // theirs), and the x it gives each: they are painted in logical order.
   const order = directed && line.order && line.order.length === segments.length ? line.order : undefined;
   const xs = order ? segmentOffsets(segments, order, startX, (seg) => (seg.kind === 'space' ? (composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width) : seg.width)) : undefined;
-  // Runs in another language than the document's (tagged render only).
-  const langs = elem && directed ? segmentLanguages(segments, elem.tree.options.lang) : undefined;
+  // Runs in another language than the document's (tagged render only):
+  // on a line with directions, and on a composed line in Japanese.
+  const docLang = elem?.tree.options.lang;
+  const langs = elem && (directed || (composed && japaneseLine(segments, docLang))) ? segmentLanguages(segments, docLang) : undefined;
   let langSpan: { lang: string; elem: StructElem } | undefined;
   const textElemOf = (i: number): StructElem | undefined => {
     const lang = langs?.[i];
@@ -296,8 +306,12 @@ function renderSegments(
       && paintShapedSegment(ctx, seg, x, baseline + (seg.baselineShift ?? 0), font, size, color, block, fontCache, actualText, kashidaOf(seg, line));
     if (shaped) {
       // Painted by HarfBuzz.
-    } else if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
+    } else {
+      withShapingLanguage(seg.lang === undefined ? shapingLanguage() : openTypeLanguageOf(seg.lang), () => {
+        if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+        else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
+      });
+    }
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
@@ -322,6 +336,14 @@ function renderSegments(
   if (lineState) endActualTextSpan(ctx, lineState);
 }
 
+
+/** Whether a composed line is Japanese text: its document's language is
+ *  Japanese, or a segment's own. Its segments in other languages then take
+ *  a `Span` with their `/Lang`; other composed lines keep the structure
+ *  they always had. */
+function japaneseLine(segments: readonly VDTLineSegment[], docLang: string | undefined): boolean {
+  return isJapaneseLanguage(docLang) || segments.some((s) => s.lang !== undefined && isJapaneseLanguage(s.lang));
+}
 
 /**
  * Paint a segment HarfBuzz shapes: a word set in several styles
@@ -450,9 +472,12 @@ function renderLineText(
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref/own font or colour); otherwise one text
-  // object paints the line.
-  if (segments && (isDirected(line) || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
+  // block (bold/italic/math/ref/own font or colour), and on a line of the
+  // CJK composer when one is in a language of its own (the composer names
+  // it in Japanese text only, #427: it is shaped and tagged in it);
+  // otherwise one text object paints the line.
+  const ownLanguage = line.cjkComposed === true && segments !== undefined && segments.some((s) => s.lang !== undefined);
+  if (segments && (isDirected(line) || ownLanguage || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
     renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }

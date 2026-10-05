@@ -42,6 +42,7 @@ import { joinsLetters, type CjkRegion, type ForcedOrientation, type PdfColorSpac
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
+import { shapingKey } from '../shapingLanguage';
 
 export interface PageCtx {
   page: PDFPage;
@@ -474,12 +475,14 @@ export function showTextShaped(font: PDFFont, text: string): PDFOperator {
     cache = new Map();
     showByFont.set(font, cache);
   }
-  const hit = cache.get(text);
+  // Text shaped in another language system is another show (`JAN `).
+  const key = shapingKey(text);
+  const hit = cache.get(key);
   if (hit) return hit;
   noteMissingGlyphs(font, text);
   const op = fallbackOperator(font, text) ?? shapedTextOperator(font, text);
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
-  cache.set(text, op);
+  cache.set(key, op);
   return op;
 }
 
@@ -669,7 +672,8 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
     cache = new Map();
     runsByFont.set(font, cache);
   }
-  const hit = cache.get(text);
+  const key = shapingKey(text);
+  const hit = cache.get(key);
   if (hit) return hit;
   const shaping = shapingFace(font);
   if (!shaping) return undefined;
@@ -685,7 +689,7 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
     run = shownRunOf(shaped?.parts ?? (hex ? [hex] : []), shaped?.widths ?? font.widthOfTextAtSize(text, 1000));
   }
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
-  cache.set(text, run);
+  cache.set(key, run);
   return run;
 }
 

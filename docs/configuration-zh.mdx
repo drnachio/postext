@@ -7739,7 +7739,8 @@ export const sliceFontProvider: PdfFontProvider = async (family, weight, style, 
 沙盒每生成一个PDF，就在检查面板中列出这些字符以及下面两种警告。书、书的设置或资源发生变化后，这些条目会标为来自之前的PDF，直到下一个PDF取代它们；打开另一本书会清除它们。
 
 - **粗体需要每个字重一个静态文件。**Fontsource把Noto Serif SC和TC的每个字重作为单独的静态文件提供，所以在沙盒中粗体可以正常使用。Google Fonts的文件（`NotoSerifSC[wght].ttf`，25 MB）是可变字体：pdf-lib嵌入其默认实例，700的字体会按400印出，`renderToPdf`将其报告为`variableFontDefaultInstance`。制作文件包时，用fontTools为每个字重切出一个静态实例（`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`），再用`pyftsubset`把它子集化到书中用到的字符。
-- **使用TrueType版本。**思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。
+- **使用TrueType版本。**思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。日文方面，Noto Serif JP和Noto Sans JP（Google Fonts，或Fontsource的编号分片）、Shippori Mincho、Zen Old Mincho和BIZ UDMincho都是TrueType；思源宋体日文版（Source Han Serif JP）和Noto Serif CJK的`JP` `.otf`文件是CFF。
+- **泛CJK字体中的日文字形。**同一个码位的汉字、标点或引号，在日本和中国可能写法不同，泛CJK字体（思源、Noto CJK）两种字形都有。PDF对日文文档（`locale: 'ja'`），以及任何文档中标为日文的隔离段（`:ltr[…]{lang=ja}`），按OpenType语言系统`JAN `成形，字体的`locl`特性因此印出日文字形，与画布和HTML通过`lang`印出的一致。日文书中标为其他语言的隔离段按该语言的字形成形（中文即字体的默认字形），并标记为带`/Lang`的`Span`。中文及其他文档仍按字体的默认字形成形，与以前相同。专为日文设计的字体（如Noto Serif JP）默认字形就是日文的；不过日文文字中的“ ”仍会换成`JAN `字形。
 
 一个家族缺少的字符不会从另一个家族借用：Noto Serif TC不会借用Noto Serif SC的字形。字符覆盖要在制作字体文件时解决；《红楼梦》示例就把TC子集缺少的字形从SC字体复制了过去。
 
