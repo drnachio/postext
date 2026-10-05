@@ -32,10 +32,24 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # As after a release: no record the Sandbox could take.
+      - name: Drop the committed pagination
+        run: rm apps/web/public/presets/*/layouts.*.json
+
       - run: scripts/presets/ci-layouts.sh
 
       - name: Differences with the committed pagination
-        run: git diff --stat -- apps/web/public/presets
+        run: |
+          git diff --stat -- apps/web/public/presets
+          # Page counts per chapter that differ from the committed run
+          for f in apps/web/public/presets/*/layouts.*.json; do
+            git show "HEAD:$f" > /tmp/committed.json
+            node -e '
+              const [a, b] = process.argv.slice(1).map((p) => JSON.parse(require("fs").readFileSync(p, "utf8")).chapters);
+              const diff = Object.keys(b).filter((k) => a[k]?.pageCount !== b[k].pageCount);
+              console.log(`${process.argv[2]}: ${diff.length ? diff.map((k) => `${k} ${a[k]?.pageCount}→${b[k].pageCount}`).join(", ") : "same page counts"}`);
+            ' /tmp/committed.json "$f"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
