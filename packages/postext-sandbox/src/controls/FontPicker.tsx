@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useId, useSyncExternalStore, type RefObject } from 'react';
-import { chineseScriptOf, cjkRegionOf, localeScript } from 'postext';
+import { chineseScriptOf, cjkRegionOf, isJapaneseLanguage, localeScript } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { Popover, type PopoverCloseReason } from '../ui';
 import { FieldRow } from './FieldRow';
@@ -82,6 +82,17 @@ export const ARABIC_FONTS = [
 ] as const;
 FALLBACK_FONTS.push(...ARABIC_FONTS.map((family) => ({ family, subsets: ['arabic', 'latin', 'latin-ext'] })));
 
+/** Japanese book faces on Google Fonts, in the order the picker offers them
+ *  to a Japanese document: the mincho (明朝) text faces first, Noto Serif JP
+ *  (the fullest: vertical metrics, IVS, JIS X 0213) and the bunko-like
+ *  Shippori, then the gothic (ゴシック) faces for headings, then the
+ *  textbook hand and a display face. */
+export const JAPANESE_FONTS = [
+  'Noto Serif JP', 'Shippori Mincho', 'Shippori Mincho B1', 'Zen Old Mincho', 'BIZ UDPMincho',
+  'Noto Sans JP', 'Zen Kaku Gothic New', 'BIZ UDPGothic', 'Klee One', 'Kaisei Decol',
+] as const;
+FALLBACK_FONTS.push(...JAPANESE_FONTS.map((family) => ({ family, subsets: ['japanese', 'latin'] })));
+
 let cachedFonts: FontEntry[] | null = null;
 let fetchPromise: Promise<FontEntry[]> | null = null;
 
@@ -121,12 +132,21 @@ export function chineseSubsetsFor(locale: string | undefined): string[] {
 }
 
 /** The Fontsource subsets that hold a document's own script, best first:
- *  the Chinese ones (`chineseSubsetsFor`), `arabic` for a language written
- *  in the Arabic script (Arabic, Persian, Urdu). None otherwise. */
+ *  the Chinese ones (`chineseSubsetsFor`), `japanese` for Japanese (kana
+ *  and the JIS kanji), `arabic` for a language written in the Arabic
+ *  script (Arabic, Persian, Urdu). None otherwise. */
 export function scriptSubsetsFor(locale: string | undefined): string[] {
   const chinese = chineseSubsetsFor(locale);
   if (chinese.length > 0) return chinese;
+  if (isJapaneseLanguage(locale)) return ['japanese'];
   return locale !== undefined && localeScript(locale) === 'Arab' ? ['arabic'] : [];
+}
+
+/** The families the picker puts first, in order, for a script's subsets. */
+function preferredFontsFor(subsets: readonly string[]): readonly string[] {
+  if (subsets[0] === 'arabic') return ARABIC_FONTS;
+  if (subsets[0] === 'japanese') return JAPANESE_FONTS;
+  return [];
 }
 
 /** The families first that cover the document's script (in the order of
@@ -268,14 +288,15 @@ export function FontPicker({
   const ranked = rankFontsForScript(
     fonts.filter((f) => !customSet.has(f.family) && matches(f.family)),
     scriptSubsets,
-    scriptSubsets[0] === 'arabic' ? ARABIC_FONTS : [],
+    preferredFontsFor(scriptSubsets),
   );
   const filteredScript = ranked.script.map((f) => f.family);
   const filteredGoogle = ranked.other.map((f) => f.family);
   const hasAny = filteredCustom.length > 0 || filteredScript.length > 0 || filteredGoogle.length > 0;
   const scriptGroupLabel = scriptSubsets[0] === 'arabic' ? labels.fontPickerArabicGroup
-    : scriptSubsets[0] === 'chinese-simplified' ? labels.fontPickerChineseSimplifiedGroup
-      : labels.fontPickerChineseTraditionalGroup;
+    : scriptSubsets[0] === 'japanese' ? labels.fontPickerJapaneseGroup
+      : scriptSubsets[0] === 'chinese-simplified' ? labels.fontPickerChineseSimplifiedGroup
+        : labels.fontPickerChineseTraditionalGroup;
 
   const pick = (font: string) => {
     onChange(font);

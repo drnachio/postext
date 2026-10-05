@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, type CSSProperties } from 'react';
-import { chineseScriptOf, defaultCjkEmphasis, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
+import { chineseScriptOf, defaultCjkEmphasis, isJapaneseLanguage, resolveCjkConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import type { ResolvedBodyTextConfig } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { loadFont } from '../../controls/fontLoader';
@@ -22,11 +22,18 @@ const CHINESE_SAMPLE = {
   Hans: '此开卷第一回也。作者自云：因曾历过一番梦幻之后，故将*真事隐去*，而借“通灵”之说，撰此**《石头记》**一书也。',
 } as const;
 
+/** The sample of a Japanese document: the opening of 夏目漱石『吾輩は猫で
+ *  ある』 (1905), kanji, hiragana and katakana (ニャーニャー), with a bold
+ *  run, an emphasised one (傍点), and the author and title in rōmaji, whose
+ *  macrons (ō) not every Japanese face carries. */
+const JAPANESE_SAMPLE = '**吾輩は猫である**。名前はまだ無い。どこで生れたか*とんと*見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。（Natsume Sōseki, *Wagahai wa neko de aru*）';
+
 /** A short paragraph set with the body text settings — typeface, size,
  *  leading, weight, alignment, indent, colours — at true size on the page
  *  colour, in the document's language: a line of 紅樓夢 for a Chinese book,
- *  set top to bottom when its lines are vertical. The browser sets it, so
- *  line breaks are only indicative; the caption says so. */
+ *  of 吾輩は猫である for a Japanese one, set top to bottom when its lines
+ *  are vertical. The browser sets it, so line breaks are only indicative;
+ *  the caption says so. */
 export function TypeSample({ body, lang }: TypeSampleProps) {
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
@@ -36,11 +43,20 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
   useEffect(() => { loadFont(body.fontFamily); }, [body.fontFamily]);
 
   const script = chineseScriptOf(lang);
-  const text = script ? CHINESE_SAMPLE[script] : labels.bodyTypeSample;
-  // `*…*` in Chinese text prints what `cjk.emphasis` resolves to (#193):
-  // emphasis dots in a Chinese document unless it asks for italics.
+  const japanese = isJapaneseLanguage(lang);
+  const text = script ? CHINESE_SAMPLE[script] : japanese ? JAPANESE_SAMPLE : labels.bodyTypeSample;
+  // `*…*` in Chinese and Japanese text prints what `cjk.emphasis` resolves
+  // to (#193): emphasis marks unless the document asks for italics, in the
+  // shape and on the side `cjk.emphasisMark` gives (the dot under Chinese
+  // text, the sesame over Japanese text; right of a vertical line).
   const emphasisSetting = config.cjk?.emphasis ?? 'auto';
-  const dots = script !== undefined && (emphasisSetting === 'auto' ? defaultCjkEmphasis(lang) : emphasisSetting) === 'dots';
+  const dots = (script !== undefined || japanese) && (emphasisSetting === 'auto' ? defaultCjkEmphasis(lang) : emphasisSetting) === 'dots';
+  const resolvedMark = dots ? resolveCjkConfig(config.cjk, lang).emphasisMark : null;
+  const mark: EmphasisMark | null = resolvedMark && {
+    side: vertical ? (resolvedMark.position === 'under' ? 'left' : 'right') : resolvedMark.position === 'over' ? 'over' : 'under',
+    shape: resolvedMark.style,
+    open: resolvedMark.fill === 'open' || (resolvedMark.fill === 'auto' && resolvedMark.style === 'circle'),
+  };
 
   const hex = (c: ResolvedBodyTextConfig['color'] | undefined, fallback: string) =>
     resolveColorValue(c, palette, { hex: fallback, model: 'hex' }).hex;
@@ -86,7 +102,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
         {renderSample(text, {
           bold: { fontWeight: body.boldFontWeight, color: hex(body.boldColor, ink) },
           italic: emphasis,
-        }, dots ? (vertical ? 'right' : 'under') : null)}
+        }, mark)}
       </div>
       <figcaption className="border-t border-(--rule) bg-(--surface) px-2 py-1 text-[0.62rem] text-(--slate)">
         {labels.bodyTypeSampleCaption}
@@ -95,16 +111,26 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
   );
 }
 
-/** `**bold**` and `*italic*` runs of the sample text; `dots` sets the
- *  italic runs with emphasis dots instead, under the characters or to
- *  their right. */
-function renderSample(text: string, styles: { bold: CSSProperties; italic: CSSProperties }, dots: 'under' | 'right' | null) {
+/** An emphasis mark as the sample draws it: the side of the character
+ *  (on the page: over and under a horizontal line, right and left of a
+ *  vertical one), the shape, and whether it is an outline. */
+interface EmphasisMark {
+  side: 'under' | 'over' | 'right' | 'left';
+  shape: 'dot' | 'circle' | 'sesame';
+  open: boolean;
+}
+
+/** `**bold**` and `*italic*` runs of the sample text; `mark` sets the
+ *  italic runs of East Asian characters with emphasis marks instead (Latin
+ *  letters in them keep their italics, as on the page). */
+function renderSample(text: string, styles: { bold: CSSProperties; italic: CSSProperties }, mark: EmphasisMark | null) {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((p, i) => {
     if (p.startsWith('**')) return <strong key={i} style={styles.bold}>{p.slice(2, -2)}</strong>;
     if (p.startsWith('*') && p.length > 1) {
       const run = p.slice(1, -1);
-      return <em key={i} style={styles.italic}>{dots ? dotted(run, dots) : run}</em>;
+      const marked = mark !== null && !/\p{Script=Latin}/u.test(run);
+      return <em key={i} style={marked ? styles.italic : { ...styles.italic, fontStyle: 'italic' }}>{marked ? dotted(run, mark) : run}</em>;
     }
     return <Fragment key={i}>{p}</Fragment>;
   });
@@ -118,30 +144,46 @@ const DOT: CSSProperties = {
   backgroundColor: 'currentColor',
 };
 
-/** Emphasis dots (着重号), one per character and none on punctuation.
- *  Drawn apart from the text, so they take no room: CSS `text-emphasis`
- *  would open the line they sit on (the sample would misstate the
- *  leading), and its dot comes out a speck in the Noto faces. Under the
- *  character a dot hangs from the baseline (a box of no size set just
- *  before the character, which the line cannot break from), clear of the
- *  ideographic em box that ends 0.12 em below it; to its right in a
- *  vertical line, it sits past the em box from the middle of the
- *  character, which is the middle of its line there. */
-function dotted(run: string, side: 'under' | 'right') {
+/** The mark's box: a dot, a circle, or the sesame ﹅, a lens whose points
+ *  run from top left to bottom right, as the glyph leans (the same on a
+ *  vertical page, JLReq §3.3.9); an outline for the open marks (﹆, ○). */
+function markStyle(mark: EmphasisMark): CSSProperties {
+  const shape: CSSProperties = mark.shape === 'sesame'
+    ? { ...DOT, width: '0.2em', height: '0.2em', borderRadius: '0 100%' }
+    : mark.shape === 'circle' ? { ...DOT, width: '0.22em', height: '0.22em' } : DOT;
+  return mark.open
+    ? { ...shape, backgroundColor: 'transparent', border: '0.035em solid currentColor', boxSizing: 'border-box' }
+    : shape;
+}
+
+/** Emphasis marks (着重号, 傍点), one per character and none on
+ *  punctuation. Drawn apart from the text, so they take no room: CSS
+ *  `text-emphasis` would open the line they sit on (the sample would
+ *  misstate the leading), and its dot comes out a speck in the Noto faces.
+ *  Under or over the character a mark hangs from the baseline (a box of no
+ *  size set just before the character, which the line cannot break from),
+ *  clear of the ideographic em box that runs from 0.88 em above the
+ *  baseline to 0.12 em below it; right or left of it in a vertical line,
+ *  it sits past the em box from the middle of the character, which is the
+ *  middle of its line there. */
+function dotted(run: string, mark: EmphasisMark) {
+  const box = markStyle(mark);
   return Array.from(run).map((ch, i) => {
     if (!/[\p{L}\p{N}]/u.test(ch)) return <Fragment key={i}>{ch}</Fragment>;
-    if (side === 'right') {
+    if (mark.side === 'right' || mark.side === 'left') {
+      const left = mark.side === 'right' ? 'calc(50% + 0.68em)' : 'calc(50% - 0.68em)';
       return (
         <span key={i} style={{ position: 'relative' }}>
           {ch}
-          <span style={{ ...DOT, top: '50%', left: 'calc(50% + 0.68em)', transform: 'translate(-50%, -50%)' }} />
+          <span style={{ ...box, top: '50%', left, transform: 'translate(-50%, -50%)' }} />
         </span>
       );
     }
+    const top = mark.side === 'under' ? '0.24em' : `calc(-0.94em - ${String(box.height)})`;
     return (
       <span key={i} style={{ whiteSpace: 'nowrap' }}>
         <span style={{ display: 'inline-block', width: 0, height: 0, position: 'relative' }}>
-          <span style={{ ...DOT, left: '0.5em', top: '0.24em', transform: 'translateX(-50%)' }} />
+          <span style={{ ...box, left: '0.5em', top, transform: 'translateX(-50%)' }} />
         </span>
         {ch}
       </span>

@@ -555,6 +555,21 @@ export interface SandboxLabels {
   arabicDefaultsAppliedOne: string;
   arabicDefaultsUndone: string;
   arabicDefaultsUndonePartial: string;
+  japaneseDefaults: string;
+  japaneseDefaultsTooltip: string;
+  japaneseDefaultsBook: string;
+  japaneseDefaultsVertical: string;
+  japaneseDefaultsVerticalDescription: string;
+  japaneseDefaultsHorizontal: string;
+  japaneseDefaultsHorizontalDescription: string;
+  japaneseDefaultsNothing: string;
+  japaneseDefaultsApplied: string;
+  japaneseDefaultsAppliedOne: string;
+  japaneseDefaultsUndone: string;
+  japaneseDefaultsUndonePartial: string;
+  japaneseDefaultsHeadingLayout: string;
+  japaneseDefaultsHeadingMargins: string;
+  japaneseDefaultsFolio: string;
   pageMarginsFromGrid: string;
   cjkEmphasis: string;
   cjkEmphasisTooltip: string;
@@ -1190,6 +1205,7 @@ export interface SandboxLabels {
   fontPickerChineseSimplifiedGroup: string;
   fontPickerChineseTraditionalGroup: string;
   fontPickerArabicGroup: string;
+  fontPickerJapaneseGroup: string;
   resetConfigConfirm: string;
   resetSectionConfirm: string;
   resetMarkdownConfirm: string;
@@ -2573,6 +2589,8 @@ export interface SandboxLabels {
   calloutStyleBodyItalicColor: string;
   calloutStyleBodyItalicColorTooltip: string;
   smallCapsInline: string;
+  rubyInline: string;
+  tcyInline: string;
   textStyleFontWeightTooltip: string;
   textStyleBoldFontWeightTooltip: string;
   textStyleItalic: string;

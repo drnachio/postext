@@ -41,10 +41,13 @@ import {
   builtInTypes,
   canonicalJson,
   createDefaultsMemory,
+  designTextNeedsScript,
+  ENGINE_DESIGN_FACES,
   figureOf,
   headingFacesText,
   listSample,
   listSignature,
+  mapDesignTexts,
   mergeBuiltInTypes,
   sampleNumber,
   set,
@@ -155,64 +158,12 @@ export function arabicFontsFor(faces: ArabicFaces): { body: string; headings: st
   return { ...FONTS[faces] };
 }
 
-/** The faces the engine itself gives a design text (the running heads and
- *  folio of the built-in header and footer, an element with no typeface):
- *  Latin only. */
-const ENGINE_DESIGN_FACES = new Set<string>(['Open Sans', 'EB Garamond']);
-
-/** Design-text placeholders that print a number in the document digits,
- *  and the ones that print Latin letters (Roman numerals, a b c). Any other
- *  prints text of the document (a title, a mark, a number in words). */
-const DIGIT_PLACEHOLDERS = new Set(['pageNumber', 'totalPages', 'bookTotalPages', 'number', 'numberDecimal', 'chapterNumber', 'partNumber']);
-const LATIN_PLACEHOLDERS = new Set(['numberRoman', 'numberRomanLower', 'numberAlpha', 'numberAlphaLower']);
-
 /** Whether a design text with this template prints Arabic-script
  *  characters in a book whose numbers take `digits`: Arabic letters
  *  written in it, a placeholder that copies the book's text, or a number
  *  in Arabic-Indic digits. `{{`/`}}` are literal braces. */
 export function designTextNeedsArabic(content: string, digits: DigitSystem): boolean {
-  const template = content.replace(/\{\{|\}\}/g, '');
-  if (/\p{Script=Arabic}/u.test(template)) return true;
-  for (const m of template.matchAll(/\{([^{}]+)\}/g)) {
-    const name = m[1]!.trim();
-    if (LATIN_PLACEHOLDERS.has(name)) continue;
-    if (DIGIT_PLACEHOLDERS.has(name)) {
-      if (digits !== 'latn') return true;
-      continue;
-    }
-    return true;
-  }
-  return false;
-}
-
-/** A design text element of the configuration (a header, footer, opener
- *  or heading design's): `kind: 'text'` with a template and a placement. */
-function isDesignText(v: unknown): v is DesignTextElement {
-  if (typeof v !== 'object' || v === null) return false;
-  const o = v as Record<string, unknown>;
-  return o.kind === 'text' && typeof o.content === 'string' && typeof o.placement === 'object' && o.placement !== null;
-}
-
-/** `value` with every design text element `fn` changes replaced (the same
- *  objects where nothing changes). */
-function mapDesignTexts<T>(value: T, fn: (el: DesignTextElement) => DesignTextElement): T {
-  if (Array.isArray(value)) {
-    let changed = false;
-    const out = value.map((v) => {
-      const next = mapDesignTexts(v, fn);
-      if (next !== v) changed = true;
-      return next;
-    });
-    return (changed ? out : value) as T;
-  }
-  if (typeof value !== 'object' || value === null) return value;
-  if (isDesignText(value)) return fn(value) as T;
-  let out: Record<string, unknown> | undefined;
-  for (const [key, v] of Object.entries(value)) {
-    const next = mapDesignTexts(v, fn);
-    if (next !== v) (out ??= { ...(value as Record<string, unknown>) })[key] = next;
-  }
-  return (out ?? value) as T;
+  return designTextNeedsScript(content, /\p{Script=Arabic}/u, digits !== 'latn');
 }
 
 /** Naskh sits low on the line and stacks its vowel marks above and below

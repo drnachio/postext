@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import type { DigitSystem, LayoutConfig, LocaleTag, NumeralsSetting, PageConfig } from 'postext';
+import { isJapaneseLanguage } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { relocalizedResourceTypes } from '../../context/defaultConfig';
 import { ChoiceInput, CollapsibleSection, SelectInput } from '../../controls';
@@ -10,6 +11,7 @@ import { documentLocaleOptionsFor } from './BodyTextSection/constants';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
 import { ChineseDefaultsField } from './ChineseDefaultsField';
 import { ArabicDefaultsField } from './ArabicDefaultsField';
+import { JapaneseDefaultsField } from './JapaneseDefaultsField';
 import { isArabicScriptLanguage } from '../../context/arabicDefaults';
 import { documentDigits, documentDirection, documentLanguage } from '../../context/documentDirection';
 
@@ -17,8 +19,8 @@ import { documentDigits, documentDirection, documentLanguage } from '../../conte
  * Language and direction: the document language (`locale`), the direction
  * of the text (`direction`), the writing mode (`layout.writingMode`), the
  * binding (`page.binding`), the digits of generated numbers (`numerals`),
- * and the "Chinese defaults" and "Arabic defaults" actions that set a book
- * up for either in one step. The two nested keys are edited here, not
+ * and the "Chinese defaults", "Arabic defaults" and "Japanese defaults"
+ * actions that set a book up for each in one step. The two nested keys are edited here, not
  * under Page & columns, because the direction of the lines decides page
  * progression and binding.
  */
@@ -184,6 +186,7 @@ export const WritingSection = memo(function WritingSection() {
       />
       <ChineseDefaultsField />
       {isArabicScriptLanguage(language) && <ArabicDefaultsField locale={language} />}
+      {isJapaneseLanguage(language) && <JapaneseDefaultsField />}
     </CollapsibleSection>
   );
 });
