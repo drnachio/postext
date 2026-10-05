@@ -937,6 +937,12 @@ export class PageFlipper {
   private spineSrc: PageSource = null;
   private spineTex: Texture | null = null;
   private spineFaces: Mesh<PlaneGeometry, MeshPhysicalMaterial>[] = [];
+  /** The book's own cover folded round the spine while it is in the air:
+   *  a strip on the spine's outer side, up to where the cover leaves it.
+   *  `top`: the back of the block's height; `back`: its thickness; `side`:
+   *  the spine's outer side (the empty stack's, −1 left). */
+  private hinge: Mesh<BoxGeometry, MeshPhysicalMaterial>;
+  private fold = { top: 0, back: 0, side: -1 };
   private edges: MeshStandardMaterial;
   private key = new DirectionalLight(0xffffff, 1);
   private pmrem: PMREMGenerator | null = null;
@@ -1069,7 +1075,10 @@ export class PageFlipper {
     // A mirror turns three.js's face culling round with it (the front of a
     // page stays its front).
     this.stage.scale.x = this.sign;
-    this.stage.add(this.desk, this.covers, this.left, this.right, this.key, this.key.target);
+    this.hinge = new Mesh(new BoxGeometry(1, 1, 1), this.coverMaterial);
+    this.hinge.receiveShadow = true;
+    this.hinge.visible = false;
+    this.stage.add(this.desk, this.covers, this.left, this.right, this.hinge, this.key, this.key.target);
     this.scene.add(this.stage);
     this.target = at;
     this.reported = at;
@@ -1499,6 +1508,7 @@ export class PageFlipper {
     // book's own cover), no more.
     const back = Math.min(0.04 * W, Math.max(1.5, (this.coverSpec?.caliperMm ?? BINDINGS[binding].boardMm) * k));
     this.clearSpine();
+    this.fold = { top: meet > 0.4 ? meet - 0.3 : 0, back, side: tL < tR ? -1 : 1 };
     if (meet > 0.4) {
       // In a case the back is wrapped in the case's spine (the wall beside
       // an empty side, the headcap at head and tail); without one, the
@@ -1985,6 +1995,42 @@ export class PageFlipper {
     return Math.max(0.5, mm * (this.appearance.singlePage ? 0.5 : 1) * this.pxPerMm());
   }
 
+  /**
+   * The book's own cover in the air is still folded round the spine: on
+   * the spine's outer side its fold rises from the back of the block to
+   * where the cover leaves the spine. Without it the edge of the page
+   * under the cover showed between the two (a white line under a dark
+   * cover), the cover being lifted off the pages at the spine too.
+   */
+  private foldCover(air: { k: number; mesh: PageMesh }[]) {
+    const covers = this.appearance.coverLeaves;
+    const isCover = (k: number) => k === covers?.front || k === covers?.back;
+    // The lowest the spine edge of a leaf's faces stands.
+    const spineZ = (mesh: PageMesh) => {
+      const parts = mesh.userData.board as BoardParts | undefined;
+      let z = Infinity;
+      for (const m of parts?.back.visible ? [mesh, parts.back] : [mesh]) {
+        const pos = m.geometry.attributes.position;
+        for (let iy = 0; iy <= NY; iy++) z = Math.min(z, pos.getZ(iy * (NX + 1)));
+      }
+      return z;
+    };
+    let at = Infinity;
+    if (this.coverSpec) {
+      for (const { k, mesh } of air) if (isCover(k)) at = Math.min(at, spineZ(mesh));
+      const block = this.block;
+      if (block && this.blockMesh && [covers?.front, covers?.back].some((c) => c !== undefined && c >= block.lo && c < block.hi)) at = Math.min(at, spineZ(this.blockMesh));
+    }
+    const { top, back, side } = this.fold;
+    // A hair under the cover: it never shows through it.
+    const reach = at - 0.1;
+    this.hinge.visible = top > 0 && reach > top;
+    if (!this.hinge.visible) return;
+    const depth = reach - top + 0.05;
+    this.hinge.scale.set(back / 2, this.H, depth);
+    this.hinge.position.set((side * back) / 4, 0, top - 0.05 + depth / 2);
+  }
+
   /** A board leaf's other face and edges, carried with its mesh. */
   private boardParts(mesh: PageMesh): BoardParts {
     let parts = mesh.userData.board as BoardParts | undefined;
@@ -2445,6 +2491,7 @@ export class PageFlipper {
       mesh.visible = parts.back.visible = parts.slab.visible = (mesh.userData.caster as Mesh).visible = true;
       if (!mesh.parent) this.stage.add(mesh);
     }
+    this.foldCover(air);
 
     // The pages lying open: the top leaf of each stack.
     let l = -1;
@@ -2518,6 +2565,7 @@ export class PageFlipper {
       (mesh.material as Material).dispose();
     }
     for (const c of this.covers.children) (c as Mesh).geometry.dispose();
+    this.hinge.geometry.dispose();
     this.clearSpine();
     this.spineTex?.dispose();
     this.coverMaterial.normalMap?.dispose();
