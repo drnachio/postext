@@ -363,8 +363,9 @@ class Writer {
   }
 
   /** A video (#454): a self-hosted file in the reader's own player; a
-   *  YouTube or Vimeo one as its poster linked to the video (an EPUB may
-   *  not embed a web page's player: EPUBCheck RSC-006). */
+   *  YouTube or Vimeo one as its poster, linked to the video unless
+   *  `videoStyle.linkPoster` is off (an EPUB may not embed a web page's
+   *  player: EPUBCheck RSC-006). */
   private videoBody(video: VDTResourceVideo, posterSrc: string | undefined, alt: string): string {
     const label = alt || 'Video';
     if (video.source === 'file') {
@@ -389,7 +390,7 @@ class Writer {
     const picture = posterSrc
       ? `<img src="${xmlAttr(posterSrc)}" alt="${xmlAttr(label)}"/>`
       : `<span class="pt-missing" role="img" aria-label="${xmlAttr(label)}">${xmlText(label)}</span>`;
-    return video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
+    return video.linkPoster && video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
   }
 
   private figure(node: Extract<Node, { k: 'figure' }>): string {
