@@ -217,7 +217,8 @@ describe('annotations of resource blocks in HTML', () => {
     it(`writes the readings, the sesames, the side line and the note (${name})`, () => {
       const html = renderToHtml(build(cfg));
       for (const reading of ['かん', 'じ', 'とう', 'きょう', 'ふ']) {
-        expect(html).toMatch(new RegExp(`aria-hidden="true" style="position:absolute;left:[\\d.]+px;top:-[\\d.]+px;white-space:pre;"><span style="font:[^";]*10px[^";]*;line-height:0;[^"]*">${reading}<`));
+        // The reading sits in the base's <rt> (#428), placed above the cell's line.
+        expect(html).toMatch(new RegExp(`<rt style="all:inherit;display:contents;"><span style="position:absolute;left:[\\d.]+px;top:-[\\d.]+px;white-space:pre;"><span style="font:[^";]*10px[^";]*;line-height:0;[^"]*">${reading}<`));
       }
       // Four sesame paths, the lens as in horizontal text.
       const [a] = sesamePath(6, false);
