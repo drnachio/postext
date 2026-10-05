@@ -182,6 +182,18 @@ describe('East Asian typography', () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
+  it('lets a Japanese warichu note go without its （）: an empty bracket is the author\'s none', () => {
+    const changed = (label: string) => `${label} (changed)`;
+    const auto = render(CjkSection, { ...createDefaultConfig('en'), locale: 'ja' });
+    expect(auto).not.toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
+    const none = render(CjkSection, { ...createDefaultConfig('en'), locale: 'ja', cjk: { warichu: { open: '', close: '' } } });
+    expect(none).toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
+    expect(none).toContain(changed(DEFAULT_LABELS.cjkWarichuClose));
+    // In Chinese text an empty bracket is the default itself.
+    const chinese = render(CjkSection, { ...createDefaultConfig('en'), locale: 'zh-Hans', cjk: { warichu: { open: '' } } });
+    expect(chinese).not.toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
+  });
+
   it('finds the ruby, warichu and upright-number fields by search in Writing system', () => {
     const config = createDefaultConfig('en');
     for (const [labels, query, row] of [

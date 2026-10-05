@@ -139,6 +139,10 @@ export const CjkSection = memo(function CjkSection() {
   const bookTitleMark = raw?.bookTitleMark ?? DEFAULT_CJK_CONFIG.bookTitleMark;
   const autoBookTitle = defaultCjkBookTitleMark(resolvedRegion);
   const autoWarichu = defaultCjkWarichuBrackets(resolvedRegion);
+  // A cleared bracket field: back to the region's bracket where it has
+  // none (Chinese text), else none written out (`''`), so a Japanese note
+  // can go without its （）; Reset brings them back.
+  const emptyWarichu = (side: 'open' | 'close') => (autoWarichu[side] === '' ? undefined : '');
   const bookTitleNames = { brackets: labels.cjkBookTitleBrackets, wavy: labels.cjkBookTitleWavy, none: labels.cjkBookTitleNone };
   const mark = raw?.emphasisMark;
   const autoMark = defaultCjkEmphasisMark(resolvedRegion);
@@ -501,26 +505,21 @@ export const CjkSection = memo(function CjkSection() {
               onReset={() => writeWarichu({ color: undefined })}
               fieldId="cjk-warichu-color"
             />
-            <TextInput
-              label={labels.cjkWarichuOpen}
-              value={warichu?.open ?? ''}
-              onChange={(v) => writeWarichu({ open: v === '' ? undefined : v })}
-              placeholder={autoWarichu.open || '〔'}
-              widthCh={4}
-              tooltip={labels.cjkWarichuOpenTooltip}
-              isDefault={!warichu?.open}
-              onReset={() => writeWarichu({ open: undefined })}
-            />
-            <TextInput
-              label={labels.cjkWarichuClose}
-              value={warichu?.close ?? ''}
-              onChange={(v) => writeWarichu({ close: v === '' ? undefined : v })}
-              placeholder={autoWarichu.close || '〕'}
-              widthCh={4}
-              tooltip={labels.cjkWarichuCloseTooltip}
-              isDefault={!warichu?.close}
-              onReset={() => writeWarichu({ close: undefined })}
-            />
+            {(['open', 'close'] as const).map((side) => (
+              <TextInput
+                key={side}
+                label={side === 'open' ? labels.cjkWarichuOpen : labels.cjkWarichuClose}
+                value={warichu?.[side] ?? ''}
+                onChange={(v) => writeWarichu({ [side]: v === '' ? emptyWarichu(side) : v })}
+                // An empty bracket the author wrote sets none: no default
+                // shown in its place.
+                placeholder={warichu?.[side] === '' ? '' : autoWarichu[side] || (side === 'open' ? '〔' : '〕')}
+                widthCh={4}
+                tooltip={side === 'open' ? labels.cjkWarichuOpenTooltip : labels.cjkWarichuCloseTooltip}
+                isDefault={warichu?.[side] === undefined || (warichu[side] === '' && autoWarichu[side] === '')}
+                onReset={() => writeWarichu({ [side]: undefined })}
+              />
+            ))}
           </FieldGroup>
           <FieldGroup title={labels.cjkGrid} description={labels.cjkGridDescription}>
             <ToggleSwitch
