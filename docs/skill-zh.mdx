@@ -5,9 +5,9 @@ export const metadata = {
   sidebarTitle: '技能',
   description: '在Claude Code、Codex或任意智能体中安装postext-port技能，让它把PDF、Word、PowerPoint、EPUB、InDesign或HTML源文件转换成沿用原版面的Postext项目',
   lang: 'zh',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-05',
   readingTime: '8分钟',
-  order: 10,
+  order: 11,
   plainSummary: "本页写给已经有一本书或一份文档的人，比如PDF、Word或InDesign文件，想把它转成Postext。AI助手（也叫AI代理）可以完成大部分工作，只要你给它装上一个叫skill的小插件。这个skill教代理怎样复制文字，并按原样重建原书的设计。本页说明怎样安装它、该怎样提要求，以及怎样检查结果。一段大约五分钟的视频演示了每一步。",
 };
 
@@ -51,6 +51,7 @@ YouTube上也有：[在那里观看](https://youtu.be/iiqeWdm9sQE)，或者看[P
   - 一套版面设计分析方法；
   - 一份已解决的版面案例目录：各有配色的篇、章首页、诗歌、边注、脚注、索引、浮动/拆分/嵌套的标注框、矢量印刷原稿、保留真实文字的图、表格单元格中的图片、横排表、双语版本等；
   - 中文书籍，横排或竖排、右侧装订：在需求中要问什么（文字、地区、方向、装订），如何测量字符网格，如何读取竖排PDF，InDesign的注音和割注，Word的东亚版式和从右到左的EPUB，以及如何按书中用字裁剪CJK字体（见[中文排版](/zh/docs/chinese-layout)）；
+  - 日文书籍，竖排、右侧装订的文库本和单行本小说，或横排的技术书：开启日文规则的语言设置（`ja`，不用任何中文标签），在需求中要问什么（排版方向、版面网格、注音假名、注释、底本的用字），如何按字数和行数测量版面，注音假名和傍点的标记，用`aozora.py`转换的青空文库文本，日本国立国会图书馆公有领域版本的扫描件，以及保留假名和竖排字形的日文字体子集（见[日文排版](/zh/docs/japanese-layout)）；
   - 阿拉伯文书籍，现代的或标注元音的古典版本，从右到左排、右侧装订：让整本书转向的语言设置，在需求中要问什么（地区与数字、元音标注、诗体、目录放在书末），如何测量镜像的页面，如何从PDF、Word和维基文库读取阿拉伯文，把诗排成`:::verse`，每页重新编号的脚注「(١)」，以及保留连写表的阿拉伯文字体子集（见[阿拉伯文排版](/zh/docs/arabic-layout)）；
   - 印刷实物：如何读出源书的纸张、装订、封面和书脊，并把它们设为[书页视图](/zh/docs/sandbox#书页标签页)所显示的`folio`设置，由lint脚本检查。
 - **脚本**（Python和Node），在下一节介绍。
@@ -72,10 +73,11 @@ YouTube上也有：[在那里观看](https://youtu.be/iiqeWdm9sQE)，或者看[P
     <tr><td><code>extract_tables.py</code></td><td>PDF表格 → Postext的<code>TableModel</code></td></tr>
     <tr><td><code>pandoc_to_postext.py</code></td><td>DOCX、PPTX、ODT、EPUB、HTML、LaTeX、Markdown、JATS、DocBook → 章节草稿，Word样式映射为标注框和段落样式</td></tr>
     <tr><td><code>idml_extract.py</code></td><td>InDesign IDML → 按段落样式生成的章节草稿、表和锚定图片；注音、纵中横、着重号和割注转换为<code>:ruby</code>、<code>:tcy</code>、<code>:dots</code>和<code>:warichu</code>，并报告竖排文章和从右到左的装订</td></tr>
+    <tr><td><code>aozora.py</code></td><td>青空文库文本（CP932编码的zip或<code>.txt</code>）→ Postext Markdown：注音假名、傍点和傍线、带缩进的标题、作为段落样式的字下げ和地付き段落、分页、按JIS X 0213解析的外字、汉文训读符号；同时返回版权与致谢信息，并报告它无法表达的内容</td></tr>
     <tr><td><code>index_marks.py</code></td><td>把印刷版的索引重建为<code>:index</code>标记：读取PDF中的索引页，在对应页面上找到每个词条，并在各章中标记相同的词语</td></tr>
-    <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文字体保留其竖排字形和度量，阿拉伯文字体保留其连写字形和tatweel）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
+    <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文或日文字体保留其竖排字形和度量，阿拉伯文字体保留其连写字形和tatweel）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>搭建项目及其生成脚本，构建<code>preset.json</code>，打包<code>.postext</code>文件</td></tr>
-    <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符；对阿拉伯文文本，会指出缺少阿拉伯语的语言设置、只有拉丁字母或没有连写表的字体、字母间距、强制断词和斜体强调</td></tr>
+    <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符；对日文文本，会指出设成中文语言的假名文本、中文字体或中文设置、章节里残留的青空文库标记，以及没有读音的汉字索引条目；对阿拉伯文文本，会指出缺少阿拉伯语的语言设置、只有拉丁字母或没有连写表的字体、字母间距、强制断词和斜体强调</td></tr>
     <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，代理不必生成PDF就能查看页面；<code>--out</code>写出PDF</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置，Postext页面取自渲染出的PDF或JPEG文件夹</td></tr>
   </tbody>

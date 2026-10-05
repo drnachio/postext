@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { renderToEpub } from './index';
 import type { RenderToEpubOptions } from './types';
-import { AMIRI, LORA, PNG, arabicSampleBook, sampleBook } from './__tests__/sampleBook';
+import { AMIRI, LORA, MP4, PNG, arabicSampleBook, sampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -50,6 +50,21 @@ const arabic = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => (
   cover: { bytes: PNG, mediaType: 'image/png', alt: 'غلاف الكتاب' },
 });
 
+/** The videos sample (#454): a poster and an MP4 the book carries. */
+const video = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
+  ...base(layout),
+  resourceBytes: (fileId) => fileId === 'f1.png'
+    ? { bytes: PNG, mediaType: 'image/png' }
+    : fileId === 'clip.mp4' ? { bytes: MP4, mediaType: 'video/mp4' } : undefined,
+});
+
+/** The vertical Japanese sample (#428). */
+const japanese = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
+  layout,
+  metadata: { title: 'こころ', creators: ['夏目漱石'], language: 'ja', modified: new Date(Date.UTC(2026, 9, 5)) },
+  cover: { bytes: PNG, mediaType: 'image/png', alt: '表紙' },
+});
+
 const samples: { name: string; options: RenderToEpubOptions; book?: () => ReturnType<typeof sampleBook> }[] = [
   { name: 'fixed', options: base('fixed') },
   { name: 'fixed-cover', options: { ...base('fixed'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
@@ -57,6 +72,10 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   { name: 'reflowable-cover', options: { ...base('reflowable'), cover: { bytes: PNG, mediaType: 'image/png', alt: 'A red square' } } },
   { name: 'arabic-fixed', options: arabic('fixed'), book: arabicSampleBook },
   { name: 'arabic-reflowable', options: arabic('reflowable'), book: arabicSampleBook },
+  { name: 'video-fixed', options: video('fixed'), book: videoSampleBook },
+  { name: 'video-reflowable', options: video('reflowable'), book: videoSampleBook },
+  { name: 'japanese-fixed', options: japanese('fixed'), book: japaneseSampleBook },
+  { name: 'japanese-reflowable', options: japanese('reflowable'), book: japaneseSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {

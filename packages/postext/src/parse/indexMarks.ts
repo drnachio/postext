@@ -12,6 +12,7 @@
 import type { AnchorMark, ContentBlock, IndexMark, ParseIssue } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { stripInlineFormatting } from './inlineFormatting';
+import { findAnnotations } from './annotations';
 
 /** `:index[text]{attrs}`, `:index[text]` or `:index{attrs}`: not after a
  *  colon (the `:::index` directive) or a backslash (an escaped mark). The
@@ -61,6 +62,38 @@ function plainText(text: string): string {
   return stripInlineFormatting(text.replace(/\\([[\]])/g, '$1')).replace(/\s+/g, ' ').trim();
 }
 
+/** A reading in kana: kana, the long vowel mark, the middle dot and
+ *  spaces. A pinyin or zhuyin ruby is not one. */
+const KANA_READING_RE = /^[\p{sc=Hiragana}\p{sc=Katakana}ー・゠\s]+$/u;
+
+/**
+ * The kana reading the ruby of a visible mark's text gives it (#425): the
+ * text with each ruby base replaced by its reading (`{東京|とう|きょう}駅前`
+ * would leave 駅前 unread, so it gives none; `{東京|とう|きょう}えき` gives
+ * とうきょうえき). Undefined when the text has no ruby, when a ruby reading
+ * is not kana, or when a kanji is left without one.
+ */
+function rubyReadingOf(visible: string): string | undefined {
+  const found = findAnnotations(visible);
+  if (!found.some((a) => a.name === 'ruby')) return undefined;
+  let out = '';
+  let at = 0;
+  for (const a of found) {
+    // Another annotation (`:dots[…]`) keeps its text, and a ruby inside a
+    // ruby already replaced is gone with it.
+    if (a.name !== 'ruby' || a.start < at) continue;
+    const reading = a.compact
+      ? visible.slice(a.contentEnd + 1, a.end - 1).split(/(?<!\\)\|/).join('')
+      : (a.attrs !== undefined ? parseDirectiveAttrs(a.attrs).rt ?? '' : '').replace(/\|/g, '');
+    const kana = reading.replace(/\s+/g, '');
+    if (!kana || !KANA_READING_RE.test(kana)) return undefined;
+    out += visible.slice(at, a.start) + kana;
+    at = a.end;
+  }
+  const plain = plainText(out + visible.slice(at));
+  return plain.length > 0 && !/\p{sc=Han}/u.test(plain) ? plain : undefined;
+}
+
 function markFrom(attrsRaw: string | undefined, visible: string | undefined, sourceStart: number, sourceEnd: number): IndexMark {
   const attrs = attrsRaw !== undefined ? parseDirectiveAttrs(attrsRaw) : {};
   let path = termLevels(attrs.term);
@@ -72,12 +105,20 @@ function markFrom(attrsRaw: string | undefined, visible: string | undefined, sou
   const main = attrs.main !== undefined && attrs.main !== 'false';
   const range = attrs.range === 'start' || attrs.range === 'end' ? attrs.range : undefined;
   const sort = attrs.sort?.trim();
+  const yomi = (attrs.yomi ?? attrs.reading)?.trim();
+  // The ruby of the marked text reads the entry when that text is the
+  // entry's last level (no `term` naming another, no `sub`).
+  const rubyYomi = !yomi && visible !== undefined && path.length > 0 && path[path.length - 1] === plainText(visible)
+    ? rubyReadingOf(visible)
+    : undefined;
   const see = attrs.see?.trim();
   const seeAlso = attrs.seealso?.trim();
   return {
     index: attrs.index?.trim() ?? '',
     path,
     ...(sort ? { sort } : {}),
+    ...(yomi ? { yomi } : {}),
+    ...(rubyYomi ? { rubyYomi } : {}),
     ...(see ? { see } : {}),
     ...(seeAlso ? { seeAlso } : {}),
     ...(main ? { main: true } : {}),

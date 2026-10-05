@@ -34,8 +34,11 @@ import type {
   VDTDocument,
   ResolvedResourceBlock,
   VDTResourceTableCell,
+  VDTResourceVideo,
 } from 'postext';
-import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline } from 'postext';
+import { applySingleInkToSvg, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
+import { roundedRectSvgPath } from './headerFooter';
+import { pdfUri } from './links';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import { widthOfTextAtSize } from '../faceFiles';
@@ -59,12 +62,14 @@ import {
   pushFrame,
   quarterTurnMatrix,
   pushClipOutline,
+  pushClipRect,
   popClip,
   strokeOutlinePx,
   counterFlipPx,
 } from './primitives';
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { paintChip } from './chip';
+import { paintKunten, paintLineMarks, paintRuby, paintWarichu } from './annotations';
 import { tagArtifact, tagContent, type StructAttrs, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
 import {
@@ -318,7 +323,8 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
   };
   for (const block of blocks) {
     const rb = block.resourceBlock;
-    if (rb?.fileId) note(rb.fileId, rb.bodyRect.width, rb.bodyRect.height);
+    // A cropped picture is drawn at its uncropped size.
+    if (rb?.fileId) note(rb.fileId, rb.bodyRect.width / (rb.bodySource?.width ?? 1), rb.bodyRect.height / (rb.bodySource?.height ?? 1));
     for (const cell of rb?.table?.cells ?? []) {
       if (cell.image) note(cell.image.fileId, cell.image.rect.width, cell.image.rect.height);
     }
@@ -480,7 +486,7 @@ export async function preloadResourceImages(
   };
   for (const block of blocks) {
     const rb = block.resourceBlock;
-    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
+    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video')) {
       await embed(rb.fileId, rb.format);
     }
     // Images embedded in table cells draw through the same map.
@@ -557,7 +563,9 @@ interface PaintFonts {
 /** A caption, note or cell line. A tracked line (a table header set with
  *  `headerLetterSpacing`) was measured with the tracking in its widths, so
  *  it is painted with the matching character spacing (`Tc`, in points at
- *  the page scale), reset afterwards. */
+ *  the page scale), reset afterwards. Ruby readings, warichu rows and the
+ *  marks of the line are painted as on a body line (#429): a reading in
+ *  the `RT` of a `Ruby` whose `RB` is its base, the marks as artifacts. */
 function paintLine(
   ctx: PageCtx,
   line: VDTLine,
@@ -574,6 +582,7 @@ function paintLine(
   if (tracking !== 0) setTrackingPx(ctx, tracking);
   paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
   if (tracking !== 0) setTrackingPx(ctx, 0);
+  if (line.marks) paintLineMarks(ctx, line, color);
 }
 
 function paintLineRuns(
@@ -653,6 +662,15 @@ function paintLineRuns(
         x += seg.width;
         continue;
       }
+      if (composed && seg.warichu) {
+        // A warichu note's part: its two rows, not its text (#195), with
+        // no character spacing.
+        if (tracking !== 0) setTrackingPx(ctx, 0);
+        paintWarichu(ctx, seg.warichu, x, line.baseline, color, fontCache, baseFont, textElem);
+        if (tracking !== 0) setTrackingPx(ctx, tracking);
+        x += seg.width;
+        continue;
+      }
       const fontStr = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, fonts);
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
@@ -662,7 +680,10 @@ function paintLineRuns(
       // (small capitals) is one link —, a Markdown link's words to its URL.
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);
       const link = refId !== undefined ? refRun.enter(seg, x, textElem, refId, seg.width) : undefined;
-      tagContent(ctx, link ?? uriElem ?? textElem);
+      // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading.
+      const holder = link ?? uriElem ?? textElem;
+      const rubyElem = composed && seg.ruby && holder ? holder.child('Ruby') : undefined;
+      tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
       const baseline = line.baseline + (seg.baselineShift ?? 0);
       const direction = seg.rtl ? 'rtl' : 'ltr';
       if (seg.runs && drawStyledWordPx(ctx, seg.text, x, baseline, font, size, segColor, wordParts(seg, font, segColor, ctx, (bold, italic) => ({ font: fontCache.get(pickFont(bold, italic, fonts)) ?? undefined, color: segColor })), { direction })) {
@@ -682,6 +703,17 @@ function paintLineRuns(
         drawTextPx(ctx, seg.text, x + (seg.inkOffset ?? 0), line.baseline + (seg.baselineShift ?? 0), font, size, segColor);
         ctx.page.pushOperators(...stretch.after);
         if (markSpacing !== undefined || seg.tracking !== undefined) setTrackingPx(ctx, tracking);
+        if (seg.ruby) {
+          if (tracking !== 0) setTrackingPx(ctx, 0);
+          paintRuby(ctx, seg.ruby, x, line.baseline, segColor, fontCache, baseFont, rubyElem);
+          if (tracking !== 0) setTrackingPx(ctx, tracking);
+        }
+        if (seg.kunten) {
+          // Kanbun marks (#430), with the character's text.
+          if (tracking !== 0) setTrackingPx(ctx, 0);
+          paintKunten(ctx, seg.kunten, x, line.baseline, segColor, fontCache, baseFont, holder);
+          if (tracking !== 0) setTrackingPx(ctx, tracking);
+        }
       }
       const ref = refId !== undefined ? refRun.leave(seg, segs[i + 1], refId) : undefined;
       if (ref && linkRegistry) {
@@ -889,8 +921,66 @@ function renderTable(
 }
 
 function drawPlaceholder(ctx: PageCtx, rb: ResolvedResourceBlock, x: number, y: number): void {
-  const fill = colorFromHex('#eeeeee', ctx.colorSpace);
+  // A video with no poster: a dark frame its overlays read on (#454).
+  const fill = colorFromHex(rb.kind === 'video' ? '#1f1f1f' : '#eeeeee', ctx.colorSpace);
   fillRectPx(ctx, x, y, rb.bodyRect.width, rb.bodyRect.height, fill);
+}
+
+/** The play mark and the QR code of a video's poster (#454) as vectors,
+ *  over the body at (`bx`, `by`) px. On a mirrored page they are turned
+ *  back about the body, so they sit where they are printed in the other
+ *  outputs and the code reads. */
+function drawVideoOverlays(ctx: PageCtx, video: VDTResourceVideo, bx: number, by: number, bw: number): void {
+  if (!video.playMark && !video.qr) return;
+  const { scale, pageHeightPt } = ctx;
+  // `drawSvgPath` reads its path top-down from this origin, in points.
+  const origin = { x: 0, y: pageHeightPt };
+  const pt = (v: number): string => String(Math.round(v * scale * 1000) / 1000);
+  const alpha = (a: number) => (a < 1 ? { opacity: a, borderOpacity: a } : {});
+  counterFlipPx(ctx, bx, bw, () => {
+    const mark = video.playMark;
+    if (mark) {
+      const { x, y, width: w, height: h } = mark.rect;
+      const ox = bx + x;
+      const oy = by + y;
+      const tri = playMarkTriangle(mark)
+        .map(([px, py], i) => `${i === 0 ? 'M' : 'L'} ${pt(ox + px)} ${pt(oy + py)}`)
+        .join(' ') + ' Z';
+      const color = colorFromHex(mark.color, ctx.colorSpace);
+      const background = colorFromHex(mark.background, ctx.colorSpace);
+      if (mark.shape === 'triangle') {
+        ctx.page.drawSvgPath(tri, {
+          ...origin, color, borderColor: background, borderWidth: h * 0.08 * scale,
+          ...(mark.backgroundOpacity < 1 ? { borderOpacity: mark.backgroundOpacity } : {}),
+        });
+      } else {
+        if (mark.shape === 'circle') {
+          ctx.page.drawEllipse({
+            x: (ox + w / 2) * scale, y: pageHeightPt - (oy + h / 2) * scale,
+            xScale: (w / 2) * scale, yScale: (h / 2) * scale,
+            color: background, ...alpha(mark.backgroundOpacity),
+          });
+        } else {
+          ctx.page.drawSvgPath(roundedRectSvgPath(ctx, ox, oy, w, h, h * 0.24), { ...origin, color: background, ...alpha(mark.backgroundOpacity) });
+        }
+        ctx.page.drawSvgPath(tri, { ...origin, color });
+      }
+    }
+    const qr = video.qr;
+    if (qr) {
+      const { x, y, width: w, height: h } = qr.rect;
+      const ox = bx + x;
+      const oy = by + y;
+      const background = colorFromHex(qr.background, ctx.colorSpace);
+      if (qr.radius > 0) ctx.page.drawSvgPath(roundedRectSvgPath(ctx, ox, oy, w, h, qr.radius), { ...origin, color: background });
+      else fillRectPx(ctx, ox, oy, w, h, background);
+      // One path for every dark module: no seams between them.
+      const d = qrModuleRuns(qr)
+        .map((r) => `M ${pt(ox + r.x)} ${pt(oy + r.y)} h ${pt(r.w)} v ${pt(r.h)} h ${pt(-r.w)} Z`)
+        .join(' ');
+      if (d) ctx.page.drawSvgPath(d, { ...origin, color: colorFromHex(qr.color, ctx.colorSpace) });
+    }
+  });
 }
 
 export function renderResourceBlock(
@@ -944,14 +1034,42 @@ export function renderResourceBlock(
     }
   }
 
-  if (rb.kind === 'bitmap' || rb.kind === 'svg') {
-    tagContent(ctx, owner);
+  if (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video') {
     const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
-    if (embedded) {
+    const src = rb.bodySource;
+    if (embedded && src) {
+      // A picture cropped within its safe area (#442): the whole picture at
+      // its uncropped box, clipped to the body (the figure's content opened
+      // inside the clip, which closes marked content); on a mirrored page
+      // the box is reflected about the body, as the picture is turned back
+      // in it.
+      let full = uncroppedPictureBox(bx, by, bw, bh, src);
+      if (ctx.mirror) full = { ...full, x: 2 * bx + bw - full.x - full.width };
+      pushClipRect(ctx, bx, by, bw, bh);
+      tagContent(ctx, owner);
+      drawEmbeddedResource(ctx, embedded, full.x, full.y, full.width, full.height);
+      popClip(ctx);
+      tagArtifact(ctx, { type: 'Layout' });
+    } else if (embedded) {
+      tagContent(ctx, owner);
       drawEmbeddedResource(ctx, embedded, bx, by, bw, bh);
     } else {
+      tagContent(ctx, owner);
       if (rb.fileId) ctx.onMissingImage?.(rb.fileId, rb.resource.id);
       drawPlaceholder(ctx, rb, bx, by);
+    }
+    const video = rb.video;
+    if (video) {
+      tagContent(ctx, owner);
+      drawVideoOverlays(ctx, video, bx, by, bw);
+      // The poster opens the video (#454).
+      const uri = video.linkPoster && video.link ? pdfUri(video.link) : undefined;
+      if (uri && linkRegistry) {
+        const rect: [number, number, number, number] = [bx * scale, pageHeightPt - (by + bh) * scale, (bx + bw) * scale, pageHeightPt - by * scale];
+        const box = ctx.mapRectPt ? ctx.mapRectPt(rect) : rect;
+        const elem = owner?.child('Link');
+        linkRegistry.addUriLink(ctx.page, box, uri, elem ? { elem, contents: `${figureAlt(rb)} (${video.link})` } : undefined);
+      }
     }
   } else if (rb.kind === 'table') {
     renderTable(ctx, rb, bx, by, fontCache, images, linkColor, linkRegistry, owner);

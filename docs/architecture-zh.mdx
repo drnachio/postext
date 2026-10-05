@@ -152,6 +152,7 @@ interface Resource {
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
   placement?: ResourcePlacement; // 可选：单个资源覆盖浮动设置
+  safeArea?: ResourceSafeArea;  // 位图 / svg：{ x, y, width, height }，以比例表示，始终显示的部分
 }
 ```
 
@@ -344,6 +345,8 @@ interface ResolvedResourceBlock {
   number: string;             // 计算出的编号，例如"1.7"
   captionPrefix: string;      // 例如"Figure"
   bodyRect: BoundingBox;      // 图片 / 表格区域
+  bodySource?: ResourceSafeArea; // 按安全区裁切时，图片在bodyRect中显示的部分
+  bodyFlex?: { shrink: number; grow: number; delta: number }; // 主体还能缩短 / 增高的px，已改变的px
   fileId?: string;            // 带外的二进制数据（位图 / svg）
   captionLines: VDTLine[];    // 经过测量的题注，含前缀和编号
   table?: VDTResourceTableLayout; // 表格资源的单元格几何信息
@@ -397,7 +400,7 @@ Dirty跟踪让引擎不必重做已经正确完成的工作。当某一遍移动
 
 该模块按职责清晰拆分：`plain.ts`测量纯文本片段，`rich.ts`测量粗体、斜体、数学公式混排的片段，`font.ts`构造字体字符串并管理缓存的生命周期，`canvas.ts`封装底层的Canvas文本宽度原语。有一个生命周期细节在实践中很重要：`clearMeasurementCache()`会同时清空Pretext的内部缓存*和*引擎自己的文本宽度缓存，因此真实字体加载完成后，按后备字体测得的字形宽度会被丢弃。
 
-中文、日文和韩文段落在同一模块中走另一条路径。CJK字符数多于词间空格数的段落交给**CJK排版器**（`cjkCompose.ts`）处理。它把文本切分成单元（一个字符、一串拉丁文、一个两字宽的破折号或省略号、行内标签或注释标记这样不可分割的盒子），每个单元只测量一次，然后按`cjkClasses.ts`的避头尾规则以首次适配的方式填充各行：遇到不能出现在下一行行首的标点时，本行先通过标点挤压（`cjkPunctuation.ts`）让出标点的空白把它容纳进来，然后才考虑把一个字符移到下一行。两端对齐的行再把余量分配到字符之间。输出是普通的`VDTLine`，其片段携带渲染器按测量结果精确绘制所需的一切：`tracking`（每个字符后的像素数，已计入片段宽度）、让出空白的标点的`inkOffset`、`hangs`、作为`autospace`片段的汉字与拉丁文之间的间距，以及中文注释的着重号、注音和割注行。开销与段落长度成线性关系：排《紅樓夢》第1回（6,949个字符）时测量了1,298个字符，每个不同的字符只测一次；而如果测量段落的各个前缀，则需要测量636,948个字符。详见[中文排版](/zh/docs/chinese-layout)。
+中文、日文和韩文段落在同一模块中走另一条路径。CJK字符数多于词间空格数的段落交给**CJK排版器**（`cjkCompose.ts`）处理。它把文本切分成单元（一个字符、一串拉丁文、一个两字宽的破折号或省略号、行内标签或注释标记这样不可分割的盒子），每个单元只测量一次，然后按`cjkClasses.ts`的避头尾规则以首次适配的方式填充各行：遇到不能出现在下一行行首的标点时，本行先通过标点挤压（`cjkPunctuation.ts`）让出标点的空白把它容纳进来，然后才考虑把一个字符移到下一行。两端对齐的行再把余量分配到字符之间。输出是普通的`VDTLine`，其片段携带渲染器按测量结果精确绘制所需的一切：`tracking`（每个字符后的像素数，已计入片段宽度）、让出空白的标点的`inkOffset`、`hangs`、作为`autospace`片段的汉字与拉丁文之间的间距，以及中文注释的着重号、注音和割注行。在日文文档中，同一个排版器遵循JLReq：断行时从每个单元两端的字符读出日文级别的禁则类别，标点空白按JLReq的顺序挤压和让出，振假名由`rubyJis.ts`排布（1:2:1间距、伸到假名上、熟语），汉文训读记号则加宽其所属字符的单元。开销与段落长度成线性关系：排《紅樓夢》第1回（6,949个字符）时测量了1,298个字符，每个不同的字符只测一次；而如果测量段落的各个前缀，则需要测量636,948个字符。详见[中文排版](/zh/docs/chinese-layout)。
 
 在底层，这正是Pretext发挥作用的地方。`prepare()`调用开销大：它用Canvas字体引擎分析文本并缓存结果。而`layout()`调用只是纯算术，几乎没有开销。这种拆分是关键所在。文本一旦准备好，引擎就能以不同宽度重新排版，尝试不同的栏配置，测试某个段落多一个断词连字符会怎样，这些开销都可以忽略不计。准备一次，需要排多少次就排多少次。
 
@@ -638,7 +641,7 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 renderToEpub(docs, options): Promise<Uint8Array>;
 ```
 
-由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
+由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。视频资源绘制为它的封面，和其他位图一样；HTML后端还接收一个`resourceVideoUrl(fileId)`解析函数，用于它要播放的视频文件，EPUB写入器则把这些文件存放在`media/`下。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
 
 `renderToHtmlIndexed`值得单独说明：除了完整的HTML字符串，它还返回按页、按块的分解结果（`HtmlRenderIndex`），调用方可以与上一次渲染做差异比较，只修补HTML确实发生变化的DOM子树。沙盒的实时预览走的就是这条路径。
 

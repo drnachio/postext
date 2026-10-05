@@ -63,6 +63,9 @@ const TRACKING_UNITS: DimensionUnit[] = ['pt', 'em', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MIN_HEIGHT_UNITS: DimensionUnit[] = ['pt', 'mm', 'cm', 'in', 'em', 'px'];
 const ZERO_PT: Dimension = { value: 0, unit: 'pt' };
+/** 字下げ counts body characters (`em` is the body size). */
+const INDENT_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
+const ZERO_EM: Dimension = { value: 0, unit: 'em' };
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
@@ -174,7 +177,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
     'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
-    'marginTop', 'marginBottom', 'snapToGrid', 'breakBefore', 'span', 'hidden', 'advancedDesign',
+    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'jidori', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
   const resetHeadingFields = () => {
@@ -519,6 +522,39 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           tooltip={labels.headingLevelSnapToGridTooltip}
           isDefault={unset('snapToGrid')}
           onReset={() => set('snapToGrid', undefined)}
+        />
+        <NumberInput
+          label={labels.headingLineSpan}
+          value={style.lineSpan ?? lvl.lineSpan ?? 0}
+          onChange={(v) => set('lineSpan', Math.max(0, Math.round(v)))}
+          min={0}
+          max={20}
+          step={1}
+          tooltip={labels.headingLineSpanTooltip}
+          isDefault={unset('lineSpan')}
+          onReset={() => set('lineSpan', undefined)}
+        />
+        <DimensionInput
+          label={labels.headingIndent}
+          value={style.indent ?? lvl.indent ?? ZERO_EM}
+          onChange={(dim) => set('indent', dim)}
+          min={0}
+          step={0.5}
+          tooltip={labels.headingIndentTooltip}
+          isDefault={unset('indent')}
+          onReset={() => set('indent', undefined)}
+          units={INDENT_UNITS}
+        />
+        <NumberInput
+          label={labels.headingJidori}
+          value={style.jidori ?? lvl.jidori ?? 0}
+          onChange={(v) => set('jidori', Math.max(0, v))}
+          min={0}
+          max={20}
+          step={0.5}
+          tooltip={labels.headingJidoriTooltip}
+          isDefault={unset('jidori')}
+          onReset={() => set('jidori', undefined)}
         />
         <ToggleSwitch
           label={labels.headingBreakBefore}

@@ -42,6 +42,7 @@ import { joinsLetters, type CjkRegion, type ForcedOrientation, type PdfColorSpac
 import type { PageTagger } from './tagging';
 import { fallbackPieces, type FallbackFace, type TextPiece } from './fallbackSpaces';
 import { fileRuns, noteMissingGlyphs } from '../faceFiles';
+import { shapingKey } from '../shapingLanguage';
 
 export interface PageCtx {
   page: PDFPage;
@@ -474,12 +475,14 @@ export function showTextShaped(font: PDFFont, text: string): PDFOperator {
     cache = new Map();
     showByFont.set(font, cache);
   }
-  const hit = cache.get(text);
+  // Text shaped in another language system is another show (`JAN `).
+  const key = shapingKey(text);
+  const hit = cache.get(key);
   if (hit) return hit;
   noteMissingGlyphs(font, text);
   const op = fallbackOperator(font, text) ?? shapedTextOperator(font, text);
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
-  cache.set(text, op);
+  cache.set(key, op);
   return op;
 }
 
@@ -669,7 +672,8 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
     cache = new Map();
     runsByFont.set(font, cache);
   }
-  const hit = cache.get(text);
+  const key = shapingKey(text);
+  const hit = cache.get(key);
   if (hit) return hit;
   const shaping = shapingFace(font);
   if (!shaping) return undefined;
@@ -685,7 +689,7 @@ function shownRun(font: PDFFont, text: string): ShownRun | undefined {
     run = shownRunOf(shaped?.parts ?? (hex ? [hex] : []), shaped?.widths ?? font.widthOfTextAtSize(text, 1000));
   }
   if (cache.size >= ENCODE_CACHE_SLOTS) cache.clear();
-  cache.set(text, run);
+  cache.set(key, run);
   return run;
 }
 
@@ -1067,12 +1071,20 @@ function lineTextState(ctx: PageCtx, state: LineTextState): PDFOperator[] {
  *  of them carries tracking, is a Han–Latin space, is a mark that gave up
  *  blank (its glyph painted over its neighbour's box, `inkOffset`), hangs,
  *  is a ruby base (the line reads its base, not the reading painted over
- *  it) or a warichu note's part (read once, upper row first); else
+ *  it), a warichu note's part (read once, upper row first) or a character
+ *  with kanbun marks (read with its 送り仮名, {@link readText}); else
  *  undefined. */
-export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean; ruby?: unknown; warichu?: unknown }[]): string | undefined {
-  return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.ruby || s.warichu)
-    ? segments.map((s) => s.text).join('')
+export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean; ruby?: unknown; warichu?: unknown; kunten?: { okuri?: string } }[]): string | undefined {
+  return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.ruby || s.warichu || s.kunten)
+    ? segments.map(readText).join('')
     : undefined;
+}
+
+/** A segment's text as it is read: a character with kanbun marks (#430)
+ *  is followed by its 送り仮名 (`學ビテ`, as kanbun is typed with them);
+ *  its 返り点 are reading-order marks, left out. */
+export function readText(s: { text: string; kunten?: { okuri?: string } }): string {
+  return s.kunten?.okuri ? s.text + s.kunten.okuri : s.text;
 }
 
 /**

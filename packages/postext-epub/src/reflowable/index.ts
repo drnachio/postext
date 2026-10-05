@@ -18,13 +18,14 @@ import type {
   EpubWarning,
   RenderToEpubOptions,
 } from '../types';
-import { fontAssets, imageAssets, pageProgressionOf } from '../shared/assets';
+import { fontAssets, imageAssets, pageProgressionOf, remoteVideoItems, videoAssets } from '../shared/assets';
 import { bookStylesheet, stylesheetOverrides, withPalette } from './css';
 import { xmlAttr, xmlText } from './inline';
 import type { FileModel, HeadingEntry } from './model';
 import { docLanguage, walkBook } from './walk';
 import { relativeHref, writeContentDocument } from './xhtml';
 import { isRtlLanguage, navStrings } from '../package/strings';
+import { isJapaneseLanguage } from 'postext';
 
 export const STYLESHEET_HREF = 'styles/book.css';
 const TEXT_DIR = 'text/';
@@ -131,6 +132,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   onProgress?.({ phase: 'resources', done: 0, total: 2 });
   const missing: EpubWarning[] = [];
   const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w));
+  const videos = await videoAssets(docs, options.resourceBytes);
   for (const w of missing) if (w.kind !== 'missingImage' || book.images.has(w.fileId)) warn(w);
   const usedImages = new Set([...book.images].map((id) => images.hrefOf(id)).filter((h): h is string => h !== undefined));
   const fonts = fontAssets(options.fonts ?? []);
@@ -138,7 +140,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   signal?.throwIfAborted();
 
   const vertical = first.config.layout.writingMode === 'vertical-rl';
-  const sheetOptions = { vertical, ...(book.verse ? { verse: true } : {}) };
+  const sheetOptions = { vertical, ...(book.verse ? { verse: true } : {}), ...(book.dots.size > 0 ? { dots: [...book.dots] } : {}) };
   const sheet = bookStylesheet(first.config, fonts.css, sheetOptions);
   const items: EpubItem[] = [{ id: 'css', href: STYLESHEET_HREF, mediaType: 'text/css', data: sheet.css }];
   // The stylesheet follows the first chapter's configuration. A document
@@ -177,12 +179,15 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
 
   items.push(...fonts.items);
   items.push(...images.items.filter((i) => usedImages.has(i.href)));
+  items.push(...videos.items, ...remoteVideoItems(docs, videos));
   const spine: EpubSpineEntry[] = [];
   const landmarks: EpubLandmark[] = [];
   // Landmark names: in the book's language for a right-to-left book,
   // whose navigation document is set right to left in that language
-  // (#402); in English otherwise, as they have always been written.
-  const named = isRtlLanguage(metadata.language) ? navStrings(metadata.language) : undefined;
+  // (#402), and for a Japanese one (#428), whose reading systems show
+  // them in a Japanese interface; in English otherwise, as they have
+  // always been written.
+  const named = isRtlLanguage(metadata.language) || isJapaneseLanguage(metadata.language) ? navStrings(metadata.language) : undefined;
   const names = {
     cover: named?.cover ?? 'Cover',
     toc: named?.contents ?? 'Table of contents',
@@ -212,6 +217,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
     book,
     bookTitle: metadata.title,
     imageHref: (fileId: string) => images.hrefOf(fileId),
+    videoHref: (fileId: string) => videos.hrefOf(fileId),
     stylesheet: STYLESHEET_HREF,
     backLabel,
   };
@@ -264,6 +270,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
     pageList,
     landmarks,
     pageProgression: pageProgressionOf(docs),
+    ...(vertical ? { writingMode: 'vertical-rl' as const } : {}),
     accessibility,
   };
 }

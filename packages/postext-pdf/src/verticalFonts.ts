@@ -18,12 +18,16 @@
  * vertical glyph stands for two characters (Noto Serif SC sets “ and 『
  * with one glyph), the line's `/ActualText` gives the text as written.
  *
+ * The glyphs are shaped in the language in force (`shapingLanguage.ts`):
+ * a Japanese line takes the Japanese forms of a pan-CJK face.
+ *
  * fontkit misreads the `vhea` table of Noto CJK fonts (it reports no
  * vertical metrics), so nothing here reads vertical advances or origins
  * from it: every upright character is one em down the column, as the
  * layout measured it, and the painter places the pen itself.
  */
 import { PDFArray, PDFDict, PDFName, PDFRef, type PDFFont } from 'pdf-lib';
+import { shapingKey } from './shapingLanguage';
 
 /** The vertical origin (`DW2`'s first number) every twin is written with,
  *  in thousandths of the em: the ideographic em box's top above the
@@ -150,7 +154,7 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
       return { hex, glyphs };
     },
     glyphCount(text, upright = true) {
-      const key = `${upright ? 'v' : 'h'}${text}`;
+      const key = `${upright ? 'v' : 'h'}${shapingKey(text)}`;
       let n = countCache.get(key);
       if (n === undefined) {
         n = embedder.font.layout(text, upright ? vertical : plain).glyphs.length;
@@ -159,11 +163,12 @@ export function verticalTwinOf(font: PDFFont): VerticalTwin | undefined {
       return n;
     },
     hasVerticalForm(ch) {
-      const hit = formCache.get(ch);
+      const key = shapingKey(ch);
+      const hit = formCache.get(key);
       if (hit !== undefined) return hit;
       const v = idsOf(ch, vertical);
       const has = v !== idsOf(ch, plain) && v !== idsOf(ch, fullWidth);
-      formCache.set(ch, has);
+      formCache.set(key, has);
       return has;
     },
   };

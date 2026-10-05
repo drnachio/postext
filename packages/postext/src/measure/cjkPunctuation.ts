@@ -21,6 +21,13 @@
  * which fixes ：；？！ at one em (clreq §6.3.2.1), and otherwise reuses them
  * as they are.
  *
+ * Japanese full-width text (`japan`, `fullwidth`) follows JLReq where it
+ * differs from clreq ({@link isJlreqSpacing}): ・：； hold a quarter em
+ * each side and ？！ none; the half em after a closing mark or 、。 stays
+ * at the end of a line and is the first blank given up, all of it, to
+ * take one more character; inside the line 、「」・ give theirs up and 。
+ * never does (JLReq §3.1, §3.8.3).
+ *
  * Which blank a region's glyphs carry is decided by the region, not by the
  * font: a Traditional Chinese font set under a mainland tag (or the
  * reverse) puts its marks where its designer did, and compression then
@@ -28,7 +35,7 @@
  * (Noto Serif SC for the mainland, TC for Taiwan, HK for Hong Kong).
  */
 
-import type { CjkHangingPunctuation, CjkPunctuationWidth, CjkRegion, Dimension, ResolvedCjkConfig } from '../types';
+import type { CjkHangingPunctuation, CjkParagraphStartBracket, CjkPunctuationWidth, CjkRegion, Dimension, ResolvedCjkConfig } from '../types';
 import type { CjkClass } from './cjkClasses';
 import { dimensionToPx } from '../units';
 import { languageOf } from '../locale';
@@ -52,6 +59,12 @@ export interface CjkComposition {
    *  Korean text keeps the marks it shares with Latin text at their own
    *  advance (see {@link routesSharedMarks}). */
   language?: string;
+  /** One em of blank after a ？ or ！ that ends a sentence inside the
+   *  paragraph (`cjk.spaceAfterQuestion`, JLReq §3.1.6); unset: none. */
+  spaceAfterQuestion?: boolean;
+  /** How an opening bracket that starts an indented paragraph is set
+   *  (`cjk.paragraphStartBracket`); unset: as at any line start. */
+  paragraphStartBracket?: CjkParagraphStartBracket;
 }
 
 /** The composition outside a build: every mark at its full advance, no
@@ -95,6 +108,8 @@ export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number, locale?: s
     hangingPunctuation: cjk.hangingPunctuation,
     latinSpacing: ls.unit === 'em' || ls.unit === 'rem' ? { em: Math.max(0, ls.value) } : { px: Math.max(0, dimensionToPx(ls, dpi)) },
     ...(language ? { language } : {}),
+    ...(cjk.spaceAfterQuestion ? { spaceAfterQuestion: true } : {}),
+    ...(cjk.paragraphStartBracket ? { paragraphStartBracket: cjk.paragraphStartBracket } : {}),
   };
 }
 
@@ -146,13 +161,29 @@ export function cjkCompositionKey(c: CjkComposition): string {
   // Korean route no shared marks, and only a Chinese document routes them
   // in a paragraph with kana.
   const lang = japaneseOrKorean(c) ? ':jk' : c.language === 'zh' ? ':zh' : '';
-  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}`;
+  // Japanese settings only where set, so other keys stay as they were.
+  const ja = `${c.spaceAfterQuestion ? ':q' : ''}${c.paragraphStartBracket ? `:p${c.paragraphStartBracket}` : ''}`;
+  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}${ja}`;
 }
 
 /** Whether a composition changes nothing: the text is set as without it. */
 export function isPlainComposition(c: CjkComposition): boolean {
   return c.punctuationWidth === 'fullwidth' && !c.compressAdjacent && !c.trimLineStart
-    && c.hangingPunctuation === 'none' && (c.latinSpacing.px ?? c.latinSpacing.em ?? 0) === 0;
+    && c.hangingPunctuation === 'none' && (c.latinSpacing.px ?? c.latinSpacing.em ?? 0) === 0
+    && !c.spaceAfterQuestion && !c.paragraphStartBracket;
+}
+
+/**
+ * Whether marks are spaced as JLReq sets Japanese full-width text (§3.1,
+ * Appendix B): the `japan` region with `fullwidth` marks (its default).
+ * Then ・：； hold a quarter em on each side ({@link punctuationSide}), a
+ * closing mark or 、。 keeps its half em at a line end
+ * ({@link lineEndTrim}), and a line takes one more character by giving up
+ * blank in JLReq's order ({@link jlreqShrinkStep}); a Chinese region, or
+ * Japan under another width style, keeps clreq's rules.
+ */
+export function isJlreqSpacing(c: CjkComposition): boolean {
+  return c.region === 'japan' && c.punctuationWidth === 'fullwidth';
 }
 
 /** Where a full-width mark keeps the blank it may give up: before its
@@ -168,10 +199,12 @@ const COLON_SEMICOLON = new Set(['：', '；', '﹕', '﹔', '︓', '︔']);
 /**
  * The side of a mark's blank along the line (clreq §6.3.2.1): opening
  * brackets and quotes before their glyph, closing ones after it; the
- * mainland's pause and stop marks (、，。．；：？！, in the corner of their
- * box) after it; the marks Taiwan and Hong Kong centre (、，。．；：) and
- * interpuncts on both sides. ？！ are fixed at one em in horizontal Taiwan
- * and Hong Kong text, and ：；？！ in vertical text everywhere. Any other
+ * pause and stop marks of the mainland (、，。．；：？！, in the corner of
+ * their box) and Japan's 、，。． after it; the marks Taiwan and Hong Kong
+ * centre (、，。．；：), Japan's ：； (a quarter em each side, as ・, JLReq
+ * §3.1.2 cl-05) and interpuncts on both sides. ？！ are fixed at one em in
+ * horizontal Taiwan, Hong Kong and Japanese text (JLReq cl-04: a
+ * full-width glyph), and ：；？！ in vertical text everywhere. Any other
  * character has no blank.
  */
 export function punctuationSide(grapheme: string, cls: CjkClass, region: CjkRegion, vertical = false): PunctuationSide {
@@ -186,7 +219,11 @@ export function punctuationSide(grapheme: string, cls: CjkClass, region: CjkRegi
     case 'stop':
       if (vertical && (QUESTION_EXCLAMATION.has(grapheme) || COLON_SEMICOLON.has(grapheme))) return 'none';
       if (region === 'mainland') return 'end';
-      return QUESTION_EXCLAMATION.has(grapheme) ? 'none' : 'both';
+      if (QUESTION_EXCLAMATION.has(grapheme)) return 'none';
+      // Japan sets 、。，． in the corner of their box, as the mainland does
+      // (JLReq §3.1.2), and centres ：； as Taiwan and Hong Kong do.
+      if (region === 'japan' && !COLON_SEMICOLON.has(grapheme)) return 'end';
+      return 'both';
     default:
       return 'none';
   }
@@ -224,12 +261,12 @@ export function boxCut(box: PunctuationBox): number {
 }
 
 /** The blank a mark still holds on each side. */
-function blankStart(box: PunctuationBox): number {
+export function blankStart(box: PunctuationBox): number {
   if (box.side === 'start') return box.blank - box.cutStart;
   if (box.side === 'both') return box.blank / 2 - box.cutStart;
   return 0;
 }
-function blankEnd(box: PunctuationBox): number {
+export function blankEnd(box: PunctuationBox): number {
   if (box.side === 'end') return box.blank - box.cutEnd;
   if (box.side === 'both') return box.blank / 2 - box.cutEnd;
   return 0;
@@ -272,8 +309,9 @@ function isStop(box: PunctuationBox): boolean {
  * half an em under every style (GB/T 15834, clreq §5.1), centred, in either
  * writing mode: a full-width glyph gives up its blank here, and in vertical
  * text its cell is half an em already (`verticalCellEms`), so it is no
- * adjustable mark there. Undefined for a character that is no adjustable
- * mark.
+ * adjustable mark there. The Japanese ・ keeps its em (half a glyph and a
+ * quarter em each side, JLReq §3.1.2), as in Taiwan and Hong Kong.
+ * Undefined for a character that is no adjustable mark.
  */
 export function punctuationBox(grapheme: string, cls: CjkClass, advance: number, em: number, c: CjkComposition): PunctuationBox | undefined {
   const side = punctuationSide(grapheme, cls, c.region, c.vertical);
@@ -300,8 +338,13 @@ function isMarkClass(cls: CjkClass): boolean {
  * before it or an opening one after it. Only the blank between the two is
  * given up — the bracket's first — and never more than takes the pair to
  * 1.5 em, so a Kaiming pair that already takes 1.5 em (。”) keeps it.
+ *
+ * With `jlreq` ({@link isJlreqSpacing}) the same rules give JLReq §3.1.4's
+ * table: 、」 。」 」、 」。 」」 「「 solid, 、「 」「 half an em between,
+ * and 」・ ・「 (and ：； in place of ・) a quarter em between: the
+ * bracket's whole half em goes, the middle dot keeps its quarter.
  */
-export function compressPair(a: PunctuationBox, b: PunctuationBox): void {
+export function compressPair(a: PunctuationBox, b: PunctuationBox, jlreq = false): void {
   if (!isMarkClass(a.cls) || !isMarkClass(b.cls)) return;
   let limit = Math.max(a.em, b.em) / 2;
   let ok = false;
@@ -310,7 +353,7 @@ export function compressPair(a: PunctuationBox, b: PunctuationBox): void {
   else if (b.cls === 'opening' && a.cls !== 'interpunct') ok = true;
   else if ((a.cls === 'closing' && b.cls === 'interpunct') || (a.cls === 'interpunct' && b.cls === 'opening')) {
     ok = true;
-    limit = Math.max(a.em, b.em) / 4;
+    if (!jlreq) limit = Math.max(a.em, b.em) / 4;
   }
   if (!ok) return;
   // The pair's advance over 1.5 em: what may go.
@@ -376,14 +419,16 @@ export function lineStartTrim(box: PunctuationBox | undefined, c: CjkComposition
  *  `lineEndHalf` (GB/T 15834—2011 §5.1.10), the stop marks under
  *  `kaiming` (the rest are half already, but for a closing mark holding a
  *  stop's blank, {@link carryStopBlank}), a closing bracket or quote with
- *  `trimLineStart` (clreq §6.3.2.3). A centred mark gives up a quarter em
- *  each side. */
+ *  `trimLineStart` (clreq §6.3.2.3) but in JLReq spacing, which keeps it
+ *  (§3.1.9: the line gives it up only to take one more character,
+ *  {@link punctuationShrink}). A centred mark gives up a quarter em each
+ *  side. */
 export function lineEndTrim(box: PunctuationBox | undefined, c: CjkComposition): number {
   if (!box || box.side === 'start') return 0;
   const rest = box.side === 'both' ? Math.max(0, blankStart(box)) + Math.max(0, blankEnd(box)) : Math.max(0, blankEnd(box));
   if (c.punctuationWidth === 'lineEndHalf') return rest;
   if (c.punctuationWidth === 'kaiming' && (isStop(box) || box.cls === 'closing')) return rest;
-  if (c.trimLineStart && box.cls === 'closing') return rest;
+  if (c.trimLineStart && box.cls === 'closing' && !isJlreqSpacing(c)) return rest;
   return 0;
 }
 
@@ -455,10 +500,20 @@ export function lineEdgeCut(box: PunctuationBox, c: CjkComposition, start: boole
  * line), and with them the stop's blank a closing mark holds
  * ({@link carryStopBlank}); `lineEndHalf` lets every mark go down to half an
  * em.
+ *
+ * JLReq spacing ({@link isJlreqSpacing}, §3.8.3) gives up more: a mark
+ * that ends the line (`atEnd`) the blank after its glyph, a middle dot
+ * (・：；) inside the line its quarter em on each side, and an opening
+ * bracket, a closing one or 、， inside the line their half em; never the
+ * half em after 。． inside the line.
  */
-export function punctuationShrink(box: PunctuationBox | undefined, c: CjkComposition): number {
+export function punctuationShrink(box: PunctuationBox | undefined, c: CjkComposition, atEnd = false): number {
   if (!box) return 0;
   const rest = Math.max(0, box.blank - boxCut(box));
+  if (isJlreqSpacing(c)) {
+    if (atEnd) return Math.max(0, blankEnd(box));
+    return box.cls === 'stop' ? 0 : rest;
+  }
   switch (c.punctuationWidth) {
     case 'kaiming':
       return isStop(box) || box.carry ? rest : 0;
@@ -470,8 +525,15 @@ export function punctuationShrink(box: PunctuationBox | undefined, c: CjkComposi
 }
 
 /** Give up `amount` px of a mark's blank to compress its line (see
- *  {@link punctuationShrink}); returns what it gave. */
-export function shrinkPunctuation(box: PunctuationBox, amount: number): number {
+ *  {@link punctuationShrink}); returns what it gave. `atEnd`: only the
+ *  blank after the glyph of a mark that ends the line (JLReq spacing). */
+export function shrinkPunctuation(box: PunctuationBox, amount: number, atEnd = false): number {
+  if (atEnd) {
+    const take = Math.min(amount, Math.max(0, blankEnd(box)));
+    if (take <= 0) return 0;
+    box.cutEnd += take;
+    return take;
+  }
   return giveUp(box, amount);
 }
 
@@ -486,6 +548,19 @@ export function shrinkStep(box: PunctuationBox): number {
     case 'pause': return 4;
     default: return 6;
   }
+}
+
+/**
+ * The step of JLReq §3.8.3's reduction order (Table 3) a mark belongs to,
+ * after the word spaces (1): at the end of the line, the half em after a
+ * closing mark or 、。 (2), then the quarter em after a middle dot (3),
+ * each all or nothing (JLReq §3.1.9); inside the line, the middle dots'
+ * quarter ems (4), then the half ems of brackets and 、， (5); the space
+ * between Japanese and Latin text comes last (6).
+ */
+export function jlreqShrinkStep(box: PunctuationBox, atEnd: boolean): number {
+  if (atEnd) return box.side === 'both' ? 3 : 2;
+  return box.side === 'both' ? 4 : 5;
 }
 
 /**
@@ -516,12 +591,14 @@ const HANG_ANYWHERE = new Set(['、', '，', '。', '．', '､', '｡']);
  * (`cjk.hangingPunctuation`, clreq §6.1.3): 、，。． everywhere and, on the
  * mainland (whose marks sit at the start of their box), every pause and
  * stop mark; under `'allow'`, never in horizontal Taiwan and Hong Kong
- * text, whose centred marks look cut off.
+ * text, whose centred marks look cut off. Japan hangs 、，。． only, in
+ * either writing mode (ぶら下げ, JLReq §2.5.1: closing brackets and ？！
+ * never hang).
  */
 export function mayHang(grapheme: string, cls: CjkClass, c: CjkComposition): boolean {
   if (c.hangingPunctuation === 'none') return false;
   if (cls !== 'pause' && cls !== 'stop') return false;
-  if (c.hangingPunctuation === 'allow' && c.region !== 'mainland' && !c.vertical) return false;
+  if (c.hangingPunctuation === 'allow' && c.region !== 'mainland' && c.region !== 'japan' && !c.vertical) return false;
   return HANG_ANYWHERE.has(grapheme) || c.region === 'mainland';
 }
 

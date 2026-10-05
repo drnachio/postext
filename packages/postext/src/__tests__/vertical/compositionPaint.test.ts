@@ -16,7 +16,7 @@ import { installSizedStub, stubCharWidth } from './stub';
 // Han–Latin space work along the line in either writing mode, and what the
 // canvas paints agrees with what the composer measured for every
 // character — Han, punctuation pairs, Latin, digits, upright signs — in
-// both writing modes and all three regions.
+// both writing modes and all four regions.
 
 installSizedStub();
 
@@ -27,7 +27,7 @@ const stubWidth = (text: string, em: number): number => {
   for (const ch of text) w += stubCharWidth(ch, em);
   return w;
 };
-const REGIONS: CjkRegion[] = ['mainland', 'taiwan', 'hongkong'];
+const REGIONS: CjkRegion[] = ['mainland', 'taiwan', 'hongkong', 'japan'];
 const MODES: WritingMode[] = ['horizontal-tb', 'vertical-rl'];
 const EPS = 1e-6;
 
@@ -438,8 +438,9 @@ function expectedChars(doc: VDTDocument, region: CjkRegion, vertical: boolean): 
                   }
                 } else {
                   // Without a vertical twin face the painter draws the
-                  // mainland's quotes as corner brackets.
-                  out.push({ ch: run.glyph.substitute ?? run.text, at: p + (run.cell * EM) / 2, cell: true, line, hangs });
+                  // mainland's quotes as corner brackets; Japanese “ ” are
+                  // painted as 〝 〟 with or without one.
+                  out.push({ ch: run.glyph.substitute ?? run.glyph.paintAs ?? run.text, at: p + (run.cell * EM) / 2, cell: true, line, hangs });
                   p += run.cell * EM + t;
                 }
               }
@@ -466,7 +467,7 @@ const PASSAGE = [
 ].join('\n\n');
 
 describe('the canvas paints every character where the composer measured it', () => {
-  const locales: Record<CjkRegion, string> = { mainland: 'zh-Hans', taiwan: 'zh-Hant', hongkong: 'zh-HK' };
+  const locales: Record<CjkRegion, string> = { mainland: 'zh-Hans', taiwan: 'zh-Hant', hongkong: 'zh-HK', japan: 'ja' };
   for (const mode of MODES) {
     for (const region of REGIONS) {
       for (const textAlign of ['left', 'justify'] as const) {

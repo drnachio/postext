@@ -9,12 +9,14 @@ habits that print literally (pipe tables, code fences, HTML,
 unknown style/resource ids, malformed `::resource`, unbalanced fences, config
 keys that crash or silently reset (em units, H1 page breaks, `main-color`),
 missing files and bitmap sizes; for Chinese, Japanese and Korean text, the
-document language, markup typed with an input method, and whether the bundled
-fonts have a glyph for every character the chapters set (with fontTools
-installed; without it that check is skipped); for Arabic text, the document
-language and direction, the fonts that set it (and their glyphs and shaping
-tables), letter-spacing on its styles, forced hyphenation and italic
-emphasis. Pure Python otherwise.
+document language (kana make a text Japanese: locale 'ja', never 'zh-*'),
+markup typed with an input method, Aozora Bunko notation left in the
+chapters, Chinese settings or faces on a Japanese book, index entries without
+a reading, and whether the bundled fonts have a glyph for every character the
+chapters set (with fontTools installed; without it that check is skipped);
+for Arabic text, the document language and direction, the fonts that set it
+(and their glyphs and shaping tables), letter-spacing on its styles, forced
+hyphenation and italic emphasis. Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -29,12 +31,21 @@ from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
 # The page numbering styles `:::numbering{format=…}` takes (packages/postext
-# src/numbering.ts NumeralStyle): Latin, East Asian and Arabic-script.
+# src/numbering.ts NumeralStyle): Latin, East Asian (Chinese, Japanese) and
+# Arabic-script.
 NUMBERING_FORMATS = {
     "decimal", "decimal-02", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha",
     "simp-chinese-informal", "trad-chinese-informal", "simp-chinese-formal", "trad-chinese-formal",
+    "japanese-informal", "japanese-formal", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha",
     "cjk-decimal", "cjk-heavenly-stem", "cjk-earthly-branch", "circled-decimal", "fullwidth-decimal",
     "arabic-indic", "persian", "abjad", "hijai", "arabic-abjad", "arabic-abjad-maghrebi",
+}
+# The one-character tokens the same field takes (numbering.ts
+# NUMBER_FORMAT_TOKENS): 一 and 壹 follow the document language and script,
+# 壱 あ ア い イ are the Japanese daiji, gojūon and iroha series.
+NUMBERING_TOKENS = {
+    "1", "i", "I", "a", "A", "〇", "①", "甲", "子", "１", "一", "壹",
+    "壱", "あ", "ア", "い", "イ", "١", "۱", "أبجد", "أبتث",
 }
 KNOWN_DIRECTIVES = {"pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse"}
 FENCE_RE = re.compile(r"^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$")
@@ -294,6 +305,24 @@ CJK_RE = re.compile(
     "\U00020000-\U0003134f]"
 )
 HAN_RE = re.compile("[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U0003134f]")
+# Hiragana and katakana letters, with the kana iteration marks, the katakana
+# phonetic extensions (Ainu small kana), half-width katakana and the Small Kana
+# Extension. Kana are what tell Japanese text from Chinese, so the marks a
+# Chinese text may type too are left out: the prolonged sound mark \u30fc, the
+# middle dot \u30fb and \u30a0 (and the half-width \uff70).
+KANA_RE = re.compile(
+    "[\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fd-\u30ff\u31f0-\u31ff\uff66-\uff6f\uff71-\uff9d"
+    "\U0001b130-\U0001b16f]"
+)
+# Chinese builds of the pan-CJK faces (Noto Serif SC, Source Han Sans TC,
+# LXGW WenKai TC\u2026): they draw kanji in their Chinese forms (\u76f4, \u9aa8, \u89d2, \u5199).
+CHINESE_FACE_RE = re.compile(r"\b(SC|TC|HK|CN|TW|SimSun|SimHei|KaiTi|FangSong)\b|Simplified|Traditional")
+# Aozora Bunko notation left in a Postext chapter (aozora.py converts it): a
+# reading in \u300a\u300b after its base, \uff5c where the base starts, \uff3b\uff03\u2026\uff3d notes and
+# the \u304f\u306e\u5b57\u70b9 typed as \uff0f\uff3c.
+AOZORA_RUBY_RE = re.compile("(\uff5c[^\uff5c\u300a\u300b\n]{1,40})?(?<=[^\\s\u300a])\u300a[\u3041-\u309f\u30a0-\u30ff\u3014\u3015]+\u300b")
+AOZORA_NOTE_RE = re.compile("\u203b?\uff3b\uff03[^\uff3d\n]*\uff3d")
+AOZORA_KUNOJI_RE = re.compile("(?<=[\u3041-\u30ff])\uff0f\u2033?\uff3c")
 FULLWIDTH_MARKUP = [
     (re.compile(r"^\s*：：："), "：：：", ":::"),
     (re.compile(r"^\s*＃{1,6}[ 　]"), "＃", "#"),
@@ -310,9 +339,10 @@ LATIN_ONLY_FAMILIES = {"EB Garamond", "Open Sans", "Lora", "Geist", "Fraunces", 
                        "Alegreya", "Playfair Display", "Merriweather", "Inter", "Roboto"}
 
 
-def check_cjk_lines(name: str, text: str, rep: Report) -> None:
-    """Markup typed with a Chinese or Japanese input method, and ideographic
-    spaces typed as a paragraph indent."""
+def check_cjk_lines(name: str, text: str, rep: Report, japanese: bool = False) -> None:
+    """Markup typed with a Chinese or Japanese input method, ideographic
+    spaces typed as a paragraph indent, and Aozora Bunko notation that was
+    never converted."""
     prev_blank = True
     for i, raw in enumerate(text.split("\n")):
         where = f"{name}:{i + 1}"
@@ -320,9 +350,24 @@ def check_cjk_lines(name: str, text: str, rep: Report) -> None:
             if rx.search(raw):
                 rep.warn(where, f"{typed} typed with an input method prints as text (fullwidthMarkup): type {ascii_}")
         if prev_blank and raw.startswith("　"):
-            rep.info(where, "paragraph starts with ideographic spaces (U+3000), which the parser drops: "
-                            "indent with bodyText.firstLineIndent {value: 2, unit: 'em'}")
+            if japanese:
+                # JLReq §3.5: one em; Aozora types it as one U+3000.
+                rep.info(where, "paragraph starts with an ideographic space (U+3000), which the parser drops: the "
+                                "1 em indent is bodyText.firstLineIndent {value: 1, unit: 'em'}; a paragraph that must "
+                                "stay flush goes in a :::paragraphs style with firstLineIndent 0 (aozora.py writes them)")
+            else:
+                rep.info(where, "paragraph starts with ideographic spaces (U+3000), which the parser drops: "
+                                "indent with bodyText.firstLineIndent {value: 2, unit: 'em'}")
         prev_blank = not raw.strip()
+        for m in AOZORA_NOTE_RE.finditer(raw):
+            rep.error(where, f"Aozora note {m.group(0)[:24]} prints as text: convert the file with aozora.py, or "
+                             "write the Postext markup it stands for")
+        for m in AOZORA_RUBY_RE.finditer(raw):
+            rep.error(where, f"Aozora reading {m.group(0)[:24]} prints as text: write it as {{base|reading}} "
+                             "(aozora.py converts 《》 and ｜)")
+        if AOZORA_KUNOJI_RE.search(raw):
+            rep.warn(where, "／＼ after kana is Aozora's くの字点: write 〳〵 (〴〵 voiced), a vertical-only mark; "
+                            "in horizontal text write the repeated kana out")
 
 
 def font_coverage(root: Path, fonts: list[dict]) -> dict[str, list[tuple[str, set[int]]]] | None:
@@ -376,9 +421,9 @@ def check_font_files(root: Path, fonts: list[dict], vertical: bool, rep: Report)
                 if "GSUB" in font and font["GSUB"].table.FeatureList:
                     feats = {r.FeatureTag for r in font["GSUB"].table.FeatureList.FeatureRecord}
                 if not feats & {"vert", "vrt2"}:
-                    rep.warn(where, "the book is vertical but this Chinese face has no `vert` feature: brackets and "
-                                    "punctuation are turned instead of taking their vertical forms (keep layout "
-                                    "features when subsetting: fonts.py subset keeps them)")
+                    rep.warn(where, "the book is vertical but this CJK face has no `vert` feature: brackets, "
+                                    "punctuation and small kana are turned or moved instead of taking their vertical "
+                                    "forms (keep layout features when subsetting: fonts.py subset keeps them)")
 
 
 def has_han(font) -> bool:
@@ -387,19 +432,28 @@ def has_han(font) -> bool:
 
 
 def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, coverage: dict | None,
-                       fonts: set[str], rep: Report, roles: dict[str, set[str]] | None = None) -> None:
+                       fonts: set[str], rep: Report, roles: dict[str, set[str]] | None = None,
+                       japanese: bool = False) -> None:
     """Every CJK character a family sets must be in each of its bundled files:
-    Postext sets one family per style and takes nothing from another family."""
+    Postext sets one family per style and takes nothing from another family.
+    In a Japanese book (`japanese`), the families that set kana must be
+    Japanese faces."""
     for family, used in chars.items():
         if not used:
             continue
         sample = "".join(sorted(used)[:12])
+        kana = japanese and any(KANA_RE.match(c) for c in used)
         if family in LATIN_ONLY_FAMILIES:
             by = ", ".join(sorted((roles or {}).get(family, ()))) or "bodyText/headings fontFamily"
+            faces = ("a Japanese face (Noto Serif JP, Noto Sans JP, Shippori Mincho, BIZ UDMincho)" if kana
+                     else "a Chinese face (Noto Serif SC/TC, Noto Sans SC/TC)")
             rep.error(where, f"{len(used)} CJK characters ({sample}…) are set in {family}, which has none: "
-                             f"set {by} to a Chinese face (Noto Serif SC/TC, Noto Sans SC/TC), or give that text a "
-                             "paragraph or heading style that has one")
+                             f"set {by} to {faces}, or give that text a paragraph or heading style that has one")
             continue
+        if kana and CHINESE_FACE_RE.search(family):
+            rep.warn(where, f"{family} sets kana (Japanese text): a Chinese build draws its kanji in Chinese forms "
+                            "(直 骨 角 写) and may lack kana; use the JP build (Noto Serif JP, Noto Sans JP) or another "
+                            "Japanese face")
         if family not in fonts:
             rep.warn(where, f"{family} sets {len(used)} CJK characters but is not bundled: its coverage cannot be checked, "
                             "and the PDF and headless renders need the files")
@@ -412,9 +466,10 @@ def check_cjk_coverage(where: str, chars: dict[str, set[str]], cfg: dict, covera
                 continue
             missing = sorted(c for c in used if ord(c) not in cmap)
             if missing:
+                ranges = " --ranges latin,latin-ext,punct,cjk-punct,kana" if any(KANA_RE.match(c) for c in missing) else ""
                 rep.error(where, f"{family} {label} has no glyph for {len(missing)} of the {len(used)} CJK characters it sets: "
                                  f"{''.join(missing[:20])}{'…' if len(missing) > 20 else ''} (they print as empty boxes; "
-                                 "subset from a face that has them: fonts.py subset FONT --out fonts/ --text-from chapters/)")
+                                 f"subset from a face that has them: fonts.py subset FONT --out fonts/ --text-from chapters/{ranges})")
 
 
 def _styles_by_id(cfg: dict, key: str) -> dict[str, dict]:
@@ -513,11 +568,46 @@ def script_chars_by_family(texts: list[tuple[str, str]], cfg: dict, rx: re.Patte
     return out, roles
 
 
+def is_japanese_text(kana: int, han: int) -> bool:
+    """Kana make a text Japanese: Japanese prose writes a third or more of it
+    in kana, even beside dense kanji; a Chinese text quoting a Japanese name
+    or title holds a handful. At least 10 kana and 5 % of the kana and Han."""
+    return kana >= 10 and kana * 20 >= kana + han
+
+
+def document_locale(cfg: dict) -> str | None:
+    return cfg.get("locale") or ((cfg.get("bodyText") or {}).get("hyphenation") or {}).get("locale")
+
+
 def check_cjk_locale(where: str, texts: list[tuple[str, str]], cfg: dict, rep: Report) -> None:
     han = sum(len(HAN_RE.findall(t)) for _, t in texts)
+    kana = sum(len(KANA_RE.findall(t)) for _, t in texts)
+    if not han and not kana:
+        return
+    loc = document_locale(cfg)
+    lang = re.split(r"[-_]", loc)[0].lower() if loc else ""
+    if lang == "jp":
+        rep.error(where, f"config.locale {loc!r}: 'jp' is Japan's country code, not a language; Japanese is 'ja' "
+                         "(or 'ja-JP')")
+        return
+    if is_japanese_text(kana, han):
+        rules = ("the Japanese rules (JLReq kinsoku and spacing, sesame bōten, 『』 titles, jukugo furigana, 図/表, "
+                 "第一章 numbering, gojūon index) follow 'ja'")
+        if not loc:
+            rep.warn(where, f"the chapters hold {kana} kana, so they are Japanese, but config.locale is not set: set "
+                            f"'ja'; {rules}")
+        elif lang == "zh":
+            rep.error(where, f"the chapters hold {kana} kana, so they are Japanese, but config.locale is {loc!r}: "
+                             "they are set with the Chinese rules (line breaking, punctuation, emphasis dots, 《》, "
+                             f"图/圖, 一百零一); set 'ja'; {rules}")
+        elif lang != "ja":
+            latin = sum(len(re.findall(r"[A-Za-z]+", t)) for _, t in texts)
+            if han + kana > 4 * latin:
+                rep.warn(where, f"the chapters are mostly Japanese ({kana} kana, {han} kanji) but config.locale is "
+                                f"{loc!r}: set 'ja'; {rules}")
+        return
     if not han:
         return
-    loc = cfg.get("locale") or ((cfg.get("bodyText") or {}).get("hyphenation") or {}).get("locale")
     if not loc:
         rep.warn(where, f"the chapters hold {han} Chinese characters but config.locale is not set: set 'zh-Hans' or "
                         "'zh-Hant' with the region ('zh-Hans-CN', 'zh-Hant-TW', 'zh-Hant-HK'); the region picks line "
@@ -532,6 +622,35 @@ def check_cjk_locale(where: str, texts: list[tuple[str, str]], cfg: dict, rep: R
         if han > 4 * latin:
             rep.warn(where, f"the chapters are mostly Chinese ({han} characters) but config.locale is {loc!r}: the "
                             "Chinese defaults (region, emphasis dots, strings, index groups) follow a zh locale")
+
+
+def is_japanese_locale(tag: str | None) -> bool:
+    return bool(tag) and re.split(r"[-_]", tag)[0].lower() == "ja"
+
+
+def check_japanese_config(where: str, cfg: dict, rep: Report) -> None:
+    """Settings that put Chinese rules or habits on a Japanese book (locale
+    'ja'): the engine's Japanese defaults follow the `japan` region, so most of
+    them only need to be left unset."""
+    cjk = cfg.get("cjk") or {}
+    region = cjk.get("region")
+    if region not in (None, "auto", "japan"):
+        rep.warn(where, f"cjk.region {region!r} sets this Japanese book with that Chinese region's rules: remove it "
+                        "(auto is 'japan' for locale 'ja')")
+    lb = cjk.get("lineBreak")
+    if lb in ("basic", "gb", "strict"):
+        rep.warn(where, f"cjk.lineBreak {lb!r} is a Chinese level: leave it 'auto' (ja-very-strict, JIS X 4051) or "
+                        "pick 'ja-strict' (small kana and ー may open a line) or 'ja-loose' as the source shows")
+    if cjk.get("emphasis") == "italic":
+        rep.warn(where, "cjk.emphasis 'italic' slants kana and kanji, which Japanese never does: leave it 'auto' "
+                        "(sesame bōten)")
+    fli = (cfg.get("bodyText") or {}).get("firstLineIndent")
+    if isinstance(fli, dict) and fli.get("unit") == "em" and fli.get("value") == 2:
+        rep.info(where, "bodyText.firstLineIndent is 2 em, the Chinese habit: Japanese books indent 1 em (JLReq §3.5)")
+    vertical = (cfg.get("layout") or {}).get("writingMode") == "vertical-rl"
+    if vertical and (cfg.get("page") or {}).get("binding") == "left":
+        rep.warn(where, "page.binding 'left' in a vertical Japanese book: vertical books are bound on the right "
+                        "(leave 'auto'); page 1 is then the left page of its spread")
 
 
 def is_rtl_locale(tag: str | None) -> bool:
@@ -696,10 +815,64 @@ def collect_index_marks(line: str, where: str, rep: Report, index: dict) -> None
             rep.warn(where, ":index mark with no term indexes nothing (indexMarkInvalid)")
             continue
         index["marks"].append((name, path, a, where))
+        # The key a Japanese index files the last level by (indexDirective.ts):
+        # yomi, else the kana readings of a visible mark's ruby, else sort.
+        own_text = m.group(1) is not None and "term" not in a and "sub" not in a
+        reading = a.get("yomi") or a.get("reading") or (ruby_reading(m.group(1)) if own_text else None) or a.get("sort")
+        index.setdefault("readings", {}).setdefault((name, index_key(path)), []).append((reading, where))
 
 
-def check_index(index: dict, rep: Report, lang: str) -> None:
+COMPACT_RUBY_RE = re.compile(r"\{([^{}|\n]+)\|([^{}\n]+)\}")
+
+
+def ruby_reading(text: str) -> str | None:
+    """A mark's text with each compact ruby base replaced by its kana
+    reading (`{東京|とう|きょう}` → とうきょう); None when a reading is not
+    kana, or a kanji is left unread."""
+    ok = True
+
+    def read(m: re.Match) -> str:
+        nonlocal ok
+        r = m.group(2).replace("|", "")
+        if not re.fullmatch("[ぁ-ゟ゠-ヿ]+", r):
+            ok = False
+        return r
+
+    out = COMPACT_RUBY_RE.sub(read, text)
+    return out if ok and out != text and not HAN_RE.search(out) else None
+
+
+def check_index_readings(index: dict, rep: Report) -> None:
+    """A Japanese index files by reading (gojūon, JIS X 4061), and no program
+    can read kanji reliably: an entry whose key still holds a kanji files
+    after the kana with no head (indexReadingMissing). One warning per index,
+    with the first few terms."""
+    readings = index.get("readings", {})
+    seen: dict[tuple, str] = {}
+    for name, path, _, where in index["marks"]:
+        k = index_key(path)
+        for n in range(1, len(k) + 1):
+            seen.setdefault((name, k[:n]), where)
+    unread: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for (name, k), where in seen.items():
+        if any(r for r, _ in readings.get((name, k), [])):
+            continue
+        term = COMPACT_RUBY_RE.sub(r"\1", k[-1])
+        if HAN_RE.search(term):
+            unread[name].append(("!".join(COMPACT_RUBY_RE.sub(r"\1", x) for x in k), where))
+    for name, items in unread.items():
+        sample = "、".join(t for t, _ in items[:6]) + ("…" if len(items) > 6 else "")
+        one = len(items) == 1
+        rep.warn(items[0][1], f"{len(items)} {'entry' if one else 'entries'} of the {name or 'main'} index "
+                              f"{'holds' if one else 'hold'} kanji and {'has' if one else 'have'} no reading ({sample}): "
+                              f"{'it files' if one else 'they file'} after the kana with no head (indexReadingMissing); "
+                              "give each mark yomi=\"…\" in kana, or kana ruby on its own text ({東京|とう|きょう})")
+
+
+def check_index(index: dict, rep: Report, lang: str, japanese: bool = False) -> None:
     """Book-level checks of the index marks and :::index directives."""
+    if japanese:
+        check_index_readings(index, rep)
     entries: dict[str, set[tuple]] = defaultdict(set)
     ranges: Counter = Counter()
     first: dict[tuple, str] = {}
@@ -828,9 +1001,11 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                         rep.warn(where, "callout titles are plain text: ** / * print literally")
                 elif fname == "paragraphs":
                     s = attrs.get("style")
-                    if not s:
-                        rep.error(where, ":::paragraphs needs style=\"…\"")
-                    elif s not in ids["paragraphs"]:
+                    # align / indent / endIndent alone set the text around it
+                    # (地付き is {align=end}, 地から1字上げ {align=end endIndent=1}).
+                    if not s and not any(k in attrs for k in ("align", "indent", "endIndent")):
+                        rep.error(where, ":::paragraphs needs style=\"…\" (or align / indent / endIndent)")
+                    elif s and s not in ids["paragraphs"]:
                         rep.error(where, f"paragraph style {s!r} is not in paragraphStyles {sorted(ids['paragraphs'])}")
                 elif fname == "part":
                     for pid in re.findall(r"([A-Za-z0-9_-]+)\s*[=:]\s*#?[0-9a-fA-F]{3,8}", attrs.get("palette", "")):
@@ -888,7 +1063,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                 if fname == "verse":
                     # A poem: one bayt a line up to the closing ::: (postext >= 1.15).
                     in_refs = True
-                if fname == "numbering" and "format" in attrs and attrs["format"] not in NUMBERING_FORMATS:
+                if fname == "numbering" and "format" in attrs and attrs["format"] not in NUMBERING_FORMATS | NUMBERING_TOKENS:
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
             else:
                 rep.error(where, f":::{fname} is not a Postext container or directive (prints literally). "
@@ -1143,6 +1318,8 @@ def main() -> None:
         if not specs:
             rep.error("preset.json", f"no chapters for {lang}")
         texts: list[tuple[str, str]] = []
+        japanese_book = is_japanese_locale(document_locale(cfg)) or \
+            (cfg.get("index") or {}).get("groupBy") in ("gojuon", "kana")
         # Headings with an id and anchors of the whole book: a :ref may name
         # one set in another chapter.
         book_anchors = anchor_ids([(root / c.get("file", "")).read_text(encoding="utf-8")
@@ -1156,14 +1333,19 @@ def main() -> None:
             texts.append((c["file"], chapter))
             check_markdown(c["file"], chapter, i, ids, res_ids, rep, embedded, referenced, index, book_anchors)
             if CJK_RE.search(chapter):
-                check_cjk_lines(c["file"], chapter, rep)
-        check_index(index, rep, lang)
+                check_cjk_lines(c["file"], chapter, rep, japanese_book or is_japanese_text(
+                    len(KANA_RE.findall(chapter)), len(HAN_RE.findall(chapter))))
+        check_index(index, rep, lang, japanese_book)
         if any(CJK_RE.search(t) for _, t in texts):
             check_cjk_locale(f"config ({lang})", texts, cfg, rep)
+            if is_japanese_locale(document_locale(cfg)):
+                check_japanese_config(f"config ({lang})", cfg, rep)
             if coverage is ...:
                 coverage = font_coverage(root, m.get("fonts", []))
             chars, roles = cjk_chars_by_family(texts, cfg)
-            check_cjk_coverage(f"fonts ({lang})", chars, cfg, coverage, fonts, rep, roles)
+            japanese_text = japanese_book or is_japanese_text(sum(len(KANA_RE.findall(t)) for _, t in texts),
+                                                              sum(len(HAN_RE.findall(t)) for _, t in texts))
+            check_cjk_coverage(f"fonts ({lang})", chars, cfg, coverage, fonts, rep, roles, japanese_text)
             if not font_files_checked:
                 vertical = any(((cf.get("layout") or {}).get("writingMode") == "vertical-rl")
                                for cf in [shared] + [(x.get("config") or {}) for x in (m.get("localized") or {}).values()])

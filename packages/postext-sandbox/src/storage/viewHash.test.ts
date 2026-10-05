@@ -133,6 +133,15 @@ describe('view hash', () => {
     expect(viewHashFragment(wanted)).toBe('#preset=hongloumeng&lang=zh-Hant');
   });
 
+  it('reads a Japanese edition named in any case', () => {
+    expect(parseViewHash('#preset=kokoro&lang=ja').lang).toBe('ja');
+    expect(parseViewHash('#preset=kokoro&lang=JA-jp&view=pdf').lang).toBe('ja-JP');
+    const wanted = parseViewHash('#preset=kokoro&lang=ja');
+    expect(sameBook(wanted, { preset: 'kokoro', project: null, lang: 'JA' })).toBe(true);
+    expect(sameBook(wanted, { preset: 'kokoro', project: null, lang: 'zh-Hant' })).toBe(false);
+    expect(viewHashFragment(wanted)).toBe('#preset=kokoro&lang=ja');
+  });
+
   it('builds the PDF viewer fragment', () => {
     expect(pdfPageFragment(null)).toBe('');
     expect(pdfPageFragment(2)).toBe('#page=3');

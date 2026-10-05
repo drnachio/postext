@@ -111,10 +111,11 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
   (doc.contentWarnings ?? []).forEach((w, i) => {
     // …the justified CJK lines set short at their tracking cap, the
     // paragraphs whose leading is too tight for their Chinese marks, ruby
-    // readings or Arabic vowel marks, the Arabic-script words wider than
-    // their line and the styles whose letter-spacing such words do not take.
-    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'cjkLooseLine'
-      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
+    // readings, kanbun marks or Arabic vowel marks, the Arabic-script words
+    // wider than their line and the styles whose letter-spacing such words
+    // do not take.
+    if (w.kind !== 'indexSeeUnknown' && w.kind !== 'indexRangeUnclosed' && w.kind !== 'indexReadingMissing' && w.kind !== 'cjkLooseLine'
+      && w.kind !== 'cjkMarksExceedLeading' && w.kind !== 'rubyExceedsLeading' && w.kind !== 'kuntenExceedsLeading' && w.kind !== 'arabicMarksExceedLeading'
       && w.kind !== 'unbreakableWordOverflow' && w.kind !== 'joiningScriptLetterSpacing') return;
     const payload: Record<string, unknown> = { ...w };
     delete payload.sourceStart;
@@ -700,6 +701,7 @@ function firstResourceUses(blocks: ContentBlock[], markdown: string): Map<string
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
   if (r.kind === 'svg') return r.svg?.fileId;
+  if (r.kind === 'video') return r.video?.poster?.fileId;
   return undefined;
 }
 
@@ -846,8 +848,11 @@ function collectResourceWarnings(
     for (const block of doc.blocks) {
       const rb = block.resourceBlock;
       if (!rb || rb.kind !== 'bitmap') continue;
-      const bitmapWidth = rb.resource.bitmap?.width;
-      if (!bitmapWidth || bitmapWidth <= 0) continue;
+      // A picture cropped within its safe area shows only part of its
+      // pixels across the body.
+      const naturalWidth = rb.resource.bitmap?.width;
+      if (!naturalWidth || naturalWidth <= 0) continue;
+      const bitmapWidth = Math.round(naturalWidth * (rb.bodySource?.width ?? 1));
       const renderedWidth = rb.bodyRect.width;
       if (renderedWidth > bitmapWidth * BITMAP_UPSCALE_THRESHOLD) {
         const key = rb.resource.id;

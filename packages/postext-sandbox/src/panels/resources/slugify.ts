@@ -4,11 +4,14 @@
  *  Strips diacritics, keeps the letters and digits of every script (a
  *  Chinese caption gives a Chinese id, #181), collapses anything else to
  *  single hyphens, and trims leading/trailing hyphens. Returns '' for
- *  empty/symbol-only input. */
+ *  empty/symbol-only input. Kana keep their voicing marks (dakuten and
+ *  handakuten are part of the letter: がっこう stays がっこう, never
+ *  かっこう), and half-width katakana come out full width. */
 export function slugify(input: string): string {
   return input
     .normalize('NFKD')
-    .replace(/\p{M}/gu, '') // strip combining marks
+    .replace(/(?![\u3099\u309a])\p{M}/gu, '') // strip combining marks, not the kana voicing marks
+    .normalize('NFC')
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');

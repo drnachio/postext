@@ -124,6 +124,9 @@ function parseName(raw: string): CslName {
   if (CJK.test(text) && !/\s/.test(text)) return { family: text };
   const words = splitTopLevel(trimmed, /\s+/g).map(latexToText);
   if (words.length === 1) return { family: words[0]! };
+  // One with a space between its parts is written as it is said, family
+  // name first: "夏目 漱石" is 夏目 (family) 漱石 (given) (#426).
+  if (words.every((w) => CJK.test(w) && !/\p{sc=Latin}/u.test(w))) return { family: words[0]!, given: words.slice(1).join(' ') };
   // `First von Last`: the particle is the run of lower-case words before the last.
   const i = words.length - 1;
   let particleStart = i;

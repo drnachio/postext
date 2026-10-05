@@ -1,10 +1,10 @@
 import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
-import { lineTextAlign, segmentOrientation } from 'postext';
+import { isJapaneseLanguage, lineTextAlign, segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, readText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -15,11 +15,12 @@ import {
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { inkScaleOperators } from './inkScale';
 import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
 import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
 import { needsComplexShaping } from '../complexShaping';
+import { openTypeLanguageOf, shapingLanguage, withShapingLanguage } from '../shapingLanguage';
 
 /** Per-document context for resource rendering, threaded through `renderBlock`. */
 export interface ResourceRenderContext {
@@ -101,6 +102,8 @@ function paintComposedText(
   fontCache: FontCache,
   blockFont: PDFFont,
   rubyElem: StructElem | undefined,
+  /** The character's text element, which its kanbun marks join. */
+  textElem?: StructElem,
 ): void {
   // A compressed CJK mark is painted before its box (`inkOffset`) and
   // advances to its box's end.
@@ -120,6 +123,12 @@ function paintComposedText(
   if (seg.ruby) {
     if (tracking !== 0) setTrackingPx(ctx, 0);
     paintRuby(ctx, seg.ruby, x, baseline, colorHex, fontCache, blockFont, rubyElem);
+    if (tracking !== 0) setTrackingPx(ctx, tracking);
+  }
+  if (seg.kunten) {
+    // Kanbun marks (#430).
+    if (tracking !== 0) setTrackingPx(ctx, 0);
+    paintKunten(ctx, seg.kunten, x, baseline, colorHex, fontCache, blockFont, textElem);
     if (tracking !== 0) setTrackingPx(ctx, tracking);
   }
 }
@@ -153,7 +162,14 @@ function paintComposedText(
  * the marked-content sequences and the structure tree read the line as it
  * was written, and readers that order text by position (Poppler) place it
  * by its glyphs. A run of such a line in another language than the
- * document's ({@link segmentLanguages}) is a `Span` with its own `/Lang`.
+ * document's ({@link segmentLanguages}) is a `Span` with its own `/Lang`,
+ * and so is one of a composed line of a Japanese document, or of a
+ * composed line holding Japanese text (#427).
+ *
+ * A segment in a language of its own (`VDTLineSegment.lang`) is shaped in
+ * that language's OpenType language system (`shapingLanguage.ts`): a
+ * Japanese word in a Chinese book takes the Japanese forms of a pan-CJK
+ * face, a Chinese quotation in a Japanese book the font's default ones.
  *
  * A word set in several styles (`VDTLineSegment.runs`, a bold letter in an
  * Arabic word) is shaped whole and each glyph painted in its run's style
@@ -187,8 +203,10 @@ function renderSegments(
   // theirs), and the x it gives each: they are painted in logical order.
   const order = directed && line.order && line.order.length === segments.length ? line.order : undefined;
   const xs = order ? segmentOffsets(segments, order, startX, (seg) => (seg.kind === 'space' ? (composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width) : seg.width)) : undefined;
-  // Runs in another language than the document's (tagged render only).
-  const langs = elem && directed ? segmentLanguages(segments, elem.tree.options.lang) : undefined;
+  // Runs in another language than the document's (tagged render only):
+  // on a line with directions, and on a composed line in Japanese.
+  const docLang = elem?.tree.options.lang;
+  const langs = elem && (directed || (composed && japaneseLine(segments, docLang))) ? segmentLanguages(segments, docLang) : undefined;
   let langSpan: { lang: string; elem: StructElem } | undefined;
   const textElemOf = (i: number): StructElem | undefined => {
     const lang = langs?.[i];
@@ -203,7 +221,7 @@ function renderSegments(
   // written, not with the gaps between its pieces.
   // A vertical line is painted in runs and cells down the column: it reads
   // as the line too.
-  const actualLine = !composed ? undefined : ctx.vertical ? segments.map((s) => s.text).join('') : cjkLineText(segments);
+  const actualLine = !composed ? undefined : ctx.vertical ? segments.map(readText).join('') : cjkLineText(segments);
   let lineState: LineTextState | undefined;
   if (actualLine !== undefined) {
     const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
@@ -280,7 +298,10 @@ function renderSegments(
     // A footnote marker links to its note, like a `:ref` to its resource
     // and a cross-reference to its anchor (#264).
     const target = refTarget(seg) ?? (seg.footnoteId !== undefined ? footnoteDestination(linkRegistry, seg.footnoteId) : undefined);
-    const link = refRun.enter(seg, x, textElem, target, seg.width);
+    // A marker in the line gap (JLReq §4.2.3) links where its run is:
+    // before its segment, which takes no advance.
+    const side = seg.sideMarker?.runs[0];
+    const link = side ? refRun.enter(seg, x + side.dx, textElem, target, -side.dx) : refRun.enter(seg, x, textElem, target, seg.width);
     // A page number of the index links to its page.
     const pageElem = seg.pageLink !== undefined && elem && !link ? elem.child('Link') : undefined;
     // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
@@ -292,12 +313,21 @@ function renderSegments(
     // On a line with directions each segment is one run: HarfBuzz shapes a
     // right-to-left one (and any complex text), and a word set in several
     // styles. The kashidas justification inserted are painted, not read.
-    const shaped = (seg.runs !== undefined || (directed && (seg.rtl || needsComplexShaping(seg.text))))
+    const shaped = !seg.sideMarker && (seg.runs !== undefined || (directed && (seg.rtl || needsComplexShaping(seg.text))))
       && paintShapedSegment(ctx, seg, x, baseline + (seg.baselineShift ?? 0), font, size, color, block, fontCache, actualText, kashidaOf(seg, line));
-    if (shaped) {
+    if (seg.sideMarker) {
+      // Its run, not its text, with no character spacing.
+      if (tracking !== 0) setTrackingPx(ctx, 0);
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, colorHex, fontCache, blockFont);
+      if (tracking !== 0) setTrackingPx(ctx, tracking);
+    } else if (shaped) {
       // Painted by HarfBuzz.
-    } else if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-    else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
+    } else {
+      withShapingLanguage(seg.lang === undefined ? shapingLanguage() : openTypeLanguageOf(seg.lang), () => {
+        if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
+        else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem, holder);
+      });
+    }
     if (seg.pageLink !== undefined && linkRegistry) {
       const { scale, pageHeightPt } = ctx;
       linkRegistry.addPageLink(
@@ -322,6 +352,14 @@ function renderSegments(
   if (lineState) endActualTextSpan(ctx, lineState);
 }
 
+
+/** Whether a composed line is Japanese text: its document's language is
+ *  Japanese, or a segment's own. Its segments in other languages then take
+ *  a `Span` with their `/Lang`; other composed lines keep the structure
+ *  they always had. */
+function japaneseLine(segments: readonly VDTLineSegment[], docLang: string | undefined): boolean {
+  return isJapaneseLanguage(docLang) || segments.some((s) => s.lang !== undefined && isJapaneseLanguage(s.lang));
+}
 
 /**
  * Paint a segment HarfBuzz shapes: a word set in several styles
@@ -450,9 +488,12 @@ function renderLineText(
 
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
-  // block (bold/italic/math/ref/own font or colour); otherwise one text
-  // object paints the line.
-  if (segments && (isDirected(line) || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
+  // block (bold/italic/math/ref/own font or colour), and on a line of the
+  // CJK composer when one is in a language of its own (the composer names
+  // it in Japanese text only, #427: it is shaped and tagged in it);
+  // otherwise one text object paints the line.
+  const ownLanguage = line.cjkComposed === true && segments !== undefined && segments.some((s) => s.lang !== undefined);
+  if (segments && (isDirected(line) || ownLanguage || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
     renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
     return;
   }
@@ -480,14 +521,14 @@ function renderLineText(
  *  the block's plain text, or is linked; an orientation mark (`:tcy`,
  *  `:upright`, `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
-  return s.bold || s.italic || s.runs !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
+  return s.bold || s.italic || s.runs !== undefined || s.sideMarker !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
     || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
 }
 
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a
  *  vertical page, whose segments may carry the composer's fields. */
 function composedSegmentIsStyled(s: VDTLineSegment): boolean {
-  return segmentIsStyled(s) || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.ruby !== undefined || s.warichu !== undefined;
+  return segmentIsStyled(s) || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.ruby !== undefined || s.kunten !== undefined || s.warichu !== undefined;
 }
 
 /**

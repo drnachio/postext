@@ -40,14 +40,18 @@ function escapeHtml(s: string): string {
 }
 
 /** The authors of a work as a sentence names them, for a numbered style
- *  that prints none: "García", "García and Ruiz", "García et al.", "张三等". */
-function narrativeAuthors(item: CslItem | undefined, and: string, etAl: string): string {
+ *  that prints none: "García", "García and Ruiz", "García et al.", "张三等".
+ *  In Japanese (`japanese`: the locale is ja) a CJK name takes the
+ *  locale's own words, set solid: "夏目と森", "夏目ほか" (ja-JP terms `and`,
+ *  `et-al`); Chinese keeps 、 and 等. */
+function narrativeAuthors(item: CslItem | undefined, and: string, etAl: string, japanese = false): string {
   const names: CslName[] = (item?.author ?? item?.editor ?? []) as CslName[];
   if (names.length === 0) return '';
   const nameOf = (n: CslName): string => n.literal ?? [n['non-dropping-particle'], n.family].filter(Boolean).join(' ');
   const first = nameOf(names[0]!);
   const cjk = CJK.test(first);
   if (names.length === 1) return first;
+  if (cjk && japanese) return names.length === 2 ? `${first}${and}${nameOf(names[1]!)}` : `${first}${etAl}`;
   if (names.length === 2) return cjk ? `${first}、${nameOf(names[1]!)}` : `${first} ${and} ${nameOf(names[1]!)}`;
   return cjk ? `${first}等` : `${first} ${etAl}`;
 }
@@ -146,12 +150,14 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
       const kind: CitationProcessor['kind'] = engine.opt.class === 'note' ? 'note' : 'in-text';
       const numeric = numericStyle(xml);
       const chineseText = locale.startsWith('zh');
+      const japanese = locale.startsWith('ja');
       const and = engine.getTerm('and') || 'and';
       const etAl = engine.getTerm('et-al') || 'et al.';
       let cited: string[] = [];
       return {
         kind,
         numeric,
+        terms: { and, etAl },
         cite(clusters: readonly CitationClusterInput[]): string[] {
           const known = clusters.map((c) => ({ ...c, items: c.items.filter((it) => items.has(it.id)) }));
           const citations = known.map((c, index) => ({
@@ -183,7 +189,7 @@ export function createCiteprocEngine(sources: CslSources): CitationEngine {
             // "p. 33" stays on one line.
             html = html.replace(/(^|[\s(>])(\p{L}{1,6}\.) (?=[\dIVXLCivxlc])/gu, '$1$2\u00a0');
             if (c.mode === 'narrative' && kind === 'in-text' && numeric && c.items.length > 0) {
-              const who = c.items.map((it) => narrativeAuthors(items.get(it.id), and, etAl)).filter(Boolean).join('; ');
+              const who = c.items.map((it) => narrativeAuthors(items.get(it.id), and, etAl, japanese)).filter(Boolean).join('; ');
               const glue = /^<sup>/.test(html) || CJK.test(who) ? '' : ' ';
               return who ? `${escapeHtml(who)}${glue}${html}` : html;
             }

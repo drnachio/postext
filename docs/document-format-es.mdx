@@ -128,7 +128,7 @@ Dos atributos tienen significado propio. `style="<id>"` aplica al encabezado un 
 # Índice {style="preliminar" toc="false"}
 ```
 
-Otros dos cambian lo que imprime un encabezado y cómo cuenta. `hidden="true"` (o `"false"`) sobrescribe el `hidden` del nivel o del estilo del encabezado: un encabezado oculto no imprime nada ni ocupa espacio —ni en el flujo ni dentro de una caja `:::callout`—, pero sigue abriendo su página, cuenta y aparece en el índice, en las cabeceras con `{chapterTitle}` y en los marcadores del PDF. `startAt=N`, un entero positivo, pone el contador del nivel del encabezado en `N` en lugar de avanzarlo; los encabezados siguientes cuentan a partir de ahí, también en los capítulos posteriores, y los niveles inferiores se reinician bajo él como siempre. Con un estilo de encabezado que numera los apéndices con letra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apéndice reinicia la cuenta para leerse *Apéndice A* en lugar de continuar la de los capítulos:
+Otros dos cambian lo que imprime un encabezado y cómo cuenta. `hidden="true"` (o `"false"`) sobrescribe el `hidden` del nivel o del estilo del encabezado: un encabezado oculto no imprime nada ni ocupa espacio —ni en el flujo ni dentro de una caja `:::callout`—, pero sigue abriendo su página, cuenta y aparece en el índice, en las cabeceras con `{chapterTitle}` y en los marcadores del PDF. `jidori=N` espacia por igual un encabezado de una línea hasta `N` de sus propios caracteres (字取り: `# 序章 {jidori=3}` imprime 序　章), y `jidori=0` desactiva el espaciado uniforme que fija su nivel o su estilo (ver [Configuración › Configuración por nivel](/es/docs/configuration#configuración-por-nivel)). `startAt=N`, un entero positivo, pone el contador del nivel del encabezado en `N` en lugar de avanzarlo; los encabezados siguientes cuentan a partir de ahí, también en los capítulos posteriores, y los niveles inferiores se reinician bajo él como siempre. Con un estilo de encabezado que numera los apéndices con letra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apéndice reinicia la cuenta para leerse *Apéndice A* en lugar de continuar la de los capítulos:
 
 ```markdown
 # A mi madre {hidden="true" toc="false"}
@@ -251,7 +251,7 @@ Se reconocen cuatro nombres de contenedor en el flujo del texto (un quinto, `:::
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo.</td>
+      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo. <code>align</code>, <code>indent</code> y <code>endIndent</code> fijan la alineación y las sangrías, con estilo o sin él: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compone una fecha a un carácter del final de la línea (地から1字上げ).</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -425,6 +425,16 @@ El capítulo anterior termina aquí.
 # Un nuevo capítulo
 ```
 
+La bandera `center` (`:::pagebreak{center}`, desactivada con `center=false`) centra el texto de la página que abre el salto entre la cabeza y el pie de la caja de texto, a lo ancho de la página en texto vertical: el ページの左右中央 de una portadilla de parte o de una dedicatoria japonesa. Los flotantes, las notas y las cabeceras se quedan donde están, y una página ya llena no se toca. La bandera no termina la página: ciérrala con otro `:::pagebreak`.
+
+```md
+:::pagebreak{center}
+
+# 上　先生と私
+
+:::pagebreak
+```
+
 #### Atributo `parity`
 
 El atributo `parity` acepta los mismos cinco valores que `headings.levels[*].breakBefore.parity`:
@@ -469,7 +479,7 @@ Las páginas del prefacio se etiquetan `i`, `ii`, `iii`, …; el primer capítul
 
 Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil para, por ejemplo, pasar de `lower-alpha` a `upper-alpha` sin reiniciar.
 
-`format` acepta cualquier grafía de un formato de numeración: `roman-lower` e `i` funcionan igual que `lower-roman`, y `arabic` igual que `decimal` (consulta [Configuración › Grafías de los formatos de numeración](/es/docs/configuration#grafías-de-los-formatos-de-numeración)). Un valor que no es ninguna de ellas deja el formato como estaba, y el sandbox lo señala.
+`format` acepta cualquier grafía de un formato de numeración: `roman-lower` e `i` funcionan igual que `lower-roman`, `arabic` igual que `decimal`, y `一` y `あ` igual que `japanese-informal` y `hiragana` (consulta [Configuración › Grafías de los formatos de numeración](/es/docs/configuration#grafías-de-los-formatos-de-numeración)). Un valor que no es ninguna de ellas deja el formato como estaba, y el sandbox lo señala.
 
 ### `:::space`
 
@@ -736,7 +746,7 @@ En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres chinos qu
 
 ### Marcas chinas, ruby y warichu
 
-Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subrayado, glosan los caracteres con su lectura y componen el comentario dentro de la línea. Cinco directivas lo hacen. [Composición china](/es/docs/chinese-layout) explica las convenciones que hay detrás. Conservan su texto: los caracteres entre corchetes siguen en el párrafo (la búsqueda, el índice general, las anclas del índice analítico y el texto copiado los leen tal como se escribieron), y admiten las demás marcas en línea dentro y alrededor, anidadas incluidas. Escribe `\]` para un corchete literal.
+Las ediciones chinas y japonesas marcan el texto entre líneas en vez de con cursiva o subrayado, glosan los caracteres con su lectura y componen el comentario dentro de la línea. Siete directivas lo hacen. [Composición china](/es/docs/chinese-layout) y [Composición japonesa](/es/docs/japanese-layout) explican las convenciones que hay detrás. Conservan su texto: los caracteres entre corchetes siguen en el párrafo (la búsqueda, el índice general, las anclas del índice analítico y el texto copiado los leen tal como se escribieron), y admiten las demás marcas en línea dentro y alrededor, anidadas incluidas. Escribe `\]` para un corchete literal.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -744,14 +754,20 @@ Las ediciones chinas marcan el texto entre líneas en vez de con cursiva o subra
 {滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
 
 寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+
+{東京|とう|きょう}の:ruby[紫陽花]{rt="あじさい"}は*とんと*:sideline[見事]だ。:book[こころ]を読む。
+
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
 ```
 
-- **`:dots[texto]`** pone un punto de énfasis (着重号) bajo cada carácter en texto horizontal, a su derecha en vertical, y ninguno en la puntuación ni en los espacios. `style="dot|circle|sesame"` (por defecto `dot`), `fill="open"` para el contorno, `pos="over|under"` para el otro lado. El énfasis de Markdown `*…*` sobre caracteres chinos hace lo mismo con `cjk.emphasis: 'dots'`, el valor por defecto en un documento en chino; las letras latinas del mismo énfasis siguen en cursiva.
-- **`:name[texto]`** traza la línea de nombre propio (专名号) bajo el texto (a su izquierda en vertical), y **`:book[texto]`** la marca de título (书名号): 《》 alrededor del título (〈〉 para un título dentro de otro), la línea ondulada de las ediciones clásicas y de Taiwán, o nada, según `cjk.bookTitleMark` (por defecto, signos en la China continental y línea ondulada en Taiwán y Hong Kong). Una misma fuente sirve para una edición continental moderna y para una clásica. Dos nombres o títulos seguidos mantienen sus líneas separadas.
-- **`:ruby[base]{rt="…"}`** pone lecturas encima de la base (pinyin) o a la derecha de cada carácter (zhuyin, lo que se hace por defecto con lecturas en bopomofo). Con tantas lecturas como caracteres, separadas por espacios o `|`, cada carácter recibe la suya y la línea puede cortarse entre ellos (ruby mono); `group`, o un número que no coincide, pone una lectura centrada sobre toda la base, que nunca se corta. `pos="over|under|right"` elige el lado. La forma compacta `{紅樓|hóng|lóu}` (una lectura por `|`) o `{紅樓|hónglóu}` (una lectura para toda la base) se lee igual, solo cuando la base tiene un carácter han, kana o bopomofo y fuera de las fórmulas, el código y los atributos, de modo que `{x|x>0}` en prosa latina sigue siendo texto. Una barra invertida delante de la llave o de la barra vertical deja una en chino como texto: `\{紅|hóng}` y `{紅\|hóng}` imprimen `{紅|hóng}`. Una base que abre o cierra una línea se alinea con ese borde junto con su lectura.
-- **`:warichu[nota]`** compone una nota (双行夹注) en dos filas a medio cuerpo dentro de la línea; la de arriba se lee primero (la de la derecha en texto vertical). Una nota larga llena lo que queda de línea y sigue en la línea, la columna o la página siguientes. `open` y `close` la rodean de signos al tamaño del texto; `cjk.warichu` fija el tamaño, el color y los signos por defecto. Una nota en escritura latina se corta entre sus palabras.
+- **`:dots[texto]`** pone un punto de énfasis (着重号) bajo cada carácter en texto horizontal, a su derecha en vertical, y ninguno en la puntuación ni en los espacios. `style="dot|circle|sesame"` (por defecto `dot`), `fill="open"` para el contorno, `pos="over|under"` para el otro lado. El énfasis de Markdown `*…*` sobre caracteres chinos o japoneses hace lo mismo con `cjk.emphasis: 'dots'`, el valor por defecto en un documento en chino o en japonés; las letras latinas del mismo énfasis siguen en cursiva. Los atributos que faltan se toman de `cjk.emphasisMark`: un punto bajo el texto en chino, un sésamo encima (a su derecha en vertical) en japonés.
+- **`:name[texto]`** traza la línea de nombre propio (专名号) bajo el texto (a su izquierda en vertical), y **`:book[texto]`** la marca de título (书名号): 《》 alrededor del título (〈〉 para un título dentro de otro), la línea ondulada de las ediciones clásicas y de Taiwán, o nada, según `cjk.bookTitleMark` (por defecto, signos en la China continental y en Japón, y línea ondulada en Taiwán y Hong Kong). En un documento japonés los signos son 『』, y 「」 para un título dentro de otro (`cjk.bookTitleBrackets`). Una misma fuente sirve para una edición continental moderna y para una clásica. Dos nombres o títulos seguidos mantienen sus líneas separadas.
+- **`:ruby[base]{rt="…"}`** pone lecturas encima de la base (pinyin) o a la derecha de cada carácter (zhuyin, lo que se hace por defecto con lecturas en bopomofo). Con tantas lecturas como caracteres, separadas por espacios o `|`, cada carácter recibe la suya y la línea puede cortarse entre ellos (ruby mono); `group`, o un número que no coincide, pone una lectura centrada sobre toda la base, que nunca se corta. `pos="over|under|right"` elige el lado. La forma compacta `{紅樓|hóng|lóu}` (una lectura por `|`) o `{紅樓|hónglóu}` (una lectura para toda la base) se lee igual, solo cuando la base tiene un carácter han, kana o bopomofo y fuera de las fórmulas, el código y los atributos, de modo que `{x|x>0}` en prosa latina sigue siendo texto. Una barra invertida delante de la llave o de la barra vertical deja una en chino como texto: `\{紅|hóng}` y `{紅\|hóng}` imprimen `{紅|hóng}`. Una base que abre o cierra una línea se alinea con ese borde junto con su lectura. `mode=mono|group|jukugo` elige cómo van las lecturas sobre la base (`mode=group` equivale a `group`), y `align=center|jis|start` cómo se espacia una lectura más corta que su base. En un documento japonés, la forma por carácter de una palabra de dos o más caracteres (`{東京|とう|きょう}`, `rt="とう|きょう"`) es ruby jukugo: cada carácter conserva su lectura, que puede invadir el carácter siguiente de la palabra, la línea puede cortarse entre ellos, y las lecturas se espacian e invaden los kana según digan `cjk.ruby.align` y `cjk.ruby.overhang`; una sola lectura para toda la base (`{紫陽花|あじさい}`, el `《》` de Aozora) es ruby de grupo; `mode=mono` mantiene una lectura por carácter sin invadir a los vecinos.
+- **`:sideline[texto]`** traza una línea lateral (傍線) junto al texto, puntuación y espacios incluidos: debajo en texto horizontal y a su derecha en vertical. `style="solid|double|wavy|dotted"` (por defecto `solid`), `pos="over|under"` (en texto vertical, over es la derecha y under la izquierda; también vale `position=`). Funciona en cualquier escritura, también en una frase inglesa subrayada.
+- **`:warichu[nota]`** compone una nota (双行夹注) en dos filas a medio cuerpo dentro de la línea; la de arriba se lee primero (la de la derecha en texto vertical). Una nota larga llena lo que queda de línea y sigue en la línea, la columna o la página siguientes. `open` y `close` la rodean de signos al tamaño del texto; `cjk.warichu` fija el tamaño, el color y los signos por defecto (（） en un documento japonés). Una nota en escritura latina se corta entre sus palabras.
+- **`:kunten[字]{kaeri="…" okuri="…" tate}`** pone las marcas de kanbun del último carácter entre los corchetes: `kaeri` la marca de retorno (レ, 一 二 三, 上 中 下, 甲 乙 丙, 天 地 人, y 一レ 上レ 甲レ 天レ; los puntos de código ㆑ ㆒ … se leen igual), `okuri` los okurigana (los paréntesis de Aozora `（ヲ）` se descartan) y la bandera `tate` el tatesen que lo une al carácter siguiente. El texto no se reordena: las marcas se componen a medio cuerpo junto a él (`cjk.kunten`), y el texto copiado se lee 學ビテ而時ニ習フ之ヲ, con los okurigana y sin las marcas de retorno. Un ruby dentro sirve para los caracteres que se leen dos veces: `:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`.
 
-El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y la composición avisa cuando el hueco entre las líneas de un párrafo es demasiado estrecho para ellas (`cjkMarksExceedLeading`, `rubyExceedsLeading`), y cuando las marcas bajo una línea y las lecturas sobre la siguiente no caben juntas en el hueco que comparten, en un mismo párrafo o entre dos. Dales a los párrafos anotados un estilo de párrafo con más interlineado. Las marcas, lecturas y notas se dibujan en párrafos, títulos, elementos de lista, citas y recuadros; en los pies de figura, las celdas y las notas de tabla, y en los encabezados y diseños, el texto se imprime sin ellas. Con `cjk.bookTitleMark: 'brackets'` los 《》 de un título son puntuación del texto: los pies, las celdas, las notas, las filas del índice general, los marcadores del PDF y las entradas del índice alfabético los conservan. Ver [Configuración › Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu).
+El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado, y la composición avisa cuando el hueco entre las líneas de un párrafo es demasiado estrecho para ellas (`cjkMarksExceedLeading`, `rubyExceedsLeading`, `kuntenExceedsLeading`), y cuando las marcas bajo una línea y las lecturas sobre la siguiente no caben juntas en el hueco que comparten, en un mismo párrafo o entre dos. Dales a los párrafos anotados un estilo de párrafo con más interlineado. Las marcas, lecturas y notas se dibujan en párrafos, títulos, elementos de lista, citas y recuadros, y también en los pies de figura, las celdas y las notas de tabla, cuyo interlineado se comprueba igual; en los encabezados y diseños el texto se imprime sin ellas. Con `cjk.bookTitleMark: 'brackets'` los 《》 de un título son puntuación del texto: los pies, las celdas, las notas, las filas del índice general, los marcadores del PDF y las entradas del índice alfabético los conservan. Ver [Configuración › Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu).
 
 
 ### Dirección del texto en el marcado
@@ -785,6 +801,7 @@ así que aprendió a contar los escalones a oscuras.
 - **Llamada.** `[^id]` imprime el número de la nota en volado, pegado a la palabra anterior (escríbela tras la puntuación, como arriba). El id admite letras, cifras, `-`, `_`, `.` y `:`. La llamada funciona en párrafos, elementos de lista, citas y recuadros; en títulos, pies de figura y celdas de tabla se imprime tal cual.
 - **Definición.** Un párrafo que empieza por `[^id]:`; su texto llega hasta la siguiente línea en blanco y admite las marcas en línea habituales (negrita, cursiva, enlaces, `:ref`, fórmulas, chips). Las definiciones salen del flujo estén donde estén, así que pueden ir bajo el párrafo que las cita o todas juntas al final del capítulo. Si un id se define dos veces, vale la primera.
 - **Números.** Las notas se numeran en el orden en que se citan por primera vez, y la numeración vuelve a empezar en cada capítulo (un título de nivel 1, y cada documento de un libro); una nota citada dos veces conserva su primer número y se compone una sola vez. `footnotes.numbering: 'document'` sigue la numeración por todo el libro, y `'page'` la reinicia en cada página, como hacen los libros chinos; `footnotes.numberFormat: 'circled-decimal'` escribe ① ② ③ sobre la línea de base.
+- **Texto japonés.** La llamada se escribe delante de un 。 que cierra la oración (`先生[^1]。`): se queda con el carácter anterior, y 。 nunca abre una línea. Un libro japonés vertical compone por defecto sus llamadas （1） a la derecha de la línea y sus notas tras el capítulo; `footnotes.markerPosition: 'side'` pone una llamada pequeña junto a la palabra, sin ocupar sitio en la línea, y `footnotes.placement: 'spread'` compone las notas junto al texto de cada pliego (ver [Configuración › Notas al pie](/es/docs/configuration#notas-al-pie)).
 - **Dónde va la nota.** Por defecto, al pie de la columna que contiene la línea que la cita, bajo un filete corto: la línea y su nota comparten siempre columna, y una línea cuya nota no cabe pasa con ella a la siguiente. En una maqueta de una columna es el pie de la página. `footnotes.placement: 'chapterEnd'` compone en cambio todas las notas de un capítulo tras su último bloque, por defecto al pie de la columna que cierran. Los cuerpos, el filete y los espacios están en [Notas al pie](/es/docs/configuration#notas-al-pie), en la referencia de configuración.
 - **Comprobaciones.** Una llamada sin definición (`undefinedFootnote`) imprime su número sobre una nota vacía; una definición que ninguna llamada cita (`unusedFootnote`) no se compone. El Sandbox muestra ambas en el panel Revisión.
 
@@ -902,6 +919,7 @@ El estilo decide lo que dicen una cita y una entrada. Los estilos incluidos est�
     <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numérico</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-numeric</code></td><td>GB/T 7714—2025 顺序编码</td><td>numérico</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714—2015 顺序编码</td><td>numérico</td></tr>
+    <tr><td><code>sist02</code></td><td>SIST 02 参照文献の書き方</td><td>numérico</td></tr>
     <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notas</td></tr>
     <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notas</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-note</code></td><td>GB/T 7714—2025 注释</td><td>notas</td></tr>
@@ -961,6 +979,10 @@ El pulso se toma en la muñeca.:index{term="Pulso!radial" main}
       <td>La clave de ordenación del último nivel, cuando debe ordenarse por otras letras: <code>:index[S. Juan de la Cruz]&#123;sort="San Juan de la Cruz"&#125;</code>, <code>term="siglo XX" sort="siglo 20"</code>. Un índice en chino ordena y agrupa por la lectura que el ordenador de cadenas da a cada carácter. Si un carácter con varias lecturas se lee de otro modo, la clave se escribe con caracteres que solo tengan la lectura buscada: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> pone 重阳 bajo la C, entre 程 y 崔, y no bajo la Z. Una clave en pinyin (<code>sort="chong yang"</code>) también llega a la C, pero se ordena detrás de todas sus entradas chinas, porque el ordenador de cadenas pone las letras latinas después de los caracteres chinos (ver <a href="/es/docs/configuration#índice-analítico">Configuración › Índice analítico</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
+      <td><code>yomi</code>, <code>reading</code></td>
+      <td>La lectura en kana del último nivel, por la que un índice japonés lo ordena y lo agrupa: <code>:index[夏目漱石]&#123;yomi="なつめそうせき"&#125;</code> va en な, en la fila な行. Sin ella, una marca cuyo texto lleva furigana en kana se lee por ellos (<code>:index[&#123;東京|とう|きょう&#125;]</code> se ordena como とうきょう), después por <code>sort</code> y después por el texto; una entrada que sigue encabezada por un kanji se avisa con <code>indexReadingMissing</code>. En un índice en otro idioma <code>yomi</code> funciona como <code>sort</code>. Los furigana dentro de una marca se escriben en la forma compacta: un <code>:ruby[…]</code> obligaría a escapar sus corchetes. Desde postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>main</code></td>
       <td>Una bandera: el lugar donde el término se trata a fondo. Su número de página se imprime en negrita (<code>index.main</code>). Una página marcada de las dos maneras sale en negrita.</td>
     </tr>
@@ -999,7 +1021,7 @@ Una marca sin término (`:index{}` o `:index{see="…"}` a secas) no indexa nada
 :::index
 ```
 
-- **Orden.** Las entradas siguen el orden alfabético del idioma del documento (`locale`, o `index.locale`): una letra acentuada se ordena con su letra base (*Árbol* en la A) y, en español, la *ñ* va tras la *n*, con una cabeza propia. Primero van las entradas que empiezan por un símbolo, después las que empiezan por una cifra y luego las letras. Las subentradas se ordenan igual dentro de su entrada, con una sangría por nivel.
+- **Orden.** Las entradas siguen el orden alfabético del idioma del documento (`locale`, o `index.locale`): una letra acentuada se ordena con su letra base (*Árbol* en la A) y, en español, la *ñ* va tras la *n*, con una cabeza propia. Primero van las entradas que empiezan por un símbolo, después las que empiezan por una cifra y luego las letras. Las subentradas se ordenan igual dentro de su entrada, con una sangría por nivel. Un índice japonés se ordena por la lectura en el orden de la JIS X 4061 y se agrupa por filas del gojūon (あ行, か行…), con sus entradas latinas antes de los kana (ver [Composición japonesa › Índice en orden gojūon](/es/docs/japanese-layout#índice-en-orden-gojūon)).
 - **Grupos.** Cada nueva inicial abre un grupo: una letra de cabeza (`index.groups`) y una línea de espacio encima (ninguna sobre el primer grupo). La letra se compone en el mismo bloque que la primera entrada del grupo, así que nunca cierra una columna sola; una entrada sin página propia (la que solo encabeza sus subentradas) se compone con su primera subentrada por lo mismo.
 - **Números de página.** Las etiquetas que imprimen las páginas, incluidas las romanas de los preliminares. Las páginas de una entrada se ordenan y cada una aparece una vez; las consecutivas se unen en un intervalo (`12–14`, `index.mergeRanges`), una página que cae dentro de un intervalo de la misma entrada se funde con él (si es principal, el intervalo sale en negrita) e `index.rangeFormat: 'chicago'` abrevia el segundo número (`234–37`). Las páginas principales, en negrita, no se unen. En el PDF cada número enlaza con su página.
 - **Las remisiones** cierran la entrada: *Término. Véase Destino* cuando la entrada no tiene páginas, y *Término, 12. Véase también Destino* cuando las tiene. Los textos siguen el idioma del documento (*Véase*, *See*…) y se cambian en `index.see`.
@@ -1040,7 +1062,7 @@ donde $g$ es la aceleración de la caída libre.
 
 ## Recursos
 
-Las imágenes, los SVG y las tablas no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla al primer hueco libre tras esa referencia — el final de la columna donde la mencionas, el principio de la siguiente, una banda de la página siguiente —, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
+Las imágenes, los SVG, las tablas y los vídeos no se escriben en línea. Se declaran una sola vez como **recursos** (gestionados en el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox, que ofrece subida de imágenes y SVG, un editor interactivo de tablas, vídeos de YouTube y Vimeo o subidos, y edición de pies y de colocación) y luego se conectan al texto por id. **Basta con referenciar un recurso para incorporarlo**: lo mencionas una vez con `:ref{id="…"}` y el motor hace flotar la figura o tabla al primer hueco libre tras esa referencia — el final de la columna donde la mencionas, el principio de la siguiente, una banda de la página siguiente —, igual que haría un tipógrafo de imprenta. No lo colocas una segunda vez.
 
 Ambas formas de abajo son sintaxis completamente nueva que no choca con CommonMark, por lo que un documento que las use sigue leyéndose como texto plano en cualquier otro visor de markdown.
 
@@ -1193,7 +1215,7 @@ Las bandas de flotantes se corrigen contra la rejilla base para que el texto cir
 
 En la página de cierre de un capítulo —y del documento— nada sigue a las figuras y tablas a lo ancho de la página que quedan bajo la última banda de texto, así que suben hasta quedar a un hueco de flotante bajo ella, apiladas en su orden, en lugar de dejar blanco entre el texto y una figura al pie de la página. Vale también para un flotante `position: 'bottom'`. Para dejarlas al pie, como en cualquier otra página, pon `layout.hugClosingFloats: false` (consulta [Configuración › Disposición](/es/docs/configuration#disposición)). En las páginas con columna lateral nunca se mueven.
 
-Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable.
+Los tres backends — la previsualización en canvas, el visor HTML y la salida PDF — renderizan recursos. En el backend HTML, las imágenes viven fuera del documento, así que el anfitrión las suministra mediante la opción de resolución `resourceImageUrl(fileId)`; cuando falta el resolutor (o no devuelve nada para un fichero), el recurso se renderiza como una caja neutra de relleno para que la maquetación se mantenga estable. El archivo propio de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](#vídeos)).
 
 #### Dónde puede caer un flotante
 
@@ -1237,6 +1259,136 @@ Los tres backends — la previsualización en canvas, el visor HTML y la salida 
 - Un párrafo que pasa de una página a la siguiente también cuenta desde su línea de cita. Cuando el párrafo empieza al pie de la página 5 y la referencia cae en la 6 — o el párrafo entero pasa a la 6 porque al pie de la 5 no caben suficientes líneas suyas —, la referencia está en la 6: un flotante `top` abre la página 7, y uno `auto` ocupa el pie de la 6 si cabe. Lo mismo vale entre las columnas de una página y para una caja partida entre páginas: la figura que cita su segunda parte espera a esa parte.
 - **Cambia en postext 1.5.** Hasta postext 1.4 un flotante entraba en la cola cuando la maquetación llegaba al párrafo que lo cita, así que la página a la que ese párrafo pasaba (o se trasladaba entero) podía abrirse con el flotante, por encima de la línea que lleva la referencia. Esa figura cae ahora una página más tarde, o al pie de la página cuando pide `auto`; el número de páginas puede cambiar.
 
+### Zona segura
+
+Un recurso bitmap o SVG puede marcar una **zona segura**: el rectángulo de la imagen que contiene lo importante (una persona y una franja del paisaje que la rodea, la parte dibujada de una gráfica) y que siempre se ve. Es el campo `safeArea` del recurso, cuatro fracciones (0–1) del tamaño intrínseco de la imagen medidas desde su esquina superior izquierda: `x` y `width` son fracciones de su anchura, `y` y `height` de su altura. El nombre dice qué hay que conservar; una caja de recorte diría por dónde cortar.
+
+```ts
+const puerto: Resource = {
+  id: 'puerto', typeId: 'figure', kind: 'bitmap', caption: 'El puerto al amanecer.',
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'puerto.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  // las barcas y el muelle: del 18 al 68 % de la anchura, del 25 al 85 % de la altura
+  safeArea: { x: 0.18, y: 0.25, width: 0.5, height: 0.6 },
+};
+```
+
+Solo se recorta una imagen que tenga zona segura. El motor puede entonces mostrarla con cualquier proporción entre la imagen entera y la zona segura: más alta que su proporción propia recortando los lados, como mucho hasta la anchura de la zona segura, o más baja recortando arriba y abajo, como mucho hasta su altura. La anchura de la figura no cambia nunca, solo su altura. Lo que queda fuera de la zona segura se recorta por cada lado en proporción al margen que hay ahí, así que un motivo a la izquierda del centro sigue a la izquierda del centro. Compuesto a 60 mm de ancho, el puerto del ejemplo mide 40 mm de alto entero y puede mostrarse con cualquier altura entre 24 mm (arriba y abajo recortados hasta el 60 % de la altura) y 80 mm (los lados recortados hasta la mitad de la anchura). Los valores que se salen de la imagen se ajustan a sus bordes; una zona con algún valor que no es un número o con un lado de menos del 2 % de la imagen, o que cubre la imagen entera, se ignora, igual que el campo en una tabla. Sin zona segura la imagen se muestra siempre entera, como hasta ahora.
+
+El motor aprovecha ese margen en tres casos:
+
+- **El hueco que queda en una columna.** Una imagen en línea (`position: 'here'`) algo más alta que el hueco que le queda en su columna, también cuando es su leyenda la que se saldría por el pie de la página, se recorta dentro de su zona segura para quedarse ahí, en lugar de pasar a la columna o la página siguiente y dejar esta corta.
+- **Páginas más bajas que la figura.** Con `layout.fitFiguresToPage`, una imagen demasiado alta para la página se recorta primero dentro de su zona segura, conservando su anchura, y solo se reduce si sigue sin caber (consulta [Configuración › Disposición](/es/docs/configuration#disposición)).
+- **Equilibrado de columnas.** Una imagen con zona segura colocada en línea en una columna corta, o flotada en la cabeza o el pie de esa columna y solo sobre ella, crece en líneas enteras de la rejilla base hasta llenar las líneas vacías de la columna. Una imagen más alta no deja ningún hueco visible, así que esta palanca, `flexFigure`, se prueba justo después de la caja que cierra la columna y antes de añadir espacio sobre los encabezados o tras las listas. Un flotante en la cabeza de una columna de la página de cierre de un capítulo, o de una banda de cierre, no crece, porque ahí las cabezas de columna quedan a nivel (consulta [Configuración › Equilibrado de columnas](/es/docs/configuration#equilibrado-de-columnas)).
+
+El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la imagen que se ve en `bodyRect`, en las mismas fracciones (no aparece cuando se ve la imagen entera), y `bodyFlex` da los px que el cuerpo aún podría encoger y crecer y los px que ya le cambiaron las palancas (`{ shrink, grow, delta }`). La previsualización en canvas y el PDF recortan al cuerpo y dibujan la imagen entera a su tamaño sin recortar; el visor HTML y el EPUB de maquetación fija ponen la imagen con `object-fit: cover` y el `object-position` correspondiente; un EPUB adaptable, que no tiene página que llenar, muestra la imagen entera. Un anfitrión que dibuje las imágenes por su cuenta tiene las funciones que exporta `postext`: `resourceSafeArea` y `normalizeSafeArea` (la zona tal como la lee el motor, o `undefined`), `safeAreaHeightRange` (el cuerpo más bajo y el más alto a una anchura), `safeAreaSource` (la parte que se ve a una altura dada) y `uncroppedPictureBox` (dónde dibujar la imagen entera antes de recortar), con el tipo `ResourceSafeArea`. En el Sandbox el campo es **Zona segura**, en una imagen del [panel de Recursos](/es/docs/sandbox#panel-de-recursos).
+
+
+### Vídeos
+
+Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o Vimeo, o un archivo de vídeo propio (MP4, WebM). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Cada salida lo muestra como puede:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Salida</th>
+      <th>Qué muestra</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas, PDF, Folio</td>
+      <td>La <strong>portada</strong>, un fotograma del vídeo, con una marca de reproducción y un código QR que abre el vídeo (<a href="/es/docs/configuration#estilo-de-vídeo">Configuración › Estilo de vídeo</a>). En el PDF la portada es además un enlace al vídeo.</td>
+    </tr>
+    <tr>
+      <td>Visor HTML</td>
+      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo. Con <code>videoStyle.html: 'poster'</code> muestra en su lugar la portada impresa.</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o Vimeo es su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const charla: Resource = {
+  id: 'charla-farero', typeId: 'video', kind: 'video',
+  caption: 'El farero explica la lámpara.',
+  altText: 'Un farero junto a la lámpara',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'charla.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // empieza en 0:30; el enlace impreso también
+  },
+};
+```
+
+El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime *Vídeo 1.1* y hace flotar la portada al primer hueco libre tras la referencia, y `::resource{id="charla-farero"}` con `placement.position: 'here'` la coloca en línea. Los campos de `Resource.video` (`ResourceVideo`):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Campo</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>Desde dónde se reproduce el vídeo.</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado.</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>, <code>format</code></td>
+      <td><code>string</code></td>
+      <td>Un archivo: el vídeo subido, guardado fuera de banda como un bitmap, y su formato (<code>'mp4'</code>, el valor por defecto, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>El fotograma de portada, un bitmap.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
+      <td><code>number</code></td>
+      <td>El tamaño del fotograma del vídeo en px (su proporción cuando no hay portada) y su duración en segundos.</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>El segundo del archivo cuyo fotograma se usa como portada, guardado para poder volver a elegirlo.</td>
+    </tr>
+    <tr>
+      <td><code>start</code>, <code>end</code></td>
+      <td><code>number</code></td>
+      <td>Reproduce desde el segundo <code>start</code> hasta el <code>end</code>. El código QR y el enlace del PDF también empiezan en <code>start</code>.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>Las opciones de reproductor de este vídeo, que se aplican sobre <code>videoStyle.player</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+**La portada.** Se compone a la medida de su hueco (o a la fracción `placement.width` de ella), con su propia proporción y sea cual sea su tamaño en píxeles: un fotograma del tamaño de una pantalla se amplía en lugar de imprimirse pequeño. Como un bitmap, puede llevar una [zona segura](#zona-segura) y seguir `placement.align`. Un vídeo sin portada imprime un recuadro oscuro con la proporción del vídeo (16:9 si nada la indica) y sus elementos superpuestos, y genera un aviso de contenido `videoWithoutPoster`. En el Sandbox, la portada de un vídeo de YouTube o Vimeo se descarga de la plataforma al escribir su dirección, y la de un archivo es un fotograma que eliges en el vídeo.
+
+**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, desde `start`. Un archivo no tiene página: abren su dirección de producción. Sin ella, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no lleva el archivo muestra la portada. Una dirección de YouTube o Vimeo que no nombra ningún vídeo de esa plataforma genera `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
+
+**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, empezar sin sonido, repetición, precarga, inserción con más privacidad) se fijan para todo el libro en `videoStyle.player` y para un vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html`; el escritor EPUB la usa. En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada recuperan su orientación, como una imagen, para que el código QR se pueda leer.
+
+**En el VDT.** El bloque de recurso de un vídeo lleva `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un bitmap) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o Vimeo con las opciones del reproductor aplicadas, el `fileId` y el `mimeType` de un archivo, el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda del cuerpo. Un anfitrión que dibuje los vídeos por su cuenta tiene las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
+
+**En un paquete.** Un `.postext` lleva el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los nombra en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor `resourceVideoUrl` sobre los archivos de un paquete.
 
 ## Qué NO se soporta
 
@@ -1254,7 +1406,7 @@ Postext no reconoce las siguientes características de CommonMark. O se tratan c
 
 Esta lista se irá reduciendo con el tiempo. Mientras tanto, cualquier cosa que no aparezca explícitamente arriba debe considerarse texto literal.
 
-Más allá de la sintaxis, el árabe y las demás escrituras de derecha a izquierda se componen de derecha a izquierda, con el algoritmo bidireccional y la encuadernación por la derecha (véase [Composición árabe](/es/docs/arabic-layout)). El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)); el japonés y el coreano pasan por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho, el chino y el árabe. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
+Más allá de la sintaxis, el árabe y las demás escrituras de derecha a izquierda se componen de derecha a izquierda, con el algoritmo bidireccional y la encuadernación por la derecha (véase [Composición árabe](/es/docs/arabic-layout)). El chino se compone a lo ancho de la página y a lo alto, con el corte de líneas, el ancho de la puntuación, la justificación entre caracteres, las marcas, el ruby y el warichu que espera su región (ver [Composición china](/es/docs/chinese-layout)). El japonés se compone con sus propias reglas: kinsoku, espaciado de los yakumono, furigana, marcas de énfasis, marcas de kanbun y notas (ver [Composición japonesa](/es/docs/japanese-layout)); el coreano pasa por el mismo compositor con las reglas de China continental. Los patrones de separación silábica existen para ocho idiomas, y las etiquetas integradas para esos ocho, el chino, el japonés y el árabe. Ver [Idiomas y escrituras](/es/docs/configuration#idiomas-y-escrituras).
 
 
 ## Normas de redacción
@@ -1269,7 +1421,7 @@ Unas pocas normas marcan la diferencia entre un documento que se parsea limpiame
 - **No se admiten citas dentro de listas.** Empieza la cita en la columna 0, fuera de la lista.
 - **Las imágenes y tablas viven en `resources`.** El `![alt](src)` en línea se elimina precisamente porque rompe la colocación consciente de columnas. Declara cada imagen como recurso y refiérela por id — el motor decide si flota, rompe la columna o se desplaza al inicio de la página siguiente.
 - **Escapa los signos de dólar con `\$` cuando no sean matemáticas.** Postext interpreta `$…$` como LaTeX en línea, así que un `$` suelto en prosa iniciaría una fórmula. Precios, prompts de shell y cualquier otro dólar literal deben escribirse como `\$`.
-- **Escribe el marcado en ASCII, también en texto chino.** Un método de entrada chino o japonés da formas de ancho completo: `：：：` para una valla, `＃` para un título, `［＾1］` para una llamada de nota, `｛…｝` para los atributos, `＊＊` para la negrita. Se imprimen como texto, y la composición avisa de la línea con `fullwidthMarkup`, indicando la forma ASCII que hay que escribir. Los valores de los atributos pueden ir en cualquier escritura y entre `“…”` o `「…」`; las claves siguen en ASCII.
+- **Escribe el marcado en ASCII, también en texto chino y japonés.** Un método de entrada chino o japonés da formas de ancho completo: `：：：` para una valla, `＃` para un título, `［＾1］` para una llamada de nota, `｛…｝` para los atributos, `＊＊` para la negrita. Se imprimen como texto, y la composición avisa de la línea con `fullwidthMarkup`, indicando la forma ASCII que hay que escribir. Los valores de los atributos pueden ir en cualquier escritura y entre `“…”` o `「…」`; las claves siguen en ASCII.
 
 
 ## Ejemplo completo

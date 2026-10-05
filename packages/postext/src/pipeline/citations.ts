@@ -33,7 +33,8 @@ const WARICHU_ID_BASE = 1_000_000;
 
 const BIBLIOGRAPHY_TITLES: Readonly<Record<string, string>> = {
   en: 'References', es: 'Referencias', fr: 'Références', de: 'Literatur', it: 'Bibliografia', pt: 'Referências',
-  ca: 'Referències', nl: 'Literatuur', 'zh-hans': '参考文献', 'zh-hant': '參考文獻', ar: 'المراجع',
+  ca: 'Referències', nl: 'Literatuur', 'zh-hans': '参考文献', 'zh-hant': '參考文獻', ja: '参考文献',
+  ar: 'المراجع',
 };
 
 /** The title a bibliography takes in a document language. */
@@ -43,14 +44,16 @@ export function defaultBibliographyTitle(locale: unknown): string {
 
 /** The CSL locale citations are written in: the configured one, else the
  *  document language (`es` → `es-ES`, `zh-Hant` → `zh-TW`, `ar-EG` →
- *  `ar`). */
+ *  `ar`, `ja` → `ja-JP`). */
 export function citationLocale(resolved: ResolvedConfig, documentLocale: string | undefined): string {
   if (resolved.citations.locale) return resolved.citations.locale;
   const tag = (documentLocale ?? 'en-US').replace(/_/g, '-');
   const lower = tag.toLowerCase();
   if (lower.startsWith('zh')) return /hant|tw|hk|mo/.test(lower) ? 'zh-TW' : 'zh-CN';
-  // One CSL locale serves every Arabic tag (`ar-EG`, `ar-MA`…).
+  // One CSL locale serves every Arabic tag (`ar-EG`, `ar-MA`…), and one
+  // every Japanese one (`ja`, `ja-Jpan`…, #426).
   if (languageOf(lower) === 'ar') return 'ar';
+  if (languageOf(lower) === 'ja') return 'ja-JP';
   if (lower === 'en' || lower === 'en-us') return 'en-US';
   return tag;
 }
@@ -150,8 +153,10 @@ function markerSpans(
   return out;
 }
 
-/** Authors of a work for a narrative citation in a numbered style. */
-function narrativeName(item: CslItem | undefined): string {
+/** Authors of a work for a narrative citation in a numbered style. In a
+ *  Japanese locale a CJK name takes the locale's words for "and" and "et
+ *  al.", set solid (夏目と森, 夏目ほか, #426); Chinese keeps 、 and 等. */
+function narrativeName(item: CslItem | undefined, locale: string, terms: CitationProcessor['terms']): string {
   const names = (item?.author ?? item?.editor ?? []) as { family?: string; literal?: string }[];
   if (names.length === 0) return '';
   const first = names[0]!.literal ?? names[0]!.family ?? '';
@@ -161,6 +166,7 @@ function narrativeName(item: CslItem | undefined): string {
   const arabic = ARABIC.test(first);
   if (names.length === 1) return first;
   const second = names[1]!.literal ?? names[1]!.family ?? '';
+  if (cjk && terms && languageOf(locale) === 'ja') return names.length === 2 ? `${first}${terms.and}${second}` : `${first}${terms.etAl}`;
   if (names.length === 2) return cjk ? `${first}、${second}` : arabic ? `${first} و${second}` : `${first} & ${second}`;
   return cjk ? `${first}等` : arabic ? `${first} وآخرون` : `${first} et al.`;
 }
@@ -209,7 +215,7 @@ export function processCitations(ctx: CitationContext, resolved: ResolvedConfig,
         const known = c.items.filter((it) => byId.has(it.id));
         if (known.length === 0) return undefined;
         if (override) {
-          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id))).filter(Boolean).join('; ') : undefined;
+          const narrative = c.mode === 'narrative' ? known.map((it) => narrativeName(byId.get(it.id), locale, processor.terms)).filter(Boolean).join('; ') : undefined;
           return markerSpans(c, numbers, byId, resolved, narrative, { bold: false, italic: false }, locale);
         }
         return htmlToSpans(html[i] ?? '');
@@ -490,7 +496,7 @@ export function applyCitations(
         // "As @howse1980 says": the sentence keeps the author's name, the
         // reference goes to the note.
         const who = span.citation.cluster.mode === 'narrative'
-          ? span.citation.cluster.items.map((it) => narrativeName(itemsById.get(it.id))).filter(Boolean).join('; ')
+          ? span.citation.cluster.items.map((it) => narrativeName(itemsById.get(it.id), citationLocale(resolved, locale), processed!.processor.terms)).filter(Boolean).join('; ')
           : '';
         const name: InlineSpan[] = who ? [{ text: who, bold: span.bold, italic: span.italic }] : [];
         if (warichu) {

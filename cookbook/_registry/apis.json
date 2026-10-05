@@ -559,5 +559,75 @@
       "zh": "写出一本书",
       "ar": "كتابة كتاب"
     }
+  },
+  "parseVideoUrl": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Videos",
+      "es": "Vídeos",
+      "ca": "Vídeos",
+      "zh": "视频",
+      "ar": "مقاطع الفيديو"
+    }
+  },
+  "youtubePosterUrls": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Videos",
+      "es": "Vídeos",
+      "ca": "Vídeos",
+      "zh": "视频",
+      "ar": "مقاطع الفيديو"
+    }
+  },
+  "resourceVideoLink": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Videos",
+      "es": "Vídeos",
+      "ca": "Vídeos",
+      "zh": "视频",
+      "ar": "مقاطع الفيديو"
+    }
+  },
+  "videoWatchUrl": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Videos",
+      "es": "Vídeos",
+      "ca": "Vídeos",
+      "zh": "视频",
+      "ar": "مقاطع الفيديو"
+    }
+  },
+  "bundleVideoUrl": {
+    "slug": "document-format",
+    "heading": {
+      "en": "Videos",
+      "es": "Vídeos",
+      "ca": "Vídeos",
+      "zh": "视频",
+      "ar": "مقاطع الفيديو"
+    }
+  },
+  "encodeQr": {
+    "slug": "configuration",
+    "heading": {
+      "en": "QR code",
+      "es": "Código QR",
+      "ca": "Codi QR",
+      "zh": "二维码",
+      "ar": "رمز QR"
+    }
+  },
+  "resolveVideoStyleConfig": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Video style",
+      "es": "Estilo de vídeo",
+      "ca": "Estil de vídeo",
+      "zh": "视频样式",
+      "ar": "نمط الفيديو"
+    }
   }
 }

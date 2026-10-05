@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARABIC_FONTS, chineseSubsetsFor, rankFontsForScript, scriptSubsetsFor, type FontEntry } from './FontPicker';
+import { ARABIC_FONTS, JAPANESE_FONTS, chineseSubsetsFor, fetchGoogleFonts, rankFontsForScript, scriptSubsetsFor, type FontEntry } from './FontPicker';
 import { configFontSampleText } from './fontLoader';
 
 const entry = (family: string, ...subsets: string[]): FontEntry => ({ family, subsets });
@@ -30,6 +30,39 @@ describe('font picker ranking by script (#381)', () => {
     expect(ranked.other.map((f) => f.family)).toEqual(['EB Garamond', 'Noto Serif SC']);
     // Without a preference the catalogue order stands.
     expect(rankFontsForScript(fonts, ['arabic']).script.map((f) => f.family)).toEqual(['Alexandria', 'Amiri', 'Lateef', 'Noto Naskh Arabic', 'Reem Kufi']);
+  });
+
+  it('asks for the Japanese subset in a Japanese document, the mincho faces first', () => {
+    expect(scriptSubsetsFor('ja')).toEqual(['japanese']);
+    expect(scriptSubsetsFor('ja-JP')).toEqual(['japanese']);
+    expect(scriptSubsetsFor('ja-Jpan')).toEqual(['japanese']);
+    // Japanese kanji are not Chinese: no Chinese subset, and the other way round.
+    expect(scriptSubsetsFor('zh-Hans')).not.toContain('japanese');
+    const fonts = [
+      entry('BIZ UDPGothic', 'japanese', 'latin'),
+      entry('Dela Gothic One', 'japanese', 'latin'),
+      entry('EB Garamond', 'latin'),
+      entry('Noto Sans JP', 'japanese', 'latin'),
+      entry('Noto Serif JP', 'japanese', 'latin'),
+      entry('Noto Serif SC', 'chinese-simplified', 'latin'),
+      entry('Shippori Mincho', 'japanese', 'latin'),
+    ];
+    const ranked = rankFontsForScript(fonts, ['japanese'], JAPANESE_FONTS);
+    expect(ranked.script.map((f) => f.family)).toEqual(['Noto Serif JP', 'Shippori Mincho', 'Noto Sans JP', 'BIZ UDPGothic', 'Dela Gothic One']);
+    expect(ranked.other.map((f) => f.family)).toEqual(['EB Garamond', 'Noto Serif SC']);
+  });
+
+  it('lists the Japanese faces with their subset when the catalogue does not answer', async () => {
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (() => Promise.reject(new Error('offline'))) as typeof fetch;
+    try {
+      const list = await fetchGoogleFonts();
+      for (const family of JAPANESE_FONTS) {
+        expect(list.find((f) => f.family === family)?.subsets).toEqual(['japanese', 'latin']);
+      }
+    } finally {
+      globalThis.fetch = realFetch;
+    }
   });
 
   it('loads an Arabic letter and digit with the faces of an Arabic document', () => {

@@ -128,7 +128,7 @@ Two attributes have a meaning of their own. `style="<id>"` applies a named [head
 # Contents {style="front-matter" toc="false"}
 ```
 
-Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
+Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
 
 ```markdown
 # To my mother {hidden="true" toc="false"}
@@ -251,7 +251,7 @@ Four container names are recognized in the text flow (a fifth, `:::columns`, wor
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style.</td>
+      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ).</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -425,6 +425,16 @@ The old chapter ends here.
 # A new chapter
 ```
 
+The flag `center` (`:::pagebreak{center}`, off with `center=false`) centres the text of the page the break opens between the head and the foot of the type area, across the page in vertical text: the ページの左右中央 of a Japanese part title or dedication. Floats, notes and running heads stay where they are, and a page already full is left alone. The flag does not end the page: close it with another `:::pagebreak`.
+
+```md
+:::pagebreak{center}
+
+# 上　先生と私
+
+:::pagebreak
+```
+
 #### Parity attribute
 
 The `parity` attribute accepts the same five values as `headings.levels[*].breakBefore.parity`:
@@ -469,7 +479,7 @@ Preface pages are labelled `i`, `ii`, `iii`, …; the first chapter opens on a r
 
 Format-only changes (no `startAt`) keep the counter flowing — useful for, say, switching from `lower-alpha` to `upper-alpha` without resetting.
 
-`format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
+`format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal`, `一` and `あ` as well as `japanese-informal` and `hiragana` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
 
 ### `:::space`
 
@@ -736,7 +746,7 @@ In vertical text (`layout.writingMode: 'vertical-rl'`) Chinese characters stand 
 
 ### Chinese marks, ruby and warichu
 
-Chinese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Five directives do it. [Chinese layout](/en/docs/chinese-layout) explains the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
+Chinese and Japanese editions mark text between the lines rather than with italics or underlining, gloss characters with their readings, and set commentary inside the line. Seven directives do it. [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout) explain the conventions behind them. They keep their text: the characters between the brackets stay in the paragraph (search, the contents, index anchors and copied text read them as written), and the directives take the other inline marks inside and around them, nested ones included. Write `\]` for a literal bracket.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -744,14 +754,20 @@ Chinese editions mark text between the lines rather than with italics or underli
 {滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
 
 寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+
+{東京|とう|きょう}の:ruby[紫陽花]{rt="あじさい"}は*とんと*:sideline[見事]だ。:book[こころ]を読む。
+
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
 ```
 
-- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese document; Latin letters in the same emphasis stay italic.
-- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland, the wavy line in Taiwan and Hong Kong). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
-- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading.
-- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets. A note in Latin script breaks between its words.
+- **`:dots[text]`** sets an emphasis dot (着重号) under each character in horizontal text, right of it in vertical text, and none on punctuation or spaces. `style="dot|circle|sesame"` (default `dot`), `fill="open"` for an outline, `pos="over|under"` for the other side. Markdown emphasis `*…*` on Chinese or Japanese characters does the same under `cjk.emphasis: 'dots'`, the default in a Chinese or Japanese document; Latin letters in the same emphasis stay italic. Attributes left out take `cjk.emphasisMark`: a dot under the text in Chinese, a sesame over it (right of it in vertical text) in Japanese.
+- **`:name[text]`** draws the proper-name line (专名号) under the text (left of it in vertical text), and **`:book[text]`** the book-title mark (书名号): 《》 around the title (〈〉 for a title inside another), the wavy line of classical and Taiwan editions, or nothing, as `cjk.bookTitleMark` says (by default brackets on the mainland and in Japan, the wavy line in Taiwan and Hong Kong). In a Japanese document the brackets are 『』, and 「」 for a title inside another (`cjk.bookTitleBrackets`). One source serves a modern mainland edition and a classical one. Two names or titles side by side keep their lines apart.
+- **`:ruby[base]{rt="…"}`** sets readings over the base (pinyin), or right of each character (zhuyin, the default for bopomofo readings). With as many readings as characters, split on spaces or `|`, each character gets its own and a line may break between them (mono ruby); `group`, or a count that does not match, sets one reading centred over the whole base, which never breaks. `pos="over|under|right"` picks the side. The compact form `{紅樓|hóng|lóu}` (one reading per `|`) or `{紅樓|hónglóu}` (one reading for the whole base) reads the same, only when the base holds a Han, kana or bopomofo character, outside maths, code and attributes, so `{x|x>0}` in Latin prose stays text. A backslash before the brace or the bar keeps a Chinese one as text: `\{紅|hóng}` and `{紅\|hóng}` print `{紅|hóng}`. A base that opens or closes a line aligns to that edge together with its reading. `mode=mono|group|jukugo` chooses how the readings go over the base (`mode=group` is the same as `group`), and `align=center|jis|start` how a reading shorter than its base is spaced. In a Japanese document the per-character form of a word of two or more characters (`{東京|とう|きょう}`, `rt="とう|きょう"`) is jukugo ruby: each character keeps its reading, which may run onto the next character of the word, the line may break between them, and the readings are spaced and run onto kana as `cjk.ruby.align` and `cjk.ruby.overhang` say; one reading for the whole base (`{紫陽花|あじさい}`, Aozora's `《》`) is group ruby; `mode=mono` keeps a reading per character with no running onto the neighbours.
+- **`:sideline[text]`** draws a side line (傍線) beside the text, punctuation and spaces included: under it in horizontal text and right of it in vertical text. `style="solid|double|wavy|dotted"` (default `solid`), `pos="over|under"` (in vertical text over is right, under is left; `position=` works too). It works in any script, an underlined English phrase included.
+- **`:warichu[note]`** sets a note (双行夹注) in two rows at half the text size inside the line, the upper row read first (the right one in vertical text). A long note fills what is left of the line and goes on with the next line, column or page. `open` and `close` wrap it in brackets at the text size; `cjk.warichu` sets the size, colour and default brackets (（） in a Japanese document). A note in Latin script breaks between its words.
+- **`:kunten[字]{kaeri="…" okuri="…" tate}`** sets the kanbun marks of the last character between the brackets: `kaeri` the return mark (レ, 一 二 三, 上 中 下, 甲 乙 丙, 天 地 人, and 一レ 上レ 甲レ 天レ; the code points ㆑ ㆒ … read the same), `okuri` the okurigana (Aozora's parentheses `（ヲ）` are dropped), and the flag `tate` the tatesen that joins it to the next character. The text is not reordered: the marks are set at half size beside it (`cjk.kunten`), and copied text reads 學ビテ而時ニ習フ之ヲ, with the okurigana and without the return marks. A ruby inside works for the characters read twice: `:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`.
 
-The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes; in captions, table cells and notes, and in running heads and designs, the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
+The line pitch never changes: marks and readings live in the leading, and the build warns when a paragraph's line gap is too narrow for them (`cjkMarksExceedLeading`, `rubyExceedsLeading`, `kuntenExceedsLeading`), and when the marks under one line and the readings over the next do not fit in the gap they share, in one paragraph or across two. Give annotated paragraphs a paragraph style with more leading. Marks, readings and notes are drawn in paragraphs, headings, list items, blockquotes and boxes, and in captions, table cells and notes too, whose leading is checked the same way; in running heads and designs the text prints without them. Under `cjk.bookTitleMark: 'brackets'` the 《》 of a title are punctuation of the text: captions, cells, notes, contents rows, bookmarks and index entries keep them. See [Configuration › Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu).
 
 
 ### Text direction in the markup
@@ -785,6 +801,7 @@ so he learned to count the steps in the dark.
 - **Marker.** `[^id]` prints the note's number as a superscript, glued to the word before it (write it after the punctuation, as above). The id takes letters, digits, `-`, `_`, `.` and `:`. The marker works in paragraphs, list items, blockquotes and callouts; in headings, captions and table cells it prints as written.
 - **Definition.** A paragraph that starts with `[^id]:`; its text runs to the next blank line and takes the usual inline marks (bold, italics, links, `:ref`, formulas, chips). Definitions leave the flow wherever they are written, so they can sit under the paragraph that cites them or all together at the end of the chapter. The first definition of an id wins.
 - **Numbers.** Notes are numbered in the order they are first cited, starting again at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs the numbers on through the book, and `'page'` starts them again on every page, as Chinese books do; `footnotes.numberFormat: 'circled-decimal'` writes ① ② ③ on the baseline.
+- **Japanese text.** Write the marker before a sentence-final 。 (`先生[^1]。`): it stays with the character before it, and 。 never opens a line. A Japanese vertical book sets its markers （1） right of the line and its notes after the chapter by default; `footnotes.markerPosition: 'side'` sets a small marker beside the word, taking no room in the line, and `footnotes.placement: 'spread'` sets the notes beside the text of each spread (see [Configuration › Footnotes](/en/docs/configuration#footnotes)).
 - **Where the note goes.** By default at the foot of the column that holds the line citing it, under a short rule: the line and its note always share a column, and a line whose note does not fit moves on with it. In a one-column layout that is the foot of the page. `footnotes.placement: 'chapterEnd'` sets all the notes of a chapter after its last block instead, by default at the foot of the column they close. See [Footnotes](/en/docs/configuration#footnotes) in the configuration reference for the sizes, the rule and the spacing.
 - **Checks.** A marker with no definition (`undefinedFootnote`) prints its number over an empty note; a definition no marker cites (`unusedFootnote`) is not set. The Sandbox lists both in the Checks panel.
 
@@ -902,6 +919,7 @@ The style decides what a citation and an entry say. The bundled styles are liste
     <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numbered</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-numeric</code></td><td>GB/T 7714—2025 顺序编码</td><td>numbered</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714—2015 顺序编码</td><td>numbered</td></tr>
+    <tr><td><code>sist02</code></td><td>SIST 02 参照文献の書き方</td><td>numbered</td></tr>
     <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notes</td></tr>
     <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notes</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-note</code></td><td>GB/T 7714—2025 注释</td><td>notes</td></tr>
@@ -961,6 +979,10 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
       <td>The sort key of the last level when it should sort by other letters: <code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>, <code>term="20th century" sort="twentieth century"</code>. A Chinese index sorts and groups by the reading the collator gives a character. For a polyphonic one read the other way, write the key in characters that have only the reading you want: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> files 重阳 under C, between 程 and 崔, not under Z. A pinyin key (<code>sort="chong yang"</code>) reaches C too, but sorts after all of its Chinese entries, because the collator sets Latin letters after Chinese characters (see <a href="/en/docs/configuration#back-of-book-index">Configuration › Back-of-book index</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
+      <td><code>yomi</code>, <code>reading</code></td>
+      <td>The reading of the last level in kana, by which a Japanese index sorts and groups it: <code>:index[夏目漱石]&#123;yomi="なつめそうせき"&#125;</code> files under な, in the な行. Without it, a mark whose text carries furigana in kana is read through them (<code>:index[&#123;東京|とう|きょう&#125;]</code> sorts as とうきょう), then <code>sort</code>, then the text; an entry still headed by a kanji is reported as <code>indexReadingMissing</code>. In an index in another language <code>yomi</code> acts as <code>sort</code>. Write furigana inside a mark in the compact form: a <code>:ruby[…]</code> would need its brackets escaped. Since postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>main</code></td>
       <td>A flag: the principal discussion of the term. Its page number is set bold (<code>index.main</code>). A page marked both ways is bold.</td>
     </tr>
@@ -999,7 +1021,7 @@ A mark with no term (`:index{}` or `:index{see="…"}` alone) indexes nothing an
 :::index
 ```
 
-- **Order.** Entries sort in the alphabetical order of the document language (`locale`, or `index.locale`): an accented letter files with its base letter (*Árbol* under A), and in Spanish *ñ* comes after *n*, under a head of its own. Entries that start with a symbol come first, then those that start with a digit, then the letters. Sub-entries sort the same way under their entry, indented one step per level.
+- **Order.** Entries sort in the alphabetical order of the document language (`locale`, or `index.locale`): an accented letter files with its base letter (*Árbol* under A), and in Spanish *ñ* comes after *n*, under a head of its own. Entries that start with a symbol come first, then those that start with a digit, then the letters. Sub-entries sort the same way under their entry, indented one step per level. A Japanese index sorts by reading in the order of JIS X 4061 and groups by gojūon row (あ行, か行…), its Latin entries before the kana (see [Japanese layout › Index in gojūon order](/en/docs/japanese-layout#index-in-gojūon-order)).
 - **Groups.** Each new first letter opens a group: a letter head (`index.groups`) and one line of space above it (none above the first group). The head is set in one block with the group's first entry, so it never ends a column alone; an entry with no page of its own (one that only heads its sub-entries) is set with its first sub-entry for the same reason.
 - **Page numbers.** The labels the pages print, roman ones in the front matter included. An entry's pages are sorted and each is listed once; consecutive pages join into a range (`12–14`, `index.mergeRanges`), a page that falls inside a range of the same entry folds into it (a main page there makes the range bold), and `index.rangeFormat: 'chicago'` shortens the second number (`234–37`). Bold (main) pages stay apart. In the PDF each number links to its page.
 - **Cross-references** close the entry: *Term. See Target* when the entry has no pages, *Term, 12. See also Target* when it has. The labels follow the document language (*See*, *Véase*…) and can be set in `index.see`.
@@ -1040,7 +1062,7 @@ where $g$ is the acceleration of free fall.
 
 ## Resources
 
-Images, SVGs, and tables are not written inline. They are declared once as **resources** (managed in the Sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
+Images, SVGs, tables and videos are not written inline. They are declared once as **resources** (managed in the Sandbox's [Resources panel](/en/docs/sandbox#resources-panel), which handles image and SVG upload, an interactive table editor, YouTube, Vimeo and uploaded videos, and caption and placement editing) and then connected to your prose by id. **Referencing a resource is enough to incorporate it** — you mention it once with an inline `:ref{id="…"}`, and the engine floats the figure or table into the first free slot after that reference — the bottom of the column you mention it in, the top of the next column, a band of the next page — just as a print typesetter would. You do not place it a second time.
 
 Both forms below are net-new syntax that does not collide with CommonMark, so a document using them still reads as plain text in any other markdown viewer.
 
@@ -1193,7 +1215,7 @@ Float bands are corrected against the baseline grid so the surrounding text keep
 
 On the closing page of a chapter — and of the document — nothing follows the page-wide figures and tables set below the last band of text, so they move up to sit one float gap under it, stacked in their order, instead of leaving white between the text and a figure at the page foot. That holds for a `position: 'bottom'` float too. To keep them at the foot, as on every other page, set `layout.hugClosingFloats: false` (see [Configuration › Layout](/en/docs/configuration#layout)). Pages with a side column never move them.
 
-All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable.
+All three backends — the canvas preview, the HTML viewer, and the PDF output — render resources. In the HTML backend, image payloads live out-of-band, so the host supplies them through the `resourceImageUrl(fileId)` resolver option; when the resolver is missing (or returns nothing for a file), the resource renders as a neutral placeholder box so the layout stays stable. A video's own file comes through `resourceVideoUrl(fileId)` the same way (see [Videos](#videos)).
 
 #### Where a float can land
 
@@ -1237,6 +1259,136 @@ All three backends — the canvas preview, the HTML viewer, and the PDF output �
 - A paragraph that runs from one page onto the next counts from its citing line too. When the paragraph begins at the foot of page 5 and the reference falls on page 6 — or the whole paragraph moves to page 6, because not enough of its lines fit at the foot of page 5 — the reference is on page 6: a `top` float opens page 7, and an `auto` one takes the foot of page 6 when there is room for it. The same holds between the columns of a page, and for a box split across pages: a figure its second part cites waits for that part.
 - **Changed in postext 1.5.** Up to postext 1.4 a float was queued when the layout reached the paragraph that cites it, so the page such a paragraph ran onto (or moved to) could open with the float, above the line holding the reference. Such a figure now lands a page later, or at the foot of the page when it asks for `auto`; a page-count change can follow.
 
+### Safe area
+
+A bitmap or SVG resource can mark a **safe area**: the rectangle of the picture that holds what matters (a person and a strip of the landscape behind them, the plotted part of a chart) and is always shown. It is the resource's `safeArea`, four fractions (0–1) of the picture's intrinsic size measured from its top-left corner: `x` and `width` are fractions of its width, `y` and `height` of its height. The name says what has to be kept; a crop box would say where to cut.
+
+```ts
+const harbour: Resource = {
+  id: 'harbour', typeId: 'figure', kind: 'bitmap', caption: 'The harbour at dawn.',
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'harbour.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  // the boats and the quay: 18–68 % of the width, 25–85 % of the height
+  safeArea: { x: 0.18, y: 0.25, width: 0.5, height: 0.6 },
+};
+```
+
+Only a picture with a safe area is ever cropped. The engine may then show it at any aspect ratio between the whole picture and the safe area: taller than the picture's own ratio by cropping the sides, at most down to the safe area's width, or shorter by cropping top and bottom, at most down to its height. The width of the figure never changes, only its height. What lies outside the safe area is cropped on both sides in proportion to the margins there, so a subject left of centre stays left of centre. Set 60 mm wide, the harbour above is 40 mm tall when whole, and can be shown anywhere from 24 mm tall (top and bottom cropped down to 60 % of the height) to 80 mm tall (the sides cropped down to half the width). Values past the picture's edges are clamped to it; an area with a value that is not a number or a side under 2 % of the picture, or one that covers the whole picture, is ignored, and so is the field on a table. Without a safe area a picture is always shown whole, as before.
+
+The engine uses that room in three places:
+
+- **The room left in a column.** An inline picture (`position: 'here'`) a little too tall for the room left in its column, including one whose caption would run past the foot of the page, is cropped within its safe area to stay there, instead of moving on to the next column or page and leaving this one short.
+- **Pages shorter than the figure.** With `layout.fitFiguresToPage`, a picture too tall for the page is first cropped within its safe area, keeping its width, and only scaled down if it is still too tall (see [Configuration › Layout](/en/docs/configuration#layout)).
+- **Column balancing.** A picture with a safe area set inline in a short column, or floated at the head or the foot of that column over that column alone, grows by whole baseline-grid lines to fill the column's empty lines. A taller picture leaves no visible hole, so this lever, `flexFigure`, is tried right after the box closing the column and before any space is added above headings or after lists. A float at the head of a column on a chapter's closing page or in a closing band does not grow, since those column heads stay level (see [Configuration › Column balancing](/en/docs/configuration#column-balancing)).
+
+The VDT records the crop on the resource block: `bodySource` is the part of the picture shown in `bodyRect`, in the same fractions (absent when the whole picture fills it), and `bodyFlex` gives the px the body could still shrink and grow and the px the levers already changed it by (`{ shrink, grow, delta }`). The canvas preview and the PDF clip to the body and draw the whole picture at its uncropped size; the HTML viewer and fixed-layout EPUB set the image with `object-fit: cover` and a matching `object-position`; a reflowable EPUB, which has no page to fill, shows the whole picture. A host that draws pictures itself can use the helpers `postext` exports: `resourceSafeArea` and `normalizeSafeArea` (the area as the engine reads it, or `undefined`), `safeAreaHeightRange` (the shortest and tallest body at a width), `safeAreaSource` (the part shown at a given height) and `uncroppedPictureBox` (where to draw the whole picture before clipping), with the type `ResourceSafeArea`. In the Sandbox the field is **Safe area** on a picture in the [Resources panel](/en/docs/sandbox#resources-panel).
+
+
+### Videos
+
+A **video** resource (`kind: 'video'`) is a YouTube or Vimeo video, or a video file of your own (MP4, WebM). It is placed, captioned, floated and cited like a picture, and numbered in a sequence of its own: the built-in `video` type prints *Video 1.1*, *Video 1.2*… beside *Figure 1.1* and *Table 1.1* (see [Configuration › Resource types](/en/docs/configuration#resource-types)). Each output shows it as it can:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Output</th>
+      <th>What it shows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas, PDF, Folio</td>
+      <td>The <strong>poster</strong>, a frame of the video, with a play mark and a QR code that opens the video (<a href="/en/docs/configuration#video-style">Configuration › Video style</a>). In the PDF the poster is also a link to the video.</td>
+    </tr>
+    <tr>
+      <td>HTML viewer</td>
+      <td>The video's <strong>player</strong>: YouTube's or Vimeo's, or the browser's HTML5 player for a file. With <code>videoStyle.html: 'poster'</code> it shows the printed poster instead.</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>A file plays in the reading system's own player, packed in the book or read from its production address. A YouTube or Vimeo video is its poster, linked to the video: an EPUB may not embed a web page's player.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const talk: Resource = {
+  id: 'keeper-talk', typeId: 'video', kind: 'video',
+  caption: 'The keeper explains the lamp.',
+  altText: 'A lighthouse keeper beside the lamp',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // plays from 0:30; the printed link starts there too
+  },
+};
+```
+
+The text cites a video as it cites a figure: `:ref{id="keeper-talk"}` prints *Video 1.1* and floats the poster to the first free slot after the reference, and `::resource{id="keeper-talk"}` with `placement.position: 'here'` sets it inline. The fields of `Resource.video` (`ResourceVideo`):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Field</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>Where the video plays from.</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube or Vimeo: the video's address, in any form (a watch page, <code>youtu.be</code>, Shorts, an embed link, <code>youtube-nocookie.com</code>; a Vimeo page, channel page or unlisted link with its hash). A file: its <strong>production address</strong>, where the published book will find it.</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>, <code>format</code></td>
+      <td><code>string</code></td>
+      <td>A file: the uploaded video, stored out of band like a bitmap, and its format (<code>'mp4'</code>, the default, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>The poster frame, a bitmap.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
+      <td><code>number</code></td>
+      <td>The video's frame size in px (its ratio when there is no poster) and length in seconds.</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>The second of a file's frame used as the poster, kept so it can be picked again.</td>
+    </tr>
+    <tr>
+      <td><code>start</code>, <code>end</code></td>
+      <td><code>number</code></td>
+      <td>Play from <code>start</code> to <code>end</code> seconds. The QR code and the PDF link start at <code>start</code> too.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>This video's player options, laid over <code>videoStyle.player</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+**The poster.** It is set at the measure of its slot (or the `placement.width` fraction of it), in its own ratio, whatever its pixel size: a screen-sized frame is enlarged rather than printed small. Like a bitmap it can carry a [safe area](#safe-area) and follow `placement.align`. A video without a poster prints a dark box in the video's ratio (16:9 when nothing says) with its overlays, and raises a `videoWithoutPoster` content warning. In the Sandbox the poster of a YouTube or Vimeo video is fetched from the platform when its address is entered, and a file's is a frame you pick in the video.
+
+**The address.** The QR code and the PDF link open the video's page, `https://youtu.be/<id>` or `https://vimeo.com/<id>`, from `start`. A file has no page: they open its production address. Without one, print gets no QR code and no link (`videoWithoutUrl`), and an HTML or EPUB output that does not carry the file shows the poster. A YouTube or Vimeo address that names no video of that platform raises `videoUrlInvalid`; the poster is shown in place of a player.
+
+**The players.** The player options (controls, download button, full screen, speed menu, picture in picture, casting, autoplay, a muted start, loop, preload, privacy-enhanced embeds) are set for the whole book in `videoStyle.player` and for one video in `video.player`; each player honours what it can (see [Configuration › Video style](/en/docs/configuration#video-style)). The HTML backend takes the playable URL of a file through the `resourceVideoUrl(fileId)` option, as it takes pictures through `resourceImageUrl`, and falls back to the production address. Its `videos: { files, streams }` option chooses between player and poster per source, over `videoStyle.html`; the EPUB writer uses it. In a right-to-left book the player and the poster's overlays are turned back like a picture, so the QR code reads.
+
+**In the VDT.** The resource block of a video has `kind: 'video'`, its poster as `fileId` / `format` (drawn like a bitmap), and `video` (`VDTResourceVideo`): the `link` a reader is sent to, the YouTube or Vimeo `embedUrl` with the player options applied, a file's `fileId` and `mimeType`, the `start` / `end` range, the resolved `player`, `linkPoster`, `html`, and the overlays `playMark` and `qr` (the QR modules as rows of `'0'` / `'1'`), with rects relative to the body's top-left corner. A host drawing videos itself can use the helpers `postext` exports: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` and `qrModuleRuns`.
+
+**In a bundle.** A `.postext` carries a file (`resources/<id>.mp4`) and the poster (`resources/<id>.poster.jpg`): the manifest entry names them in `file` and `poster`, gives the poster's size in `width` / `height`, and keeps the rest in `video` without file ids. `bundleVideoUrl(bundle)` is the `resourceVideoUrl` resolver over a bundle's files.
 
 ## What is NOT supported
 
@@ -1254,7 +1406,7 @@ Postext does not recognise the following CommonMark features. They are either tr
 
 This list will shrink over time. Until then, anything not explicitly listed in the supported section above should be assumed to be literal text.
 
-Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)); Japanese and Korean go through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
+Beyond the syntax, Arabic and the other right-to-left scripts are set right to left, with the bidirectional algorithm and right binding (see [Arabic layout](/en/docs/arabic-layout)). Chinese is set across the page and down it, with the line breaking, punctuation widths, justification between characters, marks, ruby and warichu its region expects (see [Chinese layout](/en/docs/chinese-layout)). Japanese is set with its own rules, kinsoku, yakumono spacing, furigana, emphasis marks, kanbun marks and notes (see [Japanese layout](/en/docs/japanese-layout)); Korean goes through the same composer with the mainland Chinese rules. Hyphenation patterns ship for eight languages, and built-in labels for those eight, Chinese, Japanese and Arabic. See [Languages and scripts](/en/docs/configuration#languages-and-scripts).
 
 
 ## Authoring conventions
@@ -1269,7 +1421,7 @@ A few conventions make the difference between a document that parses cleanly and
 - **Blockquotes inside lists are not supported.** Start the blockquote at column 0, outside the list.
 - **Images and tables live in `resources`.** Inline `![alt](src)` is stripped precisely because inline images break column-aware placement. Declare each image as a resource and reference it by id — the engine then decides whether it floats, breaks the column, or moves to the top of the next page.
 - **Escape dollar signs with `\$` when you do not mean math.** Postext interprets `$…$` as inline LaTeX, so a raw `$` in prose will start a formula. Prices, shell prompts, and anything else with a bare dollar sign should be written as `\$`.
-- **Type the markup in ASCII, also in Chinese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
+- **Type the markup in ASCII, also in Chinese and Japanese text.** A Chinese or Japanese input method gives full-width forms: `：：：` for a fence, `＃` for a heading, `［＾1］` for a footnote marker, `｛…｝` for attributes, `＊＊` for bold. They print as text, and the build reports the line as a `fullwidthMarkup` warning that names the ASCII form to type. Attribute values may be in any script and quoted with `“…”` or `「…」`; keys stay ASCII.
 
 
 ## Worked example

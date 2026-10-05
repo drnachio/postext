@@ -44,7 +44,7 @@ import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry
 import { KIT_ORDER, LOCALES } from "./types.ts";
 import { unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
-import { CJK_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
+import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
 
 export interface LintReport {
   fails: string[];
@@ -134,17 +134,27 @@ function isLatin(code: number): boolean {
 }
 
 /** The Unicode blocks of Chinese, Japanese and Korean text: radicals,
- *  CJK symbols and punctuation, kana, bopomofo, hangul, enclosed and
- *  compatibility forms, the unified ideographs and their extensions,
- *  vertical and fullwidth forms. A CJK face served by Fontsource slices
- *  (the cjk kit block) covers them. */
+ *  CJK symbols and punctuation, kana (hiragana, katakana and their
+ *  phonetic extensions in 3040–31FF, the half-width forms in FF00–FFEF),
+ *  bopomofo, hangul, enclosed and compatibility forms, the unified
+ *  ideographs and their extensions, vertical and fullwidth forms, and the
+ *  historic kana of 1AFF0–1B16F. A CJK face served by Fontsource slices
+ *  (the cjk kit block) covers them, all but the historic kana. */
 const CJK_BLOCKS: readonly [number, number][] = [
   [0x2e80, 0x2fdf], [0x2ff0, 0x2fff], [0x3000, 0x33ff], [0x3400, 0x4dbf], [0x4e00, 0x9fff], [0xa960, 0xa97f],
-  [0xac00, 0xd7ff], [0xf900, 0xfaff], [0xfe10, 0xfe1f], [0xfe30, 0xfe4f], [0xff00, 0xffef], [0x20000, 0x3ffff],
+  [0xac00, 0xd7ff], [0xf900, 0xfaff], [0xfe10, 0xfe1f], [0xfe30, 0xfe4f], [0xff00, 0xffef], [0x1aff0, 0x1b16f],
+  [0x20000, 0x3ffff],
 ];
 
 function isCjk(code: number): boolean {
   return CJK_BLOCKS.some(([lo, hi]) => code >= lo && code <= hi);
+}
+
+/** Kana Extended-B, Kana Supplement, Kana Extended-A and Small Kana
+ *  Extension: hentaigana (𛀁), archaic and Ainu kana. Fontsource's
+ *  Japanese faces have none of them in any file. */
+function isHistoricKana(code: number): boolean {
+  return code >= 0x1aff0 && code <= 0x1b16f;
 }
 
 /** The Unicode blocks of Arabic-script text: Arabic, its supplement and
@@ -483,18 +493,29 @@ export function lintPen(
   const cjkKit = meta.kit?.includes("cjk") ?? false;
   const arabicKit = meta.kit?.includes("arabic") ?? false;
   let cjkText = false;
+  let japaneseText = false;
   let arabicText = false;
   let arabicBook = false;
   for (const [key, text] of Object.entries(sources.content)) {
     const file = `content.${key}.md`;
-    // Chinese and Japanese have no spaces: their characters count, 1.7 to the word.
+    // Chinese and Japanese have no spaces: their characters count, 1.7 (Chinese)
+    // or 2.2 (Japanese, whose kana spell out what Chinese leaves to one
+    // character) to the word.
     const length = textLength(text);
     if (length.total > LIMITS.contentWords) {
+      const chinese = length.cjk - length.japanese;
+      const kinds = [chinese ? `${thousands(chinese)} Chinese` : "", length.japanese ? `${thousands(length.japanese)} Japanese` : ""];
+      const rates = chinese && length.japanese
+        ? `Chinese counts ${CJK_CHARS_PER_WORD} characters to the word, Japanese ${JAPANESE_CHARS_PER_WORD}`
+        : `${chinese ? CJK_CHARS_PER_WORD : JAPANESE_CHARS_PER_WORD} characters count as a word`;
       fails.push(length.cjk
-        ? `${file}: ${thousands(length.cjk)} Chinese or Japanese characters${length.words ? ` and ${thousands(length.words)} words` : ""}, ` +
-          `about ${thousands(length.total)} words (at most ${thousands(LIMITS.contentWords)}; ${CJK_CHARS_PER_WORD} characters count as a word)`
+        ? `${file}: ${kinds.filter(Boolean).join(" and ")} characters${length.words ? ` and ${thousands(length.words)} words` : ""}, ` +
+          `about ${thousands(length.total)} words (at most ${thousands(LIMITS.contentWords)}; ${rates})`
         : `${file}: ${length.words} words (at most ${LIMITS.contentWords})`);
     }
+    // Japanese when its kana sentences outweigh the rest: a Chinese page
+    // that quotes a Japanese title stays Chinese.
+    if (length.japanese * 2 > length.cjk) japaneseText = true;
     for (const line of malformedResourceEmbeds(text)) fails.push(`${file}: "${line}" is not \`::resource{id="…"}\` (double quotes, id only)`);
     for (const name of markdownConstructs(text).unknown) fails.push(`${file}: ":::${name}" is not a Postext directive (it prints as text)`);
     fails.push(...unquotedFrontmatter(text, file));
@@ -512,6 +533,11 @@ export function lintPen(
     // in the PDF; without it, the kit loads the latin file of every face.
     if (odd.cjk.length && !cjkKit) {
       warns.push(`${file}: Chinese, Japanese or Korean text needs the cjk kit block: load its faces with loadCjkFonts(FONTS, markdown) (gotcha cjk-fonts-slices)`);
+    }
+    const historic = odd.cjk.filter((ch) => isHistoricKana(ch.codePointAt(0) ?? 0));
+    if (historic.length) {
+      warns.push(`${file}: hentaigana and archaic kana (${historic.slice(0, 8).join(" ")}) are in no file of a Fontsource Japanese face: ` +
+        "loadCjkFonts fails on them and the PDF prints boxes; write the modern kana, or set them in a face the recipe ships in its assets (gotcha ja-fonts-kana)");
     }
     // Arabic letters are set from the arabic file of an Arabic face, which
     // loadFonts never fetches: the arabic block does, unless the recipe
@@ -532,7 +558,7 @@ export function lintPen(
         : `${file}: characters outside Fontsource latin (${shown}) need latin-ext faces in the PDF`);
     }
   }
-  if (cjkKit) lintCjk(ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, fails, warns);
+  if (cjkKit) lintCjk(scan, ownCode, ownBare, postextNames, pdfOutput && cjkText, cjkText, japaneseText, fails, warns);
   if (arabicText) lintArabic(scan, ownBare, arabicKit && pdfOutput, arabicBook, fails);
   // A book bound on its right edge lies open mirrored; the book block's
   // showBook (the cjk block has the same) shows it so. The binding is the
@@ -574,21 +600,39 @@ export function lintPen(
 /** What a recipe listing the `cjk` kit block must do: when its text is
  *  Chinese, Japanese or Korean, hand the PDF the faces' files and tag the
  *  document with its language (a Latin book may list the block for
- *  showBook alone); import what the vertical forms need. */
+ *  showBook alone); import what the vertical forms need. A Japanese text
+ *  (`japaneseText`: mostly sentences with kana) is tagged 'ja': under a
+ *  Chinese tag it would take the Chinese line breaking, punctuation widths
+ *  and labels (图 for 図), and be set in Chinese glyph forms. */
 function lintCjk(
+  scan: ReturnType<typeof scanJs>,
   ownCode: string,
   ownBare: string,
   postextNames: Set<string>,
   cjkPdf: boolean,
   cjkText: boolean,
+  japaneseText: boolean,
   fails: string[],
   warns: string[],
 ): void {
   if (cjkPdf && !/\bcjkPdfProvider\b/.test(ownBare)) {
     fails.push("script.js: renderToPdf takes fontProvider: cjkPdfProvider (fontsourceProvider embeds only the latin file of a CJK face; gotcha cjk-fonts-slices)");
   }
-  if (cjkText && !/\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode)) {
-    warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
+  const tagged = /\blocale\s*:\s*(['"`])(zh|ja|ko)([-_][A-Za-z]+)*\1/.test(ownCode);
+  const tag = configString(scan, "locale");
+  if (japaneseText && tagged && tag !== undefined && !/^ja(?:[-_]|$)/i.test(tag)) {
+    fails.push(`script.js: the text is Japanese (it is written with kana) but config.locale is '${tag}': write 'ja', which sets the Japanese line breaking, punctuation and labels (gotcha ja-locale-tag)`);
+  } else if (japaneseText && !tagged) {
+    warns.push("script.js: set config.locale to the text's language ('ja'), not LANG: the tag picks the Japanese conventions and turns hyphenation off (gotcha ja-locale-tag)");
+  } else if (cjkText && !tagged) {
+    warns.push("script.js: set config.locale to the text's language ('zh-Hans', 'zh-Hant', 'ja'…), not LANG: the tag picks the regional conventions and turns hyphenation off (gotcha cjk-locale-tag)");
+  }
+  if (japaneseText) {
+    const chinese = fontFamilies(penFonts(ownCode, scan)).filter((family) => /\s(?:SC|TC|HK)$/.test(family));
+    if (chinese.length) {
+      warns.push(`script.js: Japanese text with ${chinese.join(", ")} in FONTS: a Chinese face draws the kanji in Chinese forms (直, 骨, 角) and the kana in its own design; ` +
+        "set the Japanese in a Japanese face (Noto Serif JP, Noto Sans JP, Shippori Mincho) and keep the Chinese one for Chinese quotations (gotcha ja-fonts-kana)");
+    }
   }
   if (/\bloadCjkFonts\s*\([^;]*\bvertical\s*:\s*true/.test(ownBare) && !postextNames.has("loadVerticalAlternates")) {
     fails.push("script.js: loadCjkFonts(…, { vertical: true }) needs `loadVerticalAlternates` imported from postext");

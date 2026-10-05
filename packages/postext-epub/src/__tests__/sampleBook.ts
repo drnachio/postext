@@ -113,3 +113,65 @@ export function arabicSampleBook(): VDTDocument[] {
     },
   });
 }
+
+/** A minimal MP4: just its `ftyp` box (`isom`), enough to be typed. */
+export const MP4 = Uint8Array.from([
+  0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d, 0, 0, 2, 0,
+  0x69, 0x73, 0x6f, 0x6d, 0x6d, 0x70, 0x34, 0x31,
+]);
+
+const videoResources: Resource[] = [
+  {
+    id: 'clip', typeId: 'video', kind: 'video', caption: 'The lamp turning.', altText: 'The lighthouse lamp turning at dusk',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'file', fileId: 'clip.mp4', format: 'mp4', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+  {
+    id: 'remote', typeId: 'video', kind: 'video', caption: 'The keeper speaks.', altText: 'An interview with the keeper',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'file', url: 'https://cdn.example.org/keeper.mp4', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+  {
+    id: 'talk', typeId: 'video', kind: 'video', caption: 'A talk on lamps.', altText: 'A talk on lighthouse lamps',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'youtube', url: 'https://youtu.be/dQw4w9WgXcQ', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+];
+
+/** A chapter with three videos (#454): a self-hosted file the book carries,
+ *  one that plays from its production address, and a YouTube one. */
+export function videoSampleBook(overrides: PostextConfig = {}): VDTDocument[] {
+  const markdown = ['# Videos', '', `The lamp in :ref{id=clip}, the keeper in :ref{id=remote} and a talk in :ref{id=talk}. ${para.repeat(2)}`, '', para.repeat(6)].join('\n');
+  return buildBundle({ chapters: [{ markdown }], config: { ...config, ...overrides }, resources: videoResources });
+}
+
+/** A vertical Japanese book (#428), right-bound: furigana (mono, group),
+ *  sesame 傍点, side lines, numbers set upright, a !? pair, an author's
+ *  tate-chū-yoko, a warichu note, a book title, the space after ？, and
+ *  notes. Measured with the stub (no Japanese face is embedded). */
+export const JAPANESE_CHAPTERS = [
+  [
+    '# 第一章　先生と私',
+    '',
+    `私はその人を常に{先生|せん|せい}と呼んでいた。:ruby[鎌倉]{rt="かまくら" group}の海岸で、*知り合い*になったのは${'明治の末、十二月の頃である。'.repeat(2)}`,
+    '',
+    `なぜ？それは:sideline[誰にも分からない]。なに!?と言って、:book[こころ]を第:tcy[100]号の雑誌で読んだのは12月のことだった[^1]。`,
+    '',
+    `私は:warichu[注記]{open="（" close="）"}先生の家を訪ねた。${'先生は静かに笑っていた。'.repeat(8)}`,
+    '',
+    '[^1]: 注の本文、2026年。',
+  ].join('\n'),
+  ['# 第二章　両親と私', '', '家に帰ると、父は病床にあった。'.repeat(12)].join('\n'),
+];
+
+export function japaneseSampleBook(): VDTDocument[] {
+  return buildBundle({
+    chapters: JAPANESE_CHAPTERS.map((markdown) => ({ markdown })),
+    config: {
+      ...config,
+      locale: 'ja',
+      layout: { writingMode: 'vertical-rl' },
+      page: { ...config.page, binding: 'right' },
+    },
+  });
+}

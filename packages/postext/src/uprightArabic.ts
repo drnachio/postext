@@ -36,7 +36,7 @@ const SLANTED_RE = /(^|\s)(italic|oblique)(\s|$)/;
  *  reference label, a footnote marker): it is turned upright whole, when
  *  its text is all Arabic, or left as it is. */
 function atomic(s: InlineSpan): boolean {
-  return !!(s.math || s.mathRender || s.chip || s.swatch || s.ref || s.footnote || s.ruby || s.warichu || s.citation);
+  return !!(s.math || s.mathRender || s.chip || s.swatch || s.ref || s.footnote || s.ruby || s.kunten || s.warichu || s.citation);
 }
 
 /** `font` (a CSS font shorthand, style first as `buildFontString` writes

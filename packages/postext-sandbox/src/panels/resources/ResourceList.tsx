@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown, FolderOpen, Search, X } from 'lucide-react';
+import { FileCode, Table as TableIcon, ImageIcon, Plus, ChevronDown, FolderOpen, Search, X, Film, Play } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import type { Resource, ResourceKind, ResourceType } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
@@ -17,7 +17,7 @@ interface ThumbProps {
  *  inlining its fonts for every row, which made a long list sluggish. */
 function Thumb({ resource }: ThumbProps) {
   const bitmapUrl = useBlobObjectUrl(
-    resource.kind === 'bitmap' ? resource.bitmap?.fileId : undefined,
+    resource.kind === 'bitmap' ? resource.bitmap?.fileId : resource.kind === 'video' ? resource.video?.poster?.fileId : undefined,
   );
 
   const box: React.CSSProperties = {
@@ -39,6 +39,19 @@ function Thumb({ resource }: ThumbProps) {
       </span>
     );
   }
+  if (resource.kind === 'video') {
+    // The poster with a play badge (#454).
+    return (
+      <span className="relative flex items-center justify-center" style={box}>
+        {bitmapUrl ? <img src={bitmapUrl} alt="" style={{ ...box, objectFit: 'cover' }} /> : <Film size={16} aria-hidden="true" />}
+        {bitmapUrl && (
+          <span className="absolute flex items-center justify-center rounded-full" style={{ width: 16, height: 16, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+            <Play size={9} fill="currentColor" aria-hidden="true" />
+          </span>
+        )}
+      </span>
+    );
+  }
   if (resource.kind === 'svg') {
     return (
       <span className="flex items-center justify-center" style={box}>
@@ -57,7 +70,7 @@ interface NewMenuProps {
   onNew: (kind: ResourceKind) => void;
 }
 
-/** "New" dropdown: Upload image / Upload SVG / New table. */
+/** "New" dropdown: Upload image / Upload SVG / New table / Add video. */
 function NewMenu({ onNew }: NewMenuProps) {
   const labels = useSandboxLabels();
   return (
@@ -71,6 +84,7 @@ function NewMenu({ onNew }: NewMenuProps) {
       <MenuItem icon={<ImageIcon size={13} />} onClick={() => onNew('bitmap')}>{labels.resourceUploadImage}</MenuItem>
       <MenuItem icon={<FileCode size={13} />} onClick={() => onNew('svg')}>{labels.resourceUploadSvg}</MenuItem>
       <MenuItem icon={<TableIcon size={13} />} onClick={() => onNew('table')}>{labels.resourceNewTable}</MenuItem>
+      <MenuItem icon={<Film size={13} />} onClick={() => onNew('video')}>{labels.resourceNewVideo}</MenuItem>
     </Menu>
   );
 }

@@ -1,20 +1,30 @@
 import type { ContentBlock } from './parse';
 import { caseWords, numberToWords, type NumberWordsOptions, type WordsCase } from './numberWords';
 import type { DigitSystem, OrderedListNumberFormat } from './types';
-import { localeScript } from './locale';
+import { languageOf, localeScript } from './locale';
 import { chineseNumeral, cjkDecimal, circledDecimal, fullwidthDecimal, fixedSymbol, CJK_HEAVENLY_STEMS, CJK_EARTHLY_BRANCHES } from './chineseNumerals';
+import { japaneseNumeral, japaneseZero, kanaSeries, HIRAGANA, HIRAGANA_IROHA, KATAKANA, KATAKANA_IROHA } from './japaneseNumerals';
 import { abjadNumeral, arabicIndicDecimal, arabicLettering, asciiDigits, persianDecimal, withDigits, ABJAD_LETTERS, HIJAI_LETTERS } from './arabicNumerals';
 
 /** The East Asian numeral styles, named as in CSS Counter Styles 3: Chinese
  *  numerals in the informal (一百二十) and formal (壹佰贰拾) longhand of
- *  either script, digit by digit (`cjk-decimal`, 二〇二六), the heavenly
- *  stems (甲乙丙) and earthly branches (子丑寅), circled (①) and fullwidth
- *  (１２３) digits. Every numbering setting takes them. */
+ *  either script, Japanese counted numerals (`japanese-informal` 百二十,
+ *  `japanese-formal` 壱百弐拾), the kana series in gojūon (`hiragana`
+ *  あいう, `katakana` アイウ) and iroha order (`hiragana-iroha` いろは,
+ *  `katakana-iroha` イロハ), digit by digit (`cjk-decimal`, 二〇二六), the
+ *  heavenly stems (甲乙丙) and earthly branches (子丑寅), circled (①) and
+ *  fullwidth (１２３) digits. Every numbering setting takes them. */
 export type EastAsianNumeralStyle =
   | 'simp-chinese-informal'
   | 'trad-chinese-informal'
   | 'simp-chinese-formal'
   | 'trad-chinese-formal'
+  | 'japanese-informal'
+  | 'japanese-formal'
+  | 'hiragana'
+  | 'katakana'
+  | 'hiragana-iroha'
+  | 'katakana-iroha'
   | 'cjk-decimal'
   | 'cjk-heavenly-stem'
   | 'cjk-earthly-branch'
@@ -27,6 +37,12 @@ export const EAST_ASIAN_NUMERAL_STYLES: readonly EastAsianNumeralStyle[] = Objec
   'trad-chinese-informal',
   'simp-chinese-formal',
   'trad-chinese-formal',
+  'japanese-informal',
+  'japanese-formal',
+  'hiragana',
+  'katakana',
+  'hiragana-iroha',
+  'katakana-iroha',
   'cjk-decimal',
   'cjk-heavenly-stem',
   'cjk-earthly-branch',
@@ -144,7 +160,9 @@ const NUMBER_FORMAT_NAMES: ReadonlyMap<string, NumberFormatStyle> = new Map<stri
 /** The one-character tokens of the heading templates (`{1:i}`), which the
  *  format fields accept as well. Case-sensitive: `i` and `I` differ. The
  *  Chinese tokens `一` and `壹` are read apart: they follow the document's
- *  script (see {@link parseNumberFormat}). */
+ *  language and script (see {@link parseNumberFormat}). Each kana token is
+ *  the first of its series: あ and ア open the gojūon, い and イ the iroha
+ *  (い is the second gojūon kana, never a series of its own). */
 const NUMBER_FORMAT_TOKENS: ReadonlyMap<string, NumberFormatStyle> = new Map<string, NumberFormatStyle>([
   ['1', 'decimal'],
   ['i', 'lower-roman'],
@@ -156,6 +174,11 @@ const NUMBER_FORMAT_TOKENS: ReadonlyMap<string, NumberFormatStyle> = new Map<str
   ['甲', 'cjk-heavenly-stem'],
   ['子', 'cjk-earthly-branch'],
   ['１', 'fullwidth-decimal'],
+  ['壱', 'japanese-formal'],
+  ['あ', 'hiragana'],
+  ['ア', 'katakana'],
+  ['い', 'hiragana-iroha'],
+  ['イ', 'katakana-iroha'],
   // A single أ cannot tell the two Arabic letter series apart: their first
   // letters name them (أبجد, أبتث).
   ['١', 'arabic-indic'],
@@ -171,10 +194,24 @@ function traditional(locale: string | undefined): boolean {
 }
 
 /** The informal Chinese style of a document's script: `trad-chinese-informal`
- *  for a Traditional tag, else `simp-chinese-informal`. What `{1:一}`, the
- *  `{numberHan}` placeholder and spelled-out Chinese numbers use. */
+ *  for a Traditional tag, else `simp-chinese-informal`. What spelled-out
+ *  Chinese numbers use. */
 export function chineseInformalStyle(locale?: string): 'simp-chinese-informal' | 'trad-chinese-informal' {
   return traditional(locale) ? 'trad-chinese-informal' : 'simp-chinese-informal';
+}
+
+/** Whether `locale` is Japanese (`ja`, `ja-JP`, `ja-Jpan`…), by its
+ *  language subtag. */
+function japanese(locale: string | undefined): boolean {
+  return languageOf(locale) === 'ja';
+}
+
+/** The counted kanji numerals of a document's language: `japanese-informal`
+ *  for a Japanese tag (百一, ja-typography §9), else the informal Chinese
+ *  style of its script (一百零一). What `{1:一}` and the `{numberHan}`
+ *  placeholder write. */
+export function hanInformalStyle(locale?: string): 'japanese-informal' | 'simp-chinese-informal' | 'trad-chinese-informal' {
+  return japanese(locale) ? 'japanese-informal' : chineseInformalStyle(locale);
 }
 
 /**
@@ -183,16 +220,19 @@ export function chineseInformalStyle(locale?: string): 'simp-chinese-informal' |
  * `arabic`, `lower-roman` / `roman-lower` / `i`, `upper-alpha` /
  * `alpha-upper` / `upper-latin` / `A`, the CSS names of the East Asian
  * styles and their one-character tokens `〇`, `①`, `甲`, `子`, `１`…, the
- * Arabic styles and their tokens `١`, `۱`, `أبجد`, `أبتث`; names are
- * case-insensitive). `一` and `壹` name the informal and formal Chinese
- * numerals of the document's script: Traditional when `locale` is
- * (`zh-Hant`, `zh-TW`…), else Simplified. `undefined` for anything else —
- * the caller numbers in decimal.
+ * Japanese tokens `壱`, `あ`, `ア`, `い`, `イ`, the Arabic styles and their
+ * tokens `١`, `۱`, `أبجد`, `أبتث`; names are case-insensitive). `一` names
+ * the counted numerals of the document's language: `japanese-informal`
+ * when `locale` is Japanese, else the informal Chinese of its script. `壹`
+ * names the formal Chinese numerals of the script (Japanese daiji are
+ * `壱`). The script is Traditional when `locale` is (`zh-Hant`, `zh-TW`…),
+ * else Simplified. `undefined` for anything else — the caller numbers in
+ * decimal.
  */
 export function parseNumberFormat(value: unknown, locale?: string): NumberFormatStyle | undefined {
   if (typeof value !== 'string') return undefined;
   const v = value.trim();
-  if (v === '一') return chineseInformalStyle(locale);
+  if (v === '一') return hanInformalStyle(locale);
   if (v === '壹') return traditional(locale) ? 'trad-chinese-formal' : 'simp-chinese-formal';
   return NUMBER_FORMAT_TOKENS.get(v) ?? NUMBER_FORMAT_NAMES.get(v.toLowerCase());
 }
@@ -264,7 +304,8 @@ export function formatCounter(n: number, style: CounterStyle, locale?: string, d
 }
 
 /** The tokens of a numbering template. `locale` (the document language)
- *  decides the script of the `{1:一}` and `{1:壹}` tokens. */
+ *  decides the numerals of the `{1:一}` token (Japanese or the Chinese of
+ *  its script) and the script of `{1:壹}`. */
 export function parseTemplate(tpl: string, locale?: string): Token[] {
   const tokens: Token[] = [];
   let buf = '';
@@ -373,6 +414,10 @@ export function formatNumeral(n: number, style: NumeralStyle, digits?: DigitSyst
       case 'simp-chinese-formal':
       case 'trad-chinese-formal':
         return '零';
+      case 'japanese-informal':
+        return japaneseZero('informal');
+      case 'japanese-formal':
+        return japaneseZero('formal');
       case 'cjk-decimal':
         return '〇';
       case 'circled-decimal':
@@ -409,6 +454,18 @@ export function formatNumeral(n: number, style: NumeralStyle, digits?: DigitSyst
       return chineseNumeral(n, 'formal', false);
     case 'trad-chinese-formal':
       return chineseNumeral(n, 'formal', true);
+    case 'japanese-informal':
+      return japaneseNumeral(n, 'informal');
+    case 'japanese-formal':
+      return japaneseNumeral(n, 'formal');
+    case 'hiragana':
+      return kanaSeries(n, HIRAGANA);
+    case 'katakana':
+      return kanaSeries(n, KATAKANA);
+    case 'hiragana-iroha':
+      return kanaSeries(n, HIRAGANA_IROHA);
+    case 'katakana-iroha':
+      return kanaSeries(n, KATAKANA_IROHA);
     case 'cjk-decimal':
       return cjkDecimal(n);
     case 'cjk-heavenly-stem':

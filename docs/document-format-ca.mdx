@@ -128,7 +128,7 @@ Dos atributs tenen un significat propi. `style="<id>"` aplica a l'encapçalament
 # Índex {style="preliminar" toc="false"}
 ```
 
-Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden="true"` (o `"false"`) sobreescriu el `hidden` del nivell o de l'estil de l'encapçalament: un encapçalament ocult no imprimeix res ni ocupa espai —ni al flux ni dins d'una caixa `:::callout`—, però continua obrint la seva pàgina, compta i apareix a l'índex, a les capçaleres amb `{chapterTitle}` i als marcadors del PDF. `startAt=N`, un enter positiu, posa el comptador del nivell de l'encapçalament a `N` en lloc d'avançar-lo; els encapçalaments següents compten a partir d'aquí, també en els capítols posteriors, i els nivells inferiors es reinicien a sota com sempre. Amb un estil d'encapçalament que numera els apèndixs amb lletra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apèndix reinicia el compte perquè es llegeixi *Apèndix A* en lloc de continuar el dels capítols:
+Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden="true"` (o `"false"`) sobreescriu el `hidden` del nivell o de l'estil de l'encapçalament: un encapçalament ocult no imprimeix res ni ocupa espai —ni al flux ni dins d'una caixa `:::callout`—, però continua obrint la seva pàgina, compta i apareix a l'índex, a les capçaleres amb `{chapterTitle}` i als marcadors del PDF. `jidori=N` espaia per igual un encapçalament d'una línia fins a `N` dels seus propis caràcters (字取り: `# 序章 {jidori=3}` imprimeix 序　章), i `jidori=0` desactiva l'espaiat uniforme que fixa el seu nivell o el seu estil (vegeu [Configuració › Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). `startAt=N`, un enter positiu, posa el comptador del nivell de l'encapçalament a `N` en lloc d'avançar-lo; els encapçalaments següents compten a partir d'aquí, també en els capítols posteriors, i els nivells inferiors es reinicien a sota com sempre. Amb un estil d'encapçalament que numera els apèndixs amb lletra (`numberingTemplate: 'Apéndice {1:A}'`), el primer apèndix reinicia el compte perquè es llegeixi *Apèndix A* en lloc de continuar el dels capítols:
 
 ```markdown
 # A la meva mare {hidden="true" toc="false"}
@@ -251,7 +251,7 @@ Es reconeixen quatre noms de contenidor al flux del text (un cinquè, `:::column
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos.</td>
+      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos. <code>align</code>, <code>indent</code> i <code>endIndent</code> fixen l'alineació i els sagnats, amb estil o sense: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compon una data a un caràcter del final de la línia (地から1字上げ).</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -424,6 +424,16 @@ El capítol anterior acaba aquí.
 # Un capítol nou
 ```
 
+L'indicador `center` (`:::pagebreak{center}`, desactivat amb `center=false`) centra el text de la pàgina que obre el salt entre el cap i el peu de la caixa de text, a l'ample de la pàgina en text vertical: el ページの左右中央 d'una portadella de part o d'una dedicatòria japonesa. Els flotants, les notes i les capçaleres es queden on són, i una pàgina ja plena no es toca. L'indicador no acaba la pàgina: tanca-la amb un altre `:::pagebreak`.
+
+```md
+:::pagebreak{center}
+
+# 上　先生と私
+
+:::pagebreak
+```
+
 #### Atribut `parity`
 
 L'atribut `parity` accepta els mateixos cinc valors que `headings.levels[*].breakBefore.parity`:
@@ -468,7 +478,7 @@ Les pàgines del prefaci s'etiqueten `i`, `ii`, `iii`, …; el primer capítol s
 
 Els canvis només de format (sense `startAt`) mantenen el comptador viu — útil, per exemple, per passar de `lower-alpha` a `upper-alpha` sense reiniciar.
 
-`format` accepta qualsevol grafia d'un format de numeració: `roman-lower` i `i` funcionen igual que `lower-roman`, i `arabic` igual que `decimal` (consulta [Configuració › Grafies dels formats de numeració](/ca/docs/configuration#grafies-dels-formats-de-numeració)). Un valor que no és cap d'aquestes deixa el format com estava, i el sandbox ho assenyala.
+`format` accepta qualsevol grafia d'un format de numeració: `roman-lower` i `i` funcionen igual que `lower-roman`, `arabic` igual que `decimal`, i `一` i `あ` igual que `japanese-informal` i `hiragana` (consulta [Configuració › Grafies dels formats de numeració](/ca/docs/configuration#grafies-dels-formats-de-numeració)). Un valor que no és cap d'aquestes deixa el format com estava, i el sandbox ho assenyala.
 
 ### `:::space`
 
@@ -736,7 +746,7 @@ En text vertical (`layout.writingMode: 'vertical-rl'`) els caràcters xinesos qu
 
 ### Marques xineses, ruby i warichu
 
-Les edicions xineses marquen el text entre línies en comptes de fer-ho amb cursiva o subratllat, glossen els caràcters amb la seva lectura i componen el comentari dins de la línia. Cinc directives ho fan. [Composició xinesa](/ca/docs/chinese-layout) explica les convencions que hi ha darrere. Conserven el seu text: els caràcters entre claudàtors continuen al paràgraf (la cerca, l'índex general, les àncores de l'índex analític i el text copiat els llegeixen tal com es van escriure), i admeten les altres marques en línia a dins i al voltant, incloses les niuades. Escriu `\]` per a un claudàtor literal.
+Les edicions xineses i japoneses marquen el text entre línies en comptes de fer-ho amb cursiva o subratllat, glossen els caràcters amb la seva lectura i componen el comentari dins de la línia. Set directives ho fan. [Composició xinesa](/ca/docs/chinese-layout) i [Composició japonesa](/ca/docs/japanese-layout) expliquen les convencions que hi ha darrere. Conserven el seu text: els caràcters entre claudàtors continuen al paràgraf (la cerca, l'índex general, les àncores de l'índex analític i el text copiat els llegeixen tal com es van escriure), i admeten les altres marques en línia a dins i al voltant, incloses les niuades. Escriu `\]` per a un claudàtor literal.
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -744,14 +754,20 @@ Les edicions xineses marquen el text entre línies en comptes de fer-ho amb curs
 {滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
 
 寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+
+{東京|とう|きょう}の:ruby[紫陽花]{rt="あじさい"}は*とんと*:sideline[見事]だ。:book[こころ]を読む。
+
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
 ```
 
-- **`:dots[texto]`** posa un punt d'èmfasi (着重号) sota cada caràcter en text horitzontal, a la seva dreta en vertical, i no en posa cap a la puntuació ni als espais. `style="dot|circle|sesame"` (per defecte `dot`), `fill="open"` per al contorn, `pos="over|under"` per a l'altre costat. L'èmfasi de Markdown `*…*` sobre caràcters xinesos fa el mateix amb `cjk.emphasis: 'dots'`, el valor per defecte en un document en xinès; les lletres llatines del mateix èmfasi continuen en cursiva.
-- **`:name[texto]`** traça la línia de nom propi (专名号) sota el text (a la seva esquerra en vertical), i **`:book[texto]`** la marca de títol (书名号): 《》 al voltant del títol (〈〉 per a un títol dins d'un altre), la línia ondulada de les edicions clàssiques i de Taiwan, o res, segons `cjk.bookTitleMark` (per defecte, signes a la Xina continental i línia ondulada a Taiwan i Hong Kong). Una mateixa font serveix per a una edició continental moderna i per a una de clàssica. Dos noms o títols seguits mantenen les seves línies separades.
-- **`:ruby[base]{rt="…"}`** posa lectures a sobre de la base (pinyin) o a la dreta de cada caràcter (zhuyin, cosa que es fa per defecte amb lectures en bopomofo). Amb tantes lectures com caràcters, separades per espais o `|`, cada caràcter rep la seva i la línia es pot tallar entre ells (ruby mono); `group`, o un nombre que no coincideix, posa una lectura centrada sobre tota la base, que mai no es talla. `pos="over|under|right"` tria el costat. La forma compacta `{紅樓|hóng|lóu}` (una lectura per `|`) o `{紅樓|hónglóu}` (una lectura per a tota la base) es llegeix igual, només quan la base té un caràcter han, kana o bopomofo i fora de les fórmules, el codi i els atributs, de manera que `{x|x>0}` en prosa llatina continua sent text. Una barra inversa davant de la clau o de la barra vertical en deixa una en xinès com a text: `\{紅|hóng}` i `{紅\|hóng}` imprimeixen `{紅|hóng}`. Una base que obre o tanca una línia s'alinea amb aquesta vora juntament amb la seva lectura.
-- **`:warichu[nota]`** compon una nota (双行夹注) en dues files a mig cos dins de la línia; la de dalt es llegeix primer (la de la dreta en text vertical). Una nota llarga omple el que queda de línia i continua a la línia, la columna o la pàgina següents. `open` i `close` l'envolten de signes a la mida del text; `cjk.warichu` fixa la mida, el color i els signes per defecte. Una nota en escriptura llatina es talla entre les seves paraules.
+- **`:dots[texto]`** posa un punt d'èmfasi (着重号) sota cada caràcter en text horitzontal, a la seva dreta en vertical, i no en posa cap a la puntuació ni als espais. `style="dot|circle|sesame"` (per defecte `dot`), `fill="open"` per al contorn, `pos="over|under"` per a l'altre costat. L'èmfasi de Markdown `*…*` sobre caràcters xinesos o japonesos fa el mateix amb `cjk.emphasis: 'dots'`, el valor per defecte en un document en xinès o en japonès; les lletres llatines del mateix èmfasi continuen en cursiva. Els atributs que falten es prenen de `cjk.emphasisMark`: un punt sota el text en xinès, un sèsam a sobre (a la seva dreta en vertical) en japonès.
+- **`:name[texto]`** traça la línia de nom propi (专名号) sota el text (a la seva esquerra en vertical), i **`:book[texto]`** la marca de títol (书名号): 《》 al voltant del títol (〈〉 per a un títol dins d'un altre), la línia ondulada de les edicions clàssiques i de Taiwan, o res, segons `cjk.bookTitleMark` (per defecte, signes a la Xina continental i al Japó, i línia ondulada a Taiwan i Hong Kong). En un document japonès els signes són 『』, i 「」 per a un títol dins d'un altre (`cjk.bookTitleBrackets`). Una mateixa font serveix per a una edició continental moderna i per a una de clàssica. Dos noms o títols seguits mantenen les seves línies separades.
+- **`:ruby[base]{rt="…"}`** posa lectures a sobre de la base (pinyin) o a la dreta de cada caràcter (zhuyin, cosa que es fa per defecte amb lectures en bopomofo). Amb tantes lectures com caràcters, separades per espais o `|`, cada caràcter rep la seva i la línia es pot tallar entre ells (ruby mono); `group`, o un nombre que no coincideix, posa una lectura centrada sobre tota la base, que mai no es talla. `pos="over|under|right"` tria el costat. La forma compacta `{紅樓|hóng|lóu}` (una lectura per `|`) o `{紅樓|hónglóu}` (una lectura per a tota la base) es llegeix igual, només quan la base té un caràcter han, kana o bopomofo i fora de les fórmules, el codi i els atributs, de manera que `{x|x>0}` en prosa llatina continua sent text. Una barra inversa davant de la clau o de la barra vertical en deixa una en xinès com a text: `\{紅|hóng}` i `{紅\|hóng}` imprimeixen `{紅|hóng}`. Una base que obre o tanca una línia s'alinea amb aquesta vora juntament amb la seva lectura. `mode=mono|group|jukugo` tria com van les lectures sobre la base (`mode=group` equival a `group`), i `align=center|jis|start` com s'espaia una lectura més curta que la seva base. En un document japonès, la forma per caràcter d'una paraula de dos o més caràcters (`{東京|とう|きょう}`, `rt="とう|きょう"`) és ruby jukugo: cada caràcter conserva la seva lectura, que pot envair el caràcter següent de la paraula, la línia es pot tallar entre ells, i les lectures s'espaien i envaeixen els kana segons diguin `cjk.ruby.align` i `cjk.ruby.overhang`; una sola lectura per a tota la base (`{紫陽花|あじさい}`, el `《》` d'Aozora) és ruby de grup; `mode=mono` manté una lectura per caràcter sense envair els veïns.
+- **`:sideline[text]`** traça una línia lateral (傍線) al costat del text, puntuació i espais inclosos: a sota en text horitzontal i a la seva dreta en vertical. `style="solid|double|wavy|dotted"` (per defecte `solid`), `pos="over|under"` (en text vertical, over és la dreta i under l'esquerra; també val `position=`). Funciona en qualsevol escriptura, també en una frase anglesa subratllada.
+- **`:warichu[nota]`** compon una nota (双行夹注) en dues files a mig cos dins de la línia; la de dalt es llegeix primer (la de la dreta en text vertical). Una nota llarga omple el que queda de línia i continua a la línia, la columna o la pàgina següents. `open` i `close` l'envolten de signes a la mida del text; `cjk.warichu` fixa la mida, el color i els signes per defecte (（） en un document japonès). Una nota en escriptura llatina es talla entre les seves paraules.
+- **`:kunten[字]{kaeri="…" okuri="…" tate}`** posa les marques de kanbun de l'últim caràcter entre els claudàtors: `kaeri` la marca de retorn (レ, 一 二 三, 上 中 下, 甲 乙 丙, 天 地 人, i 一レ 上レ 甲レ 天レ; els punts de codi ㆑ ㆒ … es llegeixen igual), `okuri` els okurigana (els parèntesis d'Aozora `（ヲ）` es descarten) i l'indicador `tate` el tatesen que l'uneix al caràcter següent. El text no es reordena: les marques es componen a mig cos al seu costat (`cjk.kunten`), i el text copiat es llegeix 學ビテ而時ニ習フ之ヲ, amb els okurigana i sense les marques de retorn. Un ruby a dins serveix per als caràcters que es llegeixen dues vegades: `:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`.
 
-El pas de línia no canvia mai: marques i lectures viuen a l'interlineat, i la composició avisa quan el buit entre les línies d'un paràgraf és massa estret per a elles (`cjkMarksExceedLeading`, `rubyExceedsLeading`), i quan les marques sota una línia i les lectures sobre la següent no caben juntes al buit que comparteixen, en un mateix paràgraf o entre dos. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques, lectures i notes es dibuixen en paràgrafs, títols, elements de llista, cites i requadres; als peus de figura, les cel·les i les notes de taula, i als encapçalaments i dissenys, el text s'imprimeix sense elles. Amb `cjk.bookTitleMark: 'brackets'` els 《》 d'un títol són puntuació del text: els peus, les cel·les, les notes, les files de l'índex general, els marcadors del PDF i les entrades de l'índex alfabètic els conserven. Vegeu [Configuració › Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu).
+El pas de línia no canvia mai: marques i lectures viuen a l'interlineat, i la composició avisa quan el buit entre les línies d'un paràgraf és massa estret per a elles (`cjkMarksExceedLeading`, `rubyExceedsLeading`, `kuntenExceedsLeading`), i quan les marques sota una línia i les lectures sobre la següent no caben juntes al buit que comparteixen, en un mateix paràgraf o entre dos. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques, lectures i notes es dibuixen en paràgrafs, títols, elements de llista, cites i requadres, i també als peus de figura, les cel·les i les notes de taula, l'interlineat dels quals es comprova igual; als encapçalaments i dissenys el text s'imprimeix sense elles. Amb `cjk.bookTitleMark: 'brackets'` els 《》 d'un títol són puntuació del text: els peus, les cel·les, les notes, les files de l'índex general, els marcadors del PDF i les entrades de l'índex alfabètic els conserven. Vegeu [Configuració › Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu).
 
 
 ### Direcció del text al marcatge
@@ -785,6 +801,7 @@ així que va aprendre a comptar els graons a les fosques.
 - **Crida.** `[^id]` imprimeix el número de la nota volat, enganxat a la paraula anterior (escriu-la després de la puntuació, com a dalt). L'id admet lletres, xifres, `-`, `_`, `.` i `:`. La crida funciona en paràgrafs, elements de llista, citacions i requadres; en títols, peus de figura i cel·les de taula s'imprimeix tal qual.
 - **Definició.** Un paràgraf que comença per `[^id]:`; el seu text arriba fins a la línia en blanc següent i admet les marques en línia habituals (negreta, cursiva, enllaços, `:ref`, fórmules, chips). Les definicions surten del flux siguin on siguin, de manera que poden anar sota el paràgraf que les cita o totes juntes al final del capítol. Si un id es defineix dues vegades, val la primera.
 - **Números.** Les notes es numeren en l'ordre en què se citen per primera vegada, i la numeració torna a començar a cada capítol (un títol de nivell 1, i cada document d'un llibre); una nota citada dues vegades conserva el primer número i es compon una sola vegada. `footnotes.numbering: 'document'` continua la numeració per tot el llibre, i `'page'` la reinicia a cada pàgina, com fan els llibres xinesos; `footnotes.numberFormat: 'circled-decimal'` escriu ① ② ③ sobre la línia de base.
+- **Text japonès.** La crida s'escriu davant d'un 。 que tanca la frase (`先生[^1]。`): es queda amb el caràcter anterior, i 。 mai no obre una línia. Un llibre japonès vertical compon per defecte les crides （1） a la dreta de la línia i les notes després del capítol; `footnotes.markerPosition: 'side'` posa una crida petita al costat de la paraula, sense ocupar lloc a la línia, i `footnotes.placement: 'spread'` compon les notes al costat del text de cada plec (vegeu [Configuració › Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina)).
 - **On va la nota.** Per defecte, al peu de la columna que conté la línia que la cita, sota un filet curt: la línia i la seva nota comparteixen sempre columna, i una línia la nota de la qual no hi cap passa amb ella a la següent. En una maqueta d'una columna és el peu de la pàgina. `footnotes.placement: 'chapterEnd'`, en canvi, compon totes les notes d'un capítol després del darrer bloc, per defecte al peu de la columna que tanquen. Els cossos, el filet i els espais són a [Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina), a la referència de configuració.
 - **Comprovacions.** Una crida sense definició (`undefinedFootnote`) imprimeix el seu número sobre una nota buida; una definició que cap crida no cita (`unusedFootnote`) no es compon. El Sandbox mostra totes dues al tauler Revisió.
 
@@ -902,6 +919,7 @@ L'estil decideix què diuen una citació i una entrada. Els estils inclosos són
     <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>numèric</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-numeric</code></td><td>GB/T 7714—2025 顺序编码</td><td>numèric</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714—2015 顺序编码</td><td>numèric</td></tr>
+    <tr><td><code>sist02</code></td><td>SIST 02 参照文献の書き方</td><td>numèric</td></tr>
     <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>notes</td></tr>
     <tr><td><code>oscola</code></td><td>OSCOLA</td><td>notes</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-note</code></td><td>GB/T 7714—2025 注释</td><td>notes</td></tr>
@@ -961,6 +979,10 @@ El pols es pren al canell.:index{term="Pols!radial" main}
       <td>La clau d'ordenació de l'últim nivell, quan s'ha d'ordenar per altres lletres: <code>:index[S. Juan de la Cruz]&#123;sort="San Juan de la Cruz"&#125;</code>, <code>term="siglo XX" sort="siglo 20"</code>. Un índex en xinès ordena i agrupa per la lectura que l'ordenador de cadenes dona a cada caràcter. Si un caràcter amb diverses lectures es llegeix d'una altra manera, la clau s'escriu amb caràcters que només tinguin la lectura buscada: <code>:index[重阳]&#123;sort="崇阳"&#125;</code> posa 重阳 sota la C, entre 程 i 崔, i no sota la Z. Una clau en pinyin (<code>sort="chong yang"</code>) també arriba a la C, però s'ordena darrere de totes les seves entrades xineses, perquè l'ordenador de cadenes posa les lletres llatines després dels caràcters xinesos (vegeu <a href="/ca/docs/configuration#índex-analític">Configuració › Índex analític</a>, <code>groupBy</code>).</td>
     </tr>
     <tr>
+      <td><code>yomi</code>, <code>reading</code></td>
+      <td>La lectura en kana de l'últim nivell, per la qual un índex japonès l'ordena i l'agrupa: <code>:index[夏目漱石]&#123;yomi="なつめそうせき"&#125;</code> va a な, a la fila な行. Sense ella, una marca el text de la qual porta furigana en kana es llegeix per aquests (<code>:index[&#123;東京|とう|きょう&#125;]</code> s'ordena com とうきょう), després per <code>sort</code> i després pel text; una entrada que continua encapçalada per un kanji s'avisa amb <code>indexReadingMissing</code>. En un índex en una altra llengua <code>yomi</code> funciona com <code>sort</code>. Els furigana dins d'una marca s'escriuen en la forma compacta: un <code>:ruby[…]</code> obligaria a escapar els seus claudàtors. Des de postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>main</code></td>
       <td>Un indicador: el lloc on el terme es tracta a fons. El seu número de pàgina s'imprimeix en negreta (<code>index.main</code>). Una pàgina marcada de les dues maneres surt en negreta.</td>
     </tr>
@@ -999,7 +1021,7 @@ Una marca sense terme (`:index{}` o `:index{see="…"}` tot sol) no indexa res i
 :::index
 ```
 
-- **Ordre.** Les entrades segueixen l'ordre alfabètic de la llengua del document (`locale`, o `index.locale`): una lletra accentuada s'ordena amb la seva lletra base (*Árbol* a la A) i, en castellà, la *ñ* va després de la *n*, amb una capçalera pròpia. Primer van les entrades que comencen per un símbol, després les que comencen per una xifra i després les lletres. Les subentrades s'ordenen igual dins de la seva entrada, amb un sagnat per nivell.
+- **Ordre.** Les entrades segueixen l'ordre alfabètic de la llengua del document (`locale`, o `index.locale`): una lletra accentuada s'ordena amb la seva lletra base (*Árbol* a la A) i, en castellà, la *ñ* va després de la *n*, amb una capçalera pròpia. Primer van les entrades que comencen per un símbol, després les que comencen per una xifra i després les lletres. Les subentrades s'ordenen igual dins de la seva entrada, amb un sagnat per nivell. Un índex japonès s'ordena per la lectura en l'ordre de la JIS X 4061 i s'agrupa per files del gojūon (あ行, か行…), amb les entrades llatines abans dels kana (vegeu [Composició japonesa › Índex en ordre gojūon](/ca/docs/japanese-layout#índex-en-ordre-gojūon)).
 - **Grups.** Cada inicial nova obre un grup: una lletra de capçalera (`index.groups`) i una línia d'espai a sobre (cap sobre el primer grup). La lletra es compon en el mateix bloc que la primera entrada del grup, de manera que mai no tanca una columna tota sola; una entrada sense pàgina pròpia (la que només encapçala les seves subentrades) es compon amb la primera subentrada pel mateix motiu.
 - **Números de pàgina.** Les etiquetes que imprimeixen les pàgines, incloses les romanes dels preliminars. Les pàgines d'una entrada s'ordenen i cadascuna hi apareix una vegada; les consecutives s'uneixen en un interval (`12–14`, `index.mergeRanges`), una pàgina que cau dins d'un interval de la mateixa entrada s'hi fon (si és principal, l'interval surt en negreta) i `index.rangeFormat: 'chicago'` abreuja el segon número (`234–37`). Les pàgines principals, en negreta, no s'uneixen. Al PDF cada número enllaça amb la seva pàgina.
 - **Les remissions** tanquen l'entrada: *Terme. Vegeu Destí* quan l'entrada no té pàgines, i *Terme, 12. Vegeu també Destí* quan en té. Els textos segueixen la llengua del document (*Vegeu*, *See*…) i es canvien a `index.see`.
@@ -1040,7 +1062,7 @@ on $g$ és l'acceleració de la caiguda lliure.
 
 ## Recursos
 
-Les imatges, els SVG i les taules no s'escriuen en línia. Es declaren una sola vegada com a **recursos** (gestionats al [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos) del Sandbox, que ofereix pujada d'imatges i SVG, un editor interactiu de taules i edició de peus i de col·locació) i després es connecten al text per id. **N'hi ha prou de fer referència a un recurs per incorporar-lo**: l'esmentes una vegada amb `:ref{id="…"}` i el motor fa flotar la figura o la taula al primer espai lliure després d'aquesta referència — el final de la columna on l'esmentes, el principi de la següent, una banda de la pàgina següent —, igual que faria un tipògraf d'impremta. No el col·loques una segona vegada.
+Les imatges, els SVG, les taules i els vídeos no s'escriuen en línia. Es declaren una sola vegada com a **recursos** (gestionats al [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos) del Sandbox, que ofereix pujada d'imatges i SVG, un editor interactiu de taules, vídeos de YouTube, de Vimeo o pujats, i edició de peus i de col·locació) i després es connecten al text per id. **N'hi ha prou de fer referència a un recurs per incorporar-lo**: l'esmentes una vegada amb `:ref{id="…"}` i el motor fa flotar la figura o la taula al primer espai lliure després d'aquesta referència — el final de la columna on l'esmentes, el principi de la següent, una banda de la pàgina següent —, igual que faria un tipògraf d'impremta. No el col·loques una segona vegada.
 
 Totes dues formes de sota són sintaxi completament nova que no xoca amb CommonMark, de manera que un document que les faci servir continua llegint-se com a text pla en qualsevol altre visor de markdown.
 
@@ -1192,7 +1214,7 @@ Les bandes de flotants es corregeixen contra la retícula de base perquè el tex
 
 A la pàgina de tancament d'un capítol —i del document— res no segueix les figures i taules a l'amplada de la pàgina que queden sota l'última banda de text, així que pugen fins a quedar a un buit de flotant per sota, apilades en el seu ordre, en lloc de deixar blanc entre el text i una figura al peu de la pàgina. Val també per a un flotant `position: 'bottom'`. Per deixar-les al peu, com a qualsevol altra pàgina, posa `layout.hugClosingFloats: false` (consulta [Configuració › Disposició](/ca/docs/configuration#disposició)). A les pàgines amb columna lateral no es mouen mai.
 
-Els tres backends — la previsualització en canvas, el visor HTML i la sortida PDF — renderitzen recursos. Al backend HTML, les imatges viuen fora del document, així que l'amfitrió les subministra mitjançant l'opció de resolució `resourceImageUrl(fileId)`; quan falta el resolutor (o no retorna res per a un fitxer), el recurs es renderitza com una caixa neutra de farciment perquè la maquetació es mantingui estable.
+Els tres backends — la previsualització en canvas, el visor HTML i la sortida PDF — renderitzen recursos. Al backend HTML, les imatges viuen fora del document, així que l'amfitrió les subministra mitjançant l'opció de resolució `resourceImageUrl(fileId)`; quan falta el resolutor (o no retorna res per a un fitxer), el recurs es renderitza com una caixa neutra de farciment perquè la maquetació es mantingui estable. El fitxer d'un vídeo arriba de la mateixa manera per `resourceVideoUrl(fileId)` (vegeu [Vídeos](#vídeos)).
 
 #### On pot caure un flotant
 
@@ -1236,6 +1258,136 @@ Els tres backends — la previsualització en canvas, el visor HTML i la sortida
 - Un paràgraf que passa d'una pàgina a la següent també compta des de la seva línia de cita. Quan el paràgraf comença al peu de la pàgina 5 i la referència cau a la 6 — o el paràgraf sencer passa a la 6 perquè al peu de la 5 no hi caben prou línies seves —, la referència és a la 6: un flotant `top` obre la pàgina 7, i un d'`auto` ocupa el peu de la 6 si hi cap. El mateix val entre les columnes d'una pàgina i per a una caixa partida entre pàgines: la figura que cita la seva segona part espera aquesta part.
 - **Canvia a postext 1.5.** Fins a postext 1.4 un flotant entrava a la cua quan la maquetació arribava al paràgraf que el cita, així que la pàgina a la qual aquest paràgraf passava (o es traslladava sencer) es podia obrir amb el flotant, per sobre de la línia que porta la referència. Aquesta figura cau ara una pàgina més tard, o al peu de la pàgina quan demana `auto`; el nombre de pàgines pot canviar.
 
+### Zona segura
+
+Un recurs bitmap o SVG pot marcar una **zona segura**: el rectangle de la imatge que conté allò que importa (una persona i una franja del paisatge que l'envolta, la part dibuixada d'un gràfic) i que sempre es veu. És el camp `safeArea` del recurs, quatre fraccions (0–1) de la mida intrínseca de la imatge mesurades des del seu angle superior esquerre: `x` i `width` són fraccions de l'amplada, `y` i `height` de l'alçada. El nom diu què s'ha de conservar; una caixa de retall diria per on tallar.
+
+```ts
+const port: Resource = {
+  id: 'port', typeId: 'figure', kind: 'bitmap', caption: 'El port a l\'alba.',
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'port.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  // les barques i el moll: del 18 al 68 % de l'amplada, del 25 al 85 % de l'alçada
+  safeArea: { x: 0.18, y: 0.25, width: 0.5, height: 0.6 },
+};
+```
+
+Només es retalla una imatge que tingui zona segura. Aleshores el motor la pot mostrar amb qualsevol proporció entre la imatge sencera i la zona segura: més alta que la seva proporció pròpia retallant-ne els costats, com a màxim fins a l'amplada de la zona segura, o més baixa retallant-ne la part de dalt i la de baix, com a màxim fins a la seva alçada. L'amplada de la figura no canvia mai, només l'alçada. El que queda fora de la zona segura es retalla per cada costat en proporció al marge que hi ha, de manera que un motiu a l'esquerra del centre continua a l'esquerra del centre. Composta a 60 mm d'amplada, la imatge del port fa 40 mm d'alçada sencera i es pot mostrar amb qualsevol alçada entre 24 mm (dalt i baix retallats fins al 60 % de l'alçada) i 80 mm (els costats retallats fins a la meitat de l'amplada). Els valors que surten de la imatge s'ajusten a les vores; una zona amb algun valor que no és un nombre o amb un costat de menys del 2 % de la imatge, o que cobreix la imatge sencera, s'ignora, igual que el camp en una taula. Sense zona segura la imatge es mostra sempre sencera, com fins ara.
+
+El motor aprofita aquest marge en tres casos:
+
+- **L'espai que queda en una columna.** Una imatge en línia (`position: 'here'`) una mica més alta que l'espai que li queda a la columna, també quan és el seu peu el que quedaria fora de la pàgina, es retalla dins de la zona segura per quedar-s'hi, en lloc de passar a la columna o la pàgina següent i deixar aquesta curta.
+- **Pàgines més baixes que la figura.** Amb `layout.fitFiguresToPage`, una imatge massa alta per a la pàgina primer es retalla dins de la zona segura, mantenint l'amplada, i només es redueix si encara no hi cap (vegeu [Configuració › Disposició](/ca/docs/configuration#disposició)).
+- **Equilibratge de columnes.** Una imatge amb zona segura col·locada en línia en una columna curta, o flotada al cap o al peu d'aquesta columna i només sobre ella, creix en línies senceres de la retícula de base fins a omplir les línies buides de la columna. Una imatge més alta no deixa cap forat visible, així que aquesta palanca, `flexFigure`, es prova just després de la caixa que tanca la columna i abans d'afegir espai sobre els encapçalaments o després de les llistes. Un flotant al cap d'una columna de la pàgina de tancament d'un capítol, o d'una banda de tancament, no creix, perquè allà els caps de columna queden anivellats (vegeu [Configuració › Equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
+
+El VDT anota el retall al bloc del recurs: `bodySource` és la part de la imatge que es veu a `bodyRect`, en les mateixes fraccions (no hi és quan es veu la imatge sencera), i `bodyFlex` dona els px que el cos encara podria encongir i créixer i els px que ja li han canviat les palanques (`{ shrink, grow, delta }`). La previsualització en canvas i el PDF retallen al cos i dibuixen la imatge sencera a la seva mida sense retallar; el visor HTML i l'EPUB de maquetació fixa posen la imatge amb `object-fit: cover` i l'`object-position` corresponent; un EPUB adaptable, que no té pàgina per omplir, mostra la imatge sencera. Un amfitrió que dibuixi les imatges pel seu compte té les funcions que exporta `postext`: `resourceSafeArea` i `normalizeSafeArea` (la zona tal com la llegeix el motor, o `undefined`), `safeAreaHeightRange` (el cos més baix i el més alt a una amplada), `safeAreaSource` (la part que es veu a una alçada donada) i `uncroppedPictureBox` (on dibuixar la imatge sencera abans de retallar), amb el tipus `ResourceSafeArea`. Al Sandbox el camp és **Zona segura**, en una imatge del [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos).
+
+
+### Vídeos
+
+Un recurs de **vídeo** (`kind: 'video'`) és un vídeo de YouTube o de Vimeo, o un fitxer de vídeo propi (MP4, WebM). Es col·loca, porta peu, flota i es cita com una imatge, i es numera en una seqüència pròpia: el tipus integrat `video` imprimeix *Vídeo 1.1*, *Vídeo 1.2*… al costat de *Figura 1.1* i *Taula 1.1* (vegeu [Configuració › Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Cada sortida el mostra com pot:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Sortida</th>
+      <th>Què mostra</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas, PDF, Folio</td>
+      <td>La <strong>portada</strong>, un fotograma del vídeo, amb una marca de reproducció i un codi QR que obre el vídeo (<a href="/ca/docs/configuration#estil-de-vídeo">Configuració › Estil de vídeo</a>). Al PDF la portada també és un enllaç al vídeo.</td>
+    </tr>
+    <tr>
+      <td>Visor HTML</td>
+      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador per a un fitxer. Amb <code>videoStyle.html: 'poster'</code> mostra en el seu lloc la portada impresa.</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>Un fitxer es reprodueix al reproductor del mateix lector, empaquetat dins del llibre o llegit des de la seva adreça de producció. Un vídeo de YouTube o de Vimeo és la seva portada, enllaçada amb el vídeo: un EPUB no pot inserir el reproductor d'una pàgina web.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const talk: Resource = {
+  id: 'keeper-talk', typeId: 'video', kind: 'video',
+  caption: 'The keeper explains the lamp.',
+  altText: 'A lighthouse keeper beside the lamp',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // es reprodueix des de 0:30; l'enllaç imprès també hi comença
+  },
+};
+```
+
+El text cita un vídeo com cita una figura: `:ref{id="keeper-talk"}` imprimeix *Vídeo 1.1* i fa flotar la portada al primer espai lliure després de la referència, i `::resource{id="keeper-talk"}` amb `placement.position: 'here'` la posa en línia. Els camps de `Resource.video` (`ResourceVideo`):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Camp</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th>Significat</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>D'on es reprodueix el vídeo.</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube o Vimeo: l'adreça del vídeo, en qualsevol forma (una pàgina de visualització, <code>youtu.be</code>, Shorts, un enllaç d'inserció, <code>youtube-nocookie.com</code>; una pàgina de Vimeo, una pàgina de canal o un enllaç ocult amb el seu hash). Un fitxer: la seva <strong>adreça de producció</strong>, on el trobarà el llibre publicat.</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>, <code>format</code></td>
+      <td><code>string</code></td>
+      <td>Un fitxer: el vídeo pujat, desat fora de banda com un bitmap, i el seu format (<code>'mp4'</code>, el valor per defecte, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>).</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>El fotograma de portada, un bitmap.</td>
+    </tr>
+    <tr>
+      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
+      <td><code>number</code></td>
+      <td>La mida del fotograma del vídeo en px (la seva proporció quan no hi ha portada) i la durada en segons.</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>El segon del fitxer el fotograma del qual fa de portada, desat perquè es pugui tornar a triar.</td>
+    </tr>
+    <tr>
+      <td><code>start</code>, <code>end</code></td>
+      <td><code>number</code></td>
+      <td>Reprodueix des del segon <code>start</code> fins al segon <code>end</code>. El codi QR i l'enllaç del PDF també comencen a <code>start</code>.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>Les opcions de reproductor d'aquest vídeo, aplicades per sobre de <code>videoStyle.player</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+**La portada.** Es compon a la mesura del seu espai (o a la fracció `placement.width` d'aquest espai), amb la seva proporció i sigui quina sigui la seva mida en píxels: un fotograma de la mida d'una pantalla s'amplia en lloc d'imprimir-se petit. Com un bitmap, pot portar una [zona segura](#zona-segura) i seguir `placement.align`. Un vídeo sense portada imprimeix un requadre fosc amb la proporció del vídeo (16:9 si no se'n sap res) i les marques a sobre, i genera l'avís de contingut `videoWithoutPoster`. Al Sandbox, la portada d'un vídeo de YouTube o de Vimeo es baixa de la plataforma en introduir-ne l'adreça, i la d'un fitxer és un fotograma que tries dins del vídeo.
+
+**L'adreça.** El codi QR i l'enllaç del PDF obren la pàgina del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, des de `start`. Un fitxer no té pàgina: obren la seva adreça de producció. Sense adreça, la versió impresa no porta codi QR ni enllaç (`videoWithoutUrl`), i una sortida HTML o EPUB que no porti el fitxer mostra la portada. Una adreça de YouTube o de Vimeo que no anomena cap vídeo d'aquesta plataforma genera `videoUrlInvalid`, i es mostra la portada en lloc d'un reproductor.
+
+**Els reproductors.** Les opcions de reproductor (controls, botó de baixada, pantalla completa, menú de velocitat, imatge en imatge, enviament a una altra pantalla, reproducció automàtica, començar sense so, repetició, precàrrega, insercions amb més privadesa) es fixen per a tot el llibre a `videoStyle.player` i per a un sol vídeo a `video.player`; cada reproductor respecta les que pot (vegeu [Configuració › Estil de vídeo](/ca/docs/configuration#estil-de-vídeo)). El backend HTML rep la URL reproduïble d'un fitxer per l'opció `resourceVideoUrl(fileId)`, com rep les imatges per `resourceImageUrl`, i si no n'hi ha fa servir l'adreça de producció. La seva opció `videos: { files, streams }` tria entre reproductor i portada per a cada origen, per sobre de `videoStyle.html`; l'escriptor EPUB la fa servir. En un llibre de dreta a esquerra el reproductor i les marques de la portada es tornen a girar com una imatge, perquè el codi QR es pugui llegir.
+
+**Al VDT.** El bloc de recurs d'un vídeo té `kind: 'video'`, la portada com a `fileId` / `format` (es dibuixa com un bitmap) i `video` (`VDTResourceVideo`): l'enllaç `link` al qual s'envia el lector, l'`embedUrl` de YouTube o de Vimeo amb les opcions de reproductor aplicades, el `fileId` i el `mimeType` d'un fitxer, l'interval `start` / `end`, el `player` resolt, `linkPoster`, `html`, i les marques `playMark` i `qr` (els mòduls del QR com a files de `'0'` / `'1'`), amb rectangles relatius a l'angle superior esquerre del cos. Un amfitrió que dibuixi els vídeos pel seu compte té les funcions que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` i `qrModuleRuns`.
+
+**En un paquet.** Un `.postext` porta el fitxer (`resources/<id>.mp4`) i la portada (`resources/<id>.poster.jpg`): l'entrada del manifest els anomena a `file` i `poster`, dona la mida de la portada a `width` / `height` i desa la resta a `video` sense identificadors de fitxer. `bundleVideoUrl(bundle)` és el resolutor `resourceVideoUrl` sobre els fitxers d'un paquet.
 
 ## Què NO s'admet
 
@@ -1253,7 +1405,7 @@ Postext no reconeix les característiques següents de CommonMark. O es tracten 
 
 Aquesta llista s'anirà reduint amb el temps. Mentrestant, qualsevol cosa que no aparegui explícitament a dalt s'ha de considerar text literal.
 
-Més enllà de la sintaxi, l'àrab i les altres escriptures de dreta a esquerra es componen de dreta a esquerra, amb l'algorisme bidireccional i l'enquadernació per la dreta (vegeu [Composició àrab](/ca/docs/arabic-layout)). El xinès es compon en horitzontal i en vertical, amb el tall de línies, l'amplada de la puntuació, la justificació entre caràcters, les marques, el ruby i el warichu que espera la seva regió (vegeu [Composició xinesa](/ca/docs/chinese-layout)); el japonès i el coreà passen pel mateix compositor amb les regles de la Xina continental. Els patrons de partició de mots existeixen per a vuit llengües, i les etiquetes integrades per a aquestes vuit, el xinès i l'àrab. Vegeu [Llengües i escriptures](/ca/docs/configuration#llengües-i-escriptures).
+Més enllà de la sintaxi, l'àrab i les altres escriptures de dreta a esquerra es componen de dreta a esquerra, amb l'algorisme bidireccional i l'enquadernació per la dreta (vegeu [Composició àrab](/ca/docs/arabic-layout)). El xinès es compon en horitzontal i en vertical, amb el tall de línies, l'amplada de la puntuació, la justificació entre caràcters, les marques, el ruby i el warichu que espera la seva regió (vegeu [Composició xinesa](/ca/docs/chinese-layout)). El japonès es compon amb les seves pròpies regles: kinsoku, espaiat dels yakumono, furigana, marques d'èmfasi, marques de kanbun i notes (vegeu [Composició japonesa](/ca/docs/japanese-layout)); el coreà passa pel mateix compositor amb les regles de la Xina continental. Els patrons de partició de mots existeixen per a vuit llengües, i les etiquetes integrades per a aquestes vuit, el xinès, el japonès i l'àrab. Vegeu [Llengües i escriptures](/ca/docs/configuration#llengües-i-escriptures).
 
 
 ## Normes de redacció
@@ -1268,7 +1420,7 @@ Unes poques normes marquen la diferència entre un document que s'analitza netam
 - **No s'admeten citacions dins de llistes.** Comença la citació a la columna 0, fora de la llista.
 - **Les imatges i taules viuen a `resources`.** L'`![alt](src)` en línia s'elimina precisament perquè trenca la col·locació conscient de columnes. Declara cada imatge com a recurs i referencia-la per id — el motor decideix si flota, trenca la columna o es desplaça a l'inici de la pàgina següent.
 - **Escapa els signes de dòlar amb `\$` quan no siguin matemàtiques.** Postext interpreta `$…$` com a LaTeX en línia, així que un `$` solt en prosa iniciaria una fórmula. Preus, indicadors d'ordres del shell i qualsevol altre dòlar literal s'han d'escriure com a `\$`.
-- **Escriu el marcatge en ASCII, també en text xinès.** Un mètode d'entrada xinès o japonès dona formes d'amplada completa: `：：：` per a una tanca, `＃` per a un títol, `［＾1］` per a una crida de nota, `｛…｝` per als atributs, `＊＊` per a la negreta. S'imprimeixen com a text, i la composició avisa de la línia amb `fullwidthMarkup`, indicant la forma ASCII que cal escriure. Els valors dels atributs poden anar en qualsevol escriptura i entre `“…”` o `「…」`; les claus continuen en ASCII.
+- **Escriu el marcatge en ASCII, també en text xinès i japonès.** Un mètode d'entrada xinès o japonès dona formes d'amplada completa: `：：：` per a una tanca, `＃` per a un títol, `［＾1］` per a una crida de nota, `｛…｝` per als atributs, `＊＊` per a la negreta. S'imprimeixen com a text, i la composició avisa de la línia amb `fullwidthMarkup`, indicant la forma ASCII que cal escriure. Els valors dels atributs poden anar en qualsevol escriptura i entre `“…”` o `「…」`; les claus continuen en ASCII.
 
 
 ## Exemple complet

@@ -64,5 +64,13 @@ export function relocalizedResourceTypes(
   const next = defaultResourceTypes(to);
   const current = canonicalJson(types);
   if (current === canonicalJson(next)) return null;
-  return from.some((l) => canonicalJson(defaultResourceTypes(l)) === current) ? next : null;
+  return from.some((l) => builtInVariants(l).some((v) => canonicalJson(v) === current)) ? next : null;
+}
+
+/** The built-in types of `locale` as a book may hold them: the current
+ *  three, and the figure and table a book saved before videos (#454)
+ *  carries. */
+export function builtInVariants(locale: string): ResourceType[][] {
+  const types = defaultResourceTypes(locale);
+  return [types, types.filter((t) => t.id !== 'video')];
 }

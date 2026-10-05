@@ -40,7 +40,7 @@ const document = buildDocument(content, {
 - [页眉与页脚](#页眉与页脚)：每页的文字元素和线条元素，支持占位符、奇偶页和对齐方式。
 - [正文](#正文)：排印、断词、段首孤行与段末孤行。
 - [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签，以及由它决定的[数字](#文档数字)（`numerals`）和[文本方向](#文本方向)（`direction`）；另见Postext排版所支持的[语言与文字](#语言与文字)。从右到左书籍的说明见[阿拉伯文排版](/zh/docs/arabic-layout)。
-- [东亚排版](#东亚排版)：`cjk`，涵盖中文、日文和韩文的地区惯例与断行、两端对齐时行内空白的分配、标点宽度与悬挂、汉字与拉丁字母之间的空白、字符网格、竖排中的直立数字，以及着重号、注音和割注。完整指南见[中文排版](/zh/docs/chinese-layout)。
+- [东亚排版](#东亚排版)：`cjk`，涵盖中文、日文和韩文的地区惯例与断行、两端对齐时行内空白的分配、标点宽度与悬挂、汉字与拉丁字母之间的空白、字符网格、竖排中的直立数字，以及着重号、注音、割注和汉文训读记号。完整指南见[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)。
 - [标题](#标题)：共享默认值以及H1–H6各自的覆盖设置。
 - [无序列表](#无序列表)与[有序列表](#有序列表)：项目符号、编号、嵌套。
 - [数学公式](#数学公式)：LaTeX渲染、缩放、颜色、外边距。
@@ -279,7 +279,7 @@ page: {
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>画布上以及RGB或灰度PDF中裁切标记的颜色。CMYK的PDF则改用套准色绘制（见下文）。</td>
+      <td>画布（屏幕预览）上裁切标记的颜色。PDF中始终用套准色绘制（见下文）。</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ page: {
 
 出血区域之外，除了标记什么都不印。页面绘制的一切，包括锚定到`'page'`或`'bleed'`的设计元素，在Canvas、PDF和HTML输出中都会被裁到出血框以内，与桌面排版软件导出时的裁切一致：有意超出出血放置的色带或图片，在出血边缘被截断，反正裁切时那部分也会被切掉。postext 1.4及以前，这样的元素会越过标记一直延伸到纸张边缘。
 
-在PDF（`postext-pdf`）中，每页的MediaBox是整张纸。页面还带有TrimBox（裁切后的成品页面）和BleedBox（成品加出血），供拼版和印前检查工具读取。PDF以CMYK写出时（`colorSpace: 'cmyk'`，或`pdfGeneration.forceColorSpace`配合`colorSpace: 'cmyk'`），标记用套准色即`/All`分色绘制，因此每块印版上都会印出。RGB和灰度PDF则用`color`绘制。
+在PDF（`postext-pdf`）中，每页的MediaBox是整张纸。页面还带有TrimBox（裁切后的成品页面）和BleedBox（成品加出血），供拼版和印前检查工具读取。标记用套准色即`/All`分色绘制，因此每块印版上都会印出。无论PDF以何种色彩空间写出（RGB、灰度或CMYK）都是如此：普通黑色到了印厂会变成四色叠黑，或只落在黑版上。`color`只用于画布。
 
 ### 页码编号
 
@@ -346,6 +346,12 @@ page: {
     <tr><td>中文数码</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>、<code>〇</code></td></tr>
     <tr><td>天干</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>、<code>甲</code></td></tr>
     <tr><td>地支</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>、<code>子</code></td></tr>
+    <tr><td>日文数字</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>，日文文档中的<code>一</code></td></tr>
+    <tr><td>日文大写数字</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>、<code>壱</code></td></tr>
+    <tr><td>平假名，五十音顺</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>、<code>あ</code></td></tr>
+    <tr><td>片假名，五十音顺</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>、<code>ア</code></td></tr>
+    <tr><td>平假名，伊吕波顺</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>、<code>い</code></td></tr>
+    <tr><td>片假名，伊吕波顺</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>、<code>イ</code></td></tr>
     <tr><td>带圈数字</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>、<code>①</code></td></tr>
     <tr><td>全角数字</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>、<code>１</code></td></tr>
     <tr><td>阿拉伯-印度数字</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>、<code>١</code></td></tr>
@@ -358,6 +364,8 @@ page: {
 </table>
 
 东亚样式在三处设置中都沿用[CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese)中的名称。中文小写数字在10到19之间写作十，前面不加一（十二，但一百一十）；数中连续的零只写一个零（一百零一、一千零五十）；万位用万或萬，亿位用亿或億（一万零一十）。只有`cjk-decimal`使用〇，逐位书写，与年份的写法相同（二〇二六，GB/T 15835—2011）。天干到10为止，地支到12，带圈数字到50；超出后以阿拉伯数字输出。`一`和`壹`跟随文档`locale`的字形：`zh-Hant`、`zh-TW`或`zh-HK`为繁体，其余为简体。有些较早的出版物把101写作一百一，不带零；Postext不输出这种形式。
+
+日文样式（从postext 1.16起）同样遵循CSS Counter Styles。`japanese-informal`写十时前面不加一，空位不写零（百一、千十）；`japanese-formal`写大字壱 弐 参 拾 百 阡，每个单位前都保留壱（壱拾、壱百）。CSS中两者都到9 999为止；Postext接着按四位一组用万 億 兆（大写为萬 億 兆）往下写，每组在单位前保留一：一万一是10 001，一億一万是100 010 000。在日文文档（`ja`、`ja-JP`等）中，`一`表示`japanese-informal`，所以`第{1:一}章`在那里印作第百一章，在中文文档中印作第一百零一章；`壹`仍是中文大写数字。假名序列就是CSS中的列表：按五十音顺的48个假名（包括ゐ和ゑ）和按伊吕波歌顺序的47个假名；排到最后一个之后接着用两个假名（ああ、いい），它们没有零，所以编号为0的项印作`0`。逐位的汉字数字（二〇二六）是`cjk-decimal`，年份和页码用这种写法。
 
 阿拉伯样式凡CSS已有名称的都沿用之（`arabic-indic`、`persian`；W3C《Ready-made Counter Styles》中的`urdu`和`maghrebi-abjad`分别读作`persian`和`arabic-abjad-maghrebi`）。`arabic`仍表示欧洲数字。`arabic-abjad`输出古典阿拉伯语和抄本页码所用的累加式阿布贾德数字，数值大的在前：11为يا，1446为غتمو，千位的倍数写在غ之前（2000为بغ，1002为غب）；超过999 999时以数字输出。W3C把这个名称用于一个28个字母的序列，其中11为ك；Postext把这个序列称为`abjad`，即按阿布贾德顺序给列表项编字母（أ، ب، ج، د، هـ），按字母表顺序的则是`hijai`（أ، ب، ت، ث）。两者都把第一个字母写成带hamza的أ，把单独出现的he写成带tatweel的هـ，以免被读作数字١和٥；超过28个后按`lower-alpha`的方式双写（أأ、أب）。马格里布数值依照口诀صعفض قرست ثخذ ظغش（ص为60，ض为90）；W3C的列表把ص与ض对调。单个أ无法区分两种字母序列，因此它们的记号是各自的前四个字母：`{1:أبجد}`、`{1:أبتث}`。文档本身的数字由[`numerals`](#文档数字)设定。
 
@@ -431,7 +439,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
+      <td>图（位图或SVG）的图像、题注和注释加起来比内容区域还高时，把它缩小到放得下（设了安全区<code>Resource.safeArea</code>的图片先在安全区以内按原宽度裁切，仍然放不下时才缩小）；行内图比所在栏的剩余空间稍高时，也把它排小一些（最小到原宽度的一半，题注仍保持该栏的行长），让它留在文字旁边。缩小后的图像按<code>placement.align</code>放在自己的位置里。HTML查看器会打开这一项，因为它的页面只有屏幕那么高；印刷页面的尺寸是按其中的图来定的。</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1590,9 +1598,9 @@ const config: PostextConfig = {
 
 它也决定内置的资源类型。未设置`resourceTypes`时，`buildDocument`用`defaultResourceTypes(locale)`编号和生成题注，所以只写`locale: 'de'`就会得到*Abbildung 1.1*和*Tabelle 1.1*。未设置`locale`时，由断词语言代替它，资源类型和表格文字都是如此。显式给出的`resourceTypes`列表始终优先。早先的版本中，除非你自己传入`defaultResourceTypes(locale)`，否则无论`locale`是什么都使用英文类型；设置了`locale`又想保留英文标签的文档，可以传入`resourceTypes: defaultResourceTypes('en')`。沙盒中的书和文件包自带类型列表，所以不受影响。
 
-这里与`hyphenation.locale`一样接受任意BCP 47标签：`'de-AT'`得到德文文字。内置文字提供断词所支持的八种语言，以及简体和繁体中文；其他语言一律使用英文文字。
+这里与`hyphenation.locale`一样接受任意BCP 47标签：`'de-AT'`得到德文文字。内置文字提供断词所支持的八种语言、中文（简体和繁体）、日文和阿拉伯文；其他语言一律使用英文文字。
 
-中文接受`zh`、`zh-Hans`、`zh-Hant`、`zh-CN`、`zh-SG`、`zh-TW`、`zh-HK`、`zh-MO`以及长形式（`zh-Hant-TW`），不区分大小写，分隔符用`-`或`_`均可。文字按书写系统选择，由`Intl.Locale(tag).maximize()`判断：`zh`、`zh-CN`和`zh-SG`是简体，`zh-TW`、`zh-HK`和`zh-MO`是繁体。依语言而定的排版默认值则按地区选择，这是[clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)的建议：CN、SG和MY算作中国大陆，TW算作台湾，HK和MO算作香港；没有地区的标签按书写系统判断（`zh-Hant`为台湾，`zh`和`zh-Hans`为中国大陆）。`localeScript(tag)`、`cjkRegionOf(tag)`、`stringsKeyOf(tag)`和`sameContentLocale(a, b)`给出这些判断结果，`DOCUMENT_LANGUAGES`列出带内置文字的语言，每种语言都用它自己的语言命名，与沙盒“文档语言”下拉框中的显示一致。
+中文接受`zh`、`zh-Hans`、`zh-Hant`、`zh-CN`、`zh-SG`、`zh-TW`、`zh-HK`、`zh-MO`以及长形式（`zh-Hant-TW`），不区分大小写，分隔符用`-`或`_`均可。文字按书写系统选择，由`Intl.Locale(tag).maximize()`判断：`zh`、`zh-CN`和`zh-SG`是简体，`zh-TW`、`zh-HK`和`zh-MO`是繁体。依语言而定的排版默认值则按地区选择，这是[clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)的建议：CN、SG和MY算作中国大陆，TW算作台湾，HK和MO算作香港；没有地区的标签按书写系统判断（`zh-Hant`为台湾，`zh`和`zh-Hans`为中国大陆）。日文接受`ja`、`ja-JP`、`ja-Jpan`以及其他任何`ja`标签（`isJapaneseLanguage(tag)`）；从postext 1.16起，它有自己的内置文字和自己的地区`japan`，其排版默认值遵循JLReq（见[日文排版](/zh/docs/japanese-layout)）。字符串表中没有日文条目时，给出的是英文，而不是中文。`localeScript(tag)`、`cjkRegionOf(tag)`、`stringsKeyOf(tag)`和`sameContentLocale(a, b)`给出这些判断结果，`DOCUMENT_LANGUAGES`列出带内置文字的语言，每种语言都用它自己的语言命名（日本語排在各个中文条目和العربية之间），与沙盒“文档语言”下拉框中的显示一致。
 
 <table>
   <thead>
@@ -1614,11 +1622,12 @@ const config: PostextConfig = {
     <tr><td>荷兰语（<code>nl</code>）</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>简体中文（<code>zh-Hans</code>、<code>zh</code>、<code>zh-CN</code>）</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>繁体中文（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>日文（<code>ja</code>、<code>ja-JP</code>）</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
     <tr><td>阿拉伯文（<code>ar</code>、<code>ar-EG</code>、<code>ar-MA</code>等）</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。阿拉伯文类型同样按`{h1}-{n}`编号（شكل 2-3），交叉引用写作الفصل 3、القسم 2-1和ص 12，参考文献标题为المراجع，索引使用انظر / انظر أيضًا、رموز和أرقام，并用阿拉伯文逗号和分号（، ؛）。
+题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。日文类型同样这样编号（図1-1），交叉引用写作第3章、2.3節和12ページ，参考文献标题为参考文献；索引在符号和数字条目上方用“記号”和“数字”作标题，交叉引用用箭头写出：*见*写作`→夏目漱石`，*另见*在页码之后写作`→夏目漱石、森鷗外も見よ`，竖排时这些标签直立。阿拉伯文类型同样按`{h1}-{n}`编号（شكل 2-3），交叉引用写作الفصل 3、القسم 2-1和ص 12，参考文献标题为المراجع，索引使用انظر / انظر أيضًا、رموز和أرقام，并用阿拉伯文逗号和分号（، ؛）。
 
 中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。从右向左书写的语言（阿拉伯文、波斯文、乌尔都文、希伯来文等）的文档同样声明语言：字体的语言字形（`locl`）和后备字体随之选择。
 
@@ -1677,13 +1686,14 @@ const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // 强制
 
 ### 语言与文字
 
-Postext能排从左到右书写的拼音文字，以及横排和竖排的中文。[中文排版](/zh/docs/chinese-layout)介绍中文的排法和相关设置；对应的配置键位于[东亚排版](#东亚排版)、[竖排](#竖排)和[装订](#装订)。各种文字的支持情况如下：
+Postext能排从左到右书写的拼音文字，以及横排和竖排的中文和日文。[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)介绍它们的排法和相关设置；对应的配置键位于[东亚排版](#东亚排版)、[竖排](#竖排)和[装订](#装订)。各种文字的支持情况如下：
 
 - **中文**：段落中的CJK字符多于词间空格时，由CJK排版器处理：行在字符之间断开，遵守`cjk.lineBreak`的避头尾规则（行首不出现。、」或ー，行尾不出现「或（），——和……不拆开，数字连同其符号、拉丁文单词都保持完整；两端对齐的行在字符之间均匀分配空白以填满行长。标点宽度、标点悬挂、汉字与拉丁文之间的间距、字符网格、着重号、专名号和书名号、注音以及割注，都按`locale`的地区处理，横排（沿行）和竖排（`layout.writingMode: 'vertical-rl'`）都一样。只引用少量CJK词语的拉丁文段落保持最优断行，并可以在这些词语旁边断行；拉丁文中引用的CJK括号、间隔号或全角符号（〈h〉、％）不影响任何处理。
-- **日文和韩文**：使用同一个排版器，不断词，但采用中国大陆中文的默认值：它们各自的规范（JLREQ、KLREQ）尚未实现。韩文除了在空格处断行，也在音节之间断行。
+- **日文**：使用同一个排版器，从postext 1.16起有自己的规则，即W3C《日文排版需求》（JLReq）和JIS X 4051的规则：`ja`语言区域得到`japan`地区，其auto值设定JLReq的禁则级别（小假名和ー从不出现在行首）、带相邻标点挤压的全角标点、？！之后的一个字宽、占缩进后半个字宽的段首括号、文字上方的芝麻点、『』书名号、按1:2:1排开的振假名、日文编号、注释以及按读音排序的索引。更早的版本按中国大陆中文的默认值排日文。
+- **韩文**：使用同一个排版器，不断词，但采用中国大陆中文的默认值：它自己的规范（KLREQ）尚未实现。韩文除了在空格处断行，也在音节之间断行。
 - **阿拉伯文及其他从右到左的文字**（波斯文、乌尔都文、希伯来文等）从右到左排，具体做法见[阿拉伯文排版](/zh/docs/arabic-layout)。文档的[`direction`](#文本方向)由`locale`的文字决定，Unicode双向算法安排每行中拉丁词和数字的顺序，书在右侧装订、第一栏在右边，引擎生成的每个数字都采用该地区的[数字](#文档数字)。含阿拉伯字母的词从不断词、加字距或切开，两端对齐的阿拉伯文行在空格处和用卡希达（kashida）拉伸。元音符号、强调、脚注和阿拉伯文的内置文字见[阿拉伯文](#阿拉伯文)。波斯文、乌尔都文和希伯来文有方向、数字和整词规则，但没有自己的内置文字。
 
-断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文和阿拉伯文。中文、日文、韩文和从右到左书写的语言不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文、日文和阿拉伯文。中文、日文、韩文和从右到左书写的语言不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
 
 ### 阿拉伯文
 
@@ -1906,6 +1916,12 @@ Postext能排从左到右书写的拼音文字，以及横排和竖排的中文�
       <td>为<code>true</code>时，标题绝不会成为一栏或一页的最后一个元素。如果标题之后的空间放不下后续块的至少<code>bodyText.widowMinLines</code>行（<code>bodyText.avoidWidows</code>为<code>false</code>时为一行），标题就被推到后面，与正文保持在一起。它与<code>bodyText.keepColonWithList</code>相互配合：如果那条规则必须把以冒号结尾的段落整段推走，栏末的标题会随它一起移动，不会被孤零零地留下。</td>
     </tr>
     <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>与<code>keepWithNext</code>同时使用时，仍允许标题位于偶数页最后一栏正文的末尾，因为它的正文从同一跨页对面的奇数页开始（JLReq §4.1.7）。跨页的划分是：第1页单独一页，然后是2–3、4–5……，按<code>pageIndexOffset</code>计数，左侧装订和右侧装订的书都一样。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
       <td><code>keepWithNextSplit</code></td>
       <td><code>'rules' | 'fill'</code></td>
       <td><code>'rules'</code></td>
@@ -1948,9 +1964,10 @@ headings: {
 出版方要求每一栏都从页面顶部开始、在页面底部平齐结束。分页规则（段首孤行和段末孤行保护、标题与正文不分离、不可拆分的图）自然会留下短栏，即栏底空着一个或多个基线网格行。启用齐底后，引擎会像排版工人那样处理，按编辑上的优先顺序使用以下手段：
 
 1. **收尾的框**：结束一个短栏的标注框整体下移，下移量正好等于其底部下方的空余，使它的下边缘落在页面最后一个网格位置上，与相邻栏的最后一行平齐。即使空余不足一行，只要没有内容移入另一栏，它也会占满这段空余。默认情况下这一手段先于其他所有手段执行，并占用整段空余，所以一个注释上方段落的框可能最后落在该段落下方好几行处；`closingBox: 'last'`让标题、列表结尾和其他间距手段先占用整行，框只占它们剩下的部分；`closingBox: 'off'`则从不移动它。
-2. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
-3. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
-4. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在**`bodyText.maxWordSpacing`以下**时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
+2. **有安全区的图片**：设了安全区（`Resource.safeArea`，见[文档格式 › 安全区](/zh/docs/document-format#安全区)）的图片，如果以行内方式排在短栏里，或者作为只占这一栏的浮动体排在栏顶或栏底，就按整数个网格行增高，在安全区以内裁切，直到这一栏排满，或者裁切到了安全区为止。图片变高不会在页面上留下空洞，所以这一手段在增加任何空白之前执行；在栏首要保持平齐的页面或区段上（见下文），位于栏顶的浮动体不会增高。记录为`flexFigure`。这一手段没有单独的设置：只有资源标出了安全区的图片才会增高。
+3. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
+4. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
+5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在**`bodyText.maxWordSpacing`以下**时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
 
 只有当页面自然延续到下一页时，才会对该页最后一栏做齐底；一章的末页本来就可以短一截。这样的页面，以及由`trailing`截平的收尾区段，还会让各栏的栏首保持平齐：栏首为图或表时，不会在其下方加行（浮动体后手段）；在这样的图下方开栏的标题或框，无论`stretchAfterFloats`如何设置，都留在栏首。这样就不会为了让栏底对齐而让某一栏比旁边一栏起得更低。
 
@@ -2052,11 +2069,12 @@ headings: {
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // 通常只有一个：列表后的段落可能既占用列表结尾那一行，又多排一行
-  spaceAbove: number;     // 间距手段在块上方增加的px（只有looseParagraph起作用时为0）
+  spaceAbove: number;     // 间距手段在块上方增加的px（只有looseParagraph或flexFigure起作用时为0）
+  bodyGrowth?: number;    // flexFigure：图片增高的px，在安全区以内裁切
   extraLines?: number;    // looseParagraph：段落多出的行数
   tracking?: number;      // looseParagraph：多出这些行所用的字距，单位为千分之一em（0 = 仅靠词间距）
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2072,6 +2090,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>标注框的外框块</td>
       <td>结束该栏的框下移，下移量正好等于其底部下方的空余（<code>spaceAbove</code>；不足一行也可以）。</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>图片的块（行内）或浮动体</td>
+      <td>设了安全区的图片按整数个网格行增高了<code>bodyGrowth</code> px，在安全区以内裁切。资源块的<code>bodySource</code>是显示出来的部分，<code>bodyFlex.delta</code>是同一增量。</td>
     </tr>
     <tr>
       <td><code>heading</code></td>
@@ -2162,7 +2185,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 如果配置是存储下来的，引擎能识别出来并替你处理：沙盒处理它当时保存的书和配置（见**沙盒 → 持久化**），`openBundle` / `readBundle`处理postext 1.4或更早版本写出的`.postext`文件包（见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)）。你自己存储的配置可以交给`postext/bundle`中的`migrateConfig(config)`处理，它会写出1.4当时的分页方式（`pinLegacyHeadingBreaks`）：在没有分页的H1上写`enabled: false`，在H1和标题样式中未指定奇偶的`enabled: true`旁写`parity: 'any'`。它还会按1.4的设定固定以下各项：数学公式的字号、行内图周围的间距（框内也一样）、标题的行内标记、首字下沉的尺寸、引出列表的冒号行下方的空间、框截断后段落或列表项留下的行数、破折号处的断行、齐左文字的逐行断行、标题下段落的拆分、复合词连字符处的断行，以及`:::paragraphs`容器下方的间距。把书的Markdown作为第三个参数`{ content }`传入时，它会省去用不到的固定项：文本中没有`$`时省去数学固定项；没有一行嵌入资源时省去间距固定项（框内没有时省去框内间距固定项）；没有标题带标记时省去标题标记固定项；没有列表跟在以冒号结尾的行之后时省去冒号行固定项；文本中没有`:::callout`时省去框截断固定项；词与词之间没有紧排的破折号时省去破折号固定项；文本中没有标题时省去标题拆分固定项；文本中没有`:::paragraphs`容器时省去容器固定项；两个字母之间没有连字符时省去复合词固定项。齐左断行固定项只加给将某些正文设为齐左的配置，容器固定项只加给声明了段落样式的配置（见[postext 1.4及更早版本写出的文件包](#postext-14及更早版本写出的文件包)）。如果只处理分页，调用`pinLegacyHeadingBreaks(config)`即可。
 
-按级别覆盖支持与通用默认值相同的属性，即`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`，另外还有以下仅限级别的字段：
+按级别覆盖支持与通用默认值相同的属性，即`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`，另外还有以下仅限级别的字段（[标题样式](#标题样式)也可以使用它们）：
 
 <table>
   <thead>
@@ -2193,10 +2216,28 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td>标题每个字形之后的字距，包括空格和编号前缀，等同于CSS的<code>letter-spacing</code>。正值拉开字母（用<code>textTransform: 'uppercase'</code>排的大写字母通常需要一点：<code>&#123; value: 0.12, unit: 'em' &#125;</code>），负值收紧大字号标题。<code>em</code>值相对于该级别的<code>fontSize</code>。标题各行按加了字距的文字测量，所以在加字距后的文字结束处换行，Canvas、HTML和PDF的绘制结果相同。居中或齐右的行按字母定位：像设计文本一样不计最后一个字形后的字距，因此居中标题与<code>span: 'page'</code>标题的默认章首区段对齐。由<code>advancedDesign</code>绘制的级别会忽略它，与此处其他排版字段一样：每个设计文本元素有自己的<code>letterSpacing</code>。<a href="#heading-styles">标题样式</a>也可以设置它，作用于使用该样式的标题。postext 1.4及以前标题没有字距设置，这个键会被悄悄丢弃。</td>
     </tr>
     <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>未设置</td>
+      <td>占行（行取り，JLReq §4.1.6）：标题排在由这么多正文行组成的带中，文字在带中居中，取代<code>marginTop</code>和<code>marginBottom</code>；<code>3</code>就是3行取り的标题。标题对齐网格时，带从一条正文行开始，其后的文字仍留在网格上，两种书写方向都是如此，使用<code>cjk.grid</code>时也一样；标题本身需要更多行时，取下一个整数行。居中的是字符的中心（基线减去字体的表意字中心），这是JLReq的量法，而不是行框的中心。不用于章首页标题（<code>span: 'page'</code>）、由<code>advancedDesign</code>绘制的标题、隐藏的标题和标注框内的标题。标题样式可以设为<code>0</code>来取消其级别的设置。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>标题从行首缩进的距离（字下げ），<code>em</code>指<strong>正文</strong>字号，因为日文书按正文字数计算标题缩进（JLReq §4.1.3）：<code>&#123; value: 6, unit: 'em' &#125;</code>就是6字下げ，与标题的字号无关。行长相应变窄，居中的标题在剩余部分中居中。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>未设置</td>
+      <td>均排（字取り）：比标题<strong>自身</strong>字宽的这么多倍窄的单行标题，均匀拉开到恰好这个宽度，所以<code>3</code>把序章排作序　章。更宽的标题和多行标题保持原样。在标题文字后写<code>&#123;jidori=N&#125;</code>只设置这一个标题，<code>&#123;jidori=0&#125;</code>关闭其级别的均排。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>该级别自动编号的模板。标记<code>{'{1}'}</code> … <code>{'{6}'}</code>输出对应标题级别的当前计数，可以加后缀指定格式：<code>{'{1:I}'}</code>大写罗马数字，<code>{'{1:i}'}</code>小写罗马数字，<code>{'{1:A}'}</code> / <code>{'{1:a}'}</code>字母，<code>{'{1:01}'}</code>补零，<code>{'{1:words}'}</code>用文字拼写（<em>twenty-one</em>），<code>{'{1:ordinal}'}</code>序数词（<em>twenty-first</em>），<code>{'{1:一}'}</code>中文数字，<code>{'{1:〇}'}</code>逐位书写，<code>{'{1:壹}'}</code>大写数字，<code>{'{1:①}'}</code>带圈数字，或者<a href="#numbering-format-spellings">编号格式写法</a>中的任一名称。其他文字按字面输出（<code>'Chapter {'{1}'}. '</code>、<code>'{'{1}'}.{'{2}'}'</code>、<code>'第{'{1:一}'}回'</code>输出第一百二十回；反斜杠转义字面的花括号）。计数仍为空的标记会连同相邻的分隔符一起省略。为空（默认）表示没有自动编号。生成的编号在文字流中加在标题前，用于高级设计槽位的<code>{'{number}'}</code>占位符（那里不再在前面加前缀），并显示在目录中。文字写法见<a href="#spelled-out-numbers">以文字书写的编号</a>；若某一级别中部分标题要用自己的模板，见<a href="#heading-styles">标题样式</a>。</td>
+      <td>该级别自动编号的模板。标记<code>{'{1}'}</code> … <code>{'{6}'}</code>输出对应标题级别的当前计数，可以加后缀指定格式：<code>{'{1:I}'}</code>大写罗马数字，<code>{'{1:i}'}</code>小写罗马数字，<code>{'{1:A}'}</code> / <code>{'{1:a}'}</code>字母，<code>{'{1:01}'}</code>补零，<code>{'{1:words}'}</code>用文字拼写（<em>twenty-one</em>），<code>{'{1:ordinal}'}</code>序数词（<em>twenty-first</em>），<code>{'{1:一}'}</code>中文数字（日文文档中为日文数字：第百一章），<code>{'{1:〇}'}</code>逐位书写，<code>{'{1:壹}'}</code>大写数字，<code>{'{1:①}'}</code>带圈数字，或者<a href="#numbering-format-spellings">编号格式写法</a>中的任一名称。其他文字按字面输出（<code>'Chapter {'{1}'}. '</code>、<code>'{'{1}'}.{'{2}'}'</code>、<code>'第{'{1:一}'}回'</code>输出第一百二十回；反斜杠转义字面的花括号）。计数仍为空的标记会连同相邻的分隔符一起省略。为空（默认）表示没有自动编号。生成的编号在文字流中加在标题前，用于高级设计槽位的<code>{'{number}'}</code>占位符（那里不再在前面加前缀），并显示在目录中。文字写法见<a href="#spelled-out-numbers">以文字书写的编号</a>；若某一级别中部分标题要用自己的模板，见<a href="#heading-styles">标题样式</a>。</td>
     </tr>
     <tr>
       <td><code>numberSeparator</code></td>
@@ -3038,11 +3079,12 @@ document.body.append(renderPage(doc.pages[0], doc));
 
 ```ts
 interface FootnotesConfig {
-  placement?: 'column' | 'chapterEnd'; // 引用所在栏的栏底，或章末。
-  numbering?: 'chapter' | 'document' | 'page' | 'column'; // 每章重新开始、连续编号，或每页／每栏重新开始。
+  placement?: 'column' | 'chapterEnd' | 'spread'; // 引用所在栏的栏底、章末，或跨页正文旁。
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // 每章重新开始、连续编号，或每页／每栏／每个跨页重新开始。
   numberFormat?: string;      // decimal、lower-roman、circled-decimal（①）……
-  markerPosition?: 'auto' | 'superscript' | 'inline'; // 上标，或排在基线上。
-  markerSize?: Dimension;     // 行内注码字号；em指所在正文。
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // 上标、排在基线上、排在词旁，或排在竖排行的右侧。
+  markerSize?: Dimension;     // 行内、词旁或右侧注码的字号；em指所在正文。
+  numberGap?: 'en' | 'em';    // 注文编号之后的空白。
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd：注释排在栏底，或紧接正文之下。
   fontSize?: Dimension;       // 注释字号；em为正文字号。
   lineHeight?: Dimension;     // 注释行距；em为注释字号。
@@ -3073,15 +3115,15 @@ interface FootnotesConfig {
   <tbody>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'column' | 'chapterEnd'</code></td>
-      <td><code>'column'</code></td>
-      <td><code>'column'</code>把每条注释排在引用它的那一行所在栏的栏底，上面有一条短分隔线；单栏版面中就是页面底部。<code>'chapterEnd'</code>把一章的所有注释按引用顺序排在该章最后一个块之后。</td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code>（日文竖排书：<code>'chapterEnd'</code>）</td>
+      <td><code>'column'</code>把每条注释排在引用它的那一行所在栏的栏底，上面有一条短分隔线；单栏版面中就是页面底部。<code>'chapterEnd'</code>把一章的所有注释按引用顺序排在该章最后一个块之后。<code>'spread'</code>（傍注，仅用于竖排）把一个跨页两页上引用的注释排在其奇数页（右侧装订的书中的左页）的末尾、分隔线之下：偶数页上引用的注释等待奇数页；某条注释会让奇数页剩下不足一行正文时，它连同其后的注释留在偶数页的下端；在偶数页结束的章把等待中的注释留在那一页。横排时它退回为<code>'column'</code>，并给出<code>unknownConfigValue</code>警告。从postext 1.16起提供。</td>
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
-      <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。</td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>）</td>
+      <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。<code>'spread'</code>在每个跨页（第2–3页、4–5页……）按引用顺序重新编号，用于<code>placement: 'spread'</code>。</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
@@ -3091,21 +3133,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
-      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>'superscript'</code>把正文注码和注文开头的编号缩小并升高，排成上标。<code>'inline'</code>把它们排在基线上：注码用<code>markerSize</code>，注文编号与注文同大；竖排时，行内带圈注码在自己的格子里直立。<code>'auto'</code>在<code>circled-decimal</code>时为行内，其他格式为上标。无论哪种，注码都随前一个字符，不会出现在行首。</td>
+      <td><code>'superscript'</code>把正文注码和注文开头的编号缩小并升高，排成上标。<code>'inline'</code>把它们排在基线上：注码用<code>markerSize</code>，注文编号与注文同大；竖排时，行内带圈注码在自己的格子里直立。<code>'right'</code>把缩小的注码排在竖排行的右侧并与之对齐，日文竖排书的（1）就是这样排的；横排时为上标。<code>'side'</code>（合印）把小号注码排在被注词旁边、其注音一侧，结束于该词最后一个字结束的地方；它不占行内空间，行的断行和两端对齐都当它不存在；行间空隙容不下它时报为<code>rubyExceedsLeading</code>。<code>'auto'</code>在<code>circled-decimal</code>时为行内，日文竖排书中为<code>'right'</code>，其他情况为上标。无论哪种，注码都随前一个字符，不会出现在行首。</td>
     </tr>
     <tr>
       <td><code>markerSize</code></td>
       <td><code>Dimension</code></td>
-      <td><code>1em</code></td>
-      <td>行内注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
+      <td><code>1em</code>；<code>'side'</code>为<code>0.6em</code>，<code>'right'</code>为<code>0.7em</code></td>
+      <td>行内、词旁或右侧注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code>（日文章末注：<code>'em'</code>）</td>
+      <td>注文开头的编号之后的空白：半个字宽的空格，或一个注文字号的整字宽（编号或注文含CJK文字时为全角空格），从不伸缩，也不在此断行。从postext 1.16起提供。</td>
     </tr>
     <tr>
       <td><code>markerTemplate</code></td>
       <td><code>string</code></td>
-      <td><code>'{n}'</code></td>
-      <td>注释编号的写法，<code>{n}</code>代表按编号格式和文档数字写出的编号：<code>'({n})'</code>得到阿拉伯文书籍的带括号注码「(١)」。正文注码和注文开头的编号都按它写。不含<code>{n}</code>的模板按默认值处理。</td>
+      <td><code>'&#123;n&#125;'</code>（日文竖排书：<code>'（&#123;n&#125;）'</code>）</td>
+      <td>注释编号的写法，<code>&#123;n&#125;</code>代表按编号格式和文档数字写出的编号：<code>'(&#123;n&#125;)'</code>得到阿拉伯文书籍的带括号注码「(١)」。正文注码和注文开头的编号都按它写。不含<code>&#123;n&#125;</code>的模板按默认值处理。</td>
     </tr>
     <tr>
       <td><code>noteNumberPosition</code></td>
@@ -3203,6 +3251,8 @@ footnotes: {
 }
 ```
 
+**日文书。** 日文文档（`locale: 'ja'`，从postext 1.16起）为未设置的字段取JLReq §4.2的值。竖排书把注释排在章末（`placement: 'chapterEnd'`，後注），按章编号，注码`（{n}）`排在行的右侧（`markerPosition: 'right'`，数字按`cjk.uprightDigits`直立）；横排书把注释排在页面下端，按页编号，注码为上标。两者的分隔线都是行长的三分之一（`separator.width: 1/3`），章末注取`numberGap: 'em'`和两个字的悬挂缩进。明确设置的值优先，并在保存时保留（`stripFootnotesDefaults`与文档自己的默认值比较）；中文、阿拉伯文和拉丁文文档的解析结果与过去相同。`footnoteDocumentDefaults(locale, writingMode, placement?)`返回这些值。把注码写在句末的。之前（`先生[^1]。`）：它跟随前一个字符，而。从不出现在行首。见[日文排版 › 注释](/zh/docs/japanese-layout#注释)。
+
 栏底注释的排版方式：
 
 - **注释与引用同栏。**放置一行之前，版面会加上这一行首次引用的注释的高度（如果是该栏的第一条注释，还要加上分隔线）。一行的注释在它下面排不下时，这一行连同段落的其余部分移到下一栏，并遵守段首孤行和段末孤行规则。栏的文字区域缩小注释所占的高度，所以各栏齐底和章末收尾区域只计算正文。
@@ -3216,7 +3266,9 @@ footnotes: {
 解析函数和精简函数与其他部分一致：
 
 ```ts
-import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // 未设置的字段取日文竖排的默认值
 ```
 
 
@@ -3328,7 +3380,7 @@ interface CitationsConfig {
       <td><code>locale</code></td>
       <td><code>string</code></td>
       <td>文档语言</td>
-      <td>样式用词的CSL语言环境（<code>zh-CN</code>、<code>zh-TW</code>、<code>en-US</code>等）。</td>
+      <td>样式用词的CSL语言环境（<code>zh-CN</code>、<code>zh-TW</code>、<code>ja-JP</code>、<code>en-US</code>等）。日文文档按<code>ja-JP</code>处理：叙述式引用用と连接两位作者，更多作者缩写为ほか。</td>
     </tr>
     <tr>
       <td><code>link</code></td>
@@ -3431,24 +3483,40 @@ interface CitationsConfig {
 
 ## 东亚排版
 
-`cjk`属性决定中文、日文和韩文的排版方式：遵循哪个地区的规范，行在哪里可以断开，标点排多宽、是否悬挂，汉字与拉丁字母之间的间距，版心的字格，以及文中的着重号、专名线、注音和夹注怎样印出。每个字段都是可选的；`'auto'`跟随文档语言（`locale`）所属的地区，因此`locale: 'zh-Hant'`的书无须任何其他设置，就会按台湾的做法断行和排标点。[中文排版](/zh/docs/chinese-layout)按地区逐一说明这些设置背后的规则，并给出两套完整的配置。
+`cjk`属性决定中文、日文和韩文的排版方式：遵循哪个地区的规范，行在哪里可以断开，标点排多宽、是否悬挂，汉字与拉丁字母之间的间距，版心的字格，以及文中的着重号、傍线、注音、夹注和汉文训读记号怎样印出。每个字段都是可选的；`'auto'`跟随文档语言（`locale`）所属的地区，因此`locale: 'zh-Hant'`的书无须任何其他设置，就会按台湾的做法断行和排标点，`locale: 'ja'`的书则按日文的做法。[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)说明这些设置背后的规则，各自给出两套完整的配置。日文的字段和取值从postext 1.16起提供。
 
 ```ts
 interface CjkConfig {
-  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // 地区规范。
-  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // 哪些标点不能出现在行首或行尾。
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // 地区规范。
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // 哪些标点不能出现在行首或行尾。
   punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
   compressAdjacent?: 'auto' | boolean;      // 相邻的两个标点共占1.5 em。
   trimLineStart?: 'auto' | boolean;         // 位于行首或行尾的括号去掉外侧半个字的空白。
-  hangingPunctuation?: 'none' | 'allow' | 'force';
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // 段落中？！之后加一个字宽（日本）。
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // 有缩进的段落开头的括号。
   latinSpacing?: Dimension;                 // 汉字与拉丁字母之间；默认0.25 em。
   uprightDigits?: 0 | 2 | 3 | 4;            // 竖排：数字直立排进一个字格；默认2。
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
-  emphasis?: 'auto' | 'italic' | 'dots';    // *…*对汉字的效果。
+  emphasis?: 'auto' | 'italic' | 'dots';    // *…*对中日韩字符的效果。
+  emphasisMark?: {                          // *…*和:dots[…]未指定时所画的记号。
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
   bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // :book[…]印出什么。
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // 所用的括号，由外向内。
   annotationColor?: ColorValue;             // 着重号和专名线、书名线；默认为文字颜色。
-  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // 读音最多能伸到相邻字上多少。
+    align?: 'auto' | 'center' | 'jis' | 'start'; // 比基字短的读音怎样排开。
+    smallKana?: 'keep' | 'full';                 // 读音中的小假名按原样，或排成全尺寸。
+  };
   warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // 汉文训读记号。
 }
 ```
 
@@ -3464,39 +3532,51 @@ interface CjkConfig {
   <tbody>
     <tr>
       <td><code>region</code></td>
-      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
       <td><code>'auto'</code></td>
-      <td>文字遵循的规范，地区划分依照W3C<a href="https://www.w3.org/TR/clreq/">《中文排版需求》</a>（clreq）。<code>'auto'</code>从<code>locale</code>读取地区，<code>locale</code>未设置时从<code>bodyText.hyphenation.locale</code>读取：<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>和<code>zh-SG</code>对应<code>'mainland'</code>；<code>zh-Hant</code>和<code>zh-TW</code>对应<code>'taiwan'</code>；<code>zh-HK</code>和<code>zh-MO</code>对应<code>'hongkong'</code>；其他语言一律对应<code>'mainland'</code>。地区决定<code>lineBreak</code>、<code>punctuationWidth</code>、<code>compressAdjacent</code>和<code>trimLineStart</code>的默认值。</td>
+      <td>文字遵循的规范，地区划分依照W3C<a href="https://www.w3.org/TR/clreq/">《中文排版需求》</a>（clreq）。<code>'auto'</code>从<code>locale</code>读取地区，<code>locale</code>未设置时从<code>bodyText.hyphenation.locale</code>读取：<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>和<code>zh-SG</code>对应<code>'mainland'</code>；<code>zh-Hant</code>和<code>zh-TW</code>对应<code>'taiwan'</code>；<code>zh-HK</code>和<code>zh-MO</code>对应<code>'hongkong'</code>；<code>ja</code>和所有<code>ja-*</code>标签对应<code>'japan'</code>，其规范依照W3C<a href="https://www.w3.org/TR/jlreq/">《日文排版需求》</a>（JLReq）；其他语言一律对应<code>'mainland'</code>。地区决定下面每个<code>'auto'</code>字段的默认值。手动设置<code>'japan'</code>时，任何文档都按日文的方式排版；内置文字以及注释和索引的默认值仍跟随语言。</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
-      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
       <td><code>'auto'</code></td>
-      <td>哪些标点不能出现在行首或行尾（clreq §6.1.1；见下表）。<code>'auto'</code>：大陆为<code>'gb'</code>，台湾和香港为<code>'basic'</code>。</td>
+      <td>哪些标点不能出现在行首或行尾（clreq §6.1.1和JLReq附录C.3；见下面两个表）。<code>'auto'</code>：大陆为<code>'gb'</code>，台湾和香港为<code>'basic'</code>，日本为<code>'ja-very-strict'</code>。任何文档都可以选用任何级别。</td>
     </tr>
     <tr>
       <td><code>punctuationWidth</code></td>
       <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
       <td><code>'auto'</code></td>
-      <td>全角标点排多宽（见<a href="#punctuation-widths">标点宽度</a>）。<code>'auto'</code>：大陆为<code>'kaiming'</code>，台湾和香港为<code>'fullwidth'</code>。</td>
+      <td>全角标点排多宽（见<a href="#punctuation-widths">标点宽度</a>）。<code>'auto'</code>：大陆为<code>'kaiming'</code>，台湾、香港和日本为<code>'fullwidth'</code>（日本另按JLReq处理相邻标点、行尾和中点）。</td>
     </tr>
     <tr>
       <td><code>compressAdjacent</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>相邻的两个标点（<code>。」</code>、<code>》（</code>、<code>：“</code>）去掉二者之间半个字的空白，这一对共占1.5 em，而不是2 em。<code>'auto'</code>：大陆和香港开启，台湾关闭。</td>
+      <td>相邻的两个标点（<code>。」</code>、<code>》（</code>、<code>：“</code>）去掉二者之间半个字的空白，这一对共占1.5 em，而不是2 em。<code>'auto'</code>：大陆、香港和日本开启，台湾关闭。</td>
     </tr>
     <tr>
       <td><code>trimLineStart</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>位于行首的开引号或开括号去掉前面半个字的空白，位于行尾的闭引号或闭括号去掉后面半个字的空白。<code>'auto'</code>：大陆和香港开启，台湾关闭。</td>
+      <td>位于行首的开引号或开括号去掉前面半个字的空白，位于行尾的闭引号或闭括号去掉后面半个字的空白。<code>'auto'</code>：大陆、香港和日本开启，台湾关闭。在日本，位于行尾的闭括号类标点保留半个字宽，直到本行需要它（见<a href="#标点宽度">标点宽度</a>）。</td>
     </tr>
     <tr>
       <td><code>hangingPunctuation</code></td>
-      <td><code>'none' | 'allow' | 'force'</code></td>
-      <td><code>'none'</code></td>
-      <td>点号能否悬挂到行尾之外（见<a href="#hanging-punctuation">标点悬挂</a>）。</td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>点号能否悬挂到行尾之外（见<a href="#hanging-punctuation">标点悬挂</a>）。<code>'auto'</code>：日本为<code>'allow'</code>（仅限、。，．），其他地区为<code>'none'</code>。postext 1.15及以前默认值是<code>'none'</code>，在日本以外，<code>'auto'</code>仍是如此。</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>段落中全角？或！（以及‼⁇⁈⁉，还有紧贴在它们后面的注码）之后加一个字宽的空白，这是日文的排法（JLReq §3.1.6）：在闭括号或另一个这类标点之前不加，段末不加，位于行尾时去掉。作者在那里输入的U+3000或空格就成为这个空白。它从不伸缩。<code>'auto'</code>：日本开启，其他地区关闭。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>有首行缩进的段落以开括号起头时括号怎样排（JLReq §3.1.5）：<code>'indent'</code>保留缩进，括号在其后占一个字宽（第①种）；<code>'half'</code>让括号去掉字形之前的空白，填满一个字宽缩进的后半部分，文字从其他段落文字开始的位置开始（第③种）；<code>'flush'</code>把括号放在边缘，不缩进（天付き）。没有缩进或悬挂缩进的段落保持原样。<code>'auto'</code>：日本为<code>'half'</code>；其他地区与过去一样，按一般行首处理括号。</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3520,13 +3600,25 @@ interface CjkConfig {
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'dots'</code></td>
       <td><code>'auto'</code></td>
-      <td>Markdown强调（<code>*…*</code>）对汉字的效果：<code>'dots'</code>在每个字下面（竖排时在右侧）加着重号，与<code>:dots[…]</code>相同，同一强调中的拉丁字母仍为斜体；<code>'italic'</code>把汉字排成斜体，但中文字体没有真正的斜体，只能用倾斜来伪造。<code>'auto'</code>：文档语言为中文时为<code>'dots'</code>，否则为<code>'italic'</code>（见<a href="#marks-ruby-and-warichu">着重号、注音与夹注</a>）。</td>
+      <td>Markdown强调（<code>*…*</code>）对中文和日文字符的效果：<code>'dots'</code>在每个字旁加着重号，与<code>:dots[…]</code>相同（形状和位置取<code>emphasisMark</code>），同一强调中的拉丁字母仍为斜体；<code>'italic'</code>把它们排成斜体，但中日韩字体没有真正的斜体，只能用倾斜来伪造。<code>'auto'</code>：文档语言为中文或日文时为<code>'dots'</code>，否则为<code>'italic'</code>（见<a href="#marks-ruby-and-warichu">着重号、注音与夹注</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td>均为<code>'auto'</code></td>
+      <td><code>*…*</code>和不带属性的<code>:dots[…]</code>所画的记号：<code>style</code>为<code>'dot'</code>、<code>'circle'</code>或<code>'sesame'</code>（﹅）；<code>fill</code>为<code>'filled'</code>或<code>'open'</code>（auto：圆圈为空心）；<code>position</code>为<code>'over'</code>（竖排时在右侧）或<code>'under'</code>（竖排时在左侧）。Auto：日本为文字上方的实心芝麻点，竖排时在右侧（JLReq §3.3.9）；其他地区与过去一样，为文字下方的圆点，竖排时在右侧。记号自己的属性优先。</td>
     </tr>
     <tr>
       <td><code>bookTitleMark</code></td>
       <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>:book[…]</code>印出什么：书名两侧加《》（书名中的书名用〈〉），书名下加浪线式书名号，或者只印书名。<code>'auto'</code>：大陆用书名号括起，台湾和香港用浪线。</td>
+      <td><code>:book[…]</code>印出什么：书名两侧加括号（<code>bookTitleBrackets</code>），书名下加浪线式书名号，或者只印书名。<code>'auto'</code>：大陆和日本用括号，台湾和香港用浪线。</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'brackets'</code>下<code>:book[…]</code>所用的括号，由外向内排列；嵌套层数超过列表长度的书名取最后一对。<code>'auto'</code>（或空列表）：日本为『』，其内为「」；其他地区为《》，其内为〈〉。</td>
     </tr>
     <tr>
       <td><code>annotationColor</code></td>
@@ -3536,15 +3628,21 @@ interface CjkConfig {
     </tr>
     <tr>
       <td><code>ruby</code></td>
-      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
       <td>正文的一半大小，<code>'auto'</code></td>
-      <td><code>:ruby[…]</code>和<code>&#123;紅樓|hóng|lóu&#125;</code>的注音：字体（默认与正文相同）、字号（默认为正文的<code>&#123; value: 0.5, unit: 'em' &#125;</code>；注音符号为其60 %）、颜色，以及注音本身未指定时的位置（<code>'auto'</code>：注音符号在每个字的右侧；拼音在横排时位于文字上方，竖排时位于右侧）。</td>
+      <td><code>:ruby[…]</code>和<code>&#123;紅樓|hóng|lóu&#125;</code>的注音：字体（默认与正文相同）、字号（默认为正文的<code>&#123; value: 0.5, unit: 'em' &#125;</code>；注音符号为其60 %）、颜色，以及注音本身未指定时的位置（<code>'auto'</code>：注音符号在每个字的右侧；拼音和假名在横排时位于文字上方，竖排时位于右侧）。<code>overhang</code>：比基字长的读音最多能伸到相邻字上多少：<code>'kana'</code>伸到假名、ー和标点的空白一侧上一个注音字，伸到开括号上半个，汉字上不伸（JLReq §3.3.8）；<code>'any'</code>伸到任何没有读音的相邻字上半个注音字；<code>'none'</code>不伸；auto在日本为<code>'kana'</code>，其他地区与过去一样，伸到没有读音的相邻字上，最多为注音字号的四分之一。<code>align</code>：比基字短的读音怎样排开：<code>'jis'</code>按1:2:1（两端各半份，中间各一份），<code>'center'</code>密排居中，<code>'start'</code>从基字起点开始；auto在日本为<code>'jis'</code>，其他地区为<code>'center'</code>。<code>smallKana: 'full'</code>把读音中的小假名排成全尺寸（<code>'keep'</code>为默认值，按原样）。注音自己的<code>mode</code>和<code>align</code>优先。</td>
     </tr>
     <tr>
       <td><code>warichu</code></td>
       <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
-      <td>正文的一半大小，无括号</td>
-      <td><code>:warichu[…]</code>的双行夹注：夹注的字号（默认半个em，两行正好填满一行的em）、颜色，以及按正文字号排在第一行之前、最后一行之后的括号（夹注自己的<code>open</code> / <code>close</code>优先）。</td>
+      <td>正文的一半大小；日本用括号（），其他地区无括号</td>
+      <td><code>:warichu[…]</code>的双行夹注：夹注的字号（默认半个em，两行正好填满一行的em）、颜色，以及按正文字号排在第一行之前、最后一行之后的括号（夹注自己的<code>open</code> / <code>close</code>优先）。在日本，空的<code>open</code>或<code>close</code>（<code>''</code>）让夹注不加这一侧的括号。</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>正文的一半大小，<code>'inline'</code></td>
+      <td><code>:kunten[…]</code>的汉文训读记号（返り点、送り仮名、竪点）：字号（默认<code>&#123; value: 0.5, unit: 'em' &#125;</code>，JIS X 4051 §5.5）、颜色（默认为<code>annotationColor</code>，否则为文字颜色），以及<code>placement</code>：<code>'inline'</code>把返点排在其字之后，占半个字宽，与JIS的排法相同；<code>'interlinear'</code>把所有记号放在行间空隙中，不占步进宽度。各地区都一样（见<a href="#着重号注音与夹注">着重号、注音与夹注</a>）。</td>
     </tr>
   </tbody>
 </table>
@@ -3562,6 +3660,22 @@ interface CjkConfig {
     <tr><td><code>basic</code></td><td>点号、，；：。！？．‼⁇⁈⁉；闭引号” ’ 」 』和闭括号）〕］｝】〗》〉；连接号– ～ ~以及两个词之间的单个—；间隔号· ‧ ・；叠字符々〻ゝゞヽヾ和ー；数字单位% ‰ ° ℃ ％以及单位组合字符㎡ ㎏ ㏄。</td><td>开引号“ ‘ 「 『和开括号（〔［｛【〖《〈；货币符号¥ $ € £。</td></tr>
     <tr><td><code>gb</code></td><td><code>basic</code>，加上斜线/ ／（GB/T 15834—2011 §5.1.9）。</td><td><code>basic</code>，加上斜线。</td></tr>
     <tr><td><code>strict</code></td><td><code>gb</code>，加上两字长的破折号—— ⸺和省略号…… ⋯⋯。</td><td><code>gb</code>。</td></tr>
+  </tbody>
+</table>
+
+日文级别对应JLReq附录C.3的三种惯例。在每个日文级别下，行尾都不出现开括号或开引号，货币符号跟着它的数字（<code>ja-loose</code>除外），斜线没有限制，——、――和……可以出现在行首但从不拆开（〳〵也不拆开）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>级别</th>
+      <th>不能出现在行首</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>闭括号和闭引号；、，。．；连接号‐ – ゠ 〜 ～；？！‼⁇⁈⁉；・：；；叠字符ゝゞヽヾ〻和々；ー；小假名ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ（及其半角形式）；单位％ ℃。JIS X 4051的默认设置。</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>减去小假名、ー和々（JLReq所说的一般图书）。</td></tr>
+    <tr><td><code>ja-loose</code></td><td>只有闭括号和闭引号、、，以及。．（报纸）。</td></tr>
   </tbody>
 </table>
 
@@ -3600,6 +3714,8 @@ interface CjkConfig {
   </tbody>
 </table>
 
+在日本（`punctuationWidth: 'fullwidth'`，即auto值），标点改为遵循JLReq §3.1：、，。．的空白在字形之后，：；和・两侧各留四分之一em，？！占满自己的em。位于行尾的闭括号类标点保留半个em；本行需要多收进一个字时，它最先让出这段空白，而且整段让出；行内。之后的空白从不缩减。一行按JLReq §3.8.3的顺序让出空白：词间空格、行尾标点的空白、中点、括号和、，，然后是日文与拉丁字母之间的间距；一行匀开时，开括号之后、闭括号之前以及、。・：；？！和U+3000旁边都不加空白（§3.1.11）。两个汉字数字之间的、和・密排，从不断开（二、三日，三・一四）。日文文档若改用其他`punctuationWidth`（`kaiming`、`halfwidth`等），则改按本节的clreq规则排。
+
 开启`compressAdjacent`时，相邻的两个标点去掉二者之间的空白（clreq早期草案中的八条规则）：闭括号在另一个闭括号或大陆的点号之后（`。」`，但不在台湾和香港居中的标点之后），点号在闭括号之后（`」，`），开括号在上述任何标点或另一个开括号之后（`，「`、`》（`、`「『`），以及间隔号与其前的闭括号或其后的开括号之间去掉四分之一em。挤压后这一对最少也占1.5 em：开明式下`。”`本来就占1.5 em，保持不变，`》（`占一个em。无论是否开启`compressAdjacent`，开明式都把句号的空白移到紧随其后的闭引号之后：两个字形挨在一起，半个em排在引号后面（`。”␣母`，而不是`。␣”母`），位于行尾时与句号的空白一样处理。开启`trimLineStart`时，行首的开括号去掉前面的空白，墨迹与文字边缘对齐（段落第一行的开括号落在缩进内半个em处）；行尾的闭括号去掉后面的空白。居中的标点两侧各去掉四分之一em，从不在一侧去掉半个em。在两个标点之间断行时，二者都不再挤压：各自按行首或行尾的标点处理（全角`，`后面的`「`排到下一行行首时，这个`，`在本行行尾占满一个em）。
 
 一行收进一个不能出现在下一行行首的字符（挤进）时，要看它还能让出的空白是否足以抵消超出的部分，按clreq的顺序：词间空格缩到四分之一em，然后是间隔号、括号、句内点号，汉字与拉丁字母的间距缩到八分之一em，最后是句末点号，每一步平均分摊。`kaiming`只允许句末点号缩到半个em，而且只在这种情况下：如果一行只是还差一个字才排满，就把这一行拉开，因此。？！在行内保持一个em。`lineEndHalf`允许每个标点缩到半个em；`fullwidth`的标点什么都不让出（全角式的书保持字格），`halfwidth`的标点已无可让。
@@ -3612,7 +3728,7 @@ interface CjkConfig {
 
 ### 标点悬挂
 
-`hangingPunctuation: 'allow'`允许、，。．中的一个（大陆的标点位于字身框起始处，因此还包括；：？！）在本来要排到下一行行首、而挤压又收不进本行时，悬挂到行尾之外；横排的台湾和香港文字从不悬挂，因为居中的标点看起来会像被切掉（竖排时可以）。竖排时，悬挂的标点位于行的下端之外。`'force'`让这类标点只要位于行尾就悬挂（段落最后一行除外），排不下时立即悬挂。标点与另一个标点相接时从不悬挂（`。」`、`，「`）。悬挂的片段标记为`hangs`；行的`bbox.width`、两端对齐和对齐方式都不计入它，Canvas和PDF把栏的裁剪区加宽最宽的悬挂标点的宽度（`hangingPunctuationOverhang`），因此它不会被切掉。多数中文图书不使用标点悬挂；clreq只建议在使用字格时采用。
+`hangingPunctuation: 'allow'`（日本的auto值）允许、，。．中的一个（大陆的标点位于字身框起始处，因此还包括；：？！）在本来要排到下一行行首、而挤压又收不进本行时，悬挂到行尾之外；横排的台湾和香港文字从不悬挂，因为居中的标点看起来会像被切掉（竖排时可以）。竖排时，悬挂的标点位于行的下端之外。`'force'`让这类标点只要位于行尾就悬挂（段落最后一行除外），排不下时立即悬挂。标点与另一个标点相接时从不悬挂（`。」`、`，「`）。悬挂的片段标记为`hangs`；行的`bbox.width`、两端对齐和对齐方式都不计入它，Canvas和PDF把栏的裁剪区加宽最宽的悬挂标点的宽度（`hangingPunctuationOverhang`），因此它不会被切掉。多数中文图书不使用标点悬挂；clreq只建议在使用字格时采用。日文图书悬挂、。，．（ぶら下げ），从不悬挂；：？！或括号，横排竖排都是如此，而且只在挤压收不进本行时才悬挂。
 
 ### 汉字与拉丁字母间距
 
@@ -3630,6 +3746,7 @@ interface CjkConfig {
 - 紧挨着Unicode规定直立排的符号时，每个数字各占一个字格：`30×40`是30、×、40，全部直立。
 - 字符多到一个em放不下的字格会在横向压缩到一个em；字距和两端对齐从不进入字格内部，只作用于它之后。
 - 断行和两端对齐时，这个字格算作一个汉字，周围不加汉字与拉丁字母间距。
+- 在日本，`!!`、`!?`、`?!`和`??`这几对标点，无论半角还是全角，也直立排在一个字格中（`すごい！？`），除非紧挨着拉丁字母、数字或第三个标点；全角的一对用半角字形绘制。小假名、：；、“ ”（绘制为〝〟）和・使用日文的竖排形式（见[日文排版 › 竖排字形](/zh/docs/japanese-layout#竖排字形)）。
 - 测量器和每个渲染器找到的字格都相同：Canvas把数字转回直立并压缩后绘制，PDF用横排字体同样处理，HTML则用`text-combine-upright: all`包裹它们。
 
 手动设置时，有三个行内标记在竖排中覆盖这一设置，在横排中不起作用（见[文档格式 › 竖排中的文字方向](/zh/docs/document-format#竖排中的文字方向)）：
@@ -3661,16 +3778,18 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 
 [中文标记、注音与夹注](/zh/docs/document-format#中文标记注音和双行夹注)的标记把文字留在段落中：搜索、目录、索引锚点和复制的文字读到的都是原文字符，只有字符周围绘制的内容取决于这些设置。
 
-- **着重号**（`:dots[…]`，以及`emphasis: 'dots'`下汉字上的`*…*`）每个字加一个点，居中于该字（不计两端对齐的间距），从不加在标点或空格上：横排时在字下，竖排时在字右（clreq §5.3.1）。`style`选择实心点、空心圆或芝麻点，`fill="open"`绘制轮廓，`pos="over|under"`选择一侧。
+- **着重号**（傍点；`:dots[…]`，以及`emphasis: 'dots'`下中日韩字符上的`*…*`）每个字加一个记号，居中于该字（不计两端对齐的间距），从不加在标点或空格上：横排时在字下，竖排时在字右（clreq §5.3.1）。`style`选择实心点、空心圆或芝麻点，`fill="open"`绘制轮廓，`pos="over|under"`选择一侧；记号未设定的部分取`emphasisMark`（在日本是文字上方的芝麻点，竖排时在右侧）。芝麻点在两种书写方向中朝向纸面的同一方向，与注音在同一侧的记号排在注音外侧。
+- **傍线**（傍線，`:sideline[…]{style pos}`）沿文字旁排，包括标点和空格：`solid`、`double`、`wavy`或`dotted`，默认横排时在文字下方，竖排时在右侧；两条线相接时各让出八分之一em。它适用于任何文字。
 - **专名线和书名线**（专名号`:name[…]`，`bookTitleMark: 'wavy'`下的书名号`:book[…]`）画在字身框下方（竖排时在左侧），跨过线内的空格。两段相接处，各自的端点让出八分之一em，因此`:name[賈寶玉]:name[林黛玉]`读起来是两个名字。着重号和线标在同一侧标注同一段文字时，线离文字更近。在`'brackets'`下，《》是参与断行的文字，像其他字符一样绘制和复制；它们不占纯文本或源映射中的字符（这些片段标记为`inserted`）。
-- **注音**排在行间空白中，贴着基字的字身框，居中于基字；含拉丁字母（拼音）且位于基字上方的注音，升高其字体下伸部（g、j、p、q、y）的深度再加正文的0.04 em，使其不碰到基字，同一行的所有注音保持同一条基线；比基字宽的注音会加宽基字的框，但减去它可以伸到相邻无注音字符上的四分之一注音em；两个注音之间至少相隔四分之一注音em（两个注音符号注音之间为四分之一符号em，因此两个字各配三个符号时仍留在各自的字格中）。单字注音（每个字一个读音）可以在字之间断行；词组注音从不断开。在行首或行尾，基字和注音对齐到边缘（clreq §5.5.4）。横排时，注音符号在每个字右侧排成一列，字的框随之加宽；竖排时，同样的一列沿字的右侧向下排。声调符号位于这一列右侧，其墨迹的一半高出最后一个符号的顶端（clreq §5.5.3.3），按墨迹定位，因为字体把这些符号排在字身框中偏高的位置；竖排时它直立，与第一个符号上方的轻声点一样。
+- **注音**排在行间空白中，贴着基字的字身框，居中于基字；含拉丁字母（拼音）且位于基字上方的注音，升高其字体下伸部（g、j、p、q、y）的深度再加正文的0.04 em，使其不碰到基字，同一行的所有注音保持同一条基线；比基字宽的注音会加宽基字的框，但减去它可以伸到相邻无注音字符上的四分之一注音em；两个注音之间至少相隔四分之一注音em（两个注音符号注音之间为四分之一符号em，因此两个字各配三个符号时仍留在各自的字格中）。单字注音（每个字一个读音）可以在字之间断行；词组注音从不断开。在日本，读音改为遵循`ruby.align`和`ruby.overhang`：比基字短时按1:2:1排开，比基字长时可以伸到假名上但不伸到汉字上，其余的空间靠拉开基字得到；两个及以上字符的按字注音是熟语注音，每个字保留自己的读音，读音可以伸到词中下一个字上，但从不与另一个读音重叠，行仍可在字之间断开（JLReq §3.3）。在行首或行尾，基字和注音对齐到边缘（clreq §5.5.4）。横排时，注音符号在每个字右侧排成一列，字的框随之加宽；竖排时，同样的一列沿字的右侧向下排。声调符号位于这一列右侧，其墨迹的一半高出最后一个符号的顶端（clreq §5.5.3.3），按墨迹定位，因为字体把这些符号排在字身框中偏高的位置；竖排时它直立，与第一个符号上方的轻声点一样。
 - **夹注**（双行夹注）按夹注字号折成两行，在本行中居中，两行之间没有间隙。上一行持续收字，直到至少容纳这一部分的一半，因此下一行永远不会更长；如果下一行会以不能出现在行首的标点开头，上一行再多收一个字。一行剩余空间排不下的夹注先填满本行，再接到下一行、下一栏或下一页；它的括号只排在第一行之前和最后一行之后。竖排时，上一行是右边的一行，先读。
+- **汉文训读记号**（`:kunten[字]{kaeri okuri tate}`）把最后一个字的返点排在它之后、行的下端一侧（竖排时在左下），送假名从字的中部起排在行的上端一侧，较长的送假名把下一个字往后推，竖点是连到下一个字的一条短线（JIS X 4051 §5）。复制的文字和PDF的`/ActualText`把送假名读在各自的字后面，略去返点；行间空白容不下它们时报为`kuntenExceedsLeading`。
 
-行距从不改变：着重号、线标和注音都位于行间空白中。如果一个段落的行间空白（行距减去字号）在一侧有标注时不足半个em，或在两侧都有标注时不足八分之五em（clreq §5.6.1），会报告一条`cjkMarksExceedLeading`内容警告；注音高于行间空白（拼音注音连同其升高量一起计算）的段落报告`rubyExceedsLeading`。请给这样的段落一个行距更大的段落样式。
+行距从不改变：着重号、线标和注音都位于行间空白中。如果一个段落的行间空白（行距减去字号）在一侧有标注时不足半个em，或在两侧都有标注时不足八分之五em（clreq §5.6.1），会报告一条`cjkMarksExceedLeading`内容警告；注音高于行间空白（拼音注音连同其升高量一起计算）的段落报告`rubyExceedsLeading`。请给这样的段落一个行距更大的段落样式。带振假名的日文书通常把正文行距设为约1.75 em（JLReq §2.4.2）。
 
-在VDT中，带标注的片段带有`cjkMarks`，排版把着重号和线标作为`VDTLine.marks`放在各行上（点、圆圈、芝麻点、直线和波浪线，位于该行的排版方向坐标系中），Canvas、HTML和PDF按原样绘制（PDF：`Artifact /Layout`；HTML：`aria-hidden`框，带着重号的文字放在`<em>`中）。注音基字的片段带有`ruby`（注音及其各段），注音把基字拉开时在`inkOffset`处绘制基字；夹注在一行上的部分是一个片段，其`text`先是上一行、再是下一行，其`warichu`保存渲染器实际绘制的两行。带标签的PDF把注音放进其基字`Ruby`的`RT`中，把夹注放进`Warichu`中，该行的`/ActualText`读出基字文字，夹注只读一次。着重号、注音和夹注在正文、标题、列表和标注框中绘制；题注、表格单元格和设计元素中的文字保留原文，但不绘制这些标注。
+在VDT中，带标注的片段带有`cjkMarks`，排版把着重号和线标作为`VDTLine.marks`放在各行上（点、圆圈、芝麻点、直线、双线、点线和波浪线，位于该行的排版方向坐标系中），Canvas、HTML和PDF按原样绘制（PDF：`Artifact /Layout`；HTML：`aria-hidden`框，带着重号的文字放在`<em>`中）。注音基字的片段带有`ruby`（注音及其各段；日文读音还带有它与熟语中其他字共用的注音`id`以及`jukugo`），注音把基字拉开时在`inkOffset`处并按`tracking`绘制基字；带汉文训读记号的字带有`kunten`（各段及其竖点）；夹注在一行上的部分是一个片段，其`text`先是上一行、再是下一行，其`warichu`保存渲染器实际绘制的两行。带标签的PDF把注音放进其基字`Ruby`的`RT`中，把夹注放进`Warichu`中，该行的`/ActualText`读出基字文字，夹注只读一次。着重号、注音和夹注在正文、标题、列表和标注框中绘制，也在资源的题注、表格单元格和注释中绘制，其行与正文行一样带有`marks`和`ruby`；设计元素中的文字保留原文，但不绘制这些标注。
 
-解析函数和精简函数与其他部分一致；`setCjkLineBreak`和`setCjkComposition`为在`buildDocument`之外进行的测量设定级别和排版方式（标点宽度、悬挂、汉字与拉丁字母间距；`cjkCompositionOf(resolved.cjk, dpi)`），`buildDocument`则根据配置设定它们。在构建之外，标点保留完整的前进宽度，也不加汉字与拉丁字母间距：
+解析函数和精简函数与其他部分一致。`spaceAfterQuestion`和`paragraphStartBracket`，以及注音的`overhang`、`align`和`smallKana`，只在它们改变了什么时（在日本，或者明确设置时）才出现在解析后的配置中。`setCjkLineBreak`和`setCjkComposition`为在`buildDocument`之外进行的测量设定级别和排版方式（标点宽度、悬挂、汉字与拉丁字母间距；`cjkCompositionOf(resolved.cjk, dpi)`），`buildDocument`则根据配置设定它们。在构建之外，标点保留完整的前进宽度，也不加汉字与拉丁字母间距：
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -3679,9 +3798,18 @@ resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
 //   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
-//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
 //   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
-//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
 ```
 
 在沙盒中，这些设置位于**版面设计 › 书写系统 › 东亚排版**。
@@ -3691,7 +3819,7 @@ resolveCjkConfig(undefined, 'zh-HK');
 
 **资源类型**是可由用户定义的类别，如*图*、*表*、*示意图*、*代码清单*……它决定该类资源如何编号、如何加题注、如何被引用。类型列表存放在`config.resourceTypes`中；沙盒在**设计 → 图与表 → 编号与位置**中编辑它。
 
-未设置`config.resourceTypes`时，Postext提供两个内置默认类型：**图**和**表**，二者都按`{h1}.{n}`编号（每遇到一级标题重新计数），计数器为十进制。它们的名称采用文档语言：先取`config.locale`，没有则取`bodyText.hyphenation.locale`，再没有则用英语（见[文档语言](#文档语言)）。
+未设置`config.resourceTypes`时，Postext提供三个内置默认类型：**图**、**表**和**视频**，各自独立按`{h1}.{n}`编号（每遇到一级标题重新计数），计数器为十进制。列表中没有`video`类型时（例如在有视频之前保存的书），类型为`video`的视频资源照样编号：引擎为它们补上内置的视频类型（`effectiveResourceTypes(config, resources)`），`defaultVideoResourceType(locale)`则单独返回这个类型。它们的名称采用文档语言：先取`config.locale`，没有则取`bodyText.hyphenation.locale`，再没有则用英语（见[文档语言](#文档语言)）。
 
 内置默认类型会随语言区域变化。导出的`defaultResourceTypes(locale = 'en')`把类型名称、简写标签和题注前缀本地化为文档的语言区域：英语得到*Figure*/*Fig.*和*Table*/*Tab.*；西班牙语得到*Figura*/*Fig.*和*Tabla*/*Tabla*；法语、德语、意大利语、葡萄牙语、加泰罗尼亚语和荷兰语也各有对应名称（列在[文档语言](#文档语言)的表中）。`es-ES`这类带地区的标签按语言解析，没有译名的语言区域回退到英语。编号行为（`numberingTemplate: '{h1}.{n}'`、`resetOn: 'h1'`、十进制计数器）与语言无关。每次调用都返回新对象，因此可以随意修改结果：
 
@@ -3701,7 +3829,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4449,6 +4578,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 对于标记层面处理会改写的每种颜色（十六进制、`rgb()`和`hsl()`值、`white`和`black`；见[单色模式的工作原理](#单色模式的工作原理)），像素映射给出相同的结果，抗锯齿边缘和渐变也不例外。两者的差别在于标记处理不改动的颜色：`white`和`black`以外的命名颜色、`currentColor`、没有填充的形状和文本（以默认黑色绘制），以及嵌入SVG中的位图，在屏幕上会着色，在PDF中却保留原色。给图示的每个元素指定明确的十六进制、`rgb()`或`hsl()`颜色，就能得到完全一致的输出。Canvas无法读回像素时（来自其他源、未启用CORS加载的`<img>`），图片不着色绘制。
 
 
+## 视频样式
+
+`videoStyle`属性设定[视频资源](/zh/docs/document-format#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML查看器和EPUB中提供哪些功能。
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>见下文</td>
+      <td>印在封面上、表明它可以播放的标记。</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>见下文</td>
+      <td>印在封面上的二维码：打开视频的YouTube或Vimeo页面，或文件的正式发布地址。</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>让封面链接到视频：PDF中在封面上加一个链接注释，HTML和EPUB中凡显示封面处都用<code>&lt;a&gt;</code>包住它。</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>HTML输出为视频放什么：它的播放器，或带叠加元素的印刷封面。</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>见下文</td>
+      <td>所有视频的播放器选项；单个视频自己的<code>video.player</code>覆盖在它上面。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 播放标记
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>印出标记。</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>圆盘加三角形，圆角矩形加三角形（宽为高的1.45倍），或只有三角形，以背景色描边。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>、一个角（<code>'top-left'</code>、<code>'top-right'</code>、<code>'bottom-left'</code>、<code>'bottom-right'</code>）或一条边的中点（<code>'top'</code>、<code>'bottom'</code>、<code>'left'</code>、<code>'right'</code>）。位置是物理方位：在从右到左的书中，右上角也还是右上角。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>标记的高度；最多占封面短边的40%。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>标记位于角落或边上时，与封面边缘的距离。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>白色</td><td>三角形。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>调色板主色</td><td>三角形后面的圆盘或矩形；只有三角形时则是它的描边。默认与调色板关联。</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>背景的不透明度，0–1。</td></tr>
+  </tbody>
+</table>
+
+### 二维码
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>印出二维码。没有正式发布地址的文件不印。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>同播放标记。两者要设在不同的位置。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>含留白的二维码边长；最多占封面短边的45%。手机摄像头能读出三分之一毫米及以上的模块：30个字符的地址生成29个模块的码，所以18 mm加2个模块的留白，模块为0.55 mm。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>与封面边缘的距离。</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>二维码受损或被遮住多少仍能读出：约7%、15%、25%或30%。只要模块数不变，会自动提高。</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>二维码周围、底板上的浅色模块数（0–8）。底板与封面区分开来，所以不需要标准为直接印在纸上的码规定的四个模块。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>黑色</td><td>深色模块。浅色底板上的模块要保持深色：大多数读码器读不了反色的码。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>白色</td><td>底板。</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>底板的圆角半径。</td></tr>
+  </tbody>
+</table>
+
+二维码由引擎自己编码（`encodeQr(text, level)`：字节模式、UTF-8、版本1到40，选罚分最低的掩码），并以矢量绘制：Canvas填充一条由模块段组成的路径，PDF用一次`drawSvgPath`，HTML用一个带`shape-rendering="crispEdges"`的`<path>`，所以无论印多大都保持清晰。
+
+### 播放器选项
+
+`VideoPlayerOptions`，用在`videoStyle.player`和每个视频的`video.player`中。文件的HTML5播放器支持全部选项；YouTube和Vimeo的播放器支持其嵌入参数所允许的那些。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th style={{ width: '170px' }}>适用于</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube、Vimeo、文件</td><td>显示播放器控件。</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>文件</td><td>提供浏览器的下载按钮（关闭时为<code>controlslist="nodownload"</code>）。它只隐藏按钮，并不保护文件。YouTube和Vimeo从不提供下载。</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube、Vimeo、文件</td><td>允许全屏（<code>fs=0</code>、iframe的<code>allowfullscreen</code>、<code>nofullscreen</code>）。</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo、文件</td><td>提供倍速菜单（<code>speed=0</code>、<code>noplaybackrate</code>）。</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo、文件</td><td>允许画中画（<code>pip=0</code>、<code>disablepictureinpicture</code>）。</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>文件</td><td>允许投屏到其他屏幕（<code>disableremoteplayback</code>）。</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>自动开始播放，按浏览器的要求始终静音。</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>开始时关闭声音。</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、文件</td><td>播完后从头再播。</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>文件</td><td>播放前浏览器预先加载多少：<code>'none'</code>、<code>'metadata'</code>或<code>'auto'</code>。</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>增强隐私的嵌入：YouTube从<code>youtube-nocookie.com</code>加载，Vimeo带<code>dnt=1</code>。</td></tr>
+  </tbody>
+</table>
+
+EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，其余由阅读系统决定。
+
+解析函数和精简函数与其他各节一致，另有`VideoStyleConfig` / `ResolvedVideoStyleConfig`类型：
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // 全部与默认值相同时为undefined
+```
+
 ## 段落样式
 
 `paragraphStyles`属性声明具名样式，文档用`:::paragraphs{style="…"}`容器把它们应用到一组段落上：参考文献、术语表、注释，以及任何需要自己的字体、字重、倾斜、字号、行距、大写、小型大写字母或悬挂缩进的条目块。每个排版字段都是可选的，未设置时继承正文，所以一个样式只需写出与正文不同的地方。
@@ -4581,6 +4862,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>每一行相对栏左边缘（或段落所在框的左边缘）的缩进；<code>em</code>取样式自身的字号。首行缩进和悬挂缩进都从这里量起，因此缩进的诗行可以让转行比自身起点缩得更深：<code>indent: 1.5em</code>配合<code>hangingIndent: 2.5em</code>，诗行从1.5 em处开始，转行从4 em处开始。负值按<code>0</code>处理。</td>
     </tr>
     <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>每一行相对行尾一侧（横排行的右边、竖排行的下端）的缩进；<code>em</code>取样式自身的字号。配合<code>textAlign: 'end'</code>，可以把一行排在离行尾几个字的位置，即日文书信日期或署名的地からN字上げ。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>正文首行缩进</td>
@@ -4656,6 +4943,8 @@ paragraphStyles: [
 ### `:::paragraphs`容器
 
 `:::paragraphs{style="<id>"}`一行打开容器，单独的`:::`一行关闭容器；其间的每个段落都采用指定样式，而其中的标题、列表和其他块保持各自的常规样式。容器可以嵌套在其他围栏容器中。未知的`style` id不算错误：这些段落按普通正文渲染。
+
+围栏还接受`align`（`start`、`end`、`left`、`right`、`center`、`justify`）、`indent`和`endIndent`（纯数字按em计），有没有样式都可以：有样式时，它们覆盖样式的设置；没有样式时，它们作用于外层容器的样式之上，或作用于围栏所在位置的文字样式之上（正文、篇、带样式的章节或标注框）。`:::paragraphs{align=end}`把一块文字排得与行尾对齐（地付き），`:::paragraphs{align=end endIndent=1}`则离行尾一个字。从postext 1.16起提供。
 
 在容器内，文字流离开基线网格（7pt、行距1.2em的条目无法落在8pt/1.5em的网格上），最后一段让文字流重新对齐网格（以网格为准；下方空白是最小值，与标题遵循的约定相同）。条目像正文段落一样跨栏、跨页拆分，并有同样的段首孤行和段末孤行保护；紧接在容器之前的标题与容器的第一段保持在一起。
 
@@ -5384,7 +5673,7 @@ const config: PostextConfig = {
       <td>级别字段</td>
       <td>同<code>headings.levels[]</code></td>
       <td>该级别的值</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。</td>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5576,7 +5865,7 @@ const config: PostextConfig = {
 
 ## 索引
 
-`index`属性配置`:::index`指令印出的内容（参见[文档格式](/zh/docs/document-format#索引)）：正文中用`:index[…]`和`:index{term="…"}`标记的词条，经过排序，按首字母分组（中文按拼音首字母或笔画数分组，参见`groupBy`），每条附上它所在的页码。一个条目由词条、分隔符和页码组成；其下的子条目逐级缩进一步，折行按`turnoverIndent`悬挂缩进，因此不会与子条目对齐。
+`index`属性配置`:::index`指令印出的内容（参见[文档格式](/zh/docs/document-format#索引)）：正文中用`:index[…]`和`:index{term="…"}`标记的词条，经过排序，按首字母分组（中文按拼音首字母或笔画数分组，日文按五十音行分组，参见`groupBy`），每条附上它所在的页码。一个条目由词条、分隔符和页码组成；其下的子条目逐级缩进一步，折行按`turnoverIndent`悬挂缩进，因此不会与子条目对齐。
 
 ```ts
 const config: PostextConfig = {
@@ -5665,9 +5954,9 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>groupBy</code></td>
-      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>组标题是什么。<code>'letter'</code>：排序键的首字母。<code>'pinyin'</code>：以汉字开头的条目归入其拼音读音的拉丁首字母之下（贾宝玉归入<code>J</code>），拉丁字母的排序键归入其字母，排在该字母的中文条目之后（排序器把拉丁字母排在汉字之后）：<code>sort="jia mu"</code>排在<code>J</code>组末尾。<code>'stroke'</code>：按第一个字的笔画数分组，<code>一畫</code>、<code>二畫</code>…（简体中文为<code>一画</code>…）。<code>'none'</code>：不设组标题；符号、数字和词语之间只用<code>groups.marginTop</code>隔开。<code>'auto'</code>让简体中文索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）按拼音分组，繁体中文索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）按笔画分组，其他语言按字母分组。条目按组标题所依据的排序规则排序：按拼音分组的<code>zh-Hant</code>索引按拼音排序。读音和笔画数来自排序器（CLDR）；遇到它读错的字（把重阳的重读作<em>zhòng</em>，把行业的行读作<em>xíng</em>），就给标记一个<code>sort</code>键，用只有你想要的读音的字来写，它会排在正确的位置：重阳用<code>sort="崇阳"</code>，行业用<code>sort="航业"</code>。没有中文排序数据的浏览器排出的拼音或笔画索引不带组标题。</td>
+      <td>组标题是什么。<code>'letter'</code>：排序键的首字母。<code>'pinyin'</code>：以汉字开头的条目归入其拼音读音的拉丁首字母之下（贾宝玉归入<code>J</code>），拉丁字母的排序键归入其字母，排在该字母的中文条目之后（排序器把拉丁字母排在汉字之后）：<code>sort="jia mu"</code>排在<code>J</code>组末尾。<code>'stroke'</code>：按第一个字的笔画数分组，<code>一畫</code>、<code>二畫</code>…（简体中文为<code>一画</code>…）。<code>'gojuon'</code>：假名条目归入其五十音行，あ行、か行 … わ行；<code>'kana'</code>则归入其首个假名（片假名与平假名共用组标题）；两者都按日文索引的JIS X 4061顺序排序：依据读音（标记的<code>yomi</code>，否则用其注音的假名读音，否则用<code>sort</code>，否则用文字本身），片假名按平假名排，小假名按大假名排，ー按它前面的元音排，清音在浊音前，浊音在半浊音前；符号在最前，然后是按数值排序的数字，然后是按字母分组的拉丁词，最后是假名；仍以汉字开头的条目报为<code>indexReadingMissing</code>，排在假名之后，不归入任何组。<code>'none'</code>：不设组标题；符号、数字和词语之间只用<code>groups.marginTop</code>隔开。<code>'auto'</code>让日文索引（<code>ja</code>、<code>ja-*</code>）按五十音行分组，简体中文索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）按拼音分组，繁体中文索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）按笔画分组，其他语言按字母分组。条目按组标题所依据的排序规则排序：按拼音分组的<code>zh-Hant</code>索引按拼音排序。读音和笔画数来自排序器（CLDR）；遇到它读错的字（把重阳的重读作<em>zhòng</em>，把行业的行读作<em>xíng</em>），就给标记一个<code>sort</code>键，用只有你想要的读音的字来写，它会排在正确的位置：重阳用<code>sort="崇阳"</code>，行业用<code>sort="航业"</code>。没有中文排序数据的浏览器排出的拼音或笔画索引不带组标题。</td>
     </tr>
     <tr>
       <td><code>ignoreArticle</code></td>
@@ -7579,7 +7868,8 @@ export const sliceFontProvider: PdfFontProvider = async (family, weight, style, 
 沙盒每生成一个PDF，就在检查面板中列出这些字符以及下面两种警告。书、书的设置或资源发生变化后，这些条目会标为来自之前的PDF，直到下一个PDF取代它们；打开另一本书会清除它们。
 
 - **粗体需要每个字重一个静态文件。**Fontsource把Noto Serif SC和TC的每个字重作为单独的静态文件提供，所以在沙盒中粗体可以正常使用。Google Fonts的文件（`NotoSerifSC[wght].ttf`，25 MB）是可变字体：pdf-lib嵌入其默认实例，700的字体会按400印出，`renderToPdf`将其报告为`variableFontDefaultInstance`。制作文件包时，用fontTools为每个字重切出一个静态实例（`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`），再用`pyftsubset`把它子集化到书中用到的字符。
-- **使用TrueType版本。**思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。
+- **使用TrueType版本。**思源宋体（Source Han Serif）和Noto Serif CJK的`.otf`文件是CFF轮廓，postext-pdf会整体嵌入，每个字重8到25 MB；超过2 MB的CFF字体会报告为`cffEmbeddedWhole`。TrueType版本（Google Fonts、Fontsource）会子集化到实际用到的字形。日文方面，Noto Serif JP和Noto Sans JP（Google Fonts，或Fontsource的编号分片）、Shippori Mincho、Zen Old Mincho和BIZ UDMincho都是TrueType；思源宋体日文版（Source Han Serif JP）和Noto Serif CJK的`JP` `.otf`文件是CFF。
+- **泛CJK字体中的日文字形。**同一个码位的汉字、标点或引号，在日本和中国可能写法不同，泛CJK字体（思源、Noto CJK）两种字形都有。PDF对日文文档（`locale: 'ja'`），以及任何文档中标为日文的隔离段（`:ltr[…]{lang=ja}`），按OpenType语言系统`JAN `成形，字体的`locl`特性因此印出日文字形，与画布和HTML通过`lang`印出的一致。日文书中标为其他语言的隔离段按该语言的字形成形（中文即字体的默认字形），并标记为带`/Lang`的`Span`。中文及其他文档仍按字体的默认字形成形，与以前相同。专为日文设计的字体（如Noto Serif JP）默认字形就是日文的；不过日文文字中的“ ”仍会换成`JAN `字形。
 
 一个家族缺少的字符不会从另一个家族借用：Noto Serif TC不会借用Noto Serif SC的字形。字符覆盖要在制作字体文件时解决；《红楼梦》示例就把TC子集缺少的字形从SC字体复制了过去。
 
@@ -7733,7 +8023,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 用于正式印刷流程时，在渲染前调整以下配置选项：
 
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切标记，并给每一页设置TrimBox和BleedBox。见[裁切线](#裁切线)。
-- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK，并用套准色绘制裁切标记，使其印在每一块印版上。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
+- **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：把postext绘制的颜色（文字、线条、填充、矢量图）写成DeviceCMYK（裁切标记始终用套准色）。位图和PDF印刷母版原样嵌入，所以RGB照片仍是RGB：请在添加之前先转换。
 - **`page.dpi: 300`**（或更高）：PDF的点固定为每英寸72点，但Postext的排版计算以像素为单位；较高的DPI能为以`mm`或`cm`度量的元素提供更细的划分。
 - **`colors.model: 'cmyk'`**：保留颜色是在CMYK空间中定义的这一意图。目前实际绘制到PDF时仍使用`hex`后备值；这里记录`model`，是因为它会随VDT一起传给下游工具。
 - `RenderToPdfOptions`中的**`{ pageNegative: true }`**：用Difference混合模式反转成品区域（裁切标记不反转）。适合对浅底深字的排版做印前检查。
@@ -8004,7 +8294,7 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 有四个辅助函数把打开的文件包接到引擎和各个后端上：
 
 - **`loadBundleFonts(bundle)`**把文件包的字面注册到`document.fonts`。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
-- **`registerBundleImages(bundle)`**为Canvas后端（`renderPage`、`renderToCanvas`）解码图片。**`bundleImageUrl(bundle)`**是`renderToHtml`的`resourceImageUrl`解析器。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
+- **`registerBundleImages(bundle)`**为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。**`bundleImageUrl(bundle)`**是`renderToHtml`的`resourceImageUrl`解析器，**`bundleVideoUrl(bundle)`**则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
 - **`buildBundle(bundle)`**按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`，以及`metadata`（见下文）。
 - **`bundleResourceBytes(bundle)`**和**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体家族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。
 

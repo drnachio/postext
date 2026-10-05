@@ -193,7 +193,8 @@ function rangesOf(unicodeRange) {
 }
 
 /** Families served by unicode-range slices that reach the Han ideographs
- *  (the cjk kit block adds every file of such a face, loaded or not) or the
+ *  or the hiragana (a kana-only Japanese display face has no kanji; the cjk
+ *  kit block adds every file of such a face, loaded or not) or the
  *  Arabic letters (the arabic block adds each face's arabic file next to
  *  the latin ones loadFonts adds), with the code points their files cover:
  *  the PDF's cjkPdfProvider and arabicPdfProvider hand over whichever of
@@ -209,7 +210,7 @@ function slicedFamilies() {
   }
   for (const [family, ranges] of out) {
     const reaches = (cp) => ranges.some(([lo, hi]) => lo <= cp && hi >= cp);
-    if (!(reaches(0x4e00) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
+    if (!(reaches(0x4e00) || reaches(0x3042) || reaches(0x0627)) || ranges.some(([lo, hi]) => lo === 0 && hi >= 0x10ffff)) {
       out.delete(family);
     }
   }
@@ -554,8 +555,12 @@ export function facts({ select = 'last', hero = [] } = {}) {
 
   // C11: images the pages place but nobody registered (grey placeholders).
   const placed = new Map();
+  // A video's own file is no picture: the pages draw its poster.
+  const videoFiles = new Set(source.resources.map((r) => r.video?.fileId).filter(Boolean));
   for (const { page, n } of pages) {
-    for (const { value } of collectKeys(page, /^(fileId|iconFileId|markerFileId)$/)) if (!placed.has(value)) placed.set(value, n);
+    for (const { value } of collectKeys(page, /^(fileId|iconFileId|markerFileId)$/)) {
+      if (!placed.has(value) && !videoFiles.has(value)) placed.set(value, n);
+    }
   }
   const registered = (fileId) => (typeof engine.getResourceImage === 'function'
     ? !!engine.getResourceImage(fileId) : (cb.images ?? []).includes(fileId));
@@ -1321,7 +1326,11 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
     return null;
   };
   for (const r of resources) {
-    const wanted = [[r.svg?.fileId, 'svg'], [r.svg?.pdfFileId, 'pdf'], [r.bitmap?.fileId, r.bitmap?.format]];
+    const wanted = [
+      [r.svg?.fileId, 'svg'], [r.svg?.pdfFileId, 'pdf'], [r.bitmap?.fileId, r.bitmap?.format],
+      // A video: its poster, and its own file when the pen has its bytes.
+      [r.video?.poster?.fileId, r.video?.poster?.format], [r.video?.fileId, 'video'],
+    ];
     for (const [fileId, format] of wanted) {
       if (!fileId || files.has(fileId)) continue;
       const data = await find(fileId, format);
@@ -1330,6 +1339,10 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
         // A print master the pen hands renderToPdf only: the SVG stays.
         delete r.svg.pdfFileId;
         notes.push(`${r.id}: print master ${fileId} left out (the SVG stays)`);
+      } else if (format === 'video') {
+        // The Sandbox plays it from its production address (video.url).
+        delete r.video.fileId;
+        notes.push(`${r.id}: video file ${fileId} left out (it plays from video.url)`);
       } else missing.push(`${r.id}: ${fileId}`);
     }
   }

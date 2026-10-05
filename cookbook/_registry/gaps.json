@@ -1286,72 +1286,60 @@
       }
     }
   },
-  "japanese-korean-rules": {
+  "korean-rules": {
     "label": {
-      "en": "Japanese and Korean composition rules",
-      "es": "Reglas de composición del japonés y el coreano",
-      "ca": "Regles de composició del japonès i el coreà",
-      "zh": "日文与韩文排版规则",
-      "ar": "قواعد التنضيد اليابانية والكورية"
+      "en": "Korean composition rules",
+      "es": "Reglas de composición del coreano",
+      "ca": "Regles de composició del coreà",
+      "zh": "韩文排版规则",
+      "ar": "قواعد التنضيد الكورية"
     },
     "aliases": {
       "en": [
-        "Japanese",
         "Korean",
-        "JLREQ",
         "KLREQ",
-        "kana",
         "hangul",
-        "日本語",
-        "한국어"
+        "한국어",
+        "한글",
+        "Korean line breaking"
       ],
       "es": [
-        "japonés",
         "coreano",
-        "JLREQ",
         "KLREQ",
-        "kana",
         "hangul",
-        "日本語",
-        "한국어"
+        "한국어",
+        "한글",
+        "corte de líneas coreano"
       ],
       "ca": [
-        "japonès",
         "coreà",
-        "JLREQ",
         "KLREQ",
-        "kana",
         "hangul",
-        "日本語",
-        "한국어"
+        "한국어",
+        "한글",
+        "tall de línies coreà"
       ],
       "zh": [
-        "日文排版",
         "韩文排版",
-        "日语",
         "韩语",
-        "假名",
         "谚文",
-        "日本語",
         "한국어",
-        "JLREQ",
+        "한글",
         "KLREQ"
       ],
       "ar": [
-        "اليابانية",
         "الكورية",
-        "JLREQ",
         "KLREQ",
-        "日本語",
+        "الهانغول",
         "한국어"
       ]
     },
     "explanation": {
-      "en": "Japanese and Korean text breaks between characters and justifies like Chinese, with the mainland Chinese defaults: there are no Japanese (JLREQ) or Korean (KLREQ) rules, labels or regional punctuation yet. Set cjk.lineBreak, punctuationWidth and latinSpacing by hand to come close.",
-      "es": "El texto japonés y el coreano se cortan entre caracteres y se justifican como el chino, con los valores de la China continental: aún no hay reglas japonesas (JLREQ) ni coreanas (KLREQ), ni etiquetas ni puntuación regional. Ajusta a mano cjk.lineBreak, punctuationWidth y latinSpacing para acercarte.",
-      "ca": "El text japonès i el coreà es tallen entre caràcters i es justifiquen com el xinès, amb els valors de la Xina continental: encara no hi ha regles japoneses (JLREQ) ni coreanes (KLREQ), ni etiquetes ni puntuació regional. Ajusta a mà cjk.lineBreak, punctuationWidth i latinSpacing per acostar-t'hi.",
-      "zh": "日文和韩文像中文一样按字断行、两端对齐，采用中国大陆的默认规则：目前还没有日文（JLREQ）或韩文（KLREQ）规则、标签和各地标点。可以手动设定cjk.lineBreak、punctuationWidth和latinSpacing来接近。",
-      "ar": "ينكسر النص الياباني والكوري بين الحروف ويُضبط كالصيني، بالإعدادات الافتراضية للصينية في البر الرئيسي: لا توجد بعد قواعد يابانية (JLREQ) أو كورية (KLREQ)، ولا تسميات ولا علامات ترقيم إقليمية. اضبط cjk.lineBreak وpunctuationWidth وlatinSpacing يدويًّا للاقتراب منها."
+      "en": "Korean text breaks between syllables and justifies like Chinese, with the mainland Chinese defaults: there are no Korean (KLREQ) rules yet, such as breaking only at the spaces between words (어절), nor Korean labels or punctuation. Set cjk.lineBreak, punctuationWidth and latinSpacing by hand to come close. Japanese has had its own rules since 1.16.0: tag the document 'ja'.",
+      "es": "El texto coreano se corta entre sílabas y se justifica como el chino, con los valores de la China continental: aún no hay reglas coreanas (KLREQ), como cortar solo en los espacios entre palabras (어절), ni etiquetas o puntuación coreanas. Ajusta a mano cjk.lineBreak, punctuationWidth y latinSpacing para acercarte. El japonés tiene reglas propias desde la 1.16.0: etiqueta el documento 'ja'.",
+      "ca": "El text coreà es talla entre síl·labes i es justifica com el xinès, amb els valors de la Xina continental: encara no hi ha regles coreanes (KLREQ), com tallar només als espais entre paraules (어절), ni etiquetes o puntuació coreanes. Ajusta a mà cjk.lineBreak, punctuationWidth i latinSpacing per acostar-t'hi. El japonès té regles pròpies des de la 1.16.0: etiqueta el document 'ja'.",
+      "zh": "韩文按音节断行，像中文一样两端对齐，采用中国大陆的默认规则：目前还没有韩文（KLREQ）规则，比如只在词间空格（어절）处断行，也没有韩文标签和标点。可以手动设定cjk.lineBreak、punctuationWidth和latinSpacing来接近。日文从1.16.0起有自己的规则：把文档标记为'ja'。",
+      "ar": "ينكسر النص الكوري بين المقاطع ويُضبط كالصيني، بالإعدادات الافتراضية للصينية في البر الرئيسي: لا توجد بعد قواعد كورية (KLREQ)، مثل الكسر عند الفراغات بين الكلمات (어절) وحدها، ولا تسميات ولا علامات ترقيم كورية. اضبط cjk.lineBreak وpunctuationWidth وlatinSpacing يدويًّا للاقتراب منها. أما اليابانية فلها قواعدها منذ الإصدار 1.16.0: اوسم المستند بـ 'ja'."
     },
     "docs": {
       "slug": "configuration",

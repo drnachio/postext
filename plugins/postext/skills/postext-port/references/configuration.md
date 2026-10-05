@@ -101,9 +101,9 @@ Conversion at `page.dpi` (default 300):
 | `math` | MathConfig | §19 | |
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
-| `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9) |
+| `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
-| `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off |
+| `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off. Japanese (`'ja'`, `'ja-JP'`; never `'jp'`, ≥ 1.16): the `japan` region (§19c2), 図/表, （続き）, 第{n}章 references, 参考文献, `{1:一}` = 百一 (japanese-informal), note defaults by writing mode (§19a), gojūon index, ja-JP citations, JAN glyph forms in the PDF |
 | `direction` | `'auto'`\|`'ltr'`\|`'rtl'` | `'auto'` | base direction (postext ≥ 1.15): `auto` = `rtl` when the `locale` script is written right to left (ar, fa, ur, he…). An RTL document is laid out in a **mirrored frame**: first column on the right, indents/list markers/floats/notes on the right, `page.binding: 'auto'` → right. Body-flow `left`/`right` keywords are flow-relative (a preset converted LTR→RTL keeps working); header/footer slots stay physical. Blocks: `{dir=ltr\|rtl}` on headings and `:::` containers; inline `:ltr[…]`/`:rtl[…]` isolates. Never set `'rtl'` with a non-RTL locale |
 | `numerals` | `'auto'`\|`'latn'`\|`'arab'`\|`'arabext'` | `'auto'` | digits of every engine-generated decimal number (pages, lists, notes, counters, `{h1}`/`{n}`, `{totalPages}`): `auto` = `arab` ٠–٩ for `ar` (Maghreb `ar-MA/DZ/TN/LY/MR/EH` → `latn`), `arabext` ۰–۹ for `fa`/`ps`/`ur-IN`, else `latn`; named formats print as named |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
@@ -145,7 +145,7 @@ page
 ```
 Gotchas
 - Page 1 is odd (recto). With `mirror: true`, `left` is the spine margin on every page.
-- `binding: 'right'` (vertical Chinese books and Arabic/RTL books, by default): page 1 is still the recto but sits on the
+- `binding: 'right'` (vertical Chinese and Japanese books and Arabic/RTL books, by default): page 1 is still the recto but sits on the
   LEFT of its spread; with `mirror: true` the odd pages carry the inner (`left`) margin on their right.
   The Sandbox shows spreads `[3 | 2]`, the PDF asks viewers for `/Direction /R2L`. Folio templates do not
   swap sides by themselves: set odd/even elements for the right edge.
@@ -309,6 +309,8 @@ headings
 ├─ marginTop     1.5 em            (em = level font size)
 ├─ marginBottom  0.5 em
 ├─ keepWithNext  true              never strand a heading at a column foot
+├─ keepWithNextSpread false        (≥ 1.16) with keepWithNext, a heading may still close the last column of an
+│                                  EVEN page, its text opening the facing odd page (JLReq §4.1.7 b; any binding)
 ├─ keepWithNextSplit 'rules'       the paragraph under a heading at a column foot splits keeping widowMinLines
 │                                  under it and orphanMinLines after, else the heading moves on with it;
 │                                  'fill' = as many lines as fit, however few go on (1.4; a preset without
@@ -341,6 +343,15 @@ headings
   hidden: boolean                      false → structural heading: prints nothing, takes no room
                                        (in the flow and inside callouts), still breaks / counts /
                                        is listed / bookmarked
+  lineSpan: number                     unset (≥ 1.16) 行取り: the heading takes N body lines (N × body pitch)
+                                       instead of marginTop/marginBottom, its characters centred in them;
+                                       more lines when its own need them; not for span:'page' openers,
+                                       advancedDesign or headings in boxes; follows cjk.grid
+  indent: Dimension                    0 (≥ 1.16) 字下げ from the line start, em = the BODY size (4/6/8 字 by
+                                       level in a vertical book); a centred heading centres in the rest
+  jidori: number                       unset (≥ 1.16) 字取り: a one-line heading narrower than N of its OWN ems
+                                       is spaced evenly to exactly that width (3: 序章 → 序　章); `{jidori=N}`
+                                       on a heading line overrides it, `{jidori=0}` turns it off
 }
 ```
 - **H1 page break.** H1 defaults to `breakBefore: {enabled:true, parity:'always-odd'}` (blank
@@ -354,12 +365,15 @@ headings
   `{1:words}`/`{1:Words}`/`{1:WORDS}` spelled out, `{1:ordinal}`/`{1:Ordinal}`/`{1:ORDINAL}`
   ordinal words (English or Spanish by `locale`, else the hyphenation locale; Chinese documents: 十二 and
   第十二; Arabic: definite ordinals الفصل الأول, with `-feminine`/`-f` الليلة الأولى … الحادية بعد الألف,
-  `-classical` مائة; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
+  `-classical` مائة; Japanese (≥ 1.16): 二十一 / 百一 and 第二十一; other languages take English); other text literal; `\{` escapes. Chinese numerals (≥ 1.9):
   `{1:一}` informal in the document's script (`第{1:一}回` → 第一回 … 第一百二十回), `{1:〇}` cjk-decimal
   (一二〇), `{1:壹}` financial, `{1:①}` circled, `{1:甲}` stems, `{1:子}` branches, `{1:１}` fullwidth, or a
   CSS name (`{1:trad-chinese-informal}`). Design placeholder `{numberHan}`: the counter in informal numerals. Arabic: `{1:١}`
   arabic-indic, `{1:۱}` persian, `{1:أبجد}` abjad letters (أ ب ج د هـ), `{1:أبتث}` hijai letters (أ ب ت ث), or a name
-  (`{1:arabic-abjad}` additive يا = 11). `{1}` follows the document's `numerals`. Empty counters collapse with their separator.
+  (`{1:arabic-abjad}` additive يا = 11). Japanese (≥ 1.16): in a `ja` document `{1:一}` is japanese-informal (第百一章,
+  六千一: no 一 before 十百千, no 零), `{1:壱}` japanese-formal (壱拾), `{1:あ}` hiragana, `{1:ア}` katakana, `{1:い}`
+  hiragana-iroha, `{1:イ}` katakana-iroha (`（{1:イ}）`); `{numberHan}` follows the same rule; `{1:〇}` gives positional
+  二〇二六. `{1}` follows the document's `numerals`. Empty counters collapse with their separator.
   A heading line's `{startAt=N}` sets its level counter to N instead of advancing it.
   The number is prepended to the title **followed by one space**,
   e.g. `'{1}.{2}'` → "2.3 Title"; `'Chapter {1}.'` → "Chapter 2. Title". It also feeds `{number}`
@@ -443,7 +457,7 @@ running heads, margins, layout, body typography, palette.
   // any HeadingLevelConfig field except level:
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
-  advancedDesign, hidden, snapToGrid
+  advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
   layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
@@ -658,6 +672,8 @@ numberFormat = 'arabic'|'lower-alpha'|'upper-alpha'|'lower-roman'|'upper-roman' 
                | East Asian (≥ 1.9): 'simp-chinese-informal' 一 | 'trad-chinese-informal' | 'simp-chinese-formal' 壹
                | 'trad-chinese-formal' | 'cjk-decimal' 〇 | 'cjk-heavenly-stem' 甲 | 'cjk-earthly-branch' 子
                | 'circled-decimal' ① | 'fullwidth-decimal' １
+               | Japanese (≥ 1.16): 'japanese-informal' 一 百一 | 'japanese-formal' 壱 壱拾 | 'hiragana' あいう
+               | 'katakana' アイウ | 'hiragana-iroha' いろは | 'katakana-iroha' イロハ (kana series wrap: 49 = ああ)
                | Arabic: 'arabic-indic' ١ | 'persian' ۱ | 'abjad' أ ب ج د هـ | 'hijai' أ ب ت ث
                | 'arabic-abjad' (additive, 11 = يا) | 'arabic-abjad-maghrebi'   (every numbering setting takes them: page labels,
                resource counterFormat, heading templates, :::numbering)
@@ -675,7 +691,11 @@ levels[]: { level 1–5, numberFormat, prefix, separator, fontFamily, fontSize, 
 GB/T 15834 list hierarchy for Chinese: levels 一、 / （一） / 1. / （1） / ①:
 `[{level:1,numberFormat:'simp-chinese-informal',separator:'、'}, {level:2,numberFormat:'simp-chinese-informal',prefix:'（',separator:'）'},
 {level:3,numberFormat:'arabic',separator:'.'}, {level:4,numberFormat:'arabic',prefix:'（',separator:'）'}, {level:5,numberFormat:'circled-decimal',separator:''}]`
-(`trad-chinese-informal` in Traditional). Numbers are right-aligned within a run (within the depth with `numberWidth: 'level'`). Around a list nested
+(`trad-chinese-informal` in Traditional). Japanese: vertical books 一、/（一）/ 1 /（1）/ ① (as above with
+`japanese-informal`), horizontal books the official order 1. /（1）/ ア /（ア）/ ① (公用文作成の考え方):
+`[{level:1,numberFormat:'arabic',separator:'.'}, {level:2,numberFormat:'arabic',prefix:'（',separator:'）'},
+{level:3,numberFormat:'katakana',separator:''}, {level:4,numberFormat:'katakana',prefix:'（',separator:'）'}, {level:5,numberFormat:'circled-decimal',separator:''}]`.
+Numbers are right-aligned within a run (within the depth with `numberWidth: 'level'`). Around a list nested
 in another the outer list's `itemSpacing` applies on both sides. List margins of 1.5em are large — books usually want
 `{0.5,'em'}` or a pt value. Nested list depth in markdown = 2 spaces per level (max 5).
 
@@ -693,6 +713,9 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   italic = false                 (italic paragraphs; `*…*` runs flip upright — stage directions)
   smallCaps = false              (synthesised small caps, 0.7 of the size — cast lists, headwords)
   indent: Dimension = 0          (every line; firstLineIndent and hangingIndent count from it)
+  endIndent: Dimension = 0       (≥ 1.16; from the END side: right of a horizontal line, foot of a vertical
+                                 one; em = the style's size). With textAlign 'end': 地からN字上げ; textAlign
+                                 'end' alone is 地付き (a letter's date and signature)
   hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent; counts from indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
@@ -902,11 +925,12 @@ Notes cited with `[^id]` (document-format.md §10.4).
 
 | key | default | notes |
 |---|---|---|
-| `placement` | `'column'` | `'column'` = foot of the column holding the citing line (one-column: page foot); `'chapterEnd'` = every note of the chapter after its last block, in citation order |
-| `numbering` | `'chapter'` | restarts under each level-1 heading and each document; `'document'` runs on (book chapters carry it as `continuation.footnoteNumber`); `'page'` / `'column'` (≥ 1.11) restart on every page / column, counted where the layout sets the notes (column-foot notes only; `chapterEnd` numbers by chapter) |
+| `placement` | `'column'` | `'column'` = foot of the column holding the citing line (one-column: page foot); `'chapterEnd'` = every note of the chapter after its last block, in citation order; `'spread'` (≥ 1.16, vertical books) = 傍注: the notes of both pages of a spread at the foot (fore-edge end) of its odd (left) page, top-aligned, overflow to the even page then the next spread; in horizontal text it falls back to `'column'` with an `unknownConfigValue` warning |
+| `numbering` | `'chapter'` | restarts under each level-1 heading and each document; `'document'` runs on (book chapters carry it as `continuation.footnoteNumber`); `'page'` / `'column'` (≥ 1.11) restart on every page / column, counted where the layout sets the notes (column-foot notes only; `chapterEnd` numbers by chapter); `'spread'` (≥ 1.16) per spread, with `placement: 'spread'` |
 | `numberFormat` | `'decimal'` | ≥ 1.11; any number-format spelling: `'lower-roman'`, `'circled-decimal'` / `'①'`, `'cjk-decimal'`, `'一'`…; circled past 50 → decimal |
-| `markerPosition` | `'auto'` | ≥ 1.11; `'superscript'` / `'inline'` (on the baseline, upright cell in vertical text); `'auto'` = inline for `circled-decimal`, else superscript. The note's own number follows |
-| `markerSize` | `1em` | ≥ 1.11; inline marker size, em = surrounding text (`0.75em` common) |
+| `markerPosition` | `'auto'` | ≥ 1.11; `'superscript'` / `'inline'` (on the baseline, upright cell in vertical text); `'auto'` = inline for `circled-decimal`, else superscript. ≥ 1.16: `'side'` (合印: a small marker beside the marked word on the ruby side, ending with its last character, taking no advance) and `'right'` (smaller, flush with the right side of a vertical line; superscript in horizontal text). The note's own number follows |
+| `markerSize` | `1em` | ≥ 1.11; inline marker size, em = surrounding text (`0.75em` common); default `0.6em` for `side`, `0.7em` for `right` |
+| `numberGap` | `'en'` | ≥ 1.16; space after the note's number: `'em'` = one note-em (U+3000 in CJK notes), JLReq's endnote setting |
 | `markerTemplate` | `'{n}'` | `{n}` = the number in its format and the document digits; `'({n})'` → «(١)» for Arabic books; marker and note number alike |
 | `noteNumberPosition` | `'auto'` | `'superscript'` / `'inline'` for the note's own number; `'auto'` follows `markerPosition`. Arabic books: `{markerTemplate:'({n})', numbering:'page', noteNumberPosition:'inline'}`; the rule and numbers go to the right by themselves in an RTL book |
 | `chapterEndAlign` | `'foot'` | `chapterEnd` only: `'foot'` = the notes that close a column sit at its foot; `'text'` = right under the text |
@@ -919,6 +943,12 @@ Notes cited with `[^id]` (document-format.md §10.4).
 | `spaceBelowRule` | `0.4em` | rule → first note |
 | `separator` | `{enabled:true, width:0.3, lineWidth:0.5pt, color:note colour}` | `width` = fraction of the column, from its left edge; `enabled:false` keeps the spaces |
 
+- **Japanese defaults** (`locale` ja, ≥ 1.16; only for fields left unset, so an explicit value survives a
+  save): vertical books `placement: 'chapterEnd'` (後注), `numbering: 'chapter'`, `markerPosition: 'right'`,
+  `markerTemplate: '（{n}）'` (digits upright by `cjk.uprightDigits`); horizontal books `placement: 'column'`,
+  `numbering: 'page'`, superscript; both a ⅓ rule (`separator.width`) and, for chapter-end notes,
+  `numberGap: 'em'` with a 2-note-em `hangingIndent`. Spread sidenotes: `placement: 'spread'` (numbering
+  `'spread'` follows). Write the marker before a sentence-final 。: `先生[^1]。`.
 - The citing line and its notes share a column: a line whose notes do not fit moves on (orphan/widow
   rules apply). The column's text area shrinks by the notes, so balancing counts only the text.
 - Several notes in a column stack in citation order under one rule. A bottom float placed after
@@ -953,7 +983,7 @@ Citation style and presentation (document-format.md §10.7). Needs `postext-cite
 citations: {
   style?: string;            // 'apa' (default) | 'ieee' | 'chicago-notes-bibliography' | … | 'custom'
   customStyle?: string;      // CSL XML when style: 'custom'
-  locale?: string;           // CSL locale; default: document language (es → es-ES, zh-Hant → zh-TW)
+  locale?: string;           // CSL locale; default: document language (es → es-ES, zh-Hant → zh-TW, ja → ja-JP)
   link?: boolean;            // citations link to their entries (default true)
   marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'; // numbered styles; 'corner' = 〔1〕
   collapseRanges?: boolean;  // 1–3 (default true)
@@ -961,6 +991,11 @@ citations: {
   bibliography?: { title?, scope?: 'book' | 'chapter', auto?, fontSize?, lineHeight?, hangingIndent?, entrySpacing?, labelWidth?, labelAlign?: 'left' | 'right', doi?: 'link' | 'text' | 'hide', includeUncited?, groupByLanguage? };
 }
 ```
+
+Japanese (≥ 1.16): the ja-JP locale (と, ほか, 「」 with 『』 inside) and `style: 'sist02'` (SIST 02, numeric, the
+science and technology norm: `山田太郎, 佐藤花子. 縦組みの行間について. 印刷雑誌. 2015, vol. 98, no. 4, p. 12–19.`).
+A CJK name with a space in BibTeX/YAML (`夏目 漱石`) is read family first. No humanities 『』 style ships; a house
+style is `style: 'custom'` with its CSL.
 
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
 
@@ -980,7 +1015,7 @@ What `:::index` prints from the `:index` marks (document-format.md §10.5). An e
 | `see` | by language, italic | `{label?, alsoLabel?, italic?}`: "See"/"See also", "Véase"/"Véase también"… |
 | `locale` | the document's | collation (Intl.Collator) |
 | `ignoreArticle` | `true` for an Arabic index | sort/group Arabic entries ignoring a leading ال (البصرة under ب); vowel marks, tatweel and hamza seats are always ignored (أ إ آ ٱ → ا, ة → ه, ى → ي); separators become `، ` |
-| `groupBy` | `'auto'` | `'letter'` \| `'pinyin'` (Han under the pinyin initial, 贾宝玉 → J) \| `'stroke'` (一畫, 二畫…; 一画… in zh-Hans) \| `'none'` (no heads); `auto` = pinyin for zh / zh-Hans / zh-CN, stroke for zh-Hant / zh-TW / zh-HK, letter otherwise (since 1.9). A polyphonic character read wrongly takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳); a pinyin key sorts after its letter's Han entries |
+| `groupBy` | `'auto'` | `'letter'` \| `'pinyin'` (Han under the pinyin initial, 贾宝玉 → J) \| `'stroke'` (一畫, 二畫…; 一画… in zh-Hans) \| `'gojuon'` (あ行 か行 … わ行 by the reading's first kana) \| `'kana'` (each first kana: か for が/カ) \| `'none'` (no heads); `auto` = pinyin for zh / zh-Hans / zh-CN, stroke for zh-Hant / zh-TW / zh-HK, gojuon for ja, letter otherwise (since 1.9). A Japanese index sorts by reading in JIS X 4061 order: symbols, digits, Latin (letter heads), kana rows, then unread kanji entries. A polyphonic character read wrongly takes a Han `sort` key with the wanted reading (`sort="崇阳"` for 重阳); a pinyin key sorts after its letter's Han entries |
 | `groups.enabled` | `true` | letter heads (A, B…, `0–9`, Symbols; 数字 / 數字 and 符号 / 符號 in Chinese) |
 | `groups.fontFamily/fontSize/fontWeight/italic/color` | entries', 700 | set on the entries' pitch |
 | `groups.marginTop` | one index line | above each group; none above the first or at a column top |
@@ -1002,30 +1037,36 @@ Measure the source index like body text: size, leading, indent per level, hangin
 ## 19c. `cjk` — East Asian typography (postext ≥ 1.9)
 
 Every field optional; `'auto'` follows the **region** of `locale` (CN/SG/MY mainland, TW Taiwan, HK/MO Hong Kong;
-`zh`, `zh-Hans` → mainland, `zh-Hant` → Taiwan). A paragraph with more CJK characters than word spaces is set
+`zh`, `zh-Hans` → mainland, `zh-Hant` → Taiwan; every `ja` tag → `japan`, ≥ 1.16, summarised in §19c2). A paragraph with more CJK characters than word spaces is set
 by the CJK composer (first fit, push-in before push-out, spread between characters); a Latin paragraph quoting
 CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en/docs/chinese-layout).
 
-| key | default (mainland / Taiwan / Hong Kong) | notes |
+| key | default (mainland / Taiwan / Hong Kong / Japan) | notes |
 |---|---|---|
-| `region` | `'auto'` | `'mainland'` \| `'taiwan'` \| `'hongkong'` |
-| `lineBreak` | `gb` / `basic` / `basic` | `'none'` (break anywhere) \| `'basic'` (no 、，。？！ 」）》 at a line start, no 「（《 at an end) \| `'gb'` (+ solidus) \| `'strict'` (+ —— …… at a start) |
-| `punctuationWidth` | `kaiming` / `fullwidth` / `fullwidth` | `'kaiming'`: 。？！ 1 em inside the line, every other mark ½, all ½ at a line end; `'fullwidth'`; `'lineEndHalf'`; `'halfwidth'` |
-| `compressAdjacent` | on / off / on | two marks that meet (`。」` `》（`) take 1.5 em; a centred TW/HK `。，` before a closing bracket keeps its em |
-| `trimLineStart` | on / off / on | opening bracket at a line start, closing at an end, lose their outer half |
-| `hangingPunctuation` | `'none'` | `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too |
+| `region` | `'auto'` | `'mainland'` \| `'taiwan'` \| `'hongkong'` \| `'japan'` (≥ 1.16) |
+| `lineBreak` | `gb` / `basic` / `basic` / `ja-very-strict` | `'none'` (break anywhere) \| `'basic'` (no 、，。？！ 」）》 at a line start, no 「（《 at an end) \| `'gb'` (+ solidus) \| `'strict'` (+ —— …… at a start). Japanese levels (≥ 1.16, JLReq App. C): `'ja-very-strict'` (JIS X 4051: closing marks, 、。，．, ‐ – ゠ 〜 ～, ？！‼, ・：；, ゝゞヽヾ〻 々, ー, small kana, ％ ℃ never open a line; ―― …… may, unsplit) \| `'ja-strict'` (small kana, ー, 々 may open a line) \| `'ja-loose'` (newspapers: only closing marks and 、。 kept off) |
+| `punctuationWidth` | `kaiming` / `fullwidth` / `fullwidth` / `fullwidth` | `'kaiming'`: 。？！ 1 em inside the line, every other mark ½, all ½ at a line end; `'fullwidth'` (in Japan with JLReq's pair table, ・：； ¼ em a side, a closing mark's ½ kept at a line end and given up first, 。's ½ never reduced inside a line); `'lineEndHalf'`; `'halfwidth'` |
+| `compressAdjacent` | on / off / on / on | two marks that meet (`。」` `》（`) take 1.5 em; a centred TW/HK `。，` before a closing bracket keeps its em |
+| `trimLineStart` | on / off / on / on | opening bracket at a line start, closing at an end, lose their outer half |
+| `hangingPunctuation` | `'auto'`: none / none / none / allow | `'none'` \| `'allow'` \| `'force'`: one 、，。． (mainland also ；：？！) past the line end; `'allow'` never in horizontal TW/HK, `'force'` there too. Japan hangs 、，。． only, in both directions, only when the mark would otherwise open the next line (ぶら下げ) |
+| `spaceAfterQuestion` | `'auto'`: off / off / off / on | ≥ 1.16; one em after ？！ inside a paragraph unless a closing bracket or another mark follows; a typed U+3000 there becomes that space; none at a line end |
+| `paragraphStartBracket` | `'auto'`: as any line start (Chinese) / `half` (Japan) | ≥ 1.16; a paragraph whose first-line indent meets an opening bracket: `'indent'` (JLReq ①, indent then 「), `'half'` (③, the bracket fills the indent cell, text at 1 em: Japanese novels), `'flush'` (天付き) |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
 | `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
-| `emphasis` | `'dots'` in a Chinese document | what `*…*` does to Chinese characters (`'italic'` fakes a slant) |
-| `bookTitleMark` | brackets / wavy / wavy | `:book[…]` prints 《》, a wavy line under it, or `'none'` |
+| `emphasis` | `'dots'` in a Chinese or Japanese document | what `*…*` does to CJK characters (`'italic'` fakes a slant) |
+| `emphasisMark` | `{style: 'auto', fill: 'auto', position: 'auto'}` | ≥ 1.16; the shape of `*…*` dots and of `:dots` without attributes: `style` `'dot'\|'circle'\|'sesame'`, `fill` `'filled'\|'open'`, `position` `'over'\|'under'` (over = right in vertical text). Auto: Chinese dot under (right in vertical); Japan sesame ﹅ over / right in both directions. Dots go outside a ruby reading on the same side |
+| `bookTitleMark` | brackets / wavy / wavy / brackets | `:book[…]` prints its brackets, a wavy line under it, or `'none'` |
+| `bookTitleBrackets` | `'auto'`: 《》〈〉 (Chinese) / 『』「」 (Japan) | ≥ 1.16; `[{open, close}, …]` outermost first, a deeper title takes the last pair |
 | `annotationColor` | text colour | dots and name/title lines |
-| `ruby` | `{fontSize: 0.5em, position: 'auto'}` | `fontFamily`, `fontSize`, `color`, `position`: zhuyin right of each character, pinyin over (right in vertical) |
-| `warichu` | `{fontSize: 0.5em}` | `fontSize`, `color`, `open`, `close` (brackets around each note) |
+| `ruby` | `{fontSize: 0.5em, position: 'auto', overhang: 'auto', align: 'auto', smallKana: 'keep'}` | `fontFamily`, `fontSize`, `color`, `position`: zhuyin right of each character, pinyin over (right in vertical); `overhang` `'none'\|'kana'\|'any'` (auto: `kana` in Japan = ≤ 1 ruby character onto kana and mark blanks, ½ onto 「, never onto kanji; elsewhere ¼ ruby em onto any neighbour); `align` `'center'\|'jis'\|'start'` (auto: `jis` 1:2:1 in Japan, centred elsewhere); `smallKana: 'full'` paints ゃっ full size (≥ 1.16) |
+| `warichu` | `{fontSize: 0.5em}` | `fontSize`, `color`, `open`, `close` (brackets around each note; none in Chinese, （） in Japan, `''` = none) |
+| `kunten` | `{fontSize: 0.5em, placement: 'inline'}` | ≥ 1.16, `:kunten[…]` kanbun marks: `fontSize`, `color` (else `annotationColor`), `placement` `'inline'` (JIS X 4051: 返り点 take half an em after the character) \| `'interlinear'` (in the line gap, no advance) |
 
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
-give annotated text more leading), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
+give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -1042,6 +1083,58 @@ warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInsta
 Fore-edge running heads for a vertical book (the Sandbox's **Header › Fore-edge heads (vertical)**): two text
 elements with `writingMode: 'vertical-rl'`, anchored `{to: 'outer', edge: 'top'}` (offset y 4 em, `{chapterTitle}`)
 and `{to: 'outer', edge: 'bottom'}` (offset y −5 em, `{pageNumber}`), at 80 % of the body size.
+
+## 19c2. Japanese books (postext ≥ 1.16)
+
+Guide: https://postext.dev/en/docs/japanese-layout. Everything below follows from `locale: 'ja'` (`ja-JP`; the
+`japan` region, JLReq / JIS X 4051); set only what differs from the source. Never `'jp'`, never a `zh-*` tag.
+
+| What | Key / markup | Japanese default |
+|---|---|---|
+| line breaking (kinsoku) | `cjk.lineBreak` | `ja-very-strict`; `ja-strict` lets っ ー 々 open a line, `ja-loose` (newspapers) |
+| mark widths | `cjk.punctuationWidth`, `compressAdjacent`, `trimLineStart` | full width with JLReq pair compression; brackets trimmed at a line start |
+| hanging 、。 (ぶら下げ) | `cjk.hangingPunctuation` | `allow` (、，。． only, horizontal and vertical) |
+| space after ？！ | `cjk.spaceAfterQuestion` | on (1 em inside a paragraph) |
+| 「 opening a paragraph | `cjk.paragraphStartBracket` | `half` (JLReq ③: the bracket fills the 1-em indent) |
+| paragraph indent | `bodyText.firstLineIndent` | not set by the locale: write `{value: 1, unit: 'em'}` (Chinese books use 2) |
+| `*…*` | `cjk.emphasis`, `cjk.emphasisMark` | sesame bōten ﹅ over (right in vertical text) |
+| `:book[…]` | `cjk.bookTitleMark`, `bookTitleBrackets` | 『』, a title inside one 「」 |
+| furigana | `cjk.ruby.overhang` / `align` / `smallKana` | `kana` (≤ 1 ruby character onto kana, never onto kanji) / `jis` (1:2:1) / `keep`; `{東京\|とう\|きょう}` is jukugo, `{東京\|とうきょう}` group |
+| warichu | `cjk.warichu.open/close` | （） |
+| vertical text | `cjk.uprightDigits` | 2 digits and `!!` `!?` `?!` `??` upright in one cell; small kana, ー, 〝〟 (for “”), ：； take vertical forms |
+| headings | `headings.levels[].lineSpan` / `indent` / `jidori`, `headings.keepWithNextSpread` | not set: 3行取り = `lineSpan: 3`, 5字下げ = `indent: {value: 5, unit: 'em'}` (body ems), 序　章 = `jidori: 3` |
+| numbering | `第{1:一}章`, list `numberFormat` | 一 → japanese-informal (百一, 六千一); 壱 あ ア い イ tokens; `numberToWords` 二十一 / 第二十一 |
+| notes | `footnotes` | vertical: after the chapter, （1） right of the line; horizontal: column foot, per page, superscript; ⅓ rule (§19a) |
+| index | `index.groupBy`, `:index{yomi}` | `gojuon` (あ行 か行 …), JIS X 4061 order by reading; `indexReadingMissing` without one |
+| citations | `citations.locale`, `style` | ja-JP (と, ほか, 「」); `sist02` on request |
+| strings | `resourceTypes`, table continuation, cross-references | 図 / 表 (図1-1), （続き）, 第{n}章 / {n}節 / {n}ページ, 参考文献 |
+| PDF | — | JAN `locl` forms of a pan-CJK face; `{lang=…}` isolates shaped and tagged in their language |
+| letters, dates, signatures | `:::paragraphs{align=end endIndent=1}`, paragraph style `endIndent` | 地付き = `align=end`; 地から1字上げ = `align=end endIndent=1` |
+| centred page (扉, dedication) | `:::pagebreak{center}` | the next page's text centred head to foot (across the page in vertical text) |
+| kanbun | `:kunten[字]{kaeri="レ" okuri="ヲ"}`, `cjk.kunten` | 返り点 small at the lower left, 送り仮名 at the right (vertical) |
+
+Vertical multi-tier pages run on at a chapter end (nariyuki) with `headings.balancing.trailing: false`; the
+default balances them. Fonts: Noto Serif JP (body), Noto Sans JP (headings, gothic emphasis), or Shippori
+Mincho / B1 for a bunko look (it has no ō ū: rōmaji with macrons needs another face for that text).
+
+```json
+"locale": "ja",
+"page": { "sizePreset": "custom", "width": {"value": 105, "unit": "mm"}, "height": {"value": 148, "unit": "mm"},
+  "margins": { "top": {"value": 14, "unit": "mm"}, "bottom": {"value": 12, "unit": "mm"}, "left": {"value": 10, "unit": "mm"},
+    "right": {"value": 9, "unit": "mm"}, "mirror": true } },
+"layout": { "layoutType": "single", "writingMode": "vertical-rl" },
+"bodyText": { "fontFamily": "Noto Serif JP", "fontSize": {"value": 9, "unit": "pt"}, "lineHeight": {"value": 15, "unit": "pt"},
+  "textAlign": "justify", "firstLineIndent": {"value": 1, "unit": "em"}, "indentAfterHeading": true },
+"headings": { "fontFamily": "Noto Serif JP", "levels": [
+  { "level": 1, "fontSize": {"value": 14, "unit": "pt"}, "numberingTemplate": "第{1:一}章", "numberSeparator": "　",
+    "breakBefore": {"enabled": true, "parity": "odd"}, "indent": {"value": 4, "unit": "em"} },
+  { "level": 2, "fontSize": {"value": 11, "unit": "pt"}, "lineSpan": 3, "indent": {"value": 6, "unit": "em"},
+    "breakBefore": {"enabled": false} } ] },
+"cjk": { "grid": { "enabled": true, "charsPerLine": 38, "linesPerPage": 16 } }
+```
+
+The 新潮文庫 grid (38 字 × 16 行) on an A6 bunko: 38 × 9 pt = 120.6 mm down the page and 16 × 15 pt = 84.7 mm
+across fit inside the margins, which act as minimums (a grid that does not fit is clamped: `cjkGridClamped`).
 
 ## 19d. Arabic and right-to-left books (postext ≥ 1.15)
 

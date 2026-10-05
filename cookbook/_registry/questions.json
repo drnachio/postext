@@ -2363,5 +2363,293 @@
       "ar": "EPUB، التخطيط الثابت والنص المتدفق"
     },
     "theme": "output"
+  },
+  "Q132": {
+    "kind": "how",
+    "text": {
+      "en": "How do I let a photo be cropped to fill a short column while its subject always stays in view?",
+      "es": "¿Cómo dejo que una foto se recorte para llenar una columna corta sin que su motivo salga nunca del encuadre?",
+      "ca": "Com deixo que una foto es retalli per omplir una columna curta sense que el motiu surti mai de l'enquadrament?",
+      "zh": "怎样让照片裁切后填满偏短的栏，同时主体始终留在画面里？",
+      "ar": "كيف أسمح بقصّ صورة لتملأ عمودًا قصيرًا مع بقاء موضوعها ظاهرًا دائمًا؟"
+    },
+    "index": {
+      "en": "Photos, cropped to fill a column",
+      "es": "Fotos, recortadas para llenar la columna",
+      "ca": "Fotos, retallades per omplir la columna",
+      "zh": "照片，裁切以填满栏",
+      "ar": "الصور، تُقَصّ لتملأ العمود"
+    },
+    "theme": "figures"
+  },
+  "Q133": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a video in a printed book so that a reader can open it from the page?",
+      "es": "¿Cómo pongo un vídeo en un libro impreso para que el lector pueda abrirlo desde la página?",
+      "ca": "Com poso un vídeo en un llibre imprès perquè el lector el pugui obrir des de la pàgina?",
+      "zh": "怎样把视频放进印刷书里，让读者能从页面上打开它？",
+      "ar": "كيف أضع فيديو في كتاب مطبوع بحيث يستطيع القارئ فتحه من الصفحة؟"
+    },
+    "index": {
+      "en": "Videos, printed with a QR code",
+      "es": "Vídeos, impresos con código QR",
+      "ca": "Vídeos, impresos amb codi QR",
+      "zh": "视频，印出二维码",
+      "ar": "الفيديو، يُطبع مع رمز QR"
+    },
+    "theme": "figures"
+  },
+  "Q134": {
+    "kind": "how",
+    "text": {
+      "en": "How do the HTML edition and the EPUB play the book's videos, and how do I hide the download button?",
+      "es": "¿Cómo reproducen la edición HTML y el EPUB los vídeos del libro, y cómo oculto el botón de descarga?",
+      "ca": "Com reprodueixen l'edició HTML i l'EPUB els vídeos del llibre, i com amago el botó de baixada?",
+      "zh": "HTML版和EPUB怎样播放书中的视频？怎样隐藏下载按钮？",
+      "ar": "كيف يشغّل إصدار HTML وملف EPUB مقاطع الفيديو في الكتاب، وكيف أخفي زر التنزيل؟"
+    },
+    "index": {
+      "en": "Videos, played on screen",
+      "es": "Vídeos, reproducidos en pantalla",
+      "ca": "Vídeos, reproduïts a la pantalla",
+      "zh": "视频，在屏幕上播放",
+      "ar": "الفيديو، يُشغَّل على الشاشة"
+    },
+    "theme": "output"
+  },
+  "Q135": {
+    "kind": "how",
+    "text": {
+      "en": "How do I add furigana over kanji, one reading per character or one for the whole word?",
+      "es": "¿Cómo pongo furigana sobre los kanji, una lectura por carácter o una para toda la palabra?",
+      "ca": "Com poso furigana damunt dels kanji, una lectura per caràcter o una per a tota la paraula?",
+      "zh": "怎样在汉字上加振假名，是一字一音还是整个词一个读音？",
+      "ar": "كيف أضيف الفوريغانا فوق الكانجي، قراءة لكل حرف أو قراءة واحدة للكلمة كلها؟"
+    },
+    "index": {
+      "en": "Furigana over kanji",
+      "es": "Furigana sobre los kanji",
+      "ca": "Furigana damunt dels kanji",
+      "zh": "振假名，汉字上的",
+      "ar": "الفوريغانا فوق الكانجي"
+    },
+    "theme": "type"
+  },
+  "Q136": {
+    "kind": "why",
+    "text": {
+      "en": "Why may small kana, ー and closing brackets not start a line of Japanese, and how do I choose how strict the rule is?",
+      "es": "¿Por qué el kana pequeño, ー y los cierres no pueden empezar una línea en japonés, y cómo elijo lo estricta que es la regla?",
+      "ca": "Per què el kana petit, ー i els tancaments no poden començar una línia en japonès, i com trio com d'estricta és la regla?",
+      "zh": "为什么日文的小假名、ー和闭括号不能出现在行首？怎样选择规则的严格程度？",
+      "ar": "لماذا لا يجوز أن يبدأ السطر الياباني بكانا صغيرة أو بـ ー أو بقوس مغلق، وكيف أختار درجة صرامة القاعدة؟"
+    },
+    "index": {
+      "en": "Kinsoku, small kana at the line start",
+      "es": "Kinsoku, kana pequeño al principio de línea",
+      "ca": "Kinsoku, kana petit a l'inici de línia",
+      "zh": "禁则，行首的小假名",
+      "ar": "kinsoku، الكانا الصغيرة في أول السطر"
+    },
+    "theme": "type"
+  },
+  "Q137": {
+    "kind": "how",
+    "text": {
+      "en": "How do I space Japanese punctuation: 、。「」 squeezed where they meet, a space after ？！ and the bracket that opens a paragraph?",
+      "es": "¿Cómo espacio la puntuación japonesa: 、。「」 apretados donde se juntan, un espacio tras ？！ y el corchete que abre un párrafo?",
+      "ca": "Com espaio la puntuació japonesa: 、。「」 estrets on es troben, un espai després de ？！ i el claudàtor que obre un paràgraf?",
+      "zh": "日文标点的间距怎样处理：、。「」相邻时挤压，？！后空格，段首的开括号？",
+      "ar": "كيف أباعد علامات الترقيم اليابانية: ضغط 、。「」 حيث تتجاور، وفراغ بعد ？！، والقوس الذي يفتتح الفقرة؟"
+    },
+    "index": {
+      "en": "Japanese punctuation, spacing (yakumono)",
+      "es": "Puntuación japonesa, espaciado (yakumono)",
+      "ca": "Puntuació japonesa, espaiat (yakumono)",
+      "zh": "日文标点，间距（約物）",
+      "ar": "الترقيم الياباني، التباعد (yakumono)"
+    },
+    "theme": "type"
+  },
+  "Q138": {
+    "kind": "how",
+    "text": {
+      "en": "How do I mark Japanese text with sesame emphasis dots or a side line instead of italics?",
+      "es": "¿Cómo marco un texto japonés con puntos de sésamo o una línea lateral en lugar de cursiva?",
+      "ca": "Com marco un text japonès amb punts de sèsam o una línia lateral en lloc de cursiva?",
+      "zh": "日文不用斜体时，怎样加芝麻着重号或旁线？",
+      "ar": "كيف أميّز نصًّا يابانيًّا بنقاط السمسم أو بخط جانبي بدل المائل؟"
+    },
+    "index": {
+      "en": "Emphasis marks and side lines in Japanese",
+      "es": "Marcas de énfasis y líneas laterales en japonés",
+      "ca": "Marques d'èmfasi i línies laterals en japonès",
+      "zh": "日文的着重号和旁线",
+      "ar": "علامات التوكيد والخطوط الجانبية في اليابانية"
+    },
+    "theme": "type"
+  },
+  "Q139": {
+    "kind": "how",
+    "text": {
+      "en": "How do I number chapters 第一章 in kanji numerals, or list items あ い う and イ ロ ハ?",
+      "es": "¿Cómo numero los capítulos 第一章 con numerales kanji, o los elementos de una lista あ い う e イ ロ ハ?",
+      "ca": "Com numero els capítols 第一章 amb numerals kanji, o els elements d'una llista あ い う i イ ロ ハ?",
+      "zh": "怎样用汉字数字把章编号为第一章，或把列表项编为あいう和イロハ？",
+      "ar": "كيف أرقّم الفصول 第一章 بالأعداد الكانجية، أو عناصر القائمة あ い う وイ ロ ハ؟"
+    },
+    "index": {
+      "en": "Kanji numerals and kana counters",
+      "es": "Numerales kanji y contadores en kana",
+      "ca": "Numerals kanji i comptadors en kana",
+      "zh": "汉字数字和假名序号",
+      "ar": "الأعداد الكانجية وعدّادات الكانا"
+    },
+    "theme": "headings"
+  },
+  "Q140": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a Japanese heading take three body lines (3行取り), so the text stays on the grid?",
+      "es": "¿Cómo hago que un título japonés ocupe tres líneas del texto (3行取り) para que el texto siga en la retícula?",
+      "ca": "Com faig que un títol japonès ocupi tres línies del text (3行取り) perquè el text continuï a la retícula?",
+      "zh": "怎样让日文标题占三个正文行（3行取り），使正文仍在网格上？",
+      "ar": "كيف أجعل العنوان الياباني يشغل ثلاثة أسطر من المتن (3行取り) ليبقى النص على الشبكة؟"
+    },
+    "index": {
+      "en": "Headings over several body lines (gyōdori)",
+      "es": "Títulos sobre varias líneas del texto (gyōdori)",
+      "ca": "Títols sobre diverses línies del text (gyōdori)",
+      "zh": "占多行的标题（行取り）",
+      "ar": "عناوين تشغل عدة أسطر من المتن (gyōdori)"
+    },
+    "theme": "headings"
+  },
+  "Q141": {
+    "kind": "how",
+    "text": {
+      "en": "How do I sort a Japanese index in gojūon order by its readings?",
+      "es": "¿Cómo ordeno un índice japonés en orden gojūon según sus lecturas?",
+      "ca": "Com ordeno un índex japonès en ordre gojūon segons les seves lectures?",
+      "zh": "怎样按读音以五十音顺序排日文索引？",
+      "ar": "كيف أرتّب فهرسًا يابانيًّا بترتيب gojūon بحسب قراءاته؟"
+    },
+    "index": {
+      "en": "Japanese index, in gojūon order",
+      "es": "Índice japonés, en orden gojūon",
+      "ca": "Índex japonès, en ordre gojūon",
+      "zh": "日文索引，五十音顺序",
+      "ar": "الفهرس الياباني، بترتيب gojūon"
+    },
+    "theme": "structure"
+  },
+  "Q142": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set the notes of a Japanese book: （1） at the chapter end, at the page foot or beside the text across the spread?",
+      "es": "¿Cómo compongo las notas de un libro japonés: （1） al final del capítulo, al pie de la página o junto al texto en la doble página?",
+      "ca": "Com componc les notes d'un llibre japonès: （1） al final del capítol, al peu de la pàgina o al costat del text a la doble pàgina?",
+      "zh": "日文书的注释怎样排：（1）放在章末、页脚，还是跨页排在正文旁边？",
+      "ar": "كيف أنضّد حواشي كتاب ياباني: （1） في آخر الفصل، أو في ذيل الصفحة، أو بجانب النص على الصفحتين المتقابلتين؟"
+    },
+    "index": {
+      "en": "Notes in Japanese books",
+      "es": "Notas en los libros japoneses",
+      "ca": "Notes als llibres japonesos",
+      "zh": "日文书的注释",
+      "ar": "الحواشي في الكتب اليابانية"
+    },
+    "theme": "boxes"
+  },
+  "Q143": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print kanbun with its return marks and okurigana?",
+      "es": "¿Cómo imprimo kanbun con sus marcas de retorno y su okurigana?",
+      "ca": "Com imprimeixo kanbun amb les seves marques de retorn i el seu okurigana?",
+      "zh": "怎样排印带返点和送假名的汉文？",
+      "ar": "كيف أطبع الكانبون بعلامات الرجوع والـ okurigana؟"
+    },
+    "index": {
+      "en": "Kanbun, return marks and okurigana",
+      "es": "Kanbun, marcas de retorno y okurigana",
+      "ca": "Kanbun, marques de retorn i okurigana",
+      "zh": "汉文，返点和送假名",
+      "ar": "الكانبون، علامات الرجوع والـ okurigana"
+    },
+    "theme": "type"
+  },
+  "Q144": {
+    "kind": "how",
+    "text": {
+      "en": "How do I turn an Aozora Bunko text into a Postext book?",
+      "es": "¿Cómo convierto un texto de Aozora Bunko en un libro de Postext?",
+      "ca": "Com converteixo un text d'Aozora Bunko en un llibre de Postext?",
+      "zh": "怎样把青空文库的文本做成Postext的书？",
+      "ar": "كيف أحوّل نصًّا من Aozora Bunko إلى كتاب في Postext؟"
+    },
+    "index": {
+      "en": "Aozora Bunko texts, importing",
+      "es": "Textos de Aozora Bunko, importar",
+      "ca": "Textos d'Aozora Bunko, importar",
+      "zh": "青空文库文本，导入",
+      "ar": "نصوص Aozora Bunko، استيرادها"
+    },
+    "theme": "publications"
+  },
+  "Q145": {
+    "kind": "how",
+    "text": {
+      "en": "Which fonts set Japanese, with kanji in their Japanese forms, on screen and in the PDF?",
+      "es": "¿Qué fuentes componen el japonés, con los kanji en sus formas japonesas, en pantalla y en el PDF?",
+      "ca": "Quines fonts componen el japonès, amb els kanji en les seves formes japoneses, a la pantalla i al PDF?",
+      "zh": "哪些字体能排日文，并在屏幕和PDF中让汉字采用日文字形？",
+      "ar": "ما الخطوط التي تنضّد اليابانية، بالكانجي في أشكاله اليابانية، على الشاشة وفي PDF؟"
+    },
+    "index": {
+      "en": "Japanese fonts, on screen and in the PDF",
+      "es": "Fuentes japonesas, en pantalla y en el PDF",
+      "ca": "Fonts japoneses, a la pantalla i al PDF",
+      "zh": "日文字体，屏幕与PDF",
+      "ar": "الخطوط اليابانية، على الشاشة وفي PDF"
+    },
+    "theme": "type"
+  },
+  "Q146": {
+    "kind": "why",
+    "text": {
+      "en": "Why does my Japanese text come out with Chinese rules: 图 labels, small kana starting lines, kanji in Chinese forms?",
+      "es": "¿Por qué mi texto japonés sale con reglas chinas: etiquetas 图, kana pequeño al principio de línea, kanji con formas chinas?",
+      "ca": "Per què el meu text japonès surt amb regles xineses: etiquetes 图, kana petit a l'inici de línia, kanji amb formes xineses?",
+      "zh": "为什么我的日文按中文规则排了：标签是图、小假名出现在行首、汉字是中文字形？",
+      "ar": "لماذا يخرج نصّي الياباني بالقواعد الصينية: تسمية 图، وكانا صغيرة في أول الأسطر، وكانجي بأشكال صينية؟"
+    },
+    "index": {
+      "en": "Japanese text set with Chinese rules",
+      "es": "Texto japonés compuesto con reglas chinas",
+      "ca": "Text japonès compost amb regles xineses",
+      "zh": "日文按中文规则排版",
+      "ar": "نص ياباني منضَّد بالقواعد الصينية"
+    },
+    "theme": "type"
+  },
+  "Q147": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a Japanese novel vertically, bound on the right, like a bunko paperback?",
+      "es": "¿Cómo compongo una novela japonesa en vertical, encuadernada por la derecha, como un bunko de bolsillo?",
+      "ca": "Com componc una novel·la japonesa en vertical, enquadernada per la dreta, com un bunko de butxaca?",
+      "zh": "怎样像文库本那样，把日文小说竖排并在右侧装订？",
+      "ar": "كيف أنضّد رواية يابانية عموديًّا، مجلّدة من اليمين، مثل كتاب جيب من طراز bunko؟"
+    },
+    "index": {
+      "en": "Japanese novels, vertical and right-bound (bunko)",
+      "es": "Novelas japonesas, en vertical y encuadernadas por la derecha (bunko)",
+      "ca": "Novel·les japoneses, en vertical i enquadernades per la dreta (bunko)",
+      "zh": "日文小说，竖排右装订（文库本）",
+      "ar": "الروايات اليابانية، عمودية مجلّدة من اليمين (bunko)"
+    },
+    "theme": "page"
   }
 }

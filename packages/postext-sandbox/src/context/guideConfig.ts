@@ -12,6 +12,7 @@ import {
 } from './guideKit';
 import { createChineseGuideConfig } from './guideConfigZh';
 import { createArabicGuideConfig } from './guideConfigAr';
+import { createJapaneseGuideConfig } from './guideConfigJa';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit';
 
@@ -25,17 +26,17 @@ export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit';
 // uses to show the engine at work. Every font is served by Google Fonts, so
 // the preset carries no font files.
 //
-// The Chinese edition is a vertical book bound on the right, designed in
-// `guideConfigZh.ts` on the same page and palette; the Arabic edition is
-// set right to left and bound on the right, in Arabic faces, designed in
-// `guideConfigAr.ts`.
+// The Chinese and Japanese editions are vertical books bound on the right,
+// designed in `guideConfigZh.ts` and `guideConfigJa.ts` on the same page
+// and palette; the Arabic edition is set right to left and bound on the
+// right, in Arabic faces, designed in `guideConfigAr.ts`.
 //
 // Geometry: a 170 mm text area in two 80.5 mm columns keeps the page/column
 // width ratio the example figures are drawn for (≈ 2.11, see
 // `defaultResources`), so their type comes out the same size at both spans.
 
 /** The Latin editions. */
-type LatinLang = Exclude<GuideLang, 'zh-Hans' | 'ar'>;
+type LatinLang = Exclude<GuideLang, 'zh-Hans' | 'ar' | 'ja'>;
 
 const GUTTER = 9;
 /** Height of a chapter opener's band below the top margin. */
@@ -357,12 +358,14 @@ function toc(lang: LatinLang) {
 }
 
 /** The Postext guide's configuration for `locale`: the English, Spanish,
- *  Catalan, Chinese or Arabic edition (any Chinese tag reads the Chinese
- *  one, set vertically; any Arabic tag the Arabic one, set right to left). */
+ *  Catalan, Chinese, Arabic or Japanese edition (any Chinese tag reads the
+ *  Chinese one and any Japanese tag the Japanese one, both set vertically;
+ *  any Arabic tag the Arabic one, set right to left). */
 export function createPostextGuideConfig(locale = 'en'): PostextConfig {
   const lang = guideLang(locale);
   if (lang === 'zh-Hans') return createChineseGuideConfig();
   if (lang === 'ar') return createArabicGuideConfig();
+  if (lang === 'ja') return createJapaneseGuideConfig();
   return {
     locale: lang === 'en' ? 'en-us' : lang,
     page: {

@@ -13,7 +13,10 @@ Every case below came up while porting real publications to Postext:
   live-text translated figures;
 - a 120-chapter Chinese classic in three editions: Traditional set
   vertically and bound on the right, Simplified set horizontally, and an
-  English translation.
+  English translation;
+- a Japanese novel from Aozora Bunko set vertically as a bunko, with
+  furigana, part openers centred on the page and the Aozora credits in the
+  colophon.
 
 Each entry: **case → technique**, with the Markdown/config to write. Syntax
 details are in document-format.md and configuration.md.
@@ -613,6 +616,31 @@ A Chinese family is tens of MB and thousands of glyphs; ship it cut to the book.
 - In the browser, the `arabic` subset file loads only when a character needs it; the Sandbox and the kit's
   `loadArabicFonts` load it before layout, a host checks `document.fonts.load('16px Amiri', 'ب')`.
 
+### E8. Japanese faces
+- **Body (mincho 明朝)**: **Noto Serif JP** (variable 200–900; full JIS X 0213, so Aozora's 第3・第4水準 外字
+  are there; 14,787 IVS sequences; `vert`/`vrt2`) is the default. **Shippori Mincho** / **Shippori Mincho B1**
+  give a bunko look; they lack ō ū Ō Ū (rōmaji with macrons needs another face for that text) and ヿ ゟ.
+  **BIZ UDMincho** is fixed-pitch, good on a grid (BIZ UDPMincho has proportional kana: not for grid setting).
+  **Zen Old Mincho** covers JIS levels 1–2 only and lacks ―, 〳〵, ﹅ and the macrons; Kaisei and Hina Mincho are
+  display faces (no vertical forms for some marks).
+- **Headings, run-in heads, labels (gothic ゴシック)**: **Noto Sans JP**, Zen Kaku Gothic New, BIZ UDPGothic.
+  Children's books and textbooks: Klee One (教科書体).
+- **Never the SC/TC builds** of Noto or Source Han: their kanji take Chinese forms (直, 骨, 角, 写).
+  `lint_project.py` warns when one sets kana. A pan-CJK `.otf` (Source Han Serif, Noto Serif CJK) gets its
+  Japanese forms in the PDF from `locale: 'ja'` (the JAN `locl`), but it is CFF: embedded whole
+  (`cffEmbeddedWhole`). Start from the TrueType `NotoSerifJP[wght].ttf` (Google Fonts) instead.
+- **Subset, then instance**: `fonts.py subset NotoSerifJP[wght].ttf --out work/ --text-from . --ranges
+  latin,latin-ext,punct,cjk-punct,kana` (every kana, the small kana and 〳〵 〝〟 ― ‥ … that vertical pages
+  ask for), then `fonts.py instance work/NotoSerifJP[wght].ttf --out fonts/ --stem NotoSerifJP --weights 400,700`.
+  `vert`, `vrt2`, `locl` and `vhea`/`vmtx` survive: small kana, ー, brackets and 、。 take their vertical
+  forms from them. Rebuild the subset when the text changes (`--text-from .` counts the config's strings).
+- **Coverage**: one family per style, no fallback. `lint_project.py` lists the characters a face lacks
+  (rare kanji, Aozora 外字 such as 挘 愷 睜 燄, which Noto Serif JP, Shippori Mincho and BIZ UDPMincho have and
+  Zen Old Mincho, Kaisei and Hina do not).
+- **Voices**: mincho for the text, gothic for headings and for bold emphasis where the source uses it
+  (a paragraph or heading style in Noto Sans JP), bōten (`*…*`) for emphasis in the text. No italics.
+- In the Sandbox the font picker's Japanese group lists these faces from Fontsource's `japanese` subset.
+
 ---
 
 ## F. Languages
@@ -721,6 +749,93 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   'strip'` (or `'strip-vowels'` to keep shadda).
 - Keep the edition's orthography (فى, الامر, مائة); the engine never corrects it.
 - Compare pages right to left: page 1 is the left page; columns read right first.
+
+### F9. Japanese, horizontal (technical book, textbook, report)
+- `locale: 'ja'`; horizontal (the default); body Noto Serif JP 9–10 pt, headings Noto Sans JP; leading
+  1.7–1.8 em (room for furigana); `firstLineIndent: {value: 1, unit: 'em'}`, justified, no paragraph
+  spacing, `indentAfterHeading: true`.
+- Grid: count 字詰め × 行数 (design-analysis §2c; JLReq's example 35 × 28 at 9 pt) and set `cjk.grid`.
+- Leave `cjk` to the locale: JIS X 4051 kinsoku (`ja-very-strict`; `ja-strict` when the source lets っ or ー
+  open a line), full-width marks with JLReq's pair compression, 1 em after ？！, bracket pattern ③, a quarter
+  em between Japanese and Latin. JLReq advises against hanging punctuation in text mixed with much Latin:
+  `hangingPunctuation: 'none'` when the source's line ends are flush. Keep the source's ，． or 、。.
+- Numbering in Arabic digits: `numberingTemplate: '第{1}章'` with `numberSeparator: '　'`, sections
+  `'{1}.{2}'`; resource types 図/表 come with the locale (図1-1); `captionStyle: {labelNumberGap: '',
+  labelSeparator: '　'}`; lists in the official order 1. （1） ア （ア） ① (configuration.md §10).
+- Notes: by default at the column foot, numbered per page, superscript, a ⅓ rule (nothing to set).
+- Headings: often centred (`headings.textAlign: 'center'`) and taking a fixed number of lines (`lineSpan`).
+- Index: `:index[…]{yomi="…"}` on every kanji entry; `groupBy` auto = gojūon rows (あ行 か行 …). Citations:
+  `citations.style: 'sist02'` for science and technology, or the publisher's CSL.
+- Latin words and numbers in proportional type; keep the source's full-width ones; never type spaces between
+  Japanese words.
+
+### F10. Japanese, vertical and bound on the right (bunko, tankōbon novel)
+- `locale: 'ja'`, `layout.writingMode: 'vertical-rl'`; `page.binding` stays `'auto'` (right: page 1 is the
+  LEFT page of its spread, a chapter on an odd page opens on a left page). Body Noto Serif JP or Shippori
+  Mincho B1.
+- The grid: `cjk.grid.charsPerLine` = 字詰め down the column, `linesPerPage` = 行数. Bunko A6 (105 × 148 mm):
+  38–42 × 16–18 at 8.5–9.25 pt; 四六判 (127 × 188 mm): 42–43 × 17–18 at 9–9.5 pt. A5 two-tier pages:
+  `layoutType: 'double'` (24–26 字 a tier).
+- Leave `cjk` to the locale: `ja-very-strict`, hanging 、。, upright two-digit numbers and `!?`, small kana and
+  ー in their vertical forms, “” painted 〝〟, sesame bōten right of the text, 『』 for `:book`, furigana right
+  of the text (`{漢字|かんじ}` group, `{東京|とう|きょう}` jukugo), JIS 1:2:1 ruby spacing.
+- Notes: by default after the chapter (後注) with （1） right of the line; `footnotes.placement: 'spread'`
+  for sidenotes on the left page of each spread (傍注); `markerPosition: 'side'` for small interlinear marks.
+- Headings: 字下げ in body ems and 行取り in lines (`indent`, `lineSpan`; JLReq: top 4 字, middle 6 字 and
+  3行取り, low 8 字 and 2行取り); short ones spread (`jidori`). Part titles and dedications centred across the
+  page: `:::pagebreak{center}`. A heading may close an even page when its text opens the facing odd page:
+  `headings.keepWithNextSpread: true`.
+- Running head (single method): the book or chapter title on odd (left) pages only, horizontal, in the head
+  margin about one body em above the type area at its fore-edge (left) side; folio in Arabic digits at the
+  foot, fore-edge side (left on odd pages, right on even). Fore-edge vertical heads: configuration.md §19c.
+- Aozora sources: `aozora.py` (sources.md, "Japanese sources"); merge its `styles.json` into
+  `paragraphStyles`, turn its heading `{indent="N"}` into the level's `indent`, print its credits.
+- Letters inside a novel: an indented block (`:::paragraphs{indent=2}`), the date and signature
+  `:::paragraphs{align=end}` or `{align=end endIndent=1}`; paragraphs that each open with 「 and close once
+  stay so.
+- Compare pages right to left: the source's page 1 is the left page of the first spread.
+
+```json
+{
+  "locale": "ja",
+  "page": { "sizePreset": "custom", "width": {"value": 105, "unit": "mm"}, "height": {"value": 148, "unit": "mm"},
+    "margins": { "top": {"value": 16, "unit": "mm"}, "bottom": {"value": 11, "unit": "mm"},
+      "left": {"value": 9, "unit": "mm"}, "right": {"value": 9, "unit": "mm"}, "mirror": true } },
+  "layout": { "layoutType": "single", "writingMode": "vertical-rl" },
+  "bodyText": { "fontFamily": "Shippori Mincho B1", "fontSize": {"value": 9, "unit": "pt"},
+    "lineHeight": {"value": 15, "unit": "pt"}, "textAlign": "justify", "firstLineIndent": {"value": 1, "unit": "em"},
+    "indentAfterHeading": true, "paragraphSpacing": false,
+    "color": {"hex": "#1d1916", "model": "hex"}, "boldColor": {"hex": "#1d1916", "model": "hex"} },
+  "cjk": { "grid": { "enabled": true, "charsPerLine": 38, "linesPerPage": 16 } },
+  "headings": { "fontFamily": "Shippori Mincho B1", "fontWeight": 700, "color": {"hex": "#1d1916", "model": "hex"},
+    "keepWithNextSpread": true,
+    "levels": [
+      { "level": 1, "fontSize": {"value": 13, "unit": "pt"}, "numberingTemplate": "第{1:一}章", "numberSeparator": "　",
+        "breakBefore": {"enabled": true, "parity": "odd"}, "indent": {"value": 4, "unit": "em"} },
+      { "level": 2, "fontSize": {"value": 10, "unit": "pt"}, "breakBefore": {"enabled": false},
+        "lineSpan": 3, "indent": {"value": 6, "unit": "em"} },
+      { "level": 3, "fontSize": {"value": 9, "unit": "pt"}, "lineSpan": 2, "indent": {"value": 8, "unit": "em"} } ] },
+  "header": { "elements": [
+    { "kind": "text", "id": "head", "parity": "odd", "pages": "body", "content": "{chapterTitle}",
+      "placement": { "anchor": {"to": "container", "edge": "bottom-left"}, "offset": {"x": {"value": 0, "unit": "mm"}, "y": {"value": -1, "unit": "em"}} },
+      "fontFamily": "Shippori Mincho B1", "fontSize": {"value": 7, "unit": "pt"}, "align": "left", "overflow": "ellipsis-end",
+      "color": {"hex": "#1d1916", "model": "hex"} } ] },
+  "footer": { "elements": [
+    { "kind": "text", "id": "folio-odd", "parity": "odd", "content": "{pageNumber}",
+      "placement": { "anchor": {"to": "container", "edge": "top-left"}, "offset": {"x": {"value": 0, "unit": "mm"}, "y": {"value": 3, "unit": "mm"}} },
+      "fontFamily": "Shippori Mincho B1", "fontSize": {"value": 7, "unit": "pt"}, "align": "left", "overflow": "clip",
+      "color": {"hex": "#1d1916", "model": "hex"} },
+    { "kind": "text", "id": "folio-even", "parity": "even", "content": "{pageNumber}",
+      "placement": { "anchor": {"to": "container", "edge": "top-right"}, "offset": {"x": {"value": 0, "unit": "mm"}, "y": {"value": 3, "unit": "mm"}} },
+      "fontFamily": "Shippori Mincho B1", "fontSize": {"value": 7, "unit": "pt"}, "align": "right", "overflow": "clip",
+      "color": {"hex": "#1d1916", "model": "hex"} } ] }
+}
+```
+
+The margins are minimums: the 38 × 16 grid (120.6 × 84.7 mm) is centred in the room they leave. The
+manifest bundles the Shippori Mincho B1 files (subset as in E8) and the chapters carry
+`:::paragraphs{style="aozora-…"}` blocks whose styles come from `aozora.py --styles`. A tankōbon: 127 × 188 mm,
+9.25 pt on a 16.5 pt feed, `charsPerLine: 42`, `linesPerPage: 17`, margins about 22 / 18 / 14 / 14 mm.
 
 ---
 

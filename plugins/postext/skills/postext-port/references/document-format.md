@@ -90,7 +90,9 @@ The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is take
 |---|---|---|---|
 | `style` | id of a `headingStyles[]` entry | Merges the style's level overrides and opens a *styled section* (running heads, geometry, body typography, palette) up to the next heading of the same or higher level, or the next part. The style's `numbered: false` makes the heading unnumbered (no counter advance, no number, `{chapterNumber}` empty). An unknown id is ignored. | , 54-72`;  |
 | `toc` | `false`/`no`/`0` or `true`/`yes`/`1` | Overrides whether `:::toc` lists this heading. Default: the style's `toc`, else `true`. |  |
+| `jidori` | number (≥ 1.16) | 字取り: a one-line heading narrower than N of its own ems is spaced evenly to that width (`# 序章 {jidori=3}` → 序　章); `0` turns its level's `jidori` off. |  |
 
+- There is **no** `indent` heading attribute: a Japanese heading's 字下げ is the level's (or a heading style's) `indent` in body ems (configuration.md §5.1). `aozora.py` writes `{indent="5"}` from the source's ［＃５字下げ］ as a record (a free attribute); carry it into the config.
 - There is **no** `numbered` heading attribute. `{numbered=false}` is only stored as a free attr; use a heading style with `numbered: false` instead.
 - `id` (or `{#id}`, postext ≥ 1.12) names the heading for cross-references: `:ref{id="…"}` prints *section 3.2* / its title / its page and links to it (§10.6). Before 1.12 headings had no ids.
 
@@ -169,7 +171,8 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 - URL-like tokens (`http(s)://`, `ftp://`, `www.`, DOIs `10.xxxx/`) get URL break points and no hyphen.
 - **HTML is not interpreted.** `<b>x</b>` and `&amp;` / `&nbsp;` appear literally. Write the Unicode characters themselves (`&`, U+00A0, `…`).
 - Tabs count as one character of indentation (so they don't nest lists).
-- **Ideographic spaces (U+3000) that open a paragraph are dropped.** Chinese paragraph indents come from `bodyText.firstLineIndent: {value: 2, unit: 'em'}`. Inside a line U+3000 is a character one em wide (a line may break after it, never before).
+- **Ideographic spaces (U+3000) that open a paragraph are dropped.** Chinese paragraph indents come from `bodyText.firstLineIndent: {value: 2, unit: 'em'}`, Japanese ones from `{value: 1, unit: 'em'}`. Inside a line U+3000 is a character one em wide (a line may break after it, never before). In Japanese text a U+3000 typed after ？ or ！ is kept as that mark's one-em space (`cjk.spaceAfterQuestion`, which adds it where it is missing).
+- **Japanese paragraph starts** (≥ 1.16): a paragraph opening with 「 needs no typed space; `cjk.paragraphStartBracket` (auto `half` in Japanese) sets the bracket in the indent. A paragraph that must stay flush (Aozora's paragraphs with neither U+3000 nor 「) goes in a `:::paragraphs` style with `firstLineIndent: 0`.
 - **Full-width markup is text**: `：：：`, `＃ `, `［＾1］`, `｛…｝` after a fence or heading, `＊＊…＊＊` typed with an input method print literally and raise `fullwidthMarkup`. Write the ASCII forms.
 
 ---
@@ -199,12 +202,14 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips | `replaceLinkSyntax`, `linkHref` |
 | Image | `![alt](src)` | **removed** from the text | `:315` |
 | Escapes | `\*` `\_` `\^` `\~` `` \` `` | the literal character (body, captions, cells, notes) | `:261-273` |
-| Emphasis dots (≥ 1.9) | `:dots[不可]`, `{style="dot\|circle\|sesame" fill="open" pos="over\|under"}` | 着重号: under each character (right in vertical text), none on punctuation. `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'` (default in a Chinese document) | |
+| Emphasis dots (≥ 1.9) | `:dots[不可]`, `{style="dot\|circle\|sesame" fill="open" pos="over\|under"}` | 着重号: under each character (right in vertical text), none on punctuation. `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'` (default in a Chinese document). Japanese (≥ 1.16): 傍点 are sesame ﹅ over the text (right in vertical text) by default (`cjk.emphasisMark`); `fill="open"` = 白ゴマ, `style="circle" fill="filled"` = 丸傍点 (a circle is open by default: 白丸); dots skip punctuation and go outside a ruby reading | |
+| Side line (≥ 1.16) | `:sideline[注意]{style="solid\|double\|wavy\|dotted" pos="over\|under"}` | 傍線: a line along the run (under in horizontal text, right in vertical text), through its punctuation; Aozora 鎖線 → `dotted`; 破線 has no shape (falls back to solid) | |
 | Proper-name line (≥ 1.9) | `:name[賈寶玉]` | 专名号: straight line under (left in vertical); adjacent names keep a gap | |
-| Book title (≥ 1.9) | `:book[石頭記]` | 书名号 per `cjk.bookTitleMark`: 《》 inserted (mainland default), wavy line (Taiwan/HK), or bare. If the source already TYPES 《》, keep them as text instead | |
-| Ruby (≥ 1.9) | `:ruby[紅樓]{rt="hóng lóu"}`, `{rt="hónglóu" group}`, `pos="over\|under\|right"`; compact `{紅樓\|hóng\|lóu}` | one reading per character when the counts match (line may break between), else one group reading. Zhuyin (bopomofo) goes right of each character. Compact form only when the base holds Han/kana/bopomofo; `\{紅\|hóng}` is text | |
-| Warichu (≥ 1.9) | `:warichu[note]{open="〔" close="〕"}` | 双行夹注: two half-size rows inside the line, breaking across lines and pages | |
-| Tate-chu-yoko (≥ 1.9) | `:tcy[12]` | vertical text: one upright cell. Numbers of ≤ `cjk.uprightDigits` (2) digits get it automatically, except inside a Latin sentence (a Latin word on both sides: `chapters 49 and 32`, `(7) of`, `pages 3–5 of`), where they run sideways with the words; postext 1.9.0 and 1.9.1 stand those upright too (`:sideways[49]` there). No effect horizontally | |
+| Book title (≥ 1.9) | `:book[石頭記]` | 书名号 per `cjk.bookTitleMark`: 《》 inserted (mainland default), wavy line (Taiwan/HK), or bare; 『』 in Japanese (「」 for a title inside one, `cjk.bookTitleBrackets`, ≥ 1.16). If the source already TYPES the brackets, keep them as text instead | |
+| Ruby (≥ 1.9) | `:ruby[紅樓]{rt="hóng lóu"}`, `{rt="hónglóu" group}`, `pos="over\|under\|right"`; compact `{紅樓\|hóng\|lóu}`; `mode="mono\|group\|jukugo"`, `align="center\|jis\|start"` (≥ 1.16) | one reading per character when the counts match (line may break between), else one group reading. Zhuyin (bopomofo) goes right of each character. Compact form only when the base holds Han/kana/bopomofo; `\{紅\|hóng}` is text. Japanese (`locale: ja`): a reading per character of a word (`{東京\|とう\|きょう}`) is jukugo ruby (`mode=mono` keeps it mono); one reading (`{東京\|とうきょう}`, the Aozora 《》) is group ruby | |
+| Warichu (≥ 1.9) | `:warichu[note]{open="〔" close="〕"}` | 双行夹注 / 割注: two half-size rows inside the line, breaking across lines and pages; （） by default in Japanese | |
+| Kanbun marks (≥ 1.16) | `:kunten[學]{okuri="ビテ" kaeri="レ" tate}` | 返り点 (`kaeri`: レ 一 二 三 上 中 下 甲 乙 天 地 人, 一レ 上レ…; ㆑–㆟ read as those) small at the lower left of the character (the last one when the brackets hold several), 送り仮名 (`okuri`; Aozora's （ヲ） brackets dropped) small at its right from mid-character (over and after it in horizontal text), `tate` = 竪点 joining it to the next character. The text is not reordered; copy and screen readers get 學ビテ. Nested ruby works (`:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`). Size and placement: `cjk.kunten`; `kuntenExceedsLeading` when the gap is short | |
+| Tate-chu-yoko (≥ 1.9) | `:tcy[12]` | vertical text: one upright cell. In Japanese (≥ 1.16) `!!` `!?` `?!` `??` (and ！？ pairs) get it automatically too. Numbers of ≤ `cjk.uprightDigits` (2) digits get it automatically, except inside a Latin sentence (a Latin word on both sides: `chapters 49 and 32`, `(7) of`, `pages 3–5 of`), where they run sideways with the words; postext 1.9.0 and 1.9.1 stand those upright too (`:sideways[49]` there). No effect horizontally | |
 | Upright / sideways (≥ 1.9) | `:upright[GDP]`, `:sideways[12]` | vertical text: each character upright in its own cell / the run turned | |
 | Dollar | `\$` | literal `$`; otherwise `$` opens inline math. Captions, cells, notes and chip texts have no maths: `$` is literal there, and `\$` gives `$` too (postext ≥ 1.5; 1.4 printed `\$` there). In an attribute value (`:ref{text="…"}`) a backslash is ordinary: `\$` stays `\$` |  |
 
@@ -310,7 +315,9 @@ Answer box.
 
 | attr | values | notes |
 |---|---|---|
-| `style` | id of a `paragraphStyles[]` entry | **Required.** Missing or unknown: the paragraphs render as body text, with an `unknownParagraphStyle` warning. |
+| `style` | id of a `paragraphStyles[]` entry | Required unless the fence sets `align`/`indent`/`endIndent`. Unknown: the paragraphs render as body text, with an `unknownParagraphStyle` warning. |
+| `align` (≥ 1.16) | `start` \| `end` \| `left` \| `right` \| `center` \| `justify` | overrides the style's (or, without `style`, the enclosing text's) alignment: 地付き = `{align=end}` |
+| `indent` / `endIndent` (≥ 1.16) | length; a bare number is ems (`indent=2` = 2字下げ) | every line from the start / from the end (right of a horizontal line, foot of a vertical one): 地から1字上げ = `{align=end endIndent=1}` |
 
 - The style applies **only to `paragraph` blocks** inside the container. Lists, quotes and headings inside keep their normal styles.
 - The container's `marginTop` is applied on entry and `marginBottom` after the last paragraph. Negative margins pull the flow up.
@@ -408,6 +415,7 @@ Source: ; .
 Resources are JSON records in `PostextContent.resources` (in a preset: `preset.json → resources[]` plus the files). They are not Markdown. Main fields:
 - `id`, `typeId` (e.g. `figure`, `table`), `kind: bitmap|svg|table`, `caption`, `note`, `altText`, `placement`
 - the payload (`bitmap{fileId,…}`, `svg{fileId, pdfFileId?}`, `table{model, styleId?}`)
+- `safeArea` (bitmap/svg only, optional): `{x, y, width, height}` in fractions of the picture, top-left origin; the part always shown. With it the engine may crop outside it to make the figure taller or shorter (fit the room left, `fitFiguresToPage`, column balancing lever `flexFigure`); without it the picture is always whole
 
 The Markdown only cites them.
 
@@ -525,6 +533,7 @@ Enter :smallcaps[Hamlet] and :smallcaps[Horatio], reading.
 - **Numbers** follow first citation, restarting at each chapter (a level-1 heading, and each document of a book); a note cited twice keeps its first number and is set once. `footnotes.numbering: 'document'` runs on through the book.
 - **Placement** (config `footnotes`, configuration.md §19a): by default at the foot of the column holding the citing line, under a short rule; the line and its note always share a column (a line whose note does not fit moves on with it). One-column layout = foot of the page. `placement: 'chapterEnd'` sets all of a chapter's notes after its last block. A note cited in a callout goes to the foot of the column where the text after the box goes on.
 - **Never split:** a note taller than a column overflows it. Keep notes short; move long ones into a callout.
+- **Japanese** (≥ 1.16): write the marker before a sentence-final 。 (`先生[^1]。`): it never parts from the character before it, and 。 never opens a line. A vertical Japanese book sets its notes after the chapter with （1） beside the line by default; `footnotes.markerPosition: 'side'` sets a small interlinear marker (合印), `placement: 'spread'` spread sidenotes (傍注) (configuration.md §19a).
 - **Warnings:** `undefinedFootnote` (marker, no definition: the number prints over an empty note), `unusedFootnote` (definition no marker cites: not set).
 
 ```md
@@ -540,8 +549,8 @@ The keeper climbed the tower every evening.[^steps] The wind put out his candle.
 - **`:index{term="…"}`** prints nothing. It takes the page of the word **just before it on its line** (or, opening a line, the word after it). Glue it to the word: `valves:index{term="Heart!valves"}`. A line holding only marks is removed, so a marks-only line never splits a paragraph or adds space.
 - **Not after a colon:** `word::index{…}` is not read (the lookbehind guards `:::index`); write `word:index{…}:`.
 - **Where:** paragraphs, headings, list items, blockquotes, callouts, footnote definitions. In captions, table cells and design elements a mark prints as written; inside inline code, and after `\`, it is text.
-- **Attributes:** `term` levels split at `!` (`term="Heart!valves!mitral"`; a level may carry `*italics*`, sorted without them) · `sub` = one more level · `sort` = sort key of the last level (`sort="Saint Kilda"`) · `main` flag = principal page, set bold · `range="start"` / `range="end"` with the same term = `34–37` · `see="Target!level"` = cross-reference instead of a page (adds no page) · `seealso="…"` = after the pages (the mark's page counts) · `index="names"` = a separate index.
-- **Warnings:** `indexMarkInvalid` (no term), `indexRangeUnclosed` (start without end or vice versa: prints its one page), `indexSeeUnknown` (target is no entry).
+- **Attributes:** `term` levels split at `!` (`term="Heart!valves!mitral"`; a level may carry `*italics*`, sorted without them) · `sub` = one more level · `sort` = sort key of the last level (`sort="Saint Kilda"`) · `yomi` (alias `reading`) = the kana reading of the last level, which a Japanese index files by (`:index[東京]{yomi="とうきょう"}`; a visible mark whose text carries kana ruby, `:index[{東京|とう|きょう}]`, reads itself; order yomi → ruby → sort) · `main` flag = principal page, set bold · `range="start"` / `range="end"` with the same term = `34–37` · `see="Target!level"` = cross-reference instead of a page (adds no page) · `seealso="…"` = after the pages (the mark's page counts) · `index="names"` = a separate index.
+- **Warnings:** `indexMarkInvalid` (no term), `indexRangeUnclosed` (start without end or vice versa: prints its one page), `indexSeeUnknown` (target is no entry), `indexReadingMissing` (Japanese index: an entry with a kanji and no reading files after the kana, headless; give every kanji entry a `yomi`).
 - **Printing:** `:::index` (main) / `:::index{index="names"}` where the index goes, usually a chapter of its own under a heading whose style sets a two-column `layout`. It expands into ordinary blocks: letter groups in the `locale`'s alphabetical order (accents file with the base letter, Spanish ñ after n), symbols then digits first, page labels (roman front matter included), consecutive pages joined (`12–14`), bold main pages kept apart, PDF links. It converges like `:::toc`; in a book laid out chapter by chapter the index chapter receives every chapter's marks. Styling: config `index` (configuration.md §19b).
 - **See marks with no text of their own:** put them on lines under the index heading, above `:::index`. A file or block of marks alone, with no text block to attach to, is dropped.
 
@@ -618,7 +627,7 @@ Known directives: `pagebreak`, `numbering`, `columnbreak`, `space`, `toc`, `inde
 
 | Directive | Attributes | Effect |
 |---|---|---|
-| `:::pagebreak` | `parity`: `odd` \| `even` \| `always-odd` \| `always-even`. Anything else (incl. `any`) means no parity; the sandbox warns `pagebreakInvalidParity`. | Next block on a new page. `odd`/`even` add a blank page if needed. `always-*` forces at least one separator blank, which belongs to the previous content. Pending floats go to the new page. Skipped while the first page is still empty. |
+| `:::pagebreak` | `parity`: `odd` \| `even` \| `always-odd` \| `always-even`. Anything else (incl. `any`) means no parity; the sandbox warns `pagebreakInvalidParity`. `center` flag (≥ 1.16; `center=false` off). | Next block on a new page. `odd`/`even` add a blank page if needed. `always-*` forces at least one separator blank, which belongs to the previous content. Pending floats go to the new page. Skipped while the first page is still empty. With `center`, the text of the page it opens is centred between the head and foot of the type area (across the page in vertical text: ページの左右中央, a dedication, a part title); end that page with another `:::pagebreak`. |
 | `:::columnbreak` | none | Ends the current column; continues in the next column, or on the next page from the last column. A no-op in an empty column. The column keeps its gap (balancing skips it). |
 | `:::space` | `lines`: body lines (baseline grid), default `1`; fractions allowed; > 0 and ≤ 20, else one line and the sandbox warns `spaceInvalidLines`. | Vertical space between two blocks, **added** to their margin (not collapsed into a heading's top margin); repeated lines add up. Dropped at a column/page top; one that does not fit ends the column without carrying over. A paragraph right after it loses its first-line indent when `indentAfterHeading` is off. Keep-with-next counts it. The only directive honoured inside a `:::callout`/`:::columns` (measured in the box's body lines). Before a box's first block it is dropped, **except** right under the title or in a box holding nothing else (answer box sized in lines: `:::callout{type="answer" title="Q1"}` + `:::space{lines=4}` + `:::`). Always dropped at the top of a `:::columns` group, at each of its column heads, and at the top of a split box's continuation. Works inside `:::paragraphs`. Extra blank lines in the Markdown never add space. |
 | `:::numbering` | `format`: `decimal` \| `lower-roman` \| `upper-roman` \| `lower-alpha` \| `upper-alpha`. `startAt`: integer ≥ 1. Both optional; invalid values are ignored, with `numberingInvalidFormat`/`numberingInvalidStartAt` warnings. | Switches the page-number format and/or restarts the counter **at the next page boundary** (or at the current page if it has no numbered content yet). Canonical form: `:::pagebreak{parity="odd"}` followed by `:::numbering{format="decimal" startAt=1}` before chapter 1. |
@@ -740,6 +749,15 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. A short number inside a Latin sentence runs sideways with it by itself; one that opens or ends a Latin paragraph (`49 copies…`, `…page 7.`) stands: `:sideways[…]` turns it. |
 | 回目 couplet / two-line chapter title | `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`; the number from `numberingTemplate: '第{1:一}回'`, never typed. |
 | Paragraph indent of two ideographic spaces | Delete them; `bodyText.firstLineIndent: 2em`. |
+| Japanese furigana (≥ 1.16) | One reading over the word `{麦藁帽\|むぎわらぼう}` (group; Aozora 《》, InDesign group ruby); one per character `{東京\|とう\|きょう}` (jukugo, may break between characters); `:ruby[東京]{rt="とう\|きょう" mode=mono}` keeps per-character mono ruby. Aozora `X《よみ》`, `｜X《よみ》` never stay in the text (`aozora.py`). |
+| 傍点 / 傍線 | `*…*` or `:dots[…]` (sesame in Japanese) / `:sideline[…]{style=…}`. |
+| 地付き, 地からN字上げ (a letter's date, a signature) | `:::paragraphs{align=end}` / `:::paragraphs{align=end endIndent=N}`. |
+| 字下げ block (N字下げ, 折り返してM字下げ) | A paragraph style with `indent` (and `hangingIndent`), or `:::paragraphs{indent=N}`. |
+| 改ページ / 改丁 / 改見開き / ページの左右中央 | `:::pagebreak` / `{parity="odd"}` / `{parity="even"}` / `{center}`. |
+| 中見出し 3行取り, ５字下げ | Level config `lineSpan: 3`, `indent: {value: 5, unit: 'em'}`. |
+| 返り点・送り仮名 (kanbun) | `:kunten[字]{kaeri="レ" okuri="ヲ"}`. |
+| くの字点 ／＼ | 〳〵 (〴〵 voiced), vertical text only. |
+| A letter quoted over several paragraphs (each opens with 「, one 」 at the end) | Keep it so; never add or remove brackets. |
 
 ---
 
@@ -757,3 +775,4 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.
 11. Index marks sit in running text (not captions or cells), never right after a colon; ranges are paired; every `see`/`seealso` target is an entry; each index that has marks has its `:::index`.
 12. Chinese text: no U+3000 opening a paragraph, no full-width markup (`：：：`, `＃`), 《》 kept as typed, readings as `:ruby`/`{字|zì}`, and `config.locale` names the script (`zh-Hans`/`zh-Hant`).
+13. Japanese text: `config.locale: 'ja'`; no Aozora notation left (`《》` readings, `｜`, `［＃…］`, ／＼); every kanji index entry has a `yomi`; full-width Latin and digits as the source types them (never NFKC); unbalanced 「 kept.

@@ -63,6 +63,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'captionStyle':
     case 'tableStyle':
     case 'diagramStyle':
+    case 'videoStyle':
     case 'htmlViewer':
     case 'folio':
     case 'pdfGeneration': {

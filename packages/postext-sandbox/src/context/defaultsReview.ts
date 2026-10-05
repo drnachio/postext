@@ -3,7 +3,7 @@
 // section remembers of it between mounts. Shared by the review lists; each
 // keeps a memory of its own.
 
-import type { DigitSystem, HeadingLevelConfig, HeadingStyleConfig, PostextConfig, ResourceType } from 'postext';
+import type { DesignTextElement, DigitSystem, HeadingLevelConfig, HeadingStyleConfig, PostextConfig, ResourceType } from 'postext';
 import { DOCUMENT_LANGUAGES, defaultResourceTypes, formatNumeral, parseNumberFormat } from 'postext';
 
 export function canonicalJson(value: unknown): string {
@@ -20,7 +20,11 @@ export function canonicalJson(value: unknown): string {
 export function builtInTypes(types: readonly ResourceType[], extraLocales: readonly string[]): boolean {
   const current = canonicalJson(types);
   const tags = new Set([...DOCUMENT_LANGUAGES.map((l) => l.tag), 'en', 'es', ...extraLocales]);
-  for (const tag of tags) if (canonicalJson(defaultResourceTypes(tag)) === current) return true;
+  for (const tag of tags) {
+    const types = defaultResourceTypes(tag);
+    // A book saved before videos (#454) holds the figure and table only.
+    if (canonicalJson(types) === current || canonicalJson(types.filter((t) => t.id !== 'video')) === current) return true;
+  }
   return false;
 }
 
@@ -96,6 +100,68 @@ export function mergeBuiltInTypes(types: readonly ResourceType[], target: readon
     else delete next.namePlural;
     return next;
   });
+}
+
+/** The faces the engine itself gives a design text (the running heads and
+ *  folio of the built-in header and footer, an element with no typeface):
+ *  Latin only. */
+export const ENGINE_DESIGN_FACES: ReadonlySet<string> = new Set<string>(['Open Sans', 'EB Garamond']);
+
+/** Design-text placeholders that print a number in the document digits
+ *  (or its page numbering format), and the ones that print Latin letters
+ *  (Roman numerals, a b c). Any other prints text of the document (a
+ *  title, a mark, a number in words or in Han numerals). */
+const DIGIT_PLACEHOLDERS = new Set(['pageNumber', 'totalPages', 'bookTotalPages', 'number', 'numberDecimal', 'chapterNumber', 'partNumber']);
+const LATIN_PLACEHOLDERS = new Set(['numberRoman', 'numberRomanLower', 'numberAlpha', 'numberAlphaLower']);
+
+/** Whether a design text with this template prints characters of a script
+ *  (`letters` finds them): the script's letters written in it, a
+ *  placeholder that copies the book's text, or a number when `numbers` says
+ *  the book writes its numbers in the script (Arabic-Indic digits, Han
+ *  numerals). `{{`/`}}` are literal braces. */
+export function designTextNeedsScript(content: string, letters: RegExp, numbers: boolean): boolean {
+  const template = content.replace(/\{\{|\}\}/g, '');
+  if (letters.test(template)) return true;
+  for (const m of template.matchAll(/\{([^{}]+)\}/g)) {
+    const name = m[1]!.trim();
+    if (LATIN_PLACEHOLDERS.has(name)) continue;
+    if (DIGIT_PLACEHOLDERS.has(name)) {
+      if (numbers) return true;
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
+/** A design text element of the configuration (a header, footer, opener
+ *  or heading design's): `kind: 'text'` with a template and a placement. */
+export function isDesignText(v: unknown): v is DesignTextElement {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as Record<string, unknown>;
+  return o.kind === 'text' && typeof o.content === 'string' && typeof o.placement === 'object' && o.placement !== null;
+}
+
+/** `value` with every design text element `fn` changes replaced (the same
+ *  objects where nothing changes). */
+export function mapDesignTexts<T>(value: T, fn: (el: DesignTextElement) => DesignTextElement): T {
+  if (Array.isArray(value)) {
+    let changed = false;
+    const out = value.map((v) => {
+      const next = mapDesignTexts(v, fn);
+      if (next !== v) changed = true;
+      return next;
+    });
+    return (changed ? out : value) as T;
+  }
+  if (typeof value !== 'object' || value === null) return value;
+  if (isDesignText(value)) return fn(value) as T;
+  let out: Record<string, unknown> | undefined;
+  for (const [key, v] of Object.entries(value)) {
+    const next = mapDesignTexts(v, fn);
+    if (next !== v) (out ??= { ...(value as Record<string, unknown>) })[key] = next;
+  }
+  return (out ?? value) as T;
 }
 
 /** `obj` without `key`, or undefined when nothing is left. */

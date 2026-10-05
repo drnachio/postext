@@ -63,7 +63,7 @@ Escriu l'etiqueta completa: `zh-Hans` o `zh-Hant`, i la regió quan se sàpiga (
 
 Les dues últimes files segueixen l'escriptura, no la regió. Un clàssic en caràcters tradicionals imprès a Pequín (`zh-Hant-CN`) pren el tall de línies i la puntuació de la Xina continental, i 圖, （續）, 見 i grups per nombre de traços; un llibre en caràcters simplificats etiquetat per a Hong Kong (`zh-Hans-HK`) pren 图 i grups per pinyin.
 
-Els documents en japonès i en coreà reben la regla de no dividir paraules i el compositor CJK, però encara no tenen regles pròpies: es componen amb els valors per defecte de la Xina continental, i un paràgraf en kana o en hangul conserva les cometes i els guions llargs de la font.
+Els documents en japonès tenen una regió pròpia, `japan`, des de postext 1.16: vegeu [Composició japonesa](/ca/docs/japanese-layout). Els documents en coreà reben la regla de no dividir paraules i el compositor CJK, però encara no tenen regles pròpies: es componen amb els valors per defecte de la Xina continental, i un paràgraf en hangul conserva les cometes i els guions llargs de la font.
 
 ### El Markdown d'un capítol en xinès
 
@@ -303,7 +303,7 @@ Les edicions xineses marquen el text entre les línies en lloc de fer-ho amb cur
 
 ### Lloc a la interlínia
 
-L'interlineat no canvia mai: els punts, les línies i les lectures viuen al buit entre línies. La composició avisa quan la interlínia d'un paràgraf és massa estreta per al que porta: menys de mig quadratí amb marques per un costat, cinc vuitens amb marques pels dos (clreq §5.6.1), amb l'avís `cjkMarksExceedLeading`, i `rubyExceedsLeading` quan les lectures són més altes que el buit. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques i les lectures es dibuixen en paràgrafs, títols, elements de llista, citacions i requadres; els peus, les cel·les de taula, les notes i les capçaleres imprimeixen el text sense elles.
+L'interlineat no canvia mai: els punts, les línies i les lectures viuen al buit entre línies. La composició avisa quan la interlínia d'un paràgraf és massa estreta per al que porta: menys de mig quadratí amb marques per un costat, cinc vuitens amb marques pels dos (clreq §5.6.1), amb l'avís `cjkMarksExceedLeading`, i `rubyExceedsLeading` quan les lectures són més altes que el buit. Dona als paràgrafs anotats un estil de paràgraf amb més interlineat. Les marques i les lectures es dibuixen en paràgrafs, títols, elements de llista, citacions i requadres, i també als peus, les cel·les de taula i les notes, la interlínia dels quals es comprova igual; les capçaleres imprimeixen el text sense elles.
 
 ## Fonts
 
@@ -408,12 +408,12 @@ Al Sandbox, **Disseny › Escriptura** reuneix la llengua del document, el mode 
 
 ## Límits coneguts
 
-- **El japonès i el coreà** es componen amb els valors per defecte de la Xina continental. Les seves regles pròpies ([JLREQ](https://www.w3.org/TR/jlreq/), KLREQ) no estan implementades.
+- **El coreà** es compon amb els valors per defecte de la Xina continental; les seves regles pròpies (KLREQ) no estan implementades. El japonès segueix les seves pròpies regles des de postext 1.16 ([Composició japonesa](/ca/docs/japanese-layout)).
 - **El text dels dissenys** (capçaleres, obertures, títols de requadre) talla el xinès entre dos caràcters qualssevol, sense les regles de principi i final de línia ni l'amplada de la puntuació. Aquests títols s'ajusten a mà.
 - **Un mode d'escriptura per pàgina.** No hi ha requadres horitzontals dins d'una pàgina vertical, ni taules verticals amb la fila de capçalera a la dreta, ni peus al costat d'una figura dreta. Les fórmules, les etiquetes i les mostres de color en línia s'ajeuen amb la línia vertical.
 - **Cossos en punts.** No hi ha unitats 号 ni Q.
 - **Mètriques verticals.** Cada caràcter dret avança un quadratí; no es fan servir les mètriques verticals proporcionals (`vpal`) ni el crenatge vertical.
-- **Ruby i warichu**: no hi ha ruby pels dos costats, ni lectures automàtiques, ni notes d'una sola fila; les notes i lectures de peus, cel·les i textos de disseny s'imprimeixen com a text normal.
+- **Ruby i warichu**: no hi ha ruby pels dos costats, ni lectures automàtiques, ni notes d'una sola fila; les notes i lectures dels textos de disseny s'imprimeixen com a text normal.
 - **Fonts**: no es recorre d'una família a una altra, les fonts xineses no tenen cursiva i les fonts CFF s'incrusten senceres.
 - **Índex**: un caràcter amb diverses lectures pren la que li dona l'ordenació de CLDR llevat que la seva entrada porti una clau `sort`; no hi ha ordre per radicals.
 

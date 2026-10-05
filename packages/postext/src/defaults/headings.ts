@@ -101,6 +101,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   const generalMarginTop = partial.marginTop ?? DEFAULT_HEADINGS_CONFIG.marginTop;
   const generalMarginBottom = partial.marginBottom ?? DEFAULT_HEADINGS_CONFIG.marginBottom;
   const generalKeepWithNext = partial.keepWithNext ?? DEFAULT_HEADINGS_CONFIG.keepWithNext;
+  const keepWithNextSpread = partial.keepWithNextSpread === true;
   // Any other value reads as the default.
   const keepWithNextSplit = KEEP_WITH_NEXT_SPLITS.includes(partial.keepWithNextSplit as KeepWithNextSplit)
     ? partial.keepWithNextSplit!
@@ -161,10 +162,29 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       textTransform: override?.textTransform ?? def.textTransform,
       hidden: override?.hidden ?? def.hidden,
       snapToGrid: override?.snapToGrid ?? generalSnapToGrid,
+      // The Japanese heading fields (#424) stay absent unless set, so
+      // every other configuration resolves as before.
+      ...headingPlacementFields(override),
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, keepWithNextSplit, snapToGrid: generalSnapToGrid, inlineMarks, balancing, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, ...(keepWithNextSpread ? { keepWithNextSpread } : {}), keepWithNextSplit, snapToGrid: generalSnapToGrid, inlineMarks, balancing, levels };
+}
+
+/** A level's `lineSpan`, `indent` and `jidori` (#424) as they resolve:
+ *  each present only when set to something that takes effect (a whole
+ *  number of lines from 1, a non-zero indent, a width over one character),
+ *  so a configuration without them resolves exactly as before. */
+export function headingPlacementFields(
+  partial: Pick<HeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori'> | undefined,
+): Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori'> {
+  const out: Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori'> = {};
+  const lineSpan = partial?.lineSpan;
+  if (typeof lineSpan === 'number' && Number.isFinite(lineSpan) && lineSpan >= 1) out.lineSpan = Math.round(lineSpan);
+  if (partial?.indent && partial.indent.value !== 0) out.indent = partial.indent;
+  const jidori = partial?.jidori;
+  if (typeof jidori === 'number' && Number.isFinite(jidori) && jidori > 1) out.jidori = jidori;
+  return out;
 }
 
 /** The level fields a heading style (or any partial level config) sets,
@@ -195,6 +215,11 @@ export function resolveHeadingLevelOverrides(
   if (partial.textTransform !== undefined) out.textTransform = partial.textTransform;
   if (partial.hidden !== undefined) out.hidden = partial.hidden;
   if (partial.snapToGrid !== undefined) out.snapToGrid = partial.snapToGrid;
+  // A style that sets one of them to nothing (`lineSpan: 0`, `indent: 0`)
+  // takes it off its level's.
+  if (partial.lineSpan !== undefined) out.lineSpan = headingPlacementFields(partial).lineSpan;
+  if (partial.indent !== undefined) out.indent = headingPlacementFields(partial).indent;
+  if (partial.jidori !== undefined) out.jidori = headingPlacementFields(partial).jidori;
   return out;
 }
 
@@ -234,6 +259,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
   }
   if (headings.keepWithNext !== undefined && headings.keepWithNext !== DEFAULT_HEADINGS_CONFIG.keepWithNext) {
     result.keepWithNext = headings.keepWithNext;
+    hasOverride = true;
+  }
+  if (headings.keepWithNextSpread === true) {
+    result.keepWithNextSpread = true;
     hasOverride = true;
   }
   if (headings.keepWithNextSplit !== undefined && headings.keepWithNextSplit !== DEFAULT_HEADINGS_CONFIG.keepWithNextSplit) {
@@ -418,6 +447,10 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
         entry.snapToGrid = level.snapToGrid;
         levelHasOverride = true;
       }
+      const grid = headingPlacementFields(level);
+      if (grid.lineSpan !== undefined) { entry.lineSpan = grid.lineSpan; levelHasOverride = true; }
+      if (grid.indent !== undefined) { entry.indent = grid.indent; levelHasOverride = true; }
+      if (grid.jidori !== undefined) { entry.jidori = grid.jidori; levelHasOverride = true; }
       if (level.advancedDesign && (level.advancedDesign.enabled || (level.advancedDesign.slot?.elements?.length ?? 0) > 0)) {
         entry.advancedDesign = level.advancedDesign;
         levelHasOverride = true;

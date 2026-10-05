@@ -18,7 +18,10 @@ import {
   Hash,
   Tag,
   ALargeSmall,
+  Languages,
+  ArrowLeftRight,
 } from 'lucide-react';
+import { isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
 import { undo, redo } from '@codemirror/commands';
 import type { ReactNode } from 'react';
@@ -29,6 +32,9 @@ import { IconButton } from '../ui';
 interface EditorToolbarProps {
   viewRef: React.RefObject<EditorView | null>;
   extraActions?: ToolbarAction[];
+  /** The document language: a Chinese or Japanese one adds the ruby and
+   *  tate-chū-yoko buttons. */
+  lang?: string;
 }
 
 function ToolbarButton({
@@ -71,6 +77,22 @@ function insertLinePrefix(view: EditorView, prefix: string) {
   view.focus();
 }
 
+/** The selection (`selected`, at `from`) as a ruby base, `:ruby[漢字]{rt=""}`
+ *  (group ruby), and where the caret goes: between the quotes for the
+ *  reading, or in the brackets for the base when nothing is selected. */
+export function rubyWrap(selected: string, from: number): { insert: string; caret: number } {
+  const open = ':ruby[';
+  const insert = `${open}${selected}]{rt=""}`;
+  return { insert, caret: selected ? from + insert.length - 2 : from + open.length };
+}
+
+function wrapRuby(view: EditorView) {
+  const { from, to } = view.state.selection.main;
+  const { insert, caret } = rubyWrap(view.state.sliceDoc(from, to), from);
+  view.dispatch({ changes: { from, to, insert }, selection: { anchor: caret } });
+  view.focus();
+}
+
 /** Insert a standalone block line (e.g. a directive). If the current line
  *  is non-empty, the directive is appended after it with a blank line on
  *  each side; if empty, it replaces the current line. The final cursor
@@ -93,7 +115,7 @@ function insertBlockLine(view: EditorView, text: string, cursorOffset?: number) 
   view.focus();
 }
 
-export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
+export function EditorToolbar({ viewRef, extraActions, lang }: EditorToolbarProps) {
   const { state } = useSandbox();
   const { labels } = state;
 
@@ -157,6 +179,20 @@ export function EditorToolbar({ viewRef, extraActions }: EditorToolbarProps) {
       label: labels.smallCapsInline,
       action: () => { const v = getView(); if (v) wrapSelection(v, ':smallcaps[', ']'); },
     },
+    // Readings (furigana, pinyin) and a run set across a vertical line,
+    // for a Chinese or Japanese book.
+    ...(isCjkLanguage(lang) ? [
+      {
+        icon: <Languages size={16} aria-hidden="true" />,
+        label: labels.rubyInline,
+        action: () => { const v = getView(); if (v) wrapRuby(v); },
+      },
+      {
+        icon: <ArrowLeftRight size={16} aria-hidden="true" />,
+        label: labels.tcyInline,
+        action: () => { const v = getView(); if (v) wrapSelection(v, ':tcy[', ']'); },
+      },
+    ] : []),
     {
       icon: <Quote size={16} aria-hidden="true" />,
       label: labels.blockquote,

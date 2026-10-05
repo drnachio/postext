@@ -12,7 +12,7 @@
 // (written here, set in the Amiri subset of postext-pdf's shaping tests)
 // and Cookbook bundles with footnotes, an index, citations, maths and
 // cross-references. `--full` lays out the whole of Hong Lou Meng (2030
-// pages) instead of its first chapters. Exits 1 when any book has an
+// pages) and of Kokoro instead of their first chapters. Exits 1 when any book has an
 // EPUBCheck error or warning, or fails to lay out.
 //
 // Needs the dists built (`npx tsc` in packages/postext, postext-pdf,
@@ -49,6 +49,7 @@ const MATRIX = [
   { name: 'paradise-lost', source: preset('paradise-lost') },
   { name: 'bioquimica-feduchi', source: preset('bioquimica-feduchi') },
   { name: 'hongloumeng', source: preset('hongloumeng'), ...(FULL ? {} : { chapters: '0,1,2,3,4' }) },
+  { name: 'kokoro', source: preset('kokoro'), ...(FULL ? {} : { chapters: '0,1,2,3' }) },
   { name: 'vertical-novel-right-bound', source: recipe('vertical-novel-right-bound', 'en') },
   { name: 'vertical-jiazhu-citations', source: recipe('vertical-book-with-jiazhu-citations', 'en') },
   { name: 'zhuyin-vertical-reader', source: recipe('zhuyin-vertical-reader', 'en') },

@@ -51,7 +51,7 @@ export function headingMarksFor(blocks: ContentBlock[], resolved: ResolvedConfig
     let changed = false;
     const next = blocks.map((b) => {
       if (b.type !== 'heading') return b;
-      const spans = plainSpans(brackets && b.spans.some((s) => s.bookTitle) ? withBookBrackets(b.spans) : b.spans);
+      const spans = plainSpans(brackets && b.spans.some((s) => s.bookTitle) ? withBookBrackets(b.spans, resolved.cjk.bookTitleBrackets) : b.spans);
       if (spans.length === b.spans.length && spans.every((s, i) => s === b.spans[i])) return b;
       changed = true;
       return { ...b, spans };

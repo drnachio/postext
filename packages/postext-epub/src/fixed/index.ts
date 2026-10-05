@@ -25,7 +25,7 @@ import type {
   RenderToEpubOptions,
 } from '../types';
 import { defaultAccessibility } from '../shared/accessibility';
-import { fontAssets, imageAssets, pageProgressionOf } from '../shared/assets';
+import { fontAssets, imageAssets, pageProgressionOf, remoteVideoItems, videoAssets } from '../shared/assets';
 import { decodeEntities, escapeAttr, escapeXml, htmlToXhtml, xhtmlDocument, xmlId } from '../shared/xml';
 import { navStrings } from '../package/strings';
 import { fontUses, missingFaces, type FontUse } from './fontUse';
@@ -104,6 +104,14 @@ const rowLink = (href: string, label: string, b: { x: number; y: number; width: 
 const anchorAt = (id: string, x: number, y: number): string =>
   `<span id="${escapeAttr(id)}" style="position:absolute;left:${num(x)}px;top:${num(y)}px;width:0;height:0;"></span>`;
 
+/** The HTML player attributes no EPUB schema knows (`controlslist`, the
+ *  Remote Playback and Picture-in-Picture switches) dropped: EPUBCheck
+ *  rejects them, and reading systems offer their own controls. */
+export function epubVideoMarkup(html: string): string {
+  if (!html.includes('<video')) return html;
+  return html.replace(/<video\b[^>]*>/g, (tag) => tag.replace(/\s(?:controlslist|disablepictureinpicture|disableremoteplayback)="[^"]*"/g, ''));
+}
+
 export async function buildFixedPublication(docs: EpubSource, options: RenderToEpubOptions): Promise<EpubPublication> {
   const { metadata, onWarning, onProgress, signal } = options;
   const strings = navStrings(metadata.language);
@@ -112,8 +120,9 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
   // Fonts and pictures first: the pages link to their files.
   const fonts = fontAssets(options.fonts ?? []);
   const images = await imageAssets(docs, options.resourceBytes, onWarning);
+  const videos = await videoAssets(docs, options.resourceBytes);
   signal?.throwIfAborted();
-  const imageItems = images.items;
+  const imageItems = [...images.items, ...videos.items, ...remoteVideoItems(docs, videos)];
   onProgress?.({ phase: 'resources', done: fonts.items.length + imageItems.length, total: fonts.items.length + imageItems.length });
 
   // Pass 1: render every page and learn where each id lives, so a link can
@@ -125,15 +134,28 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     const href = images.hrefOf(fileId);
     return href ? `../${href}` : undefined;
   }, { singleInk: false });
+  const videoUrl = (fileId: string) => {
+    const href = videos.hrefOf(fileId);
+    return href ? `../${href}` : undefined;
+  };
   const plans: PagePlan[] = [];
   const fileOfId = new Map<string, string>();
   let bookIndex = 0;
   for (const doc of docs) {
     const lang = docLanguage(doc, metadata.language);
-    const rendered = renderToHtmlIndexed(doc, { resourceImageUrl: imageUrl, singleInk: false, refTargets: [...refTargets] });
+    // Videos (#454): a self-hosted file plays in the reader's player; a
+    // YouTube or Vimeo one is its poster linked to the video (an EPUB may
+    // not embed a web page's player: EPUBCheck RSC-006).
+    const rendered = renderToHtmlIndexed(doc, {
+      resourceImageUrl: imageUrl,
+      resourceVideoUrl: videoUrl,
+      videos: { files: 'player', streams: 'poster' },
+      singleInk: false,
+      refTargets: [...refTargets],
+    });
     for (const [i, page] of doc.pages.entries()) {
       const file = `page-${String(bookIndex + 1).padStart(pad, '0')}.xhtml`;
-      let html = rendered.pages[i]?.innerHtml ?? '';
+      let html = epubVideoMarkup(rendered.pages[i]?.innerHtml ?? '');
       const outline: OutlineEntry[] = [];
       const part = partTitle(page);
       if (part) outline.push({ title: part, level: 0, file });

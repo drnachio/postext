@@ -18,6 +18,7 @@ export const STYLE_CATALOG: readonly CitationStyleInfo[] = [
   { id: 'iso690-numeric-en', title: 'ISO-690 (numeric, English)', short: 'ISO 690 (numeric)', format: 'numeric', fields: 'general, standards' },
   { id: 'china-national-standard-gb-t-7714-2025-numeric', title: 'China National Standard GB/T 7714-2025 (numeric)', short: 'GB/T 7714—2025 (顺序编码)', format: 'numeric', fields: 'Chinese journals and theses' },
   { id: 'china-national-standard-gb-t-7714-2015-numeric', title: 'China National Standard GB/T 7714-2015 (numeric)', short: 'GB/T 7714—2015 (顺序编码)', format: 'numeric', fields: 'Chinese journals and theses' },
+  { id: 'sist02', title: 'SIST 02 (Japanese)', short: 'SIST 02 (参照文献の書き方)', format: 'numeric', fields: 'Japanese science and technology journals' },
   { id: 'chicago-notes-bibliography', title: 'Chicago Manual of Style 18th edition (notes and bibliography)', short: 'Chicago (notes)', format: 'note', fields: 'history, humanities' },
   { id: 'oscola', title: 'OSCOLA (Oxford University Standard for Citation of Legal Authorities)', short: 'OSCOLA', format: 'note', fields: 'law' },
   { id: 'china-national-standard-gb-t-7714-2025-note', title: 'China National Standard GB/T 7714-2025 (note)', short: 'GB/T 7714—2025 (注释)', format: 'note', fields: 'Chinese humanities' },
@@ -25,4 +26,4 @@ export const STYLE_CATALOG: readonly CitationStyleInfo[] = [
 ];
 
 /** The CSL locales bundled, as a picker lists them. */
-export const LOCALE_TAGS: readonly string[] = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-PT', 'pt-BR', 'ca-AD', 'nl-NL', 'zh-CN', 'zh-TW', 'ar'];
+export const LOCALE_TAGS: readonly string[] = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-PT', 'pt-BR', 'ca-AD', 'nl-NL', 'zh-CN', 'zh-TW', 'ja-JP', 'ar'];

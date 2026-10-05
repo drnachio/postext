@@ -152,6 +152,12 @@ export interface InlineSpan {
     /** An inline marker's size relative to the text around it
      *  (`footnotes.markerSize`), set by the pipeline. Unset: full size. */
     scale?: number;
+    /** Where the pipeline sets the marker apart from the line's text
+     *  (`footnotes.markerPosition`): `'side'` in the line gap beside the
+     *  text before it, taking no advance; `'right'` (vertical text only)
+     *  flush with the right side of the line. Unset: on the line, as
+     *  `scale` and `script` say. */
+    place?: 'side' | 'right';
   };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the
@@ -190,8 +196,9 @@ export interface InlineSpan {
   properName?: number;
   /** Book-title mark (书名号, `:book[text]`, #193): the title's run and
    *  how deep it is nested in other titles (1 for the outermost). What it
-   *  prints follows `cjk.bookTitleMark`: 《》 (〈〉 nested) around the
-   *  title, a wavy line under it, or nothing. */
+   *  prints follows `cjk.bookTitleMark`: the `cjk.bookTitleBrackets`
+   *  around the title (《》 and 〈〉 nested; 『』 and 「」 in Japan), a wavy
+   *  line under it, or nothing. */
   bookTitle?: { id: number; depth: number };
   /** Ruby (`:ruby[base]{rt="…"}` or `{base|reading}`, #194): the reading
    *  set over the base text (beside it for zhuyin). A mono ruby is one
@@ -210,6 +217,18 @@ export interface InlineSpan {
    *  isolate inside another names it as `outer`. `bidi.ts`
    *  (`resolveSpans`) reads it when a line's order is resolved. */
   direction?: InlineDirection;
+  /** Side line (傍線, `:sideline[text]{style pos}`, #421): a line along
+   *  the text, under it in horizontal text and right of it in vertical
+   *  text unless `pos` says otherwise. Unlike emphasis dots it runs on
+   *  across every character of the run, punctuation and spaces included,
+   *  in any script. Every span of one line shares the object. */
+  sideline?: InlineSideline;
+  /** Kanbun reading marks (訓点, `:kunten[字]{kaeri okuri tate}`, #430):
+   *  the 返り点 and 送り仮名 (and a 竪点 to the next character) that go
+   *  with the span's last character, in the line gap and the space after
+   *  it as JIS X 4051 §5 sets them. Every span of one directive shares the
+   *  object; the marks go with the last character of the last one. */
+  kunten?: InlineKunten;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never
@@ -233,16 +252,55 @@ export interface InlineDirection {
   outer?: InlineDirection;
 }
 
+/** The side line a span belongs to (see {@link InlineSpan.sideline}). */
+export interface InlineSideline {
+  /** Tells lines apart: two lines set side by side are two runs. Ids
+   *  count from 1 in each parse of a text. */
+  id: number;
+  /** `solid` (default) a rule, `double` two rules (二重傍線), `wavy` a
+   *  wave (波線), `dotted` a row of dots. */
+  style?: 'solid' | 'double' | 'wavy' | 'dotted';
+  /** `under` or `over` the text in its flow (in vertical text over is the
+   *  right side, under the left). Unset: under in horizontal text, over
+   *  (right) in vertical text, where Japanese books set 傍線. */
+  position?: 'over' | 'under';
+}
+
+/** The kanbun reading marks of a character (see {@link InlineSpan.kunten}). */
+export interface InlineKunten {
+  /** Tells directives apart. Ids count from 1 in each parse of a text. */
+  id: number;
+  /** The 返り点 as written (`kaeri`): レ, 一 二 三 四, 上 中 下, 甲 乙 丙
+   *  丁, 天 地 人, or one of them with レ (一レ, 上レ, 甲レ, 天レ). The
+   *  kanbun code points (㆑ ㆒ … ㆟, U+3191–319F) read as the characters
+   *  they stand for. Unset: none. */
+  kaeri?: string;
+  /** The 送り仮名 (`okuri`), small kana right of the character in vertical
+   *  text, over it in horizontal text. Unset: none. */
+  okuri?: string;
+  /** A 竪点 (`tate`): the character is read with the next one as one word,
+   *  and a short rule joins them (JIS X 4051 §5.7). */
+  tate?: true;
+  /** Resolved by the layout before measuring (`cjk.kunten`): the marks'
+   *  font (CSS shorthand at their size), colour (hex; unset: the text's)
+   *  and where the 返り点 go. */
+  fontString?: string;
+  color?: string;
+  placement?: 'inline' | 'interlinear';
+}
+
 /** An emphasis-dot mark: its shape, whether it is filled, and its side. */
 export interface EmphasisMark {
   /** `dot` (default) ●, `circle` ○ (open), `sesame` ﹅. */
   style?: 'dot' | 'circle' | 'sesame';
   /** `filled` (default for `dot` and `sesame`) or `open` (default for
-   *  `circle`). */
+   *  `circle`). Unset fields take `cjk.emphasisMark`'s (in Japan the
+   *  sesame). */
   fill?: 'filled' | 'open';
   /** `under` or `over` the text in its flow (in vertical text over is the
-   *  right side, under the left). Unset: under in horizontal text, over
-   *  (right) in vertical text. */
+   *  right side, under the left). Unset: `cjk.emphasisMark.position`,
+   *  which in Japan is over; else under in horizontal text, over (right)
+   *  in vertical text. */
   position?: 'over' | 'under';
 }
 
@@ -259,6 +317,28 @@ export interface InlineRuby {
   /** The ruby this span belongs to (the characters of a mono ruby share
    *  it). */
   id: number;
+  /** Jukugo ruby (熟語ルビ, JLReq §3.3.7, #422): the per-character
+   *  readings of one word. Each character keeps its reading while every
+   *  reading fits its base; a reading that does not may run onto the next
+   *  base of the word, and the word shares its reading as a group ruby
+   *  when that is not enough. The word may break between its characters,
+   *  each part laid out again. Set by `mode=jukugo`, and in a Japanese
+   *  document (`japan` region) on any per-character ruby of two
+   *  characters or more that does not say `mode=mono`. */
+  jukugo?: true;
+  /** `mode=mono` was written: the readings stay per character (モノルビ)
+   *  in a Japanese document too. */
+  mono?: true;
+  /** `align=` as written: where a reading shorter than its base sits
+   *  (`center`, `jis` 1:2:1, `start`); unset follows `cjk.ruby.align`. */
+  align?: 'center' | 'jis' | 'start';
+  /** Resolved by the layout before measuring (`cjk.ruby.overhang`, set
+   *  only when it is not the clreq quarter em): what a longer reading may
+   *  run onto. */
+  overhang?: 'none' | 'kana' | 'any';
+  /** Resolved by the layout (`cjk.ruby.smallKana: 'full'`): the reading's
+   *  small kana are painted full size (がつこう for がっこう). */
+  fullKana?: true;
   /** Resolved by the layout before measuring: the reading's font (CSS
    *  shorthand at the ruby size) and colour (hex; unset: the text's). */
   fontString?: string;
@@ -379,6 +459,16 @@ export interface IndexMark {
   path: string[];
   /** Sort key of the last level (`sort="…"`), when it differs from it. */
   sort?: string;
+  /** Reading of the last level in kana (`yomi="…"`, or `reading="…"`,
+   *  #425): a Japanese index files the entry by it, before `sort`; any
+   *  other index sorts by it as by `sort`. */
+  yomi?: string;
+  /** The reading the ruby of a visible mark's text gives that text, when
+   *  the text is the last level, carries ruby, and every ruby reading is
+   *  kana (`:index[{東京|とう|きょう}]` → とうきょう): a Japanese index's
+   *  fallback when the mark has no `yomi`. Absent when a base character
+   *  is left without a reading. */
+  rubyYomi?: string;
   /** Cross-references: the entry prints *See* / *See also* the target
    *  instead of a page number for this mark. */
   see?: string;

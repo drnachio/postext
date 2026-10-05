@@ -49,6 +49,7 @@ import {
 import { anchorDestination, LinkRegistry } from './links';
 import { StructTree, tagArtifact, type StructElem } from './tagging';
 import { StructureFlow } from './structureFlow';
+import { openTypeLanguageOf, withShapingLanguage } from '../shapingLanguage';
 
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
@@ -342,7 +343,14 @@ function openerTextElem(page: VDTPage, structure: StructureFlow): () => StructEl
   };
 }
 
-function renderPage(
+/** Paint one page, its text shaped in the language system of its
+ *  document's language (`shapingLanguage.ts`: `JAN ` for Japanese, the
+ *  font's default for any other). */
+function renderPage(...args: Parameters<typeof paintPage>): void {
+  withShapingLanguage(openTypeLanguageOf(languageTag(args[2].config)), () => paintPage(...args));
+}
+
+function paintPage(
   pdfDoc: PDFDocument,
   vdtPage: VDTPage,
   doc: VDTDocument,

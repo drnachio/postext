@@ -238,7 +238,20 @@ export function contentAreaForPage(
 // Style attribute copy: every VDTBlock mirrors a subset of BlockStyle fields.
 // ---------------------------------------------------------------------------
 
+/** The end indent of a block's style (`endIndent`, #424), by block: its
+ *  box stops that far short of the column's (or box's) end side, so the
+ *  renderers, which align and justify a line against its block's box, set
+ *  it there. Kept off the VDT: the box width says it. */
+const blockEndIndents = new WeakMap<VDTBlock, number>();
+
+/** `width` less the end indent of `blk`, never under 1 px. */
+export function widthLessEndIndent(blk: VDTBlock, width: number): number {
+  const end = blockEndIndents.get(blk);
+  return end === undefined ? width : Math.max(1, width - end);
+}
+
 export function applyStyleAttrs(blk: VDTBlock, style: BlockStyle): void {
+  if (style.endIndentPx !== undefined && style.endIndentPx > 0) blockEndIndents.set(blk, style.endIndentPx);
   if (style.boldFontString) blk.boldFontString = style.boldFontString;
   if (style.italicFontString) blk.italicFontString = style.italicFontString;
   if (style.boldItalicFontString) blk.boldItalicFontString = style.boldItalicFontString;
@@ -312,6 +325,11 @@ export function computeMeasureViewport(
     const indentPx = Math.min(style.indentPx, Math.max(0, columnWidth - 1));
     measureMaxWidth = Math.max(1, columnWidth - indentPx);
     lineXShift = indentPx;
+  }
+  // A paragraph style's `endIndent` (地からN字上げ, #424): the measure
+  // narrows from the end side; the lines keep their start.
+  if (!listBullet && style.endIndentPx !== undefined && style.endIndentPx > 0) {
+    measureMaxWidth = Math.max(1, measureMaxWidth - Math.min(style.endIndentPx, Math.max(0, measureMaxWidth - 1)));
   }
 
   if (listBullet) {

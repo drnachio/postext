@@ -1,4 +1,4 @@
-import { chineseScriptOf, type HyphenationLocale, type PostextConfig } from 'postext';
+import { chineseScriptOf, isJapaneseLanguage, type HyphenationLocale, type PostextConfig } from 'postext';
 
 /** Hyphenation dictionary for each app locale, used when the document's
  *  configuration does not name one. */
@@ -9,11 +9,12 @@ export const LOCALE_TO_HYPHENATION: Record<string, HyphenationLocale> = {
 /** The language a document that names none is read in: the interface's.
  *  Its hyphenation dictionary (`en` → `en-us`), or for a Chinese interface
  *  the Chinese of its script (`zh`, `zh-Hans` → `zh-Hans`; `zh-TW` →
- *  `zh-Hant`), which the engine sets without hyphenation; English for any
- *  other interface. */
+ *  `zh-Hant`), for a Japanese one `ja` (both set without hyphenation);
+ *  English for any other interface. */
 export function defaultDocumentLocale(uiLocale: string): string {
   const script = chineseScriptOf(uiLocale);
   if (script) return script === 'Hant' ? 'zh-Hant' : 'zh-Hans';
+  if (isJapaneseLanguage(uiLocale)) return 'ja';
   return LOCALE_TO_HYPHENATION[uiLocale] ?? 'en-us';
 }
 

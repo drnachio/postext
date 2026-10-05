@@ -21,8 +21,9 @@
  * `featureSettings: '"vert" 1, "fwid" 1'`, which Chrome 140+ applies to
  * canvas text. Without a twin, the fallbacks of `verticalOrientation`
  * apply: brackets and quotes turned about the em box's centre, mainland
- * pause and stop marks moved to the upper right of the cell (each by its
- * glyph's `offset`). A dash, an ellipsis or a wave dash stands in the
+ * pause and stop marks and Japanese small kana moved to the upper right of
+ * the cell (each by its glyph's `offset`); so do they where the twin has
+ * no vertical form for the character. A dash, an ellipsis or a wave dash stands in the
  * twin's vertical form when the font has one (Noto CJK's —— needs `fwid`
  * with `vert`: a rule down the middle of the cell), else it is turned
  * with its ink centred on the column's axis.
@@ -142,8 +143,13 @@ const TWIN_FEATURES = '"vert" 1, "fwid" 1';
 /** Brackets the probe compares: their vertical forms differ from the
  *  horizontal ones in every CJK face. */
 const PROBE = '「（《';
-/** The characters a twin is loaded for (only these ever paint with it). */
-export const VERTICAL_ALTERNATE_SAMPLE = '「」『』（）《》〈〉【】〔〕〖〗［］｛｝，。、：；！？“”‘’…～';
+/** The characters a twin is loaded for (only these ever paint with it):
+ *  the brackets, quotes and pause marks, and the dashes, ellipses, wave
+ *  dashes, 〝〟, ー and small kana of Japanese text. A face cut into
+ *  `unicodeRange` slices (a Japanese web font has a hundred) loads the
+ *  slices that hold them, which a canvas does not wait for when it paints. */
+export const VERTICAL_ALTERNATE_SAMPLE = '「」『』（）《》〈〉【】〔〕〖〗［］｛｝，。、：；！？“”‘’…～'
+  + '‥〜〝〟゠ーぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ';
 
 function inkKey(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, font: string, text: string): string {
   ctx.font = font;
@@ -425,7 +431,7 @@ function paintVertical(
   const twinFont = twin ? `${prefix}${JSON.stringify(twin)}` : undefined;
   let cx = x;
   const graphemes = graphemesOf(text);
-  const runs = orient ? forcedVerticalRuns(graphemes, orient) : verticalRuns(graphemes, state.region, state.uprightDigits ?? 0);
+  const runs = orient ? forcedVerticalRuns(graphemes, orient, state.region) : verticalRuns(graphemes, state.region, state.uprightDigits ?? 0);
   for (const run of runs) {
     if (run.cell === undefined) {
       // The frame turns it sideways: painted as it is, the letters tracked.
@@ -434,7 +440,7 @@ function paintVertical(
       continue;
     }
     if (run.glyph.orient === 'tcy') {
-      cx += paintCombined(ctx, run.text, cx, axis, em, central, mode) + tracking;
+      cx += paintCombined(ctx, run.glyph.paintAs ?? run.text, cx, axis, em, central, mode) + tracking;
       continue;
     }
     cx += paintCell(ctx, run.text, run.glyph, cx, axis, em * run.cell, em, central, mode, twinFont, tracking !== 0) + tracking;
@@ -482,15 +488,20 @@ function paintCell(
   const spacing = tracked ? ctx.letterSpacing : undefined;
   if (spacing !== undefined) ctx.letterSpacing = '0px';
   let kind: 'upright' | 'rotate' | 'corner' = 'upright';
-  let char = g;
+  // What is painted: a Japanese “ as 〝, whose vertical form is looked for.
+  let char = glyph.paintAs ?? g;
   let face: string | undefined;
   if (glyph.orient === 'rotate') {
     // A dash, an ellipsis, a wave dash: the font's vertical form when the
     // twin has one, else turned.
-    if (twinFont && twinHasForm(ctx, ctx.font, twinFont, g)) face = twinFont;
+    if (twinFont && twinHasForm(ctx, ctx.font, twinFont, char)) face = twinFont;
     else kind = 'rotate';
   } else if (glyph.orient === 'alternate') {
-    if (twinFont) face = twinFont;
+    // The twin's vertical form. A mark or a small kana moved in its cell
+    // without one takes it only when the twin has one for the character (a
+    // face with no `vert` for a small kana draws it as the plain face
+    // does, where it must move up and right).
+    if (twinFont && (glyph.fallback !== 'corner' || twinHasForm(ctx, ctx.font, twinFont, char))) face = twinFont;
     else {
       kind = glyph.fallback === 'corner' ? 'corner' : 'rotate';
       if (glyph.substitute) char = glyph.substitute;

@@ -29,6 +29,10 @@ export async function buildPdfResourceBytes(
     if (r.kind === 'bitmap' && r.bitmap?.fileId && !out.has(r.bitmap.fileId)) {
       const bytes = await load(r.bitmap.fileId);
       if (bytes) out.set(r.bitmap.fileId, bytes);
+    } else if (r.kind === 'video' && r.video?.poster?.fileId && !out.has(r.video.poster.fileId)) {
+      // A video prints as its poster (#454).
+      const bytes = await load(r.video.poster.fileId);
+      if (bytes) out.set(r.video.poster.fileId, bytes);
     } else if (r.kind === 'svg' && r.svg?.fileId && !out.has(r.svg.fileId)) {
       const master = r.svg.pdfFileId && !singleInk ? await load(r.svg.pdfFileId) : null;
       const bytes = master ?? await load(r.svg.fileId);

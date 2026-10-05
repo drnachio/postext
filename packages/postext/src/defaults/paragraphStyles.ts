@@ -34,6 +34,8 @@ function resolveParagraphStyleConfig(
     smallCaps: partial.smallCaps ?? false,
     hyphenation: partial.hyphenation ?? bodyText.hyphenation.enabled,
     indent: partial.indent ?? ZERO,
+    // Absent unless set, so styles without it resolve as before (#424).
+    ...(partial.endIndent && partial.endIndent.value > 0 ? { endIndent: partial.endIndent } : {}),
     firstLineIndent: partial.firstLineIndent ?? bodyText.firstLineIndent,
     hangingIndent: partial.hangingIndent ?? ZERO,
     spaceBetween: partial.spaceBetween ?? ZERO,
@@ -76,6 +78,7 @@ export function stripParagraphStylesDefaults(
     if (s.smallCaps) r.smallCaps = true;
     if (s.hyphenation !== undefined) r.hyphenation = s.hyphenation;
     if (s.indent !== undefined && !isZero(s.indent)) r.indent = s.indent;
+    if (s.endIndent !== undefined && !isZero(s.endIndent)) r.endIndent = s.endIndent;
     if (s.firstLineIndent !== undefined) r.firstLineIndent = s.firstLineIndent;
     if (s.hangingIndent !== undefined && !isZero(s.hangingIndent)) r.hangingIndent = s.hangingIndent;
     if (s.spaceBetween !== undefined && !isZero(s.spaceBetween)) r.spaceBetween = s.spaceBetween;

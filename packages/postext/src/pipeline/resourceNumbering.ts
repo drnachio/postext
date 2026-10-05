@@ -39,9 +39,11 @@ const EMPTY_HEADING: HeadingContext = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0
 /** Translate a resource `counterFormat` to the shared `NumeralStyle` used by
  *  {@link formatNumeral}. The resource model uses `'roman-lower'` style names
  *  whereas the numeral formatter uses `'lower-roman'`; either spelling (and
- *  the list's `arabic`) is read, and an unknown one counts in decimal. */
-function counterFormatToStyle(format: ResourceCounterFormat): NumeralStyle {
-  return parseNumberFormat(format) ?? 'decimal';
+ *  the list's `arabic`) is read, and an unknown one counts in decimal. The
+ *  document language `locale` decides what the `一` token names (Japanese
+ *  counted numerals in a ja document). */
+function counterFormatToStyle(format: ResourceCounterFormat, locale?: string): NumeralStyle {
+  return parseNumberFormat(format, locale) ?? 'decimal';
 }
 
 /** Walk `blocks` and produce, for each block index, the heading counters in
@@ -214,8 +216,11 @@ export function computeResourceNumbering(
   start?: ResourceNumberingStart,
   /** The document's digit system (`documentNumerals`). */
   digits?: DigitSystem,
+  /** The document language (`documentLocale`), for the `一` and `壹`
+   *  counter tokens. */
+  locale?: string,
 ): ResourceNumberingMap {
-  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start, digits).map;
+  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start, digits, locale).map;
 }
 
 /** {@link computeResourceNumbering} plus the counter state at the end of the
@@ -227,6 +232,7 @@ export function computeResourceNumberingState(
   headingContext: HeadingContext[],
   start?: ResourceNumberingStart,
   digits?: DigitSystem,
+  locale?: string,
 ): ResourceNumberingResult {
   const typeById = new Map<string, ResourceType>();
   for (const t of resourceTypes) typeById.set(t.id, t);
@@ -280,7 +286,7 @@ export function computeResourceNumberingState(
   for (const [typeId, occurrences] of byType) {
     const type = typeById.get(typeId)!;
     const tokens = parseResourceTemplate(type.numberingTemplate);
-    const style = counterFormatToStyle(type.counterFormat);
+    const style = counterFormatToStyle(type.counterFormat, locale);
     const resetLevel: ResetLevel | null =
       type.resetOn === 'never' ? null : (Number(type.resetOn.slice(1)) as ResetLevel);
 

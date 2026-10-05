@@ -12,7 +12,7 @@ import { counterFlipBox } from './mirrorFrame';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { joiningScriptIn } from '../measure/joining';
 
@@ -181,6 +181,14 @@ function renderSegments(
       currentFill = '';
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap: its run, not its text.
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, seg.color ?? style.color);
+      x += seg.width;
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -206,7 +214,7 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined || s.sideMarker !== undefined;
 }
 
 /**
@@ -254,6 +262,13 @@ function renderComposedSegments(
       continue;
     }
     if (seg.chip) {
+      // A chip was measured at the block's tracking, never at the spacing a
+      // justified run before it added between its characters: painted with
+      // that spacing still set, its words ran into the text after it.
+      if (spacing !== tracking) {
+        ctx.letterSpacing = `${tracking}px`;
+        spacing = tracking;
+      }
       paintChip(ctx, seg.chip, x, baseline, (run) =>
         pickSegmentColor(!!run.bold, !!run.italic, style.color, style.boldColor, style.italicColor));
       x += seg.width;
@@ -266,6 +281,14 @@ function renderComposedSegments(
       // A warichu note's part: its two rows, not its text (#195).
       paintWarichu(ctx, seg.warichu, x, baseline, style.color);
       x += seg.width;
+      continue;
+    }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap: its run, not its text.
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, seg.color ?? style.color);
+      x += seg.width;
+      currentFont = '';
+      currentFill = '';
       continue;
     }
     const font = seg.fontString
@@ -292,6 +315,8 @@ function renderComposedSegments(
     fillSegmentText(ctx, seg, x, baseline, cuts);
     // A ruby base's reading (#194).
     if (seg.ruby) paintRuby(ctx, seg.ruby, x, baseline, fill);
+    // Kanbun marks (#430).
+    if (seg.kunten) paintKunten(ctx, seg.kunten, x, baseline, fill);
     x += seg.width;
   }
   if (spacing !== tracking) ctx.letterSpacing = `${tracking}px`;
@@ -303,7 +328,7 @@ function composedSegmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
     || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
-    || s.ruby !== undefined || s.warichu !== undefined || s.labelTab !== undefined;
+    || s.ruby !== undefined || s.kunten !== undefined || s.warichu !== undefined || s.labelTab !== undefined || s.sideMarker !== undefined;
 }
 
 /**

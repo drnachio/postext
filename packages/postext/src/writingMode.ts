@@ -13,27 +13,40 @@
  *
  * Classes follow Unicode's `Vertical_Orientation` (UAX #50, data 18.0),
  * with the Chinese rules on top (clreq Appendix A, GB/T 15834—2011 §5.2):
- * - pause and stop marks (、。，．！？) and ：； are never turned. A
- *   Simplified (mainland) font sets them in the upper right of the cell
- *   through `vert` (、。，． in the top-right corner, ！？：； in the right
- *   half); Taiwan and Hong Kong fonts centre them and have no such form
- *   (their U+FE10–FE16 are the mainland shapes, so the vertical
- *   presentation forms must not be substituted there).
+ * - pause and stop marks (、。，．！？) are never turned. A Simplified
+ *   (mainland) font sets them in the upper right of the cell through
+ *   `vert` (、。，． in the top-right corner, ！？：； in the right half);
+ *   Taiwan and Hong Kong fonts centre them and have no such form (their
+ *   U+FE10–FE16 are the mainland shapes, so the vertical presentation
+ *   forms must not be substituted there), and leave ：； upright too.
+ *   Japanese text (the `japan` region) sets 、。，． in the corner as the
+ *   mainland does, ！？ upright in the centre of the cell (JLReq §3.1.10;
+ *   a Japanese font has no vertical form for them) and turns ：； (UAX #50
+ *   `Tr`, the vertical form of JIS X 4051).
  * - brackets and quotes take the vertical form, which is the horizontal
  *   glyph turned about the em box's centre when the font gives none;
  *   “ ” ‘ ’ in mainland text read as the corner brackets 『』「」
- *   (UAX #50 §3.2.4, the Hans vertical convention).
+ *   (UAX #50 §3.2.4, the Hans vertical convention). Japanese “ ” are
+ *   horizontal marks: vertical text sets 〝 〟 in their place (JLReq
+ *   §3.1.1; ja-typography §5), whose vertical forms Japanese fonts have
+ *   where they have none for “ ”; ‘ ’ keep their own.
+ * - small kana (ぁ っ ゃ ァ ッ ㇰ…, UAX #50 `Tu`) take their vertical form in
+ *   Japanese text, which sits up and to the right of the horizontal one
+ *   (JLReq §2.1.2), or move there without one; Chinese text leaves every
+ *   `Tu` character upright as it is.
  * - dashes, ellipses, the wave dash and the interpunct are turned about
  *   the em box's centre (Noto CJK gives —— a vertical form only with
  *   `fwid`): a dash is stretched to fill its cell. The mainland interpunct
- *   takes half a cell (clreq §5.1), the Taiwan and Hong Kong one
- *   a whole cell.
+ *   takes half a cell (clreq §5.1), the Taiwan, Hong Kong and Japanese
+ *   one a whole cell (JLReq §3.1.2: ・ is a full em).
  * - an apostrophe or an interpunct inside a Latin word ("don’t", "l·l")
  *   runs sideways with the word, as the composer keeps it in the word.
  *
  * The measurer and every renderer read the same runs ({@link
  * verticalRuns}): what stands in a cell advances its cell (one em, half an
  * em for the mainland interpunct), what runs sideways its horizontal width.
+ * Japanese text also sets a pair of exclamation and question marks (!! !?
+ * ?! ?? and ！！ ！？ ？！ ？？) side by side in one cell (JLReq §3.1.10).
  */
 
 import type { CjkRegion } from './types';
@@ -57,11 +70,19 @@ export type VerticalOrientationKind = 'upright' | 'sideways' | 'rotate' | 'alter
 export interface VerticalGlyph {
   orient: VerticalOrientationKind;
   /** `alternate` only: what a renderer without the font's vertical forms
-   *  does instead. */
+   *  does instead: turn the glyph (`rotate`), or move the upright glyph by
+   *  `offset` in its cell (`corner`: a mainland pause mark to the top
+   *  right, a Japanese small kana up and to the right). */
   fallback?: 'rotate' | 'corner';
   /** The character a fallback paints instead of this one (“ → 『 in
    *  mainland text: the Hans vertical quote is the corner bracket). */
   substitute?: string;
+  /** The text every renderer paints in place of the grapheme (or of the
+   *  `tcy` cell's text), before it looks for the font's vertical form:
+   *  Japanese “ ” are set as 〝 〟; a Japanese pair of full-width ！？ in one
+   *  cell as the half-width !? that fit it. The text read and copied stays
+   *  the grapheme. Absent outside the `japan` region. */
+  paintAs?: string;
   /** `rotate`: stretch the turned glyph along the line to fill its cell
    *  (a dash narrower than its em). */
   stretch?: boolean;
@@ -135,7 +156,7 @@ const CORNER_MARKS = new Set(['、', '。', '，', '．', '﹐', '﹑', '﹒']);
 const EXCLAIM_MARKS = new Set(['！', '？', '﹖', '﹗']);
 const COLON_MARKS = new Set(['：', '；', '﹔', '﹕']);
 
-/** Marks turned about their em box in every Chinese region: dashes,
+/** Marks turned about their em box in every CJK region: dashes,
  *  ellipses, the interpunct, connectors and the wave dash. */
 const TURNED = new Set([
   '—', '―', '⸺', '⸻', // — ― ⸺ ⸻
@@ -184,26 +205,63 @@ const ALT_CORNER: VerticalGlyph = { orient: 'alternate', fallback: 'corner' };
 const ALT_EXCLAIM: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.5, y: -0.08 } };
 const ALT_COLON: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.52, y: -0.22 } };
 const TCY: VerticalGlyph = { orient: 'tcy' };
+/** Japanese small kana: the font's vertical form, else moved by
+ *  {@link SMALL_KANA_OFFSET_EM}. */
+const ALT_SMALL_KANA: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0.13, y: -0.13 } };
+/** Another `Tu` character in Japanese text (the squared words ㍻ ㌀, the
+ *  standalone sound marks ゛゜): the font's vertical form, else upright in
+ *  the middle of its cell. */
+const ALT_UPRIGHT: VerticalGlyph = { orient: 'alternate', fallback: 'corner', offset: { x: 0, y: 0 } };
+/** Japanese vertical quotes (JLReq §3.1.1): “ ” are set as 〝 〟. */
+const JAPANESE_QUOTES: Record<string, VerticalGlyph> = {
+  '“': { orient: 'alternate', fallback: 'rotate', paintAs: '〝' },
+  '”': { orient: 'alternate', fallback: 'rotate', paintAs: '〟' },
+};
+
+/** The small kana of UAX #50 `Tu` (JLReq cl-11 less ゝゞヽヾ々ー, which are
+ *  `U` / `Tr`): hiragana, katakana, the katakana extensions for Ainu
+ *  (ㇰ–ㇿ) and the small kana of the Kana Extended blocks. */
+const SMALL_KANA_RE = /^[ぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶㇰ-ㇿ\u{1B132}\u{1B150}-\u{1B152}\u{1B155}\u{1B164}-\u{1B167}]/u;
+
+/** Where a Japanese small kana moves when the font gives no vertical form,
+ *  in ems of its cell (right and up): the shift of the `vert` glyphs'
+ *  ink from the horizontal ones in Noto Serif JP and Noto Sans JP, Shippori
+ *  Mincho, BIZ UDMincho and Zen Old Mincho: 0.09–0.25 em right and
+ *  0.06–0.26 em up (0.15 and 0.14 in Noto Serif JP). */
+export const SMALL_KANA_OFFSET_EM = ALT_SMALL_KANA.offset!;
 
 /**
- * How a grapheme is set in a vertical line of `region`'s Chinese (see the
- * module comment). Reads the grapheme's first code point; a sequence with
- * a combining mark or a variation selector follows its base.
+ * How a grapheme is set in a vertical line of `region`'s Chinese or
+ * Japanese (see the module comment). Reads the grapheme's first code
+ * point; a sequence with a combining mark or a variation selector follows
+ * its base.
  */
 export function verticalOrientation(grapheme: string, region: CjkRegion = 'mainland'): VerticalGlyph {
   const cp = grapheme.codePointAt(0);
   if (cp === undefined) return SIDEWAYS;
   if (cp < 0x80) return SIDEWAYS;
   const ch = String.fromCodePoint(cp);
-  if (CORNER_MARKS.has(ch)) return region === 'mainland' ? ALT_CORNER : UPRIGHT;
+  const japan = region === 'japan';
+  // Japan sets 、。，． in the corner too, and ！？ upright and centred: a
+  // Japanese font has no vertical form for them to move to the right.
+  if (CORNER_MARKS.has(ch)) return region === 'mainland' || japan ? ALT_CORNER : UPRIGHT;
   if (EXCLAIM_MARKS.has(ch)) return region === 'mainland' ? ALT_EXCLAIM : UPRIGHT;
-  if (COLON_MARKS.has(ch)) return region === 'mainland' ? ALT_COLON : UPRIGHT;
+  // Japan turns ：； (UAX #50 `Tr`): the font's vertical form, else the
+  // colon turned about its em box.
+  if (COLON_MARKS.has(ch)) return region === 'mainland' ? ALT_COLON : japan ? ALT_ROTATE : UPRIGHT;
   if (TURNED.has(ch)) return STRETCHED.has(ch) ? ROTATE_STRETCH : ROTATE;
   const hans = HANS_QUOTES[ch];
-  if (hans !== undefined) return region === 'mainland' ? { orient: 'alternate', fallback: 'rotate', substitute: hans } : ALT_ROTATE;
+  if (hans !== undefined) {
+    if (region === 'mainland') return { orient: 'alternate', fallback: 'rotate', substitute: hans };
+    return (japan ? JAPANESE_QUOTES[ch] : undefined) ?? ALT_ROTATE;
+  }
   switch (uaxVerticalOrientation(cp)) {
     case 'U': return UPRIGHT;
-    case 'Tu': return UPRIGHT; // small kana and the like: upright, the vertical form when the font has one
+    // Small kana and the like: in Japanese text the font's vertical form
+    // (a small kana up and to the right of the horizontal one), else moved
+    // there; Chinese text leaves them upright as they are (the bopomofo ㄧ
+    // is `Tu` too).
+    case 'Tu': return japan ? (SMALL_KANA_RE.test(ch) ? ALT_SMALL_KANA : ALT_UPRIGHT) : UPRIGHT;
     case 'Tr': return ALT_ROTATE;
     default: return SIDEWAYS;
   }
@@ -220,12 +278,15 @@ export function isVerticalCell(grapheme: string, region: CjkRegion = 'mainland')
  *  quadrant, the vertical one in the top-right). Measured against the
  *  `vert` glyphs of Noto Serif SC: within 0.07 em for 、。，．. ！？ and ：；
  *  carry their own `offset` (half an em to the right, 0.08 and 0.22 em up),
- *  within 0.02 em of the font's. */
+ *  within 0.02 em of the font's. Japanese 、。，． use it too: the `vert`
+ *  glyphs of Noto Serif JP move 0.59–0.62 em right and 0.60–0.65 em up,
+ *  those of Shippori Mincho 0.61–0.65 and 0.62–0.66. */
 export const CORNER_OFFSET_EM = { x: 0.6, y: -0.62 };
 
 /** The size of a character's cell in a vertical line, in ems: half an em
  *  for the mainland interpunct (· ・, clreq §5.1), one em for
- *  every other character that stands in a cell. `cls`, when the caller has
+ *  every other character that stands in a cell (the Japanese ・ too,
+ *  JLReq §3.1.2). `cls`, when the caller has
  *  it, is the grapheme's `cjkClassOf`. */
 export function verticalCellEms(grapheme: string, region: CjkRegion = 'mainland', cls = cjkClassOf(grapheme)): number {
   return region === 'mainland' && cls === 'interpunct' ? 0.5 : 1;
@@ -342,12 +403,59 @@ export function uprightDigitRuns(graphemes: readonly string[], digits: number, r
   return out;
 }
 
+const HALF_MARKS = new Set(['!', '?']);
+const FULL_MARKS = new Set(['！', '？']);
+/** Every exclamation and question mark a pair must not touch. */
+const PAIR_BLOCKERS = new Set(['!', '?', '！', '？', '﹗', '﹖', '‼', '⁇', '⁈', '⁉']);
+
+/** The half-width marks a full-width pair is painted with in its cell
+ *  (`VerticalGlyph.paintAs`): ！？ → !?. */
+function halfWidthPair(pair: string): string {
+  return [...pair].map((c) => String.fromCodePoint(c.codePointAt(0)! - 0xFEE0)).join('');
+}
+
+/** Whether `a` and `b` are a pair of exclamation or question marks of one
+ *  width (!! !? ?! ?? or ！！ ！？ ？！ ？？). */
+function isMarkPair(a: string | undefined, b: string | undefined): boolean {
+  if (a === undefined || b === undefined) return false;
+  return (HALF_MARKS.has(a) && HALF_MARKS.has(b)) || (FULL_MARKS.has(a) && FULL_MARKS.has(b));
+}
+
+/**
+ * Whether `graphemes[i, i + 2)` is a pair of exclamation and question marks
+ * Japanese vertical text sets side by side in one upright cell (JLReq
+ * §3.1.10; ja-typography §8): !! !? ?! ?? or ！！ ！？ ？！ ？？, exactly two
+ * (a third mark on either side leaves all of them as they are). Half-width
+ * marks pair only outside a Latin run: no letter, digit or other mark set
+ * sideways touches them (`Wow!!`, `(!?)` and `12!!` run sideways with their
+ * text); a space may. The composer reads its units by the same rule
+ * (`cjkCompose.ts`), so a line paints the cells it measured.
+ */
+export function isUprightMarkPair(graphemes: readonly string[], i: number, region: CjkRegion): boolean {
+  if (region !== 'japan' || !isMarkPair(graphemes[i], graphemes[i + 1])) return false;
+  const before = graphemes[i - 1];
+  const after = graphemes[i + 2];
+  if ((before !== undefined && PAIR_BLOCKERS.has(before)) || (after !== undefined && PAIR_BLOCKERS.has(after))) return false;
+  if (FULL_MARKS.has(graphemes[i]!)) return true;
+  const latin = (g: string | undefined): boolean => g !== undefined && !/^\s+$/.test(g) && verticalOrientation(g, region).orient === 'sideways';
+  return !latin(before) && !latin(after);
+}
+
+/** The one-cell glyph of a mark pair (see {@link isUprightMarkPair}): a
+ *  full-width pair is painted with the half-width marks, which fit the
+ *  cell where the full-width ones would be squeezed to half their width. */
+export function markPairGlyph(pair: string): VerticalGlyph {
+  return FULL_MARKS.has([...pair][0]!) ? { orient: 'tcy', paintAs: halfWidthPair(pair) } : TCY;
+}
+
 /** Cut `text` into the runs a vertical line paints and measures: sideways
  *  graphemes joined into runs, every other grapheme a cell of its own. An
  *  apostrophe or interpunct between two letters of a Latin word runs
  *  sideways with it (see `isWordInnerMark`), as the composer measures it.
  *  With `uprightDigits` (`cjk.uprightDigits`), each short number
- *  ({@link uprightDigitRuns}) is one `tcy` cell. */
+ *  ({@link uprightDigitRuns}) is one `tcy` cell; in Japanese text, so is
+ *  each pair of exclamation and question marks ({@link
+ *  isUprightMarkPair}). */
 export function verticalRuns(graphemes: readonly string[], region: CjkRegion = 'mainland', uprightDigits = 0): VerticalRun[] {
   const out: VerticalRun[] = [];
   const tcy = uprightDigitRuns(graphemes, uprightDigits, region);
@@ -362,6 +470,16 @@ export function verticalRuns(graphemes: readonly string[], region: CjkRegion = '
       }
       out.push({ text: graphemes.slice(i, i + combined).join(''), glyph: TCY, cell: 1 });
       i += combined - 1;
+      continue;
+    }
+    if (region === 'japan' && isUprightMarkPair(graphemes, i, region)) {
+      if (side) {
+        out.push({ text: side, glyph: SIDEWAYS });
+        side = '';
+      }
+      const pair = g + graphemes[i + 1]!;
+      out.push({ text: pair, glyph: markPairGlyph(pair), cell: 1 });
+      i += 1;
       continue;
     }
     const glyph = isWordInnerMark(g, graphemes[i - 1], graphemes[i + 1]) ? SIDEWAYS : verticalOrientation(g, region);
@@ -387,10 +505,16 @@ export type ForcedOrientation = 'tcy' | 'upright' | 'sideways';
 
 /** The runs of a text whose orientation the author forced (see
  *  {@link ForcedOrientation}): one `tcy` cell, one upright cell per
- *  grapheme, or one sideways run. */
-export function forcedVerticalRuns(graphemes: readonly string[], orient: ForcedOrientation): VerticalRun[] {
+ *  grapheme, or one sideways run. A cell of two full-width ！？ in
+ *  Japanese text (`region`; the composer sets a pair in one, see {@link
+ *  isUprightMarkPair}) is painted with the half-width marks. */
+export function forcedVerticalRuns(graphemes: readonly string[], orient: ForcedOrientation, region?: CjkRegion): VerticalRun[] {
   if (graphemes.length === 0) return [];
-  if (orient === 'tcy') return [{ text: graphemes.join(''), glyph: TCY, cell: 1 }];
+  if (orient === 'tcy') {
+    const text = graphemes.join('');
+    const glyph = region === 'japan' && graphemes.length === 2 && isMarkPair(graphemes[0], graphemes[1]) ? markPairGlyph(text) : TCY;
+    return [{ text, glyph, cell: 1 }];
+  }
   if (orient === 'sideways') return [{ text: graphemes.join(''), glyph: SIDEWAYS }];
   return graphemes.map((g) => ({ text: g, glyph: UPRIGHT, cell: 1 }));
 }
@@ -407,9 +531,14 @@ export function segmentOrientation(seg: { tcy?: boolean; orientation?: 'upright'
  *  {@link uprightDigitCandidates}, also one that runs with Latin text, so a
  *  paragraph holding one is measured by the formatted path, which reads
  *  each number with its paragraph (`sidewaysNumberSpans`). ASCII letters
- *  never do. */
-export function holdsVerticalCell(text: string, uprightDigits: number): boolean {
+ *  never do; in Japanese text (`region`), a pair of half-width marks set
+ *  in one cell does ({@link isUprightMarkPair}). */
+export function holdsVerticalCell(text: string, uprightDigits: number, region?: CjkRegion): boolean {
   if (uprightDigits > 0 && /[0-9]/.test(text) && uprightDigitCandidates([...text], uprightDigits).size > 0) return true;
+  if (region === 'japan' && /[!?][!?]/.test(text)) {
+    const graphemes = [...text];
+    for (let i = 0; i + 1 < graphemes.length; i++) if (isUprightMarkPair(graphemes, i, region)) return true;
+  }
   if (!/[^\u0000-\u007F]/.test(text)) return false;
   for (const ch of text) {
     if (ch.charCodeAt(0) < 0x80) continue;

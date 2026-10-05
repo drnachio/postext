@@ -137,7 +137,98 @@ export interface ResourceType {
 }
 
 /** The concrete payload kind a `Resource` carries. */
-export type ResourceKind = 'bitmap' | 'svg' | 'table';
+export type ResourceKind = 'bitmap' | 'svg' | 'table' | 'video';
+
+/** Where a video resource plays from (#454): a YouTube or Vimeo page, or a
+ *  self-hosted file (an uploaded MP4 or WebM). */
+export type VideoSource = 'youtube' | 'vimeo' | 'file';
+
+/** What a video's player offers in the interactive outputs (the HTML viewer,
+ *  EPUB). Set for the whole book in `videoStyle.player`, and per video in
+ *  `Resource.video.player` (only the fields set there). The HTML5 player of
+ *  a self-hosted file honours them all; the YouTube and Vimeo players honour
+ *  what their embed parameters allow (see each field). */
+export interface VideoPlayerOptions {
+  /** Show the player's controls. Default `true`. YouTube, Vimeo and
+   *  HTML5. */
+  controls?: boolean;
+  /** Offer the browser's download button (HTML5 only: `controlslist=
+   *  "nodownload"` when off). Default `true`. It hides the button; it is
+   *  not copy protection. YouTube and Vimeo never offer a download. */
+  download?: boolean;
+  /** Offer full screen. Default `true`. YouTube (`fs=0`), Vimeo and HTML5
+   *  (`nofullscreen`). */
+  fullscreen?: boolean;
+  /** Offer the playback speed menu. Default `true`. Vimeo (`speed=0`) and
+   *  HTML5 (`noplaybackrate`, Chromium). */
+  playbackRate?: boolean;
+  /** Offer picture-in-picture. Default `true`. Vimeo (`pip=0`) and HTML5
+   *  (`disablepictureinpicture`). */
+  pictureInPicture?: boolean;
+  /** Offer casting to another screen. Default `true`. HTML5
+   *  (`disableremoteplayback`). */
+  remotePlayback?: boolean;
+  /** Start playing on its own (always muted, as browsers require). Default
+   *  `false`. */
+  autoplay?: boolean;
+  /** Start muted. Default `false`. */
+  muted?: boolean;
+  /** Play again from the start at the end. Default `false`. */
+  loop?: boolean;
+  /** How much of a self-hosted file the browser loads before play:
+   *  `'none'`, `'metadata'` (the default) or `'auto'`. HTML5 only. */
+  preload?: 'none' | 'metadata' | 'auto';
+  /** Privacy-enhanced embeds: YouTube from `youtube-nocookie.com`, Vimeo
+   *  with `dnt=1` (no tracking cookies). Default `true`. */
+  privacy?: boolean;
+}
+
+export type ResolvedVideoPlayerOptions = Required<VideoPlayerOptions>;
+
+/** The picture printed for a video: a frame of it (the platform's poster
+ *  for YouTube and Vimeo, a chosen frame of a self-hosted file), stored
+ *  out-of-band like a bitmap. */
+export interface ResourceVideoPoster {
+  fileId: string;
+  format: string;
+  width: number;
+  height: number;
+}
+
+/** The payload of a `kind: 'video'` resource (#454). */
+export interface ResourceVideo {
+  source: VideoSource;
+  /** YouTube or Vimeo: the video's address (any watch, short, Shorts or
+   *  embed link). A self-hosted file: its production address, where the
+   *  published book finds it — printed in the QR code, linked from the PDF,
+   *  and played by the HTML and EPUB outputs when the file itself is not
+   *  available to them. */
+  url?: string;
+  /** A self-hosted file: the uploaded video, stored out-of-band like a
+   *  bitmap (part of a `.postext` bundle). */
+  fileId?: string;
+  /** A self-hosted file's format: `'mp4'` (the default), `'webm'`, `'ogv'`,
+   *  `'mov'`. */
+  format?: string;
+  /** Frame size of the video in px, for its aspect ratio when there is no
+   *  poster. */
+  width?: number;
+  height?: number;
+  /** Length in seconds (informative). */
+  duration?: number;
+  /** The poster frame. Without one a video is printed as a placeholder box
+   *  in the video's aspect ratio (16:9 when unknown). */
+  poster?: ResourceVideoPoster;
+  /** The time in seconds of a self-hosted file's frame used as the poster
+   *  (informative, kept so the frame can be picked again). */
+  posterTime?: number;
+  /** Play from `start` to `end` seconds. The printed link starts at
+   *  `start` too. */
+  start?: number;
+  end?: number;
+  /** Player options of this video, laid over `videoStyle.player`. */
+  player?: VideoPlayerOptions;
+}
 
 /** Horizontal alignment of a table cell's content. */
 export type TableCellAlign = 'left' | 'center' | 'right';
@@ -209,6 +300,16 @@ export interface TableModel {
   columnWidths?: number[];
 }
 
+/** A rectangle of a picture in fractions of its intrinsic size: `x` and
+ *  `width` of its width, `y` and `height` of its height (0–1, top-left
+ *  origin). */
+export interface ResourceSafeArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** A user-managed resource instance. Binary payloads (bitmaps, SVGs) are
  *  stored out-of-band (IndexedDB in the sandbox) and referenced by
  *  `fileId`; table resources carry their model inline. */
@@ -278,6 +379,21 @@ export interface Resource {
      *  the document. */
     direction?: 'ltr' | 'rtl';
   };
+  /** Present when `kind === 'video'`: a YouTube, Vimeo or self-hosted
+   *  video, placed, captioned and numbered like a picture (its type is
+   *  usually the built-in `video`, numbered on its own: Video 1.1), printed
+   *  as its poster with the `videoStyle` overlays and played by the
+   *  interactive outputs. */
+  video?: ResourceVideo;
+  /** The safe area of a bitmap or SVG: the rectangle of the picture that
+   *  holds what matters (a person and part of the landscape). With one, the
+   *  engine may show the picture at any aspect ratio between the whole
+   *  picture and this rectangle, cropping what lies outside it, to make the
+   *  figure taller or shorter where the page needs it (fill a column left
+   *  short, fit the room left); the outer margins are cropped in proportion
+   *  to their sizes and the safe area always stays in view. Without one the
+   *  picture is always shown whole. Ignored for tables. */
+  safeArea?: ResourceSafeArea;
   /** Optional per-resource placement override. When unset, the resource's
    *  type default (then `top` / `column`) applies. A `position` of `'top'` or
    *  `'bottom'` floats the resource to a band on the page near its first
@@ -345,6 +461,10 @@ export interface OutlineIndexMark {
   /** The entry's levels, main term first. */
   path: string[];
   sort?: string;
+  /** The reading of the last level (`yomi="…"`), and the kana reading the
+   *  ruby of the marked text gives it (see {@link IndexMark.rubyYomi}). */
+  yomi?: string;
+  rubyYomi?: string;
   see?: string;
   seeAlso?: string;
   main?: boolean;
@@ -566,9 +686,10 @@ export interface CutLinesConfig {
   markOffset?: Dimension;
   /** Stroke width of the marks. Default 0.25 pt. */
   markWidth?: Dimension;
-  /** Colour of the marks on the canvas and in RGB or grayscale PDFs. A
-   *  CMYK PDF paints them in registration colour (the `/All`
-   *  separation), so they print on every plate. Default black. */
+  /** Colour of the marks on the canvas (the screen preview). A PDF
+   *  always paints them in registration colour (the `/All` separation),
+   *  whatever its colour space, so they print on every plate. Default
+   *  black. */
   color?: ColorValue;
 }
 
@@ -1547,6 +1668,117 @@ export interface ResolvedDiagramStyleConfig {
   inkColor: ColorValue;
 }
 
+/** Where an overlay sits on a video's poster: the centre, a corner or the
+ *  middle of a side. The positions are physical: `top-right` is the top
+ *  right corner in a right-to-left book too. */
+export type VideoOverlayPosition =
+  | 'center'
+  | 'top-left'
+  | 'top'
+  | 'top-right'
+  | 'left'
+  | 'right'
+  | 'bottom-left'
+  | 'bottom'
+  | 'bottom-right';
+
+/** The mark printed on a video's poster to say it plays. */
+export interface VideoPlayMarkConfig {
+  /** Print it. Default `true`. */
+  enabled?: boolean;
+  /** `'circle'` (a disc with a triangle, the default), `'rounded'` (a
+   *  rounded rectangle with a triangle) or `'triangle'` (the triangle
+   *  alone, outlined in the background colour). */
+  shape?: 'circle' | 'rounded' | 'triangle';
+  /** Default `'center'`. */
+  position?: VideoOverlayPosition;
+  /** Height of the mark (the disc's diameter). Default `12mm`; never more
+   *  than 40 % of the poster's shorter side. */
+  size?: Dimension;
+  /** Distance from the poster's edges when the mark sits at a side or a
+   *  corner. Default `4mm`. */
+  inset?: Dimension;
+  /** The triangle. Default white. */
+  color?: ColorValue;
+  /** The disc or rectangle behind it. Default the main palette colour. */
+  background?: ColorValue;
+  /** Opacity of the background, 0–1. Default `0.9`. */
+  backgroundOpacity?: number;
+}
+
+/** The QR code printed on a video's poster, opening the video (its YouTube
+ *  or Vimeo page, or a self-hosted file's production address). */
+export interface VideoQrConfig {
+  /** Print it. Default `true`. A video with no address (a self-hosted file
+   *  without `url`) prints none and raises `videoWithoutUrl`. */
+  enabled?: boolean;
+  /** Default `'bottom-right'`. */
+  position?: VideoOverlayPosition;
+  /** Side of the code with its quiet zone. Default `18mm`; never more than
+   *  45 % of the poster's shorter side. Keep each module at least a third of
+   *  a millimetre for phone cameras. */
+  size?: Dimension;
+  /** Distance from the poster's edges. Default `3mm`. */
+  inset?: Dimension;
+  /** Error-correction level `'L'`, `'M'` (the default), `'Q'` or `'H'`;
+   *  raised automatically while the code stays the same size. */
+  errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+  /** Light modules around the code, in modules. Default `2`. */
+  quietZone?: number;
+  /** Dark modules. Default black. */
+  color?: ColorValue;
+  /** The plate behind the code. Default white. */
+  background?: ColorValue;
+  /** Corner radius of the plate. Default `1mm`. */
+  radius?: Dimension;
+}
+
+/** How video resources are printed and played (#454). */
+export interface VideoStyleConfig {
+  playMark?: VideoPlayMarkConfig;
+  qr?: VideoQrConfig;
+  /** Make the poster a link to the video: a link annotation in the PDF, an
+   *  `<a>` around the poster in HTML and EPUB when they show the poster.
+   *  Default `true`. */
+  linkPoster?: boolean;
+  /** What the HTML output sets for a video: its player (`'player'`, the
+   *  default) or the printed poster with its overlays (`'poster'`). */
+  html?: 'player' | 'poster';
+  /** Player options for every video. */
+  player?: VideoPlayerOptions;
+}
+
+export interface ResolvedVideoPlayMarkConfig {
+  enabled: boolean;
+  shape: 'circle' | 'rounded' | 'triangle';
+  position: VideoOverlayPosition;
+  size: Dimension;
+  inset: Dimension;
+  color: ColorValue;
+  background: ColorValue;
+  backgroundOpacity: number;
+}
+
+export interface ResolvedVideoQrConfig {
+  enabled: boolean;
+  position: VideoOverlayPosition;
+  size: Dimension;
+  inset: Dimension;
+  errorCorrection: 'L' | 'M' | 'Q' | 'H';
+  quietZone: number;
+  color: ColorValue;
+  background: ColorValue;
+  radius: Dimension;
+}
+
+export interface ResolvedVideoStyleConfig {
+  playMark: ResolvedVideoPlayMarkConfig;
+  qr: ResolvedVideoQrConfig;
+  linkPoster: boolean;
+  html: 'player' | 'poster';
+  player: ResolvedVideoPlayerOptions;
+}
+
 /** A named paragraph style, applied to the paragraphs inside a
  *  `:::paragraphs{style="<id>"}` container. Every typographic field is
  *  optional and inherits the body text when unset, so a style only needs to
@@ -1598,6 +1830,14 @@ export interface ParagraphStyleConfig {
    *  `hangingIndent: 2.5em` sets the line at 1.5 em and its turnover at
    *  4 em. Default `0`; a negative value counts as `0`. */
   indent?: Dimension;
+  /** Indent of every line from the side lines end on (the right of an
+   *  English paragraph, the foot of a vertical line), `em` being the
+   *  style's own size: the measure narrows by it and lines set flush to the
+   *  end (`textAlign: 'end'`) stop that far short of it. A date or a
+   *  signature raised N characters off the foot of a Japanese letter (地から
+   *  N字上げ) is `textAlign: 'end'` with `endIndent: 'Nem'`; 地付き is the
+   *  same at `0`. Default `0`; a negative value counts as `0`. */
+  endIndent?: Dimension;
   /** Defaults to the body first-line indent. Ignored when
    *  {@link hangingIndent} is non-zero. */
   firstLineIndent?: Dimension;
@@ -1649,6 +1889,8 @@ export interface ResolvedParagraphStyleConfig {
   smallCaps: boolean;
   hyphenation: boolean;
   indent: Dimension;
+  /** Absent when the style sets none (or `0`). */
+  endIndent?: Dimension;
   firstLineIndent: Dimension;
   hangingIndent: Dimension;
   spaceBetween: Dimension;
@@ -2377,6 +2619,31 @@ export interface HeadingLevelConfig {
    *  a half above its text while an H3 stays on the grid. A heading style
    *  may set it too. */
   snapToGrid?: boolean;
+  /** 行取り (gyōdori, JLReq §4.1.6): the heading takes exactly this many
+   *  lines of the body grid (N × the body line pitch), its text centred in
+   *  them, in place of its `marginTop` and `marginBottom` — "3行取り" is
+   *  `lineSpan: 3`. The band starts on the grid when the heading snaps to it
+   *  (`snapToGrid`), keeps its lines at the head of a column and after
+   *  another heading, and holds its text centred across the line in
+   *  vertical text too. A heading whose lines need more room than N body
+   *  lines takes the next whole number of lines. Not read by a heading set
+   *  as a page opener (`span: 'page'`) or from its `advancedDesign`, nor
+   *  inside a box. Unset (default): the margins apply. */
+  lineSpan?: number;
+  /** Indent of the heading's lines from the side lines start on (字下げ:
+   *  the top of a vertical line, the left of an English one), in which `em`
+   *  is the BODY size, as Japanese books count a heading's indent in body
+   *  characters (JLReq §4.1.3: 4, 6 and 8 字 for the levels of a vertical
+   *  book). The measure narrows by it; a centred heading centres in what is
+   *  left. Default `0`. */
+  indent?: Dimension;
+  /** 字取り (jidori, JLReq §3.7.3, §4.1): a heading shorter than this many
+   *  of its own characters is spaced out evenly to fill exactly that width
+   *  (`jidori: 3` sets 序章 as 序　章). Applies to a heading that fits one
+   *  line; a longer title is set as it is. A heading overrides it with
+   *  `{jidori=N}` (`{jidori=0}` turns it off). Unset (default): no
+   *  spacing. */
+  jidori?: number;
 }
 
 export type HeadingTextTransform = 'none' | 'uppercase';
@@ -2408,6 +2675,12 @@ export interface ResolvedHeadingLevelConfig {
   hidden: boolean;
   /** The level's own value, else `headings.snapToGrid`. */
   snapToGrid: boolean;
+  /** Absent unless set (see {@link HeadingLevelConfig.lineSpan}). */
+  lineSpan?: number;
+  /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
+  indent?: Dimension;
+  /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
+  jidori?: number;
 }
 
 export interface HeadingsConfig {
@@ -2425,6 +2698,12 @@ export interface HeadingsConfig {
    *  rule too: the cut is taken lower (or dropped) rather than leave a
    *  heading closing a column while its text opens the next. Default true. */
   keepWithNext?: boolean;
+  /** With {@link keepWithNext} on, let a heading close the last column of an
+   *  even page all the same: its text opens the facing odd page, which the
+   *  reader sees beside it in the same spread (JLReq §4.1.7 b allows it in
+   *  vertical books; the spread is the same in a left-bound book). Default
+   *  `false`. */
+  keepWithNextSpread?: boolean;
   /** How a paragraph that does not fit under a heading at a column's foot
    *  is split, when pushing it whole would leave the heading behind
    *  (`keepWithNext`):
@@ -2564,6 +2843,8 @@ export interface ResolvedHeadingsConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   keepWithNext: boolean;
+  /** Present (`true`) only when set. */
+  keepWithNextSpread?: boolean;
   keepWithNextSplit: KeepWithNextSplit;
   snapToGrid: boolean;
   inlineMarks: boolean;
@@ -3089,24 +3370,44 @@ export interface ResolvedMathConfig {
  *  - `'column'`: at the foot of the column that holds the line citing the
  *    note, under a separator rule, above the column's bottom float band. In
  *    a one-column layout that is the foot of the page;
- *  - `'chapterEnd'`: every note of the chapter after its last block. */
-export type FootnotePlacement = 'column' | 'chapterEnd';
+ *  - `'chapterEnd'`: every note of the chapter after its last block;
+ *  - `'spread'`: sidenotes (傍注) of a vertical book (JLReq §4.2.6): the
+ *    notes cited on both pages of a spread are set at the fore-edge end of
+ *    its odd page (the left page of a right-bound book: the foot of the
+ *    flow, after its last line), under a rule. A note that does not fit
+ *    there stays on the even page, at its own fore-edge end; one cited too
+ *    late on the odd page goes, with its line, to the next spread. In a
+ *    horizontal document the notes are set as `'column'` notes and a
+ *    configuration warning (`footnoteSpreadHorizontal`) says so. */
+export type FootnotePlacement = 'column' | 'chapterEnd' | 'spread';
 
 /** When the note numbers start again at 1: at each chapter (a heading
  *  that opens a page, `breakBefore`, and the start of each document of a
  *  book), never within the document, on every page (`'page'`, the usual
- *  页下注 of a Chinese book) or in every column (`'column'`, for books that
- *  set their notes column by column). `'page'` and `'column'` count the
- *  notes where the layout sets them, so they apply to notes at the column
- *  foot only: with `placement: 'chapterEnd'` they number by chapter. */
-export type FootnoteNumbering = 'chapter' | 'document' | 'page' | 'column';
+ *  页下注 of a Chinese book), in every column (`'column'`, for books that
+ *  set their notes column by column) or on every spread (`'spread'`, the
+ *  sidenotes of a Japanese book). `'page'`, `'column'` and `'spread'`
+ *  count the notes where the layout sets them, so they apply to notes at
+ *  the column foot or on the spread only: with `placement: 'chapterEnd'`
+ *  they number by chapter. */
+export type FootnoteNumbering = 'chapter' | 'document' | 'page' | 'column' | 'spread';
 
 /** How the marker in the text is set:
  *  - `'superscript'`: raised and reduced, as a superscript (`text¹`);
  *  - `'inline'`: on the baseline at `markerSize` (`text①`), centred in its
  *    cell in vertical text — how Chinese books set circled markers;
+ *  - `'side'`: the interlinear marker of Japanese books (合印, JLReq
+ *    §4.2.3): small (`markerSize`, default 0.6 em) in the line gap beside
+ *    the word it marks, on the side ruby takes (right of a vertical line,
+ *    over a horizontal one), its end flush with the end of the word's last
+ *    character. It takes no room in the line, and the leading must hold it
+ *    as it holds ruby;
+ *  - `'right'`: the inline marker of Japanese vertical text (行右小書き):
+ *    reduced (`markerSize`, default 0.7 em) and set flush with the right
+ *    side of the line, taking its advance. In horizontal text it is a
+ *    superscript;
  *  - `'auto'`: inline for `circled-decimal` numbers, else superscript. */
-export type FootnoteMarkerPosition = 'auto' | 'superscript' | 'inline';
+export type FootnoteMarkerPosition = 'auto' | 'superscript' | 'inline' | 'side' | 'right';
 
 /** The rule set between the text and the notes of a column. */
 export interface FootnoteSeparatorConfig {
@@ -3255,10 +3556,20 @@ export interface ResolvedCrossRefsConfig {
   defaultStyle: 'default' | 'number' | 'title' | 'page';
 }
 
+/** Footnotes. A Japanese document (`locale: 'ja'`) resolves the fields it
+ *  leaves unset after JLReq §4.2: a vertical one sets endnotes after each
+ *  chapter (後注: `placement: 'chapterEnd'`, numbered by chapter) with
+ *  `（1）` markers at the right of the line (`markerPosition: 'right'`,
+ *  `markerTemplate: '（{n}）'`, the digits upright by `cjk.uprightDigits`),
+ *  the notes hung 2 note-ems with a full em after the number; a
+ *  horizontal one sets them at the column foot numbered per page, with
+ *  superscript markers and a rule ⅓ of the measure. `placement: 'spread'`
+ *  numbers per spread unless `numbering` says otherwise. Every other
+ *  document resolves the defaults given on each field. */
 export interface FootnotesConfig {
   /** Default `'column'`. */
   placement?: FootnotePlacement;
-  /** Default `'chapter'`. */
+  /** Default `'chapter'` (`'spread'` with `placement: 'spread'`). */
   numbering?: FootnoteNumbering;
   /** How the numbers are written, in any spelling of a number format
    *  (`decimal`, `lower-roman`, `circled-decimal` / `①`, `cjk-decimal`…, see
@@ -3269,8 +3580,9 @@ export interface FootnotesConfig {
    *  that opens the note itself follows it too: raised, or set at the size
    *  of the note text. */
   markerPosition?: FootnoteMarkerPosition;
-  /** Size of an inline marker in the text, `em` of the text around it.
-   *  Default `1em`. No effect on a superscript marker. */
+  /** Size of an inline, side or right marker in the text, `em` of the
+   *  text around it. Default `1em` (`0.6em` for a side marker, `0.7em` for
+   *  a right one). No effect on a superscript marker. */
   markerSize?: Dimension;
   /** How a note's number is written, `{n}` standing for it in its number
    *  format and the document's digits: `'({n})'` sets the parentheses of
@@ -3303,6 +3615,11 @@ export interface FootnotesConfig {
   /** Indent of the turnover lines of a note, so they align past its
    *  number. Default `0` (the lines run flush under the number). */
   hangingIndent?: Dimension;
+  /** The space between a note's number and its text: an en space (`'en'`,
+   *  the default) or a full em of the note size (`'em'`, an ideographic
+   *  space in CJK text: JLReq §4.2.4 sets one note-em after the number).
+   *  It never stretches or breaks. */
+  numberGap?: 'en' | 'em';
   /** Space between two notes. Default `0`. */
   spaceBetween?: Dimension;
   /** Space between the last line of text and the separator rule (or the
@@ -3319,7 +3636,7 @@ export interface ResolvedFootnotesConfig {
   numbering: FootnoteNumbering;
   numberFormat: NumberFormatStyle;
   /** `'auto'` resolved against the number format. */
-  markerPosition: 'superscript' | 'inline';
+  markerPosition: 'superscript' | 'inline' | 'side' | 'right';
   markerSize: Dimension;
   /** Set when it is not `'{n}'` (and holds `{n}`). */
   markerTemplate?: string;
@@ -3332,19 +3649,23 @@ export interface ResolvedFootnotesConfig {
   color?: ColorValue;
   textAlign?: TextAlign;
   hangingIndent: Dimension;
+  /** Set when it is `'em'`. */
+  numberGap?: 'em';
   spaceBetween: Dimension;
   spaceAbove: Dimension;
   spaceBelowRule: Dimension;
   separator: ResolvedFootnoteSeparatorConfig;
 }
 
-/** The conventions Chinese text follows, after the regions clreq
+/** The conventions CJK text follows. Chinese, after the regions clreq
  *  describes: `mainland` (China and Singapore: simplified characters,
- *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters). */
-export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong';
+ *  GB/T 15834—2011), `taiwan` and `hongkong` (traditional characters).
+ *  Japanese: `japan` (JIS X 4051, W3C JLReq), which every `ja` tag
+ *  resolves to. */
+export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong' | 'japan';
 
-/** How strictly lines of CJK text avoid starting or ending with a mark
- *  (clreq §6.1.1):
+/** How strictly lines of CJK text avoid starting or ending with a mark.
+ *  The Chinese levels (clreq §6.1.1):
  *  - `none`: a line may break between any two characters (Taiwan and Hong
  *    Kong newspapers);
  *  - `basic`: no line starts with a pause or stop mark (、，；：。！？), a
@@ -3355,10 +3676,25 @@ export type CjkRegion = 'mainland' | 'taiwan' | 'hongkong';
  *    15834—2011 §5.1.9);
  *  - `strict`: `gb`, and no line starts with a two-em dash (——) or an
  *    ellipsis (……).
+ *  The Japanese levels (kinsoku shori, JLReq §3.1.7–§3.1.10 and Appendix
+ *  C.3, JIS X 4051). At each no line starts with a closing bracket or
+ *  quote, 、，。． or a closing warichu bracket, and none ends with an
+ *  opening one; a line may start with ―― or …… (never break inside them,
+ *  nor inside ‥‥ or 〳〵); the solidus has no rule:
+ *  - `ja-very-strict` (JIS X 4051's default): no line starts with a small
+ *    kana (ぁ っ ゃ ァ ッ ョ ㇰ…), the prolonged sound mark ー, an iteration
+ *    mark (々 ゝ ゞ ヽ ヾ 〻), a hyphen (‐ ゠ 〜 ～ –), ？！ or a middle dot
+ *    (・ ： ；);
+ *  - `ja-strict`: `ja-very-strict`, but a small kana, ー and 々 may start a
+ *    line (JLReq's convention for general books);
+ *  - `ja-loose` (newspapers): only the marks named first stay off the line
+ *    start; hyphens, ？！, middle dots and every iteration mark may open a
+ *    line, and a currency sign or a unit may stand at a line end or start
+ *    away from a number.
  *  At every level —— and …… never split, a number keeps its signs and its
  *  unit (¥5,999, 50%), a Latin word stays whole unless it is wider than the
  *  line, and a footnote marker stays with the character it follows. */
-export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict';
+export type CjkLineBreak = 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose';
 
 /** East Asian typography: how Chinese, Japanese and Korean text is
  *  composed. Every field is optional; `'auto'` follows the region of the
@@ -3369,33 +3705,66 @@ export interface CjkConfig {
   /** The regional conventions to follow. `'auto'` (the default) reads them
    *  from `locale`: `zh`, `zh-Hans`, `zh-CN` and `zh-SG` → `mainland`;
    *  `zh-Hant` and `zh-TW` → `taiwan`; `zh-HK` and `zh-MO` → `hongkong`;
-   *  any other language → `mainland`. */
+   *  `ja` and every `ja-*` tag → `japan`; any other language →
+   *  `mainland`. */
   region?: 'auto' | CjkRegion;
   /** Where lines may break (see {@link CjkLineBreak}). `'auto'` (the
-   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong. */
+   *  default): `gb` for the mainland, `basic` for Taiwan and Hong Kong,
+   *  `ja-very-strict` for Japan. */
   lineBreak?: 'auto' | CjkLineBreak;
   /** How wide the full-width marks are set (see
    *  {@link CjkPunctuationWidth}). `'auto'` (the default): `kaiming` for
-   *  the mainland, `fullwidth` for Taiwan and Hong Kong. */
+   *  the mainland, `fullwidth` for Taiwan, Hong Kong and Japan (JLReq
+   *  §3.1.2: 、。 inside a Japanese line keep their whole em). Japanese
+   *  full-width text follows JLReq throughout: ・：； take a quarter em
+   *  on each side, ？！ none, 、 and ・ between kanji numerals none
+   *  (二、三日, 三・一四); a line that takes one more character gives up
+   *  the half em at its end first, then the blank of 、・「」 inside it,
+   *  never the half em after a 。 (JLReq §3.8.3); a justified line is
+   *  never spread inside a bracket or next to 、。・？！. */
   punctuationWidth?: 'auto' | CjkPunctuationWidth;
   /** Two marks that meet (`。」`, `》（`, `：“`) give up the half em of
    *  blank between them, so the pair takes 1.5 em instead of 2 (clreq
-   *  §6.3.2.2). `'auto'` (the default): on for the mainland and Hong
-   *  Kong, off for Taiwan. */
+   *  §6.3.2.2, JLReq §3.1.4). `'auto'` (the default): on for the
+   *  mainland, Hong Kong and Japan, off for Taiwan. */
   compressAdjacent?: 'auto' | boolean;
   /** An opening bracket or quote that starts a line gives up its leading
    *  half em, so its ink lines up with the text edge, and a closing one
-   *  that ends a line its trailing half (clreq §6.3.2.3). `'auto'` (the
-   *  default): on for the mainland and Hong Kong, off for Taiwan. */
+   *  that ends a line its trailing half (clreq §6.3.2.3, JLReq §3.1.5).
+   *  Japanese full-width text keeps the half em after a closing mark at
+   *  the end of a line: it is the first blank the line gives up, all of
+   *  it, when it takes in one more character (JLReq §3.8.3). `'auto'` (the
+   *  default): on for the mainland, Hong Kong and Japan, off for
+   *  Taiwan. */
   trimLineStart?: 'auto' | boolean;
   /** Whether a pause or stop mark may hang past the end of the line
-   *  (clreq §6.1.3). `'none'` (the default): never. `'allow'`: one of
-   *  、，。． (on the mainland also ；：？！) hangs when it would otherwise
-   *  open the next line and compressing the line cannot take it in; never
-   *  in horizontal Taiwan and Hong Kong text. `'force'`: such a mark hangs
+   *  (clreq §6.1.3; ぶら下げ, JLReq §2.5.1, §3.8.2). `'none'`: never.
+   *  `'allow'`: one of 、，。． (on the mainland also ；：？！) hangs when it
+   *  would otherwise open the next line and compressing the line cannot
+   *  take it in; never in horizontal Taiwan and Hong Kong text (Japan:
+   *  、，。． only, in both writing modes). `'force'`: such a mark hangs
    *  whenever it ends a line (but the paragraph's last). Never after or
-   *  before another mark. */
-  hangingPunctuation?: CjkHangingPunctuation;
+   *  before another mark. `'auto'` (the default): `'allow'` for Japan,
+   *  where many books hang 、。 (bunko in particular), `'none'` for the
+   *  Chinese regions. */
+  hangingPunctuation?: 'auto' | CjkHangingPunctuation;
+  /** The full-width space after ？ and ！ (JLReq §3.1.6): one em of blank
+   *  after a ？ or ！ that ends a sentence inside a paragraph, none when a
+   *  closing bracket or another ？！ follows it, at the end of the
+   *  paragraph or at the end of a line (it does not carry over to the next
+   *  line). A space the author typed after the mark (U+3000 or a word
+   *  space) is replaced, not added to. The space neither stretches nor
+   *  shrinks when the line is justified. `'auto'` (the default): on for
+   *  Japan, off for the Chinese regions, whose ？！ take no space. */
+  spaceAfterQuestion?: 'auto' | boolean;
+  /** Where an opening bracket that starts a paragraph is set (JLReq
+   *  §3.1.5, 起こしの括弧), see {@link CjkParagraphStartBracket}. Applies
+   *  to a paragraph with a first-line indent (`bodyText.firstLineIndent`)
+   *  that opens with 「『（〔 and the other opening brackets and quotes.
+   *  `'auto'` (the default): `'half'` for Japan (pattern ③, the
+   *  convention of literary books), and for the Chinese regions the
+   *  bracket is set as at any line start (`trimLineStart`). */
+  paragraphStartBracket?: 'auto' | CjkParagraphStartBracket;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
    *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
@@ -3422,18 +3791,32 @@ export interface CjkConfig {
    *  letters inside the same emphasis keep their italics; `'italic'` slants
    *  them as any text (a CJK face has no italic, so the slant is
    *  synthesised). `'auto'` (the default): `'dots'` when the document
-   *  language (`locale`) is Chinese, `'italic'` otherwise (#193). */
+   *  language (`locale`) is Chinese or Japanese (傍点: Japanese has no
+   *  italics either), `'italic'` otherwise (#193). */
   emphasis?: 'auto' | CjkEmphasis;
+  /** The emphasis mark `:dots[…]` and `*…*` (under `emphasis: 'dots'`)
+   *  set when the directive does not say: its shape, fill and side (see
+   *  {@link CjkEmphasisMarkConfig}). A `:dots[…]{style fill pos}`
+   *  attribute wins over it. */
+  emphasisMark?: CjkEmphasisMarkConfig;
   /** What a book title marked `:book[…]` prints (#193): `'brackets'` sets
-   *  《》 around it (〈〉 for a title inside another), as text the lines
-   *  are broken with; `'wavy'` draws the wavy book-title line (书名号甲式)
-   *  under it (left of it in vertical text); `'none'` prints the bare
-   *  title. `'auto'` (the default): brackets for the mainland, the wavy
-   *  line for Taiwan and Hong Kong (`region`). */
+   *  the brackets of `bookTitleBrackets` around it (《》 on the mainland,
+   *  『』 in Japan), as text the lines are broken with; `'wavy'` draws the
+   *  wavy book-title line (书名号甲式) under it (left of it in vertical
+   *  text); `'none'` prints the bare title. `'auto'` (the default):
+   *  brackets for the mainland and Japan, the wavy line for Taiwan and
+   *  Hong Kong (`region`). */
   bookTitleMark?: 'auto' | CjkBookTitleMark;
-  /** Colour of the emphasis dots and of the proper-name and book-title
-   *  lines. Unset: the colour of the text they mark (#193). The default of
-   *  the ruby and warichu colours too. */
+  /** The brackets `bookTitleMark: 'brackets'` sets around a book title:
+   *  the outermost title's pair first, then the pair of a title inside it
+   *  (a title deeper still takes the last pair). `'auto'` (the default):
+   *  《》 then 〈〉 for Chinese (GB/T 15834—2011), 『』 then 「」 for Japan
+   *  (『』 for a book, 「」 for an article or a chapter named inside its
+   *  title). */
+  bookTitleBrackets?: 'auto' | CjkBracketPair[];
+  /** Colour of the emphasis dots, of the proper-name and book-title lines
+   *  and of side lines (`:sideline[…]`). Unset: the colour of the text
+   *  they mark (#193). The default of the ruby and warichu colours too. */
   annotationColor?: ColorValue;
   /** Ruby: how readings (pinyin, zhuyin) set with `:ruby[…]{rt="…"}` or
    *  `{紅樓|hóng|lóu}` look (see {@link CjkRubyConfig}, #194). */
@@ -3441,6 +3824,10 @@ export interface CjkConfig {
   /** Warichu (双行夹注): how the two-row notes of `:warichu[…]` look (see
    *  {@link CjkWarichuConfig}, #195). */
   warichu?: CjkWarichuConfig;
+  /** Kanbun reading marks (訓点): how the 返り点 and 送り仮名 of
+   *  `:kunten[字]{kaeri okuri tate}` look and where they go (see
+   *  {@link CjkKuntenConfig}, #430). */
+  kunten?: CjkKuntenConfig;
 }
 
 /** See {@link CjkConfig.emphasis}. */
@@ -3448,6 +3835,42 @@ export type CjkEmphasis = 'italic' | 'dots';
 
 /** See {@link CjkConfig.bookTitleMark}. */
 export type CjkBookTitleMark = 'brackets' | 'wavy' | 'none';
+
+/** An opening and a closing bracket (`『` `』`), set at the text size. */
+export interface CjkBracketPair {
+  open: string;
+  close: string;
+}
+
+/** The shape of an emphasis mark: a dot ●, a circle ○, a sesame ﹅. */
+export type CjkEmphasisMarkStyle = 'dot' | 'circle' | 'sesame';
+
+/** `cjk.emphasisMark`: the emphasis mark set on each character (着重号,
+ *  傍点). Every field is optional; `'auto'` follows the region. */
+export interface CjkEmphasisMarkConfig {
+  /** `'auto'` (the default): the sesame ﹅ in Japan, in horizontal and
+   *  vertical text alike (JLReq §3.3.9, the Aozora 傍点; CSS keeps a
+   *  circle for horizontal `filled`, which literary books do not); the
+   *  dot elsewhere (着重号, GB/T 15834—2011). */
+  style?: 'auto' | CjkEmphasisMarkStyle;
+  /** `'auto'` (the default): filled, open for a circle. */
+  fill?: 'auto' | 'filled' | 'open';
+  /** Which side of the text, in its flow: `over` is above horizontal
+   *  text and right of vertical text, `under` below it and to its left.
+   *  `'auto'` (the default): over in Japan (JLReq §3.3.9: right of
+   *  vertical text, above horizontal text); for Chinese under horizontal
+   *  text and right of vertical text (clreq). */
+  position?: 'auto' | 'over' | 'under';
+}
+
+/** `cjk.emphasisMark` resolved: the shape, and the fill and side when the
+ *  region or the author sets one (`'auto'`: a circle open, anything else
+ *  filled; under horizontal text, right of vertical text). */
+export interface ResolvedCjkEmphasisMarkConfig {
+  style: CjkEmphasisMarkStyle;
+  fill: 'auto' | 'filled' | 'open';
+  position: 'auto' | 'over' | 'under';
+}
 
 /** Where a ruby reading goes: over the base (in vertical text: to its
  *  right), under it (to its left), or right of each character inside the
@@ -3474,7 +3897,49 @@ export interface CjkRubyConfig {
    *  right of each character, anything else (pinyin) over the base in
    *  horizontal text and right of it in vertical text. */
   position?: 'auto' | CjkRubyPosition;
+  /** What a reading longer than its base may run onto (肩掛け, JLReq
+   *  §3.3.8) before the base is spread (see {@link CjkRubyOverhang}).
+   *  `'auto'` (the default): `kana` in Japan (`region`); elsewhere a
+   *  quarter of the ruby em onto any neighbour without a reading
+   *  (clreq). */
+  overhang?: 'auto' | CjkRubyOverhang;
+  /** Where a reading sits on its base (see {@link CjkRubyAlign}).
+   *  `'auto'` (the default): `jis` in Japan; elsewhere centred, as
+   *  `center`. */
+  align?: 'auto' | CjkRubyAlign;
+  /** Small kana in readings (ゃゅょっ…): `keep` (the default) paints them
+   *  as written, as modern books do; `full` paints them full size
+   *  (がつこう for がっこう), as letterpress books did (JLReq §3.3.3
+   *  note). The text read and copied keeps the small kana. */
+  smallKana?: 'keep' | 'full';
 }
+
+/** What a ruby reading longer than its base may run onto, past the
+ *  base's edge, before the base is spread (JLReq §3.3.8):
+ *  - `none`: nothing; the base is spread to the reading;
+ *  - `kana`: up to one ruby character (half an em of the text) onto
+ *    hiragana, katakana, small kana and ー, onto the blank of a mark (the
+ *    half em after 、。」 before the reading, an ideographic space, a
+ *    middle dot's quarter, …… and ――), at most half a ruby character
+ *    onto an opening bracket; never onto kanji, Latin text or another
+ *    base; two readings never share a kana from both sides (the later one
+ *    keeps to its base);
+ *  - `any`: up to half a ruby character onto any neighbour without a
+ *    reading.
+ *  Never past the line's start or end: a reading at a line edge is set
+ *  flush with it and its base moves in. */
+export type CjkRubyOverhang = 'none' | 'kana' | 'any';
+
+/** Where a ruby reading sits on its base (JIS X 4051 §12, JLReq §3.3.6):
+ *  - `center`: centred; a longer reading centred over its base, which is
+ *    centred in the box the reading needs;
+ *  - `jis`: a shorter reading spread 1:2:1 (half a unit before the first
+ *    character and after the last, one between characters; `ruby-align:
+ *    space-around`), or flush with both ends of the base (`space-between`)
+ *    when the half unit would exceed one ruby character; a longer reading
+ *    set solid over a base spread 1:2:1;
+ *  - `start`: from the base's start (肩付き, a vertical-text practice). */
+export type CjkRubyAlign = 'center' | 'jis' | 'start';
 
 /** `cjk.warichu`: the look of warichu notes (双行夹注). */
 export interface CjkWarichuConfig {
@@ -3486,10 +3951,42 @@ export interface CjkWarichuConfig {
    *  vermilion). Unset: `cjk.annotationColor`, else the text colour. */
   color?: ColorValue;
   /** Brackets set at the text size before the first row and after the
-   *  last one (`〔` `〕`, `（` `）`). Default: none. A note's own
-   *  `open` / `close` attributes win. */
+   *  last one (`〔` `〕`, `（` `）`). Default: none, but `（` `）` for
+   *  Japan (`region`; JLReq §3.4.2). An empty string sets none. A note's
+   *  own `open` / `close` attributes win. */
   open?: string;
   close?: string;
+}
+
+/** Where the 返り点 of a kanbun text go (see {@link CjkKuntenConfig}):
+ *  - `inline` (JIS X 4051 §5.5): right after their character, in the
+ *    left half of a vertical line (the lower half of a horizontal one),
+ *    taking their own advance; a 竪点 takes half an em between the two
+ *    characters it joins, and 送り仮名 longer than the room beside their
+ *    character push the next one on (§5.6.4);
+ *  - `interlinear`: in the line gap left of the character's lower half
+ *    (under it in horizontal text), taking no advance, as many school
+ *    editions set them; the characters keep an even pitch and 送り仮名 run
+ *    on beside the next character. */
+export type CjkKuntenPlacement = 'inline' | 'interlinear';
+
+/** `cjk.kunten`: the look of kanbun reading marks (`:kunten[…]`). */
+export interface CjkKuntenConfig {
+  /** Size of the 返り点 and 送り仮名, in em of the text (or any length).
+   *  Default `{ value: 0.5, unit: 'em' }` (JIS X 4051 §5.5, §5.6). */
+  fontSize?: Dimension;
+  /** Colour of the marks. Unset: `cjk.annotationColor`, else the text
+   *  colour. */
+  color?: ColorValue;
+  /** Where the 返り点 go (see {@link CjkKuntenPlacement}). Default
+   *  `inline`. */
+  placement?: CjkKuntenPlacement;
+}
+
+export interface ResolvedCjkKuntenConfig {
+  fontSize: Dimension;
+  color?: ColorValue;
+  placement: CjkKuntenPlacement;
 }
 
 export interface ResolvedCjkRubyConfig {
@@ -3497,6 +3994,14 @@ export interface ResolvedCjkRubyConfig {
   fontSize: Dimension;
   color?: ColorValue;
   position: 'auto' | CjkRubyPosition;
+  /** Set only when it is not clreq's quarter em (Japan, or set): absent,
+   *  a longer reading passes its base by a quarter of the ruby em onto a
+   *  neighbour without a reading. */
+  overhang?: CjkRubyOverhang;
+  /** Set only when it is not the plain centring (Japan, or set). */
+  align?: CjkRubyAlign;
+  /** Set only when on. */
+  smallKana?: 'full';
 }
 
 export interface ResolvedCjkWarichuConfig {
@@ -3523,6 +4028,21 @@ export type CjkPunctuationWidth = 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'hal
 
 /** See {@link CjkConfig.hangingPunctuation}. */
 export type CjkHangingPunctuation = 'none' | 'allow' | 'force';
+
+/** An opening bracket at the start of an indented paragraph (JLReq
+ *  §3.1.5, with an indent of one em):
+ *  - `indent` (pattern ①, JIS X 4051's default): the indent, then the
+ *    bracket without the half em of blank before its glyph; the text
+ *    after it starts at 1.5 em;
+ *  - `half` (pattern ③, most literary publishers): the bracket's glyph
+ *    sits in the second half of the indent, so the text after it starts
+ *    where the indent ends; with a one-em indent it reads as the bracket
+ *    filling the indent cell with its half em of blank;
+ *  - `flush` (天付き): no indent; the bracket's glyph at the start of the
+ *    line.
+ *  A bracket that opens a later line of the paragraph follows
+ *  `trimLineStart`. */
+export type CjkParagraphStartBracket = 'indent' | 'half' | 'flush';
 
 /** The character grid of `cjk.grid`: the type area is derived from the
  *  body size, not authored as margins. Each column is `charsPerLine` ems
@@ -3561,14 +4081,23 @@ export interface ResolvedCjkConfig {
   compressAdjacent: boolean;
   trimLineStart: boolean;
   hangingPunctuation: CjkHangingPunctuation;
+  /** Set (true) only when on: absent, ？！ take no space after them. */
+  spaceAfterQuestion?: true;
+  /** Set only when it differs from a line start: absent, a bracket that
+   *  opens a paragraph is set as at any line start. */
+  paragraphStartBracket?: CjkParagraphStartBracket;
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
   emphasis: CjkEmphasis;
+  emphasisMark: ResolvedCjkEmphasisMarkConfig;
   bookTitleMark: CjkBookTitleMark;
+  /** At least one pair. */
+  bookTitleBrackets: CjkBracketPair[];
   annotationColor?: ColorValue;
   ruby: ResolvedCjkRubyConfig;
   warichu: ResolvedCjkWarichuConfig;
+  kunten: ResolvedCjkKuntenConfig;
 }
 
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
@@ -4489,11 +5018,26 @@ export interface IndexConfig {
    *    for 重阳);
    *  - `'stroke'`: under the stroke count of its first character (一畫,
    *    二畫 …; 一画 … in Simplified Chinese);
+   *  - `'gojuon'` (五十音, #425): under the gojūon row of the first kana of
+   *    the entry's reading (あ行 か行 さ行 た行 な行 は行 ま行 や行 ら行
+   *    わ行); see below for the order;
+   *  - `'kana'`: under the first kana of the reading itself (か for が,
+   *    カ and ヵ);
    *  - `'none'`: no heads; symbols, numbers and words are set apart by the
    *    groups' `marginTop` only;
    *  - `'auto'` (default): `'pinyin'` in Simplified Chinese (`zh`,
    *    `zh-Hans`, `zh-CN`), `'stroke'` in Traditional Chinese (`zh-Hant`,
-   *    `zh-TW`, `zh-HK`), `'letter'` in any other language.
+   *    `zh-TW`, `zh-HK`), `'gojuon'` in Japanese (`ja`, `ja-JP`),
+   *    `'letter'` in any other language.
+   *
+   *  A Japanese index (or one grouped by `gojuon` or `kana`) sorts by the
+   *  entries' readings in JIS X 4061 order: symbols, digits, Latin (under
+   *  their letters), then the kana rows; katakana file as hiragana, small
+   *  kana as large, voiced as plain (清 < 濁 < 半濁 break the ties), ー as
+   *  the vowel before it. The reading is the mark's `yomi` (alias
+   *  `reading`), else the kana ruby of the marked text, else `sort`; an
+   *  entry with a kanji and no reading raises `indexReadingMissing` and
+   *  files after the kana, with no head.
    *
    *  The entries sort in the collation the heads come from (a
    *  `zh-Hant` index grouped by pinyin sorts by pinyin). A browser without
@@ -4511,7 +5055,7 @@ export interface IndexConfig {
 }
 
 /** See {@link IndexConfig.groupBy}. */
-export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'none';
+export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none';
 
 export interface ResolvedIndexConfig {
   fontFamily: string;
@@ -4561,6 +5105,9 @@ export interface PostextConfig {
   captionStyle?: CaptionStyleConfig;
   /** Styling for embedded SVG diagrams (single-ink reproduction). */
   diagramStyle?: DiagramStyleConfig;
+  /** How video resources are printed (poster overlays: play mark, QR
+   *  code) and played (player options). */
+  videoStyle?: VideoStyleConfig;
   /** Named paragraph styles for `:::paragraphs{style="…"}` containers. */
   paragraphStyles?: ParagraphStyleConfig[];
   /** Named callout styles for `:::callout{type="…"}` containers. Defaults
@@ -4657,7 +5204,9 @@ export interface PostextConfig {
 
   /** User-definable resource categories (figures, tables, etc.) that drive
    *  typed numbering, caption prefixes, and inline references. Defaults to
-   *  the built-in 'figure' and 'table' types when unset, localised to the
+   *  the built-in 'figure', 'table' and 'video' types when unset (a list
+   *  with no 'video' type still numbers video resources typed `video` with
+   *  the built-in one), localised to the
    *  document language (`defaultResourceTypes(locale)`, where the language is
    *  {@link locale}, else `bodyText.hyphenation.locale`, else English). */
   resourceTypes?: ResourceType[];

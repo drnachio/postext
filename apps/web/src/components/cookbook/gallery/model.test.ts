@@ -236,6 +236,14 @@ describe("search", () => {
     expect(matchedGaps("注", gaps, "zh")).toEqual([]);
   });
 
+  it("finds a Japanese gap term in either kana, inside a query without spaces", () => {
+    const gaps = [{ ...catalog.gaps![0], label: "割注", aliases: ["ワリチュウ", "PDF 割注"] }];
+    expect(matchedGaps("割注の組み方", gaps, "en").map((g) => g.id)).toEqual(["footnotes"]);
+    expect(matchedGaps("わりちゅうを入れる", gaps, "es").map((g) => g.id)).toEqual(["footnotes"]);
+    expect(matchedGaps("ﾜﾘﾁｭｳ", gaps, "zh").map((g) => g.id)).toEqual(["footnotes"]);
+    expect(matchedGaps("割", gaps, "en")).toEqual([]);
+  });
+
   it("finds nothing for gibberish, and offers no removals", () => {
     const m = model("q=zzqxw");
     expect(m.results).toEqual([]);

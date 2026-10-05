@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
-import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineArabicGuide, isPristineChineseGuide, pristineGuideFollowsViewer } from './builtin';
+import { BUILTIN_PRESET_LOCALES, GUIDE_SAMPLE_DOCUMENTS, createPostextGuidePreset, isPristineArabicGuide, isPristineChineseGuide, isPristineJapaneseGuide, pristineGuideFollowsViewer } from './builtin';
 import { localeShortTag } from './localeNames';
-import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import { isPristineBook, sampleBook } from '../book/chapterOps';
 import { createPostextGuideConfig } from '../context/guideConfig';
 
@@ -12,13 +12,14 @@ const preset = (extra: Partial<Parameters<typeof createPostextGuidePreset>[0]> =
 const svgFileIds = (resources: { kind: string; svg?: { fileId: string } }[]) =>
   resources.filter((r) => r.kind === 'svg').map((r) => r.svg!.fileId);
 
-describe('the built-in guide in five languages', () => {
-  it('lists Spanish, Catalan, English, Arabic and Simplified Chinese, the last two shown as ع and 简', () => {
+describe('the built-in guide in six languages', () => {
+  it('lists Spanish, Catalan, English, Arabic, Simplified Chinese and Japanese, the last three shown as ع, 简 and 日', () => {
     const { summary } = preset();
-    expect(summary.locales).toEqual(['es', 'ca', 'en', 'ar', 'zh-Hans']);
+    expect(summary.locales).toEqual(['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja']);
     expect([...BUILTIN_PRESET_LOCALES]).toEqual(summary.locales);
     expect(localeShortTag('zh-Hans', summary.locales!)).toEqual({ text: '简', lang: 'zh-Hans' });
     expect(localeShortTag('ar', summary.locales!)).toEqual({ text: 'ع', lang: 'ar' });
+    expect(localeShortTag('ja', summary.locales!)).toEqual({ text: '日', lang: 'ja' });
     expect(localeShortTag('es', summary.locales!).text).toBe('es');
     expect(localeShortTag('ca', summary.locales!).text).toBe('ca');
   });
@@ -46,7 +47,7 @@ describe('the built-in guide in five languages', () => {
       expect(config.captionStyle?.fontFamily).toBe('IBM Plex Sans Arabic');
       expect(config.bodyText?.hyphenation?.enabled).toBe(false);
       expect(config.bodyText?.kashida).toBe('auto');
-      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول']);
+      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول', 'فيديو']);
       expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ar'))).toBe(true);
       const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
       expect(table.caption).toBe('مقاسات الصفحة الجاهزة واستعمالاتها المعتادة.');
@@ -84,6 +85,36 @@ describe('the built-in guide in five languages', () => {
     }
   });
 
+  it('loads the Japanese edition for any Japanese tag, vertical in Japanese faces, with its own figures', async () => {
+    for (const tag of ['ja', 'ja-JP', 'ja_jp']) {
+      const loaded = await preset().load(tag);
+      expect(loaded.locale).toBe('ja');
+      const config = loaded.config;
+      expect(config.locale).toBe('ja');
+      expect(config.layout?.writingMode).toBe('vertical-rl');
+      // Binding (right) and every Japanese rule come from the language.
+      expect(config.page?.binding).toBeUndefined();
+      expect(config.cjk?.region).toBeUndefined();
+      expect(config.bodyText?.fontFamily).toBe('Noto Serif JP');
+      expect(config.headings?.fontFamily).toBe('Noto Sans JP');
+      expect(config.headings?.levels?.find((l) => l.level === 1)?.numberingTemplate).toBe('第{1:一}章');
+      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['図', '表', '動画']);
+      expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ja'))).toBe(true);
+      const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
+      expect(table.caption).toBe('定義済みの判型と主な用途。');
+      expect(JSON.stringify(table.table)).toContain('四六判');
+      // Vertical: every figure and table takes one tier.
+      expect(loaded.resources.every((r) => r.placement?.span !== 'page')).toBe(true);
+      expect(loaded.chapters[0]!.markdown).toContain('ウェブで動く、プログラムできる組版システム');
+    }
+  });
+
+  it('sets no Chinese, Latin-only or Arabic face where the Japanese design prints Japanese', () => {
+    const json = JSON.stringify(createPostextGuideConfig('ja'));
+    for (const face of ['Lora', 'Geist', 'Bricolage Grotesque', 'Noto Serif SC', 'Noto Sans SC', 'Amiri']) expect(json, face).not.toContain(`"${face}"`);
+    expect(json).not.toContain('uppercase');
+  });
+
   it('keeps the English and Spanish editions and their blob ids', async () => {
     const en = await preset().load('en');
     const es = await preset().load('es-ES');
@@ -97,8 +128,8 @@ describe('the built-in guide in five languages', () => {
   });
 
   it('cuts every edition into the same chapters', async () => {
-    const counts = await Promise.all(['en', 'es', 'ca', 'zh-Hans', 'ar'].map(async (l) => (await preset().load(l)).chapters.length));
-    expect(counts).toEqual([14, 14, 14, 14, 14]);
+    const counts = await Promise.all(['en', 'es', 'ca', 'zh-Hans', 'ar', 'ja'].map(async (l) => (await preset().load(l)).chapters.length));
+    expect(counts).toEqual([14, 14, 14, 14, 14, 14]);
   });
 
   it('follows the language asked for when the host passes one of the samples', async () => {
@@ -108,16 +139,18 @@ describe('the built-in guide in five languages', () => {
     expect(custom.chapters[0]!.markdown).toContain('# Mine');
   });
 
-  it('sets the Chinese and Arabic editions in their own design even under a host config', async () => {
+  it('sets the Chinese, Arabic and Japanese editions in their own design even under a host config', async () => {
     const host: PostextConfig = { bodyText: { fontFamily: 'Host Serif' } };
     expect((await preset({ configOverride: host }).load('en')).config).toBe(host);
     const zh = await preset({ configOverride: host }).load('zh-Hans');
     expect(zh.config.bodyText?.fontFamily).toBe('Noto Serif SC');
     const ar = await preset({ configOverride: host }).load('ar');
     expect(ar.config.bodyText?.fontFamily).toBe('Amiri');
+    const ja = await preset({ configOverride: host }).load('ja');
+    expect(ja.config.bodyText?.fontFamily).toBe('Noto Serif JP');
   });
 
-  it('has a fingerprint that covers the five editions', async () => {
+  it('has a fingerprint that covers the six editions', async () => {
     const a = await preset().fingerprint!();
     const b = await preset().fingerprint!();
     expect(a).toMatch(/^builtin-[0-9a-f]{8}$/);
@@ -125,12 +158,12 @@ describe('the built-in guide in five languages', () => {
   });
 });
 
-describe('pristine guide detection with five languages', () => {
+describe('pristine guide detection with six languages', () => {
   let n = 0;
   const ids = () => `c${n++}`;
 
   it('reads every untouched edition as pristine', () => {
-    for (const sample of [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR]) {
+    for (const sample of [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA]) {
       expect(GUIDE_SAMPLE_DOCUMENTS).toContain(sample);
       expect(isPristineBook(sampleBook(sample, ids, 'Guide'), GUIDE_SAMPLE_DOCUMENTS)).toBe(true);
     }
@@ -181,6 +214,21 @@ describe('pristine guide detection with five languages', () => {
     // …and the Arabic interface swaps another edition for its own.
     expect(pristineGuideFollowsViewer(en, DEFAULT_MARKDOWN_AR, 'en')).toBe(true);
     expect(pristineGuideFollowsViewer(ar, DEFAULT_MARKDOWN_AR, 'en')).toBe(false);
+  });
+
+  it('keeps the Japanese guide opened on purpose: there is no Japanese interface for it to follow', () => {
+    const ja = sampleBook(DEFAULT_MARKDOWN_JA, ids, 'Guide');
+    const en = sampleBook(DEFAULT_MARKDOWN_EN, ids, 'Guide');
+    expect(isPristineJapaneseGuide(ja)).toBe(true);
+    expect(isPristineJapaneseGuide(en)).toBe(false);
+    expect(isPristineChineseGuide(ja)).toBe(false);
+    for (const [viewer, previous] of [[DEFAULT_MARKDOWN_EN, 'en'], [DEFAULT_MARKDOWN_ES, null], [DEFAULT_MARKDOWN_ZH_HANS, 'zh-Hans'], [DEFAULT_MARKDOWN_AR, 'ar']] as const) {
+      expect(pristineGuideFollowsViewer(ja, viewer, previous)).toBe(false);
+    }
+    // An edited Japanese guide is the reader's.
+    const edited = { ...ja, chapters: ja.chapters.map((c, i) => (i === 4 ? { ...c, markdown: `${c.markdown}\n\n一文を足した。` } : c)) };
+    expect(isPristineJapaneseGuide(edited)).toBe(false);
+    expect(isPristineBook(edited, GUIDE_SAMPLE_DOCUMENTS)).toBe(false);
   });
 
   it('drops an edited Chinese guide', () => {

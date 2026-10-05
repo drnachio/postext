@@ -105,12 +105,22 @@ export function directionOf(tag: unknown): 'ltr' | 'rtl' {
   return script !== undefined && RTL_SCRIPTS.has(script) ? 'rtl' : 'ltr';
 }
 
-/** The typographic region of a Chinese tag, which decides its typographic
- *  defaults (clreq §1.2: rules follow the region, not the script): CN, SG
- *  and MY are `'mainland'`, TW `'taiwan'`, HK and MO `'hongkong'`; a tag
- *  without a region follows its script (`zh-Hant` → `'taiwan'`, `zh` and
- *  `zh-Hans` → `'mainland'`). `undefined` for any other language. */
+/** Whether `tag` names Japanese (`'ja'`, `'ja-JP'`, `'JA_jp'`,
+ *  `'ja-Latn'`), in any case, with `-` or `_`: the documents the `japan`
+ *  CJK region and the Japanese built-in strings are for. */
+export function isJapaneseLanguage(tag: unknown): boolean {
+  return isTag(tag) && languageOf(tag) === 'ja';
+}
+
+/** The typographic region of a Chinese or Japanese tag, which decides its
+ *  typographic defaults (clreq §1.2: rules follow the region, not the
+ *  script). Chinese: CN, SG and MY are `'mainland'`, TW `'taiwan'`, HK and
+ *  MO `'hongkong'`; a tag without a region follows its script (`zh-Hant` →
+ *  `'taiwan'`, `zh` and `zh-Hans` → `'mainland'`). Every Japanese tag
+ *  (`ja`, `ja-JP`, `ja-Jpan`) is `'japan'`: JIS X 4051 and JLReq, not
+ *  clreq. `undefined` for any other language (Korean included). */
 export function cjkRegionOf(tag: unknown): CjkRegion | undefined {
+  if (isJapaneseLanguage(tag)) return 'japan';
   if (!isTag(tag) || languageOf(tag) !== 'zh') return undefined;
   const loc = maximize(tag);
   switch (loc?.region) {
@@ -133,7 +143,7 @@ export function chineseScriptOf(tag: unknown): 'Hans' | 'Hant' | undefined {
 /** The key of the built-in string tables for a tag: `'zh-hans'` or
  *  `'zh-hant'` for Chinese (Simplified and Traditional need different
  *  characters: 图/圖, 续/續, 见/見), else the bare language
- *  ({@link languageOf}). */
+ *  ({@link languageOf}): `'ja'` for every Japanese tag. */
 export function stringsKeyOf(tag: unknown): string {
   const script = chineseScriptOf(tag);
   if (script) return script === 'Hant' ? 'zh-hant' : 'zh-hans';
@@ -178,7 +188,8 @@ export function renderLangOf(config: {
  * The entry of a built-in string table for `tag`, keyed by
  * {@link stringsKeyOf}: the tag's own, then — for Traditional Chinese — the
  * Simplified one, then English (`en`). A table only lists the languages it
- * has strings for.
+ * has strings for. Japanese (`ja`) never borrows a Chinese entry: its
+ * characters and words differ (図 not 图, 続き not 续).
  */
 export function stringsFor<T>(table: Readonly<Record<string, T>>, tag: unknown): T {
   const key = stringsKeyOf(tag);
@@ -196,11 +207,11 @@ export interface DocumentLanguage {
 /** The document languages with built-in strings, in the order a language
  *  picker lists them: the eight hyphenation languages, then Chinese in
  *  Simplified characters, in Traditional characters (Taiwan) and in
- *  Traditional characters as set in Hong Kong, then Arabic — bare, as set
- *  in Egypt and as set in Morocco. The strings are the same in the three
- *  Arabic entries; the region decides what a regional default reads from
- *  the tag (digits: Arabic-Indic ٠–٩ in the Mashriq, European 0–9 in the
- *  Maghreb; month names in dates). */
+ *  Traditional characters as set in Hong Kong, then Japanese, then Arabic
+ *  — bare, as set in Egypt and as set in Morocco. The strings are the same
+ *  in the three Arabic entries; the region decides what a regional default
+ *  reads from the tag (digits: Arabic-Indic ٠–٩ in the Mashriq, European
+ *  0–9 in the Maghreb; month names in dates). */
 export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'en-us', name: 'English' },
   { tag: 'es', name: 'Español' },
@@ -213,6 +224,7 @@ export const DOCUMENT_LANGUAGES: readonly DocumentLanguage[] = Object.freeze([
   { tag: 'zh-Hans', name: '中文（简体）' },
   { tag: 'zh-Hant', name: '中文（繁體）' },
   { tag: 'zh-Hant-HK', name: '中文（香港）' },
+  { tag: 'ja', name: '日本語' },
   { tag: 'ar', name: 'العربية' },
   { tag: 'ar-EG', name: 'العربية (مصر)' },
   { tag: 'ar-MA', name: 'العربية (المغرب)' },

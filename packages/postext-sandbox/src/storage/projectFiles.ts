@@ -45,6 +45,17 @@ export function remapContentFileIds(content: ProjectContent, map: FileIdMapper):
     return next;
   };
   const resources: Resource[] = content.resources.map((r) => {
+    if (r.video) {
+      // A video's file and its poster travel under ids of their own (#454).
+      const v = r.video;
+      const file = v.fileId ? remapBlob(v.fileId, `${r.id}.${v.format ?? 'mp4'}`) : undefined;
+      const poster = v.poster ? remapBlob(v.poster.fileId, `${r.id}.poster.${v.poster.format === 'jpeg' ? 'jpg' : v.poster.format}`) : undefined;
+      if (file === v.fileId && poster === v.poster?.fileId) return r;
+      return {
+        ...r,
+        video: { ...v, ...(file ? { fileId: file } : {}), ...(v.poster && poster ? { poster: { ...v.poster, fileId: poster } } : {}) },
+      };
+    }
     const fileId = r.bitmap?.fileId ?? r.svg?.fileId;
     if (!fileId) return r;
     const ext = r.kind === 'svg' ? 'svg' : (r.bitmap?.format ?? 'bin');

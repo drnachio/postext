@@ -13,6 +13,7 @@ export type WarningKind =
   | 'joiningScriptLetterSpacing'
   | 'cjkMarksExceedLeading'
   | 'rubyExceedsLeading'
+  | 'kuntenExceedsLeading'
   | 'arabicMarksExceedLeading'
   | 'headingHierarchy'
   | 'consecutiveHeadings'
@@ -38,6 +39,7 @@ export type WarningKind =
   | 'indexMarkInvalid'
   | 'indexSeeUnknown'
   | 'indexRangeUnclosed'
+  | 'indexReadingMissing'
   | 'unknownHeadingStyle'
   | 'chipOverlap'
   | 'numberingInvalidFormat'
@@ -63,6 +65,9 @@ export type WarningKind =
   | 'bitmapTooSmall'
   | 'unknownTableStyle'
   | 'raggedTableGrid'
+  | 'videoWithoutPoster'
+  | 'videoWithoutUrl'
+  | 'videoUrlInvalid'
   | 'missingImage'
   | 'storageUnavailable'
   | 'chapterFrontmatterIgnored'
@@ -103,6 +108,7 @@ export type WarningPayload =
   | { kind: 'joiningScriptLetterSpacing'; text: string }
   | { kind: 'cjkMarksExceedLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  | { kind: 'kuntenExceedsLeading'; text: string; gapEm: number; neededEm: number }
   | { kind: 'arabicMarksExceedLeading'; text: string; lineHeightEm: number; neededEm: number }
   | { kind: 'headingHierarchy'; from: number; to: number }
   | { kind: 'consecutiveHeadings' }
@@ -175,6 +181,9 @@ export type WarningPayload =
   /** A page range of the index opened and never closed (or closed with no
    *  opening): it prints as a single page. */
   | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
+  /** An entry of a Japanese index with a kanji and no reading: it files
+   *  after the kana entries, with no head. */
+  | { kind: 'indexReadingMissing'; term: string; index: string }
   /** A heading's `{style="…"}` names no heading style; the heading keeps
    *  its level's settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }
@@ -257,6 +266,14 @@ export type WarningPayload =
    *  a merge covers was left out instead of kept with `hiddenBy`, or a row
    *  ends short): the cells after it shift. Locates the first issue. */
   | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** A video the text uses has no poster frame (#454): print shows a dark
+   *  box. */
+  | { kind: 'videoWithoutPoster'; resourceId: string }
+  /** A self-hosted video has no production address: no QR code or link in
+   *  print. */
+  | { kind: 'videoWithoutUrl'; resourceId: string }
+  /** A YouTube or Vimeo video's address is no video of that platform. */
+  | { kind: 'videoUrlInvalid'; resourceId: string; url: string }
   /** An image the document shows has no payload the previews can read (the
    *  file is missing from storage or does not decode): it is painted as a
    *  placeholder. */

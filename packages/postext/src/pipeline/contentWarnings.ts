@@ -9,6 +9,7 @@
  * landed on.
  */
 
+import { parseVideoUrl } from '../video/url';
 import { resourceRefId, unprefixedId } from './crossRefs';
 import { citationIssues } from './citations';
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
@@ -380,6 +381,15 @@ export function collectContentWarnings(
     if (r.placement?.rotate && r.placement.position !== 'here' && verticalAt(firstUseBlock.get(id) ?? -1)) {
       out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
     }
+    if (r.kind === 'video') {
+      const v = r.video;
+      if (!v?.poster) out.push({ kind: 'videoWithoutPoster', resourceId: id, ...where });
+      if ((v?.source ?? 'file') === 'file') {
+        if (!/^https?:\/\/\S+$/i.test(v?.url?.trim() ?? '')) out.push({ kind: 'videoWithoutUrl', resourceId: id, ...where });
+      } else if (parseVideoUrl(v?.url)?.source !== v?.source) {
+        out.push({ kind: 'videoUrlInvalid', resourceId: id, url: v?.url ?? '', ...where });
+      }
+    }
     if (r.kind !== 'table' || !r.table) continue;
     const styleId = r.table.styleId;
     // JSON documents may carry `styleId: null` for "no named style".
@@ -637,6 +647,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'indexRangeUnclosed':
       text = `The index range of "${w.term}" has no range="${w.missing}" mark — it prints a single page`;
       break;
+    case 'indexReadingMissing':
+      text = `The index entry "${w.term}" has a kanji and no reading — add yomi="…" in kana to its mark; it files after the kana entries`;
+      break;
     case 'unknownHeadingStyle':
       text = `Unknown heading style "${w.style}" on an H${w.level} — the level's own settings apply`;
       break;
@@ -672,6 +685,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'rubyExceedsLeading':
       text = `The paragraph "${w.text}" has ruby readings ${w.neededEm} em high in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
+      break;
+    case 'kuntenExceedsLeading':
+      text = `The kanbun "${w.text}" has reading marks ${w.neededEm} em out of its lines in a line gap of ${w.gapEm} em — they touch the next line; set it with more leading`;
       break;
     case 'arabicMarksExceedLeading':
       text = `The vowel marks of "${w.text}" meet the next line: the two lines' ink takes ${w.neededEm} em, and their baselines are ${w.lineHeightEm} em apart; set the paragraph with more leading`;

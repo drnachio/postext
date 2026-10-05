@@ -40,7 +40,7 @@ Esta referencia es larga. Estos son los bloques principales:
 - [Encabezados y pies](#encabezados-y-pies) — elementos de texto y línea por página con marcadores, paridad y alineación.
 - [Texto de cuerpo](#texto-de-cuerpo) — tipografía, separación silábica, viudas y huérfanas.
 - [Idioma del documento](#idioma-del-documento) — el `locale` de primer nivel: respaldo de la separación silábica, tipos de recurso integrados y cadenas de continuación de tablas y de avisos partidos, lengua etiquetada en un PDF accesible; las [cifras](#cifras-del-documento) (`numerals`) y la [dirección del texto](#dirección-del-texto) (`direction`) que de él se siguen; y los [idiomas y escrituras](#idiomas-y-escrituras) que Postext compone. La guía de los libros de derecha a izquierda es [Composición árabe](/es/docs/arabic-layout).
-- [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, cómo se ensanchan sus líneas justificadas, los anchos de la puntuación y la puntuación colgada, el espacio entre chino y latín, la retícula de caracteres, los números que van de pie en texto vertical, y las marcas, el ruby y las notas warichu. La guía de todo ello es [Composición china](/es/docs/chinese-layout).
+- [Tipografía de Asia oriental](#tipografía-de-asia-oriental) — `cjk`: las convenciones regionales y el corte de línea del texto en chino, japonés y coreano, cómo se ensanchan sus líneas justificadas, los anchos de la puntuación y la puntuación colgada, el espacio entre chino y latín, la retícula de caracteres, los números que van de pie en texto vertical, y las marcas, el ruby, las notas warichu y las marcas de kanbun. Las guías de todo ello son [Composición china](/es/docs/chinese-layout) y [Composición japonesa](/es/docs/japanese-layout).
 - [Encabezados](#encabezados) — valores generales y sobrescrituras H1–H6.
 - [Listas no ordenadas](#listas-no-ordenadas) y [Listas ordenadas](#listas-ordenadas) — viñetas, numeración, anidamiento.
 - [Matemáticas](#matemáticas) — renderizado LaTeX, escala, color, márgenes.
@@ -279,7 +279,7 @@ Al activarse, el lienzo se expande para incluir una zona de sangrado y el motor 
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>Color de las marcas de corte en el lienzo y en los PDF en RGB o en escala de grises. Un PDF en CMYK las pinta en color de registro (ver más abajo).</td>
+      <td>Color de las marcas de corte en el lienzo (la vista en pantalla). El PDF las pinta siempre en color de registro (ver más abajo).</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ El pliego crece `bleed + markOffset + markLength` por cada lado, y la página co
 
 Fuera del sangrado solo se imprimen las marcas. Todo lo que pinta la página, incluidos los elementos de diseño anclados a `'page'` o a `'bleed'`, se recorta a la caja de sangrado en el canvas, en el PDF y en la salida HTML, como lo recorta una exportación de maquetación: una banda o una imagen que se sale del sangrado a propósito se corta en el borde del sangrado, donde la guillotina la perdería de todos modos. Hasta postext 1.4 un elemento así seguía por encima de las marcas hasta el borde del pliego.
 
-En el PDF (`postext-pdf`), la MediaBox de cada página es el pliego entero. La página lleva además una TrimBox, la página cortada, y una BleedBox, el corte más el sangrado, que leen las herramientas de imposición y de preflight. Cuando el PDF se escribe en CMYK (`colorSpace: 'cmyk'`, o `pdfGeneration.forceColorSpace` con `colorSpace: 'cmyk'`), las marcas se pintan en color de registro, la separación `/All`, y se imprimen en todas las planchas. Los PDF en RGB y en escala de grises las pintan en `color`.
+En el PDF (`postext-pdf`), la MediaBox de cada página es el pliego entero. La página lleva además una TrimBox, la página cortada, y una BleedBox, el corte más el sangrado, que leen las herramientas de imposición y de preflight. Las marcas se pintan en color de registro, la separación `/All`, y se imprimen en todas las planchas. Es así en cualquier espacio de color en que se escriba el PDF (RGB, escala de grises o CMYK): un negro corriente llegaría a la imprenta como negro enriquecido o solo en la plancha del negro. `color` solo se aplica al lienzo.
 
 ### Numeración
 
@@ -346,6 +346,12 @@ Tres ajustes eligen un formato de numeración, y cada uno creció con su propia 
     <tr><td>Cifras chinas</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
     <tr><td>Troncos celestes</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
     <tr><td>Ramas terrestres</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>Numerales japoneses</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>, <code>一</code> en un documento japonés</td></tr>
+    <tr><td>Numerales japoneses formales</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>, <code>壱</code></td></tr>
+    <tr><td>Hiragana, orden gojūon</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>, <code>あ</code></td></tr>
+    <tr><td>Katakana, orden gojūon</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>, <code>ア</code></td></tr>
+    <tr><td>Hiragana, orden iroha</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>, <code>い</code></td></tr>
+    <tr><td>Katakana, orden iroha</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>, <code>イ</code></td></tr>
     <tr><td>En círculo</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Cifras de ancho completo</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
     <tr><td>Cifras arábigo-índicas</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
@@ -358,6 +364,8 @@ Tres ajustes eligen un formato de numeración, y cada uno creció con su propia 
 </table>
 
 Los estilos de Asia oriental conservan su nombre de [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) en los tres ajustes. Los numerales chinos informales escriben 十 del 10 al 19 sin un 一 delante (十二, pero 一百一十), un solo 零 por cada tramo de ceros dentro del número (一百零一, 一千零五十), y 万 o 萬 para la decena de millar, 亿 o 億 para los cien millones (一万零一十). Solo `cjk-decimal` usa 〇, cifra a cifra, como se escriben los años (二〇二六, GB/T 15835—2011). Los troncos llegan al 10, las ramas al 12 y las cifras en círculo al 50; más allá, el número se imprime en cifras. `一` y `壹` siguen la escritura del `locale` del documento: tradicional para `zh-Hant`, `zh-TW` o `zh-HK`, simplificada en los demás casos. Algunas ediciones antiguas escriben 101 como 一百一, sin 零; Postext no imprime esa forma.
+
+Los estilos japoneses (desde postext 1.16) siguen también CSS Counter Styles. `japanese-informal` escribe 十 sin 一 delante y sin 零 para una posición vacía (百一, 千十), y `japanese-formal`, los 大字 壱 弐 参 拾 百 阡, con 壱 delante de cada unidad (壱拾, 壱百). CSS detiene los dos en 9999; Postext sigue por grupos de cuatro cifras con 万 億 兆 (en el formal, 萬 億 兆), y cada grupo conserva su 一 delante de una unidad: 一万一 es 10 001, y 一億一万, 100 010 000. En un documento japonés (`ja`, `ja-JP`…) `一` significa `japanese-informal`, así que `第{1:一}章` imprime ahí 第百一章 y en uno chino 第一百零一章; `壹` sigue siendo el de los numerales formales chinos. Las series de kana son las listas de CSS: 48 kana en el orden del gojūon (con ゐ y ゑ) y 47 en el del poema iroha; tras el último siguen con dos kana (ああ, いい), y no tienen cero, así que un elemento numerado 0 imprime `0`. Las cifras kanji posicionales (二〇二六), la forma de los años y los folios, son `cjk-decimal`.
 
 Los estilos árabes conservan el nombre CSS cuando lo hay (`arabic-indic`, `persian`; `urdu` y `maghrebi-abjad`, de la nota del W3C *Ready-made Counter Styles*, se leen como `persian` y `arabic-abjad-maghrebi`). `arabic` mantiene su sentido de siempre: las cifras europeas. `arabic-abjad` escribe los numerales abyad aditivos del árabe clásico y de la foliación de manuscritos, el valor mayor primero: 11 es يا, 1446 غتمو, y el número de millares va antes de غ (2000 بغ, 1002 غب); a partir de 999 999 el número se imprime en cifras. La nota del W3C usa ese nombre para una serie de 28 letras en la que 11 es ك; Postext llama a esa serie `abjad`, la que letra los elementos de lista en orden abyad (أ، ب، ج، د، هـ), y `hijai` al orden alfabético (أ، ب، ت، ث). Las dos escriben la primera letra con su hamza (أ) y una he que quedaría aislada como هـ, con tatweel, para que no se lean como las cifras ١ y ٥; pasadas las 28 letras se duplican, como `lower-alpha` (أأ, أب). Los valores magrebíes siguen la regla mnemotécnica صعفض قرست ثخذ ظغش (ص 60, ض 90); la lista del W3C intercambia ص y ض. Una sola أ no distingue las dos series de letras, así que su token son sus cuatro primeras letras: `{1:أبجد}`, `{1:أبتث}`. Las cifras del propio documento se eligen con [`numerals`](#cifras-del-documento).
 
@@ -431,7 +439,7 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella, y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. La imagen reducida se sitúa en su hueco según <code>placement.align</code>. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
+      <td>Reduce una figura (mapa de bits o SVG) cuya imagen, pie y nota quedarían más altos que el área de contenido hasta que quepan en ella (una imagen con zona segura, <code>Resource.safeArea</code>, se recorta antes dentro de ella a todo su ancho, y solo se reduce si sigue sin caber), y compone más pequeña una figura en línea que no cabe por poco en lo que queda de su columna (hasta la mitad de su ancho; el pie conserva la medida de la columna) para que siga junto a su texto. La imagen reducida se sitúa en su hueco según <code>placement.align</code>. El visor HTML la activa, porque sus páginas son tan altas como la pantalla; las páginas impresas se dimensionan para sus figuras.</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1593,9 +1601,9 @@ El `locale` de primer nivel es el idioma del documento en su conjunto. Admite lo
 
 También elige los tipos de recurso integrados. Cuando `resourceTypes` no está definido, `buildDocument` numera y rotula con `defaultResourceTypes(locale)`, así que `locale: 'de'` basta para obtener *Abbildung 1.1* y *Tabelle 1.1*. Si `locale` no está definido, lo sustituye el idioma de la separación silábica, tanto para los tipos de recurso como para las cadenas de las tablas. Una lista `resourceTypes` explícita siempre manda. Las versiones anteriores usaban los tipos en inglés fuera cual fuera el `locale`, salvo que pasaras tú mismo `defaultResourceTypes(locale)`; un documento que fija `locale` y quiere conservar las etiquetas inglesas pasa `resourceTypes: defaultResourceTypes('en')`. Los libros del Sandbox y los paquetes llevan su propia lista, así que no les afecta.
 
-Aquí vale cualquier etiqueta BCP 47, igual que en `hyphenation.locale`: `'de-AT'` recibe las cadenas alemanas. Las cadenas integradas existen en los ocho idiomas que admite la separación silábica y en chino, en caracteres simplificados y tradicionales; cualquier otro idioma recibe las inglesas.
+Aquí vale cualquier etiqueta BCP 47, igual que en `hyphenation.locale`: `'de-AT'` recibe las cadenas alemanas. Las cadenas integradas existen en los ocho idiomas que admite la separación silábica, en chino (en caracteres simplificados y tradicionales), en japonés y en árabe; cualquier otro idioma recibe las inglesas.
 
-El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` y las formas largas (`zh-Hant-TW`), en mayúsculas o minúsculas y con `-` o `_`. Las cadenas siguen la escritura, leída con `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` y `zh-SG` son chino simplificado; `zh-TW`, `zh-HK` y `zh-MO`, tradicional. Los valores tipográficos que dependen del idioma siguen en cambio la región, como recomienda [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script): CN, SG y MY cuentan como China continental, TW como Taiwán, HK y MO como Hong Kong, y una etiqueta sin región se rige por su escritura (`zh-Hant` es Taiwán; `zh` y `zh-Hans`, la China continental). `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` y `sameContentLocale(a, b)` devuelven estas lecturas, y `DOCUMENT_LANGUAGES` enumera los idiomas con cadenas integradas, cada uno con su nombre en su propia lengua, tal como los muestra el selector de idioma del documento del Sandbox.
+El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` y las formas largas (`zh-Hant-TW`), en mayúsculas o minúsculas y con `-` o `_`. Las cadenas siguen la escritura, leída con `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` y `zh-SG` son chino simplificado; `zh-TW`, `zh-HK` y `zh-MO`, tradicional. Los valores tipográficos que dependen del idioma siguen en cambio la región, como recomienda [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script): CN, SG y MY cuentan como China continental, TW como Taiwán, HK y MO como Hong Kong, y una etiqueta sin región se rige por su escritura (`zh-Hant` es Taiwán; `zh` y `zh-Hans`, la China continental). El japonés admite `ja`, `ja-JP`, `ja-Jpan` y cualquier otra etiqueta `ja` (`isJapaneseLanguage(tag)`); desde postext 1.16 tiene sus propias cadenas y su propia región, `japan`, cuyos valores tipográficos por defecto siguen JLReq (ver [Composición japonesa](/es/docs/japanese-layout)). Una tabla de cadenas sin entrada japonesa da el inglés, nunca el chino. `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` y `sameContentLocale(a, b)` devuelven estas lecturas, y `DOCUMENT_LANGUAGES` enumera los idiomas con cadenas integradas, cada uno con su nombre en su propia lengua (日本語 entre las entradas chinas y العربية), tal como los muestra el selector de idioma del documento del Sandbox.
 
 <table>
   <thead>
@@ -1617,11 +1625,12 @@ El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
     <tr><td>Neerlandés (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>Chino simplificado (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>Chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>Japonés (<code>ja</code>, <code>ja-JP</code>)</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
     <tr><td>Árabe (<code>ar</code>, <code>ar-EG</code>, <code>ar-MA</code>…)</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional. El árabe numera sus tipos del mismo modo, `{h1}-{n}` (شكل 2-3), escribe las referencias cruzadas como الفصل 3, القسم 2-1 y ص 12, titula la bibliografía المراجع, y su índice imprime انظر / انظر أيضًا, رموز y أرقام, con la coma y el punto y coma árabes (، ؛).
+El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional. El japonés numera sus tipos del mismo modo (図1-1), escribe las referencias cruzadas como 第3章, 2.3節 y 12ページ, titula la bibliografía 参考文献, y su índice imprime 記号 y 数字 sobre los símbolos y los números y escribe sus remisiones con una flecha, `→夏目漱石` para *véase* y `→夏目漱石、森鷗外も見よ` tras las páginas para *véase también*, con las etiquetas en redonda. El árabe numera sus tipos del mismo modo, `{h1}-{n}` (شكل 2-3), escribe las referencias cruzadas como الفصل 3, القسم 2-1 y ص 12, titula la bibliografía المراجع, y su índice imprime انظر / انظر أيضًا, رموز y أرقام, con la coma y el punto y coma árabes (، ؛).
 
 Un documento en chino, japonés o coreano declara su idioma en la salida HTML (`lang` en la raíz `.pt-doc`, con `zh-Hant-TW` completo) y en el canvas que pinta (`ctx.lang`, en Chrome 136 y posteriores), de modo que el navegador dibuja las formas de glifo de su región: Unicode unifica los caracteres han, y un mismo punto de código se ve distinto en una fuente taiwanesa y en una japonesa. Los demás documentos no llevan `lang`, como antes. El PDF declara `/Lang` a partir de `locale` para todo documento, etiquetado o no, con su escritura y su región. Un documento en un idioma que se escribe de derecha a izquierda (árabe, persa, urdu, hebreo…) también declara su idioma: las formas de la lengua de la fuente (`locl`) y la fuente de reserva lo siguen.
 
@@ -1680,13 +1689,14 @@ const ingles: PostextConfig = { locale: 'en', direction: 'rtl' };      // forzad
 
 ### Idiomas y escrituras
 
-Postext compone escrituras alfabéticas que se escriben de izquierda a derecha, y el chino a lo ancho de la página y a lo alto. [Composición china](/es/docs/chinese-layout) explica cómo se compone el chino y qué ajustes lo gobiernan; las claves están en [Tipografía de Asia oriental](#tipografía-de-asia-oriental), [Escritura vertical](#escritura-vertical) y [Encuadernación](#encuadernación). Lo que recibe cada escritura:
+Postext compone escrituras alfabéticas que se escriben de izquierda a derecha, y el chino y el japonés a lo ancho de la página y a lo alto. [Composición china](/es/docs/chinese-layout) y [Composición japonesa](/es/docs/japanese-layout) explican cómo se componen y qué ajustes los gobiernan; las claves están en [Tipografía de Asia oriental](#tipografía-de-asia-oriental), [Escritura vertical](#escritura-vertical) y [Encuadernación](#encuadernación). Lo que recibe cada escritura:
 
 - **El chino** lo compone el compositor CJK cuando un párrafo tiene más caracteres CJK que espacios entre palabras: sus líneas se cortan entre caracteres con las reglas de principio y final de línea de `cjk.lineBreak` (ninguna línea empieza por 。、」 o ー, ninguna termina en 「 o （), mantienen enteros —— y ……, un número con sus signos y una palabra latina, y una línea justificada se ensancha entre sus caracteres hasta la medida. El ancho de la puntuación, la puntuación colgada, el espacio entre chino y latín, la retícula de caracteres, los puntos de énfasis, las marcas de nombre propio y de título, el ruby y las notas warichu siguen la región de `locale`, a lo largo de la línea horizontal o de la vertical (`layout.writingMode: 'vertical-rl'`). Un párrafo latino que cita unas pocas palabras CJK conserva la división óptima de líneas y puede cortarse junto a ellas; un signo de apertura o cierre CJK, el punto medio o un signo de ancho completo citados en texto latino (〈h〉, ％) no cambian nada.
-- **El japonés y el coreano** pasan por el mismo compositor y se componen sin separación silábica, pero con los valores por defecto de China continental: sus reglas propias (JLREQ, KLREQ) no están implementadas. El coreano se corta entre sílabas además de en sus espacios.
+- **El japonés** pasa por el mismo compositor con reglas propias desde postext 1.16, las de los *Requisitos para la composición de textos japoneses* del W3C (JLReq) y la JIS X 4051: un `locale` `ja` da la región `japan`, cuyos valores automáticos fijan los niveles de kinsoku de JLReq (los kana pequeños y ー nunca abren línea), la puntuación de ancho completo con compresión de parejas, un cuadratín tras ？！, el paréntesis que abre un párrafo en la segunda mitad de la sangría, marcas de énfasis de sésamo sobre el texto, títulos de obras entre 『』, furigana repartidos 1:2:1, contadores japoneses, notas y un índice ordenado por la lectura. Las versiones anteriores componían el japonés con los valores por defecto de China continental.
+- **El coreano** pasa por el mismo compositor y se compone sin separación silábica, pero con los valores por defecto de China continental: sus reglas propias (KLREQ) no están implementadas. El coreano se corta entre sílabas además de en sus espacios.
 - **El árabe y las demás escrituras de derecha a izquierda** (persa, urdu, hebreo…) se componen de derecha a izquierda; [Composición árabe](/es/docs/arabic-layout) explica cómo. La [`direction`](#dirección-del-texto) del documento sale de la escritura del `locale`, el algoritmo bidireccional de Unicode ordena las palabras latinas y las cifras dentro de cada línea, el libro se encuaderna por la derecha con la primera columna a la derecha, y cada número que escribe el motor toma las [cifras](#cifras-del-documento) de la región. Una palabra con una letra del alfabeto árabe no se divide, no se espacia ni se corta nunca, y una línea árabe justificada se estira en sus espacios y con cachidas. Los signos vocálicos, el énfasis, las notas al pie y las cadenas del árabe están en [Texto árabe](#texto-árabe). El persa, el urdu y el hebreo reciben la dirección, las cifras y las reglas de palabra entera, pero no cadenas integradas propias.
 
-Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho, en chino y en árabe. El chino, el japonés, el coreano y las lenguas que se escriben de derecha a izquierda se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
+Hay patrones de separación silábica para ocho idiomas (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); los tipos de recurso integrados y las cadenas de continuación existen en esos ocho, en chino, en japonés y en árabe. El chino, el japonés, el coreano y las lenguas que se escriben de derecha a izquierda se componen sin separación silábica. Cualquier otro idioma se divide con los patrones del inglés de EE. UU., con un aviso en la consola, y recibe las cadenas inglesas. Para un documento así, fija `hyphenation.enabled: false` y pasa `resourceTypes` y las cadenas de continuación de `tableStyle` en su idioma.
 
 ### Texto árabe
 
@@ -1909,6 +1919,12 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td>Cuando es <code>true</code>, un encabezado nunca se coloca como último elemento de una columna o página. Si el siguiente bloque no tuviera al menos <code>bodyText.widowMinLines</code> líneas de hueco tras el encabezado (o una línea cuando <code>bodyText.avoidWidows</code> es <code>false</code>), el encabezado se empuja hacia delante para quedar unido a su texto. Interactúa con <code>bodyText.keepColonWithList</code>: si esa regla tiene que empujar el párrafo de dos puntos por completo, los encabezados que lo preceden en la columna viajan con él en vez de quedar varados.</td>
     </tr>
     <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Con <code>keepWithNext</code>, deja aun así que un encabezado cierre la última columna de texto de una página par, porque su texto abre entonces la página impar de enfrente, en el mismo pliego (JLReq §4.1.7). Los pliegos son la página 1 sola y después 2–3, 4–5…, contados con <code>pageIndexOffset</code>, tanto en libros encuadernados por la izquierda como por la derecha. Desde postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>keepWithNextSplit</code></td>
       <td><code>'rules' | 'fill'</code></td>
       <td><code>'rules'</code></td>
@@ -1951,9 +1967,10 @@ Un objeto `headings` conserva todos los valores por defecto de nivel que no repi
 Las editoriales esperan que cada columna empiece en la parte superior de la página y termine alineada con su parte inferior. Las reglas de ruptura (protección de huérfanas y viudas, títulos unidos a su texto, figuras indivisibles) dejan columnas cortas de forma natural — una o más líneas de rejilla base vacías al final. Con el equilibrado activado, el motor hace lo que haría un maquetista, aplicando sus palancas en orden de prioridad editorial:
 
 1. **Una caja que cierra la columna** — un callout que termina una columna corta baja exactamente el espacio que queda bajo su pie, de modo que su borde inferior cae en la última casilla de rejilla de la página, a nivel con la última línea de la columna contigua. Ocupa ese espacio aunque sea menor que una línea, siempre que nada pase a otra columna. Por defecto actúa antes que cualquier otra palanca y se queda con todo el hueco, de modo que un recuadro que comenta el párrafo de encima puede acabar varias líneas por debajo de él; con `closingBox: 'last'` los encabezados, los finales de lista y las demás palancas de espacio toman antes las líneas enteras, y el recuadro solo lo que dejan, y con `closingBox: 'off'` no se mueve nunca.
-2. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior — salvo un encabezado justo bajo una figura o tabla que encabeza su columna en una página que fluye hacia la siguiente: el espacio va sobre ese encabezado, bajo la figura.
-3. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
-4. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
+2. **Imágenes con zona segura** — una imagen con zona segura (`Resource.safeArea`, véase [Formato del documento › Zona segura](/es/docs/document-format#zona-segura)) colocada en línea en la columna corta, o flotada en su cabeza o su pie y solo sobre ella, crece en líneas enteras de rejilla, recortada dentro de su zona segura, hasta llenar la columna o hasta que el recorte llega a la zona segura. Una imagen más alta no deja ningún hueco en la página, así que actúa antes de añadir ningún espacio; un flotante en la cabeza de una columna de una página o banda cuyas cabezas de columna quedan a nivel (véase más abajo) no crece. Se anota como `flexFigure`. No tiene ajuste propio: solo crece una imagen cuyo recurso marca una zona segura.
+3. **Encabezados** — se añaden líneas completas de rejilla al margen superior de los encabezados de la columna corta. Cuando hacen falta varias líneas y la columna contiene varios encabezados, las líneas se reparten entre ellos, dejando siempre la mayor parte al encabezado más importante (un `h2` recibe más que un `h3`). Los encabezados situados al principio de una columna nunca reciben espacio adicional, de modo que las columnas siguen empezando en la parte superior — salvo un encabezado justo bajo una figura o tabla que encabeza su columna en una página que fluye hacia la siguiente: el espacio va sobre ese encabezado, bajo la figura.
+4. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
+5. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
 
 La última columna de una página solo se equilibra cuando la página fluye de forma natural hacia la siguiente — la página final de un capítulo termina corta de forma legítima. Esa página, y una banda de cierre cortada a nivel por `trailing`, mantienen además las cabezas de sus columnas a la misma altura: no se añade ninguna línea bajo una figura o tabla que encabece una de sus columnas (la palanca tras flotantes), y un encabezado o una caja que abre una columna bajo esa figura se queda en su cabeza, diga lo que diga `stretchAfterFloats`, de modo que ninguna columna empieza más abajo que su vecina solo para igualar los pies.
 
@@ -2055,11 +2072,12 @@ La maquetación deja constancia de cada palanca que aplica, en el bloque sobre e
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // normalmente una: un párrafo tras una lista puede tomar la línea de final de lista y además ganar una línea
-  spaceAbove: number;     // px que las palancas de espaciado añadieron sobre el bloque (0 si solo actuó looseParagraph)
+  spaceAbove: number;     // px que las palancas de espaciado añadieron sobre el bloque (0 si solo actuó looseParagraph o flexFigure)
+  bodyGrowth?: number;    // flexFigure: px que creció la imagen, recortada dentro de su zona segura
   extraLines?: number;    // looseParagraph: líneas que ganó el párrafo
   tracking?: number;      // looseParagraph: el tracking con que las ganó, en milésimas de eme (0 = solo con el espaciado entre palabras)
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2075,6 +2093,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>el bloque del marco del aviso</td>
       <td>Una caja que cierra la columna bajó exactamente el espacio que quedaba bajo su pie (<code>spaceAbove</code>; puede ser una fracción de línea).</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>el bloque de la imagen (en línea) o el flotante</td>
+      <td>Una imagen con zona segura compuesta <code>bodyGrowth</code> px más alta, en líneas enteras de rejilla, recortada dentro de la zona segura. El <code>bodySource</code> del bloque del recurso es la parte que se ve, y <code>bodyFlex.delta</code> el mismo crecimiento.</td>
     </tr>
     <tr>
       <td><code>heading</code></td>
@@ -2165,7 +2188,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Donde la configuración estaba guardada, el motor puede saberlo y lo hace por ti: el Sandbox con los libros y las configuraciones que guardó entonces (ver **Sandbox → Persistencia**), y `openBundle` / `readBundle` con un paquete `.postext` escrito por postext 1.4 o anterior (ver [Paquetes escritos por postext 1.4 o anterior](#paquetes-escritos-por-postext-14-o-anterior)). Una configuración que guardaste tú puede pasar por `migrateConfig(config)` de `postext/bundle`, que escribe los saltos tal como los componía la 1.4 (`pinLegacyHeadingBreaks`): `enabled: false` en un H1 que no tenía salto, y `parity: 'any'` junto a un `enabled: true` que no indicaba paridad, en H1 y en los estilos de encabezado. También fija el tamaño de las fórmulas, el espacio en torno a las figuras en línea (también en los recuadros), las marcas en línea de los encabezados, el tamaño de las letras capitales, el sitio bajo una línea de dos puntos que introduce una lista, las líneas que deja de un párrafo o de un elemento de lista el corte de una caja, los cortes de línea tras una raya, la composición línea a línea del texto en bandera, la división de un párrafo bajo un encabezado, los cortes de línea tras el guion de un compuesto y el espacio bajo los contenedores `:::paragraphs`, tal como los componía la 1.4. Si le pasas el markdown del libro como tercer argumento, `{ content }`, omite la fijación de las fórmulas cuando el texto no tiene ningún `$`, las de los huecos cuando ninguna línea inserta un recurso (la del hueco en los recuadros cuando ninguna lo hace dentro de un recuadro), la de las marcas cuando ningún encabezado lleva ninguna, la de los dos puntos cuando ninguna lista sigue a una línea que termina en dos puntos, la del corte de las cajas cuando el texto no abre ningún `:::callout`, la de las rayas cuando ninguna raya va entre palabras sin espacios, la de la división bajo un encabezado cuando el texto no tiene ningún encabezado, la de los contenedores cuando el texto no abre ningún contenedor `:::paragraphs`, y la de los compuestos cuando ningún guion va entre dos letras; la del texto en bandera solo se aplica a una configuración que pone en bandera algún texto corrido, y la de los contenedores solo a una que declara algún estilo de párrafo (ver [Paquetes escritos por postext 1.4 o anterior](#paquetes-escritos-por-postext-14-o-anterior)). Para fijar solo los saltos, llama a `pinLegacyHeadingBreaks(config)`.
 
-Las configuraciones por nivel soportan las mismas propiedades que los valores generales — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — más estos campos exclusivos de cada nivel:
+Las configuraciones por nivel soportan las mismas propiedades que los valores generales — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — más estos campos exclusivos de cada nivel (un [estilo de encabezado](#estilos-de-encabezado) también los admite):
 
 <table>
   <thead>
@@ -2196,10 +2219,28 @@ Las configuraciones por nivel soportan las mismas propiedades que los valores ge
       <td>Espaciado entre letras tras cada glifo del encabezado —espacios y prefijo de numeración incluidos—, como <code>letter-spacing</code> en CSS. Un valor positivo abre las letras (las versales compuestas con <code>textTransform: 'uppercase'</code> suelen pedir un poco: <code>&#123; value: 0.12, unit: 'em' &#125;</code>); uno negativo aprieta un cuerpo de titular. Un valor en <code>em</code> es relativo al <code>fontSize</code> del nivel. Las líneas del encabezado se miden con él, de modo que cortan donde acaba el texto espaciado, y canvas, HTML y PDF lo pintan igual. Una línea centrada o alineada a la derecha se coloca por sus letras: el espaciado que sigue a su último glifo no cuenta, como en el texto de los diseños, así que un encabezado centrado queda alineado con la apertura por defecto de un encabezado <code>span: 'page'</code>. Un nivel dibujado con su <code>advancedDesign</code> lo ignora, como los demás campos tipográficos de esta tabla: cada elemento de texto del diseño tiene su propio <code>letterSpacing</code>. Un <a href="#estilos-de-encabezado">estilo de encabezado</a> también puede fijarlo, para los encabezados que lo usan. Hasta postext 1.4 los encabezados no tenían espaciado entre letras, y la clave se descartaba sin aviso.</td>
     </tr>
     <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>sin fijar</td>
+      <td>Líneas que ocupa (行取り, JLReq §4.1.6): el encabezado se compone en una banda de ese número de líneas del texto, con sus caracteres centrados en ella, en lugar de <code>marginTop</code> y <code>marginBottom</code>; <code>3</code> es un encabezado 3行取り. La banda empieza en una línea del texto cuando el encabezado se ajusta a la rejilla, y el texto que lo sigue se queda en la rejilla, en los dos modos de escritura y con <code>cjk.grid</code>; un encabezado cuyas líneas necesitan más toma el siguiente número entero. El centro es el de los caracteres (la línea base menos el centro ideográfico de la fuente), como lo mide JLReq, no el de las cajas de línea. No se aplica a las aperturas (<code>span: 'page'</code>), a los encabezados dibujados con un <code>advancedDesign</code>, a los encabezados ocultos ni a los encabezados dentro de recuadros. Un estilo de encabezado puede fijar <code>0</code> para quitar el de su nivel. Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría del encabezado desde el principio de la línea (字下げ), con <code>em</code> igual al cuerpo del <strong>texto</strong>, porque los libros japoneses cuentan las sangrías de los títulos en caracteres del texto (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> es 6字下げ sea cual sea el cuerpo del encabezado. La medida se estrecha en esa cantidad, y un encabezado centrado se centra en lo que queda. Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>sin fijar</td>
+      <td>Espaciado uniforme (字取り): un encabezado de una línea más estrecho que ese número de sus cuadratines <strong>propios</strong> se espacia por igual hasta medir exactamente ese ancho, así que <code>3</code> compone 序章 como 序　章. Los títulos más anchos y los encabezados de varias líneas se quedan como están. <code>&#123;jidori=N&#125;</code> tras el título de un encabezado lo fija para ese encabezado, y <code>&#123;jidori=0&#125;</code> desactiva el de su nivel. Desde postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Plantilla del número automático del nivel. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime el contador acumulado de ese nivel de encabezado, opcionalmente formateado con un sufijo — <code>{'{1:I}'}</code> romanos en mayúscula, <code>{'{1:i}'}</code> romanos en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> con cero a la izquierda, <code>{'{1:words}'}</code> con letras (<em>veintiuno</em>), <code>{'{1:ordinal}'}</code> como ordinal (<em>vigesimoprimero</em>), <code>{'{1:一}'}</code> en numerales chinos, <code>{'{1:〇}'}</code> cifra a cifra, <code>{'{1:壹}'}</code> en numerales financieros y <code>{'{1:①}'}</code> en círculo, o cualquier nombre de <a href="#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a> — y el resto del texto es literal (<code>'Capítulo {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> para 第一百二十回; una barra invertida escapa una llave literal). Un token cuyo contador aún está vacío se pliega junto con el separador contiguo. Vacía (el valor por defecto) significa sin número automático. El número resultante se antepone al título en el flujo, alimenta el marcador <code>{'{number}'}</code> de una ranura de diseño avanzado (donde el prefijo no se antepone) y se imprime en el índice de contenidos. Ver <a href="#números-con-letras">Números con letras</a> para las palabras, y <a href="#estilos-de-encabezado">Estilos de encabezado</a> para dar a algunos encabezados de un nivel una plantilla propia.</td>
+      <td>Plantilla del número automático del nivel. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprime el contador acumulado de ese nivel de encabezado, opcionalmente formateado con un sufijo — <code>{'{1:I}'}</code> romanos en mayúscula, <code>{'{1:i}'}</code> romanos en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabético, <code>{'{1:01}'}</code> con cero a la izquierda, <code>{'{1:words}'}</code> con letras (<em>veintiuno</em>), <code>{'{1:ordinal}'}</code> como ordinal (<em>vigesimoprimero</em>), <code>{'{1:一}'}</code> en numerales chinos (japoneses en un documento japonés: 第百一章), <code>{'{1:〇}'}</code> cifra a cifra, <code>{'{1:壹}'}</code> en numerales financieros y <code>{'{1:①}'}</code> en círculo, o cualquier nombre de <a href="#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a> — y el resto del texto es literal (<code>'Capítulo {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> para 第一百二十回; una barra invertida escapa una llave literal). Un token cuyo contador aún está vacío se pliega junto con el separador contiguo. Vacía (el valor por defecto) significa sin número automático. El número resultante se antepone al título en el flujo, alimenta el marcador <code>{'{number}'}</code> de una ranura de diseño avanzado (donde el prefijo no se antepone) y se imprime en el índice de contenidos. Ver <a href="#números-con-letras">Números con letras</a> para las palabras, y <a href="#estilos-de-encabezado">Estilos de encabezado</a> para dar a algunos encabezados de un nivel una plantilla propia.</td>
     </tr>
     <tr>
       <td><code>numberSeparator</code></td>
@@ -3041,11 +3082,12 @@ La propiedad `footnotes` fija dónde van las notas citadas con `[^id]`, cómo se
 
 ```ts
 interface FootnotesConfig {
-  placement?: 'column' | 'chapterEnd'; // Pie de la columna que cita, o tras el capítulo.
-  numbering?: 'chapter' | 'document' | 'page' | 'column'; // Reiniciar en cada capítulo, seguir, o reiniciar en cada página / columna.
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Pie de la columna que cita, tras el capítulo, o junto al texto de un pliego.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar en cada capítulo, seguir, o reiniciar en cada página / columna / pliego.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
-  markerPosition?: 'auto' | 'superscript' | 'inline'; // Volada, o sobre la línea de base.
-  markerSize?: Dimension;     // Tamaño de la llamada en línea; em es el texto que la rodea.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línea de base, junto a la palabra, o a la derecha de una línea vertical.
+  markerSize?: Dimension;     // Tamaño de la llamada en línea, lateral o a la derecha; em es el texto que la rodea.
+  numberGap?: 'en' | 'em';    // Espacio tras el número de la propia nota.
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notas al pie de la columna, o bajo el texto.
   fontSize?: Dimension;       // Cuerpo de la nota; em es el cuerpo del texto.
   lineHeight?: Dimension;     // Interlineado de la nota; em es el cuerpo de la nota.
@@ -3076,15 +3118,15 @@ interface FootnotesConfig {
   <tbody>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'column' | 'chapterEnd'</code></td>
-      <td><code>'column'</code></td>
-      <td><code>'column'</code> compone cada nota al pie de la columna que contiene la línea que la cita, bajo un filete corto; en una maqueta de una columna es el pie de la página. <code>'chapterEnd'</code> compone todas las notas de un capítulo tras su último bloque, en el orden en que se citan.</td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (libros japoneses verticales: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> compone cada nota al pie de la columna que contiene la línea que la cita, bajo un filete corto; en una maqueta de una columna es el pie de la página. <code>'chapterEnd'</code> compone todas las notas de un capítulo tras su último bloque, en el orden en que se citan. <code>'spread'</code> (傍注, solo en texto vertical) compone las notas citadas en las dos páginas de un pliego al final de su página impar, la izquierda en un libro encuadernado por la derecha, bajo el filete: las notas citadas en la página par la esperan, una nota que dejaría en la página impar menos de una línea de texto se queda al pie de la página par con las que la siguen, y un capítulo que acaba en una página par conserva allí las notas que esperaban. En texto horizontal vuelve a <code>'column'</code> con un aviso <code>unknownConfigValue</code>. Desde postext 1.16.</td>
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
-      <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code> vuelve a empezar en 1 bajo cada título de nivel 1 y al principio de cada documento. <code>'document'</code> sigue por todo el documento y, en un libro maquetado capítulo a capítulo, de un capítulo al siguiente (<code>continuationAfter</code> lleva el último número en <code>continuation.footnoteNumber</code>). <code>'page'</code> vuelve a empezar en 1 en cada página y <code>'column'</code> en cada columna, contando las notas donde las coloca la maquetación (las columnas de una página en orden de lectura): el 页下注 habitual de un libro chino. El documento se maqueta, se numera según dónde cayeron sus notas y se vuelve a maquetar hasta que los números se mantienen (como mucho tres veces más). Ambos valen para las notas al pie de la columna: con <code>placement: 'chapterEnd'</code> las notas se numeran por capítulo.</td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (libros japoneses horizontales: <code>'page'</code>; con <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> vuelve a empezar en 1 bajo cada título de nivel 1 y al principio de cada documento. <code>'document'</code> sigue por todo el documento y, en un libro maquetado capítulo a capítulo, de un capítulo al siguiente (<code>continuationAfter</code> lleva el último número en <code>continuation.footnoteNumber</code>). <code>'page'</code> vuelve a empezar en 1 en cada página y <code>'column'</code> en cada columna, contando las notas donde las coloca la maquetación (las columnas de una página en orden de lectura): el 页下注 habitual de un libro chino. El documento se maqueta, se numera según dónde cayeron sus notas y se vuelve a maquetar hasta que los números se mantienen (como mucho tres veces más). Ambos valen para las notas al pie de la columna: con <code>placement: 'chapterEnd'</code> las notas se numeran por capítulo. <code>'spread'</code> vuelve a empezar en cada pliego (páginas 2–3, 4–5…), en el orden de cita, para <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
@@ -3094,21 +3136,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
-      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>'superscript'</code> pone volados, a tamaño reducido, la llamada del texto y el número que abre la nota. <code>'inline'</code> los compone sobre la línea de base: la llamada a <code>markerSize</code>, el número de la nota al tamaño de la nota; en texto vertical, una llamada en círculo en línea va derecha en una casilla propia. <code>'auto'</code> es en línea con <code>circled-decimal</code> y volada con cualquier otro formato. En todos los casos la llamada sigue al carácter que la precede y nunca abre una línea.</td>
+      <td><code>'superscript'</code> pone volados, a tamaño reducido, la llamada del texto y el número que abre la nota. <code>'inline'</code> los compone sobre la línea de base: la llamada a <code>markerSize</code>, el número de la nota al tamaño de la nota; en texto vertical, una llamada en círculo en línea va derecha en una casilla propia. <code>'right'</code> compone una llamada reducida a ras del lado derecho de una línea vertical, como componen （1） los libros verticales japoneses; en texto horizontal es una volada. <code>'side'</code> (合印) compone una llamada pequeña junto a la palabra marcada, del lado de su ruby, que acaba donde acaba el último carácter de la palabra; no ocupa sitio en la línea, que se corta y se justifica como si no estuviera, y una interlínea demasiado estrecha para ella se avisa con <code>rubyExceedsLeading</code>. <code>'auto'</code> es en línea con <code>circled-decimal</code>, <code>'right'</code> en un libro japonés vertical y volada en los demás casos. En todos los casos la llamada sigue al carácter que la precede y nunca abre una línea.</td>
     </tr>
     <tr>
       <td><code>markerSize</code></td>
       <td><code>Dimension</code></td>
-      <td><code>1em</code></td>
-      <td>Tamaño de una llamada en línea; <code>em</code> es el tamaño del texto que la rodea (<code>0.75em</code> es una reducción habitual). No afecta a una llamada volada.</td>
+      <td><code>1em</code>; <code>0.6em</code> con <code>'side'</code>, <code>0.7em</code> con <code>'right'</code></td>
+      <td>Tamaño de una llamada en línea, lateral o a la derecha; <code>em</code> es el tamaño del texto que la rodea (<code>0.75em</code> es una reducción habitual). No afecta a una llamada volada.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (notas japonesas tras el capítulo: <code>'em'</code>)</td>
+      <td>El espacio tras el número que abre una nota: un espacio de medio cuadratín o un cuadratín entero de la nota (un espacio ideográfico cuando el número o la nota llevan texto CJK), que nunca se estira ni se corta. Desde postext 1.16.</td>
     </tr>
     <tr>
       <td><code>markerTemplate</code></td>
       <td><code>string</code></td>
-      <td><code>'{n}'</code></td>
-      <td>Cómo se escribe el número de una nota; <code>{n}</code> lo representa en el formato de numeración y las cifras del documento: <code>'({n})'</code> da las llamadas entre paréntesis de los libros árabes, «(١)». Escribe igual la llamada del texto y el número que abre la nota. Una plantilla sin <code>{n}</code> se lee como el valor por defecto.</td>
+      <td><code>'&#123;n&#125;'</code> (libros japoneses verticales: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>Cómo se escribe el número de una nota; <code>&#123;n&#125;</code> lo representa en el formato de numeración y las cifras del documento: <code>'(&#123;n&#125;)'</code> da las llamadas entre paréntesis de los libros árabes, «(١)». Escribe igual la llamada del texto y el número que abre la nota. Una plantilla sin <code>&#123;n&#125;</code> se lee como el valor por defecto.</td>
     </tr>
     <tr>
       <td><code>noteNumberPosition</code></td>
@@ -3206,6 +3254,8 @@ footnotes: {
 }
 ```
 
+**Libros japoneses.** Un documento japonés (`locale: 'ja'`, desde postext 1.16) da a los campos que deja sin fijar los valores de JLReq §4.2. Un libro vertical compone sus notas tras el capítulo (`placement: 'chapterEnd'`, 後注), numeradas por capítulo, con llamadas `（{n}）` a la derecha de la línea (`markerPosition: 'right'`, con las cifras de pie según `cjk.uprightDigits`); uno horizontal las compone al pie de la página, numeradas en cada página, con llamadas voladas. Los dos trazan el filete con un tercio de la medida (`separator.width: 1/3`), y las notas tras el capítulo llevan `numberGap: 'em'` y una sangría francesa de dos cuadratines. Un valor explícito manda y se conserva al guardar (`stripFootnotesDefaults` compara con los valores por defecto del propio documento); los documentos chinos, árabes y latinos se resuelven como antes. `footnoteDocumentDefaults(locale, writingMode, placement?)` devuelve estos valores. La llamada se escribe delante de un 。 que cierra la oración (`先生[^1]。`): se queda con el carácter anterior, y 。 nunca abre una línea. Ver [Composición japonesa › Notas](/es/docs/japanese-layout#notas).
+
 Cómo se componen las notas al pie de columna:
 
 - **La nota y su llamada comparten columna.** Antes de colocar una línea, la maquetación suma la altura de las notas que esa línea cita por primera vez (y la del filete, en la primera nota de la columna). Una línea cuyas notas no caben debajo pasa a la columna siguiente con el resto de su párrafo, según las reglas de viudas y huérfanas. El área de texto de la columna se acorta en la altura de las notas, así que el equilibrado de columnas y la banda de cierre de un capítulo solo cuentan el texto.
@@ -3219,7 +3269,9 @@ Cómo se componen las notas al pie de columna:
 El resolutor y el depurador siguen el patrón de las demás secciones:
 
 ```ts
-import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // los campos sin fijar toman los valores japoneses verticales
 ```
 
 
@@ -3331,7 +3383,7 @@ interface CitationsConfig {
       <td><code>locale</code></td>
       <td><code>string</code></td>
       <td>idioma del documento</td>
-      <td>La configuración regional CSL en la que el estilo escribe sus palabras (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>…).</td>
+      <td>La configuración regional CSL en la que el estilo escribe sus palabras (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>, <code>ja-JP</code>…). Un documento japonés se lee como <code>ja-JP</code>: las citas narrativas unen dos autores con と y abrevian los demás con ほか.</td>
     </tr>
     <tr>
       <td><code>link</code></td>
@@ -3434,24 +3486,40 @@ interface CitationsConfig {
 
 ## Tipografía de Asia oriental
 
-La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas chinas, las lecturas ruby y las notas warichu del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán sin fijar nada más. [Composición china](/es/docs/chinese-layout) explica las reglas que hay detrás de estos ajustes, región por región, con dos configuraciones completas.
+La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas de énfasis, las líneas laterales, las lecturas ruby, las notas warichu y las marcas de kanbun del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán, y uno con `locale: 'ja'` a la japonesa, sin fijar nada más. [Composición china](/es/docs/chinese-layout) y [Composición japonesa](/es/docs/japanese-layout) explican las reglas que hay detrás de estos ajustes, con dos configuraciones completas cada una. Los campos y valores japoneses existen desde postext 1.16.
 
 ```ts
 interface CjkConfig {
-  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Convenciones regionales.
-  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Qué signos no pueden abrir ni cerrar una línea.
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Convenciones regionales.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Qué signos no pueden abrir ni cerrar una línea.
   punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
   compressAdjacent?: 'auto' | boolean;      // Dos signos seguidos ocupan 1,5 cuadratines.
   trimLineStart?: 'auto' | boolean;         // Los paréntesis en el borde de una línea pierden su mitad exterior.
-  hangingPunctuation?: 'none' | 'allow' | 'force';
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // Un cuadratín tras ？！ dentro de un párrafo (Japón).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un paréntesis que abre un párrafo sangrado.
   latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Texto vertical: números en una casilla; por defecto 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
-  emphasis?: 'auto' | 'italic' | 'dots';    // Qué hace *…* con los caracteres chinos.
+  emphasis?: 'auto' | 'italic' | 'dots';    // Qué hace *…* con los caracteres CJK.
+  emphasisMark?: {                          // La marca que dibujan *…* y :dots[…] cuando no la indican.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
   bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // Qué imprime :book[…].
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // Los signos, del exterior al interior.
   annotationColor?: ColorValue;             // Puntos y líneas de nombre y título; por defecto, el color del texto.
-  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // Cuánto puede invadir una lectura a sus vecinos.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // Cómo se espacia una lectura más corta que su base.
+    smallKana?: 'keep' | 'full';                 // Kana pequeños de las lecturas tal como se escriben, o a tamaño normal.
+  };
   warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Marcas de kanbun.
 }
 ```
 
@@ -3467,39 +3535,51 @@ interface CjkConfig {
   <tbody>
     <tr>
       <td><code>region</code></td>
-      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
       <td><code>'auto'</code></td>
-      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; cualquier otro idioma da <code>'mainland'</code>. La región elige los valores por defecto de <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> y <code>trimLineStart</code>.</td>
+      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; <code>ja</code> y cualquier etiqueta <code>ja-*</code> dan <code>'japan'</code>, cuyas convenciones siguen los <a href="https://www.w3.org/TR/jlreq/">Requisitos de composición del texto japonés</a> del W3C (JLReq); cualquier otro idioma da <code>'mainland'</code>. La región elige los valores por defecto de todos los campos <code>'auto'</code> de abajo. <code>'japan'</code> fijado a mano compone cualquier documento a la japonesa; las cadenas integradas y los valores por defecto de las notas y del índice siguen al idioma.</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
-      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
       <td><code>'auto'</code></td>
-      <td>Qué signos no pueden abrir ni cerrar una línea (clreq §6.1.1; ver la tabla siguiente). <code>'auto'</code>: <code>'gb'</code> en China continental, <code>'basic'</code> en Taiwán y Hong Kong.</td>
+      <td>Qué signos no pueden abrir ni cerrar una línea (clreq §6.1.1 y el apéndice C.3 de JLReq; ver las tablas siguientes). <code>'auto'</code>: <code>'gb'</code> en China continental, <code>'basic'</code> en Taiwán y Hong Kong, <code>'ja-very-strict'</code> en Japón. Cualquier nivel puede elegirse en cualquier documento.</td>
     </tr>
     <tr>
       <td><code>punctuationWidth</code></td>
       <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
       <td><code>'auto'</code></td>
-      <td>Qué ancho ocupan los signos de ancho completo (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>). <code>'auto'</code>: <code>'kaiming'</code> en China continental, <code>'fullwidth'</code> en Taiwán y Hong Kong.</td>
+      <td>Qué ancho ocupan los signos de ancho completo (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>). <code>'auto'</code>: <code>'kaiming'</code> en China continental, <code>'fullwidth'</code> en Taiwán, Hong Kong y Japón (en Japón, con las reglas de JLReq para las parejas, los finales de línea y los puntos medios).</td>
     </tr>
     <tr>
       <td><code>compressAdjacent</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Dos signos seguidos (<code>。」</code>, <code>》（</code>, <code>：“</code>) ceden el medio cuadratín de blanco que queda entre ellos, y el par ocupa 1,5 cuadratines en vez de 2. <code>'auto'</code>: activado en China continental y Hong Kong, desactivado en Taiwán.</td>
+      <td>Dos signos seguidos (<code>。」</code>, <code>》（</code>, <code>：“</code>) ceden el medio cuadratín de blanco que queda entre ellos, y el par ocupa 1,5 cuadratines en vez de 2. <code>'auto'</code>: activado en China continental, Hong Kong y Japón, desactivado en Taiwán.</td>
     </tr>
     <tr>
       <td><code>trimLineStart</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Un paréntesis o unas comillas de apertura que empiezan una línea ceden el medio cuadratín que llevan delante, y los de cierre que la acaban, el de detrás. <code>'auto'</code>: activado en China continental y Hong Kong, desactivado en Taiwán.</td>
+      <td>Un paréntesis o unas comillas de apertura que empiezan una línea ceden el medio cuadratín que llevan delante, y los de cierre que la acaban, el de detrás. <code>'auto'</code>: activado en China continental, Hong Kong y Japón, desactivado en Taiwán. En Japón un signo de cierre conserva su medio cuadratín a final de línea hasta que la línea lo necesita (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>).</td>
     </tr>
     <tr>
       <td><code>hangingPunctuation</code></td>
-      <td><code>'none' | 'allow' | 'force'</code></td>
-      <td><code>'none'</code></td>
-      <td>Si un signo de pausa o de cierre de oración puede colgar fuera del final de la línea (ver <a href="#puntuación-colgada">Puntuación colgada</a>).</td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Si un signo de pausa o de cierre de oración puede colgar fuera del final de la línea (ver <a href="#puntuación-colgada">Puntuación colgada</a>). <code>'auto'</code>: <code>'allow'</code> en Japón (solo 、。，．), <code>'none'</code> en las demás regiones. Hasta postext 1.15 el valor por defecto era <code>'none'</code>, que es lo que <code>'auto'</code> sigue siendo fuera de Japón.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Un cuadratín de espacio tras un ？ o un ！ de ancho completo (también tras ‼⁇⁈⁉, y tras una llamada de nota pegada a ellos) dentro de un párrafo, como lo compone el japonés (JLReq §3.1.6): no delante de un paréntesis de cierre ni de otro signo así, no al final de un párrafo, y se suprime al final de una línea. Un U+3000 o un espacio que el autor escribió ahí se convierten en ese espacio. Nunca se estira ni se encoge. <code>'auto'</code>: activado en Japón, desactivado en las demás regiones.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Cómo se compone un paréntesis de apertura que empieza un párrafo con sangría de primera línea (JLReq §3.1.5): <code>'indent'</code> conserva la sangría y da al paréntesis su cuadratín tras ella (patrón ①); <code>'half'</code> deja que el paréntesis ceda el blanco que hay delante de su dibujo, que llena entonces la segunda mitad de una sangría de un cuadratín, y el texto empieza donde empieza el de los demás párrafos (patrón ③); <code>'flush'</code> pone el paréntesis en el borde, sin sangría (天付き). Un párrafo sin sangría o con sangría francesa se queda como está. <code>'auto'</code>: <code>'half'</code> en Japón; en las demás regiones el paréntesis se compone como al principio de cualquier línea, igual que antes.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3523,13 +3603,25 @@ interface CjkConfig {
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'dots'</code></td>
       <td><code>'auto'</code></td>
-      <td>Qué hace el énfasis de Markdown (<code>*…*</code>) con los caracteres chinos: <code>'dots'</code> pone un punto de énfasis bajo cada uno (a su derecha en texto vertical), como <code>:dots[…]</code>, y las letras latinas del mismo énfasis conservan la cursiva; <code>'italic'</code> los inclina, algo que una fuente china solo puede simular. <code>'auto'</code>: <code>'dots'</code> cuando el idioma del documento es el chino, <code>'italic'</code> en los demás casos (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
+      <td>Qué hace el énfasis de Markdown (<code>*…*</code>) con los caracteres chinos y japoneses: <code>'dots'</code> pone una marca de énfasis junto a cada uno, como <code>:dots[…]</code> (con la forma y el lado de <code>emphasisMark</code>), y las letras latinas del mismo énfasis conservan la cursiva; <code>'italic'</code> los inclina, algo que una fuente CJK solo puede simular. <code>'auto'</code>: <code>'dots'</code> cuando el idioma del documento es el chino o el japonés, <code>'italic'</code> en los demás casos (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td><code>'auto'</code> en cada uno</td>
+      <td>La marca que dibujan <code>*…*</code> y un <code>:dots[…]</code> sin atributos: <code>style</code> <code>'dot'</code>, <code>'circle'</code> o <code>'sesame'</code> (﹅); <code>fill</code> <code>'filled'</code> u <code>'open'</code> (automático: hueco para el círculo); <code>position</code> <code>'over'</code> (a la derecha del texto vertical) o <code>'under'</code> (a su izquierda). Automático: en Japón, un sésamo relleno sobre el texto y a su derecha en texto vertical (JLReq §3.3.9); en las demás regiones, un punto bajo el texto y a su derecha en texto vertical, como antes. Los atributos de cada marca mandan.</td>
     </tr>
     <tr>
       <td><code>bookTitleMark</code></td>
       <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>Qué imprime <code>:book[…]</code>: 《》 alrededor del título (〈〉 dentro de otro título), la línea ondulada de título bajo él, o el título solo. <code>'auto'</code>: signos en la China continental, línea ondulada en Taiwán y Hong Kong.</td>
+      <td>Qué imprime <code>:book[…]</code>: signos alrededor del título (<code>bookTitleBrackets</code>), la línea ondulada de título bajo él, o el título solo. <code>'auto'</code>: signos en la China continental y en Japón, línea ondulada en Taiwán y Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td>Los signos de <code>:book[…]</code> con <code>'brackets'</code>, del exterior al interior; un título anidado a más profundidad que la lista toma la última pareja. <code>'auto'</code> (o una lista vacía): 『』 y luego 「」 en Japón, 《》 y luego 〈〉 en las demás regiones.</td>
     </tr>
     <tr>
       <td><code>annotationColor</code></td>
@@ -3539,15 +3631,21 @@ interface CjkConfig {
     </tr>
     <tr>
       <td><code>ruby</code></td>
-      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
       <td>medio cuerpo, <code>'auto'</code></td>
-      <td>Las lecturas de <code>:ruby[…]</code> y <code>&#123;紅樓|hóng|lóu&#125;</code>: fuente (por defecto, la del texto), tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code> del texto; el zhuyin al 60 % de él), color, y dónde van cuando un ruby no lo dice (<code>'auto'</code>: el zhuyin a la derecha de cada carácter, el pinyin encima del texto en horizontal y a su derecha en vertical).</td>
+      <td>Las lecturas de <code>:ruby[…]</code> y <code>&#123;紅樓|hóng|lóu&#125;</code>: fuente (por defecto, la del texto), tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code> del texto; el zhuyin al 60 % de él), color, y dónde van cuando un ruby no lo dice (<code>'auto'</code>: el zhuyin a la derecha de cada carácter, el pinyin y los kana encima del texto en horizontal y a su derecha en vertical). <code>overhang</code>: cuánto puede invadir a sus vecinos una lectura más larga que su base: <code>'kana'</code>, un carácter de ruby sobre los kana, ー y el lado en blanco de un signo, medio sobre un paréntesis de apertura y nada sobre los kanji (JLReq §3.3.8); <code>'any'</code>, medio carácter de ruby sobre cualquier vecino sin lectura; <code>'none'</code>, nada; automático, <code>'kana'</code> en Japón y, en las demás regiones, un cuarto del cuerpo del ruby sobre cualquier vecino sin lectura, como antes. <code>align</code>: cómo se espacia una lectura más corta que su base: <code>'jis'</code>, 1:2:1 (media unidad en los extremos y una entre cada dos); <code>'center'</code>, centrada y sin espaciar; <code>'start'</code>, desde el principio de la base; automático, <code>'jis'</code> en Japón y <code>'center'</code> en las demás regiones. <code>smallKana: 'full'</code> compone a tamaño normal los kana pequeños de las lecturas (<code>'keep'</code>, el valor por defecto, los deja como se escriben). El <code>mode</code> y el <code>align</code> de cada ruby mandan.</td>
     </tr>
     <tr>
       <td><code>warichu</code></td>
       <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
-      <td>medio cuerpo, sin signos</td>
-      <td>Las notas en dos filas de <code>:warichu[…]</code>: el tamaño de la nota (por defecto medio em, de modo que las dos filas llenan el em de la línea), su color y los signos que se componen al tamaño del texto antes de la primera fila y tras la última (mandan los <code>open</code> / <code>close</code> de cada nota).</td>
+      <td>medio cuerpo; signos （） en Japón, ninguno en las demás regiones</td>
+      <td>Las notas en dos filas de <code>:warichu[…]</code>: el tamaño de la nota (por defecto medio em, de modo que las dos filas llenan el em de la línea), su color y los signos que se componen al tamaño del texto antes de la primera fila y tras la última (mandan los <code>open</code> / <code>close</code> de cada nota). En Japón un <code>open</code> o un <code>close</code> vacío (<code>''</code>) compone la nota sin ese signo.</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>medio cuerpo, <code>'inline'</code></td>
+      <td>Las marcas de kanbun de <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): su tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), su color (por defecto <code>annotationColor</code> y, si no, el del texto) y <code>placement</code>: <code>'inline'</code> compone las marcas de retorno tras su carácter, ocupando medio em, como las compone la JIS; <code>'interlinear'</code> pone todas las marcas en el hueco entre líneas, sin ocupar avance. Igual en todas las regiones (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3565,6 +3663,22 @@ interface CjkConfig {
     <tr><td><code>basic</code></td><td>Los signos de pausa y de cierre de oración 、，；：。！？．‼⁇⁈⁉; las comillas de cierre ” ’ 」 』 y los paréntesis y corchetes de cierre ）〕］｝】〗》〉; los conectores – ～ ~ y una raya — sola entre dos palabras; los puntos medios · ‧ ・; las marcas de iteración 々〻ゝゞヽヾ y ー; las unidades de un número % ‰ ° ℃ ％ y los cuadros de unidad ㎡ ㎏ ㏄.</td><td>Las comillas de apertura “ ‘ 「 『 y los paréntesis y corchetes de apertura （〔［｛【〖《〈; los signos de moneda ¥ $ € £.</td></tr>
     <tr><td><code>gb</code></td><td><code>basic</code>, y la barra / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, y la barra.</td></tr>
     <tr><td><code>strict</code></td><td><code>gb</code>, y la raya doble —— ⸺ y los puntos suspensivos …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+Los niveles japoneses siguen las tres convenciones del apéndice C.3 de JLReq. En todos ellos ninguna línea termina con un paréntesis o unas comillas de apertura, un signo de moneda se queda con su número (salvo en <code>ja-loose</code>), la barra no tiene regla, y ——, ―― y …… pueden abrir una línea pero nunca se separan (tampoco 〳〵):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Nivel</th>
+      <th>Nunca al principio de una línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Los paréntesis y comillas de cierre; 、，。．; los guiones ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; las marcas de repetición ゝゞヽヾ〻 y 々; ー; los kana pequeños ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ (y sus formas de medio ancho); las unidades ％ ℃. El valor por defecto de la JIS X 4051.</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>, menos los kana pequeños, ー y 々 (los libros en general, según JLReq).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Solo los paréntesis y comillas de cierre, 、， y 。． (periódicos).</td></tr>
   </tbody>
 </table>
 
@@ -3603,6 +3717,8 @@ Un signo chino de ancho completo es medio cuadratín de dibujo y medio de blanco
   </tbody>
 </table>
 
+En Japón (`punctuationWidth: 'fullwidth'`, el valor automático) los signos siguen en cambio JLReq §3.1: 、，。． conservan su blanco tras el dibujo, ：； y ・ un cuarto de cuadratín a cada lado, y ？！ llenan su cuadratín. Un signo de cierre al final de una línea conserva su medio cuadratín, y lo cede entero, antes que ningún otro blanco, cuando la línea tiene que meter un carácter más; el blanco tras 。 nunca se reduce dentro de la línea. Una línea devuelve espacio en el orden de JLReq §3.8.3: los espacios entre palabras, el blanco del signo que acaba la línea, los puntos medios, los paréntesis y 、，, y después el espacio entre japonés y latín; y se espacia sin añadir espacio tras un paréntesis de apertura, delante de uno de cierre ni junto a 、。・：；？！ y U+3000 (§3.1.11). 、 y ・ entre dos numerales kanji van sin blanco y nunca se cortan (二、三日, 三・一四). Un documento japonés con otro `punctuationWidth` (`kaiming`, `halfwidth`…) sigue en su lugar las reglas de clreq de esta sección.
+
 Con `compressAdjacent`, dos signos seguidos ceden el blanco que queda entre ellos (las ocho reglas de los borradores anteriores de clreq): un paréntesis de cierre tras otro de cierre o tras un signo de pausa o de cierre de oración de China continental (`。」`, no tras los signos centrados de Taiwán y Hong Kong), un signo de pausa o de cierre de oración tras un paréntesis de cierre (`」，`), un paréntesis de apertura tras cualquiera de ellos o tras otro de apertura (`，「`, `》（`, `「『`), y un cuarto de cuadratín entre un punto medio y un paréntesis de cierre anterior o uno de apertura posterior. Nunca más de lo que deja el par en 1,5 cuadratines: con Kaiming `。”` ya ocupa 1,5 y así se queda, y `》（` ocupa uno. Con o sin `compressAdjacent`, Kaiming pasa el blanco de un signo de cierre de oración detrás del signo de cierre que lo sigue: los dos trazos quedan juntos y el medio cuadratín va después de la comilla (`。”␣母`, no `。␣”母`), y al final de una línea desaparece, como el de un punto solo. Con `trimLineStart`, un paréntesis de apertura que empieza una línea cede el blanco que lleva delante, y su trazo queda alineado con el borde del texto (en la primera línea de un párrafo queda medio cuadratín dentro de la sangría), y uno de cierre que acaba una línea cede el de detrás. Un signo centrado cede un cuarto de cuadratín por cada lado, nunca medio por uno. Cuando una línea se corta entre dos signos, ninguno conserva la compresión: cada uno se compone como signo en el borde de una línea (una `，` de ancho completo cuyo `「` abre la línea siguiente acaba la suya con un cuadratín entero).
 
 Una línea admite un carácter que no puede abrir la línea siguiente (*push-in*) cuando el blanco que aún puede ceder cubre lo que sobresale, en el orden de clreq: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y, al final, los signos de cierre de oración, cada paso repartido por igual. `kaiming` solo deja bajar a medio cuadratín sus signos de cierre de oración, y solo en este caso: a una línea a la que simplemente le falta sitio para un carácter más se le reparte el espacio, así que 。？！ conservan su cuadratín dentro de la línea. `lineEndHalf` deja bajar a medio cuadratín todos los signos; los de `fullwidth` no ceden nada (un libro de ancho completo conserva su retícula) y a los de `halfwidth` no les queda nada que ceder.
@@ -3615,7 +3731,7 @@ En el VDT un signo que cedió blanco es un segmento propio, cuyo `width` es el a
 
 ### Puntuación colgada
 
-`hangingPunctuation: 'allow'` deja que uno de 、，。． (en China continental, cuyos signos van al principio de su caja, también ；：？！) cuelgue fuera del final de la línea cuando de otro modo abriría la siguiente y comprimir la línea no basta para meterlo; nunca en texto horizontal de Taiwán y Hong Kong, cuyos signos centrados parecerían cortados (en vertical sí puede). En texto vertical el signo colgado queda bajo el pie de la línea. `'force'` hace colgar ese signo siempre que acaba una línea (salvo en la última de un párrafo), y en cuanto no cabe. Un signo nunca cuelga si lo toca otro signo (`。」`, `，「`). El segmento colgado lleva `hangs`; el `bbox.width` de la línea, su justificación y su alineación lo dejan fuera, y el canvas y el PDF ensanchan el recorte de la columna con el signo colgado más ancho (`hangingPunctuationOverhang`), así que nunca se corta. La mayoría de los libros chinos no cuelgan la puntuación; clreq solo la recomienda junto con una retícula de caracteres.
+`hangingPunctuation: 'allow'`, el valor automático en Japón, deja que uno de 、，。． (en China continental, cuyos signos van al principio de su caja, también ；：？！) cuelgue fuera del final de la línea cuando de otro modo abriría la siguiente y comprimir la línea no basta para meterlo; nunca en texto horizontal de Taiwán y Hong Kong, cuyos signos centrados parecerían cortados (en vertical sí puede). En texto vertical el signo colgado queda bajo el pie de la línea. `'force'` hace colgar ese signo siempre que acaba una línea (salvo en la última de un párrafo), y en cuanto no cabe. Un signo nunca cuelga si lo toca otro signo (`。」`, `，「`). El segmento colgado lleva `hangs`; el `bbox.width` de la línea, su justificación y su alineación lo dejan fuera, y el canvas y el PDF ensanchan el recorte de la columna con el signo colgado más ancho (`hangingPunctuationOverhang`), así que nunca se corta. La mayoría de los libros chinos no cuelgan la puntuación; clreq solo la recomienda junto con una retícula de caracteres. Los libros japoneses cuelgan 、。，． (*burasagari*), nunca ；：？！ ni los paréntesis, en los dos modos de escritura y solo cuando comprimir la línea no basta para meter el signo.
 
 ### Espacio entre chino y latín
 
@@ -3633,6 +3749,7 @@ En texto vertical una palabra latina o un número largo se tumban, y un número 
 - Junto a un signo que Unicode pone de pie, cada número ocupa su propia casilla: `30×40` son 30, × y 40, todos de pie.
 - Una casilla con más caracteres de los que caben en un cuadratín se estrecha hasta el cuadratín; el espaciado y la justificación nunca entran en ella, solo van detrás.
 - Para cortar y justificar, la casilla cuenta como un carácter chino, y no lleva espacio entre chino y latín a ningún lado.
+- En Japón las parejas `!!`, `!?`, `?!` y `??`, de medio ancho o de ancho completo, también van de pie en una casilla (`すごい！？`), salvo que las toque una letra latina, una cifra o un tercer signo; una pareja de ancho completo se pinta con los signos de medio ancho. Los kana pequeños, ：；, “ ” (pintadas 〝〟) y ・ toman las formas verticales japonesas (ver [Composición japonesa › Formas verticales](/es/docs/japanese-layout#formas-verticales)).
 - El medidor y todos los motores de pintado ven las mismas casillas: el canvas pinta las cifras enderezadas y estrechadas, el PDF igual con la fuente horizontal, y el HTML las envuelve en `text-combine-upright: all`.
 
 A mano, tres marcas en línea mandan sobre el ajuste en texto vertical y no cambian nada en texto horizontal (ver [Formato del documento › Orientación en texto vertical](/es/docs/document-format#orientación-en-texto-vertical)):
@@ -3664,16 +3781,18 @@ Dos cajas de la práctica china, en 五号 (10,5 pt) con 6 pt de interlínea (`l
 
 El marcado de [marcas chinas, ruby y warichu](/es/docs/document-format#marcas-chinas-ruby-y-warichu) conserva su texto en el párrafo: la búsqueda, el índice general, las anclas del índice analítico y el texto copiado leen los caracteres tal como se escribieron, y de estos ajustes solo depende lo que se dibuja alrededor.
 
-- **Puntos de énfasis** (着重号, `:dots[…]`, y `*…*` sobre caracteres chinos con `emphasis: 'dots'`): un punto por carácter, centrado en él (sin contar el espaciado de una línea justificada), nunca en la puntuación ni en los espacios; bajo el carácter en texto horizontal y a su derecha en vertical (clreq §5.3.1). `style` elige punto relleno, círculo o punto sésamo, `fill="open"` dibuja el contorno y `pos="over|under"` el lado.
+- **Puntos de énfasis** (着重号, 傍点; `:dots[…]`, y `*…*` sobre caracteres CJK con `emphasis: 'dots'`): una marca por carácter, centrada en él (sin contar el espaciado de una línea justificada), nunca en la puntuación ni en los espacios; bajo el carácter en texto horizontal y a su derecha en vertical (clreq §5.3.1). `style` elige punto relleno, círculo o punto sésamo, `fill="open"` dibuja el contorno y `pos="over|under"` el lado; `emphasisMark` fija lo que una marca no indica (en Japón, un sésamo sobre el texto, a su derecha en vertical). Un sésamo tiene la misma orientación sobre el papel en los dos modos de escritura, y las marcas del lado de una lectura ruby van por fuera de ella.
+- **Líneas laterales** (傍線, `:sideline[…]{style pos}`): corren junto al texto, puntuación y espacios incluidos: `solid`, `double`, `wavy` o `dotted`, por defecto bajo el texto en horizontal y a su derecha en vertical; dos líneas que se tocan ceden cada una un octavo de em. Funcionan en cualquier escritura.
 - **Líneas de nombre propio y de título** (专名号 `:name[…]`, 书名号 `:book[…]` con `bookTitleMark: 'wavy'`): corren bajo la caja de los caracteres (a su izquierda en vertical) y atraviesan los espacios de la secuencia. Donde se tocan dos secuencias, cada extremo cede un octavo de em, de modo que `:name[賈寶玉]:name[林黛玉]` se lee como dos nombres. Si unos puntos y una línea marcan el mismo texto por el mismo lado, la línea va más cerca del texto. Con `'brackets'`, los 《》 son texto con el que se cortan las líneas, se pintan y se copian como cualquier carácter; no ocupan ningún carácter del texto plano ni del mapa de fuente (los segmentos llevan `inserted`).
-- **Ruby**: las lecturas ocupan el hueco entre líneas junto a la caja de la base, centradas en ella; una lectura con letras latinas (pinyin) sobre su base sube lo que bajan los rasgos descendentes de su fuente (g, j, p, q, y) y 0,04 em del texto más, para que no toquen la base, y todas las lecturas de la línea comparten línea base; una lectura más ancha que su base ensancha la caja de la base, menos el cuarto de em de ruby que puede invadir un vecino sin lectura, y dos lecturas guardan un cuarto de em de ruby entre sí (dos lecturas en zhuyin, un cuarto del em de sus símbolos, así que tres símbolos junto a cada uno de dos caracteres no salen de su casilla). Un ruby mono (una lectura por carácter) puede cortarse entre sus caracteres; un ruby de grupo, nunca. Al principio o al final de una línea, base y lectura se alinean con el borde (clreq §5.5.4). El zhuyin en texto horizontal forma una columna a la derecha de cada carácter, y la caja del carácter crece lo que mide la columna; en texto vertical la misma columna baja a la derecha de los caracteres. La marca de tono va a la derecha de la columna, con la mitad de su trazo por encima del último símbolo (clreq §5.5.3.3), colocada por su trazo porque las fuentes dibujan estas marcas altas dentro de su caja, y en vertical se mantiene de pie, igual que el punto del tono neutro sobre el primer símbolo.
+- **Ruby**: las lecturas ocupan el hueco entre líneas junto a la caja de la base, centradas en ella; una lectura con letras latinas (pinyin) sobre su base sube lo que bajan los rasgos descendentes de su fuente (g, j, p, q, y) y 0,04 em del texto más, para que no toquen la base, y todas las lecturas de la línea comparten línea base; una lectura más ancha que su base ensancha la caja de la base, menos el cuarto de em de ruby que puede invadir un vecino sin lectura, y dos lecturas guardan un cuarto de em de ruby entre sí (dos lecturas en zhuyin, un cuarto del em de sus símbolos, así que tres símbolos junto a cada uno de dos caracteres no salen de su casilla). Un ruby mono (una lectura por carácter) puede cortarse entre sus caracteres; un ruby de grupo, nunca. En Japón una lectura sigue en cambio `ruby.align` y `ruby.overhang`: se reparte 1:2:1 cuando es más corta que su base, e invade los kana pero no los kanji cuando es más larga, y el resto del sitio sale de espaciar la base; un ruby por carácter de dos o más caracteres es ruby jukugo, en el que cada carácter conserva su lectura, que puede invadir el carácter siguiente de la palabra pero nunca se solapa con otra lectura, y la línea sigue pudiendo cortarse entre ellos (JLReq §3.3). Al principio o al final de una línea, base y lectura se alinean con el borde (clreq §5.5.4). El zhuyin en texto horizontal forma una columna a la derecha de cada carácter, y la caja del carácter crece lo que mide la columna; en texto vertical la misma columna baja a la derecha de los caracteres. La marca de tono va a la derecha de la columna, con la mitad de su trazo por encima del último símbolo (clreq §5.5.3.3), colocada por su trazo porque las fuentes dibujan estas marcas altas dentro de su caja, y en vertical se mantiene de pie, igual que el punto del tono neutro sobre el primer símbolo.
 - **Notas warichu** (双行夹注): se pliegan en dos filas al tamaño de la nota, centradas en la línea y sin hueco entre ellas. La fila de arriba toma caracteres hasta tener al menos la mitad del fragmento, así que la segunda nunca es la más larga, y uno más mientras la de abajo empezaría con un signo que no puede abrir línea. Una nota más larga que el sitio que queda en la línea la llena y sigue en la línea, la columna o la página siguientes; sus signos van solo antes de la primera fila y tras la última. En texto vertical la fila de arriba es la de la derecha, que se lee primero.
+- **Marcas de kanbun** (`:kunten[字]{kaeri okuri tate}`): las marcas de retorno del último carácter van tras él, del lado del pie de la línea (abajo a la izquierda en texto vertical), sus okurigana van del lado de la cabeza a partir de su mitad (los más largos desplazan el carácter siguiente), y el tatesen es un filete corto hasta el carácter siguiente (JIS X 4051 §5). El texto copiado y el `/ActualText` del PDF leen los okurigana tras sus caracteres y dejan fuera las marcas de retorno; una interlínea demasiado estrecha para ellas se avisa con `kuntenExceedsLeading`.
 
-El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado. Un párrafo cuyo hueco entre líneas (la altura de línea menos el cuerpo) mide menos de medio em con marcas por un lado, o cinco octavos con marcas por los dos (clreq §5.6.1), se avisa con `cjkMarksExceedLeading`; uno cuyas lecturas miden más que el hueco (una lectura en pinyin, con lo que sube), con `rubyExceedsLeading`. Dales a esos párrafos un estilo de párrafo con más interlineado.
+El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado. Un párrafo cuyo hueco entre líneas (la altura de línea menos el cuerpo) mide menos de medio em con marcas por un lado, o cinco octavos con marcas por los dos (clreq §5.6.1), se avisa con `cjkMarksExceedLeading`; uno cuyas lecturas miden más que el hueco (una lectura en pinyin, con lo que sube), con `rubyExceedsLeading`. Dales a esos párrafos un estilo de párrafo con más interlineado. Los libros japoneses con furigana suelen usar un interlineado del texto de unos 1,75 em (JLReq §2.4.2).
 
-En el VDT un segmento marcado lleva `cjkMarks`, y la composición coloca los puntos y las líneas de sus líneas en `VDTLine.marks` (puntos, círculos, sésamos, líneas rectas y onduladas, en el marco de flujo de la línea), que el canvas, el HTML y el PDF dibujan tal cual (PDF: `Artifact /Layout`; HTML: cajas `aria-hidden` y el texto con puntos en `<em>`). El segmento de la base de un ruby lleva `ruby` (la lectura y sus trozos) y pinta la base en `inkOffset` cuando la lectura la ensanchó; el fragmento de una nota warichu en una línea es un segmento cuyo `text` es la fila de arriba y luego la de abajo, y cuyo `warichu` guarda las filas que los renderizadores pintan en su lugar. El PDF etiquetado pone la lectura en el `RT` del `Ruby` de su base y la nota en un `Warichu`, y el `/ActualText` de la línea lee el texto de la base y la nota una sola vez. Las marcas, lecturas y notas se dibujan en el texto, los títulos, las listas y los recuadros; los pies de figura, las celdas de tabla y el texto de diseño conservan el texto sin ellas.
+En el VDT un segmento marcado lleva `cjkMarks`, y la composición coloca los puntos y las líneas de sus líneas en `VDTLine.marks` (puntos, círculos, sésamos, líneas rectas, dobles, de puntos y onduladas, en el marco de flujo de la línea), que el canvas, el HTML y el PDF dibujan tal cual (PDF: `Artifact /Layout`; HTML: cajas `aria-hidden` y el texto con puntos en `<em>`). El segmento de la base de un ruby lleva `ruby` (la lectura y sus trozos; en una lectura japonesa, también el `id` que su anotación comparte con los demás caracteres de una palabra jukugo, y `jukugo`) y pinta la base en `inkOffset`, con `tracking`, cuando la lectura la ensanchó; un carácter con marcas de kanbun lleva `kunten` (sus trozos y su tatesen); el fragmento de una nota warichu en una línea es un segmento cuyo `text` es la fila de arriba y luego la de abajo, y cuyo `warichu` guarda las filas que los renderizadores pintan en su lugar. El PDF etiquetado pone la lectura en el `RT` del `Ruby` de su base y la nota en un `Warichu`, y el `/ActualText` de la línea lee el texto de la base y la nota una sola vez. Las marcas, lecturas y notas se dibujan en el texto, los títulos, las listas y los recuadros, y en los pies de figura, las celdas de tabla y las notas de los recursos, cuyas líneas llevan `marks` y `ruby` como las del texto; el texto de diseño conserva el texto sin ellas.
 
-El resolutor y el depurador siguen el patrón de las demás secciones; `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
+El resolutor y el depurador siguen el patrón de las demás secciones. `spaceAfterQuestion` y `paragraphStartBracket`, y el `overhang`, el `align` y el `smallKana` del ruby, solo están en la configuración resuelta cuando cambian algo (en Japón, o cuando se fijan). `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -3682,9 +3801,18 @@ resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
 //   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
-//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
 //   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
-//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
 ```
 
 En el Sandbox estos ajustes están en **Diseño › Escritura › Tipografía de Asia oriental**.
@@ -3694,7 +3822,7 @@ En el Sandbox estos ajustes están en **Diseño › Escritura › Tipografía de
 
 Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el Sandbox la edita en **Diseño → Figuras y tablas → Numeración y colocación**.
 
-Cuando `config.resourceTypes` no está definido, Postext incluye dos valores por defecto integrados: **Figura** y **Tabla**, ambos numerados como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales. Se nombran en el idioma del documento: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, el inglés (ver [Idioma del documento](#idioma-del-documento)).
+Cuando `config.resourceTypes` no está definido, Postext incluye tres valores por defecto integrados: **Figura**, **Tabla** y **Vídeo**, cada uno numerado por su cuenta como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales. Una lista sin tipo `video` —la de un libro guardado antes de que existieran los vídeos— sigue numerando los recursos de vídeo con `typeId` `video`: se le añade para ellos el tipo integrado Vídeo (`effectiveResourceTypes(config, resources)`), y `defaultVideoResourceType(locale)` lo devuelve por separado. Se nombran en el idioma del documento: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, el inglés (ver [Idioma del documento](#idioma-del-documento)).
 
 Los valores por defecto integrados se adaptan al idioma. La función exportada `defaultResourceTypes(locale = 'en')` localiza los nombres de tipo, las etiquetas cortas y los prefijos de pie al idioma del documento — el inglés produce *Figure*/*Fig.* y *Table*/*Tab.*; el español produce *Figura*/*Fig.* y *Tabla*/*Tabla*; el francés, el alemán, el italiano, el portugués, el catalán y el neerlandés tienen los suyos (la tabla de [Idioma del documento](#idioma-del-documento) los recoge). Las etiquetas regionales como `es-ES` se resuelven por idioma, y cualquier idioma sin traducción cae al inglés. El comportamiento de numeración (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, contadores decimales) es independiente del idioma. Cada llamada devuelve objetos nuevos, así que puedes mutar el resultado libremente:
 
@@ -3704,7 +3832,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4452,6 +4581,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 Para cada color que reescribe la pasada sobre el marcado (valores hexadecimales, `rgb()` y `hsl()`, `white` y `black`; consulta [Cómo funciona la tinta única](#cómo-funciona-la-tinta-única)), el mapeo por píxeles da el mismo resultado, incluidos los bordes suavizados y los degradados. Los dos difieren donde la pasada sobre el marcado deja un color como está: los colores con nombre distintos de `white` y `black`, `currentColor`, las formas y los textos sin relleno (dibujados en el negro por defecto) y los mapas de bits incrustados en el SVG se tiñen en pantalla pero conservan su color en el PDF. Da a cada elemento del diagrama un color explícito en hexadecimal, `rgb()` o `hsl()` para obtener la misma salida. Cuando el canvas no puede leer los píxeles de vuelta (un `<img>` de otro origen, cargado sin CORS), la imagen se pinta sin teñir.
 
 
+## Estilo de vídeo
+
+La propiedad `videoStyle` fija cómo se imprimen los [recursos de vídeo](/es/docs/document-format#vídeos) —la marca de reproducción y el código QR sobre la portada, y si la portada enlaza con el vídeo— y qué ofrecen sus reproductores en el visor HTML y en EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>ver abajo</td>
+      <td>La marca impresa sobre la portada que indica que se reproduce.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>ver abajo</td>
+      <td>El código QR impreso sobre la portada: abre la página del vídeo en YouTube o Vimeo, o la dirección de producción de un archivo.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Hace de la portada un enlace al vídeo: una anotación de enlace sobre ella en el PDF, y un <code>&lt;a&gt;</code> que la rodea en HTML y EPUB allí donde se muestre la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Qué pone la salida HTML en lugar de un vídeo: su reproductor, o la portada impresa con sus elementos superpuestos.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>ver abajo</td>
+      <td>Las opciones de reproductor de todos los vídeos; el <code>video.player</code> de cada vídeo se aplica sobre ellas.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducción
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disco con un triángulo, un rectángulo redondeado con un triángulo (1,45 veces más ancho que alto) o el triángulo solo, perfilado con el color de fondo.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, una esquina (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el centro de un lado (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Las posiciones son físicas: la esquina superior derecha es la superior derecha también en un libro de derecha a izquierda.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Altura de la marca; nunca más del 40 % del lado menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distancia a los bordes de la portada en una esquina o un lado.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanco</td><td>El triángulo.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disco o el rectángulo de detrás; el perfil del triángulo cuando va solo. Vinculado a la paleta por defecto.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacidad del fondo, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Código QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime el código. Un archivo sin dirección de producción no lo lleva.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Como en la marca de reproducción. Da a las dos posiciones distintas.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Lado del código con su margen; nunca más del 45 % del lado menor de la portada. Las cámaras de los móviles leen módulos a partir de un tercio de milímetro: una dirección de 30 caracteres da un código de 29 módulos, así que 18 mm con un margen de 2 dan módulos de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distancia a los bordes de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Cuánto del código puede estar dañado o tapado sin que deje de leerse: alrededor de un 7 %, un 15 %, un 25 % o un 30 %. Sube por sí sola mientras el código conserve el mismo número de módulos.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Módulos claros alrededor del código, sobre su placa (de 0 a 8). La placa se distingue de la portada, así que no hacen falta los cuatro módulos que pide la norma sobre papel en blanco.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negro</td><td>Los módulos oscuros. Mantenlos oscuros sobre una placa clara: la mayoría de los lectores no leen códigos invertidos.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanco</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radio de las esquinas de la placa.</td></tr>
+  </tbody>
+</table>
+
+El propio motor codifica el código (`encodeQr(text, level)`: modo byte, UTF-8, versiones 1 a 40, la máscara con menor penalización) y lo dibuja como vectores: el canvas rellena un solo trazado con las series de módulos, el PDF un `drawSvgPath` y el HTML un `<path>` con `shape-rendering="crispEdges"`, así que sale nítido a cualquier tamaño de impresión.
+
+### Opciones del reproductor
+
+`VideoPlayerOptions`, en `videoStyle.player` y en el `video.player` de cada vídeo. El reproductor HTML5 de un archivo las respeta todas; los de YouTube y Vimeo, las que permiten sus parámetros de inserción.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th style={{ width: '170px' }}>La respetan</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Muestra los controles del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece el botón de descarga del navegador (<code>controlslist="nodownload"</code> cuando está desactivado). Oculta el botón; no protege el archivo. YouTube y Vimeo nunca ofrecen descarga.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Ofrece la pantalla completa (<code>fs=0</code>, el <code>allowfullscreen</code> del iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece el menú de velocidad (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece la imagen en imagen (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece enviar el vídeo a otra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza a reproducirse solo, siempre sin sonido, como exigen los navegadores.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza con el sonido apagado.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Vuelve a empezar al terminar.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>archivos</td><td>Cuánto carga el navegador antes de reproducir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Inserciones con más privacidad: YouTube desde <code>youtube-nocookie.com</code>, Vimeo con <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB conserva solo los atributos que conoce su esquema: un archivo se reproduce con <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> y <code>preload</code>, y el sistema de lectura decide el resto.
+
+El resolutor y el depurador siguen el patrón de las demás secciones, junto a los tipos `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined si todo está por defecto
+```
+
 ## Estilos de párrafo
 
 La propiedad `paragraphStyles` declara estilos con nombre que el documento aplica a una serie de párrafos mediante un contenedor `:::paragraphs{style="…"}` — bibliografías, glosarios, notas, cualquier bloque de entradas que quiera su propia tipografía, peso, cursiva, tamaño, interlineado, mayúsculas, versalitas o un sangrado francés. Todos los campos tipográficos son opcionales y heredan del texto de cuerpo cuando no se indican, de modo que un estilo solo describe lo que difiere del texto corrido.
@@ -4584,6 +4865,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Sangría de todas las líneas desde el borde izquierdo de la columna (o del recuadro en el que están los párrafos); <code>em</code> es el cuerpo del propio estilo. La sangría de primera línea y la francesa se miden desde ella, así que un verso sangrado puede llevar lo que no le cabe en la línea más adentro que su propio comienzo: <code>indent: 1.5em</code> con <code>hangingIndent: 2.5em</code> pone el verso a 1,5 em y su continuación a 4 em. Un valor negativo cuenta como <code>0</code>.</td>
     </tr>
     <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de todas las líneas desde el lado del final (la derecha de una línea horizontal, el pie de una vertical); <code>em</code> es el cuerpo del propio estilo. Con <code>textAlign: 'end'</code> compone una línea unos caracteres por encima del pie, el 地からN字上げ de la fecha o la firma de una carta japonesa. Desde postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>sangría del cuerpo</td>
@@ -4659,6 +4946,8 @@ Un verso en `verso-sangrado` empieza a 1,5 em y su continuación a 4 em, a la al
 ### El contenedor `:::paragraphs`
 
 Una línea `:::paragraphs{style="<id>"}` abre el contenedor y una línea `:::` a solas lo cierra; todos los párrafos intermedios toman el estilo indicado, mientras que los encabezados, listas y otros bloques del interior conservan su estilo habitual. Los contenedores pueden anidarse dentro de otros contenedores. Un `style` desconocido no es un error: los párrafos se componen como texto de cuerpo normal.
+
+La valla admite también `align` (`start`, `end`, `left`, `right`, `center`, `justify`), `indent` y `endIndent` (los números sin unidad son em), con estilo o sin él: con estilo, mandan sobre él; sin estilo, se aplican sobre el estilo del contenedor que lo rodea, o sobre el estilo de texto del lugar donde está la valla (el cuerpo, una parte, una sección con estilo o un recuadro). `:::paragraphs{align=end}` compone un bloque a ras del final de la línea (地付き) y `:::paragraphs{align=end endIndent=1}`, a un carácter de él. Desde postext 1.16.
 
 Dentro del contenedor el flujo abandona la rejilla base — una entrada de 7pt con interlineado 1.2em no puede asentarse en una rejilla de 8pt/1.5em — y el último párrafo devuelve el flujo a la rejilla (la rejilla manda; el espacio de debajo es un mínimo, la misma convención que siguen los encabezados). Las entradas se parten entre columnas y páginas como los párrafos del cuerpo, con la misma protección de viudas y huérfanas; un encabezado inmediatamente anterior al contenedor se mantiene unido a su primer párrafo.
 
@@ -5389,7 +5678,7 @@ const config: PostextConfig = {
       <td>campos de nivel</td>
       <td>como en <code>headings.levels[]</code></td>
       <td>los valores del nivel</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>hidden</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo. <code>breakBefore</code> se combina campo a campo con el del nivel: un estilo que solo fija <code>parity</code> conserva el <code>enabled</code> del nivel, y uno que solo fija <code>enabled: true</code> conserva su paridad (hasta postext 1.4, el campo que faltaba salía en cambio del valor sin salto).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo. <code>breakBefore</code> se combina campo a campo con el del nivel: un estilo que solo fija <code>parity</code> conserva el <code>enabled</code> del nivel, y uno que solo fija <code>enabled: true</code> conserva su paridad (hasta postext 1.4, el campo que faltaba salía en cambio del valor sin salto).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5581,7 +5870,7 @@ Las etiquetas de página son las que el documento imprime. `buildDocument()` vue
 
 ## Índice analítico
 
-La propiedad `index` configura lo que imprime una directiva `:::index` (ver [Formato del documento](/es/docs/document-format#índice-analítico)): los términos marcados con `:index[…]` e `:index{term="…"}` en el texto, ordenados, agrupados por inicial (en chino, por la inicial del pinyin o por trazos; véase `groupBy`) y cada uno con las páginas en que cae. Una entrada es su término, un separador y sus números de página; detrás van sus subentradas, con un paso de sangría por nivel, y las líneas que continúan una entrada cuelgan `turnoverIndent` para no alinearse nunca con una subentrada.
+La propiedad `index` configura lo que imprime una directiva `:::index` (ver [Formato del documento](/es/docs/document-format#índice-analítico)): los términos marcados con `:index[…]` e `:index{term="…"}` en el texto, ordenados, agrupados por inicial (en chino, por la inicial del pinyin o por trazos, y en japonés por filas del gojūon; véase `groupBy`) y cada uno con las páginas en que cae. Una entrada es su término, un separador y sus números de página; detrás van sus subentradas, con un paso de sangría por nivel, y las líneas que continúan una entrada cuelgan `turnoverIndent` para no alinearse nunca con una subentrada.
 
 ```ts
 const config: PostextConfig = {
@@ -5670,9 +5959,9 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>groupBy</code></td>
-      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>Qué encabeza cada grupo. <code>'letter'</code>: la primera letra de la clave de orden. <code>'pinyin'</code>: una entrada que empieza por un carácter han va bajo la inicial latina de su lectura en pinyin (贾宝玉 bajo <code>J</code>), y una clave de orden latina bajo su letra, detrás de las entradas chinas de esa letra (el ordenador de cadenas pone las letras latinas después de los caracteres chinos): <code>sort="jia mu"</code> cierra la <code>J</code>. <code>'stroke'</code>: bajo el número de trazos del primer carácter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en chino simplificado). <code>'none'</code>: sin cabeceras; los símbolos, las cifras y las palabras solo se separan por <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índice en chino simplificado (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) por pinyin, uno en chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) por trazos y cualquier otro idioma por letra. Las entradas se ordenan con la colación de la que salen las cabeceras: un índice <code>zh-Hant</code> agrupado por pinyin se ordena por pinyin. Las lecturas y los trazos son los del ordenador de cadenas (CLDR); si lee mal un carácter (重 como <em>zhòng</em> en 重阳, 行 como <em>xíng</em> en 行业), da a la marca una clave <code>sort</code> escrita con caracteres que solo tengan la lectura buscada, que se ordena en su sitio: <code>sort="崇阳"</code> para 重阳, <code>sort="航业"</code> para 行业. Un navegador sin datos de colación china imprime un índice por pinyin o por trazos sin cabeceras.</td>
+      <td>Qué encabeza cada grupo. <code>'letter'</code>: la primera letra de la clave de orden. <code>'pinyin'</code>: una entrada que empieza por un carácter han va bajo la inicial latina de su lectura en pinyin (贾宝玉 bajo <code>J</code>), y una clave de orden latina bajo su letra, detrás de las entradas chinas de esa letra (el ordenador de cadenas pone las letras latinas después de los caracteres chinos): <code>sort="jia mu"</code> cierra la <code>J</code>. <code>'stroke'</code>: bajo el número de trazos del primer carácter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en chino simplificado). <code>'gojuon'</code>: una entrada en kana va bajo su fila del gojūon, あ行, か行 … わ行, y <code>'kana'</code>, bajo su primer kana (katakana e hiragana comparten cabecera), en el orden JIS X 4061 de un índice japonés: por la lectura (el <code>yomi</code> de la marca y, si no, la lectura en kana de su ruby, luego <code>sort</code> y luego el texto), los katakana como hiragana, los kana pequeños como los grandes, ー como la vocal que la precede, y el kana sin marca antes que el sonoro y este antes que el semisonoro; primero los símbolos, luego los números por su valor, luego las palabras latinas bajo sus letras y luego los kana; una entrada que sigue encabezada por un kanji se avisa con <code>indexReadingMissing</code> y se coloca tras los kana, sin cabecera. <code>'none'</code>: sin cabeceras; los símbolos, las cifras y las palabras solo se separan por <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índice en japonés (<code>ja</code>, <code>ja-*</code>) por filas del gojūon, uno en chino simplificado (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) por pinyin, uno en chino tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) por trazos y cualquier otro idioma por letra. Las entradas se ordenan con la colación de la que salen las cabeceras: un índice <code>zh-Hant</code> agrupado por pinyin se ordena por pinyin. Las lecturas y los trazos son los del ordenador de cadenas (CLDR); si lee mal un carácter (重 como <em>zhòng</em> en 重阳, 行 como <em>xíng</em> en 行业), da a la marca una clave <code>sort</code> escrita con caracteres que solo tengan la lectura buscada, que se ordena en su sitio: <code>sort="崇阳"</code> para 重阳, <code>sort="航业"</code> para 行业. Un navegador sin datos de colación china imprime un índice por pinyin o por trazos sin cabeceras.</td>
     </tr>
     <tr>
       <td><code>ignoreArticle</code></td>
@@ -7586,7 +7875,8 @@ Los caracteres para los que ningún archivo de la variante tiene glifo se dibuja
 El Sandbox muestra estos avisos, y los dos siguientes, en su panel Revisión tras cada PDF que genera. Si cambian el libro, sus ajustes o sus recursos, se marcan como de un PDF anterior hasta que el siguiente los sustituye; abrir otro libro los retira.
 
 - **La negrita necesita un archivo estático por peso.** Fontsource sirve cada peso de Noto Serif SC y TC en archivos estáticos propios, así que la negrita funciona en el Sandbox. Los archivos de Google Fonts (`NotoSerifSC[wght].ttf`, 25 MB) son fuentes variables: pdf-lib incrusta su instancia por defecto, así que una variante 700 se imprime con peso 400, y `renderToPdf` lo notifica como `variableFontDefaultInstance`. Para un paquete, saca una instancia estática por peso con fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) y redúcela a los caracteres del libro con `pyftsubset`.
-- **Usa las versiones TrueType.** Source Han Serif y los archivos `.otf` de Noto Serif CJK tienen contornos CFF, que postext-pdf incrusta enteros, de 8 a 25 MB por peso; una fuente CFF de más de 2 MB se notifica como `cffEmbeddedWhole`. Las versiones TrueType (Google Fonts, Fontsource) se reducen a los glifos usados.
+- **Usa las versiones TrueType.** Source Han Serif y los archivos `.otf` de Noto Serif CJK tienen contornos CFF, que postext-pdf incrusta enteros, de 8 a 25 MB por peso; una fuente CFF de más de 2 MB se notifica como `cffEmbeddedWhole`. Las versiones TrueType (Google Fonts, Fontsource) se reducen a los glifos usados. Para el japonés, Noto Serif JP y Noto Sans JP (Google Fonts, o los fragmentos numerados de Fontsource), Shippori Mincho, Zen Old Mincho y BIZ UDMincho vienen en TrueType; Source Han Serif JP y los archivos `.otf` `JP` de Noto Serif CJK son CFF.
+- **Formas japonesas de una fuente panCJK.** Un mismo punto de código de un carácter han, de la puntuación o de las comillas puede dibujarse de una manera en Japón y de otra en China, y una fuente panCJK (Source Han, Noto CJK) tiene las dos. El PDF compone un documento japonés (`locale: 'ja'`), y un aislado en japonés (`:ltr[…]{lang=ja}`) en cualquier documento, con el sistema de idioma OpenType `JAN `, de modo que la función `locl` de la fuente imprime las formas japonesas que el lienzo y el HTML imprimen gracias a `lang`. Un aislado en otro idioma dentro de un libro japonés se compone con las formas de ese idioma (las de la fuente por defecto, para el chino) y se etiqueta como un `Span` con su `/Lang`. Los documentos chinos y los demás se componen con las formas por defecto de la fuente, como hasta ahora. Una fuente hecha para el japonés, como Noto Serif JP, ya tiene formas japonesas por defecto; aun así pone las “ ” del texto japonés en su forma `JAN `.
 
 Un carácter que falta en una familia no se toma de otra: Noto Serif TC no toma prestado de Noto Serif SC. Resuelve la cobertura al preparar los archivos de fuente; el ejemplo de 红楼梦 copia en sus subconjuntos TC los glifos que les faltan desde la fuente SC.
 
@@ -7740,7 +8030,7 @@ El worker de composición de `postext/worker` necesita el mismo envoltorio alred
 Para flujos de trabajo de impresión en producción, ajusta estas opciones de configuración antes de renderizar:
 
 - **`page.cutLines.enabled: true`** — añade área de sangrado y marcas de corte alrededor del trim, y da a cada página una TrimBox y una BleedBox. Ver [Marcas de corte](#marcas-de-corte).
-- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escribe en DeviceCMYK los colores que pinta postext (texto, filetes, fondos, figuras vectoriales) y pinta las marcas de corte en color de registro, para que se impriman en todas las planchas. Los mapas de bits y los originales de impresión en PDF se insertan tal como son, así que una foto RGB sigue en RGB: conviértela antes de añadirla.
+- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escribe en DeviceCMYK los colores que pinta postext (texto, filetes, fondos, figuras vectoriales) (las marcas de corte van siempre en color de registro). Los mapas de bits y los originales de impresión en PDF se insertan tal como son, así que una foto RGB sigue en RGB: conviértela antes de añadirla.
 - **`page.dpi: 300`** (o superior) — los puntos PDF están fijos a 72/pulgada, pero la aritmética de maquetación de Postext corre en píxeles; un DPI mayor da una subdivisión más fina para elementos medidos en `mm` o `cm`.
 - **`colors.model: 'cmyk'`** — preserva la intención de que los colores se definieron en espacio CMYK. El fallback `hex` sigue siendo el que se usa para dibujar realmente al PDF hoy; `model` se documenta aquí porque viaja junto al VDT para herramientas aguas abajo.
 - **`{ pageNegative: true }`** en `RenderToPdfOptions` — invierte el área de trim usando un blend mode de tipo Difference (las marcas de corte quedan sin invertir). Útil para comprobaciones de preflight sobre tipografía oscura-sobre-claro.
@@ -8011,7 +8301,7 @@ migrateConfig(config, CONFIG_VERSION); // reglas actuales: el propio `config`
 Cuatro utilidades conectan un paquete abierto con el motor y los backends:
 
 - **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
-- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
+- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`), portadas de vídeo incluidas. **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`, y **`bundleVideoUrl(bundle)`** su resolvedor `resourceVideoUrl` para los archivos de vídeo que lleva un paquete. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
 - **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice de contenidos (`:::toc`) o el analítico (`:::index`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
 - **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback` con los argumentos del renderizador, `request` incluido, y entrega lo que devuelva. Un `fallback` que solo descarga el archivo `latin` de la familia imprime como cajas vacías una familia china que el paquete no incrusta; uno que responde con los fragmentos, como `sliceFontProvider` en [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas), la imprime completa.
 

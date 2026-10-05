@@ -23,6 +23,7 @@ const STRINGS: Readonly<Record<string, NavStrings>> = {
   it: { contents: 'Indice', landmarks: 'Punti di riferimento', pages: 'Pagine', cover: 'Copertina', bodymatter: 'Inizio del contenuto', page: 'Pagina', index: 'Indice analitico', bibliography: 'Bibliografia' },
   de: { contents: 'Inhalt', landmarks: 'Orientierungspunkte', pages: 'Seiten', cover: 'Umschlag', bodymatter: 'Beginn des Inhalts', page: 'Seite', index: 'Register', bibliography: 'Literaturverzeichnis' },
   zh: { contents: '目录', landmarks: '导航', pages: '页码', cover: '封面', bodymatter: '正文', page: '第', index: '索引', bibliography: '参考文献' },
+  ja: { contents: '目次', landmarks: 'ランドマーク', pages: 'ページ', cover: '表紙', bodymatter: '本文', page: 'p.', index: '索引', bibliography: '参考文献' },
   ar: { contents: 'المحتويات', landmarks: 'معالم الكتاب', pages: 'الصفحات', cover: 'الغلاف', bodymatter: 'بداية المحتوى', page: 'صفحة', index: 'الفهرس الأبجدي', bibliography: 'المراجع' },
 };
 

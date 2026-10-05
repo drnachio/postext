@@ -1,10 +1,12 @@
 /**
- * Chinese inline annotations (#193, #194, #195): emphasis dots
- * (`:dots[…]`), the proper-name and book-title marks (`:name[…]`,
- * `:book[…]`), ruby (`:ruby[…]{rt="…"}` and the compact `{紅樓|hóng|lóu}`)
- * and warichu notes (`:warichu[…]{open close}`); and the directional
- * isolates (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which
- * set a run in its own direction inside text of the other.
+ * Chinese and Japanese inline annotations (#193, #194, #195, #421, #430):
+ * emphasis dots (`:dots[…]`), the proper-name and book-title marks
+ * (`:name[…]`, `:book[…]`), side lines (傍線, `:sideline[…]{style pos}`),
+ * kanbun reading marks (訓点, `:kunten[字]{kaeri okuri tate}`), ruby
+ * (`:ruby[…]{rt="…" mode align}` and the compact `{紅樓|hóng|lóu}`) and
+ * warichu notes (`:warichu[…]{open close}`); and the directional isolates
+ * (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which set a
+ * run in its own direction inside text of the other.
  *
  * They preserve their text, as `:smallcaps[…]` does: the characters between
  * the brackets stay in the paragraph's plain text (search, the contents,
@@ -17,12 +19,12 @@
  * nested annotations included (`:warichu[甲戌側批：:name[寶玉]…]`).
  */
 
-import type { DirectiveAttrs, EmphasisMark, InlineDirection, InlineRuby, InlineSpan, InlineWarichu } from './types';
+import type { DirectiveAttrs, EmphasisMark, InlineDirection, InlineKunten, InlineRuby, InlineSideline, InlineSpan, InlineWarichu } from './types';
 import { parseDirectiveAttrs } from './attrs';
 import { graphemesOf } from '../measure/graphemes';
 
 /** The inline annotation directives, by name. */
-export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl'] as const;
+export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten'] as const;
 export type AnnotationName = (typeof ANNOTATION_NAMES)[number];
 
 /** Private-use marks opening each kind of annotation while the emphasis
@@ -36,11 +38,13 @@ const OPEN: Record<AnnotationName, string> = {
   warichu: '',
   ltr: '',
   rtl: '',
+  sideline: '',
+  kunten: '',
 };
 const CLOSE = '';
 const KIND_OF_OPEN = new Map<string, AnnotationName>(ANNOTATION_NAMES.map((n) => [OPEN[n], n]));
-const MARK_RE = /[-]/;
-const MARKS_RE = /[-]/g;
+const MARK_RE = /[-]/;
+const MARKS_RE = /[-]/g;
 
 /** One annotation as written: its kind, its attributes, and (a compact
  *  ruby) its readings. Queued in the order of the marks in the text. */
@@ -52,7 +56,7 @@ export interface QueuedAnnotation {
 }
 
 /** `:dots[`, `:name[`… at the start of a match. */
-const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl)\[/y;
+const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[/y;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
@@ -164,8 +168,11 @@ function nextAnnotation(text: string, from: number, end: number): FoundAnnotatio
       const close = closingBracket(text, open, end);
       if (close < 0 || close === open + 1) continue;
       // A compact ruby right after the bracket is text, not attributes
-      // (`:name[賈寶玉]{紅|hóng}`).
-      const blob = compactRubyAt(text, close + 1, end) ? -1 : attrBlobEnd(text, close + 1, end);
+      // (`:name[賈寶玉]{紅|hóng}`); a brace whose "base" assigns a value is
+      // attributes (`:ruby[東京]{rt="とう|きょう"}`, kana readings split
+      // on bars, #422).
+      const compact = compactRubyAt(text, close + 1, end);
+      const blob = compact && !text.slice(close + 2, compact.bar).includes('=') ? -1 : attrBlobEnd(text, close + 1, end);
       return {
         name: m[1] as AnnotationName,
         start: i,
@@ -272,12 +279,17 @@ interface Frame {
   warichu?: InlineWarichu;
   /** The object every span of a directional isolate shares. */
   direction?: InlineDirection;
+  /** The object every span of a side line shares. */
+  sideline?: InlineSideline;
+  /** The object every span of a kanbun mark shares. */
+  kunten?: InlineKunten;
   /** Indices (in the output) of the spans a ruby holds. */
   pieces?: number[];
 }
 
 const DOT_STYLES = new Set(['dot', 'circle', 'sesame']);
 const SIDES = new Set(['over', 'under']);
+const SIDELINE_STYLES = new Set(['solid', 'double', 'wavy', 'dotted']);
 const RUBY_SIDES = new Set(['over', 'under', 'right']);
 
 function emphasisOf(attrs: DirectiveAttrs): EmphasisMark {
@@ -290,19 +302,73 @@ function emphasisOf(attrs: DirectiveAttrs): EmphasisMark {
   return mark;
 }
 
+/** A side line's look as written: `style` and `pos` (or `position`);
+ *  values the engine does not know are left unset. */
+function sidelineOf(id: number, attrs: DirectiveAttrs): InlineSideline {
+  const line: InlineSideline = { id };
+  if (attrs.style && SIDELINE_STYLES.has(attrs.style)) line.style = attrs.style as InlineSideline['style'];
+  const pos = attrs.pos ?? attrs.position;
+  if (pos && SIDES.has(pos)) line.position = pos as InlineSideline['position'];
+  return line;
+}
+
+/** The kanbun code points (U+3191–319F, ㆑ ㆒ … ㆟): the 返り点 they
+ *  stand for, set as ordinary characters at the marks' size (the fonts
+ *  that have these glyphs draw them small and placed, differently from
+ *  each other). U+3190 ㆐ is the 竪点. */
+const KANBUN_MARKS: Record<string, string> = {
+  '㆑': 'レ', '㆒': '一', '㆓': '二', '㆔': '三', '㆕': '四', '㆖': '上', '㆗': '中', '㆘': '下',
+  '㆙': '甲', '㆚': '乙', '㆛': '丙', '㆜': '丁', '㆝': '天', '㆞': '地', '㆟': '人',
+};
+
+/** A kanbun mark as written: `kaeri` (返り点, kanbun code points read as
+ *  the characters they stand for), `okuri` (送り仮名, `（ヲ）` read as
+ *  ヲ) and the flag `tate` (竪点); empty values are left unset. */
+function kuntenOf(id: number, attrs: DirectiveAttrs): InlineKunten {
+  const k: InlineKunten = { id };
+  const kaeri = (attrs.kaeri ?? '').replace(/[㆑-㆟]/g, (c) => KANBUN_MARKS[c] ?? c).trim();
+  if (kaeri.length > 0) k.kaeri = kaeri;
+  const okuri = (attrs.okuri ?? '').trim().replace(/^[（(](.*)[）)]$/, '$1');
+  if (okuri.length > 0) k.okuri = okuri;
+  if (flag(attrs.tate)) k.tate = true;
+  return k;
+}
+
 /** A flag attribute: present, and not written `false` or `no`. */
 function flag(value: string | undefined): boolean {
   return value !== undefined && value !== 'false' && value !== 'no';
 }
 
+const RUBY_MODES = new Set(['mono', 'group', 'jukugo']);
+const RUBY_ALIGNS = new Set(['center', 'jis', 'start']);
+
+/** A ruby's `mode` (#422): `mono`, `group` or `jukugo` as written (the
+ *  `group` flag is `mode=group`); undefined when it says none. */
+function rubyMode(attrs: DirectiveAttrs): 'mono' | 'group' | 'jukugo' | undefined {
+  if (flag(attrs.group)) return 'group';
+  const mode = attrs.mode?.trim();
+  return mode && RUBY_MODES.has(mode) ? (mode as 'mono' | 'group' | 'jukugo') : undefined;
+}
+
+/** The fields `mode` and `align` give each span of a ruby (#422). */
+function rubyFlags(attrs: DirectiveAttrs, perCharacter: boolean, count: number): Pick<InlineRuby, 'jukugo' | 'mono' | 'align'> {
+  const mode = rubyMode(attrs);
+  const align = attrs.align?.trim();
+  return {
+    ...(perCharacter && mode === 'jukugo' && count > 1 ? { jukugo: true as const } : {}),
+    ...(perCharacter && mode === 'mono' ? { mono: true as const } : {}),
+    ...(align && RUBY_ALIGNS.has(align) ? { align: align as InlineRuby['align'] } : {}),
+  };
+}
+
 /**
  * The readings of a ruby, one per base character when they pair up (a mono
- * ruby), else undefined (a group ruby): the `rt` attribute split on `|` or
- * spaces, or the readings of a compact ruby (one `|` each; a single one
- * split on spaces).
+ * ruby, or a jukugo ruby), else undefined (a group ruby): the `rt`
+ * attribute split on `|` or spaces, or the readings of a compact ruby (one
+ * `|` each; a single one split on spaces).
  */
 function monoReadings(entry: QueuedAnnotation, count: number): string[] | undefined {
-  if (flag(entry.attrs.group)) return undefined;
+  if (rubyMode(entry.attrs) === 'group') return undefined;
   let readings: string[];
   if (entry.readings) {
     readings = entry.readings.length === 1 ? entry.readings[0]!.split(/\s+/) : entry.readings;
@@ -358,6 +424,13 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
           // The innermost isolate: it names the ones around it.
           fields.direction = f.direction!;
           break;
+        case 'sideline':
+          // The innermost line: a span takes one.
+          fields.sideline = f.sideline!;
+          break;
+        case 'kunten':
+          fields.kunten = f.kunten!;
+          break;
         case 'ruby':
           break;
       }
@@ -397,6 +470,8 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
           frame.pieces = [];
           rubies.push(frame);
         }
+        if (kind === 'sideline') frame.sideline = sidelineOf(frame.id, entry.attrs);
+        if (kind === 'kunten') frame.kunten = kuntenOf(frame.id, entry.attrs);
         if (kind === 'ltr' || kind === 'rtl') {
           let outer: InlineDirection | undefined;
           for (let i = stack.length - 1; i >= 0 && !outer; i--) outer = stack[i]!.direction;
@@ -433,13 +508,14 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
     const pos = frame.entry.attrs.pos ?? frame.entry.attrs.position;
     const position = pos && RUBY_SIDES.has(pos) ? (pos as InlineRuby['position']) : undefined;
     const readings = monoReadings(frame.entry, graphemes.length);
+    const flags = rubyFlags(frame.entry.attrs, readings !== undefined, graphemes.length);
     if (readings) {
       let r = 0;
       for (const i of pieces) {
         const span = out[i]!;
         const parts: InlineSpan[] = [];
         for (const g of graphemesOf(span.text)) {
-          parts.push({ ...span, text: g, ruby: { text: readings[r++]!, id: frame.id, ...(position ? { position } : {}) } });
+          parts.push({ ...span, text: g, ruby: { text: readings[r++]!, id: frame.id, ...(position ? { position } : {}), ...flags } });
         }
         replace.set(i, parts);
       }
@@ -449,7 +525,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
       replace.set(pieces[0]!, [{
         ...first,
         text: base,
-        ...(reading.length > 0 ? { ruby: { text: reading, group: true, id: frame.id, ...(position ? { position } : {}) } } : {}),
+        ...(reading.length > 0 ? { ruby: { text: reading, group: true, id: frame.id, ...(position ? { position } : {}), ...flags } } : {}),
       }]);
       for (const i of pieces.slice(1)) drop.add(i);
     }
@@ -474,6 +550,8 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
   if (span.bookTitle) out.bookTitle = span.bookTitle;
   if (span.warichu) out.warichu = span.warichu;
   if (span.direction) out.direction = span.direction;
+  if (span.sideline) out.sideline = span.sideline;
+  if (span.kunten) out.kunten = span.kunten;
   if (withRuby && span.ruby) out.ruby = span.ruby;
   if (span.inserted) out.inserted = true;
   return out;
@@ -490,7 +568,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
 export function annotationSourceSkips(markdown: string, from: number, end: number): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   const slice = markdown.slice(from, end);
-  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl)\[|\{[^{}\n|]*\|/.test(slice)) return out;
+  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\|/.test(slice)) return out;
   // Inline code spans, which the parser protects.
   const code: Array<[number, number]> = [];
   const codeRe = /(?<!\\)`[^`\n]+?`/g;
@@ -536,56 +614,74 @@ export function findAnnotations(text: string): FoundAnnotation[] {
   return out;
 }
 
-/** 《》 around the titles of `:book[…]` (〈〉 for a title inside one), as
- *  spans flagged `inserted` (they take no character of the plain text);
- *  the titles lose their `bookTitle`. `cjk.bookTitleMark: 'brackets'`. */
-export function withBookBrackets(spans: readonly InlineSpan[]): InlineSpan[] {
+/** The brackets of a Chinese book title: 《》, 〈〉 for a title inside
+ *  one (`defaultCjkBookTitleBrackets`). */
+const CHINESE_BOOK_BRACKETS: readonly BracketPair[] = [{ open: '《', close: '》' }, { open: '〈', close: '〉' }];
+
+/** An opening and a closing bracket (`cjk.bookTitleBrackets`). */
+export interface BracketPair {
+  open: string;
+  close: string;
+}
+
+/** The side line the brackets of the title opening at `spans[at]` carry:
+ *  the one its first and its last character share, if any (a line drawn
+ *  under a whole title runs on under its brackets). */
+function titleSideline(spans: readonly InlineSpan[], at: number, depth: number, id: number): InlineSideline | undefined {
+  const line = spans[at]!.sideline;
+  if (!line) return undefined;
+  let last = at;
+  for (let k = at + 1; k < spans.length; k++) {
+    const book = spans[k]!.bookTitle;
+    if (!book || book.depth < depth || (book.depth === depth && book.id !== id)) break;
+    last = k;
+  }
+  return spans[last]!.sideline?.id === line.id ? line : undefined;
+}
+
+/** The brackets of `pairs` around the titles of `:book[…]` (`《》` and
+ *  `〈〉` for a title inside one unless `pairs` says otherwise; a title
+ *  nested deeper than the list takes its last pair), as spans flagged
+ *  `inserted` (they take no character of the plain text); the titles lose
+ *  their `bookTitle`. A bracket written empty is left out.
+ *  `cjk.bookTitleMark: 'brackets'` with `cjk.bookTitleBrackets`. */
+export function withBookBrackets(spans: readonly InlineSpan[], pairs: readonly BracketPair[] = CHINESE_BOOK_BRACKETS): InlineSpan[] {
   const out: InlineSpan[] = [];
-  // Open titles, by depth (index 0 = depth 1): their run ids.
-  const open: number[] = [];
-  const bracket = (text: string): InlineSpan => ({ text, bold: false, italic: false, inserted: true });
+  const list = pairs.length > 0 ? pairs : CHINESE_BOOK_BRACKETS;
+  const pairAt = (depth: number): BracketPair => list[Math.min(depth, list.length) - 1]!;
+  // Open titles, by depth (index 0 = depth 1): their run ids, and the side
+  // line their brackets carry.
+  const open: { id: number; line?: InlineSideline }[] = [];
+  const bracket = (text: string, line: InlineSideline | undefined): void => {
+    if (text.length > 0) out.push({ text, bold: false, italic: false, inserted: true, ...(line ? { sideline: line } : {}) });
+  };
   const close = (toDepth: number): void => {
     while (open.length > toDepth) {
-      out.push(bracket(open.length > 1 ? '〉' : '》'));
+      bracket(pairAt(open.length).close, open[open.length - 1]!.line);
       open.pop();
     }
   };
-  for (const span of spans) {
+  spans.forEach((span, i) => {
     const book = span.bookTitle;
     if (!book) {
       close(0);
       out.push(span);
-      continue;
+      return;
     }
-    if (open.length >= book.depth && open[book.depth - 1] === book.id) close(book.depth);
+    if (open.length >= book.depth && open[book.depth - 1]!.id === book.id) close(book.depth);
     else {
       close(book.depth - 1);
       while (open.length < book.depth) {
-        out.push(bracket(open.length > 0 ? '〈' : '《'));
-        open.push(open.length === book.depth - 1 ? book.id : -1);
+        const own = open.length === book.depth - 1;
+        const line = own ? titleSideline(spans, i, book.depth, book.id) : undefined;
+        bracket(pairAt(open.length + 1).open, line);
+        open.push({ id: own ? book.id : -1, ...(line ? { line } : {}) });
       }
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { bookTitle: _b, ...rest } = span;
     out.push(rest);
-  }
+  });
   close(0);
   return out;
-}
-
-/** `spans` without their Chinese annotations: the text as written, set
- *  plain (captions, table cells and notes, which do not draw them). The
- *  same array when none has one. With `bookBrackets` (`cjk.bookTitleMark:
- *  'brackets'`) a book title keeps its 《》, which are then punctuation of
- *  the text, not a mark. Directional isolates (`:rtl[…]`, `:ltr[…]`)
- *  stay: they decide the order of the text, which no setting drops. */
-export function dropAnnotations(spans: InlineSpan[], bookBrackets = false): InlineSpan[] {
-  if (bookBrackets && spans.some((s) => s.bookTitle)) spans = withBookBrackets(spans);
-  if (!spans.some((s) => s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu)) return spans;
-  return spans.map((s) => {
-    if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu) return s;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { emphasisMark: _e, properName: _p, bookTitle: _b, ruby: _r, warichu: _w, ...rest } = s;
-    return rest;
-  });
 }

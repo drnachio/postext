@@ -116,6 +116,10 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks: the widest a figure's image may be set, its caption
    *  keeping the column's width (`layout.fitFiguresToPage`). */
   figureMaxBodyWidth?: number;
+  /** Resource blocks: px a picture with a safe area is set taller (or
+   *  shorter, when negative) by cropping outside it (the fit and balancing
+   *  levers, #442). */
+  figureHeightDelta?: number;
   /** Resource blocks on a vertical page: set upright, the frame at most
    *  this wide (see `ResourceLayoutInput.upright`). */
   uprightMaxLength?: number;
@@ -190,6 +194,7 @@ export function measureContentBlock(
       resourceType: kind.resourceType,
       resourceNumber: kind.resourceNumber,
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
       ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
     });
     if (!resourceBlock) return null;
@@ -228,9 +233,14 @@ export function measureContentBlock(
   // Footnote markers print their note's number as a superscript, or on
   // the baseline at `footnotes.markerSize` (`markerPosition: 'inline'`):
   // one atomic token tagged with the note id (`VDTLineSegment.footnoteId`).
+  // A Japanese marker (JLReq §4.2.3) stands in the line gap beside the text
+  // (`'side'`) or, down a vertical line, flush with its right side
+  // (`'right'`; a superscript in horizontal text).
   if (contentBlock.spans.some((s) => s.footnote)) {
     const f = resolved.footnotes;
-    const inline = f.markerPosition === 'inline';
+    const position = f.markerPosition === 'right' && !measuringVertically() ? 'superscript' : f.markerPosition;
+    const inline = position !== 'superscript';
+    const place = position === 'side' || position === 'right' ? position : undefined;
     const size = f.markerSize;
     const scale = !inline ? undefined
       : size.unit === 'em' || size.unit === 'rem' ? size.value
@@ -244,7 +254,7 @@ export function measureContentBlock(
               text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?',
               bold: false,
               italic: false,
-              footnote: { id: s.footnote.id, ...(scale !== undefined && Math.abs(scale - 1) > 1e-6 ? { scale } : {}) },
+              footnote: { id: s.footnote.id, ...(scale !== undefined && Math.abs(scale - 1) > 1e-6 ? { scale } : {}), ...(place ? { place } : {}) },
             }
           : { ...s, text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?', script: 'sup' as const, bold: false, italic: false }
         : s)),
@@ -266,8 +276,9 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
   }
 
-  // Chinese annotations (#193–#195): emphasis dots for `*…*`, book-title
-  // brackets, the fonts of readings and notes.
+  // Chinese and Japanese annotations (#193–#195, #421): emphasis dots for
+  // `*…*` and the region's mark, book-title brackets, the fonts of
+  // readings and notes.
   if (hasAnnotations(contentBlock.spans, resolved.cjk)) {
     contentBlock = {
       ...contentBlock,
@@ -279,7 +290,7 @@ export function measureContentBlock(
   // text, which is measured as before them.
   const vertical = measuringVertically();
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
-    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline || s.kunten
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
     || s.direction !== undefined
     || (vertical && (s.combineUpright || s.orientation)));
@@ -494,6 +505,38 @@ export function measureContentBlock(
     }
   }
 
+  // 字取り (jidori, JLReq §3.7.3, #424): a one-line heading narrower than
+  // its `jidori` width is spaced out evenly to fill it, 序章 at three
+  // characters set as 序　章. The space goes between the characters as
+  // tracking: the advance after the last one is no part of the width (the
+  // renderers align a tracked line by its letters, EF-153), so `n`
+  // characters fill the width with `n - 1` equal gaps. How many tracked
+  // advances the line holds is read off a trial setting, so a tate-chu-yoko
+  // number or a ruby base counts as the composer counts it.
+  const jidori = vdtType === 'heading' ? headingJidori(style, rawBlock) : undefined;
+  if (jidori !== undefined && hasRichFonts && measured.lines.length === 1 && opts?.trackingEm === undefined) {
+    const target = jidori * style.fontSizePx;
+    const naturalWidth = measured.lines[0]!.bbox.width;
+    const tracked = (spacing: number) => runMeasurement({
+      vdtType, rawBlock, contentBlock, style, measureMaxWidth, mathEnabled, cache,
+      measureOptions: { ...measureOptions, letterSpacingPx: spacing !== 0 ? spacing : undefined },
+      useRich: true,
+    }).measured;
+    if (naturalWidth < target - 0.5) {
+      const probe = tracked(trackingPx + 1);
+      const advances = probe.lines.length === 1 ? Math.round(probe.lines[0]!.bbox.width - naturalWidth) : 0;
+      if (advances >= 2) {
+        const untracked = naturalWidth - advances * trackingPx;
+        const spacing = (target - untracked) / (advances - 1);
+        const spaced = tracked(spacing);
+        if (spaced.lines.length === 1) {
+          measured = spaced;
+          trackingPx = spacing;
+        }
+      }
+    }
+  }
+
   if (measured.lines.length === 0) return null;
 
   // A paragraph whose direction opposes its frame's (the document's: a
@@ -527,6 +570,18 @@ export function measureContentBlock(
     kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender,
     ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
   };
+}
+
+/** A heading's jidori width in its own ems: its `{jidori=N}` attribute
+ *  (`0` or anything under 1 turns the level's off), else its level's
+ *  `jidori`. Undefined: none. */
+function headingJidori(style: BlockStyle, block: ContentBlock): number | undefined {
+  const own = block.attrs?.jidori;
+  if (own !== undefined) {
+    const n = Number(own.trim());
+    return Number.isFinite(n) && n > 1 ? n : undefined;
+  }
+  return style.jidori;
 }
 
 /** How loose a paragraph's justified lines are: the widest word spacing of

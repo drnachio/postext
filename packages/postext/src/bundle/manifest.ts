@@ -283,6 +283,11 @@ const MIME_BY_EXT: Record<string, string> = {
   woff2: 'font/woff2',
   md: 'text/markdown',
   json: 'application/json',
+  mp4: 'video/mp4',
+  m4v: 'video/mp4',
+  webm: 'video/webm',
+  ogv: 'video/ogg',
+  mov: 'video/quicktime',
 };
 
 /** Media type of a bundle file, from its extension. */
@@ -301,6 +306,24 @@ const BITMAP_FORMAT_BY_EXT: Record<string, string> = {
 /** True when `file` is a bitmap the engine can place. */
 export function isBitmapFile(file: string): boolean {
   return fileExtension(file) in BITMAP_FORMAT_BY_EXT;
+}
+
+const VIDEO_FORMAT_BY_EXT: Record<string, string> = {
+  mp4: 'mp4',
+  m4v: 'mp4',
+  webm: 'webm',
+  ogv: 'ogv',
+  mov: 'mov',
+};
+
+/** True when `file` is a video a bundle carries (#454). */
+export function isVideoFile(file: string): boolean {
+  return fileExtension(file) in VIDEO_FORMAT_BY_EXT;
+}
+
+/** The bitmap format of a picture file (`png`, `jpeg`…), or undefined. */
+export function bitmapFormatOf(file: string): string | undefined {
+  return BITMAP_FORMAT_BY_EXT[fileExtension(file)];
 }
 
 export function isSvgFile(file: string): boolean {
@@ -349,6 +372,17 @@ export function extensionForResource(r: Resource): string | null {
   if (r.kind === 'svg' && r.svg) return 'svg';
   if (r.kind === 'bitmap' && r.bitmap) return EXT_BY_BITMAP_FORMAT[r.bitmap.format] ?? r.bitmap.format;
   return null;
+}
+
+/** File extension of a self-hosted video's file (`mp4`, `webm`…). */
+export function extensionForVideo(format: string | undefined): string {
+  const f = (format ?? 'mp4').toLowerCase();
+  return f in VIDEO_FORMAT_BY_EXT ? f : 'mp4';
+}
+
+/** File extension of a bitmap format (`jpeg` → `jpg`). */
+export function extensionForBitmapFormat(format: string): string {
+  return EXT_BY_BITMAP_FORMAT[format] ?? format;
 }
 
 // ---------------------------------------------------------------------------
@@ -402,8 +436,26 @@ export function resourceFromSpec(
   fileIdFor: (file: string) => string = identity,
 ): Resource {
   const now = Date.now();
-  const { file, pdfFile, width, height, ...rest } = spec;
+  const { file, pdfFile, poster, width, height, ...rest } = spec;
   const base: Resource = { ...rest, createdAt: now, updatedAt: now };
+  if (spec.kind === 'video' || (file && isVideoFile(file))) {
+    // A video (#454): its own file (self-hosted) and its poster frame.
+    const video = { source: 'file' as const, ...(spec.video ?? {}) };
+    delete (video as { fileId?: string }).fileId;
+    delete (video as { poster?: unknown }).poster;
+    const posterFormat = poster ? BITMAP_FORMAT_BY_EXT[fileExtension(poster)] : undefined;
+    const w = width ?? size?.width;
+    const h = height ?? size?.height;
+    return {
+      ...base,
+      kind: 'video',
+      video: {
+        ...video,
+        ...(file && isVideoFile(file) ? { fileId: fileIdFor(file), format: VIDEO_FORMAT_BY_EXT[fileExtension(file)] } : {}),
+        ...(poster && posterFormat ? { poster: { fileId: fileIdFor(poster), format: posterFormat, width: w ?? 0, height: h ?? 0 } } : {}),
+      },
+    };
+  }
   if (!file) return base;
 
   const fileId = fileIdFor(file);

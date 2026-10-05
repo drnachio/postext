@@ -2,7 +2,7 @@
 
 import { applySingleInkToSvg, resolveColorValue, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubWarning } from '../types';
-import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, sniffFontFormat, sniffImageType } from './media';
+import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media';
 import { uuidV5 } from './uuid';
 
 /** The embedded font files as manifest items under `fonts/` and the
@@ -105,11 +105,71 @@ export function placedFileIds(doc: VDTDocument): string[] {
     }
     for (const [key, v] of Object.entries(value)) {
       if (key === 'fileId' && typeof v === 'string' && v) out.add(v);
+      // A video's own file is no picture (its poster is the block's
+      // `fileId`): see `placedVideoFileIds`.
+      else if (key === 'video') continue;
       else if (typeof v === 'object') walk(v);
     }
   };
   walk(doc.pages);
   return [...out];
+}
+
+/** The self-hosted videos (#454) the pages of `doc` place: their files'
+ *  `fileId`, in order of first appearance. */
+export function placedVideoFileIds(doc: VDTDocument): string[] {
+  const out = new Set<string>();
+  for (const page of doc.pages) {
+    const blocks = [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])];
+    for (const b of blocks) {
+      const fileId = b.resourceBlock?.video?.fileId;
+      if (fileId) out.add(fileId);
+    }
+  }
+  return [...out];
+}
+
+/** The self-hosted videos (#454) the book does not carry but plays from
+ *  their production address: manifest items of their own, as EPUB asks of
+ *  every remote resource. */
+export function remoteVideoItems(docs: readonly VDTDocument[], carried: ImageAssets): EpubItem[] {
+  const out = new Map<string, EpubItem>();
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      for (const b of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
+        const v = b.resourceBlock?.video;
+        if (!v || v.source !== 'file' || !v.link || out.has(v.link)) continue;
+        if (v.fileId && carried.hrefOf(v.fileId)) continue;
+        out.set(v.link, { id: `remote-${out.size + 1}`, href: v.link, mediaType: v.mimeType ?? 'video/mp4', data: '', remote: true });
+      }
+    }
+  }
+  return [...out.values()];
+}
+
+/** The videos' files (#454), written under `media/`. `hrefOf` answers the
+ *  href of a `fileId`, or undefined when the host had no bytes: the video
+ *  then plays from its production address, or shows its poster. */
+export async function videoAssets(
+  docs: readonly VDTDocument[],
+  resourceBytes: EpubResourceBytes | undefined,
+): Promise<ImageAssets> {
+  const fileIds = [...new Set(docs.flatMap(placedVideoFileIds))];
+  const fetched = await Promise.all(fileIds.map(async (fileId) => ({ fileId, payload: await resourceBytes?.(fileId) })));
+  const items: EpubItem[] = [];
+  const hrefs = new Map<string, string>();
+  const names = new Set<string>();
+  for (const { fileId, payload } of fetched) {
+    const mediaType = payload && payload.bytes.length > 0
+      ? sniffVideoType(payload.bytes) ?? (payload.mediaType in VIDEO_EXTENSIONS ? payload.mediaType : undefined)
+      : undefined;
+    if (!payload || !mediaType) continue;
+    const name = unique(slug(fileId.replace(/\.[a-z0-9]+$/i, '')), names);
+    const href = `media/${name}.${VIDEO_EXTENSIONS[mediaType]!}`;
+    items.push({ id: `vid-${name}`, href, mediaType, data: payload.bytes });
+    hrefs.set(fileId, href);
+  }
+  return { items, hrefOf: (fileId) => hrefs.get(fileId) };
 }
 
 /** The ink SVG pictures are recoloured to, or null without single ink. */

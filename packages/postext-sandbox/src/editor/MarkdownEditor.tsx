@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef } from 'react';
-import { DEFAULT_CHIP_STYLES, defaultResourceTypes } from 'postext';
+import { DEFAULT_CHIP_STYLES, canonicalLocaleTag, defaultResourceTypes } from 'postext';
+import { documentLanguage } from '../context/documentDirection';
+import { defaultDocumentLocale } from '../controls/hyphenation';
 import { useCodeMirror } from './useCodeMirror';
 import { EditorToolbar } from './EditorToolbar';
 import { useUiRtl } from '../ui/direction';
@@ -55,6 +57,10 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
 
   const hintId = useId();
   const rtl = useUiRtl();
+  // The text is in the document's language (the interface's when it
+  // names none), not the interface's.
+  const language = documentLanguage(state.config, defaultDocumentLocale(state.locale));
+  const lang = canonicalLocaleTag(language) ?? language;
   const { containerRef, viewRef } = useCodeMirror({
     initialValue: state.markdown,
     externalValue: state.markdown,
@@ -67,6 +73,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     ariaLabel: state.labels.markdownEditor,
     ariaDescribedBy: hintId,
     rtl,
+    lang,
   });
 
   // If this editor unmounts (e.g. user switches to another viewport tab),
@@ -109,7 +116,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>
-      <EditorToolbar viewRef={viewRef} />
+      <EditorToolbar viewRef={viewRef} lang={language} />
       <p id={hintId} className="sr-only">{state.labels.editorKeyboardHint}</p>
       <div style={{ flex: '1 1 0%', minHeight: 0, position: 'relative' }}>
         <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />

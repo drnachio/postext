@@ -110,7 +110,7 @@ import {
   rollbackTrailingBlocks,
 } from './buildHelpers';
 import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
-import { paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
+import { containerStyle, paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
   footnoteIdsOfLines,
@@ -126,6 +126,7 @@ import {
 import { planParts, derivePartMeasureContext } from './parts';
 import {
   layoutCallout,
+  offsetBlock,
   offsetCalloutToAbsolute,
   pickCalloutStyle,
   planCallouts,
@@ -161,12 +162,12 @@ import {
   computeResourceNumbering,
   type ResourceNumberingMap,
 } from './resourceNumbering';
-import { defaultResourceTypes, documentLocale } from '../defaults/resourceTypes';
+import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
-import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey } from './columnBalancing';
+import { proposeBalanceLines, collectColumnGaps, firstDivergentColumn, gapLinesIn, boxRoomIn, boxLeverKeys, pageSegments, type LooseBudget, type PageRange, type ColumnGap, MAX_BALANCING_PASSES, MAX_BALANCING_PASSES_PER_DOCUMENT, balanceKey, candidateKey, flexFigureKey, flexFloatKey } from './columnBalancing';
 import {
   applyBandCap,
   uncapBand,
@@ -190,6 +191,7 @@ import { tashkilFor } from './tashkil';
 import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
 import { paperByBlock, stampPagePaper } from './paper';
+import { headingLineSpanBand } from './lineSpan';
 
 /** Tolerance for "does this block fit" checks against a column's free
  *  height, absorbing floating-point drift between grid multiples. */
@@ -596,7 +598,7 @@ function placeDocumentPass(
   }
   const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
   const parsedBlocks = chapterEndNotes
-    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes))
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes, resolved.layout.writingMode === 'vertical-rl'), resolved.footnotes.numberGap)
     : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -635,8 +637,8 @@ function placeDocumentPass(
   // captions and inline `:ref`s can resolve their rendered number strings
   // before measurement. Numbering follows order of first reference in the
   // document.
-  const resourceTypes: ResourceType[] = config?.resourceTypes ?? defaultResourceTypes(documentLocale(config));
   const resources: Resource[] = content.resources ?? [];
+  const resourceTypes: ResourceType[] = effectiveResourceTypes(config, resources);
   const headingContext = computeHeadingContext(contentBlocks, headingStart, isNumbered);
   const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
     contentBlocks,
@@ -645,6 +647,7 @@ function placeDocumentPass(
     headingContext,
     continuation ? { counters: continuation.resourceCounters, numbered: continuation.resourceNumbers } : undefined,
     resolved.numerals,
+    documentLocale(config),
   );
 
   // Lookups threaded into block-kind resolution + measurement.
@@ -963,6 +966,9 @@ function placeDocumentPass(
   ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
+    // Column balancing: a picture with a safe area grown by whole lines
+    // (`flexFigure`, #442).
+    const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
     return layoutResourceBlock({
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
@@ -975,6 +981,7 @@ function placeDocumentPass(
       ...(slice ? { slice } : {}),
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
+      ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
     });
   };
 
@@ -1118,6 +1125,9 @@ function placeDocumentPass(
     blk.dirty = false;
     blk.snappedToGrid = false;
     blk.bbox = createBoundingBox(x, 0, width, totalHeight);
+    if ((rb.bodyFlex?.delta ?? 0) > 0.01 && balanceExtraPx?.has(flexFloatKey(resourceId))) {
+      blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: rb.bodyFlex!.delta };
+    }
     blk.lines = [];
     if (rb.rotation) {
       // The upright frame's origin: for a counter-clockwise turn the frame's
@@ -1142,6 +1152,8 @@ function placeDocumentPass(
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
   const floatReserved = new Map<VDTColumn, { top: number; bottom: number }>();
+  /** Pages a `:::pagebreak{center}` opened (#424). */
+  const centredPages = new Set<number>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
     floatReserved.get(col) ?? { top: 0, bottom: 0 };
   const floatHeadOf = (col: VDTColumn): number => reservedOf(col).top;
@@ -1949,7 +1961,21 @@ function placeDocumentPass(
   // places lines (`notesPrefixCost`), so the line citing a note and the note
   // share a column. The notes are set in their reserved room once the pass
   // is placed (`setColumnNotes`).
-  const columnNotes = resolved.footnotes.placement === 'column' && footnoteNumbering.numbers.size > 0;
+  //
+  // Sidenotes on the spread (`placement: 'spread'`, 傍注, JLReq §4.2.6; a
+  // vertical document's: a horizontal one resolves to `'column'`) use the
+  // same room, at the foot of the flow, which on a vertical page is its
+  // left end, the fore edge of a right-bound book's odd page. A spread is
+  // an even book page and the odd page after it. The notes cited on the
+  // odd page are reserved there as column notes; the ones cited on the
+  // even page wait for the odd page (`spreadDeferred`) and are reserved at
+  // the foot of its first column of text before anything it cites. A note
+  // that would leave the odd page without room for a line of its own text
+  // stays on the even page, at its foot (the overflow JLReq sends there);
+  // a line on the odd page whose notes no longer fit moves on, as any
+  // line with column notes does, to the next spread.
+  const spreadNotes = resolved.footnotes.placement === 'spread' && footnoteNumbering.numbers.size > 0;
+  const columnNotes = (resolved.footnotes.placement === 'column' || spreadNotes) && footnoteNumbering.numbers.size > 0;
   const noteStyle = columnNotes ? resolveParagraphStyle(footnoteParagraphStyle(resolved), resolved) : bodyStyle;
   const noteSpaceAbovePx = dimensionToPx(resolved.footnotes.spaceAbove, dpi, bodyStyle.fontSizePx);
   const noteSpaceBelowRulePx = dimensionToPx(resolved.footnotes.spaceBelowRule, dpi, bodyStyle.fontSizePx);
@@ -1967,7 +1993,7 @@ function placeDocumentPass(
     let m = noteMeasures.get(key);
     if (m === undefined) {
       const number = footnoteNumbering.numbers.get(id) ?? '?';
-      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes)), 0, width, measureCtx, { styleOverride: noteStyle });
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes, resolved.layout.writingMode === 'vertical-rl'), resolved.footnotes.numberGap), 0, width, measureCtx, { styleOverride: noteStyle });
       noteMeasures.set(key, m);
     }
     return m;
@@ -1990,6 +2016,11 @@ function placeDocumentPass(
     });
     return h;
   };
+  /** Sidenotes cited on the even page of a spread, waiting for its odd
+   *  page (`spreadDeferredPage`, a page index) or the first page after it
+   *  the flow sets text on. */
+  const spreadDeferred: string[] = [];
+  let spreadDeferredPage = -1;
   /** Notes cited by blocks set outside the flow (the paragraphs of a box,
    *  inline, floated or fixed): they wait for the next text the flow
    *  places, and go to the foot of its column, in citation order. */
@@ -1999,9 +2030,43 @@ function placeDocumentPass(
   const collectPendingNotes = (): void => {
     for (; notesScanned < doc.blocks.length; notesScanned++) {
       for (const id of footnoteIdsOfLines(doc.blocks[notesScanned]!.lines)) {
-        if (!placedNotes.has(id) && !pendingNotes.includes(id)) pendingNotes.push(id);
+        if (!placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id)) pendingNotes.push(id);
       }
     }
+  };
+  /** Whether the page at `pageIndex` opens its spread (an even book page),
+   *  so the notes it cites go to the next page. */
+  const opensSpread = (pageIndex: number): boolean => spreadNotes && (pageIndex + pageIndexOffset + 1) % 2 === 0;
+  /** The sidenotes waiting for the page at `pageIndex`, if any. */
+  const deferredFor = (pageIndex: number): string[] => (spreadDeferred.length > 0 && pageIndex >= spreadDeferredPage ? spreadDeferred : []);
+  /** Height `ids` take at the foot of a column of `width` with no note
+   *  yet: the separator zone, the notes and the gaps between. */
+  const freshNotesCost = (ids: readonly string[], width: number): number => {
+    let h = ids.length > 0 ? noteHeadPx : 0;
+    ids.forEach((id, i) => { h += (i > 0 ? noteGapPx : 0) + noteHeight(id, width); });
+    return h;
+  };
+  /** On the even page of a spread (`pageIndex`), `col` holding the text:
+   *  which of `ids` (cited there, in order) wait for the odd page and which
+   *  stay at this column's foot. Each waits while the notes waiting with it
+   *  leave the odd page room for a line of text — measured on this column,
+   *  which the odd page's matches; a note that does not stays here, and so
+   *  do the ones after it. */
+  const splitSpreadNotes = (pageIndex: number, col: VDTColumn, ids: readonly string[]): { wait: string[]; here: string[] } => {
+    const already = spreadDeferredPage > pageIndex ? spreadDeferred : [];
+    const wait = [...already];
+    const here: string[] = [];
+    const room = col.bbox.height + reservedHeight(col) - bodyStyle.lineHeightPx;
+    for (const id of ids) {
+      if (here.length === 0 && freshNotesCost([...wait, id], col.bbox.width) <= room + 0.01) wait.push(id);
+      else here.push(id);
+    }
+    return { wait: wait.slice(already.length), here };
+  };
+  /** What the notes reserved at `col`'s foot took from it. */
+  const reservedHeight = (col: VDTColumn): number => {
+    const entry = columnNotesOf.get(col);
+    return entry ? entry.slots.reduce((h, slot) => h + slot.height, 0) : 0;
   };
   /** `cost[k]`: the notes the first `k` of `lines` cite for the first time
    *  (after the pending ones) would add to `col`'s foot. Undefined when
@@ -2009,29 +2074,47 @@ function placeDocumentPass(
   const notesPrefixCost = (col: VDTColumn, lines: readonly VDTLine[]): number[] | undefined => {
     if (!columnNotes) return undefined;
     collectPendingNotes();
+    const page = cursor.pageIndex;
+    // Sidenotes waiting for this page are set first; on the even page of a
+    // spread only the notes that stay on it cost room.
+    const waiting = deferredFor(page);
     const ids: string[] = [...pendingNotes];
-    let any = ids.length > 0;
-    const cost = [notesCost(col, ids)];
+    let any = ids.length > 0 || waiting.length > 0;
+    const even = opensSpread(page);
+    const costOf = (): number => notesCost(col, [...waiting, ...(even ? splitSpreadNotes(page, col, ids).here : ids)]);
+    const cost = [costOf()];
     for (const line of lines) {
       for (const seg of line.segments ?? []) {
         const id = seg.footnoteId;
-        if (id !== undefined && !placedNotes.has(id) && !ids.includes(id)) { ids.push(id); any = true; }
+        if (id !== undefined && !placedNotes.has(id) && !ids.includes(id) && !spreadDeferred.includes(id)) { ids.push(id); any = true; }
       }
-      cost.push(notesCost(col, ids));
+      cost.push(costOf());
     }
     return any ? cost : undefined;
   };
   /** Reserve at the placed block's column foot the pending notes and the
-   *  ones the block cites first. */
+   *  ones the block cites first (sidenotes: the ones waiting for this
+   *  page first; on the even page of a spread, only the ones that stay). */
   const reserveCitedNotes = (placed: VDTBlock): void => {
     if (!columnNotes || placed.pageIndex < 0) return;
     collectPendingNotes();
-    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id));
-    if (cited.length === 0 && pendingNotes.length === 0) return;
+    const waiting = deferredFor(placed.pageIndex);
+    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id));
+    if (cited.length === 0 && pendingNotes.length === 0 && waiting.length === 0) return;
     const page = doc.pages[placed.pageIndex];
     const col = page?.columns[placed.columnIndex];
     if (!page || !col) return;
-    reserveNotes(page, col, [...pendingNotes.splice(0), ...cited], placed.contentIndex ?? 0);
+    const anchor = placed.contentIndex ?? 0;
+    if (waiting.length > 0) reserveNotes(page, col, spreadDeferred.splice(0), anchor);
+    const ids = [...pendingNotes.splice(0), ...cited];
+    if (opensSpread(placed.pageIndex)) {
+      const { wait, here } = splitSpreadNotes(placed.pageIndex, col, ids);
+      spreadDeferred.push(...wait);
+      spreadDeferredPage = placed.pageIndex + 1;
+      if (here.length > 0) reserveNotes(page, col, here, anchor);
+      return;
+    }
+    if (ids.length > 0) reserveNotes(page, col, ids, anchor);
   };
   /** Reserve `ids` at `col`'s foot. */
   const reserveNotes = (page: VDTPage, col: VDTColumn, ids: string[], anchor: number): void => {
@@ -2070,10 +2153,29 @@ function placeDocumentPass(
   const reserveLeftoverNotes = (): void => {
     if (!columnNotes) return;
     collectPendingNotes();
+    reserveLeftoverSidenotes();
     if (pendingNotes.length === 0) return;
     const page = doc.pages[cursor.pageIndex];
     const col = page?.columns[cursor.columnIndex];
     if (page && col) reserveNotes(page, col, pendingNotes.splice(0), contentBlocks.length - 1);
+  };
+  /** Sidenotes still waiting when the flow ends on the even page of a
+   *  spread: they stay on it (JLReq §4.2.6), at the foot of the column the
+   *  flow ended in when they fit under its text, else on a page of their
+   *  own after it. */
+  const reserveLeftoverSidenotes = (): void => {
+    if (spreadDeferred.length === 0) return;
+    const ids = spreadDeferred.splice(0);
+    let page = doc.pages[cursor.pageIndex];
+    let col = page?.columns[cursor.columnIndex];
+    if (!page || !col) return;
+    if (notesCost(col, ids) > col.availableHeight + 0.01) {
+      page = createPageWithColumns(doc.pages.length, geomResolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
+      doc.pages.push(page);
+      col = page.columns[0];
+      if (!col) return;
+    }
+    reserveNotes(page, col, ids, contentBlocks.length - 1);
   };
   /** `chapterEnd`: move the run of note paragraphs that closes a column
    *  down to the column's true foot (under a band cap's cut, above any
@@ -2746,6 +2848,19 @@ function placeDocumentPass(
     pendingNumberingChange = null;
   };
 
+  /** `headings.keepWithNextSpread` (#424): whether a heading may close
+   *  `col` even so — the last text column of an even page, whose text then
+   *  opens the facing odd page of the same spread (JLReq §4.1.7 b). Pages
+   *  count as printed (`pageIndexOffset` of a chapter laid out after
+   *  others), page 1 being the lone recto. */
+  const headingMayCloseColumn = (col: VDTColumn): boolean => {
+    if (!resolved.headings.keepWithNextSpread) return false;
+    const page = doc.pages[cursor.pageIndex];
+    if (!page || !page.columns.includes(col)) return false;
+    if ((page.index + (doc.pageIndexOffset ?? 0) + 1) % 2 !== 0) return false;
+    const flow = page.columns.filter((c) => c.kind !== 'side' && c.kind !== 'span');
+    return flow[flow.length - 1] === col;
+  };
   /** Heading blocks that are not part of a callout — the only ones the
    *  keep-with-next rollbacks may pull along (a callout is one unbreakable
    *  unit; its children never leave it). */
@@ -2753,7 +2868,7 @@ function placeDocumentPass(
   /** Free headings closing `col` (its trailing run), 0 unless keep-with-next
    *  is on: the headings a block moving on would strand. */
   const trailingHeadingRun = (col: VDTColumn): number => {
-    if (!resolved.headings.keepWithNext) return 0;
+    if (!resolved.headings.keepWithNext || headingMayCloseColumn(col)) return 0;
     let n = 0;
     for (let j = col.blocks.length - 1; j >= 0 && isFreeHeading(col.blocks[j]!); j--) n++;
     return n;
@@ -4184,6 +4299,10 @@ function placeDocumentPass(
         // parity padding, so a blank parity page never carries a float.
         flushFloatsIntoPage(doc.pages[cursor.pageIndex]!);
         flushPendingNumberingAtBoundary();
+        // `:::pagebreak{center}` (ページの左右中央, #424): the text of the page
+        // the break opens is centred between the head and the foot of the
+        // type area once the pass is done (`centrePageText`).
+        if (attrs.center !== undefined && attrs.center.trim().toLowerCase() !== 'false') centredPages.add(cursor.pageIndex);
       } else if (name === 'columnbreak') {
         // Explicit column break: end the current column here (its bottom
         // gap is intentional, so balancing skips it) and continue in the
@@ -4441,7 +4560,9 @@ function placeDocumentPass(
       ? { ...containerTail.tailStyle, marginBottomPx: blockMeasureCtx.bodyStyle.marginBottomPx }
       : containerTail?.tailStyle;
     const styleOverride = paragraphContainer
-      ? (isContainerTail ? tailStyle ?? paragraphContainer.tailStyle : paragraphContainer.style)
+      ? (paragraphContainer.overBody
+        ? containerStyle(paragraphContainer, isContainerTail, blockMeasureCtx.bodyStyle, dpi)
+        : isContainerTail ? tailStyle ?? paragraphContainer.tailStyle : paragraphContainer.style)
       : undefined;
     // Column balancing "run a paragraph long": the loose path is taken only
     // for the paragraphs the driver asked for, so the common case keeps its
@@ -4469,9 +4590,27 @@ function placeDocumentPass(
     const upright = pageIsVertical(blockPage) && rawBlock.type === 'resourceBlock'
       ? { uprightMaxLength: uprightOn(blockPage).length }
       : {};
+    // Column balancing: an inline picture with a safe area grown by whole
+    // lines (`flexFigure`, #442).
+    const figureGrowPx = rawBlock.type === 'resourceBlock' ? balanceExtraPx?.get(flexFigureKey(blockIdx)) ?? 0 : 0;
+    const figureDelta = figureGrowPx > 0 ? { figureHeightDelta: figureGrowPx } : {};
     let measuredBlock = tryLoose
       ? measureLooseParagraph(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome)
-      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright });
+      : measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright, ...figureDelta });
+    // An inline picture with a safe area a little too tall for the room
+    // left in its column is cropped within its safe area to stay there
+    // rather than move on and leave the column short (#442).
+    if (measuredBlock?.kind.vdtType === 'resource' && measuredBlock.resourceBlock?.bodyFlex) {
+      const flex = measuredBlock.resourceBlock.bodyFlex;
+      const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
+      const over = measuredBlock.measured.totalHeight - room;
+      if (over > 0.01 && room > 0 && over <= flex.shrink + 0.01) {
+        const cropped = measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, {
+          styleOverride, ...upright, figureHeightDelta: flex.delta - over,
+        });
+        if (cropped && cropped.measured.totalHeight <= room + 0.01) measuredBlock = cropped;
+      }
+    }
     // Screen pages (`layout.fitFiguresToPage`): an inline figure a little
     // too tall for the room left in its column — under an opener band, say
     // — is set smaller to stay with its text rather than leave the rest of
@@ -4513,7 +4652,16 @@ function placeDocumentPass(
     // break, keep-with-next and grid snap apply — but with no line height
     // and no margins: it takes no room, and renderers skip it.
     const hiddenHeading = vdtType === 'heading' && headingIsHidden(rawBlock, headingLevels.forBlock(rawBlock));
-    const style = hiddenHeading ? { ...kind.style, lineHeightPx: 0, marginTopPx: 0, marginBottomPx: 0 } : kind.style;
+    // 行取り (#424): a heading with a `lineSpan` takes that many body grid
+    // lines, its text centred in them; the band replaces its margins. Not a
+    // heading painted as a page opener or from its own design.
+    const lineSpan = vdtType === 'heading' && !hiddenHeading && kind.style.lineSpan !== undefined
+      && !headingSetsOwnBand(headingLevels.forBlock(rawBlock))
+      ? kind.style.lineSpan
+      : undefined;
+    const style = hiddenHeading
+      ? { ...kind.style, lineHeightPx: 0, marginTopPx: 0, marginBottomPx: 0 }
+      : lineSpan !== undefined ? { ...kind.style, marginTopPx: 0, marginBottomPx: 0 } : kind.style;
 
     // --- Resource blocks (image / svg / table + caption) -----------------
     // Placed atomically (kept-together) — no mid-content split for v1.
@@ -4551,6 +4699,11 @@ function placeDocumentPass(
       // resource's own caption/table lines live on `resourceBlock` and must be
       // offset to absolute page coordinates here using the placed bbox origin.
       offsetResourceBlockToAbsolute(resourceBlock, blk.bbox.x, blk.bbox.y);
+      const grown = figureGrowPx > 0 ? resourceBlock.bodyFlex?.delta ?? 0 : 0;
+      if (grown > 0.01) {
+        blk.balancing = { levers: ['flexFigure'], spaceAbove: 0, bodyGrowth: grown };
+        addBalanceExtra(currentColumn(doc, cursor), grown);
+      }
       doc.blocks.push(blk);
       // Snap the flow position after the resource to the baseline grid (the
       // group height is arbitrary), baking in at least marginBottom — same
@@ -4786,6 +4939,12 @@ function placeDocumentPass(
         spacingBefore = pendingSpacing;
         if (vdtType === 'heading' || vdtType === 'mathDisplay') {
           spacingBefore = Math.max(partIndex === 0 ? pendingBeforeSelfSnapping(blockIdx) : spacingBefore, style.marginTopPx);
+          // A 行取り band opens on a grid line when its heading snaps to the
+          // grid, so its lines are body lines (#424).
+          if (lineSpan !== undefined && partIndex === 0 && (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)) {
+            const usedHeight = curCol.bbox.height - curCol.availableHeight;
+            spacingBefore = Math.ceil((usedHeight + spacingBefore - 0.01) / baselineGrid) * baselineGrid - usedHeight;
+          }
           // Column balancing: extra whole grid lines above this heading so
           // the column it sits in ends flush with the page bottom. Applied
           // after margin collapsing — the heading's effective top margin
@@ -4896,6 +5055,21 @@ function placeDocumentPass(
       // actual content bottom so the reserved block height (and the
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
+      /** How far the lines of a 行取り heading go down its band (#424). */
+      let lineSpanShift = 0;
+      if (lineSpan !== undefined && partIndex === 0) {
+        const bodyBlockStyle = blockMeasureCtx.bodyStyle;
+        const band = headingLineSpanBand(
+          lineSpan,
+          remainingLines.length,
+          style.lineHeightPx,
+          { font: style.fontString, sizePx: style.fontSizePx },
+          { font: bodyBlockStyle.fontString, sizePx: bodyBlockStyle.fontSizePx },
+          baselineGrid,
+        );
+        effectiveRemainHeight = band.height;
+        lineSpanShift = band.shift;
+      }
       /** The heading's design and the values it is laid out with, kept for
        *  the side-column obstacles once the block is placed (EF-78). */
       let headingDesign: { lvl: ResolvedHeadingLevelConfig; info: HeadingPlaceholderInfo } | undefined;
@@ -5171,6 +5345,7 @@ function placeDocumentPass(
           && !nextIsHeading
           && nextBlock !== null
           && (curCol.blocks.length > trailingHeadingRun(curCol) || shortColumn)
+          && !headingMayCloseColumn(curCol)
         ) {
           const wouldUsedHeight =
             (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
@@ -5235,7 +5410,7 @@ function placeDocumentPass(
           const mathLine = { ...remainingLines[0]!, bbox: { ...remainingLines[0]!.bbox, y: 0 } };
           blk.lines = [mathLine];
         } else {
-          blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+          blk.lines = shiftLinesDown(resetLinePositions(remainingLines, style.lineHeightPx), lineSpanShift);
         }
         blk.dirty = false;
         blk.snappedToGrid = shouldSnapToGrid && partIndex === 0;
@@ -5597,7 +5772,7 @@ function placeDocumentPass(
         blk.titleBreaks = rawBlock.titleBreaks;
         blk.titleLength = rawBlock.text.length;
       }
-      blk.lines = resetLinePositions(remainingLines, style.lineHeightPx);
+      blk.lines = shiftLinesDown(resetLinePositions(remainingLines, style.lineHeightPx), lineSpanShift);
       blk.dirty = false;
       blk.snappedToGrid = false;
       if (remainingLines.length > 0) {
@@ -5650,6 +5825,10 @@ function placeDocumentPass(
   // to its foot: the room left over stays between the text and them.
   if (chapterEndNotes && resolved.footnotes.chapterEndAlign === 'foot') dropChapterEndNotes();
   if (chapterEndNotes) ruleChapterEndNotes();
+  for (const index of centredPages) {
+    const page = doc.pages[index];
+    if (page) centrePageText(page, reservedOf);
+  }
 
   // A band that is still cut at the end of the pass (a trailing cap: the
   // closing band of a chapter or of the document) must hold what it took,
@@ -5912,8 +6091,9 @@ function printedFootnoteNumbers(doc: VDTDocument): Map<string, string> {
 const MAX_FOOTNOTE_ROUNDS = 3;
 
 /**
- * {@link buildDocumentBalanced}, with `footnotes.numbering: 'page'` /
- * `'column'`: a note's number depends on the page the layout sets it on,
+ * {@link buildDocumentBalanced}, with `footnotes.numbering: 'page'`,
+ * `'column'` or `'spread'`: a note's number depends on the page the layout
+ * sets it on,
  * so the document is numbered by chapter, laid out, numbered again where
  * its notes landed, and laid out with those numbers until they no longer
  * change (as the contents' page labels are). A circled marker is the same
@@ -5929,11 +6109,14 @@ function* buildDocumentNumbered(
 ): Generator<void, VDTDocument, void> {
   let doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound);
   const f = doc.config.footnotes;
-  if (f.placement !== 'column' || (f.numbering !== 'page' && f.numbering !== 'column')) return doc;
+  if ((f.placement !== 'column' && f.placement !== 'spread') || (f.numbering !== 'page' && f.numbering !== 'column' && f.numbering !== 'spread')) return doc;
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
     const used = printedFootnoteNumbers(doc);
     if (used.size === 0) break;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate).numbers;
+    // A spread counts its notes in citation order: the order of the first
+    // markers, which `used` holds.
+    const order = f.numbering === 'spread' ? new Map([...used.keys()].map((id, i) => [id, i])) : undefined;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);
@@ -6079,7 +6262,7 @@ function* buildDocumentBalanced(
     for (const g of gaps) {
       const si = segmentAt(g.pageIndex);
       if (si < 0) continue;
-      for (const c of g.candidates) owner.set(balanceKey(c.contentIndex, c.part ?? 0), si);
+      for (const c of g.candidates) owner.set(candidateKey(c), si);
     }
     return owner;
   };
@@ -6181,7 +6364,7 @@ function* buildDocumentBalanced(
       return hit;
     };
     const keysOf = (pick: (g: ColumnGap) => boolean): Set<number> =>
-      new Set(gaps.filter(pick).flatMap((g) => g.candidates.map((c) => balanceKey(c.contentIndex, c.part ?? 0))));
+      new Set(gaps.filter(pick).flatMap((g) => g.candidates.map((c) => candidateKey(c))));
     if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex && g.columnIndex === div.columnIndex))) return true;
     if (blacklist(keysOf((g) => g.pageIndex === div.pageIndex))) return true;
     return blacklist(null);
@@ -6370,4 +6553,66 @@ function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
 function verseSnaps(styleId: string | undefined, resolved: ResolvedConfig): boolean {
   const key = styleId?.trim();
   return !key || resolved.paragraphStyles.find((s) => s.id === key)?.snapToGrid !== false;
+}
+
+/** `lines` (block-relative, as `resetLinePositions` sets them) moved `dy`
+ *  px down their block: a 行取り heading's lines in its band (#424). */
+function shiftLinesDown(lines: VDTLine[], dy: number): VDTLine[] {
+  if (dy === 0) return lines;
+  for (const line of lines) {
+    line.bbox.y += dy;
+    line.baseline += dy;
+  }
+  return lines;
+}
+
+/** Whether a heading level sets the band it takes itself — a page opener
+ *  (`span: 'page'`) or a heading painted from its `advancedDesign` — so a
+ *  `lineSpan` (#424) does not apply to it. */
+function headingSetsOwnBand(lvl: ResolvedHeadingLevelConfig | undefined): boolean {
+  return lvl !== undefined && (lvl.span === 'page' || lvl.advancedDesign.enabled);
+}
+
+/**
+ * ページの左右中央 (#424): the text on `page` centred between the head and
+ * the foot of its type area — across the page in vertical text, down it in
+ * horizontal text — as a dedication or a part title is set on a page of its
+ * own. The extent is measured from the first line box to the last one of
+ * every text column (a box or a figure by its frame), and the room taken by
+ * floats at the head or foot of a column is left out; every block of the
+ * columns moves by the same amount, so columns and the text in them keep
+ * their places relative to each other. Floats, notes and running heads stay
+ * where they are. A page whose text already fills the area is left alone.
+ */
+function centrePageText(page: VDTPage, reservedOf: (col: VDTColumn) => { top: number; bottom: number }): void {
+  const cols = page.columns.filter((c) => c.kind !== 'side' && c.blocks.length > 0);
+  if (cols.length === 0) return;
+  let top = Infinity;
+  let bottom = -Infinity;
+  let areaTop = Infinity;
+  let areaBottom = -Infinity;
+  for (const col of cols) {
+    const reserved = reservedOf(col);
+    areaTop = Math.min(areaTop, col.bbox.y + reserved.top);
+    areaBottom = Math.max(areaBottom, col.bbox.y + col.bbox.height - reserved.bottom);
+    for (const b of col.blocks) {
+      if (b.hidden) continue;
+      const first = b.lines[0];
+      const last = b.lines[b.lines.length - 1];
+      const textual = first !== undefined && last !== undefined && b.type !== 'resource' && b.containerId === undefined;
+      top = Math.min(top, textual ? first.bbox.y : b.bbox.y);
+      bottom = Math.max(bottom, textual ? last.bbox.y + last.bbox.height : b.bbox.y + b.bbox.height);
+    }
+  }
+  if (!Number.isFinite(top) || !Number.isFinite(bottom)) return;
+  const dy = (areaTop + areaBottom) / 2 - (top + bottom) / 2;
+  if (dy < 0.5) return;
+  const moved = new Set<VDTBlock>();
+  for (const col of cols) {
+    for (const b of col.blocks) {
+      if (moved.has(b)) continue;
+      moved.add(b);
+      offsetBlock(b, 0, dy);
+    }
+  }
 }

@@ -9,7 +9,7 @@ import { hasAnchorRefs } from './crossRefs';
 import { extractFrontmatter } from '../frontmatter';
 import { parseMarkdownMemo } from '../parse';
 import type { ContentBlock } from '../parse';
-import { defaultResourceTypes } from '../defaults';
+import { effectiveResourceTypes } from '../defaults';
 import { documentLocale } from '../defaults/resourceTypes';
 import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, PostextConfig, PostextContent } from '../types';
 import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering';
@@ -37,7 +37,7 @@ export function continuationAfter(
   const headings = headingContext.length > 0
     ? headingContext[headingContext.length - 1]!
     : before?.headings ?? NO_HEADINGS;
-  const resourceTypes = config?.resourceTypes ?? defaultResourceTypes(documentLocale(config));
+  const resourceTypes = effectiveResourceTypes(config, content.resources);
   const { map, counters } = computeResourceNumberingState(
     blocks,
     resourceTypes,
@@ -45,6 +45,7 @@ export function continuationAfter(
     headingContext,
     before ? { counters: before.resourceCounters, numbered: before.resourceNumbers } : undefined,
     resolved.numerals,
+    documentLocale(config),
   );
   // The last part opened in `content` (its fence may well have closed —
   // a part stays in effect until the next one), else the inherited one.

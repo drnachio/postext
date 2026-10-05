@@ -94,6 +94,13 @@ describe("C24: loose lines", () => {
     expect(of("C24", runChecks(input({ facts: facts({ cjkLoose: fine }) })))).toEqual([]);
   });
 
+  it("judges Japanese lines the same way", () => {
+    const cjkLoose = { count: 1, total: 30, share: 0.03, worst: 0.6, threshold: 0.5, lines: [{ page: 4, tracking: 0.6, text: "先生の手紙にはhttps://www.aozora.gr.jp/とだけあった。" }] };
+    expect(of("C24", runChecks(input({ facts: facts({ cjkLoose }) })))[0].detail).toBe(
+      "1 of 30 justified Chinese, Japanese or Korean lines needed more than 0.5 em between characters and end short (cjkLooseLine); p. 4 “先生の手紙にはhttps://www.aozora.gr.jp/とだけあった。”",
+    );
+  });
+
   it("keeps the word-space rule for Latin lines", () => {
     const loose = { count: 3, total: 100, share: 0.03, worst: 2.4, threshold: 2, lines: [{ page: 1, ratio: 2.4, text: "a loose line" }] };
     expect(of("C24", runChecks(input({ facts: facts({ loose }) })))[0].detail).toMatch(/^3 of 100 justified lines \(3\.0 %\) stretch past 2×/);
@@ -113,6 +120,9 @@ describe("C25: characters the PDF cannot set", () => {
   it("lists characters outside latin that no loaded face covers", () => {
     const nonLatin = [{ ch: "ǎ", code: "U+01CE", where: "page 1" }];
     expect(of("C25", runChecks(input({ facts: facts({ nonLatin }) })))[0].detail).toBe("outside the latin subset: ǎ U+01CE");
+    // Hentaigana: no Fontsource Japanese file has them.
+    const kana = [{ ch: "𛀁", code: "U+1B001", where: "page 3" }];
+    expect(of("C25", runChecks(input({ facts: facts({ nonLatin: kana }) })))[0].detail).toBe("outside the latin subset: 𛀁 U+1B001");
   });
 });
 
@@ -141,6 +151,14 @@ describe("C12: CJK and Arabic files loaded after the layout", () => {
       detail: "Noto Sans TC 700 sets 章 回 (p3 heading) from files not loaded when the layout ran: give loadCjkFonts the text this face sets, and list the weight in FONTS",
     }]);
     expect(of("C12", runChecks(input({ facts: facts({ faces: { used: [], loaded: [], missing: [] } }) })))).toEqual([]);
+  });
+
+  it("names loadCjkFonts for a Japanese face, kana or kanji", () => {
+    const late = [{ family: "Noto Sans JP", weight: 700, style: "normal" as const, where: "p5 heading", chars: "先生と私" }];
+    const faces = { used: [], loaded: [], missing: [], late };
+    expect(of("C12", runChecks(input({ facts: facts({ faces }) })))[0].detail).toBe(
+      "Noto Sans JP 700 sets 先 生 と 私 (p5 heading) from files not loaded when the layout ran: give loadCjkFonts the text this face sets, and list the weight in FONTS",
+    );
   });
 
   it("names loadArabicFonts for an Arabic weight that had only its latin file", () => {

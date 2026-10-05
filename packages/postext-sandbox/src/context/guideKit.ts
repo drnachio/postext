@@ -19,8 +19,10 @@ import type { GuideLang } from '../defaultResources/lang';
 // What every edition of the built-in Postext guide shares: the page, the
 // Postext palette, the part colours and the small builders its designs are
 // written with. The Latin editions are designed in `guideConfig.ts`, the
-// Chinese one, set vertically, in `guideConfigZh.ts`, the Arabic one, set
-// right to left and bound on the right, in `guideConfigAr.ts`.
+// Chinese one, set vertically, in `guideConfigZh.ts`, the Japanese one, set
+// vertically too, in `guideConfigJa.ts` (the designs the two vertical books
+// share are in `guideVerticalKit.ts`), the Arabic one, set right to left
+// and bound on the right, in `guideConfigAr.ts`.
 
 export const PAGE_W = 210;
 export const PAGE_H = 280;
@@ -79,6 +81,11 @@ export const PALETTE_NAMES: Record<GuideLang, Record<PaletteId, string>> = {
     ink: 'الحبر', night: 'ليل الغلاف', paper: 'الورق', white: 'الأبيض', band: 'لون الجزء', gilt: 'الذهبي',
     'main-color': 'أزرق Postext', vermilion: 'الزنجفري', muted: 'رمادي الحواشي', mist: 'الضباب', rule: 'الخطوط',
     tint: 'خلفية دافئة', panel: 'خلفية باردة',
+  },
+  ja: {
+    ink: '墨', night: '表紙の夜色', paper: '紙', white: '白', band: '部の色', gilt: '金',
+    'main-color': 'Postextの青', vermilion: '朱', muted: '注記の灰色', mist: '霧の灰色', rule: '罫',
+    tint: '暖色の地', panel: '寒色の地',
   },
 };
 

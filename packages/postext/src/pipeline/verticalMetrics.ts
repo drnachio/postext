@@ -40,7 +40,9 @@ function addLines(lines: readonly VDTLine[] | undefined, blockFonts: readonly (s
       for (const run of seg.chip?.runs ?? []) if (run.fontString) out.fonts.add(run.fontString);
       addDashes(seg.text, seg.fontString ? [seg.fontString] : blockFonts, out);
       for (const run of seg.ruby?.runs ?? []) addDashes(run.text, [run.fontString], out);
+      for (const run of seg.kunten?.runs ?? []) addDashes(run.text, [run.fontString], out);
       for (const run of seg.warichu?.runs ?? []) addDashes(run.text, [run.fontString], out);
+      for (const run of seg.sideMarker?.runs ?? []) addDashes(run.text, [run.fontString], out);
     }
   }
 }

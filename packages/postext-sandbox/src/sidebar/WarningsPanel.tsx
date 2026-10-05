@@ -33,6 +33,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'kuntenExceedsLeading':
     case 'arabicMarksExceedLeading':
       return FileWarning;
     case 'headingHierarchy':
@@ -64,6 +65,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'indexMarkInvalid':
     case 'indexSeeUnknown':
     case 'indexRangeUnclosed':
+    case 'indexReadingMissing':
     case 'chipOverlap':
     case 'numberingInvalidFormat':
     case 'numberingInvalidStartAt':
@@ -92,6 +94,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'bitmapTooSmall':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
+    case 'videoWithoutPoster':
+    case 'videoWithoutUrl':
+    case 'videoUrlInvalid':
     case 'missingImage':
       return Image;
     case 'storageUnavailable':
@@ -138,6 +143,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsCjkMarksLeadingTitle;
     case 'rubyExceedsLeading':
       return labels.warningsRubyLeadingTitle;
+    case 'kuntenExceedsLeading':
+      return labels.warningsKuntenLeadingTitle;
     case 'arabicMarksExceedLeading':
       return labels.warningsArabicMarksLeadingTitle;
     case 'headingHierarchy':
@@ -188,6 +195,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsIndexSeeUnknownTitle;
     case 'indexRangeUnclosed':
       return labels.warningsIndexRangeUnclosedTitle;
+    case 'indexReadingMissing':
+      return labels.warningsIndexReadingMissingTitle;
     case 'unknownHeadingStyle':
       return labels.warningsUnknownHeadingStyleTitle;
     case 'chipOverlap':
@@ -237,6 +246,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownTableStyleTitle;
     case 'raggedTableGrid':
       return labels.warningsRaggedTableGridTitle;
+    case 'videoWithoutPoster':
+      return labels.warningsVideoWithoutPosterTitle;
+    case 'videoWithoutUrl':
+      return labels.warningsVideoWithoutUrlTitle;
+    case 'videoUrlInvalid':
+      return labels.warningsVideoUrlInvalidTitle;
     case 'missingImage':
       return labels.warningsMissingImageTitle;
     case 'storageUnavailable':
@@ -329,6 +344,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         .replace('__text__', payload.text)
         .replace('__need__', String(payload.neededEm))
         .replace('__gap__', String(payload.gapEm));
+    case 'kuntenExceedsLeading':
+      return labels.warningsKuntenLeadingDetail
+        .replace('__text__', payload.text)
+        .replace('__need__', String(payload.neededEm))
+        .replace('__gap__', String(payload.gapEm));
     case 'arabicMarksExceedLeading':
       return labels.warningsArabicMarksLeadingDetail
         .replace('__text__', payload.text)
@@ -382,6 +402,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.target}" — ${labels.warningsIndexSeeUnknownDetail}`;
     case 'indexRangeUnclosed':
       return `:index{term="${payload.term}" range="${payload.missing}"} — ${labels.warningsIndexRangeUnclosedDetail}`;
+    case 'indexReadingMissing':
+      return `${payload.index ? `:::index{index="${payload.index}"} · ` : ''}"${payload.term}" — ${labels.warningsIndexReadingMissingDetail}`;
     case 'unknownHeadingStyle':
       return `H${payload.level} {style="${payload.style}"} — ${labels.warningsUnknownHeadingStyleDetail}`;
     case 'chipOverlap':
@@ -453,6 +475,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         : labels.warningsRaggedTableGridMissingDetail;
       return `#${payload.resourceId} · ${detail.replace('__row__', String(payload.row + 1)).replace('__col__', String(payload.col + 1))}${payload.count > 1 ? ` (×${payload.count})` : ''}`;
     }
+    case 'videoWithoutPoster':
+      return `#${payload.resourceId} — ${labels.warningsVideoWithoutPosterDetail}`;
+    case 'videoWithoutUrl':
+      return `#${payload.resourceId} — ${labels.warningsVideoWithoutUrlDetail}`;
+    case 'videoUrlInvalid':
+      return `#${payload.resourceId} · ${payload.url || '""'} — ${labels.warningsVideoUrlInvalidDetail}`;
     case 'missingImage':
       return `#${payload.resourceId} — ${labels.warningsMissingImageDetail}`;
     case 'storageUnavailable':

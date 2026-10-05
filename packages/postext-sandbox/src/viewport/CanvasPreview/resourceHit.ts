@@ -1,5 +1,5 @@
 import type { VDTDocument } from 'postext';
-import { mapInlineSnippet, resourceBlockRectToPage, resourceBlockToLocal } from 'postext';
+import { mapInlineSnippet, resourceBlockRectToPage, resourceBlockToLocal, uncroppedPictureBox } from 'postext';
 import type { ResourceFocusTarget } from '../../context/SandboxContext';
 import { hitSvgTextIndex, type SvgTextIndex } from '../../controls/svgSource';
 import { addsHyphen, foldRefRuns, resourceBlocksOnPage, segmentPlainLength } from './geometry';
@@ -267,7 +267,10 @@ export function resourceTextAtPixel(
       if (body.width > 0 && body.height > 0 && inside(body, xLocal, yLocal)) {
         const index = svgIndexFor(rb.fileId);
         if (index) {
-          const offset = hitSvgTextIndex(index, (xLocal - body.x) / body.width, (yLocal - body.y) / body.height);
+          // A picture cropped within its safe area maps through the box the
+          // whole picture covers.
+          const full = rb.bodySource ? uncroppedPictureBox(body.x, body.y, body.width, body.height, rb.bodySource) : body;
+          const offset = hitSvgTextIndex(index, (xLocal - full.x) / full.width, (yLocal - full.y) / full.height);
           if (offset !== null) return { resourceId, target: { kind: 'svgText' }, offset };
         }
       }
@@ -292,7 +295,9 @@ export function svgBodyRectFor(
     const body = rb.rotation
       ? resourceBlockRectToPage(rb, rb.bodyRect)
       : { x: block.bbox.x + rb.bodyRect.x, y: block.bbox.y + rb.bodyRect.y, width: rb.bodyRect.width, height: rb.bodyRect.height };
-    return { ...body, fileId: rb.fileId };
+    // Cropped within its safe area: the box the whole picture covers.
+    const full = rb.bodySource && !rb.rotation ? uncroppedPictureBox(body.x, body.y, body.width, body.height, rb.bodySource) : body;
+    return { ...full, fileId: rb.fileId };
   }
   return null;
 }

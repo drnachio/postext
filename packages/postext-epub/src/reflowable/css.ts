@@ -14,6 +14,44 @@ export interface StylesheetOptions {
   vertical: boolean;
   /** The book sets a `:::verse` poem (its rules are written only then). */
   verse?: boolean;
+  /** Classes of emphasis marks the text uses beyond `pt-dots` (the
+   *  filled dot on the default side): their rules are written only then
+   *  (`inline.ts` `dotsClasses`, #428). */
+  dots?: readonly string[];
+}
+
+/** CSS `line-break` for a Japanese kinsoku level (`cjk.lineBreak`, #417):
+ *  JLReq's strictest rules are CSS `strict` (no small kana, ー or 々 at a
+ *  line start), the general books' rules CSS `normal` (they may), the
+ *  newspapers' CSS `loose`. Chinese levels write none, as before. */
+const LINE_BREAK: Record<string, string> = { 'ja-very-strict': 'strict', 'ja-strict': 'normal', 'ja-loose': 'loose' };
+
+/** The declarations of the Japanese text of a book (#428): kinsoku and,
+ *  with burasagari (`cjk.hangingPunctuation`, on by default in Japan),
+ *  、。，． hanging past the line end. None for other books. */
+function japaneseDecls(cjk: ResolvedConfig['cjk']): string[] {
+  const out: string[] = [];
+  const lineBreak = LINE_BREAK[cjk.lineBreak];
+  if (lineBreak) out.push(`line-break: ${lineBreak}`, `-epub-line-break: ${lineBreak}`, `-webkit-line-break: ${lineBreak}`);
+  if (cjk.region === 'japan' && cjk.hangingPunctuation !== 'none') {
+    out.push(`hanging-punctuation: ${cjk.hangingPunctuation === 'force' ? 'force-end' : 'allow-end'}`);
+  }
+  return out;
+}
+
+/** The emphasis-mark rule of a class `dotsClasses` gives: a shape and fill
+ *  (`pt-dots-filled-sesame`), or a side (`pt-dots-over`: over horizontal
+ *  text and right of vertical text; `pt-dots-under`: under and left). */
+function dotsRule(cls: string): CssRule | '' {
+  const side = /^pt-dots-(over|under)$/.exec(cls);
+  if (side) {
+    const pos = side[1] === 'over' ? 'over right' : 'under left';
+    return rule(`.pt-dots.${cls}`, [`text-emphasis-position: ${pos}`, `-webkit-text-emphasis-position: ${pos}`]);
+  }
+  const shape = /^pt-dots-(filled|open)-(dot|circle|sesame)$/.exec(cls);
+  if (!shape) return '';
+  const style = `${shape[1]} ${shape[2]}`;
+  return rule(`.pt-dots.${cls}`, [`text-emphasis-style: ${style}`, `-epub-text-emphasis-style: ${style}`, `-webkit-text-emphasis-style: ${style}`]);
 }
 
 const SANS = /\b(sans|grotesk|grotesque|gothic|helvetica|arial|inter|roboto|lato|montserrat|open sans|source sans|fira sans|heiti|hei\b|黑)/i;
@@ -106,6 +144,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     body.avoidWidows && `widows: ${Math.max(1, body.widowMinLines)}`,
     'margin: 0',
     'padding: 0 1em',
+    ...japaneseDecls(config.cjk),
   ]));
   const indent = px(body.firstLineIndent);
   const ratio = round(dimensionToPx(body.lineHeight, dpi, bodyPx) / bodyPx);
@@ -135,9 +174,19 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
 
   // --- headings ------------------------------------------------------------
   const headings = config.headings;
+  /** The body's line pitch, px: a 行取り heading (`lineSpan`, #424) takes
+   *  whole numbers of it. */
+  const bodyLinePx = body.lineHeight.unit === 'em' || body.lineHeight.unit === 'rem'
+    ? body.lineHeight.value * bodyPx
+    : px(body.lineHeight);
   for (const level of headings.levels) {
     if (level.level < 1 || level.level > 6) continue;
     const hPx = px(level.fontSize);
+    // 行取り: the heading's line centred in N body lines, its margins the
+    // rest of them (a reflowable book has no grid to keep).
+    const lineSpanMargin = level.lineSpan !== undefined
+      ? Math.max(0, (level.lineSpan * bodyLinePx - (level.lineHeight.unit === 'em' || level.lineHeight.unit === 'rem' ? level.lineHeight.value * hPx : px(level.lineHeight, hPx))) / 2)
+      : undefined;
     out.push(rule(`h${level.level}`, [
       fam(level.fontFamily || headings.fontFamily),
       `font-size: ${round(hPx / bodyPx)}em`,
@@ -148,7 +197,11 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       `text-align: ${ALIGN[headings.textAlign] ?? 'start'}`,
       level.letterSpacing.value !== 0 && `letter-spacing: ${em(level.letterSpacing, hPx)}`,
       level.textTransform === 'uppercase' && 'text-transform: uppercase',
-      `margin: ${round(px(level.marginTop, hPx) / hPx)}em 0 ${round(px(level.marginBottom, hPx) / hPx)}em`,
+      lineSpanMargin !== undefined
+        ? `margin: ${round(lineSpanMargin / hPx)}em 0`
+        : `margin: ${round(px(level.marginTop, hPx) / hPx)}em 0 ${round(px(level.marginBottom, hPx) / hPx)}em`,
+      // 字下げ: the indent counts body characters.
+      level.indent && px(level.indent) > 0 && `margin-inline-start: ${round(px(level.indent) / hPx)}em`,
       'hyphens: manual',
       '-epub-hyphens: manual',
       'page-break-after: avoid',
@@ -212,6 +265,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   const capPx = px(cap.fontSize);
   out.push(rule('figure', ['margin: 1em 0', 'text-align: center', 'page-break-inside: avoid', 'break-inside: avoid']));
   out.push(rule('figure img', ['max-width: 100%', 'height: auto']));
+  out.push(rule('figure video', ['width: 100%', 'height: auto', 'background-color: #000']));
+  out.push(rule('a.pt-video-link', ['display: block']));
   out.push(rule('figcaption, caption', [
     fam(cap.fontFamily),
     `font-size: ${round(capPx / bodyPx)}em`,
@@ -341,6 +396,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       !s.hyphenation && 'hyphens: manual',
       s.textTransform === 'uppercase' && 'text-transform: uppercase',
       px(s.indent, sPx) > 0 && `margin-inline-start: ${round(px(s.indent, sPx) / sPx)}em`,
+      // 地からN字上げ (#424).
+      s.endIndent && px(s.endIndent, sPx) > 0 && `margin-inline-end: ${round(px(s.endIndent, sPx) / sPx)}em`,
       `text-indent: ${round(px(s.firstLineIndent, sPx) / sPx)}em`,
       px(s.marginTop, sPx) > 0 && `margin-block-start: ${round(px(s.marginTop, sPx) / sPx)}em`,
       px(s.marginBottom, sPx) > 0 && `margin-block-end: ${round(px(s.marginBottom, sPx) / sPx)}em`,
@@ -407,15 +464,46 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   }
   out.push(rule('.pt-sc', ['font-variant: small-caps']));
   out.push(rule('.pt-dots', ['font-style: normal', 'text-emphasis: filled dot', '-epub-text-emphasis-style: filled dot', '-webkit-text-emphasis-style: filled dot', 'text-emphasis-position: under right', '-webkit-text-emphasis-position: under right']));
+  // Other shapes and sides (the Japanese sesame over the text, #428),
+  // sorted so the stylesheet is the same whatever order they were read in.
+  for (const cls of [...(options.dots ?? [])].sort()) out.push(dotsRule(cls));
   out.push(rule('.pt-proper', ['text-decoration: underline']));
   out.push(rule('.pt-book', ['text-decoration: underline wavy']));
+  // Side lines (傍線): under horizontal text and left of vertical text, or
+  // over and right of it; one unbroken line, descenders and all.
+  const underSide = ['text-underline-position: under left', '-epub-text-underline-position: under left', '-webkit-text-underline-position: under left'];
+  out.push(rule('.pt-side', ['text-decoration-line: underline', 'text-decoration-skip-ink: none', ...underSide]));
+  out.push(rule('.pt-side.pt-side-over', ['text-decoration-line: overline']));
+  for (const style of ['double', 'wavy', 'dotted']) out.push(rule(`.pt-side.pt-side-${style}`, [`text-decoration-style: ${style}`]));
   out.push(rule('.pt-tcy', ['text-combine-upright: all', '-epub-text-combine: horizontal', '-webkit-text-combine: horizontal']));
   out.push(rule('.pt-upright', ['text-orientation: upright', '-epub-text-orientation: upright', '-webkit-text-orientation: upright']));
   out.push(rule('.pt-sideways', ['text-orientation: sideways', '-epub-text-orientation: sideways', '-webkit-text-orientation: sideways']));
   out.push(rule('.pt-warichu', ['font-size: 0.6em']));
   out.push(rule('ruby.pt-ruby-under', ['ruby-position: under', '-epub-ruby-position: under', '-webkit-ruby-position: after']));
   out.push(rule('ruby.pt-ruby-right', ['ruby-position: inter-character']));
+  // Kanbun marks (訓点): half size, the 送り仮名 raised (right of vertical
+  // text) and the 返り点 lowered (left of it), after their character.
+  out.push(rule('.pt-okuri, .pt-kaeri', ['font-size: 0.5em', 'line-height: 0']));
+  out.push(rule('.pt-okuri', ['vertical-align: super']));
+  out.push(rule('.pt-kaeri', ['vertical-align: sub']));
   out.push(rule('.pt-marker', ['height: 0']));
+  // Japanese note markers (JLReq §4.2.3), only in a book that sets them.
+  // In the line gap: a box of no advance, its text running back from it
+  // (right to left, inline-start being the end), its baseline raised past
+  // the text's em box (0.88 em over its baseline) without growing the
+  // line. Right of a vertical line: reduced, its box against
+  // the line's right side.
+  const marker = config.footnotes.markerPosition;
+  if (marker === 'side' || marker === 'right') {
+    const size = config.footnotes.markerSize;
+    const em = size.unit === 'em' || size.unit === 'rem' ? size.value : px(size) / bodyPx;
+    if (marker === 'side') {
+      out.push(rule('.pt-note-side', ['display: inline-block', 'inline-size: 0', 'direction: rtl', 'white-space: nowrap', 'line-height: 0', `font-size: ${round(em)}em`, `vertical-align: ${round(0.88 / em + 0.12)}em`]));
+      out.push(rule('.pt-note-side > span', ['direction: ltr', 'unicode-bidi: isolate']));
+    } else {
+      out.push(rule('.pt-note-right', [`font-size: ${round(em)}em`, 'vertical-align: text-top', 'line-height: 0']));
+    }
+  }
 
   // --- classical verse -----------------------------------------------------
   // A bayt is a row of two equal hemistich columns (and the ornament's,

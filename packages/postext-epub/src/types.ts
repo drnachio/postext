@@ -121,6 +121,10 @@ export interface EpubItem {
   /** Manifest properties (`nav`, `cover-image`, `svg`, `mathml`,
    *  `remote-resources`…). */
   properties?: string[];
+  /** A resource read from the web (a video's production address, #454):
+   *  declared in the manifest by its absolute `href`, not written in the
+   *  container (`data` is then empty). */
+  remote?: true;
 }
 
 export interface EpubSpineEntry {
@@ -172,6 +176,10 @@ export interface EpubPublication {
   pageList: EpubPageTarget[];
   landmarks: EpubLandmark[];
   pageProgression: 'ltr' | 'rtl';
+  /** A reflowable book set in vertical lines (Chinese, Japanese): the
+   *  package names its writing mode (`primary-writing-mode`), which some
+   *  reading systems read before they open a content document (#428). */
+  writingMode?: 'vertical-rl';
   /** Fixed-layout rendition properties. */
   fixed?: {
     spread: 'none' | 'landscape' | 'both' | 'auto';

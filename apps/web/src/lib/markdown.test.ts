@@ -201,6 +201,20 @@ describe("page renditions", () => {
     }
   });
 
+  it("renders the Japanese layout guide as plain Markdown", () => {
+    for (const locale of ["en", "es", "ca", "zh", "ar"]) {
+      const md = pageMarkdown(locale, "/docs/japanese-layout")!;
+      expect(md).toMatch(/^# /);
+      expect(md).toMatch(/^> \*\*[^*]+: /m);
+      expect(md).toMatch(/^\| .*`ja-very-strict`/m);
+      // Language spans around the Japanese samples leave their text only.
+      expect(md).not.toMatch(/<\/?(table|thead|tbody|tr|td|th|code|span|bdi)\b|className=|style=\{\{|\{\/\*/);
+      expect(md).toContain("第{1:一}章");
+      expect(md).toContain("『こころ』");
+      expect(llmsTxt(locale)).toContain(`https://postext.dev/${locale}/docs/japanese-layout.md`);
+    }
+  });
+
   it("llms.txt follows the llmstxt.org shape", () => {
     const txt = llmsTxt("en");
     expect(txt).toMatch(/^# Postext\n\n> /);

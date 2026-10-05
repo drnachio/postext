@@ -36,10 +36,11 @@ export function effectiveLineHeight(style: string): string | undefined {
   return lh;
 }
 
-/** Every absolutely placed run (`top` + `right`) of `html`. */
+/** Every absolutely placed run (`top` + `right`) of `html` (a ruby base
+ *  and its reading's runs too, inside their `<ruby>` and `<rt>`). */
 export function verticalSpans(html: string): VerticalSpan[] {
   const out: VerticalSpan[] = [];
-  for (const m of html.matchAll(/<span(?: aria-hidden="true")? style="(position:absolute;top:[^"]*right:[^"]*)">(.*?)<\/span>(?=<span|<\/span>|<\/div>|$)/g)) {
+  for (const m of html.matchAll(/<span(?: aria-hidden="true")? style="(position:absolute;top:[^"]*right:[^"]*)">(.*?)<\/span>(?=<span|<\/span>|<\/div>|<\/?ruby\b|<\/?rt\b|$)/g)) {
     const style = m[1]!;
     const top = parseFloat(/top:(-?[\d.]+)px/.exec(style)![1]!);
     const right = parseFloat(/right:(-?[\d.]+)(?:px)?/.exec(style)![1]!);

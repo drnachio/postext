@@ -24,6 +24,9 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'bitmapTooSmall':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
+    case 'videoWithoutPoster':
+    case 'videoWithoutUrl':
+    case 'videoUrlInvalid':
     case 'missingImage':
       return 'figures';
     case 'headerFooterUnknownPlaceholder':
@@ -47,6 +50,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'joiningScriptLetterSpacing':
     case 'cjkMarksExceedLeading':
     case 'rubyExceedsLeading':
+    case 'kuntenExceedsLeading':
     case 'arabicMarksExceedLeading':
     case 'calloutOverflow':
     case 'alphaPdfOverflow':

@@ -128,7 +128,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
 # Contents {style="front-matter" toc="false"}
 ```
 
-另有两个属性改变标题输出的内容和计数方式。`hidden="true"`（或`"false"`）覆盖标题所在级别或样式的`hidden`：隐藏的标题不输出任何内容，也不占空间（在正文流中和`:::callout`框内都是如此），但仍会开启它所在的页、参与计数，并列入目录、`{chapterTitle}`书眉和PDF书签。`startAt=N`（正整数）把该标题所在级别的计数器设为`N`，而不是递增；其后的标题从这里继续计数，后面的章也一样，下级标题照常在它之下重新计数。如果某个标题样式用字母为附录编号（`numberingTemplate: 'Appendix {1:A}'`），第一个附录重新开始计数，读作*Appendix A*，而不是接着各章往下数：
+另有两个属性改变标题输出的内容和计数方式。`hidden="true"`（或`"false"`）覆盖标题所在级别或样式的`hidden`：隐藏的标题不输出任何内容，也不占空间（在正文流中和`:::callout`框内都是如此），但仍会开启它所在的页、参与计数，并列入目录、`{chapterTitle}`书眉和PDF书签。`jidori=N`把单行标题均匀拉开到标题自身的`N`个字宽（字取り：`# 序章 {jidori=3}`印作序　章），`jidori=0`关闭其级别或样式设定的均排（见[配置 › 按级别覆盖](/zh/docs/configuration#按级别覆盖)）。`startAt=N`（正整数）把该标题所在级别的计数器设为`N`，而不是递增；其后的标题从这里继续计数，后面的章也一样，下级标题照常在它之下重新计数。如果某个标题样式用字母为附录编号（`numberingTemplate: 'Appendix {1:A}'`），第一个附录重新开始计数，读作*Appendix A*，而不是接着各章往下数：
 
 ```markdown
 # To my mother {hidden="true" toc="false"}
@@ -251,7 +251,7 @@ Keep the lantern lit **every** night.
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。</td>
+      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。<code>align</code>、<code>indent</code>和<code>endIndent</code>设置对齐和缩进，有没有样式都可以：<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>把日期排在离行尾一个字的位置（地から1字上げ）。</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -425,6 +425,16 @@ The old chapter ends here.
 # A new chapter
 ```
 
+开关`center`（`:::pagebreak{center}`，用`center=false`关闭）让分页开启的那一页上的文字在版心的上下之间居中，竖排时在左右之间居中：即日文篇名页或献词页的ページの左右中央。浮动体、注释和书眉位置不变，已经排满的页面保持原样。这个开关不会结束这一页：请再用一个`:::pagebreak`结束它。
+
+```md
+:::pagebreak{center}
+
+# 上　先生と私
+
+:::pagebreak
+```
+
 #### 奇偶属性
 
 `parity`属性接受的五个值与`headings.levels[*].breakBefore.parity`相同：
@@ -469,7 +479,7 @@ title: "A Book With Front Matter"
 
 只改格式（不带`startAt`）时计数器继续累加，这在从`lower-alpha`切换到`upper-alpha`而不重置时很有用。
 
-`format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效（见[配置 › 编号格式的写法](/zh/docs/configuration#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
+`format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效，`一`和`あ`与`japanese-informal`和`hiragana`等效（见[配置 › 编号格式的写法](/zh/docs/configuration#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
 
 ### `:::space`
 
@@ -736,7 +746,7 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 
 ### 中文标记、注音和双行夹注
 
-中文书籍用字行之间的标记代替斜体或下划线，为汉字标注读音，并在行内排注文。这由五个指令完成。[中文排版](/zh/docs/chinese-layout)解释了它们背后的规范。这些指令保留文本：方括号内的字符留在段落中（搜索、目录、索引锚点和复制的文本都按原样读取），指令内部和外围都可带其他行内标记，包括嵌套的标记。字面方括号写作`\]`。
+中文和日文书籍用字行之间的标记代替斜体或下划线，为汉字标注读音，并在行内排注文。这由七个指令完成。[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)解释了它们背后的规范。这些指令保留文本：方括号内的字符留在段落中（搜索、目录、索引锚点和复制的文本都按原样读取），指令内部和外围都可带其他行内标记，包括嵌套的标记。字面方括号写作`\]`。
 
 ```markdown
 此事:dots[不可]輕忽。:name[賈寶玉]與:name[林黛玉]讀:book[西廂記]。
@@ -744,14 +754,20 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 {滿紙|mǎn|zhǐ}荒唐言，:ruby[一把]{rt="yì bǎ"}辛酸淚！:ruby[都]{rt="ㄉㄡ"}云作者痴。
 
 寶玉:warichu[甲戌側批：此是第一首標題詩。]{open="〔" close="〕"}道：……
+
+{東京|とう|きょう}の:ruby[紫陽花]{rt="あじさい"}は*とんと*:sideline[見事]だ。:book[こころ]を読む。
+
+:kunten[學]{okuri="ビテ"}而:kunten[時]{okuri="ニ"}:kunten[習]{kaeri="二" okuri="フ"}:kunten[之]{kaeri="一" okuri="ヲ"}。
 ```
 
-- **`:dots[text]`**在横排中于每个字符下方、竖排中于其右侧加着重号，标点和空格不加。`style="dot|circle|sesame"`（默认`dot`），`fill="open"`为空心，`pos="over|under"`换到另一侧。在`cjk.emphasis: 'dots'`下（中文文档的默认设置），汉字上的Markdown强调`*…*`效果相同；同一强调中的拉丁字母仍为斜体。
-- **`:name[text]`**在文本下方（竖排时在左侧）画专名号，**`:book[text]`**加书名号：按`cjk.bookTitleMark`的设定，在书名两侧加《》（书名中的书名用〈〉），或用古籍和台湾版本的波浪线，或什么都不加（默认在大陆用括号，在台湾和香港用波浪线）。同一份源文件可同时用于现代大陆版本和古籍版本。并排的两个专名或书名，线条彼此分开。
-- **`:ruby[base]{rt="…"}`**在基字上方标注读音（拼音），或在每个字右侧标注（注音符号读音默认如此）。读音数与字数相同时（以空格或`|`分隔），每个字各得一个读音，行可在它们之间断开（单字注音）；使用`group`或数量不符时，一个读音居中排在整个基字上方，且不会断开。`pos="over|under|right"`选择标注的一侧。简写形式`{紅樓|hóng|lóu}`（每个`|`后一个读音）或`{紅樓|hónglóu}`（整个基字一个读音）效果相同，但仅当基字含有汉字、假名或注音符号，且不在公式、代码和属性中时才生效，因此拉丁文正文中的`{x|x>0}`仍是文本。在花括号或竖线前加反斜杠，可让中文的这类写法保持为文本：`\{紅|hóng}`和`{紅\|hóng}`印出`{紅|hóng}`。位于行首或行尾的基字连同读音一起对齐到该边。
-- **`:warichu[note]`**在行内以正文一半的字号分两行排注文（双行夹注），先读上行（竖排时为右行）。长注文填满本行剩余部分，再接到下一行、下一栏或下一页。`open`和`close`在注文两侧加正文字号的括号；`cjk.warichu`设定字号、颜色和默认括号。拉丁文字的注文在词间断开。
+- **`:dots[text]`**在横排中于每个字符下方、竖排中于其右侧加着重号，标点和空格不加。`style="dot|circle|sesame"`（默认`dot`），`fill="open"`为空心，`pos="over|under"`换到另一侧。在`cjk.emphasis: 'dots'`下（中文和日文文档的默认设置），中文或日文字符上的Markdown强调`*…*`效果相同；同一强调中的拉丁字母仍为斜体。省略的属性取`cjk.emphasisMark`：中文为文字下方的圆点，日文为文字上方（竖排时在右侧）的芝麻点。
+- **`:name[text]`**在文本下方（竖排时在左侧）画专名号，**`:book[text]`**加书名号：按`cjk.bookTitleMark`的设定，在书名两侧加《》（书名中的书名用〈〉），或用古籍和台湾版本的波浪线，或什么都不加（默认在大陆和日本用括号，在台湾和香港用波浪线）。在日文文档中，括号是『』，书名中的书名用「」（`cjk.bookTitleBrackets`）。同一份源文件可同时用于现代大陆版本和古籍版本。并排的两个专名或书名，线条彼此分开。
+- **`:ruby[base]{rt="…"}`**在基字上方标注读音（拼音），或在每个字右侧标注（注音符号读音默认如此）。读音数与字数相同时（以空格或`|`分隔），每个字各得一个读音，行可在它们之间断开（单字注音）；使用`group`或数量不符时，一个读音居中排在整个基字上方，且不会断开。`pos="over|under|right"`选择标注的一侧。简写形式`{紅樓|hóng|lóu}`（每个`|`后一个读音）或`{紅樓|hónglóu}`（整个基字一个读音）效果相同，但仅当基字含有汉字、假名或注音符号，且不在公式、代码和属性中时才生效，因此拉丁文正文中的`{x|x>0}`仍是文本。在花括号或竖线前加反斜杠，可让中文的这类写法保持为文本：`\{紅|hóng}`和`{紅\|hóng}`印出`{紅|hóng}`。位于行首或行尾的基字连同读音一起对齐到该边。`mode=mono|group|jukugo`选择读音怎样分配到基字上（`mode=group`与`group`相同），`align=center|jis|start`选择比基字短的读音怎样排开。在日文文档中，两个及以上字符的词按字分配读音的写法（`{東京|とう|きょう}`、`rt="とう|きょう"`）是熟语注音：每个字保留自己的读音，读音可以伸到词中下一个字上，行可以在字之间断开，读音按`cjk.ruby.align`和`cjk.ruby.overhang`排开并伸到假名上；整个基字一个读音（`{紫陽花|あじさい}`，青空文库的`《》`）是整词注音；`mode=mono`每个字一个读音，不伸到相邻字上。
+- **`:sideline[text]`**在文字旁画傍线（傍線），穿过标点和空格：横排时在下方，竖排时在右侧。`style="solid|double|wavy|dotted"`（默认`solid`），`pos="over|under"`（竖排时over在右侧，under在左侧；也可以写`position=`）。它适用于任何文字，包括加下划线的英文短语。
+- **`:warichu[note]`**在行内以正文一半的字号分两行排注文（双行夹注），先读上行（竖排时为右行）。长注文填满本行剩余部分，再接到下一行、下一栏或下一页。`open`和`close`在注文两侧加正文字号的括号；`cjk.warichu`设定字号、颜色和默认括号（日文文档中默认为一对全角圆括号）。拉丁文字的注文在词间断开。
+- **`:kunten[字]{kaeri="…" okuri="…" tate}`**为方括号中的最后一个字标注汉文训读记号：`kaeri`是返点（レ，一 二 三，上 中 下，甲 乙 丙，天 地 人，以及一レ 上レ 甲レ 天レ；码位㆑ ㆒ …读法相同），`okuri`是送假名（青空文库的括号`（ヲ）`会被去掉），开关`tate`是把它和下一个字连起来的竖点。文字不重新排序：记号以一半字号排在字旁（`cjk.kunten`），复制的文字读作學ビテ而時ニ習フ之ヲ，带送假名，不带返点。里面可以嵌套注音，用于读两次的字：`:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`。
 
-行距始终不变：标记和读音都放在行间空白中；当段落的行间空白不足以容纳它们时（`cjkMarksExceedLeading`、`rubyExceedsLeading`），以及当一行下方的标记与下一行上方的读音放不进共用的空白时（无论在同一段内还是跨两段），构建都会发出警告。请为带注的段落设置行距更大的段落样式。标记、读音和注文在段落、标题、列表项、引用块和框中绘制；在题注、表格单元格和注释中，以及在书眉和版面设计中，文本印出但不带它们。在`cjk.bookTitleMark: 'brackets'`下，书名的《》属于文本中的标点：题注、单元格、注释、目录条目、书签和索引条目都保留它们。见[配置 › 标记、注音和双行夹注](/zh/docs/configuration#着重号注音与夹注)。
+行距始终不变：标记和读音都放在行间空白中；当段落的行间空白不足以容纳它们时（`cjkMarksExceedLeading`、`rubyExceedsLeading`、`kuntenExceedsLeading`），以及当一行下方的标记与下一行上方的读音放不进共用的空白时（无论在同一段内还是跨两段），构建都会发出警告。请为带注的段落设置行距更大的段落样式。标记、读音和注文在段落、标题、列表项、引用块和框中绘制，在题注、表格单元格和注释中也同样绘制，其行间空白按同样方式检查；在书眉和版面设计中，文本印出但不带它们。在`cjk.bookTitleMark: 'brackets'`下，书名的《》属于文本中的标点：题注、单元格、注释、目录条目、书签和索引条目都保留它们。见[配置 › 标记、注音和双行夹注](/zh/docs/configuration#着重号注音与夹注)。
 
 
 ### 标记中的文本方向
@@ -785,6 +801,7 @@ so he learned to count the steps in the dark.
 - **标号。**`[^id]`把脚注编号印成上标，紧贴前面的词（写在标点之后，如上例）。id可包含字母、数字、`-`、`_`、`.`和`:`。标号可用于段落、列表项、引用块和标注框；在标题、题注和表格单元格中照原样印出。
 - **定义。**以`[^id]:`开头的段落；其文本一直延续到下一个空行，可带常见的行内标记（粗体、斜体、链接、`:ref`、公式、行内标签）。定义无论写在哪里都会离开文字流，因此可以放在引用它的段落下方，也可以全部集中在章末。同一id以第一个定义为准。
 - **编号。**脚注按首次引用的顺序编号，每章（一级标题，以及书中的每个文档）重新开始；被引用两次的脚注保留第一次的编号，只排一次。`footnotes.numbering: 'document'`让编号贯穿全书，`'page'`像中文书那样每页重新编号；`footnotes.numberFormat: 'circled-decimal'`在基线上排出① ② ③。
+- **日文文本。**把标号写在句末的。之前（`先生[^1]。`）：它跟随前一个字符，而。从不出现在行首。日文竖排书默认把标号（1）排在行的右侧，把注文排在章末；`footnotes.markerPosition: 'side'`在词旁排一个小标号，不占行内空间；`footnotes.placement: 'spread'`把注文排在每个跨页的正文旁边（见[配置 › 脚注](/zh/docs/configuration#脚注)）。
 - **脚注的位置。**默认排在引用它的那一行所在栏的底部，上方有一条短线：该行与其脚注总在同一栏，脚注放不下时，该行会随脚注一起移走。单栏版面中就是页面底部。`footnotes.placement: 'chapterEnd'`则把一章的所有脚注排在该章最后一个块之后，默认位于它们结束的那一栏的底部。字号、分隔线和间距见配置参考中的[脚注](/zh/docs/configuration#脚注)。
 - **检查。**没有定义的标号（`undefinedFootnote`）在空脚注上印出编号；没有标号引用的定义（`unusedFootnote`）不排。沙盒在检查面板中列出这两种情况。
 
@@ -904,6 +921,7 @@ nocite: "@lopez2019"
     <tr><td><code>iso690-numeric-en</code></td><td>ISO 690</td><td>顺序编码</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-numeric</code></td><td>GB/T 7714—2025 顺序编码</td><td>顺序编码</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2015-numeric</code></td><td>GB/T 7714—2015 顺序编码</td><td>顺序编码</td></tr>
+    <tr><td><code>sist02</code></td><td>SIST 02 参照文献の書き方</td><td>顺序编码</td></tr>
     <tr><td><code>chicago-notes-bibliography</code></td><td>Chicago (notes)</td><td>注释</td></tr>
     <tr><td><code>oscola</code></td><td>OSCOLA</td><td>注释</td></tr>
     <tr><td><code>china-national-standard-gb-t-7714-2025-note</code></td><td>GB/T 7714—2025 注释</td><td>注释</td></tr>
@@ -963,6 +981,10 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
       <td>最后一级的排序键，用于该级应按其他字母排序的情况：<code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>、<code>term="20th century" sort="twentieth century"</code>。中文索引按排序器给出的汉字读音排序和分组。多音字若要按另一读音排序，就用只有所需读音的汉字写排序键：<code>:index[重阳]&#123;sort="崇阳"&#125;</code>把重阳归在C下，位于程与崔之间，而不是归在Z下。拼音排序键（<code>sort="chong yang"</code>）也能归到C，但会排在C下所有中文条目之后，因为排序器把拉丁字母排在汉字之后（见<a href="/en/docs/configuration#back-of-book-index">配置 › 索引</a>中的<code>groupBy</code>）。</td>
     </tr>
     <tr>
+      <td><code>yomi</code>、<code>reading</code></td>
+      <td>最后一级的假名读音，日文索引按它排序和分组：<code>:index[夏目漱石]&#123;yomi="なつめそうせき"&#125;</code>归在な下，属于な行。没有它时，文字带假名振假名的标记按振假名读取（<code>:index[&#123;東京|とう|きょう&#125;]</code>按とうきょう排序），然后用<code>sort</code>，最后用文字本身；仍以汉字开头的条目报为<code>indexReadingMissing</code>。在其他语言的索引中，<code>yomi</code>的作用与<code>sort</code>相同。标记中的振假名请用简写形式：<code>:ruby[…]</code>需要转义它的方括号。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
       <td><code>main</code></td>
       <td>一个标志，表示该术语的主要论述处。其页码排成粗体（<code>index.main</code>）。同时以两种方式标记的页为粗体。</td>
     </tr>
@@ -1001,7 +1023,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
 :::index
 ```
 
-- **顺序。**条目按文档语言（`locale`或`index.locale`）的字母顺序排序：带重音的字母与其基本字母归在一起（*Árbol*归在A下），西班牙语中*ñ*排在*n*之后，自成一组。以符号开头的条目排在最前，其次是以数字开头的，然后是字母。子条目在其条目下以同样方式排序，每深一级缩进一级。
+- **顺序。**条目按文档语言（`locale`或`index.locale`）的字母顺序排序：带重音的字母与其基本字母归在一起（*Árbol*归在A下），西班牙语中*ñ*排在*n*之后，自成一组。以符号开头的条目排在最前，其次是以数字开头的，然后是字母。子条目在其条目下以同样方式排序，每深一级缩进一级。日文索引按JIS X 4061的顺序依读音排序，按五十音行（あ行、か行…）分组，拉丁条目排在假名之前（见[日文排版 › 五十音顺索引](/zh/docs/japanese-layout#五十音顺索引)）。
 - **分组。**每出现一个新的首字母就开启一组：一个字母标题（`index.groups`），其上方空一行（第一组上方不空）。字母标题与该组第一个条目排在同一个块中，因此不会单独留在栏末；没有自身页码的条目（只作为其子条目的上级）出于同样原因与其第一个子条目排在一起。
 - **页码。**使用页面上印出的页码标签，包括前置部分的罗马数字页码。条目的页码经过排序且每页只列一次；连续的页合并为范围（`12–14`，`index.mergeRanges`），落在同一条目某个范围内的页并入该范围（其中若有主要页，整个范围排成粗体），`index.rangeFormat: 'chicago'`会缩短第二个数字（`234–37`）。粗体（主要）页码单独列出。在PDF中，每个页码都链接到对应的页。
 - **参见**位于条目末尾：条目没有页码时为*Term. See Target*，有页码时为*Term, 12. See also Target*。这些标签随文档语言变化（*See*、*Véase*……），可在`index.see`中设定。
@@ -1042,7 +1064,7 @@ where $g$ is the acceleration of free fall.
 
 ## 资源
 
-图片、SVG和表格不直接写在正文里。它们作为**资源**声明一次（在沙盒的[“资源”面板](/zh/docs/sandbox#资源面板)中管理，这个面板负责上传图片和SVG，提供交互式表格编辑器，也用来编辑题注和位置），再通过id与正文关联。**引用一个资源就足以把它放进文档**：你只需用行内的`:ref{id="…"}`提到它一次，引擎就会把这幅图或这张表浮动到该引用之后的第一个空位，可能是提到它的那一栏的栏底、下一栏的栏顶，或者下一页的一个横带，和印刷排版师的做法一样。你不需要再摆放它第二次。
+图片、SVG、表格和视频不直接写在正文里。它们作为**资源**声明一次（在沙盒的[“资源”面板](/zh/docs/sandbox#资源面板)中管理，这个面板负责上传图片和SVG，提供交互式表格编辑器，处理YouTube、Vimeo和上传的视频，也用来编辑题注和位置），再通过id与正文关联。**引用一个资源就足以把它放进文档**：你只需用行内的`:ref{id="…"}`提到它一次，引擎就会把这幅图或这张表浮动到该引用之后的第一个空位，可能是提到它的那一栏的栏底、下一栏的栏顶，或者下一页的一个横带，和印刷排版师的做法一样。你不需要再摆放它第二次。
 
 下面两种写法都是新增的语法，不与CommonMark冲突，所以用到它们的文档在其他任何Markdown查看器里仍然能当作普通文本阅读。
 
@@ -1195,7 +1217,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 
 在一章（以及整个文档）的最后一页，排在最后一段文字下方的通栏图和表后面再没有内容，所以它们会上移，依次叠放在文字下方一个浮动间距处，而不是在文字与页面底部的图之间留出空白。`position: 'bottom'`的浮动体也是如此。要让它们像其他页面一样留在页面底部，设置`layout.hugClosingFloats: false`（见[配置 › 版面](/zh/docs/configuration#版式)）。有侧栏的页面从不移动它们。
 
-三个后端，即Canvas预览、HTML查看器和PDF输出，都会渲染资源。在HTML后端中，图片数据不随版面一起传递，所以由宿主通过`resourceImageUrl(fileId)`解析器选项提供；缺少解析器（或它对某个文件没有返回内容）时，资源会渲染成一个中性的占位框，使版面保持稳定。
+三个后端，即Canvas预览、HTML查看器和PDF输出，都会渲染资源。在HTML后端中，图片数据不随版面一起传递，所以由宿主通过`resourceImageUrl(fileId)`解析器选项提供；缺少解析器（或它对某个文件没有返回内容）时，资源会渲染成一个中性的占位框，使版面保持稳定。视频自身的文件同样通过`resourceVideoUrl(fileId)`提供（见[视频](#视频)）。
 
 #### 浮动体可以落在哪里
 
@@ -1239,6 +1261,136 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 - 从一页延续到下一页的段落，同样从引用行算起。段落从第5页底部开始，而引用落在第6页时（或者因为第5页底部放不下足够多的行，整段移到了第6页），引用就在第6页：`top`浮动体排在第7页开头，`auto`浮动体在有空间时占用第6页底部。同一页的各栏之间也是如此，跨页拆分的框也一样：由框的第二部分引用的图要等到那一部分。
 - **postext 1.5中的变化。**在postext 1.4及以前，版面排到引用浮动体的段落时，浮动体就进入等待队列，所以这样的段落延续到（或移到）的那一页，可能以该浮动体开头，排在含有引用的那一行之上。现在这样的图会晚一页出现，或者在它要求`auto`时落在该页底部；页数可能随之变化。
 
+### 安全区
+
+位图或SVG资源可以标出一个**安全区**：图片中承载要紧内容、任何时候都要显示出来的那个矩形（一个人和他身后的一条风景，图表中画了数据的部分）。它写在资源的`safeArea`字段里，是四个以图片固有尺寸为单位的比例值（0–1），从左上角起算：`x`和`width`是宽度的比例，`y`和`height`是高度的比例。这个名字说的是必须保留的部分；裁切框说的则是从哪里下刀。
+
+```ts
+const harbour: Resource = {
+  id: 'harbour', typeId: 'figure', kind: 'bitmap', caption: '清晨的港口。',
+  createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'harbour.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  // 船和码头：宽度的18%–68%，高度的25%–85%
+  safeArea: { x: 0.18, y: 0.25, width: 0.5, height: 0.6 },
+};
+```
+
+只有设了安全区的图片才会被裁切。这时引擎可以按整幅图片与安全区之间的任意宽高比显示它：裁去左右两侧，使它比自身比例更高，最多裁到安全区的宽度；或者裁去上下两边，使它更矮，最多裁到安全区的高度。图的宽度始终不变，变的只是高度。安全区以外的部分按两侧余量的大小成比例裁去，所以偏在中心左边的主体仍然偏在左边。上例的港口排成60 mm宽时，完整显示高40 mm，可以显示成24 mm（上下裁到高度的60%）到80 mm（左右裁到宽度的一半）之间的任意高度。超出图片边缘的数值会被收回到边缘以内；含有非数字的值、某一边小于图片的2%、或者覆盖整幅图片的安全区会被忽略，表格上的这个字段也会被忽略。没有安全区的图片总是完整显示，与以前一样。
+
+引擎在三种情况下利用这段余地：
+
+- **栏中剩下的空间。**行内图片（`position: 'here'`）比所在栏剩下的空间稍高一点时（包括题注会超出页面底部的情况），会在安全区以内裁切，留在这一栏，而不是移到下一栏或下一页、让这一栏留空。
+- **比图还矮的页面。**开启`layout.fitFiguresToPage`时，对页面来说太高的图片先在安全区以内裁切，保持宽度不变，仍然太高时才缩小（见[配置 › 版式](/zh/docs/configuration#版式)）。
+- **各栏齐底。**设了安全区的图片，如果以行内方式排在一个短栏里，或者作为只占这一栏的浮动体排在这一栏的栏顶或栏底，就会按整条基线网格行增高，填满这一栏空着的行。图片变高不会在页面上留下看得见的空洞，所以这个手段（`flexFigure`）紧接在收尾的框之后、在标题上方或列表之后加空之前尝试。章末页或收尾区段中位于栏顶的浮动体不会增高，因为那里各栏的栏顶要保持齐平（见[配置 › 各栏齐底](/zh/docs/configuration#各栏齐底)）。
+
+VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示出来的部分，用同样的比例表示（完整显示时不出现）；`bodyFlex`给出图片主体还能缩短和增高的px数，以及各个手段已经改变的px数（`{ shrink, grow, delta }`）。Canvas预览和PDF把绘制范围限定在图片主体内，按未裁切的尺寸画出整幅图片；HTML查看器和固定版式EPUB用`object-fit: cover`加上相应的`object-position`显示图片；流式EPUB没有要填满的页面，显示整幅图片。自己绘制图片的宿主可以使用`postext`导出的函数：`resourceSafeArea`和`normalizeSafeArea`（引擎读到的安全区，或`undefined`）、`safeAreaHeightRange`（某一宽度下主体的最小和最大高度）、`safeAreaSource`（某一高度下显示的部分）和`uncroppedPictureBox`（裁切前整幅图片应画在哪里），以及类型`ResourceSafeArea`。在Sandbox中，这个字段是[资源面板](/zh/docs/sandbox#资源面板)里图片的**安全区**。
+
+
+### 视频
+
+**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频文件（MP4、WebM）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>输出</th>
+      <th>显示的内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Canvas、PDF、Folio</td>
+      <td><strong>封面</strong>，即视频中的一帧，上面有播放标记和一个打开视频的二维码（<a href="/zh/docs/configuration#视频样式">配置 › 视频样式</a>）。在PDF中，封面同时是指向视频的链接。</td>
+    </tr>
+    <tr>
+      <td>HTML查看器</td>
+      <td>视频的<strong>播放器</strong>：YouTube或Vimeo的播放器，文件则用浏览器的HTML5播放器。设置<code>videoStyle.html: 'poster'</code>时改为显示印刷封面。</td>
+    </tr>
+    <tr>
+      <td>EPUB</td>
+      <td>文件在阅读系统自己的播放器中播放，文件打包在书中，或从正式发布地址读取。YouTube或Vimeo视频显示为封面，链接到视频：EPUB不能嵌入网页的播放器。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const talk: Resource = {
+  id: 'keeper-talk', typeId: 'video', kind: 'video',
+  caption: '看守人讲解灯具。',
+  altText: '灯塔看守人站在灯旁',
+  createdAt: 0, updatedAt: 0,
+  video: {
+    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
+    url: 'https://youtu.be/aqz-KE-bpKQ',
+    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
+    start: 30,                                // 从0:30开始播放；印出的链接也从这里开始
+  },
+};
+```
+
+正文引用视频的方式与引用图相同：`:ref{id="keeper-talk"}`印出*Video 1.1*，并把封面浮动到该引用之后的第一个空位；`::resource{id="keeper-talk"}`配合`placement.position: 'here'`则把它行内嵌入。`Resource.video`（`ResourceVideo`）的字段：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>字段</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>source</code></td>
+      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
+      <td>视频从哪里播放。</td>
+    </tr>
+    <tr>
+      <td><code>url</code></td>
+      <td><code>string</code></td>
+      <td>YouTube或Vimeo：视频的地址，任何形式均可（观看页、<code>youtu.be</code>、Shorts、嵌入链接、<code>youtube-nocookie.com</code>；Vimeo的视频页、频道页，或带哈希的不公开链接）。文件：它的<strong>正式发布地址</strong>，即出版后的书找到它的位置。</td>
+    </tr>
+    <tr>
+      <td><code>fileId</code>、<code>format</code></td>
+      <td><code>string</code></td>
+      <td>文件：上传的视频，像位图一样在带外存储，以及它的格式（<code>'mp4'</code>为默认值，另有<code>'webm'</code>、<code>'ogv'</code>、<code>'mov'</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>poster</code></td>
+      <td><code>{'{ fileId, format, width, height }'}</code></td>
+      <td>封面帧，一张位图。</td>
+    </tr>
+    <tr>
+      <td><code>width</code>、<code>height</code>、<code>duration</code></td>
+      <td><code>number</code></td>
+      <td>视频画面的px尺寸（没有封面时用它的宽高比）和以秒计的时长。</td>
+    </tr>
+    <tr>
+      <td><code>posterTime</code></td>
+      <td><code>number</code></td>
+      <td>文件中用作封面的那一帧所在的秒数，保留下来以便重新选取。</td>
+    </tr>
+    <tr>
+      <td><code>start</code>、<code>end</code></td>
+      <td><code>number</code></td>
+      <td>从第<code>start</code>秒播放到第<code>end</code>秒。二维码和PDF链接也从<code>start</code>开始。</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>这个视频的播放器选项，覆盖在<code>videoStyle.player</code>之上。</td>
+    </tr>
+  </tbody>
+</table>
+
+**封面。**封面按所在空位的行长（或其`placement.width`比例）排版，保持自身的宽高比，与像素尺寸无关：屏幕大小的帧会被放大，而不是印得很小。和位图一样，它可以带[安全区](#安全区)，也遵循`placement.align`。没有封面的视频印出一个按视频宽高比（没有说明时为16:9）的深色方框，上面照样有叠加元素，并发出`videoWithoutPoster`内容警告。在沙盒中，填入YouTube或Vimeo视频的地址时会从平台获取封面；文件的封面则是你在视频中选取的一帧。
+
+**地址。**二维码和PDF链接打开视频的页面，即`https://youtu.be/<id>`或`https://vimeo.com/<id>`，从`start`开始。文件没有页面，所以打开它的正式发布地址。没有这个地址时，印刷版既没有二维码也没有链接（`videoWithoutUrl`），不携带文件的HTML或EPUB输出则显示封面。YouTube或Vimeo地址不指向该平台的任何视频时，发出`videoUrlInvalid`，并以封面代替播放器。
+
+**播放器。**播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`；EPUB写入器就使用这个选项。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
+
+**在VDT中。**视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`和`mimeType`、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
+
+**在文件包中。**`.postext`携带视频文件（`resources/<id>.mp4`）和封面（`resources/<id>.poster.jpg`）：清单条目在`file`和`poster`中写明它们，在`width` / `height`中给出封面的尺寸，其余内容放在不含文件id的`video`中。`bundleVideoUrl(bundle)`是基于文件包中文件的`resourceVideoUrl`解析函数。
 
 ## 不支持的内容
 
@@ -1256,7 +1408,7 @@ Postext不识别以下CommonMark功能。它们要么被当作普通文本（因
 
 这份清单会随时间缩短。在此之前，凡是上文支持部分没有明确列出的内容，都应当视为原样输出的文本。
 
-除语法之外，阿拉伯文和其他从右向左书写的文字按从右到左排版，使用双向算法并在右侧装订（见[阿拉伯文排版](/zh/docs/arabic-layout)）。中文可以横排，也可以竖排，并按其所在地区的要求处理断行、标点宽度、字间两端对齐、着重号、注音和割注（见[中文排版](/zh/docs/chinese-layout)）；日文和韩文使用同一个排版器，按中国大陆的中文规则处理。内置八种语言的断词模式，并为这八种语言、中文和阿拉伯文提供内置标签。见[语言与文字](/zh/docs/configuration#语言与文字)。
+除语法之外，阿拉伯文和其他从右向左书写的文字按从右到左排版，使用双向算法并在右侧装订（见[阿拉伯文排版](/zh/docs/arabic-layout)）。中文可以横排，也可以竖排，并按其所在地区的要求处理断行、标点宽度、字间两端对齐、着重号、注音和割注（见[中文排版](/zh/docs/chinese-layout)）。日文按自己的规则排版，包括禁则、约物间距、振假名、傍点、汉文训读记号和注释（见[日文排版](/zh/docs/japanese-layout)）；韩文使用同一个排版器，按中国大陆的中文规则处理。内置八种语言的断词模式，并为这八种语言、中文、日文和阿拉伯文提供内置标签。见[语言与文字](/zh/docs/configuration#语言与文字)。
 
 
 ## 书写约定
@@ -1271,7 +1423,7 @@ Postext不识别以下CommonMark功能。它们要么被当作普通文本（因
 - **不支持列表中的引文块。**引文块要从第0列开始，写在列表之外。
 - **图片和表格放在`resources`中。**行内的`![alt](src)`会被去掉，正是因为行内图片会破坏按栏感知的放置。把每张图片声明为资源并按id引用，引擎再决定它是浮动、打断分栏，还是移到下一页的顶部。
 - **不表示公式时，用`\$`转义美元符号。**Postext把`$…$`解释为行内LaTeX，所以正文中单独的`$`会开始一个公式。价格、shell提示符以及其他带单独美元符号的内容都应写成`\$`。
-- **标记用ASCII字符键入，中文文本中也一样。**中文或日文输入法会给出全角形式：围栏写成`：：：`，标题写成`＃`，脚注标记写成`［＾1］`，属性写成`｛…｝`，粗体写成`＊＊`。它们会作为文本印出，构建时会把该行报告为`fullwidthMarkup`警告，并指出应该键入的ASCII形式。属性值可以使用任何文字，可以用`“…”`或`「…」`加引号；键名仍然是ASCII。
+- **标记用ASCII字符键入，中文和日文文本中也一样。**中文或日文输入法会给出全角形式：围栏写成`：：：`，标题写成`＃`，脚注标记写成`［＾1］`，属性写成`｛…｝`，粗体写成`＊＊`。它们会作为文本印出，构建时会把该行报告为`fullwidthMarkup`警告，并指出应该键入的ASCII形式。属性值可以使用任何文字，可以用`“…”`或`「…」`加引号；键名仍然是ASCII。
 
 
 ## 完整示例

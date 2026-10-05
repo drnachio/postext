@@ -36,10 +36,14 @@ import { measuringVertically, withMeasureWritingMode } from '../measure/vertical
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
+import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeArea';
+import { layoutVideo } from './videoOverlay';
 import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
+  ResolvedCjkConfig,
   Resource,
+  ResourceSafeArea,
   ResourceRotation,
   ResourceType,
   TableCell,
@@ -71,7 +75,7 @@ import { dimensionToPx } from '../units';
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
 import { parseInlineSnippetSpans } from '../parse/inlineSnippet';
-import { dropAnnotations } from '../parse/annotations';
+import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import { sliceSpan } from '../parse/links';
 import { chipContextOf, fontSizePxOf, resolveChipSpans, type ChipContext } from './chips';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
@@ -82,11 +86,29 @@ import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
 
-/** A caption's, a note's or a cell's spans. The Chinese annotations
- *  (#193–#195) are set as plain text there: resource lines draw no marks,
- *  readings or warichu rows; a book title keeps its 《》 when they are the
- *  document's book-title mark (`bookBrackets`). */
-const parseRefAwareSpans = (text: string, bookBrackets: boolean) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets);
+/**
+ * A caption's, a note's or a cell's spans with their Chinese and Japanese
+ * annotations resolved as the running text resolves them (#429; the
+ * marks of #193, #421, ruby #194, warichu #195): `*…*` on CJK characters
+ * set with emphasis marks under `cjk.emphasis: 'dots'`, the region's mark
+ * where a mark leaves it unset, book titles as `cjk.bookTitleMark` sets
+ * them (brackets in the text, the wavy line, or plain), and the faces of
+ * ruby readings and warichu notes at the size of `fontString` (the cell's,
+ * the caption's or the note's). The measurer then sets readings and notes
+ * and flags the marked segments; the marks are placed once the document is
+ * laid out (`annotateDocument`), as on body lines. The same array when the
+ * spans hold none of them, so plain captions and cells measure as before.
+ */
+function annotatedSpans(spans: InlineSpan[], scope: AnnotationScope, fontString: string): InlineSpan[] {
+  if (!hasAnnotations(spans, scope.cjk)) return spans;
+  return resolveAnnotationSpans(spans, { cjk: scope.cjk, dpi: scope.dpi, fontString, fontSizePx: fontSizePxOf(fontString) });
+}
+
+/** What {@link annotatedSpans} reads of the document. */
+interface AnnotationScope {
+  cjk: ResolvedCjkConfig;
+  dpi: number;
+}
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */
@@ -124,6 +146,12 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Make a picture with a safe area (`Resource.safeArea`) this many px
+   *  taller (or shorter, when negative) than it would be set, by cropping
+   *  outside its safe area; clamped to the range the safe area allows (see
+   *  `bodyFlex` in the result). Ignored for pictures without one, tables
+   *  and turned blocks. */
+  bodyHeightDelta?: number;
   /** Set the block upright on a vertical page (`VDTPage.flow`): laid out
    *  in an upright frame counter-rotated in the flow (`rotation.direction:
    *  'ccw'`, which the page's clockwise frame turns back), so the picture
@@ -371,9 +399,9 @@ interface TableLayoutStyle {
   palette?: ColorPaletteEntry[];
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
-  /** Book titles in cells print their 《》 (`cjk.bookTitleMark:
-   *  'brackets'`). */
-  bookBrackets?: boolean;
+  /** The document's CJK settings, for the annotations of cells
+   *  ({@link annotatedSpans}). */
+  annotations: AnnotationScope;
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -860,14 +888,14 @@ function layoutTableIn(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets === true);
-      const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
+      const parsed = parseInlineSnippetSpans(cell.content);
+      const spans = annotatedSpans(resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
         resourceTypes,
         resources,
         refStyle,
-      ), style.palette), style.chips, set);
+      ), style.palette), style.chips, set), style.annotations, set.fontString);
       const align = cellAlignOf(cell.align, opposite);
       const m = measureCellContent(
         spans,
@@ -1136,6 +1164,17 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const ih = resource.svg.height ?? 0;
     bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
+  } else if (resource.kind === 'video') {
+    // A video is set as its poster (#454): the column's width, the poster's
+    // ratio (else the video's, else 16:9). Posters are screen-sized, so
+    // they fill the measure like an SVG rather than keep their pixel size.
+    const poster = resource.video?.poster;
+    fileId = poster?.fileId;
+    format = poster?.format;
+    const iw = poster?.width ?? resource.video?.width ?? 0;
+    const ih = poster?.height ?? resource.video?.height ?? 0;
+    bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
+    bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * (9 / 16);
   } else if (resource.kind === 'table' && resource.table) {
     const ts = tableStyle;
     const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
@@ -1178,7 +1217,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
       chips: chipContextOf(resolved),
-      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: true } : {}),
+      annotations: { cjk: resolved.cjk, dpi },
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1233,13 +1272,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   if (hasCaption) {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
     const prefixText = captionLabelText(captionPrefix, number, cs);
-    const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(captionText, resolved.cjk.bookTitleMark === 'brackets'),
+    // The annotations are resolved on the spans as written, before the
+    // style slants the description: a caption set in italics is no
+    // emphasis.
+    const resolvedSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
+      parseInlineSnippetSpans(captionText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette), chipContextOf(resolved), captionFontPx);
+    ), palette), chipContextOf(resolved), captionFontPx), { cjk: resolved.cjk, dpi }, captionFontString);
     // Description spans pick up the configured slant on top of their own markup.
     const descSpans: InlineSpan[] = cs.descriptionItalic
       ? resolvedSpans.map((s) => ({ ...s, italic: s.italic || true }))
@@ -1282,13 +1324,13 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // The note closes the table: a slice that continues holds it back for
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(noteText, resolved.cjk.bookTitleMark === 'brackets'),
+    const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
+      parseInlineSnippetSpans(noteText),
       resourceNumbering,
       resourceTypes,
       resources,
       refStyle,
-    ), palette), chipContextOf(resolved), noteFontPx);
+    ), palette), chipContextOf(resolved), noteFontPx), { cjk: resolved.cjk, dpi }, noteFontString);
     const slanted: InlineSpan[] = cs.note.italic
       ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
       : noteSpans;
@@ -1335,7 +1377,24 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // A rotated figure must also fit the band's width with its caption and
   // note: scale the image down when the stack would run past it (a table
   // is cut between rows by the placer instead).
-  if (rotate && (resource.kind === 'bitmap' || resource.kind === 'svg')) {
+  // Intrinsic size and safe area of a picture that may be cropped to make
+  // it taller or shorter (#442); `flexRange` gives its body height range at
+  // a width.
+  const safeArea = resourceSafeArea(resource);
+  const intrinsic = resource.kind === 'bitmap' && resource.bitmap
+    ? { width: resource.bitmap.width, height: resource.bitmap.height }
+    : resource.kind === 'svg' && resource.svg?.width && resource.svg.height
+      ? { width: resource.svg.width, height: resource.svg.height }
+      : resource.kind === 'video' && resource.video?.poster
+        ? { width: resource.video.poster.width, height: resource.video.poster.height }
+        : undefined;
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  const flexRange = safeArea && intrinsic && intrinsic.width > 0 && intrinsic.height > 0 && !rotate
+    ? (w: number) => safeAreaHeightRange(intrinsic.width, intrinsic.height, safeArea, w)
+    : undefined;
+  // The content area's room for the body, when `fitFiguresToPage` caps it.
+  let pageRoom: number | undefined;
+  if (rotate && picture) {
     const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
     if (bodyHeight > room && bodyHeight > 0) {
       const k = Math.max(0.01, room) / bodyHeight;
@@ -1348,17 +1407,36 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // so image, caption and note fit one page with a line of air to spare.
   if (
     !rotate && !input.captionAside && resolved.layout.fitFiguresToPage
-    && (resource.kind === 'bitmap' || resource.kind === 'svg')
+    && picture
   ) {
     const m = resolved.page.margins;
     const areaHeight = dimensionToPx(resolved.page.height, dpi)
       - dimensionToPx(m.top, dpi) - dimensionToPx(m.bottom, dpi);
     const room = areaHeight - captionHeight - noteHeight - continuesHeight - bodyStyle.lineHeightPx;
+    // A picture with a safe area is cropped first, keeping its width.
+    if (bodyHeight > room && bodyHeight > 0 && room > 0 && flexRange) {
+      bodyHeight = Math.max(room, flexRange(bodyWidth).min);
+    }
     if (bodyHeight > room && bodyHeight > 0 && room > 0) {
       const k = room / bodyHeight;
       bodyWidth *= k;
       bodyHeight *= k;
     }
+    pageRoom = room;
+  }
+
+  // A picture with a safe area set taller or shorter than its own ratio:
+  // the lever's delta, within what the safe area (and the page) allows.
+  let bodySource: ResourceSafeArea | undefined;
+  let bodyFlex: { shrink: number; grow: number; delta: number } | undefined;
+  if (flexRange && safeArea && intrinsic && !rotate) {
+    const range = flexRange(bodyWidth);
+    const max = pageRoom !== undefined ? Math.max(range.min, Math.min(range.max, pageRoom)) : range.max;
+    const delta = input.bodyHeightDelta ?? 0;
+    const before = bodyHeight;
+    if (delta !== 0) bodyHeight = Math.max(range.min, Math.min(max, bodyHeight + delta));
+    bodySource = safeAreaSource(intrinsic.width, intrinsic.height, safeArea, bodyWidth, bodyHeight);
+    bodyFlex = { shrink: Math.max(0, bodyHeight - range.min), grow: Math.max(0, max - bodyHeight), delta: bodyHeight - before };
   }
 
   // --- Vertical stacking -------------------------------------------------
@@ -1377,7 +1455,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // sits in the slot per `placement.align`, as a float narrowed by
   // `placement.width` does; the caption and note keep the slot's measure.
   // A turned figure and one with its caption beside it stay flush left.
-  const bodyX = !rotate && !aside && (resource.kind === 'bitmap' || resource.kind === 'svg') && bodyWidth < columnWidth
+  const bodyX = !rotate && !aside && picture && bodyWidth < columnWidth
     ? (columnWidth - bodyWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
     : 0;
   const bodyRect = createBoundingBox(bodyX, bodyY, bodyWidth, bodyHeight);
@@ -1417,13 +1495,17 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     ? bodyHeight + continuesHeight
     : bodyHeight + captionHeight + noteHeight + continuesHeight;
 
+  const video = layoutVideo(resource, resolved, bodyWidth, bodyHeight);
   const block: ResolvedResourceBlock = {
     resource,
     kind: resource.kind,
+    ...(video ? { video } : {}),
     ...(slice ? { slice } : {}),
     number,
     captionPrefix,
     bodyRect,
+    ...(bodySource ? { bodySource } : {}),
+    ...(bodyFlex ? { bodyFlex } : {}),
     fileId,
     format,
     captionLines,
@@ -1489,7 +1571,7 @@ function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: numbe
   const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
   let length = Math.max(1, maxLength);
   let out = at(length);
-  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg') {
+  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg' || input.resource.kind === 'video') {
     const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
     const holds = (o: ReturnType<typeof layoutResourceBlock>) =>
       o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;

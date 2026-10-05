@@ -90,6 +90,22 @@ describe('Language and direction', () => {
     expect(maghreb).toContain(`${DEFAULT_LABELS.documentDirection} (changed)${DEFAULT_LABELS.documentDirectionLtr}`);
   });
 
+  it('offers the Japanese defaults for a Japanese book only (#431)', () => {
+    expect(render(WritingSection, createDefaultConfig('en'))).not.toContain(DEFAULT_LABELS.japaneseDefaults);
+    expect(render(WritingSection, { ...createDefaultConfig('en'), locale: 'zh-Hant' })).not.toContain(DEFAULT_LABELS.japaneseDefaults);
+    const japanese = render(WritingSection, { ...createDefaultConfig('en'), locale: 'ja' });
+    expect(japanese).toContain(DEFAULT_LABELS.japaneseDefaults);
+    expect(japanese).toContain('日本語');
+    expect(render(WritingSection, { ...createDefaultConfig('en'), locale: 'ja-JP' })).toContain(DEFAULT_LABELS.japaneseDefaults);
+    // In Spanish too, and the settings search finds it.
+    expect(render(WritingSection, { ...createDefaultConfig('es'), locale: 'ja' }, { labels: ES })).toContain(ES.japaneseDefaults);
+    const config = { ...createDefaultConfig('en'), locale: 'ja' };
+    for (const [labels, query] of [[DEFAULT_LABELS, 'japanese defaults'], [ES, 'ajustes japonés']] as const) {
+      const plan = planSettingsSearch(buildSectionSearchIndex(labels, config, []), compileMatcher(query).tokens, false, config);
+      expect(plan.find((g) => g.sections.includes('writing'))?.id, query).toBe('writing');
+    }
+  });
+
   it('finds the direction and digit fields by search, in English and Spanish', () => {
     const config = createDefaultConfig('en');
     for (const [labels, query] of [
@@ -164,6 +180,18 @@ describe('East Asian typography', () => {
       DEFAULT_LABELS.cjkGridEnabled,
     ].map(at);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it('lets a Japanese warichu note go without its （）: an empty bracket is the author\'s none', () => {
+    const changed = (label: string) => `${label} (changed)`;
+    const auto = render(CjkSection, { ...createDefaultConfig('en'), locale: 'ja' });
+    expect(auto).not.toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
+    const none = render(CjkSection, { ...createDefaultConfig('en'), locale: 'ja', cjk: { warichu: { open: '', close: '' } } });
+    expect(none).toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
+    expect(none).toContain(changed(DEFAULT_LABELS.cjkWarichuClose));
+    // In Chinese text an empty bracket is the default itself.
+    const chinese = render(CjkSection, { ...createDefaultConfig('en'), locale: 'zh-Hans', cjk: { warichu: { open: '' } } });
+    expect(chinese).not.toContain(changed(DEFAULT_LABELS.cjkWarichuOpen));
   });
 
   it('finds the ruby, warichu and upright-number fields by search in Writing system', () => {

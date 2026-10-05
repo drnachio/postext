@@ -30,9 +30,10 @@ guide needs a fix.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
 - **Bilingual where it can be.** Samples come in English and, most of them, Spanish; their
-  write-ups are required. The site is also in Catalan and Simplified Chinese: `ca.mdx` and
-  `zh.mdx` translate the Spanish and English write-ups, and their pages show the Spanish
-  (Catalan) or the first (Chinese) sample.
+  write-ups are required. The site is also in Catalan, Simplified Chinese and Arabic:
+  `ca.mdx`, `zh.mdx` and `ar.mdx` translate the Spanish and English write-ups, and their
+  pages show the Spanish (Catalan) or the first (Chinese, Arabic) sample. A Chinese,
+  Japanese or Arabic book is written in its own language in both samples (§6).
 
 A recipe is **not** a feature demo on placeholder text, a page in the engine's default look,
 or a copy of a third-party publication.
@@ -71,7 +72,7 @@ cookbook/
 └── <slug>/                   one folder per recipe; the folder name is the slug
     ├── recipe.json           metadata (§4)
     ├── en.mdx  es.mdx        the write-ups (§9); both are required
-    ├── ca.mdx  zh.mdx        their Catalan and Chinese translations (the lint asks for them)
+    ├── ca.mdx  zh.mdx  ar.mdx  their Catalan, Chinese and Arabic translations (the lint asks for them)
     ├── script.js             the pen, with markers (§5)
     ├── content.en.md         the sample document, one file per sample language
     ├── [content.es.md]
@@ -141,7 +142,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook ephemera any`. |
 | `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
-| `answers` | Question ids (`Q01`…`Q105`); `answers[0]` is the question the recipe page leads with. |
+| `answers` | Question ids (`Q01`…`Q144`); `answers[0]` is the question the recipe page leads with. |
 | `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
 | `gotchas`, `explainsWarnings` | Shared pitfalls and warning kinds shown under Pitfalls. |
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
@@ -326,7 +327,7 @@ whole Cookbook is verified again.
 |---|---|
 | Recipe code (lines outside the content, the kit and `#region art…` artwork) | ≤ 300; aim for ≤ 120 (level 1), ≤ 180 (level 2), ≤ 250 (level 3) |
 | Composed script / CodePen prefill | ≤ 72 KB / ≤ 96 KB |
-| Each content file | ≤ 2,500 words; Chinese and Japanese characters count 1.7 to the word (about 4,250 characters of Chinese); Korean and Arabic count their spaced words, as Latin text does; fullwidth Ａ１ counts as A1 |
+| Each content file | ≤ 2,500 words; Chinese characters count 1.7 to the word (about 4,250 characters), Japanese 2.2 (about 5,500: its kana spell out what Chinese writes in one character; a sentence with kana is Japanese); Korean and Arabic count their spaced words, as Latin text does; fullwidth Ａ１ counts as A1 |
 | Captured pages | 2–12 |
 | Each asset / all assets | ≤ 400 KB / ≤ 2 MB; images ≤ 2400 px on the long side, JPEG q80 |
 | Captured media per edition (PDF excluded) | warning at 0.9 MB (0.1 MB per published page past 9), failure at 1.4 MB |
@@ -403,7 +404,7 @@ every box before you ask for a review. The ranges come from the showcase books.
       grey mush at card size.
 - [ ] No 1 px hairline patterns or ruled baseline grids on the hero: they alias into noise.
 
-### Chinese, Japanese and Korean pages
+### Chinese pages
 
 A recipe set in Chinese meets the bar above with these changes, taken from clreq and the
 showcase's 红楼梦. The Latin rules on hyphenation, italics and Spanish conventions do not apply
@@ -443,6 +444,57 @@ to the Chinese text.
       captions and any translation change with the edition.
 - [ ] The recipe's write-up names the Latin-script recipe it pairs with (the same technique
       in a European book), so a reader can compare.
+
+Korean has no rules of its own yet (gap `korean-rules`): a Korean page follows the Chinese
+bar, with its words spaced.
+
+### Japanese pages
+
+A recipe set in Japanese meets the bar above with these changes, taken from JLReq (W3C
+*Requirements for Japanese Text Layout*), JIS X 4051 and Japanese publishers' bunko and
+tankōbon. Hyphenation, italics, drop caps and the Spanish conventions do not apply to the
+Japanese text; most of what follows is what `locale: 'ja'` does by itself.
+
+**Page and grid**
+- [ ] `config.locale: 'ja'` written out, never `LANG` or a Chinese tag (the lint fails kana
+      under `zh-*` or `ko`; gotcha `ja-locale-tag`).
+- [ ] A trim from Japanese practice: 文庫 (bunko) A6 105 × 148 mm, 新書 105 × 173–182,
+      四六判 127 × 188, A5 148 × 210 for textbooks; the head margin larger than the foot.
+- [ ] The type area in characters (`cjk.grid`): a bunko 38–42 characters × 15–18 lines, a
+      四六判 novel about 42 × 17, a horizontal textbook 30–40 per line; a whole number of
+      ems in every case.
+- [ ] Novels vertical (`layout.writingMode: 'vertical-rl'`, bound on the right), shown with
+      `showBook`; technical and school books horizontal.
+
+**Typography**
+- [ ] Mincho for the text (Noto Serif JP, or Shippori Mincho B1 for a bunko look), gothic
+      for heads, labels and emphasis (Noto Sans JP), each loaded with `loadCjkFonts` with the
+      text it sets; never an SC or TC face for Japanese (gotcha `ja-fonts-kana`).
+- [ ] Body 8.5–10 pt (9–9.25 pt in a bunko), line pitch about 1.75 × the size, so a ruby
+      line at half size fits between the lines.
+- [ ] Justified, with a 1-character first-line indent and no space between paragraphs; no
+      space between Japanese words.
+- [ ] Japanese punctuation: 、。 and 「」, 『』 for titles and quotes inside quotes; ―― and ……
+      in pairs; 〜 for ranges; no Western quotes in vertical text. Leave the spacing to the
+      engine (yakumono) unless the recipe teaches it.
+- [ ] Emphasis with sesame marks (`*…*` or `:dots[…]`) or a side line, never italics;
+      bold only in a gothic face.
+- [ ] Furigana only where a reader needs them (rare kanji, names, a children's book), as
+      jukugo `{漢字|かん|じ}` or group `{夕方|ゆうがた}` readings; leading wide enough for them.
+- [ ] Chapter numbers and dates in kanji numerals in vertical text (第一章, 二〇二六年),
+      Arabic digits in horizontal text; two-digit numbers set tate-chū-yoko.
+- [ ] Headings that take a whole number of lines (行取り) so the grid holds across a
+      heading.
+- [ ] No `cjkLooseLine` in the capture (C24); no paragraph ending in a one-character line.
+
+**Content**
+- [ ] The text from a public-domain Japanese source (Aozora Bunko, converted with the
+      skill's `aozora.py`; gotcha `aozora-cp932`), cited with its 底本 (base edition), or
+      original Japanese prose; both editions (`en`, `es`) carry the Japanese text, and the
+      chrome, captions and any translation change with the edition.
+- [ ] Modern kana: Fontsource's Japanese files have no hentaigana (the lint warns).
+- [ ] The write-up names the Latin-script or Chinese recipe it pairs with, and says where
+      the Japanese rule differs from the Chinese one.
 
 ### Arabic pages
 
@@ -599,7 +651,11 @@ word is literal, like a real journey on foot). The rules live in
 `apps/web/src/lib/cookbook/style.ts`. Chinese prose you write yourself (a caption, a
 colophon, an editorial note) is checked against a Chinese list in either write-up: 值得一提的是,
 众所周知, 不言而喻, 总而言之, 综上所述, 在当今…时代 and 赋能 fail; 至关重要, 随着…的发展 and 打造
-warn. Quoted classical text is left as its author wrote it.
+warn. Japanese prose (any sentence with kana) is checked against a Japanese list instead:
+と言えるでしょう, と言っても過言ではありません, することが重要です, 重要な役割を果たす, の世界へようこそ,
+いかがでしたか, まとめると、, 一緒に見ていきましょう, シームレス and 徹底解説 fail; まさに, 革新的な,
+魅力的な, 唯一無二, を実現します and ではないでしょうか warn. Quoted classical text is left as its
+author wrote it.
 
 - **Stock phrases (FAIL).** English: *delve, tapestry, a testament to, in today's … world,
   ever-evolving, seamless(ly), unlock/unleash the power/potential, game-changer, look no
@@ -671,10 +727,10 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | File | Holds | Keyed by |
 |---|---|---|
 | `taxonomy.json` | parts, chapters, genres, outputs, levels, the write-up headings | fixed ids |
-| `features.json` | ~100 user-facing features: label, definition, search aliases, group, docs anchor, research ids, optional detect rules | kebab-case id |
+| `features.json` | about 150 user-facing features: label, definition, search aliases, group, docs anchor, research ids, optional detect rules | kebab-case id |
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
-| `questions.json` | the reader questions Q01–Q105, how/why, index form, theme, gap | `Qnn` |
+| `questions.json` | the reader questions Q01–Q144, how/why, index form, theme, gap | `Qnn` |
 | `gaps.json` | what Postext does not do, with aliases and the workaround | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |
@@ -797,8 +853,9 @@ Follow this procedure exactly; do not skip steps because the output "looks right
 9. **A Chinese, Japanese or Korean recipe** also lists the `cjk` kit block, loads its faces
    with `loadCjkFonts` after `loadFonts` (the text face with the sample, each other voice
    with the text it sets: headings, quotations), gives `renderToPdf`
-   `cjkPdfProvider`, writes `config.locale` out, shows a right-bound book with `showBook`,
-   and meets §6's CJK variant. When it needs an unreleased feature it is a preview draft
+   `cjkPdfProvider`, writes `config.locale` out (`'zh-Hans'`, `'zh-Hant'`, `'ja'`), shows
+   a right-bound book with `showBook`, and meets §6's Chinese or Japanese variant. The lint
+   fails a Japanese text (mostly sentences with kana) under a Chinese or Korean tag. When it needs an unreleased feature it is a preview draft
    (§3): `pnpm cookbook lint <slug> --engine local`, `pnpm cookbook dev <slug> --engine local`.
 10. **An Arabic recipe** lists the `arabic` and `book` kit blocks, loads its faces with
     `loadArabicFonts(FONTS, markdown)` after `loadFonts` (every weight the pages set in Arabic

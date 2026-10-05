@@ -41,7 +41,7 @@ describe('the base resource types follow the language a bundle serves (EF-150)',
     const { bytes } = await spanish();
     const bundle = await openBundle(bytes, { locale: 'en' });
     expect(bundle.locale).toBe('es');
-    expect(prefixes(bundle.config.resourceTypes)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(bundle.config.resourceTypes)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // The caption the chapter prints.
     const doc = buildDocument({ markdown: bundle.chapters[0]!.markdown, resources: bundle.resources }, bundle.config);
     const captions = doc.blocks.flatMap((b) => b.resourceBlock?.captionLines ?? []).map((l) => l.text).join(' ');
@@ -54,9 +54,9 @@ describe('the base resource types follow the language a bundle serves (EF-150)',
     const zip = zipSync({ 'preset.json': enc.encode(JSON.stringify(manifest)), 'a.md': enc.encode('# A') });
     const es = await openBundle(zip, { locale: 'es' });
     expect(es.locale).toBe('es');
-    expect(prefixes(es.config.resourceTypes)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(es.config.resourceTypes)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     const en = await openBundle(zip);
-    expect(prefixes(en.config.resourceTypes)).toEqual(['Figure', 'Table']);
+    expect(prefixes(en.config.resourceTypes)).toEqual(['Figure', 'Table', 'Video']);
   });
 
   it('localises to the language the config names when the manifest names none', async () => {
@@ -65,11 +65,11 @@ describe('the base resource types follow the language a bundle serves (EF-150)',
       'a.md': enc.encode('# T\n\n::resource{id="f"}\n'),
     });
     const byLocale = await openBundle(withConfig({ locale: 'es' }), { locale: 'en' });
-    expect(prefixes(byLocale.config.resourceTypes)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(byLocale.config.resourceTypes)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // As the engine resolves the document language: `locale`, then the
     // hyphenation locale.
     const byHyphenation = await openBundle(withConfig({ bodyText: { hyphenation: { locale: 'es' } } }));
-    expect(prefixes(byHyphenation.config.resourceTypes)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(byHyphenation.config.resourceTypes)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // The caption the chapter prints matches what the engine prints for
     // the same config without a bundle.
     const read = await openBundle(withConfig({ locale: 'es' }));
@@ -96,10 +96,10 @@ describe('the base resource types follow the language a bundle serves (EF-150)',
     const zip = zipSync({ 'preset.json': enc.encode(JSON.stringify(manifest)), 'en.md': enc.encode('# One'), 'es.md': enc.encode('# Uno') });
     const es = await openBundle(zip, { locale: 'es-MX' });
     expect(es.locale).toBe('es');
-    expect(prefixes(es.config.resourceTypes)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(es.config.resourceTypes)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     const other = await openBundle(zip, { locale: 'de' });
     expect(other.locale).toBe('en');
-    expect(prefixes(other.config.resourceTypes)).toEqual(['Figure', 'Table']);
+    expect(prefixes(other.config.resourceTypes)).toEqual(['Figure', 'Table', 'Video']);
   });
 
   it('keeps resource types the bundle writes, and a base the host passes', async () => {
@@ -107,14 +107,14 @@ describe('the base resource types follow the language a bundle serves (EF-150)',
       name: 'x', locale: 'es', markdown: '# T', config: { resourceTypes: defaultResourceTypes('de') },
     });
     const bundle = await openBundle(bytes, { locale: 'en' });
-    expect(prefixes(bundle.config.resourceTypes)).toEqual(['Abbildung', 'Tabelle']);
+    expect(prefixes(bundle.config.resourceTypes)).toEqual(['Abbildung', 'Tabelle', 'Video']);
     const opened = unzipSync(bytes);
     const read = await readBundle(
       JSON.parse(new TextDecoder().decode(opened['preset.json'])),
       async (path) => opened[path]!.slice().buffer,
       { locale: 'en', baseConfig: { resourceTypes: defaultResourceTypes('fr') } },
     );
-    expect(prefixes(read.config.resourceTypes)).toEqual(['Abbildung', 'Tabelle']);
+    expect(prefixes(read.config.resourceTypes)).toEqual(['Abbildung', 'Tabelle', 'Video']);
   });
 });
 

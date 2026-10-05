@@ -1,0 +1,55 @@
+--- a/docs/document-format-en.mdx
++++ b/docs/document-format-en.mdx
+@@ -1261,6 +1261,8 @@
+ 
+ The VDT records the crop on the resource block: `bodySource` is the part of the picture shown in `bodyRect`, in the same fractions (absent when the whole picture fills it), and `bodyFlex` gives the px the body could still shrink and grow and the px the levers already changed it by (`{ shrink, grow, delta }`). The canvas preview and the PDF clip to the body and draw the whole picture at its uncropped size; the HTML viewer and fixed-layout EPUB set the image with `object-fit: cover` and a matching `object-position`; a reflowable EPUB, which has no page to fill, shows the whole picture. A host that draws pictures itself can use the helpers `postext` exports: `resourceSafeArea` and `normalizeSafeArea` (the area as the engine reads it, or `undefined`), `safeAreaHeightRange` (the shortest and tallest body at a width), `safeAreaSource` (the part shown at a given height) and `uncroppedPictureBox` (where to draw the whole picture before clipping), with the type `ResourceSafeArea`. In the Sandbox the field is **Safe area** on a picture in the [Resources panel](/en/docs/sandbox#resources-panel).
+ 
++Recipe Nº 116 in the Cookbook, [Photos that grow to fill a short column](/en/cookbook/photos-fill-short-columns), sets a two-column magazine feature twice, without and with safe areas, so you can compare the pages one beside the other.
++
+ 
+ ## What is NOT supported
+ 
+--- a/docs/document-format-es.mdx
++++ b/docs/document-format-es.mdx
+@@ -1261,6 +1261,8 @@
+ 
+ El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la imagen que se ve en `bodyRect`, en las mismas fracciones (no aparece cuando se ve la imagen entera), y `bodyFlex` da los px que el cuerpo aún podría encoger y crecer y los px que ya le cambiaron las palancas (`{ shrink, grow, delta }`). La previsualización en canvas y el PDF recortan al cuerpo y dibujan la imagen entera a su tamaño sin recortar; el visor HTML y el EPUB de maquetación fija ponen la imagen con `object-fit: cover` y el `object-position` correspondiente; un EPUB adaptable, que no tiene página que llenar, muestra la imagen entera. Un anfitrión que dibuje las imágenes por su cuenta tiene las funciones que exporta `postext`: `resourceSafeArea` y `normalizeSafeArea` (la zona tal como la lee el motor, o `undefined`), `safeAreaHeightRange` (el cuerpo más bajo y el más alto a una anchura), `safeAreaSource` (la parte que se ve a una altura dada) y `uncroppedPictureBox` (dónde dibujar la imagen entera antes de recortar), con el tipo `ResourceSafeArea`. En el Sandbox el campo es **Zona segura**, en una imagen del [panel de Recursos](/es/docs/sandbox#panel-de-recursos).
+ 
++La receta nº 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para comparar las páginas una junto a otra.
++
+ 
+ ## Qué NO se soporta
+ 
+--- a/docs/document-format-ca.mdx
++++ b/docs/document-format-ca.mdx
+@@ -1260,6 +1260,8 @@
+ 
+ El VDT anota el retall al bloc del recurs: `bodySource` és la part de la imatge que es veu a `bodyRect`, en les mateixes fraccions (no hi és quan es veu la imatge sencera), i `bodyFlex` dona els px que el cos encara podria encongir i créixer i els px que ja li han canviat les palanques (`{ shrink, grow, delta }`). La previsualització en canvas i el PDF retallen al cos i dibuixen la imatge sencera a la seva mida sense retallar; el visor HTML i l'EPUB de maquetació fixa posen la imatge amb `object-fit: cover` i l'`object-position` corresponent; un EPUB adaptable, que no té pàgina per omplir, mostra la imatge sencera. Un amfitrió que dibuixi les imatges pel seu compte té les funcions que exporta `postext`: `resourceSafeArea` i `normalizeSafeArea` (la zona tal com la llegeix el motor, o `undefined`), `safeAreaHeightRange` (el cos més baix i el més alt a una amplada), `safeAreaSource` (la part que es veu a una alçada donada) i `uncroppedPictureBox` (on dibuixar la imatge sencera abans de retallar), amb el tipus `ResourceSafeArea`. Al Sandbox el camp és **Zona segura**, en una imatge del [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos).
+ 
++La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna](/ca/cookbook/photos-fill-short-columns), compon dues vegades un reportatge de revista a dues columnes, sense zones segures i amb elles, per comparar les pàgines l'una al costat de l'altra.
++
+ 
+ ## Què NO s'admet
+ 
+--- a/docs/document-format-zh.mdx
++++ b/docs/document-format-zh.mdx
+@@ -1263,6 +1263,8 @@
+ 
+ VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示出来的部分，用同样的比例表示（完整显示时不出现）；`bodyFlex`给出图片主体还能缩短和增高的px数，以及各个手段已经改变的px数（`{ shrink, grow, delta }`）。Canvas预览和PDF把绘制范围限定在图片主体内，按未裁切的尺寸画出整幅图片；HTML查看器和固定版式EPUB用`object-fit: cover`加上相应的`object-position`显示图片；流式EPUB没有要填满的页面，显示整幅图片。自己绘制图片的宿主可以使用`postext`导出的函数：`resourceSafeArea`和`normalizeSafeArea`（引擎读到的安全区，或`undefined`）、`safeAreaHeightRange`（某一宽度下主体的最小和最大高度）、`safeAreaSource`（某一高度下显示的部分）和`uncroppedPictureBox`（裁切前整幅图片应画在哪里），以及类型`ResourceSafeArea`。在Sandbox中，这个字段是[资源面板](/zh/docs/sandbox#资源面板)里图片的**安全区**。
+ 
++排版食谱第116号[长高以填满短栏的照片](/zh/cookbook/photos-fill-short-columns)把一篇双栏杂志报道排了两遍，一遍没有安全区，一遍有，可以把页面并排对照。
++
+ 
+ ## 不支持的内容
+ 
+--- a/docs/document-format-ar.mdx
++++ b/docs/document-format-ar.mdx
+@@ -1261,6 +1261,8 @@
+ 
+ تسجّل شجرة VDT القصّ على كتلة المورد: `bodySource` هو الجزء الظاهر من الصورة داخل `bodyRect`، بالكسور نفسها (ويغيب حين تظهر الصورة كاملة)، و`bodyFlex` يعطي عدد px التي لا يزال جسم الصورة يستطيع أن يقصر أو يطول بها، وعدد px التي غيّرته بها الأدوات (`{ shrink, grow, delta }`). معاينة Canvas وملف PDF يقصّان الرسم إلى جسم الصورة ويرسمان الصورة كاملة بحجمها غير المقصوص؛ وعارض HTML وEPUB ذو التخطيط الثابت يضعان الصورة بـ`object-fit: cover` مع `object-position` المطابق؛ أما EPUB المرن، الذي لا صفحة فيه تُملأ، فيعرض الصورة كاملة. والمضيف الذي يرسم الصور بنفسه يجد الدوال التي يصدّرها `postext`: `resourceSafeArea` و`normalizeSafeArea` (المنطقة كما يقرؤها المحرّك، أو `undefined`)، و`safeAreaHeightRange` (أقصر جسم وأطوله عند عرض معيّن)، و`safeAreaSource` (الجزء الظاهر عند ارتفاع معيّن)، و`uncroppedPictureBox` (أين تُرسم الصورة كاملة قبل القصّ)، مع النوع `ResourceSafeArea`. وفي Sandbox يحمل الحقل اسم **المنطقة الآمنة**، في صورة من [لوحة الموارد](/ar/docs/sandbox#لوحة-الموارد).
+ 
++تنضد الوصفة رقم 116 في دليل الوصفات، [صور تطول لتملأ العمود القصير](/ar/cookbook/photos-fill-short-columns)، تحقيقَ مجلة بعمودين مرتين، بلا مناطق آمنة ومعها، لتقارن الصفحات جنبًا إلى جنب.
++
+ 
+ ## ما لا يدعمه Postext
+ 

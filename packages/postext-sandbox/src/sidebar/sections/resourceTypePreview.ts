@@ -14,6 +14,12 @@ const RESOURCE_COUNTER_FORMATS: Record<NumberFormatStyle, ResourceCounterFormat>
   'trad-chinese-informal': 'trad-chinese-informal',
   'simp-chinese-formal': 'simp-chinese-formal',
   'trad-chinese-formal': 'trad-chinese-formal',
+  'japanese-informal': 'japanese-informal',
+  'japanese-formal': 'japanese-formal',
+  hiragana: 'hiragana',
+  katakana: 'katakana',
+  'hiragana-iroha': 'hiragana-iroha',
+  'katakana-iroha': 'katakana-iroha',
   'cjk-decimal': 'cjk-decimal',
   'cjk-heavenly-stem': 'cjk-heavenly-stem',
   'cjk-earthly-branch': 'cjk-earthly-branch',
@@ -31,9 +37,10 @@ const RESOURCE_COUNTER_FORMATS: Record<NumberFormatStyle, ResourceCounterFormat>
  *  reads it: any spelling of a format (`lower-roman`, `arabic`, `i`…), and
  *  an unknown value counts in decimal. What the counter-format select shows,
  *  so a preset written with another setting's spelling still selects its
- *  option. */
-export function resourceCounterFormat(format: unknown): ResourceCounterFormat {
-  return RESOURCE_COUNTER_FORMATS[parseNumberFormat(format) ?? 'decimal'];
+ *  option. The document language `locale` reads the `一` token as the
+ *  engine does (Japanese numerals in a ja document). */
+export function resourceCounterFormat(format: unknown, locale?: string): ResourceCounterFormat {
+  return RESOURCE_COUNTER_FORMATS[parseNumberFormat(format, locale) ?? 'decimal'];
 }
 
 /** Sample heading numbers used solely to render the live preview. */
@@ -51,8 +58,8 @@ const PREVIEW_HEADING: Record<string, number> = {
  *  `{h1}`..`{h6}`) but is intentionally lightweight for preview purposes.
  *  Decimal numbers take the document's `digits`, as the engine writes them
  *  (شكل ١-٧ in an Arabic book). */
-function renderPreviewNumber(type: ResourceType, digits: DigitSystem): string {
-  const style = documentNumeralStyle(parseNumberFormat(type.counterFormat) ?? 'decimal', digits);
+function renderPreviewNumber(type: ResourceType, digits: DigitSystem, locale?: string): string {
+  const style = documentNumeralStyle(parseNumberFormat(type.counterFormat, locale) ?? 'decimal', digits);
   return type.numberingTemplate.replace(/\{([^}]+)\}/g, (_match, body: string) => {
     const key = body.trim();
     if (key === 'n') return formatNumeral(7, style);
@@ -63,9 +70,10 @@ function renderPreviewNumber(type: ResourceType, digits: DigitSystem): string {
 }
 
 /** Builds the full preview string, e.g. "Fig. 1.7" or "Figure 1.7", in the
- *  document's digits (default European). */
-export function renderResourceTypePreview(type: ResourceType, digits: DigitSystem = 'latn'): string {
-  const number = renderPreviewNumber(type, digits);
+ *  document's digits (default European); `locale`, the document language,
+ *  reads the `一` counter token. */
+export function renderResourceTypePreview(type: ResourceType, digits: DigitSystem = 'latn', locale?: string): string {
+  const number = renderPreviewNumber(type, digits, locale);
   const prefix = type.shortLabel || type.captionPrefix || type.name;
   return [prefix, number].filter(Boolean).join(' ');
 }

@@ -165,9 +165,11 @@ export function prefersSpreads(area: { width: number; height: number }, viewport
 
 /** A label template with its `__token__` replaced by `value`. The spaces a
  *  Chinese template keeps around a number set in Arabic digits (`第 __page__
- *  页`) close up when the value is a Chinese numeral (`第一页`). */
+ *  页`) close up when the value is a Chinese or Japanese numeral or a kana
+ *  page label (`第一页`, `第あ页`): between two kanji or kana. */
 export function fillLabel(template: string, token: string, value: string): string {
-  return template.replace(token, value).replace(/(\p{Script=Han}) (?=\p{Script=Han})/gu, '$1');
+  return template.replace(token, value)
+    .replace(/([\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]) (?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])/gu, '$1');
 }
 
 /** Readable byte size (`2.4 MB`). */

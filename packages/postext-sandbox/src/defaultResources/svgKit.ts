@@ -28,6 +28,15 @@ export const FONT_ZH = "'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Micr
 /** Chinese sample text inside a figure: the guide's Chinese body face. */
 export const SERIF_ZH = "'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'Source Han Serif SC', serif";
 
+/** The labels' typeface in the Japanese edition: the guide's Japanese
+ *  heading face, Noto Sans JP (its `locl` gives the Japanese forms of the
+ *  shared Han characters), then the system gothic faces the previews fall
+ *  back on. */
+export const FONT_JA = "'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Source Han Sans JP', sans-serif";
+
+/** Japanese sample text inside a figure: the guide's Japanese body face. */
+export const SERIF_JA = "'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', 'Source Han Serif JP', serif";
+
 /** The labels' typeface in the Arabic edition: the guide's small face, IBM
  *  Plex Sans Arabic, which sets the Latin words of a label too (the PDF sets
  *  a whole run in the first family of the list it can provide, and shapes
@@ -70,15 +79,17 @@ export function mirrorSvg(svg: string): string {
 }
 
 /** A figure drawn with the kit, relabelled for its edition. The Chinese
- *  edition sets its labels in {@link FONT_ZH}, upright (Chinese has no
- *  italic; a slanted Han character is a browser's fake). The Arabic edition
+ *  edition sets its labels in {@link FONT_ZH}, the Japanese one in
+ *  {@link FONT_JA}, upright (neither has an italic; a slanted Han character
+ *  or kana is a browser's fake). The Arabic edition
  *  sets them in {@link FONT_AR}, upright, right to left (`direction="rtl"`):
  *  a label turned back by {@link mirrorFragment} keeps its anchor, which now
  *  names its mirrored end; any other keeps the place it had, its `start`
  *  and `end` swapped. Latin editions are returned as drawn. */
 export function localizeFigure(svg: string, lang: GuideLang): string {
-  if (lang === 'zh-Hans') {
-    return svg.split(`font-family="${FONT}"`).join(`font-family="${FONT_ZH}"`).split(' font-style="italic"').join('');
+  if (lang === 'zh-Hans' || lang === 'ja') {
+    const face = lang === 'ja' ? FONT_JA : FONT_ZH;
+    return svg.split(`font-family="${FONT}"`).join(`font-family="${face}"`).split(' font-style="italic"').join('');
   }
   if (lang !== 'ar') return svg;
   const labelled = svg.replace(/<text\b[^>]*>/g, (tag) => {

@@ -5,7 +5,7 @@ export { openBundle, createBundle, bundleFileMime } from './api';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData } from './api';
 export { buildBundle } from './book';
 export type { BuildBundleOptions } from './book';
-export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleResourceBytes, bundleFontProvider, diagramInkHex } from './adapters';
+export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, diagramInkHex } from './adapters';
 export type { BundleSource, BundleFontProviderOptions, BundleFontRequest } from './adapters';
 
 // Low-level codec, for hosts that store or serve bundles their own way.
@@ -31,6 +31,7 @@ export {
   fileBasename,
   mimeForFile,
   isBitmapFile,
+  isVideoFile,
   isSvgFile,
   isPdfFile,
   fontFormatFromFile,

@@ -40,7 +40,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Capçaleres i peus](#capçaleres-i-peus) — elements de text i de línia per pàgina amb marcadors, paritat i alineació.
 - [Text de cos](#text-de-cos) — tipografia, partició de mots, vídues i òrfenes.
 - [Llengua del document](#llengua-del-document) — el `locale` de primer nivell: alternativa per a la partició de mots, tipus de recurs integrats i cadenes de continuació de taules i d'avisos partits, llengua etiquetada en un PDF accessible; les [xifres](#xifres-del-document) (`numerals`) i la [direcció del text](#direcció-del-text) (`direction`) que se'n desprenen; i les [llengües i escriptures](#llengües-i-escriptures) que Postext compon. La guia dels llibres de dreta a esquerra és [Composició àrab](/ca/docs/arabic-layout).
-- [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental) — `cjk`: les convencions regionals i el tall de línia del text en xinès, japonès i coreà, com s'eixamplen les seves línies justificades, les amplades de la puntuació i la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els números que van drets en text vertical, i les marques, el ruby i les notes warichu. La guia de tot plegat és [Composició xinesa](/ca/docs/chinese-layout).
+- [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental) — `cjk`: les convencions regionals i el tall de línia del text en xinès, japonès i coreà, com s'eixamplen les seves línies justificades, les amplades de la puntuació i la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els números que van drets en text vertical, i les marques, el ruby, les notes warichu i les marques de kanbun. Les guies de tot plegat són [Composició xinesa](/ca/docs/chinese-layout) i [Composició japonesa](/ca/docs/japanese-layout).
 - [Encapçalaments](#encapçalaments) — valors generals i sobreescriptures H1–H6.
 - [Llistes no ordenades](#llistes-no-ordenades) i [Llistes ordenades](#llistes-ordenades) — vinyetes, numeració, imbricació.
 - [Matemàtiques](#matemàtiques) — renderització LaTeX, escala, color, marges.
@@ -279,7 +279,7 @@ En activar-se, el llenç s'expandeix per incloure una zona de sang i el motor di
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>
-      <td>Color de les marques de tall al llenç i als PDF en RGB o en escala de grisos. Un PDF en CMYK les pinta en color de registre (mira més avall).</td>
+      <td>Color de les marques de tall al llenç (la vista en pantalla). El PDF les pinta sempre en color de registre (mira més avall).</td>
     </tr>
   </tbody>
 </table>
@@ -288,7 +288,7 @@ El plec creix `bleed + markOffset + markLength` per cada costat, i la pàgina ta
 
 Fora de la sang només s'imprimeixen les marques. Tot el que pinta la pàgina, inclosos els elements de disseny ancorats a `'page'` o a `'bleed'`, es retalla a la caixa de sang al canvas, al PDF i a la sortida HTML, com ho retalla una exportació de maquetació: una banda o una imatge que surt de la sang a propòsit es talla a la vora de la sang, on la guillotina la perdria de tota manera. Fins a postext 1.4 un element així continuava per damunt de les marques fins a la vora del plec.
 
-Al PDF (`postext-pdf`), la MediaBox de cada pàgina és el plec sencer. La pàgina porta a més una TrimBox, la pàgina tallada, i una BleedBox, el tall més la sang, que llegeixen les eines d'imposició i de preflight. Quan el PDF s'escriu en CMYK (`colorSpace: 'cmyk'`, o `pdfGeneration.forceColorSpace` amb `colorSpace: 'cmyk'`), les marques es pinten en color de registre, la separació `/All`, i s'imprimeixen en totes les planxes. Els PDF en RGB i en escala de grisos les pinten en `color`.
+Al PDF (`postext-pdf`), la MediaBox de cada pàgina és el plec sencer. La pàgina porta a més una TrimBox, la pàgina tallada, i una BleedBox, el tall més la sang, que llegeixen les eines d'imposició i de preflight. Les marques es pinten en color de registre, la separació `/All`, i s'imprimeixen en totes les planxes. És així en qualsevol espai de color en què s'escrigui el PDF (RGB, escala de grisos o CMYK): un negre corrent arribaria a la impremta com a negre enriquit o només a la planxa del negre. `color` només s'aplica al llenç.
 
 ### Numeració
 
@@ -346,6 +346,12 @@ Tres paràmetres trien un format de numeració, i cadascun va créixer amb la se
     <tr><td>Xifres xineses</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
     <tr><td>Troncs celestes</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
     <tr><td>Branques terrestres</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>Numerals japonesos</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>, <code>一</code> en un document japonès</td></tr>
+    <tr><td>Numerals japonesos formals</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>, <code>壱</code></td></tr>
+    <tr><td>Hiragana, ordre gojūon</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>, <code>あ</code></td></tr>
+    <tr><td>Katakana, ordre gojūon</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>, <code>ア</code></td></tr>
+    <tr><td>Hiragana, ordre iroha</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>, <code>い</code></td></tr>
+    <tr><td>Katakana, ordre iroha</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>, <code>イ</code></td></tr>
     <tr><td>En cercle</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
     <tr><td>Xifres d'amplada completa</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
     <tr><td>Xifres aràbigues orientals</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
@@ -358,6 +364,8 @@ Tres paràmetres trien un format de numeració, i cadascun va créixer amb la se
 </table>
 
 Els estils de l'Àsia oriental conserven el seu nom de [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) en els tres paràmetres. Els numerals xinesos informals escriuen 十 del 10 al 19 sense un 一 al davant (十二, però 一百一十), un sol 零 per cada tram de zeros dins del número (一百零一, 一千零五十), i 万 o 萬 per a la desena de miler, 亿 o 億 per als cent milions (一万零一十). Només `cjk-decimal` fa servir 〇, xifra a xifra, com s'escriuen els anys (二〇二六, GB/T 15835—2011). Els troncs arriben al 10, les branques al 12 i les xifres en cercle al 50; més enllà, el número s'imprimeix en xifres. `一` i `壹` segueixen l'escriptura del `locale` del document: tradicional per a `zh-Hant`, `zh-TW` o `zh-HK`, simplificada en els altres casos. Algunes edicions antigues escriuen 101 com 一百一, sense 零; Postext no imprimeix aquesta forma.
+
+Els estils japonesos (des de postext 1.16) també segueixen CSS Counter Styles. `japanese-informal` escriu 十 sense 一 al davant i sense 零 per a una posició buida (百一, 千十), i `japanese-formal`, els 大字 壱 弐 参 拾 百 阡, amb 壱 davant de cada unitat (壱拾, 壱百). CSS atura tots dos a 9999; Postext continua per grups de quatre xifres amb 万 億 兆 (en el formal, 萬 億 兆), i cada grup conserva el seu 一 davant d'una unitat: 一万一 és 10 001, i 一億一万, 100 010 000. En un document japonès (`ja`, `ja-JP`…) `一` vol dir `japanese-informal`, així que `第{1:一}章` hi imprimeix 第百一章 i en un de xinès 第一百零一章; `壹` continua sent el dels numerals financers xinesos. Les sèries de kana són les llistes de CSS: 48 kana en l'ordre del gojūon (amb ゐ i ゑ) i 47 en el del poema iroha; després de l'últim continuen amb dos kana (ああ, いい), i no tenen zero, així que un element numerat 0 imprimeix `0`. Les xifres kanji posicionals (二〇二六), la forma dels anys i dels folis, són `cjk-decimal`.
 
 Els estils àrabs conserven el nom CSS quan n'hi ha (`arabic-indic`, `persian`; `urdu` i `maghrebi-abjad`, de la nota del W3C *Ready-made Counter Styles*, es llegeixen com `persian` i `arabic-abjad-maghrebi`). `arabic` manté el sentit de sempre: les xifres europees. `arabic-abjad` escriu els numerals abjad additius de l'àrab clàssic i de la foliació de manuscrits, el valor més gran primer: 11 és يا, 1446 غتمو, i el nombre de milers va abans de غ (2000 بغ, 1002 غب); a partir de 999 999 el número s'imprimeix en xifres. La nota del W3C fa servir aquest nom per a una sèrie de 28 lletres en què 11 és ك; Postext anomena aquesta sèrie `abjad`, la que lletreja els elements de llista en ordre abjad (أ، ب، ج، د، هـ), i `hijai` l'ordre alfabètic (أ، ب، ت، ث). Totes dues escriuen la primera lletra amb la seva hamza (أ) i una he que quedaria aïllada com هـ, amb tatweel, perquè no es llegeixin com les xifres ١ i ٥; passades les 28 lletres es dupliquen, com `lower-alpha` (أأ, أب). Els valors magribins segueixen la regla mnemotècnica صعفض قرست ثخذ ظغش (ص 60, ض 90); la llista del W3C intercanvia ص i ض. Una sola أ no distingeix les dues sèries de lletres, així que el seu token són les seves quatre primeres lletres: `{1:أبجد}`, `{1:أبتث}`. Les xifres del document mateix es trien amb [`numerals`](#xifres-del-document).
 
@@ -429,7 +437,7 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td><code>fitFiguresToPage</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Redueix una figura (mapa de bits o SVG) la imatge, el peu i la nota de la qual quedarien més alts que l'àrea de contingut fins que hi càpiguen, i compon més petita una figura en línia que per poc no cap en el que queda de la seva columna (fins a la meitat de la seva amplada; el peu conserva la mida de la columna) perquè continuï al costat del seu text. La imatge reduïda se situa en el seu buit segons <code>placement.align</code>. El visor HTML l'activa, perquè les seves pàgines són tan altes com la pantalla; les pàgines impreses es dimensionen per a les seves figures.</td>
+      <td>Redueix una figura (mapa de bits o SVG) la imatge, el peu i la nota de la qual quedarien més alts que l'àrea de contingut fins que hi càpiguen (una imatge amb zona segura, <code>Resource.safeArea</code>, primer es retalla dins d'aquesta zona a tota l'amplada, i només es redueix si encara no hi cap), i compon més petita una figura en línia que per poc no cap en el que queda de la seva columna (fins a la meitat de la seva amplada; el peu conserva la mida de la columna) perquè continuï al costat del seu text. La imatge reduïda se situa en el seu buit segons <code>placement.align</code>. El visor HTML l'activa, perquè les seves pàgines són tan altes com la pantalla; les pàgines impreses es dimensionen per a les seves figures.</td>
     </tr>
     <tr>
       <td><code>hugClosingFloats</code></td>
@@ -1588,9 +1596,9 @@ El `locale` de primer nivell és la llengua del document en conjunt. Admet els m
 
 També tria els tipus de recurs integrats. Quan `resourceTypes` no està definit, `buildDocument` numera i retola amb `defaultResourceTypes(locale)`, de manera que amb `locale: 'de'` n'hi ha prou per obtenir *Abbildung 1.1* i *Tabelle 1.1*. Si `locale` no està definit, el substitueix la llengua de la partició de mots, tant per als tipus de recurs com per a les cadenes de les taules. Una llista `resourceTypes` explícita sempre mana. Les versions anteriors feien servir els tipus en anglès fos quin fos el `locale`, tret que passessis tu mateix `defaultResourceTypes(locale)`; un document que fixa `locale` i vol conservar les etiquetes angleses passa `resourceTypes: defaultResourceTypes('en')`. Els llibres del Sandbox i els paquets porten la seva pròpia llista, així que no els afecta.
 
-Aquí val qualsevol etiqueta BCP 47, igual que a `hyphenation.locale`: `'de-AT'` rep les cadenes alemanyes. Les cadenes integrades existeixen en les vuit llengües que admet la partició de mots i en xinès, en caràcters simplificats i tradicionals; qualsevol altra llengua rep les angleses.
+Aquí val qualsevol etiqueta BCP 47, igual que a `hyphenation.locale`: `'de-AT'` rep les cadenes alemanyes. Les cadenes integrades existeixen en les vuit llengües que admet la partició de mots, en xinès (en caràcters simplificats i tradicionals), en japonès i en àrab; qualsevol altra llengua rep les angleses.
 
-El xinès admet `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` i les formes llargues (`zh-Hant-TW`), en majúscules o minúscules i amb `-` o `_`. Les cadenes segueixen l'escriptura, llegida amb `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` i `zh-SG` són xinès simplificat; `zh-TW`, `zh-HK` i `zh-MO`, tradicional. Els valors tipogràfics que depenen de la llengua segueixen en canvi la regió, com recomana [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script): CN, SG i MY compten com a Xina continental, TW com a Taiwan, HK i MO com a Hong Kong, i una etiqueta sense regió es regeix per la seva escriptura (`zh-Hant` és Taiwan; `zh` i `zh-Hans`, la Xina continental). `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` i `sameContentLocale(a, b)` retornen aquestes lectures, i `DOCUMENT_LANGUAGES` enumera les llengües amb cadenes integrades, cadascuna amb el seu nom en la seva pròpia llengua, tal com les mostra el selector de llengua del document del Sandbox.
+El xinès admet `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `zh-MO` i les formes llargues (`zh-Hant-TW`), en majúscules o minúscules i amb `-` o `_`. Les cadenes segueixen l'escriptura, llegida amb `Intl.Locale(tag).maximize()`: `zh`, `zh-CN` i `zh-SG` són xinès simplificat; `zh-TW`, `zh-HK` i `zh-MO`, tradicional. Els valors tipogràfics que depenen de la llengua segueixen en canvi la regió, com recomana [clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script): CN, SG i MY compten com a Xina continental, TW com a Taiwan, HK i MO com a Hong Kong, i una etiqueta sense regió es regeix per la seva escriptura (`zh-Hant` és Taiwan; `zh` i `zh-Hans`, la Xina continental). El japonès admet `ja`, `ja-JP`, `ja-Jpan` i qualsevol altra etiqueta `ja` (`isJapaneseLanguage(tag)`); des de postext 1.16 té les seves pròpies cadenes i la seva pròpia regió, `japan`, els valors tipogràfics per defecte de la qual segueixen JLReq (vegeu [Composició japonesa](/ca/docs/japanese-layout)). Una taula de cadenes sense entrada japonesa dona l'anglès, mai el xinès. `localeScript(tag)`, `cjkRegionOf(tag)`, `stringsKeyOf(tag)` i `sameContentLocale(a, b)` retornen aquestes lectures, i `DOCUMENT_LANGUAGES` enumera les llengües amb cadenes integrades, cadascuna amb el seu nom en la seva pròpia llengua (日本語 entre les entrades xineses i العربية), tal com les mostra el selector de llengua del document del Sandbox.
 
 <table>
   <thead>
@@ -1612,11 +1620,12 @@ El xinès admet `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
     <tr><td>Neerlandès (<code>nl</code>)</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
     <tr><td>Xinès simplificat (<code>zh-Hans</code>, <code>zh</code>, <code>zh-CN</code>)</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
     <tr><td>Xinès tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>)</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>Japonès (<code>ja</code>, <code>ja-JP</code>)</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
     <tr><td>Àrab (<code>ar</code>, <code>ar-EG</code>, <code>ar-MA</code>…)</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
   </tbody>
 </table>
 
-El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
+El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. El japonès numera els seus tipus de la mateixa manera (図1-1), escriu les referències creuades com 第3章, 2.3節 i 12ページ, titula la bibliografia 参考文献, i el seu índex imprimeix 記号 i 数字 sobre els símbols i els números i escriu les remissions amb una fletxa, `→夏目漱石` per a *vegeu* i `→夏目漱石、森鷗外も見よ` després de les pàgines per a *vegeu també*, amb les etiquetes en rodona. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
 
 Un document en xinès, japonès o coreà declara la seva llengua a la sortida HTML (`lang` a l'arrel `.pt-doc`, amb `zh-Hant-TW` complet) i al canvas que pinta (`ctx.lang`, a Chrome 136 i posteriors), de manera que el navegador dibuixa les formes de glif de la seva regió: Unicode unifica els caràcters han, i un mateix punt de codi es veu diferent en una font taiwanesa i en una de japonesa. Els altres documents no porten `lang`, com abans. El PDF declara `/Lang` a partir de `locale` per a tot document, etiquetat o no, amb la seva escriptura i la seva regió. Un document en una llengua que s'escriu de dreta a esquerra (àrab, persa, urdú, hebreu…) també declara la seva llengua: les formes de la llengua de la font (`locl`) i la font de reserva la segueixen.
 
@@ -1675,13 +1684,14 @@ const angles: PostextConfig = { locale: 'en', direction: 'rtl' };      // força
 
 ### Llengües i escriptures
 
-Postext compon escriptures alfabètiques que s'escriuen d'esquerra a dreta, i el xinès en horitzontal i en vertical. [Composició xinesa](/ca/docs/chinese-layout) explica com es compon el xinès i quins ajustos el governen; les claus són a [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental), [Escriptura vertical](#escriptura-vertical) i [Enquadernació](#enquadernació). El que rep cada escriptura:
+Postext compon escriptures alfabètiques que s'escriuen d'esquerra a dreta, i el xinès i el japonès en horitzontal i en vertical. [Composició xinesa](/ca/docs/chinese-layout) i [Composició japonesa](/ca/docs/japanese-layout) expliquen com es componen i quins ajustos els governen; les claus són a [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental), [Escriptura vertical](#escriptura-vertical) i [Enquadernació](#enquadernació). El que rep cada escriptura:
 
 - **El xinès** el compon el compositor CJK quan un paràgraf té més caràcters CJK que espais entre paraules: les seves línies es tallen entre caràcters amb les regles de principi i final de línia de `cjk.lineBreak` (cap línia no comença per 。、」 o ー, cap no acaba en 「 o （), mantenen senceres —— i ……, un número amb els seus signes i una paraula llatina, i una línia justificada s'eixampla entre els seus caràcters fins a la mesura. L'amplada de la puntuació, la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els punts d'èmfasi, les marques de nom propi i de títol, el ruby i les notes warichu segueixen la regió de `locale`, al llarg de la línia horitzontal o de la vertical (`layout.writingMode: 'vertical-rl'`). Un paràgraf llatí que cita unes poques paraules CJK conserva la divisió òptima de línies i es pot tallar al costat d'aquestes; un signe d'obertura o tancament CJK, el punt volat o un signe d'amplada completa citats en text llatí (〈h〉, ％) no canvien res.
-- **El japonès i el coreà** passen pel mateix compositor i es componen sense partició de mots, però amb els valors per defecte de la Xina continental: les seves regles pròpies (JLREQ, KLREQ) no estan implementades. El coreà es talla entre síl·labes a més de pels seus espais.
+- **El japonès** passa pel mateix compositor amb regles pròpies des de postext 1.16, les dels *Requisits per a la composició de textos japonesos* del W3C (JLReq) i la JIS X 4051: un `locale` `ja` dona la regió `japan`, els valors automàtics de la qual fixen els nivells de kinsoku de JLReq (els kana petits i ー mai no obren línia), la puntuació d'amplada completa amb compressió de parelles, un quadratí després de ？！, el parèntesi que obre un paràgraf a la segona meitat del sagnat, marques d'èmfasi de sèsam sobre el text, títols d'obres entre 『』, furigana repartits 1:2:1, comptadors japonesos, notes i un índex ordenat per la lectura. Les versions anteriors componien el japonès amb els valors per defecte de la Xina continental.
+- **El coreà** passa pel mateix compositor i es compon sense partició de mots, però amb els valors per defecte de la Xina continental: les seves regles pròpies (KLREQ) no estan implementades. El coreà es talla entre síl·labes a més de pels seus espais.
 - **L'àrab i les altres escriptures de dreta a esquerra** (persa, urdú, hebreu…) es componen de dreta a esquerra; [Composició àrab](/ca/docs/arabic-layout) explica com. La [`direction`](#direcció-del-text) del document surt de l'escriptura del `locale`, l'algorisme bidireccional d'Unicode ordena les paraules llatines i les xifres dins de cada línia, el llibre s'enquaderna per la dreta amb la primera columna a la dreta, i cada número que escriu el motor pren les [xifres](#xifres-del-document) de la regió. Una paraula amb una lletra de l'alfabet àrab no es parteix, no s'espaia ni es talla mai, i una línia àrab justificada s'estira als espais i amb caixides. Els signes vocàlics, l'èmfasi, les notes a peu de pàgina i les cadenes de l'àrab són a [Text àrab](#text-àrab). El persa, l'urdú i l'hebreu reben la direcció, les xifres i les regles de paraula sencera, però no cadenes integrades pròpies.
 
-Hi ha patrons de partició de mots per a vuit llengües (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); els tipus de recurs integrats i les cadenes de continuació existeixen en aquestes vuit, en xinès i en àrab. El xinès, el japonès, el coreà i les llengües que s'escriuen de dreta a esquerra es componen sense partició de mots. Qualsevol altra llengua es divideix amb els patrons de l'anglès dels EUA, amb un avís a la consola, i rep les cadenes angleses. Per a un document així, fixa `hyphenation.enabled: false` i passa `resourceTypes` i les cadenes de continuació de `tableStyle` en la seva llengua.
+Hi ha patrons de partició de mots per a vuit llengües (`en-us`, `es`, `fr`, `de`, `it`, `pt`, `ca`, `nl`); els tipus de recurs integrats i les cadenes de continuació existeixen en aquestes vuit, en xinès, en japonès i en àrab. El xinès, el japonès, el coreà i les llengües que s'escriuen de dreta a esquerra es componen sense partició de mots. Qualsevol altra llengua es divideix amb els patrons de l'anglès dels EUA, amb un avís a la consola, i rep les cadenes angleses. Per a un document així, fixa `hyphenation.enabled: false` i passa `resourceTypes` i les cadenes de continuació de `tableStyle` en la seva llengua.
 
 ### Text àrab
 
@@ -1903,6 +1913,12 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
       <td>Quan és <code>true</code>, un encapçalament mai no es col·loca com a últim element d'una columna o pàgina. Si el bloc següent no tingués almenys <code>bodyText.widowMinLines</code> línies de buit després de l'encapçalament (o una línia quan <code>bodyText.avoidWidows</code> és <code>false</code>), l'encapçalament s'empeny endavant per quedar unit al seu text. Interactua amb <code>bodyText.keepColonWithList</code>: si aquesta regla ha d'empènyer del tot el paràgraf de dos punts, els encapçalaments que el precedeixen a la columna viatgen amb ell en lloc de quedar encallats.</td>
     </tr>
     <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Amb <code>keepWithNext</code>, deixa igualment que un encapçalament tanqui l'última columna de text d'una pàgina parella, perquè el seu text obre llavors la pàgina senar del davant, en el mateix plec (JLReq §4.1.7). Els plecs són la pàgina 1 sola i després 2–3, 4–5…, comptats amb <code>pageIndexOffset</code>, tant en llibres enquadernats per l'esquerra com per la dreta. Des de postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>keepWithNextSplit</code></td>
       <td><code>'rules' | 'fill'</code></td>
       <td><code>'rules'</code></td>
@@ -1944,9 +1960,10 @@ Un objecte `headings` conserva tots els valors per defecte de nivell que no repe
 Les editorials esperen que cada columna comenci a la part superior de la pàgina i acabi alineada amb la part inferior. Les regles de ruptura (protecció d'òrfenes i vídues, títols units al seu text, figures indivisibles) deixen columnes curtes de manera natural — una o més línies de retícula de base buides al final. Amb l'equilibratge activat, el motor fa el que faria un maquetista, aplicant les seves palanques en ordre de prioritat editorial:
 
 1. **Una caixa que tanca la columna** — un callout que acaba una columna curta baixa exactament l'espai que queda sota el seu peu, de manera que la seva vora inferior cau a l'última casella de retícula de la pàgina, a nivell amb l'última línia de la columna contigua. Ocupa aquest espai encara que sigui menor que una línia, sempre que res no passi a una altra columna. Per defecte actua abans que qualsevol altra palanca i es queda tot el buit, de manera que un requadre que comenta el paràgraf de damunt pot acabar diverses línies per sota d'aquest; amb `closingBox: 'last'` els encapçalaments, els finals de llista i les altres palanques d'espai prenen abans les línies senceres, i el requadre només el que deixen, i amb `closingBox: 'off'` no es mou mai.
-2. **Encapçalaments** — s'afegeixen línies completes de retícula al marge superior dels encapçalaments de la columna curta. Quan calen diverses línies i la columna conté diversos encapçalaments, les línies es reparteixen entre ells, deixant sempre la major part a l'encapçalament més important (un `h2` en rep més que un `h3`). Els encapçalaments situats al principi d'una columna no reben mai espai addicional, de manera que les columnes continuen començant a la part superior — llevat d'un encapçalament just sota una figura o taula que encapçala la seva columna en una pàgina que flueix cap a la següent: l'espai va damunt d'aquest encapçalament, sota la figura.
-3. **Finals de llista** — quan els encapçalaments no poden absorbir tot el buit, s'afegeix una línia de retícula on acaba una llista o enumeració (l'aire després d'una llista es llegeix amb naturalitat), amb un màxim per llista.
-4. **Paràgrafs correguts** — com a últim recurs, es recompon un paràgraf de la columna amb una línia més (el `\looseness=+1` de TeX), triant el paràgraf més llarg perquè l'espaiat addicional es dilueixi de manera invisible. La solució correguda només s'accepta quan totes les seves línies queden **per sota de `bodyText.maxWordSpacing`** — el color tipogràfic mai no supera el límit que ja tinguis configurat. Requereix `bodyText.optimalLineBreaking`.
+2. **Imatges amb zona segura** — una imatge amb zona segura (`Resource.safeArea`, vegeu [Format del document › Zona segura](/ca/docs/document-format#zona-segura)) col·locada en línia a la columna curta, o flotada al seu cap o al seu peu i només sobre ella, creix en línies senceres de retícula, retallada dins de la zona segura, fins a omplir la columna o fins que el retall arriba a la zona segura. Una imatge més alta no deixa cap forat a la pàgina, així que actua abans d'afegir cap espai; un flotant al cap d'una columna d'una pàgina o banda on els caps de columna queden anivellats (vegeu més avall) no creix. S'anota com a `flexFigure`. No té cap ajust propi: només creix una imatge el recurs de la qual marca una zona segura.
+3. **Encapçalaments** — s'afegeixen línies completes de retícula al marge superior dels encapçalaments de la columna curta. Quan calen diverses línies i la columna conté diversos encapçalaments, les línies es reparteixen entre ells, deixant sempre la major part a l'encapçalament més important (un `h2` en rep més que un `h3`). Els encapçalaments situats al principi d'una columna no reben mai espai addicional, de manera que les columnes continuen començant a la part superior — llevat d'un encapçalament just sota una figura o taula que encapçala la seva columna en una pàgina que flueix cap a la següent: l'espai va damunt d'aquest encapçalament, sota la figura.
+4. **Finals de llista** — quan els encapçalaments no poden absorbir tot el buit, s'afegeix una línia de retícula on acaba una llista o enumeració (l'aire després d'una llista es llegeix amb naturalitat), amb un màxim per llista.
+5. **Paràgrafs correguts** — com a últim recurs, es recompon un paràgraf de la columna amb una línia més (el `\looseness=+1` de TeX), triant el paràgraf més llarg perquè l'espaiat addicional es dilueixi de manera invisible. La solució correguda només s'accepta quan totes les seves línies queden **per sota de `bodyText.maxWordSpacing`** — el color tipogràfic mai no supera el límit que ja tinguis configurat. Requereix `bodyText.optimalLineBreaking`.
 
 L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de manera natural cap a la següent — la pàgina final d'un capítol acaba curta de manera legítima. Aquesta pàgina, i una banda de tancament tallada a nivell per `trailing`, mantenen a més els caps de les seves columnes a la mateixa altura: no s'afegeix cap línia sota una figura o taula que encapçali una de les seves columnes (la palanca després de flotants), i un encapçalament o una caixa que obre una columna sota aquesta figura es queda al seu cap, digui el que digui `stretchAfterFloats`, de manera que cap columna no comença més avall que la veïna només per igualar els peus.
 
@@ -2048,11 +2065,12 @@ La maquetació deixa constància de cada palanca que aplica, al bloc sobre el qu
 ```ts
 interface VDTBalancing {
   levers: BalanceLever[]; // normalment una: un paràgraf després d'una llista pot prendre la línia de final de llista i a més guanyar una línia
-  spaceAbove: number;     // px que les palanques d'espaiat han afegit damunt del bloc (0 si només ha actuat looseParagraph)
+  spaceAbove: number;     // px que les palanques d'espaiat han afegit damunt del bloc (0 si només ha actuat looseParagraph o flexFigure)
+  bodyGrowth?: number;    // flexFigure: px que ha crescut la imatge, retallada dins de la zona segura
   extraLines?: number;    // looseParagraph: línies que ha guanyat el paràgraf
   tracking?: number;      // looseParagraph: el tracking amb què les ha guanyades, en mil·lèsimes d'em (0 = només amb l'espaiat entre paraules)
 }
-type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 ```
 
 <table>
@@ -2068,6 +2086,11 @@ type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' |
       <td><code>trailingCallout</code></td>
       <td>el bloc del marc de l'avís</td>
       <td>Una caixa que tanca la columna ha baixat exactament l'espai que quedava sota el seu peu (<code>spaceAbove</code>; pot ser una fracció de línia).</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>el bloc de la imatge (en línia) o el flotant</td>
+      <td>Una imatge amb zona segura composta <code>bodyGrowth</code> px més alta, en línies senceres de retícula, retallada dins de la zona segura. El <code>bodySource</code> del bloc del recurs és la part que es veu, i <code>bodyFlex.delta</code> el mateix creixement.</td>
     </tr>
     <tr>
       <td><code>heading</code></td>
@@ -2158,7 +2181,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 On la configuració estava desada, el motor ho pot saber i ho fa per tu: el Sandbox amb els llibres i les configuracions que va desar llavors (vegeu **Sandbox → Persistència**), i `openBundle` / `readBundle` amb un paquet `.postext` escrit per postext 1.4 o anterior (vegeu [Paquets escrits per postext 1.4 o anterior](#paquets-escrits-per-postext-14-o-anterior)). Una configuració que vas desar tu pot passar per `migrateConfig(config)` de `postext/bundle`, que escriu els salts tal com els componia la 1.4 (`pinLegacyHeadingBreaks`): `enabled: false` en un H1 que no tenia salt, i `parity: 'any'` al costat d'un `enabled: true` que no indicava paritat, a H1 i als estils d'encapçalament. També fixa la mida de les fórmules, l'espai al voltant de les figures en línia (també als requadres), les marques en línia dels encapçalaments, la mida de les caplletres, el lloc sota una línia de dos punts que introdueix una llista, les línies que deixa d'un paràgraf o d'un element de llista el tall d'una caixa, els talls de línia després d'un guió llarg, la composició línia a línia del text en bandera, la divisió d'un paràgraf sota un encapçalament, els talls de línia després del guionet d'un compost i l'espai sota els contenidors `:::paragraphs`, tal com els componia la 1.4. Si li passes el markdown del llibre com a tercer argument, `{ content }`, omet la fixació de les fórmules quan el text no té cap `$`, les dels buits quan cap línia no insereix un recurs (la del buit als requadres quan cap no ho fa dins d'un requadre), la de les marques quan cap encapçalament no en porta cap, la dels dos punts quan cap llista no segueix una línia que acaba en dos punts, la del tall de les caixes quan el text no obre cap `:::callout`, la dels guions llargs quan cap guió llarg no va entre paraules sense espais, la de la divisió sota un encapçalament quan el text no té cap encapçalament, la dels contenidors quan el text no obre cap contenidor `:::paragraphs`, i la dels compostos quan cap guionet no va entre dues lletres; la del text en bandera només s'aplica a una configuració que posa en bandera algun text corregut, i la dels contenidors només a una que declara algun estil de paràgraf (vegeu [Paquets escrits per postext 1.4 o anterior](#paquets-escrits-per-postext-14-o-anterior)). Per fixar només els salts, crida `pinLegacyHeadingBreaks(config)`.
 
-Les configuracions per nivell admeten les mateixes propietats que els valors generals — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — més aquests camps exclusius de cada nivell:
+Les configuracions per nivell admeten les mateixes propietats que els valors generals — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — més aquests camps exclusius de cada nivell (un [estil d'encapçalament](#estils-dencapçalament) també els admet):
 
 <table>
   <thead>
@@ -2189,10 +2212,28 @@ Les configuracions per nivell admeten les mateixes propietats que els valors gen
       <td>Espaiat entre lletres després de cada glif de l'encapçalament —espais i prefix de numeració inclosos—, com <code>letter-spacing</code> en CSS. Un valor positiu obre les lletres (les versals compostes amb <code>textTransform: 'uppercase'</code> solen demanar-ne una mica: <code>&#123; value: 0.12, unit: 'em' &#125;</code>); un de negatiu estreny un cos de titular. Un valor en <code>em</code> és relatiu al <code>fontSize</code> del nivell. Les línies de l'encapçalament es mesuren amb aquest valor, de manera que tallen on acaba el text espaiat, i canvas, HTML i PDF el pinten igual. Una línia centrada o alineada a la dreta es col·loca per les seves lletres: l'espaiat que segueix el seu últim glif no compta, com en el text dels dissenys, així que un encapçalament centrat queda alineat amb l'obertura per defecte d'un encapçalament <code>span: 'page'</code>. Un nivell dibuixat amb el seu <code>advancedDesign</code> l'ignora, com els altres camps tipogràfics d'aquesta taula: cada element de text del disseny té el seu propi <code>letterSpacing</code>. Un <a href="#estils-dencapçalament">estil d'encapçalament</a> també el pot fixar, per als encapçalaments que l'usen. Fins a postext 1.4 els encapçalaments no tenien espaiat entre lletres, i la clau es descartava sense avís.</td>
     </tr>
     <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>sense fixar</td>
+      <td>Línies que ocupa (行取り, JLReq §4.1.6): l'encapçalament es compon en una banda d'aquest nombre de línies del text, amb els caràcters centrats en ella, en lloc de <code>marginTop</code> i <code>marginBottom</code>; <code>3</code> és un encapçalament 3行取り. La banda comença en una línia del text quan l'encapçalament s'ajusta a la retícula, i el text que el segueix es queda a la retícula, en els dos modes d'escriptura i amb <code>cjk.grid</code>; un encapçalament les línies del qual necessiten més pren el nombre enter següent. El centre és el dels caràcters (la línia de base menys el centre ideogràfic de la font), com el mesura JLReq, no el de les caixes de línia. No s'aplica a les obertures (<code>span: 'page'</code>), als encapçalaments dibuixats amb un <code>advancedDesign</code>, als encapçalaments ocults ni als encapçalaments dins de requadres. Un estil d'encapçalament pot fixar <code>0</code> per treure el del seu nivell. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sagnat de l'encapçalament des del principi de la línia (字下げ), amb <code>em</code> igual al cos del <strong>text</strong>, perquè els llibres japonesos compten els sagnats dels títols en caràcters del text (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> és 6字下げ sigui quin sigui el cos de l'encapçalament. La mesura s'estreny en aquesta quantitat, i un encapçalament centrat es centra en el que queda. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>sense fixar</td>
+      <td>Espaiat uniforme (字取り): un encapçalament d'una línia més estret que aquest nombre dels seus quadratins <strong>propis</strong> s'espaia per igual fins a mesurar exactament aquesta amplada, així que <code>3</code> compon 序章 com a 序　章. Els títols més amples i els encapçalaments de diverses línies es queden com són. <code>&#123;jidori=N&#125;</code> després del títol d'un encapçalament el fixa per a aquest encapçalament, i <code>&#123;jidori=0&#125;</code> desactiva el del seu nivell. Des de postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>numberingTemplate</code></td>
       <td><code>string</code></td>
       <td><code>''</code></td>
-      <td>Plantilla del número automàtic del nivell. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprimeix el comptador acumulat d'aquest nivell d'encapçalament, opcionalment formatat amb un sufix — <code>{'{1:I}'}</code> romans en majúscula, <code>{'{1:i}'}</code> romans en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabètic, <code>{'{1:01}'}</code> amb zero a l'esquerra, <code>{'{1:words}'}</code> en lletres (<em>vint-i-u</em>), <code>{'{1:ordinal}'}</code> com a ordinal (<em>vint-i-unè</em>), <code>{'{1:一}'}</code> en numerals xinesos, <code>{'{1:〇}'}</code> xifra a xifra, <code>{'{1:壹}'}</code> en numerals financers i <code>{'{1:①}'}</code> en cercle, o qualsevol nom de <a href="#grafies-dels-formats-de-numeració">Grafies dels formats de numeració</a> — i la resta del text és literal (<code>'Capítol {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> per a 第一百二十回; una barra inversa escapa una clau literal). Un token el comptador del qual encara és buit es plega juntament amb el separador contigu. Buida (el valor per defecte) vol dir sense número automàtic. El número resultant s'anteposa al títol en el flux, alimenta el marcador <code>{'{number}'}</code> d'una ranura de disseny avançat (on el prefix no s'anteposa) i s'imprimeix a l'índex de continguts. Vegeu <a href="#nombres-en-lletres">Números en lletres</a> per a les paraules, i <a href="#estils-dencapçalament">Estils d'encapçalament</a> per donar a alguns encapçalaments d'un nivell una plantilla pròpia.</td>
+      <td>Plantilla del número automàtic del nivell. Un token <code>{'{1}'}</code> … <code>{'{6}'}</code> imprimeix el comptador acumulat d'aquest nivell d'encapçalament, opcionalment formatat amb un sufix — <code>{'{1:I}'}</code> romans en majúscula, <code>{'{1:i}'}</code> romans en minúscula, <code>{'{1:A}'}</code> / <code>{'{1:a}'}</code> alfabètic, <code>{'{1:01}'}</code> amb zero a l'esquerra, <code>{'{1:words}'}</code> en lletres (<em>vint-i-u</em>), <code>{'{1:ordinal}'}</code> com a ordinal (<em>vint-i-unè</em>), <code>{'{1:一}'}</code> en numerals xinesos (japonesos en un document japonès: 第百一章), <code>{'{1:〇}'}</code> xifra a xifra, <code>{'{1:壹}'}</code> en numerals financers i <code>{'{1:①}'}</code> en cercle, o qualsevol nom de <a href="#grafies-dels-formats-de-numeració">Grafies dels formats de numeració</a> — i la resta del text és literal (<code>'Capítol {'{1}'}. '</code>, <code>'{'{1}'}.{'{2}'}'</code>, <code>'第{'{1:一}'}回'</code> per a 第一百二十回; una barra inversa escapa una clau literal). Un token el comptador del qual encara és buit es plega juntament amb el separador contigu. Buida (el valor per defecte) vol dir sense número automàtic. El número resultant s'anteposa al títol en el flux, alimenta el marcador <code>{'{number}'}</code> d'una ranura de disseny avançat (on el prefix no s'anteposa) i s'imprimeix a l'índex de continguts. Vegeu <a href="#nombres-en-lletres">Números en lletres</a> per a les paraules, i <a href="#estils-dencapçalament">Estils d'encapçalament</a> per donar a alguns encapçalaments d'un nivell una plantilla pròpia.</td>
     </tr>
     <tr>
       <td><code>numberSeparator</code></td>
@@ -3030,11 +3071,12 @@ La propietat `footnotes` fixa on van les notes citades amb `[^id]`, com es numer
 
 ```ts
 interface FootnotesConfig {
-  placement?: 'column' | 'chapterEnd'; // Peu de la columna que cita, o després del capítol.
-  numbering?: 'chapter' | 'document' | 'page' | 'column'; // Reiniciar a cada capítol, continuar, o reiniciar a cada pàgina / columna.
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Peu de la columna que cita, després del capítol, o al costat del text d'un plec.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar a cada capítol, continuar, o reiniciar a cada pàgina / columna / plec.
   numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
-  markerPosition?: 'auto' | 'superscript' | 'inline'; // Volada, o sobre la línia de base.
-  markerSize?: Dimension;     // Mida de la crida en línia; em és el text que l'envolta.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línia de base, al costat de la paraula, o a la dreta d'una línia vertical.
+  markerSize?: Dimension;     // Mida de la crida en línia, lateral o a la dreta; em és el text que l'envolta.
+  numberGap?: 'en' | 'em';    // Espai després del número de la nota mateixa.
   chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes al peu de la columna, o sota el text.
   fontSize?: Dimension;       // Cos de la nota; em és el cos del text.
   lineHeight?: Dimension;     // Interlineat de la nota; em és el cos de la nota.
@@ -3065,15 +3107,15 @@ interface FootnotesConfig {
   <tbody>
     <tr>
       <td><code>placement</code></td>
-      <td><code>'column' | 'chapterEnd'</code></td>
-      <td><code>'column'</code></td>
-      <td><code>'column'</code> compon cada nota al peu de la columna que conté la línia que la cita, sota un filet curt; en una maqueta d'una columna és el peu de la pàgina. <code>'chapterEnd'</code> compon totes les notes d'un capítol després del seu darrer bloc, en l'ordre en què es citen.</td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (llibres japonesos verticals: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> compon cada nota al peu de la columna que conté la línia que la cita, sota un filet curt; en una maqueta d'una columna és el peu de la pàgina. <code>'chapterEnd'</code> compon totes les notes d'un capítol després del seu darrer bloc, en l'ordre en què es citen. <code>'spread'</code> (傍注, només en text vertical) compon les notes citades a les dues pàgines d'un plec al final de la seva pàgina senar, l'esquerra en un llibre enquadernat per la dreta, sota el filet: les notes citades a la pàgina parella l'esperen, una nota que deixaria a la pàgina senar menys d'una línia de text es queda al peu de la pàgina parella amb les que la segueixen, i un capítol que acaba en una pàgina parella hi conserva les notes que esperaven. En text horitzontal torna a <code>'column'</code> amb un avís <code>unknownConfigValue</code>. Des de postext 1.16.</td>
     </tr>
     <tr>
       <td><code>numbering</code></td>
-      <td><code>'chapter' | 'document' | 'page' | 'column'</code></td>
-      <td><code>'chapter'</code></td>
-      <td><code>'chapter'</code> torna a començar per 1 sota cada títol de nivell 1 i al principi de cada document. <code>'document'</code> continua per tot el document i, en un llibre maquetat capítol a capítol, d'un capítol al següent (<code>continuationAfter</code> porta l'últim número a <code>continuation.footnoteNumber</code>). <code>'page'</code> torna a començar per 1 a cada pàgina i <code>'column'</code> a cada columna, comptant les notes on les col·loca la maquetació (les columnes d'una pàgina en ordre de lectura): el 页下注 habitual d'un llibre xinès. El document es maqueta, es numera segons on han caigut les seves notes i es torna a maquetar fins que els números es mantenen (com a màxim tres vegades més). Tots dos valen per a les notes al peu de la columna: amb <code>placement: 'chapterEnd'</code> les notes es numeren per capítol.</td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>)</td>
+      <td><code>'chapter'</code> torna a començar per 1 sota cada títol de nivell 1 i al principi de cada document. <code>'document'</code> continua per tot el document i, en un llibre maquetat capítol a capítol, d'un capítol al següent (<code>continuationAfter</code> porta l'últim número a <code>continuation.footnoteNumber</code>). <code>'page'</code> torna a començar per 1 a cada pàgina i <code>'column'</code> a cada columna, comptant les notes on les col·loca la maquetació (les columnes d'una pàgina en ordre de lectura): el 页下注 habitual d'un llibre xinès. El document es maqueta, es numera segons on han caigut les seves notes i es torna a maquetar fins que els números es mantenen (com a màxim tres vegades més). Tots dos valen per a les notes al peu de la columna: amb <code>placement: 'chapterEnd'</code> les notes es numeren per capítol. <code>'spread'</code> torna a començar a cada plec (pàgines 2–3, 4–5…), en l'ordre de cita, per a <code>placement: 'spread'</code>.</td>
     </tr>
     <tr>
       <td><code>numberFormat</code></td>
@@ -3083,21 +3125,27 @@ interface FootnotesConfig {
     </tr>
     <tr>
       <td><code>markerPosition</code></td>
-      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
       <td><code>'auto'</code></td>
-      <td><code>'superscript'</code> posa volats, a mida reduïda, la crida del text i el número que obre la nota. <code>'inline'</code> els compon sobre la línia de base: la crida a <code>markerSize</code>, el número de la nota a la mida de la nota; en text vertical, una crida en cercle en línia va dreta en una casella pròpia. <code>'auto'</code> és en línia amb <code>circled-decimal</code> i volada amb qualsevol altre format. En tots els casos la crida segueix el caràcter que la precedeix i mai no obre una línia.</td>
+      <td><code>'superscript'</code> posa volats, a mida reduïda, la crida del text i el número que obre la nota. <code>'inline'</code> els compon sobre la línia de base: la crida a <code>markerSize</code>, el número de la nota a la mida de la nota; en text vertical, una crida en cercle en línia va dreta en una casella pròpia. <code>'right'</code> compon una crida reduïda arran del costat dret d'una línia vertical, com componen （1） els llibres verticals japonesos; en text horitzontal és una volada. <code>'side'</code> (合印) compon una crida petita al costat de la paraula marcada, al costat del seu ruby, que acaba on acaba l'últim caràcter de la paraula; no ocupa lloc a la línia, que es talla i es justifica com si no hi fos, i una interlínia massa estreta per a ella s'avisa amb <code>rubyExceedsLeading</code>. <code>'auto'</code> és en línia amb <code>circled-decimal</code>, <code>'right'</code> en un llibre japonès vertical i volada en els altres casos. En tots els casos la crida segueix el caràcter que la precedeix i mai no obre una línia.</td>
     </tr>
     <tr>
       <td><code>markerSize</code></td>
       <td><code>Dimension</code></td>
-      <td><code>1em</code></td>
-      <td>Mida d'una crida en línia; <code>em</code> és la mida del text que l'envolta (<code>0.75em</code> és una reducció habitual). No afecta una crida volada.</td>
+      <td><code>1em</code>; <code>0.6em</code> amb <code>'side'</code>, <code>0.7em</code> amb <code>'right'</code></td>
+      <td>Mida d'una crida en línia, lateral o a la dreta; <code>em</code> és la mida del text que l'envolta (<code>0.75em</code> és una reducció habitual). No afecta una crida volada.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (notes japoneses després del capítol: <code>'em'</code>)</td>
+      <td>L'espai després del número que obre una nota: un espai de mig quadratí o un quadratí sencer de la nota (un espai ideogràfic quan el número o la nota porten text CJK), que mai no s'estira ni es talla. Des de postext 1.16.</td>
     </tr>
     <tr>
       <td><code>markerTemplate</code></td>
       <td><code>string</code></td>
-      <td><code>'{n}'</code></td>
-      <td>Com s'escriu el número d'una nota; <code>{n}</code> el representa en el format de numeració i les xifres del document: <code>'({n})'</code> dona les crides entre parèntesis dels llibres àrabs, «(١)». Escriu igual la crida del text i el número que obre la nota. Una plantilla sense <code>{n}</code> es llegeix com el valor per defecte.</td>
+      <td><code>'&#123;n&#125;'</code> (llibres japonesos verticals: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>Com s'escriu el número d'una nota; <code>&#123;n&#125;</code> el representa en el format de numeració i les xifres del document: <code>'(&#123;n&#125;)'</code> dona les crides entre parèntesis dels llibres àrabs, «(١)». Escriu igual la crida del text i el número que obre la nota. Una plantilla sense <code>&#123;n&#125;</code> es llegeix com el valor per defecte.</td>
     </tr>
     <tr>
       <td><code>noteNumberPosition</code></td>
@@ -3195,6 +3243,8 @@ footnotes: {
 }
 ```
 
+**Llibres japonesos.** Un document japonès (`locale: 'ja'`, des de postext 1.16) dona als camps que deixa sense fixar els valors de JLReq §4.2. Un llibre vertical compon les notes després del capítol (`placement: 'chapterEnd'`, 後注), numerades per capítol, amb crides `（{n}）` a la dreta de la línia (`markerPosition: 'right'`, amb les xifres dretes segons `cjk.uprightDigits`); un d'horitzontal les compon al peu de la pàgina, numerades a cada pàgina, amb crides volades. Tots dos tracen el filet amb un terç de la mesura (`separator.width: 1/3`), i les notes després del capítol porten `numberGap: 'em'` i un sagnat francès de dos quadratins. Un valor explícit mana i es conserva en desar (`stripFootnotesDefaults` compara amb els valors per defecte del mateix document); els documents xinesos, àrabs i llatins es resolen com abans. `footnoteDocumentDefaults(locale, writingMode, placement?)` retorna aquests valors. La crida s'escriu davant d'un 。 que tanca la frase (`先生[^1]。`): es queda amb el caràcter anterior, i 。 mai no obre una línia. Vegeu [Composició japonesa › Notes](/ca/docs/japanese-layout#notes).
+
 Com es componen les notes al peu de columna:
 
 - **La nota i la seva crida comparteixen columna.** Abans de col·locar una línia, la maquetació suma l'alçada de les notes que aquella línia cita per primer cop (i la del filet, en la primera nota de la columna). Una línia les notes de la qual no caben a sota passa a la columna següent amb la resta del seu paràgraf, segons les regles de vídues i òrfenes. L'àrea de text de la columna s'escurça en l'alçada de les notes, de manera que l'equilibrat de columnes i la banda de tancament d'un capítol només compten el text.
@@ -3208,7 +3258,9 @@ Com es componen les notes al peu de columna:
 El resolutor i el depurador segueixen el patró de les altres seccions:
 
 ```ts
-import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults } from 'postext';
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // els camps sense fixar prenen els valors japonesos verticals
 ```
 
 
@@ -3320,7 +3372,7 @@ interface CitationsConfig {
       <td><code>locale</code></td>
       <td><code>string</code></td>
       <td>llengua del document</td>
-      <td>La configuració regional CSL en què l'estil escriu les seves paraules (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>…).</td>
+      <td>La configuració regional CSL en què l'estil escriu les seves paraules (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>, <code>ja-JP</code>…). Un document japonès es llegeix com a <code>ja-JP</code>: les citacions narratives uneixen dos autors amb と i abreugen els altres amb ほか.</td>
     </tr>
     <tr>
       <td><code>link</code></td>
@@ -3422,24 +3474,40 @@ interface CitationsConfig {
 </table>
 ## Tipografia de l'Àsia oriental
 
-La propietat `cjk` fixa com es compon el text en xinès, japonès i coreà: quines convencions regionals segueix, on se'n poden tallar les línies, quina amplada n'ocupa la puntuació i si penja, l'espai entre xinès i llatí, la retícula de caràcters de la caixa de text, i com s'imprimeixen les marques xineses, les lectures ruby i les notes warichu del text. Tots els camps són opcionals, i `'auto'` segueix la regió de la llengua del document (`locale`), de manera que un llibre amb `locale: 'zh-Hant'` talla les seves línies i compon la seva puntuació a la manera de Taiwan sense fixar res més. [Composició xinesa](/ca/docs/chinese-layout) explica les regles que hi ha darrere d'aquesta configuració, regió per regió, amb dues configuracions completes.
+La propietat `cjk` fixa com es compon el text en xinès, japonès i coreà: quines convencions regionals segueix, on se'n poden tallar les línies, quina amplada n'ocupa la puntuació i si penja, l'espai entre xinès i llatí, la retícula de caràcters de la caixa de text, i com s'imprimeixen les marques d'èmfasi, les línies laterals, les lectures ruby, les notes warichu i les marques de kanbun del text. Tots els camps són opcionals, i `'auto'` segueix la regió de la llengua del document (`locale`), de manera que un llibre amb `locale: 'zh-Hant'` talla les seves línies i compon la seva puntuació a la manera de Taiwan, i un amb `locale: 'ja'` a la japonesa, sense fixar res més. [Composició xinesa](/ca/docs/chinese-layout) i [Composició japonesa](/ca/docs/japanese-layout) expliquen les regles que hi ha darrere d'aquesta configuració, amb dues configuracions completes cadascuna. Els camps i els valors japonesos existeixen des de postext 1.16.
 
 ```ts
 interface CjkConfig {
-  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong';   // Convencions regionals.
-  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'; // Quins signes no poden obrir ni tancar una línia.
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Convencions regionals.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Quins signes no poden obrir ni tancar una línia.
   punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
   compressAdjacent?: 'auto' | boolean;      // Dos signes seguits ocupen 1,5 quadratins.
   trimLineStart?: 'auto' | boolean;         // Els parèntesis a la vora d'una línia perden la meitat exterior.
-  hangingPunctuation?: 'none' | 'allow' | 'force';
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // Un quadratí després de ？！ dins d'un paràgraf (Japó).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un parèntesi que obre un paràgraf sagnat.
   latinSpacing?: Dimension;                 // Entre xinès i llatí; per defecte 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Text vertical: nombres en una casella; per defecte 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
-  emphasis?: 'auto' | 'italic' | 'dots';    // Què fa *…* amb els caràcters xinesos.
+  emphasis?: 'auto' | 'italic' | 'dots';    // Què fa *…* amb els caràcters CJK.
+  emphasisMark?: {                          // La marca que dibuixen *…* i :dots[…] quan no la indiquen.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
   bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // Què imprimeix :book[…].
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // Els signes, de l'exterior a l'interior.
   annotationColor?: ColorValue;             // Punts i línies de nom i títol; per defecte, el color del text.
-  ruby?: { fontFamily?: string; fontSize?: Dimension; color?: ColorValue; position?: 'auto' | 'over' | 'under' | 'right' };
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // Quant pot envair una lectura els seus veïns.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // Com s'espaia una lectura més curta que la seva base.
+    smallKana?: 'keep' | 'full';                 // Kana petits de les lectures tal com s'escriuen, o a mida normal.
+  };
   warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Marques de kanbun.
 }
 ```
 
@@ -3455,39 +3523,51 @@ interface CjkConfig {
   <tbody>
     <tr>
       <td><code>region</code></td>
-      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong'</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
       <td><code>'auto'</code></td>
-      <td>Les convencions que segueix el text, segons les regions que descriuen els <a href="https://www.w3.org/TR/clreq/">Requisits de composició del text xinès</a> del W3C (clreq). <code>'auto'</code> pren la regió de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no està definit: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> i <code>zh-SG</code> donen <code>'mainland'</code> (la Xina continental); <code>zh-Hant</code> i <code>zh-TW</code> donen <code>'taiwan'</code>; <code>zh-HK</code> i <code>zh-MO</code> donen <code>'hongkong'</code>; qualsevol altra llengua dona <code>'mainland'</code>. La regió tria els valors per defecte de <code>lineBreak</code>, <code>punctuationWidth</code>, <code>compressAdjacent</code> i <code>trimLineStart</code>.</td>
+      <td>Les convencions que segueix el text, segons les regions que descriuen els <a href="https://www.w3.org/TR/clreq/">Requisits de composició del text xinès</a> del W3C (clreq). <code>'auto'</code> pren la regió de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no està definit: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> i <code>zh-SG</code> donen <code>'mainland'</code> (la Xina continental); <code>zh-Hant</code> i <code>zh-TW</code> donen <code>'taiwan'</code>; <code>zh-HK</code> i <code>zh-MO</code> donen <code>'hongkong'</code>; <code>ja</code> i qualsevol etiqueta <code>ja-*</code> donen <code>'japan'</code>, les convencions del qual segueixen els <a href="https://www.w3.org/TR/jlreq/">Requisits de composició del text japonès</a> del W3C (JLReq); qualsevol altra llengua dona <code>'mainland'</code>. La regió tria els valors per defecte de tots els camps <code>'auto'</code> de sota. <code>'japan'</code> fixat a mà compon qualsevol document a la japonesa; les cadenes integrades i els valors per defecte de les notes i de l'índex segueixen la llengua.</td>
     </tr>
     <tr>
       <td><code>lineBreak</code></td>
-      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict'</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
       <td><code>'auto'</code></td>
-      <td>Quins signes no poden obrir ni tancar una línia (clreq §6.1.1; vegeu la taula següent). <code>'auto'</code>: <code>'gb'</code> a la Xina continental, <code>'basic'</code> a Taiwan i Hong Kong.</td>
+      <td>Quins signes no poden obrir ni tancar una línia (clreq §6.1.1 i l'apèndix C.3 de JLReq; vegeu les taules següents). <code>'auto'</code>: <code>'gb'</code> a la Xina continental, <code>'basic'</code> a Taiwan i Hong Kong, <code>'ja-very-strict'</code> al Japó. Qualsevol nivell es pot triar en qualsevol document.</td>
     </tr>
     <tr>
       <td><code>punctuationWidth</code></td>
       <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
       <td><code>'auto'</code></td>
-      <td>Quina amplada ocupen els signes d'amplada completa (vegeu <a href="#amplades-de-la-puntuació">Amplades de la puntuació</a>). <code>'auto'</code>: <code>'kaiming'</code> a la Xina continental, <code>'fullwidth'</code> a Taiwan i Hong Kong.</td>
+      <td>Quina amplada ocupen els signes d'amplada completa (vegeu <a href="#amplades-de-la-puntuació">Amplades de la puntuació</a>). <code>'auto'</code>: <code>'kaiming'</code> a la Xina continental, <code>'fullwidth'</code> a Taiwan, Hong Kong i el Japó (al Japó, amb les regles de JLReq per a les parelles, els finals de línia i els punts volats).</td>
     </tr>
     <tr>
       <td><code>compressAdjacent</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Dos signes seguits (<code>。」</code>, <code>》（</code>, <code>：“</code>) cedeixen el mig quadratí de blanc que queda entre ells, i el parell ocupa 1,5 quadratins en lloc de 2. <code>'auto'</code>: activat a la Xina continental i Hong Kong, desactivat a Taiwan.</td>
+      <td>Dos signes seguits (<code>。」</code>, <code>》（</code>, <code>：“</code>) cedeixen el mig quadratí de blanc que queda entre ells, i el parell ocupa 1,5 quadratins en lloc de 2. <code>'auto'</code>: activat a la Xina continental, Hong Kong i el Japó, desactivat a Taiwan.</td>
     </tr>
     <tr>
       <td><code>trimLineStart</code></td>
       <td><code>'auto' | boolean</code></td>
       <td><code>'auto'</code></td>
-      <td>Un parèntesi o unes cometes d'obertura que comencen una línia cedeixen el mig quadratí que porten al davant, i els de tancament que l'acaben, el del darrere. <code>'auto'</code>: activat a la Xina continental i Hong Kong, desactivat a Taiwan.</td>
+      <td>Un parèntesi o unes cometes d'obertura que comencen una línia cedeixen el mig quadratí que porten al davant, i els de tancament que l'acaben, el del darrere. <code>'auto'</code>: activat a la Xina continental, Hong Kong i el Japó, desactivat a Taiwan. Al Japó un signe de tancament conserva el seu mig quadratí a final de línia fins que la línia el necessita (vegeu <a href="#amplades-de-la-puntuació">Amplades de la puntuació</a>).</td>
     </tr>
     <tr>
       <td><code>hangingPunctuation</code></td>
-      <td><code>'none' | 'allow' | 'force'</code></td>
-      <td><code>'none'</code></td>
-      <td>Si un signe de pausa o de final de frase pot penjar fora del final de la línia (vegeu <a href="#puntuació-penjada">Puntuació penjada</a>).</td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Si un signe de pausa o de final de frase pot penjar fora del final de la línia (vegeu <a href="#puntuació-penjada">Puntuació penjada</a>). <code>'auto'</code>: <code>'allow'</code> al Japó (només 、。，．), <code>'none'</code> a les altres regions. Fins a postext 1.15 el valor per defecte era <code>'none'</code>, que és el que <code>'auto'</code> continua sent fora del Japó.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Un quadratí d'espai després d'un ？ o un ！ d'amplada completa (també després de ‼⁇⁈⁉, i després d'una crida de nota enganxada a ells) dins d'un paràgraf, com ho compon el japonès (JLReq §3.1.6): no davant d'un parèntesi de tancament ni d'un altre signe d'aquests, no al final d'un paràgraf, i se suprimeix al final d'una línia. Un U+3000 o un espai que l'autor hi ha escrit es converteixen en aquest espai. Mai no s'estira ni s'encongeix. <code>'auto'</code>: activat al Japó, desactivat a les altres regions.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Com es compon un parèntesi d'obertura que comença un paràgraf amb sagnat de primera línia (JLReq §3.1.5): <code>'indent'</code> conserva el sagnat i dona al parèntesi el seu quadratí després d'aquest (patró ①); <code>'half'</code> deixa que el parèntesi cedeixi el blanc que hi ha davant del seu dibuix, que omple llavors la segona meitat d'un sagnat d'un quadratí, i el text comença on comença el dels altres paràgrafs (patró ③); <code>'flush'</code> posa el parèntesi a la vora, sense sagnat (天付き). Un paràgraf sense sagnat o amb sagnat francès es queda com és. <code>'auto'</code>: <code>'half'</code> al Japó; a les altres regions el parèntesi es compon com al principi de qualsevol línia, igual que abans.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -3511,13 +3591,25 @@ interface CjkConfig {
       <td><code>emphasis</code></td>
       <td><code>'auto' | 'italic' | 'dots'</code></td>
       <td><code>'auto'</code></td>
-      <td>Què fa l'èmfasi de Markdown (<code>*…*</code>) amb els caràcters xinesos: <code>'dots'</code> posa un punt d'èmfasi sota cadascun (a la seva dreta en text vertical), com <code>:dots[…]</code>, i les lletres llatines del mateix èmfasi conserven la cursiva; <code>'italic'</code> els inclina, cosa que una font xinesa només pot simular. <code>'auto'</code>: <code>'dots'</code> quan la llengua del document és el xinès, <code>'italic'</code> en els altres casos (vegeu <a href="#marques-ruby-i-warichu">Marques, ruby i warichu</a>).</td>
+      <td>Què fa l'èmfasi de Markdown (<code>*…*</code>) amb els caràcters xinesos i japonesos: <code>'dots'</code> posa una marca d'èmfasi al costat de cadascun, com <code>:dots[…]</code> (amb la forma i el costat d'<code>emphasisMark</code>), i les lletres llatines del mateix èmfasi conserven la cursiva; <code>'italic'</code> els inclina, cosa que una font CJK només pot simular. <code>'auto'</code>: <code>'dots'</code> quan la llengua del document és el xinès o el japonès, <code>'italic'</code> en els altres casos (vegeu <a href="#marques-ruby-i-warichu">Marques, ruby i warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td><code>'auto'</code> a cadascun</td>
+      <td>La marca que dibuixen <code>*…*</code> i un <code>:dots[…]</code> sense atributs: <code>style</code> <code>'dot'</code>, <code>'circle'</code> o <code>'sesame'</code> (﹅); <code>fill</code> <code>'filled'</code> o <code>'open'</code> (automàtic: buit per al cercle); <code>position</code> <code>'over'</code> (a la dreta del text vertical) o <code>'under'</code> (a la seva esquerra). Automàtic: al Japó, un sèsam ple sobre el text i a la seva dreta en text vertical (JLReq §3.3.9); a les altres regions, un punt sota el text i a la seva dreta en text vertical, com abans. Els atributs de cada marca manen.</td>
     </tr>
     <tr>
       <td><code>bookTitleMark</code></td>
       <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>Què imprimeix <code>:book[…]</code>: 《》 al voltant del títol (〈〉 dins d'un altre títol), la línia ondulada de títol a sota, o el títol sol. <code>'auto'</code>: signes a la Xina continental, línia ondulada a Taiwan i Hong Kong.</td>
+      <td>Què imprimeix <code>:book[…]</code>: signes al voltant del títol (<code>bookTitleBrackets</code>), la línia ondulada de títol a sota, o el títol sol. <code>'auto'</code>: signes a la Xina continental i al Japó, línia ondulada a Taiwan i Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td>Els signes de <code>:book[…]</code> amb <code>'brackets'</code>, de l'exterior a l'interior; un títol niat a més profunditat que la llista pren l'última parella. <code>'auto'</code> (o una llista buida): 『』 i després 「」 al Japó, 《》 i després 〈〉 a les altres regions.</td>
     </tr>
     <tr>
       <td><code>annotationColor</code></td>
@@ -3527,15 +3619,21 @@ interface CjkConfig {
     </tr>
     <tr>
       <td><code>ruby</code></td>
-      <td><code>&#123; fontFamily?, fontSize?, color?, position? &#125;</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
       <td>mig cos, <code>'auto'</code></td>
-      <td>Les lectures de <code>:ruby[…]</code> i <code>&#123;紅樓|hóng|lóu&#125;</code>: font (per defecte, la del text), mida (per defecte <code>&#123; value: 0.5, unit: 'em' &#125;</code> del text; el zhuyin al 60 % d'aquesta), color, i on van quan un ruby no ho diu (<code>'auto'</code>: el zhuyin a la dreta de cada caràcter, el pinyin damunt del text en horitzontal i a la seva dreta en vertical).</td>
+      <td>Les lectures de <code>:ruby[…]</code> i <code>&#123;紅樓|hóng|lóu&#125;</code>: font (per defecte, la del text), mida (per defecte <code>&#123; value: 0.5, unit: 'em' &#125;</code> del text; el zhuyin al 60 % d'aquesta), color, i on van quan un ruby no ho diu (<code>'auto'</code>: el zhuyin a la dreta de cada caràcter, el pinyin i els kana damunt del text en horitzontal i a la seva dreta en vertical). <code>overhang</code>: quant pot envair els seus veïns una lectura més llarga que la seva base: <code>'kana'</code>, un caràcter de ruby sobre els kana, ー i el costat en blanc d'un signe, mig sobre un parèntesi d'obertura i res sobre els kanji (JLReq §3.3.8); <code>'any'</code>, mig caràcter de ruby sobre qualsevol veí sense lectura; <code>'none'</code>, res; automàtic, <code>'kana'</code> al Japó i, a les altres regions, un quart del cos del ruby sobre qualsevol veí sense lectura, com abans. <code>align</code>: com s'espaia una lectura més curta que la seva base: <code>'jis'</code>, 1:2:1 (mitja unitat als extrems i una entre cada dos); <code>'center'</code>, centrada i sense espaiar; <code>'start'</code>, des del principi de la base; automàtic, <code>'jis'</code> al Japó i <code>'center'</code> a les altres regions. <code>smallKana: 'full'</code> compon a mida normal els kana petits de les lectures (<code>'keep'</code>, el valor per defecte, els deixa com s'escriuen). El <code>mode</code> i l'<code>align</code> de cada ruby manen.</td>
     </tr>
     <tr>
       <td><code>warichu</code></td>
       <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
-      <td>mig cos, sense signes</td>
-      <td>Les notes en dues files de <code>:warichu[…]</code>: la mida de la nota (per defecte mig em, de manera que les dues files omplen l'em de la línia), el seu color i els signes que es componen a la mida del text abans de la primera fila i després de l'última (manen els <code>open</code> / <code>close</code> de cada nota).</td>
+      <td>mig cos; signes （） al Japó, cap a les altres regions</td>
+      <td>Les notes en dues files de <code>:warichu[…]</code>: la mida de la nota (per defecte mig em, de manera que les dues files omplen l'em de la línia), el seu color i els signes que es componen a la mida del text abans de la primera fila i després de l'última (manen els <code>open</code> / <code>close</code> de cada nota). Al Japó un <code>open</code> o un <code>close</code> buit (<code>''</code>) compon la nota sense aquest signe.</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>mig cos, <code>'inline'</code></td>
+      <td>Les marques de kanbun de <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): la mida (per defecte <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), el color (per defecte <code>annotationColor</code> i, si no, el del text) i <code>placement</code>: <code>'inline'</code> compon les marques de retorn darrere del seu caràcter, ocupant mig em, com les compon la JIS; <code>'interlinear'</code> posa totes les marques a l'espai entre línies, sense ocupar avanç. Igual a totes les regions (vegeu <a href="#marques-ruby-i-warichu">Marques, ruby i warichu</a>).</td>
     </tr>
   </tbody>
 </table>
@@ -3553,6 +3651,22 @@ interface CjkConfig {
     <tr><td><code>basic</code></td><td>Els signes de pausa i de final de frase 、，；：。！？．‼⁇⁈⁉; les cometes de tancament ” ’ 」 』 i els parèntesis i claudàtors de tancament ）〕］｝】〗》〉; els connectors – ～ ~ i un guió llarg — sol entre dues paraules; els punts volats · ‧ ・; les marques d'iteració 々〻ゝゞヽヾ i ー; les unitats d'un nombre % ‰ ° ℃ ％ i els quadres d'unitat ㎡ ㎏ ㏄.</td><td>Les cometes d'obertura “ ‘ 「 『 i els parèntesis i claudàtors d'obertura （〔［｛【〖《〈; els signes de moneda ¥ $ € £.</td></tr>
     <tr><td><code>gb</code></td><td><code>basic</code>, i la barra / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, i la barra.</td></tr>
     <tr><td><code>strict</code></td><td><code>gb</code>, i el guió llarg doble —— ⸺ i els punts suspensius …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+Els nivells japonesos segueixen les tres convencions de l'apèndix C.3 de JLReq. En tots ells cap línia no acaba amb un parèntesi o unes cometes d'obertura, un signe de moneda es queda amb el seu nombre (tret de `ja-loose`), la barra no té regla, i ——, ―― i …… poden obrir una línia però mai no se separen (tampoc 〳〵):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Nivell</th>
+      <th>Mai al començament d'una línia</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Els parèntesis i les cometes de tancament; 、，。．; els guions ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; les marques d'iteració ゝゞヽヾ〻 i 々; ー; els kana petits ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ (i les seves formes de mitja amplada); les unitats ％ ℃. El valor per defecte de la JIS X 4051.</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>, menys els kana petits, ー i 々 (els llibres en general, segons JLReq).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Només els parèntesis i les cometes de tancament, 、， i 。． (diaris).</td></tr>
   </tbody>
 </table>
 
@@ -3591,6 +3705,8 @@ Un signe xinès d'amplada completa és mig quadratí de dibuix i mig de blanc, i
   </tbody>
 </table>
 
+Al Japó (`punctuationWidth: 'fullwidth'`, el valor automàtic) els signes segueixen en canvi JLReq §3.1: 、，。． conserven el blanc darrere del dibuix, ：； i ・ un quart de quadratí a cada costat, i ？！ omplen el seu quadratí. Un signe de tancament al final d'una línia conserva el seu mig quadratí, i el cedeix sencer, abans que cap altre blanc, quan la línia ha de fer cabre un caràcter més; el blanc després de 。 mai no es redueix dins de la línia. Una línia retorna espai en l'ordre de JLReq §3.8.3: els espais entre paraules, el blanc del signe que acaba la línia, els punts volats, els parèntesis i 、，, i després l'espai entre japonès i llatí; i s'espaia sense afegir espai després d'un parèntesi d'obertura, davant d'un de tancament ni al costat de 、。・：；？！ i U+3000 (§3.1.11). 、 i ・ entre dos numerals kanji van sense blanc i mai no es tallen (二、三日, 三・一四). Un document japonès amb un altre `punctuationWidth` (`kaiming`, `halfwidth`…) segueix en lloc d'això les regles de clreq d'aquesta secció.
+
 Amb `compressAdjacent`, dos signes seguits cedeixen el blanc que queda entre ells (les vuit regles dels esborranys anteriors de clreq): un parèntesi de tancament després d'un altre de tancament o després d'un signe de pausa o de final de frase de la Xina continental (`。」`, no després dels signes centrats de Taiwan i Hong Kong), un signe de pausa o de final de frase després d'un parèntesi de tancament (`」，`), un parèntesi d'obertura després de qualsevol d'aquests o després d'un altre d'obertura (`，「`, `》（`, `「『`), i un quart de quadratí entre un punt volat i un parèntesi de tancament anterior o un d'obertura posterior. Mai més del que deixa el parell en 1,5 quadratins: amb Kaiming `。”` ja ocupa 1,5 i així es queda, i `》（` n'ocupa un. Amb `compressAdjacent` o sense, Kaiming passa el blanc d'un signe de final de frase darrere del signe de tancament que el segueix: els dos traços queden junts i el mig quadratí va després de la cometa (`。”␣母`, no `。␣”母`), i al final d'una línia desapareix, com el d'un punt sol. Amb `trimLineStart`, un parèntesi d'obertura que comença una línia cedeix el blanc que porta al davant, i el seu traç queda alineat amb la vora del text (a la primera línia d'un paràgraf queda mig quadratí dins del sagnat), i un de tancament que acaba una línia cedeix el del darrere. Un signe centrat cedeix un quart de quadratí per cada costat, mai mig per un. Quan una línia es talla entre dos signes, cap no conserva la compressió: cadascun es compon com a signe a la vora d'una línia (una `，` d'amplada completa el `「` de la qual obre la línia següent acaba la seva amb un quadratí sencer).
 
 Una línia admet un caràcter que no pot obrir la línia següent (*push-in*) quan el blanc que encara pot cedir cobreix el que sobresurt, en l'ordre de clreq: els espais entre paraules fins a un quart de quadratí, després els punts volats, els parèntesis, els signes de pausa, els espais entre xinès i llatí fins a un vuitè de quadratí i, al final, els signes de final de frase, cada pas repartit per igual. `kaiming` només deixa baixar a mig quadratí els seus signes de final de frase, i només en aquest cas: a una línia a la qual simplement li falta lloc per a un caràcter més se li reparteix l'espai, així que 。？！ conserven el seu quadratí dins de la línia. `lineEndHalf` deixa baixar a mig quadratí tots els signes; els de `fullwidth` no cedeixen res (un llibre d'amplada completa conserva la seva retícula) i als de `halfwidth` no els queda res per cedir.
@@ -3603,7 +3719,7 @@ Al VDT un signe que ha cedit blanc és un segment propi, el `width` del qual és
 
 ### Puntuació penjada
 
-`hangingPunctuation: 'allow'` deixa que un de 、，。． (a la Xina continental, on els signes van al principi de la seva caixa, també ；：？！) pengi fora del final de la línia quan altrament obriria la següent i no n'hi ha prou a comprimir la línia per fer-l'hi cabre; mai en text horitzontal de Taiwan i Hong Kong, on els signes centrats semblarien tallats (en vertical sí que pot). En text vertical el signe penjat queda sota el peu de la línia. `'force'` fa penjar aquest signe sempre que acaba una línia (tret de l'última d'un paràgraf), i tan bon punt no hi cap. Un signe mai no penja si el toca un altre signe (`。」`, `，「`). El segment penjat porta `hangs`; el `bbox.width` de la línia, la seva justificació i la seva alineació el deixen fora, i el canvas i el PDF eixamplen el retall de la columna amb el signe penjat més ample (`hangingPunctuationOverhang`), així que mai no es talla. La majoria dels llibres xinesos no pengen la puntuació; clreq només la recomana juntament amb una retícula de caràcters.
+`hangingPunctuation: 'allow'`, el valor automàtic al Japó, deixa que un de 、，。． (a la Xina continental, on els signes van al principi de la seva caixa, també ；：？！) pengi fora del final de la línia quan altrament obriria la següent i no n'hi ha prou a comprimir la línia per fer-l'hi cabre; mai en text horitzontal de Taiwan i Hong Kong, on els signes centrats semblarien tallats (en vertical sí que pot). En text vertical el signe penjat queda sota el peu de la línia. `'force'` fa penjar aquest signe sempre que acaba una línia (tret de l'última d'un paràgraf), i tan bon punt no hi cap. Un signe mai no penja si el toca un altre signe (`。」`, `，「`). El segment penjat porta `hangs`; el `bbox.width` de la línia, la seva justificació i la seva alineació el deixen fora, i el canvas i el PDF eixamplen el retall de la columna amb el signe penjat més ample (`hangingPunctuationOverhang`), així que mai no es talla. La majoria dels llibres xinesos no pengen la puntuació; clreq només la recomana juntament amb una retícula de caràcters. Els llibres japonesos pengen 、。，． (*burasagari*), mai ；：？！ ni els parèntesis, en els dos modes d'escriptura i només quan comprimir la línia no n'hi ha prou per fer cabre el signe.
 
 ### Espai entre xinès i llatí
 
@@ -3621,6 +3737,7 @@ En text vertical una paraula llatina o un nombre llarg s'ajeuen, i un nombre cur
 - Al costat d'un signe que Unicode posa dret, cada nombre ocupa la seva pròpia casella: `30×40` són 30, × i 40, tots drets.
 - Una casella amb més caràcters dels que caben en un quadratí s'estreny fins al quadratí; l'espaiat i la justificació mai no hi entren, només van darrere.
 - Per tallar i justificar, la casella compta com un caràcter xinès, i no porta espai entre xinès i llatí a cap costat.
+- Al Japó les parelles `!!`, `!?`, `?!` i `??`, de mitja amplada o d'amplada completa, també van dretes en una casella (`すごい！？`), tret que les toqui una lletra llatina, una xifra o un tercer signe; una parella d'amplada completa es pinta amb els signes de mitja amplada. Els kana petits, ：；, “ ” (pintades 〝〟) i ・ prenen les formes verticals japoneses (vegeu [Composició japonesa › Formes verticals](/ca/docs/japanese-layout#formes-verticals)).
 - El mesurador i tots els motors de pintura veuen les mateixes caselles: el canvas pinta les xifres redreçades i estretes, el PDF igual amb la font horitzontal, i l'HTML les embolcalla en `text-combine-upright: all`.
 
 A mà, tres marques en línia manen sobre l'ajust en text vertical i no canvien res en text horitzontal (vegeu [Format del document › Orientació en text vertical](/ca/docs/document-format#orientació-en-text-vertical)):
@@ -3651,16 +3768,18 @@ Dues caixes de la pràctica xinesa, en 五号 (10,5 pt) amb 6 pt d'interlineat (
 
 El marcatge de [marques xineses, ruby i warichu](/ca/docs/document-format#marques-xineses-ruby-i-warichu) conserva el seu text al paràgraf: la cerca, l'índex general, les àncores de l'índex analític i el text copiat llegeixen els caràcters tal com es van escriure, i d'aquesta configuració només depèn el que es dibuixa al voltant.
 
-- **Punts d'èmfasi** (着重号, `:dots[…]`, i `*…*` sobre caràcters xinesos amb `emphasis: 'dots'`): un punt per caràcter, centrat en ell (sense comptar l'espaiat d'una línia justificada), mai a la puntuació ni als espais; sota el caràcter en text horitzontal i a la seva dreta en vertical (clreq §5.3.1). `style` tria punt ple, cercle o punt de sèsam, `fill="open"` dibuixa el contorn i `pos="over|under"` el costat.
+- **Punts d'èmfasi** (着重号, 傍点; `:dots[…]`, i `*…*` sobre caràcters CJK amb `emphasis: 'dots'`): una marca per caràcter, centrada en ell (sense comptar l'espaiat d'una línia justificada), mai a la puntuació ni als espais; sota el caràcter en text horitzontal i a la seva dreta en vertical (clreq §5.3.1). `style` tria punt ple, cercle o punt de sèsam, `fill="open"` dibuixa el contorn i `pos="over|under"` el costat; `emphasisMark` fixa el que una marca no indica (al Japó, un sèsam sobre el text, a la seva dreta en vertical). Un sèsam té la mateixa orientació sobre el paper en els dos modes d'escriptura, i les marques del costat d'una lectura ruby van per fora d'aquesta.
+- **Línies laterals** (傍線, `:sideline[…]{style pos}`): corren al costat del text, puntuació i espais inclosos: `solid`, `double`, `wavy` o `dotted`, per defecte sota el text en horitzontal i a la seva dreta en vertical; dues línies que es toquen cedeixen cadascuna un vuitè d'em. Funcionen en qualsevol escriptura.
 - **Línies de nom propi i de títol** (专名号 `:name[…]`, 书名号 `:book[…]` amb `bookTitleMark: 'wavy'`): corren sota la caixa dels caràcters (a la seva esquerra en vertical) i travessen els espais de la seqüència. On es toquen dues seqüències, cada extrem cedeix un vuitè d'em, de manera que `:name[賈寶玉]:name[林黛玉]` es llegeix com a dos noms. Si uns punts i una línia marquen el mateix text pel mateix costat, la línia va més a prop del text. Amb `'brackets'`, els 《》 són text amb el qual es tallen les línies, es pinten i es copien com qualsevol caràcter; no ocupen cap caràcter del text pla ni del mapa de font (els segments porten `inserted`).
-- **Ruby**: les lectures ocupen l'espai entre línies al costat de la caixa de la base, centrades en ella; una lectura amb lletres llatines (pinyin) sobre la seva base puja el que baixen els traços descendents de la seva font (g, j, p, q, y) i 0,04 em del text més, perquè no toquin la base, i totes les lectures de la línia comparteixen línia de base; una lectura més ampla que la seva base eixampla la caixa de la base, menys el quart d'em de ruby que pot envair un veí sense lectura, i dues lectures deixen un quart d'em de ruby entre elles (dues lectures en zhuyin, un quart de l'em dels seus símbols, de manera que tres símbols al costat de cadascun de dos caràcters no surten de la seva casella). Un ruby mono (una lectura per caràcter) es pot tallar entre els seus caràcters; un ruby de grup, mai. Al principi o al final d'una línia, base i lectura s'alineen amb la vora (clreq §5.5.4). El zhuyin en text horitzontal forma una columna a la dreta de cada caràcter, i la caixa del caràcter creix el que mesura la columna; en text vertical la mateixa columna baixa a la dreta dels caràcters. La marca de to va a la dreta de la columna, amb la meitat del seu traç per sobre de l'últim símbol (clreq §5.5.3.3), col·locada pel seu traç perquè les fonts dibuixen aquestes marques altes dins de la seva caixa, i en vertical es manté dreta, igual que el punt del to neutre sobre el primer símbol.
+- **Ruby**: les lectures ocupen l'espai entre línies al costat de la caixa de la base, centrades en ella; una lectura amb lletres llatines (pinyin) sobre la seva base puja el que baixen els traços descendents de la seva font (g, j, p, q, y) i 0,04 em del text més, perquè no toquin la base, i totes les lectures de la línia comparteixen línia de base; una lectura més ampla que la seva base eixampla la caixa de la base, menys el quart d'em de ruby que pot envair un veí sense lectura, i dues lectures deixen un quart d'em de ruby entre elles (dues lectures en zhuyin, un quart de l'em dels seus símbols, de manera que tres símbols al costat de cadascun de dos caràcters no surten de la seva casella). Un ruby mono (una lectura per caràcter) es pot tallar entre els seus caràcters; un ruby de grup, mai. Al Japó una lectura segueix en canvi `ruby.align` i `ruby.overhang`: es reparteix 1:2:1 quan és més curta que la seva base, i envaeix els kana però no els kanji quan és més llarga, i la resta del lloc surt d'espaiar la base; un ruby per caràcter de dos o més caràcters és ruby jukugo, en què cada caràcter conserva la seva lectura, que pot envair el caràcter següent de la paraula però mai no se superposa a una altra lectura, i la línia es continua podent tallar entre ells (JLReq §3.3). Al principi o al final d'una línia, base i lectura s'alineen amb la vora (clreq §5.5.4). El zhuyin en text horitzontal forma una columna a la dreta de cada caràcter, i la caixa del caràcter creix el que mesura la columna; en text vertical la mateixa columna baixa a la dreta dels caràcters. La marca de to va a la dreta de la columna, amb la meitat del seu traç per sobre de l'últim símbol (clreq §5.5.3.3), col·locada pel seu traç perquè les fonts dibuixen aquestes marques altes dins de la seva caixa, i en vertical es manté dreta, igual que el punt del to neutre sobre el primer símbol.
 - **Notes warichu** (双行夹注): es pleguen en dues files a la mida de la nota, centrades a la línia i sense espai entre elles. La fila de dalt pren caràcters fins a tenir almenys la meitat del fragment, de manera que la segona no és mai la més llarga, i un més mentre la de baix començaria amb un signe que no pot obrir línia. Una nota més llarga que l'espai que queda a la línia l'omple i continua a la línia, la columna o la pàgina següents; els seus signes van només abans de la primera fila i després de l'última. En text vertical la fila de dalt és la de la dreta, que es llegeix primer.
+- **Marques de kanbun** (`:kunten[字]{kaeri okuri tate}`): les marques de retorn de l'últim caràcter van darrere seu, al costat del peu de la línia (a baix a l'esquerra en text vertical), els okurigana van al costat del cap a partir de la seva meitat (els més llargs desplacen el caràcter següent), i el tatesen és un filet curt fins al caràcter següent (JIS X 4051 §5). El text copiat i l'`/ActualText` del PDF llegeixen els okurigana darrere dels seus caràcters i deixen fora les marques de retorn; una interlínia massa estreta per a elles s'avisa amb `kuntenExceedsLeading`.
 
-El pas de línia no canvia mai: marques i lectures viuen a l'interlineat. Un paràgraf l'espai entre línies del qual (l'alçada de línia menys el cos) mesura menys de mig em amb marques per un costat, o cinc vuitens amb marques pels dos (clreq §5.6.1), s'avisa amb `cjkMarksExceedLeading`; un les lectures del qual mesuren més que l'espai (una lectura en pinyin, amb el que puja), amb `rubyExceedsLeading`. Dona a aquests paràgrafs un estil de paràgraf amb més interlineat.
+El pas de línia no canvia mai: marques i lectures viuen a l'interlineat. Un paràgraf l'espai entre línies del qual (l'alçada de línia menys el cos) mesura menys de mig em amb marques per un costat, o cinc vuitens amb marques pels dos (clreq §5.6.1), s'avisa amb `cjkMarksExceedLeading`; un les lectures del qual mesuren més que l'espai (una lectura en pinyin, amb el que puja), amb `rubyExceedsLeading`. Dona a aquests paràgrafs un estil de paràgraf amb més interlineat. Els llibres japonesos amb furigana solen fer servir un interlineat del text d'uns 1,75 em (JLReq §2.4.2).
 
-Al VDT un segment marcat porta `cjkMarks`, i la composició col·loca els punts i les línies de les seves línies a `VDTLine.marks` (punts, cercles, sèsams, línies rectes i ondulades, en el marc de flux de la línia), que el canvas, l'HTML i el PDF dibuixen tal qual (PDF: `Artifact /Layout`; HTML: caixes `aria-hidden` i el text amb punts dins `<em>`). El segment de la base d'un ruby porta `ruby` (la lectura i els seus trossos) i pinta la base a `inkOffset` quan la lectura l'ha eixamplada; el fragment d'una nota warichu en una línia és un segment el `text` del qual és la fila de dalt i després la de baix, i el `warichu` del qual guarda les files que els renderitzadors pinten al seu lloc. El PDF etiquetat posa la lectura al `RT` del `Ruby` de la seva base i la nota en un `Warichu`, i l'`/ActualText` de la línia llegeix el text de la base i la nota una sola vegada. Les marques, lectures i notes es dibuixen al text, els títols, les llistes i els requadres; els peus de figura, les cel·les de taula i el text de disseny conserven el text sense elles.
+Al VDT un segment marcat porta `cjkMarks`, i la composició col·loca els punts i les línies de les seves línies a `VDTLine.marks` (punts, cercles, sèsams, línies rectes, dobles, de punts i ondulades, en el marc de flux de la línia), que el canvas, l'HTML i el PDF dibuixen tal qual (PDF: `Artifact /Layout`; HTML: caixes `aria-hidden` i el text amb punts dins `<em>`). El segment de la base d'un ruby porta `ruby` (la lectura i els seus trossos; en una lectura japonesa, també l'`id` que la seva anotació comparteix amb els altres caràcters d'una paraula jukugo, i `jukugo`) i pinta la base a `inkOffset`, amb `tracking`, quan la lectura l'ha eixamplada; un caràcter amb marques de kanbun porta `kunten` (els seus trossos i el seu tatesen); el fragment d'una nota warichu en una línia és un segment el `text` del qual és la fila de dalt i després la de baix, i el `warichu` del qual guarda les files que els renderitzadors pinten al seu lloc. El PDF etiquetat posa la lectura al `RT` del `Ruby` de la seva base i la nota en un `Warichu`, i l'`/ActualText` de la línia llegeix el text de la base i la nota una sola vegada. Les marques, lectures i notes es dibuixen al text, els títols, les llistes i els requadres, i als peus de figura, les cel·les de taula i les notes dels recursos, les línies dels quals porten `marks` i `ruby` com les del text; el text de disseny conserva el text sense elles.
 
-El resolutor i el depurador segueixen el patró de les altres seccions; `setCjkLineBreak` i `setCjkComposition` fixen el nivell i la composició (amplades de la puntuació, puntuació penjada, espai entre xinès i llatí; `cjkCompositionOf(resolved.cjk, dpi)`) per a les mesures fetes fora de `buildDocument`, que els pren de la configuració. Fora d'una composició, els signes conserven tot el seu avanç i no es posa espai entre xinès i llatí:
+El resolutor i el depurador segueixen el patró de les altres seccions. `spaceAfterQuestion` i `paragraphStartBracket`, i l'`overhang`, l'`align` i el `smallKana` del ruby, només són a la configuració resolta quan canvien alguna cosa (al Japó, o quan es fixen). `setCjkLineBreak` i `setCjkComposition` fixen el nivell i la composició (amplades de la puntuació, puntuació penjada, espai entre xinès i llatí; `cjkCompositionOf(resolved.cjk, dpi)`) per a les mesures fetes fora de `buildDocument`, que els pren de la configuració. Fora d'una composició, els signes conserven tot el seu avanç i no es posa espai entre xinès i llatí:
 
 ```ts
 import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
@@ -3669,9 +3788,18 @@ resolveCjkConfig(undefined, 'zh-HK');
 // { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
 //   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
 //   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
-//   emphasis: 'dots', bookTitleMark: 'wavy',
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
 //   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
-//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' } }
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
 ```
 
 Al Sandbox aquesta configuració és a **Disseny › Escriptura › Tipografia d'Àsia oriental**.
@@ -3681,7 +3809,7 @@ Al Sandbox aquesta configuració és a **Disseny › Escriptura › Tipografia d
 
 Un **tipus de recurs** és una categoria definible per l'usuari — *Figura*, *Taula*, *Diagrama*, *Llistat*… — que determina com es numeren, com es retola el peu i com es referencien els recursos d'aquella classe. La llista viu a `config.resourceTypes`; el Sandbox l'edita a **Disseny → Figures i taules → Numeració i col·locació**.
 
-Quan `config.resourceTypes` no està definit, Postext inclou dos valors per defecte integrats: **Figura** i **Taula**, tots dos numerats com `{h1}.{n}` (es reinicien a cada encapçalament de nivell 1) amb comptadors decimals. S'anomenen en la llengua del document: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, l'anglès (vegeu [Llengua del document](#llengua-del-document)).
+Quan `config.resourceTypes` no està definit, Postext inclou tres valors per defecte integrats: **Figura**, **Taula** i **Vídeo**, cadascun numerat per separat com `{h1}.{n}` (es reinicien a cada encapçalament de nivell 1) amb comptadors decimals. Una llista sense cap tipus `video`, la d'un llibre desat abans que existissin els vídeos, continua numerant els recursos de vídeo de tipus `video`: s'hi afegeix per a ells el tipus Vídeo integrat (`effectiveResourceTypes(config, resources)`), i `defaultVideoResourceType(locale)` el retorna tot sol. S'anomenen en la llengua del document: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, l'anglès (vegeu [Llengua del document](#llengua-del-document)).
 
 Els valors per defecte integrats s'adapten a la llengua. La funció exportada `defaultResourceTypes(locale = 'en')` localitza els noms de tipus, les etiquetes curtes i els prefixos de peu a la llengua del document — l'anglès produeix *Figure*/*Fig.* i *Table*/*Tab.*; el castellà produeix *Figura*/*Fig.* i *Tabla*/*Tabla*; el francès, l'alemany, l'italià, el portuguès, el català i el neerlandès tenen els seus (la taula de [Llengua del document](#llengua-del-document) els recull). Les etiquetes regionals com `es-ES` es resolen per llengua, i qualsevol llengua sense traducció passa a l'anglès. El comportament de numeració (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, comptadors decimals) és independent de la llengua. Cada crida retorna objectes nous, de manera que pots mutar el resultat lliurement:
 
@@ -3691,7 +3819,8 @@ import { defaultResourceTypes } from 'postext';
 const types = defaultResourceTypes('es');
 // => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
 //       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
-//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … }]
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
 ```
 
 ```ts
@@ -4438,6 +4567,158 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 Per a cada color que reescriu la passada sobre el marcatge (valors hexadecimals, `rgb()` i `hsl()`, `white` i `black`; consulta [Com funciona la tinta única](#com-funciona-la-tinta-única)), el mapatge per píxels dona el mateix resultat, inclosos les vores suavitzades i els degradats. Tots dos difereixen on la passada sobre el marcatge deixa un color com està: els colors amb nom diferents de `white` i `black`, `currentColor`, les formes i els textos sense emplenament (dibuixats en el negre per defecte) i els mapes de bits incrustats a l'SVG es tenyeixen en pantalla però conserven el seu color al PDF. Dona a cada element del diagrama un color explícit en hexadecimal, `rgb()` o `hsl()` per obtenir la mateixa sortida. Quan el canvas no pot tornar a llegir els píxels (un `<img>` d'un altre origen, carregat sense CORS), la imatge es pinta sense tenyir.
 
 
+## Estil de vídeo
+
+La propietat `videoStyle` defineix com s'imprimeixen els [recursos de vídeo](/ca/docs/document-format#vídeos) (la marca de reproducció i el codi QR sobre la portada, i si la portada enllaça amb el vídeo) i què ofereixen els seus reproductors al visor HTML i a l'EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>La marca impresa sobre la portada que indica que es reprodueix.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>El codi QR imprès sobre la portada: obre la pàgina del vídeo a YouTube o a Vimeo, o l'adreça de producció d'un fitxer.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Fa de la portada un enllaç al vídeo: una anotació d'enllaç a sobre al PDF, i un <code>&lt;a&gt;</code> que l'envolta a HTML i a EPUB allà on es mostri la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Què posa la sortida HTML per a un vídeo: el seu reproductor, o la portada impresa amb les marques que porta a sobre.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>vegeu més avall</td>
+      <td>Les opcions de reproductor de tots els vídeos; el <code>video.player</code> de cada vídeo s'hi aplica per sobre.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducció
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disc amb un triangle, un rectangle arrodonit amb un triangle (1,45 vegades més ample que alt) o només el triangle, perfilat amb el color de fons.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, un cantó (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el mig d'un costat (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Les posicions són físiques: el cantó de dalt a la dreta també ho és en un llibre de dreta a esquerra.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Alçada de la marca; mai més del 40 % del costat menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distància a les vores de la portada quan la marca és en un cantó o en un costat.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanc</td><td>El triangle.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disc o el rectangle de darrere; el perfil del triangle quan va sol. Per defecte està enllaçat a la paleta.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacitat del fons, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Codi QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix el codi. Un fitxer sense adreça de producció no en porta.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Com a la marca de reproducció. Dona'ls posicions diferents.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Costat del codi amb el seu marge; mai més del 45 % del costat menor de la portada. Les càmeres dels mòbils llegeixen mòduls a partir d'un terç de mil·límetre: una adreça de 30 caràcters dona un codi de 29 mòduls, de manera que 18 mm amb un marge de 2 fan mòduls de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distància a les vores de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Quina part del codi es pot malmetre o tapar sense que deixi de llegir-se: un 7 %, un 15 %, un 25 % o un 30 %, aproximadament. Puja tota sola mentre el codi conservi el mateix nombre de mòduls.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Mòduls clars al voltant del codi, sobre la seva placa (0–8). La placa ja es destaca de la portada, així que no calen els quatre mòduls que demana la norma sobre paper lliure.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negre</td><td>Els mòduls foscos. Mantén-los foscos sobre una placa clara: la majoria de lectors no llegeixen codis invertits.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanc</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radi dels cantons de la placa.</td></tr>
+  </tbody>
+</table>
+
+El codi el codifica el mateix motor (`encodeQr(text, level)`: mode byte, UTF-8, versions de l'1 al 40, la màscara amb menys penalització) i es dibuixa com a vectors: el canvas omple un sol camí de tirades de mòduls, el PDF fa un sol `drawSvgPath` i l'HTML un sol `<path>` amb `shape-rendering="crispEdges"`, de manera que es manté nítid a qualsevol mida d'impressió.
+
+### Opcions del reproductor
+
+`VideoPlayerOptions`, a `videoStyle.player` i al `video.player` de cada vídeo. El reproductor HTML5 d'un fitxer les respecta totes; els reproductors de YouTube i de Vimeo, les que permeten els seus paràmetres d'inserció.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th style={{ width: '170px' }}>La respecten</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Mostra els controls del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix el botó de baixada del navegador (<code>controlslist="nodownload"</code> quan és desactivat). Amaga el botó, no protegeix el fitxer. YouTube i Vimeo no ofereixen mai la baixada.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Ofereix la pantalla completa (<code>fs=0</code>, l'<code>allowfullscreen</code> de l'iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix el menú de velocitat (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix la imatge en imatge (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix enviar el vídeo a una altra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença a reproduir-se sol, sempre sense so, com exigeixen els navegadors.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença amb el so apagat.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Torna a començar en acabar.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>fitxers</td><td>Quant carrega el navegador abans de reproduir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Insercions amb més privadesa: YouTube des de <code>youtube-nocookie.com</code>, Vimeo amb <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB només conserva els atributs que coneix el seu esquema: un fitxer es reprodueix amb <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> i <code>preload</code>, i la resta la decideix el lector.
+
+El resolutor i el depurador segueixen el patró de les altres seccions, juntament amb els tipus `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined quan tot és per defecte
+```
+
 ## Estils de paràgraf
 
 La propietat `paragraphStyles` declara estils amb nom que el document aplica a una sèrie de paràgrafs mitjançant un contenidor `:::paragraphs{style="…"}` — bibliografies, glossaris, notes, qualsevol bloc d'entrades que vulgui la seva pròpia tipografia, pes, cursiva, mida, interlineat, majúscules, versaletes o un sagnat francès. Tots els camps tipogràfics són opcionals i hereten del text del cos quan no s'indiquen, de manera que un estil només descriu el que difereix del text corrent.
@@ -4570,6 +4851,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Sagnat de totes les línies des de la vora esquerra de la columna (o del requadre en què hi ha els paràgrafs); <code>em</code> és el cos del mateix estil. El sagnat de primera línia i el francès es mesuren des d'aquest, així que un vers sagnat pot portar el que no li cap a la línia més endins que el seu propi començament: <code>indent: 1.5em</code> amb <code>hangingIndent: 2.5em</code> posa el vers a 1,5 em i la seva continuació a 4 em. Un valor negatiu compta com a <code>0</code>.</td>
     </tr>
     <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sagnat de totes les línies des del costat del final (la dreta d'una línia horitzontal, el peu d'una de vertical); <code>em</code> és el cos del mateix estil. Amb <code>textAlign: 'end'</code> compon una línia uns quants caràcters per sobre del peu, el 地からN字上げ de la data o la signatura d'una carta japonesa. Des de postext 1.16.</td>
+    </tr>
+    <tr>
       <td><code>firstLineIndent</code></td>
       <td><code>Dimension</code></td>
       <td>sagnat del cos</td>
@@ -4644,6 +4931,8 @@ Un vers en `verso-sangrado` comença a 1,5 em i la seva continuació a 4 em, a l
 ### El contenidor `:::paragraphs`
 
 Una línia `:::paragraphs{style="<id>"}` obre el contenidor i una línia `:::` tota sola el tanca; tots els paràgrafs del mig prenen l'estil indicat, mentre que els encapçalaments, les llistes i els altres blocs de l'interior conserven el seu estil habitual. Els contenidors es poden niar dins d'altres contenidors. Un `style` desconegut no és un error: els paràgrafs es componen com a text de cos normal.
+
+La tanca admet també `align` (`start`, `end`, `left`, `right`, `center`, `justify`), `indent` i `endIndent` (els nombres sense unitat són em), amb estil o sense: amb estil, manen sobre el que fixa l'estil; sense estil, s'apliquen sobre l'estil del contenidor que l'envolta, o sobre l'estil de text del lloc on és la tanca (el cos, una part, una secció amb estil o un requadre). `:::paragraphs{align=end}` compon un bloc arran del final de la línia (地付き) i `:::paragraphs{align=end endIndent=1}`, a un caràcter d'aquest. Des de postext 1.16.
 
 Dins del contenidor el flux abandona la retícula de base — una entrada de 7pt amb interlineat 1.2em no es pot assentar en una retícula de 8pt/1.5em — i l'últim paràgraf torna el flux a la retícula (la retícula mana; l'espai de sota és un mínim, la mateixa convenció que segueixen els encapçalaments). Les entrades es parteixen entre columnes i pàgines com els paràgrafs del cos, amb la mateixa protecció de vídues i òrfenes; un encapçalament immediatament anterior al contenidor es manté unit al seu primer paràgraf.
 
@@ -5371,7 +5660,7 @@ const config: PostextConfig = {
       <td>camps de nivell</td>
       <td>com a <code>headings.levels[]</code></td>
       <td>els valors del nivell</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil. <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>hidden</code>: cadascun que es fixi substitueix el valor del nivell per als encapçalaments d'aquest estil. <code>breakBefore</code> es combina camp a camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la seva paritat (fins a postext 1.4, el camp que faltava sortia en canvi del valor sense salt).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -5563,7 +5852,7 @@ Les etiquetes de pàgina són les que imprimeix el document. `buildDocument()` t
 
 ## Índex analític
 
-La propietat `index` configura el que imprimeix una directiva `:::index` (vegeu [Format del document](/ca/docs/document-format#índex-analític)): els termes marcats amb `:index[…]` i `:index{term="…"}` al text, ordenats, agrupats per inicial (en xinès, per la inicial del pinyin o per traços; vegeu `groupBy`) i cadascun amb les pàgines on cau. Una entrada és el seu terme, un separador i els seus números de pàgina; al darrere van les seves subentrades, amb un pas de sagnat per nivell, i les línies que continuen una entrada pengen `turnoverIndent` per no alinear-se mai amb una subentrada.
+La propietat `index` configura el que imprimeix una directiva `:::index` (vegeu [Format del document](/ca/docs/document-format#índex-analític)): els termes marcats amb `:index[…]` i `:index{term="…"}` al text, ordenats, agrupats per inicial (en xinès, per la inicial del pinyin o per traços, i en japonès per files del gojūon; vegeu `groupBy`) i cadascun amb les pàgines on cau. Una entrada és el seu terme, un separador i els seus números de pàgina; al darrere van les seves subentrades, amb un pas de sagnat per nivell, i les línies que continuen una entrada pengen `turnoverIndent` per no alinear-se mai amb una subentrada.
 
 ```ts
 const config: PostextConfig = {
@@ -5652,9 +5941,9 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>groupBy</code></td>
-      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'none'</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
       <td><code>'auto'</code></td>
-      <td>Què encapçala cada grup. <code>'letter'</code>: la primera lletra de la clau d'ordenació. <code>'pinyin'</code>: una entrada que comença per un caràcter han va sota la inicial llatina de la seva lectura en pinyin (贾宝玉 sota <code>J</code>), i una clau d'ordenació llatina sota la seva lletra, darrere de les entrades xineses d'aquesta lletra (l'ordenador de cadenes posa les lletres llatines després dels caràcters xinesos): <code>sort="jia mu"</code> tanca la <code>J</code>. <code>'stroke'</code>: sota el nombre de traços del primer caràcter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en xinès simplificat). <code>'none'</code>: sense capçaleres; els símbols, les xifres i les paraules només se separen per <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índex en xinès simplificat (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) per pinyin, un en xinès tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) per traços i qualsevol altra llengua per lletra. Les entrades s'ordenen amb la col·lació de la qual surten les capçaleres: un índex <code>zh-Hant</code> agrupat per pinyin s'ordena per pinyin. Les lectures i els traços són els de l'ordenador de cadenes (CLDR); si llegeix malament un caràcter (重 com a <em>zhòng</em> a 重阳, 行 com a <em>xíng</em> a 行业), dona a la marca una clau <code>sort</code> escrita amb caràcters que només tinguin la lectura cercada, que s'ordena al seu lloc: <code>sort="崇阳"</code> per a 重阳, <code>sort="航业"</code> per a 行业. Un navegador sense dades de col·lació xinesa imprimeix un índex per pinyin o per traços sense capçaleres.</td>
+      <td>Què encapçala cada grup. <code>'letter'</code>: la primera lletra de la clau d'ordenació. <code>'pinyin'</code>: una entrada que comença per un caràcter han va sota la inicial llatina de la seva lectura en pinyin (贾宝玉 sota <code>J</code>), i una clau d'ordenació llatina sota la seva lletra, darrere de les entrades xineses d'aquesta lletra (l'ordenador de cadenes posa les lletres llatines després dels caràcters xinesos): <code>sort="jia mu"</code> tanca la <code>J</code>. <code>'stroke'</code>: sota el nombre de traços del primer caràcter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en xinès simplificat). <code>'gojuon'</code>: una entrada en kana va sota la seva fila del gojūon, あ行, か行 … わ行, i <code>'kana'</code>, sota el seu primer kana (katakana i hiragana comparteixen capçalera), en l'ordre JIS X 4061 d'un índex japonès: per la lectura (el <code>yomi</code> de la marca i, si no, la lectura en kana del seu ruby, després <code>sort</code> i després el text), els katakana com a hiragana, els kana petits com els grans, ー com la vocal que la precedeix, i el kana sense marca abans que el sonor i aquest abans que el semisonor; primer els símbols, després els nombres pel seu valor, després les paraules llatines sota les seves lletres i després els kana; una entrada que continua encapçalada per un kanji s'avisa amb <code>indexReadingMissing</code> i es col·loca després dels kana, sense capçalera. <code>'none'</code>: sense capçaleres; els símbols, les xifres i les paraules només se separen per <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índex en japonès (<code>ja</code>, <code>ja-*</code>) per files del gojūon, un en xinès simplificat (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) per pinyin, un en xinès tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) per traços i qualsevol altra llengua per lletra. Les entrades s'ordenen amb la col·lació de la qual surten les capçaleres: un índex <code>zh-Hant</code> agrupat per pinyin s'ordena per pinyin. Les lectures i els traços són els de l'ordenador de cadenes (CLDR); si llegeix malament un caràcter (重 com a <em>zhòng</em> a 重阳, 行 com a <em>xíng</em> a 行业), dona a la marca una clau <code>sort</code> escrita amb caràcters que només tinguin la lectura cercada, que s'ordena al seu lloc: <code>sort="崇阳"</code> per a 重阳, <code>sort="航业"</code> per a 行业. Un navegador sense dades de col·lació xinesa imprimeix un índex per pinyin o per traços sense capçaleres.</td>
     </tr>
     <tr>
       <td><code>ignoreArticle</code></td>
@@ -7564,7 +7853,8 @@ Els caràcters per als quals cap fitxer de la variant té glif es dibuixen amb e
 El Sandbox mostra aquests avisos, i els dos següents, al seu tauler Revisió després de cada PDF que genera. Si canvien el llibre, la seva configuració o els seus recursos, es marquen com d'un PDF anterior fins que el següent els substitueix; obrir un altre llibre els retira.
 
 - **La negreta necessita un fitxer estàtic per pes.** Fontsource serveix cada pes de Noto Serif SC i TC en fitxers estàtics propis, de manera que la negreta funciona al Sandbox. Els fitxers de Google Fonts (`NotoSerifSC[wght].ttf`, 25 MB) són fonts variables: pdf-lib incrusta la seva instància per defecte, de manera que una variant 700 s'imprimeix amb pes 400, i `renderToPdf` ho notifica com a `variableFontDefaultInstance`. Per a un paquet, treu una instància estàtica per pes amb fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) i redueix-la als caràcters del llibre amb `pyftsubset`.
-- **Fes servir les versions TrueType.** Source Han Serif i els fitxers `.otf` de Noto Serif CJK tenen contorns CFF, que postext-pdf incrusta sencers, de 8 a 25 MB per pes; una font CFF de més de 2 MB es notifica com a `cffEmbeddedWhole`. Les versions TrueType (Google Fonts, Fontsource) es redueixen als glifs usats.
+- **Fes servir les versions TrueType.** Source Han Serif i els fitxers `.otf` de Noto Serif CJK tenen contorns CFF, que postext-pdf incrusta sencers, de 8 a 25 MB per pes; una font CFF de més de 2 MB es notifica com a `cffEmbeddedWhole`. Les versions TrueType (Google Fonts, Fontsource) es redueixen als glifs usats. Per al japonès, Noto Serif JP i Noto Sans JP (Google Fonts, o els fragments numerats de Fontsource), Shippori Mincho, Zen Old Mincho i BIZ UDMincho són TrueType; Source Han Serif JP i els fitxers `.otf` `JP` de Noto Serif CJK són CFF.
+- **Formes japoneses d'una font panCJK.** Un mateix punt de codi d'un caràcter han, de la puntuació o de les cometes es pot dibuixar d'una manera al Japó i d'una altra a la Xina, i una font panCJK (Source Han, Noto CJK) té totes dues. El PDF compon un document japonès (`locale: 'ja'`), i un aïllat en japonès (`:ltr[…]{lang=ja}`) en qualsevol document, amb el sistema d'idioma OpenType `JAN `, de manera que la funció `locl` de la font imprimeix les formes japoneses que el llenç i l'HTML imprimeixen gràcies a `lang`. Un aïllat en un altre idioma dins d'un llibre japonès es compon amb les formes d'aquest idioma (les de la font per defecte, per al xinès) i s'etiqueta com un `Span` amb el seu `/Lang`. Els documents xinesos i els altres es componen amb les formes per defecte de la font, com fins ara. Una font feta per al japonès, com Noto Serif JP, ja té formes japoneses per defecte; tot i així posa les “ ” del text japonès en la seva forma `JAN `.
 
 Un caràcter que falta en una família no es pren d'una altra: Noto Serif TC no manlleva res de Noto Serif SC. Resol la cobertura en preparar els fitxers de font; l'exemple de 红楼梦 copia als seus subconjunts TC els glifs que els falten des de la font SC.
 
@@ -7717,7 +8007,7 @@ El worker de composició de `postext/worker` necessita el mateix embolcall al vo
 Per a fluxos de treball d'impressió en producció, ajusta aquestes opcions de configuració abans de renderitzar:
 
 - **`page.cutLines.enabled: true`** — afegeix àrea de sang i marques de tall al voltant del trim, i dona a cada pàgina una TrimBox i una BleedBox. Vegeu [Marques de tall](#marques-de-tall).
-- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escriu en DeviceCMYK els colors que pinta postext (text, filets, fons, figures vectorials) i pinta les marques de tall en color de registre, perquè s'imprimeixin en totes les planxes. Els mapes de bits i els originals d'impressió en PDF s'insereixen tal com són, així que una foto RGB continua en RGB: converteix-la abans d'afegir-la.
+- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — escriu en DeviceCMYK els colors que pinta postext (text, filets, fons, figures vectorials) (les marques de tall van sempre en color de registre). Els mapes de bits i els originals d'impressió en PDF s'insereixen tal com són, així que una foto RGB continua en RGB: converteix-la abans d'afegir-la.
 - **`page.dpi: 300`** (o superior) — els punts PDF són fixos a 72/polzada, però l'aritmètica de maquetació de Postext funciona en píxels; un DPI més alt dona una subdivisió més fina per a elements mesurats en `mm` o `cm`.
 - **`colors.model: 'cmyk'`** — preserva la intenció que els colors es van definir en espai CMYK. El fallback `hex` continua sent el que s'utilitza per dibuixar realment al PDF avui; `model` es documenta aquí perquè viatja juntament amb el VDT per a eines posteriors.
 - **`{ pageNegative: true }`** a `RenderToPdfOptions` — inverteix l'àrea de trim amb un blend mode de tipus Difference (les marques de tall queden sense invertir). Útil per a comprovacions de preflight sobre tipografia fosca sobre clar.
@@ -7988,7 +8278,7 @@ migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
 Quatre utilitats connecten un paquet obert amb el motor i els backends:
 
 - **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`. Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
-- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`). **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
+- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
 - **`buildBundle(bundle)`** compon els capítols en ordre i retorna un `VDTDocument` per capítol. Cada capítol continua l'anterior: comptadors d'encapçalaments i de recursos, la part oberta, la paritat de pàgina i la numeració. Un capítol que imprimeix l'índex de continguts (`:::toc`) o l'analític (`:::index`) rep l'esquema del llibre sencer. Admet les mateixes opcions que `buildDocument`, més `config` per substituir la configuració del paquet, `cache` per compartir una memòria cau de mesures i `metadata` (vegeu més avall).
 - **`bundleResourceBytes(bundle)`** i **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** són les opcions `resourceBytes` i `fontProvider` de `renderToPdf` de `postext-pdf`. El proveïdor de fonts tria del paquet el pes més proper de l'estil demanat. Per a una variant `.woff2` necessita `decompressWoff2`, i per a una família que el paquet no inclou crida `fallback` amb els arguments del renderitzador, `request` inclòs, i lliura el que retorni. Un `fallback` que només baixa el fitxer `latin` de la família imprimeix com a caixes buides una família xinesa que el paquet no incrusta; un que respon amb els fragments, com `sliceFontProvider` a [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes), la imprimeix completa.
 

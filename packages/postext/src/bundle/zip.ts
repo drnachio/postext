@@ -89,7 +89,7 @@ export function openBundleZip(bytes: Uint8Array): OpenedBundleZip {
   return { manifest, readFile, rootPrefix, entries: [...all.keys()], files };
 }
 
-const STORED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'woff2']);
+const STORED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'woff2', 'mp4', 'm4v', 'webm', 'ogv', 'mov']);
 
 export interface ZipBundleOptions {
   /** Modification date written on every file of the archive. Unset: the

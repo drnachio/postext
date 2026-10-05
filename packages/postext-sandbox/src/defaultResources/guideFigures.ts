@@ -2,7 +2,7 @@
 // lands, the balancing levers, the anatomy of a book and the Sandbox
 // interface. Same kit and unit system as the figures in `index.ts`.
 
-import { FS, P, PAGE_VW, SERIF_ZH, arabicDigits, bar, edge, text } from './svgKit';
+import { FS, P, PAGE_VW, SERIF_JA, SERIF_ZH, arabicDigits, bar, edge, text } from './svgKit';
 import { byLang, type GuideLang } from './lang';
 
 const NIGHT = '#15171c';
@@ -44,6 +44,7 @@ const COLUMN_LAYOUTS = byLang(
   { aria: '可用的分栏结构', labels: ['单栏', '双栏', '一栏半', '浮动体边栏'] },
   { aria: 'estructures de columnes disponibles', labels: ['Una columna', 'Dues columnes', 'Columna i mitja', 'Lateral de flotants'] },
   { aria: 'بنى الأعمدة المتاحة', labels: ['عمود واحد', 'عمودان', 'عمود ونصف', 'عمود جانبي للعوائم'] },
+  { aria: '使える段組の構成', labels: ['1段組', '2段組', '主段と脇段', '図版用の脇段'] },
 );
 
 export function columnLayoutsSvg(lang: GuideLang): string {
@@ -82,6 +83,7 @@ const FLOAT_SLOTS = byLang(
   { aria: '引用之后依次提供给浮动体的空位', ref: '引用处', taken: '占用第一个空位', full: '放不下', next: '下一页' },
   { aria: 'ordre dels espais que s\'ofereixen a un flotant després de la seva referència', ref: 'referència', taken: 'ocupa el primer espai lliure', full: 'no hi cap', next: 'pàgina següent' },
   { aria: 'ترتيب الأماكن التي تُعرض على العنصر العائم بعد الإحالة إليه', ref: 'الإحالة', taken: 'يشغل أول مكان شاغر', full: 'لا يتسع', next: 'الصفحة التالية' },
+  { aria: '参照のあとでフロートに差し出される場所の順序', ref: '参照箇所', taken: '最初の空きに入る', full: '入らない', next: '次のページ' },
 );
 
 export function floatSlotsSvg(lang: GuideLang): string {
@@ -140,6 +142,7 @@ const BALANCING = byLang(
   { aria: '平衡分栏的调节手段', before: '平衡前', after: '平衡后', legend: ['标题上方加空', '列表后加一行', '段落排松一行'] },
   { aria: 'palanques de l\'equilibri de columnes', before: 'Abans', after: 'Després', legend: ['Espai sobre el títol', 'Línia després de la llista', 'Paràgraf més solt'] },
   { aria: 'روافع موازنة الأعمدة', before: 'قبل', after: 'بعد', legend: ['مسافة فوق العنوان', 'سطر بعد القائمة', 'فقرة أرحب بسطر'] },
+  { aria: '段末をそろえる手段', before: '調整前', after: '調整後', legend: ['見出しの前のアキ', 'リストのあとの1行', '1行ゆるく組んだ段落'] },
 );
 
 export function balancingSvg(lang: GuideLang): string {
@@ -210,6 +213,7 @@ const BOOK_ANATOMY = byLang(
   { aria: '用Postext排出的一本竖排书的构成，从右向左读', names: ['封面', '目录', '篇章页', '章首页', '正文页', '正文页'] },
   { aria: 'anatomia d\'un llibre compost amb Postext', names: ['Coberta', 'Índex', 'Part', 'Obertura', 'Cos', 'Cos'] },
   { aria: 'بنية كتاب منضّد بـPostext، يُقرأ من اليمين إلى اليسار', names: ['الغلاف', 'المحتويات', 'الجزء', 'الافتتاحية', 'المتن', 'المتن'] },
+  { aria: 'Postextで組んだ縦組みの本の構成。右から左へ読む', names: ['表紙', '目次', '部扉', '章扉', '本文', '本文'] },
 );
 
 /** Vertical text-line bars: columns from `right` leftward to `left`, each
@@ -225,13 +229,24 @@ function columnsOf(right: number, left: number, top: number, bottom: number, pit
   return out;
 }
 
-/** The anatomy of the Chinese edition: the same six pages set vertically
+/** The anatomy of a vertical edition: the same six pages set vertically
  *  and read from the right, as the book is bound — the cover's title strip,
  *  a contents of columns with leaders down to the folios, a part divider,
  *  an opener with its band down the right edge, and body pages in two
- *  tiers with fore-edge heads. */
-function bookAnatomyVerticalSvg(): string {
-  const { aria, names } = BOOK_ANATOMY['zh-Hans'];
+ *  tiers. The Chinese edition's body pages carry their heads down the
+ *  fore-edge; the Japanese edition's carry a horizontal head over the type
+ *  area and the folio under it, on the fore-edge side (JLReq §2.6). */
+function bookAnatomyVerticalSvg(lang: GuideLang): string {
+  const { aria, names } = BOOK_ANATOMY[lang];
+  // The running head and folio of a body page: down the fore-edge, or
+  // across the head and foot at the fore-edge side (`right`: a right-hand
+  // page, whose fore-edge is its right).
+  const heads = (x: number, right: boolean): string => {
+    if (lang !== 'ja') return vbar(x + 3, y + 14, 22, '#9aa7b6', 1.8);
+    return right
+      ? bar(x + W - 30, y + 4.2, 22, '#9aa7b6', 1.8) + bar(x + W - 13, y + H - 6, 5, '#9aa7b6', 1.8)
+      : bar(x + 8, y + 4.2, 22, '#9aa7b6', 1.8) + bar(x + 8, y + H - 6, 5, '#9aa7b6', 1.8);
+  };
   const roles = ['heading style', ':::toc', ':::part', 'opener', 'body', 'body'];
   const W = 84;
   const H = 112;
@@ -275,12 +290,12 @@ function bookAnatomyVerticalSvg(): string {
   // Body with a figure standing at the head of the upper tier, the running
   // head down the fore-edge.
   x = xs[4]!;
-  out.push(card(x, y, W, H), vbar(x + 3, y + 14, 22, '#9aa7b6', 1.8));
+  out.push(card(x, y, W, H), heads(x, true));
   out.push(`<rect x="${x + W - 34}" y="${y + 10}" width="26" height="42" rx="1.5" fill="${P.blueTint}" stroke="${P.blue}" stroke-width="0.9" />`);
   out.push(columnsOf(x + W - 38, x + 8, y + 10, y + 52), columnsOf(x + W - 8, x + 8, y + 60, y + H - 10));
   // Body with a panel across both tiers.
   x = xs[5]!;
-  out.push(card(x, y, W, H), vbar(x + 3, y + 14, 22, '#9aa7b6', 1.8));
+  out.push(card(x, y, W, H), heads(x, false));
   out.push(tiers(x, W - 8, W - 32), tiers(x, 32, 8));
   out.push(`<rect x="${x + 36}" y="${y + 10}" width="${W - 72 + 4}" height="${H - 20}" rx="1" fill="${NIGHT}" />`, vbar(x + 44, y + 15, 18, GILT, 2.4), vbar(x + 40, y + 15, 24, '#9aa0aa', 2.4), vbar(x + 40, y + 45, 24, '#9aa0aa', 2.4), vbar(x + 40, y + 75, 20, '#9aa0aa', 2.4));
   // Labels.
@@ -294,7 +309,7 @@ function bookAnatomyVerticalSvg(): string {
 }
 
 export function bookAnatomySvg(lang: GuideLang): string {
-  if (lang === 'zh-Hans') return bookAnatomyVerticalSvg();
+  if (lang === 'zh-Hans' || lang === 'ja') return bookAnatomyVerticalSvg(lang);
   const { aria: ariaLabel, names } = BOOK_ANATOMY[lang];
   const roles = ['heading style', ':::toc', ':::part', 'opener', 'body', 'body'];
   const W = 84;
@@ -360,9 +375,29 @@ const CJK_SAMPLE = '曹雪芹著《红楼梦》（又名《石头记》）。';
  *  opening bracket never ends a line). */
 const CJK_VERTICAL = ['曹雪芹著《红楼梦》', '（又名《石头记》）。'];
 
-const OPENING = new Set(['《', '（', '“', '「']);
-const CLOSING = new Set(['》', '）', '”', '」']);
+/** The Japanese edition's line: 夏目漱石's novel and the title it first ran
+ *  under in the newspaper. Eighteen characters, seven of them marks;
+ *  』（, 」） and ）。 meet. */
+const JA_SAMPLE = '夏目漱石『こころ』（初出は「心」）。';
+const JA_VERTICAL = ['夏目漱石『こころ』', '（初出は「心」）。'];
+
+const OPENING = new Set(['《', '（', '“', '「', '『']);
+const CLOSING = new Set(['》', '）', '”', '」', '』']);
 const STOP = new Set(['。', '，', '、']);
+
+/** The marks of a Japanese line that give up half an em in JLReq's
+ *  setting: where two marks meet, the blank between them goes (JLReq
+ *  §3.1.4) — taken from a closing mark before a closing mark or a stop, and
+ *  from an opening bracket after a closing mark or a stop. A mark that
+ *  meets none keeps its em, the stop at the line's end too (§3.8.3). */
+function jlreqHalves(chars: string[]): boolean[] {
+  const closes = (c: string | undefined) => c !== undefined && (CLOSING.has(c) || STOP.has(c));
+  return chars.map((ch, i) => {
+    if (OPENING.has(ch)) return closes(chars[i - 1]);
+    if (CLOSING.has(ch) || STOP.has(ch)) return closes(chars[i + 1]);
+    return false;
+  });
+}
 
 const CJK_COMPOSITION = byLang(
   {
@@ -395,13 +430,21 @@ const CJK_COMPOSITION = byLang(
     vertical: 'عموديًا', ems: (n: number) => `${arabicDigits(String(n).replace('.', '٫'))} مربعًا`,
     legend: ['النصف الفارغ من علامة بالعرض الكامل', 'علامة منضّدة في نصف مربع'],
   },
+  {
+    // The Japanese edition draws a Japanese line (see `JA_COMPOSITION`):
+    // its second row is JLReq's pair compression, not Kaiming.
+    aria: '同じ日本語の一行のベタ組み、約物を詰めた組み、縦組み',
+    full: 'ベタ組み：約物はすべて全角', kaiming: 'JLReq：約物が並ぶと間のアキを詰める',
+    vertical: '縦組み', ems: (n: number) => `${n}字`,
+    legend: ['全角の約物のアキの半分', '半角で組んだ約物'],
+  },
 );
 
-/** One character of the sample, in the Chinese body face, its em box's
- *  left edge at `x` and top at `top`. */
-function han(x: number, top: number, ch: string, em: number): string {
+/** One character of the sample, in the edition's body face (the Chinese
+ *  one unless given), its em box's left edge at `x` and top at `top`. */
+function han(x: number, top: number, ch: string, em: number, face: string = SERIF_ZH): string {
   // The ideographic em box: the alphabetic baseline 0.88 em below its top.
-  return `<text x="${+x.toFixed(2)}" y="${+(top + em * 0.88).toFixed(2)}" font-family="${SERIF_ZH}" font-size="${em}" fill="${NIGHT}">${ch}</text>`;
+  return `<text x="${+x.toFixed(2)}" y="${+(top + em * 0.88).toFixed(2)}" font-family="${face}" font-size="${em}" fill="${NIGHT}">${ch}</text>`;
 }
 
 /** The same Chinese line set three ways: on a row of full-width cells,
@@ -410,16 +453,21 @@ function han(x: number, top: number, ch: string, em: number): string {
  *  up; and down two vertical lines, the brackets turned a quarter and the
  *  full stop moved to the top-right corner of its cell, as mainland fonts
  *  set it. Each glyph is placed by its em box, so any Chinese face lands
- *  where the rules put it. */
+ *  where the rules put it. The Japanese edition sets a Japanese line in
+ *  its own face, its second row after JLReq: only where two marks meet
+ *  does one give up its blank (see {@link jlreqHalves}). */
 export function cjkCompositionSvg(lang: GuideLang): string {
   const t = CJK_COMPOSITION[lang];
+  const ja = lang === 'ja';
+  const face = ja ? SERIF_JA : SERIF_ZH;
   const E = 18;
   const x0 = 24;
-  const chars = [...CJK_SAMPLE];
+  const chars = [...(ja ? JA_SAMPLE : CJK_SAMPLE)];
   const out: string[] = [];
   const cell = (x: number, y: number, w: number, fill = 'none', stroke: string = P.hair): string =>
     `<rect x="${+x.toFixed(2)}" y="${y}" width="${+w.toFixed(2)}" height="${E}" fill="${fill}" stroke="${stroke}" stroke-width="0.8" />`;
   const isMark = (ch: string) => OPENING.has(ch) || CLOSING.has(ch) || STOP.has(ch);
+  const halved = ja ? jlreqHalves(chars) : chars.map(isMark);
   const blank = (x: number, y: number, w: number) => `<rect x="${+x.toFixed(2)}" y="${y}" width="${w}" height="${E}" fill="${P.amberTint}" />`;
 
   // Row 1: full width. The blank half of each mark is tinted: before the
@@ -430,25 +478,27 @@ export function cjkCompositionSvg(lang: GuideLang): string {
     const x = x0 + i * E;
     if (isMark(ch)) out.push(blank(OPENING.has(ch) ? x : x + E / 2, top1, E / 2));
     out.push(cell(x, top1, E));
-    out.push(han(x, top1, ch, E));
+    out.push(han(x, top1, ch, E, face));
   });
   const end1 = x0 + chars.length * E;
   out.push(text(end1 + 8, top1 + 13, t.ems(chars.length), { size: FS.small, color: P.amberDark, weight: 600, anchor: 'start' }));
 
   // Row 2: Kaiming. Every bracket half an em (its glyph half kept), the
-  // full stop half an em at the line's end; the characters close up.
+  // full stop half an em at the line's end; the characters close up. In
+  // Japanese, JLReq: the marks that meet another close up, the rest keep
+  // their em.
   const top2 = 108;
   out.push(text(x0, top2 - 10, t.kaiming, { size: FS.small, color: P.muted, anchor: 'start' }));
   let x = x0;
-  chars.forEach((ch) => {
-    if (isMark(ch)) {
+  chars.forEach((ch, i) => {
+    if (halved[i]) {
       out.push(cell(x, top2, E / 2, P.blueTint, P.blueMid));
       // The glyph sits in the half of its em box the blank did not take.
-      out.push(han(OPENING.has(ch) ? x - E / 2 : x, top2, ch, E));
+      out.push(han(OPENING.has(ch) ? x - E / 2 : x, top2, ch, E, face));
       x += E / 2;
     } else {
       out.push(cell(x, top2, E));
-      out.push(han(x, top2, ch, E));
+      out.push(han(x, top2, ch, E, face));
       x += E;
     }
   });
@@ -467,7 +517,7 @@ export function cjkCompositionSvg(lang: GuideLang): string {
   const vTop = 40;
   const vCentre = colRight - E - colGap / 2;
   out.push(text(vCentre, vTop - 10, t.vertical, { size: FS.small, color: P.muted }));
-  CJK_VERTICAL.forEach((line, li) => {
+  (ja ? JA_VERTICAL : CJK_VERTICAL).forEach((line, li) => {
     const cx = colRight - E - li * (E + colGap);
     [...line].forEach((ch, i) => {
       const y = vTop + i * E;
@@ -475,12 +525,13 @@ export function cjkCompositionSvg(lang: GuideLang): string {
       if (OPENING.has(ch) || CLOSING.has(ch)) {
         // Turned a quarter clockwise about the cell's centre: an opening
         // bracket's glyph moves from the right half to the lower one.
-        out.push(`<g transform="rotate(90 ${cx + E / 2} ${y + E / 2})">${han(cx, y, ch, E)}</g>`);
+        out.push(`<g transform="rotate(90 ${cx + E / 2} ${y + E / 2})">${han(cx, y, ch, E, face)}</g>`);
       } else if (STOP.has(ch)) {
-        // Mainland faces set 。，、 in the top-right corner of the cell.
-        out.push(han(cx + E * 0.6, y - E * 0.62, ch, E));
+        // Mainland and Japanese faces set 。，、 in the top-right corner of
+        // the cell.
+        out.push(han(cx + E * 0.6, y - E * 0.62, ch, E, face));
       } else {
-        out.push(han(cx, y, ch, E));
+        out.push(han(cx, y, ch, E, face));
       }
     });
   });
@@ -493,9 +544,8 @@ export function cjkCompositionSvg(lang: GuideLang): string {
 // ── The Sandbox ─────────────────────────────────────────────────────────────
 
 /** The panels of the activity bar, the one whose editor is drawn open
- *  (with its tooltip) and the chapter the switcher shows. The Sandbox's
- *  interface is in English or Spanish, so the Chinese edition draws the
- *  English one around a Chinese book. */
+ *  (with its tooltip) and the chapter the switcher shows. The Chinese and
+ *  Japanese editions draw the English interface around their book. */
 const SANDBOX_UI = byLang(
   {
     aria: 'Sandbox interface layout', chapter: '3 · Setting the line', scope: 'Whole book',
@@ -518,6 +568,12 @@ const SANDBOX_UI = byLang(
     // mirrored, as the interface is in Arabic.
     aria: 'تخطيط واجهة Sandbox', chapter: '٣ · تنضيد السطر', scope: 'الكتاب كاملًا',
     panels: ['الكتب', 'الفصول', 'النص', 'الموارد', 'الخطوط', 'التصميم', 'الفحوص'],
+  },
+  {
+    // The Sandbox has no Japanese interface: the English one around a
+    // Japanese book, as the Japanese edition's text names it.
+    aria: 'Sandboxの画面構成', chapter: '3 · 一行を組む', scope: 'Whole book',
+    panels: ['Books', 'Chapters', 'Text', 'Resources', 'Fonts', 'Design', 'Checks'],
   },
 );
 
@@ -592,6 +648,7 @@ const ROSETTE = byLang(
   { aria: '由花瓣、圆环和微缩文字组成的矢量玫瑰花饰', micro: 'Postext · 矢量 · 缩放 · ' },
   { aria: 'roseta vectorial de pètals, anells i microtext', micro: 'Postext · vector · zoom · ' },
   { aria: 'وردة متجهية من بتلات وحلقات ونص مجهري', micro: 'Postext · متجهي · تكبير · ' },
+  { aria: '花弁と円環と微小文字でできたベクターのロゼット', micro: 'Postext · ベクター · 拡大 · ' },
 );
 
 export function vectorRosetteSvg(lang: GuideLang): string {
@@ -623,6 +680,7 @@ const CHART = byLang(
   { aria: '带坐标轴和标签的矢量面积图与折线图', months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'], pages: '每秒页数', chapters: '章数' },
   { aria: 'gràfic vectorial d\'àrea i línia amb eixos i etiquetes', months: ['gen.', 'febr.', 'març', 'abr.', 'maig', 'juny', 'jul.', 'ag.'], pages: 'pàgines per segon', chapters: 'capítols' },
   { aria: 'رسم بياني متجهي بمساحة وخط، بمحورين وتسميات', months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس'], pages: 'صفحة في الثانية', chapters: 'فصول' },
+  { aria: '軸とラベルのあるベクターの面グラフと折れ線グラフ', months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'], pages: '毎秒のページ数', chapters: '章数' },
 );
 
 export function vectorChartSvg(lang: GuideLang): string {
@@ -660,6 +718,7 @@ const CLIP = byLang(
   { aria: '带剪切路径、重复使用的元素和透明度的矢量构图', clip: '剪切路径', opacity: '不透明度' },
   { aria: 'composició vectorial amb retalls, elements reutilitzats i transparències', clip: 'retall', opacity: 'opacitat' },
   { aria: 'تركيب متجهي بمسار قص وعناصر معاد استخدامها وشفافية', clip: 'مسار القص', opacity: 'العتامة' },
+  { aria: 'クリッピングパス、再利用する要素、透明度を使ったベクターの構成', clip: 'クリッピングパス', opacity: '不透明度' },
 );
 
 export function vectorClipSvg(lang: GuideLang): string {
@@ -715,6 +774,10 @@ const EPUB_RENDITIONS = byLang(
   {
     aria: 'إخراج واحد يُكتب ملف EPUB بتخطيط ثابت وملفًا قابلًا لإعادة التدفق', page: 'الإخراج', pageNote: 'صفحات وأعمدة وأسطر',
     fixed: 'تخطيط ثابت', fixedNote: 'مستند لكل صفحة مطبوعة', flow: 'قابل لإعادة التدفق', flowNote: 'مستند لكل فصل', marker: 'ص ١٢',
+  },
+  {
+    aria: '一つの版面を固定レイアウトとリフロー型の二つのEPUBに書き出す', page: '版面', pageNote: 'ページ・段・行',
+    fixed: '固定レイアウト', fixedNote: '印刷ページごとに一文書', flow: 'リフロー型', flowNote: '章ごとに一文書', marker: '12ページ',
   },
 );
 
@@ -781,7 +844,7 @@ export function epubRenditionsSvg(lang: GuideLang): string {
   flowText += lines(cx, y, y + 17, cw, 8.5, '#c8d3e0', 4, 3.4);
   y += 19;
   // The marker where printed page 12 begins.
-  const tagW = lang === 'zh-Hans' ? 32 : 26;
+  const tagW = lang === 'zh-Hans' ? 32 : lang === 'ja' ? 38 : 26;
   flowText += `<line x1="${cx}" y1="${y + 4}" x2="${cx + cw - tagW - 3}" y2="${y + 4}" stroke="${P.amber}" stroke-width="0.9" stroke-dasharray="2.5 2" />`
     + `<rect x="${cx + cw - tagW}" y="${y - 2}" width="${tagW}" height="12" rx="6" fill="${P.amberTint}" stroke="${P.amber}" stroke-width="0.8" />`
     + text(cx + cw - tagW / 2, y + 7, marker, { size: 7.5, color: P.amberDark, weight: 600 });

@@ -21,7 +21,13 @@ export async function generateMetadata({
   });
 }
 
-const SECTION_TITLE = { type: "categoryType", cjk: "categoryCjk", arabic: "categoryArabic", web: "categoryWeb" } as const;
+const SECTION_TITLE = {
+  type: "categoryType",
+  cjk: "categoryCjk",
+  japanese: "categoryJapanese",
+  arabic: "categoryArabic",
+  web: "categoryWeb",
+} as const;
 
 /** The site's glossary (WCAG 3.1.3 and 3.1.4): the trade words, grouped
  *  and sorted in the reader's language, then every abbreviation with its
@@ -104,7 +110,13 @@ export default async function GlossaryPage({
                     <dt className="font-head text-lg font-bold text-foreground 2xl:text-xl">
                       {term.term}
                       {term.native && (
-                        <span lang="zh-Hans" className="ms-2 font-body font-normal text-slate">
+                        // In its own language (Japanese forms for 振り仮名,
+                        // not Chinese ones) and isolated in its own direction.
+                        <span
+                          lang={term.nativeLang}
+                          dir={term.nativeLang === "ar" ? "rtl" : "ltr"}
+                          className="ms-2 font-body font-normal text-slate"
+                        >
                           {term.native}
                         </span>
                       )}

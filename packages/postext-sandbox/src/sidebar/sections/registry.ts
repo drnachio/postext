@@ -47,6 +47,7 @@ export type SettingsSectionId =
   | 'tableStyle'
   | 'tableStyles'
   | 'diagramStyle'
+  | 'videoStyle'
   | 'calloutStyles'
   | 'htmlViewer'
   | 'folio'
@@ -115,6 +116,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'tableStyle', group: 'figures', labelKey: 'tableStyleSection', configKeys: ['tableStyle'] },
   { id: 'tableStyles', group: 'figures', labelKey: 'tableStylesSection', configKeys: ['tableStyles'] },
   { id: 'diagramStyle', group: 'figures', labelKey: 'diagramStyleSection', configKeys: ['diagramStyle'] },
+  { id: 'videoStyle', group: 'figures', labelKey: 'videoStyleSection', configKeys: ['videoStyle'] },
   { id: 'calloutStyles', group: 'callouts', labelKey: 'calloutStylesSection', configKeys: ['calloutStyles'] },
   { id: 'headerFooter', group: 'running', labelKey: 'headerFooter', configKeys: ['header', 'footer'] },
   { id: 'parts', group: 'parts', labelKey: 'parts', configKeys: ['parts'] },

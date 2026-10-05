@@ -70,9 +70,13 @@ export function valueText(v: ChineseDefaultValue, labels: SandboxLabels, uiLocal
       return v.auto ? labels.cjkAuto.replace('__value__', name) : name;
     }
     case 'footnotes': {
-      const position = v.position === 'inline' ? labels.footnotesMarkerPositionInline : labels.footnotesMarkerPositionSuperscript;
+      const position = v.position === 'inline' ? labels.footnotesMarkerPositionInline
+        : v.position === 'side' ? labels.footnotesMarkerPositionSide
+          : v.position === 'right' ? labels.footnotesMarkerPositionRight
+            : labels.footnotesMarkerPositionSuperscript;
       const numbering = v.numbering === 'page' ? labels.footnotesNumberingPage
         : v.numbering === 'column' ? labels.footnotesNumberingColumn
+          : v.numbering === 'spread' ? labels.footnotesNumberingSpread
           : v.numbering === 'document' ? labels.footnotesNumberingDocument
             : labels.footnotesNumberingChapter;
       return `${v.marker} (${position}), ${numbering}`;

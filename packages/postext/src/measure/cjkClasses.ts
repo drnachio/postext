@@ -7,6 +7,14 @@ import type { CjkLineBreak } from '../types';
  * level, which marks never part (—— ……), and which characters take no
  * inter-character space when a justified line is spread.
  *
+ * Japanese line breaking (kinsoku shori, JLReq §3.1.7–§3.1.10, JIS X 4051)
+ * tells apart characters these classes merge: the small kana and ー (ideograph
+ * and iteration here), 々 among the iteration marks, the hyphens among the
+ * connectors, ？！ among the stops, ：； among the pauses. The Japanese
+ * levels read them from the grapheme ({@link breakClassOf}); every other
+ * use of a class (widths, spacing, justification) and the Chinese levels
+ * see only the classes below.
+ *
  * A class is read from the first code point of a grapheme. The marks Latin
  * text shares with Chinese (— … · “ ” ‘ ’) are classed as Chinese marks
  * here: the table is only consulted for paragraphs set by the CJK composer
@@ -15,16 +23,24 @@ import type { CjkLineBreak } from '../types';
  * interpunct inside one ("l·l") are kept in their word by the unit builder.
  */
 
-/** How strictly lines avoid starting or ending with punctuation (clreq
- *  §6.1.1). `none`: anywhere between characters (Taiwan and Hong Kong
- *  newspapers). `basic`: no pause or stop mark, closing bracket or quote,
- *  connector, interpunct or iteration mark opens a line, and no opening
- *  bracket or quote closes one. `gb`: `basic` plus the solidus at either
- *  end (GB/T 15834—2011 §5.1.9). `strict`: `gb` plus the two-em dash and
- *  the ellipsis at the start of a line. */
+/** How strictly lines avoid starting or ending with punctuation. The
+ *  Chinese levels (clreq §6.1.1): `none`: anywhere between characters
+ *  (Taiwan and Hong Kong newspapers). `basic`: no pause or stop mark,
+ *  closing bracket or quote, connector, interpunct or iteration mark opens
+ *  a line, and no opening bracket or quote closes one. `gb`: `basic` plus
+ *  the solidus at either end (GB/T 15834—2011 §5.1.9). `strict`: `gb` plus
+ *  the two-em dash and the ellipsis at the start of a line. The Japanese
+ *  levels (JLReq Appendix C.3): `ja-very-strict` (JIS X 4051), `ja-strict`
+ *  (small kana, ー and 々 may open a line) and `ja-loose` (newspapers); see
+ *  {@link isLineStartProhibited}. */
 export type CjkLineBreakLevel = CjkLineBreak;
 
-export const CJK_LINE_BREAK_LEVELS: readonly CjkLineBreakLevel[] = ['none', 'basic', 'gb', 'strict'];
+export const CJK_LINE_BREAK_LEVELS: readonly CjkLineBreakLevel[] = ['none', 'basic', 'gb', 'strict', 'ja-very-strict', 'ja-strict', 'ja-loose'];
+
+/** Whether a level is one of the Japanese ones (`ja-…`). */
+export function isJapaneseLineBreak(level: CjkLineBreakLevel): boolean {
+  return level === 'ja-very-strict' || level === 'ja-strict' || level === 'ja-loose';
+}
 
 export type CjkClass =
   /** Han, kana, hangul, bopomofo, fullwidth letters and digits, 〇, emoji
@@ -68,6 +84,33 @@ export type CjkClass =
   /** U+200B, the zero-width space: a break opportunity, not printed. */
   | 'zwsp';
 
+/** The classes the Japanese levels break by: the {@link CjkClass} of a
+ *  grapheme, or one of the JLReq classes (Appendix A) a Chinese class holds
+ *  together with others, which {@link breakClassOf} reads from the
+ *  grapheme under a Japanese level only. */
+export type CjkBreakClass =
+  | CjkClass
+  /** Small kana, cl-11: ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ
+   *  ｧ–ｯ and the small kana of the Kana Extended blocks (ideographs to
+   *  the Chinese levels). */
+  | 'smallKana'
+  /** The prolonged sound mark ー (ｰ), cl-10. */
+  | 'prolonged'
+  /** 々, the one iteration mark `ja-strict` lets open a line. */
+  | 'kanjiIteration'
+  /** Hyphens, cl-03: ‐ – ゠ 〜 and ～ (U+FF5E, which Japanese text types for
+   *  〜; JLReq §3.1.7 note). */
+  | 'hyphen'
+  /** Dividing punctuation, cl-04: ？！‼⁇⁈⁉ (stops to the Chinese levels). */
+  | 'dividing'
+  /** Middle dots, cl-05: ・ ： ； and the other interpuncts (pauses or
+   *  interpuncts to the Chinese levels). */
+  | 'middleDot'
+  /** 〳 〴 〵, the halves of the vertical kana repeat mark: cl-08
+   *  inseparable characters, which may open a line but never part from
+   *  each other (iteration marks to the Chinese levels). */
+  | 'inseparable';
+
 /** The level lines of CJK text break at when a measurement names none:
  *  the document's `cjk.lineBreak`, which the build sets before it lays the
  *  document out (as it sets the hyphenation language), so captions, table
@@ -90,43 +133,193 @@ export function getCjkLineBreak(): CjkLineBreakLevel {
  *  `aCls`, a CJK grapheme when `aCjk`) and `b` after it. Only next to a CJK
  *  grapheme — two Western graphemes never part here — and never before the
  *  ideographic space; at `level`, no prohibited mark opens or closes a
- *  line. */
-export function cjkBreakAllowed(aCls: CjkClass, aCjk: boolean, bCls: CjkClass, bCjk: boolean, level: CjkLineBreakLevel): boolean {
+ *  line. Under a Japanese level the graphemes, when given (`aG`, `bG`: the
+ *  last of the text before and the first after), refine the classes
+ *  ({@link breakClassOf}) and keep the inseparable pairs whole
+ *  ({@link isInseparablePair}). */
+export function cjkBreakAllowed(
+  aCls: CjkClass,
+  aCjk: boolean,
+  bCls: CjkClass,
+  bCjk: boolean,
+  level: CjkLineBreakLevel,
+  aG?: string,
+  bG?: string,
+): boolean {
   if (aCls === 'zwsp' || bCls === 'zwsp') return true;
   if (!aCjk && !bCjk) return false;
   if (bCls === 'ideoSpace') return false;
-  return !isLineStartProhibited(bCls, level) && !isLineEndProhibited(aCls, level);
+  if (aG !== undefined && bG !== undefined && isJapaneseLineBreak(level) && isInseparablePair(aG, bG)) return false;
+  return !isLineStartProhibited(bCls, level, bG) && !isLineEndProhibited(aCls, level, aG);
 }
 
-/** Whether a grapheme of `cls` may not open a line at `level`. */
-export function isLineStartProhibited(cls: CjkClass, level: CjkLineBreakLevel): boolean {
+/** Whether a grapheme of `cls` may not open a line at `level`. Under a
+ *  Japanese level `grapheme`, when given, refines the class
+ *  ({@link breakClassOf}); the Chinese levels never read it.
+ *
+ *  The Japanese levels (JLReq §3.1.7 and Appendix C.3). At all three no
+ *  line opens with a closing bracket or quote (cl-02, and the warichu's
+ *  cl-29), 、， (cl-07) or 。． (cl-06). `ja-very-strict` (JIS X 4051's
+ *  default) adds the hyphens (cl-03), ？！ (cl-04), the middle dots (cl-05),
+ *  the iteration marks (cl-09), ー (cl-10), the small kana (cl-11) and a unit
+ *  sign; `ja-strict` lets a small kana, ー and 々 open a line (JLReq's
+ *  convention for books in general); `ja-loose` (the newspapers' very
+ *  loose convention) lets all of them but the first group. The two-em
+ *  dash and the ellipsis (cl-08) may open a line at every Japanese level,
+ *  and the solidus has no rule (GB/T's only). */
+export function isLineStartProhibited(cls: CjkBreakClass, level: CjkLineBreakLevel, grapheme?: string): boolean {
   switch (level) {
     case 'none':
       return false;
+    case 'ja-very-strict':
+    case 'ja-strict':
+    case 'ja-loose':
+      return jaLineStartProhibited(grapheme === undefined ? cls : breakClassOf(grapheme, cls, level), level);
+  }
+  const c = chineseClass(cls);
+  switch (level) {
     case 'strict':
-      if (cls === 'dash' || cls === 'ellipsis') return true;
+      if (c === 'dash' || c === 'ellipsis') return true;
     // falls through
     case 'gb':
-      if (cls === 'solidus') return true;
+      if (c === 'solidus') return true;
     // falls through
     case 'basic':
-      return cls === 'pause' || cls === 'stop' || cls === 'closing' || cls === 'connector'
-        || cls === 'interpunct' || cls === 'iteration' || cls === 'postfix';
+      return c === 'pause' || c === 'stop' || c === 'closing' || c === 'connector'
+        || c === 'interpunct' || c === 'iteration' || c === 'postfix';
   }
 }
 
-/** Whether a grapheme of `cls` may not close a line at `level`. */
-export function isLineEndProhibited(cls: CjkClass, level: CjkLineBreakLevel): boolean {
+function jaLineStartProhibited(cls: CjkBreakClass, level: 'ja-very-strict' | 'ja-strict' | 'ja-loose'): boolean {
+  switch (cls) {
+    case 'closing': case 'pause': case 'stop':
+      return true;
+    case 'hyphen': case 'connector': case 'dividing': case 'middleDot': case 'interpunct': case 'iteration': case 'postfix':
+      return level !== 'ja-loose';
+    case 'smallKana': case 'prolonged': case 'kanjiIteration':
+      return level === 'ja-very-strict';
+    default:
+      return false;
+  }
+}
+
+/** Whether a grapheme of `cls` may not close a line at `level` (`grapheme`
+ *  as for {@link isLineStartProhibited}). At every Japanese level an
+ *  opening bracket or quote (cl-01, and the warichu's cl-28); a currency
+ *  sign (cl-12) too, but at `ja-loose`, which lets one end a line away
+ *  from a number (a number keeps its signs at every level). */
+export function isLineEndProhibited(cls: CjkBreakClass, level: CjkLineBreakLevel, grapheme?: string): boolean {
   switch (level) {
     case 'none':
       return false;
+    case 'ja-very-strict':
+    case 'ja-strict':
+    case 'ja-loose': {
+      const c = grapheme === undefined ? cls : breakClassOf(grapheme, cls, level);
+      return c === 'opening' || (c === 'prefix' && level !== 'ja-loose');
+    }
+  }
+  const c = chineseClass(cls);
+  switch (level) {
     case 'strict':
     case 'gb':
-      if (cls === 'solidus') return true;
+      if (c === 'solidus') return true;
     // falls through
     case 'basic':
-      return cls === 'opening' || cls === 'prefix';
+      return c === 'opening' || c === 'prefix';
   }
+}
+
+/** A Japanese break class as the Chinese levels read it: the clreq class
+ *  that holds it. Only a Japanese level refines a class, so the Chinese
+ *  levels meet one only when a caller passes it in. */
+function chineseClass(cls: CjkBreakClass): CjkClass {
+  switch (cls) {
+    case 'smallKana': return 'ideograph';
+    case 'prolonged': case 'kanjiIteration': case 'inseparable': return 'iteration';
+    case 'hyphen': return 'connector';
+    case 'dividing': return 'stop';
+    case 'middleDot': return 'pause';
+    default: return cls;
+  }
+}
+
+/** Small kana (cl-11): ぁぃぅぇぉ っ ゃゅょ ゎ ゕゖ and their katakana, the
+ *  Ainu small katakana ㇰ–ㇿ (U+31F0–31FF, ㇷ゚ with its combining mark), the
+ *  halfwidth ｧ–ｯ and the small kana of the Kana Extended and Small Kana
+ *  Extension blocks. UAX #14 classes them CJ. */
+function isSmallKana(cp: number): boolean {
+  switch (cp) {
+    case 0x3041: case 0x3043: case 0x3045: case 0x3047: case 0x3049: case 0x3063: case 0x3083: case 0x3085: case 0x3087: case 0x308E: case 0x3095: case 0x3096:
+    case 0x30A1: case 0x30A3: case 0x30A5: case 0x30A7: case 0x30A9: case 0x30C3: case 0x30E3: case 0x30E5: case 0x30E7: case 0x30EE: case 0x30F5: case 0x30F6:
+    case 0x1B132: case 0x1B150: case 0x1B151: case 0x1B152: case 0x1B155: case 0x1B164: case 0x1B165: case 0x1B166: case 0x1B167:
+      return true;
+  }
+  return (cp >= 0x31F0 && cp <= 0x31FF) || (cp >= 0xFF67 && cp <= 0xFF6F);
+}
+
+/** Hyphens (cl-03): ‐ (U+2010, a quarter em), – (U+2013), ゠ (U+30A0), 〜
+ *  (U+301C) and ～ (U+FF5E), the fullwidth tilde Japanese text types for 〜
+ *  (UAX #14 classes it ID, so it needs this tailoring). */
+const HYPHEN = new Set('\u2010\u2013\u30A0\u301C\uFF5E');
+/** Dividing punctuation (cl-04). */
+const DIVIDING = new Set('！？!?‼⁇⁈⁉﹖﹗︕︖');
+/** The colon and semicolon, middle dots (cl-05) to JLReq. */
+const MIDDLE_DOT_PAUSE = new Set('：；:;﹔﹕︓︔');
+
+/**
+ * The class a Japanese level breaks `grapheme` by, given its class `cls`
+ * (as the composer set it on the grapheme's unit): the JLReq class
+ * (Appendix A) where the clreq class merges several, else `cls`. Under a
+ * Chinese level, `cls` unchanged. Only a grapheme whose `cls` is the one
+ * {@link cjkClassOf} gives it is refined, so a unit whose class the
+ * composer set (an upright number cell, a single em dash read as a
+ * connector) keeps what the composer meant:
+ * - an ideograph that is a small kana → `smallKana`;
+ * - ー → `prolonged`; 々 → `kanjiIteration`; 〳 〴 〵 → `inseparable`;
+ * - a hyphen, connector or Western grapheme in {@link HYPHEN} → `hyphen`;
+ *   a single — or ― (a connector to clreq) → `dash`, which may open a
+ *   Japanese line;
+ * - ？！ → `dividing`; ：； and the interpuncts → `middleDot`.
+ */
+export function breakClassOf(grapheme: string, cls: CjkBreakClass, level: CjkLineBreakLevel): CjkBreakClass {
+  if (!isJapaneseLineBreak(level)) return cls;
+  const cp = grapheme.codePointAt(0);
+  if (cp === undefined) return cls;
+  switch (cls) {
+    case 'ideograph':
+      return isSmallKana(cp) ? 'smallKana' : cls;
+    case 'iteration':
+      if (cp === 0x30FC || cp === 0xFF70) return 'prolonged';
+      if (cp === 0x3005) return 'kanjiIteration';
+      return cp >= 0x3033 && cp <= 0x3035 ? 'inseparable' : cls;
+    case 'connector':
+      if (cp === 0x2014 || cp === 0x2015) return 'dash';
+    // falls through
+    case 'western':
+      return HYPHEN.has(String.fromCodePoint(cp)) ? 'hyphen' : cls;
+    case 'stop':
+      return DIVIDING.has(String.fromCodePoint(cp)) ? 'dividing' : cls;
+    case 'pause':
+      return MIDDLE_DOT_PAUSE.has(String.fromCodePoint(cp)) ? 'middleDot' : cls;
+    case 'interpunct':
+      return 'middleDot';
+    default:
+      return cls;
+  }
+}
+
+/** Two graphemes a Japanese line never breaks between (分離禁止, JLReq
+ *  §3.1.10): the same inseparable character twice (―― —— …… ‥‥, cl-08;
+ *  the composer sets ――, —— and …… as one unit already, this keeps a third
+ *  with them and ‥‥ whole), and the two halves of the vertical kana repeat
+ *  mark (〳〵, 〴〵). Two different ones may part. */
+export function isInseparablePair(a: string, b: string): boolean {
+  const ca = a.codePointAt(0);
+  const cb = b.codePointAt(0);
+  if (ca === undefined || cb === undefined) return false;
+  if (cb === 0x3035) return ca === 0x3033 || ca === 0x3034;
+  return ca === cb && (ca === 0x2014 || ca === 0x2015 || ca === 0x2026 || ca === 0x2025);
 }
 
 const OPENING = new Set('（〔［｛【〖《〈「『〘〚〝“‘([{«‹︵︷︹︻︽︿﹁﹃﹇﹙﹛﹝︗｟｢⦅');

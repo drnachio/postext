@@ -19,10 +19,13 @@
       are the vertical metrics (`vhea`, `vmtx`). A Chinese face: pass
       `--ranges latin,punct,cjk-punct` (full-width and vertical punctuation
       the text may not hold yet; add `bopomofo` for zhuyin readings) and
-      subset a variable font before `instance`, which is then quick. An
-      Arabic face: `--ranges latin,punct,arabic` (the whole Arabic block, so
-      the tatweel kashida inserts and the joining forms stay; GSUB/GPOS are
-      kept, without them letters print isolated).
+      subset a variable font before `instance`, which is then quick. A
+      Japanese face: `--ranges latin,latin-ext,punct,cjk-punct,kana` (every
+      kana, so furigana and later edits find their glyphs; latin-ext holds
+      the macrons of rōmaji, ō ū). An Arabic face: `--ranges
+      latin,punct,arabic` (the whole Arabic block, so the tatweel kashida
+      inserts and the joining forms stay; GSUB/GPOS are kept, without them
+      letters print isolated).
 
   fonts.py scale FONT --factor 1.10 --family "Garamond 110" --out fonts/
       A horizontally scaled copy (layout apps set body text at 105-110 %
@@ -68,6 +71,15 @@ RANGES = {
     "cjk-punct": [(0x3000, 0x303F), (0xFF00, 0xFFEF), (0xFE10, 0xFE1F), (0xFE30, 0xFE4F),
                   (0x2010, 0x2027), (0x00B7, 0x00B7), (0x2E3A, 0x2E3B)],
     "bopomofo": [(0x3100, 0x312F), (0x31A0, 0x31BF), (0x02C7, 0x02C7), (0x02CA, 0x02CB), (0x02D9, 0x02D9)],
+    # Japanese kana: hiragana and katakana (with ー ・ ゝ ヽ and the voicing
+    # marks), the katakana phonetic extensions (small ㇰ–ㇿ), half-width
+    # katakana and the Small Kana Extension; then what a vertical Japanese
+    # page asks for beyond the text: 〱–〵 (くの字点), 〝〟 (the engine paints
+    # “” as 〝〟 in vertical text), the two-em dash ― and the leaders ‥ ….
+    # The vertical forms themselves come from the `vert`/`vrt2` lookups,
+    # which the subset keeps with the glyphs they reach.
+    "kana": [(0x3040, 0x30FF), (0x31F0, 0x31FF), (0xFF66, 0xFF9F), (0x1B130, 0x1B16F),
+             (0x3031, 0x3035), (0x301D, 0x301F), (0x2015, 0x2015), (0x2025, 0x2026)],
     # Arabic, its supplements and presentation forms (the shaper may map to
     # them), the tatweel kashida inserts, ZWNJ/ZWJ and the bidi controls.
     "arabic": [(0x0600, 0x06FF), (0x0750, 0x077F), (0x0870, 0x08FF), (0xFB50, 0xFDFF), (0xFE70, 0xFEFF),

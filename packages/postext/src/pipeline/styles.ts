@@ -35,6 +35,18 @@ export interface BlockStyle {
    *  a paragraph style's `indent`; the first-line and hanging indents are
    *  measured from it. Unset: none. */
   indentPx?: number;
+  /** Indent of every line (px) from the side lines end on — a paragraph
+   *  style's `endIndent` (地からN字上げ): the measure narrows by it, the
+   *  lines keep their start. Unset: none. */
+  endIndentPx?: number;
+  /** A heading level's `lineSpan` (行取り, #424): the heading takes this
+   *  many body grid lines, its text centred in them, in place of its
+   *  margins (see `headingLineSpanBand`). Unset: the margins apply. */
+  lineSpan?: number;
+  /** A heading level's `jidori` (字取り, #424): a one-line heading
+   *  narrower than this many of its own ems is spaced out evenly to that
+   *  width. Unset: no spacing. */
+  jidori?: number;
   /** Set the text in small capitals (a paragraph style's or a callout
    *  body's `smallCaps`): every span is measured and painted so. */
   smallCaps?: boolean;
@@ -178,8 +190,12 @@ export function resolveHeadingStyle(
   // Tracking (EF-83): left unset at zero so untracked headings measure (and
   // cache) exactly as before.
   const trackingPx = headingConfig.letterSpacing ? dimensionToPx(headingConfig.letterSpacing, dpi, fontSizePx) : 0;
+  // 字下げ (#424): counted in body characters, as the body grid is.
+  const indentPx = headingConfig.indent
+    ? dimensionToPx(headingConfig.indent, dpi, dimensionToPx(resolved.bodyText.fontSize, dpi))
+    : 0;
   const letterSpacingPx = Number.isFinite(trackingPx) && trackingPx !== 0 ? trackingPx : undefined;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}), ...(emphasis ? { emphasis } : {}) };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}), ...(emphasis ? { emphasis } : {}), ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}), ...(headingConfig.lineSpan !== undefined ? { lineSpan: headingConfig.lineSpan } : {}), ...(headingConfig.jidori !== undefined ? { jidori: headingConfig.jidori } : {}) };
 }
 
 export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
@@ -272,6 +288,7 @@ export function resolveParagraphStyle(
     : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
   const indentPx = style.indent ? dimensionToPx(style.indent, dpi, fontSizePx) : 0;
+  const endIndentPx = style.endIndent ? dimensionToPx(style.endIndent, dpi, fontSizePx) : 0;
   return {
     ...faces,
     fontSizePx,
@@ -290,6 +307,7 @@ export function resolveParagraphStyle(
     firstLineIndentPx,
     hangingIndent,
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
+    ...(Number.isFinite(endIndentPx) && endIndentPx > 0 ? { endIndentPx } : {}),
     ...(style.smallCaps ? { smallCaps: true } : {}),
     ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
   };

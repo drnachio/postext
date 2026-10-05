@@ -46,7 +46,7 @@ export const TOOLBAR_STYLE_BASE = {
 const TOOLBAR_SCROLL = {
   maxHeight: `calc(100% - ${TOOLBAR_TOP + 12}px)`,
   overflowY: 'auto' as const,
-  scrollbarWidth: 'thin' as const,
+  scrollbarWidth: 'none' as const,
 };
 
 export function toolbarHiddenStyle(hidden: boolean, rtl = false): React.CSSProperties {

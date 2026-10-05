@@ -8,6 +8,7 @@ import { resolveColorValue, resolveDiagramStyleConfig } from '../defaults';
 import { applySingleInkToSvg } from '../svg/singleInk';
 import type { PostextBundle } from './api';
 import { mimeForFile } from './manifest';
+import { videoMimeType } from '../video/url';
 
 /** The fields of a bundle the adapters read: an opened `PostextBundle`, or
  *  any object with the same shape. */
@@ -16,6 +17,8 @@ export type BundleSource = Pick<PostextBundle, 'config' | 'resources' | 'files'>
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
   if (r.kind === 'svg') return r.svg?.fileId;
+  // A video is printed as its poster frame (#454).
+  if (r.kind === 'video') return r.video?.poster?.fileId;
   return undefined;
 }
 
@@ -109,6 +112,27 @@ export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => strin
   });
 }
 
+/** A `resourceVideoUrl` resolver for `renderToHtml` (#454): object URLs
+ *  over the bundle's self-hosted videos, built once. `revoke()` frees
+ *  them. */
+export function bundleVideoUrl(bundle: BundleSource): ((fileId: string) => string | undefined) & { revoke: () => void } {
+  const urls = new Map<string, string>();
+  for (const r of bundle.resources) {
+    const fileId = r.kind === 'video' ? r.video?.fileId : undefined;
+    const bytes = fileId ? bundle.files.get(fileId) : undefined;
+    if (fileId && bytes && !urls.has(fileId)) {
+      urls.set(fileId, URL.createObjectURL(new Blob([bytes.slice()], { type: videoMimeType(r.video?.format) })));
+    }
+  }
+  const resolve = (fileId: string): string | undefined => urls.get(fileId);
+  return Object.assign(resolve, {
+    revoke: () => {
+      for (const url of urls.values()) URL.revokeObjectURL(url);
+      urls.clear();
+    },
+  });
+}
+
 /** A `resourceBytes` resolver for `postext-pdf`'s `renderToPdf`: an SVG
  *  figure resolves to its vector print master (`svg.pdfFileId`) when it has
  *  one — unless single-ink is on, which recolours SVG markup only. The
@@ -121,6 +145,9 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
     if (r.kind === 'bitmap' && r.bitmap?.fileId) {
       const data = bundle.files.get(r.bitmap.fileId);
       if (data) bytes.set(r.bitmap.fileId, data);
+    } else if (r.kind === 'video' && r.video?.poster?.fileId) {
+      const data = bundle.files.get(r.video.poster.fileId);
+      if (data) bytes.set(r.video.poster.fileId, data);
     } else if (r.kind === 'svg' && r.svg?.fileId) {
       const master = r.svg.pdfFileId && !singleInk ? bundle.files.get(r.svg.pdfFileId) : undefined;
       const data = master ?? bundle.files.get(r.svg.fileId);

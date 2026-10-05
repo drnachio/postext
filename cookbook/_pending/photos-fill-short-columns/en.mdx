@@ -1,0 +1,60 @@
+---
+title: "Photos that grow to fill a short column"
+summary: "Each photo marks a safe area; column balancing may crop outside it to set the photo taller, so a column left short by a heading or a float ends flush."
+description: "A two-column magazine feature where photos with a safe area grow by whole grid lines to fill short columns, set beside the same pages without one."
+plain: "Tell the layout which part of each photo must always show. When a column comes up a few lines short, the photo gets taller instead of leaving a gap."
+question: "How do I let a photo be cropped to fill a short column without losing its subject?"
+aliases: ["safe area", "crop to fit", "flexible photo", "fill column gap", "focal area"]
+---
+
+## What you'll build
+
+Three pages of a coastal magazine: a feature on the trades of an estuary town, with a bleed photo across the opener and five photos in the columns. The pen sets the feature twice from the same text. In the first setting the photos keep the shape of their files, and on <PageRef page={2}>page 2</PageRef> both columns end a line short of the grid: the left one under its last paragraph, the right one above the photo at its foot. In the second each photo names the part of the frame that must always show, and the engine crops outside it: on <PageRef page={5}>the same page</PageRef> the shellfish gatherer and the net mender each grow by a line, and both columns end on the last line of the grid. Nobody had to choose the crops.
+
+## Method
+
+### 1 · Mark what must stay, nothing else
+
+The code is [the short answer](#the-short-answer) above. A safe area is four fractions of the picture, measured from its top-left corner. The engine may show the photo at any shape between the whole file and that rectangle, as wide as its column: taller by cutting the sides, lower by cutting the top and bottom. What lies outside the area goes in proportion to the margins on each side, so Rosa, right of centre on the quay, stays right of centre when the sides are cut.
+
+### 2 · Let balancing take the slack only through the photos
+
+The same region sets the balancer. Its usual levers add white: a line above a heading, air under a photo, a paragraph run one line long. Here they are off, so the plain setting shows every short column as it is. A photo with a safe area is tried first anyway, before any of those levers, because a taller photo leaves no hole in the text.
+
+### 3 · The safe area belongs to the resource
+
+<Excerpt region="photos" />
+
+`safeArea` sits on the resource next to its file, caption and placement, so a photo keeps it wherever it floats and in every document that uses it. The pen passes it or leaves it out, and that is the only difference between the two settings. The opener's estuary is drawn by the heading style, not floated, so it needs none.
+
+### 4 · Build both and compare
+
+<Excerpt region="builds" />
+
+Both documents come from one config and one Markdown string. Only the pages that flow on are filled to the foot: <PageRef page={3}>page 3</PageRef> closes the feature, and a closing page only has its columns end level with each other, which here they already do, so no photo grows there. The PDF button builds whichever setting is on the desk, and the PDF clips each photo to its frame in the same way.
+
+## Variations
+
+### Keep an inline photo with its text
+
+A photo set with `position: 'here'` and a safe area is cropped from the top and bottom when it is a little too tall for the room left in its column, instead of moving to the next one.
+
+```diff
+-const PLACEMENT = { pulpeira: { position: 'here' } }; // the rest float to the first free slot
++const PLACEMENT = { pulpeira: { position: 'here' }, faro: { position: 'here' } };
+```
+
+### Give the balancer its other levers back
+
+With the defaults the photos still go first, and the headings and floats take what a photo's safe area cannot.
+
+```diff
+-const balancing = { enabled: true, maxLinesPerHeading: 0, stretchAfterLists: false,
+-  stretchAfterFloats: false, looseParagraphs: false };
++const balancing = { enabled: true };
+```
+
+## Pitfalls
+
+- A safe area that covers the whole picture, or one with a side under 2 % of it, is ignored: the photo is shown whole, as without one.
+- Only column floats and inline photos grow. A photo floated across both columns keeps its shape, because growing it would push every column under it at once.

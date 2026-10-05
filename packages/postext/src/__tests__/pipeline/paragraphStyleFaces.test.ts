@@ -124,7 +124,7 @@ describe('unknown paragraph style keys (EF-173)', () => {
     const style: Required<ParagraphStyleConfig> = {
       id: 's', name: 'S', fontFamily: 'Inter', fontSize: pt(9), lineHeight: pt(11), color: { hex: '#000000', model: 'hex' },
       textAlign: 'left', boldColor: { hex: '#000000', model: 'hex' }, italicColor: { hex: '#000000', model: 'hex' },
-      fontWeight: 400, boldFontWeight: 700, italic: false, smallCaps: false, hyphenation: false, indent: pt(0),
+      fontWeight: 400, boldFontWeight: 700, italic: false, smallCaps: false, hyphenation: false, indent: pt(0), endIndent: pt(9),
       firstLineIndent: pt(0), hangingIndent: pt(0), spaceBetween: pt(0), marginTop: pt(0), marginBottom: pt(0),
       snapToGrid: true, textTransform: 'none',
     };

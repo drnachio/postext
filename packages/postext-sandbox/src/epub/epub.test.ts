@@ -143,6 +143,10 @@ describe('reader helpers', () => {
     expect(fillLabel('EPUB 第 __page__ 页', '__page__', '一')).toBe('EPUB 第一页');
     expect(fillLabel('EPUB 第 __page__ 页', '__page__', '12')).toBe('EPUB 第 12 页');
     expect(fillLabel('EPUB page __page__', '__page__', 'iv')).toBe('EPUB page iv');
+    // A Japanese book's page labels: kanji or kana close up too.
+    expect(fillLabel('EPUB 第 __page__ 页', '__page__', '一〇五')).toBe('EPUB 第一〇五页');
+    expect(fillLabel('EPUB 第 __page__ 页', '__page__', 'あ')).toBe('EPUB 第あ页');
+    expect(fillLabel('EPUB page __page__', '__page__', 'あ')).toBe('EPUB page あ');
   });
 
 

@@ -58,20 +58,27 @@ function mathCacheKey(span: InlineSpan): string {
   return `|m:${span.math!.tex}${render ? `|${render.widthPx}x${render.heightPx}` : ''}`;
 }
 
-/** The Chinese annotations of a span (#193–#195): marks set on the same
- *  text change its segments, a reading or a note its measure. A
- *  directional isolate (#367) changes the order of its line. Empty for a
- *  span without any, so its key is unchanged. */
+/** The Chinese and Japanese annotations of a span (#193–#195, #421, #430):
+ *  marks set on the same text change its segments, a reading or a note its
+ *  measure. A directional isolate (#367) changes the order of its line.
+ *  Empty for a span without any, so its key is unchanged. */
 function annotationCacheKey(s: InlineSpan): string {
-  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction) return '';
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction && !s.sideline && !s.kunten) return '';
   let key = '';
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
   if (s.bookTitle) key += `|bt:${s.bookTitle.id}.${s.bookTitle.depth}`;
-  if (s.ruby) key += `|rb:${s.ruby.text}|${s.ruby.group ? 'g' : 'm'}|${s.ruby.position ?? ''}|${s.ruby.fontString ?? ''}|${s.ruby.color ?? ''}|${s.ruby.id}`;
+  if (s.ruby) {
+    const r = s.ruby;
+    key += `|rb:${r.text}|${r.group ? 'g' : 'm'}|${r.position ?? ''}|${r.fontString ?? ''}|${r.color ?? ''}|${r.id}`;
+    // The Japanese rules (#422): absent on other rubies, whose key stays.
+    if (r.jukugo || r.mono || r.align || r.overhang || r.fullKana) key += `|${r.jukugo ? 'j' : ''}${r.mono ? 'o' : ''}:${r.align ?? ''}:${r.overhang ?? ''}:${r.fullKana ? 'f' : ''}`;
+  }
   if (s.warichu) key += `|wc:${s.warichu.id}|${s.warichu.fontString ?? ''}|${s.warichu.open ?? ''}|${s.warichu.close ?? ''}|${s.warichu.color ?? ''}`;
   if (s.inserted) key += '|ins';
   for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;
+  if (s.sideline) key += `|sl:${s.sideline.id}:${s.sideline.style ?? ''}:${s.sideline.position ?? ''}`;
+  if (s.kunten) key += `|kt:${s.kunten.id}:${s.kunten.kaeri ?? ''}:${s.kunten.okuri ?? ''}:${s.kunten.tate ? 't' : ''}:${s.kunten.fontString ?? ''}:${s.kunten.color ?? ''}:${s.kunten.placement ?? ''}`;
   return key;
 }
 
@@ -85,7 +92,7 @@ function buildRichCacheKey(
   // Script and small-caps marks change the measure of the same text, and a
   // formula or a swatch colour what a placeholder paints: they join the key
   // only when set, so the common keys are unchanged.
-  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.ref?.anchor ? `@a${s.ref.pageIndex ?? ''}` : ''}${s.footnote ? `|fn:${s.footnote.id}${s.footnote.scale !== undefined ? `@${s.footnote.scale}` : ''}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.fixedSpace ? '|fx' : ''}${s.labelTab ? `|lt:${s.labelTab}` : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}${annotationCacheKey(s)}`).join('\x01');
+  const spanKey = spans.map((s) => `${s.text}|${s.bold}|${s.italic}|${s.ref?.resourceId ?? ''}${s.ref?.anchor ? `@a${s.ref.pageIndex ?? ''}` : ''}${s.footnote ? `|fn:${s.footnote.id}${s.footnote.scale !== undefined ? `@${s.footnote.scale}` : ''}${s.footnote.place ? `:${s.footnote.place}` : ''}` : ''}${s.chip ? chipCacheKey(s.chip) : ''}${s.math ? mathCacheKey(s) : ''}${s.swatch ? `|sw:${s.swatch.color}` : ''}${s.script ? `|${s.script}` : ''}${s.smallCaps ? '|sc' : ''}${s.fixedSpace ? '|fx' : ''}${s.labelTab ? `|lt:${s.labelTab}` : ''}${s.combineUpright ? '|tcy' : ''}${s.orientation === 'upright' ? '|up' : s.orientation === 'sideways' ? '|side' : ''}${annotationCacheKey(s)}`).join('\x01');
   return `R\x00${spanKey}\x00${fonts[0]}\x00${fonts[1]}\x00${fonts[2]}\x00${fonts[3]}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(spanKey, options)}${cjkLinkKey(spans, spanKey)}`;
 }
 

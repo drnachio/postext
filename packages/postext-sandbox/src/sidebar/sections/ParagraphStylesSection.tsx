@@ -2,7 +2,7 @@
 
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { BodyTextConfig, ColorValue, DimensionUnit, ParagraphContainerSpacing, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
+import type { BodyTextConfig, ColorValue, Dimension, DimensionUnit, ParagraphContainerSpacing, ParagraphStyleConfig, ResolvedParagraphStyleConfig } from 'postext';
 import { DEFAULT_BODY_TEXT_CONFIG, resolveBodyTextConfig, resolveParagraphStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import {
@@ -22,6 +22,7 @@ import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const SPACING_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const ZERO_EM: Dimension = { value: 0, unit: 'em' };
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
@@ -306,6 +307,17 @@ function ParagraphStyleCard({
         tooltip={labels.paragraphStyleIndentTooltip}
         isDefault={unset('indent')}
         onReset={() => onResetField('indent')}
+      />
+      <DimensionInput
+        label={labels.paragraphStyleEndIndent}
+        value={resolved.endIndent ?? ZERO_EM}
+        onChange={(v) => onChange({ endIndent: v })}
+        min={0}
+        step={0.1}
+        units={SPACING_UNITS}
+        tooltip={labels.paragraphStyleEndIndentTooltip}
+        isDefault={unset('endIndent')}
+        onReset={() => onResetField('endIndent')}
       />
       <DimensionInput
         label={labels.bodyFirstLineIndent}

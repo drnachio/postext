@@ -340,6 +340,40 @@
       }
     }
   },
+  "kuntenExceedsLeading": {
+    "source": "engine",
+    "label": {
+      "en": "Kanbun marks crowd the next line",
+      "es": "Las marcas de kanbun invaden la línea vecina",
+      "ca": "Les marques de kanbun envaeixen la línia veïna",
+      "zh": "训点碰到相邻的行",
+      "ar": "علامات الكانبون تلامس السطر المجاور"
+    },
+    "cause": {
+      "en": "A paragraph of kanbun has okurigana beside its characters (or return marks in the line gap, `cjk.kunten.placement: 'interlinear'`) in a line gap narrower than the marks: they sit in the leading and touch the line next to them.",
+      "es": "Un párrafo de kanbun lleva okurigana junto a sus caracteres (o marcas de retorno en el interlineado, `cjk.kunten.placement: 'interlinear'`) en un hueco entre líneas más estrecho que las marcas: ocupan el interlineado y tocan la línea vecina.",
+      "ca": "Un paràgraf de kanbun porta okurigana al costat dels seus caràcters (o marques de retorn a l'interlineat, `cjk.kunten.placement: 'interlinear'`) en un buit entre línies més estret que les marques: ocupen l'interlineat i toquen la línia veïna.",
+      "zh": "汉文段落在字旁带送假名（或用`cjk.kunten.placement: 'interlinear'`把返点排在行间），行间空隙却比这些训点还窄：训点位于行距之中，碰到相邻的行。",
+      "ar": "فقرة كانبون فيها أوكوريغانا بجانب حروفها (أو علامات رجوع في الفراغ بين الأسطر، `cjk.kunten.placement: 'interlinear'`) وفراغها بين الأسطر أضيق من العلامات: فهي تقع في تباعد الأسطر وتلامس السطر المجاور."
+    },
+    "fix": {
+      "en": "Set the paragraph with more leading (at least the text size plus `cjk.kunten.fontSize`), or make the marks smaller.",
+      "es": "Compón el párrafo con más interlineado (al menos el cuerpo más `cjk.kunten.fontSize`), o reduce las marcas.",
+      "ca": "Compon el paràgraf amb més interlineat (com a mínim el cos més `cjk.kunten.fontSize`), o redueix les marques.",
+      "zh": "给该段落设更大的行距（至少为正文字号加上`cjk.kunten.fontSize`），或把训点缩小。",
+      "ar": "انضد الفقرة بتباعد أسطر أكبر (حجم النص مضافًا إليه `cjk.kunten.fontSize` على الأقل)، أو صغّر العلامات."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Marks, ruby and warichu",
+        "es": "Marcas, ruby y warichu",
+        "ca": "Marques, ruby i warichu",
+        "zh": "着重号、注音与夹注",
+        "ar": "العلامات والروبي والواريتشو"
+      }
+    }
+  },
   "arabicMarksExceedLeading": {
     "source": "engine",
     "label": {
@@ -2312,6 +2346,40 @@
       }
     }
   },
+  "indexReadingMissing": {
+    "source": "engine",
+    "label": {
+      "en": "Index entry without a reading",
+      "es": "Entrada del índice sin lectura",
+      "ca": "Entrada de l'índex sense lectura",
+      "zh": "索引词条缺少读音",
+      "ar": "مدخل فهرس بلا قراءة"
+    },
+    "cause": {
+      "en": "A Japanese index files entries by their reading, and no algorithm reads kanji reliably: this entry has a kanji and none of its marks gives a reading (yomi, kana ruby on the marked text, or a kana sort key), so it files after the kana entries, by code point.",
+      "es": "Un índice japonés ordena las entradas por su lectura, y ningún algoritmo lee los kanji con fiabilidad: esta entrada tiene un kanji y ninguna de sus marcas da una lectura (yomi, ruby en kana sobre el texto marcado o una clave sort en kana), así que se ordena después de las entradas en kana, por punto de código.",
+      "ca": "Un índex japonès ordena les entrades per la seva lectura, i cap algorisme no llegeix els kanji amb fiabilitat: aquesta entrada té un kanji i cap de les seves marques no en dona la lectura (yomi, ruby en kana sobre el text marcat o una clau sort en kana), de manera que s'ordena després de les entrades en kana, per punt de codi.",
+      "zh": "日文索引按读音排列词条，而汉字的读音无法可靠地自动推出：这个词条含有汉字，它的标记都没有给出读音（yomi、标记文字上的假名注音，或用假名写的sort键），因此它按码位排在假名词条之后。",
+      "ar": "يرتّب الفهرس الياباني المداخل حسب قراءتها، ولا توجد خوارزمية تقرأ الكانجي بموثوقية: هذا المدخل فيه حرف كانجي ولا تعطي أي من علاماته قراءة (yomi، أو روبي بالكانا على النص المعلَّم، أو مفتاح sort بالكانا)، فيُرتَّب بعد مداخل الكانا حسب نقطة الترميز."
+    },
+    "fix": {
+      "en": "Add yomi=\"…\" with the reading in kana to one of the entry's marks (:index[東京]{yomi=\"とうきょう\"}), or mark text that carries ruby ({東京|とう|きょう}).",
+      "es": "Añade yomi=\"…\" con la lectura en kana a una de las marcas de la entrada (:index[東京]{yomi=\"とうきょう\"}), o marca un texto que lleve ruby ({東京|とう|きょう}).",
+      "ca": "Afegeix yomi=\"…\" amb la lectura en kana a una de les marques de l'entrada (:index[東京]{yomi=\"とうきょう\"}), o marca un text que porti ruby ({東京|とう|きょう}).",
+      "zh": "在词条的某个标记上加 yomi=\"…\"，用假名写出读音（:index[東京]{yomi=\"とうきょう\"}），或标记带注音的文字（{東京|とう|きょう}）。",
+      "ar": "أضف yomi=\"…\" بالقراءة بالكانا إلى إحدى علامات المدخل (:index[東京]{yomi=\"とうきょう\"})، أو علّم نصًّا يحمل روبي ({東京|とう|きょう})."
+    },
+    "docs": {
+      "slug": "japanese-layout",
+      "heading": {
+        "en": "Index in gojūon order",
+        "es": "Índice en orden gojūon",
+        "ca": "Índex en ordre gojūon",
+        "zh": "五十音顺索引",
+        "ar": "الفهرس بترتيب غوجوون"
+      }
+    }
+  },
   "missingGlyph": {
     "source": "sandbox",
     "label": {
@@ -2514,6 +2582,78 @@
         "zh": "配置警告",
         "ar": "تحذيرات الإعدادات"
       }
+    }
+  },
+  "videoWithoutPoster": {
+    "source": "engine",
+    "label": {
+      "en": "Video without a poster",
+      "es": "Vídeo sin portada",
+      "ca": "Vídeo sense portada",
+      "zh": "视频没有封面",
+      "ar": "فيديو بلا غلاف"
+    },
+    "cause": {
+      "en": "A video resource the text uses has no `video.poster`, so print shows a dark box in the video's ratio with its play mark and QR code.",
+      "es": "Un recurso de vídeo que usa el texto no tiene `video.poster`, así que el impreso muestra un recuadro oscuro con la proporción del vídeo, su marca de reproducción y su código QR.",
+      "ca": "Un recurs de vídeo que fa servir el text no té `video.poster`, de manera que l'imprès mostra un requadre fosc amb la proporció del vídeo, la marca de reproducció i el codi QR.",
+      "zh": "正文用到的视频资源没有`video.poster`，印刷版显示一个按视频比例的深色方框，带播放标记和二维码。",
+      "ar": "مورد فيديو يستعمله النص ليس له `video.poster`، فيظهر في المطبوع مربع داكن بنسبة الفيديو مع علامة التشغيل ورمز QR."
+    },
+    "fix": {
+      "en": "Give the video a poster: a frame of the video or a picture of your own (`{ fileId, format, width, height }`), and register its bitmap like any picture.",
+      "es": "Dale una portada al vídeo: un fotograma suyo o una imagen propia (`{ fileId, format, width, height }`), y registra su mapa de bits como cualquier imagen.",
+      "ca": "Dona una portada al vídeo: un fotograma seu o una imatge pròpia (`{ fileId, format, width, height }`), i registra'n el mapa de bits com qualsevol imatge.",
+      "zh": "给视频一张封面：视频中的一帧或自己的图片（`{ fileId, format, width, height }`），并像其他图片一样注册它的位图。",
+      "ar": "أعطِ الفيديو غلافًا: إطارًا منه أو صورة خاصة بك (`{ fileId, format, width, height }`)، وسجّل صورته النقطية كأي صورة."
+    }
+  },
+  "videoWithoutUrl": {
+    "source": "engine",
+    "label": {
+      "en": "Video without a production address",
+      "es": "Vídeo sin dirección de producción",
+      "ca": "Vídeo sense adreça de producció",
+      "zh": "视频没有正式发布地址",
+      "ar": "فيديو بلا عنوان نشر"
+    },
+    "cause": {
+      "en": "A self-hosted video (`source: 'file'`) has no http(s) `video.url`, so its printed poster gets no QR code or link, and an HTML or EPUB output without the file shows the poster.",
+      "es": "Un vídeo propio (`source: 'file'`) no tiene un `video.url` http(s), así que su portada impresa no lleva código QR ni enlace, y una salida HTML o EPUB sin el archivo muestra la portada.",
+      "ca": "Un vídeo propi (`source: 'file'`) no té un `video.url` http(s), de manera que la portada impresa no porta codi QR ni enllaç, i una sortida HTML o EPUB sense el fitxer mostra la portada.",
+      "zh": "自有视频（`source: 'file'`）没有 http(s) 的`video.url`，印刷封面因此没有二维码和链接；不带文件的 HTML 或 EPUB 输出只显示封面。",
+      "ar": "فيديو خاص (`source: 'file'`) ليس له `video.url` بعنوان http(s)، فلا يحمل غلافه المطبوع رمز QR ولا رابطًا، وتعرض مخرجات HTML أو EPUB التي لا تحمل الملف الغلافَ."
+    },
+    "fix": {
+      "en": "Set `video.url` to the address the published video will have.",
+      "es": "Pon en `video.url` la dirección que tendrá el vídeo publicado.",
+      "ca": "Posa a `video.url` l'adreça que tindrà el vídeo publicat.",
+      "zh": "把`video.url`设为视频发布后的地址。",
+      "ar": "اجعل `video.url` العنوانَ الذي سيكون للفيديو بعد نشره."
+    }
+  },
+  "videoUrlInvalid": {
+    "source": "engine",
+    "label": {
+      "en": "Video link not recognized",
+      "es": "Enlace de vídeo no reconocido",
+      "ca": "Enllaç de vídeo no reconegut",
+      "zh": "无法识别的视频链接",
+      "ar": "رابط فيديو غير معروف"
+    },
+    "cause": {
+      "en": "A YouTube or Vimeo video's `video.url` is no link to a video of that platform, so no player is embedded and the poster is shown instead.",
+      "es": "El `video.url` de un vídeo de YouTube o Vimeo no enlaza un vídeo de esa plataforma, así que no se inserta reproductor y se muestra la portada.",
+      "ca": "El `video.url` d'un vídeo de YouTube o Vimeo no enllaça un vídeo d'aquesta plataforma, de manera que no s'insereix reproductor i es mostra la portada.",
+      "zh": "YouTube 或 Vimeo 视频的`video.url`不是该平台的视频链接，因此不嵌入播放器，改为显示封面。",
+      "ar": "`video.url` لفيديو من يوتيوب أو فيميو ليس رابطًا لفيديو على تلك المنصة، فلا يُضمَّن مشغّل ويُعرض الغلاف بدلًا منه."
+    },
+    "fix": {
+      "en": "Paste the video's own link (a watch page, a short link or an embed link), or change `video.source` to the platform it belongs to.",
+      "es": "Pega el enlace del propio vídeo (la página del vídeo, un enlace corto o uno de inserción), o cambia `video.source` a su plataforma.",
+      "ca": "Enganxa l'enllaç del vídeo (la pàgina del vídeo, un enllaç curt o un d'inserció), o canvia `video.source` a la seva plataforma.",
+      "zh": "粘贴视频本身的链接（观看页、短链接或嵌入链接），或把`video.source`改为它所属的平台。",
+      "ar": "الصق رابط الفيديو نفسه (صفحة المشاهدة أو رابطًا مختصرًا أو رابط تضمين)، أو غيّر `video.source` إلى منصته."
     }
   }
 }

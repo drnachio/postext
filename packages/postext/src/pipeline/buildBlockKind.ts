@@ -296,8 +296,9 @@ export function verseMarginTopPx(styleId: string | undefined, resolved: Resolved
 /** A poem's block style: flush left (its lines carry their own geometry),
  *  no indent, no hyphenation. */
 function verseBlockStyle(style: BlockStyle): BlockStyle {
-  const { hyphenationZonePx: _zone, indentPx: _indent, ...rest } = style;
+  const { hyphenationZonePx: _zone, indentPx: _indent, endIndentPx: _endIndent, ...rest } = style;
   void _zone;
   void _indent;
+  void _endIndent;
   return { ...rest, textAlign: 'left', hyphenate: false, firstLineIndentPx: 0, hangingIndent: false };
 }

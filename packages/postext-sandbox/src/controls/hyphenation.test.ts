@@ -37,6 +37,8 @@ describe('defaultDocumentLocale', () => {
     expect(defaultDocumentLocale('zh-Hans')).toBe('zh-Hans');
     expect(defaultDocumentLocale('zh')).toBe('zh-Hans');
     expect(defaultDocumentLocale('zh-TW')).toBe('zh-Hant');
+    expect(defaultDocumentLocale('ja')).toBe('ja');
+    expect(defaultDocumentLocale('ja-JP')).toBe('ja');
     expect(defaultDocumentLocale('xx')).toBe('en-us');
   });
 });

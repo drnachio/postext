@@ -25,7 +25,7 @@ interface PresetEntry {
   binding?: "left" | "right";
   /** Where the book stands on the shelf: the books without one keep the
    *  index order (by id) and come first, the others follow by this number
-   *  (ألف ليلة وليلة and 紅樓夢, the two right-bound books, stand last). */
+   *  (ألف ليلة وليلة, 紅樓夢 and こころ, the right-bound books, stand last). */
   shelfOrder?: number;
 }
 
@@ -123,7 +123,7 @@ export async function ShowcaseSection() {
         </div>
       </div>
 
-      <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 [scrollbar-width:thin] md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
+      <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
         <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>

@@ -4,12 +4,27 @@
 // output (accents stripped, lowercased), so an index into the normalized
 // string is also an index into the original — `matchRanges` relies on that
 // to highlight the original label.
+//
+// Chinese and Japanese labels have no spaces between words: every Han
+// character and every kana starts a word, so 位置 finds ルビの位置. Kana
+// keep their voicing marks: が is not か, ぱ not は (the dakuten and
+// handakuten tell words apart, they are not accents).
 
 const charCache = new Map<string, string>();
+
+/** Hiragana and katakana (with their voiced forms), kept as they are. */
+const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
+
+/** Characters that start a word wherever they stand. */
+const IDEOGRAPHIC = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
 function normalizeUnit(ch: string): string {
   const cached = charCache.get(ch);
   if (cached !== undefined) return cached;
+  if (KANA.test(ch)) {
+    charCache.set(ch, ch);
+    return ch;
+  }
   let out = ch.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
   if (out.length === 0) out = ' ';
   else if (out.length > 1) out = out[0];
@@ -32,7 +47,7 @@ export function tokenize(query: string): string[] {
 const WORD_CHAR = /[\p{L}\p{N}]/u;
 
 function isWordStart(s: string, i: number): boolean {
-  return i === 0 || !WORD_CHAR.test(s[i - 1]);
+  return i === 0 || !WORD_CHAR.test(s[i - 1]) || IDEOGRAPHIC.test(s[i]);
 }
 
 /** Positions (in `normalized`) where `token` starts a word. */

@@ -129,6 +129,94 @@ export function measureInkBox(text: string, font: string): { ascent: number; des
   return { ascent, descent };
 }
 
+/** How far the ink of a text reaches above and below the baseline at each
+ *  pixel column along it (see {@link measureInkProfile}). */
+export interface InkProfile {
+  /** Where column 0 stands, px from the pen's origin (negative when the
+   *  ink overhangs the origin). */
+  start: number;
+  /** The text's advance, px. */
+  advance: number;
+  /** Per column: px of ink above the baseline (−Infinity: no ink). */
+  above: Float32Array;
+  /** Per column: px of ink below the baseline (−Infinity: no ink). */
+  below: Float32Array;
+}
+
+let _profileCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null | undefined;
+
+/** Alpha under which a pixel is left out: a faint fringe. */
+const INK_ALPHA = 32;
+
+/**
+ * The ink of `text` in `font` column by column: the text is painted from
+ * its left edge, left to right as the page paints it, and each pixel
+ * column records its highest and lowest inked pixel. Null when nothing can
+ * be painted and read back (no canvas, or a measurer without pixels) or
+ * the text has no ink. Not cached.
+ */
+export function measureInkProfile(text: string, font: string): InkProfile | null {
+  if (_profileCtx === undefined) {
+    _profileCtx = null;
+    try {
+      const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(1, 1) : typeof document !== 'undefined' ? document.createElement('canvas') : null;
+      const ctx = canvas?.getContext('2d', { willReadFrequently: true } as CanvasRenderingContext2DSettings) as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null | undefined;
+      if (ctx && typeof ctx.fillText === 'function' && typeof ctx.getImageData === 'function') _profileCtx = ctx;
+    } catch {
+      _profileCtx = null;
+    }
+  }
+  const ctx = _profileCtx;
+  if (!ctx) return null;
+  try {
+    ctx.font = font;
+    const m = ctx.measureText(text);
+    const { actualBoundingBoxLeft: left, actualBoundingBoxRight: right, actualBoundingBoxAscent: ascent, actualBoundingBoxDescent: descent } = m;
+    if (![left, right, ascent, descent].every((v) => typeof v === 'number' && Number.isFinite(v))) return null;
+    const pad = 2;
+    const x0 = Math.floor(-left) - pad;
+    const width = Math.ceil(right) + pad - x0;
+    const top = Math.ceil(ascent) + pad;
+    const height = top + Math.ceil(descent) + pad;
+    if (width <= 0 || height <= 0 || width * height > 4_000_000) return null;
+    const canvas = ctx.canvas as { width: number; height: number };
+    if (canvas.width < width) canvas.width = width;
+    if (canvas.height < height) canvas.height = height;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    if ('direction' in ctx) ctx.direction = 'ltr';
+    ctx.font = font;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#000';
+    ctx.fillText(text, -x0, top);
+    const data = ctx.getImageData(0, 0, width, height).data;
+    const above = new Float32Array(width).fill(-Infinity);
+    const below = new Float32Array(width).fill(-Infinity);
+    let inked = false;
+    // The outermost pixel of a column is only partly covered: its alpha
+    // says how much, so the edge stands that far into it.
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        const a = data[(y * width + x) * 4 + 3]!;
+        if (a < INK_ALPHA) continue;
+        above[x] = top - y - 1 + a / 255;
+        inked = true;
+        break;
+      }
+      for (let y = height - 1; y >= 0; y--) {
+        const a = data[(y * width + x) * 4 + 3]!;
+        if (a < INK_ALPHA) continue;
+        below[x] = y - top + a / 255;
+        break;
+      }
+    }
+    return inked ? { start: x0, advance: m.width, above, below } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Where the ink of `text` in `font` starts and ends along the line, px
  *  from the pen's origin (the start is negative when the ink overhangs
  *  it), or null when the measurer gives no ink metrics or the text has no

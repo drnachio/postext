@@ -4,6 +4,7 @@ import { fontKey, parseFontString } from './fontString';
 import { missingGlyphsOf, registerFaceFiles, wantsGlyph, type FaceFiles } from './faceFiles';
 import { registerFontFamily } from './fontFamilies';
 import { verticalTwinRefOf } from './verticalFonts';
+import { shapeInCurrentLanguage } from './shapingLanguage';
 
 /** True when `bytes` starts with the `OTTO` magic identifying a CFF-flavored
  *  OpenType font — the ones pdf-lib cannot subset reliably, so they embed
@@ -95,7 +96,7 @@ export function coverAllGlyphUnicode(font: PDFFont): void {
   interface Glyph { id: number; codePoints: number[] }
   const embedder = (font as unknown as {
     embedder: {
-      font: FontkitFace & { layout: (text: string, features?: unknown) => { glyphs: Glyph[] } };
+      font: FontkitFace & { layout: (text: string, features?: unknown, ...rest: unknown[]) => { glyphs: Glyph[] } };
       glyphCache: { access: () => Glyph[] };
       embedUnicodeCmap: (context: { flateStream: (s: string) => unknown; register: (o: unknown) => unknown }) => unknown;
     };
@@ -103,8 +104,8 @@ export function coverAllGlyphUnicode(font: PDFFont): void {
   const face = embedder.font;
   const shaped = new Map<number, number[]>();
   const layout = face.layout.bind(face);
-  face.layout = (text, features) => {
-    const run = layout(text, features);
+  face.layout = (text, features, ...rest) => {
+    const run = layout(text, features, ...rest);
     for (const g of run.glyphs) {
       if (g.codePoints.length > 0 && !shaped.has(g.id)) shaped.set(g.id, g.codePoints);
     }
@@ -329,6 +330,8 @@ export class FontCache {
           this.onFileIssue?.({ kind: 'cffEmbeddedWhole', ...spec, bytes: bytes.length });
         }
       }
+      // Japanese text is shaped in its language system (`JAN `).
+      shapeInCurrentLanguage(embedded);
       this.embedded.add(embedded);
       return embedded;
     })();

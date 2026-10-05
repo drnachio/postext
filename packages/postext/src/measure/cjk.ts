@@ -35,7 +35,9 @@ export function hasCJKRun(text: string): boolean {
  *  only — the marks Latin text shares with Chinese (— … “ ”) count as
  *  Latin here — under the prohibitions of `level` (the document's
  *  `cjk.lineBreak` by default), so no line starts with closing punctuation
- *  (。、」…) and none ends with an opening bracket (「（…). */
+ *  (。、」…) and none ends with an opening bracket (「（…). A Japanese level
+ *  reads the JLReq classes from the two graphemes (`**ちょ**っと` keeps っ
+ *  off the line start at `ja-very-strict`) and keeps ‥‥ and 〳〵 whole. */
 export function cjkJoinBreaks(left: string, right: string, level: CjkLineBreakLevel = getCjkLineBreak()): boolean {
   const a = lastGrapheme(left);
   const cp = right.codePointAt(0);
@@ -44,5 +46,5 @@ export function cjkJoinBreaks(left: string, right: string, level: CjkLineBreakLe
   const aCjk = CJK_RE.test(a);
   const bCjk = CJK_RE.test(b);
   if (!aCjk && !bCjk) return false;
-  return cjkBreakAllowed(cjkClassOf(a), isCjkGrapheme(a), cjkClassOf(b), isCjkGrapheme(b), level);
+  return cjkBreakAllowed(cjkClassOf(a), isCjkGrapheme(a), cjkClassOf(b), isCjkGrapheme(b), level, a, b);
 }

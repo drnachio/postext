@@ -46,6 +46,64 @@ describe('Arabic', () => {
   });
 });
 
+describe('Japanese (#426)', () => {
+  const japanese: CslItem[] = [
+    { id: 'natsume1914', type: 'book', language: 'ja', author: [{ family: '夏目', given: '漱石' }], title: 'こころ', issued: { 'date-parts': [[1914]] }, publisher: '岩波書店', 'publisher-place': '東京' },
+    { id: 'yamada2015', type: 'article-journal', language: 'ja', author: [{ family: '山田', given: '太郎' }, { family: '佐藤', given: '花子' }], title: '縦組みの行間について', 'container-title': '印刷雑誌', volume: '98', issue: '4', page: '12-19', issued: { 'date-parts': [[2015]] } },
+    { id: 'suzuki2010', type: 'chapter', language: 'ja', author: [{ family: '鈴木', given: '一郎' }, { family: '田中', given: '次郎' }, { family: '高橋', given: '三郎' }], title: '活字の歴史', 'container-title': '日本の印刷文化', editor: [{ family: '中村', given: '四郎' }], publisher: '朝倉書店', 'publisher-place': '東京', page: '45-67', issued: { 'date-parts': [[2010]] } },
+  ];
+
+  it('ships the ja-JP locale and the SIST 02 style', () => {
+    expect(LOCALES['ja-JP']).toContain('xml:lang="ja-JP"');
+    expect(LOCALE_TAGS).toContain('ja-JP');
+    for (const tag of ['ja', 'ja-JP', 'ja_JP', 'ja-Jpan']) expect(pickLocale(LOCALES, tag), tag).toBe('ja-JP');
+    expect(STYLE_CATALOG.find((s) => s.id === 'sist02')).toMatchObject({ format: 'numeric' });
+    expect(STYLES.sist02).toContain('default-locale="ja-JP"');
+  });
+
+  it('SIST 02: numbers in parentheses, a book, an article and a chapter', () => {
+    const p = engine.createProcessor({ style: 'sist02', locale: 'ja-JP', items: japanese });
+    expect(p.numeric).toBe(true);
+    const out = p.cite([
+      { mode: 'parenthetical', items: [{ id: 'natsume1914', locator: '12', label: 'page' }] },
+      { mode: 'parenthetical', items: [{ id: 'yamada2015' }, { id: 'suzuki2010' }] },
+    ]);
+    expect(out).toEqual(['(1, p. 12)', '(2, 3)']);
+    const bib = p.bibliography();
+    expect(bib.entries.map((e) => e.label)).toEqual(['(1)', '(2)', '(3)']);
+    // Family name first, set solid; no italics.
+    expect(bib.entries[0]!.html).toBe('夏目漱石. こころ. 東京, 岩波書店, 1914.');
+    expect(bib.entries[1]!.html).toBe('山田太郎, 佐藤花子. 縦組みの行間について. 印刷雑誌. 2015, vol. 98, no. 4, p. 12–19.');
+    // A chapter's title is quoted, as the style asks; its editor takes 編.
+    expect(bib.entries[2]!.html).toBe('鈴木一郎, 田中次郎, 高橋三郎. “活字の歴史”. 日本の印刷文化. 中村四郎編. 東京, 朝倉書店, 2010, p. 45–67.');
+  });
+
+  it('names two and three authors with the ja-JP terms, not 、 and 等', () => {
+    const p = engine.createProcessor({ style: 'sist02', locale: 'ja-JP', items: japanese });
+    expect(p.terms).toEqual({ and: 'と', etAl: 'ほか' });
+    const out = p.cite([
+      { mode: 'narrative', items: [{ id: 'natsume1914' }] },
+      { mode: 'narrative', items: [{ id: 'yamada2015' }] },
+      { mode: 'narrative', items: [{ id: 'suzuki2010' }] },
+    ]);
+    expect(out).toEqual(['夏目(1)', '山田と佐藤(2)', '鈴木ほか(3)']);
+    expect(out.join('')).not.toMatch(/[等、]/);
+    // Chinese keeps 、 and 等.
+    const zh = engine.createProcessor({ style: 'ieee', locale: 'zh-CN', items: [...items, ...japanese] });
+    expect(zh.cite([{ mode: 'narrative', items: [{ id: 'zhang2018' }] }, { mode: 'narrative', items: [{ id: 'suzuki2010' }] }]))
+      .toEqual(['张三等[1]', '鈴木等[2]']);
+  });
+
+  it('quotes an article title in 「」 and an inner title in 『』 from the ja-JP locale', () => {
+    const p = engine.createProcessor({ style: 'chicago-author-date', locale: 'ja-JP', items: japanese });
+    expect(p.cite([{ mode: 'parenthetical', items: [{ id: 'natsume1914' }] }])[0]).toBe('(夏目 1914年)');
+    const bib = p.bibliography(['natsume1914', 'yamada2015']);
+    expect(bib.entries.find((e) => e.id === 'yamada2015')!.html).toContain('「縦組みの行間について」');
+    const inner = engine.createProcessor({ style: 'chicago-author-date', locale: 'ja-JP', items: [{ ...japanese[1]!, title: '"こころ"の版面' }] });
+    expect(inner.bibliography(['yamada2015']).entries[0]!.html).toContain('「『こころ』の版面」');
+  });
+});
+
 describe('formatting', () => {
   it('APA: parenthetical with a locator, narrative, author suppressed', () => {
     const p = engine.createProcessor({ style: 'apa', locale: 'es-ES', items });
@@ -171,6 +229,15 @@ describe('BibTeX', () => {
     expect(out[2]).toMatchObject({ type: 'paper-conference', issued: { 'date-parts': [[1981, 11]] }, URL: 'https://x.org/a_b' });
     expect(out[3]).toMatchObject({ type: 'thesis', publisher: 'UNED', genre: 'PhD thesis', issued: { 'date-parts': [[2021, 5, 3]] } });
     expect(out[3]!.author).toEqual([{ family: 'Ruiz', given: 'Eva', suffix: 'Jr.' }]);
+  });
+  it('reads a CJK name with a space family first (#426)', () => {
+    const [item] = parseBibtex('@book{k, author = {夏目 漱石 and 森 鷗外 and 张三 and Smith, John and Tanaka Kakuei}, title = {こころ}, year = {1914}}');
+    expect(item!.author).toEqual([
+      { family: '夏目', given: '漱石' }, { family: '森', given: '鷗外' }, { family: '张三' },
+      { family: 'Smith', given: 'John' },
+      // A romanised name keeps the BibTeX reading, given name first.
+      { family: 'Kakuei', given: 'Tanaka' },
+    ]);
   });
 });
 

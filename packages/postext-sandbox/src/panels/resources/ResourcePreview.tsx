@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileCode, Table as TableIcon, ImageOff } from 'lucide-react';
+import { FileCode, Table as TableIcon, ImageOff, Play } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
@@ -143,6 +143,19 @@ function SvgBody({ fileId, altText }: BitmapBodyProps) {
   );
 }
 
+/** A video's poster with a play badge (#454): what print shows, the
+ *  overlays aside. */
+function VideoBody({ fileId, altText }: BitmapBodyProps) {
+  return (
+    <div className="relative flex items-center justify-center">
+      <BitmapBody fileId={fileId} altText={altText} />
+      <span className="absolute flex items-center justify-center rounded-full" style={{ width: 36, height: 36, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+        <Play size={18} fill="currentColor" aria-hidden="true" />
+      </span>
+    </div>
+  );
+}
+
 interface TableBodyProps {
   resource: Resource;
 }
@@ -250,6 +263,8 @@ export function ResourcePreview({ resource, type }: ResourcePreviewProps) {
         <SvgBody fileId={resource.svg.fileId} altText={alt} />
       ) : resource.kind === 'table' ? (
         <TableBody resource={resource} />
+      ) : resource.kind === 'video' && resource.video?.poster ? (
+        <VideoBody fileId={resource.video.poster.fileId} altText={alt} />
       ) : (
         <div
           className="flex items-center justify-center rounded text-xs"

@@ -26,15 +26,18 @@ import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
-import { renderLangOf } from './locale';
+import { isJapaneseLanguage, renderLangOf } from './locale';
 import { hasCJK } from './measure/cjk';
 import { joiningScriptIn } from './measure/joining';
 import { DEFAULT_CENTRAL_BASELINE, verticalFlowOf } from './vdt';
-import type { CjkRegion } from './types';
+import type { CjkRegion, ResourceSafeArea } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
-import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf, kuntenHtml, verticalKuntenTateHtml } from './htmlAnnotations';
+import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
+import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
+import type { VDTResourceVideo } from './vdt';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -112,6 +115,16 @@ export interface RenderHtmlOptions {
    *  comes out lighter. Pass `true` when `resourceImageUrl` returns the raw
    *  markup. The next major release turns it on by default. */
   singleInk?: boolean;
+  /** Resolver from a self-hosted video's `fileId` to a playable URL (an
+   *  object URL, the file's address in a package…). When it is omitted or
+   *  returns nothing, the video plays from its production address
+   *  (`video.url`); with neither, the poster is shown. */
+  resourceVideoUrl?: (fileId: string) => string | undefined;
+  /** What a video resource is set as (#454): its player, or the printed
+   *  poster with its play mark and QR code (linked to the video when
+   *  `videoStyle.linkPoster`). `files` covers self-hosted videos, `streams`
+   *  YouTube and Vimeo. Each defaults to `videoStyle.html`. */
+  videos?: { files?: 'player' | 'poster'; streams?: 'player' | 'poster' };
   /** Told of what the render could not produce as asked: an image with no
    *  URL (no `resourceImageUrl`, or one that returns nothing for its
    *  `fileId`) is emitted as a placeholder and reported once per `fileId`
@@ -160,8 +173,8 @@ interface HtmlPaint extends RenderHtmlOptions {
   /** The direction the document's root declares (`dir`, #379): a box of
    *  text running the other way declares its own. */
   dir?: TextDirection;
-  /** The language a right-to-left document's root and pages declare
-   *  (`renderLangOf`). */
+  /** The language the pages of a right-to-left or a Japanese document
+   *  declare, as its root does (`renderLangOf`). */
   lang?: string;
   /** The language the document's root declares, whatever its direction: a
    *  word in another one named by the author (`VDTLineSegment.lang`)
@@ -273,7 +286,7 @@ function kashidaTextHtml(text: string, offsets: readonly number[] | undefined, b
 /** Inserted tatweels: painted, never selected or copied. */
 const KASHIDA_DECL = '-webkit-user-select:none;user-select:none;';
 
-/** What vertical lines need: the Chinese region, the central axis of each
+/** What vertical lines need: the CJK region, the central axis of each
  *  family (`VDTFlowFrame.centralBaselines`), `cjk.uprightDigits`, and the
  *  advance of each dash stretched to its cell (`VDTFlowFrame.dashAdvances`). */
 interface VerticalHtml {
@@ -627,6 +640,39 @@ function linkRuns(): { at: (href: string | undefined) => string; space: (next: s
   };
 }
 
+/**
+ * The `<ruby>` elements of a line (#428, see {@link RUBY_OPEN}): `open`
+ * returns the markup before a ruby base (the `<ruby>`, unless the base
+ * goes on in the one already open), `after` the markup after its reading
+ * (`</ruby>`, unless the base names its annotation: the next base may go
+ * on in it), `before` the markup to emit before any segment (closing a
+ * `<ruby>` the segment does not go on in), `end` the markup that closes
+ * the line. The bases of one annotation (`rubyGroupOf`) share a `<ruby>`
+ * while they follow each other with the same link, so the element never
+ * straddles an `<a>` of {@link linkRuns}.
+ */
+function rubyRuns(): { open: (seg: VDTLineSegment) => string; after: (seg: VDTLineSegment) => string; before: (seg: VDTLineSegment) => string; end: () => string } {
+  let open: { group: string | undefined; href: string | undefined } | undefined;
+  const end = (): string => {
+    const close = open !== undefined ? '</ruby>' : '';
+    open = undefined;
+    return close;
+  };
+  const continues = (seg: VDTLineSegment): boolean =>
+    open?.group !== undefined && seg.kind === 'text' && seg.ruby !== undefined && !seg.warichu && !seg.chip
+    && seg.refResourceId === undefined && rubyGroupOf(seg.ruby) === open.group && segmentHref(seg) === open.href;
+  return {
+    before: (seg) => (continues(seg) ? '' : end()),
+    open(seg) {
+      if (open !== undefined) return '';
+      open = { group: seg.ruby ? rubyGroupOf(seg.ruby) : undefined, href: segmentHref(seg) };
+      return RUBY_OPEN;
+    },
+    after: (seg) => (open?.group === undefined || seg.refResourceId !== undefined ? end() : ''),
+    end,
+  };
+}
+
 /** A segment's link, unless it is a `:ref` (which links to its resource):
  *  a Markdown link's URL, a footnote marker's note, an index page number's
  *  page (#264). */
@@ -808,6 +854,12 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap (JLReq §4.2.3).
+      parts.push(sideMarkerHtml(seg.sideMarker, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
       const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
       parts.push(group.html);
@@ -906,8 +958,11 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     const dir = dirAttr(seg.rtl ? 'rtl' : 'ltr', rootDir);
     return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir ? { attrs: dir, decl: '' } : PLAIN_BOX);
   };
+  // The `<ruby>` open across the bases of one annotation (#428).
+  const ruby = rubyRuns();
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
+    parts.push(ruby.before(seg));
     if (seg.kind === 'space') {
       // The space as text, for copying (#403): a Han–Latin gap only where
       // the author typed one (its `text`).
@@ -940,6 +995,12 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       x += seg.width;
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap (JLReq §4.2.3).
+      parts.push(sideMarkerHtml(seg.sideMarker, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
       const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
       parts.push(group.html);
@@ -947,12 +1008,19 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       i = group.end - 1;
       continue;
     }
+    // A ruby base and its reading (#194), in a `<ruby>` (#428).
+    if (seg.ruby) parts.push(ruby.open(seg));
     parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
-    // A ruby base's reading (#194).
-    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString));
+    if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, pickSegmentColor(seg, block), quoteFontString), ruby.after(seg));
+    if (seg.kunten) {
+      // Kanbun marks (#430), after the character's `<ruby>`; the 送り仮名
+      // read and copy after their character, as transparent text.
+      parts.push(ruby.end(), kuntenHtml(seg.kunten, x, pickSegmentColor(seg, block), quoteFontString));
+      if (seg.kunten.okuri) parts.push(lineEndHtml(seg.kunten.okuri, x + seg.width));
+    }
     x += seg.width;
   }
-  parts.push(links.end());
+  parts.push(ruby.end(), links.end());
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
@@ -1128,24 +1196,33 @@ function centralOf(v: VerticalHtml, fontString: string): number {
   return v.axes?.[fontFamilyOf(fontString)] ?? DEFAULT_CENTRAL_BASELINE;
 }
 
+/** Characters of Japanese vertical text the HTML sets otherwise than the
+ *  browser would: “ ” (set as 〝 〟) and the marks of a pair set in one
+ *  cell (`isUprightMarkPair`). */
+const JAPANESE_VERTICAL_RE = /[“”!?！？]/;
+
 /** Escaped text of a vertical run, with its tate-chu-yoko cells, the
  *  orientation its author forced, and each turned mark in a box of its
  *  cell ({@link turnedCellHtml}). `font` is the run's font string (whose
  *  family's `dashes` stretch a dash) and `tracking` the letter spacing it
- *  is set with, px, which follows each cell. */
+ *  is set with, px, which follows each cell. A Japanese “ ” is written as
+ *  the 〝 〟 the canvas and the PDF paint (`VerticalGlyph.paintAs`), whose
+ *  vertical form the browser takes; a pair of ！？ in one cell is combined
+ *  as written, the browser fitting it to the cell. */
 function verticalTextHtml(text: string, v: VerticalHtml, orient?: ForcedOrientation, font?: string, tracking = 0): string {
   if (orient === 'tcy') return `<span style="text-combine-upright:all;">${esc(text)}</span>`;
   if (orient === 'upright') return `<span style="text-orientation:upright;">${esc(text)}</span>`;
   if (orient === 'sideways') return `<span style="text-orientation:sideways;">${esc(text)}</span>`;
   const digits = v.uprightDigits > 0 && /[0-9]/.test(text);
-  if (!digits && !holdsTurnedMark(text)) return esc(text);
+  const japanese = v.region === 'japan' && JAPANESE_VERTICAL_RE.test(text);
+  if (!digits && !japanese && !holdsTurnedMark(text)) return esc(text);
   const runs = verticalRuns(graphemesOf(text), v.region, v.uprightDigits);
-  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate')) return esc(text);
+  if (!runs.some((r) => r.glyph.orient === 'tcy' || r.glyph.orient === 'rotate' || r.glyph.paintAs !== undefined)) return esc(text);
   const advances = font !== undefined ? v.dashes?.[fontFamilyOf(font)] : undefined;
   // A number in one cell combined upright; a turned mark in its cell.
   return runs.map((r) => (r.glyph.orient === 'tcy'
     ? `<span style="text-combine-upright:all;">${esc(r.text)}</span>`
-    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.text))).join('');
+    : r.glyph.orient === 'rotate' ? turnedCellHtml(r, advances?.[r.text], tracking) : esc(r.glyph.paintAs ?? r.text))).join('');
 }
 
 /**
@@ -1206,20 +1283,23 @@ function verticalSpan(at: number, axis: number, inner: string, decl = ''): strin
 
 /** A run of vertical text whose em boxes are centred `axis` px from the
  *  box's flow top, on either side of it (a ruby reading or a warichu row
- *  sits outside the line's own box). */
-function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = ''): string {
+ *  sits outside the line's own box); `hidden` from assistive technology
+ *  (a warichu row, which its note box reads). */
+function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = '', hidden = true): string {
   const lh = Math.max(1, 2 * size);
-  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
+  return `<span${hidden ? ' aria-hidden="true"' : ''} style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
 }
 
 /** Annotation runs of a vertical line (a ruby reading, a warichu note's
  *  rows, #194, #195) from `x` along it: set down the column in their own
  *  face, centred across it on their baseline (`dy`) less their face's
- *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`). */
-function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number): string {
+ *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`).
+ *  `hidden` from assistive technology unless they are a ruby reading's,
+ *  which its `<rt>` holds (#428). */
+function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number, hidden = true): string {
   return runs.map((run) => {
     const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
-    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl);
+    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl, hidden);
   }).join('');
 }
 
@@ -1253,7 +1333,10 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
   const spaceAxis = axisOf(block.fontString);
+  // The `<ruby>` open across the bases of one annotation (#428).
+  const ruby = rubyRuns();
   for (const seg of segs) {
+    inner.push(ruby.before(seg));
     if (seg.kind === 'space') {
       // The space as text, for copying (#403).
       if (seg.text) inner.push(verticalSpan(x, spaceAxis, esc(seg.text)));
@@ -1284,6 +1367,15 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       x += seg.width;
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap, right of the column (JLReq
+      // §4.2.3), read as the marker and linked to its note.
+      const runs = verticalAnnotationRuns(seg.sideMarker.runs, x, pickSegmentColor(seg, block), v, axisOf, false);
+      const href = segmentHref(seg);
+      inner.push(href !== undefined ? `<a href="${esc(href)}" style="color:inherit;text-decoration:none;">${runs}</a>` : runs);
+      x += seg.width;
+      continue;
+    }
     const fontString = pickSegmentFont(seg, block);
     const font = quoteFontString(fontString);
     const color = pickSegmentColor(seg, block);
@@ -1304,11 +1396,20 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       ? (refLinks(refKey(seg), targets) ? refAnchorHref(refKey(seg)) : undefined)
       : segmentHref(seg);
     if (href !== undefined) text = `<a href="${esc(href)}" style="color:inherit;text-decoration:none;"${seg.href !== undefined && seg.refResourceId === undefined ? ' rel="noopener noreferrer"' : ''}>${text}</a>`;
+    // A ruby base and its reading beside it (#194), in a `<ruby>` (#428).
+    if (seg.ruby) inner.push(ruby.open(seg));
     inner.push(verticalSpan(x + (seg.inkOffset ?? 0), axisOf(fontString, seg.baselineShift ?? 0), text, decl));
-    // A ruby base's reading, beside the base (#194).
-    if (seg.ruby) inner.push(verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf));
+    if (seg.ruby) inner.push(RT_OPEN, verticalAnnotationRuns(seg.ruby.runs, x, seg.ruby.color ?? color, v, axisOf, false), '</rt>', ruby.after(seg));
+    if (seg.kunten) {
+      // Kanbun marks beside the character (#430), after its `<ruby>`; its
+      // 送り仮名 read and copy after it, as transparent text.
+      inner.push(ruby.end(), verticalAnnotationRuns(seg.kunten.runs, x, seg.kunten.color ?? color, v, axisOf));
+      if (seg.kunten.tate) sideways.push(verticalKuntenTateHtml(seg.kunten, x, line, color));
+      if (seg.kunten.okuri) inner.push(verticalSpan(x + seg.width, spaceAxis, esc(seg.kunten.okuri), LINE_END_DECL));
+    }
     x += seg.width;
   }
+  inner.push(ruby.end());
   // Emphasis dots, proper-name and book-title lines (#193), in the turned
   // flow with the line's box.
   if (line.marks) sideways.push(verticalLineMarksHtml(line, block.color));
@@ -1411,7 +1512,8 @@ function pickResourceFont(seg: VDTLineSegment, fonts: ResourceLineFonts): string
 /** Render one already-positioned rich-text line (caption or table cell).
  *  Alignment and justification are baked into the measured geometry, so
  *  segments paint sequentially from the line origin — `:ref` segments in the
- *  link colour, `captionLabel` segments in the label colour. */
+ *  link colour, `captionLabel` segments in the label colour — with ruby
+ *  readings, warichu rows and the line's marks as on a body line (#429). */
 function renderResourceLine(
   line: VDTLine,
   fonts: ResourceLineFonts,
@@ -1479,6 +1581,12 @@ function renderResourceLine(
         x += seg.width;
         continue;
       }
+      if (composed && seg.warichu) {
+        // A warichu note's part: its two rows (#195, #429).
+        parts.push(warichuHtml(seg.warichu, x, color, quoteFontString));
+        x += seg.width;
+        continue;
+      }
       if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
         const group = renderRefRuns(segs, i, x, linkColor, (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
         parts.push(group.html);
@@ -1487,10 +1595,20 @@ function renderResourceLine(
         continue;
       }
       parts.push(paintText(seg, x, seg.refResourceId !== undefined && !refLinks(refKey(seg), targets)));
+      // A ruby base's reading (#194, #429).
+      if (seg.ruby) parts.push(rubyHtml(seg.ruby, x, segColorOf(seg), quoteFontString));
+      // Kanbun marks (#430), the 送り仮名 read after their character.
+      if (seg.kunten) {
+        parts.push(kuntenHtml(seg.kunten, x, segColorOf(seg), quoteFontString));
+        if (seg.kunten.okuri) parts.push(lineEndHtml(seg.kunten.okuri, x + seg.width));
+      }
       x += seg.width;
     }
     parts.push(links.end());
     parts.push(lineEndHtml(end, x));
+    // Emphasis marks, side lines, the proper-name and book-title lines
+    // (#193, #421, #429).
+    if (line.marks) parts.push(lineMarksHtml(line, color));
   } else {
     parts.push(`<span style="position:absolute;left:0;top:0;white-space:pre;">${esc(line.text)}</span>`);
     parts.push(lineEndHtml(end, line.bbox.width));
@@ -1523,12 +1641,13 @@ function renderFittedImage(
   h: number,
   paint?: HtmlPaint,
   svg?: boolean,
+  source?: ResourceSafeArea,
 ): string {
   if (url) {
     const filter = paint ? inkFilterDecl(paint, svg, url) : '';
     return (
       `<img src="${esc(url)}" alt="${esc(alt)}" style="position:absolute;` +
-      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${filter}" />`
+      `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${source ? croppedFitDecl(source) : ''}${filter}" />`
     );
   }
   const labelSize = Math.max(10, Math.min(16, h * 0.1));
@@ -1540,6 +1659,108 @@ function renderFittedImage(
     `font:${labelSize}px sans-serif;color:rgba(120,120,120,0.8);` +
     `">${label}</div>`
   );
+}
+
+/** An attribute list as HTML: a boolean attribute written `name="name"`,
+ *  valid in HTML and XHTML alike (the fixed-layout EPUB converts the
+ *  markup). */
+function htmlAttrs(attrs: Array<[string, string | true]>): string {
+  return attrs.map(([name, value]) => ` ${name}="${esc(value === true ? name : value)}"`).join('');
+}
+
+/** A video resource (#454): its player — an HTML5 `<video>` for a
+ *  self-hosted file, the YouTube or Vimeo `<iframe>` — or its poster with
+ *  the play mark and the QR code, linked to the video. */
+function renderVideoHtml(
+  video: VDTResourceVideo | undefined,
+  posterFileId: string | undefined,
+  alt: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  paint: HtmlPaint,
+  source?: ResourceSafeArea,
+): string {
+  const box = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+  const label = alt || 'Video';
+  if (video) {
+    const stream = video.source !== 'file';
+    const mode = (stream ? paint.videos?.streams : paint.videos?.files) ?? video.html;
+    if (mode === 'player') {
+      if (stream && video.embedUrl) {
+        return (
+          `<iframe class="pt-video" src="${esc(video.embedUrl)}" title="${esc(label)}"` +
+          ` allow="${esc(videoEmbedAllow(video.player))}"${video.player.fullscreen ? ' allowfullscreen="allowfullscreen"' : ''}` +
+          ` loading="lazy" referrerpolicy="strict-origin-when-cross-origin"` +
+          ` style="${box}border:0;background:#000;"></iframe>`
+        );
+      }
+      const src = !stream ? (video.fileId ? paint.resourceVideoUrl?.(video.fileId) : undefined) ?? video.link : undefined;
+      if (src) {
+        const poster = posterFileId ? paint.resourceImageUrl?.(posterFileId) : undefined;
+        return (
+          `<video class="pt-video" src="${esc(src + mediaFragment(video))}"${poster ? ` poster="${esc(poster)}"` : ''}` +
+          `${htmlAttrs(videoElementAttributes(video.player))} aria-label="${esc(label)}"` +
+          ` style="${box}object-fit:cover;background:#000;"></video>`
+        );
+      }
+    }
+  }
+  // The poster, as printed.
+  const url = posterFileId ? imageUrl(paint, posterFileId) : undefined;
+  const picture = url
+    ? `<img src="${esc(url)}" alt="${esc(label)}" style="position:absolute;left:0;top:0;width:${w}px;height:${h}px;${source ? croppedFitDecl(source) : ''}" />`
+    : `<div role="img" aria-label="${esc(label)}" style="position:absolute;left:0;top:0;width:${w}px;height:${h}px;background:#1f1f1f;"></div>`;
+  const overlay = video ? videoOverlaySvg(video, w, h) : '';
+  const inner = picture + overlay;
+  return video?.linkPoster && video.link
+    ? `<a class="pt-video-link" href="${esc(video.link)}" rel="noopener noreferrer" style="${box}display:block;">${inner}</a>`
+    : `<div style="${box}">${inner}</div>`;
+}
+
+/** The play mark and QR code of a video's poster as one SVG over the body
+ *  (`w` × `h`). In a mirrored flow the SVG turns back about its own box
+ *  like a picture, so the overlays land where they are printed and the code
+ *  reads. */
+function videoOverlaySvg(video: VDTResourceVideo, w: number, h: number): string {
+  const n = (v: number): string => String(Math.round(v * 1000) / 1000);
+  const parts: string[] = [];
+  const mark = video.playMark;
+  if (mark) {
+    const { x, y, width: mw, height: mh } = mark.rect;
+    const tri = playMarkTriangle(mark).map(([px, py]) => `${n(x + px)},${n(y + py)}`).join(' ');
+    if (mark.shape === 'triangle') {
+      parts.push(`<polygon points="${tri}" fill="${mark.color}" stroke="${mark.background}" stroke-opacity="${mark.backgroundOpacity}" stroke-width="${n(mh * 0.08)}" stroke-linejoin="round"/>`);
+    } else {
+      parts.push(mark.shape === 'circle'
+        ? `<ellipse cx="${n(x + mw / 2)}" cy="${n(y + mh / 2)}" rx="${n(mw / 2)}" ry="${n(mh / 2)}" fill="${mark.background}" fill-opacity="${mark.backgroundOpacity}"/>`
+        : `<rect x="${n(x)}" y="${n(y)}" width="${n(mw)}" height="${n(mh)}" rx="${n(mh * 0.24)}" fill="${mark.background}" fill-opacity="${mark.backgroundOpacity}"/>`);
+      parts.push(`<polygon points="${tri}" fill="${mark.color}"/>`);
+    }
+  }
+  const qr = video.qr;
+  if (qr) {
+    const { x, y, width: qw, height: qh } = qr.rect;
+    parts.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(qw)}" height="${n(qh)}" rx="${n(qr.radius)}" fill="${qr.background}"/>`);
+    const d = qrModuleRuns(qr).map((r) => `M${n(x + r.x)} ${n(y + r.y)}h${n(r.w)}v${n(r.h)}h${n(-r.w)}z`).join('');
+    parts.push(`<path d="${d}" fill="${qr.color}" shape-rendering="crispEdges"/>`);
+  }
+  if (parts.length === 0) return '';
+  return (
+    `<svg aria-hidden="true" focusable="false" width="${n(w)}" height="${n(h)}" viewBox="0 0 ${n(w)} ${n(h)}"` +
+    ` style="position:absolute;left:0;top:0;overflow:visible;">${parts.join('')}</svg>`
+  );
+}
+
+/** The `object-fit` of a picture cropped within its safe area (#442): the
+ *  shown part spans the picture's whole width or whole height and has the
+ *  box's ratio, so `cover` scales the picture as the crop does, and the
+ *  position puts the shown part in the box. */
+function croppedFitDecl(source: ResourceSafeArea): string {
+  const px = source.width < 1 ? (source.x / (1 - source.width)) * 100 : 0;
+  const py = source.height < 1 ? (source.y / (1 - source.height)) * 100 : 0;
+  return `object-fit:cover;object-position:${+px.toFixed(3)}% ${+py.toFixed(3)}%;`;
 }
 
 /** Wrap absolutely positioned page markup in a box clipped to a rounded
@@ -1671,10 +1892,17 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
       `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`
     : '';
 
-  if (rb.kind === 'bitmap' || rb.kind === 'svg') {
+  if (rb.kind === 'video') {
+    // Named like the PDF's figure: its alt text, else its caption, else
+    // its label (`Video 1.2`).
+    const name = rb.resource.altText?.trim()
+      || rb.captionLines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim()
+      || `${rb.captionPrefix} ${rb.number}`.trim();
+    parts.push(renderVideoHtml(rb.video, rb.fileId, name, bx, by, bw, bh, options, rb.bodySource));
+  } else if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? imageUrl(options, rb.fileId, rb.resource.id) : undefined;
     // `<img>`, or a neutral placeholder matching the canvas backend's colours.
-    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg'));
+    parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg', rb.bodySource));
   } else if (rb.kind === 'table') {
     parts.push(renderResourceTable(rb, bx, by, options));
   }
@@ -2059,8 +2287,10 @@ function renderPageDetailed(
       ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
       : flowHtml) + slotParts.join('');
   // A right-to-left document's pages say so, with its language, for a host
-  // that mounts them apart from the document's root (#379).
-  const pageAttrs = options.dir === 'rtl' ? ` dir="rtl"${options.lang ? ` lang="${options.lang}"` : ''}` : '';
+  // that mounts them apart from the document's root (#379); so do a
+  // Japanese document's, whose glyph forms (a pan-CJK face's `locl`) and
+  // vertical forms the browser picks by language (#428).
+  const pageAttrs = (options.dir === 'rtl' ? ' dir="rtl"' : '') + (options.lang ? ` lang="${options.lang}"` : '');
   const outerHtml =
     `<div class="pt-page" id="${pageElementId((options.pageIndexOffset ?? 0) + page.index)}" data-page="${page.index}"${pageAttrs} style="` +
     `position:relative;` +
@@ -2082,7 +2312,7 @@ function renderPageDetailed(
  *  stretched dash, a turned design picture) keeps it and stays mirrored. */
 const MIRRORED_FLOW_STYLE =
   '<style>.pt-flow-mirrored [style*="white-space:pre"],.pt-flow-mirrored img,' +
-  '.pt-flow-mirrored svg:not(.pt-char-grid){transform:scaleX(-1);}</style>';
+  '.pt-flow-mirrored svg:not(.pt-char-grid),.pt-flow-mirrored .pt-video{transform:scaleX(-1);}</style>';
 
 /** The character grid (稿纸) as one SVG path over the page, under the
  *  text (see `cjkGridCells`). */
@@ -2187,7 +2417,7 @@ export function renderToHtmlIndexed(
     ...(doc.anchors ? { anchors: doc.anchors } : {}),
     pageIndexOffset: doc.pageIndexOffset ?? 0,
     ...(docLang ? { rootLang: docLang } : {}),
-    ...(rtl ? { dir: 'rtl' as const, ...(docLang ? { lang: docLang } : {}) } : {}),
+    ...(rtl ? { dir: 'rtl' as const, ...(docLang ? { lang: docLang } : {}) } : isJapaneseLanguage(docLang) ? { lang: docLang } : {}),
   };
   const bleedInset = doc.trimOffset > 0
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))

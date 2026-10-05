@@ -3,7 +3,7 @@ import { createPostextGuideConfig } from '../context/guideConfig';
 import { buildDefaultResources, defaultResourcesSignature } from '../defaultResources';
 import { coverThumbnailSvg } from '../defaultResources/cover';
 import { guideLang, type GuideLang } from '../defaultResources/lang';
-import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown';
 import type { PresetProvider } from './types';
 import { isPristineBook, sampleBook } from '../book/chapterOps';
 import type { BookContent } from '../book/types';
@@ -12,10 +12,11 @@ import { generateId } from '../storage/ids';
 export const BUILTIN_PRESET_ID = 'postext-guide';
 
 /** The editions of the guide, as the tags its summary lists: the library
- *  row offers ES, CA, EN, ع and 简 (see `localeShortTag`), and a permalink
- *  names one with `lang=`. The Latin-script editions first, then the two
- *  set in a script and a direction of their own. */
-export const BUILTIN_PRESET_LOCALES = ['es', 'ca', 'en', 'ar', 'zh-Hans'] as const;
+ *  row offers ES, CA, EN, ع, 简 and 日 (see `localeShortTag`), and a
+ *  permalink names one with `lang=`. The Latin-script editions first, then
+ *  the three set in a script and a direction of their own, the Japanese one
+ *  last (it came last, and the buttons before it keep their places). */
+export const BUILTIN_PRESET_LOCALES = ['es', 'ca', 'en', 'ar', 'zh-Hans', 'ja'] as const;
 
 /** The guide's text in each edition. */
 export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
@@ -24,10 +25,11 @@ export const GUIDE_MARKDOWN: Record<GuideLang, string> = {
   'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS,
   ca: DEFAULT_MARKDOWN_CA,
   ar: DEFAULT_MARKDOWN_AR,
+  ja: DEFAULT_MARKDOWN_JA,
 };
 
 /** Every edition of the guide's text, for the pristine-book checks. */
-export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_AR];
+export const GUIDE_SAMPLE_DOCUMENTS: readonly string[] = [DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA];
 
 /** Whether `book` is the untouched Chinese guide. In an English or Spanish
  *  interface the Chinese edition is opened on purpose (the 简 button, a
@@ -44,11 +46,19 @@ export function isPristineArabicGuide(book: BookContent): boolean {
   return isPristineBook(book, [DEFAULT_MARKDOWN_AR]);
 }
 
-/** The edition in a script of its own (Chinese, Arabic) `book` is an
- *  untouched copy of, or null. */
+/** Whether `book` is the untouched Japanese guide: like the Chinese one, a
+ *  vertical edition opened on purpose (the 日 button, a `lang=ja` link);
+ *  the Sandbox has no Japanese interface for it to follow. */
+export function isPristineJapaneseGuide(book: BookContent): boolean {
+  return isPristineBook(book, [DEFAULT_MARKDOWN_JA]);
+}
+
+/** The edition in a script of its own (Chinese, Arabic, Japanese) `book`
+ *  is an untouched copy of, or null. */
 function pristineScriptEdition(book: BookContent): GuideLang | null {
   if (isPristineChineseGuide(book)) return 'zh-Hans';
   if (isPristineArabicGuide(book)) return 'ar';
+  if (isPristineJapaneseGuide(book)) return 'ja';
   return null;
 }
 
@@ -89,7 +99,7 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     source: 'builtin' as const,
     available: true,
     // Like the showcase presets, the row offers every edition: Spanish,
-    // Catalan, English, Arabic and Simplified Chinese.
+    // Catalan, English, Arabic, Simplified Chinese and Japanese.
     locales: [...BUILTIN_PRESET_LOCALES],
     license: 'MIT',
     thumbnailUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(coverThumbnailSvg())}`,
@@ -103,9 +113,9 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
     if (fingerprintValue === null) {
       const source = JSON.stringify([
         opts.markdownOverride ?? null, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_ZH_HANS, DEFAULT_MARKDOWN_CA,
-        DEFAULT_MARKDOWN_AR,
+        DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_JA,
         opts.configOverride ?? null, createPostextGuideConfig('en'), createPostextGuideConfig('es'), createPostextGuideConfig('zh-Hans'),
-        createPostextGuideConfig('ca'), createPostextGuideConfig('ar'),
+        createPostextGuideConfig('ca'), createPostextGuideConfig('ar'), createPostextGuideConfig('ja'),
         defaultResourcesSignature(),
       ]);
       fingerprintValue = `builtin-${hashString(source)}`;
@@ -119,12 +129,12 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
       const lang = guideLang(locale);
       // A host override that is just one of the built-in samples (the web app
       // passes its locale's copy) still follows the locale asked for, so the
-      // ES / CA / EN / ع / 简 buttons switch the language; any other text is used as is.
+      // ES / CA / EN / ع / 简 / 日 buttons switch the language; any other text is used as is.
       const custom = opts.markdownOverride !== undefined && !GUIDE_SAMPLE_DOCUMENTS.includes(opts.markdownOverride);
       const markdown = custom ? opts.markdownOverride! : GUIDE_MARKDOWN[lang];
-      // A host config is the design of the host's own language: the Chinese
-      // and Arabic editions keep their own, set for their script.
-      const ownDesign = lang === 'zh-Hans' || lang === 'ar';
+      // A host config is the design of the host's own language: the Chinese,
+      // Arabic and Japanese editions keep their own, set for their script.
+      const ownDesign = lang === 'zh-Hans' || lang === 'ar' || lang === 'ja';
       const config = opts.configOverride && !ownDesign ? opts.configOverride : createPostextGuideConfig(lang);
       const resources = await buildDefaultResources(lang);
       const { chapters } = sampleBook(markdown, () => generateId('chapter'), opts.name);

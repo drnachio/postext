@@ -3,6 +3,7 @@ import type {
   DocumentMetadata,
   PostextResource,
   Resource,
+  ResourceSafeArea,
   TableCellAlign,
   TableCellVerticalAlign,
   ResolvedPageConfig,
@@ -14,6 +15,9 @@ import type {
   TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
+  ResolvedVideoStyleConfig,
+  ResolvedVideoPlayerOptions,
+  VideoSource,
   ResolvedParagraphStyleConfig,
   ResolvedCalloutStyleConfig,
   ResolvedChipStyleConfig,
@@ -68,6 +72,7 @@ export interface ResolvedConfig {
   tableStyles: ResolvedNamedTableStyleConfig[];
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
+  videoStyle: ResolvedVideoStyleConfig;
   paragraphStyles: ResolvedParagraphStyleConfig[];
   calloutStyles: ResolvedCalloutStyleConfig[];
   /** Named chip styles (`:chip[…]{style="…"}`). */
@@ -236,6 +241,15 @@ export interface VDTLineSegment {
    *  id. The layout sets the note at the foot of the column holding the
    *  line; the PDF backend links the marker to it. */
   footnoteId?: string;
+  /** A footnote marker set in the line gap (`footnotes.markerPosition:
+   *  'side'`, the interlinear 合印 of JLReq §4.2.3): `text` is the marker
+   *  (read in copied text and by assistive technology), but renderers paint
+   *  `runs` instead, placed from where the segment starts as a ruby
+   *  reading is — over the line (right of a vertical one), ending where
+   *  the character before it ends. The segment takes no advance of its own:
+   *  its `width` is 0, or the inter-character gap of a justified CJK line
+   *  that follows the character it marks. Absent on every other segment. */
+  sideMarker?: { runs: VDTAnnotationRun[] };
   /** Set on the second and later segments of one `:ref` painted as several
    *  runs (a label in small capitals: one run per case). Such a segment
    *  continues the previous one's reference: it takes no plain-text char of
@@ -311,7 +325,9 @@ export interface VDTLineSegment {
    *  author typed there (which it replaces). Also set, with empty `text`,
    *  on the gap a justified CJK line leaves after a ruby base of several
    *  characters (#194): the base is painted at its natural spacing, so the
-   *  gap cannot be its `tracking`. */
+   *  gap cannot be its `tracking`; and on the one-em space after a
+   *  Japanese ？ or ！ (`cjk.spaceAfterQuestion`, #418), whose `text` is
+   *  empty or the space typed there. */
   autospace?: boolean;
   /** Vertical text: the segment is one tate-chu-yoko cell set by
    *  `:tcy[…]`: its characters side by side in one upright cell, `width`
@@ -334,13 +350,19 @@ export interface VDTLineSegment {
    *  `x + inkOffset` when the reading is wider than it, and the reading's
    *  runs follow. Absent otherwise. */
   ruby?: VDTRuby;
+  /** Kanbun reading marks on the segment's last character (訓点,
+   *  `:kunten[…]`, #430): 返り点, 送り仮名 and a 竪点, painted from where
+   *  the segment starts. The room the marks take after the character
+   *  (`cjk.kunten.placement: 'inline'`) is the space segment that follows
+   *  (`autospace`), never this segment's width. Absent otherwise. */
+  kunten?: VDTKunten;
   /** The segment is the part of a warichu note (双行夹注, #195) set on this
    *  line: its `text` is the upper row then the lower one (so the plain
    *  text, search and the source map read the note once, in order), and
    *  renderers paint the two rows (`runs`) instead of `text`. Its `width`
    *  is the wider row's advance. Absent otherwise. */
   warichu?: VDTWarichu;
-  /** Characters the layout added (the 《》 of `cjk.bookTitleMark:
+  /** Characters the layout added (the 《》 or 『』 of `cjk.bookTitleMark:
    *  'brackets'`, the brackets of a warichu note): painted, and read in
    *  copied text, but no character of the plain text or the source. */
   inserted?: boolean;
@@ -388,6 +410,10 @@ export interface VDTSegmentMarks {
   /** The book-title run the text belongs to (a wavy line under it, when
    *  `cjk.bookTitleMark` is `'wavy'`). */
   bookTitle?: number;
+  /** The side line (傍線, `:sideline[…]`, #421) the text belongs to: its
+   *  run, how it is drawn and on which side (in the flow frame, as
+   *  `dots`). */
+  sideline?: { id: number; style: 'solid' | 'double' | 'wavy' | 'dotted'; position: 'over' | 'under' };
 }
 
 /** Text an annotation paints (a ruby reading, a zhuyin symbol, a row of a
@@ -427,10 +453,49 @@ export interface VDTRuby {
   position: 'over' | 'under' | 'right';
   /** Group ruby: one reading over the whole base. */
   group?: boolean;
+  /** The annotation the reading belongs to (#422): segments of one line
+   *  with the same id are one ruby (a jukugo word, or a mono ruby written
+   *  as one), adjacent in `segments`, so a renderer can set them as one
+   *  `<ruby>` with a reading per base. Unique within a block (a word cut
+   *  by a line break keeps its id on both lines). Set on rubies laid out by
+   *  the Japanese rules (`cjk.ruby.overhang` / `align` other than the
+   *  clreq defaults, as in every Japanese document, or `mode` / `align`
+   *  written on the ruby); absent elsewhere: each segment's reading is an
+   *  annotation of its own. */
+  id?: number;
+  /** One character of a jukugo ruby (熟語ルビ, JLReq §3.3.7, #422): its
+   *  reading is its own (`text`), painted by its base or, when the word
+   *  shares its reading, as part of the word's. */
+  jukugo?: true;
   /** Colour of the reading (hex); unset: the text colour. */
   color?: string;
-  /** What is painted: the reading, or its zhuyin symbols one by one. */
+  /** What is painted: the reading, or its zhuyin symbols one by one; a
+   *  Japanese reading spread 1:2:1 one run per character. `dx` is from the
+   *  base segment's start and may fall before it or past its width (a
+   *  reading running onto a neighbour). */
   runs: VDTAnnotationRun[];
+}
+
+/** The kanbun marks of a segment (see {@link VDTLineSegment.kunten}). */
+export interface VDTKunten {
+  /** The 返り点 and the 送り仮名 as written (the 送り仮名 are read after
+   *  the character: accessible and copied text read `學ビテ`); unset when
+   *  the directive gives none. */
+  kaeri?: string;
+  okuri?: string;
+  /** The marks' font (CSS shorthand at their size). */
+  fontString: string;
+  /** Colour of the marks (hex); unset: the text colour. */
+  color?: string;
+  /** What is painted: the 返り点 (`role: 'kaeri'`, a combined form such as
+   *  一レ as two runs) and the 送り仮名 (`role: 'okuri'`), each a vertical
+   *  run on a vertical line. */
+  runs: (VDTAnnotationRun & { role: 'kaeri' | 'okuri' })[];
+  /** The 竪点 joining the character to the next one (JIS X 4051 §5.7): a
+   *  thin rule along the line from `dx` (from where the segment starts),
+   *  `length` px long, centred `dy` px from the line's baseline (flow
+   *  frame, as a run's `dy`), `thickness` px across. */
+  tate?: { dx: number; dy: number; length: number; thickness: number };
 }
 
 /** One line's part of a warichu note (see {@link VDTLineSegment.warichu}). */
@@ -451,23 +516,35 @@ export interface VDTWarichu {
 }
 
 /**
- * A mark the layout set on a line (#193): an emphasis dot, circle or sesame
- * on one character, or the proper-name or wavy book-title line under a run.
- * Geometry is in the flow frame, relative to the line: `x` px along the
- * line from `VDTLine.bbox.x` (where the painted text starts: alignment and
- * justified word spaces included), `y` px from the line's baseline across
- * it (positive: towards the line's foot, the left of vertical text).
+ * A mark the layout set on a line (#193, #421): an emphasis dot, circle or
+ * sesame on one character, or a line along a run: the proper-name line,
+ * the wavy book-title line, a side line (傍線: `line`, `double`, `wavy`,
+ * `dotted`). Geometry is in the flow frame, relative to the line: `x` px
+ * along the line from `VDTLine.bbox.x` (where the painted text starts:
+ * alignment and justified word spaces included), `y` px from the line's
+ * baseline across it (positive: towards the line's foot, the left of
+ * vertical text). A sesame's lens is drawn as it stands on the sheet
+ * (leaning like ﹅), so a renderer painting a vertical page turns it back
+ * against the page's quarter turn.
  */
 export interface VDTLineMark {
-  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy';
-  /** A dot's centre; a line's start. */
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted';
+  /** A dot's centre; a line's start (`double`: midway between its two
+   *  rules). */
   x: number;
   y: number;
-  /** A dot's diameter (a sesame's length). */
+  /** A dot's diameter (a sesame's length; the diameter of each dot of a
+   *  `dotted` line). */
   size?: number;
   /** A line's length along the line. */
   length?: number;
-  /** Stroke width: a line, a wave, an open dot's outline. */
+  /** `double`: how far apart the centres of its two rules are. `dotted`:
+   *  how far apart the centres of its dots are, the first dot touching
+   *  `x` and the last `x + length` (the layout sets a pitch that comes out
+   *  even). */
+  gap?: number;
+  /** Stroke width: a line, each rule of a double line, a wave, an open
+   *  dot's outline. */
   thickness: number;
   /** A dot drawn as an outline (`circle`, or `fill="open"`). */
   open?: boolean;
@@ -1108,10 +1185,72 @@ export function mirroredFlowFrame(width: number): VDTMirroredFlowFrame {
   return { writingMode: 'horizontal-tb', direction: 'rtl', mirror: { originX: width } };
 }
 
+/** The play mark printed on a video's poster (#454). `rect` is relative to
+ *  the top-left corner of the body (`bodyRect`). */
+export interface VDTVideoPlayMark {
+  rect: BoundingBox;
+  shape: 'circle' | 'rounded' | 'triangle';
+  /** The triangle (hex). */
+  color: string;
+  /** The disc or rectangle behind it (hex); the triangle's outline for the
+   *  bare `'triangle'`. */
+  background: string;
+  backgroundOpacity: number;
+}
+
+/** The QR code printed on a video's poster (#454). `rect` is the plate,
+ *  quiet zone included, relative to the top-left corner of the body. */
+export interface VDTVideoQr {
+  rect: BoundingBox;
+  /** What the code holds: the address it opens. */
+  text: string;
+  /** Modules per side, without the quiet zone. */
+  size: number;
+  /** One string per row, `'1'` for a dark module. */
+  rows: string[];
+  /** Light modules between the code and the plate's edge. */
+  quietZone: number;
+  /** Side of one module in px. */
+  moduleSize: number;
+  color: string;
+  background: string;
+  /** Corner radius of the plate in px. */
+  radius: number;
+}
+
+/** A video resource as the outputs need it (#454): where it plays from, the
+ *  player options, and the overlays printed on its poster. */
+export interface VDTResourceVideo {
+  source: VideoSource;
+  /** The address a reader is sent to: the YouTube or Vimeo page, or a
+   *  self-hosted file's production address. Absent when there is none. */
+  link?: string;
+  /** The YouTube or Vimeo player's `src` (the player options applied). */
+  embedUrl?: string;
+  /** A self-hosted file: its out-of-band id and media type. */
+  fileId?: string;
+  mimeType?: string;
+  /** Play range in seconds. */
+  start?: number;
+  end?: number;
+  player: ResolvedVideoPlayerOptions;
+  /** Make the poster a link to {@link link} (`videoStyle.linkPoster`, and
+   *  a link to make). */
+  linkPoster: boolean;
+  /** What the HTML output sets (`videoStyle.html`). */
+  html: 'player' | 'poster';
+  playMark?: VDTVideoPlayMark;
+  qr?: VDTVideoQr;
+}
+
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
+  /** Present when `kind === 'video'`: playback and the poster's overlays
+   *  (#454). The poster itself is `fileId` / `format`, drawn like a
+   *  bitmap. */
+  video?: VDTResourceVideo;
   /** Present when the block is one slice of a table split across pages. */
   slice?: VDTTableSlice;
   /** Present when the block is set turned on the page; the inner geometry
@@ -1124,6 +1263,17 @@ export interface ResolvedResourceBlock {
   /** Pixel rect of the figure body (image / table area) relative to the block
    *  origin. Caption is laid out below it. */
   bodyRect: BoundingBox;
+  /** For bitmap/svg: the part of the picture shown in `bodyRect`, in
+   *  fractions of its intrinsic size, when the engine cropped it within its
+   *  safe area (`Resource.safeArea`). Absent: the whole picture fills
+   *  `bodyRect`. Renderers scale the picture so this rectangle maps onto
+   *  `bodyRect` and clip to `bodyRect`. */
+  bodySource?: ResourceSafeArea;
+  /** For a picture with a safe area: how many px its body could still
+   *  shrink or grow from the height it is set at, by cropping outside the
+   *  safe area (the room the fit and balancing levers have), and the px
+   *  the levers already set it taller (`delta`, negative when shorter). */
+  bodyFlex?: { shrink: number; grow: number; delta: number };
   /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
   fileId?: string;
   /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */
@@ -1407,7 +1557,7 @@ export interface ResolvedCalloutBlock {
  *  - `afterFloat` — a grid line under a float band heading the column;
  *  - `looseParagraph` — a paragraph re-broken a line long (plus tracking
  *    when word spacing alone could not gain the line). */
-export type BalanceLever = 'trailingCallout' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+export type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 
 /** What column balancing did to one block (`VDTBlock.balancing`). */
 export interface VDTBalancing {
@@ -1422,6 +1572,9 @@ export interface VDTBalancing {
   spaceAbove: number;
   /** `looseParagraph`: lines the paragraph gained. */
   extraLines?: number;
+  /** `flexFigure`: px the picture was set taller, cropped within its safe
+   *  area (`Resource.safeArea`); `spaceAbove` is then `0`. */
+  bodyGrowth?: number;
   /** `looseParagraph`: tracking that gained the line, in thousandths of an
    *  em (`0` when word spacing alone did); the block's `letterSpacing` is
    *  the same value in px. */
@@ -1601,7 +1754,7 @@ export interface VDTDesignTextBlock {
 }
 
 /** How the text of a vertical design block ({@link VDTDesignTextBlock.vertical})
- *  is set: the Chinese region whose punctuation it takes, how many digits a
+ *  is set: the CJK region whose punctuation it takes, how many digits a
  *  number set in one cell may have (`cjk.uprightDigits`), and the central
  *  axis of each family it is set in (em above the baseline, as
  *  {@link VDTFlowFrame.centralBaselines}). */
@@ -1919,9 +2072,27 @@ export type ContentWarning = ContentWarningBase & (
    *  or closed with no opening (`missing: 'start'`): it prints as a single
    *  page. Points at the `:::index` line. */
   | { kind: 'indexRangeUnclosed'; term: string; missing: 'start' | 'end'; index: string }
+  /** An entry of a Japanese index (#425) whose text holds a kanji and that
+   *  no mark gives a reading (`yomi`, a kana ruby on the marked text, or a
+   *  `sort` key in kana): it files after the kana entries, by code point.
+   *  `term` is the entry's levels joined with `!`. Points at the `:::index`
+   *  line. */
+  | { kind: 'indexReadingMissing'; term: string; index: string }
   /** A heading's `{style}` attribute names no heading style: the heading
    *  and its section keep the level's own settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }
+  /** A video resource the text uses has no poster frame (#454): print
+   *  outputs show a dark box with the play mark and the QR code. */
+  | { kind: 'videoWithoutPoster'; resourceId: string }
+  /** A self-hosted video the text uses has no production address
+   *  (`video.url`, http or https): the printed poster gets no QR code and
+   *  no link, and an HTML or EPUB output without the file cannot play it. */
+  | { kind: 'videoWithoutUrl'; resourceId: string }
+  /** A YouTube or Vimeo video whose address is not a link to a video of that
+   *  platform: no player is embedded (the poster is shown instead), and the
+   *  QR code and the link carry the address as written when it is a web
+   *  address. */
+  | { kind: 'videoUrlInvalid'; resourceId: string; url: string }
   /** A table resource's `table.styleId` names no `tableStyles` entry: the
    *  table is set in the document's `tableStyle`. */
   | { kind: 'unknownTableStyle'; styleId: string; resourceId: string }
@@ -1964,6 +2135,11 @@ export type ContentWarning = ContentWarningBase & (
    *  line gap is narrower than the readings: they overlap the next line.
    *  `gapEm` and `neededEm` in em of the text. */
   | { kind: 'rubyExceedsLeading'; text: string; gapEm: number; neededEm: number }
+  /** A paragraph of kanbun with 送り仮名 (or 返り点 set in the line gap,
+   *  `cjk.kunten.placement: 'interlinear'`) whose line gap is narrower than
+   *  the marks (#430): they overlap the next line. `gapEm` and `neededEm`
+   *  in em of the text. */
+  | { kind: 'kuntenExceedsLeading'; text: string; gapEm: number; neededEm: number }
   /** A paragraph of vocalised Arabic (#376) whose vowel marks meet the
    *  ink of the line above or below it in its column: a mark over a word
    *  reaches down-hanging letters or marks of the line above, or a kasra

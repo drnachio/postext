@@ -151,6 +151,33 @@ describe('joining lines', () => {
   });
 });
 
+describe('side lines (傍線, #421)', () => {
+  it('mark the run with its style and side, drawn by text-decoration', async () => {
+    const docs = [layOut('A :sideline[side line]{style="wavy" pos="over"} and :sideline[plain] text.')];
+    const { pub, all } = await render(docs);
+    expect(all).toContain('<span class="pt-side pt-side-over pt-side-wavy">side line</span>');
+    expect(all).toContain('<span class="pt-side">plain</span>');
+    const css = pub.items.filter((i) => i.mediaType === 'text/css').map((i) => String(i.data)).join('\n');
+    expect(css).toMatch(/\.pt-side \{[^}]*text-decoration-line: underline;[^}]*text-decoration-skip-ink: none;[^}]*text-underline-position: under left/);
+    expect(css).toMatch(/\.pt-side\.pt-side-over \{[^}]*text-decoration-line: overline/);
+    for (const style of ['double', 'wavy', 'dotted']) expect(css).toContain(`.pt-side.pt-side-${style} {`);
+  });
+});
+
+describe('kanbun marks (訓点, #430)', () => {
+  it('raise the 送り仮名 after their character, lower the 返り点, a 竪点 as a hyphen; only the 送り仮名 read', async () => {
+    const docs = [layOut(':kunten[學]{okuri="ビテ"}而:kunten[敬]{tate kaeri="二"}祭:kunten[:ruby[未]{rt="いま"}]{kaeri="レ" okuri="ダ"}嘗')];
+    const { pub, all } = await render(docs);
+    expect(all).toContain('<span class="pt-kunten">學<span class="pt-okuri">ビテ</span></span>');
+    expect(all).toContain('<span class="pt-kunten">敬<span class="pt-kaeri" aria-hidden="true">二</span><span class="pt-tate" aria-hidden="true">‐</span></span>');
+    expect(all).toContain('<span class="pt-kunten"><ruby>未<rt>いま</rt></ruby><span class="pt-okuri">ダ</span><span class="pt-kaeri" aria-hidden="true">レ</span></span>');
+    const css = pub.items.filter((i) => i.mediaType === 'text/css').map((i) => String(i.data)).join('\n');
+    expect(css).toMatch(/\.pt-okuri, \.pt-kaeri \{[^}]*font-size: 0\.5em/);
+    expect(css).toMatch(/\.pt-okuri \{[^}]*vertical-align: super/);
+    expect(css).toMatch(/\.pt-kaeri \{[^}]*vertical-align: sub/);
+  });
+});
+
 describe('buildReflowablePublication', () => {
   it('writes one sound content document per chapter, with page starts and navigation', async () => {
     const docs = layOutBook([
@@ -289,6 +316,25 @@ describe('buildReflowablePublication', () => {
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).toMatch(/p\.pt-index-entry \{[^}]*padding-inline-start: 2em;\n {2}text-indent: -2em;/);
     expect(css).toContain('p.pt-index-l1 {\n  margin-inline-start: 1em;');
+  });
+
+  it('carries a heading\'s 行取り and 字下げ and a style\'s end indent into the stylesheet (#424)', async () => {
+    const config = {
+      ...baseConfig,
+      bodyText: { ...baseConfig.bodyText, fontSize: pt(10), lineHeight: pt(17.5) },
+      headings: { levels: [{ level: 2, fontSize: pt(14), lineHeight: pt(21), lineSpan: 3, indent: { value: 4, unit: 'em' as const } }] },
+      paragraphStyles: [{ id: 'sign', textAlign: 'end' as const, endIndent: { value: 1, unit: 'em' as const } }],
+    };
+    const { pub } = await render([layOut('## 一\n\nText.\n\n:::paragraphs{style="sign"}\nK\n:::', config)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    // (3 × 17.5 − 21) / 2 = 15.75 px above and below a 14 px heading;
+    // 4 body ems are 40 px, 2.857 of its own.
+    expect(css).toMatch(/h2 \{[^}]*margin: 1\.125em 0;\n {2}margin-inline-start: 2\.857em;/);
+    expect(css).toMatch(/p\.ps-sign[^{]*\{[^}]*margin-inline-end: 1em;/);
+    // Nothing of it without the settings.
+    const plain = (await render([layOut('## One\n\nText.')])).pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(plain).not.toContain('margin-inline-end');
+    expect(plain).not.toMatch(/h2 \{[^}]*margin-inline-start/);
   });
 
   it('gives a part its own opener document', async () => {
@@ -499,5 +545,34 @@ describe('reflowable rendition: stylesheets per chapter and part', () => {
     expect(own).toMatch(/\.hs-plate \{\n {2}font-size: [\d.]+em;\n {2}font-style: unset;\n\}/);
     expect(files.get('text/chapter-002.xhtml')).toContain('href="../styles/book-2.css"');
     expect(files.get('text/chapter-003.xhtml')).not.toContain('book-2.css');
+  });
+});
+
+describe('reflowable rendition: Japanese note markers (JLReq §4.2.3)', () => {
+  const md = '先生[^a]と呼んでいた。\n\n[^a]: 注の本文。';
+
+  it('sets a side marker in a box of no advance over the text, linked to its note', async () => {
+    const doc = layOut(md, { ...baseConfig, locale: 'ja', footnotes: { placement: 'column', markerPosition: 'side' } });
+    const { pub, files, all } = await render([doc]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-side"><span>1<\/span><\/span><\/a>/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/\.pt-note-side \{[^}]*inline-size: 0;[^}]*font-size: 0\.6em;/);
+    expect(css).not.toContain('.pt-note-right');
+  });
+
+  it('sets a right marker of a vertical book reduced against the line\'s right side', async () => {
+    const doc = layOut(md, { ...baseConfig, locale: 'ja', layout: { writingMode: 'vertical-rl' }, footnotes: { placement: 'column' } });
+    const { pub, all } = await render([doc]);
+    // The digit stands upright in its own cell (automatic tate-chū-yoko, #428).
+    expect(all).toMatch(/<a epub:type="noteref"[^>]*><span class="pt-note-right">（<\/span><span class="pt-note-right"><span class="pt-tcy">1<\/span><\/span><span class="pt-note-right">）<\/span><\/a>/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/\.pt-note-right \{[^}]*font-size: 0\.7em;/);
+  });
+
+  it('writes no marker rule for other books', async () => {
+    const { pub } = await render([layOut(`${para}[^a]\n\n[^a]: Note.`)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).not.toContain('pt-note-');
   });
 });

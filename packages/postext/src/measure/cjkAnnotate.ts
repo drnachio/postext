@@ -1,6 +1,6 @@
 /**
- * Geometry of ruby readings (#194) and warichu notes (#195) inside a line,
- * for the CJK composer.
+ * Geometry of ruby readings (#194), warichu notes (#195) and kanbun
+ * reading marks (#430) inside a line, for the CJK composer.
  *
  * Everything is in the flow frame: `dx` along the line from where the
  * annotated segment starts, `dy` across it from the line's baseline to the
@@ -32,9 +32,21 @@
  *   never the longer), and one more while the lower row would open with a
  *   mark that may not start a line or the upper row would end with one
  *   that may not end a line (an opening bracket).
+ * - Kanbun marks (訓点, JIS X 4051 §5) go with the last character of
+ *   their base, at half its size: the 返り点 right after it with its box
+ *   against the line's foot side (the left half of a vertical line, the
+ *   lower half of a horizontal one, §5.5), the 送り仮名 against its head
+ *   side (right of vertical text, over horizontal text) from half-way
+ *   along it, or right after a reading on that side (§5.6), the 竪点 a
+ *   thin rule half an em long on the line's axis in the gap after the
+ *   character (§5.7). Inline (the default) the room after the character
+ *   is its own advance: the larger of the 返り点 and the 竪点, and as far
+ *   as 送り仮名 reach (they never run beside the next character, §5.6.4).
+ *   Interlinear, the 返り点 sit in the line gap beside the character's
+ *   lower half and nothing takes advance.
  */
 
-import type { VDTAnnotationRun } from '../vdt';
+import type { VDTAnnotationRun, VDTKunten } from '../vdt';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt';
 import { measureInkBox, measureTextWidth, onTextWidthCacheClear } from './canvas';
 import { flowTextWidth, fontEm, measuringVertically } from './vertical';
@@ -99,6 +111,21 @@ export interface RubyGeometry {
   /** What the reading could pass the box by on each side (the input's). */
   allowLeft: number;
   allowRight: number;
+  /** Space after each base character, px, counted in `width`: a base of
+   *  several characters spread 1:2:1 under a longer reading (Japanese
+   *  ruby, `rubyJis.ts`). Unset: the base keeps its own spacing. */
+  tracking?: number;
+}
+
+/** The baseline (`dy`) of a reading over or under its base, px from the
+ *  line's baseline: against the base's em box, a Latin reading over the
+ *  base lifted clear of the base (`rubyLift.ts`). */
+export function readingBaseline(reading: string, fontString: string, position: 'over' | 'under', em: number): number {
+  const rtEm = fontEm(fontString);
+  const side = position === 'under' ? 1 : -1;
+  const rtAxis = -CENTRAL * em + side * (em / 2 + rtEm / 2);
+  const lift = side < 0 ? latinReadingLift(reading, fontString, em) : 0;
+  return baselineOf(rtAxis, rtEm) - lift;
 }
 
 /** Gap between a base and its zhuyin column, in em of the text. */
@@ -227,6 +254,20 @@ export function rubyGeometry(input: RubyInput): RubyGeometry {
   return { width, inset, rtWidth, runs: [{ text: reading, dx: (width - rtWidth) / 2, dy: baselineOf(rtAxis, rtEm) - lift, fontString }], ...allow };
 }
 
+/**
+ * The run of a footnote marker set in the line gap (`footnotes.markerPosition:
+ * 'side'`, JLReq §4.2.3): `text` at `fontString` over the text — right of a
+ * vertical line, above a horizontal one — against the em box of the text
+ * (`em` px), as a ruby reading over its base. It ends where its segment
+ * starts, the end of the character it marks (the marker's foot aligned with
+ * the word's last character), and changes nothing in the line.
+ */
+export function sideMarkerRun(text: string, fontString: string, em: number): VDTAnnotationRun {
+  const markEm = fontEm(fontString);
+  const axis = -CENTRAL * em - (em / 2 + markEm / 2);
+  return { text, dx: -flowTextWidth(text, fontString), dy: baselineOf(axis, markEm), fontString };
+}
+
 /** The advance of a reading along the line (a zhuyin reading: its
  *  symbols' column, tone marks aside), before its base is sized. */
 export function readingAdvance(reading: string, fontString: string, position: 'over' | 'under' | 'right'): number {
@@ -235,6 +276,89 @@ export function readingAdvance(reading: string, fontString: string, position: 'o
   if (position === 'right') return zEm;
   const symbols = graphemesOf(reading).filter((g) => !TONE_MARKS.has(g) && g !== NEUTRAL_TONE).join('');
   return flowTextWidth(symbols, withFontSize(fontString, zEm));
+}
+
+/** What a character with kanbun marks is set with (see the module
+ *  comment). Lengths are px along the line, from where its unit starts. */
+export interface KuntenInput {
+  kaeri?: string;
+  okuri?: string;
+  tate?: boolean;
+  /** The marks' font (at their size) and colour. */
+  fontString: string;
+  color?: string;
+  placement: 'inline' | 'interlinear';
+  /** The text's em, px. */
+  em: number;
+  /** Where the character ends, and the unit's advance so far. */
+  baseEnd: number;
+  width: number;
+  /** Where a ruby reading over (right of vertical text) or under the base
+   *  ends, if it has one on that side. */
+  readingOverEnd?: number;
+  readingUnderEnd?: number;
+}
+
+/** Thickness of a 竪点, in em of the text (a thin rule, JIS X 4051 §5.7). */
+const TATE_STROKE_EM = 0.06;
+
+/**
+ * The marks of a character with kanbun marks, and the advance they add
+ * after its unit (0 when they are set interlinear). Measured in the
+ * writing mode the composer runs in: down a vertical line each mark is an
+ * upright cell.
+ */
+export function kuntenGeometry(input: KuntenInput): { extra: number; kunten: VDTKunten } {
+  const { em, baseEnd, fontString } = input;
+  const kEm = fontEm(fontString);
+  const inline = input.placement === 'inline';
+  const axis = -CENTRAL * em;
+  const runs: VDTKunten['runs'] = [];
+  let advance = 0;
+  if (input.kaeri) {
+    // The 返り点, one run per mark (a combined form such as 一レ is the
+    // mark and the レ after it), along the line from the character's end
+    // (inline), or ending with it in the line gap (interlinear, after a
+    // reading on that side).
+    let at = inline ? baseEnd : Math.max(baseEnd - kEm, input.readingUnderEnd ?? -Infinity);
+    const start = at;
+    const dy = baselineOf(inline ? axis + em / 2 - kEm / 2 : axis + em / 2 + kEm / 2, kEm);
+    for (const g of graphemesOf(input.kaeri)) {
+      runs.push({ text: g, dx: at, dy, fontString, role: 'kaeri' });
+      at += flowTextWidth(g, fontString);
+    }
+    if (inline) advance = at - start;
+  }
+  let tate: VDTKunten['tate'];
+  if (input.tate) {
+    const thickness = Math.max(0.5, TATE_STROKE_EM * em);
+    if (inline) {
+      // Half an em of its own, unless the 返り点 beside it take more; the
+      // rule is centred in the gap.
+      advance = Math.max(advance, em / 2);
+      tate = { dx: baseEnd + (advance - em / 2) / 2, dy: axis, length: em / 2, thickness };
+    } else {
+      // No gap: a short rule across the two characters' meeting point.
+      tate = { dx: baseEnd - em / 8, dy: axis, length: em / 4, thickness };
+    }
+  }
+  let reach = baseEnd + advance;
+  if (input.okuri) {
+    // From half-way along the character, or right after a reading on the
+    // same side (§5.6.3).
+    const dx = Math.max(baseEnd - em / 2, input.readingOverEnd ?? -Infinity);
+    runs.push({ text: input.okuri, dx, dy: baselineOf(axis - em / 2 - kEm / 2, kEm), fontString, role: 'okuri' });
+    reach = Math.max(reach, dx + flowTextWidth(input.okuri, fontString));
+  }
+  const kunten: VDTKunten = {
+    ...(input.kaeri ? { kaeri: input.kaeri } : {}),
+    ...(input.okuri ? { okuri: input.okuri } : {}),
+    fontString,
+    ...(input.color ? { color: input.color } : {}),
+    runs,
+    ...(tate ? { tate } : {}),
+  };
+  return { extra: inline ? Math.max(0, reach - input.width) : 0, kunten };
 }
 
 /** Where the upper row of a warichu part ends (units `[0, at)`): see the

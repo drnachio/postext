@@ -95,8 +95,9 @@
   }
 }
 
-/* The band's actions: outlined in the band's own ink, the primary one in
-   night (it reads on every part colour, in both themes). */
+/* The band's actions: outlined in the band's own ink, the two ways into
+   the recipe filled: CodePen in night, Sandbox in cream with the Sandbox's
+   blue icon (both read on every part colour, in both themes). */
 .cb-actions {
   display: flex;
   flex-wrap: wrap;
@@ -139,6 +140,18 @@
 }
 .cb-action-primary svg {
   color: var(--brand-gilt);
+}
+.cb-action-sandbox {
+  border-color: var(--brand-cream);
+  background: var(--brand-cream);
+  color: var(--brand-night);
+}
+.cb-action-sandbox:hover {
+  border-color: #fff;
+  background: #fff;
+}
+.cb-action-sandbox svg {
+  color: var(--brand-blue);
 }
 .cb-action-link {
   border-color: transparent;
@@ -637,7 +650,6 @@
   max-height: calc(100vh - 6rem);
   overflow-y: auto;
   padding-bottom: 2rem;
-  scrollbar-width: thin;
 }
 .cb-aside-title {
   margin-bottom: 0.6rem;
@@ -1445,10 +1457,10 @@
     min-height: 2.75rem;
     padding-inline: 0.6rem;
   }
-  /* Four actions (CodePen, Sandbox, Copy, PDF) do not fit at 375 px: the
-     secondary ones keep their icons only (the text stays in the DOM as the
+  /* Four actions (CodePen, Sandbox, Copy, PDF) do not fit at 375 px: Copy
+     and PDF keep their icons only (the text stays in the DOM as the
      buttons' names). */
-  .cb-action-bar-row:has(> :nth-child(4)) .cb-action:not(.cb-action-primary) {
+  .cb-action-bar-row:has(> :nth-child(4)) .cb-action:not(.cb-action-primary, .cb-action-sandbox) {
     flex: 0 0 3rem;
     font-size: 0;
     gap: 0;

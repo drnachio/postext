@@ -14,7 +14,7 @@
 //
 // Every word a figure, table, caption or alternative text prints is given
 // once per edition of the guide (English, Spanish, Simplified Chinese,
-// Catalan and Arabic; see `lang.ts`). The Arabic edition's figures read from
+// Catalan, Arabic and Japanese; see `lang.ts`). The Arabic edition's figures read from
 // the right: those whose layout follows the reading order are drawn as
 // their mirror image, their labels set right to left (see `drawn`).
 
@@ -26,7 +26,7 @@ import { GUIDE_LANGS, byLang, guideLang, type ByLang, type GuideLang } from './l
 
 export { GUIDE_LANGS, guideLang, type GuideLang } from './lang';
 
-/** Stable ids referenced by the default markdown (en.ts / es.ts / zh-Hans.ts).
+/** Stable ids referenced by the default markdown (en.ts, es.ts, zh-Hans.ts…).
  *  Keys are internal; the string *values* are the ids the markdown's
  *  `:ref{id=…}` directives resolve against, so they must stay in sync with
  *  the markdown. */
@@ -81,8 +81,9 @@ export const DEFAULT_RESOURCE_IDS = {
 // stroke widths, and arrowhead markers come out the same physical size in
 // every figure, regardless of where the float lands.
 //
-// A Chinese label is about one em per character (FS.label: 11.5 units), so
-// the Chinese wording is kept to what fits the boxes the Latin labels sit in.
+// A Chinese or Japanese label is about one em per character (FS.label: 11.5
+// units), so their wording is kept to what fits the boxes the Latin labels
+// sit in.
 // ───────────────────────────────────────────────────────────────────────────
 
 import { COLUMN_VW, DEFS, FS, P, PAGE_VW, bar, edge, localizeFigure, mirrorFragment, mirrorSvg, node, text } from './svgKit';
@@ -94,6 +95,7 @@ const PIPELINE = byLang(
   { parse: '解析', measure: '测量', layout: '排版', config: '配置', loop: ['最多5轮'], aria: 'Postext的处理流水线' },
   { parse: 'Anàlisi', measure: 'Mesura', layout: 'Maquetació', config: 'Configuració', loop: ['fins a', '5 passades'], aria: 'cadena de processament de Postext' },
   { parse: 'التحليل', measure: 'القياس', layout: 'التنضيد', config: 'الإعدادات', loop: ['حتى', '٥ تمريرات'], aria: 'خط معالجة Postext' },
+  { parse: '解析', measure: '計測', layout: '組版', config: '設定', loop: ['最大5回'], aria: 'Postextの処理の流れ' },
 );
 
 /** The Postext pipeline: Markdown and configuration → parse → measure →
@@ -138,6 +140,7 @@ const CONVERGENCE = byLang(
   { place: '排布', check: '检查', adjust: '调整', done: '收敛', ok: '满足', conflict: '冲突', iters: '最多5轮', aria: '排版的收敛循环', itersWidth: 72 },
   { place: 'Col·locar', check: 'Comprovar', adjust: 'Ajustar', done: 'Convergit', ok: 'compleix', conflict: 'conflicte', iters: 'fins a 5 iteracions', aria: 'bucle de convergència de la maquetació', itersWidth: 110 },
   { place: 'وضع', check: 'تحقق', adjust: 'تعديل', done: 'استقرار', ok: 'مستوفى', conflict: 'تعارض', iters: '٥ تكرارات على الأكثر', aria: 'حلقة تقارب التنضيد', itersWidth: 110 },
+  { place: '配置', check: '検査', adjust: '調整', done: '収束', ok: '問題なし', conflict: '衝突', iters: '最大5回', aria: '組版の収束ループ', itersWidth: 72 },
 );
 
 /** The convergence loop: place → check → (conflict ⇒ adjust ⇒ back) until the
@@ -168,6 +171,7 @@ const SPEED = byLang(
   { withDom: '借助DOM', withoutDom: '不借助DOM', faster: '更快', time: '耗时', aria: '借助DOM与不借助DOM的测量速度对比' },
   { withDom: 'Amb DOM', withoutDom: 'Sense DOM', faster: 'més ràpid', time: 'temps', aria: 'comparació de velocitat entre la mesura amb DOM i sense DOM' },
   { withDom: 'عبر DOM', withoutDom: 'بلا DOM', faster: 'أسرع', time: 'الزمن', aria: 'مقارنة سرعة القياس عبر DOM وبلا DOM' },
+  { withDom: 'DOMを使う', withoutDom: 'DOMを使わない', faster: '高速', time: '時間', aria: 'DOMを使う計測と使わない計測の速度比較' },
 );
 
 /** A two-bar chart contrasting DOM-based measurement with DOM-free measurement,
@@ -198,24 +202,26 @@ function measurementSpeedSvg(lang: GuideLang): string {
 /** The two labels of the orphan-and-widow figure: the one under the foot of
  *  the left column and the one over the head of the right. The Latin
  *  editions follow the engine's names (`avoidWidows` at a column's foot,
- *  `avoidOrphans` at the next one's head); the Chinese edition names them by
- *  place, as its text does (段首孤行 at the foot: a paragraph's first line;
- *  段末孤行 at the head: its last). */
+ *  `avoidOrphans` at the next one's head); the Chinese and Japanese editions
+ *  name them by place, as their text does (段首孤行, オーファン at the foot:
+ *  a paragraph's first line; 段末孤行, ウィドウ at the head: its last). */
 const ORPHAN_WIDOW = byLang(
   { foot: 'Widow', head: 'Orphan', aria: 'widow and orphan lines across columns' },
   { foot: 'Viuda', head: 'Huérfana', aria: 'líneas viuda y huérfana entre columnas' },
   { foot: '段首孤行', head: '段末孤行', aria: '分栏处两侧的段首孤行与段末孤行' },
   { foot: 'Vídua', head: 'Òrfena', aria: 'línies vídua i òrfena entre columnes' },
   { foot: 'أرملة', head: 'يتيمة', aria: 'سطر أرملة وسطر يتيم بين عمودين' },
+  { foot: 'オーファン', head: 'ウィドウ', aria: '段の切れ目の両側にできるオーファンとウィドウ' },
 );
 
 /** Two columns of text lines illustrating a widow (lone last line at the foot of
  *  a column) and an orphan (lone first line at the head of the next). In
- *  the Chinese edition the stranded lines are drawn the way its names read
- *  them: a full first line at the foot, a short last line at the head. */
+ *  the Chinese and Japanese editions the stranded lines are drawn the way
+ *  their names read them: a full first line at the foot, a short last line
+ *  at the head. */
 function orphanWidowSvg(lang: GuideLang): string {
   const { foot: widow, head: orphan, aria: ariaLabel } = ORPHAN_WIDOW[lang];
-  const zh = lang === 'zh-Hans';
+  const byPlace = lang === 'zh-Hans' || lang === 'ja';
   // Full body lines fill the left column; its paragraph's last line strands
   // alone at the foot. The continuation paragraph opens the right column with
   // a lone first line before the next paragraph begins.
@@ -223,8 +229,8 @@ function orphanWidowSvg(lang: GuideLang): string {
   const leftLines = leftWidths.map((w, i) => bar(26, 32 + i * 12, w)).join('\n  ');
   const rightWidths = [92, 96, 86, 96, 90, 96, 84, 94];
   const rightLines = rightWidths.map((w, i) => bar(178, 56 + i * 12, w)).join('\n  ');
-  const footLine = zh ? bar(36, 144, 86, P.amber) : bar(26, 144, 56, P.amber);
-  const headLine = zh ? bar(178, 32, 52, P.amber) : bar(178, 32, 96, P.amber);
+  const footLine = byPlace ? bar(36, 144, 86, P.amber) : bar(26, 144, 56, P.amber);
+  const headLine = byPlace ? bar(178, 32, 52, P.amber) : bar(178, 32, 96, P.amber);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${COLUMN_VW} 180" role="img" aria-label="${ariaLabel}">
   <rect x="16" y="20" width="116" height="140" rx="6" fill="${P.paper}" stroke="${P.edgeSoft}" />
   <rect x="168" y="20" width="116" height="140" rx="6" fill="${P.paper}" stroke="${P.edgeSoft}" />
@@ -257,6 +263,9 @@ const KNUTH_PLASS = byLang(
   {
     box: 'صندوق', glue: 'مسافة مرنة', penalty: 'جزاء', measure: 'عرض السطر · r = 0.42 · الرداءة ٧',
     aria: 'عناصر Knuth-Plass: الصناديق والمسافات المرنة والجزاءات',
+  },  {
+    box: 'ボックス', glue: 'グルー', penalty: 'ペナルティ', measure: '行長 · r = 0.42 · 不良度 7',
+    aria: 'Knuth–Plass法の基本要素：ボックス、グルー、ペナルティ',
   },
 );
 /** The words of the example line. The hyphenated line is a Western one, so
@@ -267,6 +276,7 @@ const KP_WORDS = byLang(
   ['Cada', 'párrafo', 'se', 'equili', 'bra'],
   ['Every', 'paragraph', 'is', 'balan', 'ced'],
   ['Cada', 'paràgraf', 'és', 'equili', 'brat'],
+  ['Every', 'paragraph', 'is', 'balan', 'ced'],
   ['Every', 'paragraph', 'is', 'balan', 'ced'],
 );
 
@@ -317,6 +327,7 @@ const BASELINE = byLang(
   { label: '基线网格', aria: '文字对齐基线网格', pillW: 76 },
   { label: 'Retícula de línia de base', aria: 'alineació a la retícula de línia de base', pillW: 172 },
   { label: 'شبكة خطوط القاعدة', aria: 'المحاذاة على شبكة خطوط القاعدة', pillW: 116 },
+  { label: 'ベースライングリッド', aria: '行をベースライングリッドにそろえる', pillW: 128 },
 );
 
 /** Two columns whose text lines snap to a shared horizontal baseline grid, with
@@ -372,13 +383,13 @@ const drawn = (draw: (lang: GuideLang) => string, mirrored = false) => (lang: Gu
  *  Widths follow the shared unit system: COLUMN_VW for column-span figures,
  *  PAGE_VW for page-span ones (see FIGURE_SPECS placements). */
 export const SVG_FIGURES: Record<string, GuideFigure> = {
-  // The Chinese edition, a vertical book, has a portrait cover: one of its
-  // own pages beside the title strip.
+  // The Chinese and Japanese editions, vertical books, have a portrait
+  // cover: one of their own pages beside the title strip.
   'default-guide-cover': {
     // The Arabic edition's spread is drawn mirrored (see `coverArtSvg`).
-    generate: (lang) => (lang === 'zh-Hans' ? coverArtVerticalSvg() : coverArtSvg(lang)),
+    generate: (lang) => (lang === 'zh-Hans' || lang === 'ja' ? coverArtVerticalSvg(lang) : coverArtSvg(lang)),
     width: COVER_VW, height: COVER_VH,
-    sizeIn: { 'zh-Hans': { width: COVER_ZH_VW, height: COVER_ZH_VH } },
+    sizeIn: { 'zh-Hans': { width: COVER_ZH_VW, height: COVER_ZH_VH }, ja: { width: COVER_ZH_VW, height: COVER_ZH_VH } },
   },
   'default-layout-pipeline': { generate: drawn(pipelineSvg, true), width: COLUMN_VW, height: 300 },
   'default-convergence-loop': { generate: drawn(convergenceLoopSvg, true), width: PAGE_VW, height: 170 },
@@ -429,6 +440,22 @@ function featureTableModel(lang: GuideLang): TableModel {
         ['شبكة خطوط قاعدة عبر الأعمدة', 'لا', yes],
         ['ترويسات وأرقام صفحات وفهرس مرقّم', 'لا', yes],
         ['PDF موسوم من المصدر نفسه', 'لا', yes],
+      ],
+    );
+  }
+  if (lang === 'ja') {
+    // ○ △ × as Japanese comparison tables mark them.
+    const yes = '**○**';
+    return table(
+      ['機能', 'CSS', 'Postext'],
+      [
+        ['内容に応じた段末そろえ', '△', yes],
+        ['オーファン、ウィドウ、孤立した最終行', '△', yes],
+        ['段落全体での最適な行分割（Knuth–Plass）', '×', yes],
+        ['参照のあとに置かれる図', '×', yes],
+        ['段をまたぐベースライングリッド', '×', yes],
+        ['柱、ノンブル、ページ番号入りの目次', '×', yes],
+        ['同じ原稿から作るタグ付きPDF', '×', yes],
       ],
     );
   }
@@ -506,6 +533,19 @@ function toolsTableModel(lang: GuideLang): TableModel {
       ],
     );
   }
+  if (lang === 'ja') {
+    const yes = '**○**';
+    return table(
+      ['ツール', '組版の制御', 'Webで動く', '組み込める', 'オープンソース'],
+      [
+        ['ワープロ', '△', '△', '×', '×'],
+        ['Adobe InDesign', yes, '×', '×', '×'],
+        ['LaTeX', yes, '×', '×', yes],
+        ['ページ組みのCSS', '△', yes, '△', yes],
+        ['Postext', yes, yes, yes, yes],
+      ],
+    );
+  }
   if (lang === 'zh-Hans') {
     const full = '**完整**';
     const yes = '**是**';
@@ -577,6 +617,19 @@ function placementTableModel(lang: GuideLang): TableModel {
         ['align', 'left · center · right', 'الموضع داخل ذلك العرض'],
         ['rotate', 'ccw · cw', 'ربع دورة، في صفحة خاصة به'],
         ['captionSide', 'نعم · لا', 'التعليق في العمود الجانبي'],
+      ],
+    );
+  }
+  if (lang === 'ja') {
+    return table(
+      ['フィールド', '値', '効果'],
+      [
+        ['position', 'auto · top · bottom · here', '最初の空き、段頭か段末、またはその場'],
+        ['span', 'column · page · side', '1段分、版面の全幅、または脇段'],
+        ['width', '0–1', '使える幅に対する割合'],
+        ['align', 'left · center · right', 'その幅の中での位置'],
+        ['rotate', 'ccw · cw', '90度回して専用のページに置く'],
+        ['captionSide', 'true · false', 'キャプションを脇段に置く'],
       ],
     );
   }
@@ -656,6 +709,38 @@ function documentFormatTableModel(lang: GuideLang): TableModel {
         [':chip', 'كلمة في إطار صغير يجري مع السطر'],
         [':ltr · :rtl', 'مقطع من اليسار إلى اليمين أو من اليمين إلى اليسار'],
         ['# العنوان {style="…"}', 'نمط عنوان، وسمات تستعملها التصاميم'],
+      ],
+    );
+  }
+  if (lang === 'ja') {
+    // The Japanese edition adds the marks its text describes; a backslash
+    // keeps the compact ruby as written.
+    return table(
+      ['記法', 'はたらき'],
+      [
+        [':::pagebreak', '改ページ。parity="odd"か"even"で奇数ページか偶数ページを指定する'],
+        [':::columnbreak', 'いまの段を終える'],
+        [':::space', '1行アキ。lines=2で2行アキ'],
+        [':::numbering', 'ノンブルの系列を切り替える：書式と開始番号'],
+        [':::toc', '実際のページ番号の入った目次を組む'],
+        [':::part', '部扉を開く。タイトル、番号、パレット付き'],
+        [':::callout', '囲みのスタイルの一つで組む囲み：メモ、引用、数字など'],
+        [':::columns', '囲みの中でそろえて組む段'],
+        [':::paragraphs', '囲んだ段落に段落スタイルを適用する'],
+        [':::paper', '別の用紙に刷るページ。Folioビューで表示される'],
+        [':ref', 'リソースに言及し、番号を振ってフロートさせる'],
+        ['::resource', 'リソースをその位置に埋め込む'],
+        [':swatch', '行内の色見本'],
+        ['[^id]', '注の合印。[^id]:で注の本文を始める'],
+        [':index', '用語を巻末索引に登録する。yomiで読みを与える'],
+        [':::index', '実際のページ番号の入った索引を組む'],
+        ['\\{漢字|かん|じ}', 'ルビ。読みを一字ずつ、または語全体に'],
+        [':sideline · :dots', '傍線と圏点'],
+        [':tcy · :warichu', '縦中横と割注'],
+        [':::verse', 'アラビア語の古典詩。前半句と後半句を||で区切る'],
+        [':chip', '行と一緒に流れる小さな枠の中の語'],
+        [':ltr · :rtl', '左から右、または右から左に組む一続きの文字'],
+        ['# 見出し {style="…"}', '見出しスタイルと、デザインが使う属性'],
       ],
     );
   }
@@ -784,6 +869,22 @@ function paperStocksTableModel(lang: GuideLang): TableModel {
       ],
     );
   }
+  if (lang === 'ja') {
+    return table(
+      ['用紙', '坪量', '紙厚', '表面', '主な用途'],
+      [
+        ['上質紙', '90 g/m²', '113 µm', '非塗工', '書籍と報告書'],
+        ['書籍用紙（クリーム、嵩高）', '80 g/m²', '128 µm', '非塗工', '小説と随筆'],
+        ['マットコート紙', '115 g/m²', '115 µm', 'マット', '教科書と美術書'],
+        ['ダルコート紙', '115 g/m²', '104 µm', 'ダル', 'カタログと雑誌'],
+        ['グロスコート紙', '115 g/m²', '92 µm', 'グロス', '雑誌と図版'],
+        ['インディア紙', '40 g/m²', '44 µm', '非塗工', '辞書と古典'],
+        ['新聞用紙', '48 g/m²', '72 µm', '非塗工', '新聞'],
+        ['厚紙', '250 g/m²', '300 µm', '非塗工', '表紙と仕切り'],
+        ['板紙', '1250 g/m²', '2000 µm', 'ダル', '幼児向けのボードブック'],
+      ],
+    );
+  }
   if (lang === 'zh-Hans') {
     return table(
       ['纸种', '克重', '单张厚度', '表面', '常见用途'],
@@ -860,6 +961,18 @@ function presetTableModel(lang: GuideLang): TableModel {
       ],
     );
   }
+  if (lang === 'ja') {
+    return table(
+      ['判型', '主な用途'],
+      [
+        ['11 × 17 cm', '新書に近い。ポケットガイド'],
+        ['12 × 19 cm', '四六判に近い。小説の単行本'],
+        ['17 × 24 cm', '教科書とマニュアル'],
+        ['21 × 28 cm', '雑誌、大判の本、このガイド'],
+        ['カスタム', '任意の寸法。cm、mm、インチ、ポイントで指定'],
+      ],
+    );
+  }
   if (lang === 'zh-Hans') {
     return table(
       ['开本', '常见用途'],
@@ -920,6 +1033,17 @@ function phasesTableModel(lang: GuideLang): TableModel {
         ['2 · التنضيد التحريري', 'الأعمدة، والموازنة، والعناصر العائمة، والجداول التي تنقسم أو تدور، والكتب والأجزاء', open + ': نص يلتف حول العوائق'],
         ['3 · الطباعة الاحترافية', 'Knuth-Plass، وتقطيع الكلمات في 8 لغات، والأرامل واليتامى والأسطر القصيرة، والرياضيات، والحواشي وتعليقات نهاية الفصل، والصينية أفقيًا وعموديًا، والعربية من اليمين إلى اليسار بالكشيدة', open + ': حواشي الهامش'],
         ['4 · المخرجات', 'Canvas، وHTML، وPDF موسوم، وworker، وSandbox بكتب جاهزة', '**أُنجز**'],
+      ],
+    );
+  }
+  if (lang === 'ja') {
+    return table(
+      ['段階', '完了', '残り'],
+      [
+        ['1 · 基盤', 'データモデル、パーサー、DOMを使わない計測、文書形式', '設定形式の確定'],
+        ['2 · 書籍の組版', '段組、段末そろえ、フロート、分割・回転できる表、本と部', '障害物を避けて流れる文字'],
+        ['3 · 本格的な組版', 'Knuth–Plass、8言語のハイフネーション、オーファン・ウィドウ・孤立した最終行、数式、脚注と章末注、中国語と日本語の横組み・縦組み', '欄外の注'],
+        ['4 · 出力', 'Canvas、HTML、タグ付きPDF、EPUB 3、ワーカー、プリセット付きのSandbox', '**完了**'],
       ],
     );
   }
@@ -997,13 +1121,14 @@ const FIGURE_SPECS: FigureSpec[] = [
     id: DEFAULT_RESOURCE_IDS.cover,
     fileId: 'default-guide-cover',
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('Cover art of the guide.', 'Arte de cubierta de la guía.', '本指南的封面图。', 'Art de coberta de la guia.', 'صورة غلاف الدليل.'),
+    caption: byLang('Cover art of the guide.', 'Arte de cubierta de la guía.', '本指南的封面图。', 'Art de coberta de la guia.', 'صورة غلاف الدليل.', 'ガイドの表紙画。'),
     altText: byLang(
       'An open spread drawn the way the engine sees it: justified lines of word boxes, a chapter band, a floated figure and one line opened into boxes, glue and a penalty.',
       'Un pliego abierto dibujado como lo ve el motor: líneas justificadas de cajas de palabra, una banda de capítulo, una figura flotante y una línea abierta en cajas, gomas y una penalización.',
       '按引擎眼中的样子画出的一个跨页：由词块组成的两端对齐的行、一条章首色带、一幅浮动图，以及拆成盒子、粘连和惩罚值的一行。',
       'Un plec obert dibuixat tal com el veu el motor: línies justificades de caixes de paraula, una banda de capítol, una figura flotant i una línia oberta en caixes, gomes i una penalització.',
       'صفحتان متقابلتان مرسومتان كما يراهما المحرّك: أسطر مضبوطة من صناديق الكلمات، وشريط فصل، وشكل عائم، وسطر مفتوح على صناديق ومسافات مرنة وجزاء.',
+      'エンジンの目で描いた縦組みの一ページ：上下二段に並ぶ縦の行、右端を走る章扉の帯、フロートした図、そしてボックスとグルーとペナルティに分けた一行。',
     ),
   },
   {
@@ -1016,6 +1141,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '流水线：Markdown和配置经过解析、测量和排版（排版最多循环5轮），得到三个渲染器共同绘制的VDT。',
       'La cadena de processament: el Markdown i la configuració s\'analitzen, es mesuren i es maqueten, en un bucle de cinc passades com a màxim, fins al VDT que dibuixen els tres renderitzadors.',
       'خط المعالجة: يُحلَّل نص Markdown والإعدادات ويُقاسان ويُنضَّدان، في حلقة من خمس تمريرات على الأكثر، حتى شجرة VDT التي ترسمها المُصيِّرات الثلاثة.',
+      '処理の流れ：Markdownと設定を解析し、計測し、組版して（組版は最大5回まで繰り返す）、三つのレンダラーが共通に描くVDTを得る。',
     ),
     altText: byLang(
       'Markdown and Configuration flow into Parse, Measure and Layout, which loops on itself, then into the VDT and out to Canvas, HTML and PDF.',
@@ -1023,6 +1149,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       'Markdown和配置依次进入解析、测量和排版；排版自我循环，然后得到VDT，再输出为Canvas、HTML和PDF。',
       'Markdown i Configuració entren a Anàlisi, Mesura i Maquetació, que torna sobre si mateixa; després el VDT i les sortides Canvas, HTML i PDF.',
       'يدخل Markdown والإعدادات إلى التحليل ثم القياس ثم التنضيد الذي يعود على نفسه، ثم شجرة VDT، فالمخرجات Canvas وHTML وPDF.',
+      'Markdownと設定が解析、計測、組版へと進み、組版は自分自身に戻る。そのあとVDTを経て、Canvas、HTML、PDFに出力される。',
     ),
   },
   {
@@ -1035,6 +1162,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '用Canvas字体度量和算术代替DOM回流来测量，快300～600倍。',
       'Mesurar amb mètriques de canvas i aritmètica, en lloc de reflux del DOM, és entre 300 i 600 vegades més ràpid.',
       'القياس بمقاييس canvas والحساب، بدل إعادة تدفق DOM، أسرع بما بين ٣٠٠ و٦٠٠ مرة.',
+      'DOMのリフローではなく、Canvasのフォントメトリクスと計算で計測すると、300〜600倍速い。',
     ),
     altText: byLang(
       'A tall bar for DOM-based measurement beside a tiny bar for DOM-free measurement, annotated 300–600× faster.',
@@ -1042,6 +1170,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '借助DOM测量是一根高柱，不借助DOM测量是旁边一根极矮的柱，标注“300–600×更快”。',
       'Una barra alta per a la mesura amb DOM al costat d\'una barra minúscula per a la mesura sense DOM, amb l\'anotació 300–600× més ràpid.',
       'عمود طويل للقياس عبر DOM بجانب عمود ضئيل للقياس بلا DOM، وعليهما «أسرع ٣٠٠–٦٠٠ مرة».',
+      'DOMを使う計測の高い棒と、DOMを使わない計測のごく低い棒。「300–600×　高速」と注記がある。',
     ),
   },
   {
@@ -1054,6 +1183,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '收敛循环：排布、检查，调整发生冲突的部分后再排布，直到什么都不再移动。最多5轮，通常一两轮就够。',
       'El bucle de convergència: col·locar, comprovar, ajustar el que xoca i tornar a col·locar fins que res no es mogui; cinc iteracions com a màxim, gairebé sempre una o dues.',
       'حلقة التقارب: وضعٌ فتحقق فتعديلُ ما يتعارض ثم وضعٌ من جديد، حتى لا يتحرك شيء؛ خمسة تكرارات على الأكثر، وفي الغالب واحد أو اثنان.',
+      '収束ループ：配置し、検査し、衝突した箇所を調整して配置し直す。何も動かなくなるまで繰り返し、最大5回、たいていは1〜2回で済む。',
     ),
     altText: byLang(
       'A flow from Place to Check to Converged, with a conflict branch through Adjust looping back to Place, capped at five iterations.',
@@ -1061,6 +1191,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '从排布到检查再到收敛的流程；发生冲突时经调整回到排布，最多5轮。',
       'Un flux de Col·locar a Comprovar i a Convergit, amb una branca de conflicte per Ajustar que torna a Col·locar, limitada a cinc iteracions.',
       'مسار من «وضع» إلى «تحقق» إلى «استقرار»، وفرع للتعارض يمر بـ«تعديل» ويعود إلى «وضع»، بحد أقصى خمسة تكرارات.',
+      '配置から検査、収束へと進む流れ。衝突があると調整を経て配置に戻る。繰り返しは最大5回。',
     ),
   },
   {
@@ -1073,6 +1204,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       'Knuth–Plass算法把一行西文看成盒子、粘连和惩罚值；带标记的惩罚值是一个断词点，伸缩比r表示粘连伸展了多少。',
       'Knuth-Plass veu una línia com a caixes, gomes i penalitzacions; la penalització marcada és un punt de guionet i la raó r mesura quant s\'estiren les gomes.',
       'يرى Knuth-Plass السطر صناديق ومسافات مرنة وجزاءات؛ الجزاء المعلَّم نقطة قطع بشَرطة في كلمة إنجليزية، والنسبة r تقيس مقدار تمدد المسافات.',
+      'Knuth–Plass法は欧文の一行をボックス、グルー、ペナルティの列として見る。旗の付いたペナルティはハイフネーションの位置で、比rはグルーがどれだけ伸びたかを表す。',
     ),
     altText: byLang(
       'The words Every paragraph is balan- ced as boxes joined by springs, a hyphen penalty with a flag, and a legend.',
@@ -1080,6 +1212,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '英文单词Every paragraph is balan- ced排成由弹簧相连的盒子，一个带小旗的断词惩罚值，以及图例。',
       'Les paraules Cada paràgraf és equili- brat com a caixes unides per molles, una penalització de guionet amb bandera i una llegenda.',
       'الكلمات الإنجليزية Every paragraph is balan- ced صناديقَ تصل بينها نوابض، وجزاء شَرطة عليه راية، ومفتاح للرموز.',
+      '英単語Every paragraph is balan- cedをばねでつないだボックスとして並べ、旗の付いたハイフンのペナルティと凡例を添えた図。',
     ),
   },
   {
@@ -1092,6 +1225,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '同一行中文的三种排法：每个标点占一个全角；大陆的开明式，括号、书名号和行末句号只占半个字；竖排，括号转90度，句号移到字格的右上角。',
       'Una mateixa línia en xinès de tres maneres: cada signe un quadratí sencer; en l\'estil Kaiming de la Xina continental, on els parèntesis, els signes de títol i el punt final ocupen mig quadratí; i en vertical, amb els parèntesis i els signes de títol girats i el punt a la cantonada de la seva casella.',
       'سطر صيني واحد بثلاث طرق: لكل علامة مربع كامل؛ وبأسلوب كايمينغ في البر الصيني، حيث تشغل الأقواس وعلامات العناوين والنقطة في آخر السطر نصف مربع؛ ومنضّدًا عموديًا، والأقواس مُدارة والنقطة في زاوية خانتها.',
+      '同じ一行を三通りに組む：約物をすべて全角で組むベタ組み、JLReqに従って隣り合う約物の間のアキを詰めた組み、そして縦組み（括弧は縦向きになり、句点は字面の右上に移る）。',
     ),
     altText: byLang(
       'Two rows of the same Chinese sentence on a grid of em squares, the second shorter because its brackets take half a square, and the sentence again in two vertical columns.',
@@ -1099,6 +1233,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '同一句中文排在全角字格上的两行，第二行较短，因为括号和书名号只占半格；右边是同一句竖排成的两列。',
       'Dues files de la mateixa frase en xinès sobre una retícula de quadratins, la segona més curta perquè els parèntesis i els signes de títol ocupen mig quadratí, i la mateixa frase en dues columnes verticals.',
       'صفّان من الجملة الصينية نفسها على شبكة من المربعات، الثاني أقصر لأن أقواسه وعلامات عناوينه تشغل نصف مربع، والجملة نفسها في عمودين رأسيين.',
+      '全角の升目に組んだ同じ日本語の文が二行。二行目は約物どうしの間のアキを詰めた分だけ短い。右には同じ文を縦二行に組んだもの。',
     ),
   },
   {
@@ -1111,6 +1246,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '一栏栏底落单的段首孤行，下一栏栏顶落单的段末孤行：段落跨栏时，优化器为这两种缺陷计价。',
       'Una vídua al peu d\'una columna i una òrfena al capdamunt de la següent: els dos defectes que pondera l\'optimitzador de talls.',
       'سطر أرملة في ذيل عمود وسطر يتيم في رأس العمود التالي: العيبان اللذان يزنهما مُحسِّن القطع.',
+      '段末に取り残されたオーファンと、次の段の頭に送られたウィドウ：段落が段をまたぐとき、分割の最適化はこの二つの欠陥に代価を課す。',
     ),
     altText: byLang(
       'Two columns: the left ends with a lone short line, the right begins with a lone line.',
@@ -1118,6 +1254,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '两栏：左栏以一个段落的第一行结束，右栏以一个段落落单的最后一行开始。',
       'Dues columnes: l\'esquerra acaba amb una línia curta sola i la dreta comença amb una línia sola.',
       'عمودان: الأيمن ينتهي بسطر قصير وحيد، والأيسر يبدأ بسطر وحيد.',
+      '二つの段。左の段は段落の最初の一行で終わり、右の段は前の段落の最後の一行だけで始まる。',
     ),
   },
   {
@@ -1130,6 +1267,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '分栏结构：单栏、双栏和一栏半；一栏半的边栏可以排文字，也可以只放浮动体。',
       'Les estructures de columnes: una, dues i columna i mitja, la columna lateral de la qual porta text o només flotants.',
       'بنى الأعمدة: عمود واحد، وعمودان، وعمود ونصف يحمل عموده الجانبي نصًا أو العناصر العائمة وحدها.',
+      '段組の構成：1段組、2段組、そして主段に脇段を添えた構成。脇段には本文を流すことも、フロートだけを置くこともできる。',
     ),
     altText: byLang(
       'Four page thumbnails: single column, two columns, a main column with a narrow text column, and a main column with figures and boxes in the side column.',
@@ -1137,6 +1275,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '四个页面缩略图：单栏；双栏；一个主栏加一条排文字的窄栏；一个主栏加一条放图和标注框的边栏。',
       'Quatre miniatures de pàgina: una columna, dues columnes, una columna principal amb una altra columna estreta de text i una columna principal amb figures i requadres a la lateral.',
       'أربع صفحات مصغّرة: عمود واحد، وعمودان، وعمود رئيسي بجانبه عمود نص ضيّق، وعمود رئيسي بجانبه عمود جانبي فيه أشكال وإطارات.',
+      '四つのページの縮小図：1段組、2段組、主段と本文を流す細い脇段、主段と図や囲みを置く脇段。',
     ),
   },
   {
@@ -1149,6 +1288,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '基线网格让每一行遵循同一种纵向节奏，栏间距两侧的行因此彼此相对。',
       'La retícula de línia de base assenta cada línia en un ritme comú, de manera que les línies es miren a través de l\'espai entre columnes.',
       'تضع شبكة خطوط القاعدة كل سطر على إيقاع مشترك، فتتقابل الأسطر عبر الفاصل بين العمودين.',
+      'ベースライングリッドはすべての行を共通のリズムに乗せ、段間をはさんで行どうしが向かい合う。',
     ),
     altText: byLang(
       'Two columns of lines resting on a shared horizontal grid, with a dashed alignment guide.',
@@ -1156,6 +1296,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '两栏文字行落在同一套水平网格上，一条虚线标出两栏的对齐。',
       'Dues columnes de línies assentades en una retícula horitzontal comuna, amb una guia discontínua.',
       'عمودان من الأسطر يستندان إلى شبكة أفقية مشتركة، مع خط إرشاد متقطع.',
+      '共通の水平グリッドに乗った二段の行と、そろいを示す破線のガイド。',
     ),
   },
   {
@@ -1168,6 +1309,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '补齐一栏短栏：标题上方加一个网格行，列表后加一行，再把一个段落排松一行，这一栏就与旁边一栏齐底了。',
       'Equilibrar una columna curta: una línia de retícula sobre un títol, una línia després d\'una llista i un paràgraf compost una línia més solt la igualen amb la seva veïna.',
       'موازنة عمود قصير: سطر من الشبكة فوق عنوان، وسطر بعد قائمة، وفقرة منضّدة أرحب بسطر تجعله في مستوى جاره.',
+      '短い段をそろえる：見出しの前にグリッド1行分、リストのあとに1行、そして1行ゆるく組んだ段落で、隣の段と段末がそろう。',
     ),
     altText: byLang(
       'Two page sketches: before, the second column ends three lines short; after, the three levers are highlighted and both columns end level.',
@@ -1175,6 +1317,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '两幅页面草图：平衡前，第二栏比第一栏短三行；平衡后，三种调节手段都做了标记，两栏齐底。',
       'Dos esbossos de pàgina: abans, la segona columna acaba tres línies més curta; després, les tres palanques apareixen ressaltades i totes dues columnes acaben a la mateixa alçada.',
       'رسمان لصفحة: قبلُ، ينتهي العمود الثاني أقصر بثلاثة أسطر؛ وبعدُ، تظهر الروافع الثلاث مميَّزة وينتهي العمودان في مستوى واحد.',
+      '二つのページの略図。調整前は二段目が三行短く、調整後は三つの手段が強調され、両段の段末がそろっている。',
     ),
   },
   {
@@ -1187,6 +1330,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '浮动体落在哪里：引用之后的空位按顺序逐个尝试——同一栏的栏底、下一栏的栏顶、下一页的一个浮动区——第一个放得下的空位胜出。',
       'On cau un flotant: els espais després de la seva referència es proven en ordre —el peu de la mateixa columna, el capdamunt de la següent, una banda a la pàgina següent— i guanya el primer que té lloc.',
       'أين يستقر العنصر العائم: تُجرَّب الأماكن التالية للإحالة إليه بالترتيب ــ ذيل العمود نفسه، ثم رأس العمود التالي، ثم شريط في الصفحة التالية ــ ويفوز أول مكان يتسع له.',
+      'フロートの行き先：参照のあとの場所を順に試す——同じ段の段末、次の段の段頭、次ページの帯——そして最初に入る場所に決まる。',
     ),
     altText: byLang(
       'A page with a reference near the foot of column 1; slot 1 below it has no room, slot 2 at the head of column 2 is filled; slot 3 on the next page is not needed.',
@@ -1194,6 +1338,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '一页中，引用处靠近第1栏栏底；它下面的空位1放不下，第2栏栏顶的空位2被占用，下一页的空位3用不上。',
       'Una pàgina amb una referència a prop del peu de la columna 1; a l\'espai 1 no hi cap, l\'espai 2, al capdamunt de la columna 2, està ocupat i l\'espai 3, a la pàgina següent, no cal.',
       'صفحة فيها إحالة قرب ذيل العمود ١ (الأيمن)؛ المكان ١ تحتها لا يتسع، والمكان ٢ في رأس العمود ٢ مشغول، والمكان ٣ في الصفحة التالية لا حاجة إليه.',
+      '第1段の段末近くに参照のあるページ。その下の場所1には入らず、第2段の段頭の場所2に入る。次ページの場所3は使われない。',
     ),
   },
   {
@@ -1206,6 +1351,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '本书的构成：用标题样式排出的封面、自动编好页码的目录、篇章页、章首页，以及带书眉的正文页。',
       'L\'anatomia d\'aquest llibre: una coberta composta amb un estil de títol, un índex que es numera sol, una portadella de part, una obertura de capítol i pàgines de cos amb capçaleres.',
       'بنية هذا الكتاب: غلاف منضّد بنمط عنوان، وفهرس محتويات يرقّم نفسه، وصفحة جزء، وافتتاحية فصل، وصفحات متن بترويسات.',
+      'この本の構成：見出しスタイルで組んだ表紙、ページ番号を自動で入れる目次、部扉、章扉、柱とノンブルの付いた本文ページ。',
     ),
     altText: byLang(
       'Six page thumbnails: a dark cover, a contents page with leaders, a gilt part page, a chapter opener with a band, and two body pages.',
@@ -1213,6 +1359,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '六个页面缩略图：深色的封面、带前导点的目录页、金色的篇章页、带色带的章首页，以及两个正文页。',
       'Sis miniatures: una coberta fosca, un índex amb punts guia, una portadella daurada, una obertura amb banda i dues pàgines de cos.',
       'ست صفحات مصغّرة من اليمين إلى اليسار: غلاف داكن، وصفحة محتويات بنقاط إرشاد، وصفحة جزء ذهبية، وافتتاحية بشريط، وصفحتا متن.',
+      '右から左へ並ぶ六つのページの縮小図：暗い表紙、リーダー付きの目次、金色の部扉、帯のある章扉、二つの本文ページ。',
     ),
   },
   {
@@ -1225,6 +1372,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       'Sandbox：带七个面板的活动栏、带章节切换器的文字编辑器，以及带Canvas、PDF、书页、HTML和EPUB 3五个标签页的视图区。',
       'El Sandbox: la barra d\'activitat amb els seus set taulers, l\'editor de text amb el selector de capítols i el visor amb les seves cinc pestanyes, de Canvas a EPUB 3.',
       'Sandbox: شريط النشاط بلوحاته السبع، ومحرر النص بمبدّل الفصول، والعارض بألسنته الخمسة، من Canvas إلى EPUB 3.',
+      'Sandbox：七つのパネルを持つアクティビティバー、章の切り替えを備えたテキストエディター、CanvasからEPUB 3までの五つのタブを持つビューポート。',
     ),
     altText: byLang(
       'Interface sketch: a column of seven icons, an editor panel with a chapter title, and a viewport showing a two-page spread.',
@@ -1232,6 +1380,7 @@ const FIGURE_SPECS: FigureSpec[] = [
       '界面草图：一列七个图标，一个显示章名的编辑器面板，以及一个显示跨页的视图区。',
       'Esbós de la interfície: una columna de set icones, un tauler d\'editor amb el títol del capítol i un visor amb un plec de dues pàgines.',
       'رسم للواجهة: عمود من سبع أيقونات، ولوحة محرر فيها عنوان الفصل، وعارض يعرض صفحتين متقابلتين.',
+      '画面の略図：七つのアイコンの列、章題を表示したエディターのパネル、見開きを表示したビューポート。',
     ),
   },
 ];
@@ -1247,6 +1396,7 @@ FIGURE_SPECS.push(
       '贝塞尔曲线画成的花瓣、极细的圆环和一行微缩文字：把PDF放大到任意倍数，每一条边都依然锐利。',
       'Pètals de Bézier, anells de traç fi i una línia de microtext: amplia el PDF tant com vulguis i totes les vores continuen nítides.',
       'بتلات بمنحنيات Bézier، وحلقات بخطوط شعرية، وسطر من النص المجهري: كبّر ملف PDF قدر ما تشاء فتبقى كل حافة حادة.',
+      'ベジェ曲線の花弁、極細の円環、一行の微小文字：PDFをどこまで拡大しても輪郭は鮮明なままである。',
     ),
     altText: byLang(
       'A rosette of eighteen overlapping blue and gilt petals inside thin rings, above five lines of tiny text.',
@@ -1254,6 +1404,7 @@ FIGURE_SPECS.push(
       '由十八片相互重叠的蓝色和金色花瓣组成的玫瑰花饰，外有细圆环，下面是五行极小的文字。',
       'Una roseta de divuit pètals blaus i daurats superposats dins d\'anells fins, sobre cinc línies de text minúscul.',
       'وردة من ثماني عشرة بتلة زرقاء وذهبية متراكبة داخل حلقات رفيعة، فوق خمسة أسطر من نص دقيق جدًا.',
+      '細い円環の中で重なり合う青と金の十八枚の花弁と、その下の五行のごく小さな文字。',
     ),
   },
   {
@@ -1266,6 +1417,7 @@ FIGURE_SPECS.push(
       '用路径和文字画成的图表：在PDF里，它的标签是真正的文字，可以选中，也可以搜索。',
       'Un gràfic dibuixat amb traçats i text: al PDF les seves etiquetes són text real, que es pot seleccionar i cercar.',
       'رسم بياني مرسوم بمسارات ونص: تسمياته في ملف PDF نص حقيقي يمكن تحديده والبحث فيه.',
+      'パスと文字で描いたグラフ：PDFではラベルが本物のテキストで、選択も検索もできる。',
     ),
     altText: byLang(
       'An area chart with a solid blue line and a dashed gilt line over eight months, with axis labels and a legend.',
@@ -1273,6 +1425,7 @@ FIGURE_SPECS.push(
       '一张面积图，一条蓝色实线和一条金色虚线跨越八个月，带坐标轴标签和图例。',
       'Un gràfic d\'àrea amb una línia blava contínua i una de daurada discontínua al llarg de vuit mesos, amb etiquetes als eixos i llegenda.',
       'رسم بياني مساحي بخط أزرق متصل وخط ذهبي متقطع على مدى ثمانية أشهر، مع تسميات على المحورين ومفتاح.',
+      '8か月にわたる青い実線と金色の破線の面グラフ。軸のラベルと凡例が付く。',
     ),
   },
   {
@@ -1285,6 +1438,7 @@ FIGURE_SPECS.push(
       '一条剪切路径、三个半透明的圆和一颗重复使用五次的星：全部转换成PDF原生的绘图操作。',
       'Un traçat de retall, tres cercles translúcids i una estrella reutilitzada cinc vegades: tot es converteix en operacions de dibuix natives del PDF.',
       'مسار قص، وثلاث دوائر شفافة، ونجمة واحدة مستعملة خمس مرات: كل ذلك يتحول إلى أوامر رسم أصلية في PDF.',
+      'クリッピングパス、半透明の三つの円、五回再利用した一つの星：どれもPDFのネイティブな描画命令に変換される。',
     ),
     altText: byLang(
       'Blue stripes clipped to a disc, three overlapping translucent circles in vermilion, blue and gilt, and five gilt stars.',
@@ -1292,6 +1446,7 @@ FIGURE_SPECS.push(
       '剪切成圆盘形的蓝色条纹，三个相互重叠的朱红、蓝色和金色半透明圆，以及五颗金色的星。',
       'Franges blaves retallades en un disc, tres cercles translúcids superposats en vermelló, blau i or, i cinc estrelles daurades.',
       'خطوط زرقاء مقصوصة في قرص، وثلاث دوائر شفافة متراكبة بالزنجفري والأزرق والذهبي، وخمس نجوم ذهبية.',
+      '円盤の形に切り抜いた青い縞、朱・青・金の三つの半透明の円の重なり、五つの金色の星。',
     ),
   },
   {
@@ -1304,6 +1459,7 @@ FIGURE_SPECS.push(
       '同一个版面，两种电子书：固定版式保留每一个印刷页，流式版式保留文字，交给阅读系统重新排版，并在每个印刷页开始的地方留下标记。',
       'Una maquetació, dos llibres electrònics: la maquetació fixa conserva cada pàgina impresa; la fluida conserva el text i deixa que el sistema de lectura el torni a compondre, amb una marca on comença cada pàgina impresa.',
       'إخراج واحد وكتابان إلكترونيان: التخطيط الثابت يحفظ كل صفحة مطبوعة، والكتاب القابل لإعادة التدفق يحفظ النص ويترك لنظام القراءة أن ينضّده من جديد، مع علامة حيث تبدأ كل صفحة مطبوعة.',
+      '一つの版面から二種類の電子書籍：固定レイアウトは印刷ページをそのまま残し、リフロー型はテキストを残して組み直しを読書システムに任せ、印刷ページの始まりごとに印を置く。',
     ),
     altText: byLang(
       'A two-column page in the middle, with arrows to a tablet on one side showing the same spread and to a phone on the other showing one column of larger text, a figure and a page marker.',
@@ -1311,6 +1467,7 @@ FIGURE_SPECS.push(
       '中间是一张双栏页面，箭头一边指向显示同一跨页的平板电脑，另一边指向手机，手机上是一栏字号较大的文字、一幅图和一个页码标记。',
       'Una pàgina a dues columnes al centre, amb fletxes cap a una tauleta que mostra el mateix plec i cap a un telèfon que mostra una sola columna de lletra més grossa, una figura i una marca de pàgina.',
       'صفحة بعمودين في الوسط، تخرج منها أسهم إلى جهاز لوحي يعرض الصفحتين المتقابلتين نفسيهما، وإلى هاتف يعرض عمودًا واحدًا بحرف أكبر وشكلًا وعلامة صفحة.',
+      '中央に二段組のページ。矢印の一方は同じ見開きを表示するタブレットへ、もう一方は大きめの文字の一段、図、ページの印を表示するスマートフォンへ向かう。',
     ),
   },
 );
@@ -1320,31 +1477,31 @@ const TABLE_SPECS: TableSpec[] = [
     id: DEFAULT_RESOURCE_IDS.featureTable,
     model: featureTableModel,
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('What editorial layout needs, in plain CSS and in Postext.', 'Lo que necesita la maquetación editorial, en CSS y en Postext.', '出版排版需要的能力：纯CSS与Postext对比。', 'El que necessita la maquetació editorial, en CSS i en Postext.', 'ما يحتاجه التنضيد التحريري، في CSS وحده وفي Postext.'),
+    caption: byLang('What editorial layout needs, in plain CSS and in Postext.', 'Lo que necesita la maquetación editorial, en CSS y en Postext.', '出版排版需要的能力：纯CSS与Postext对比。', 'El que necessita la maquetació editorial, en CSS i en Postext.', 'ما يحتاجه التنضيد التحريري، في CSS وحده وفي Postext.', '組版に必要な機能：CSSだけの場合とPostextの比較。'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.toolsTable,
     model: toolsTableModel,
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('How Postext compares with established editorial tools.', 'Cómo se sitúa Postext frente a las herramientas editoriales establecidas.', 'Postext与现有出版工具的比较。', 'Com se situa Postext davant de les eines editorials establertes.', 'موقع Postext من أدوات النشر الراسخة.'),
+    caption: byLang('How Postext compares with established editorial tools.', 'Cómo se sitúa Postext frente a las herramientas editoriales establecidas.', 'Postext与现有出版工具的比较。', 'Com se situa Postext davant de les eines editorials establertes.', 'موقع Postext من أدوات النشر الراسخة.', '既存の組版ツールとPostextの比較。'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.placementTable,
     model: placementTableModel,
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('The placement fields of a resource.', 'Los campos de colocación de un recurso.', '资源的位置字段。', 'Els camps de col·locació d\'un recurs.', 'حقول موضع المورد.'),
+    caption: byLang('The placement fields of a resource.', 'Los campos de colocación de un recurso.', '资源的位置字段。', 'Els camps de col·locació d\'un recurs.', 'حقول موضع المورد.', 'リソースの配置フィールド。'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.documentFormatTable,
     model: documentFormatTableModel,
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('The extensions of the document format.', 'Las extensiones del formato del documento.', '文档格式的扩展语法。', 'Les extensions del format del document.', 'امتدادات صيغة المستند.'),
+    caption: byLang('The extensions of the document format.', 'Las extensiones del formato del documento.', '文档格式的扩展语法。', 'Les extensions del format del document.', 'امتدادات صيغة المستند.', '文書形式の拡張記法。'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.presetTable,
     model: presetTableModel,
     placement: { position: 'auto', span: 'column' },
-    caption: byLang('Preset page sizes and their typical use.', 'Tamaños de página predefinidos y su uso habitual.', '预设开本及其常见用途。', 'Mides de pàgina predefinides i el seu ús habitual.', 'مقاسات الصفحة الجاهزة واستعمالاتها المعتادة.'),
+    caption: byLang('Preset page sizes and their typical use.', 'Tamaños de página predefinidos y su uso habitual.', '预设开本及其常见用途。', 'Mides de pàgina predefinides i el seu ús habitual.', 'مقاسات الصفحة الجاهزة واستعمالاتها المعتادة.', '定義済みの判型と主な用途。'),
   },
   {
     id: DEFAULT_RESOURCE_IDS.paperStocksTable,
@@ -1356,23 +1513,24 @@ const TABLE_SPECS: TableSpec[] = [
       '书页视图的纸种及各自设定的数值：克重、单张厚度和表面。',
       'Els papers del visor Folio i els valors que fixa cadascun: gramatge, gruix d\'un full i acabat.',
       'أنواع الورق في عارض Folio والقيم التي يضبطها كل منها: الغراماج، وسُمك الورقة الواحدة، والتشطيب.',
+      'Folioビューの用紙と、それぞれが決める値：坪量、一枚の厚さ、表面。',
     ),
   },
   {
     id: DEFAULT_RESOURCE_IDS.phasesTable,
     model: phasesTableModel,
     placement: { position: 'auto', span: 'page' },
-    caption: byLang('The four phases of the project: what has shipped and what is still open.', 'Las cuatro fases del proyecto: lo que ya está hecho y lo que sigue abierto.', '项目的四个阶段：已完成的和待完成的。', 'Les quatre fases del projecte: el que ja està fet i el que continua obert.', 'مراحل المشروع الأربع: ما أُنجز وما لا يزال مفتوحًا.'),
+    caption: byLang('The four phases of the project: what has shipped and what is still open.', 'Las cuatro fases del proyecto: lo que ya está hecho y lo que sigue abierto.', '项目的四个阶段：已完成的和待完成的。', 'Les quatre fases del projecte: el que ja està fet i el que continua obert.', 'مراحل المشروع الأربع: ما أُنجز وما لا يزال مفتوحًا.', 'プロジェクトの四つの段階：完了したことと残っていること。'),
   },
 ];
 
-/** A figure's or table's placement in an edition. The Chinese edition is
- *  vertical: a figure or table stands upright in its tier and the breadth
- *  it takes on the sheet is the room it uses in the flow, so one set across
- *  both tiers would hold a whole page for the strip it fills. There each
- *  takes one tier, the other going on with the text. */
+/** A figure's or table's placement in an edition. The Chinese and Japanese
+ *  editions are vertical: a figure or table stands upright in its tier and
+ *  the breadth it takes on the sheet is the room it uses in the flow, so one
+ *  set across both tiers would hold a whole page for the strip it fills.
+ *  There each takes one tier, the other going on with the text. */
 function figurePlacement(placement: ResourcePlacement, lang: GuideLang): ResourcePlacement {
-  return lang === 'zh-Hans' && placement.span === 'page' ? { ...placement, span: 'column' } : placement;
+  return (lang === 'zh-Hans' || lang === 'ja') && placement.span === 'page' ? { ...placement, span: 'column' } : placement;
 }
 
 /** The blob id a figure's SVG is stored under in one language. Each
@@ -1401,7 +1559,7 @@ export function defaultResourcesSignature(): string {
 /** Build (and persist the blobs for) the default example resources for the
  *  given document `locale` (defaults to English). Captions, table content, and
  *  diagram labels follow the locale so they match the seeded markdown — a
- *  Spanish document gets Spanish tables and figures, a Chinese one Chinese
+ *  Spanish document gets Spanish tables and figures, a Japanese one Japanese
  *  ones. Safe to call repeatedly — blob writes are idempotent on their
  *  deterministic ids. */
 export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> {

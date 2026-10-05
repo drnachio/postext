@@ -582,7 +582,7 @@ function PresetRow({
   // A bilingual bundle lists every locale it carries; the primary one
   // otherwise. With more than one, each tag opens the preset in that
   // language (the reader's edits there, if any); the active one is marked.
-  // The tags are short (繁 / 简 for the two Chinese editions, EN, ES) and
+  // The tags are short (繁 / 简 for the two Chinese editions, 日, ع, EN, ES) and
   // named in full in the interface language by their tooltips.
   const locales = presetLocales(preset);
   const activeTag = isActive ? activeLocaleTag(locales, activeLocale) : null;
