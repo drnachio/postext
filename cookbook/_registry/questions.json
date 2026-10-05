@@ -2363,5 +2363,23 @@
       "ar": "EPUB، التخطيط الثابت والنص المتدفق"
     },
     "theme": "output"
+  },
+  "Q132": {
+    "kind": "how",
+    "text": {
+      "en": "How do I let a photo be cropped to fill a short column while its subject always stays in view?",
+      "es": "¿Cómo dejo que una foto se recorte para llenar una columna corta sin que su motivo salga nunca del encuadre?",
+      "ca": "Com deixo que una foto es retalli per omplir una columna curta sense que el motiu surti mai de l'enquadrament?",
+      "zh": "怎样让照片裁切后填满偏短的栏，同时主体始终留在画面里？",
+      "ar": "كيف أسمح بقصّ صورة لتملأ عمودًا قصيرًا مع بقاء موضوعها ظاهرًا دائمًا؟"
+    },
+    "index": {
+      "en": "Photos, cropped to fill a column",
+      "es": "Fotos, recortadas para llenar la columna",
+      "ca": "Fotos, retallades per omplir la columna",
+      "zh": "照片，裁切以填满栏",
+      "ar": "الصور، تُقَصّ لتملأ العمود"
+    },
+    "theme": "figures"
   }
 }

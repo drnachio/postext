@@ -1,0 +1,60 @@
+---
+title: "Fotos que crecen hasta llenar la columna"
+summary: "Cada foto marca su zona segura; el equilibrado puede recortar fuera de ella para alargarla, y la columna que había quedado corta acaba a ras."
+description: "Un reportaje de revista a dos columnas en el que las fotos con zona segura crecen por líneas de la rejilla para llenar las columnas cortas."
+plain: "Dile a la maquetación qué parte de cada foto tiene que verse siempre. Cuando a una columna le faltan unas líneas, la foto se alarga en lugar de dejar un hueco."
+question: "¿Cómo dejo que una foto se recorte para llenar una columna corta sin perder su motivo?"
+aliases: ["zona segura", "recortar foto", "reencuadre", "llenar columna", "encuadre flexible"]
+---
+
+## Lo que vas a componer
+
+Tres páginas de una revista de costa: un reportaje sobre los oficios de un pueblo de ría, con una foto a sangre en la apertura y cinco fotos en las columnas. La receta compone el reportaje dos veces con el mismo texto. En la primera las fotos conservan la forma de su archivo, y en la <PageRef page={2}>página 2</PageRef> las dos columnas se quedan una línea por encima de la rejilla: la izquierda bajo su último párrafo, la derecha encima de la foto del pie. En la segunda cada foto dice qué parte del encuadre tiene que verse siempre, y el motor recorta fuera de ella: en <PageRef page={5}>la misma página</PageRef> la mariscadora y la redeira crecen una línea cada una y las dos columnas terminan en la última línea de la rejilla. Nadie ha tenido que elegir los recortes.
+
+## Elaboración
+
+### 1 · Marca lo que tiene que quedar, nada más
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La zona segura son cuatro fracciones de la imagen, medidas desde su esquina superior izquierda. El motor puede mostrar la foto con cualquier forma entre el archivo entero y ese rectángulo, siempre con el ancho de su columna: más alta si recorta los lados, más baja si recorta arriba y abajo. Lo que queda fuera se recorta en proporción a los márgenes de cada lado, así que Rosa, a la derecha del centro en el muelle, sigue a la derecha cuando se cortan los lados.
+
+### 2 · Que el equilibrado solo tire de las fotos
+
+La misma región configura el equilibrado. Sus recursos habituales añaden blanco: una línea sobre un título, aire bajo una foto, un párrafo una línea más largo. Aquí están apagados, para que la composición sin zonas seguras muestre cada columna corta tal como queda. Una foto con zona segura se prueba antes que cualquiera de ellos, porque una foto más alta no abre ningún hueco en el texto.
+
+### 3 · La zona segura es del recurso
+
+<Excerpt region="photos" />
+
+`safeArea` está en el recurso, junto a su archivo, su pie y su colocación, de modo que la foto la conserva flote donde flote y en cualquier documento que la use. La receta la pasa o la omite, y esa es la única diferencia entre las dos composiciones. La ría de la apertura la dibuja el estilo del título y no es un flotante, así que no la necesita.
+
+### 4 · Compón las dos y compáralas
+
+<Excerpt region="builds" />
+
+Los dos documentos salen de la misma configuración y del mismo Markdown. Solo las páginas que continúan se llenan hasta el pie: en la <PageRef page={3}>página 3</PageRef>, la última del reportaje, las columnas solo tienen que acabar a la misma altura. Sin zonas seguras la segunda termina una línea antes que la primera; con ellas la foto del pulpo crece esa línea y las dos acaban igualadas. El botón del PDF compone la versión que está sobre la mesa, y el PDF recorta cada foto a su marco de la misma manera.
+
+## Variantes
+
+### Mantén una foto en línea junto a su texto
+
+Una foto con `position: 'here'` y zona segura se recorta por arriba y por abajo cuando es un poco más alta que el hueco que le queda en su columna, en lugar de pasar a la siguiente.
+
+```diff
+-const PLACEMENT = { pulpeira: { position: 'here' } }; // the rest float to the first free slot
++const PLACEMENT = { pulpeira: { position: 'here' }, faro: { position: 'here' } };
+```
+
+### Devuelve al equilibrado sus otros recursos
+
+Con los valores por defecto las fotos siguen yendo primero, y los títulos y los flotantes toman lo que la zona segura de una foto no alcanza.
+
+```diff
+-const balancing = { enabled: true, maxLinesPerHeading: 0, stretchAfterLists: false,
+-  stretchAfterFloats: false, looseParagraphs: false };
++const balancing = { enabled: true };
+```
+
+## Errores frecuentes
+
+- Una zona segura que cubre la imagen entera, o con un lado menor que el 2 % de ella, no se tiene en cuenta: la foto se muestra completa, como sin ella.
+- Solo crecen los flotantes de columna y las fotos en línea. Una foto flotante a lo ancho de las dos columnas mantiene su forma, porque al crecer empujaría a la vez todas las columnas que tiene debajo.

@@ -5445,6 +5445,67 @@
       ]
     }
   },
+  "picture-safe-area": {
+    "label": {
+      "en": "Picture safe area",
+      "es": "Zona segura de la imagen",
+      "ca": "Zona segura de la imatge",
+      "zh": "图片安全区",
+      "ar": "المنطقة الآمنة في الصورة"
+    },
+    "definition": {
+      "en": "The part of a picture that is always shown; the layout may crop what lies outside it to set the figure taller or shorter, to fill a short column or keep an inline picture with its text.",
+      "es": "La parte de una imagen que siempre se ve; la maquetación puede recortar lo que queda fuera para hacer la figura más alta o más baja, llenar una columna corta o mantener una imagen en línea junto a su texto.",
+      "ca": "La part d'una imatge que sempre es veu; la maquetació pot retallar el que queda fora per fer la figura més alta o més baixa, omplir una columna curta o mantenir una imatge en línia al costat del seu text.",
+      "zh": "图片中始终显示的部分；排版可以裁去其外的部分，把图放高或放矮，以填满偏短的栏，或让行内图留在其文字旁。",
+      "ar": "الجزء من الصورة الذي يظهر دائمًا؛ يمكن للتنضيد أن يقصّ ما يقع خارجه ليجعل الشكل أطول أو أقصر، فيملأ عمودًا قصيرًا أو يُبقي صورة مضمّنة مع نصها."
+    },
+    "aliases": {
+      "en": [
+        "safeArea",
+        "safe area",
+        "crop to fit",
+        "focus area",
+        "flexible figure"
+      ],
+      "es": [
+        "safeArea",
+        "zona segura",
+        "recortar foto",
+        "reencuadre",
+        "encuadre flexible"
+      ],
+      "ca": [
+        "safeArea",
+        "zona segura",
+        "retallar foto",
+        "reenquadrament"
+      ],
+      "zh": [
+        "safeArea",
+        "安全区",
+        "裁切图片",
+        "重新取景"
+      ],
+      "ar": [
+        "safeArea",
+        "المنطقة الآمنة",
+        "قص الصورة",
+        "إعادة التأطير"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Safe area",
+        "es": "Zona segura",
+        "ca": "Zona segura",
+        "zh": "安全区",
+        "ar": "المنطقة الآمنة"
+      }
+    }
+  },
   "float-barriers": {
     "label": {
       "en": "Float barriers",

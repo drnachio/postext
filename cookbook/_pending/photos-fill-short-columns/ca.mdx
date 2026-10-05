@@ -1,0 +1,60 @@
+---
+title: "Fotos que creixen fins a omplir la columna"
+summary: "Cada foto marca la seva zona segura; l'equilibrat pot retallar-ne l'exterior per allargar-la, i la columna que havia quedat curta acaba arran."
+description: "Un reportatge de revista a dues columnes en què les fotos amb zona segura creixen per línies de la retícula per omplir les columnes curtes."
+plain: "Digues a la maquetació quina part de cada foto s'ha de veure sempre. Quan a una columna li falten unes línies, la foto s'allarga en lloc de deixar un forat."
+question: "Com deixo que una foto es retalli per omplir una columna curta sense perdre'n el motiu?"
+aliases: ["zona segura", "retallar foto", "reenquadrament", "omplir columna", "safe area"]
+---
+
+## Què compondràs
+
+Tres pàgines d'una revista de costa: un reportatge sobre els oficis d'un poble de ria, amb una foto a sang a l'obertura i cinc fotos a les columnes. La recepta compon el reportatge dues vegades amb el mateix text. En la primera, les fotos conserven la forma del seu arxiu, i a la <PageRef page={2}>pàgina 2</PageRef> les dues columnes es queden una línia per sobre de la retícula: l'esquerra sota l'últim paràgraf, la dreta damunt la foto del peu. En la segona, cada foto diu quina part de l'enquadrament s'ha de veure sempre, i el motor en retalla l'exterior: a <PageRef page={5}>la mateixa pàgina</PageRef> la marisquera i la remendadora creixen una línia cadascuna i les dues columnes acaben a l'última línia de la retícula. Ningú no ha hagut de triar els retalls.
+
+## Elaboració
+
+### 1 · Marca el que s'ha de quedar, res més
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. La zona segura són quatre fraccions de la imatge, mesurades des del seu angle superior esquerre. El motor pot mostrar la foto amb qualsevol forma entre l'arxiu sencer i aquest rectangle, sempre amb l'amplada de la seva columna: més alta si en retalla els costats, més baixa si en retalla la part de dalt i la de baix. El que queda fora es retalla en proporció als marges de cada costat, de manera que la Rosa, a la dreta del centre al moll, continua a la dreta quan es tallen els costats.
+
+### 2 · Que l'equilibrat només estiri de les fotos
+
+La mateixa regió configura l'equilibrat. Els seus recursos habituals afegeixen blanc: una línia sobre un títol, aire sota una foto, un paràgraf una línia més llarg. Aquí estan apagats, perquè la composició sense zones segures mostri cada columna curta tal com queda. Una foto amb zona segura es prova abans que qualsevol d'aquests recursos, perquè una foto més alta no obre cap forat en el text.
+
+### 3 · La zona segura és del recurs
+
+<Excerpt region="photos" />
+
+`safeArea` és al recurs, al costat del seu arxiu, el seu peu i la seva col·locació, de manera que la foto la conserva floti on floti i en qualsevol document que la faci servir. La recepta la passa o l'omet, i aquesta és l'única diferència entre les dues composicions. La ria de l'obertura la dibuixa l'estil del títol i no és un flotant, així que no la necessita.
+
+### 4 · Compon-les totes dues i compara-les
+
+<Excerpt region="builds" />
+
+Els dos documents surten de la mateixa configuració i del mateix Markdown. Només les pàgines que continuen s'omplen fins al peu: a la <PageRef page={3}>pàgina 3</PageRef>, l'última del reportatge, les columnes només han d'acabar a la mateixa altura. Sense zones segures, la segona acaba una línia abans que la primera; amb elles, la foto del pop creix aquesta línia i totes dues acaben igualades. El botó del PDF compon la versió que hi ha damunt la taula, i el PDF retalla cada foto al seu marc de la mateixa manera.
+
+## Variants
+
+### Mantén una foto en línia al costat del seu text
+
+Una foto amb `position: 'here'` i zona segura es retalla per dalt i per baix quan és una mica més alta que l'espai que li queda a la columna, en lloc de passar a la següent.
+
+```diff
+-const PLACEMENT = { pulpeira: { position: 'here' } }; // the rest float to the first free slot
++const PLACEMENT = { pulpeira: { position: 'here' }, faro: { position: 'here' } };
+```
+
+### Torna a l'equilibrat els seus altres recursos
+
+Amb els valors per defecte les fotos continuen anant primer, i els títols i els flotants prenen el que la zona segura d'una foto no arriba a cobrir.
+
+```diff
+-const balancing = { enabled: true, maxLinesPerHeading: 0, stretchAfterLists: false,
+-  stretchAfterFloats: false, looseParagraphs: false };
++const balancing = { enabled: true };
+```
+
+## Errors freqüents
+
+- Una zona segura que cobreix la imatge sencera, o amb un costat menor que el 2 % d'aquesta, no es té en compte: la foto es mostra sencera, com sense zona.
+- Només creixen els flotants de columna i les fotos en línia. Una foto flotant a l'amplada de les dues columnes manté la seva forma, perquè en créixer empentaria alhora totes les columnes que té a sota.
