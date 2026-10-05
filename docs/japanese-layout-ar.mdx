@@ -52,7 +52,7 @@ export const metadata = {
   </tbody>
 </table>
 
-والكلمات المدمجة يابانية أيضًا: تطبع الإحالات <span lang="ja" className="font-body">第3章</span> و<span lang="ja" className="font-body">2.3節</span> و<span lang="ja" className="font-body">12ページ</span>، وعنوان قائمة المراجع <span lang="ja" className="font-body">参考文献</span>، والجدول أو الإطار المقسوم يقول <span lang="ja" className="font-body">次ページへ続く</span>، ويعنون الفهرس رموزه وأرقامه بـ <span lang="ja" className="font-body">記号</span> و<span lang="ja" className="font-body">数字</span> ويكتب إحالاته بسهم (<span lang="ja" className="font-body">金之助　→夏目漱石</span>، و<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> بعد الصفحات)، ويسمّي كتاب EPUB عناصر تنقّله <span lang="ja" className="font-body">目次</span> و<span lang="ja" className="font-body">表紙</span> و<span lang="ja" className="font-body">本文</span>. وجدول الكلمات الذي لا مدخل ياباني فيه يعطي الإنجليزية، ولا يعطي الصينية أبدًا. وأنواع الأشكال والجداول تُرقَّم بحسب الفصل (<span lang="ja" className="font-body">図1-1</span>)، ويجعل `captionStyle: { labelNumberGap: '', labelSeparator: '　' }` التعليق <span lang="ja" className="font-body">図1-1　東京の地図</span>. وتقسيم الكلمات بالواصلة معطّل، كما في كل مستند CJK، ما لم تفعّله للكلمات اللاتينية.
+والكلمات المدمجة يابانية أيضًا: تطبع الإحالات <span lang="ja" className="font-body">第3章</span> و<span lang="ja" className="font-body">2.3節</span> و<span lang="ja" className="font-body">12ページ</span>، وعنوان قائمة المراجع <span lang="ja" className="font-body">参考文献</span>، والجدول أو الإطار المقسوم يقول <span lang="ja" className="font-body">次ページへ続く</span>، ويعنون الفهرس رموزه وأرقامه بـ <span lang="ja" className="font-body">記号</span> و<span lang="ja" className="font-body">数字</span> ويكتب إحالاته بسهم (<span lang="ja" className="font-body">金之助　→夏目漱石</span>، و<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span> بعد الصفحات)، ويسمّي كتاب EPUB عناصر تنقّله <span lang="ja" className="font-body">目次</span> و<span lang="ja" className="font-body">表紙</span> و<span lang="ja" className="font-body">本文</span>. وجدول الكلمات الذي لا مدخل ياباني فيه يعطي الإنجليزية، ولا يعطي الصينية أبدًا. وأنواع الأشكال والجداول تُرقَّم بحسب الفصل، ويُقرأ التعليق <span lang="ja" className="font-body">図1-1　東京の地図</span>: التسمية والرقم متلاصقان، ومسافة إيديوغرافية قبل النص، ولا نقطة (JLReq §4.3). ويُقرأ `:ref` <span lang="ja" className="font-body">図1-1</span>، والجدول المستمر <span lang="ja" className="font-body">表1-1　東京の区（続き）</span>. هذه هي القيم الافتراضية لـ`captionStyle.labelNumberGap` و`labelSeparator` في المستند الياباني؛ والقيمة المضبوطة هناك هي التي تُعتمد. وتقسيم الكلمات بالواصلة معطّل، كما في كل مستند CJK، ما لم تفعّله للكلمات اللاتينية.
 
 ويُعلَن الوسم نفسه في المُخرَجات: يحمل مستند HTML وكل صفحة من صفحاته `lang="ja"`، وترسم اللوحة (Canvas) مع `ctx.lang`، ويعلن PDF `/Lang (ja)` ويشكّل نصه بأشكال الرسوم اليابانية (انظر [الخطوط](#الخطوط)). فـ Unicode يعطي 直 و骨 و角 نقطة ترميز واحدة لكل منها، والخط الياباني يرسمها رسمًا يختلف عن الخط الصيني.
 
@@ -533,7 +533,6 @@ python3 aozora.py 773_ruby_5968.zip -o kokoro.md --report report.json --styles s
       { "level": 5, "numberFormat": "circled-decimal", "separator": "" }
     ]
   },
-  "captionStyle": { "labelNumberGap": "", "labelSeparator": "　" },
   "header": { "elements": [] },
   "footer": {
     "elements": [

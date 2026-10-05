@@ -37,6 +37,7 @@ import {
   DEFAULT_HEADINGS_CONFIG,
   DEFAULT_TEXT_ELEMENT,
   cjkGridGeometry,
+  defaultCaptionLabels,
   defaultResourceTypes,
   dimensionsEqual,
   formatNumeral,
@@ -193,10 +194,10 @@ const CHAPTER_TEMPLATES: Record<JapaneseBook, string> = {
   vertical: '第{1:一}章',
   horizontal: '第{1}章',
 };
-const CAPTION_GAP = '';
-const CAPTION_SEPARATOR = IDEOGRAPHIC_SPACE;
-const DEFAULT_CAPTION_GAP = ' ';
-const DEFAULT_CAPTION_SEPARATOR = '. ';
+/** The engine's caption label in a Japanese document (図1-1　), and in
+ *  any other (Figure 1.1. ): `defaultCaptionLabels`. */
+const { labelNumberGap: CAPTION_GAP, labelSeparator: CAPTION_SEPARATOR } = defaultCaptionLabels('ja');
+const { labelNumberGap: DEFAULT_CAPTION_GAP, labelSeparator: DEFAULT_CAPTION_SEPARATOR } = defaultCaptionLabels();
 const DEFAULT_NUMBER_SEPARATOR = ' ';
 
 const FONTS = { body: 'Noto Serif JP', headings: 'Noto Sans JP' } as const;
@@ -622,21 +623,28 @@ export function japaneseDefaults(config: PostextConfig, options: JapaneseDefault
   }
 
   // Caption label: 図1-1　タイトル (JLReq §4.3: an ideographic space
-  // between the number and the caption).
+  // between the number and the caption) is what the engine sets in a `ja`
+  // document by itself (#464). A gap or separator the config writes
+  // otherwise stands in its way: the row takes it out.
   const rawGap = config.captionStyle?.labelNumberGap;
   const rawSep = config.captionStyle?.labelSeparator;
-  const fromGap = rawGap ?? DEFAULT_CAPTION_GAP;
-  const fromSep = rawSep ?? DEFAULT_CAPTION_SEPARATOR;
-  if (fromGap !== CAPTION_GAP || fromSep !== CAPTION_SEPARATOR) {
+  const strayGap = rawGap !== undefined && rawGap !== CAPTION_GAP;
+  const straySep = rawSep !== undefined && rawSep !== CAPTION_SEPARATOR;
+  if (strayGap || straySep) {
+    const fromLabels = defaultCaptionLabels(fromLocale);
     const sample = (t: ResourceType | undefined, gap: string, sep: string) =>
       t ? `${t.captionPrefix}${gap}${sampleNumber(t.numberingTemplate)}${sep}…` : `1${sep}…`;
     rows.push({
       id: 'captionLabel',
-      from: { kind: 'text', text: sample(figureOf(fromTypes), fromGap, fromSep) },
+      from: { kind: 'text', text: sample(figureOf(fromTypes), rawGap ?? fromLabels.labelNumberGap, rawSep ?? fromLabels.labelSeparator) },
       to: { kind: 'text', text: sample(figureOf(proposedTypes), CAPTION_GAP, CAPTION_SEPARATOR) },
-      customised: (rawGap !== undefined && rawGap !== DEFAULT_CAPTION_GAP && rawGap !== CAPTION_GAP)
-        || (rawSep !== undefined && rawSep !== DEFAULT_CAPTION_SEPARATOR && rawSep !== CAPTION_SEPARATOR),
-      apply: (c) => ({ ...c, captionStyle: { ...c.captionStyle, labelNumberGap: CAPTION_GAP, labelSeparator: CAPTION_SEPARATOR } }),
+      customised: (strayGap && rawGap !== DEFAULT_CAPTION_GAP) || (straySep && rawSep !== DEFAULT_CAPTION_SEPARATOR),
+      apply: (c) => {
+        let next = c.captionStyle;
+        if (strayGap) next = without(next, 'labelNumberGap');
+        if (straySep) next = without(next, 'labelSeparator');
+        return set(c, 'captionStyle', next);
+      },
     });
   }
 

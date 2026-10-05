@@ -760,8 +760,8 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   em between Japanese and Latin. JLReq advises against hanging punctuation in text mixed with much Latin:
   `hangingPunctuation: 'none'` when the source's line ends are flush. Keep the source's ，． or 、。.
 - Numbering in Arabic digits: `numberingTemplate: '第{1}章'` with `numberSeparator: '　'`, sections
-  `'{1}.{2}'`; resource types 図/表 come with the locale (図1-1); `captionStyle: {labelNumberGap: '',
-  labelSeparator: '　'}`; lists in the official order 1. （1） ア （ア） ① (configuration.md §10).
+  `'{1}.{2}'`; resource types 図/表 and the caption label 図1-1　 come with the locale (nothing to set);
+  lists in the official order 1. （1） ア （ア） ① (configuration.md §10).
 - Notes: by default at the column foot, numbered per page, superscript, a ⅓ rule (nothing to set).
 - Headings: often centred (`headings.textAlign: 'center'`) and taking a fixed number of lines (`lineSpan`).
 - Index: `:index[…]{yomi="…"}` on every kanji entry; `groupBy` auto = gojūon rows (あ行 か行 …). Citations:

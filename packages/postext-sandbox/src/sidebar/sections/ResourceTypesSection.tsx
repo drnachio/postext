@@ -98,6 +98,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const globalCaption = resolveCaptionStyleConfig(
     config.captionStyle,
     resolveBodyTextConfig(config.bodyText),
+    language,
   );
   const counterFormats = counterFormatOptions(labels);
   const resetOns = resetOnOptions(labels);

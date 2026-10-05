@@ -22,6 +22,7 @@ import {
   DEFAULT_HEADINGS_CONFIG,
   chineseScriptOf,
   cjkRegionOf,
+  defaultCaptionLabels,
   defaultResourceTypes,
   dimensionsEqual,
   formatNumeral,
@@ -377,9 +378,13 @@ export function chineseDefaults(config: PostextConfig, options: ChineseDefaultsO
   // Caption label: 图1-1　标题.
   const rawGap = config.captionStyle?.labelNumberGap;
   const rawSep = config.captionStyle?.labelSeparator;
-  const fromGap = rawGap ?? DEFAULT_CAPTION_GAP;
-  const fromSep = rawSep ?? DEFAULT_CAPTION_SEPARATOR;
-  if (fromGap !== CAPTION_GAP || fromSep !== CAPTION_SEPARATOR) {
+  if ((rawGap ?? DEFAULT_CAPTION_GAP) !== CAPTION_GAP || (rawSep ?? DEFAULT_CAPTION_SEPARATOR) !== CAPTION_SEPARATOR) {
+    // Unset, the gap and separator follow the document's language: the
+    // label reads 図1-1　 in a Japanese book now, but would read 图 1-1.
+    // once the book is Chinese, so the row writes them.
+    const fromLabels = defaultCaptionLabels(fromLocale);
+    const fromGap = rawGap ?? fromLabels.labelNumberGap;
+    const fromSep = rawSep ?? fromLabels.labelSeparator;
     const fromFigure = figureOf(fromTypes);
     const toFigure = figureOf(proposedTypes);
     const sample = (t: ResourceType | undefined, gap: string, sep: string) =>

@@ -5,6 +5,7 @@ import {
   cjkGridGeometry,
   defaultResourceTypes,
   resolveBodyTextConfig,
+  resolveCaptionStyleConfig,
   resolveCjkConfig,
   resolveLayoutConfig,
   resolveOrderedListsConfig,
@@ -32,7 +33,7 @@ describe('japaneseDefaults', () => {
     expect(r.locale).toBe('ja');
     expect(ids(r)).toEqual([
       'locale', 'writingMode', 'bodyFont', 'headingFont', 'designFonts', 'lineHeight', 'grid', 'firstLineIndent',
-      'hyphenation', 'resourceTypes', 'captionLabel', 'chapterNumbering', 'headingLayout', 'listNumbers',
+      'hyphenation', 'resourceTypes', 'chapterNumbering', 'headingLayout', 'listNumbers',
     ]);
     expect(r.changes.every((c) => c.applied && !c.customised)).toBe(true);
     const c = r.config;
@@ -45,7 +46,10 @@ describe('japaneseDefaults', () => {
     expect(c.bodyText?.firstLineIndent).toEqual({ value: 1, unit: 'em' });
     expect(c.resourceTypes).toEqual(defaultResourceTypes('ja'));
     expect(c.resourceTypes?.map((t) => t.name)).toEqual(['図', '表', '動画']);
-    expect(c.captionStyle).toEqual({ labelNumberGap: '', labelSeparator: '　' });
+    // 図1-1　 is the engine's caption label in a Japanese book (#464): not
+    // written into the config.
+    expect(c.captionStyle).toBeUndefined();
+    expect(resolveCaptionStyleConfig(c.captionStyle, resolveBodyTextConfig(c.bodyText), c.locale)).toMatchObject({ labelNumberGap: '', labelSeparator: '　' });
     expect(c.headings?.levels).toEqual([
       { level: 1, numberingTemplate: '第{1:一}章', numberSeparator: '　', indent: { value: 4, unit: 'em' } },
       { level: 2, lineSpan: 3, indent: { value: 6, unit: 'em' } },
@@ -141,6 +145,22 @@ describe('japaneseDefaults', () => {
     // And back: nothing left but the direction and what goes with it.
     expect(japaneseDefaults(japaneseDefaults(vertical, { book: 'horizontal' }).config, { book: 'vertical' }).config).toEqual(vertical);
     expect(japaneseDefaults(vertical, { book: 'vertical' }).changes).toEqual([]);
+  });
+
+  it('takes out a caption gap or separator that stands in the way of 図1-1　 (#464)', () => {
+    const nbsp = '\u00a0';
+    const latin = japaneseDefaults({ ...createDefaultConfig('en'), captionStyle: { labelNumberGap: nbsp, labelSeparator: '. ', labelBold: false } });
+    expect(change(latin, 'captionLabel')).toMatchObject({
+      from: { kind: 'text', text: `Figure${nbsp}1.1. …` }, to: { kind: 'text', text: '図1-1　…' }, customised: false, applied: true,
+    });
+    expect(latin.config.captionStyle).toEqual({ labelBold: false });
+    // A separator of the author's own is listed unticked, and goes when ticked.
+    const own = { ...createDefaultConfig('en'), captionStyle: { labelSeparator: ': ' } };
+    expect(change(japaneseDefaults(own), 'captionLabel')).toMatchObject({ customised: true, applied: false });
+    expect(japaneseDefaults(own).config.captionStyle).toEqual({ labelSeparator: ': ' });
+    expect(japaneseDefaults(own, { include: ['captionLabel'] }).config.captionStyle).toBeUndefined();
+    // The Japanese values themselves stay as written.
+    expect(ids(japaneseDefaults({ ...createDefaultConfig('en'), captionStyle: { labelNumberGap: '', labelSeparator: '　' } }))).not.toContain('captionLabel');
   });
 
   it('turns a Chinese book Japanese: faces, indent, lists and notes, taking its settings for the other language\'s', () => {

@@ -8,6 +8,7 @@ import type {
   ResolvedBodyTextConfig,
 } from '../types';
 import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor, startEndAsLeftRight } from './shared';
+import { isJapaneseLanguage } from '../locale';
 
 /** Ratio of the note size to the caption size when `note.fontSize` is unset. */
 const NOTE_SIZE_RATIO = 0.85;
@@ -27,6 +28,18 @@ const STATIC_DEFAULTS = {
   labelNumberGap: '\u00a0',
   labelSeparator: '. ',
 } satisfies Partial<ResolvedCaptionStyleConfig>;
+
+/** What stands around a caption's number when the config sets nothing:
+ *  "Figure 1.7. " (a no-break space, then a stop and a space) in most
+ *  languages; in a Japanese document (`locale` `ja`, `ja-*`) the label and
+ *  the number solid and an ideographic space before the caption text,
+ *  with no stop (図1-1　東京の地図, JLReq §4.3). Chinese documents keep
+ *  the Latin defaults, as before (their books set the pair by hand). */
+export function defaultCaptionLabels(locale?: string): { labelNumberGap: string; labelSeparator: string } {
+  return isJapaneseLanguage(locale)
+    ? { labelNumberGap: '', labelSeparator: '\u3000' }
+    : { labelNumberGap: STATIC_DEFAULTS.labelNumberGap, labelSeparator: STATIC_DEFAULTS.labelSeparator };
+}
 
 /** Static note defaults (size and colour derive from the caption). */
 const NOTE_STATIC_DEFAULTS = {
@@ -57,12 +70,16 @@ function resolveNote(
 
 /** Resolve a partial caption-style config. Font family, size, and colour (and
  *  thus the label colour) inherit the resolved body text when unset, so a
- *  document with no caption config renders exactly as before. */
+ *  document with no caption config renders exactly as before. The label's
+ *  gap and separator follow the document language `locale` when unset
+ *  ({@link defaultCaptionLabels}). */
 export function resolveCaptionStyleConfig(
   partial: CaptionStyleConfig | undefined,
   bodyText: ResolvedBodyTextConfig,
+  locale?: string,
 ): ResolvedCaptionStyleConfig {
   const p = partial ?? {};
+  const labels = defaultCaptionLabels(locale);
   const color = p.color ?? bodyText.color;
   const fontSize = p.fontSize ?? bodyText.fontSize;
   return {
@@ -80,8 +97,8 @@ export function resolveCaptionStyleConfig(
     background: p.background ?? STATIC_DEFAULTS.background,
     padding: p.padding ?? STATIC_DEFAULTS.padding,
     note: resolveNote(p.note, fontSize, color),
-    labelNumberGap: typeof p.labelNumberGap === 'string' ? p.labelNumberGap : STATIC_DEFAULTS.labelNumberGap,
-    labelSeparator: typeof p.labelSeparator === 'string' ? p.labelSeparator : STATIC_DEFAULTS.labelSeparator,
+    labelNumberGap: typeof p.labelNumberGap === 'string' ? p.labelNumberGap : labels.labelNumberGap,
+    labelSeparator: typeof p.labelSeparator === 'string' ? p.labelSeparator : labels.labelSeparator,
   };
 }
 
@@ -149,11 +166,16 @@ function stripNoteDefaults(note: CaptionNoteStyleConfig | undefined): CaptionNot
 }
 
 /** Drop fields equal to their static default; inherited font/colour fields are
- *  kept whenever explicitly set. Returns `undefined` when nothing remains. */
+ *  kept whenever explicitly set. The label's gap and separator are compared
+ *  with the defaults of the document language `locale`
+ *  ({@link defaultCaptionLabels}): a no-break space kept in a Japanese
+ *  document is no default there. Returns `undefined` when nothing remains. */
 export function stripCaptionStyleDefaults(
   captionStyle: CaptionStyleConfig | undefined,
+  locale?: string,
 ): CaptionStyleConfig | undefined {
   if (!captionStyle) return undefined;
+  const labels = defaultCaptionLabels(locale);
   const r: CaptionStyleConfig = {};
   let has = false;
 
@@ -172,8 +194,8 @@ export function stripCaptionStyleDefaults(
   if (captionStyle.padding !== undefined && !dimensionsEqual(captionStyle.padding, STATIC_DEFAULTS.padding)) { r.padding = captionStyle.padding; has = true; }
   const note = stripNoteDefaults(captionStyle.note);
   if (note) { r.note = note; has = true; }
-  if (captionStyle.labelNumberGap !== undefined && captionStyle.labelNumberGap !== STATIC_DEFAULTS.labelNumberGap) { r.labelNumberGap = captionStyle.labelNumberGap; has = true; }
-  if (captionStyle.labelSeparator !== undefined && captionStyle.labelSeparator !== STATIC_DEFAULTS.labelSeparator) { r.labelSeparator = captionStyle.labelSeparator; has = true; }
+  if (captionStyle.labelNumberGap !== undefined && captionStyle.labelNumberGap !== labels.labelNumberGap) { r.labelNumberGap = captionStyle.labelNumberGap; has = true; }
+  if (captionStyle.labelSeparator !== undefined && captionStyle.labelSeparator !== labels.labelSeparator) { r.labelSeparator = captionStyle.labelSeparator; has = true; }
 
   return has ? r : undefined;
 }

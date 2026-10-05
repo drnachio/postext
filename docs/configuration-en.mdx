@@ -1630,7 +1630,7 @@ Chinese takes `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, `z
   </tbody>
 </table>
 
-The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Japanese numbers its types the same way (図1-1), writes cross-references as 第3章, 2.3節 and 12ページ, titles the bibliography 参考文献, and its index prints 記号 and 数字 over symbols and numbers and writes its cross-references with an arrow, `→夏目漱石` for *see* and `→夏目漱石、森鷗外も見よ` after the pages for *see also*, the labels upright. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
+The caption prefix is the type's name (*Figure 1.1.*). The Chinese types number within the chapter with a hyphen, `{h1}-{n}` (图 1-1); with the caption settings `labelNumberGap: ''` and `labelSeparator: '　'` the caption reads 图1-1　标题 (see [Caption style](#caption-style)). The back-of-book index follows the language too: 见 and 另见 before a cross-reference, 符号 and 数字 over the symbols and the numbers in Simplified; 見, 另見, 符號 and 數字 in Traditional. Japanese numbers its types the same way and sets its captions 図1-1　題 without the two settings, writes cross-references as 第3章, 2.3節 and 12ページ, titles the bibliography 参考文献, and its index prints 記号 and 数字 over symbols and numbers and writes its cross-references with an arrow, `→夏目漱石` for *see* and `→夏目漱石、森鷗外も見よ` after the pages for *see also*, the labels upright. Arabic numbers its types the same way, `{h1}-{n}` (شكل 2-3), writes cross-references as الفصل 3, القسم 2-1 and ص 12, titles the bibliography المراجع, and its index prints انظر / انظر أيضًا, رموز and أرقام, with the Arabic comma and semicolon (، ؛).
 
 A Chinese, Japanese or Korean document declares its language in the HTML output (`lang` on the `.pt-doc` root, `zh-Hant-TW` kept whole) and on the canvas it paints (`ctx.lang`, in Chrome 136 and later), so the browser draws the region's glyph forms: Unicode unifies the Han characters, and one code point looks different in a Taiwanese and in a Japanese font. Other documents carry no `lang`, as before. The PDF declares `/Lang` from `locale` for every document, tagged or not, with its script and region. A document in a language written right to left (Arabic, Persian, Urdu, Hebrew…) declares its language too: the font's language forms (`locl`) and the fallback font follow it.
 
@@ -4411,14 +4411,14 @@ const config: PostextConfig = {
     <tr>
       <td><code>labelNumberGap</code></td>
       <td><code>string</code></td>
-      <td>no-break space</td>
-      <td>What stands between the label and the number, in the caption and in an inline <code>:ref</code>: <em>Figure 1.7</em>, <em>Fig. 1.7</em>. Chinese sets them solid: <code>''</code> gives 图1-1.</td>
+      <td>no-break space; <code>''</code> in a Japanese document</td>
+      <td>What stands between the label and the number, in the caption and in an inline <code>:ref</code>: <em>Figure 1.7</em>, <em>Fig. 1.7</em>. Chinese and Japanese set them solid: <code>''</code> gives 图1-1, and is the default in a Japanese document (図1-1).</td>
     </tr>
     <tr>
       <td><code>labelSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>'. '</code></td>
-      <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
+      <td><code>'. '</code>; <code>'　'</code> in a Japanese document</td>
+      <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题), and so do Japanese ones, by default (図1-1　東京の地図, JLReq §4.3). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
     </tr>
   </tbody>
 </table>

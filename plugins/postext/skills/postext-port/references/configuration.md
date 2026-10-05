@@ -888,6 +888,7 @@ align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
+   Japanese documents (locale ja, ≥ 1.16): those two are the defaults when unset → 図1-1　題 (don't restate them)
 descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
@@ -1099,6 +1100,7 @@ Guide: https://postext.dev/en/docs/japanese-layout. Everything below follows fro
 | space after ？！ | `cjk.spaceAfterQuestion` | on (1 em inside a paragraph) |
 | 「 opening a paragraph | `cjk.paragraphStartBracket` | `half` (JLReq ③: the bracket fills the 1-em indent) |
 | phrases spaced by the author (分かち書き) | `cjk.wordBreak` | `normal`; `keep-all` breaks only at the spaces (picture books, primers) |
+| caption label | `captionStyle.labelNumberGap` / `labelSeparator` | `''` / `'　'`: 図1-1　題 (≥ 1.16; set only to change it) |
 | paragraph indent | `bodyText.firstLineIndent` | not set by the locale: write `{value: 1, unit: 'em'}` (Chinese books use 2) |
 | `*…*` | `cjk.emphasis`, `cjk.emphasisMark` | sesame bōten ﹅ over (right in vertical text) |
 | `:book[…]` | `cjk.bookTitleMark`, `bookTitleBrackets` | 『』, a title inside one 「」 |

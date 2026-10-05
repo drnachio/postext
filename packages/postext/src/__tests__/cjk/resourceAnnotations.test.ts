@@ -139,10 +139,10 @@ describe('annotations in resource blocks (#429)', () => {
     expect(tight.map((w) => [w.kind, w.text.replace(/\u00a0/g, ' ')]).sort()).toEqual([
       ['cjkMarksExceedLeading', '大切なこと'],
       ['cjkMarksExceedLeading', '注意して読む'],
-      ['cjkMarksExceedLeading', '表 1. 振り仮名と傍点'],
+      ['cjkMarksExceedLeading', '表1　振り仮名と傍点'],
       ['rubyExceedsLeading', '東京'],
       ['rubyExceedsLeading', '漢字'],
-      ['rubyExceedsLeading', '表 1. 振り仮名と傍点'],
+      ['rubyExceedsLeading', '表1　振り仮名と傍点'],
     ]);
     const ruby = tight.find((w) => w.kind === 'rubyExceedsLeading' && w.text === '漢字') as { gapEm: number; neededEm: number; pageIndex?: number };
     expect(ruby.gapEm).toBeCloseTo(0.2, 3);

@@ -64,4 +64,11 @@ describe('captionPreviewLabel', () => {
     expect(captionPreviewLabel({ captionPrefix: '', numberingTemplate: '{n}' })).toBe('');
     expect(captionPreviewLabel(undefined)).toBe('');
   });
+
+  it('takes the caption style\'s gap and separator, a type\'s own first (#464)', () => {
+    const figure = { captionPrefix: '図', numberingTemplate: '{h1}-{n}' };
+    expect(captionPreviewLabel(figure, { labelNumberGap: '', labelSeparator: '　' })).toBe('図#　');
+    expect(captionPreviewLabel({ ...figure, captionStyle: { labelSeparator: '：' } }, { labelNumberGap: '', labelSeparator: '　' })).toBe('図#：');
+    expect(captionPreviewLabel({ captionPrefix: 'Do', numberingTemplate: '' }, { labelNumberGap: '', labelSeparator: '　' })).toBe('Do. ');
+  });
 });

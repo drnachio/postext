@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { FileCode, Table as TableIcon, ImageOff, Play } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
+import { defaultCaptionLabels } from 'postext';
+import { documentLanguage } from '../../context/documentDirection';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
 import { inlineSvgFonts } from '../../controls/svgFonts';
@@ -63,7 +65,11 @@ interface CaptionFootProps {
 /** Render the caption foot: "<prefix> #. <caption>" with inline microformats,
  *  the label set as the engine sets it (see {@link captionPreviewLabel}). */
 function CaptionFoot({ resource, type }: CaptionFootProps) {
-  const label = captionPreviewLabel(type);
+  // The document's gap and separator around the number: as written, else
+  // its language's (図1-1　 in a Japanese book, #464).
+  const labelNumberGap = useSandboxSelector((s) => s.config.captionStyle?.labelNumberGap ?? defaultCaptionLabels(documentLanguage(s.config, s.locale)).labelNumberGap);
+  const labelSeparator = useSandboxSelector((s) => s.config.captionStyle?.labelSeparator ?? defaultCaptionLabels(documentLanguage(s.config, s.locale)).labelSeparator);
+  const label = captionPreviewLabel(type, { labelNumberGap, labelSeparator });
   const tokens = parseInlinePreview(resource.caption ?? '');
   if (!label && tokens.length === 0) return null;
   return (

@@ -1630,7 +1630,7 @@ El chino admite `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
   </tbody>
 </table>
 
-El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional. El japonés numera sus tipos del mismo modo (図1-1), escribe las referencias cruzadas como 第3章, 2.3節 y 12ページ, titula la bibliografía 参考文献, y su índice imprime 記号 y 数字 sobre los símbolos y los números y escribe sus remisiones con una flecha, `→夏目漱石` para *véase* y `→夏目漱石、森鷗外も見よ` tras las páginas para *véase también*, con las etiquetas en redonda. El árabe numera sus tipos del mismo modo, `{h1}-{n}` (شكل 2-3), escribe las referencias cruzadas como الفصل 3, القسم 2-1 y ص 12, titula la bibliografía المراجع, y su índice imprime انظر / انظر أيضًا, رموز y أرقام, con la coma y el punto y coma árabes (، ؛).
+El prefijo del pie es el nombre del tipo (*Figura 1.1.*). Los tipos chinos numeran dentro del capítulo con un guion, `{h1}-{n}` (图 1-1); con los ajustes de pie `labelNumberGap: ''` y `labelSeparator: '　'` el pie se lee 图1-1　标题 (ver [Estilo de pies de recurso](#estilo-de-pies-de-recurso)). El índice alfabético sigue también el idioma: 见 y 另见 ante una remisión, 符号 y 数字 sobre los símbolos y los números en chino simplificado; 見, 另見, 符號 y 數字 en tradicional. El japonés numera sus tipos del mismo modo y compone sus pies como 図1-1　題 sin los dos ajustes, escribe las referencias cruzadas como 第3章, 2.3節 y 12ページ, titula la bibliografía 参考文献, y su índice imprime 記号 y 数字 sobre los símbolos y los números y escribe sus remisiones con una flecha, `→夏目漱石` para *véase* y `→夏目漱石、森鷗外も見よ` tras las páginas para *véase también*, con las etiquetas en redonda. El árabe numera sus tipos del mismo modo, `{h1}-{n}` (شكل 2-3), escribe las referencias cruzadas como الفصل 3, القسم 2-1 y ص 12, titula la bibliografía المراجع, y su índice imprime انظر / انظر أيضًا, رموز y أرقام, con la coma y el punto y coma árabes (، ؛).
 
 Un documento en chino, japonés o coreano declara su idioma en la salida HTML (`lang` en la raíz `.pt-doc`, con `zh-Hant-TW` completo) y en el canvas que pinta (`ctx.lang`, en Chrome 136 y posteriores), de modo que el navegador dibuja las formas de glifo de su región: Unicode unifica los caracteres han, y un mismo punto de código se ve distinto en una fuente taiwanesa y en una japonesa. Los demás documentos no llevan `lang`, como antes. El PDF declara `/Lang` a partir de `locale` para todo documento, etiquetado o no, con su escritura y su región. Un documento en un idioma que se escribe de derecha a izquierda (árabe, persa, urdu, hebreo…) también declara su idioma: las formas de la lengua de la fuente (`locl`) y la fuente de reserva lo siguen.
 
@@ -4411,14 +4411,14 @@ const config: PostextConfig = {
     <tr>
       <td><code>labelNumberGap</code></td>
       <td><code>string</code></td>
-      <td>espacio de no separación</td>
-      <td>Lo que separa la etiqueta del número, en el pie y en un <code>:ref</code> en línea: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El chino los compone juntos: <code>''</code> da 图1-1.</td>
+      <td>espacio de no separación; <code>''</code> en un documento japonés</td>
+      <td>Lo que separa la etiqueta del número, en el pie y en un <code>:ref</code> en línea: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El chino y el japonés los componen juntos: <code>''</code> da 图1-1, y es el valor por defecto en un documento japonés (図1-1).</td>
     </tr>
     <tr>
       <td><code>labelSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>'. '</code></td>
-      <td>Lo que sigue al número, antes de la descripción: <em>Figura 1.7. Un pie</em>. Los pies chinos llevan un espacio ideográfico, <code>'　'</code> (图1-1　标题). Una etiqueta sin número conserva su propia regla: un punto, salvo que el prefijo ya termine en uno.</td>
+      <td><code>'. '</code>; <code>'　'</code> en un documento japonés</td>
+      <td>Lo que sigue al número, antes de la descripción: <em>Figura 1.7. Un pie</em>. Los pies chinos llevan un espacio ideográfico, <code>'　'</code> (图1-1　标题), y los japoneses también, por defecto (図1-1　東京の地図, JLReq §4.3). Una etiqueta sin número conserva su propia regla: un punto, salvo que el prefijo ya termine en uno.</td>
     </tr>
   </tbody>
 </table>

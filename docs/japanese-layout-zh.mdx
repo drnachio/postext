@@ -52,7 +52,7 @@ Postext用同一份Markdown源文件和同一套配置，既能横排日文，�
   </tbody>
 </table>
 
-内置用词也是日文：交叉引用印作<span lang="ja" className="font-body">第3章</span>、<span lang="ja" className="font-body">2.3節</span>和<span lang="ja" className="font-body">12ページ</span>，参考文献的标题是<span lang="ja" className="font-body">参考文献</span>，拆开的表格或标注框写<span lang="ja" className="font-body">次ページへ続く</span>，索引的符号组和数字组分别以<span lang="ja" className="font-body">記号</span>和<span lang="ja" className="font-body">数字</span>为组名，交叉引用用箭头写出（<span lang="ja" className="font-body">金之助　→夏目漱石</span>，页码之后则是<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span>），EPUB的导航名为<span lang="ja" className="font-body">目次</span>、<span lang="ja" className="font-body">表紙</span>、<span lang="ja" className="font-body">本文</span>。字符串表中没有日文条目时，给出的是英文，而不是中文。图和表按章编号（<span lang="ja" className="font-body">図1-1</span>），`captionStyle: { labelNumberGap: '', labelSeparator: '　' }`把题注排成<span lang="ja" className="font-body">図1-1　東京の地図</span>。和所有CJK文档一样，断词默认关闭，除非你为其中的拉丁单词打开它。
+内置用词也是日文：交叉引用印作<span lang="ja" className="font-body">第3章</span>、<span lang="ja" className="font-body">2.3節</span>和<span lang="ja" className="font-body">12ページ</span>，参考文献的标题是<span lang="ja" className="font-body">参考文献</span>，拆开的表格或标注框写<span lang="ja" className="font-body">次ページへ続く</span>，索引的符号组和数字组分别以<span lang="ja" className="font-body">記号</span>和<span lang="ja" className="font-body">数字</span>为组名，交叉引用用箭头写出（<span lang="ja" className="font-body">金之助　→夏目漱石</span>，页码之后则是<span lang="ja" className="font-body">→夏目漱石、森鷗外も見よ</span>），EPUB的导航名为<span lang="ja" className="font-body">目次</span>、<span lang="ja" className="font-body">表紙</span>、<span lang="ja" className="font-body">本文</span>。字符串表中没有日文条目时，给出的是英文，而不是中文。图和表按章编号，题注排成<span lang="ja" className="font-body">図1-1　東京の地図</span>：标签与编号之间不留空，编号与文字之间加一个全角空格，不加句点（JLReq §4.3）。`:ref`读作<span lang="ja" className="font-body">図1-1</span>，续表读作<span lang="ja" className="font-body">表1-1　東京の区（続き）</span>。这是日文文档中`captionStyle.labelNumberGap`和`labelSeparator`的默认值；在那里设置的值优先。和所有CJK文档一样，断词默认关闭，除非你为其中的拉丁单词打开它。
 
 各种输出也声明同一个标签：HTML文档及其每一页都带`lang="ja"`，Canvas用`ctx.lang`绘制，PDF声明`/Lang (ja)`并用日文字形整形（见[字体](#字体)）。Unicode只给直、骨和角各一个码位，日文字体和中文字体的写法却不同。
 
@@ -533,7 +533,6 @@ python3 aozora.py 773_ruby_5968.zip -o kokoro.md --report report.json --styles s
       { "level": 5, "numberFormat": "circled-decimal", "separator": "" }
     ]
   },
-  "captionStyle": { "labelNumberGap": "", "labelSeparator": "　" },
   "header": { "elements": [] },
   "footer": {
     "elements": [

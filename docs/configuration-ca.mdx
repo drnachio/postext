@@ -1625,7 +1625,7 @@ El xinès admet `zh`, `zh-Hans`, `zh-Hant`, `zh-CN`, `zh-SG`, `zh-TW`, `zh-HK`, 
   </tbody>
 </table>
 
-El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. El japonès numera els seus tipus de la mateixa manera (図1-1), escriu les referències creuades com 第3章, 2.3節 i 12ページ, titula la bibliografia 参考文献, i el seu índex imprimeix 記号 i 数字 sobre els símbols i els números i escriu les remissions amb una fletxa, `→夏目漱石` per a *vegeu* i `→夏目漱石、森鷗外も見よ` després de les pàgines per a *vegeu també*, amb les etiquetes en rodona. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
+El prefix del peu és el nom del tipus (*Figura 1.1.*). Els tipus xinesos numeren dins del capítol amb un guionet, `{h1}-{n}` (图 1-1); amb els ajustos de peu `labelNumberGap: ''` i `labelSeparator: '　'` el peu es llegeix 图1-1　标题 (vegeu [Estil de peus de recurs](#estil-dels-peus-de-recurs)). L'índex alfabètic també segueix la llengua: 见 i 另见 davant d'una remissió, 符号 i 数字 sobre els símbols i els números en xinès simplificat; 見, 另見, 符號 i 數字 en tradicional. El japonès numera els seus tipus de la mateixa manera i compon els seus peus com 図1-1　題 sense els dos ajustos, escriu les referències creuades com 第3章, 2.3節 i 12ページ, titula la bibliografia 参考文献, i el seu índex imprimeix 記号 i 数字 sobre els símbols i els números i escriu les remissions amb una fletxa, `→夏目漱石` per a *vegeu* i `→夏目漱石、森鷗外も見よ` després de les pàgines per a *vegeu també*, amb les etiquetes en rodona. L'àrab numera els seus tipus de la mateixa manera, `{h1}-{n}` (شكل 2-3), escriu les referències creuades com الفصل 3, القسم 2-1 i ص 12, titula la bibliografia المراجع, i el seu índex imprimeix انظر / انظر أيضًا, رموز i أرقام, amb la coma i el punt i coma àrabs (، ؛).
 
 Un document en xinès, japonès o coreà declara la seva llengua a la sortida HTML (`lang` a l'arrel `.pt-doc`, amb `zh-Hant-TW` complet) i al canvas que pinta (`ctx.lang`, a Chrome 136 i posteriors), de manera que el navegador dibuixa les formes de glif de la seva regió: Unicode unifica els caràcters han, i un mateix punt de codi es veu diferent en una font taiwanesa i en una de japonesa. Els altres documents no porten `lang`, com abans. El PDF declara `/Lang` a partir de `locale` per a tot document, etiquetat o no, amb la seva escriptura i la seva regió. Un document en una llengua que s'escriu de dreta a esquerra (àrab, persa, urdú, hebreu…) també declara la seva llengua: les formes de la llengua de la font (`locl`) i la font de reserva la segueixen.
 
@@ -4397,14 +4397,14 @@ const config: PostextConfig = {
     <tr>
       <td><code>labelNumberGap</code></td>
       <td><code>string</code></td>
-      <td>espai de no separació</td>
-      <td>El que separa l'etiqueta del número, al peu i en una <code>:ref</code> en línia: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El xinès els compon junts: <code>''</code> dona 图1-1.</td>
+      <td>espai de no separació; <code>''</code> en un document japonès</td>
+      <td>El que separa l'etiqueta del número, al peu i en una <code>:ref</code> en línia: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El xinès i el japonès els componen junts: <code>''</code> dona 图1-1, i és el valor per defecte en un document japonès (図1-1).</td>
     </tr>
     <tr>
       <td><code>labelSeparator</code></td>
       <td><code>string</code></td>
-      <td><code>'. '</code></td>
-      <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题). Una etiqueta sense número conserva la seva pròpia regla: un punt, llevat que el prefix ja acabi en punt.</td>
+      <td><code>'. '</code>; <code>'　'</code> en un document japonès</td>
+      <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题), i els japonesos també, per defecte (図1-1　東京の地図, JLReq §4.3). Una etiqueta sense número conserva la seva pròpia regla: un punt, llevat que el prefix ja acabi en punt.</td>
     </tr>
   </tbody>
 </table>
