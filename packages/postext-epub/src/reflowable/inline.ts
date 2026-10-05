@@ -174,12 +174,20 @@ function rawOf(seg: VDTLineSegment, ctx: InlineContext): string | undefined {
     const runs = seg.chip.runs.map((r) => wrapFormat(xmlText(r.text), formatOf(r))).join('');
     return `<span class="pt-chip pt-chip-${idOf('', seg.chip.styleId)}">${runs}</span>`;
   }
-  if (seg.ruby) {
-    const pos = seg.ruby.position === 'under' ? ' class="pt-ruby-under"' : seg.ruby.position === 'right' ? ' class="pt-ruby-right"' : '';
-    // No <rp> fallback brackets: EPUB 3.3 discourages them (EPUBCheck
-    // HTM_055), every EPUB 3 reading system lays ruby out.
-    return `<ruby${pos}>${rubyPair(seg, ctx)}</ruby>`;
+  if (seg.kunten) {
+    // Kanbun marks (#430), set inline as JIS X 4051 sets the 返り点 after
+    // their character: the 送り仮名 raised (right of vertical text), read
+    // after the character; the 返り点 lowered (left of it) and a 竪点 as
+    // a hyphen, neither read.
+    const k = seg.kunten;
+    const base = seg.ruby ? rubyOf(seg, ctx) : wrapFormat(xmlText(seg.text), formatOf(seg, seg, ctx));
+    return `<span class="pt-kunten">${base}`
+      + (k.okuri ? `<span class="pt-okuri">${xmlText(k.okuri)}</span>` : '')
+      + (k.kaeri ? `<span class="pt-kaeri" aria-hidden="true">${xmlText(k.kaeri)}</span>` : '')
+      + (k.tate ? '<span class="pt-tate" aria-hidden="true">‐</span>' : '')
+      + '</span>';
   }
+  if (seg.ruby) return rubyOf(seg, ctx);
   return undefined;
 }
 
@@ -238,6 +246,15 @@ function tcyRuns(text: string, tcy: NonNullable<InlineContext['tcy']>): [string,
     else out.push([run.text, cell]);
   }
   return out;
+}
+
+/** A ruby base and its reading as a `<ruby>` of its own. */
+function rubyOf(seg: VDTLineSegment, ctx: InlineContext): string {
+  const ruby = seg.ruby!;
+  const pos = ruby.position === 'under' ? ' class="pt-ruby-under"' : ruby.position === 'right' ? ' class="pt-ruby-right"' : '';
+  // No <rp> fallback brackets: EPUB 3.3 discourages them (EPUBCheck
+  // HTM_055), every EPUB 3 reading system lays ruby out.
+  return `<ruby${pos}>${rubyPair(seg, ctx)}</ruby>`;
 }
 
 /** `inner` inside the elements and classes of `fmt`. */

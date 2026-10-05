@@ -164,6 +164,20 @@ describe('side lines (傍線, #421)', () => {
   });
 });
 
+describe('kanbun marks (訓点, #430)', () => {
+  it('raise the 送り仮名 after their character, lower the 返り点, a 竪点 as a hyphen; only the 送り仮名 read', async () => {
+    const docs = [layOut(':kunten[學]{okuri="ビテ"}而:kunten[敬]{tate kaeri="二"}祭:kunten[:ruby[未]{rt="いま"}]{kaeri="レ" okuri="ダ"}嘗')];
+    const { pub, all } = await render(docs);
+    expect(all).toContain('<span class="pt-kunten">學<span class="pt-okuri">ビテ</span></span>');
+    expect(all).toContain('<span class="pt-kunten">敬<span class="pt-kaeri" aria-hidden="true">二</span><span class="pt-tate" aria-hidden="true">‐</span></span>');
+    expect(all).toContain('<span class="pt-kunten"><ruby>未<rt>いま</rt></ruby><span class="pt-okuri">ダ</span><span class="pt-kaeri" aria-hidden="true">レ</span></span>');
+    const css = pub.items.filter((i) => i.mediaType === 'text/css').map((i) => String(i.data)).join('\n');
+    expect(css).toMatch(/\.pt-okuri, \.pt-kaeri \{[^}]*font-size: 0\.5em/);
+    expect(css).toMatch(/\.pt-okuri \{[^}]*vertical-align: super/);
+    expect(css).toMatch(/\.pt-kaeri \{[^}]*vertical-align: sub/);
+  });
+});
+
 describe('buildReflowablePublication', () => {
   it('writes one sound content document per chapter, with page starts and navigation', async () => {
     const docs = layOutBook([

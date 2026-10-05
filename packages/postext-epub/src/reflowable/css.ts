@@ -481,6 +481,11 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   out.push(rule('.pt-warichu', ['font-size: 0.6em']));
   out.push(rule('ruby.pt-ruby-under', ['ruby-position: under', '-epub-ruby-position: under', '-webkit-ruby-position: after']));
   out.push(rule('ruby.pt-ruby-right', ['ruby-position: inter-character']));
+  // Kanbun marks (訓点): half size, the 送り仮名 raised (right of vertical
+  // text) and the 返り点 lowered (left of it), after their character.
+  out.push(rule('.pt-okuri, .pt-kaeri', ['font-size: 0.5em', 'line-height: 0']));
+  out.push(rule('.pt-okuri', ['vertical-align: super']));
+  out.push(rule('.pt-kaeri', ['vertical-align: sub']));
   out.push(rule('.pt-marker', ['height: 0']));
   // Japanese note markers (JLReq §4.2.3), only in a book that sets them.
   // In the line gap: a box of no advance, its text running back from it
