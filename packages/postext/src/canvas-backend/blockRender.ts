@@ -12,7 +12,7 @@ import { counterFlipBox } from './mirrorFrame';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts, type MarkCutRule } from '../measure/markCuts';
 import { hasCJK } from '../measure/cjk';
-import { paintLineMarks, paintRuby, paintWarichu } from './annotations';
+import { paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { fillSegmentWord, type WordRun } from './wordRuns';
 import { joiningScriptIn } from '../measure/joining';
 
@@ -181,6 +181,14 @@ function renderSegments(
       currentFill = '';
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap: its run, not its text.
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, seg.color ?? style.color);
+      x += seg.width;
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -206,7 +214,7 @@ function renderSegments(
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.runs !== undefined || s.sideMarker !== undefined;
 }
 
 /**
@@ -268,6 +276,14 @@ function renderComposedSegments(
       x += seg.width;
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap: its run, not its text.
+      paintSideMarker(ctx, seg.sideMarker, x, baseline, seg.color ?? style.color);
+      x += seg.width;
+      currentFont = '';
+      currentFill = '';
+      continue;
+    }
     const font = seg.fontString
       ?? pickSegmentFont(!!seg.bold, !!seg.italic, style.font, style.boldFont, style.italicFont, style.boldItalicFont);
     if (font !== currentFont) {
@@ -303,7 +319,7 @@ function composedSegmentIsStyled(s: VDTLineSegment): boolean {
   return !!s.bold || !!s.italic || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined
     || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined || s.tracking !== undefined
     || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
-    || s.ruby !== undefined || s.warichu !== undefined || s.labelTab !== undefined;
+    || s.ruby !== undefined || s.warichu !== undefined || s.labelTab !== undefined || s.sideMarker !== undefined;
 }
 
 /**

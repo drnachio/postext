@@ -104,6 +104,11 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   };
   (config.headings?.levels ?? []).forEach((l, i) => position(`headings.levels[${i}].numberPosition`, (l as { numberPosition?: unknown }).numberPosition));
   (config.headingStyles ?? []).forEach((st, i) => position(`headingStyles[${i}].numberPosition`, (st as { numberPosition?: unknown }).numberPosition));
+  // Sidenotes on the spread (傍注, JLReq §4.2.6) are a vertical book's: a
+  // horizontal document sets them at the column foot.
+  if (config.footnotes?.placement === 'spread' && resolveAllConfig(config).layout.writingMode !== 'vertical-rl') {
+    out.push({ kind: 'unknownConfigValue', path: 'footnotes.placement', value: 'spread', used: 'column' });
+  }
   return out;
 }
 

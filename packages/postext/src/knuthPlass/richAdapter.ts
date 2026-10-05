@@ -4,7 +4,7 @@
  * reconstruction of VDT lines from the optimal breakpoint sequence.
  */
 
-import type { VDTChip, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
+import type { VDTAnnotationRun, VDTChip, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import type { TextAlign } from '../types';
 import type { KPItem, RichTokenMeta } from './types';
@@ -43,6 +43,10 @@ interface RichToken {
   baselineShift?: number;
   /** An inline footnote marker's own font (see `measure/rich.ts`). */
   markerFont?: string;
+  /** A footnote marker in the line gap, and the shift of one flush right of
+   *  a vertical line (see `measure/rich.ts`). */
+  sideRuns?: VDTAnnotationRun[];
+  markerShift?: number;
   /** The unslanted face of Arabic words in a slanted style (see
    *  `measure/rich.ts`). */
   faceFont?: string;
@@ -297,6 +301,8 @@ export function reconstructRichLines(
           ...(token.labelTab ? { labelTab: true as const } : {}),
           ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
           ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
+          ...(token.sideRuns ? { sideMarker: { runs: token.sideRuns } } : {}),
+          ...(token.markerShift !== undefined ? { baselineShift: token.markerShift } : {}),
           ...(token.faceFont && !token.script ? { fontString: token.faceFont } : {}),
           ...(token.stacked === 'first' ? { stacked: true } : {}),
           ...(token.smallCaps ? { smallCaps: true } : {}),

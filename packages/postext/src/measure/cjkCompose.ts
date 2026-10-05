@@ -1335,6 +1335,23 @@ function jlreqFixed(cls: CjkClass): boolean {
   return cls === 'pause' || cls === 'stop' || cls === 'interpunct' || cls === 'ideoSpace';
 }
 
+/** Whether the gap after unit `j` of a line takes tracking. A footnote
+ *  marker in the line gap (`footnotes.markerPosition: 'side'`) takes no
+ *  room in the line: the gap between the characters around it is theirs,
+ *  and is set after the marker, which stays against the character it
+ *  marks. */
+function gapAfterStretches(us: readonly Unit[], j: number, jlreq = false): boolean {
+  const next = us[j + 1]!;
+  if (isSideMarker(next)) return false;
+  const u = us[j]!;
+  if (isSideMarker(u)) return j > 0 && gapStretches(us[j - 1]!, next, jlreq);
+  return gapStretches(u, next, jlreq);
+}
+
+function isSideMarker(u: Unit): boolean {
+  return u.token?.sideRuns !== undefined;
+}
+
 /** One line as the breaker found it: units `start` to `end` (exclusive),
  *  the first replaced by `first` (the rest of a unit the line before cut)
  *  and `head` appended (the part of unit `end` that fits). */
@@ -2064,7 +2081,7 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
         natural += u.width;
         widest = Math.max(widest, u.width);
       }
-      const s = j < us.length - 1 && gapStretches(u, us[j + 1]!, jlreq);
+      const s = j < us.length - 1 && gapAfterStretches(us, j, jlreq);
       stretches.push(s);
       if (s) gaps++;
     }
@@ -2170,6 +2187,8 @@ function composeLine(units: readonly Unit[], range: LineRange, li: number, isLas
     }
     if (u.kind === 'atomic') {
       const seg = tokenSegment(u.token!);
+      // A side marker carries the gap after the character it marks.
+      if (seg.sideMarker && tracking > 0 && stretches[j]) seg.width += tracking;
       pieces.push({ seg, parts: [seg.text], key: undefined });
       continue;
     }

@@ -34,7 +34,7 @@ import type { CjkRegion, ResourceSafeArea } from './types';
 import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientation, type VerticalRun } from './writingMode';
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
-import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
+import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml } from './htmlAnnotations';
 import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
 import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
 import type { VDTResourceVideo } from './vdt';
@@ -821,6 +821,12 @@ function renderSegments(
       x += seg.width;
       continue;
     }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap (JLReq §4.2.3).
+      parts.push(sideMarkerHtml(seg.sideMarker, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
     if (seg.refResourceId !== undefined && segs[i + 1]?.refContinues) {
       const group = renderRefRuns(segs, i, x, pickSegmentColor(seg, block), (run, at) => paintText(run, at, true), refLinks(refKey(seg), targets));
       parts.push(group.html);
@@ -950,6 +956,12 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     if (seg.warichu) {
       // A warichu note's part: its two rows (#195).
       parts.push(warichuHtml(seg.warichu, x, pickSegmentColor(seg, block), quoteFontString));
+      x += seg.width;
+      continue;
+    }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap (JLReq §4.2.3).
+      parts.push(sideMarkerHtml(seg.sideMarker, x, pickSegmentColor(seg, block), quoteFontString));
       x += seg.width;
       continue;
     }
@@ -1229,19 +1241,19 @@ function verticalSpan(at: number, axis: number, inner: string, decl = ''): strin
 /** A run of vertical text whose em boxes are centred `axis` px from the
  *  box's flow top, on either side of it (a ruby reading or a warichu row
  *  sits outside the line's own box). */
-function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = ''): string {
+function verticalSpanAt(at: number, axis: number, size: number, inner: string, decl = '', hidden = true): string {
   const lh = Math.max(1, 2 * size);
-  return `<span aria-hidden="true" style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
+  return `<span${hidden ? ' aria-hidden="true"' : ''} style="position:absolute;top:${at.toFixed(3)}px;right:${(axis - lh / 2).toFixed(3)}px;white-space:pre;${decl}line-height:${lh.toFixed(3)}px;">${inner}</span>`;
 }
 
 /** Annotation runs of a vertical line (a ruby reading, a warichu note's
  *  rows, #194, #195) from `x` along it: set down the column in their own
  *  face, centred across it on their baseline (`dy`) less their face's
  *  axis, a zhuyin tone mark standing upright (`VDTAnnotationRun.upright`). */
-function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number): string {
+function verticalAnnotationRuns(runs: readonly VDTAnnotationRun[], x: number, color: string, v: VerticalHtml, axisOf: (fontString: string, shift?: number) => number, hidden = true): string {
   return runs.map((run) => {
     const decl = `font:${quoteFontString(run.fontString)};color:${run.color ?? color};letter-spacing:0;`;
-    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl);
+    return verticalSpanAt(x + run.dx, axisOf(run.fontString, run.dy), extractFontSizePx(run.fontString), verticalTextHtml(run.text, v, run.upright ? 'upright' : undefined, run.fontString), decl, hidden);
   }).join('');
 }
 
@@ -1303,6 +1315,15 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
       // row the right one, read once (#195).
       const w = seg.warichu;
       inner.push(`<span role="note" aria-label="${esc(w.upper + w.lower)}">${verticalAnnotationRuns(w.runs, x, w.color ?? pickSegmentColor(seg, block), v, axisOf)}</span>`);
+      x += seg.width;
+      continue;
+    }
+    if (seg.sideMarker) {
+      // A footnote marker in the line gap, right of the column (JLReq
+      // §4.2.3), read as the marker and linked to its note.
+      const runs = verticalAnnotationRuns(seg.sideMarker.runs, x, pickSegmentColor(seg, block), v, axisOf, false);
+      const href = segmentHref(seg);
+      inner.push(href !== undefined ? `<a href="${esc(href)}" style="color:inherit;text-decoration:none;">${runs}</a>` : runs);
       x += seg.width;
       continue;
     }

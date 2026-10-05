@@ -241,6 +241,15 @@ export interface VDTLineSegment {
    *  id. The layout sets the note at the foot of the column holding the
    *  line; the PDF backend links the marker to it. */
   footnoteId?: string;
+  /** A footnote marker set in the line gap (`footnotes.markerPosition:
+   *  'side'`, the interlinear 合印 of JLReq §4.2.3): `text` is the marker
+   *  (read in copied text and by assistive technology), but renderers paint
+   *  `runs` instead, placed from where the segment starts as a ruby
+   *  reading is — over the line (right of a vertical one), ending where
+   *  the character before it ends. The segment takes no advance of its own:
+   *  its `width` is 0, or the inter-character gap of a justified CJK line
+   *  that follows the character it marks. Absent on every other segment. */
+  sideMarker?: { runs: VDTAnnotationRun[] };
   /** Set on the second and later segments of one `:ref` painted as several
    *  runs (a label in small capitals: one run per case). Such a segment
    *  continues the previous one's reference: it takes no plain-text char of

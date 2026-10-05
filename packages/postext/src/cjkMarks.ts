@@ -359,6 +359,9 @@ function marksNeed(line: VDTLine): number {
 function rubyNeed(line: VDTLine, em: number): number {
   let need = 0;
   for (const seg of line.segments ?? []) {
+    // A footnote marker in the line gap (JLReq §4.2.3) needs its size, as
+    // a reading does.
+    for (const run of seg.sideMarker?.runs ?? []) need = Math.max(need, fontEm(run.fontString) / em);
     const r = seg.ruby;
     if (!r || r.position === 'right') continue;
     const rtEm = fontEm(r.fontString);
@@ -405,6 +408,10 @@ function lineReach(line: VDTLine, em: number): LineReach {
     extend(m.y - half, m.y + half, false);
   }
   for (const seg of line.segments ?? []) {
+    for (const run of seg.sideMarker?.runs ?? []) {
+      const runEm = fontEm(run.fontString);
+      extend(run.dy - (CENTRAL + 0.5) * runEm, run.dy + (0.5 - CENTRAL) * runEm, true);
+    }
     const r = seg.ruby;
     if (!r || r.position === 'right') continue;
     for (const run of r.runs) {
@@ -463,8 +470,10 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         const marks = lineMarks(line, block, color, vertical);
         if (marks.length > 0) line.marks = marks;
       }
-      // Only the CJK composer sets ruby (#194).
+      // Only the CJK composer sets ruby (#194). A footnote marker in the
+      // line gap is checked as a reading is, in any line.
       if (line.cjkComposed && segs.some((s) => s.ruby && s.ruby.position !== 'right')) ruby = true;
+      if (segs.some((s) => s.sideMarker)) ruby = true;
     }
     if (!marked && !ruby) continue;
     const em = fontEm(block.fontString);

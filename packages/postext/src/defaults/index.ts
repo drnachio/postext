@@ -199,7 +199,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.headingStyles;
   }
-  const strippedFootnotes = stripFootnotesDefaults(config.footnotes);
+  const strippedFootnotes = stripFootnotesDefaults(config.footnotes, config.locale, config.layout?.writingMode);
   if (strippedFootnotes) {
     result.footnotes = strippedFootnotes;
   } else {

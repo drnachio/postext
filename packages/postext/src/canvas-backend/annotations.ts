@@ -8,7 +8,7 @@
  * sideways).
  */
 
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTRuby, VDTWarichu } from '../vdt';
+import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt';
 import { fillFlowText, verticalPaintActive, type TextPaintMode } from './verticalText';
 import type { MarkCutRule } from '../measure/markCuts';
 
@@ -156,4 +156,10 @@ export function paintRuby(ctx: Ctx, ruby: VDTRuby, x: number, baseline: number, 
 /** Paint a warichu note's rows; `x` is where the note's segment starts. */
 export function paintWarichu(ctx: Ctx, warichu: VDTWarichu, x: number, baseline: number, textColor: string): void {
   paintRuns(ctx, warichu.runs, x, baseline, warichu.color ?? textColor, 'composed');
+}
+
+/** Paint a footnote marker set in the line gap (`VDTLineSegment.sideMarker`,
+ *  JLReq §4.2.3); `x` is where its segment starts. */
+export function paintSideMarker(ctx: Ctx, marker: NonNullable<VDTLineSegment['sideMarker']>, x: number, baseline: number, color: string): void {
+  paintRuns(ctx, marker.runs, x, baseline, color, 'text');
 }

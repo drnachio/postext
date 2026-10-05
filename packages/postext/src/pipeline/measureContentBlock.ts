@@ -233,9 +233,14 @@ export function measureContentBlock(
   // Footnote markers print their note's number as a superscript, or on
   // the baseline at `footnotes.markerSize` (`markerPosition: 'inline'`):
   // one atomic token tagged with the note id (`VDTLineSegment.footnoteId`).
+  // A Japanese marker (JLReq §4.2.3) stands in the line gap beside the text
+  // (`'side'`) or, down a vertical line, flush with its right side
+  // (`'right'`; a superscript in horizontal text).
   if (contentBlock.spans.some((s) => s.footnote)) {
     const f = resolved.footnotes;
-    const inline = f.markerPosition === 'inline';
+    const position = f.markerPosition === 'right' && !measuringVertically() ? 'superscript' : f.markerPosition;
+    const inline = position !== 'superscript';
+    const place = position === 'side' || position === 'right' ? position : undefined;
     const size = f.markerSize;
     const scale = !inline ? undefined
       : size.unit === 'em' || size.unit === 'rem' ? size.value
@@ -249,7 +254,7 @@ export function measureContentBlock(
               text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?',
               bold: false,
               italic: false,
-              footnote: { id: s.footnote.id, ...(scale !== undefined && Math.abs(scale - 1) > 1e-6 ? { scale } : {}) },
+              footnote: { id: s.footnote.id, ...(scale !== undefined && Math.abs(scale - 1) > 1e-6 ? { scale } : {}), ...(place ? { place } : {}) },
             }
           : { ...s, text: ctx.footnoteNumbers?.get(s.footnote.id) ?? '?', script: 'sup' as const, bold: false, italic: false }
         : s)),

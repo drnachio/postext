@@ -227,6 +227,20 @@ export function rubyGeometry(input: RubyInput): RubyGeometry {
   return { width, inset, rtWidth, runs: [{ text: reading, dx: (width - rtWidth) / 2, dy: baselineOf(rtAxis, rtEm) - lift, fontString }], ...allow };
 }
 
+/**
+ * The run of a footnote marker set in the line gap (`footnotes.markerPosition:
+ * 'side'`, JLReq §4.2.3): `text` at `fontString` over the text — right of a
+ * vertical line, above a horizontal one — against the em box of the text
+ * (`em` px), as a ruby reading over its base. It ends where its segment
+ * starts, the end of the character it marks (the marker's foot aligned with
+ * the word's last character), and changes nothing in the line.
+ */
+export function sideMarkerRun(text: string, fontString: string, em: number): VDTAnnotationRun {
+  const markEm = fontEm(fontString);
+  const axis = -CENTRAL * em - (em / 2 + markEm / 2);
+  return { text, dx: -flowTextWidth(text, fontString), dy: baselineOf(axis, markEm), fontString };
+}
+
 /** The advance of a reading along the line (a zhuyin reading: its
  *  symbols' column, tone marks aside), before its base is sized. */
 export function readingAdvance(reading: string, fontString: string, position: 'over' | 'under' | 'right'): number {

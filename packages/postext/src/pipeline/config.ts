@@ -94,7 +94,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     headingStyles: resolveHeadingStylesConfig(config?.headingStyles, page, bodyText, unorderedLists, orderedLists, layout),
     toc: resolveTocConfig(config?.toc, bodyText),
     index: resolveIndexConfig(config?.index, bodyText, documentLocale),
-    footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale),
+    footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale, layout.writingMode),
     crossRefs: resolveCrossRefsConfig(config?.crossRefs, documentLocale),
     citations: resolveCitationsConfig(config?.citations),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),

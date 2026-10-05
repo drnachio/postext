@@ -1,4 +1,4 @@
-import type { VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
+import type { VDTAnnotationRun, VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
 import type { MathRender } from '../math/types';
@@ -20,6 +20,7 @@ import { directChipRuns } from '../design/bidiText';
 import { cjkJoinBreaks, hasCJK } from './cjk';
 import { composeCjkParagraph, cjkWordBreaks, composesAsCjk, spanMarks, type CjkWordBreaks } from './cjkCompose';
 import { graphemeCount, graphemesOf } from './graphemes';
+import { CENTRAL, sideMarkerRun } from './cjkAnnotate';
 import { fontEm, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, mayHoldVerticalCell, measuringVertically, verticalTextWidth, withMeasureWritingMode } from './vertical';
 import { latinReader, uprightDigitCandidates } from '../writingMode';
 import { sliceSpan } from '../parse/links';
@@ -106,6 +107,15 @@ export interface RichToken {
   /** A footnote marker (`[^id]`): atomic like a reference; the id flows
    *  onto the segment. */
   footnoteId?: string;
+  /** A footnote marker set in the line gap (`footnotes.markerPosition:
+   *  'side'`): what is painted there; the token is 0 wide (see
+   *  `VDTLineSegment.sideMarker`). */
+  sideRuns?: VDTAnnotationRun[];
+  /** A footnote marker set flush with the right side of a vertical line
+   *  (`footnotes.markerPosition: 'right'`): how far its baseline moves
+   *  across the line (negative: right), px, for its em box at
+   *  `markerFont` to end where the line's does. */
+  markerShift?: number;
   /** True when this token belongs to a caption's numbered label. Flows to the
    *  segment so renderers can apply the label colour. */
   captionLabel?: boolean;
@@ -939,6 +949,7 @@ export function atomicSpanToken(
       ...(span.combineUpright ? { tcy: true as const } : { orientation: span.orientation! }),
     };
   }
+  if (span.footnote?.place) return placedMarkerToken(span, span.footnote.place, pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont), letterSpacingPx);
   if (span.ref || span.footnote) {
     const scriptFields = spanScriptFields(span, normalFont, boldFont, italicFont, boldItalicFont);
     const scale = span.footnote?.scale;
@@ -998,6 +1009,38 @@ export function atomicSpanToken(
   return undefined;
 }
 
+/**
+ * A footnote marker set apart from the text (`footnotes.markerPosition`,
+ * JLReq §4.2.3), at its size (`span.footnote.scale` of `font`, the text's):
+ * - `'side'`: an interlinear 合印 in the line gap over the text before it,
+ *   a token 0 wide whose run is painted there ({@link sideMarkerRun});
+ * - `'right'` (vertical text): an inline marker taking its advance down
+ *   the line, its em box moved across to end where the line's ends, on
+ *   the right (行右小書き).
+ * Either is never broken from the text it marks (the CJK composer glues a
+ * note marker to the unit before it; Latin text has no break point there).
+ */
+function placedMarkerToken(span: InlineSpan, place: 'side' | 'right', font: string, letterSpacingPx: number): RichToken {
+  const scale = span.footnote?.scale ?? 1;
+  const markerFont = Math.abs(scale - 1) > 1e-6 ? scaledFont(font, scale) : font;
+  const em = fontEm(font);
+  const base = {
+    text: span.text,
+    bold: span.bold,
+    italic: span.italic,
+    kind: 'text' as const,
+    footnoteId: span.footnote!.id,
+    markerFont,
+  };
+  if (place === 'side') return { ...base, width: 0, sideRuns: [sideMarkerRun(span.text, markerFont, em)] };
+  // The marker's em box is centred `CENTRAL` of its em above its baseline,
+  // the line's on the line's axis: moving it by the difference of the two
+  // half-ems puts both boxes' right ends together.
+  const markEm = fontEm(markerFont);
+  const track = letterSpacingPx === 0 ? 0 : wordLetterSpacing(span.text, letterSpacingPx) * graphemeCount(span.text);
+  return { ...base, width: textWidth(span.text, markerFont, false) + track, markerShift: -(em - markEm) * (CENTRAL + 0.5) };
+}
+
 /** The segment a token (or the part of one on a line) sets: its kind, text
  *  (soft hyphens removed), width and every flag the renderers read. Small
  *  capitals stay flagged until {@link expandSmallCaps} splits them. */
@@ -1017,6 +1060,8 @@ export function tokenSegment(t: RichToken): PendingSegment {
     ...(t.labelTab ? { labelTab: true as const } : {}),
     ...(t.script ? { script: t.script, fontString: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.markerFont && !t.script ? { fontString: t.markerFont } : {}),
+    ...(t.sideRuns ? { sideMarker: { runs: t.sideRuns } } : {}),
+    ...(t.markerShift !== undefined ? { baselineShift: t.markerShift } : {}),
     ...(t.faceFont && !t.script ? { fontString: t.faceFont } : {}),
     ...(t.stacked === 'first' ? { stacked: true } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),

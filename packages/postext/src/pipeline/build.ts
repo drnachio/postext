@@ -598,7 +598,7 @@ function placeDocumentPass(
   }
   const chapterEndNotes = resolved.footnotes.placement === 'chapterEnd' && footnoteNumbering.numbers.size > 0;
   const parsedBlocks = chapterEndNotes
-    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes))
+    ? appendChapterEndNotes(footnoteSplit.blocks, footnoteNumbering, footnoteDefs, noteNumberPositionOf(resolved.footnotes, resolved.layout.writingMode === 'vertical-rl'), resolved.footnotes.numberGap)
     : footnoteSplit.blocks;
   const headingStart = continuation?.headings;
   // `:::toc` expands into the entries of the book's outline — the one the
@@ -1961,7 +1961,21 @@ function placeDocumentPass(
   // places lines (`notesPrefixCost`), so the line citing a note and the note
   // share a column. The notes are set in their reserved room once the pass
   // is placed (`setColumnNotes`).
-  const columnNotes = resolved.footnotes.placement === 'column' && footnoteNumbering.numbers.size > 0;
+  //
+  // Sidenotes on the spread (`placement: 'spread'`, 傍注, JLReq §4.2.6; a
+  // vertical document's: a horizontal one resolves to `'column'`) use the
+  // same room, at the foot of the flow, which on a vertical page is its
+  // left end, the fore edge of a right-bound book's odd page. A spread is
+  // an even book page and the odd page after it. The notes cited on the
+  // odd page are reserved there as column notes; the ones cited on the
+  // even page wait for the odd page (`spreadDeferred`) and are reserved at
+  // the foot of its first column of text before anything it cites. A note
+  // that would leave the odd page without room for a line of its own text
+  // stays on the even page, at its foot (the overflow JLReq sends there);
+  // a line on the odd page whose notes no longer fit moves on, as any
+  // line with column notes does, to the next spread.
+  const spreadNotes = resolved.footnotes.placement === 'spread' && footnoteNumbering.numbers.size > 0;
+  const columnNotes = (resolved.footnotes.placement === 'column' || spreadNotes) && footnoteNumbering.numbers.size > 0;
   const noteStyle = columnNotes ? resolveParagraphStyle(footnoteParagraphStyle(resolved), resolved) : bodyStyle;
   const noteSpaceAbovePx = dimensionToPx(resolved.footnotes.spaceAbove, dpi, bodyStyle.fontSizePx);
   const noteSpaceBelowRulePx = dimensionToPx(resolved.footnotes.spaceBelowRule, dpi, bodyStyle.fontSizePx);
@@ -1979,7 +1993,7 @@ function placeDocumentPass(
     let m = noteMeasures.get(key);
     if (m === undefined) {
       const number = footnoteNumbering.numbers.get(id) ?? '?';
-      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes)), 0, width, measureCtx, { styleOverride: noteStyle });
+      m = measureContentBlock(noteContentBlock(footnoteDefs.get(id), id, number, noteNumberPositionOf(resolved.footnotes, resolved.layout.writingMode === 'vertical-rl'), resolved.footnotes.numberGap), 0, width, measureCtx, { styleOverride: noteStyle });
       noteMeasures.set(key, m);
     }
     return m;
@@ -2002,6 +2016,11 @@ function placeDocumentPass(
     });
     return h;
   };
+  /** Sidenotes cited on the even page of a spread, waiting for its odd
+   *  page (`spreadDeferredPage`, a page index) or the first page after it
+   *  the flow sets text on. */
+  const spreadDeferred: string[] = [];
+  let spreadDeferredPage = -1;
   /** Notes cited by blocks set outside the flow (the paragraphs of a box,
    *  inline, floated or fixed): they wait for the next text the flow
    *  places, and go to the foot of its column, in citation order. */
@@ -2011,9 +2030,43 @@ function placeDocumentPass(
   const collectPendingNotes = (): void => {
     for (; notesScanned < doc.blocks.length; notesScanned++) {
       for (const id of footnoteIdsOfLines(doc.blocks[notesScanned]!.lines)) {
-        if (!placedNotes.has(id) && !pendingNotes.includes(id)) pendingNotes.push(id);
+        if (!placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id)) pendingNotes.push(id);
       }
     }
+  };
+  /** Whether the page at `pageIndex` opens its spread (an even book page),
+   *  so the notes it cites go to the next page. */
+  const opensSpread = (pageIndex: number): boolean => spreadNotes && (pageIndex + pageIndexOffset + 1) % 2 === 0;
+  /** The sidenotes waiting for the page at `pageIndex`, if any. */
+  const deferredFor = (pageIndex: number): string[] => (spreadDeferred.length > 0 && pageIndex >= spreadDeferredPage ? spreadDeferred : []);
+  /** Height `ids` take at the foot of a column of `width` with no note
+   *  yet: the separator zone, the notes and the gaps between. */
+  const freshNotesCost = (ids: readonly string[], width: number): number => {
+    let h = ids.length > 0 ? noteHeadPx : 0;
+    ids.forEach((id, i) => { h += (i > 0 ? noteGapPx : 0) + noteHeight(id, width); });
+    return h;
+  };
+  /** On the even page of a spread (`pageIndex`), `col` holding the text:
+   *  which of `ids` (cited there, in order) wait for the odd page and which
+   *  stay at this column's foot. Each waits while the notes waiting with it
+   *  leave the odd page room for a line of text — measured on this column,
+   *  which the odd page's matches; a note that does not stays here, and so
+   *  do the ones after it. */
+  const splitSpreadNotes = (pageIndex: number, col: VDTColumn, ids: readonly string[]): { wait: string[]; here: string[] } => {
+    const already = spreadDeferredPage > pageIndex ? spreadDeferred : [];
+    const wait = [...already];
+    const here: string[] = [];
+    const room = col.bbox.height + reservedHeight(col) - bodyStyle.lineHeightPx;
+    for (const id of ids) {
+      if (here.length === 0 && freshNotesCost([...wait, id], col.bbox.width) <= room + 0.01) wait.push(id);
+      else here.push(id);
+    }
+    return { wait: wait.slice(already.length), here };
+  };
+  /** What the notes reserved at `col`'s foot took from it. */
+  const reservedHeight = (col: VDTColumn): number => {
+    const entry = columnNotesOf.get(col);
+    return entry ? entry.slots.reduce((h, slot) => h + slot.height, 0) : 0;
   };
   /** `cost[k]`: the notes the first `k` of `lines` cite for the first time
    *  (after the pending ones) would add to `col`'s foot. Undefined when
@@ -2021,29 +2074,47 @@ function placeDocumentPass(
   const notesPrefixCost = (col: VDTColumn, lines: readonly VDTLine[]): number[] | undefined => {
     if (!columnNotes) return undefined;
     collectPendingNotes();
+    const page = cursor.pageIndex;
+    // Sidenotes waiting for this page are set first; on the even page of a
+    // spread only the notes that stay on it cost room.
+    const waiting = deferredFor(page);
     const ids: string[] = [...pendingNotes];
-    let any = ids.length > 0;
-    const cost = [notesCost(col, ids)];
+    let any = ids.length > 0 || waiting.length > 0;
+    const even = opensSpread(page);
+    const costOf = (): number => notesCost(col, [...waiting, ...(even ? splitSpreadNotes(page, col, ids).here : ids)]);
+    const cost = [costOf()];
     for (const line of lines) {
       for (const seg of line.segments ?? []) {
         const id = seg.footnoteId;
-        if (id !== undefined && !placedNotes.has(id) && !ids.includes(id)) { ids.push(id); any = true; }
+        if (id !== undefined && !placedNotes.has(id) && !ids.includes(id) && !spreadDeferred.includes(id)) { ids.push(id); any = true; }
       }
-      cost.push(notesCost(col, ids));
+      cost.push(costOf());
     }
     return any ? cost : undefined;
   };
   /** Reserve at the placed block's column foot the pending notes and the
-   *  ones the block cites first. */
+   *  ones the block cites first (sidenotes: the ones waiting for this
+   *  page first; on the even page of a spread, only the ones that stay). */
   const reserveCitedNotes = (placed: VDTBlock): void => {
     if (!columnNotes || placed.pageIndex < 0) return;
     collectPendingNotes();
-    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id));
-    if (cited.length === 0 && pendingNotes.length === 0) return;
+    const waiting = deferredFor(placed.pageIndex);
+    const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id));
+    if (cited.length === 0 && pendingNotes.length === 0 && waiting.length === 0) return;
     const page = doc.pages[placed.pageIndex];
     const col = page?.columns[placed.columnIndex];
     if (!page || !col) return;
-    reserveNotes(page, col, [...pendingNotes.splice(0), ...cited], placed.contentIndex ?? 0);
+    const anchor = placed.contentIndex ?? 0;
+    if (waiting.length > 0) reserveNotes(page, col, spreadDeferred.splice(0), anchor);
+    const ids = [...pendingNotes.splice(0), ...cited];
+    if (opensSpread(placed.pageIndex)) {
+      const { wait, here } = splitSpreadNotes(placed.pageIndex, col, ids);
+      spreadDeferred.push(...wait);
+      spreadDeferredPage = placed.pageIndex + 1;
+      if (here.length > 0) reserveNotes(page, col, here, anchor);
+      return;
+    }
+    if (ids.length > 0) reserveNotes(page, col, ids, anchor);
   };
   /** Reserve `ids` at `col`'s foot. */
   const reserveNotes = (page: VDTPage, col: VDTColumn, ids: string[], anchor: number): void => {
@@ -2082,10 +2153,29 @@ function placeDocumentPass(
   const reserveLeftoverNotes = (): void => {
     if (!columnNotes) return;
     collectPendingNotes();
+    reserveLeftoverSidenotes();
     if (pendingNotes.length === 0) return;
     const page = doc.pages[cursor.pageIndex];
     const col = page?.columns[cursor.columnIndex];
     if (page && col) reserveNotes(page, col, pendingNotes.splice(0), contentBlocks.length - 1);
+  };
+  /** Sidenotes still waiting when the flow ends on the even page of a
+   *  spread: they stay on it (JLReq §4.2.6), at the foot of the column the
+   *  flow ended in when they fit under its text, else on a page of their
+   *  own after it. */
+  const reserveLeftoverSidenotes = (): void => {
+    if (spreadDeferred.length === 0) return;
+    const ids = spreadDeferred.splice(0);
+    let page = doc.pages[cursor.pageIndex];
+    let col = page?.columns[cursor.columnIndex];
+    if (!page || !col) return;
+    if (notesCost(col, ids) > col.availableHeight + 0.01) {
+      page = createPageWithColumns(doc.pages.length, geomResolved, contentArea, pageWidthPx, pageHeightPx, pageIndexOffset);
+      doc.pages.push(page);
+      col = page.columns[0];
+      if (!col) return;
+    }
+    reserveNotes(page, col, ids, contentBlocks.length - 1);
   };
   /** `chapterEnd`: move the run of note paragraphs that closes a column
    *  down to the column's true foot (under a band cap's cut, above any
@@ -6001,8 +6091,9 @@ function printedFootnoteNumbers(doc: VDTDocument): Map<string, string> {
 const MAX_FOOTNOTE_ROUNDS = 3;
 
 /**
- * {@link buildDocumentBalanced}, with `footnotes.numbering: 'page'` /
- * `'column'`: a note's number depends on the page the layout sets it on,
+ * {@link buildDocumentBalanced}, with `footnotes.numbering: 'page'`,
+ * `'column'` or `'spread'`: a note's number depends on the page the layout
+ * sets it on,
  * so the document is numbered by chapter, laid out, numbered again where
  * its notes landed, and laid out with those numbers until they no longer
  * change (as the contents' page labels are). A circled marker is the same
@@ -6018,11 +6109,14 @@ function* buildDocumentNumbered(
 ): Generator<void, VDTDocument, void> {
   let doc = yield* buildDocumentBalanced(content, config, cache, options, tocRound);
   const f = doc.config.footnotes;
-  if (f.placement !== 'column' || (f.numbering !== 'page' && f.numbering !== 'column')) return doc;
+  if ((f.placement !== 'column' && f.placement !== 'spread') || (f.numbering !== 'page' && f.numbering !== 'column' && f.numbering !== 'spread')) return doc;
   for (let round = 0; round < MAX_FOOTNOTE_ROUNDS; round++) {
     const used = printedFootnoteNumbers(doc);
     if (used.size === 0) break;
-    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate).numbers;
+    // A spread counts its notes in citation order: the order of the first
+    // markers, which `used` holds.
+    const order = f.numbering === 'spread' ? new Map([...used.keys()].map((id, i) => [id, i])) : undefined;
+    const placed = numberFootnotesByPlacement(doc.pages, f.numbering, documentNumeralStyle(f.numberFormat, doc.config.numerals), f.markerTemplate, doc.pageIndexOffset ?? 0, order).numbers;
     // A note the layout set nowhere keeps the number it had.
     const next = new Map(used);
     for (const [id, number] of placed) next.set(id, number);

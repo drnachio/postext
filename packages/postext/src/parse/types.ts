@@ -152,6 +152,12 @@ export interface InlineSpan {
     /** An inline marker's size relative to the text around it
      *  (`footnotes.markerSize`), set by the pipeline. Unset: full size. */
     scale?: number;
+    /** Where the pipeline sets the marker apart from the line's text
+     *  (`footnotes.markerPosition`): `'side'` in the line gap beside the
+     *  text before it, taking no advance; `'right'` (vertical text only)
+     *  flush with the right side of the line. Unset: on the line, as
+     *  `scale` and `script` say. */
+    place?: 'side' | 'right';
   };
   /** Present when this span is an inline reference to a `Resource`. The
    *  `text` carries placeholder/fallback content; the pipeline resolves the

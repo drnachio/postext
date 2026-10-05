@@ -1,4 +1,5 @@
-import type { FootnotesConfig, ResolvedFootnotesConfig } from '../types';
+import type { Dimension, FootnoteNumbering, FootnotePlacement, FootnotesConfig, ResolvedFootnotesConfig } from '../types';
+import { isJapaneseLanguage } from '../locale';
 import { parseNumberFormat } from '../numbering';
 import { dimensionsEqual, colorsEqual, startEndAsLeftRight } from './shared';
 
@@ -22,66 +23,146 @@ export const DEFAULT_FOOTNOTES_CONFIG: ResolvedFootnotesConfig = {
   },
 };
 
-const NUMBERINGS: ReadonlySet<string> = new Set(['chapter', 'document', 'page', 'column']);
+const NUMBERINGS: ReadonlySet<string> = new Set(['chapter', 'document', 'page', 'column', 'spread']);
+const PLACEMENTS: ReadonlySet<string> = new Set(['column', 'chapterEnd', 'spread']);
 
-/** `locale`: the document language, which `一` / `壹` formats follow. */
-export function resolveFootnotesConfig(partial?: FootnotesConfig, locale?: string): ResolvedFootnotesConfig {
-  const d = DEFAULT_FOOTNOTES_CONFIG;
-  if (!partial) return { ...d, separator: { ...d.separator } };
-  const sep = partial.separator;
-  const width = sep?.width;
-  const numberFormat = parseNumberFormat(partial.numberFormat, locale) ?? d.numberFormat;
-  const position = partial.markerPosition;
-  const markerSize = partial.markerSize;
+/** Default size of a side marker (合印 in the line gap, JLReq §4.2.3:
+ *  about 6 pt at a 9 pt body) and of a right one (one or two sizes under
+ *  the text), in em of the text. */
+const SIDE_MARKER_SIZE: Dimension = { value: 0.6, unit: 'em' };
+const RIGHT_MARKER_SIZE: Dimension = { value: 0.7, unit: 'em' };
+
+/** The default `markerSize` of a marker set at `position`. */
+function markerSizeFor(position: FootnotesConfig['markerPosition']): Dimension {
+  return position === 'side' ? SIDE_MARKER_SIZE : position === 'right' ? RIGHT_MARKER_SIZE : DEFAULT_FOOTNOTES_CONFIG.markerSize;
+}
+
+/** The marker template of a Japanese vertical book: the number between
+ *  full-width parentheses, its digits upright (`cjk.uprightDigits`). */
+const JAPANESE_VERTICAL_TEMPLATE = '（{n}）';
+/** Turnover lines of a Japanese endnote hang 2 note-ems (JLReq §4.2.4:
+ *  1–2). */
+const JAPANESE_ENDNOTE_HANG: Dimension = { value: 2, unit: 'em' };
+
+/**
+ * The values a document's unset footnote fields take when they are not
+ * {@link DEFAULT_FOOTNOTES_CONFIG}'s: a Japanese document's (JLReq §4.2),
+ * by writing mode, and the per-spread numbering of `placement: 'spread'`.
+ * `placement` is the author's, when set: the endnote setting (a full em
+ * after the number, turnover lines hung 2 note-ems) goes with endnotes.
+ * Empty for every other document, which resolves exactly as before.
+ */
+export function footnoteDocumentDefaults(
+  locale: string | undefined,
+  writingMode: 'horizontal-tb' | 'vertical-rl' | undefined,
+  placement?: FootnotePlacement,
+): {
+  placement?: FootnotePlacement;
+  numbering?: FootnoteNumbering;
+  markerPosition?: 'right';
+  markerTemplate?: string;
+  numberGap?: 'em';
+  hangingIndent?: Dimension;
+  separatorWidth?: number;
+} {
+  const vertical = writingMode === 'vertical-rl';
+  const spread = placement === 'spread';
+  if (!isJapaneseLanguage(locale)) return spread ? { numbering: vertical ? 'spread' : 'page' } : {};
+  // 後注 in a vertical book, 脚注 numbered per page in a horizontal one.
+  const where = placement ?? (vertical ? 'chapterEnd' : 'column');
   return {
-    placement: partial.placement === 'chapterEnd' ? 'chapterEnd' : 'column',
-    numbering: typeof partial.numbering === 'string' && NUMBERINGS.has(partial.numbering) ? partial.numbering : d.numbering,
+    placement: vertical ? 'chapterEnd' : 'column',
+    numbering: where === 'spread' ? (vertical ? 'spread' : 'page') : vertical ? 'chapter' : 'page',
+    ...(vertical ? { markerPosition: 'right' as const, markerTemplate: JAPANESE_VERTICAL_TEMPLATE } : {}),
+    ...(where === 'chapterEnd' ? { numberGap: 'em' as const, hangingIndent: JAPANESE_ENDNOTE_HANG } : {}),
+    separatorWidth: 1 / 3,
+  };
+}
+
+/** `locale`: the document language, which `一` / `壹` formats follow and
+ *  whose defaults (Japanese, see {@link footnoteDocumentDefaults}) the
+ *  unset fields take, with `writingMode` (`layout.writingMode`). */
+export function resolveFootnotesConfig(
+  partial?: FootnotesConfig,
+  locale?: string,
+  writingMode?: 'horizontal-tb' | 'vertical-rl',
+): ResolvedFootnotesConfig {
+  const d = DEFAULT_FOOTNOTES_CONFIG;
+  const asked = partial?.placement !== undefined && PLACEMENTS.has(partial.placement) ? partial.placement : undefined;
+  const doc = footnoteDocumentDefaults(locale, writingMode, asked);
+  if (!partial && Object.keys(doc).length === 0) return { ...d, separator: { ...d.separator } };
+  const p: FootnotesConfig = partial ?? {};
+  const sep = p.separator;
+  const width = sep?.width;
+  const numberFormat = parseNumberFormat(p.numberFormat, locale) ?? d.numberFormat;
+  const position = p.markerPosition;
+  const markerPosition: ResolvedFootnotesConfig['markerPosition'] = position === 'superscript' || position === 'inline' || position === 'side' || position === 'right'
+    ? position
+    : doc.markerPosition ?? (numberFormat === 'circled-decimal' ? 'inline' : 'superscript');
+  const markerSize = p.markerSize;
+  const template = p.markerTemplate ?? doc.markerTemplate;
+  // Sidenotes on the spread are a vertical book's: a horizontal document
+  // sets them at the column foot (`configWarnings` says so).
+  const placement = asked === 'spread' && writingMode !== 'vertical-rl' ? 'column' : asked ?? doc.placement ?? d.placement;
+  const numberGap = p.numberGap === 'em' || p.numberGap === 'en' ? p.numberGap : doc.numberGap;
+  return {
+    placement,
+    numbering: typeof p.numbering === 'string' && NUMBERINGS.has(p.numbering) ? p.numbering : doc.numbering ?? d.numbering,
     numberFormat,
-    markerPosition: position === 'superscript' || position === 'inline'
-      ? position
-      : numberFormat === 'circled-decimal' ? 'inline' : 'superscript',
-    markerSize: markerSize && Number.isFinite(markerSize.value) && markerSize.value > 0 ? markerSize : d.markerSize,
-    ...(typeof partial.markerTemplate === 'string' && partial.markerTemplate !== '{n}' && partial.markerTemplate.includes('{n}')
-      ? { markerTemplate: partial.markerTemplate }
+    markerPosition,
+    markerSize: markerSize && Number.isFinite(markerSize.value) && markerSize.value > 0 ? markerSize : markerSizeFor(markerPosition),
+    ...(typeof template === 'string' && template !== '{n}' && template.includes('{n}')
+      ? { markerTemplate: template }
       : {}),
-    ...(partial.noteNumberPosition === 'superscript' || partial.noteNumberPosition === 'inline'
-      ? { noteNumberPosition: partial.noteNumberPosition }
+    ...(p.noteNumberPosition === 'superscript' || p.noteNumberPosition === 'inline'
+      ? { noteNumberPosition: p.noteNumberPosition }
       : {}),
-    chapterEndAlign: partial.chapterEndAlign === 'text' ? 'text' : 'foot',
-    fontSize: partial.fontSize ?? d.fontSize,
-    lineHeight: partial.lineHeight ?? d.lineHeight,
-    ...(partial.color ? { color: partial.color } : {}),
-    ...(partial.textAlign ? { textAlign: startEndAsLeftRight(partial.textAlign) } : {}),
-    hangingIndent: partial.hangingIndent ?? d.hangingIndent,
-    spaceBetween: partial.spaceBetween ?? d.spaceBetween,
-    spaceAbove: partial.spaceAbove ?? d.spaceAbove,
-    spaceBelowRule: partial.spaceBelowRule ?? d.spaceBelowRule,
+    chapterEndAlign: p.chapterEndAlign === 'text' ? 'text' : 'foot',
+    fontSize: p.fontSize ?? d.fontSize,
+    lineHeight: p.lineHeight ?? d.lineHeight,
+    ...(p.color ? { color: p.color } : {}),
+    ...(p.textAlign ? { textAlign: startEndAsLeftRight(p.textAlign) } : {}),
+    hangingIndent: p.hangingIndent ?? doc.hangingIndent ?? d.hangingIndent,
+    ...(numberGap === 'em' ? { numberGap } : {}),
+    spaceBetween: p.spaceBetween ?? d.spaceBetween,
+    spaceAbove: p.spaceAbove ?? d.spaceAbove,
+    spaceBelowRule: p.spaceBelowRule ?? d.spaceBelowRule,
     separator: {
       enabled: sep?.enabled ?? d.separator.enabled,
-      width: typeof width === 'number' && Number.isFinite(width) ? Math.min(1, Math.max(0, width)) : d.separator.width,
+      width: typeof width === 'number' && Number.isFinite(width) ? Math.min(1, Math.max(0, width)) : doc.separatorWidth ?? d.separator.width,
       lineWidth: sep?.lineWidth ?? d.separator.lineWidth,
       ...(sep?.color ? { color: sep.color } : {}),
     },
   };
 }
 
-export function stripFootnotesDefaults(footnotes?: FootnotesConfig): FootnotesConfig | undefined {
+/** `footnotes` without the fields at their default. `locale` and
+ *  `writingMode` are the document's: a Japanese document keeps a value its
+ *  own defaults would not give (`markerTemplate: '{n}'`, `placement:
+ *  'column'` in a vertical book), so the config reads back as written. */
+export function stripFootnotesDefaults(
+  footnotes?: FootnotesConfig,
+  locale?: string,
+  writingMode?: 'horizontal-tb' | 'vertical-rl',
+): FootnotesConfig | undefined {
   if (!footnotes) return undefined;
   const d = DEFAULT_FOOTNOTES_CONFIG;
+  const doc = footnoteDocumentDefaults(locale, writingMode, footnotes.placement);
   const result: FootnotesConfig = {};
-  if (footnotes.placement !== undefined && footnotes.placement !== d.placement) result.placement = footnotes.placement;
-  if (footnotes.numbering !== undefined && footnotes.numbering !== d.numbering) result.numbering = footnotes.numbering;
+  if (footnotes.placement !== undefined && footnotes.placement !== (doc.placement ?? d.placement)) result.placement = footnotes.placement;
+  if (footnotes.numbering !== undefined && footnotes.numbering !== (doc.numbering ?? d.numbering)) result.numbering = footnotes.numbering;
   if (footnotes.numberFormat !== undefined && parseNumberFormat(footnotes.numberFormat) !== d.numberFormat) result.numberFormat = footnotes.numberFormat;
-  if (footnotes.markerPosition !== undefined && footnotes.markerPosition !== 'auto') result.markerPosition = footnotes.markerPosition;
-  if (footnotes.markerSize && !dimensionsEqual(footnotes.markerSize, d.markerSize)) result.markerSize = footnotes.markerSize;
-  if (footnotes.markerTemplate !== undefined && footnotes.markerTemplate !== '{n}') result.markerTemplate = footnotes.markerTemplate;
+  if (footnotes.markerPosition !== undefined && footnotes.markerPosition !== 'auto' && footnotes.markerPosition !== doc.markerPosition) result.markerPosition = footnotes.markerPosition;
+  if (footnotes.markerSize && !dimensionsEqual(footnotes.markerSize, markerSizeFor(footnotes.markerPosition ?? doc.markerPosition))) result.markerSize = footnotes.markerSize;
+  if (footnotes.markerTemplate !== undefined && footnotes.markerTemplate !== (doc.markerTemplate ?? '{n}')) result.markerTemplate = footnotes.markerTemplate;
   if (footnotes.noteNumberPosition !== undefined && footnotes.noteNumberPosition !== 'auto') result.noteNumberPosition = footnotes.noteNumberPosition;
   if (footnotes.chapterEndAlign !== undefined && footnotes.chapterEndAlign !== d.chapterEndAlign) result.chapterEndAlign = footnotes.chapterEndAlign;
   if (footnotes.fontSize && !dimensionsEqual(footnotes.fontSize, d.fontSize)) result.fontSize = footnotes.fontSize;
   if (footnotes.lineHeight && !dimensionsEqual(footnotes.lineHeight, d.lineHeight)) result.lineHeight = footnotes.lineHeight;
   if (footnotes.color) result.color = footnotes.color;
   if (footnotes.textAlign) result.textAlign = footnotes.textAlign;
-  if (footnotes.hangingIndent && !dimensionsEqual(footnotes.hangingIndent, d.hangingIndent)) result.hangingIndent = footnotes.hangingIndent;
+  if (footnotes.hangingIndent && !dimensionsEqual(footnotes.hangingIndent, doc.hangingIndent ?? d.hangingIndent)) result.hangingIndent = footnotes.hangingIndent;
+  if (footnotes.numberGap !== undefined && footnotes.numberGap !== (doc.numberGap ?? 'en')) result.numberGap = footnotes.numberGap;
   if (footnotes.spaceBetween && !dimensionsEqual(footnotes.spaceBetween, d.spaceBetween)) result.spaceBetween = footnotes.spaceBetween;
   if (footnotes.spaceAbove && !dimensionsEqual(footnotes.spaceAbove, d.spaceAbove)) result.spaceAbove = footnotes.spaceAbove;
   if (footnotes.spaceBelowRule && !dimensionsEqual(footnotes.spaceBelowRule, d.spaceBelowRule)) result.spaceBelowRule = footnotes.spaceBelowRule;
@@ -89,7 +170,7 @@ export function stripFootnotesDefaults(footnotes?: FootnotesConfig): FootnotesCo
   if (sep) {
     const s: NonNullable<FootnotesConfig['separator']> = {};
     if (sep.enabled !== undefined && sep.enabled !== d.separator.enabled) s.enabled = sep.enabled;
-    if (sep.width !== undefined && sep.width !== d.separator.width) s.width = sep.width;
+    if (sep.width !== undefined && sep.width !== (doc.separatorWidth ?? d.separator.width)) s.width = sep.width;
     if (sep.lineWidth && !dimensionsEqual(sep.lineWidth, d.separator.lineWidth)) s.lineWidth = sep.lineWidth;
     if (sep.color && !(d.separator.color && colorsEqual(sep.color, d.separator.color))) s.color = sep.color;
     if (Object.keys(s).length > 0) result.separator = s;

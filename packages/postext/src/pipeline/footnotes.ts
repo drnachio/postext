@@ -11,6 +11,7 @@ import type { ContentBlock, InlineSpan } from '../parse';
 import type { Dimension, FootnoteNumbering as FootnoteNumberingMode, ResolvedParagraphStyleConfig } from '../types';
 import { formatNumeral, type NumberFormatStyle } from '../numbering';
 import type { ResolvedConfig, VDTLine } from '../vdt';
+import { hasCJK } from '../measure/cjk';
 
 /** Id of the paragraph style the notes are set in (not a user style). */
 export const FOOTNOTE_STYLE_ID = '__postext-footnote';
@@ -66,9 +67,17 @@ export function formatFootnoteNumber(n: number, format: NumberFormatStyle = 'dec
 }
 
 /** Where a note's own number stands: `footnotes.noteNumberPosition`, else
- *  as the marker in the text. */
-export function noteNumberPositionOf(f: { markerPosition: 'superscript' | 'inline'; noteNumberPosition?: 'superscript' | 'inline' }): 'superscript' | 'inline' {
-  return f.noteNumberPosition ?? f.markerPosition;
+ *  as the marker in the text — on the line at the note's size for a side
+ *  marker, and for a right one in vertical text (a superscript in
+ *  horizontal text, as the marker is there). */
+export function noteNumberPositionOf(
+  f: { markerPosition: 'superscript' | 'inline' | 'side' | 'right'; noteNumberPosition?: 'superscript' | 'inline' },
+  vertical = false,
+): 'superscript' | 'inline' {
+  if (f.noteNumberPosition) return f.noteNumberPosition;
+  if (f.markerPosition === 'side') return 'inline';
+  if (f.markerPosition === 'right') return vertical ? 'inline' : 'superscript';
+  return f.markerPosition;
 }
 
 /** Number the notes in order of first citation, starting again at each
@@ -111,20 +120,48 @@ export function numberFootnotes(
 }
 
 /**
- * `'page'` / `'column'` numbering: the notes counted again from 1 on every
- * page (or in every column), in the order the layout set them — the
- * columns of a page in reading order, the notes of a column top to bottom.
- * `areas` are each page's footnote areas (`VDTPage.footnoteAreas`).
- * Notes the layout set nowhere keep no number (the caller keeps theirs).
+ * `'page'` / `'column'` / `'spread'` numbering: the notes counted again
+ * from 1 on every page (in every column, on every spread), in the order the
+ * layout set them — the columns of a page in reading order, the notes of a
+ * column top to bottom. `areas` are each page's footnote areas
+ * (`VDTPage.footnoteAreas`). A spread is the even book page and the odd
+ * one after it (`index + pageIndexOffset + 1` is a page's number); its
+ * notes stand on both pages (sidenotes that overflow, JLReq §4.2.6), so
+ * they are counted in citation order (`order`: a note's rank, by its
+ * first marker). Notes the layout set nowhere keep no number (the caller
+ * keeps theirs).
  */
 export function numberFootnotesByPlacement(
-  pages: readonly { footnoteAreas?: readonly { columnIndex: number; noteIds: readonly string[] }[] }[],
-  numbering: 'page' | 'column',
+  pages: readonly { index?: number; footnoteAreas?: readonly { columnIndex: number; noteIds: readonly string[] }[] }[],
+  numbering: 'page' | 'column' | 'spread',
   format: NumberFormatStyle = 'decimal',
   template?: string,
+  pageIndexOffset = 0,
+  order?: ReadonlyMap<string, number>,
 ): { numbers: Map<string, string>; counts: Map<string, number> } {
   const numbers = new Map<string, string>();
   const counts = new Map<string, number>();
+  const assign = (ids: readonly string[]): void => {
+    let n = 0;
+    for (const id of ids) {
+      if (counts.has(id)) continue;
+      counts.set(id, ++n);
+      numbers.set(id, formatFootnoteNumber(n, format, template));
+    }
+  };
+  if (numbering === 'spread') {
+    const spreads = new Map<number, string[]>();
+    pages.forEach((page, i) => {
+      const spread = Math.floor(((page.index ?? i) + pageIndexOffset + 1) / 2);
+      let ids = spreads.get(spread);
+      if (!ids) spreads.set(spread, (ids = []));
+      const areas = [...(page.footnoteAreas ?? [])].sort((a, b) => a.columnIndex - b.columnIndex);
+      for (const area of areas) for (const id of area.noteIds) if (!ids.includes(id)) ids.push(id);
+    });
+    const rank = (id: string): number => order?.get(id) ?? Number.MAX_SAFE_INTEGER;
+    for (const ids of spreads.values()) assign(order ? [...ids].sort((a, b) => rank(a) - rank(b)) : ids);
+    return { numbers, counts };
+  }
   for (const page of pages) {
     const areas = [...(page.footnoteAreas ?? [])].sort((a, b) => a.columnIndex - b.columnIndex);
     let n = 0;
@@ -211,28 +248,34 @@ export function withFootnoteStyle(resolved: ResolvedConfig): ResolvedConfig {
  *  fixed space (`InlineSpan.fixedSpace`) so that justification neither
  *  stretches nor shrinks it and the line never breaks there: the gap is as
  *  wide in a justified note as in a ragged one-line note. */
-const NUMBER_GAP = ' ';
+const NUMBER_GAP = '\u2002';
+/** `footnotes.numberGap: 'em'`: a full em, the ideographic space in CJK
+ *  text (one cell down a vertical line) and an em space in other text. */
+const NUMBER_GAP_CJK_EM = '\u3000';
+const NUMBER_GAP_EM = '\u2003';
 
 /** The paragraph a note is set as: its number (a superscript, or at the
  *  note's size with `markerPosition: 'inline'`) and its text. The number
- *  maps back to the definition's start. */
+ *  maps back to the definition's start. `gap`: `footnotes.numberGap`. */
 export function noteContentBlock(
   def: ContentBlock | undefined,
   id: string,
   number: string,
   markerPosition: 'superscript' | 'inline' = 'superscript',
+  gap: 'en' | 'em' = 'en',
 ): ContentBlock {
   void id;
   const text = def?.text ?? '';
   const spans = def?.spans ?? [];
   const sourceStart = def?.sourceStart ?? 0;
-  const prefix = `${number}${NUMBER_GAP}`;
+  const space = gap === 'em' ? (hasCJK(number + text) ? NUMBER_GAP_CJK_EM : NUMBER_GAP_EM) : NUMBER_GAP;
+  const prefix = `${number}${space}`;
   return {
     type: 'paragraph',
     text: prefix + text,
     spans: [
       { text: number, bold: false, italic: false, ...(markerPosition === 'superscript' ? { script: 'sup' as const } : {}) },
-      { text: NUMBER_GAP, bold: false, italic: false, fixedSpace: true },
+      { text: space, bold: false, italic: false, fixedSpace: true },
       ...spans,
     ],
     sourceStart,
@@ -252,6 +295,7 @@ export function appendChapterEndNotes(
   numbering: FootnoteNumbering,
   defs: ReadonlyMap<string, ContentBlock>,
   markerPosition: 'superscript' | 'inline' = 'superscript',
+  gap: 'en' | 'em' = 'en',
 ): ContentBlock[] {
   if (numbering.numbers.size === 0) return blocks as ContentBlock[];
   const out: ContentBlock[] = [];
@@ -275,7 +319,7 @@ export function appendChapterEndNotes(
         });
         out.push(marker('containerStart'));
         for (const noteId of ids) {
-          out.push({ ...noteContentBlock(defs.get(noteId), noteId, numbering.numbers.get(noteId)!, markerPosition), footnoteNote: noteId });
+          out.push({ ...noteContentBlock(defs.get(noteId), noteId, numbering.numbers.get(noteId)!, markerPosition, gap), footnoteNote: noteId });
         }
         out.push(marker('containerEnd'));
       }

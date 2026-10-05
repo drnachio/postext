@@ -8,7 +8,7 @@
  * layout gave it: the same the canvas and PDF backends draw.
  */
 
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTRuby, VDTWarichu } from './vdt';
+import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from './vdt';
 import { dottedCentres, sesamePath, wavePoints } from './canvas-backend/annotations';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -89,15 +89,22 @@ export type FontQuoter = (font: string) => string;
  *  the line's baseline moved by the run's `dy`: an outer box that takes
  *  the line's baseline, an inner one in the run's face with no line height
  *  (as a segment in another face is set). */
-function runHtml(run: VDTAnnotationRun, x: number, color: string, quote: FontQuoter): string {
+function runHtml(run: VDTAnnotationRun, x: number, color: string, quote: FontQuoter, hidden = true): string {
   const ink = run.color ?? color;
-  return `<span aria-hidden="true" style="position:absolute;left:${n(x + run.dx)}px;top:${n(run.dy)}px;white-space:pre;">`
+  return `<span${hidden ? ' aria-hidden="true"' : ''} style="position:absolute;left:${n(x + run.dx)}px;top:${n(run.dy)}px;white-space:pre;">`
     + `<span style="font:${quote(run.fontString)};line-height:0;color:${ink};">${esc(run.text)}</span></span>`;
 }
 
 /** A ruby base's reading, from the base segment's `x`. */
 export function rubyHtml(ruby: VDTRuby, x: number, color: string, quote: FontQuoter): string {
   return ruby.runs.map((r) => runHtml(r, x, ruby.color ?? color, quote)).join('');
+}
+
+/** A footnote marker in the line gap (`VDTLineSegment.sideMarker`, JLReq
+ *  §4.2.3), from its segment's `x`: its run, which is the marker's text
+ *  and is read (and copied) as such. */
+export function sideMarkerHtml(marker: NonNullable<VDTLineSegment['sideMarker']>, x: number, color: string, quote: FontQuoter): string {
+  return marker.runs.map((r) => runHtml(r, x, color, quote, false)).join('');
 }
 
 /** A warichu note's part: its rows, in a box that reads the note once. */
