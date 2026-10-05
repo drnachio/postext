@@ -361,6 +361,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     cjkRegionMainland: t("cjkRegionMainland"),
     cjkRegionTaiwan: t("cjkRegionTaiwan"),
     cjkRegionHongKong: t("cjkRegionHongKong"),
+    cjkRegionJapan: t("cjkRegionJapan"),
     cjkLineBreak: t("cjkLineBreak"),
     cjkLineBreakTooltip: t("cjkLineBreakTooltip"),
     writingMode: t("writingMode"),

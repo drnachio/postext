@@ -430,6 +430,7 @@ export interface SandboxLabels {
   cjkRegionMainland: string;
   cjkRegionTaiwan: string;
   cjkRegionHongKong: string;
+  cjkRegionJapan: string;
   cjkLineBreak: string;
   cjkLineBreakTooltip: string;
   writingMode: string;

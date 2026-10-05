@@ -31,7 +31,7 @@ export function localeOptionsFor(value: string | undefined): { value: string; la
 
 /** The Document language options: every language with built-in strings
  *  (the engine's `DOCUMENT_LANGUAGES`: the hyphenation languages plus
- *  Chinese in Simplified and Traditional characters and Arabic), each named
+ *  Chinese in Simplified and Traditional characters, Japanese and Arabic), each named
  *  in its own language. Written out, not mapped, so the settings search
  *  indexes the names (a test keeps the list equal to the engine's). */
 export const DOCUMENT_LOCALE_OPTIONS: { value: string; label: string }[] = [
@@ -39,6 +39,7 @@ export const DOCUMENT_LOCALE_OPTIONS: { value: string; label: string }[] = [
   { value: 'zh-Hans', label: '中文（简体）' },
   { value: 'zh-Hant', label: '中文（繁體）' },
   { value: 'zh-Hant-HK', label: '中文（香港）' },
+  { value: 'ja', label: '日本語' },
   { value: 'ar', label: 'العربية' },
   { value: 'ar-EG', label: 'العربية (مصر)' },
   { value: 'ar-MA', label: 'العربية (المغرب)' },
@@ -46,7 +47,8 @@ export const DOCUMENT_LOCALE_OPTIONS: { value: string; label: string }[] = [
 
 /** The document language a tag that is not one of the options reads as:
  *  for Chinese, the option of the same script, and of the same region when
- *  one is (Hong Kong), else the region's script option; for a hyphenation
+ *  one is (Hong Kong), else the region's script option; for Japanese
+ *  (`ja-JP`), 日本語; for a hyphenation
  *  language, its patterns' option (`es-ES` → Español); else the option that
  *  is the bare language (`ar-SA` → العربية). */
 function documentLanguageOf(tag: string): { tag: string; name: string } | undefined {

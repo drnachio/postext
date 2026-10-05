@@ -146,13 +146,15 @@ describe('what the guide says about itself and the Sandbox', () => {
   });
 
   it('says a mark keeps a full square only where the region’s defaults keep it', () => {
-    const TAGS: Record<CjkRegion, string> = { mainland: 'zh-Hans', taiwan: 'zh-Hant-TW', hongkong: 'zh-Hant-HK' };
-    const fullSquare = (region: CjkRegion): boolean => {
+    // The guide's sentence is about the Chinese regions.
+    type ChineseRegion = Exclude<CjkRegion, 'japan'>;
+    const TAGS: Record<ChineseRegion, string> = { mainland: 'zh-Hans', taiwan: 'zh-Hant-TW', hongkong: 'zh-Hant-HK' };
+    const fullSquare = (region: ChineseRegion): boolean => {
       const cjk = resolveCjkConfig(undefined, TAGS[region]);
       expect(cjk.region).toBe(region);
       return cjk.punctuationWidth === 'fullwidth' && !cjk.compressAdjacent && !cjk.trimLineStart;
     };
-    const regions: Record<Edition, Record<CjkRegion, string>> = {
+    const regions: Record<Edition, Record<ChineseRegion, string>> = {
       en: { mainland: 'mainland', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
       es: { mainland: 'China continental', taiwan: 'Taiwán', hongkong: 'Hong Kong' },
       ca: { mainland: 'Xina continental', taiwan: 'Taiwan', hongkong: 'Hong Kong' },
@@ -169,7 +171,7 @@ describe('what the guide says about itself and the Sandbox', () => {
     };
     for (const edition of Object.keys(sentences) as Edition[]) {
       const subject = claim(edition, sentences[edition])[1]!;
-      for (const region of Object.keys(TAGS) as CjkRegion[]) {
+      for (const region of Object.keys(TAGS) as ChineseRegion[]) {
         expect(subject.includes(regions[edition][region]), `${edition}: ${region} in “${subject}”`).toBe(fullSquare(region));
       }
     }

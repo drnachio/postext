@@ -6,6 +6,7 @@ import {
   DEFAULT_CJK_CONFIG,
   cjkRegionOf,
   defaultCjkBookTitleMark,
+  defaultCjkWarichuBrackets,
   defaultCjkCompression,
   defaultCjkEmphasis,
   defaultCjkLineBreak,
@@ -82,6 +83,7 @@ export const CjkSection = memo(function CjkSection() {
     mainland: labels.cjkRegionMainland,
     taiwan: labels.cjkRegionTaiwan,
     hongkong: labels.cjkRegionHongKong,
+    japan: labels.cjkRegionJapan,
   };
   const lineBreakNames = {
     none: labels.cjkLineBreakNone,
@@ -113,6 +115,7 @@ export const CjkSection = memo(function CjkSection() {
   const emphasisNames = { italic: labels.cjkEmphasisItalic, dots: labels.cjkEmphasisDots };
   const bookTitleMark = raw?.bookTitleMark ?? DEFAULT_CJK_CONFIG.bookTitleMark;
   const autoBookTitle = defaultCjkBookTitleMark(resolvedRegion);
+  const autoWarichu = defaultCjkWarichuBrackets(resolvedRegion);
   const bookTitleNames = { brackets: labels.cjkBookTitleBrackets, wavy: labels.cjkBookTitleWavy, none: labels.cjkBookTitleNone };
   const markColor = raw?.annotationColor ?? body.color;
   const ruby = raw?.ruby;
@@ -157,6 +160,7 @@ export const CjkSection = memo(function CjkSection() {
               { value: 'mainland', label: regionNames.mainland },
               { value: 'taiwan', label: regionNames.taiwan },
               { value: 'hongkong', label: regionNames.hongkong },
+              { value: 'japan', label: regionNames.japan },
             ]}
             onChange={(v) => write({ ...raw, region: v as CjkConfig['region'] })}
             tooltip={labels.cjkRegionTooltip}
@@ -372,7 +376,7 @@ export const CjkSection = memo(function CjkSection() {
               label={labels.cjkWarichuOpen}
               value={warichu?.open ?? ''}
               onChange={(v) => writeWarichu({ open: v === '' ? undefined : v })}
-              placeholder="〔"
+              placeholder={autoWarichu.open || '〔'}
               widthCh={4}
               tooltip={labels.cjkWarichuOpenTooltip}
               isDefault={!warichu?.open}
@@ -382,7 +386,7 @@ export const CjkSection = memo(function CjkSection() {
               label={labels.cjkWarichuClose}
               value={warichu?.close ?? ''}
               onChange={(v) => writeWarichu({ close: v === '' ? undefined : v })}
-              placeholder="〕"
+              placeholder={autoWarichu.close || '〕'}
               widthCh={4}
               tooltip={labels.cjkWarichuCloseTooltip}
               isDefault={!warichu?.close}

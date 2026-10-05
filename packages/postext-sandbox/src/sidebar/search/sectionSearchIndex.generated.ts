@@ -161,7 +161,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
   },
   'writing': {
     sources: [],
-    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）"],
+    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）", "日本語"],
     keys: [
       'arabicDefaults',
       'arabicDefaultsApplied',
@@ -908,7 +908,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
   },
   'bodyText': {
     sources: ['color', 'dimension', 'font'],
-    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "em", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）"],
+    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "em", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）", "日本語"],
     keys: [
       'bodyAvoidOrphans',
       'bodyAvoidOrphansInLists',
@@ -2757,7 +2757,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
   },
   'cjk': {
     sources: ['color', 'dimension', 'font'],
-    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）"],
+    literals: ["Català", "Deutsch", "English", "Español", "Français", "Italiano", "Nederlands", "Português", "العربية", "العربية (المغرب)", "العربية (مصر)", "中文（简体）", "中文（繁體）", "中文（香港）", "日本語"],
     keys: [
       'bodyFontNoResults',
       'bodyFontSearch',
@@ -2816,6 +2816,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'cjkPunctuationWidthTooltip',
       'cjkRegion',
       'cjkRegionHongKong',
+      'cjkRegionJapan',
       'cjkRegionMainland',
       'cjkRegionTaiwan',
       'cjkRegionTooltip',

@@ -19,12 +19,13 @@ describe('localeOptionsFor', () => {
 });
 
 describe('documentLocaleOptionsFor', () => {
-  it('offers the hyphenation languages and Chinese in both scripts', () => {
-    expect(DOCUMENT_LOCALE_OPTIONS.map((o) => o.value)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK', 'ar', 'ar-EG', 'ar-MA']);
-    expect(DOCUMENT_LOCALE_OPTIONS.slice(8, 11).map((o) => o.label)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）']);
+  it('offers the hyphenation languages, Chinese in both scripts, Japanese and Arabic', () => {
+    expect(DOCUMENT_LOCALE_OPTIONS.map((o) => o.value)).toEqual(['en-us', 'es', 'fr', 'de', 'it', 'pt', 'ca', 'nl', 'zh-Hans', 'zh-Hant', 'zh-Hant-HK', 'ja', 'ar', 'ar-EG', 'ar-MA']);
+    expect(DOCUMENT_LOCALE_OPTIONS.slice(8, 12).map((o) => o.label)).toEqual(['中文（简体）', '中文（繁體）', '中文（香港）', '日本語']);
     expect(DOCUMENT_LOCALE_OPTIONS.slice(-3).map((o) => o.label)).toEqual(['العربية', 'العربية (مصر)', 'العربية (المغرب)']);
     expect(documentLocaleOptionsFor('ar-MA')).toBe(DOCUMENT_LOCALE_OPTIONS);
     expect(documentLocaleOptionsFor('zh-Hant')).toBe(DOCUMENT_LOCALE_OPTIONS);
+    expect(documentLocaleOptionsFor('ja')).toBe(DOCUMENT_LOCALE_OPTIONS);
     // The engine's list, name for name.
     expect(DOCUMENT_LOCALE_OPTIONS).toEqual(DOCUMENT_LANGUAGES.map((l) => ({ value: l.tag, label: l.name })));
   });
@@ -36,6 +37,8 @@ describe('documentLocaleOptionsFor', () => {
     expect(documentLocaleOptionsFor('es-ES').at(-1)).toEqual({ value: 'es-ES', label: 'Español (es-ES)' });
     expect(documentLocaleOptionsFor('sv').at(-1)).toEqual({ value: 'sv', label: 'sv' });
     expect(documentLocaleOptionsFor('ar-SA').at(-1)).toEqual({ value: 'ar-SA', label: 'العربية (ar-SA)' });
+    // Japanese is not Chinese: ja-JP reads as 日本語, never as a Chinese option.
+    expect(documentLocaleOptionsFor('ja-JP').at(-1)).toEqual({ value: 'ja-JP', label: '日本語 (ja-JP)' });
     expect(documentLocaleOptionsFor('fa').at(-1)).toEqual({ value: 'fa', label: 'fa' });
   });
 });
@@ -51,5 +54,7 @@ describe('documentLocaleLabel', () => {
     expect(documentLocaleLabel('sv')).toBe('sv');
     expect(documentLocaleLabel('ar-EG')).toBe('العربية (مصر)');
     expect(documentLocaleLabel('ar_SA')).toBe('العربية');
+    expect(documentLocaleLabel('ja')).toBe('日本語');
+    expect(documentLocaleLabel('ja_JP')).toBe('日本語');
   });
 });
