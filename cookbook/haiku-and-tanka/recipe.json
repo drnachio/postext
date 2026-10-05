@@ -1,0 +1,61 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 119,
+  "status": "draft",
+  "chapter": "type",
+  "order": 300,
+  "level": 2,
+  "genres": ["poetry"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["paragraph-styles", "gyodori-headings", "vertical-writing"],
+    "also": ["right-binding", "paragraph-indents", "furigana", "japanese-kinsoku", "japanese-numerals", "kana-scripts", "character-grid", "cjk-fonts", "aozora-import", "heading-styles", "opener-design", "design-elements", "running-heads", "page-role-filters", "mirrored-margins", "color-palette", "pdf-export"]
+  },
+  "answers": ["Q43", "Q145"],
+  "gaps": ["hard-line-breaks"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "quote-frontmatter", "font-range-holes"],
+  "related": ["poetry-collection", "tang-poems-facing-english", "bunko-novel-furigana", "shaped-verse"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 80, "texture": "laid", "textureStrength": 0.5, "shade": "#fdfcf8"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "paper", "coverColor": "#b5512c"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "松尾芭蕉『おくのほそ道』 (The Narrow Road to the Deep North, 1702), seven sections, the editor’s notes left out; Aozora Bunko card 61619, from 「芭蕉　おくのほそ道」 (Iwanami, 1975) after 杉浦正一郎’s Iwanami Bunko edition (1957), input 砂場清隆, proofreading 木下聡, converted with aozora.py",
+          "es": "松尾芭蕉『おくのほそ道』 (Sendas de Oku, 1702), siete secciones, sin las notas del editor; ficha 61619 de Aozora Bunko, según 「芭蕉　おくのほそ道」 (Iwanami, 1975), sobre la edición de 杉浦正一郎 en Iwanami Bunko (1957), transcripción de 砂場清隆, corrección de 木下聡, convertida con aozora.py"
+        },
+        "who": "Matsuo Bashō; Sugiura Shōichirō (editor, 1911–1957); Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/002240/card61619.html",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "石川啄木『一握の砂』 (A Handful of Sand, 1910), twelve tanka; Aozora Bunko card 816, converted with aozora.py",
+          "es": "石川啄木『一握の砂』 (Un puñado de arena, 1910), doce tankas; ficha 816 de Aozora Bunko, convertida con aozora.py"
+        },
+        "who": "Ishikawa Takuboku; Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/000153/card816.html",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Shippori Mincho", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

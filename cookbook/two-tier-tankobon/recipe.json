@@ -1,0 +1,60 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 118,
+  "status": "draft",
+  "chapter": "page",
+  "order": 150,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["column-layouts", "vertical-writing", "column-balancing"],
+    "also": ["right-binding", "chapter-breaks", "gyodori-headings", "character-grid", "column-rule", "japanese-kinsoku", "yakumono", "furigana", "aozora-import", "cjk-fonts", "running-heads", "page-role-filters", "heading-styles", "opener-design", "paragraph-styles", "color-palette", "pdf-export"]
+  },
+  "answers": ["Q27", "Q24", "Q90"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-grid-balancing", "page-span-heading-new-page", "cjk-fonts-slices", "cjk-spread-order"],
+  "related": ["vertical-newspaper-tiers", "bunko-novel-furigana", "five-chapter-openers", "vertical-novel-right-bound"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [4, 5], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 70, "texture": "smooth", "shade": "#fdfcf8"},
+    "binding": {"type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#2f3d63"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "芥川龍之介「蜘蛛の糸」 (The Spider’s Thread, 1918); Aozora Bunko card 92, from 「芥川龍之介全集2」 (Chikuma Bunko, 1986), input 平山誠 and 野口英司, proofreading もりみつじゅんじ, converted with aozora.py",
+          "es": "芥川龍之介「蜘蛛の糸」 (El hilo de la araña, 1918); ficha 92 de Aozora Bunko, según 「芥川龍之介全集2」 (Chikuma Bunko, 1986), transcripción de 平山誠 y 野口英司, corrección de もりみつじゅんじ, convertida con aozora.py"
+        },
+        "who": "Akutagawa Ryūnosuke; Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/000879/card92.html",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "芥川龍之介「尾生の信」 (Bisei’s Faith, 1920); Aozora Bunko card 24, from 「芥川龍之介全集3」 (Chikuma Bunko, 1986), input j.utiyama, proofreading かとうかおり, converted with aozora.py; the rule before the coda shortened to fit a tier",
+          "es": "芥川龍之介「尾生の信」 (La fe de Bisei, 1920); ficha 24 de Aozora Bunko, según 「芥川龍之介全集3」 (Chikuma Bunko, 1986), transcripción de j.utiyama, corrección de かとうかおり, convertida con aozora.py; la raya antes del final, acortada para que quepa en un piso"
+        },
+        "who": "Akutagawa Ryūnosuke; Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/000879/card24.html",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Noto Serif JP", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

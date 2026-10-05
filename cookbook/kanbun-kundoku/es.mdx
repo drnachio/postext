@@ -1,0 +1,59 @@
+---
+title: "Kanbun con sus marcas de lectura y la lectura japonesa"
+summary: "Tres dichos de las Analectas y una cuarteta Tang como en un libro escolar japonés: marcas de retorno y okurigana en bermellón, y la lectura en kana debajo."
+plain: "El chino clásico como lo aprenden los lectores japoneses: unas marcas rojas pequeñas junto a los caracteres dicen en qué orden leerlos y qué terminaciones japonesas añadir, y la lectura japonesa completa sigue a cada pasaje."
+description: "Kanbun kundoku en Postext: 返り点 y 送り仮名 con :kunten junto a las Analectas y Amanecer de primavera, en vertical, con el yomikudashi de cada pasaje en furigana."
+question: "¿Cómo imprimo kanbun con sus marcas de retorno y su okurigana, y la lectura japonesa detrás?"
+aliases: ["kanbun", "漢文", "kundoku", "訓読", "kunten", "訓点", "marcas de retorno", "返り点", "kaeriten", "レ点", "一二点", "okurigana", "送り仮名", "yomikudashi", "書き下し文", "kakikudashi", "chino clásico en japonés", "Analectas", "論語", "Confucio", "春暁", "Amanecer de primavera", "Meng Haoran", "孟浩然"]
+pageNotes: { "1": "論語 abre la primera página, con 学而・為政より en caracteres bermellón pequeños; bajo la etiqueta 学而第一, el dicho 子曰、学而時習之… ocupa dos líneas de Mincho grande con marcas bermellón pequeñas junto a los caracteres, レ y 一 二 abajo a la izquierda y okurigana como ビテ y ハク a la derecha, y luego la lectura japonesa 子曰はく、学びて時に之を習ふ… en tres líneas de letra escolar con furigana.", "3": "唐詩: 春暁 de 孟浩然 en dos líneas de dos versos cada una, 春眠不覚暁 con dos marcas レ, y su lectura 春眠暁を覚えず　処処啼鳥を聞く." }
+---
+
+## Lo que vas a componer
+
+Tres páginas de un libro escolar japonés de 漢文 (kanbun), el chino clásico leído como japonés, en una página A5 encuadernada por la derecha: tres dichos de las *Analectas* y la cuarteta *Amanecer de primavera* de Meng Haoran. Cada pasaje va en Zen Old Mincho de 15 pt, en el orden chino, con sus 訓点 (kunten) junto a los caracteres, en bermellón y a la mitad de su tamaño: las marcas de retorno (返り点) abajo a la izquierda de un carácter dicen a quien lee que siga y vuelva a él, y el okurigana (送り仮名) a su derecha añade las terminaciones japonesas. Bajo cada pasaje, su 書き下し文 (yomikudashi), el mismo texto escrito como japonés, va en Klee One, una letra escolar, con furigana donde la lectura es difícil. Los clásicos chinos con sus propias ayudas de lectura son la <RecipeLink slug="zhuyin-vertical-reader">Nº 080</RecipeLink>.
+
+## Elaboración
+
+### 1 · Marca cada carácter con `:kunten`
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `:kunten[習]{kaeri="レ" okuri="フ"}` da a 習 la marca de retorno レ y el okurigana フ; el texto conserva el carácter, así que la búsqueda, la copia y el PDF leen el pasaje tal como está escrito, y las marcas no ocupan ningún carácter suyo ([Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu)). Lee 学ビテ而時ニ習フレ之ヲ: la レ de 習 manda leer antes 之 y volver, 之を習ふ; 而 no lleva marca y no se lee. En vertical la marca de retorno va abajo a la izquierda de su carácter y ocupa medio carácter de la línea, y el okurigana va a la derecha, empezando a media altura del carácter, como los compone JIS X 4051. `cjk.kunten` fija su tamaño, la mitad del texto, y su color, el bermellón con que las escribe un lector; un pasaje va en 15 pt sobre dos líneas de la retícula, lo que deja 27 pt junto a cada línea para el okurigana.
+
+### 2 · Salta con 一 二 y con 一レ
+
+Los números llevan a quien lee más atrás. En 不二亦タ説バシカラ一乎 se salta 不, que lleva 二, se lee 亦た説ばしから y en el 一 se vuelve a 不: 亦た説ばしからずや. En 為政 la marca combinada 一レ de 為 hace las dos cosas: 可二以テ為一レ師ト矣 se lee 以て, 師と (レ), 為る y de vuelta a 可 (de 一 a 二), 以て師と為るべし. Los puntos de código de kanbun ㆑ ㆒ ㆓ se leen como los caracteres que representan, así que un texto copiado de otra parte conserva sus marcas.
+
+### 3 · Deja que un okurigana largo empuje al carácter siguiente
+
+Un okurigana más largo que su carácter no corre junto al siguiente: en 花落ツルコト知ル多少 los cuatro kana de ツルコト ocupan dos caracteres de largo, y 知 baja para empezar tras ellos, como lo compone JIS X 4051 (§5.6.4). La línea crece, y su corte se mueve con ella.
+
+### 4 · Da a cada pasaje una etiqueta de dos líneas
+
+<Excerpt region="headings" />
+
+Cada libro de la antología abre página con su título, 論語 o 唐詩, el primero con una nota bermellón pequeña sobre lo que contiene; cada pasaje lleva una etiqueta en gótica de dos líneas del texto (2行取り), 学而第一 o 春暁　孟浩然, para que los pasajes que siguen queden en la retícula. La lectura es un contenedor `:::paragraphs{style="kudashi"}` dos caracteres más abajo, en la letra y el cuerpo del texto, con furigana jukugo: `{君子|くん|し}` da a cada carácter su propia lectura, de modo que una línea podría cortarse entre ellos.
+
+### 5 · Carga cada voz con sus caracteres
+
+<Excerpt region="voices" />
+
+El texto clásico y la lectura van en letras distintas, así que cada una carga los archivos de sus propios caracteres: Zen Old Mincho para los pasajes y sus marcas, cuyos kana van dentro de los atributos de `:kunten`; Klee One para las lecturas y su furigana; Noto Sans JP para las etiquetas. La cuarteta va con dos versos por línea y un espacio ideográfico entre ellos, una forma habitual de imprimirla, para que el poema y su lectura quepan en la página bajo el título.
+
+## Variantes
+
+### Imprime las marcas en negro
+
+Un libro impreso compone los kunten con la tinta del texto; quita el color.
+
+```diff
+-  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'inline' },
++  kunten: { fontSize: em(0.5), placement: 'inline' },
+```
+
+### Pon las marcas entre las líneas
+
+`placement: 'interlinear'` saca las marcas de retorno de la línea al hueco junto a la mitad inferior del carácter, de modo que el pasaje conserva el espaciado del texto desnudo (白文). JIS las pone en la línea, el valor por defecto.
+
+```diff
+-  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'inline' },
++  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'interlinear' },
+```

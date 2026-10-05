@@ -1,0 +1,61 @@
+---
+title: "A Japanese story in two tiers, its title across both"
+summary: "Two Akutagawa stories in a collected works: two tiers of 25 characters down an A5 page, each title across both on an odd page, last pages left as they fall."
+plain: "Two short stories as a Japanese collected works prints them: the text runs down the page in two stacked bands, each story opens on a left-hand page with its title running the whole height, and its last page is not evened out."
+description: "Akutagawa set in two vertical tiers with Postext: titles across both tiers, works opening on odd pages, 3-line section numbers, last pages left unbalanced."
+question: "How do I set a Japanese story in two tiers, its title across both, opening on a left-hand page?"
+aliases: ["二段組", "nidangumi", "two tiers", "two-tier vertical", "段", "dan", "tiers", "zenshū", "全集", "collected works", "tankōbon", "単行本", "成り行き", "nariyuki", "unbalanced last page", "title across tiers", "Akutagawa", "芥川龍之介", "蜘蛛の糸", "The Spider's Thread", "尾生の信"]
+pageNotes: { "1": "Page 211 of a collected-works volume, alone on the left of the spine: 蜘蛛の糸 runs large down the right of the page through both tiers, 芥川龍之介 near the foot, then the text in two tiers with a hairline between them, section 一 three lines wide in the upper tier, and a two-line colophon in English at the foot.", "4": "The last page of The Spider's Thread: the upper tier runs the whole page, with section 三, and the lower tier holds three lines and the date （大正七年四月十六日）, raised one character from the foot.", "5": "The next story, 尾生の信, opens on the facing left-hand page with its title through both tiers.", "7": "The last page: the text ends a third of the way across the upper tier and the lower tier stays empty." }
+---
+
+## What you'll build
+
+Seven pages from a volume of collected works (全集) on an A5 page bound on the right: Akutagawa Ryūnosuke's *The Spider's Thread* and *Bisei's Faith*, set in two tiers (二段組) of 25 characters down the page and 21 lines across, Noto Serif JP at 9 pt with a hairline between the tiers. Each story opens on an odd page, the left-hand one, with its title in 20 pt running down through both tiers and the author's name near the foot; the folios count on from page 211. The sections 一 二 三 take three lines of their tier. When a story ends, its last page is left as the text falls, the Japanese 成り行き (nariyuki): on page 214 the upper tier runs the whole page and the lower tier holds three lines and the date. The Chinese newspaper in vertical tiers is <RecipeLink slug="vertical-newspaper-tiers">Nº 084</RecipeLink>, and a chapter title across two horizontal columns is <RecipeLink slug="five-chapter-openers">Nº 017</RecipeLink>.
+
+## Method
+
+### 1 · Two columns turned a quarter turn are two tiers
+
+The code is [the short answer](#the-short-answer) above. On a page with `writingMode: 'vertical-rl'`, `layoutType: 'double'` stacks the two columns: the first fills the upper tier from the right, then the lower one, and the gutter is the band between them ([Vertical writing](/en/docs/configuration#vertical-writing)). The [character grid](/en/docs/configuration#character-grid) counts characters down one tier, so each tier is 25 characters of 9 pt and the gutter is rounded to a whole two characters; the 21 lines of 15.75 pt across fit 116.7 mm of the 148 mm page. The rule between the tiers runs across the page, 0.4 pt in a warm grey.
+
+Postext's balancer would end both tiers of a story's last page at the same line, which is how Chinese newspapers and most European two-column books close a chapter. A Japanese book in tiers lets the text fall: the upper tier runs the whole page before the lower one starts. `balancing.trailing: false` is that choice, and `enabled: false`, which implies it, also stops the balancer from adding lines above the headings on a character grid ([Column balancing](/en/docs/configuration#column-balancing)).
+
+### 2 · Run the work's title down both tiers
+
+<Excerpt region="opener" />
+
+A heading level with `span: 'page'` is laid out across the whole height of the page, both tiers and the gutter, at the head of the flow, the right of a vertical page; the tiers start after the seven lines its design reserves. Such a heading always opens a page, and `breakBefore.parity: 'odd'` makes it the left-hand one: *The Spider's Thread* ends on page 214, an even page, so *Bisei's Faith* opens on 215 with no blank page between them ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)). In the design `x` runs down the page and `y` across it from the right edge of the type area; the author's name is placed from the foot of the lower tier, three characters up.
+
+### 3 · Number the sections in three lines of their tier
+
+The second level, `lineSpan: 3` with `indent: em(8)`, sets 一 二 三 eight characters down a tier in a band of three lines, as the Aozora text marks them (八字下げ, 中見出し), so the text after a section number stays on the lines of the tier beside it ([Per-level overrides](/en/docs/configuration#per-level-overrides)). The dates that close the stories, （大正七年四月十六日）, are raised one character from the foot of their tier (地から一字上げ) with `:::paragraphs{align=end endIndent=1}`; the Aozora converter writes them as an `aozora-end1` style that sets them flush with the foot, and the fence attributes add the one-character raise.
+
+### 4 · Put the volume and the work down the fore-edge
+
+<Excerpt region="furniture" />
+
+`anchor.to: 'outer'` sets the hashira in the fore-edge margin, the volume's name 芥川龍之介集 on the right-hand pages and the work's title on the left-hand ones, and `pages: 'body'` keeps both off the pages where a work opens ([Vertical text elements](/en/docs/configuration#vertical-text-elements)). The folio is set across the margin in Arabic digits, as many collected works print it: down the fore-edge three digits would lie on their side. `pageNumbering.startAt: 211` numbers the pages as the volume does. The first work's heading style carries the colophon with `pages: 'opener'`, because a style's footer serves every page of its section.
+
+## Variations
+
+### Level the last page
+
+Leave `balancing` out and the last page of each work is cut level: page 214 ends with 10 lines in the upper tier and 11 in the lower, the closing a Chinese or European book in columns uses.
+
+```diff
+-const balancing = { enabled: false, trailing: false };
++const balancing = {}; // the defaults: the closing band is cut level
+```
+
+### Open each work on the next page
+
+`parity: 'any'` starts a work on whichever page comes next, as magazines and anthologies of very short pieces do.
+
+```diff
+-const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' } };
++const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } };
+```
+
+### Set the story in one tier
+
+Novels and bunko set their text in one tier, with no gutter; <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> sets a bunko that way.

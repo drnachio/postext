@@ -1,0 +1,59 @@
+---
+title: "Kanbun amb les marques de lectura i la lectura japonesa"
+summary: "Tres dites de les Analectes i una quarteta Tang com en un llibre escolar japonès: marques de retorn i okurigana en vermelló, i la lectura en kana a sota."
+plain: "El xinès clàssic tal com l'aprenen els lectors japonesos: unes marques vermelles petites al costat dels caràcters diuen en quin ordre llegir-los i quines terminacions japoneses afegir-hi, i la lectura japonesa sencera segueix cada passatge."
+description: "Kanbun kundoku amb Postext: 返り点 i 送り仮名 amb :kunten al costat de les Analectes i Albada de primavera, en vertical, i el yomikudashi de cada passatge en furigana."
+question: "Com imprimeixo kanbun amb les seves marques de retorn i el seu okurigana, i la lectura japonesa al darrere?"
+aliases: ["kanbun", "漢文", "kundoku", "訓読", "kunten", "訓点", "marques de retorn", "返り点", "kaeriten", "レ点", "一二点", "okurigana", "送り仮名", "yomikudashi", "書き下し文", "kakikudashi", "xinès clàssic en japonès", "Analectes", "論語", "Confuci", "春暁", "Albada de primavera", "Meng Haoran", "孟浩然"]
+pageNotes: { "1": "論語 obre la primera pàgina, amb 学而・為政より en caràcters petits de color vermelló; sota l'etiqueta 学而第一, la dita 子曰、学而時習之… ocupa dues línies de Mincho gran amb marques petites de color vermelló al costat dels caràcters, レ i 一 二 a baix a l'esquerra i okurigana com ビテ i ハク a la dreta, i després la lectura japonesa 子曰はく、学びて時に之を習ふ… en tres línies de lletra escolar amb furigana.", "3": "唐詩: 春暁 de 孟浩然 en dues línies de dos versos cadascuna, 春眠不覚暁 amb dues marques レ, i la seva lectura 春眠暁を覚えず　処処啼鳥を聞く." }
+---
+
+## Què compondràs
+
+Tres pàgines d'un llibre escolar japonès de 漢文 (kanbun), el xinès clàssic llegit com a japonès, en una pàgina A5 enquadernada per la dreta: tres dites de les *Analectes* i la quarteta *Albada de primavera* de Meng Haoran. Cada passatge va en Zen Old Mincho de 15 pt, en l'ordre xinès, amb els seus 訓点 (kunten) al costat dels caràcters, en vermelló i a la meitat de la seva mida: les marques de retorn (返り点), a baix a l'esquerra d'un caràcter, diuen al lector que continuï i hi torni després, i l'okurigana (送り仮名), a la seva dreta, hi afegeix les terminacions japoneses. Sota cada passatge, el seu 書き下し文 (yomikudashi), el mateix text escrit com a japonès, va en Klee One, una lletra escolar, amb furigana on la lectura és difícil. Els clàssics xinesos amb les seves pròpies ajudes de lectura són la <RecipeLink slug="zhuyin-vertical-reader">Núm. 080</RecipeLink>.
+
+## Elaboració
+
+### 1 · Marca cada caràcter amb `:kunten`
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `:kunten[習]{kaeri="レ" okuri="フ"}` dona a 習 la marca de retorn レ i l'okurigana フ; el text conserva el caràcter, així que la cerca, la còpia i el PDF llegeixen el passatge tal com està escrit, i les marques no ocupen cap caràcter del text ([Marques, ruby i warichu](/ca/docs/configuration#marques-ruby-i-warichu)). Llegeix 学ビテ而時ニ習フレ之ヲ: la レ de 習 fa llegir primer 之 i tornar, 之を習ふ; 而 no porta marca i no es llegeix. En vertical, la marca de retorn va a baix a l'esquerra del seu caràcter i ocupa mig caràcter de la línia, i l'okurigana va a la dreta, començant a mitja alçada del caràcter, tal com els compon JIS X 4051. `cjk.kunten` en fixa la mida, la meitat del text, i el color, el vermelló amb què les escriu un lector; un passatge va en 15 pt sobre dues línies de la retícula, cosa que deixa 27 pt al costat de cada línia per a l'okurigana.
+
+### 2 · Salta amb 一 二 i amb 一レ
+
+Els números porten el lector més enrere. A 不二亦タ説バシカラ一乎 se salta 不, que porta 二, es llegeix 亦た説ばしから i al 一 es torna a 不: 亦た説ばしからずや. A 為政, la marca combinada 一レ de 為 fa totes dues coses: 可二以テ為一レ師ト矣 es llegeix 以て, 師と (レ), 為る i de tornada a 可 (de 一 a 二), 以て師と為るべし. Els punts de codi de kanbun ㆑ ㆒ ㆓ es llegeixen com els caràcters que representen, així que un text copiat d'una altra banda conserva les seves marques.
+
+### 3 · Deixa que un okurigana llarg empenyi el caràcter següent
+
+Un okurigana més llarg que el seu caràcter no corre al costat del següent: a 花落ツルコト知ル多少 els quatre kana de ツルコト ocupen dos caràcters de llarg, i 知 baixa per començar després d'ells, tal com ho compon JIS X 4051 (§5.6.4). La línia creix, i el seu tall es mou amb ella.
+
+### 4 · Dona a cada passatge una etiqueta de dues línies
+
+<Excerpt region="headings" />
+
+Cada llibre de l'antologia obre pàgina amb el seu títol, 論語 o 唐詩, el primer amb una nota petita en vermelló sobre el que conté; cada passatge porta una etiqueta en gòtica de dues línies del text (2行取り), 学而第一 o 春暁　孟浩然, perquè els passatges que segueixen quedin a la retícula. La lectura és un contenidor `:::paragraphs{style="kudashi"}` dos caràcters més avall, en la lletra i el cos del text, amb furigana jukugo: `{君子|くん|し}` dona a cada caràcter la seva pròpia lectura, de manera que una línia es podria tallar entre ells.
+
+### 5 · Carrega cada veu amb els seus caràcters
+
+<Excerpt region="voices" />
+
+El text clàssic i la lectura van en lletres diferents, així que cadascuna carrega els fitxers dels seus propis caràcters: Zen Old Mincho per als passatges i les seves marques, els kana de les quals van dins dels atributs de `:kunten`; Klee One per a les lectures i el seu furigana; Noto Sans JP per a les etiquetes. La quarteta va amb dos versos per línia i un espai ideogràfic entre ells, una manera habitual d'imprimir-la, perquè el poema i la seva lectura càpiguen a la pàgina sota el títol.
+
+## Variants
+
+### Imprimeix les marques en negre
+
+Un llibre imprès compon els kunten amb la tinta del text; treu el color.
+
+```diff
+-  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'inline' },
++  kunten: { fontSize: em(0.5), placement: 'inline' },
+```
+
+### Posa les marques entre les línies
+
+`placement: 'interlinear'` treu les marques de retorn de la línia i les porta al buit del costat de la meitat inferior del caràcter, de manera que el passatge conserva l'espaiat del text nu (白文). JIS les posa a la línia, el valor per defecte.
+
+```diff
+-  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'inline' },
++  kunten: { fontSize: em(0.5), color: col('vermilion'), placement: 'interlinear' },
+```

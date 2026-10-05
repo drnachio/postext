@@ -1,0 +1,61 @@
+---
+title: "Un conte japonès en dos pisos, amb el títol sobre tots dos"
+summary: "Dos contes d'Akutagawa en unes obres completes: dos pisos de 25 caràcters en un A5, cada títol sobre tots dos en pàgina senar i finals tal com cauen."
+plain: "Dos contes tal com els imprimeixen unes obres completes japoneses: el text baixa per la pàgina en dues franges apilades, cada conte comença en una pàgina de l'esquerra amb el títol a tota l'alçada, i la seva última pàgina no s'iguala."
+description: "Akutagawa en dos pisos verticals amb Postext: títols sobre tots dos pisos, obres que comencen en pàgina senar, seccions de 3 línies i finals sense igualar."
+question: "Com componc un conte japonès en dos pisos, amb el títol sobre tots dos, començant en una pàgina de l'esquerra?"
+aliases: ["二段組", "nidangumi", "dos pisos", "dues columnes en vertical", "段", "dan", "pisos", "zenshū", "全集", "obres completes", "tankōbon", "単行本", "成り行き", "nariyuki", "última pàgina sense igualar", "títol sobre els pisos", "Akutagawa", "芥川龍之介", "蜘蛛の糸", "El fil de l'aranya", "尾生の信"]
+pageNotes: { "1": "La pàgina 211 d'unes obres completes, sola a l'esquerra del llom: 蜘蛛の糸 baixa gran per la dreta de la pàgina, travessant els dos pisos, 芥川龍之介 a prop del peu, i després el text en dos pisos amb un filet fi entre ells, la secció 一 de tres línies al pis de dalt i un colofó de dues línies en castellà al peu.", "4": "L'última pàgina d'El fil de l'aranya: el pis de dalt ocupa tota la pàgina, amb la secció 三, i el de baix té tres línies i la data （大正七年四月十六日）, aixecada un caràcter del peu.", "5": "El conte següent, 尾生の信, comença a la pàgina de l'esquerra del davant amb el títol travessant els dos pisos.", "7": "L'última pàgina: el text acaba a un terç del pis de dalt i el de baix queda buit." }
+---
+
+## Què compondràs
+
+Set pàgines d'un volum d'obres completes (全集) en una pàgina A5 enquadernada per la dreta: *El fil de l'aranya* i *La fe de Bisei*, d'Akutagawa Ryūnosuke, compostos en dos pisos (二段組) de 25 caràcters d'alçada i 21 línies d'amplada, en Noto Serif JP de 9 pt amb un filet fi entre els pisos. Cada conte comença en una pàgina senar, la de l'esquerra, amb el títol de 20 pt baixant pels dos pisos i el nom de l'autor a prop del peu; els folis continuen des de la pàgina 211. Les seccions 一 二 三 ocupen tres línies del seu pis. Quan un conte s'acaba, la seva última pàgina queda tal com cau el text, el 成り行き (nariyuki) japonès: a la pàgina 214 el pis de dalt ocupa tota la pàgina i el de baix té tres línies i la data. El diari xinès en pisos verticals és la <RecipeLink slug="vertical-newspaper-tiers">Núm. 084</RecipeLink>, i un títol de capítol sobre dues columnes horitzontals, la <RecipeLink slug="five-chapter-openers">Núm. 017</RecipeLink>.
+
+## Elaboració
+
+### 1 · Dues columnes girades un quart de volta són dos pisos
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. En una pàgina amb `writingMode: 'vertical-rl'`, `layoutType: 'double'` apila les dues columnes: la primera omple el pis de dalt des de la dreta, després el de baix, i el canal és la franja que queda entre tots dos ([Escriptura vertical](/ca/docs/configuration#escriptura-vertical)). La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) compta els caràcters d'un pis, així que cada pis fa 25 caràcters de 9 pt i el canal s'arrodoneix a dos caràcters justos; les 21 línies de 15,75 pt ocupen 116,7 mm dels 148 de la pàgina. El filet entre els pisos travessa la pàgina, de 0,4 pt i d'un gris càlid.
+
+L'equilibratge de Postext acabaria els dos pisos de l'última pàgina d'un conte a la mateixa alçada, que és com tanquen un capítol els diaris xinesos i la majoria dels llibres europeus a dues columnes. Un llibre japonès en pisos deixa caure el text: el pis de dalt recorre tota la pàgina abans que comenci el de baix. `balancing.trailing: false` és aquesta decisió, i `enabled: false`, que la inclou, impedeix a més que l'equilibratge afegeixi línies sobre els títols en una retícula de caràcters ([Equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
+
+### 2 · Baixa el títol de l'obra pels dos pisos
+
+<Excerpt region="opener" />
+
+Un nivell de títol amb `span: 'page'` es compon a tota l'alçada de la pàgina, els dos pisos i el canal, al començament del flux, a la dreta d'una pàgina vertical; els pisos comencen després de les set línies que en reserva el disseny. Un títol així sempre obre pàgina, i `breakBefore.parity: 'odd'` fa que sigui la de l'esquerra: *El fil de l'aranya* acaba a la pàgina 214, que és parella, de manera que *La fe de Bisei* comença a la 215 sense cap pàgina en blanc entre totes dues ([Span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). Al disseny, `x` baixa per la pàgina i `y` la travessa des de la vora dreta de la caixa; el nom de l'autor es col·loca des del peu del pis de baix, tres caràcters més amunt.
+
+### 3 · Numera les seccions en tres línies del seu pis
+
+El segon nivell, `lineSpan: 3` amb `indent: em(8)`, compon 一 二 三 vuit caràcters més avall en una franja de tres línies, tal com les marca el text d'Aozora (八字下げ, 中見出し), així que el text que segueix un número de secció es manté a les línies del pis del costat ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). Les dates que tanquen els contes, （大正七年四月十六日）, s'aixequen un caràcter del peu del seu pis (地から一字上げ) amb `:::paragraphs{align=end endIndent=1}`; el convertidor d'Aozora les escriu com un estil `aozora-end1` que les deixa enganxades al peu, i els atributs del contenidor hi afegeixen la pujada d'un caràcter.
+
+### 4 · Posa el volum i l'obra al tall
+
+<Excerpt region="furniture" />
+
+`anchor.to: 'outer'` col·loca el hashira al marge del tall, el nom del volum, 芥川龍之介集, a les pàgines de la dreta i el títol de l'obra a les de l'esquerra, i `pages: 'body'` els aparta de les pàgines on comença una obra ([Elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)). El foli va de través al marge, en xifres aràbigues, com l'imprimeixen moltes obres completes: baixant pel tall, tres xifres quedarien ajagudes. `pageNumbering.startAt: 211` numera les pàgines com el volum. L'estil del títol de la primera obra porta el colofó amb `pages: 'opener'`, perquè el peu d'un estil serveix a totes les pàgines de la seva secció.
+
+## Variants
+
+### Iguala l'última pàgina
+
+Si treus `balancing`, l'última pàgina de cada obra es talla a la mateixa alçada: la pàgina 214 acaba amb 10 línies al pis de dalt i 11 al de baix, el tancament d'un llibre xinès o europeu en columnes.
+
+```diff
+-const balancing = { enabled: false, trailing: false };
++const balancing = {}; // the defaults: the closing band is cut level
+```
+
+### Comença cada obra a la pàgina següent
+
+`parity: 'any'` comença una obra a la pàgina que vingui, com fan les revistes i les antologies de peces molt breus.
+
+```diff
+-const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' } };
++const work = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } };
+```
+
+### Compon el conte en un sol pis
+
+Les novel·les i els bunko componen el text en un sol pis, sense canal; la <RecipeLink slug="bunko-novel-furigana">Núm. 117</RecipeLink> compon així un bunko.

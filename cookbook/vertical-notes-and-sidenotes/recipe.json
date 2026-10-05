@@ -1,0 +1,51 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 121,
+  "status": "draft",
+  "chapter": "boxes",
+  "order": 140,
+  "level": 2,
+  "genres": ["novel"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["japanese-notes", "footnotes", "kenten"],
+    "also": ["vertical-writing", "right-binding", "furigana", "tate-chu-yoko", "japanese-numerals", "gyodori-headings", "character-grid", "japanese-kinsoku", "aozora-import", "cjk-fonts", "running-heads", "page-role-filters", "heading-styles", "opener-design", "mirrored-margins", "color-palette", "pdf-export"]
+  },
+  "answers": ["Q142", "Q45", "Q138"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order"],
+  "related": ["novel-footnotes-column-foot", "vertical-book-with-jiazhu-citations", "endnotes-instead-of-footnotes", "bunko-novel-furigana"],
+  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "bookWove", "grammage": 64, "texture": "smooth", "shade": "#fdfbf7"},
+    "binding": {"type": "sewn", "cover": "case", "coverMaterial": "cloth", "coverColor": "#6b3a55"},
+    "surface": {"type": "walnut"},
+    "lighting": {"environment": "daylight"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "樋口一葉「たけくらべ」 (Child’s Play, 1895–96), chapter one; Aozora Bunko card 389, from 「日本現代文學全集10　樋口一葉集」 (Kōdansha, 1962), input 青空文庫, proofreading 米田進 and 小林繁雄, converted with aozora.py; the seven notes were written for this recipe (CC BY 4.0)",
+          "es": "樋口一葉「たけくらべ」 (Juegos de niños, 1895–96), capítulo primero; ficha 389 de Aozora Bunko, según 「日本現代文學全集10　樋口一葉集」 (Kōdansha, 1962), transcripción de 青空文庫, corrección de 米田進 y 小林繁雄, convertida con aozora.py; las siete notas se escribieron para esta receta (CC BY 4.0)"
+        },
+        "who": "Higuchi Ichiyō; Aozora Bunko volunteers",
+        "source": "https://www.aozora.gr.jp/cards/000064/card389.html",
+        "license": "PD"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Shippori Mincho", "license": "OFL-1.1" },
+      { "family": "Noto Sans JP", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-05",
+  "updated": "2026-10-05"
+}

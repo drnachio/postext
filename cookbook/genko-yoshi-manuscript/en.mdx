@@ -1,0 +1,61 @@
+---
+title: "A story on genkō yōshi, one character to a square"
+summary: "Botchan's opening on 400-square manuscript paper: a drawn 20 × 20 grid, a character or mark in every square, and any 、。 that cannot head a line hung below."
+plain: "Japanese manuscript paper has a square for every character. This page writes the first lines of a famous novel on it, with the title, the author's name and each punctuation mark where Japanese school rules put them."
+description: "Genkō yōshi in Postext: a drawn 20 × 20 character grid, one character per square, title and name lines, and 、。 hung below the last square, never squeezed."
+question: "How do I set Japanese on manuscript paper, 20 squares by 20 lines, one character in each square?"
+aliases: ["genkō yōshi", "genkouyoushi", "原稿用紙", "manuscript paper", "400-character sheet", "400字詰", "squared paper", "character grid", "マス目", "masume", "Japanese composition paper", "作文", "sakubun", "kinsoku on manuscript paper", "ぶら下げ", "burasage", "Botchan", "坊っちゃん", "Natsume Sōseki", "Klee One"]
+pageNotes: { "1": "The first sheet, alone on the left: a red-brown double frame round 20 lines of 20 grey squares, 坊っちゃん in the first line from the third square, 夏目　漱石 in the second ending one square above the foot, then the text of Botchan from the third line, one character or mark in each square; a 、 that falls after the twentieth square hangs below it. The sheet number （1） and the printed label 20×20 sit under the frame.", "3": "The third sheet: the paragraph ends on its thirteenth line, and the remaining lines are empty squares." }
+---
+
+## What you'll build
+
+Three sheets of Japanese manuscript paper (原稿用紙, genkō yōshi), the 400-square kind, with the first three paragraphs of Natsume Sōseki's *Botchan* copied out on them as a writer or a pupil would: 20 lines of 20 squares, read top to bottom from the right, in Klee One, a face drawn with a pen. The title stands in the first line from the third square and the author's name in the second, one square above the foot; each paragraph starts after one empty square. Every character, small kana and mark has a square of its own, and a 、 or 。 that would head a line is written below the last square of the line before. A red-brown frame, the sheet number and the paper's printed label 20×20 make the sheet. The Chinese page counted in characters is <RecipeLink slug="chinese-official-document">Nº 082</RecipeLink>.
+
+## Method
+
+### 1 · Draw the squares and give every mark a whole one
+
+The code is [the short answer](#the-short-answer) above. The [character grid](/en/docs/configuration#character-grid) makes the type area 20 characters of 20 pt (7.1 mm) down and 20 lines of 27 pt (9.5 mm) across, and `show: true` draws its squares in a light grey of its own, on screen, and in the PDF when `renderToPdf` is given `characterGrid: true` (a grid is a proofing aid in a book, so a PDF leaves it out by default); the 2.5 mm strip between two lines is where a writer adds readings and corrections. A Japanese mark is half a glyph and half an em of blank, and a book takes in blanks where two marks meet or a bracket starts a line. On manuscript paper each mark keeps its square, so `compressAdjacent: false` sets 。」 in two squares and `trimLineStart: false` leaves a bracket at the head of a line its whole square ([East Asian typography](/en/docs/configuration#east-asian-typography)).
+
+### 2 · Follow the manuscript's line rules
+
+Manuscript paper has its own kinsoku. A small kana or ー may start a line, each in its own square; `ja-loose` allows it. A 、 or 。 that would head a line is written in the last square of the line before, with the character there, or just below it; `hangingPunctuation: 'force'` hangs it below the twentieth square, and no line is ever squeezed. With `'allow'`, the default for Japanese, the engine first takes the mark into the line by squeezing a 、 inside it to half a square, which a printed book does and a manuscript never does: the rest of that line would sit half a square up, across the grid's lines.
+
+### 3 · Write the title and the name where the rules put them
+
+<Excerpt region="heading" />
+
+The title is a heading the size and face of the text, so it fills squares like any other line: `lineSpan: 1` keeps it on one line of the grid and `indent: em(2)` leaves two empty squares above it ([Per-level overrides](/en/docs/configuration#per-level-overrides)). The name is a paragraph with `textAlign: 'end'` and `endIndent: em(1)`, which ends it one square above the foot, and the Markdown writes the blank square between family and given name as an ideographic space: `夏目　漱石`. The text starts on the third line, each paragraph after one empty square from `firstLineIndent: em(1)`.
+
+### 4 · Print the sheet around the squares
+
+<Excerpt region="sheet" />
+
+The header's elements are drawn on the sheet itself: on a vertical page `x` runs right and `y` down from the top-left corner, unlike a heading's design, which is laid out in the turned frame of the text. The double frame stands 1.5 mm off the squares on three sides and 8 mm below them, where the hanging marks fall. `GRID` and `MARGIN` place it from the same numbers the page's margins are made of; the margins handed to the page are half a millimetre smaller, because the grid treats them as minimums and an exact fit could round to 19 lines.
+
+### 5 · Set it in a pen face
+
+<Excerpt region="pen" />
+
+Klee One is drawn with a pen and keeps the Japanese forms of the kanji, so the sheets read as handwriting without the irregularity of a scan. Its vertical forms put 、。 in the upper right of their square and turn ー and the brackets, which is where a writer puts them. Like every Japanese family on Fontsource it comes as about 120 files, and `loadCjkFonts` fetches the ones the text needs ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)).
+
+## Variations
+
+### Check a book's grid with the same squares
+
+`show: true` works on any character grid: on the bunko of <RecipeLink slug="bunko-novel-furigana">Nº 117</RecipeLink> it draws the 38 × 15 squares over the text, a quick check that every line keeps to the grid and every heading to its three lines.
+
+```diff
+-  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES },
++  grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES, show: true },
+```
+
+### Let the marks squeeze, as a printed page does
+
+With the Japanese default the sheets read like a book typed on squared paper: a 、 that would head a line is taken in by squeezing another one, and the rest of that line sits half a square off the grid.
+
+```diff
+-  hangingPunctuation: 'force',
++  hangingPunctuation: 'allow',
+```

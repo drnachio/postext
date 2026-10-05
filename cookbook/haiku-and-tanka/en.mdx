@@ -1,0 +1,63 @@
+---
+title: "Haiku and tanka set vertically"
+summary: "Bashō's haiku inside his travel prose and twelve of Takuboku's three-line tanka down a 四六判 page: a verse per line, set in from the head, signatures at the foot."
+plain: "A small book of Japanese poems: Bashō's travel diary with its haiku on lines of their own, and Takuboku's short poems in three lines each, never cut by a page turn."
+description: "Bashō's Oku no Hosomichi and Takuboku's A Handful of Sand set vertically with Postext: haiku indented three characters, 3-line tanka kept whole, 地付き signatures."
+question: "How do I set haiku and tanka vertically, each verse on its own line, indented from the head?"
+aliases: ["haiku", "俳句", "tanka", "短歌", "waka", "haibun", "俳文", "vertical poetry", "Japanese poetry", "句集", "歌集", "地付き", "jitsuki", "字取り", "jidori", "Oku no Hosomichi", "おくのほそ道", "Bashō", "芭蕉", "Ishikawa Takuboku", "石川啄木", "一握の砂", "A Handful of Sand", "three-line tanka"]
+pageNotes: { "1": "The first part opens on the left of the spine: おくのほそ道 in bold Mincho down the right with （抄） after it and a persimmon rule, 松尾芭蕉 near the foot, then the heading 冒　頭 and the opening of the travel diary with its readings.", "2": "Bashō's first haiku, 草の戸も住替る代ぞひなの家, on a line of its own three characters down, then the headings 旅　立 and 平　泉, each spaced to three characters, with 行春や鳥啼魚の目は泪 between them.", "3": "The Hiraizumi prose, then 夏草や兵どもが夢の跡 and Sora's 卯の花に兼房みゆる白毛かな, signed 曾良 low in the line, then 立石寺 and 閑さや岩にしみ入蝉の聲.", "5": "The second part: 一握の砂 （抄） and 石川啄木, then Takuboku's first two tanka, each in three lines set two characters down with a blank line between them." }
+---
+
+## What you'll build
+
+Eight pages of a small poetry book on a 四六判 page of 127 × 188 mm, bound on the right. The first part is seven stations of Bashō's *Narrow Road to the Deep North*, his prose with its haiku; the second, twelve tanka from Ishikawa Takuboku's *A Handful of Sand*, each in the three lines he wrote it in. The prose runs top to bottom, 36 characters to the line, in Shippori Mincho at 10 pt on a generous pitch of 1.9 em. Each haiku stands on a line of its own three characters down, each tanka two down, and Sora's haiku is signed 曾良 near the foot of the line. A tanka never breaks across a page, and a persimmon ＊ separates the groups. The European poetry book is <RecipeLink slug="poetry-collection">Nº 015</RecipeLink>; Tang poems in vertical Chinese are <RecipeLink slug="tang-poems-facing-english">Nº 083</RecipeLink>.
+
+## Method
+
+### 1 · A line of verse is a paragraph, and its style says where it starts
+
+The code is [the short answer](#the-short-answer) above. Postext has no hard line break, so each line of a poem is a paragraph of its own inside a `:::paragraphs` fence, and the fence's style sets the indent: `indent: em(3)` stands a haiku three characters below the head of the line (the Aozora text sets them two down; three gives the poems more air), and `firstLineIndent: em(0)` stops the body's one-character indent from adding to it. A haiku's 17 or so characters fit any line of 36, so it never wraps. The signature is a paragraph of its own: `textAlign: 'end'` sets it against the foot of the line (地付き, jitsuki) and `endIndent: em(5)` raises it five characters from there (地から五字上げ), as the edition this text comes from does ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
+
+### 2 · Keep each tanka on one page
+
+<Excerpt region="tanka" />
+
+A tanka's three lines are three paragraphs, and the engine keeps a paragraph's lines together but never one paragraph with the next. A box does keep its content together, so each tanka goes in a `:::callout` whose style draws nothing: no background, no padding, and a margin of one line after it, the blank line between poems. On page 5 the third tanka does not fit under the part title and the first two, so it opens page 6 whole, rather than leaving its first line behind ([Callout styles](/en/docs/configuration#callout-styles)).
+
+### 3 · Space the place names to one width
+
+<Excerpt region="places" />
+
+The stations of Bashō's route are second-level headings two body lines tall (2行取り), so the prose and haiku after them stay on the grid. `jidori: 3` spaces a shorter name out to three of its own characters (字取り): 平泉 prints 平　泉 with a full character between, and every name ends at the same height as 立石寺 and 最上川. A name already three characters long is left alone ([Per-level overrides](/en/docs/configuration#per-level-overrides)).
+
+### 4 · Open each part on its own page
+
+<Excerpt region="part" />
+
+Each part is a level-1 heading whose design sets the title, a small （抄）, "selections", placed just after it with `anchor.to: '#title'`, a short persimmon rule beside the title, and the poet near the foot of the line. The design reserves five lines, and the text starts after them on the same grid.
+
+### 5 · Choose a face that has the old marks
+
+<Excerpt region="voices" />
+
+Bashō's prose writes repeated words with the old iteration mark 〻 (日〻, 人〻), and older texts use the long くの字点 〳〵 as well. Zen Old Mincho has neither: the canvas would borrow them from a system face and the PDF would draw empty boxes. Shippori Mincho, Noto Serif JP and Shippori Mincho B1 have both, so the poems are set in Shippori Mincho ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)). The Aozora text also keeps the editor's notes on old spellings, `とら{え|（へ）}て`, which print the expected kana beside the one Bashō wrote.
+
+## Variations
+
+### Space the haiku's three phrases
+
+School anthologies sometimes set an ideographic space between the 5, 7 and 5 sounds, for readers learning the form; the space is a character of the text.
+
+```diff
+-{夏草|なつくさ}や{兵|つはもの}どもが夢の跡
++{夏草|なつくさ}や　{兵|つはもの}どもが　夢の跡
+```
+
+### Let a long tanka break
+
+A box style with `keepTogether: false` lets a tanka start at the foot of a page and go on overleaf, as a dense anthology of a thousand poems would.
+
+```diff
+-const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
++const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+```
