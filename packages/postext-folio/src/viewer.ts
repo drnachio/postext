@@ -17,7 +17,11 @@ export interface FolioAppearance {
   pageWidthMm?: number;
   /** Pages of the book before the first page given and after the last
    *  (the other chapters of a book shown a chapter at a time): they are
-   *  never drawn, only counted for the thickness of the page block. */
+   *  never drawn, only counted for the thickness of the page block.
+   *  `createFolioFromDocument` places the covers by them too: with pages
+   *  before, the first page given is not the book's front cover, nor with
+   *  pages after the last its back cover (a chapter from the middle of a
+   *  book with its own covers turns paper leaves). */
   extraPages?: { before: number; after: number };
   /** Where the scanned desk textures are served (see
    *  `FlipAppearance.textureBaseUrl`). */

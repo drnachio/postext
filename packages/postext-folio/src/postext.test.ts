@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { VDTPage } from "postext";
-import { carriedPaintings, sweepFor } from "./postext";
+import type { VDTDocument, VDTPage } from "postext";
+import { appearanceOf, carriedPaintings, sweepFor } from "./postext";
 
 const page = (index: number, text = `p${index}`) => ({ index, width: 100, height: 140, text }) as unknown as VDTPage;
 
@@ -61,5 +61,38 @@ describe("sweepFor", () => {
   it("lifts backwards in reverse order", () => {
     const { pages } = sweepFor(null, [9, 10], [5, 6], 100);
     expect(pages).toEqual([11, 10, 9, 8, 7, 6, 5, 4]);
+  });
+});
+
+describe("appearanceOf", () => {
+  // A book with its own covers (`binding.cover: 'pages'`), four pages of it.
+  const doc = (extra: Partial<VDTDocument> = {}) =>
+    ({
+      pages: [0, 1, 2, 3].map((i) => page(i)),
+      trimOffset: 0,
+      config: { page: { dpi: 300 }, folio: { binding: { type: "hardcover", cover: "pages" } } },
+      ...extra,
+    }) as unknown as VDTDocument;
+
+  it("turns the covers of a whole book as boards", () => {
+    expect(appearanceOf(doc(), undefined).covers).toEqual({ front: true, back: true });
+  });
+
+  it("gives a chapter from the middle of the book paper leaves at both ends (#449)", () => {
+    const a = appearanceOf(doc({ pageIndexOffset: 10 }), { extraPages: { before: 10, after: 20 } });
+    expect(a.covers).toEqual({ front: false, back: false });
+    expect(a.extraPages).toEqual({ before: 10, after: 20 });
+  });
+
+  it("keeps the front cover on the first chapter and the back one on the last", () => {
+    expect(appearanceOf(doc(), { extraPages: { before: 0, after: 20 } }).covers).toEqual({ front: true, back: false });
+    expect(appearanceOf(doc({ pageIndexOffset: 10 }), { extraPages: { before: 10, after: 0 } }).covers).toEqual({ front: false, back: true });
+  });
+
+  it("falls back on the document's own offset and book page count", () => {
+    expect(appearanceOf(doc({ pageIndexOffset: 10, bookPageCount: 30 }), undefined)).toMatchObject({
+      covers: { front: false, back: false },
+      extraPages: { before: 10, after: 16 },
+    });
   });
 });

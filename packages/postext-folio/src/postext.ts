@@ -28,8 +28,10 @@ export interface FolioDocumentViewer extends FolioViewer {
   /** Shows another layout of the book (after an edit), on the same page
    *  unless `at` says otherwise. A page that reads the same as before
    *  keeps its painting; `repaint` paints every page again (an image that
-   *  came in after the pages were painted). */
-  setDocument(doc: VDTDocument, options?: { at?: number; repaint?: boolean }): void;
+   *  came in after the pages were painted). `appearance` is laid over the
+   *  host's own, as `setAppearance` does, for the new document (a chapter
+   *  saying how many pages of the book lie round it). */
+  setDocument(doc: VDTDocument, options?: { at?: number; repaint?: boolean; appearance?: FolioAppearance }): void;
   /** Draws the decorations (`decorate`) again on these pages, or on every
    *  painted page; the book shows them at once, on a turning leaf too. */
   redecorate(pages?: Iterable<number>): void;
@@ -57,14 +59,19 @@ function paperOf(doc: VDTDocument): string {
 
 /** How the document's book is presented: its `folio` settings, its page
  *  width, the book's pages before and after it (a chapter of a longer
- *  book), with the host's own appearance laid over them. */
-function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
+ *  book), with the host's own appearance laid over them. The pages round
+ *  it are the host's word when it gives them (`extraPages`: a host laying
+ *  a book out a chapter at a time knows the chapters after this one, which
+ *  the document only knows when it was given the book's page count). */
+export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): FolioAppearance {
   const page = doc.pages[0];
-  const before = doc.pageIndexOffset ?? 0;
-  const after = Math.max(0, (doc.bookPageCount ?? 0) - before - doc.pages.length);
+  const before = Math.max(0, own?.extraPages?.before ?? doc.pageIndexOffset ?? 0);
+  const after = Math.max(0, own?.extraPages?.after ?? (doc.bookPageCount ?? 0) - before - doc.pages.length);
   const folio = own && "folio" in own ? own.folio : doc.config.folio;
   // The document's own covers: the book's first page (a recto) and its
-  // last, when that is a verso (an even page number).
+  // last, when that is a verso (an even page number). A chapter from the
+  // middle of the book has neither: its first and last leaves are paper
+  // (#449).
   const ownCovers = resolveFolioConfig(folio).binding.cover === "pages";
   const total = before + doc.pages.length;
   return {
@@ -72,8 +79,8 @@ function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined): Folio
     covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
     // Page sizes are in device pixels at the page's dpi.
     ...(page ? { pageWidthMm: (trimmedSize(page, doc).width * 25.4) / (doc.config.page.dpi || 300) } : {}),
-    extraPages: { before, after },
     ...own,
+    extraPages: { before, after },
   };
 }
 
@@ -426,7 +433,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     get state() {
       return viewer.state;
     },
-    setDocument(next: VDTDocument, opts: { at?: number; repaint?: boolean } = {}) {
+    setDocument(next: VDTDocument, opts: { at?: number; repaint?: boolean; appearance?: FolioAppearance } = {}) {
+      if (opts.appearance) hostAppearance = { ...hostAppearance, ...opts.appearance };
       const at = Math.max(0, Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0));
       const before = current;
       const oldCanvases = canvases;

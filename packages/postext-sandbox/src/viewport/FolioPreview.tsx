@@ -5,6 +5,7 @@ import { createFolioFromDocument, type FolioDocumentViewer, type FolioInteractio
 import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, type PostextConfig, type VDTDocument } from 'postext';
 import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource } from '../context/SandboxContext';
 import { composeBookMemo } from '../book/compose';
+import type { BookPlan } from '../book/types';
 import { buildBookChapters, type HeldChapterDoc } from '../book/buildBook';
 import { layoutCacheKey } from '../book/layoutKeys';
 import { chapterLayoutFromDoc, leadingBlankPageCount } from '../book/pagination';
@@ -56,6 +57,24 @@ interface ShownDoc {
   doc: VDTDocument;
   pageChapters: readonly number[] | null;
   chapter: number;
+  /** A chapter's document: the book's pages before and after it (its
+   *  first and last leaves are the covers only at the book's ends). */
+  extraPages?: { before: number; after: number };
+}
+
+/** The pages of the book round a chapter laid out on its own: those before
+ *  it (its offset; at least one when a chapter before it is not paginated
+ *  yet) and those of the chapters after it (their last layouts, one page
+ *  for a chapter not laid out yet). Only the first chapter has none before
+ *  it and only the last none after: a chapter from the middle of a book
+ *  with its own covers turns paper leaves at both ends (#449). */
+function pagesAround(doc: VDTDocument, plan: BookPlan, chapterId: string): { before: number; after: number } {
+  const index = plan.chapters.findIndex((c) => c.chapterId === chapterId);
+  const offset = doc.pageIndexOffset ?? 0;
+  if (index < 0) return { before: offset, after: 0 };
+  const before = index > 0 ? Math.max(1, offset) : offset;
+  const after = plan.chapters.slice(index + 1).reduce((n, c) => n + Math.max(1, c.layout?.pageCount ?? 1), 0);
+  return { before, after };
 }
 
 /** Where page `index` of `from` lies in `to`: the page of the same chapter
@@ -293,7 +312,12 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
       const layout = chapterLayoutFromDoc(built, deferredSource.plan, { markdown: deferredSource.chapterMarkdown, config: rawDeferredConfig, resources: deferredResources });
       if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
       dispatch({ type: 'BUMP_DOC_VERSION' });
-      setDoc({ doc: built, pageChapters: null, chapter: Math.max(0, chaptersRef.current.findIndex((c) => c.id === deferredSource.chapterId)) });
+      setDoc({
+        doc: built,
+        pageChapters: null,
+        chapter: Math.max(0, chaptersRef.current.findIndex((c) => c.id === deferredSource.chapterId)),
+        extraPages: pagesAround(built, planRef.current, deferredSource.chapterId),
+      });
       counted?.(built.pages.length, leadingBlankPageCount(built), built.pages.map((p) => p.pageNumberValue));
     };
     run()
@@ -369,7 +393,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         controls: false,
         labels: folioLabelsRef.current,
         interaction: interactionRef.current,
-        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current },
+        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current, extraPages: shownDoc.extraPages },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         decorate: (index, ctx) => selectionRef.current.decorate(index, ctx),
         onTarget: (state) => {
@@ -405,7 +429,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         if (same >= 0) break;
       }
     }
-    viewer.setDocument(doc, { ...(same >= 0 ? { at: same } : {}), repaint });
+    viewer.setDocument(doc, { ...(same >= 0 ? { at: same } : {}), repaint, appearance: { extraPages: shownDoc.extraPages } });
     if (pendingJumpRef.current !== null) {
       viewer.goToPage(pendingJumpRef.current, { instant: true });
       pendingJumpRef.current = null;
