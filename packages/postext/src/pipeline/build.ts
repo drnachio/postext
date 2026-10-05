@@ -645,6 +645,7 @@ function placeDocumentPass(
     headingContext,
     continuation ? { counters: continuation.resourceCounters, numbered: continuation.resourceNumbers } : undefined,
     resolved.numerals,
+    documentLocale(config),
   );
 
   // Lookups threaded into block-kind resolution + measurement.

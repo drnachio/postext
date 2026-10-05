@@ -1,7 +1,7 @@
 import type { DigitSystem, DocumentMetadata, PostextConfig } from '../types';
 import { withDigits } from '../arabicNumerals';
 import type { VDTPage } from '../vdt';
-import { chineseInformalStyle, formatCounter, formatNumeral } from '../numbering';
+import { formatCounter, formatNumeral, hanInformalStyle } from '../numbering';
 import { metadataText } from '../frontmatter';
 import {
   resolvePlaceholders as legacyResolvePlaceholders,
@@ -177,8 +177,10 @@ function resolveHeadingName(name: string, ctx: DesignPlaceholderContext): string
     case 'numberOrdinalWordsLower':
       return h?.numericValue !== undefined ? formatCounter(h.numericValue, 'ordinal', h.locale) : '';
     case 'numberHan':
-      // Chinese numerals in the document's script: 第{numberHan}回.
-      return h?.numericValue !== undefined ? formatNumeral(h.numericValue, chineseInformalStyle(h.locale)) : '';
+      // Counted kanji numerals in the document's language: 第{numberHan}回
+      // in the Chinese of its script (第一百零一回), Japanese in a ja
+      // document (第百一章).
+      return h?.numericValue !== undefined ? formatNumeral(h.numericValue, hanInformalStyle(h.locale)) : '';
     case 'chapterNumber':
       return h?.chapterNumber ?? ctx.chapterNumberByPageIndex?.[ctx.page.index] ?? '';
     case 'chapterTitle':

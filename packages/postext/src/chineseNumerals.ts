@@ -114,12 +114,13 @@ export function fixedSymbol(n: number, symbols: readonly string[]): string {
 // Reading
 // ---------------------------------------------------------------------------
 
-/** Value of each digit character, informal and formal, both scripts. */
+/** Value of each digit character, informal and formal, both Chinese
+ *  scripts and the Japanese daiji (壱 弐 参). */
 const DIGIT_VALUES: ReadonlyMap<string, number> = new Map([
   ['〇', 0], ['零', 0], ['○', 0],
-  ['一', 1], ['壹', 1],
-  ['二', 2], ['贰', 2], ['貳', 2], ['两', 2], ['兩', 2],
-  ['三', 3], ['叁', 3], ['參', 3],
+  ['一', 1], ['壹', 1], ['壱', 1],
+  ['二', 2], ['贰', 2], ['貳', 2], ['弐', 2], ['两', 2], ['兩', 2],
+  ['三', 3], ['叁', 3], ['參', 3], ['参', 3],
   ['四', 4], ['肆', 4],
   ['五', 5], ['伍', 5],
   ['六', 6], ['陆', 6], ['陸', 6],
@@ -128,11 +129,12 @@ const DIGIT_VALUES: ReadonlyMap<string, number> = new Map([
   ['九', 9], ['玖', 9],
 ]);
 const SMALL_MARKERS: ReadonlyMap<string, number> = new Map([
-  ['十', 10], ['拾', 10], ['百', 100], ['佰', 100], ['千', 1000], ['仟', 1000],
+  ['十', 10], ['拾', 10], ['百', 100], ['佰', 100], ['千', 1000], ['仟', 1000], ['阡', 1000],
 ]);
 
 /** Value of a group below 10 000 written with markers (十二, 一百零一,
- *  壹佰贰拾); `undefined` when it is not one. */
+ *  壹佰贰拾, and the Japanese forms without 零: 百一, 千十, 壱阡弐拾);
+ *  `undefined` when it is not one. */
 function readGroup(s: string): number | undefined {
   let total = 0;
   let digit: number | undefined;
@@ -170,8 +172,9 @@ function readWithUnits(s: string): number | undefined {
 
 /**
  * The value of a number written in Chinese numerals: the longhand, informal
- * or formal, in either script (三, 十二, 一百零一, 一万零一十, 壹佰贰拾), or
- * digit by digit (一二〇, 二〇二六). `undefined` for anything else.
+ * or formal, in either script (三, 十二, 一百零一, 一万零一十, 壹佰贰拾),
+ * the Japanese counted forms (百一, 千十, 一万一, 壱萬弐阡), or digit by
+ * digit (一二〇, 二〇二六). `undefined` for anything else.
  */
 export function parseChineseNumeral(text: string): number | undefined {
   const s = text.trim();

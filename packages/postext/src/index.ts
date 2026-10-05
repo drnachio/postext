@@ -368,7 +368,7 @@ export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLA
 export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt } from './parse';
 export type { OrientationMark } from './parse';
 export type { InlineSnippetMapping } from './parse';
-export { buildPageLabels, collectPageLabelRuns, formatNumeral, documentNumeralStyle, parseNumberFormat, chineseInformalStyle, EAST_ASIAN_NUMERAL_STYLES, ARABIC_NUMERAL_STYLES } from './numbering';
+export { buildPageLabels, collectPageLabelRuns, formatNumeral, documentNumeralStyle, parseNumberFormat, chineseInformalStyle, hanInformalStyle, EAST_ASIAN_NUMERAL_STYLES, ARABIC_NUMERAL_STYLES } from './numbering';
 export type { NumeralStyle, NumberFormatStyle, EastAsianNumeralStyle, ArabicNumeralStyle, PageNumberSegment, PageLabelInfo, PageLabelRun } from './numbering';
 export { withDigits, asciiDigits } from './arabicNumerals';
 export { parseChineseNumeral } from './chineseNumerals';

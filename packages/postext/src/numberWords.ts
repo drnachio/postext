@@ -3,7 +3,8 @@
  * "vigesimoprimero", 二十一, 第二十一, الحادي والعشرون — for heading numbering
  * templates (`{1:words}`, `{1:ordinal}`) and the `{numberWords}` /
  * `{numberOrdinalWords}` design placeholders. English, Spanish, Chinese
- * (in the document's script: 一万 / 一萬) and Arabic; any other language
+ * (in the document's script: 一万 / 一萬), Japanese (百一, where Chinese
+ * writes 一百零一) and Arabic; any other language
  * takes the English words, like the other localised strings (table
  * continuation labels). Masculine forms by default, as a chapter or a part
  * is numbered ("capítulo primero", الفصل الأول); Arabic also has the
@@ -11,6 +12,7 @@
  */
 import { stringsKeyOf } from './locale';
 import { chineseNumeral } from './chineseNumerals';
+import { japaneseNumeral } from './japaneseNumerals';
 import { arabicCardinal, arabicOrdinal, type ArabicGender, type ArabicSpelling } from './arabicNumberWords';
 
 /** Cardinal ("twenty-one") or ordinal ("twenty-first"). */
@@ -31,9 +33,9 @@ export interface NumberWordsOptions {
 const MAX_CARDINAL = 999_999;
 const MAX_ORDINAL_ES = 999;
 
-function language(locale: string | undefined): 'en' | 'es' | 'zh-hans' | 'zh-hant' | 'ar' {
+function language(locale: string | undefined): 'en' | 'es' | 'zh-hans' | 'zh-hant' | 'ja' | 'ar' {
   const key = stringsKeyOf(locale ?? 'en');
-  return key === 'es' || key === 'zh-hans' || key === 'zh-hant' || key === 'ar' ? key : 'en';
+  return key === 'es' || key === 'zh-hans' || key === 'zh-hant' || key === 'ja' || key === 'ar' ? key : 'en';
 }
 
 // --- English ---------------------------------------------------------------
@@ -154,9 +156,10 @@ function esOrdinal(n: number): string {
 /**
  * `n` spelled out in lower case, in the document language (`locale`:
  * `'es'` or a Spanish tag gives Spanish, a Chinese tag Chinese numerals in
- * its script, an Arabic tag Arabic words in the gender and spelling of
- * `options`, anything else English). Numbers past 999 999 (Spanish
- * ordinals: past 999; Chinese: past 10¹⁶ − 1; Arabic: cardinals past
+ * its script, a Japanese tag Japanese kanji numerals, an Arabic tag Arabic
+ * words in the gender and spelling of `options`, anything else English).
+ * Numbers past 999 999 (Spanish ordinals: past 999; Chinese and Japanese:
+ * past 10¹⁶ − 1; Arabic: cardinals past
  * 99 999, ordinals past 9 999) print in digits; zero and below print
  * nothing, like the other numeral formats.
  */
@@ -167,6 +170,13 @@ export function numberToWords(n: number, kind: NumberWordsKind = 'cardinal', loc
   if (lang === 'zh-hans' || lang === 'zh-hant') {
     // Informal numerals; the ordinal is 第 before them (第十二).
     const numeral = chineseNumeral(n, 'informal', lang === 'zh-hant');
+    return kind === 'ordinal' ? `第${numeral}` : numeral;
+  }
+  if (lang === 'ja') {
+    // The counted kanji numerals as they are read (二十一, 百一, 一万一:
+    // no 一 before 十百千, no 零 for a gap); the ordinal is 第 before
+    // them (第一, 第二十一), as chapters are numbered (第一章).
+    const numeral = japaneseNumeral(n, 'informal');
     return kind === 'ordinal' ? `第${numeral}` : numeral;
   }
   if (kind === 'ordinal') {

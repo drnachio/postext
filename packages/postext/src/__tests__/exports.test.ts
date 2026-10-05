@@ -356,6 +356,7 @@ describe("package exports", () => {
       "documentNumeralStyle",
       "parseNumberFormat",
       "chineseInformalStyle",
+      "hanInformalStyle",
       "EAST_ASIAN_NUMERAL_STYLES",
       "ARABIC_NUMERAL_STYLES",
       "withDigits",

@@ -273,8 +273,8 @@ export function formatListNumber(n: number, format: OrderedListNumberFormat, dig
 }
 
 /** The styles with a zero of their own (零, 〇, ⓪, ０, ٠, ۰); an item
- *  numbered 0 in them prints it. */
-const OWN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal', 'arabic-indic', 'persian']);
+ *  numbered 0 in them prints it. The kana series have none. */
+const OWN_ZERO = new Set<string>(['simp-chinese-informal', 'trad-chinese-informal', 'simp-chinese-formal', 'trad-chinese-formal', 'japanese-informal', 'japanese-formal', 'cjk-decimal', 'circled-decimal', 'fullwidth-decimal', 'arabic-indic', 'persian']);
 
 /**
  * Walks content blocks identifying contiguous ordered-list runs per depth,
