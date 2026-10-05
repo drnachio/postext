@@ -573,20 +573,26 @@ function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         if (uBehindOn > 0.5 && uTransmit > 0.0) {
           // Thin paper in the air lets through the light behind it (#484):
           // what lies there on screen, seen through the print of both
-          // faces. The sheet scatters what it lets through about evenly,
-          // so a thing a gap behind it is spread over about that gap:
-          // sharp where the leaf touches the page under it, a soft glow
-          // of the desk further off. What it lets through it does not
-          // reflect.
+          // faces. The sheet scatters what it lets through about evenly
+          // (near Lambertian), so a thing a gap behind it is spread over
+          // about twice that gap: sharp where the leaf touches the page
+          // under it, a soft glow a few millimetres off. A page close
+          // under it is lit only through the leaf, so its print comes
+          // back at about half the leaf's transmittance (1 − opacity, as
+          // the open page shows the one under it); what lies further, out
+          // of the leaf's shade, at the whole of it. Stronger and sharper,
+          // the page under a leaf about to land read as lying over it
+          // (#492). What it lets through it does not reflect.
           vec2 st = gl_FragCoord.xy / uBehindSize;
           float depth = texture2D(uBehindDepth, st).x;
           float zBehind = uBehindClip.x * uBehindClip.y / (uBehindClip.y - depth * (uBehindClip.y - uBehindClip.x));
           float gap = max(0.0, zBehind - vViewPosition.z);
-          float spread = (uBehindFloor + 0.7 * gap) * uBehindScale / vViewPosition.z;
+          float spread = (uBehindFloor + 2.0 * gap) * uBehindScale / vViewPosition.z;
           vec4 seen = textureLod(uBehind, st, log2(max(1.0, 2.0 * spread)));
-          float lost = uTransmit * seen.a;
+          float carried = uTransmit * mix(0.5, 1.0, smoothstep(0.0, 8.0 * uBehindFloor, gap));
+          float lost = carried * seen.a;
           reflectedLight.directDiffuse *= 1.0 - lost;
-          reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse * (1.0 - lost) + uTransmit * seen.rgb * transInk;
+          reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse * (1.0 - lost) + carried * seen.rgb * transInk;
         }`,
       );
   };
@@ -1474,9 +1480,11 @@ export class PageFlipper {
     // An open page shows the page under it; a leaf in the air, what is
     // behind it (a block of leaves turning together is opaque).
     const open = mesh === this.left || mesh === this.right;
-    // As much as a leaf lifting off it lets through: nothing changes
-    // when the reader takes hold of it.
-    u.uUnderK.value = open ? spec.transmission : 0;
+    // Print under a sheet shows through at 1 − opacity (what opacity
+    // measures), half the light the sheet lets through: as much as a
+    // leaf lifting off it lets through close over the page, so nothing
+    // changes when the reader takes hold of it (#492).
+    u.uUnderK.value = open ? spec.transmission / 2 : 0;
     u.uTransmit.value = open || mesh === this.blockMesh ? 0 : spec.transmission;
     m.needsUpdate = true;
   }
