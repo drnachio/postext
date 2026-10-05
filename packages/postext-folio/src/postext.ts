@@ -24,9 +24,11 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
    */
   decorate?: (index: number, ctx: CanvasRenderingContext2D) => boolean;
   /**
-   * Videos printed on the pages play there (#477): in `hand` mode a click
-   * on a video's poster plays it on the page, a click on it again pauses
-   * it, and it goes on playing while its leaf turns. Starting another
+   * Videos printed on the pages play there (#477): a click on a video's
+   * poster plays it on the page (in every pointer mode), a click on it
+   * again pauses it, and it goes on playing while its leaf turns. A video
+   * with `player.autoplay` starts by itself the first time its spread is
+   * shown (muted until the reader has interacted with the page). Starting another
    * stops the one playing; it stops too when the book comes to rest on a
    * spread that does not show it. Self-hosted videos only (a file, or its
    * address: MP4, WebM or an HLS stream); a YouTube or Vimeo poster turns
@@ -194,6 +196,10 @@ export function sweepFor(run: SweepRun | null, settled: number[], target: number
 }
 /** Painting time per frame while leaves are in the air. */
 const SWEEP_BUDGET_MS = 8;
+
+/** How long the book must stay as it is before a video set to play on its
+ *  own starts (a host's layouts settling, a run of turns). */
+const AUTOPLAY_SETTLE_MS = 700;
 
 /** How long a resize settles before the pages are painted at the new size. */
 const RESIZE_SETTLE_MS = 120;
@@ -390,8 +396,11 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   // ── Videos on the pages (#477) ──
   /** The video spots of each page of the current document, as found. */
   let spots = new Map<number, PageVideoSpot[]>();
-  /** The video playing (or paused) on a page. */
-  let playing: { page: number; spot: PageVideoSpot; element: HTMLVideoElement; release?: () => void; shown: boolean } | null = null;
+  /** The video playing (or paused) on a page; `autoMuted` while it plays
+   *  muted because it started on its own. */
+  let playing: { page: number; spot: PageVideoSpot; element: HTMLVideoElement; release?: () => void; shown: boolean; autoMuted: boolean } | null = null;
+  /** The videos that have started on their own once (`player.autoplay`). */
+  const autoplayed = new Set<string>();
 
   const spotsOf = (i: number): PageVideoSpot[] => {
     let found = spots.get(i);
@@ -432,7 +441,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     if (p.shown) viewer.setPageVideo(null);
   }
 
-  function startVideo(page: number, spot: PageVideoSpot) {
+  function startVideo(page: number, spot: PageVideoSpot, auto = false) {
     stopVideo();
     const url = urlOf(spot);
     if (!url) return;
@@ -442,8 +451,12 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     // WebGL draws the picture only when its server allows the read.
     if (!/^(blob|data):/i.test(url)) element.crossOrigin = "anonymous";
     const player = spot.video.player;
-    element.muted = player.muted;
-    const entry: NonNullable<typeof playing> = { page, spot, element, shown: false };
+    // A video that starts on its own has its sound once the reader has
+    // clicked or typed on the page (the browser allows it then); before
+    // that it starts muted, as browsers require, and a click unmutes it.
+    const activated = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive ?? false;
+    element.muted = player.muted || (auto && !activated);
+    const entry: NonNullable<typeof playing> = { page, spot, element, shown: false, autoMuted: !player.muted && element.muted };
     playing = entry;
     const live = () => playing === entry;
     const range = { start: spot.video.start ?? 0, end: spot.video.end };
@@ -468,7 +481,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     // The picture's height on screen: an HLS stream needs no larger variant.
     const size = viewer.pageSize;
     const maxHeight = Math.max(Math.hypot(spot.down.x * size.deviceWidth, spot.down.y * size.deviceHeight), Math.hypot(spot.across.x * size.deviceWidth, spot.across.y * size.deviceHeight));
-    void attachVideoSource(element, url, { hls: isHlsVideo(spot.video, url), maxHeight }).then(
+    void attachVideoSource(element, url, { hls: isHlsVideo(spot.video, url), maxHeight, corsTag: true }).then(
       (release) => {
         if (!live()) return release();
         entry.release = release;
@@ -478,6 +491,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
           if (!live()) return;
           if ((err as { name?: string })?.name === "NotAllowedError" && !element.muted) {
             element.muted = true;
+            entry.autoMuted = !player.muted;
             return element.play();
           }
           throw err;
@@ -492,13 +506,48 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   function toggleVideoAt(point: FolioPagePoint): boolean {
     const spot = spotAt(point);
     if (!spot) return false;
-    if (playing && playing.page === point.page && playing.spot.key === spot.key) {
-      if (playing.element.paused) void playing.element.play().catch(() => {});
-      else playing.element.pause();
-      return true;
-    }
-    startVideo(point.page, spot);
+    if (playing && playing.page === point.page && playing.spot.key === spot.key) togglePlaying();
+    else startVideo(point.page, spot);
     return true;
+  }
+
+  /** A click (or Space) on the video playing: one that started on its own
+   *  is unmuted first; otherwise it pauses or resumes. */
+  function togglePlaying() {
+    const p = playing;
+    if (!p) return;
+    if (p.autoMuted && !p.element.paused) {
+      p.autoMuted = false;
+      p.element.muted = false;
+      return;
+    }
+    if (p.element.paused) void p.element.play().catch(() => {});
+    else p.element.pause();
+  }
+
+  /** Autoplay waits for the book to settle: a host lays a book out in
+   *  steps (a chapter, then the whole book), and only the spread the reader
+   *  is left looking at counts as shown. */
+  let autoTimer = 0;
+  const scheduleAutoplay = () => {
+    clearTimeout(autoTimer);
+    autoTimer = window.setTimeout(() => {
+      if (!turning) autoplayOn(viewer.state.pages);
+    }, AUTOPLAY_SETTLE_MS);
+  };
+
+  /** The first time a spread shows a video set to play on its own
+   *  (`player.autoplay`), it starts, muted; never again in this viewer. */
+  function autoplayOn(pages: number[]) {
+    if (options.videos === false || playing) return;
+    for (const page of pages) {
+      for (const spot of spotsOf(page)) {
+        if (!spot.video.player.autoplay || !urlOf(spot) || autoplayed.has(spot.key)) continue;
+        autoplayed.add(spot.key);
+        startVideo(page, spot, true);
+        return;
+      }
+    }
   }
 
   /** A new layout: the playing video follows its resource to where the
@@ -543,8 +592,10 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     onPageClick: (point) => toggleVideoAt(point) || !!options.onPageClick?.(point),
     isPageAction: (point) => !!spotAt(point) || !!options.isPageAction?.(point),
     onChange: (state) => {
-      // A video whose page has turned away stops.
+      // A video whose page has turned away stops; one set to play on its
+      // own starts the first time its spread is shown.
       if (playing && !state.pages.includes(playing.page)) stopVideo();
+      scheduleAutoplay();
       focus = state.pages;
       settled = state.pages;
       turning = false;
@@ -568,15 +619,24 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   focus = viewer.state.pages;
   settled = viewer.state.pages;
   refresh(around(viewer.state));
+  scheduleAutoplay();
+  // Debugging (`__postextFolioPreserve`, as for the renderer): the videos.
+  if ((globalThis as { __postextFolioPreserve?: boolean }).__postextFolioPreserve) {
+    (globalThis as { __postextFolioVideos?: unknown }).__postextFolioVideos = {
+      playing: () => playing,
+      autoplayed,
+      spots: (i: number) => spotsOf(i),
+      state: () => viewer.state,
+      turning: () => turning,
+    };
+  }
 
   // Space plays or pauses the first video on the spread on show.
   viewer.element.addEventListener("keydown", (event) => {
     if (event.target !== viewer.element || (event.key !== " " && event.key !== "Enter") || options.videos === false) return;
     const on = viewer.state.pages;
-    if (playing && on.includes(playing.page)) {
-      if (playing.element.paused) void playing.element.play().catch(() => {});
-      else playing.element.pause();
-    } else {
+    if (playing && on.includes(playing.page)) togglePlaying();
+    else {
       const page = on.find((i) => spotsOf(i).some((s) => urlOf(s)));
       if (page === undefined) return;
       startVideo(page, spotsOf(page).find((s) => urlOf(s))!);
@@ -664,6 +724,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       }
       refresh(around(viewer.state));
       followVideo();
+      scheduleAutoplay();
     },
     redecorate(pages?: Iterable<number>) {
       let swapped = false;
@@ -676,6 +737,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       if (swapped) viewer.setPages(sources());
     },
     dispose() {
+      clearTimeout(autoTimer);
       stopVideo();
       cancelIdle(idle);
       cancelAnimationFrame(sweepFrame);

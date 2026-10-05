@@ -93,56 +93,108 @@ interface HlsLike {
   loadSource(url: string): void;
   attachMedia(media: HTMLMediaElement): void;
   destroy(): void;
-  on(event: string, cb: (event: string, data: { levels?: { height: number }[] }) => void): void;
+  on(event: string, cb: (event: string, data: { levels?: { height: number }[]; fatal?: boolean; type?: string }) => void): void;
   startLoad(): void;
+  recoverMediaError(): void;
   autoLevelCapping: number;
 }
 interface HlsConstructor {
   new (config?: Record<string, unknown>): HlsLike;
   isSupported(): boolean;
   Events: { MANIFEST_PARSED: string; ERROR: string };
+  ErrorTypes: { NETWORK_ERROR: string; MEDIA_ERROR: string };
+}
+
+/** The variant to cap a stream at: the tallest no taller than `maxHeight`
+ *  (with a quarter of slack), else the shortest there is. */
+export function hlsLevelCap(levels: readonly { height: number }[], maxHeight: number): number {
+  let cap = -1;
+  let lowest = -1;
+  levels.forEach((l, i) => {
+    if (lowest < 0 || l.height < levels[lowest]!.height) lowest = i;
+    if (l.height <= maxHeight * 1.25 && (cap < 0 || l.height > levels[cap]!.height)) cap = i;
+  });
+  return cap >= 0 ? cap : lowest;
 }
 
 /**
  * Gives a `<video>` its source: a file's address as it is, or an HLS
- * stream (`hls`, or an `.m3u8` address) natively where the browser plays
- * HLS (Safari) and through hls.js elsewhere, loaded on demand, its quality
- * capped at the variant nearest `maxHeight` px tall. `lazy` loads no
- * segment before the first play (a player on a page that may never be
- * played). Resolves to a function that lets the source go; rejects when
- * the stream cannot play.
+ * stream (`hls`, or an `.m3u8` address). A stream plays through hls.js
+ * (loaded on demand) wherever Media Source Extensions exist, its quality
+ * capped at the variant nearest `maxHeight` px tall, so a picture a few
+ * hundred pixels tall never pulls a 4K variant; the browser's own HLS
+ * (Safari on iOS) is the fallback, or the first choice with `native:
+ * 'prefer'` (a player shown at its size, which picks its own variant).
+ * A fatal network or media error is retried once each. `lazy` loads no
+ * segment before the first play. Resolves to a function that lets the
+ * source go; rejects when the stream cannot play.
  */
 export async function attachVideoSource(
   element: HTMLVideoElement,
   url: string,
-  options: { hls?: boolean; maxHeight?: number; lazy?: boolean } = {},
+  options: { hls?: boolean; maxHeight?: number; lazy?: boolean; native?: "prefer" | "avoid"; corsTag?: boolean } = {},
 ): Promise<() => void> {
   const hls = options.hls ?? /\.m3u8(?:$|[?#])/i.test(url);
-  if (!hls || element.canPlayType("application/vnd.apple.mpegurl")) {
+  const nativeHls = hls && !!element.canPlayType("application/vnd.apple.mpegurl");
+  const plain = () => {
     element.src = url;
     return () => {
       element.removeAttribute("src");
       element.load();
     };
+  };
+  if (!hls || (nativeHls && options.native === "prefer")) return plain();
+  let Hls: HlsConstructor | null = null;
+  try {
+    Hls = ((await import("hls.js")) as unknown as { default: HlsConstructor }).default;
+  } catch {
+    Hls = null;
   }
-  const { default: Hls } = (await import("hls.js")) as unknown as { default: HlsConstructor };
-  if (!Hls.isSupported()) throw new Error("HLS is not supported");
-  const player = new Hls({ capLevelToPlayerSize: false, startLevel: -1, autoStartLoad: !options.lazy });
+  if (!Hls || !Hls.isSupported()) {
+    if (nativeHls) return plain();
+    throw new Error("HLS is not supported");
+  }
+  const H = Hls;
+  const player = new H({
+    capLevelToPlayerSize: false,
+    startLevel: -1,
+    autoStartLoad: !options.lazy,
+    // `corsTag`: every playlist and segment is asked for with a query of its
+    // own, so the browser's cache never hands back a copy fetched without
+    // CORS by another player of the same stream (a plain <video> sends no
+    // Origin, and a server that answers it without `Vary: Origin` gets that
+    // copy reused for this cross-origin read, which then fails: playback
+    // stops at the first such segment).
+    ...(options.corsTag ? { xhrSetup: (xhr: XMLHttpRequest, u: string) => xhr.open("GET", corsTagged(u), true) } : {}),
+  });
   if (options.lazy) element.addEventListener("play", () => player.startLoad(), { once: true });
   const maxHeight = options.maxHeight;
   if (maxHeight) {
-    player.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
-      const levels = data.levels ?? [];
-      let cap = -1;
-      levels.forEach((l, i) => {
-        if (l.height <= maxHeight * 1.25 && (cap < 0 || l.height > levels[cap]!.height)) cap = i;
-      });
+    player.on(H.Events.MANIFEST_PARSED, (_e, data) => {
+      const cap = hlsLevelCap(data.levels ?? [], maxHeight);
       if (cap >= 0) player.autoLevelCapping = cap;
     });
   }
+  const retried = new Set<string>();
+  player.on(H.Events.ERROR, (_e, data) => {
+    if (!data.fatal || !data.type || retried.has(data.type)) return;
+    retried.add(data.type);
+    if (data.type === H.ErrorTypes.NETWORK_ERROR) player.startLoad();
+    else if (data.type === H.ErrorTypes.MEDIA_ERROR) player.recoverMediaError();
+  });
   player.loadSource(url);
   player.attachMedia(element);
   return () => player.destroy();
+}
+
+/** An address with the query that keeps its cache entry apart (see
+ *  `corsTag`). */
+export function corsTagged(url: string): string {
+  if (/^(blob|data):/i.test(url) || /[?&]pt-cors(=|&|$)/.test(url)) return url;
+  const at = url.indexOf("#");
+  const base = at < 0 ? url : url.slice(0, at);
+  const hash = at < 0 ? "" : url.slice(at);
+  return `${base}${base.includes("?") ? "&" : "?"}pt-cors=1${hash}`;
 }
 
 /** Whether a video plays from an HLS address. */

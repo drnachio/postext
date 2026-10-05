@@ -11,4 +11,4 @@ export { loadDeskMaps, type DeskMaps } from "./deskTextures";
 export { createFolioFromDocument, firstPageIsRecto } from "./postext";
 export type { FolioDocumentOptions, FolioDocumentViewer } from "./postext";
 export { FOLIO_CSS } from "./styles";
-export { attachVideoSource, pageVideoSpots, spotContains, isHlsVideo, type PageVideoSpot } from "./videos";
+export { attachVideoSource, hlsLevelCap, pageVideoSpots, spotContains, isHlsVideo, type PageVideoSpot } from "./videos";

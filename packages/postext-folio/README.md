@@ -47,7 +47,7 @@ The container sets the size: the book fills it, with the ‹ › buttons and the
 
 ## Videos on the pages
 
-A video resource of the document plays on its page. With the pointer turning pages, a click on the poster starts it there: the page's shader draws the frames over the poster, so the picture curls with the leaf and keeps playing while it turns. Another click pauses it, starting another stops the first, and it stops when the book comes to rest on a spread that no longer shows it. Space or Enter plays or pauses the video on the open spread.
+A video resource of the document plays on its page. A click on the poster starts it there, in any pointer mode: the page's shader draws the frames over the poster, so the picture curls with the leaf and keeps playing while it turns. Another click pauses it, starting another stops the first, and it stops when the book comes to rest on a spread that no longer shows it. Space or Enter plays or pauses the video on the open spread. A video with `player.autoplay` starts by itself the first time its spread is shown (muted until the reader has interacted with the page).
 
 ```ts
 const book = createFolioFromDocument(container, doc, {
@@ -56,7 +56,7 @@ const book = createFolioFromDocument(container, doc, {
 });
 ```
 
-Files and web addresses play (MP4, WebM, and HLS streams: natively in Safari and recent Chrome, through [hls.js](https://github.com/video-dev/hls.js) elsewhere, an optional peer dependency loaded on the first play). The server must allow cross-origin reads (CORS) for WebGL to draw the video; YouTube and Vimeo play in iframes, which WebGL cannot draw, so their posters turn the page as before. `videos: false` turns it off.
+Files and web addresses play (MP4, WebM, and HLS streams through [hls.js](https://github.com/video-dev/hls.js), an optional peer dependency loaded on the first play and capped at the picture's size on screen; the browser's own HLS is the fallback). The server must allow cross-origin reads (CORS) for WebGL to draw the video; YouTube and Vimeo play in iframes, which WebGL cannot draw, so their posters turn the page as before. `videos: false` turns it off.
 
 ## The book on the desk
 

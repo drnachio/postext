@@ -111,6 +111,9 @@ export function guideVideoResources(lang: GuideLang, now: number): Resource[] {
       height: 1080,
       duration: spec.duration[lang],
       poster: { fileId: guideVideoPosterId(spec.id, lang), format: 'jpeg', width: 1280, height: 720 },
+      // They start on their own (muted) the first time their page is
+      // shown, in Folio and in the HTML view.
+      player: { autoplay: true },
     },
     placement: spec.placement,
     caption: spec.caption[lang],
@@ -123,5 +126,5 @@ export function guideVideoResources(lang: GuideLang, now: number): Resource[] {
 /** A pure description of every edition's videos, for the built-in preset's
  *  fingerprint. */
 export function guideVideosSignature(): unknown[] {
-  return SPECS.map((s) => [s.id, s.path, s.placement, s.duration, s.caption, s.altText, VERSION, GUIDE_MEDIA_BASE]);
+  return SPECS.map((s) => [s.id, s.path, s.placement, s.duration, s.caption, s.altText, VERSION, GUIDE_MEDIA_BASE, 'autoplay']);
 }

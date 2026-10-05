@@ -104,9 +104,10 @@ export interface FolioOptions {
   /** Told as soon as the book is sent to another spread (a button, a key,
    *  a page let go past halfway), before its leaves have landed. */
   onTarget?: (state: FolioState) => void;
-  /** A click on a page in `hand` mode, before it turns the page: return
-   *  true to keep the page where it is (the click did something else,
-   *  such as playing a video printed there). */
+  /** A click on a page, before it turns the page (hand mode) or reaches
+   *  the host (select mode): return true when the click did something else,
+   *  such as playing a video printed there. In orbit and select modes it is
+   *  asked only where `isPageAction` says a click acts. */
   onPageClick?: (point: FolioPagePoint) => boolean;
   /** Whether a click at this point of a page acts on it (`onPageClick`):
    *  the pointer shows a hand there. */
@@ -668,12 +669,59 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
   // Select mode: a text cursor over the pages as the book is seen.
   root.addEventListener("pointermove", (event) => {
     if (event.buttons) return;
-    if (interaction === "select") root.classList.toggle("is-over-page", !!pageAt(event));
-    else if (interaction === "hand" && options.isPageAction) {
-      const point = holding ? null : pageAt(event);
-      root.classList.toggle("is-over-action", !!point && options.isPageAction(point));
-    }
+    const point = holding ? null : pageAt(event);
+    if (interaction === "select") root.classList.toggle("is-over-page", !!point);
+    if (options.isPageAction) root.classList.toggle("is-over-action", !!point && options.isPageAction(point));
   });
+  // Orbit and select modes: a click on something a click acts on (a video)
+  // acts on it, as in hand mode. The press is taken before the host hears
+  // it in select mode (no caret, no link followed); in orbit mode a drag
+  // from it still turns the view.
+  let actionPress: { x: number; y: number; id: number; point: FolioPagePoint } | null = null;
+  let swallowClick = false;
+  root.addEventListener(
+    "pointerdown",
+    (event) => {
+      actionPress = null;
+      if (interaction === "hand" || event.button !== 0 || !options.onPageClick || !options.isPageAction) return;
+      if ((event.target as Element).closest(".postext-folio-nav")) return;
+      const point = pageAt(event);
+      if (!point || !options.isPageAction(point)) return;
+      actionPress = { x: event.clientX, y: event.clientY, id: event.pointerId, point };
+      if (interaction === "select") event.stopPropagation();
+    },
+    true,
+  );
+  root.addEventListener(
+    "pointermove",
+    (event) => {
+      if (actionPress && interaction === "select" && event.pointerId === actionPress.id) event.stopPropagation();
+    },
+    true,
+  );
+  root.addEventListener(
+    "pointerup",
+    (event) => {
+      const press = actionPress;
+      if (!press || event.pointerId !== press.id) return;
+      actionPress = null;
+      if (interaction === "select") {
+        event.stopPropagation();
+        swallowClick = true;
+      }
+      if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < CLICK_SLOP) options.onPageClick?.(press.point);
+    },
+    true,
+  );
+  root.addEventListener(
+    "click",
+    (event) => {
+      if (!swallowClick) return;
+      swallowClick = false;
+      event.stopPropagation();
+    },
+    true,
+  );
   root.addEventListener("pointerleave", () => root.classList.remove("is-over-action"));
   root.addEventListener("pointerdown", (event) => {
     // Only the hand takes pages, swipes and clicks them over.

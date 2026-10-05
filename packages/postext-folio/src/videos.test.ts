@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { VDTDocument, VDTPage } from "postext";
-import { isHlsVideo, pageVideoSpots, spotContains } from "./videos";
+import { corsTagged, hlsLevelCap, isHlsVideo, pageVideoSpots, spotContains } from "./videos";
 
 // A 200 × 300 px sheet with a 10 px bleed (trimmed: 180 × 280) and one
 // video whose body is 100 × 50 px.
@@ -77,5 +77,27 @@ describe("isHlsVideo", () => {
     expect(isHlsVideo({ mimeType: "application/vnd.apple.mpegurl" }, "https://x.org/a")).toBe(true);
     expect(isHlsVideo({}, "https://x.org/reel/master.m3u8?v=1")).toBe(true);
     expect(isHlsVideo({ mimeType: "video/mp4" }, "https://x.org/clip.mp4")).toBe(false);
+  });
+});
+
+describe("hlsLevelCap", () => {
+  const levels = [{ height: 2160 }, { height: 1440 }, { height: 1080 }, { height: 720 }];
+  it("caps at the tallest variant the picture needs", () => {
+    expect(hlsLevelCap(levels, 800)).toBe(3);
+    expect(hlsLevelCap(levels, 900)).toBe(2);
+    expect(hlsLevelCap(levels, 2000)).toBe(0);
+  });
+  it("falls back to the shortest variant for a small picture", () => {
+    expect(hlsLevelCap(levels, 300)).toBe(3);
+    expect(hlsLevelCap([], 300)).toBe(-1);
+  });
+});
+
+describe("corsTagged", () => {
+  it("adds a query of its own, once, before the fragment", () => {
+    expect(corsTagged("https://x.org/a/seg_001.m4s")).toBe("https://x.org/a/seg_001.m4s?pt-cors=1");
+    expect(corsTagged("https://x.org/a/master.m3u8?v=2#t=3")).toBe("https://x.org/a/master.m3u8?v=2&pt-cors=1#t=3");
+    expect(corsTagged("https://x.org/a.m4s?pt-cors=1")).toBe("https://x.org/a.m4s?pt-cors=1");
+    expect(corsTagged("blob:http://x/1")).toBe("blob:http://x/1");
   });
 });

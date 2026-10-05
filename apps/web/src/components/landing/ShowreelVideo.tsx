@@ -184,6 +184,10 @@ export function ShowreelVideo({
         controlsList={frameFs ? "nofullscreen" : undefined}
         playsInline
         preload="none"
+        // A cross-origin read, so the CDN's answers carry CORS headers in
+        // the browser's cache: Folio's pages draw the same segments into
+        // WebGL, which needs them (#477).
+        crossOrigin="anonymous"
         poster={near ? poster : undefined}
         aria-label={title}
         onPlay={() => setStarted(true)}
