@@ -41,7 +41,7 @@ function SandboxAction({ sandbox, short }: { sandbox: NonNullable<RecipeActionsD
   const t = useTranslations("CookbookRecipe");
   const title = t(sandbox.live ? "openInSandboxTitleLive" : "openInSandboxTitle");
   return (
-    <a href={sandbox.href} className="cb-action" title={title} aria-label={short ? title : undefined}>
+    <a href={sandbox.href} className="cb-action cb-action-sandbox" title={title} aria-label={short ? title : undefined}>
       <AppWindow aria-hidden="true" className="size-3.5" />
       {t(short ? "openInSandboxShort" : "openInSandbox")}
     </a>
@@ -100,7 +100,7 @@ export function useRecipeActions(data: RecipeActionsData) {
   };
 }
 
-/** The band's actions: Open in CodePen (primary), Open in Sandbox, Copy
+/** The band's actions: Open in CodePen and Open in Sandbox (both filled), Copy
  *  code, the `.html` and PDF downloads and the GitHub folder. */
 export function RecipeActions({ data, className }: { data: RecipeActionsData; className?: string }) {
   const { t, codepen, copy, download } = useRecipeActions(data);
