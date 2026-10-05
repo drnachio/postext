@@ -15,11 +15,15 @@ import type { MarkCutRule } from '../measure/markCuts';
 type Ctx = CanvasRenderingContext2D;
 
 /** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
- *  leaning a third of a right angle, centred on the origin. */
-export function sesamePath(size: number): { x: number; y: number }[][] {
+ *  leaning a third of a right angle, centred on the origin. The lens
+ *  stands the same way on the sheet in horizontal and vertical text (the
+ *  glyph U+FE45 has no vertical form; CSS `text-emphasis: sesame` draws it
+ *  upright in `vertical-rl`): on a vertical page, whose flow is painted a
+ *  quarter turn clockwise, `vertical` turns the lens a quarter turn back. */
+export function sesamePath(size: number, vertical = false): { x: number; y: number }[][] {
   const l = size / 2;
   const w = size * 0.6;
-  const a = -Math.PI / 6;
+  const a = -Math.PI / 6 - (vertical ? Math.PI / 2 : 0);
   const rot = (x: number, y: number) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) });
   // Two quadratic curves: [start, control, end] each.
   return [
@@ -42,13 +46,27 @@ export function wavePoints(mark: Pick<VDTLineMark, 'x' | 'y' | 'length' | 'ampli
   return out;
 }
 
+/** The centres of the dots of a `dotted` line, along it from its start
+ *  (see `VDTLineMark.gap`). */
+export function dottedCentres(mark: Pick<VDTLineMark, 'x' | 'length' | 'size' | 'gap'>, x0 = 0): number[] {
+  const size = mark.size ?? 0;
+  const span = Math.max(0, (mark.length ?? 0) - size);
+  const gap = mark.gap ?? 0;
+  const count = gap > 0 ? Math.round(span / gap) : 0;
+  const out: number[] = [];
+  for (let i = 0; i <= count; i++) out.push(x0 + mark.x + size / 2 + (count > 0 ? (span * i) / count : span / 2));
+  return out;
+}
+
 /** Paint the marks of a line (`VDTLine.marks`) in `color` unless a mark
- *  has its own. */
+ *  has its own. On a vertical page a sesame turns back against the flow
+ *  (see {@link sesamePath}). */
 export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
   const marks = line.marks;
   if (!marks || marks.length === 0) return;
   const x0 = line.bbox.x;
   const y0 = line.baseline;
+  const vertical = verticalPaintActive();
   ctx.save();
   for (const m of marks) {
     const ink = m.color ?? color;
@@ -73,7 +91,7 @@ export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
       }
       case 'sesame': {
         ctx.beginPath();
-        const [a, b] = sesamePath(m.size ?? 0);
+        const [a, b] = sesamePath(m.size ?? 0, vertical);
         ctx.moveTo(cx + a![0]!.x, cy + a![0]!.y);
         ctx.quadraticCurveTo(cx + a![1]!.x, cy + a![1]!.y, cx + a![2]!.x, cy + a![2]!.y);
         ctx.quadraticCurveTo(cx + b![1]!.x, cy + b![1]!.y, cx + b![2]!.x, cy + b![2]!.y);
@@ -85,6 +103,22 @@ export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
       case 'line':
         ctx.fillRect(cx, cy - m.thickness / 2, m.length ?? 0, m.thickness);
         break;
+      case 'double': {
+        const half = (m.gap ?? 0) / 2;
+        ctx.fillRect(cx, cy - half - m.thickness / 2, m.length ?? 0, m.thickness);
+        ctx.fillRect(cx, cy + half - m.thickness / 2, m.length ?? 0, m.thickness);
+        break;
+      }
+      case 'dotted': {
+        const r = (m.size ?? 0) / 2;
+        ctx.beginPath();
+        for (const x of dottedCentres(m, x0)) {
+          ctx.moveTo(x + r, cy);
+          ctx.arc(x, cy, r, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        break;
+      }
       case 'wavy': {
         const pts = wavePoints(m, x0, y0);
         ctx.beginPath();

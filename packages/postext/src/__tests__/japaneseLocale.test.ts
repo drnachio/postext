@@ -73,7 +73,7 @@ describe('Japanese locale tags', () => {
 });
 
 describe('cjk defaults for Japan', () => {
-  it('resolves auto: JIS X 4051 breaks (ja-very-strict), full-width marks with compression and trimming, hanging 、。, emphasis dots, bare titles, （） warichu', () => {
+  it('resolves auto: JIS X 4051 breaks (ja-very-strict), full-width marks with compression and trimming, hanging 、。, sesame emphasis, 『』 titles, （） warichu', () => {
     expect(resolveCjkConfig(undefined, 'ja')).toMatchObject({
       region: 'japan',
       lineBreak: 'ja-very-strict',
@@ -84,7 +84,9 @@ describe('cjk defaults for Japan', () => {
       spaceAfterQuestion: true,
       paragraphStartBracket: 'half',
       emphasis: 'dots',
-      bookTitleMark: 'none',
+      emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' },
+      bookTitleMark: 'brackets',
+      bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
       warichu: { open: '（', close: '）' },
     });
     expect(resolveAllConfig({ locale: 'ja-JP' }).cjk.region).toBe('japan');
@@ -94,7 +96,7 @@ describe('cjk defaults for Japan', () => {
     expect(defaultCjkLineBreak('japan')).toBe('ja-very-strict');
     expect(defaultCjkPunctuationWidth('japan')).toBe('fullwidth');
     expect(defaultCjkCompression('japan')).toBe(true);
-    expect(defaultCjkBookTitleMark('japan')).toBe('none');
+    expect(defaultCjkBookTitleMark('japan')).toBe('brackets');
     expect(defaultCjkWarichuBrackets('japan')).toEqual({ open: '（', close: '）' });
     // The Chinese regions are unchanged.
     expect((['mainland', 'taiwan', 'hongkong'] as CjkRegion[]).map((r) => [defaultCjkLineBreak(r), defaultCjkPunctuationWidth(r), defaultCjkBookTitleMark(r), defaultCjkWarichuBrackets(r).open]))
@@ -159,16 +161,16 @@ describe('Japanese marks', () => {
 });
 
 describe('Japanese text in a build', () => {
-  it('*…* sets emphasis dots on kana and kanji; Latin keeps its italics', () => {
+  it('*…* sets emphasis marks (the sesame, J6 #421) on kana and kanji; Latin keeps its italics', () => {
     const doc = buildDocument({ markdown: 'これは*大切な*ことと *emphasis* の違い' }, config());
     const line = lines(doc)[0]!;
-    expect(line.marks!.filter((m) => m.kind === 'dot')).toHaveLength(3);
+    expect(line.marks!.filter((m) => m.kind === 'sesame')).toHaveLength(3);
     expect(line.segments!.find((s) => s.text === 'emphasis')!.italic).toBe(true);
   });
 
-  it(':book prints the bare title; 『』 typed by the author stay', () => {
+  it(':book sets 『』 around the title (J6, #421); 『』 typed by the author stay', () => {
     const doc = buildDocument({ markdown: '漱石の:book[こころ]と『坊っちゃん』' }, config());
-    expect(lines(doc)[0]!.text).toBe('漱石のこころと『坊っちゃん』');
+    expect(lines(doc)[0]!.text).toBe('漱石の『こころ』と『坊っちゃん』');
     expect(lines(doc)[0]!.marks).toBeUndefined();
   });
 

@@ -347,7 +347,7 @@ export interface VDTLineSegment {
    *  renderers paint the two rows (`runs`) instead of `text`. Its `width`
    *  is the wider row's advance. Absent otherwise. */
   warichu?: VDTWarichu;
-  /** Characters the layout added (the 《》 of `cjk.bookTitleMark:
+  /** Characters the layout added (the 《》 or 『』 of `cjk.bookTitleMark:
    *  'brackets'`, the brackets of a warichu note): painted, and read in
    *  copied text, but no character of the plain text or the source. */
   inserted?: boolean;
@@ -395,6 +395,10 @@ export interface VDTSegmentMarks {
   /** The book-title run the text belongs to (a wavy line under it, when
    *  `cjk.bookTitleMark` is `'wavy'`). */
   bookTitle?: number;
+  /** The side line (傍線, `:sideline[…]`, #421) the text belongs to: its
+   *  run, how it is drawn and on which side (in the flow frame, as
+   *  `dots`). */
+  sideline?: { id: number; style: 'solid' | 'double' | 'wavy' | 'dotted'; position: 'over' | 'under' };
 }
 
 /** Text an annotation paints (a ruby reading, a zhuyin symbol, a row of a
@@ -458,23 +462,35 @@ export interface VDTWarichu {
 }
 
 /**
- * A mark the layout set on a line (#193): an emphasis dot, circle or sesame
- * on one character, or the proper-name or wavy book-title line under a run.
- * Geometry is in the flow frame, relative to the line: `x` px along the
- * line from `VDTLine.bbox.x` (where the painted text starts: alignment and
- * justified word spaces included), `y` px from the line's baseline across
- * it (positive: towards the line's foot, the left of vertical text).
+ * A mark the layout set on a line (#193, #421): an emphasis dot, circle or
+ * sesame on one character, or a line along a run: the proper-name line,
+ * the wavy book-title line, a side line (傍線: `line`, `double`, `wavy`,
+ * `dotted`). Geometry is in the flow frame, relative to the line: `x` px
+ * along the line from `VDTLine.bbox.x` (where the painted text starts:
+ * alignment and justified word spaces included), `y` px from the line's
+ * baseline across it (positive: towards the line's foot, the left of
+ * vertical text). A sesame's lens is drawn as it stands on the sheet
+ * (leaning like ﹅), so a renderer painting a vertical page turns it back
+ * against the page's quarter turn.
  */
 export interface VDTLineMark {
-  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy';
-  /** A dot's centre; a line's start. */
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted';
+  /** A dot's centre; a line's start (`double`: midway between its two
+   *  rules). */
   x: number;
   y: number;
-  /** A dot's diameter (a sesame's length). */
+  /** A dot's diameter (a sesame's length; the diameter of each dot of a
+   *  `dotted` line). */
   size?: number;
   /** A line's length along the line. */
   length?: number;
-  /** Stroke width: a line, a wave, an open dot's outline. */
+  /** `double`: how far apart the centres of its two rules are. `dotted`:
+   *  how far apart the centres of its dots are, the first dot touching
+   *  `x` and the last `x + length` (the layout sets a pitch that comes out
+   *  even). */
+  gap?: number;
+  /** Stroke width: a line, each rule of a double line, a wave, an open
+   *  dot's outline. */
   thickness: number;
   /** A dot drawn as an outline (`circle`, or `fill="open"`). */
   open?: boolean;

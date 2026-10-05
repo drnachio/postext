@@ -1,15 +1,19 @@
 /**
- * Chinese inline annotations before measurement (#193, #194, #195): what
- * the configuration makes of the spans the parser marked, on every text
- * the layout measures as a block.
+ * Chinese and Japanese inline annotations before measurement (#193, #194,
+ * #195, #421): what the configuration makes of the spans the parser
+ * marked, on every text the layout measures as a block.
  *
- * - `cjk.emphasis: 'dots'`: the Chinese characters of `*…*` lose their
- *   italics and take emphasis dots; Latin letters in the same emphasis keep
- *   the italics.
- * - `cjk.bookTitleMark`: `'brackets'` adds 《》 (〈〉 nested) around each
- *   `:book[…]` title as text the lines are broken with (spans flagged
- *   `inserted`, which take no character of the plain text); `'wavy'` keeps
- *   the title's run for the wavy line; `'none'` drops it.
+ * - `cjk.emphasis: 'dots'`: the Chinese and Japanese characters of `*…*`
+ *   lose their italics and take emphasis dots; Latin letters in the same
+ *   emphasis keep the italics.
+ * - `cjk.emphasisMark`: what an emphasis mark leaves unset (`:dots[…]`
+ *   without `style`, `*…*`) takes the configured or regional shape, fill
+ *   and side (the sesame over the text in Japan).
+ * - `cjk.bookTitleMark`: `'brackets'` adds the `cjk.bookTitleBrackets`
+ *   (《》 and 〈〉 nested; 『』 and 「」 in Japan) around each `:book[…]`
+ *   title as text the lines are broken with (spans flagged `inserted`,
+ *   which take no character of the plain text); `'wavy'` keeps the
+ *   title's run for the wavy line; `'none'` drops it.
  * - Ruby readings and warichu notes get their font (at their size, in the
  *   text's face unless `cjk.ruby.fontFamily` names one) and colour; a note
  *   gets the brackets `cjk.warichu` gives it unless it names its own.
@@ -18,7 +22,7 @@
  * array), so text without them measures and caches as before.
  */
 
-import type { InlineSpan, InlineWarichu } from '../parse';
+import type { EmphasisMark, InlineSpan, InlineWarichu } from '../parse';
 import type { ResolvedCjkConfig } from '../types';
 import { sliceSpan } from '../parse/links';
 import { withBookBrackets } from '../parse/annotations';
@@ -46,11 +50,27 @@ export function fontAtSize(font: string, sizePx: number): string {
   return `${m[1]}${sizePx}px ${m[4]}`;
 }
 
+/** What `cjk.emphasisMark` fills in on an emphasis mark that leaves it
+ *  unset; undefined when it fills nothing in (the Chinese dot, its fill
+ *  and side left to the style and the writing mode), so marks stay as
+ *  written. */
+function emphasisMarkDefaults(cjk: Pick<ResolvedCjkConfig, 'emphasisMark'>): EmphasisMark | undefined {
+  const m = cjk.emphasisMark;
+  const out: EmphasisMark = {
+    ...(m.style !== 'dot' ? { style: m.style } : {}),
+    ...(m.fill !== 'auto' ? { fill: m.fill } : {}),
+    ...(m.position !== 'auto' ? { position: m.position } : {}),
+  };
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 /** Whether a span list holds anything {@link resolveAnnotationSpans}
  *  changes under `cjk`. */
 export function hasAnnotations(spans: readonly InlineSpan[], cjk: ResolvedCjkConfig): boolean {
+  const marks = emphasisMarkDefaults(cjk) !== undefined;
   for (const s of spans) {
     if (s.ruby || s.warichu || s.bookTitle) return true;
+    if (marks && s.emphasisMark) return true;
     if (cjk.emphasis === 'dots' && s.italic && !s.math && !s.chip && !s.swatch && !s.ref && CJK_ANY_RE.test(s.text)) return true;
   }
   return false;
@@ -94,10 +114,10 @@ function emphasisAsDots(span: InlineSpan): InlineSpan[] {
 export function withBookTitleBrackets(
   text: string,
   spans: readonly InlineSpan[],
-  cjk: Pick<ResolvedCjkConfig, 'bookTitleMark'>,
+  cjk: Pick<ResolvedCjkConfig, 'bookTitleMark' | 'bookTitleBrackets'>,
 ): { text: string; spans: readonly InlineSpan[] } {
   if (cjk.bookTitleMark !== 'brackets') return { text, spans };
-  const bracketed = spans.some((s) => s.bookTitle) ? withBookBrackets(spans) : spans;
+  const bracketed = spans.some((s) => s.bookTitle) ? withBookBrackets(spans, cjk.bookTitleBrackets) : spans;
   if (!bracketed.some((s) => s.inserted)) return { text, spans };
   let plain = '';
   let out = '';
@@ -109,11 +129,12 @@ export function withBookTitleBrackets(
 }
 
 /** Book titles as `cjk.bookTitleMark` sets them, for a text measured
- *  outside the paragraph path (an index entry): 《》 added, the titles left
- *  for the wavy line, or plain. The same array when nothing changes. */
-export function bookTitlesAsConfigured(spans: InlineSpan[], cjk: Pick<ResolvedCjkConfig, 'bookTitleMark'>): InlineSpan[] {
+ *  outside the paragraph path (an index entry): brackets added (《》, 『』
+ *  in Japan), the titles left for the wavy line, or plain. The same array
+ *  when nothing changes. */
+export function bookTitlesAsConfigured(spans: InlineSpan[], cjk: Pick<ResolvedCjkConfig, 'bookTitleMark' | 'bookTitleBrackets'>): InlineSpan[] {
   if (!spans.some((s) => s.bookTitle)) return spans;
-  if (cjk.bookTitleMark === 'brackets') return withBookBrackets(spans);
+  if (cjk.bookTitleMark === 'brackets') return withBookBrackets(spans, cjk.bookTitleBrackets);
   if (cjk.bookTitleMark !== 'none') return spans;
   return spans.map((s) => {
     if (!s.bookTitle) return s;
@@ -121,6 +142,15 @@ export function bookTitlesAsConfigured(spans: InlineSpan[], cjk: Pick<ResolvedCj
     const { bookTitle: _b, ...rest } = s;
     return rest;
   });
+}
+
+/** The fields of a mark that are set. */
+function definedFields(mark: EmphasisMark): EmphasisMark {
+  const out: EmphasisMark = {};
+  if (mark.style !== undefined) out.style = mark.style;
+  if (mark.fill !== undefined) out.fill = mark.fill;
+  if (mark.position !== undefined) out.position = mark.position;
+  return out;
 }
 
 /** The hex of a resolved colour, if any. */
@@ -143,6 +173,13 @@ export function resolveAnnotationSpans(spans: InlineSpan[], ctx: AnnotationConte
       } else out.push(span);
     }
   } else out = [...spans];
+
+  // The region's (or the configured) emphasis mark, where a mark leaves
+  // its shape, fill or side unset; what `:dots[…]{…}` writes wins.
+  const markDefaults = emphasisMarkDefaults(cjk);
+  if (markDefaults) {
+    out = out.map((s) => (s.emphasisMark ? { ...s, emphasisMark: { ...markDefaults, ...definedFields(s.emphasisMark) } } : s));
+  }
 
   // Book titles.
   out = bookTitlesAsConfigured(out, cjk);

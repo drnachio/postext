@@ -190,8 +190,9 @@ export interface InlineSpan {
   properName?: number;
   /** Book-title mark (书名号, `:book[text]`, #193): the title's run and
    *  how deep it is nested in other titles (1 for the outermost). What it
-   *  prints follows `cjk.bookTitleMark`: 《》 (〈〉 nested) around the
-   *  title, a wavy line under it, or nothing. */
+   *  prints follows `cjk.bookTitleMark`: the `cjk.bookTitleBrackets`
+   *  around the title (《》 and 〈〉 nested; 『』 and 「」 in Japan), a wavy
+   *  line under it, or nothing. */
   bookTitle?: { id: number; depth: number };
   /** Ruby (`:ruby[base]{rt="…"}` or `{base|reading}`, #194): the reading
    *  set over the base text (beside it for zhuyin). A mono ruby is one
@@ -210,6 +211,12 @@ export interface InlineSpan {
    *  isolate inside another names it as `outer`. `bidi.ts`
    *  (`resolveSpans`) reads it when a line's order is resolved. */
   direction?: InlineDirection;
+  /** Side line (傍線, `:sideline[text]{style pos}`, #421): a line along
+   *  the text, under it in horizontal text and right of it in vertical
+   *  text unless `pos` says otherwise. Unlike emphasis dots it runs on
+   *  across every character of the run, punctuation and spaces included,
+   *  in any script. Every span of one line shares the object. */
+  sideline?: InlineSideline;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never
@@ -233,16 +240,32 @@ export interface InlineDirection {
   outer?: InlineDirection;
 }
 
+/** The side line a span belongs to (see {@link InlineSpan.sideline}). */
+export interface InlineSideline {
+  /** Tells lines apart: two lines set side by side are two runs. Ids
+   *  count from 1 in each parse of a text. */
+  id: number;
+  /** `solid` (default) a rule, `double` two rules (二重傍線), `wavy` a
+   *  wave (波線), `dotted` a row of dots. */
+  style?: 'solid' | 'double' | 'wavy' | 'dotted';
+  /** `under` or `over` the text in its flow (in vertical text over is the
+   *  right side, under the left). Unset: under in horizontal text, over
+   *  (right) in vertical text, where Japanese books set 傍線. */
+  position?: 'over' | 'under';
+}
+
 /** An emphasis-dot mark: its shape, whether it is filled, and its side. */
 export interface EmphasisMark {
   /** `dot` (default) ●, `circle` ○ (open), `sesame` ﹅. */
   style?: 'dot' | 'circle' | 'sesame';
   /** `filled` (default for `dot` and `sesame`) or `open` (default for
-   *  `circle`). */
+   *  `circle`). Unset fields take `cjk.emphasisMark`'s (in Japan the
+   *  sesame). */
   fill?: 'filled' | 'open';
   /** `under` or `over` the text in its flow (in vertical text over is the
-   *  right side, under the left). Unset: under in horizontal text, over
-   *  (right) in vertical text. */
+   *  right side, under the left). Unset: `cjk.emphasisMark.position`,
+   *  which in Japan is over; else under in horizontal text, over (right)
+   *  in vertical text. */
   position?: 'over' | 'under';
 }
 

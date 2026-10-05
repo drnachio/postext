@@ -1,7 +1,10 @@
 import type {
   CjkBookTitleMark,
+  CjkBracketPair,
   CjkConfig,
   CjkEmphasis,
+  CjkEmphasisMarkConfig,
+  CjkEmphasisMarkStyle,
   CjkGridConfig,
   CjkHangingPunctuation,
   CjkLineBreak,
@@ -14,6 +17,7 @@ import type {
   ColorValue,
   Dimension,
   ResolvedCjkConfig,
+  ResolvedCjkEmphasisMarkConfig,
   ResolvedCjkGridConfig,
   ResolvedCjkRubyConfig,
   ResolvedCjkWarichuConfig,
@@ -40,7 +44,9 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   uprightDigits: 2,
   grid: { enabled: false, show: false },
   emphasis: 'auto',
+  emphasisMark: { style: 'auto', fill: 'auto', position: 'auto' },
   bookTitleMark: 'auto',
+  bookTitleBrackets: 'auto',
   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' },
 };
@@ -51,21 +57,54 @@ const RUBY_POSITIONS: readonly CjkRubyPosition[] = ['over', 'under', 'right'];
 
 /** What `*…*` does to Chinese characters by default: emphasis dots when the
  *  document language is Chinese or Japanese, italics otherwise. Japanese
- *  has no italics: emphasis is 傍点 (JLReq §3.3.9). The mark's shape and
- *  side are still the Chinese dot under the text in horizontal lines;
- *  the Japanese sesame over it comes with `cjk.emphasisMark` (J6, #421). */
+ *  has no italics: emphasis is 傍点 (JLReq §3.3.9), set as the region's
+ *  mark (`defaultCjkEmphasisMark`). */
 export function defaultCjkEmphasis(locale: string | undefined): CjkEmphasis {
   return languageOf(locale) === 'zh' || isJapaneseLanguage(locale) ? 'dots' : 'italic';
 }
 
-/** What `:book[…]` prints by default: 《》 on the mainland, the wavy line
- *  in Taiwan and Hong Kong, the bare title in Japan. Japanese titles take
- *  『』 (「」 inside them), which the author types until the brackets are
- *  configurable (`cjk.bookTitleBrackets`, J6 #421); 《》 would be wrong
- *  there and the wavy line is Chinese. */
+/** What `:book[…]` prints by default: brackets on the mainland (《》) and
+ *  in Japan (『』, `defaultCjkBookTitleBrackets`), the wavy line in Taiwan
+ *  and Hong Kong. */
 export function defaultCjkBookTitleMark(region: CjkRegion): CjkBookTitleMark {
-  if (region === 'japan') return 'none';
-  return region === 'mainland' ? 'brackets' : 'wavy';
+  return region === 'taiwan' || region === 'hongkong' ? 'wavy' : 'brackets';
+}
+
+/** The brackets a book title is set between by default, outermost first:
+ *  『』 then 「」 in Japan (an article or a chapter named inside a book's
+ *  title takes 「」), 《》 then 〈〉 for Chinese (GB/T 15834—2011). */
+export function defaultCjkBookTitleBrackets(region: CjkRegion): CjkBracketPair[] {
+  return region === 'japan'
+    ? [{ open: '『', close: '』' }, { open: '「', close: '」' }]
+    : [{ open: '《', close: '》' }, { open: '〈', close: '〉' }];
+}
+
+/** The emphasis mark a region sets when `cjk.emphasisMark` says nothing:
+ *  in Japan the filled sesame ﹅ over the text, which is right of vertical
+ *  text (JLReq §3.3.9; the Aozora 傍点 is the sesame in either direction);
+ *  for Chinese the filled dot, with the side the writing mode gives (under
+ *  horizontal text, right of vertical text). */
+export function defaultCjkEmphasisMark(region: CjkRegion): ResolvedCjkEmphasisMarkConfig {
+  return region === 'japan'
+    ? { style: 'sesame', fill: 'auto', position: 'over' }
+    : { style: 'dot', fill: 'auto', position: 'auto' };
+}
+
+const MARK_STYLES: readonly CjkEmphasisMarkStyle[] = ['dot', 'circle', 'sesame'];
+
+function resolveEmphasisMark(mark: CjkEmphasisMarkConfig | undefined, region: CjkRegion): ResolvedCjkEmphasisMarkConfig {
+  const d = defaultCjkEmphasisMark(region);
+  return {
+    style: mark?.style && MARK_STYLES.includes(mark.style as CjkEmphasisMarkStyle) ? (mark.style as CjkEmphasisMarkStyle) : d.style,
+    fill: mark?.fill === 'filled' || mark?.fill === 'open' ? mark.fill : d.fill,
+    position: mark?.position === 'over' || mark?.position === 'under' ? mark.position : d.position,
+  };
+}
+
+/** Whether `v` is a list of bracket pairs (at least one). */
+function isBracketPairs(v: unknown): v is CjkBracketPair[] {
+  return Array.isArray(v) && v.length > 0
+    && v.every((p) => !!p && typeof p === 'object' && typeof (p as CjkBracketPair).open === 'string' && typeof (p as CjkBracketPair).close === 'string');
 }
 
 /** The brackets a warichu note is set between by default: （ ） in Japan
@@ -227,9 +266,13 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     emphasis: partial?.emphasis && EMPHASES.includes(partial.emphasis as CjkEmphasis)
       ? (partial.emphasis as CjkEmphasis)
       : defaultCjkEmphasis(locale),
+    emphasisMark: resolveEmphasisMark(partial?.emphasisMark, region),
     bookTitleMark: partial?.bookTitleMark && BOOK_TITLE_MARKS.includes(partial.bookTitleMark as CjkBookTitleMark)
       ? (partial.bookTitleMark as CjkBookTitleMark)
       : defaultCjkBookTitleMark(region),
+    bookTitleBrackets: isBracketPairs(partial?.bookTitleBrackets)
+      ? partial.bookTitleBrackets.map((p) => ({ open: p.open, close: p.close }))
+      : defaultCjkBookTitleBrackets(region),
     ...(isColor(partial?.annotationColor) ? { annotationColor: partial.annotationColor } : {}),
     ruby: resolveRuby(partial?.ruby),
     warichu: resolveWarichu(partial?.warichu, region),
@@ -264,6 +307,17 @@ function stripWarichuDefaults(warichu: CjkWarichuConfig | undefined): CjkWarichu
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+/** `cjk.emphasisMark` without the fields at `'auto'`; undefined when
+ *  nothing is left. */
+function stripEmphasisMarkDefaults(mark: CjkEmphasisMarkConfig | undefined): CjkEmphasisMarkConfig | undefined {
+  if (!mark) return undefined;
+  const result: CjkEmphasisMarkConfig = {};
+  if (mark.style !== undefined && mark.style !== 'auto') result.style = mark.style;
+  if (mark.fill !== undefined && mark.fill !== 'auto') result.fill = mark.fill;
+  if (mark.position !== undefined && mark.position !== 'auto') result.position = mark.position;
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 /** `cjk.grid` without the fields at their default; undefined when nothing
  *  is left. */
 function stripGridDefaults(grid: CjkGridConfig | undefined): CjkGridConfig | undefined {
@@ -295,7 +349,10 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   const grid = stripGridDefaults(cjk.grid);
   if (grid) result.grid = grid;
   if (cjk.emphasis !== undefined && cjk.emphasis !== d.emphasis) result.emphasis = cjk.emphasis;
+  const emphasisMark = stripEmphasisMarkDefaults(cjk.emphasisMark);
+  if (emphasisMark) result.emphasisMark = emphasisMark;
   if (cjk.bookTitleMark !== undefined && cjk.bookTitleMark !== d.bookTitleMark) result.bookTitleMark = cjk.bookTitleMark;
+  if (cjk.bookTitleBrackets !== undefined && cjk.bookTitleBrackets !== d.bookTitleBrackets) result.bookTitleBrackets = cjk.bookTitleBrackets;
   if (cjk.annotationColor !== undefined) result.annotationColor = cjk.annotationColor;
   const ruby = stripRubyDefaults(cjk.ruby);
   if (ruby) result.ruby = ruby;

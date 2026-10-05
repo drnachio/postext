@@ -271,8 +271,9 @@ export function measureContentBlock(
     contentBlock = { ...contentBlock, spans: contentBlock.spans.map((s) => (s.smallCaps ? s : { ...s, smallCaps: true })) };
   }
 
-  // Chinese annotations (#193–#195): emphasis dots for `*…*`, book-title
-  // brackets, the fonts of readings and notes.
+  // Chinese and Japanese annotations (#193–#195, #421): emphasis dots for
+  // `*…*` and the region's mark, book-title brackets, the fonts of
+  // readings and notes.
   if (hasAnnotations(contentBlock.spans, resolved.cjk)) {
     contentBlock = {
       ...contentBlock,
@@ -284,7 +285,7 @@ export function measureContentBlock(
   // text, which is measured as before them.
   const vertical = measuringVertically();
   const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
-    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted
+    || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
     || s.direction !== undefined
     || (vertical && (s.combineUpright || s.orientation)));

@@ -297,6 +297,8 @@ describe("package exports", () => {
       "defaultCjkCompression",
       "defaultCjkEmphasis",
       "defaultCjkBookTitleMark",
+      "defaultCjkBookTitleBrackets",
+      "defaultCjkEmphasisMark",
       "defaultCjkWarichuBrackets",
       "defaultCjkHangingPunctuation",
       "defaultCjkSpaceAfterQuestion",

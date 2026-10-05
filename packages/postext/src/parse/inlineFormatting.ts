@@ -591,7 +591,8 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
 }
 
 /** `spans` set plain: bold, italic, scripts, small capitals, links and the
- *  Chinese marks (emphasis dots, proper-name and book-title marks) dropped,
+ *  Chinese and Japanese marks (emphasis dots, proper-name and book-title
+ *  marks, side lines) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before
  *  headings read inline marks (`headings.inlineMarks: false`). Formulas,
  *  references, swatches, ruby and warichu notes keep their own spans, and
@@ -600,8 +601,8 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
   for (const span of spans) {
-    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, ...rest } = span;
-    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle) changed = true;
+    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, sideline, ...rest } = span;
+    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle || sideline) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
     // A run set upright or sideways in vertical text keeps its span: the
     // mark is about how it stands, not a style. So does a directional
@@ -841,7 +842,7 @@ function linkDestinationRanges(text: string): Array<readonly [number, number]> {
 /** The `{…}` attributes of an inline directive — `:ref{…}`, `:swatch{…}`,
  *  a chip's `:chip[…]{…}`, an annotation's `:ruby[…]{…}` — in group 1:
  *  data, never text to break. */
-const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu|ltr|rtl)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
+const DIRECTIVE_ATTRS_RE = /(?::ref|:swatch|:(?:chip|dots|name|book|ruby|warichu|ltr|rtl|sideline)\[(?:\\.|[^\]\\\n])+\])(\{[^}\n]*\})/g;
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})

@@ -3756,17 +3756,29 @@ export interface CjkConfig {
    *  language (`locale`) is Chinese or Japanese (傍点: Japanese has no
    *  italics either), `'italic'` otherwise (#193). */
   emphasis?: 'auto' | CjkEmphasis;
+  /** The emphasis mark `:dots[…]` and `*…*` (under `emphasis: 'dots'`)
+   *  set when the directive does not say: its shape, fill and side (see
+   *  {@link CjkEmphasisMarkConfig}). A `:dots[…]{style fill pos}`
+   *  attribute wins over it. */
+  emphasisMark?: CjkEmphasisMarkConfig;
   /** What a book title marked `:book[…]` prints (#193): `'brackets'` sets
-   *  《》 around it (〈〉 for a title inside another), as text the lines
-   *  are broken with; `'wavy'` draws the wavy book-title line (书名号甲式)
-   *  under it (left of it in vertical text); `'none'` prints the bare
-   *  title. `'auto'` (the default): brackets for the mainland, the wavy
-   *  line for Taiwan and Hong Kong, the bare title for Japan, whose books
-   *  set 『』 the author types (`region`). */
+   *  the brackets of `bookTitleBrackets` around it (《》 on the mainland,
+   *  『』 in Japan), as text the lines are broken with; `'wavy'` draws the
+   *  wavy book-title line (书名号甲式) under it (left of it in vertical
+   *  text); `'none'` prints the bare title. `'auto'` (the default):
+   *  brackets for the mainland and Japan, the wavy line for Taiwan and
+   *  Hong Kong (`region`). */
   bookTitleMark?: 'auto' | CjkBookTitleMark;
-  /** Colour of the emphasis dots and of the proper-name and book-title
-   *  lines. Unset: the colour of the text they mark (#193). The default of
-   *  the ruby and warichu colours too. */
+  /** The brackets `bookTitleMark: 'brackets'` sets around a book title:
+   *  the outermost title's pair first, then the pair of a title inside it
+   *  (a title deeper still takes the last pair). `'auto'` (the default):
+   *  《》 then 〈〉 for Chinese (GB/T 15834—2011), 『』 then 「」 for Japan
+   *  (『』 for a book, 「」 for an article or a chapter named inside its
+   *  title). */
+  bookTitleBrackets?: 'auto' | CjkBracketPair[];
+  /** Colour of the emphasis dots, of the proper-name and book-title lines
+   *  and of side lines (`:sideline[…]`). Unset: the colour of the text
+   *  they mark (#193). The default of the ruby and warichu colours too. */
   annotationColor?: ColorValue;
   /** Ruby: how readings (pinyin, zhuyin) set with `:ruby[…]{rt="…"}` or
    *  `{紅樓|hóng|lóu}` look (see {@link CjkRubyConfig}, #194). */
@@ -3781,6 +3793,42 @@ export type CjkEmphasis = 'italic' | 'dots';
 
 /** See {@link CjkConfig.bookTitleMark}. */
 export type CjkBookTitleMark = 'brackets' | 'wavy' | 'none';
+
+/** An opening and a closing bracket (`『` `』`), set at the text size. */
+export interface CjkBracketPair {
+  open: string;
+  close: string;
+}
+
+/** The shape of an emphasis mark: a dot ●, a circle ○, a sesame ﹅. */
+export type CjkEmphasisMarkStyle = 'dot' | 'circle' | 'sesame';
+
+/** `cjk.emphasisMark`: the emphasis mark set on each character (着重号,
+ *  傍点). Every field is optional; `'auto'` follows the region. */
+export interface CjkEmphasisMarkConfig {
+  /** `'auto'` (the default): the sesame ﹅ in Japan, in horizontal and
+   *  vertical text alike (JLReq §3.3.9, the Aozora 傍点; CSS keeps a
+   *  circle for horizontal `filled`, which literary books do not); the
+   *  dot elsewhere (着重号, GB/T 15834—2011). */
+  style?: 'auto' | CjkEmphasisMarkStyle;
+  /** `'auto'` (the default): filled, open for a circle. */
+  fill?: 'auto' | 'filled' | 'open';
+  /** Which side of the text, in its flow: `over` is above horizontal
+   *  text and right of vertical text, `under` below it and to its left.
+   *  `'auto'` (the default): over in Japan (JLReq §3.3.9: right of
+   *  vertical text, above horizontal text); for Chinese under horizontal
+   *  text and right of vertical text (clreq). */
+  position?: 'auto' | 'over' | 'under';
+}
+
+/** `cjk.emphasisMark` resolved: the shape, and the fill and side when the
+ *  region or the author sets one (`'auto'`: a circle open, anything else
+ *  filled; under horizontal text, right of vertical text). */
+export interface ResolvedCjkEmphasisMarkConfig {
+  style: CjkEmphasisMarkStyle;
+  fill: 'auto' | 'filled' | 'open';
+  position: 'auto' | 'over' | 'under';
+}
 
 /** Where a ruby reading goes: over the base (in vertical text: to its
  *  right), under it (to its left), or right of each character inside the
@@ -3919,7 +3967,10 @@ export interface ResolvedCjkConfig {
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
   emphasis: CjkEmphasis;
+  emphasisMark: ResolvedCjkEmphasisMarkConfig;
   bookTitleMark: CjkBookTitleMark;
+  /** At least one pair. */
+  bookTitleBrackets: CjkBracketPair[];
   annotationColor?: ColorValue;
   ruby: ResolvedCjkRubyConfig;
   warichu: ResolvedCjkWarichuConfig;

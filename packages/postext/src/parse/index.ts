@@ -26,6 +26,7 @@ export type {
   InlineRuby,
   InlineWarichu,
   InlineDirection,
+  InlineSideline,
 } from './types';
 export { MATH_PLACEHOLDER } from './inlineMath';
 export { REF_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, extractInlineSwatches, injectSwatchSpans, extractInlineChips, injectChipSpans } from './inlineFormatting';

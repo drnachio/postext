@@ -277,11 +277,13 @@ interface Fonts {
   boldItalic: string;
 }
 
-/** The marks a span sets on its characters (#193), the emphasis dots'
- *  defaults filled in: a filled dot (an open circle), under the text, or
- *  right of it in vertical text. */
+/** The marks a span sets on its characters (#193, #421), the defaults
+ *  of what the span leaves unset filled in (`cjk.emphasisMark` has filled
+ *  the region's in already, `pipeline/annotations.ts`): emphasis dots a
+ *  filled dot (an open circle), a side line solid; both under the text,
+ *  or right of it in vertical text. */
 export function spanMarks(span: InlineSpan, vertical: boolean): VDTSegmentMarks | undefined {
-  if (!span.emphasisMark && span.properName === undefined && !span.bookTitle) return undefined;
+  if (!span.emphasisMark && span.properName === undefined && !span.bookTitle && !span.sideline) return undefined;
   const marks: VDTSegmentMarks = {};
   if (span.emphasisMark) {
     const style = span.emphasisMark.style ?? 'dot';
@@ -293,6 +295,13 @@ export function spanMarks(span: InlineSpan, vertical: boolean): VDTSegmentMarks 
   }
   if (span.properName !== undefined) marks.properName = span.properName;
   if (span.bookTitle) marks.bookTitle = span.bookTitle.id;
+  if (span.sideline) {
+    marks.sideline = {
+      id: span.sideline.id,
+      style: span.sideline.style ?? 'solid',
+      position: span.sideline.position ?? (vertical ? 'over' : 'under'),
+    };
+  }
   return marks;
 }
 
@@ -300,7 +309,8 @@ export function spanMarks(span: InlineSpan, vertical: boolean): VDTSegmentMarks 
 function marksKey(marks: VDTSegmentMarks | undefined, inserted: boolean | undefined): string {
   if (!marks && !inserted) return '';
   const d = marks?.dots;
-  return `|m:${d ? `${d.style}${d.fill}${d.position}` : ''}:${marks?.properName ?? ''}:${marks?.bookTitle ?? ''}${inserted ? ':ins' : ''}`;
+  const l = marks?.sideline;
+  return `|m:${d ? `${d.style}${d.fill}${d.position}` : ''}:${marks?.properName ?? ''}:${marks?.bookTitle ?? ''}${l ? `:sl${l.id}${l.style}${l.position}` : ''}${inserted ? ':ins' : ''}`;
 }
 
 /**

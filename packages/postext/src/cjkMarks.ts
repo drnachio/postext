@@ -1,8 +1,9 @@
 /**
- * The Chinese interlinear marks of a laid-out document (#193): emphasis dots
- * (着重号), the proper-name line (专名号) and the wavy book-title line
- * (书名号甲式), as `VDTLine.marks` — primitives the renderers draw as they
- * are — and the leading checks of marks and ruby (#194).
+ * The Chinese and Japanese interlinear marks of a laid-out document (#193,
+ * #421): emphasis dots (着重号, 傍点), the proper-name line (专名号), the
+ * wavy book-title line (书名号甲式) and side lines (傍線), as
+ * `VDTLine.marks` — primitives the renderers draw as they are — and the
+ * leading checks of marks and ruby (#194).
  *
  * The measurer flags the segments (`VDTLineSegment.cjkMarks`); the marks are
  * placed once the document is laid out, where the renderers paint each
@@ -10,14 +11,16 @@
  * spaces of a line included), in the flow frame of the line. Dots are
  * centred on each character, spacing after it left out, and skip
  * punctuation and spaces; a line spans its run's characters, and where two
- * runs meet each end gives up an eighth of an em (clreq §5.6.1). Marks sit
- * against the characters' em box, centred on the font's central axis:
- * under in horizontal text (left in vertical text), emphasis dots over in
- * vertical text (right); when dots and a line mark the same text on one
- * side, the line is nearer the text.
+ * runs meet each end gives up an eighth of an em (clreq §5.6.1). A side
+ * line runs on across every character of its run, punctuation and spaces
+ * included. Marks sit against the characters' em box, centred on the
+ * font's central axis, on the side they were given (`over`: above
+ * horizontal text, right of vertical text): when dots and a line mark the
+ * same text on one side, the line is nearer the text, and dots on the side
+ * of a ruby reading go outside it (as CSS Text Decoration 3 sets them).
  */
 
-import type { ContentWarning, VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment } from './vdt';
+import type { ContentWarning, VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTSegmentMarks } from './vdt';
 import type { CjkRegion, ResolvedCjkConfig } from './types';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { measureTextWidth } from './measure/canvas';
@@ -94,6 +97,11 @@ const LINE_AT = 0.08;
 const WAVE_AT = 0.1;
 const WAVE_HEIGHT = 0.08;
 const WAVE_LENGTH = 0.25;
+/** A double side line: its two rules' centres this far apart. */
+const DOUBLE_GAP = 0.08;
+/** A dotted side line: its dots' diameter and the pitch they come near. */
+const DOTTED_SIZE = 0.08;
+const DOTTED_PITCH = 0.16;
 /** How far dots move out when a line marks the same text on their side. */
 const PAST_LINE = 0.16;
 
@@ -163,23 +171,32 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string, verti
   const out: VDTLineMark[] = [];
   const paint = color !== undefined ? { color } : {};
 
-  // Lines first: they decide where dots under the same text go.
-  type Run = { kind: 'line' | 'wavy'; key: string; from: number; to: number; em: number; axis: number; startSeg: number; endSeg: number };
+  // Lines first: they decide where dots on the same side of the same text
+  // go. The Chinese marks' lines (`line`, `wavy`) go under the text; side
+  // lines (`side`) on their own side.
+  type Sideline = NonNullable<VDTSegmentMarks['sideline']>;
+  type Run = { kind: 'line' | 'wavy' | 'side'; key: string; from: number; to: number; em: number; axis: number; startSeg: number; endSeg: number; side?: Sideline };
   const runs: Run[] = [];
   const lined = new Set<number>();
-  for (const kind of ['line', 'wavy'] as const) {
+  const linedOver = new Set<number>();
+  const idOf = (kind: Run['kind'], seg: VDTLineSegment | undefined): number | undefined =>
+    kind === 'line' ? seg?.cjkMarks?.properName : kind === 'wavy' ? seg?.cjkMarks?.bookTitle : seg?.cjkMarks?.sideline?.id;
+  for (const kind of ['line', 'wavy', 'side'] as const) {
     let open: Run | undefined;
     for (let i = 0; i < segments.length; i++) {
       const seg = segments[i]!;
-      const id = kind === 'line' ? seg.cjkMarks?.properName : seg.cjkMarks?.bookTitle;
-      if (seg.kind === 'space' && id === undefined && open) {
-        // A space inside a run: the line goes on when the run does.
+      const id = idOf(kind, seg);
+      // A space inside a run (for a side line, anything the layout added
+      // there too: a Han–Latin space, a bracket): the line goes on when
+      // the run does.
+      const bridges = (s: VDTLineSegment): boolean => s.kind === 'space' || (kind === 'side' && !!s.inserted && !s.warichu);
+      if (id === undefined && open && bridges(seg)) {
         let j = i + 1;
-        while (j < segments.length && segments[j]!.kind === 'space') j++;
-        const nextId = kind === 'line' ? segments[j]?.cjkMarks?.properName : segments[j]?.cjkMarks?.bookTitle;
+        while (j < segments.length && bridges(segments[j]!)) j++;
+        const nextId = idOf(kind, segments[j]);
         if (nextId !== undefined && `${kind}:${nextId}` === open.key) continue;
       }
-      if (id === undefined || seg.warichu || seg.inserted) {
+      if (id === undefined || seg.warichu || (seg.inserted && kind !== 'side')) {
         open = undefined;
         continue;
       }
@@ -187,21 +204,33 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string, verti
       const font = segmentFont(seg, block);
       const em = fontEm(font);
       const end = xs[i]! + widths[i]! - (seg.kind === 'text' ? tracking + (seg.tracking ?? 0) : 0);
+      const over = kind === 'side' && seg.cjkMarks!.sideline!.position === 'over';
       if (open && open.key === key) {
         open.to = Math.max(open.to, end);
         open.endSeg = i;
-        lined.add(i);
+        (over ? linedOver : lined).add(i);
         continue;
       }
-      open = { kind, key, from: xs[i]!, to: end, em, axis: -CENTRAL * em + (seg.baselineShift ?? 0), startSeg: i, endSeg: i };
+      open = {
+        kind,
+        key,
+        from: xs[i]!,
+        to: end,
+        em,
+        axis: -CENTRAL * em + (seg.baselineShift ?? 0),
+        startSeg: i,
+        endSeg: i,
+        ...(kind === 'side' ? { side: seg.cjkMarks!.sideline! } : {}),
+      };
       runs.push(open);
-      lined.add(i);
+      (over ? linedOver : lined).add(i);
     }
   }
   // Two runs that meet each give up an eighth of an em.
   for (const a of runs) {
     for (const b of runs) {
       if (a === b || a.kind !== b.kind || b.startSeg !== a.endSeg + 1) continue;
+      if (a.side && a.side.position !== b.side?.position) continue;
       a.to -= a.em / 8;
       b.from += b.em / 8;
     }
@@ -209,6 +238,10 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string, verti
   for (const r of runs) {
     const length = r.to - r.from;
     if (length <= 0) continue;
+    if (r.side) {
+      out.push(sidelineMark(r.side, r.from - x0, length, r.axis, r.em, paint));
+      continue;
+    }
     const edge = r.axis + r.em / 2;
     if (r.kind === 'line') {
       out.push({ kind: 'line', x: r.from - x0, y: edge + LINE_AT * r.em, length, thickness: Math.max(0.5, STROKE * r.em), ...paint });
@@ -235,8 +268,11 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string, verti
     const axis = -CENTRAL * em + (seg.baselineShift ?? 0);
     const size = DOT[dots.style] * em;
     const under = dots.position === 'under';
-    const past = under && lined.has(i) ? PAST_LINE * em : 0;
-    const y = under ? axis + em / 2 + GAP * em + past + size / 2 : axis - em / 2 - GAP * em - size / 2;
+    const past = (under ? lined : linedOver).has(i) ? PAST_LINE * em : 0;
+    let y = under ? axis + em / 2 + GAP * em + past + size / 2 : axis - em / 2 - GAP * em - past - size / 2;
+    // A reading on the same side: the dots go outside it.
+    const reading = seg.ruby && seg.ruby.position === dots.position ? rubyExtent(seg.ruby) : undefined;
+    if (reading) y = under ? Math.max(y, reading.foot + GAP * em + size / 2) : Math.min(y, reading.head - GAP * em - size / 2);
     const t = tracking + (seg.tracking ?? 0);
     const inset = seg.ruby ? seg.inkOffset ?? 0 : 0;
     const box = seg.ruby ? Math.max(0, widths[i]! - 2 * inset) : widths[i]!;
@@ -256,6 +292,53 @@ export function lineMarks(line: VDTLine, block: BlockLike, color?: string, verti
   return out;
 }
 
+/** How far a reading reaches across its line, px from the baseline: its
+ *  runs' em boxes (`head` the least, `foot` the most). */
+function rubyExtent(ruby: VDTRuby): { head: number; foot: number } | undefined {
+  let head = Infinity;
+  let foot = -Infinity;
+  for (const run of ruby.runs) {
+    const runEm = fontEm(run.fontString);
+    head = Math.min(head, run.dy - (CENTRAL + 0.5) * runEm);
+    foot = Math.max(foot, run.dy + (0.5 - CENTRAL) * runEm);
+  }
+  return head <= foot ? { head, foot } : undefined;
+}
+
+/** The mark of a side line (傍線) `length` px long from `x`, against the
+ *  em box of text `em` px high whose central axis is `axis`: a rule, two
+ *  rules, a wave or a row of dots, on the side it was given. */
+function sidelineMark(line: NonNullable<VDTSegmentMarks['sideline']>, x: number, length: number, axis: number, em: number, paint: { color?: string }): VDTLineMark {
+  const sign = line.position === 'over' ? -1 : 1;
+  const edge = axis + sign * (em / 2);
+  switch (line.style) {
+    case 'double': {
+      const gap = DOUBLE_GAP * em;
+      return { kind: 'double', x, y: edge + sign * (LINE_AT * em + gap / 2), length, gap, thickness: Math.max(0.4, OUTLINE * em), ...paint };
+    }
+    case 'wavy':
+      return {
+        kind: 'wavy',
+        x,
+        y: edge + sign * WAVE_AT * em,
+        length,
+        thickness: Math.max(0.5, STROKE * em * 0.9),
+        amplitude: WAVE_HEIGHT * em,
+        wavelength: WAVE_LENGTH * em,
+        ...paint,
+      };
+    case 'dotted': {
+      const size = DOTTED_SIZE * em;
+      // The pitch that sets the dots evenly from one end to the other.
+      const span = Math.max(0, length - size);
+      const count = Math.max(1, Math.round(span / (DOTTED_PITCH * em)));
+      return { kind: 'dotted', x, y: edge + sign * LINE_AT * em, length, size, gap: span / count, thickness: size, ...paint };
+    }
+    default:
+      return { kind: 'line', x, y: edge + sign * LINE_AT * em, length, thickness: Math.max(0.5, STROKE * em), ...paint };
+  }
+}
+
 /** How much line gap (em of the text) a line's marks need: half an em on
  *  one side, five eighths on both (clreq §5.6.1). 0 when it has none. */
 function marksNeed(line: VDTLine): number {
@@ -265,6 +348,7 @@ function marksNeed(line: VDTLine): number {
     if (!m) continue;
     if (m.dots) sides.add(m.dots.position);
     if (m.properName !== undefined || m.bookTitle !== undefined) sides.add('under');
+    if (m.sideline) sides.add(m.sideline.position);
   }
   return sides.size === 0 ? 0 : sides.size > 1 ? 0.625 : 0.5;
 }
@@ -314,7 +398,10 @@ function lineReach(line: VDTLine, em: number): LineReach {
     } else if (ruby && hi - bottom > 1e-9) reach.footRuby = true;
   };
   for (const m of line.marks ?? []) {
-    const half = m.kind === 'line' ? m.thickness / 2 : m.kind === 'wavy' ? (m.amplitude ?? 0) / 2 + m.thickness / 2 : (m.size ?? 0) / 2;
+    const half = m.kind === 'line' ? m.thickness / 2
+      : m.kind === 'wavy' ? (m.amplitude ?? 0) / 2 + m.thickness / 2
+        : m.kind === 'double' ? (m.gap ?? 0) / 2 + m.thickness / 2
+          : (m.size ?? 0) / 2;
     extend(m.y - half, m.y + half, false);
   }
   for (const seg of line.segments ?? []) {

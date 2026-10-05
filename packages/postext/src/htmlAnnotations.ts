@@ -9,15 +9,16 @@
  */
 
 import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTRuby, VDTWarichu } from './vdt';
-import { sesamePath, wavePoints } from './canvas-backend/annotations';
+import { dottedCentres, sesamePath, wavePoints } from './canvas-backend/annotations';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]!);
 const n = (v: number): string => v.toFixed(3);
 
 /** A mark as markup, placed from a point `baseline` px above the line's
- *  text baseline (0: on it). */
-function markHtml(m: VDTLineMark, baseline: number, color: string): string {
+ *  text baseline (0: on it); `vertical` inside a vertical line's turned
+ *  box (a sesame turns back, see `sesamePath`). */
+function markHtml(m: VDTLineMark, baseline: number, color: string, vertical = false): string {
   const ink = m.color ?? color;
   const cx = m.x;
   const cy = baseline + m.y;
@@ -30,7 +31,7 @@ function markHtml(m: VDTLineMark, baseline: number, color: string): string {
     }
     case 'sesame': {
       const d = m.size ?? 0;
-      const [a, b] = sesamePath(d);
+      const [a, b] = sesamePath(d, vertical);
       const p = (q: { x: number; y: number }) => `${n(q.x + d)} ${n(q.y + d)}`;
       const path = `M${p(a![0]!)}Q${p(a![1]!)} ${p(a![2]!)}Q${p(b![1]!)} ${p(b![2]!)}Z`;
       const paint = m.open ? `fill="none" stroke="${ink}" stroke-width="${n(m.thickness)}"` : `fill="${ink}"`;
@@ -38,6 +39,16 @@ function markHtml(m: VDTLineMark, baseline: number, color: string): string {
     }
     case 'line':
       return `<span aria-hidden="true" style="position:absolute;left:${n(cx)}px;top:${n(cy - m.thickness / 2)}px;width:${n(m.length ?? 0)}px;height:${n(m.thickness)}px;background:${ink};"></span>`;
+    case 'double': {
+      const half = (m.gap ?? 0) / 2;
+      const rule = (y: number) => `<span aria-hidden="true" style="position:absolute;left:${n(cx)}px;top:${n(y - m.thickness / 2)}px;width:${n(m.length ?? 0)}px;height:${n(m.thickness)}px;background:${ink};"></span>`;
+      return rule(cy - half) + rule(cy + half);
+    }
+    case 'dotted': {
+      const d = m.size ?? 0;
+      return dottedCentres(m).map((x) =>
+        `<span aria-hidden="true" style="position:absolute;left:${n(x - d / 2)}px;top:${n(cy - d / 2)}px;width:${n(d)}px;height:${n(d)}px;border-radius:50%;background:${ink};"></span>`).join('');
+    }
     case 'wavy': {
       const amp = (m.amplitude ?? 0) / 2 + m.thickness;
       const pts = wavePoints({ ...m, x: 0, y: amp });
@@ -67,7 +78,7 @@ export function verticalLineMarksHtml(line: VDTLine, color: string): string {
   if (!line.marks || line.marks.length === 0) return '';
   const baseline = line.baseline - line.bbox.y;
   return `<span aria-hidden="true" style="position:absolute;left:0;top:${n(baseline)}px;width:0;height:0;">`
-    + line.marks.map((m) => markHtml(m, 0, color)).join('') + '</span>';
+    + line.marks.map((m) => markHtml(m, 0, color, true)).join('') + '</span>';
 }
 
 /** Quotes the family of a CSS font shorthand for a `style` attribute (the

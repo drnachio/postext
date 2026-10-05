@@ -39,6 +39,7 @@ import { suffixJoiner } from '../parse/inlineFormatting';
 import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeArea';
 import { layoutVideo } from './videoOverlay';
 import type {
+  CjkBracketPair,
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
   Resource,
@@ -87,9 +88,15 @@ import type { ResourceNumberingMap } from './resourceNumbering';
 
 /** A caption's, a note's or a cell's spans. The Chinese annotations
  *  (#193–#195) are set as plain text there: resource lines draw no marks,
- *  readings or warichu rows; a book title keeps its 《》 when they are the
- *  document's book-title mark (`bookBrackets`). */
-const parseRefAwareSpans = (text: string, bookBrackets: boolean) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets);
+ *  readings or warichu rows; a book title keeps its brackets (《》, 『』)
+ *  when they are the document's book-title mark (`bookBrackets`: the
+ *  pairs). */
+const parseRefAwareSpans = (text: string, bookBrackets: readonly CjkBracketPair[] | undefined) => dropAnnotations(parseInlineSnippetSpans(text), bookBrackets ?? false);
+
+/** The brackets book titles keep in captions, notes and cells: the
+ *  document's, when brackets are its book-title mark. */
+const bookBracketsOf = (resolved: ResolvedConfig): readonly CjkBracketPair[] | undefined =>
+  resolved.cjk.bookTitleMark === 'brackets' ? resolved.cjk.bookTitleBrackets : undefined;
 
 /** Non-breaking space used to glue a resolved `:ref` label into a single
  *  atomic text token, so a post-measurement pass can tag it reliably. */
@@ -380,9 +387,9 @@ interface TableLayoutStyle {
   palette?: ColorPaletteEntry[];
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
-  /** Book titles in cells print their 《》 (`cjk.bookTitleMark:
-   *  'brackets'`). */
-  bookBrackets?: boolean;
+  /** Book titles in cells print these brackets (`cjk.bookTitleBrackets`
+   *  under `cjk.bookTitleMark: 'brackets'`). */
+  bookBrackets?: readonly CjkBracketPair[];
 }
 
 /** A list-item marker at the head of a cell paragraph: the glyph as
@@ -869,7 +876,7 @@ function layoutTableIn(
       const isHeader = cellIsHeader(cell, r, model);
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
-      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets === true);
+      const parsed = parseRefAwareSpans(cell.content, style.bookBrackets);
       const spans = resolveCellChips(resolveSwatchSpans(resolveRefSpans(
         set.uppercase ? parsed.map((s) => (s.ref || s.math ? s : { ...s, text: uppercasePreservingLength(s.text) })) : parsed,
         resourceNumbering,
@@ -1198,7 +1205,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
       chips: chipContextOf(resolved),
-      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: true } : {}),
+      ...(resolved.cjk.bookTitleMark === 'brackets' ? { bookBrackets: resolved.cjk.bookTitleBrackets } : {}),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -1254,7 +1261,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     // Prefix span: "<captionPrefix> <number>. " (non-breaking inside the label).
     const prefixText = captionLabelText(captionPrefix, number, cs);
     const resolvedSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(captionText, resolved.cjk.bookTitleMark === 'brackets'),
+      parseRefAwareSpans(captionText, bookBracketsOf(resolved)),
       resourceNumbering,
       resourceTypes,
       resources,
@@ -1303,7 +1310,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // the last slice.
   if (noteText.trim().length > 0 && !slice?.continues) {
     const noteSpans = resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      parseRefAwareSpans(noteText, resolved.cjk.bookTitleMark === 'brackets'),
+      parseRefAwareSpans(noteText, bookBracketsOf(resolved)),
       resourceNumbering,
       resourceTypes,
       resources,
