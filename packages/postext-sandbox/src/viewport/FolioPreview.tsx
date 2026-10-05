@@ -60,6 +60,8 @@ interface ShownDoc {
   /** A chapter's document: the book's pages before and after it (its
    *  first and last leaves are the covers only at the book's ends). */
   extraPages?: { before: number; after: number };
+  /** The book it was laid out from (`bookVersion`). */
+  book: number;
 }
 
 /** The pages of the book round a chapter laid out on its own: those before
@@ -124,20 +126,26 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     const r = spineId ? resources.find((x) => x.id === spineId) : undefined;
     return r?.bitmap?.fileId ?? r?.svg?.fileId;
   }, [resources, spineId]);
-  const [spineUrl, setSpineUrl] = useState<string | undefined>(undefined);
+  const [spine, setSpine] = useState<{ fileId: string; url?: string } | null>(null);
+  const spineUrl = spine?.fileId === spineFileId ? spine?.url : undefined;
   const spineUrlRef = useRef(spineUrl);
   spineUrlRef.current = spineUrl;
+  // The picture of the spine is read (or found missing): a new viewer
+  // waits for it rather than binding the book without it.
+  const spineReady = !spineFileId || spine?.fileId === spineFileId;
   useEffect(() => {
     if (!spineFileId) {
-      setSpineUrl(undefined);
+      setSpine(null);
       return;
     }
     let live = true;
     let url: string | undefined;
     void getBlob(spineFileId).then((rec) => {
-      if (!live || !rec) return;
-      url = URL.createObjectURL(new Blob([rec.bytes], { type: rec.contentType }));
-      setSpineUrl(url);
+      if (!live) return;
+      if (rec) url = URL.createObjectURL(new Blob([rec.bytes], { type: rec.contentType }));
+      setSpine({ fileId: spineFileId, url });
+    }, () => {
+      if (live) setSpine({ fileId: spineFileId });
     });
     return () => {
       live = false;
@@ -149,6 +157,12 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const chapters = useSandboxSelector((s) => s.chapters);
   const chaptersRef = useRef(chapters);
   chaptersRef.current = chapters;
+  // The book open in the sandbox: bumped when another one is opened (a
+  // whole new book), with its settings in the same commit.
+  const bookVersion = useSandboxSelector((s) => s.bookVersion);
+  const bookVersionRef = useRef(bookVersion);
+  bookVersionRef.current = bookVersion;
+  const deferredBookVersion = useDeferredValue(bookVersion);
   const compact = useCompactLayout();
   const plan = useBookPlan();
   const planRef = useRef(plan);
@@ -279,7 +293,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         sharedDocSourceRef.current = composeBookMemo(snapshotChapters);
         for (const layout of result.records) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
         dispatch({ type: 'BUMP_DOC_VERSION' });
-        setDoc({ doc: stitched.doc, pageChapters: stitched.pageChapters, chapter: -1 });
+        setDoc({ doc: stitched.doc, pageChapters: stitched.pageChapters, chapter: -1, book: deferredBookVersion });
         counted?.(
           stitched.doc.pages.length,
           leadingBlankPageCount(stitched.doc),
@@ -317,6 +331,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         pageChapters: null,
         chapter: Math.max(0, chaptersRef.current.findIndex((c) => c.id === deferredSource.chapterId)),
         extraPages: pagesAround(built, planRef.current, deferredSource.chapterId),
+        book: deferredBookVersion,
       });
       counted?.(built.pages.length, leadingBlankPageCount(built), built.pages.map((p) => p.pageNumberValue));
     };
@@ -331,7 +346,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     return () => {
       cancelled = true;
     };
-  }, [deferredSource, deferredBookSource, deferredResources, deferredConfig, rawDeferredConfig, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, chapterDocsRef, layoutWorker]);
+  }, [deferredSource, deferredBookSource, deferredResources, deferredConfig, rawDeferredConfig, deferredBookVersion, rebuildKey, dispatch, sharedDocRef, sharedDocSourceRef, chapterDocsRef, layoutWorker]);
 
   // Resource images decoded after the pages were painted: paint them again.
   const diagramInkHex = useMemo((): string | null => {
@@ -339,13 +354,19 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     if (!ds.singleInk) return null;
     return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
   }, [deferredConfig]);
+  // The resources whose pictures are decoded: a new viewer opens with them
+  // painted, not with placeholders.
+  const [imagesFor, setImagesFor] = useState<readonly unknown[] | null>(null);
   useEffect(() => {
     let cancelled = false;
     ensureResourceImages(deferredResources, diagramInkHex)
       .then((changed) => {
         if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
-      .catch(() => { /* leave placeholders */ });
+      .catch(() => { /* leave placeholders */ })
+      .finally(() => {
+        if (!cancelled) setImagesFor(deferredResources);
+      });
     // Uploaded videos, played on the pages from their object URLs (#477).
     void ensureResourceVideoUrls(deferredResources).catch(() => false);
     return () => {
@@ -371,17 +392,38 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const pageAltRef = useRef(labels.folioPageAlt);
   pageAltRef.current = labels.folioPageAlt;
 
+  const mode = compact ? 'single' : 'auto';
+  const imagesReady = imagesFor === deferredResources;
+
+  // Another book opened: the one being left is put away, and the cover
+  // stays up until the new one is ready (its first layout, its pictures,
+  // its spine), when a new viewer opens with its settings. The new book's
+  // paper, binding and desk never dress the old book's pages.
+  const viewerBookRef = useRef(bookVersion);
+  useEffect(() => {
+    if (viewerBookRef.current === bookVersion) return;
+    viewerBookRef.current = bookVersion;
+    viewerRef.current?.dispose();
+    viewerRef.current = null;
+    viewerDocRef.current = null;
+    setOpened(false);
+  }, [bookVersion]);
+
   // The viewer: made with the first document (and again when the reading
   // mode or the page negative changes), fed every later one.
-  const mode = compact ? 'single' : 'auto';
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !shownDoc) return;
+    // A layout of the book being left, still on its way when another
+    // book was opened, is never shown.
+    if (shownDoc.book !== bookVersionRef.current) return;
+    let viewer = viewerRef.current;
+    if (!viewer && !(spineReady && imagesReady)) return;
     const doc = shownDoc.doc;
     const before = viewerDocRef.current;
+    if (viewer && before === shownDoc && paintedKeyRef.current === paintKey) return;
     viewerDocRef.current = shownDoc;
     callbacksRef.current.onBindingChange?.(doc.binding === 'right');
-    let viewer = viewerRef.current;
     if (!viewer) {
       const at = pendingJumpRef.current ?? leadingBlankPageCount(doc);
       pendingJumpRef.current = null;
@@ -443,7 +485,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     callbacksRef.current.onSpreadChange?.(viewer.state.pages);
     const shown = viewer.state.pages[viewer.state.pages.length - 1];
     if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
-  }, [shownDoc, paintKey, mode, pageNegative]);
+  }, [shownDoc, paintKey, mode, pageNegative, spineReady, imagesReady]);
 
   // A new reading mode or page negative: a new viewer, on the same page.
   const modeKey = `${mode}|${pageNegative}`;
