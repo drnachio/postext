@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Document Format',
   description: 'The markdown subset Postext parses, and the rules for authoring source documents',
   lang: 'en',
-  lastUpdated: '2026-09-29',
+  lastUpdated: '2026-10-05',
   readingTime: '10 min',
   order: 5,
   plainSummary: "This page explains how to write a text that Postext can lay out. You write in Markdown, a simple way of writing where a few symbols mark headings, lists, bold words and links. Postext also understands some extra marks for boxes, footnotes, pictures, tables and formulas. The page lists every mark it accepts and the ones it ignores. It ends with advice on writing text that is easy to read.",
@@ -128,7 +128,7 @@ Two attributes have a meaning of their own. `style="<id>"` applies a named [head
 # Contents {style="front-matter" toc="false"}
 ```
 
-Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
+Two more change what a heading prints and how it counts. `hidden="true"` (or `"false"`) overrides the `hidden` of the heading's level or style: a hidden heading prints nothing and takes no room — in the flow and inside a `:::callout` box alike — but still opens its page, counts, and is listed in the contents, the `{chapterTitle}` running heads and the PDF bookmarks. `jidori=N` spaces a one-line heading evenly to `N` of its own characters (字取り: `# 序章 {jidori=3}` prints 序　章), and `jidori=0` turns off the even spacing its level or style sets (see [Configuration › Per-level overrides](/en/docs/configuration#per-level-overrides)). `indent=N` lowers one heading `N` characters of the body text from the line start (字下げ: `## 一 {indent=5}`), over the `indent` of its level or style; a bare number counts body ems, `0` sets the heading at the line start, and it works the same in vertical and horizontal text. `startAt=N`, a positive integer, sets the heading's level counter to `N` instead of advancing it; the headings after it count on from there, in later chapters too, and the levels below restart under it as usual. With a heading style that letters appendices (`numberingTemplate: 'Appendix {1:A}'`), the first appendix restarts the count so that it reads *Appendix A* rather than continuing from the chapters:
 
 ```markdown
 # To my mother {hidden="true" toc="false"}

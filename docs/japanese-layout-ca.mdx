@@ -282,7 +282,7 @@ Els títols japonesos es col·loquen en línies del text i se sagnen en caràcte
 
 ### Sagnats i espaiat uniforme
 
-`indent` en un nivell o un estil sagna el títol des del principi de la línia en quadratins del **text** (字下げ): `indent: { value: 6, unit: 'em' }` és 6字下げ, sigui quin sigui el cos del títol mateix. `jidori` espaia per igual un títol d'una línia fins a aquest nombre de quadratins **propis** (*jidori*, 字取り): amb `jidori: 3`, 序章 es compon 序　章 i omple tres caràcters. `{jidori=5}` després del text d'un títol el fixa per a aquest títol, i `{jidori=0}` desactiva el del seu nivell.
+`indent` en un nivell o un estil sagna el títol des del principi de la línia en quadratins del **text** (字下げ): `indent: { value: 6, unit: 'em' }` és 6字下げ, sigui quin sigui el cos del títol mateix. `jidori` espaia per igual un títol d'una línia fins a aquest nombre de quadratins **propis** (*jidori*, 字取り): amb `jidori: 3`, 序章 es compon 序　章 i omple tres caràcters. `{jidori=5}` després del text d'un títol el fixa per a aquest títol, i `{jidori=0}` desactiva el del seu nivell. Un títol també pot portar el seu propi `{indent=N}`, en quadratins del text, que s'imposa al del seu nivell o estil: `## 一 {indent=3}`, i `{indent=0}` el posa al principi de la línia. El convertidor d'Aozora l'escriu a cada títol a partir del ［＃N字下げ］ de la font.
 
 ```ts
 headings: {

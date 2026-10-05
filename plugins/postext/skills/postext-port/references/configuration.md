@@ -348,7 +348,9 @@ headings
                                        more lines when its own need them; not for span:'page' openers,
                                        advancedDesign or headings in boxes; follows cjk.grid
   indent: Dimension                    0 (≥ 1.16) 字下げ from the line start, em = the BODY size (4/6/8 字 by
-                                       level in a vertical book); a centred heading centres in the rest
+                                       level in a vertical book); a centred heading centres in the rest;
+                                       `{indent=N}` on a heading line overrides it (body ems), `{indent=0}`
+                                       sets that heading at the line start
   jidori: number                       unset (≥ 1.16) 字取り: a one-line heading narrower than N of its OWN ems
                                        is spaced evenly to exactly that width (3: 序章 → 序　章); `{jidori=N}`
                                        on a heading line overrides it, `{jidori=0}` turns it off

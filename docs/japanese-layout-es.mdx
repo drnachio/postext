@@ -282,7 +282,7 @@ Los títulos japoneses se colocan en líneas del texto y se sangran en caractere
 
 ### Sangrías y espaciado uniforme
 
-`indent` en un nivel o un estilo sangra el título desde el principio de la línea en cuadratines del **texto** (字下げ): `indent: { value: 6, unit: 'em' }` es 6字下げ, sea cual sea el cuerpo del propio título. `jidori` espacia por igual un título de una línea hasta ese número de cuadratines **propios** (*jidori*, 字取り): con `jidori: 3`, 序章 se compone 序　章 y llena tres caracteres. `{jidori=5}` tras el texto de un título lo fija para ese título, y `{jidori=0}` desactiva el de su nivel.
+`indent` en un nivel o un estilo sangra el título desde el principio de la línea en cuadratines del **texto** (字下げ): `indent: { value: 6, unit: 'em' }` es 6字下げ, sea cual sea el cuerpo del propio título. `jidori` espacia por igual un título de una línea hasta ese número de cuadratines **propios** (*jidori*, 字取り): con `jidori: 3`, 序章 se compone 序　章 y llena tres caracteres. `{jidori=5}` tras el texto de un título lo fija para ese título, y `{jidori=0}` desactiva el de su nivel. Un título puede llevar también su propio `{indent=N}`, en cuadratines del texto, que se impone al de su nivel o su estilo: `## 一 {indent=3}`, y `{indent=0}` lo pone al principio de la línea. El conversor de Aozora lo escribe en cada título a partir del ［＃N字下げ］ de la fuente.
 
 ```ts
 headings: {

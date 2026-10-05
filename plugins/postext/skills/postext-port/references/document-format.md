@@ -91,8 +91,9 @@ The blob is parsed with the shared attribute grammar (§8). Since 1.9 it is take
 | `style` | id of a `headingStyles[]` entry | Merges the style's level overrides and opens a *styled section* (running heads, geometry, body typography, palette) up to the next heading of the same or higher level, or the next part. The style's `numbered: false` makes the heading unnumbered (no counter advance, no number, `{chapterNumber}` empty). An unknown id is ignored. | , 54-72`;  |
 | `toc` | `false`/`no`/`0` or `true`/`yes`/`1` | Overrides whether `:::toc` lists this heading. Default: the style's `toc`, else `true`. |  |
 | `jidori` | number (≥ 1.16) | 字取り: a one-line heading narrower than N of its own ems is spaced evenly to that width (`# 序章 {jidori=3}` → 序　章); `0` turns its level's `jidori` off. |  |
+| `indent` | length; a bare number is **body** ems (≥ 1.16) | 字下げ of this heading: `## 一 {indent=5}` sets it 5 body characters from the line start (the top of a vertical line), over its level's or heading style's `indent`; `em` counts body ems too, `pt`/`mm` work; `0` sets it at the line start. A value that is no length is ignored. Same in vertical and horizontal text. |  |
 
-- There is **no** `indent` heading attribute: a Japanese heading's 字下げ is the level's (or a heading style's) `indent` in body ems (configuration.md §5.1). `aozora.py` writes `{indent="5"}` from the source's ［＃５字下げ］ as a record (a free attribute); carry it into the config.
+- A heading's 字下げ is usually the same for a whole level: set it once as the level's (or a heading style's) `indent` (configuration.md §5.1) and use `{indent=N}` for the heading that differs. `aozora.py` writes `{indent="5"}` from the source's ［＃５字下げ］ on every heading; it takes effect as written (before 1.16 it was a free attribute and did nothing).
 - There is **no** `numbered` heading attribute. `{numbered=false}` is only stored as a free attr; use a heading style with `numbered: false` instead.
 - `id` (or `{#id}`, postext ≥ 1.12) names the heading for cross-references: `:ref{id="…"}` prints *section 3.2* / its title / its page and links to it (§10.6). Before 1.12 headings had no ids.
 
@@ -754,7 +755,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | 地付き, 地からN字上げ (a letter's date, a signature) | `:::paragraphs{align=end}` / `:::paragraphs{align=end endIndent=N}`. |
 | 字下げ block (N字下げ, 折り返してM字下げ) | A paragraph style with `indent` (and `hangingIndent`), or `:::paragraphs{indent=N}`. |
 | 改ページ / 改丁 / 改見開き / ページの左右中央 | `:::pagebreak` / `{parity="odd"}` / `{parity="even"}` / `{center}`. |
-| 中見出し 3行取り, ５字下げ | Level config `lineSpan: 3`, `indent: {value: 5, unit: 'em'}`. |
+| 中見出し 3行取り, ５字下げ | Level config `lineSpan: 3`, `indent: {value: 5, unit: 'em'}`; one heading lowered otherwise: `## 一 {indent=3}`. |
 | 返り点・送り仮名 (kanbun) | `:kunten[字]{kaeri="レ" okuri="ヲ"}`. |
 | くの字点 ／＼ | 〳〵 (〴〵 voiced), vertical text only. |
 | A letter quoted over several paragraphs (each opens with 「, one 」 at the end) | Keep it so; never add or remove brackets. |

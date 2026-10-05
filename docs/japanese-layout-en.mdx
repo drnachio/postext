@@ -282,7 +282,7 @@ Japanese headings are placed in body lines and indented in body characters, and 
 
 ### Indents and even spacing
 
-`indent` on a level or a style indents the heading from the line start in **body** ems (字下げ): `indent: { value: 6, unit: 'em' }` is 6字下げ, whatever the heading's own size. `jidori` spaces a one-line heading evenly to that many of its **own** ems (字取り): with `jidori: 3`, 序章 is set 序　章, filling three characters. `{jidori=5}` after a heading's title sets one heading, and `{jidori=0}` turns its level's off.
+`indent` on a level or a style indents the heading from the line start in **body** ems (字下げ): `indent: { value: 6, unit: 'em' }` is 6字下げ, whatever the heading's own size. `jidori` spaces a one-line heading evenly to that many of its **own** ems (字取り): with `jidori: 3`, 序章 is set 序　章, filling three characters. `{jidori=5}` after a heading's title sets one heading, and `{jidori=0}` turns its level's off. A heading may also carry its own `{indent=N}`, in body ems, over its level's or style's: `## 一 {indent=3}`, and `{indent=0}` sets it at the line start. The Aozora converter writes it on every heading from the source's ［＃N字下げ］.
 
 ```ts
 headings: {

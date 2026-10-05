@@ -789,7 +789,8 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   margin about one body em above the type area at its fore-edge (left) side; folio in Arabic digits at the
   foot, fore-edge side (left on odd pages, right on even). Fore-edge vertical heads: configuration.md §19c.
 - Aozora sources: `aozora.py` (sources.md, "Japanese sources"); merge its `styles.json` into
-  `paragraphStyles`, turn its heading `{indent="N"}` into the level's `indent`, print its credits.
+  `paragraphStyles`, set the level's `indent` to the usual heading `{indent="N"}` (the attribute itself
+  is read, so the few that differ stay as written), print its credits.
 - Letters inside a novel: an indented block (`:::paragraphs{indent=2}`), the date and signature
   `:::paragraphs{align=end}` or `{align=end endIndent=1}`; paragraphs that each open with 「 and close once
   stay so.
