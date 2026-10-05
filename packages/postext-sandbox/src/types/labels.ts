@@ -470,6 +470,14 @@ export interface SandboxLabels {
   cjkHangingNone: string;
   cjkHangingAllow: string;
   cjkHangingForce: string;
+  cjkParagraphStartBracket: string;
+  cjkParagraphStartBracketTooltip: string;
+  cjkParagraphStartBracketHalf: string;
+  cjkParagraphStartBracketIndent: string;
+  cjkParagraphStartBracketFlush: string;
+  cjkParagraphStartBracketLineStart: string;
+  cjkSpaceAfterQuestion: string;
+  cjkSpaceAfterQuestionTooltip: string;
   cjkLatinSpacing: string;
   cjkLatinSpacingTooltip: string;
   cjkUprightDigits: string;

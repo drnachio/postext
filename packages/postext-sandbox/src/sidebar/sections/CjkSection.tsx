@@ -9,8 +9,11 @@ import {
   defaultCjkWarichuBrackets,
   defaultCjkCompression,
   defaultCjkEmphasis,
+  defaultCjkHangingPunctuation,
   defaultCjkLineBreak,
+  defaultCjkParagraphStartBracket,
   defaultCjkPunctuationWidth,
+  defaultCjkSpaceAfterQuestion,
   dimensionsEqual,
   isCjkLanguage,
   resolveBodyTextConfig,
@@ -26,7 +29,8 @@ import { defaultDocumentLocale } from '../../controls/hyphenation';
 /**
  * East Asian typography (`cjk`): the regional conventions Chinese text
  * follows, where its lines may break, how wide its marks are set, whether
- * they hang, the space between Han and Latin, the numbers set upright in
+ * they hang, where a bracket that opens a paragraph goes, the space between
+ * Han and Latin and after ？！, the numbers set upright in
  * vertical text, what emphasis and book-title markup print, the look of
  * ruby readings and warichu notes, and the character grid.
  * `Auto` follows the document language; the option shows what it resolves
@@ -106,6 +110,8 @@ export const CjkSection = memo(function CjkSection() {
   const compressAdjacent = raw?.compressAdjacent ?? DEFAULT_CJK_CONFIG.compressAdjacent;
   const trimLineStart = raw?.trimLineStart ?? DEFAULT_CJK_CONFIG.trimLineStart;
   const hanging = raw?.hangingPunctuation ?? DEFAULT_CJK_CONFIG.hangingPunctuation;
+  const spaceAfterQuestion = raw?.spaceAfterQuestion ?? DEFAULT_CJK_CONFIG.spaceAfterQuestion;
+  const paragraphStartBracket = raw?.paragraphStartBracket ?? DEFAULT_CJK_CONFIG.paragraphStartBracket;
   const latinSpacing = raw?.latinSpacing ?? DEFAULT_CJK_CONFIG.latinSpacing;
   const uprightDigits = raw?.uprightDigits ?? DEFAULT_CJK_CONFIG.uprightDigits;
   const autoRegion = cjkRegionOf(locale) ?? 'mainland';
@@ -113,6 +119,15 @@ export const CjkSection = memo(function CjkSection() {
   const autoLineBreak = defaultCjkLineBreak(resolvedRegion);
   const autoWidth = defaultCjkPunctuationWidth(resolvedRegion);
   const autoCompression = defaultCjkCompression(resolvedRegion);
+  const hangingNames = { none: labels.cjkHangingNone, allow: labels.cjkHangingAllow, force: labels.cjkHangingForce };
+  const autoHanging = defaultCjkHangingPunctuation(resolvedRegion);
+  const autoSpaceAfterQuestion = defaultCjkSpaceAfterQuestion(resolvedRegion);
+  const bracketNames = {
+    half: labels.cjkParagraphStartBracketHalf,
+    indent: labels.cjkParagraphStartBracketIndent,
+    flush: labels.cjkParagraphStartBracketFlush,
+  };
+  const autoBracket = defaultCjkParagraphStartBracket(resolvedRegion);
   const emphasis = raw?.emphasis ?? DEFAULT_CJK_CONFIG.emphasis;
   const autoEmphasis = defaultCjkEmphasis(locale);
   const emphasisNames = { italic: labels.cjkEmphasisItalic, dots: labels.cjkEmphasisDots };
@@ -203,12 +218,27 @@ export const CjkSection = memo(function CjkSection() {
               onReset={() => resetField('trimLineStart')}
             />
             <SelectInput
+              label={labels.cjkParagraphStartBracket}
+              value={paragraphStartBracket}
+              options={[
+                { value: 'auto', label: auto(autoBracket ? bracketNames[autoBracket] : labels.cjkParagraphStartBracketLineStart) },
+                { value: 'half', label: bracketNames.half },
+                { value: 'indent', label: bracketNames.indent },
+                { value: 'flush', label: bracketNames.flush },
+              ]}
+              onChange={(v) => write({ ...raw, paragraphStartBracket: v as CjkConfig['paragraphStartBracket'] })}
+              tooltip={labels.cjkParagraphStartBracketTooltip}
+              isDefault={paragraphStartBracket === DEFAULT_CJK_CONFIG.paragraphStartBracket}
+              onReset={() => resetField('paragraphStartBracket')}
+            />
+            <SelectInput
               label={labels.cjkHanging}
               value={hanging}
               options={[
-                { value: 'none', label: labels.cjkHangingNone },
-                { value: 'allow', label: labels.cjkHangingAllow },
-                { value: 'force', label: labels.cjkHangingForce },
+                { value: 'auto', label: auto(hangingNames[autoHanging]) },
+                { value: 'none', label: hangingNames.none },
+                { value: 'allow', label: hangingNames.allow },
+                { value: 'force', label: hangingNames.force },
               ]}
               onChange={(v) => write({ ...raw, hangingPunctuation: v as CjkConfig['hangingPunctuation'] })}
               tooltip={labels.cjkHangingTooltip}
@@ -257,6 +287,19 @@ export const CjkSection = memo(function CjkSection() {
               tooltip={labels.cjkLatinSpacingTooltip}
               isDefault={dimensionsEqual(latinSpacing, DEFAULT_CJK_CONFIG.latinSpacing)}
               onReset={() => resetField('latinSpacing')}
+            />
+            <SelectInput
+              label={labels.cjkSpaceAfterQuestion}
+              value={tri(spaceAfterQuestion)}
+              options={[
+                { value: 'auto', label: auto(onOff(autoSpaceAfterQuestion)) },
+                { value: 'on', label: labels.cjkOn },
+                { value: 'off', label: labels.cjkOff },
+              ]}
+              onChange={(v) => write({ ...raw, spaceAfterQuestion: fromTri(v) })}
+              tooltip={labels.cjkSpaceAfterQuestionTooltip}
+              isDefault={spaceAfterQuestion === DEFAULT_CJK_CONFIG.spaceAfterQuestion}
+              onReset={() => resetField('spaceAfterQuestion')}
             />
           </FieldGroup>
           <FieldGroup title={labels.cjkGroupVertical}>
