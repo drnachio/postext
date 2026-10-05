@@ -209,15 +209,15 @@ describe('Japanese built-in strings', () => {
 
   it('index: → for see, →…も見よ for see also, upright; 記号 and 数字 heads', () => {
     const outline = [
-      markEntry(['夏目漱石'], 1), markEntry(['金之助'], 2, { see: '夏目漱石' }),
-      markEntry(['正岡子規'], 3, { seeAlso: '夏目漱石' }), markEntry(['正岡子規'], 4, { seeAlso: '森鷗外' }), markEntry(['森鷗外'], 5),
+      markEntry(['夏目漱石'], 1), markEntry(['金之助'], 2, { see: '夏目漱石', yomi: 'きんのすけ' }),
+      markEntry(['正岡子規'], 3, { seeAlso: '夏目漱石', yomi: 'まさおかしき' }), markEntry(['正岡子規'], 4, { seeAlso: '森鷗外', yomi: 'まさおかしき' }), markEntry(['森鷗外'], 5),
       markEntry(['#'], 6), markEntry(['1914'], 7),
     ];
     const blocks = expand({ locale: 'ja' }, outline);
     const text = blocks.map((b) => `${b.index!.group ? `[${b.index!.group}] ` : ''}${b.text}`);
-    // (The group heads by reading are J10's, #425.)
-    expect(text).toContain('[金] 金之助　→夏目漱石');
-    expect(text).toContain('[正] 正岡子規, 4–5　→夏目漱石、森鷗外も見よ');
+    // Heads are gojūon rows taken from the readings (#425).
+    expect(text).toContain('[か行] 金之助　→夏目漱石');
+    expect(text).toContain('[ま行] 正岡子規, 4–5　→夏目漱石、森鷗外も見よ');
     expect(text.some((t) => t.startsWith('[記号]'))).toBe(true);
     expect(text.some((t) => t.startsWith('[数字]'))).toBe(true);
     const spans = blocks.flatMap((b) => b.spans ?? []);
