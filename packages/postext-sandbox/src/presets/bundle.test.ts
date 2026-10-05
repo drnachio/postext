@@ -64,18 +64,18 @@ describe('parseBundle', () => {
     const fromEn = await parseBundle(spanish, readerFrom(files), { locale: 'en', summary });
     expect(fromEn.locale).toBe('es');
     expect(prefixes(fromEn.config)).toEqual(prefixes(createDefaultConfig('es')));
-    expect(prefixes(fromEn.config)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(fromEn.config)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // A bundle that names no language is read in the viewer's.
     const unnamed = await parseBundle(manifest(), readerFrom(files), { locale: 'es', summary });
-    expect(prefixes(unnamed.config)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(unnamed.config)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // Unless its configuration names the document's language.
     const configured = await parseBundle(manifest({ config: { locale: 'es' } }), readerFrom(files), { locale: 'en', summary });
-    expect(prefixes(configured.config)).toEqual(['Figura', 'Tabla']);
+    expect(prefixes(configured.config)).toEqual(['Figura', 'Tabla', 'Vídeo']);
     // A bilingual bundle: the language of the chapters served.
     const both = manifest({ locale: 'en', markdown: { en: 'en.md', es: 'es.md' } });
     const bilingual = { 'en.md': 'EN', 'es.md': 'ES' };
-    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'es-AR', summary })).config)).toEqual(['Figura', 'Tabla']);
-    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'de', summary })).config)).toEqual(['Figure', 'Table']);
+    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'es-AR', summary })).config)).toEqual(['Figura', 'Tabla', 'Vídeo']);
+    expect(prefixes((await parseBundle(both, readerFrom(bilingual), { locale: 'de', summary })).config)).toEqual(['Figure', 'Table', 'Video']);
   });
 
   it('lets a locale bring its own artwork, and reads that file\'s own size', async () => {

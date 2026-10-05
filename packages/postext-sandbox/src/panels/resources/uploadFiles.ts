@@ -2,6 +2,7 @@ import type { Resource } from 'postext';
 import { putBlob } from '../../storage/blobStore';
 import { slugifyFilename, uniqueSlug } from './slugify';
 import { isValidSvg, svgIntrinsicSize } from './svgIntrinsic';
+import { defaultPoster, readVideoMetadata, videoFormatOf } from './videoMedia';
 
 /** Bitmap MIME types we accept for upload. */
 const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
@@ -18,8 +19,39 @@ export async function resourceFromFile(
   file: File,
   typeId: string,
   existingIds: Set<string>,
+  /** The type of a video (#454), asked for only when one is dropped. */
+  videoTypeId: () => string = () => 'video',
 ): Promise<Resource | null> {
   const now = Date.now();
+  const videoFormat = videoFormatOf(file);
+  if (videoFormat) {
+    // A self-hosted video: its frame size, length and a first poster.
+    const local = URL.createObjectURL(file);
+    try {
+      const meta = await readVideoMetadata(local);
+      const fileId = await putBlob(await file.arrayBuffer(), file.type || `video/${videoFormat}`);
+      const first = await defaultPoster(local);
+      const id = uniqueSlug(slugifyFilename(file.name), existingIds, 'video');
+      existingIds.add(id);
+      return {
+        id,
+        typeId: videoTypeId(),
+        kind: 'video',
+        video: {
+          source: 'file',
+          fileId,
+          format: videoFormat,
+          ...(meta.width && meta.height ? { width: meta.width, height: meta.height } : {}),
+          ...(meta.duration ? { duration: meta.duration } : {}),
+          ...(first ? { poster: first.poster, posterTime: first.time } : {}),
+        },
+        createdAt: now,
+        updatedAt: now,
+      };
+    } finally {
+      URL.revokeObjectURL(local);
+    }
+  }
   const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
 
   if (isSvg) {
@@ -76,12 +108,13 @@ export async function uploadFiles(
   files: File[],
   typeId: string,
   existingIds: Set<string>,
+  videoTypeId?: () => string,
 ): Promise<UploadFilesResult> {
   const created: Resource[] = [];
   const skipped: string[] = [];
   for (const file of files) {
     try {
-      const resource = await resourceFromFile(file, typeId, existingIds);
+      const resource = await resourceFromFile(file, typeId, existingIds, videoTypeId);
       if (resource) created.push(resource);
       else skipped.push(file.name);
     } catch {

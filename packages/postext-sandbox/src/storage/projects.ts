@@ -152,6 +152,9 @@ export function referencedFileIds(content: { resources: Resource[]; config: Post
     if (fileId) blobIds.add(fileId);
     // An SVG's vector print master is a blob of its own.
     if (r.svg?.pdfFileId) blobIds.add(r.svg.pdfFileId);
+    // A video's file and its poster (#454).
+    if (r.video?.fileId) blobIds.add(r.video.fileId);
+    if (r.video?.poster?.fileId) blobIds.add(r.video.poster.fileId);
   }
   // The cover picture is a blob of the project, referenced by no resource.
   if (content.thumbnail) blobIds.add(content.thumbnail.fileId);

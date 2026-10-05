@@ -35,6 +35,9 @@ import { holdsTurnedMark, segmentOrientation, verticalRuns, type ForcedOrientati
 import { graphemesOf } from './measure/graphemes';
 import { fontFamilyOf } from './measure/vertical';
 import { lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml } from './htmlAnnotations';
+import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay';
+import { mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url';
+import type { VDTResourceVideo } from './vdt';
 
 /**
  * Declarations of every box of CJK text measured with no punctuation
@@ -112,6 +115,16 @@ export interface RenderHtmlOptions {
    *  comes out lighter. Pass `true` when `resourceImageUrl` returns the raw
    *  markup. The next major release turns it on by default. */
   singleInk?: boolean;
+  /** Resolver from a self-hosted video's `fileId` to a playable URL (an
+   *  object URL, the file's address in a package…). When it is omitted or
+   *  returns nothing, the video plays from its production address
+   *  (`video.url`); with neither, the poster is shown. */
+  resourceVideoUrl?: (fileId: string) => string | undefined;
+  /** What a video resource is set as (#454): its player, or the printed
+   *  poster with its play mark and QR code (linked to the video when
+   *  `videoStyle.linkPoster`). `files` covers self-hosted videos, `streams`
+   *  YouTube and Vimeo. Each defaults to `videoStyle.html`. */
+  videos?: { files?: 'player' | 'poster'; streams?: 'player' | 'poster' };
   /** Told of what the render could not produce as asked: an image with no
    *  URL (no `resourceImageUrl`, or one that returns nothing for its
    *  `fileId`) is emitted as a placeholder and reported once per `fileId`
@@ -1543,6 +1556,98 @@ function renderFittedImage(
   );
 }
 
+/** An attribute list as HTML: a boolean attribute written `name="name"`,
+ *  valid in HTML and XHTML alike (the fixed-layout EPUB converts the
+ *  markup). */
+function htmlAttrs(attrs: Array<[string, string | true]>): string {
+  return attrs.map(([name, value]) => ` ${name}="${esc(value === true ? name : value)}"`).join('');
+}
+
+/** A video resource (#454): its player — an HTML5 `<video>` for a
+ *  self-hosted file, the YouTube or Vimeo `<iframe>` — or its poster with
+ *  the play mark and the QR code, linked to the video. */
+function renderVideoHtml(
+  video: VDTResourceVideo | undefined,
+  posterFileId: string | undefined,
+  alt: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  paint: HtmlPaint,
+  source?: ResourceSafeArea,
+): string {
+  const box = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+  const label = alt || 'Video';
+  if (video) {
+    const stream = video.source !== 'file';
+    const mode = (stream ? paint.videos?.streams : paint.videos?.files) ?? video.html;
+    if (mode === 'player') {
+      if (stream && video.embedUrl) {
+        return (
+          `<iframe class="pt-video" src="${esc(video.embedUrl)}" title="${esc(label)}"` +
+          ` allow="${esc(videoEmbedAllow(video.player))}"${video.player.fullscreen ? ' allowfullscreen="allowfullscreen"' : ''}` +
+          ` loading="lazy" referrerpolicy="strict-origin-when-cross-origin"` +
+          ` style="${box}border:0;background:#000;"></iframe>`
+        );
+      }
+      const src = !stream ? (video.fileId ? paint.resourceVideoUrl?.(video.fileId) : undefined) ?? video.link : undefined;
+      if (src) {
+        const poster = posterFileId ? paint.resourceImageUrl?.(posterFileId) : undefined;
+        return (
+          `<video class="pt-video" src="${esc(src + mediaFragment(video))}"${poster ? ` poster="${esc(poster)}"` : ''}` +
+          `${htmlAttrs(videoElementAttributes(video.player))} aria-label="${esc(label)}"` +
+          ` style="${box}object-fit:cover;background:#000;"></video>`
+        );
+      }
+    }
+  }
+  // The poster, as printed.
+  const url = posterFileId ? imageUrl(paint, posterFileId) : undefined;
+  const picture = url
+    ? `<img src="${esc(url)}" alt="${esc(label)}" style="position:absolute;left:0;top:0;width:${w}px;height:${h}px;${source ? croppedFitDecl(source) : ''}" />`
+    : `<div role="img" aria-label="${esc(label)}" style="position:absolute;left:0;top:0;width:${w}px;height:${h}px;background:#1f1f1f;"></div>`;
+  const overlay = video ? videoOverlaySvg(video, w, h) : '';
+  const inner = picture + overlay;
+  return video?.linkPoster && video.link
+    ? `<a class="pt-video-link" href="${esc(video.link)}" rel="noopener noreferrer" style="${box}display:block;">${inner}</a>`
+    : `<div style="${box}">${inner}</div>`;
+}
+
+/** The play mark and QR code of a video's poster as one SVG over the body
+ *  (`w` × `h`). In a mirrored flow the SVG turns back about its own box
+ *  like a picture, so the overlays land where they are printed and the code
+ *  reads. */
+function videoOverlaySvg(video: VDTResourceVideo, w: number, h: number): string {
+  const n = (v: number): string => String(Math.round(v * 1000) / 1000);
+  const parts: string[] = [];
+  const mark = video.playMark;
+  if (mark) {
+    const { x, y, width: mw, height: mh } = mark.rect;
+    const tri = playMarkTriangle(mark).map(([px, py]) => `${n(x + px)},${n(y + py)}`).join(' ');
+    if (mark.shape === 'triangle') {
+      parts.push(`<polygon points="${tri}" fill="${mark.color}" stroke="${mark.background}" stroke-opacity="${mark.backgroundOpacity}" stroke-width="${n(mh * 0.08)}" stroke-linejoin="round"/>`);
+    } else {
+      parts.push(mark.shape === 'circle'
+        ? `<ellipse cx="${n(x + mw / 2)}" cy="${n(y + mh / 2)}" rx="${n(mw / 2)}" ry="${n(mh / 2)}" fill="${mark.background}" fill-opacity="${mark.backgroundOpacity}"/>`
+        : `<rect x="${n(x)}" y="${n(y)}" width="${n(mw)}" height="${n(mh)}" rx="${n(mh * 0.24)}" fill="${mark.background}" fill-opacity="${mark.backgroundOpacity}"/>`);
+      parts.push(`<polygon points="${tri}" fill="${mark.color}"/>`);
+    }
+  }
+  const qr = video.qr;
+  if (qr) {
+    const { x, y, width: qw, height: qh } = qr.rect;
+    parts.push(`<rect x="${n(x)}" y="${n(y)}" width="${n(qw)}" height="${n(qh)}" rx="${n(qr.radius)}" fill="${qr.background}"/>`);
+    const d = qrModuleRuns(qr).map((r) => `M${n(x + r.x)} ${n(y + r.y)}h${n(r.w)}v${n(r.h)}h${n(-r.w)}z`).join('');
+    parts.push(`<path d="${d}" fill="${qr.color}" shape-rendering="crispEdges"/>`);
+  }
+  if (parts.length === 0) return '';
+  return (
+    `<svg aria-hidden="true" focusable="false" width="${n(w)}" height="${n(h)}" viewBox="0 0 ${n(w)} ${n(h)}"` +
+    ` style="position:absolute;left:0;top:0;overflow:visible;">${parts.join('')}</svg>`
+  );
+}
+
 /** The `object-fit` of a picture cropped within its safe area (#442): the
  *  shown part spans the picture's whole width or whole height and has the
  *  box's ratio, so `cover` scales the picture as the crop does, and the
@@ -1682,7 +1787,14 @@ function renderResourceBlockHtml(block: VDTBlock, paint: HtmlPaint): string {
       `left:${block.bbox.x}px;top:${block.bbox.y}px;width:0;height:0;"></span>`
     : '';
 
-  if (rb.kind === 'bitmap' || rb.kind === 'svg') {
+  if (rb.kind === 'video') {
+    // Named like the PDF's figure: its alt text, else its caption, else
+    // its label (`Video 1.2`).
+    const name = rb.resource.altText?.trim()
+      || rb.captionLines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim()
+      || `${rb.captionPrefix} ${rb.number}`.trim();
+    parts.push(renderVideoHtml(rb.video, rb.fileId, name, bx, by, bw, bh, options, rb.bodySource));
+  } else if (rb.kind === 'bitmap' || rb.kind === 'svg') {
     const url = rb.fileId ? imageUrl(options, rb.fileId, rb.resource.id) : undefined;
     // `<img>`, or a neutral placeholder matching the canvas backend's colours.
     parts.push(renderFittedImage(url, rb.resource.altText ?? '', rb.kind === 'svg' ? 'SVG' : 'Image', bx, by, bw, bh, options, rb.kind === 'svg', rb.bodySource));
@@ -2093,7 +2205,7 @@ function renderPageDetailed(
  *  stretched dash, a turned design picture) keeps it and stays mirrored. */
 const MIRRORED_FLOW_STYLE =
   '<style>.pt-flow-mirrored [style*="white-space:pre"],.pt-flow-mirrored img,' +
-  '.pt-flow-mirrored svg:not(.pt-char-grid){transform:scaleX(-1);}</style>';
+  '.pt-flow-mirrored svg:not(.pt-char-grid),.pt-flow-mirrored .pt-video{transform:scaleX(-1);}</style>';
 
 /** The character grid (稿纸) as one SVG path over the page, under the
  *  text (see `cjkGridCells`). */

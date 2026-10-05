@@ -9,6 +9,7 @@
  * landed on.
  */
 
+import { parseVideoUrl } from '../video/url';
 import { resourceRefId, unprefixedId } from './crossRefs';
 import { citationIssues } from './citations';
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
@@ -379,6 +380,15 @@ export function collectContentWarnings(
     // not applied where the resource is first used in one (#188).
     if (r.placement?.rotate && r.placement.position !== 'here' && verticalAt(firstUseBlock.get(id) ?? -1)) {
       out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
+    }
+    if (r.kind === 'video') {
+      const v = r.video;
+      if (!v?.poster) out.push({ kind: 'videoWithoutPoster', resourceId: id, ...where });
+      if ((v?.source ?? 'file') === 'file') {
+        if (!/^https?:\/\/\S+$/i.test(v?.url?.trim() ?? '')) out.push({ kind: 'videoWithoutUrl', resourceId: id, ...where });
+      } else if (parseVideoUrl(v?.url)?.source !== v?.source) {
+        out.push({ kind: 'videoUrlInvalid', resourceId: id, url: v?.url ?? '', ...where });
+      }
     }
     if (r.kind !== 'table' || !r.table) continue;
     const styleId = r.table.styleId;

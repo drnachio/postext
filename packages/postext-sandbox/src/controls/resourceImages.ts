@@ -78,7 +78,34 @@ export function onUnavailableResourceImagesChange(cb: () => void): () => void {
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
   if (r.kind === 'svg') return r.svg?.fileId;
+  // A video is shown as its poster frame (#454).
+  if (r.kind === 'video') return r.video?.poster?.fileId;
   return undefined;
+}
+
+/** fileId → object URL of a self-hosted video (#454), for the HTML
+ *  viewer's player. */
+const videoUrls = new Map<string, string>();
+
+/** The playable URL of a self-hosted video, as last built by
+ *  {@link ensureResourceVideoUrls}: the HTML backend's `resourceVideoUrl`. */
+export function getResourceVideoUrl(fileId: string): string | undefined {
+  return videoUrls.get(fileId);
+}
+
+/** Ensure every self-hosted video has an object URL. Returns true when one
+ *  was built, so the caller can re-render. */
+export async function ensureResourceVideoUrls(resources: Resource[]): Promise<boolean> {
+  let changed = false;
+  for (const r of resources) {
+    const fileId = r.kind === 'video' ? r.video?.fileId : undefined;
+    if (!fileId || videoUrls.has(fileId)) continue;
+    const rec = await getBlob(fileId).catch(() => null);
+    if (!rec) continue;
+    videoUrls.set(fileId, URL.createObjectURL(new Blob([rec.bytes], { type: rec.contentType || 'video/mp4' })));
+    changed = true;
+  }
+  return changed;
 }
 
 /** Decode a blob into something the canvas backend can `drawImage`. SVGs load

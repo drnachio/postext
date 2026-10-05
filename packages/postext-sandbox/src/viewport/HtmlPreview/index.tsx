@@ -21,7 +21,7 @@ import { leadingBlankPageCount } from '../../book/pagination';
 import type { ComposedBook } from '../../book/types';
 import { useShadowDom } from '../../hooks/useShadowDom';
 import { ensureConfigFontsLoaded, missingConfigFontSpecs } from '../../controls/fontLoader';
-import { ensureResourceImageUrls, getResourceImageUrl } from '../../controls/resourceImages';
+import { ensureResourceImageUrls, ensureResourceVideoUrls, getResourceImageUrl, getResourceVideoUrl } from '../../controls/resourceImages';
 import { useLayoutWorker } from '../../worker/useLayoutWorker';
 import { createOverlaySvg } from '../CanvasPreview/dom';
 import { drawOverlay, drawBaselines } from '../CanvasPreview/overlay';
@@ -426,6 +426,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         ? resolveColorValue(ds.inkColor, currentConfig.colorPalette, ds.inkColor).hex
         : null;
       await ensureResourceImageUrls(resourcesRef.current, inkHex).catch(() => false);
+      // Uploaded videos play from object URLs too (#454).
+      await ensureResourceVideoUrls(resourcesRef.current).catch(() => false);
       if (seq !== renderSeqRef.current) return;
 
       const mode = currentColumnMode === 'single' ? 'single' : 'multi';
@@ -439,6 +441,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
         padding: PADDING_PX,
         background: 'transparent',
         resourceImageUrl: getResourceImageUrl,
+        resourceVideoUrl: getResourceVideoUrl,
         // The URLs are recoloured for single ink already (see above).
         singleInk: false,
       });

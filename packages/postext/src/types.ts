@@ -137,7 +137,98 @@ export interface ResourceType {
 }
 
 /** The concrete payload kind a `Resource` carries. */
-export type ResourceKind = 'bitmap' | 'svg' | 'table';
+export type ResourceKind = 'bitmap' | 'svg' | 'table' | 'video';
+
+/** Where a video resource plays from (#454): a YouTube or Vimeo page, or a
+ *  self-hosted file (an uploaded MP4 or WebM). */
+export type VideoSource = 'youtube' | 'vimeo' | 'file';
+
+/** What a video's player offers in the interactive outputs (the HTML viewer,
+ *  EPUB). Set for the whole book in `videoStyle.player`, and per video in
+ *  `Resource.video.player` (only the fields set there). The HTML5 player of
+ *  a self-hosted file honours them all; the YouTube and Vimeo players honour
+ *  what their embed parameters allow (see each field). */
+export interface VideoPlayerOptions {
+  /** Show the player's controls. Default `true`. YouTube, Vimeo and
+   *  HTML5. */
+  controls?: boolean;
+  /** Offer the browser's download button (HTML5 only: `controlslist=
+   *  "nodownload"` when off). Default `true`. It hides the button; it is
+   *  not copy protection. YouTube and Vimeo never offer a download. */
+  download?: boolean;
+  /** Offer full screen. Default `true`. YouTube (`fs=0`), Vimeo and HTML5
+   *  (`nofullscreen`). */
+  fullscreen?: boolean;
+  /** Offer the playback speed menu. Default `true`. Vimeo (`speed=0`) and
+   *  HTML5 (`noplaybackrate`, Chromium). */
+  playbackRate?: boolean;
+  /** Offer picture-in-picture. Default `true`. Vimeo (`pip=0`) and HTML5
+   *  (`disablepictureinpicture`). */
+  pictureInPicture?: boolean;
+  /** Offer casting to another screen. Default `true`. HTML5
+   *  (`disableremoteplayback`). */
+  remotePlayback?: boolean;
+  /** Start playing on its own (always muted, as browsers require). Default
+   *  `false`. */
+  autoplay?: boolean;
+  /** Start muted. Default `false`. */
+  muted?: boolean;
+  /** Play again from the start at the end. Default `false`. */
+  loop?: boolean;
+  /** How much of a self-hosted file the browser loads before play:
+   *  `'none'`, `'metadata'` (the default) or `'auto'`. HTML5 only. */
+  preload?: 'none' | 'metadata' | 'auto';
+  /** Privacy-enhanced embeds: YouTube from `youtube-nocookie.com`, Vimeo
+   *  with `dnt=1` (no tracking cookies). Default `true`. */
+  privacy?: boolean;
+}
+
+export type ResolvedVideoPlayerOptions = Required<VideoPlayerOptions>;
+
+/** The picture printed for a video: a frame of it (the platform's poster
+ *  for YouTube and Vimeo, a chosen frame of a self-hosted file), stored
+ *  out-of-band like a bitmap. */
+export interface ResourceVideoPoster {
+  fileId: string;
+  format: string;
+  width: number;
+  height: number;
+}
+
+/** The payload of a `kind: 'video'` resource (#454). */
+export interface ResourceVideo {
+  source: VideoSource;
+  /** YouTube or Vimeo: the video's address (any watch, short, Shorts or
+   *  embed link). A self-hosted file: its production address, where the
+   *  published book finds it — printed in the QR code, linked from the PDF,
+   *  and played by the HTML and EPUB outputs when the file itself is not
+   *  available to them. */
+  url?: string;
+  /** A self-hosted file: the uploaded video, stored out-of-band like a
+   *  bitmap (part of a `.postext` bundle). */
+  fileId?: string;
+  /** A self-hosted file's format: `'mp4'` (the default), `'webm'`, `'ogv'`,
+   *  `'mov'`. */
+  format?: string;
+  /** Frame size of the video in px, for its aspect ratio when there is no
+   *  poster. */
+  width?: number;
+  height?: number;
+  /** Length in seconds (informative). */
+  duration?: number;
+  /** The poster frame. Without one a video is printed as a placeholder box
+   *  in the video's aspect ratio (16:9 when unknown). */
+  poster?: ResourceVideoPoster;
+  /** The time in seconds of a self-hosted file's frame used as the poster
+   *  (informative, kept so the frame can be picked again). */
+  posterTime?: number;
+  /** Play from `start` to `end` seconds. The printed link starts at
+   *  `start` too. */
+  start?: number;
+  end?: number;
+  /** Player options of this video, laid over `videoStyle.player`. */
+  player?: VideoPlayerOptions;
+}
 
 /** Horizontal alignment of a table cell's content. */
 export type TableCellAlign = 'left' | 'center' | 'right';
@@ -288,6 +379,12 @@ export interface Resource {
      *  the document. */
     direction?: 'ltr' | 'rtl';
   };
+  /** Present when `kind === 'video'`: a YouTube, Vimeo or self-hosted
+   *  video, placed, captioned and numbered like a picture (its type is
+   *  usually the built-in `video`, numbered on its own: Video 1.1), printed
+   *  as its poster with the `videoStyle` overlays and played by the
+   *  interactive outputs. */
+  video?: ResourceVideo;
   /** The safe area of a bitmap or SVG: the rectangle of the picture that
    *  holds what matters (a person and part of the landscape). With one, the
    *  engine may show the picture at any aspect ratio between the whole
@@ -1565,6 +1662,117 @@ export interface DiagramStyleConfig {
 export interface ResolvedDiagramStyleConfig {
   singleInk: boolean;
   inkColor: ColorValue;
+}
+
+/** Where an overlay sits on a video's poster: the centre, a corner or the
+ *  middle of a side. The positions are physical: `top-right` is the top
+ *  right corner in a right-to-left book too. */
+export type VideoOverlayPosition =
+  | 'center'
+  | 'top-left'
+  | 'top'
+  | 'top-right'
+  | 'left'
+  | 'right'
+  | 'bottom-left'
+  | 'bottom'
+  | 'bottom-right';
+
+/** The mark printed on a video's poster to say it plays. */
+export interface VideoPlayMarkConfig {
+  /** Print it. Default `true`. */
+  enabled?: boolean;
+  /** `'circle'` (a disc with a triangle, the default), `'rounded'` (a
+   *  rounded rectangle with a triangle) or `'triangle'` (the triangle
+   *  alone, outlined in the background colour). */
+  shape?: 'circle' | 'rounded' | 'triangle';
+  /** Default `'center'`. */
+  position?: VideoOverlayPosition;
+  /** Height of the mark (the disc's diameter). Default `12mm`; never more
+   *  than 40 % of the poster's shorter side. */
+  size?: Dimension;
+  /** Distance from the poster's edges when the mark sits at a side or a
+   *  corner. Default `4mm`. */
+  inset?: Dimension;
+  /** The triangle. Default white. */
+  color?: ColorValue;
+  /** The disc or rectangle behind it. Default the main palette colour. */
+  background?: ColorValue;
+  /** Opacity of the background, 0–1. Default `0.9`. */
+  backgroundOpacity?: number;
+}
+
+/** The QR code printed on a video's poster, opening the video (its YouTube
+ *  or Vimeo page, or a self-hosted file's production address). */
+export interface VideoQrConfig {
+  /** Print it. Default `true`. A video with no address (a self-hosted file
+   *  without `url`) prints none and raises `videoWithoutUrl`. */
+  enabled?: boolean;
+  /** Default `'bottom-right'`. */
+  position?: VideoOverlayPosition;
+  /** Side of the code with its quiet zone. Default `18mm`; never more than
+   *  45 % of the poster's shorter side. Keep each module at least a third of
+   *  a millimetre for phone cameras. */
+  size?: Dimension;
+  /** Distance from the poster's edges. Default `3mm`. */
+  inset?: Dimension;
+  /** Error-correction level `'L'`, `'M'` (the default), `'Q'` or `'H'`;
+   *  raised automatically while the code stays the same size. */
+  errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+  /** Light modules around the code, in modules. Default `2`. */
+  quietZone?: number;
+  /** Dark modules. Default black. */
+  color?: ColorValue;
+  /** The plate behind the code. Default white. */
+  background?: ColorValue;
+  /** Corner radius of the plate. Default `1mm`. */
+  radius?: Dimension;
+}
+
+/** How video resources are printed and played (#454). */
+export interface VideoStyleConfig {
+  playMark?: VideoPlayMarkConfig;
+  qr?: VideoQrConfig;
+  /** Make the poster a link to the video: a link annotation in the PDF, an
+   *  `<a>` around the poster in HTML and EPUB when they show the poster.
+   *  Default `true`. */
+  linkPoster?: boolean;
+  /** What the HTML output sets for a video: its player (`'player'`, the
+   *  default) or the printed poster with its overlays (`'poster'`). */
+  html?: 'player' | 'poster';
+  /** Player options for every video. */
+  player?: VideoPlayerOptions;
+}
+
+export interface ResolvedVideoPlayMarkConfig {
+  enabled: boolean;
+  shape: 'circle' | 'rounded' | 'triangle';
+  position: VideoOverlayPosition;
+  size: Dimension;
+  inset: Dimension;
+  color: ColorValue;
+  background: ColorValue;
+  backgroundOpacity: number;
+}
+
+export interface ResolvedVideoQrConfig {
+  enabled: boolean;
+  position: VideoOverlayPosition;
+  size: Dimension;
+  inset: Dimension;
+  errorCorrection: 'L' | 'M' | 'Q' | 'H';
+  quietZone: number;
+  color: ColorValue;
+  background: ColorValue;
+  radius: Dimension;
+}
+
+export interface ResolvedVideoStyleConfig {
+  playMark: ResolvedVideoPlayMarkConfig;
+  qr: ResolvedVideoQrConfig;
+  linkPoster: boolean;
+  html: 'player' | 'poster';
+  player: ResolvedVideoPlayerOptions;
 }
 
 /** A named paragraph style, applied to the paragraphs inside a
@@ -4591,6 +4799,9 @@ export interface PostextConfig {
   captionStyle?: CaptionStyleConfig;
   /** Styling for embedded SVG diagrams (single-ink reproduction). */
   diagramStyle?: DiagramStyleConfig;
+  /** How video resources are printed (poster overlays: play mark, QR
+   *  code) and played (player options). */
+  videoStyle?: VideoStyleConfig;
   /** Named paragraph styles for `:::paragraphs{style="…"}` containers. */
   paragraphStyles?: ParagraphStyleConfig[];
   /** Named callout styles for `:::callout{type="…"}` containers. Defaults
@@ -4687,7 +4898,9 @@ export interface PostextConfig {
 
   /** User-definable resource categories (figures, tables, etc.) that drive
    *  typed numbering, caption prefixes, and inline references. Defaults to
-   *  the built-in 'figure' and 'table' types when unset, localised to the
+   *  the built-in 'figure', 'table' and 'video' types when unset (a list
+   *  with no 'video' type still numbers video resources typed `video` with
+   *  the built-in one), localised to the
    *  document language (`defaultResourceTypes(locale)`, where the language is
    *  {@link locale}, else `bodyText.hyphenation.locale`, else English). */
   resourceTypes?: ResourceType[];

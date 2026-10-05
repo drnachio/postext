@@ -113,3 +113,34 @@ export function arabicSampleBook(): VDTDocument[] {
     },
   });
 }
+
+/** A minimal MP4: just its `ftyp` box (`isom`), enough to be typed. */
+export const MP4 = Uint8Array.from([
+  0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d, 0, 0, 2, 0,
+  0x69, 0x73, 0x6f, 0x6d, 0x6d, 0x70, 0x34, 0x31,
+]);
+
+const videoResources: Resource[] = [
+  {
+    id: 'clip', typeId: 'video', kind: 'video', caption: 'The lamp turning.', altText: 'The lighthouse lamp turning at dusk',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'file', fileId: 'clip.mp4', format: 'mp4', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+  {
+    id: 'remote', typeId: 'video', kind: 'video', caption: 'The keeper speaks.', altText: 'An interview with the keeper',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'file', url: 'https://cdn.example.org/keeper.mp4', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+  {
+    id: 'talk', typeId: 'video', kind: 'video', caption: 'A talk on lamps.', altText: 'A talk on lighthouse lamps',
+    createdAt: 0, updatedAt: 0,
+    video: { source: 'youtube', url: 'https://youtu.be/dQw4w9WgXcQ', poster: { fileId: 'f1.png', format: 'png', width: 400, height: 300 } },
+  },
+];
+
+/** A chapter with three videos (#454): a self-hosted file the book carries,
+ *  one that plays from its production address, and a YouTube one. */
+export function videoSampleBook(overrides: PostextConfig = {}): VDTDocument[] {
+  const markdown = ['# Videos', '', `The lamp in :ref{id=clip}, the keeper in :ref{id=remote} and a talk in :ref{id=talk}. ${para.repeat(2)}`, '', para.repeat(6)].join('\n');
+  return buildBundle({ chapters: [{ markdown }], config: { ...config, ...overrides }, resources: videoResources });
+}

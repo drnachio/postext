@@ -9,8 +9,10 @@ import { cloneDefaultColorPalette, defaultResourceTypes, stripConfigDefaults } f
 import {
   bitmapSize,
   chapterFileName,
+  extensionForBitmapFormat,
   extensionForImageMime,
   extensionForResource,
+  extensionForVideo,
   fontsToCustomFonts,
   isBitmapFile,
   isBundleManifest,
@@ -214,6 +216,28 @@ export async function readBundle(
   const resources: Resource[] = await Promise.all(
     localizedSpecs.map(async (spec) => {
       const file = spec.file;
+      if (spec.kind === 'video') {
+        // A video (#454): the file it plays (self-hosted) and its poster.
+        if (file) {
+          const bytes = await readFile(file).catch(() => null);
+          if (bytes) blobs.push({ fileId: ids.blob(file), file, bytes, mime: mimeForFile(file) });
+          else onWarning?.(`${spec.id}: video "${file}" not found, ignored`);
+        }
+        let resolved = spec;
+        let size: BundleImageSize | undefined;
+        if (spec.poster) {
+          const bytes = isBitmapFile(spec.poster) ? await readFile(spec.poster).catch(() => null) : null;
+          if (bytes) {
+            const mime = mimeForFile(spec.poster);
+            blobs.push({ fileId: ids.blob(spec.poster), file: spec.poster, bytes, mime });
+            if (spec.width === undefined || spec.height === undefined) size = await measureBitmap(bytes, mime);
+          } else {
+            onWarning?.(`${spec.id}: poster "${spec.poster}" not found or not a picture, ignored`);
+            resolved = { ...spec, poster: undefined };
+          }
+        }
+        return resourceFromSpec(resolved, size, ids.blob);
+      }
       if (!file) return resourceFromSpec(spec, undefined, ids.blob);
       const mime = mimeForFile(file);
       const bytes = await readFile(file);
@@ -368,6 +392,28 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   for (const r of content.resources) {
     const { bitmap, svg } = r;
     const rest = omitStorageFields(r);
+    if (r.kind === 'video' && r.video) {
+      // A video (#454): its file (self-hosted) and its poster, side by side.
+      const { fileId: videoFileId, poster, ...video } = r.video;
+      const spec: BundleResourceSpec = { ...rest, video };
+      if (videoFileId || poster) {
+        const name = uniqueSlug(slugify(r.id), takenResourceNames, 'resource');
+        takenResourceNames.add(name);
+        resourceNames.set(r.id, name);
+        if (videoFileId) {
+          spec.file = `resources/${name}.${extensionForVideo(video.format)}`;
+          files.push({ path: spec.file, fileId: videoFileId, kind: 'blob', owner: r.id });
+        }
+        if (poster) {
+          spec.poster = `resources/${name}.poster.${extensionForBitmapFormat(poster.format)}`;
+          files.push({ path: spec.poster, fileId: poster.fileId, kind: 'blob', owner: r.id });
+          if (poster.width) spec.width = poster.width;
+          if (poster.height) spec.height = poster.height;
+        }
+      }
+      resources.push(spec);
+      continue;
+    }
     const ext = extensionForResource(r);
     const fileId = bitmap?.fileId ?? svg?.fileId;
     if (!ext || !fileId) {
@@ -612,8 +658,21 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
   }
   if (missingPaths.size > 0) {
     const resources = manifest.resources
-      ?.filter((r) => !r.file || !missingPaths.has(r.file))
-      .map((r) => (r.pdfFile && missingPaths.has(r.pdfFile) ? { ...r, pdfFile: undefined } : r));
+      // A video keeps its address and player without its file or poster.
+      ?.filter((r) => r.kind === 'video' || !r.file || !missingPaths.has(r.file))
+      .map((r) => {
+        if (r.kind === 'video') {
+          const spec = { ...r };
+          if (spec.file && missingPaths.has(spec.file)) delete spec.file;
+          if (spec.poster && missingPaths.has(spec.poster)) {
+            delete spec.poster;
+            delete spec.width;
+            delete spec.height;
+          }
+          return spec;
+        }
+        return r.pdfFile && missingPaths.has(r.pdfFile) ? { ...r, pdfFile: undefined } : r;
+      });
     const fonts = manifest.fonts
       ?.map((fam) => ({ ...fam, variants: fam.variants.filter((v) => !missingPaths.has(v.file)) }))
       .filter((fam) => fam.variants.length > 0);

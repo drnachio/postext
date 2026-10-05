@@ -227,6 +227,19 @@ function applyPaletteToListedResolvedColors(
       ...resolved.diagramStyle,
       inkColor: resolveRequired(resolved.diagramStyle.inkColor, palette),
     },
+    videoStyle: {
+      ...resolved.videoStyle,
+      playMark: {
+        ...resolved.videoStyle.playMark,
+        color: resolveRequired(resolved.videoStyle.playMark.color, palette),
+        background: resolveRequired(resolved.videoStyle.playMark.background, palette),
+      },
+      qr: {
+        ...resolved.videoStyle.qr,
+        color: resolveRequired(resolved.videoStyle.qr.color, palette),
+        background: resolveRequired(resolved.videoStyle.qr.background, palette),
+      },
+    },
     paragraphStyles: resolved.paragraphStyles.map((s) => ({ ...s, color: resolveRequired(s.color, palette) })),
     calloutStyles: resolved.calloutStyles.map((s) => ({
       ...s,
@@ -412,6 +425,15 @@ function applyPaletteToListedColors(config: PostextConfig, palette: ColorPalette
     next.diagramStyle = {
       ...config.diagramStyle,
       inkColor: resolveColor(config.diagramStyle.inkColor, palette),
+    };
+  }
+
+  if (config.videoStyle) {
+    const vs = config.videoStyle;
+    next.videoStyle = {
+      ...vs,
+      ...(vs.playMark ? { playMark: { ...vs.playMark, color: resolveColor(vs.playMark.color, palette), background: resolveColor(vs.playMark.background, palette) } } : {}),
+      ...(vs.qr ? { qr: { ...vs.qr, color: resolveColor(vs.qr.color, palette), background: resolveColor(vs.qr.background, palette) } } : {}),
     };
   }
 

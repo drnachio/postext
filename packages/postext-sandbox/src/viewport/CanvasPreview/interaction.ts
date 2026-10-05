@@ -277,7 +277,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     if (!pt) return null;
     const fileId = designImageFileIdAtPixel(doc, pt.pageIndex, pt.x, pt.y);
     if (fileId === null) return null;
-    return resources.find((r) => r.bitmap?.fileId === fileId || r.svg?.fileId === fileId)?.id ?? null;
+    return resources.find((r) => r.bitmap?.fileId === fileId || r.svg?.fileId === fileId || r.video?.poster?.fileId === fileId)?.id ?? null;
   };
 
   // Editable resource text (table cells, captions, notes, SVG text nodes) is
@@ -339,8 +339,12 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   // double tap goes to the source.
   let touchTap = false;
 
+  // A video player in the HTML preview (#454) keeps its own pointer: its
+  // controls play, scrub and go full screen.
+  const onPlayer = (ev: Event): boolean => !!(ev.target as Element | null)?.closest?.('.pt-video');
+
   target.addEventListener('pointerdown', (ev) => {
-    if (!on()) return;
+    if (!on() || onPlayer(ev)) return;
     touchTap = ev.pointerType === 'touch' && !opts.touchSelects;
     if (ev.button !== 0 || touchTap) return;
     const at = locate(ev);
@@ -415,7 +419,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       ev.stopPropagation();
       return;
     }
-    if (ev.detail === 0 || !on()) return;
+    if (ev.detail === 0 || !on() || onPlayer(ev)) return;
     const at = locate(ev);
     if (!at) return;
     pageIndex = at.pageIndex;
@@ -459,6 +463,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   target.addEventListener('dblclick', (ev) => {
+    if (onPlayer(ev)) return;
     if (!on()) return;
     const at = locate(ev);
     if (!at) return;

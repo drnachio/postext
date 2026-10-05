@@ -161,7 +161,7 @@ import {
   computeResourceNumbering,
   type ResourceNumberingMap,
 } from './resourceNumbering';
-import { defaultResourceTypes, documentLocale } from '../defaults/resourceTypes';
+import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, headingTitleText, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
@@ -635,8 +635,8 @@ function placeDocumentPass(
   // captions and inline `:ref`s can resolve their rendered number strings
   // before measurement. Numbering follows order of first reference in the
   // document.
-  const resourceTypes: ResourceType[] = config?.resourceTypes ?? defaultResourceTypes(documentLocale(config));
   const resources: Resource[] = content.resources ?? [];
+  const resourceTypes: ResourceType[] = effectiveResourceTypes(config, resources);
   const headingContext = computeHeadingContext(contentBlocks, headingStart, isNumbered);
   const resourceNumbering: ResourceNumberingMap = computeResourceNumbering(
     contentBlocks,

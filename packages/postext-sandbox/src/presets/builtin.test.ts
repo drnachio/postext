@@ -46,7 +46,7 @@ describe('the built-in guide in five languages', () => {
       expect(config.captionStyle?.fontFamily).toBe('IBM Plex Sans Arabic');
       expect(config.bodyText?.hyphenation?.enabled).toBe(false);
       expect(config.bodyText?.kashida).toBe('auto');
-      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول']);
+      expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول', 'فيديو']);
       expect(svgFileIds(loaded.resources).every((id) => id.endsWith('-ar'))).toBe(true);
       const table = loaded.resources.find((r) => r.id === 'preset-sizes')!;
       expect(table.caption).toBe('مقاسات الصفحة الجاهزة واستعمالاتها المعتادة.');

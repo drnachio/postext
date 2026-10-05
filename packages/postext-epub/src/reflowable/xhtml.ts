@@ -1,7 +1,7 @@
 // The semantic model to EPUB 3 XHTML content documents: one per chapter
 // (or part opener), with its footnotes after the text.
 
-import { bidiClassOf } from 'postext';
+import { bidiClassOf, mediaFragment, type VDTResourceVideo } from 'postext';
 import type {
   FileModel,
   InlineItem,
@@ -23,6 +23,8 @@ export interface SerializeContext {
   bookTitle: string;
   /** Href of a picture relative to the package document, or undefined. */
   imageHref(fileId: string): string | undefined;
+  /** The href of a self-hosted video's file (#454), when the book carries it. */
+  videoHref?(fileId: string): string | undefined;
   /** Href of the stylesheet relative to the package document. */
   stylesheet: string;
   /** Accessible name of a note's link back to its marker. */
@@ -360,11 +362,43 @@ class Writer {
     return this.inline(inl);
   }
 
+  /** A video (#454): a self-hosted file in the reader's own player; a
+   *  YouTube or Vimeo one as its poster linked to the video (an EPUB may
+   *  not embed a web page's player: EPUBCheck RSC-006). */
+  private videoBody(video: VDTResourceVideo, posterSrc: string | undefined, alt: string): string {
+    const label = alt || 'Video';
+    if (video.source === 'file') {
+      const own = video.fileId ? this.ctx.videoHref?.(video.fileId) : undefined;
+      const src = own ? relativeHref(this.file.href, own) : video.link;
+      if (src) {
+        const p = video.player;
+        const attrs = [
+          p.controls && ' controls="controls"',
+          p.autoplay && ' autoplay="autoplay"',
+          (p.autoplay || p.muted) && ' muted="muted"',
+          p.loop && ' loop="loop"',
+          ' playsinline="playsinline"',
+          ` preload="${p.preload}"`,
+          posterSrc && ` poster="${xmlAttr(posterSrc)}"`,
+        ].filter(Boolean).join('');
+        const range = mediaFragment(video);
+        const fallback = video.link ? `<a href="${xmlAttr(video.link)}">${xmlText(label)}</a>` : xmlText(label);
+        return `<video src="${xmlAttr(src + range)}"${attrs} aria-label="${xmlAttr(label)}">${fallback}</video>`;
+      }
+    }
+    const picture = posterSrc
+      ? `<img src="${xmlAttr(posterSrc)}" alt="${xmlAttr(label)}"/>`
+      : `<span class="pt-missing" role="img" aria-label="${xmlAttr(label)}">${xmlText(label)}</span>`;
+    return video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
+  }
+
   private figure(node: Extract<Node, { k: 'figure' }>): string {
     const href = node.fileId ? this.ctx.imageHref(node.fileId) : undefined;
-    const body = href
-      ? `<img src="${xmlAttr(relativeHref(this.file.href, href))}" alt="${xmlAttr(node.alt)}"/>`
-      : `<div class="pt-missing" role="img" aria-label="${xmlAttr(node.alt || '?')}">${xmlText(node.alt)}</div>`;
+    const body = node.video
+      ? this.videoBody(node.video, href ? relativeHref(this.file.href, href) : undefined, node.alt)
+      : href
+        ? `<img src="${xmlAttr(relativeHref(this.file.href, href))}" alt="${xmlAttr(node.alt)}"/>`
+        : `<div class="pt-missing" role="img" aria-label="${xmlAttr(node.alt || '?')}">${xmlText(node.alt)}</div>`;
     const pre = this.inline(node.pre);
     const note = node.note.length > 0 ? this.inline(node.note) : '';
     // A figcaption is the figure's first or last child: page starts go

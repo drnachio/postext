@@ -58,7 +58,7 @@ const borderOpacity = (alpha: number) => (alpha < 1 ? { borderOpacity: alpha } :
  *  for `drawSvgPath` anchored at the page's top-left corner. Clockwise on
  *  the page, or counter-clockwise with `reverse`, so that a filled path
  *  holding both leaves the inner one empty. A radius of 0 gives no arcs. */
-function roundedRectSvgPath(
+export function roundedRectSvgPath(
   ctx: PageCtx,
   xPx: number,
   yPx: number,

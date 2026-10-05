@@ -59,7 +59,7 @@ describe('chineseDefaults', () => {
     expect(change(r, 'firstLineIndent')?.to).toEqual({ kind: 'dimension', value: { value: 2, unit: 'em' } });
     // Hyphenation turns off with the language: listed, not optional.
     expect(change(r, 'hyphenation')).toMatchObject({ from: { kind: 'switch', on: true }, to: { kind: 'switch', on: false }, required: true });
-    expect(change(r, 'resourceTypes')).toMatchObject({ from: { kind: 'text', text: 'Figura, Tabla' }, to: { kind: 'text', text: '图, 表' } });
+    expect(change(r, 'resourceTypes')).toMatchObject({ from: { kind: 'text', text: 'Figura, Tabla, Vídeo' }, to: { kind: 'text', text: '图, 表, 视频' } });
     expect(change(r, 'captionLabel')).toMatchObject({ from: { kind: 'text', text: 'Figura 1.1. …' }, to: { kind: 'text', text: '图1-1　…' } });
     expect(change(r, 'chapterNumbering')).toMatchObject({ from: { kind: 'none' }, to: { kind: 'text', text: '第一章' } });
     expect(change(r, 'listNumbers')).toMatchObject({ from: { kind: 'text', text: '1. 1. 1. 1. 1.' }, to: { kind: 'text', text: '一、 （一） 1. （1） ①' } });

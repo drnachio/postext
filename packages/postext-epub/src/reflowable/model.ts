@@ -3,6 +3,8 @@
 // kept as inline items, links as targets resolved once every chapter has
 // been walked (a cross-reference may point at a later chapter).
 
+import type { VDTResourceVideo } from 'postext';
+
 /** Where a link goes, resolved to `file#id` by the registry. */
 export type LinkTarget =
   /** A URL as written (`https:`, `mailto:`…, or a relative one). */
@@ -119,6 +121,8 @@ export interface FigureNode {
   caption: InlineItem[];
   captionAbove: boolean;
   note: InlineItem[];
+  /** A video resource (#454): what it plays; `fileId` is its poster. */
+  video?: VDTResourceVideo;
 }
 
 export interface TableCellNode {

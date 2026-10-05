@@ -37,6 +37,7 @@ import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure
 import type { InlineSpan, RefCase } from '../parse';
 import { suffixJoiner } from '../parse/inlineFormatting';
 import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeArea';
+import { layoutVideo } from './videoOverlay';
 import type {
   ColorPaletteEntry,
   ResolvedCaptionStyleConfig,
@@ -1144,6 +1145,17 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const ih = resource.svg.height ?? 0;
     bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
+  } else if (resource.kind === 'video') {
+    // A video is set as its poster (#454): the column's width, the poster's
+    // ratio (else the video's, else 16:9). Posters are screen-sized, so
+    // they fill the measure like an SVG rather than keep their pixel size.
+    const poster = resource.video?.poster;
+    fileId = poster?.fileId;
+    format = poster?.format;
+    const iw = poster?.width ?? resource.video?.width ?? 0;
+    const ih = poster?.height ?? resource.video?.height ?? 0;
+    bodyWidth = Math.min(columnWidth, input.maxBodyWidth ?? columnWidth);
+    bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * (9 / 16);
   } else if (resource.kind === 'table' && resource.table) {
     const ts = tableStyle;
     const bodyFontPx = dimensionToPx(ts.bodyFontSize, dpi);
@@ -1351,13 +1363,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     ? { width: resource.bitmap.width, height: resource.bitmap.height }
     : resource.kind === 'svg' && resource.svg?.width && resource.svg.height
       ? { width: resource.svg.width, height: resource.svg.height }
-      : undefined;
+      : resource.kind === 'video' && resource.video?.poster
+        ? { width: resource.video.poster.width, height: resource.video.poster.height }
+        : undefined;
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
   const flexRange = safeArea && intrinsic && intrinsic.width > 0 && intrinsic.height > 0 && !rotate
     ? (w: number) => safeAreaHeightRange(intrinsic.width, intrinsic.height, safeArea, w)
     : undefined;
   // The content area's room for the body, when `fitFiguresToPage` caps it.
   let pageRoom: number | undefined;
-  if (rotate && (resource.kind === 'bitmap' || resource.kind === 'svg')) {
+  if (rotate && picture) {
     const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
     if (bodyHeight > room && bodyHeight > 0) {
       const k = Math.max(0.01, room) / bodyHeight;
@@ -1370,7 +1385,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // so image, caption and note fit one page with a line of air to spare.
   if (
     !rotate && !input.captionAside && resolved.layout.fitFiguresToPage
-    && (resource.kind === 'bitmap' || resource.kind === 'svg')
+    && picture
   ) {
     const m = resolved.page.margins;
     const areaHeight = dimensionToPx(resolved.page.height, dpi)
@@ -1418,7 +1433,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   // sits in the slot per `placement.align`, as a float narrowed by
   // `placement.width` does; the caption and note keep the slot's measure.
   // A turned figure and one with its caption beside it stay flush left.
-  const bodyX = !rotate && !aside && (resource.kind === 'bitmap' || resource.kind === 'svg') && bodyWidth < columnWidth
+  const bodyX = !rotate && !aside && picture && bodyWidth < columnWidth
     ? (columnWidth - bodyWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
     : 0;
   const bodyRect = createBoundingBox(bodyX, bodyY, bodyWidth, bodyHeight);
@@ -1458,9 +1473,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     ? bodyHeight + continuesHeight
     : bodyHeight + captionHeight + noteHeight + continuesHeight;
 
+  const video = layoutVideo(resource, resolved, bodyWidth, bodyHeight);
   const block: ResolvedResourceBlock = {
     resource,
     kind: resource.kind,
+    ...(video ? { video } : {}),
     ...(slice ? { slice } : {}),
     number,
     captionPrefix,
@@ -1532,7 +1549,7 @@ function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: numbe
   const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
   let length = Math.max(1, maxLength);
   let out = at(length);
-  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg') {
+  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg' || input.resource.kind === 'video') {
     const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
     const holds = (o: ReturnType<typeof layoutResourceBlock>) =>
       o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;

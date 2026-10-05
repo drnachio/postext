@@ -11,6 +11,16 @@ export const IMAGE_EXTENSIONS: Readonly<Record<string, string>> = {
   'image/svg+xml': 'svg',
 };
 
+/** The video media types a book carries (#454), and the file extension of
+ *  each. Video in an HTML `<video>` element is exempt from EPUB's
+ *  core-media-type fallbacks. */
+export const VIDEO_EXTENSIONS: Readonly<Record<string, string>> = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/ogg': 'ogv',
+  'video/quicktime': 'mov',
+};
+
 /** The EPUB core media types of fonts, by file format. */
 export const FONT_MEDIA_TYPES: Readonly<Record<'woff2' | 'woff' | 'ttf' | 'otf', string>> = {
   woff2: 'font/woff2',
@@ -35,6 +45,15 @@ export function sniffImageType(bytes: Uint8Array): string | undefined {
   // whose root is <svg.
   const head = new TextDecoder().decode(bytes.subarray(0, 4096)).replace(/^﻿/, '');
   if (/^\s*</.test(head) && /<svg[\s>]/i.test(head)) return 'image/svg+xml';
+  return undefined;
+}
+
+/** The video media type of `bytes` (MP4 and QuickTime by their `ftyp`
+ *  box, WebM by its EBML header, Ogg), or undefined. */
+export function sniffVideoType(bytes: Uint8Array): string | undefined {
+  if (startsWith(bytes, ascii('ftyp'), 4)) return startsWith(bytes, ascii('qt  '), 8) ? 'video/quicktime' : 'video/mp4';
+  if (startsWith(bytes, [0x1a, 0x45, 0xdf, 0xa3])) return 'video/webm';
+  if (startsWith(bytes, ascii('OggS'))) return 'video/ogg';
   return undefined;
 }
 

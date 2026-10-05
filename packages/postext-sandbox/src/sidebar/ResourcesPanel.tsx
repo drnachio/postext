@@ -5,7 +5,7 @@ import { composeBookMemo } from '../book/compose';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import type { Resource, ResourceKind, ResourceType, TableModel } from 'postext';
-import { defaultResourceTypes } from 'postext';
+import { defaultResourceTypes, defaultVideoResourceType } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext';
 import { getBlob, putBlob } from '../storage/blobStore';
 import { ResourceList } from '../panels/resources/ResourceList';
@@ -40,10 +40,11 @@ function emptyTableModel(): TableModel {
 
 function newResource(kind: ResourceKind, typeId: string, existingIds: Set<string>): Resource {
   const now = Date.now();
-  const base = kind === 'bitmap' ? 'image' : kind === 'svg' ? 'svg' : 'table';
+  const base = kind === 'bitmap' ? 'image' : kind === 'svg' ? 'svg' : kind === 'video' ? 'video' : 'table';
   const id = uniqueSlug(base, existingIds, base);
   const resource: Resource = { id, typeId, kind, createdAt: now, updatedAt: now };
   if (kind === 'table') resource.table = { model: emptyTableModel() };
+  if (kind === 'video') resource.video = { source: 'youtube' };
   return resource;
 }
 
@@ -91,11 +92,19 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
     [chapters, selectedId],
   );
 
+  // Videos are numbered in a sequence of their own (#454): a book whose
+  // types predate them gets the built-in Video type when it adds one.
+  const videoTypeId = (): string => {
+    if (types.some((t) => t.id === 'video')) return 'video';
+    dispatch({ type: 'UPDATE_CONFIG', payload: { resourceTypes: [...types, defaultVideoResourceType(locale)] } });
+    return 'video';
+  };
+
   const ingestFiles = async (files: File[]) => {
     if (files.length === 0) return;
     const existingIds = new Set(resources.map((r) => r.id));
     const typeId = types[0]?.id ?? '';
-    const { created, skipped } = await uploadFiles(files, typeId, existingIds);
+    const { created, skipped } = await uploadFiles(files, typeId, existingIds, videoTypeId);
     for (const r of created) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
     if (created.length === 1) setSelectedId(created[0].id);
     setUploadNote(
@@ -142,7 +151,7 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
 
   const handleNew = (kind: ResourceKind) => {
     const existingIds = new Set(resources.map((r) => r.id));
-    const typeId = types[0]?.id ?? '';
+    const typeId = kind === 'video' ? videoTypeId() : (types.find((t) => t.id !== 'video') ?? types[0])?.id ?? '';
     const resource = newResource(kind, typeId, existingIds);
     dispatch({ type: 'UPSERT_RESOURCE', payload: resource });
     setSelectedId(resource.id);
@@ -164,6 +173,25 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
     // deletes the old record's blob when the id disappears. To keep a renamed
     // bitmap/SVG intact, copy its blob to a fresh fileId so the cascade deletes
     // the now-orphaned original rather than the live payload.
+    if (next.video && (next.video.fileId || next.video.poster)) {
+      // A video's file and poster are copied the same way (#454).
+      const copy = (fileId: string | undefined) => (fileId
+        ? getBlob(fileId).then((record) => (record ? putBlob(record.bytes, record.contentType) : fileId))
+        : Promise.resolve(undefined));
+      const video = next.video;
+      Promise.all([copy(video.fileId), copy(video.poster?.fileId)])
+        .then(([fileId, posterId]) => ({
+          ...next,
+          video: { ...video, ...(fileId ? { fileId } : {}), ...(video.poster && posterId ? { poster: { ...video.poster, fileId: posterId } } : {}) },
+        }))
+        .catch(() => next)
+        .then((remapped) => {
+          dispatch({ type: 'DELETE_RESOURCE', payload: oldId });
+          dispatch({ type: 'UPSERT_RESOURCE', payload: remapped });
+          setSelectedId(remapped.id);
+        });
+      return;
+    }
     const sourceFileId = next.bitmap?.fileId ?? next.svg?.fileId;
     if (sourceFileId) {
       getBlob(sourceFileId)

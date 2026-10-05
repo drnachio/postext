@@ -20,7 +20,11 @@ export function canonicalJson(value: unknown): string {
 export function builtInTypes(types: readonly ResourceType[], extraLocales: readonly string[]): boolean {
   const current = canonicalJson(types);
   const tags = new Set([...DOCUMENT_LANGUAGES.map((l) => l.tag), 'en', 'es', ...extraLocales]);
-  for (const tag of tags) if (canonicalJson(defaultResourceTypes(tag)) === current) return true;
+  for (const tag of tags) {
+    const types = defaultResourceTypes(tag);
+    // A book saved before videos (#454) holds the figure and table only.
+    if (canonicalJson(types) === current || canonicalJson(types.filter((t) => t.id !== 'video')) === current) return true;
+  }
   return false;
 }
 

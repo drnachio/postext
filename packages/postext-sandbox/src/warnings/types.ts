@@ -63,6 +63,9 @@ export type WarningKind =
   | 'bitmapTooSmall'
   | 'unknownTableStyle'
   | 'raggedTableGrid'
+  | 'videoWithoutPoster'
+  | 'videoWithoutUrl'
+  | 'videoUrlInvalid'
   | 'missingImage'
   | 'storageUnavailable'
   | 'chapterFrontmatterIgnored'
@@ -257,6 +260,14 @@ export type WarningPayload =
    *  a merge covers was left out instead of kept with `hiddenBy`, or a row
    *  ends short): the cells after it shift. Locates the first issue. */
   | { kind: 'raggedTableGrid'; resourceId: string; reason: 'spanOverlap' | 'missingCells'; row: number; col: number; count: number }
+  /** A video the text uses has no poster frame (#454): print shows a dark
+   *  box. */
+  | { kind: 'videoWithoutPoster'; resourceId: string }
+  /** A self-hosted video has no production address: no QR code or link in
+   *  print. */
+  | { kind: 'videoWithoutUrl'; resourceId: string }
+  /** A YouTube or Vimeo video's address is no video of that platform. */
+  | { kind: 'videoUrlInvalid'; resourceId: string; url: string }
   /** An image the document shows has no payload the previews can read (the
    *  file is missing from storage or does not decode): it is painted as a
    *  placeholder. */

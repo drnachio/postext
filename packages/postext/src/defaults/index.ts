@@ -6,6 +6,7 @@ import { stripHeadingsDefaults } from './headings';
 import { stripTableStyleDefaults, stripTableStylesDefaults } from './tableStyle';
 import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
+import { stripVideoStyleDefaults } from './videoStyle';
 import { stripParagraphStylesDefaults } from './paragraphStyles';
 import { stripCalloutStylesDefaults } from './calloutStyles';
 import { stripChipStylesDefaults } from './chipStyles';
@@ -34,6 +35,7 @@ export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfi
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './tableStyle';
 export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
+export { DEFAULT_VIDEO_STYLE_CONFIG, DEFAULT_VIDEO_PLAYER_OPTIONS, resolveVideoStyleConfig, resolveVideoPlayerOptions, stripVideoStyleDefaults } from './videoStyle';
 export { DEFAULT_PARAGRAPH_STYLES, resolveParagraphStylesConfig, stripParagraphStylesDefaults } from './paragraphStyles';
 export { DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from './calloutStyles';
 export { DEFAULT_CHIP_STYLES, DEFAULT_CHIP_STYLE_STATIC, resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from './chipStyles';
@@ -47,7 +49,7 @@ export { FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, resolveFolioC
 export type { FolioPaperStock } from './folio';
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './headerFooter';
 export type { HeaderFooterSlotKind } from './headerFooter';
-export { defaultResourceTypes } from './resourceTypes';
+export { defaultResourceTypes, defaultVideoResourceType, effectiveResourceTypes } from './resourceTypes';
 export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './parts';
 export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesDefaults } from './headingStyles';
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
@@ -106,6 +108,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.diagramStyle = strippedDiagramStyle;
   } else {
     delete result.diagramStyle;
+  }
+  const strippedVideoStyle = stripVideoStyleDefaults(config.videoStyle);
+  if (strippedVideoStyle) {
+    result.videoStyle = strippedVideoStyle;
+  } else {
+    delete result.videoStyle;
   }
   const strippedParagraphStyles = stripParagraphStylesDefaults(config.paragraphStyles);
   if (strippedParagraphStyles) {

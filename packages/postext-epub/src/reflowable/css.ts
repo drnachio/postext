@@ -212,6 +212,8 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   const capPx = px(cap.fontSize);
   out.push(rule('figure', ['margin: 1em 0', 'text-align: center', 'page-break-inside: avoid', 'break-inside: avoid']));
   out.push(rule('figure img', ['max-width: 100%', 'height: auto']));
+  out.push(rule('figure video', ['width: 100%', 'height: auto', 'background-color: #000']));
+  out.push(rule('a.pt-video-link', ['display: block']));
   out.push(rule('figcaption, caption', [
     fam(cap.fontFamily),
     `font-size: ${round(capPx / bodyPx)}em`,

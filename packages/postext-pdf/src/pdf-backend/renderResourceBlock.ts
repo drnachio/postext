@@ -34,8 +34,11 @@ import type {
   VDTDocument,
   ResolvedResourceBlock,
   VDTResourceTableCell,
+  VDTResourceVideo,
 } from 'postext';
-import { applySingleInkToSvg, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
+import { applySingleInkToSvg, playMarkTriangle, qrModuleRuns, resolveColorValue, tableCellFillRects, tableFrameOutline, uncroppedPictureBox } from 'postext';
+import { roundedRectSvgPath } from './headerFooter';
+import { pdfUri } from './links';
 import { parseFontString } from '../fontString';
 import { FontCache, type PdfFontProvider } from '../fontCache';
 import { widthOfTextAtSize } from '../faceFiles';
@@ -482,7 +485,7 @@ export async function preloadResourceImages(
   };
   for (const block of blocks) {
     const rb = block.resourceBlock;
-    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg')) {
+    if (rb && rb.fileId && (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video')) {
       await embed(rb.fileId, rb.format);
     }
     // Images embedded in table cells draw through the same map.
@@ -891,8 +894,66 @@ function renderTable(
 }
 
 function drawPlaceholder(ctx: PageCtx, rb: ResolvedResourceBlock, x: number, y: number): void {
-  const fill = colorFromHex('#eeeeee', ctx.colorSpace);
+  // A video with no poster: a dark frame its overlays read on (#454).
+  const fill = colorFromHex(rb.kind === 'video' ? '#1f1f1f' : '#eeeeee', ctx.colorSpace);
   fillRectPx(ctx, x, y, rb.bodyRect.width, rb.bodyRect.height, fill);
+}
+
+/** The play mark and the QR code of a video's poster (#454) as vectors,
+ *  over the body at (`bx`, `by`) px. On a mirrored page they are turned
+ *  back about the body, so they sit where they are printed in the other
+ *  outputs and the code reads. */
+function drawVideoOverlays(ctx: PageCtx, video: VDTResourceVideo, bx: number, by: number, bw: number): void {
+  if (!video.playMark && !video.qr) return;
+  const { scale, pageHeightPt } = ctx;
+  // `drawSvgPath` reads its path top-down from this origin, in points.
+  const origin = { x: 0, y: pageHeightPt };
+  const pt = (v: number): string => String(Math.round(v * scale * 1000) / 1000);
+  const alpha = (a: number) => (a < 1 ? { opacity: a, borderOpacity: a } : {});
+  counterFlipPx(ctx, bx, bw, () => {
+    const mark = video.playMark;
+    if (mark) {
+      const { x, y, width: w, height: h } = mark.rect;
+      const ox = bx + x;
+      const oy = by + y;
+      const tri = playMarkTriangle(mark)
+        .map(([px, py], i) => `${i === 0 ? 'M' : 'L'} ${pt(ox + px)} ${pt(oy + py)}`)
+        .join(' ') + ' Z';
+      const color = colorFromHex(mark.color, ctx.colorSpace);
+      const background = colorFromHex(mark.background, ctx.colorSpace);
+      if (mark.shape === 'triangle') {
+        ctx.page.drawSvgPath(tri, {
+          ...origin, color, borderColor: background, borderWidth: h * 0.08 * scale,
+          ...(mark.backgroundOpacity < 1 ? { borderOpacity: mark.backgroundOpacity } : {}),
+        });
+      } else {
+        if (mark.shape === 'circle') {
+          ctx.page.drawEllipse({
+            x: (ox + w / 2) * scale, y: pageHeightPt - (oy + h / 2) * scale,
+            xScale: (w / 2) * scale, yScale: (h / 2) * scale,
+            color: background, ...alpha(mark.backgroundOpacity),
+          });
+        } else {
+          ctx.page.drawSvgPath(roundedRectSvgPath(ctx, ox, oy, w, h, h * 0.24), { ...origin, color: background, ...alpha(mark.backgroundOpacity) });
+        }
+        ctx.page.drawSvgPath(tri, { ...origin, color });
+      }
+    }
+    const qr = video.qr;
+    if (qr) {
+      const { x, y, width: w, height: h } = qr.rect;
+      const ox = bx + x;
+      const oy = by + y;
+      const background = colorFromHex(qr.background, ctx.colorSpace);
+      if (qr.radius > 0) ctx.page.drawSvgPath(roundedRectSvgPath(ctx, ox, oy, w, h, qr.radius), { ...origin, color: background });
+      else fillRectPx(ctx, ox, oy, w, h, background);
+      // One path for every dark module: no seams between them.
+      const d = qrModuleRuns(qr)
+        .map((r) => `M ${pt(ox + r.x)} ${pt(oy + r.y)} h ${pt(r.w)} v ${pt(r.h)} h ${pt(-r.w)} Z`)
+        .join(' ');
+      if (d) ctx.page.drawSvgPath(d, { ...origin, color: colorFromHex(qr.color, ctx.colorSpace) });
+    }
+  });
 }
 
 export function renderResourceBlock(
@@ -946,7 +1007,7 @@ export function renderResourceBlock(
     }
   }
 
-  if (rb.kind === 'bitmap' || rb.kind === 'svg') {
+  if (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video') {
     const embedded = rb.fileId ? images.get(rb.fileId) : undefined;
     const src = rb.bodySource;
     if (embedded && src) {
@@ -969,6 +1030,19 @@ export function renderResourceBlock(
       tagContent(ctx, owner);
       if (rb.fileId) ctx.onMissingImage?.(rb.fileId, rb.resource.id);
       drawPlaceholder(ctx, rb, bx, by);
+    }
+    const video = rb.video;
+    if (video) {
+      tagContent(ctx, owner);
+      drawVideoOverlays(ctx, video, bx, by, bw);
+      // The poster opens the video (#454).
+      const uri = video.linkPoster && video.link ? pdfUri(video.link) : undefined;
+      if (uri && linkRegistry) {
+        const rect: [number, number, number, number] = [bx * scale, pageHeightPt - (by + bh) * scale, (bx + bw) * scale, pageHeightPt - by * scale];
+        const box = ctx.mapRectPt ? ctx.mapRectPt(rect) : rect;
+        const elem = owner?.child('Link');
+        linkRegistry.addUriLink(ctx.page, box, uri, elem ? { elem, contents: `${figureAlt(rb)} (${video.link})` } : undefined);
+      }
     }
   } else if (rb.kind === 'table') {
     renderTable(ctx, rb, bx, by, fontCache, images, linkColor, linkRegistry, owner);

@@ -22,7 +22,7 @@ const CONTAINER_XML =
   `</container>\n`;
 
 /** Media types whose bytes are compressed already: stored, not deflated. */
-const STORED_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'font/woff', 'font/woff2']);
+const STORED_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'font/woff', 'font/woff2', 'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']);
 
 /** Zip entry time: fixed, so the same book gives the same bytes (the DOS
  *  epoch, in local time as zip stores it). */
@@ -48,14 +48,17 @@ export function w3cDate(value: string | undefined): string | undefined {
 
 /** Manifest properties of a content document read from its markup: `svg`
  *  and `mathml` must be declared exactly when present (EPUBCheck errors
- *  either way). Other items keep the properties they were given. */
+ *  either way), and `remote-resources` when a `<video>` plays from the web
+ *  (a self-hosted video's production address, #454). Other items keep the
+ *  properties they were given. */
 function itemProperties(item: EpubItem): string[] {
   const given = item.properties ?? [];
   if (item.mediaType !== 'application/xhtml+xml') return given;
   const text = typeof item.data === 'string' ? item.data : new TextDecoder().decode(item.data);
-  const out = given.filter((p) => p !== 'svg' && p !== 'mathml');
+  const out = given.filter((p) => p !== 'svg' && p !== 'mathml' && p !== 'remote-resources');
   if (/<(?:[a-z]+:)?svg[\s>/]/.test(text)) out.push('svg');
   if (/<(?:[a-z]+:)?math[\s>/]/.test(text)) out.push('mathml');
+  if (/<(?:video|audio|source)\b[^>]*\ssrc="https?:/.test(text)) out.push('remote-resources');
   return out;
 }
 
@@ -111,7 +114,7 @@ export function buildOpf(pub: EpubPublication, identifier = bookIdentifier(pub.m
     `    <item id="ncx" href="${NCX_HREF}" media-type="application/x-dtbncx+xml"/>`,
     ...pub.items.map((item) => {
       const props = itemProperties(item);
-      return `    <item id="${escapeAttr(item.id)}" href="${escapeAttr(encodeHref(item.href))}" media-type="${escapeAttr(item.mediaType)}"` +
+      return `    <item id="${escapeAttr(item.id)}" href="${escapeAttr(item.remote ? item.href : encodeHref(item.href))}" media-type="${escapeAttr(item.mediaType)}"` +
         (props.length ? ` properties="${escapeAttr(props.join(' '))}"` : '') + `/>`;
     }),
   ];
@@ -256,6 +259,7 @@ export function packEpub(publication: EpubPublication): Uint8Array {
     [`${PACKAGE_DIR}${NCX_HREF}`]: [enc.encode(buildNcx(publication, identifier)), { level: 9 }],
   };
   for (const item of publication.items) {
+    if (item.remote) continue;
     files[`${PACKAGE_DIR}${item.href}`] = [bytesOf(item.data), { level: level(item.mediaType) }];
   }
   return zipSync(files, { mtime: ZIP_TIME });

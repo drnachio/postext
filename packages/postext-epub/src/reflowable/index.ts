@@ -18,7 +18,7 @@ import type {
   EpubWarning,
   RenderToEpubOptions,
 } from '../types';
-import { fontAssets, imageAssets, pageProgressionOf } from '../shared/assets';
+import { fontAssets, imageAssets, pageProgressionOf, remoteVideoItems, videoAssets } from '../shared/assets';
 import { bookStylesheet, stylesheetOverrides, withPalette } from './css';
 import { xmlAttr, xmlText } from './inline';
 import type { FileModel, HeadingEntry } from './model';
@@ -131,6 +131,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   onProgress?.({ phase: 'resources', done: 0, total: 2 });
   const missing: EpubWarning[] = [];
   const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w));
+  const videos = await videoAssets(docs, options.resourceBytes);
   for (const w of missing) if (w.kind !== 'missingImage' || book.images.has(w.fileId)) warn(w);
   const usedImages = new Set([...book.images].map((id) => images.hrefOf(id)).filter((h): h is string => h !== undefined));
   const fonts = fontAssets(options.fonts ?? []);
@@ -177,6 +178,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
 
   items.push(...fonts.items);
   items.push(...images.items.filter((i) => usedImages.has(i.href)));
+  items.push(...videos.items, ...remoteVideoItems(docs, videos));
   const spine: EpubSpineEntry[] = [];
   const landmarks: EpubLandmark[] = [];
   // Landmark names: in the book's language for a right-to-left book,
@@ -212,6 +214,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
     book,
     bookTitle: metadata.title,
     imageHref: (fileId: string) => images.hrefOf(fileId),
+    videoHref: (fileId: string) => videos.hrefOf(fileId),
     stylesheet: STYLESHEET_HREF,
     backLabel,
   };

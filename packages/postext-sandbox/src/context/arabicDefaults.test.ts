@@ -87,13 +87,13 @@ describe('arabicDefaults', () => {
   it('relocalises a book still named in another language, keeping types of the author\'s own', () => {
     const english: PostextConfig = { ...createDefaultConfig('en'), locale: 'ar' };
     const r = arabicDefaults(english, { locale: 'ar' });
-    expect(change(r, 'resourceTypes')).toMatchObject({ from: { kind: 'text', text: 'Figure, Table' }, to: { kind: 'text', text: 'شكل، جدول' }, customised: false });
+    expect(change(r, 'resourceTypes')).toMatchObject({ from: { kind: 'text', text: 'Figure, Table, Video' }, to: { kind: 'text', text: 'شكل، جدول، فيديو' }, customised: false });
     expect(r.config.resourceTypes).toEqual(defaultResourceTypes('ar'));
     const own: PostextConfig = { ...english, resourceTypes: [...defaultResourceTypes('en'), { ...defaultResourceTypes('en')[0]!, id: 'map', name: 'Map', captionPrefix: 'Map' }] };
     const mine = arabicDefaults(own, { locale: 'ar' });
     expect(change(mine, 'resourceTypes')).toMatchObject({ customised: true, applied: false });
     const ticked = arabicDefaults(own, { locale: 'ar', include: ['resourceTypes'] });
-    expect(ticked.config.resourceTypes?.map((t) => t.name)).toEqual(['شكل', 'جدول', 'Map']);
+    expect(ticked.config.resourceTypes?.map((t) => t.name)).toEqual(['شكل', 'جدول', 'فيديو', 'Map']);
   });
 
   it('returns a book set left to right to Auto, a row the author cannot untick', () => {

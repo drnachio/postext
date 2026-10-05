@@ -33,6 +33,10 @@ export async function deleteResource(id: string, cascadeBlobs = false): Promise<
     if (existing) {
       const fileId = existing.bitmap?.fileId ?? existing.svg?.fileId;
       if (fileId) await deleteBlob(fileId).catch(() => undefined);
+      // A video's own file and its poster (#454).
+      for (const id of [existing.video?.fileId, existing.video?.poster?.fileId]) {
+        if (id) await deleteBlob(id).catch(() => undefined);
+      }
       const pdfFileId = existing.svg?.pdfFileId;
       if (pdfFileId) await deleteBlob(pdfFileId).catch(() => undefined);
     }

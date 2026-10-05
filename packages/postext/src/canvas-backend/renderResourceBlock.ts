@@ -13,7 +13,8 @@
  * surface, so clickability is PDF-only for v1.
  */
 
-import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline } from '../vdt';
+import type { VDTBlock, VDTLine, ResolvedResourceBlock, RoundedOutline, VDTResourceVideo } from '../vdt';
+import { playMarkTriangle, qrModuleRuns } from '../pipeline/videoOverlay';
 import { fillFlowText, setVerticalPaint, verticalPaintActive } from './verticalText';
 import { fillSegmentText, fillWordsText } from './segmentText';
 import { lineMarkCuts } from '../measure/markCuts';
@@ -409,6 +410,75 @@ function paintLineRuns(
   else ctx.fillText(line.text, line.bbox.x, line.baseline);
 }
 
+/** The play mark and the QR code of a video's poster (#454), over the body
+ *  at (`bx`, `by`). The positions are physical and the code must not read
+ *  mirrored: on a mirrored page they are drawn through a reflection about
+ *  the body, which undoes the page's. */
+export function paintVideoOverlays(
+  ctx: CanvasRenderingContext2D,
+  video: VDTResourceVideo,
+  bx: number,
+  by: number,
+  bw: number,
+): void {
+  if (!video.playMark && !video.qr) return;
+  ctx.save();
+  if (mirroredPaintActive()) {
+    ctx.translate(2 * bx + bw, 0);
+    ctx.scale(-1, 1);
+  }
+  const mark = video.playMark;
+  if (mark) {
+    const { x, y, width: w, height: h } = mark.rect;
+    const ox = bx + x;
+    const oy = by + y;
+    const tri = playMarkTriangle(mark);
+    const trianglePath = (): void => {
+      ctx.beginPath();
+      tri.forEach(([px, py], i) => (i === 0 ? ctx.moveTo(ox + px, oy + py) : ctx.lineTo(ox + px, oy + py)));
+      ctx.closePath();
+    };
+    if (mark.shape === 'triangle') {
+      trianglePath();
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = h * 0.08;
+      ctx.globalAlpha = mark.backgroundOpacity;
+      ctx.strokeStyle = mark.background;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.beginPath();
+      if (mark.shape === 'circle') ctx.ellipse(ox + w / 2, oy + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+      else roundedOutlinePath(ctx, { x: ox, y: oy, width: w, height: h, radii: [h * 0.24, h * 0.24, h * 0.24, h * 0.24] });
+      ctx.globalAlpha = mark.backgroundOpacity;
+      ctx.fillStyle = mark.background;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      trianglePath();
+    }
+    ctx.fillStyle = mark.color;
+    ctx.fill();
+  }
+  const qr = video.qr;
+  if (qr) {
+    const { x, y, width: w, height: h } = qr.rect;
+    const ox = bx + x;
+    const oy = by + y;
+    ctx.fillStyle = qr.background;
+    if (qr.radius > 0) {
+      roundedOutlinePath(ctx, { x: ox, y: oy, width: w, height: h, radii: [qr.radius, qr.radius, qr.radius, qr.radius] });
+      ctx.fill();
+    } else {
+      ctx.fillRect(ox, oy, w, h);
+    }
+    ctx.fillStyle = qr.color;
+    ctx.beginPath();
+    for (const run of qrModuleRuns(qr)) ctx.rect(ox + run.x, oy + run.y, run.w, run.h);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawPlaceholder(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -591,9 +661,10 @@ export function renderResourceBlock(
   const bw = rb.bodyRect.width;
   const bh = rb.bodyRect.height;
 
-  if (rb.kind === 'bitmap' || rb.kind === 'svg') {
+  if (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video') {
     // A picture cropped within its safe area (#442): the whole picture is
-    // drawn at its uncropped box, clipped to the body.
+    // drawn at its uncropped box, clipped to the body. A video draws its
+    // poster the same way (#454).
     const src = rb.bodySource;
     let full = src ? uncroppedPictureBox(bx, by, bw, bh, src) : null;
     // On a mirrored page `drawImage` turns the picture back about its own
@@ -609,9 +680,16 @@ export function renderResourceBlock(
       ? drawResourceImage(ctx, rb.fileId, full?.x ?? bx, full?.y ?? by, full?.width ?? bw, full?.height ?? bh, { inkHex, svg: rb.kind === 'svg' }, rb.resource.id)
       : false;
     if (full) ctx.restore();
-    if (!drawn) {
+    if (!drawn && rb.kind === 'video') {
+      // No poster (or not loaded yet): a dark frame the overlays read on.
+      ctx.save();
+      ctx.fillStyle = '#1f1f1f';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.restore();
+    } else if (!drawn) {
       drawPlaceholder(ctx, bx, by, bw, bh, rb.kind === 'svg' ? 'SVG' : 'Image');
     }
+    if (rb.video) paintVideoOverlays(ctx, rb.video, bx, by, bw);
   } else if (rb.kind === 'table') {
     renderTable(ctx, rb, bx, by, inkHex);
   }

@@ -700,6 +700,7 @@ function firstResourceUses(blocks: ContentBlock[], markdown: string): Map<string
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
   if (r.kind === 'svg') return r.svg?.fileId;
+  if (r.kind === 'video') return r.video?.poster?.fileId;
   return undefined;
 }
 

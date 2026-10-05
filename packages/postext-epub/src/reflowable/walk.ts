@@ -954,6 +954,7 @@ class DocWalker {
       caption,
       captionAbove,
       note: lines(rb.noteLines),
+      ...(rb.video ? { video: rb.video } : {}),
     };
     if (rb.fileId) this.book.images.add(rb.fileId);
     if (alt) this.book.altText = true;

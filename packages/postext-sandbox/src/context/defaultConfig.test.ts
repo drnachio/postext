@@ -12,7 +12,7 @@ describe('createBlankBookConfig', () => {
     const config = createBlankBookConfig('zh-Hans');
     expect(config.locale).toBe('zh-Hans');
     expect(config.bodyText?.fontFamily).toBe('Noto Serif SC');
-    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['图', '表']);
+    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['图', '表', '视频']);
     expect(withDefaultResourceTypes(config, 'zh-Hans')).toBe(config);
   });
 
@@ -21,7 +21,7 @@ describe('createBlankBookConfig', () => {
     expect(config.locale).toBe('ar');
     expect(config.direction).toBeUndefined();
     expect(config.bodyText?.fontFamily).toBe('Amiri');
-    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول']);
+    expect(config.resourceTypes?.map((t) => t.captionPrefix)).toEqual(['شكل', 'جدول', 'فيديو']);
     expect(config.headings?.levels?.find((l) => l.level === 1)?.numberingTemplate).toBe('الفصل {1:ordinal}');
     expect(withDefaultResourceTypes(config, 'ar')).toBe(config);
   });
@@ -46,10 +46,10 @@ describe('relocalizedResourceTypes', () => {
   it('replaces the built-in types of the previous language', () => {
     const spanish = defaultResourceTypes('es');
     const next = relocalizedResourceTypes(spanish, ['es', 'es'], 'en-us');
-    expect(next?.map((t) => t.captionPrefix)).toEqual(['Figure', 'Table']);
+    expect(next?.map((t) => t.captionPrefix)).toEqual(['Figure', 'Table', 'Video']);
     // Key order does not matter (a stored config came through JSON).
     const reordered = spanish.map((t) => Object.fromEntries(Object.entries(t).reverse())) as typeof spanish;
-    expect(relocalizedResourceTypes(reordered, ['es'], 'fr')?.map((t) => t.name)).toEqual(['Figure', 'Tableau']);
+    expect(relocalizedResourceTypes(reordered, ['es'], 'fr')?.map((t) => t.name)).toEqual(['Figure', 'Tableau', 'Vidéo']);
     // The interface language counts too (a new book's seed).
     expect(relocalizedResourceTypes(spanish, ['en', 'es'], 'de')?.[0]?.name).toBe('Abbildung');
   });
@@ -66,12 +66,19 @@ describe('relocalizedResourceTypes', () => {
   // #179: Chinese built-in types, and back from Chinese to the interface's.
   it('follows a Chinese document language and back', () => {
     const zh = relocalizedResourceTypes(defaultResourceTypes('es'), ['es'], 'zh-Hant')!;
-    expect(zh.map((t) => t.name)).toEqual(['圖', '表']);
+    expect(zh.map((t) => t.name)).toEqual(['圖', '表', '影片']);
     expect(zh[0]!.numberingTemplate).toBe('{h1}-{n}');
-    expect(relocalizedResourceTypes(defaultResourceTypes('zh-Hans'), ['zh-Hans', 'en'], 'en')!.map((t) => t.name)).toEqual(['Figure', 'Table']);
+    expect(relocalizedResourceTypes(defaultResourceTypes('zh-Hans'), ['zh-Hans', 'en'], 'en')!.map((t) => t.name)).toEqual(['Figure', 'Table', 'Video']);
     // The same strings in another region: nothing to change.
     expect(relocalizedResourceTypes(defaultResourceTypes('es'), ['es'], 'es-MX')).toBeNull();
     const custom = defaultResourceTypes('es').map((t, i) => (i === 0 ? { ...t, name: 'Lámina' } : t));
     expect(relocalizedResourceTypes(custom, ['es'], 'zh-Hans')).toBeNull();
+  });
+});
+
+describe('resource types saved before videos (#454)', () => {
+  it('still read as the built-in ones, and relocalise with the video type added', () => {
+    const legacy = defaultResourceTypes('es').filter((t) => t.id !== 'video');
+    expect(relocalizedResourceTypes(legacy, ['es'], 'en')?.map((t) => t.name)).toEqual(['Figure', 'Table', 'Video']);
   });
 });

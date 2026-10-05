@@ -25,6 +25,7 @@ import { ParagraphStylesSection } from './ParagraphStylesSection';
 import { CalloutStylesSection } from './CalloutStylesSection';
 import { ChipStylesSection } from './ChipStylesSection';
 import { DiagramStyleSection } from './DiagramStyleSection';
+import { VideoStyleSection } from './VideoStyleSection';
 import { ResourceTypesSection } from './ResourceTypesSection';
 import { HtmlViewerSection } from './HtmlViewerSection';
 import { PdfGenerationSection } from './PdfGenerationSection';
@@ -59,6 +60,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'tableStyle': TableStyleSection,
   'tableStyles': TableStylesSection,
   'diagramStyle': DiagramStyleSection,
+  'videoStyle': VideoStyleSection,
   'calloutStyles': CalloutStylesSection,
   'chipStyles': ChipStylesSection,
   'htmlViewer': HtmlViewerSection,

@@ -15,6 +15,9 @@ import type {
   TableRules,
   ResolvedCaptionStyleConfig,
   ResolvedDiagramStyleConfig,
+  ResolvedVideoStyleConfig,
+  ResolvedVideoPlayerOptions,
+  VideoSource,
   ResolvedParagraphStyleConfig,
   ResolvedCalloutStyleConfig,
   ResolvedChipStyleConfig,
@@ -69,6 +72,7 @@ export interface ResolvedConfig {
   tableStyles: ResolvedNamedTableStyleConfig[];
   captionStyle: ResolvedCaptionStyleConfig;
   diagramStyle: ResolvedDiagramStyleConfig;
+  videoStyle: ResolvedVideoStyleConfig;
   paragraphStyles: ResolvedParagraphStyleConfig[];
   calloutStyles: ResolvedCalloutStyleConfig[];
   /** Named chip styles (`:chip[…]{style="…"}`). */
@@ -1109,10 +1113,72 @@ export function mirroredFlowFrame(width: number): VDTMirroredFlowFrame {
   return { writingMode: 'horizontal-tb', direction: 'rtl', mirror: { originX: width } };
 }
 
+/** The play mark printed on a video's poster (#454). `rect` is relative to
+ *  the top-left corner of the body (`bodyRect`). */
+export interface VDTVideoPlayMark {
+  rect: BoundingBox;
+  shape: 'circle' | 'rounded' | 'triangle';
+  /** The triangle (hex). */
+  color: string;
+  /** The disc or rectangle behind it (hex); the triangle's outline for the
+   *  bare `'triangle'`. */
+  background: string;
+  backgroundOpacity: number;
+}
+
+/** The QR code printed on a video's poster (#454). `rect` is the plate,
+ *  quiet zone included, relative to the top-left corner of the body. */
+export interface VDTVideoQr {
+  rect: BoundingBox;
+  /** What the code holds: the address it opens. */
+  text: string;
+  /** Modules per side, without the quiet zone. */
+  size: number;
+  /** One string per row, `'1'` for a dark module. */
+  rows: string[];
+  /** Light modules between the code and the plate's edge. */
+  quietZone: number;
+  /** Side of one module in px. */
+  moduleSize: number;
+  color: string;
+  background: string;
+  /** Corner radius of the plate in px. */
+  radius: number;
+}
+
+/** A video resource as the outputs need it (#454): where it plays from, the
+ *  player options, and the overlays printed on its poster. */
+export interface VDTResourceVideo {
+  source: VideoSource;
+  /** The address a reader is sent to: the YouTube or Vimeo page, or a
+   *  self-hosted file's production address. Absent when there is none. */
+  link?: string;
+  /** The YouTube or Vimeo player's `src` (the player options applied). */
+  embedUrl?: string;
+  /** A self-hosted file: its out-of-band id and media type. */
+  fileId?: string;
+  mimeType?: string;
+  /** Play range in seconds. */
+  start?: number;
+  end?: number;
+  player: ResolvedVideoPlayerOptions;
+  /** Make the poster a link to {@link link} (`videoStyle.linkPoster`, and
+   *  a link to make). */
+  linkPoster: boolean;
+  /** What the HTML output sets (`videoStyle.html`). */
+  html: 'player' | 'poster';
+  playMark?: VDTVideoPlayMark;
+  qr?: VDTVideoQr;
+}
+
 export interface ResolvedResourceBlock {
   /** The source resource. */
   resource: Resource;
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
+  /** Present when `kind === 'video'`: playback and the poster's overlays
+   *  (#454). The poster itself is `fileId` / `format`, drawn like a
+   *  bitmap. */
+  video?: VDTResourceVideo;
   /** Present when the block is one slice of a table split across pages. */
   slice?: VDTTableSlice;
   /** Present when the block is set turned on the page; the inner geometry
@@ -1937,6 +2003,18 @@ export type ContentWarning = ContentWarningBase & (
   /** A heading's `{style}` attribute names no heading style: the heading
    *  and its section keep the level's own settings. */
   | { kind: 'unknownHeadingStyle'; style: string; level: number }
+  /** A video resource the text uses has no poster frame (#454): print
+   *  outputs show a dark box with the play mark and the QR code. */
+  | { kind: 'videoWithoutPoster'; resourceId: string }
+  /** A self-hosted video the text uses has no production address
+   *  (`video.url`, http or https): the printed poster gets no QR code and
+   *  no link, and an HTML or EPUB output without the file cannot play it. */
+  | { kind: 'videoWithoutUrl'; resourceId: string }
+  /** A YouTube or Vimeo video whose address is not a link to a video of that
+   *  platform: no player is embedded (the poster is shown instead), and the
+   *  QR code and the link carry the address as written when it is a web
+   *  address. */
+  | { kind: 'videoUrlInvalid'; resourceId: string; url: string }
   /** A table resource's `table.styleId` names no `tableStyles` entry: the
    *  table is set in the document's `tableStyle`. */
   | { kind: 'unknownTableStyle'; styleId: string; resourceId: string }

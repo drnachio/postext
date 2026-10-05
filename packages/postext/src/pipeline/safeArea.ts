@@ -17,7 +17,9 @@ const MIN_SIDE = 0.02;
  *  has none, it is not a picture, or the area covers the whole picture
  *  (which leaves no freedom). */
 export function resourceSafeArea(resource: Resource): ResourceSafeArea | undefined {
-  if (resource.kind !== 'bitmap' && resource.kind !== 'svg') return undefined;
+  // A video's poster is a picture too (#454).
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || (resource.kind === 'video' && !!resource.video?.poster);
+  if (!picture) return undefined;
   return normalizeSafeArea(resource.safeArea);
 }
 

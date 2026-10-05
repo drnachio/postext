@@ -20,6 +20,7 @@ import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
 import { SafeAreaField } from './SafeAreaEditor';
+import { VideoEditor } from './VideoEditor';
 import { SvgSourceEditor, type SvgSourceCommit } from './SvgSourceEditor';
 import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor';
 import { slugify } from './slugify';
@@ -141,7 +142,7 @@ export function ResourceDetail({
   // The alignment places a resource narrower than its slot: one narrowed by
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
   // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
-  const alignApplies = placementWidthPercent < 100 || resource.kind === 'bitmap' || resource.kind === 'svg';
+  const alignApplies = placementWidthPercent < 100 || resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
 
   // Named table style (`config.tableStyles`); unset = the document's table style.
   const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
@@ -192,6 +193,7 @@ export function ResourceDetail({
         bitmap: { fileId: r.fileId, format: r.format, width: r.width, height: r.height },
         svg: undefined,
         table: undefined,
+        video: undefined,
       }),
     );
   };
@@ -205,6 +207,7 @@ export function ResourceDetail({
         svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId },
         bitmap: undefined,
         table: undefined,
+        video: undefined,
       }),
     );
   };
@@ -472,6 +475,9 @@ export function ResourceDetail({
         </div>
 
         {/* Kind-specific controls */}
+        {resource.kind === 'video' && (
+          <VideoEditor resource={resource} onChange={(partial) => onChange(touch(partial))} />
+        )}
         {resource.kind === 'bitmap' && (
           <Field label={labels.resourceImageLabel}>
             {resource.bitmap && (

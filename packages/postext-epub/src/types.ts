@@ -121,6 +121,10 @@ export interface EpubItem {
   /** Manifest properties (`nav`, `cover-image`, `svg`, `mathml`,
    *  `remote-resources`…). */
   properties?: string[];
+  /** A resource read from the web (a video's production address, #454):
+   *  declared in the manifest by its absolute `href`, not written in the
+   *  container (`data` is then empty). */
+  remote?: true;
 }
 
 export interface EpubSpineEntry {

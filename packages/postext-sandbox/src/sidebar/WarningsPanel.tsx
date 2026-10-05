@@ -92,6 +92,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'bitmapTooSmall':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
+    case 'videoWithoutPoster':
+    case 'videoWithoutUrl':
+    case 'videoUrlInvalid':
     case 'missingImage':
       return Image;
     case 'storageUnavailable':
@@ -237,6 +240,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownTableStyleTitle;
     case 'raggedTableGrid':
       return labels.warningsRaggedTableGridTitle;
+    case 'videoWithoutPoster':
+      return labels.warningsVideoWithoutPosterTitle;
+    case 'videoWithoutUrl':
+      return labels.warningsVideoWithoutUrlTitle;
+    case 'videoUrlInvalid':
+      return labels.warningsVideoUrlInvalidTitle;
     case 'missingImage':
       return labels.warningsMissingImageTitle;
     case 'storageUnavailable':
@@ -453,6 +462,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
         : labels.warningsRaggedTableGridMissingDetail;
       return `#${payload.resourceId} · ${detail.replace('__row__', String(payload.row + 1)).replace('__col__', String(payload.col + 1))}${payload.count > 1 ? ` (×${payload.count})` : ''}`;
     }
+    case 'videoWithoutPoster':
+      return `#${payload.resourceId} — ${labels.warningsVideoWithoutPosterDetail}`;
+    case 'videoWithoutUrl':
+      return `#${payload.resourceId} — ${labels.warningsVideoWithoutUrlDetail}`;
+    case 'videoUrlInvalid':
+      return `#${payload.resourceId} · ${payload.url || '""'} — ${labels.warningsVideoUrlInvalidDetail}`;
     case 'missingImage':
       return `#${payload.resourceId} — ${labels.warningsMissingImageDetail}`;
     case 'storageUnavailable':
