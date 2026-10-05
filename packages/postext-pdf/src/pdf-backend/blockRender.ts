@@ -4,7 +4,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
-import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
+import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, readText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, setTrackingPx, type LineTextState } from './primitives';
 import { paintChip } from './chip';
 import { pickSegmentColor, pickSegmentFont } from './fontHelpers';
 import { renderHeaderFooterSlot } from './headerFooter';
@@ -15,7 +15,7 @@ import {
 import { LinkRegistry, RefRun, refTarget, UriRuns } from './links';
 import { tagArtifact, tagContent, type StructElem } from './tagging';
 import type { StructureFlow } from './structureFlow';
-import { paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
+import { paintKunten, paintLineMarks, paintRuby, paintSideMarker, paintWarichu } from './annotations';
 import { inkScaleOperators } from './inkScale';
 import { drawShapedTextPx, drawStyledWordPx } from './shapedText';
 import { segmentLanguages, segmentOffsets, wordParts } from './directedLine';
@@ -102,6 +102,8 @@ function paintComposedText(
   fontCache: FontCache,
   blockFont: PDFFont,
   rubyElem: StructElem | undefined,
+  /** The character's text element, which its kanbun marks join. */
+  textElem?: StructElem,
 ): void {
   // A compressed CJK mark is painted before its box (`inkOffset`) and
   // advances to its box's end.
@@ -121,6 +123,12 @@ function paintComposedText(
   if (seg.ruby) {
     if (tracking !== 0) setTrackingPx(ctx, 0);
     paintRuby(ctx, seg.ruby, x, baseline, colorHex, fontCache, blockFont, rubyElem);
+    if (tracking !== 0) setTrackingPx(ctx, tracking);
+  }
+  if (seg.kunten) {
+    // Kanbun marks (#430).
+    if (tracking !== 0) setTrackingPx(ctx, 0);
+    paintKunten(ctx, seg.kunten, x, baseline, colorHex, fontCache, blockFont, textElem);
     if (tracking !== 0) setTrackingPx(ctx, tracking);
   }
 }
@@ -213,7 +221,7 @@ function renderSegments(
   // written, not with the gaps between its pieces.
   // A vertical line is painted in runs and cells down the column: it reads
   // as the line too.
-  const actualLine = !composed ? undefined : ctx.vertical ? segments.map((s) => s.text).join('') : cjkLineText(segments);
+  const actualLine = !composed ? undefined : ctx.vertical ? segments.map(readText).join('') : cjkLineText(segments);
   let lineState: LineTextState | undefined;
   if (actualLine !== undefined) {
     const first = segments.find((s) => s.kind === 'text' && !s.chip && s.text !== '');
@@ -317,7 +325,7 @@ function renderSegments(
     } else {
       withShapingLanguage(seg.lang === undefined ? shapingLanguage() : openTypeLanguageOf(seg.lang), () => {
         if (!composed) drawTextPx(ctx, seg.text, x, baseline + (seg.baselineShift ?? 0), font, size, color, undefined, actualText);
-        else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem);
+        else paintComposedText(ctx, seg, x, baseline, font, size, color, colorHex, actualText, tracking, fontCache, blockFont, rubyElem, holder);
       });
     }
     if (seg.pageLink !== undefined && linkRegistry) {
@@ -520,7 +528,7 @@ function segmentIsStyled(s: VDTLineSegment): boolean {
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a
  *  vertical page, whose segments may carry the composer's fields. */
 function composedSegmentIsStyled(s: VDTLineSegment): boolean {
-  return segmentIsStyled(s) || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.ruby !== undefined || s.warichu !== undefined;
+  return segmentIsStyled(s) || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.ruby !== undefined || s.kunten !== undefined || s.warichu !== undefined;
 }
 
 /**

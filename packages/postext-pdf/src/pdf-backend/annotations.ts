@@ -4,7 +4,10 @@
  * /Layout`, so copied text stays clean), a ruby base's reading and a
  * warichu note's rows as text. In a tagged render the reading goes in an
  * `RT` element beside its base's `RB` under one `Ruby`, and a note's rows
- * in the `WT` of a `Warichu`, in reading order (upper row first). Geometry
+ * in the `WT` of a `Warichu`, in reading order (upper row first). A
+ * character's kanbun marks (#430) are painted with its text: the line's
+ * `/ActualText` reads the 送り仮名 after the character (`學ビテ`) and
+ * leaves the 返り点 and the 竪点 out, as reading-order marks. Geometry
  * is the layout's, in the flow frame of the line: on a vertical page it is
  * drawn inside the page's flow transform, as the text is.
  */
@@ -25,7 +28,7 @@ import {
   type PDFFont,
   type PDFOperator,
 } from 'pdf-lib';
-import type { VDTAnnotationRun, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
+import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
 import { parseFontString } from '../fontString';
 import type { FontCache } from '../fontCache';
 import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx } from './primitives';
@@ -134,21 +137,23 @@ export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color): void {
   const marks = line.marks;
   if (!marks || marks.length === 0) return;
   tagArtifact(ctx, { type: 'Layout' });
-  for (const m of marks) {
-    const color = m.color ? colorFromHex(m.color, ctx.colorSpace) : ink;
-    const { ops, filled } = markOps(ctx, m, line.bbox.x, line.baseline);
-    const alpha = alphaOf(color);
-    const gs = alpha < 1 ? alphaStateOp(ctx, filled ? alpha : 1, filled ? 1 : alpha) : null;
-    ctx.page.pushOperators(
-      pushGraphicsState(),
-      ...(gs ? [gs] : []),
-      filled ? setFillingColor(color) : setStrokingColor(color),
-      ...(filled ? [] : [setLineWidth(Math.max(0.01, m.thickness * ctx.scale))]),
-      ...ops,
-      filled ? fill() : stroke(),
-      popGraphicsState(),
-    );
-  }
+  for (const m of marks) paintMark(ctx, m, line.bbox.x, line.baseline, m.color ? colorFromHex(m.color, ctx.colorSpace) : ink);
+}
+
+/** Draw one mark from `(xPx, yPx)` (px, flow frame) in `color`. */
+function paintMark(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number, color: Color): void {
+  const { ops, filled } = markOps(ctx, m, xPx, yPx);
+  const alpha = alphaOf(color);
+  const gs = alpha < 1 ? alphaStateOp(ctx, filled ? alpha : 1, filled ? 1 : alpha) : null;
+  ctx.page.pushOperators(
+    pushGraphicsState(),
+    ...(gs ? [gs] : []),
+    filled ? setFillingColor(color) : setStrokingColor(color),
+    ...(filled ? [] : [setLineWidth(Math.max(0.01, m.thickness * ctx.scale))]),
+    ...ops,
+    filled ? fill() : stroke(),
+    popGraphicsState(),
+  );
 }
 
 /** A text colour as a hex (a body block's) or as resolved (a resource
@@ -196,6 +201,29 @@ export function paintRuby(
   if (elem) tagContent(ctx, elem.child('RT'));
   else tagArtifact(ctx, { type: 'Layout' });
   paintRuns(ctx, ruby.runs, x, baseline, ruby.color ?? textColor, fontCache, fallback);
+}
+
+/**
+ * Paint a character's kanbun marks (返り点, 送り仮名, 竪点) from its
+ * segment's `x`. In a tagged render they join `elem`, the character's
+ * text element, inside the line's `/ActualText` (see the module comment).
+ */
+export function paintKunten(
+  ctx: PageCtx,
+  kunten: VDTKunten,
+  x: number,
+  baseline: number,
+  textColor: TextColor,
+  fontCache: FontCache,
+  fallback: PDFFont,
+  elem: StructElem | undefined,
+): void {
+  if (elem) tagContent(ctx, elem);
+  else tagArtifact(ctx, { type: 'Layout' });
+  const ink = kunten.color ?? textColor;
+  paintRuns(ctx, kunten.runs, x, baseline, ink, fontCache, fallback);
+  const t = kunten.tate;
+  if (t) paintMark(ctx, { kind: 'line', x: t.dx, y: t.dy, length: t.length, thickness: t.thickness }, x, baseline, typeof ink === 'string' ? colorFromHex(ink, ctx.colorSpace) : ink);
 }
 
 /**

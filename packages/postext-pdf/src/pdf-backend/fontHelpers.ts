@@ -132,6 +132,8 @@ function addLinesFonts(lines: readonly VDTLine[] | undefined, faces: FaceSet, ou
         continue;
       }
       if (seg.ruby) for (const run of seg.ruby.runs) if (run.text) add(out, run.fontString, run.text);
+      // Kanbun marks (#430).
+      if (seg.kunten) for (const run of seg.kunten.runs) if (run.text) add(out, run.fontString, run.text);
       // A footnote marker in the line gap paints its run, not its text.
       if (seg.sideMarker) {
         for (const run of seg.sideMarker.runs) if (run.text) add(out, run.fontString, run.text);
