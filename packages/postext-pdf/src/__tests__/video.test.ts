@@ -81,6 +81,23 @@ function uriAnnots(pdf: PDFDocument, pageIndex = 0): { uri: string; rect: number
   return out;
 }
 
+/** Alt texts of the Figure elements in the structure tree. */
+function figureAlts(pdf: PDFDocument): string[] {
+  const out: string[] = [];
+  const seen = new Set<PDFDict>();
+  const walk = (node: unknown): void => {
+    const value = node && typeof node === 'object' && 'tag' in (node as object) ? pdf.context.lookup(node as never) : node;
+    if (value instanceof PDFArray) for (let i = 0; i < value.size(); i++) walk(value.get(i));
+    if (!(value instanceof PDFDict) || seen.has(value)) return;
+    seen.add(value);
+    const alt = value.lookup(PDFName.of('Alt'));
+    if (value.lookup(PDFName.of('S')) === PDFName.of('Figure') && (alt instanceof PDFString || alt instanceof PDFHexString)) out.push(alt.decodeText());
+    walk(value.get(PDFName.of('K')));
+  };
+  walk(pdf.catalog.get(PDFName.of('StructTreeRoot')));
+  return out;
+}
+
 const firstResource = (doc: ReturnType<typeof buildDocument>): VDTBlock => {
   for (const page of doc.pages) for (const col of page.columns) for (const b of col.blocks) if (b.type === 'resource') return b;
   throw new Error('no resource');
@@ -110,6 +127,8 @@ describe('video resources in the PDF', () => {
     // Tagged: the link joins the figure's structure, with its contents.
     expect(annot!.contents).toContain('A lighthouse keeper beside the lamp');
     expect(annot!.structParent).toBeTypeOf('number');
+    // The figure says it is a video, in its type's name.
+    expect(figureAlts(pdf)).toEqual(['Video: A lighthouse keeper beside the lamp']);
   });
 
   it('prints no link and no QR code when the style turns them off', async () => {
