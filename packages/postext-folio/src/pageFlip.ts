@@ -850,6 +850,44 @@ function reach(G: Pt, P: Pt, H: number): Pt {
   return { u, v };
 }
 
+/** Whether the folded part of a leaf stays between the book's head and
+ *  foot when the point `G` is carried to `P`: the edges of the page laid
+ *  past its fold as `layLeaf` lays them, along the spine. */
+function foldFits(G: Pt, P: Pt, W: number, H: number, roll: number): boolean {
+  const fold = foldOf(G, P, W, H, roll);
+  if (!fold) return true;
+  const { F, n, R, theta } = fold;
+  const N = 12;
+  for (let i = 0; i <= 4 * N; i++) {
+    const t = (i % N) / N;
+    const side = Math.floor(i / N);
+    const u = side === 0 ? t * W : side === 1 ? W : side === 2 ? (1 - t) * W : 0;
+    const v = side === 0 ? H / 2 : side === 1 ? H / 2 - t * H : side === 2 ? -H / 2 : -H / 2 + t * H;
+    const d = (u - F.u) * n.u + (v - F.v) * n.v;
+    if (d <= 0) continue;
+    const dd = R > 1e-3 && d < R * theta ? R * Math.sin(d / R) : R * Math.sin(theta) + (d - R * theta) * Math.cos(theta);
+    if (Math.abs(v - n.v * (d - dd)) > H / 2 + 0.5) return false;
+  }
+  return true;
+}
+
+/** Keeps the folded part of a leaf between the book's head and foot: the
+ *  hand brought back towards the height it took the page at, as far as
+ *  that needs (a level pull folds square to the spine and never reaches
+ *  past them). A steep diagonal fold carried the outer corner past the
+ *  foot, over the edge of the block (#493). */
+function withinBook(G: Pt, P: Pt, W: number, H: number, roll: number): Pt {
+  if (foldFits(G, P, W, H, roll)) return P;
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 12; i++) {
+    const mid = (lo + hi) / 2;
+    if (foldFits(G, { u: P.u, v: G.v + (P.v - G.v) * mid }, W, H, roll)) lo = mid;
+    else hi = mid;
+  }
+  return { u: P.u, v: G.v + (P.v - G.v) * lo };
+}
+
 /** The open book's two surfaces, which a leaf lies on at rest. */
 interface Surfaces {
   left: Profile;
@@ -2301,6 +2339,7 @@ export class PageFlipper {
         const { aim } = turn.held;
         const f = 1 - Math.pow(1 - spec.follow, dt / 16);
         turn.P = reach(turn.G, { u: turn.P.u + (aim.u - turn.P.u) * f, v: turn.P.v + (aim.v - turn.P.v) * f }, this.H);
+        if (!turn.rigid) turn.P = withinBook(turn.G, turn.P, this.W, this.H, spec.roll);
       } else if (turn.spring) {
         const sp = turn.spring;
         const t = Math.min(1, (now - sp.start) / sp.duration);
@@ -2309,6 +2348,7 @@ export class PageFlipper {
         const h01 = -2 * t ** 3 + 3 * t ** 2;
         const at = (axis: "u" | "v") => h00 * sp.from[axis] + h10 * sp.duration * sp.vel[axis] + h01 * sp.to[axis];
         turn.P = reach(turn.G, { u: at("u"), v: at("v") }, this.H);
+        if (!turn.rigid) turn.P = withinBook(turn.G, turn.P, this.W, this.H, spec.roll);
         if (t >= 1) {
           this.turned[k] = sp.lands ? turn.forward : !turn.forward;
           this.turns.delete(k);
@@ -2318,6 +2358,7 @@ export class PageFlipper {
         const t = Math.min(1, (now - start) / duration);
         const e = arc ? ease(t) : easeOut(t);
         turn.P = reach(turn.G, { u: from.u + (to.u - from.u) * e, v: from.v + (to.v - from.v) * e + arc * Math.sin(Math.PI * e) }, this.H);
+        if (!turn.rigid) turn.P = withinBook(turn.G, turn.P, this.W, this.H, spec.roll);
         if (t >= 1) {
           this.turned[k] = lands ? turn.forward : !turn.forward;
           this.turns.delete(k);
