@@ -14,6 +14,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type Resource
 import { InlineMarkdownInput, type InlineSelection } from '../../controls/InlineMarkdownInput';
 import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
+import { NumberInput, SelectInput, ToggleSwitch } from '../../controls';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
@@ -115,26 +116,27 @@ export function ResourceDetail({
     updatedAt: Date.now(),
   });
 
-  // Placement (defaults mirror the engine: top / single column).
+  // Placement, resolved key by key as the engine does: the resource's own
+  // value → its type's `defaultPlacement` → the built-in default. Each row
+  // shows the effective value; a key the resource sets is marked and resets
+  // back to the type's.
   const currentPlacement: ResourcePlacement = resource.placement ?? {};
-  const placementPosition: PlacementPosition = currentPlacement.position ?? 'auto';
-  const placementSpan: PlacementSpan = currentPlacement.span ?? 'column';
-  const placementRotate: ResourceRotation | 'none' = currentPlacement.rotate ?? 'none';
-  const setRotate = (value: string) => {
-    const next: ResourcePlacement = { ...currentPlacement };
-    if (value === 'ccw' || value === 'cw') next.rotate = value;
-    else delete next.rotate;
-    onChange(touch({ placement: next }));
-  };
+  const typePlacement: ResourcePlacement = type?.defaultPlacement ?? {};
+  const placementPosition: PlacementPosition = currentPlacement.position ?? typePlacement.position ?? 'auto';
+  const placementSpan: PlacementSpan = currentPlacement.span ?? typePlacement.span ?? 'column';
+  const placementRotate: ResourceRotation | 'none' = currentPlacement.rotate ?? typePlacement.rotate ?? 'none';
   /** Merge one placement key; `undefined` drops it so the resource falls
    *  back to its type's default placement. */
   const setPlacementKey = <K extends keyof ResourcePlacement>(key: K, value: ResourcePlacement[K] | undefined) => {
     const next: ResourcePlacement = { ...currentPlacement };
     if (value === undefined) delete next[key];
     else next[key] = value;
-    onChange(touch({ placement: next }));
+    onChange(touch({ placement: Object.keys(next).length > 0 ? next : undefined }));
   };
-  const placementWidthPercent = Math.round((currentPlacement.width ?? 1) * 100);
+  const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? 1) * 100);
+  // An inline embed is never turned; a turned resource is a page-span float.
+  const placementInline = placementPosition === 'here';
+  const placementRotated = !placementInline && placementRotate !== 'none';
   // The alignment places a resource narrower than its slot: one narrowed by
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
   // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
@@ -150,7 +152,8 @@ export function ResourceDetail({
     onChange(touch({ table }));
   };
   // `start` / `end` are synonyms of left / right for a float (#371).
-  const placementAlign = currentPlacement.align === 'start' ? 'left' : currentPlacement.align === 'end' ? 'right' : currentPlacement.align ?? 'left';
+  const rawAlign = currentPlacement.align ?? typePlacement.align;
+  const placementAlign = rawAlign === 'start' ? 'left' : rawAlign === 'end' ? 'right' : rawAlign ?? 'left';
   // In a right-to-left book the body's sides are mirrored: a float's
   // `left` stands on the sheet's right.
   const rtlBook = useRightToLeftFlow();
@@ -357,122 +360,115 @@ export function ResourceDetail({
         </Field>
 
         {/* Placement: how the resource floats on the page. Referencing the
-            resource (`:ref`) is what places it; these control where it lands. */}
-        <Field
-          label={labels.resourcePlacementLabel}
-          hint={
-            placementPosition === 'here'
-              ? labels.resourcePlacementHintHere
-              : placementRotate !== 'none'
-                ? labels.resourcePlacementHintRotated
-                : placementSpan === 'page'
-                  ? labels.resourcePlacementHintPage
-                  : labels.resourcePlacementHintColumn
-          }
-        >
-          <div className="flex gap-1.5">
-            <select
-              value={placementPosition}
-              onChange={(e) =>
-                onChange(touch({ placement: { ...currentPlacement, position: e.target.value as PlacementPosition } }))
-              }
-              aria-label={labels.resourcePositionAria}
-              className={inputClass}
-              style={inputStyle}
-            >
-              <option value="auto">{labels.resourcePositionAuto}</option>
-              <option value="top">{labels.resourcePositionTop}</option>
-              <option value="bottom">{labels.resourcePositionBottom}</option>
-              <option value="here">{labels.resourcePositionHere}</option>
-            </select>
-            <select
-              value={placementSpan}
-              onChange={(e) =>
-                onChange(touch({ placement: { ...currentPlacement, span: e.target.value as PlacementSpan } }))
-              }
-              aria-label={labels.resourceWidthAria}
-              disabled={placementPosition === 'here' || placementRotate !== 'none'}
-              className={inputClass}
-              style={{ ...inputStyle, opacity: placementPosition === 'here' || placementRotate !== 'none' ? 0.5 : 1 }}
-            >
-              <option value="column">{labels.resourceSpanColumn}</option>
-              <option value="page">{labels.resourceSpanPage}</option>
-              <option value="side">{labels.resourceSpanSide}</option>
-            </select>
+            resource (`:ref`) is what places it; these control where it lands.
+            One row per key; rows that cannot apply are left out. */}
+        <div role="group" aria-labelledby={`${resource.id}-placement`} className="@container flex flex-col gap-2">
+          <div>
+            <div id={`${resource.id}-placement`} className="text-xs leading-[1.3] text-(--slate)">
+              {labels.resourcePlacementLabel}
+            </div>
+            <div className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate)">
+              {placementInline
+                ? labels.resourcePlacementHintHere
+                : placementRotated
+                  ? labels.resourcePlacementHintRotated
+                  : placementSpan === 'page'
+                    ? labels.resourcePlacementHintPage
+                    : labels.resourcePlacementHintColumn}
+            </div>
           </div>
-          {/* Orientation: a turned resource is always a page-span float on
-              a page of its own. */}
-          <select
-            value={placementRotate}
-            onChange={(e) => setRotate(e.target.value)}
-            aria-label={labels.resourceRotateAria}
-            disabled={placementPosition === 'here'}
-            className={`${inputClass} mt-1.5`}
-            style={{ ...inputStyle, opacity: placementPosition === 'here' ? 0.5 : 1 }}
-          >
-            <option value="none">{labels.resourceRotateNone}</option>
-            <option value="ccw">{labels.resourceRotateCcw}</option>
-            <option value="cw">{labels.resourceRotateCw}</option>
-          </select>
+          <SelectInput
+            stacked
+            label={labels.resourceTypePlacementPosition}
+            value={placementPosition}
+            options={[
+              { value: 'auto', label: labels.resourcePositionAuto },
+              { value: 'top', label: labels.resourcePositionTop },
+              { value: 'bottom', label: labels.resourcePositionBottom },
+              { value: 'here', label: labels.resourcePositionHere },
+            ]}
+            onChange={(v) => setPlacementKey('position', v as PlacementPosition)}
+            isDefault={currentPlacement.position === undefined}
+            onReset={() => setPlacementKey('position', undefined)}
+          />
+          {!placementInline && (
+            <SelectInput
+              stacked
+              label={labels.resourceTypePlacementRotate}
+              tooltip={labels.resourceTypePlacementRotateTooltip}
+              value={placementRotate}
+              options={[
+                { value: 'none', label: labels.resourceRotateNone },
+                { value: 'ccw', label: labels.resourceRotateCcw },
+                { value: 'cw', label: labels.resourceRotateCw },
+              ]}
+              onChange={(v) => setPlacementKey('rotate', v === 'ccw' || v === 'cw' ? v : undefined)}
+              isDefault={currentPlacement.rotate === undefined}
+              onReset={() => setPlacementKey('rotate', undefined)}
+            />
+          )}
+          {!placementInline && !placementRotated && (
+            <SelectInput
+              stacked
+              label={labels.resourceTypePlacementSpan}
+              tooltip={labels.resourceTypePlacementSpanTooltip}
+              value={placementSpan}
+              options={[
+                { value: 'column', label: labels.resourceSpanColumn },
+                { value: 'page', label: labels.resourceSpanPage },
+                { value: 'side', label: labels.resourceSpanSide },
+              ]}
+              onChange={(v) => setPlacementKey('span', v as PlacementSpan)}
+              isDefault={currentPlacement.span === undefined}
+              onReset={() => setPlacementKey('span', undefined)}
+            />
+          )}
           {/* Width fraction and alignment of a resource narrower than its
               slot (floats and inline embeds alike; a picture narrower than
               the column follows the alignment at full width too), and the
               caption beside a column float (side column of a
               column-and-a-half layout). */}
-          {placementRotate === 'none' && (
-            <div className="mt-1.5 flex flex-col gap-1.5">
-              <div className="flex gap-1.5">
-                <select
-                  value={String(placementWidthPercent)}
-                  onChange={(e) => {
-                    const pct = Number(e.target.value);
-                    setPlacementKey('width', pct >= 100 ? undefined : pct / 100);
-                  }}
-                  aria-label={labels.resourceTypePlacementWidth}
-                  title={labels.resourceTypePlacementWidthTooltip}
-                  className={inputClass}
-                  style={inputStyle}
-                >
-                  {[100, 90, 80, 75, 70, 66, 60, 50, 40, 33, 30, 25].map((pct) => (
-                    <option key={pct} value={String(pct)}>
-                      {labels.resourceTypePlacementWidth} {pct}%
-                    </option>
-                  ))}
-                  {![100, 90, 80, 75, 70, 66, 60, 50, 40, 33, 30, 25].includes(placementWidthPercent) && (
-                    <option value={String(placementWidthPercent)}>
-                      {labels.resourceTypePlacementWidth} {placementWidthPercent}%
-                    </option>
-                  )}
-                </select>
-                <select
-                  value={placementAlign}
-                  onChange={(e) => setPlacementKey('align', e.target.value === 'left' ? undefined : (e.target.value as ResourcePlacement['align']))}
-                  aria-label={labels.resourceTypePlacementAlign}
-                  title={labels.resourceTypePlacementAlignTooltip}
-                  disabled={!alignApplies}
-                  className={inputClass}
-                  style={{ ...inputStyle, opacity: alignApplies ? 1 : 0.5 }}
-                >
-                  <option value="left">{floatSide.left}</option>
-                  <option value="center">{labels.headerFooterElementAlignCenter}</option>
-                  <option value="right">{floatSide.right}</option>
-                </select>
-              </div>
-              {placementPosition !== 'here' && placementSpan === 'column' && (
-                <label className="flex pt-large:min-h-11 cursor-pointer items-center gap-2 text-xs" style={{ color: 'var(--foreground)' }} title={labels.resourceTypePlacementCaptionSideTooltip}>
-                  <input
-                    type="checkbox"
-                    className="h-6 w-6 shrink-0 cursor-pointer accent-(--brand)"
-                    checked={currentPlacement.captionSide ?? false}
-                    onChange={(e) => setPlacementKey('captionSide', e.target.checked ? true : undefined)}
-                    aria-label={labels.resourceTypePlacementCaptionSide}
-                  />
-                  {labels.resourceTypePlacementCaptionSide}
-                </label>
-              )}
-            </div>
+          {!placementRotated && (
+            <NumberInput
+              label={labels.resourceTypePlacementWidth}
+              tooltip={labels.resourceTypePlacementWidthTooltip}
+              value={placementWidthPercent}
+              onChange={(v) => setPlacementKey('width', Math.min(100, Math.max(1, v)) / 100)}
+              min={10}
+              max={100}
+              step={5}
+              suffix="%"
+              isDefault={currentPlacement.width === undefined}
+              onReset={() => setPlacementKey('width', undefined)}
+            />
           )}
-        </Field>
+          {!placementRotated && alignApplies && (
+            <SelectInput
+              variant="segmented"
+              label={labels.resourceTypePlacementAlign}
+              tooltip={labels.resourceTypePlacementAlignTooltip}
+              value={placementAlign}
+              options={[
+                { value: 'left', label: floatSide.left },
+                { value: 'center', label: labels.headerFooterElementAlignCenter },
+                { value: 'right', label: floatSide.right },
+              ]}
+              onChange={(v) => setPlacementKey('align', v as ResourcePlacement['align'])}
+              isDefault={currentPlacement.align === undefined}
+              onReset={() => setPlacementKey('align', undefined)}
+            />
+          )}
+          {!placementInline && !placementRotated && placementSpan === 'column' && (
+            <ToggleSwitch
+              label={labels.resourceTypePlacementCaptionSide}
+              tooltip={labels.resourceTypePlacementCaptionSideTooltip}
+              checked={currentPlacement.captionSide ?? typePlacement.captionSide ?? false}
+              onChange={(v) => setPlacementKey('captionSide', v)}
+              isDefault={currentPlacement.captionSide === undefined}
+              onReset={() => setPlacementKey('captionSide', undefined)}
+            />
+          )}
+        </div>
 
         {/* Kind-specific controls */}
         {resource.kind === 'bitmap' && (

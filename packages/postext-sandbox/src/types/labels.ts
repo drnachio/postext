@@ -1579,15 +1579,12 @@ export interface SandboxLabels {
   resourcePlacementHintHere: string;
   resourcePlacementHintPage: string;
   resourcePlacementHintColumn: string;
-  resourcePositionAria: string;
   resourcePositionTop: string;
   resourcePositionBottom: string;
   resourcePositionHere: string;
   resourcePositionAuto: string;
-  resourceWidthAria: string;
   resourceSpanColumn: string;
   resourceSpanPage: string;
-  resourceRotateAria: string;
   resourceRotateNone: string;
   resourceRotateCcw: string;
   resourceRotateCw: string;
