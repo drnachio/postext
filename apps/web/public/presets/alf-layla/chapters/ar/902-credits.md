@@ -3,7 +3,7 @@
 :::paragraphs{style="credits"}
 **النص:** ألف ليلة وليلة، طبعة مؤسسة هنداوي (٢٠٢٢) في ستة أجزاء، عن طبعة بولاق. نص الكتاب في الملك العام؛ أما الضبط بالشكل وعلامات الترقيم فمن عمل مؤسسة هنداوي، مرخَّص بموجب رخصة المشاع الإبداعي: نسب المصنَّف، الإصدار ٤٫٠ (CC BY 4.0). أُخذت النسخ الإلكترونية (EPUB) من أرشيف الإنترنت. التعديلات: توحيد الترميز، وحذف علامات الاتجاه الخفية، وتصحيح عنوان الليلة ١٣٦ («فقال» ← «فلما»)، وتقسيم أربع فقرات عند بداية حكايات لم تُعنون في الأصل، وعناوين لتلك الحكايات ولمجموعات الحكايات القصار، وكتابة عدد الليالي بالحروف، وحذف رسوم تلك الطبعة.
 
-**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن ويكيميديا كومنز وأرشيف الإنترنت، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط ومن عناوين لين لرسوم هارفي.
+**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن ويكيميديا كومنز وأرشيف الإنترنت، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط ومن عناوين لين لرسوم هارفي. وصورتا الغلاف والكعب: Generated With Diffusion Models.
 
 **الحروف:** «أميري» (الإصدار ١٫٠٠٣) لخالد حسني، و«عارف رقعة» لعبد الله عارف وخالد حسني، برخصة SIL Open Font License 1.1. والزخارف (السرلوح والشمسة) مرسومة لهذه النسخة.
 
@@ -11,5 +11,5 @@
 :::
 
 :::paragraphs{style="credits-en" dir="ltr"}
-One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons and the Internet Archive, public domain. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.
+One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons and the Internet Archive, public domain; cover and spine pictures: Generated With Diffusion Models. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.
 :::

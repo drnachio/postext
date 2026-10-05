@@ -189,6 +189,13 @@ category "Portraits of the Dream of the Red Chamber by Gai Qi".
 | `portrait-you-sanjie` | 尤三姐 | [Commons](https://commons.wikimedia.org/wiki/File:Hongloumeng_Tuyong_You_Sanjie.jpg) | Public domain |
 | `portrait-qin-zhong` | 秦鍾 | [Commons](https://commons.wikimedia.org/wiki/File:Hongloumeng_Tuyong_Qin_Zhong.jpg) | Public domain |
 
+## Cover and spines
+
+The covers of the two Chinese editions (`cover-art`, `cover-art-zh-Hans`, the
+same painting mirrored for the left-bound edition) and the cloth of the three
+spines: Generated With Diffusion Models (`covers.py`). Their lettering is set
+by the bundle.
+
 ## Fonts
 
 SIL Open Font License 1.1 unless stated (licence texts in `fonts/`):

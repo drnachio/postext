@@ -320,29 +320,37 @@ def night_design() -> dict:
 # --- the cover, the title page, the part pages ---------------------------------------------
 
 
-COVER_PLATE = "sani-20c"
-COVER_TRIM = 0.035
-COVER_SIZE = [1359, 819]  # the cropped panel, px (set by resources())
+# The cover is a painting (covers.py, GPT Image 2.5): oxblood morocco tooled
+# in gold round a miniature of Shahrazad and Shahryar, with two empty
+# cartouches the design letters. Their centres and heights, in mm from the
+# head of the 240 mm page, measured on art/cover.jpg.
+COVER_ART = "cover-art"
+COVER_TITLE_BAND = (34.6, 19.0)
+COVER_FOOT_BAND = (208.6, 14.0)
+
+
+def cover_art_specs(rdir: str) -> list[dict]:
+    """The cover's painting, copied from art/ into the bundle's resources."""
+    src = os.path.join(HERE, "art", "cover.jpg")
+    shutil.copyfile(src, os.path.join(rdir, "cover-art.jpg"))
+    w, h = Image.open(src).size
+    return [{"id": COVER_ART, "typeId": "ornament", "kind": "bitmap", "file": "resources/cover-art.jpg", "width": w, "height": h, "caption": "الغلاف", "altText": "غلاف من الجلد الأحمر الداكن المذهَّب، في وسطه تصويرة لشهرزاد تحكي للملك شهريار في قاعة من قصره ليلًا، ومن ورائهما قباب المدينة ومآذنها تحت الهلال"}]
 
 
 def cover_design() -> dict:
-    """Oxblood leather tooled in gold: a double gold frame, the headpiece in
-    gold, the title in Ruqʿa, a panel of Sani ol-Molk's (Sharkan and Abriza
-    by moonlight) in a gold rule, the volumes' count under it."""
+    """The painted cover, full bleed, lettered in gold: the title in Ruqʿa
+    in the upper cartouche, the volumes' count in the lower one, each over
+    a dark lip a hair below and to the left, as if stamped."""
     g = G
-    W, H = g.width, g.height
-    m = 11.0
-    els = [
-        _common.box_el("leather", col=col, anchor=at("bleed", "top-left"), fill="leather"),
-        frame_box("c-frame", x=m, y=m, w=W - 2 * m, h=H - 2 * m, color="gold", thickness=2.2),
-        frame_box("c-frame-in", x=m + 3, y=m + 3, w=W - 2 * m - 6, h=H - 2 * m - 6, color="gold", thickness=0.6),
-        image("c-head", "headpiece-gold", anchor=at("page", "top"), offset=(0, m + 9), width=W - 2 * m - 26, decorative=True),
-        text("c-title", TITLE, anchor=at("page", "top-left"), offset=(m, 62), width=W - 2 * m, size_pt=46, family=DISPLAY, weight=700, align="center", line_height=1.3, color="gold"),
-        frame_box("c-panel-rule", x=(W - 116) / 2 - 2, y=104 - 2, w=116 + 4, h=116 * COVER_SIZE[1] / COVER_SIZE[0] + 4, color="gold", thickness=0.9),
-        image("c-panel", "cover-panel", anchor=at("page", "top"), offset=(0, 104), width=116),
-        text("c-sub", "في ستة أجزاء", anchor=at("page", "top-left"), offset=(m, 189), width=W - 2 * m, size_pt=17, family=BODY, weight=700, align="center", color="gold"),
-        image("c-rosette", "rosette-gold", anchor=at("page", "top"), offset=(0, 204), width=13, decorative=True),
-    ]
+    W = g.width
+    els = [image("c-art", COVER_ART, anchor=at("bleed", "top-left"), width=W, height=g.height)]
+    for id_, content, (cy, _), size_pt, family, lh in (
+        ("c-title", TITLE, COVER_TITLE_BAND, 50, DISPLAY, 1.3),
+        ("c-sub", "في ستة أجزاء", COVER_FOOT_BAND, 21, BODY, 1.5),
+    ):
+        top = cy - size_pt * lh * 0.3528 / 2
+        for suffix, dx, dy, color in (("-lip", -0.35, 0.35, "leather"), ("", 0.0, 0.0, "gold")):
+            els.append(text(id_ + suffix, content, anchor=at("page", "top-left"), offset=(dx, top + dy), width=W, size_pt=size_pt, family=family, weight=700, align="center", line_height=lh, color=color))
     return {"enabled": True, "minHeight": mm(g.text_h), "slot": {"elements": els}}
 
 
@@ -488,6 +496,7 @@ def resource_types() -> list[dict]:
 
 SPINE = "spine"
 SPINE_PAGES = 2700
+SPINE_LABEL_AT = 0.274  # the label's centre on the painted spine, head 0 … tail 1
 FOLIO = {
     "paper": {"type": "bible", "grammage": 40, "bulk": 1.3, "texture": "laid", "textureStrength": 0.5, "shade": {"hex": "#f3ead6", "model": "hex"}},
     "binding": {"type": "hardcover", "cover": "pages", "coverMaterial": "leather", "coverColor": col("leather"), "spineImage": SPINE},
@@ -497,7 +506,8 @@ FOLIO = {
 
 
 def add_spine(out: str, shared: list[dict]) -> None:
-    """The spine: the title in gold Ruqʿa between gold bands on the leather."""
+    """The spine: the title in gold Ruqʿa on the label of the painted
+    leather."""
     fonts = os.path.join(out, "fonts")
     spec, _ = _common.build_spines(
         out,
@@ -510,10 +520,11 @@ def add_spine(out: str, shared: list[dict]) -> None:
                 "thickness_mm": _common.spine_thickness_mm(SPINE_PAGES, FOLIO["paper"]["grammage"], FOLIO["paper"]["bulk"], FOLIO["binding"]["type"]),
                 "ground": PALETTE["leather"],
                 "ink": PALETTE["gold"],
-                "rules": PALETTE["gold"],
+                # The painted spine (covers.py): five raised bands, the
+                # second compartment a blank label for the title.
+                "background": {"file": os.path.join(HERE, "art", "spine.jpg"), "fit": "stretch"},
                 "pieces": [
-                    {"text": TITLE, "font": os.path.join(fonts, "ArefRuqaa-Bold.ttf"), "size": 0.3, "at": 0.4},
-                    {"text": "في ستة أجزاء", "font": os.path.join(fonts, "Amiri-Bold.ttf"), "size": 0.2, "at": 0.8},
+                    {"text": "ألف ليلة\nوليلة", "font": os.path.join(fonts, "ArefRuqaa-Bold.ttf"), "size": 0.135, "at": SPINE_LABEL_AT, "across": True, "leading": -0.12, "deboss": True, "gradient": [PALETTE["gold"], PALETTE["goldDark"]]},
                 ],
             }
         },
@@ -651,13 +662,13 @@ COLOPHON = [
 
 CREDITS_AR = [
     "**النص:** ألف ليلة وليلة، طبعة مؤسسة هنداوي (٢٠٢٢) في ستة أجزاء، عن طبعة بولاق. نص الكتاب في الملك العام؛ أما الضبط بالشكل وعلامات الترقيم فمن عمل مؤسسة هنداوي، مرخَّص بموجب رخصة المشاع الإبداعي: نسب المصنَّف، الإصدار ٤٫٠ (CC BY 4.0). أُخذت النسخ الإلكترونية (EPUB) من أرشيف الإنترنت. التعديلات: توحيد الترميز، وحذف علامات الاتجاه الخفية، وتصحيح عنوان الليلة ١٣٦ («فقال» ← «فلما»)، وتقسيم أربع فقرات عند بداية حكايات لم تُعنون في الأصل، وعناوين لتلك الحكايات ولمجموعات الحكايات القصار، وكتابة عدد الليالي بالحروف، وحذف رسوم تلك الطبعة.",
-    "**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن ويكيميديا كومنز وأرشيف الإنترنت، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط ومن عناوين لين لرسوم هارفي.",
+    "**التصاوير:** صنيع الملك أبو الحسن غفاري (١٨١٤–١٨٦٦م) وتلاميذه، رسوم «هزار و یک شب»، الترجمة الفارسية لألف ليلة وليلة، المجلد الأول، ١٢٦٥–١٢٧٢هـ (١٨٤٩–١٨٥٦م)، مكتبة قصر كلستان، طهران (المخطوط ٢٢٤٠)؛ ووليم هارفي (١٧٩٦–١٨٦٦م)، رسوم محفورة على الخشب لترجمة إدوارد وليم لين (لندن، ١٨٣٩–١٨٤١م). عن ويكيميديا كومنز وأرشيف الإنترنت، وكلها في الملك العام. الكلام تحت الصور من وضعنا، مستخلص من العناوين الفارسية في المخطوط ومن عناوين لين لرسوم هارفي. وصورتا الغلاف والكعب: Generated With Diffusion Models.",
     "**الحروف:** «أميري» (الإصدار ١٫٠٠٣) لخالد حسني، و«عارف رقعة» لعبد الله عارف وخالد حسني، برخصة SIL Open Font License 1.1. والزخارف (السرلوح والشمسة) مرسومة لهذه النسخة.",
     "**الإخراج:** صُفَّ الكتاب بمحرك Postext؛ ونصوص هذه النسخة التي كتبناها (الكلمة في الطبعة، والعناوين المضافة، والكلام تحت الصور، وهذه الصفحة) بموجب رخصة المشاع الإبداعي CC BY 4.0.",
 ]
 
 CREDITS_EN = [
-    "One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons and the Internet Archive, public domain. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.",
+    "One Thousand and One Nights (Alf layla wa-layla), the Bulaq text in the Hindawi Foundation edition (2022), six volumes; text in the public domain, Hindawi’s vocalisation and punctuation CC BY 4.0. Pictures: Sani ol-Molk (Abu’l-Hasan Ghaffari) and workshop, Persian Nights, Golestan Palace Library MS 2240, 1849–56; William Harvey’s wood engravings for E. W. Lane’s translation, London 1839–41; Wikimedia Commons and the Internet Archive, public domain; cover and spine pictures: Generated With Diffusion Models. Fonts: Amiri and Aref Ruqaa, SIL OFL 1.1. Set with Postext.",
 ]
 
 
@@ -820,13 +831,7 @@ def resources(out: str, plates: list[dict]) -> list[dict]:
                 "altText": plate_alt(p),
             }
         )
-    # The cover's panel: the plate less the strip of the manuscript's
-    # cartouche frame along its top.
-    im = Image.open(os.path.join(WORK, "plates", COVER_PLATE + ".jpg")).convert("RGB")
-    im = im.crop((0, round(im.height * COVER_TRIM), im.width, im.height))
-    im.save(os.path.join(rdir, "cover-panel.jpg"), quality=PLATE_QUALITY, optimize=True, progressive=True)
-    COVER_SIZE[:] = [im.width, im.height]
-    specs.append({"id": "cover-panel", "typeId": "ornament", "kind": "bitmap", "file": "resources/cover-panel.jpg", "width": im.width, "height": im.height, "caption": "شركان وإبريزة في ضوء القمر", "altText": "لوحة مائية لصنيع الملك: شركان وإبريزة في ضوء القمر"})
+    specs += cover_art_specs(rdir)
     made = ornaments.write_all(rdir, PALETTE["ink"], PALETTE["rubric"], PALETTE["tint"], PALETTE["paper"], PALETTE["gold"], PALETTE["goldDark"])
     names = {"headpiece": "سرلوح", "headpiece-gold": "سرلوح مذهَّب", "rosette": "شمسة", "rosette-gold": "شمسة مذهَّبة"}
     for rid, (f, w, h) in made.items():
@@ -960,6 +965,8 @@ heading attribute; the edition's own illustrations left out.
   Lane's volume 2 (1840, `thousandandonen01lanegoog`) and volume 3 (1841,
   `thousandandonen01harvgoog`), chosen from Lane's lists of illustrations for
   the tales of the later Bulaq volumes, set in grey.
+- The cover and the spine: Generated With Diffusion Models
+  (`covers.py`); their lettering is set by the bundle.
 - The headpiece (سرلوح) and the rosettes are drawn for this bundle
   (`ornaments.py`), CC0.
 

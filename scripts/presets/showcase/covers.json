@@ -1,0 +1,133 @@
+{
+  "generator": {
+    "endpoint": "openai/gpt-image-2.5/sunburst/text-to-image",
+    "quality": "high",
+    "credit": "Generated With Diffusion Models"
+  },
+  "noText": "Absolutely no text anywhere in the image: no letters, no words, no calligraphy, no characters of any script, no numbers, no seals, no signatures, no watermark.",
+  "pictures": [
+    {
+      "id": "alf-layla-cover",
+      "book": "alf-layla",
+      "size": [
+        2048,
+        2896
+      ],
+      "variants": 2,
+      "prompt": "Front cover artwork for a luxurious edition of The Thousand and One Nights, seen perfectly flat and straight-on and filling the entire frame edge to edge: the image is the cover itself, with no book object, no perspective and nothing around it. Deep oxblood red morocco leather, hand-tooled in burnished gold leaf in the Mamluk Egyptian bookbinding tradition: a wide border of interlacing gold arabesques inside a fine double gold fillet, small gold corner fleurons. In the upper quarter, a wide horizontal cartouche with lobed pointed ends, outlined in gold and filled with plain smooth dark leather, left completely empty because a title will be stamped into it later. Below it, filling the middle of the cover, a tall arched panel framed in gold holding a jewel-toned Persian miniature painting in the manner of Sani ol-Molk's 1850s Thousand and One Nights illustrations: Shahrazad seated on a carpet telling stories to King Shahryar in a lamplit palace chamber at night, an open arcade behind them onto moonlit domes and minarets under a deep blue starry sky with a crescent moon. Near the foot, a small empty horizontal cartouche of plain leather outlined in gold. Rich, subtle leather grain, slight wear on the gilt, warm lamplight sheen.",
+      "pick": 1,
+      "trim": 0.012,
+      "outputs": [
+        {
+          "file": "art/cover.jpg",
+          "mm": [
+            170,
+            240
+          ]
+        }
+      ]
+    },
+    {
+      "id": "alf-layla-spine",
+      "book": "alf-layla",
+      "size": [
+        1280,
+        3840
+      ],
+      "variants": 1,
+      "prompt": "A flat, straight-on orthographic view of the spine of a thick antique book bound in oxblood red morocco leather, filling the whole image edge to edge: the image is the spine itself, with no background, no boards, no perspective. Five raised horizontal bands cross the spine, each tooled with gold fillets. The six compartments between them are decorated in burnished gold leaf with Mamluk arabesque tooling: a small central rosette and four corner fleurons in each. The second compartment from the top holds a recessed rectangular panel of plain darker leather inside a gold fillet, left completely blank because a title will be stamped into it later. Gilt rolls at the head and the tail. Subtle leather grain, slight wear on the gold, soft warm lamplight, the gentle roundness of the spine shading its two long edges.",
+      "pick": 1,
+      "outputs": [
+        {
+          "file": "art/spine.jpg"
+        }
+      ]
+    },
+    {
+      "id": "hongloumeng-cover",
+      "book": "hongloumeng",
+      "size": [
+        2048,
+        2896
+      ],
+      "variants": 2,
+      "prompt": "Front cover of a thread-bound Chinese book in the Qing manner, seen perfectly flat and straight-on and filling the frame edge to edge: the image is the cover itself, with no perspective and nothing around it. The cover is a gongbi painting in mineral pigments on aged silk of the Grand View Garden in snow from Dream of the Red Chamber: a pavilion with vermilion pillars and grey tiled roofs half hidden among red plum blossoms, snow on the branches and on the garden rocks, a winding covered gallery, a young woman in a red felt cape crossing a little stone bridge over a frozen stream, soft drifting mist. Muted palette of indigo, ink grey, cinnabar and celadon, very fine brushwork. Along the right edge, a narrow strip of plain dark indigo silk carries the traditional four-hole binding: four holes, with pale silk thread stitched from each hole round the right edge and along a line parallel to it. The upper left part of the cover is calm pale misty sky with nothing in it, because a paper title slip will be pasted there later.",
+      "pick": 1,
+      "trim": 0.004,
+      "outputs": [
+        {
+          "file": "art/cover.jpg",
+          "mm": [
+            148,
+            210
+          ],
+          "anchor": "right"
+        },
+        {
+          "file": "art/cover-zh-Hans.jpg",
+          "mm": [
+            140,
+            203
+          ],
+          "anchor": "right",
+          "mirror": true
+        }
+      ]
+    },
+    {
+      "id": "hongloumeng-spine",
+      "book": "hongloumeng",
+      "size": [
+        1280,
+        3840
+      ],
+      "variants": 1,
+      "prompt": "A flat, straight-on orthographic view of the spine of a Chinese book covered in dark indigo-dyed silk cloth, filling the whole image edge to edge: the image is the spine itself, with no background, no perspective. A fine woven silk texture with a faint cloud-scroll damask pattern woven into the cloth, a thin vermilion band near the head and another near the tail. In the upper third a narrow cream paper slip with a thin ink border is pasted on, left completely blank because a title will be printed on it later. The gentle roundness of the spine shades its two long edges; soft daylight.",
+      "pick": 1,
+      "outputs": [
+        {
+          "file": "art/spine.jpg"
+        }
+      ]
+    },
+    {
+      "id": "kokoro-cover",
+      "book": "kokoro",
+      "size": [
+        1952,
+        2896
+      ],
+      "variants": 2,
+      "prompt": "Front cover painting for Natsume Soseki's novel Kokoro, seen perfectly flat and straight-on and filling the frame edge to edge: the image is the cover itself, with no book object, no perspective and nothing around it. A Japanese nanga literati painting in the manner of Soseki's own paintings: soft sumi ink lines and pale mineral washes of indigo, ochre, pine green and a touch of vermilion on warm toned paper. The beach at Kamakura on a late summer morning: a few crooked black pines leaning over a low dune in the lower right foreground, the calm sea fading into haze, a distant headland, and a single small figure in a dark kimono standing at the water's edge looking out to sea. The whole upper left of the picture is quiet empty paper sky, because a title will be set there later.",
+      "pick": 2,
+      "outputs": [
+        {
+          "file": "art/cover.jpg",
+          "mm": [
+            127,
+            188
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kokoro-spine",
+      "book": "kokoro",
+      "size": [
+        1280,
+        3840
+      ],
+      "variants": 1,
+      "prompt": "A flat, straight-on orthographic photograph of plain vermilion red book cloth, the cloth of a 1914 Japanese hardcover, filling the whole image edge to edge with no edges, no objects and no perspective: an even, fine linen weave, slightly faded and softly mottled with age, a few faint scuffs, evenly lit by soft daylight.",
+      "pick": 1,
+      "outputs": [
+        {
+          "file": "art/spine.jpg",
+          "tint": "#b8472d"
+        }
+      ]
+    }
+  ],
+  "coverHeightPx": 2000,
+  "spineHeightPx": 3360
+}

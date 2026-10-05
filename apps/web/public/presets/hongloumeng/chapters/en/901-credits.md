@@ -9,6 +9,8 @@ Chapter plates: *Zengping butu Shitou ji* (Shanghai: Tongwen shuju, 1884), from 
 
 Portraits: Gai Qi, *Honglou meng tuyong* (1879), Wikimedia Commons category “Portraits of the Dream of the Red Chamber by Gai Qi”. Public domain.
 
+Spine: Generated With Diffusion Models.
+
 Fonts: EB Garamond (Georg Duffner, Octavio Pardo) and LXGW WenKai TC, under the SIL Open Font License 1.1; the licence texts are in the fonts folder of this book.
 
 The editorial matter (the note on this edition, the introductions, the index and this page) is released under Creative Commons Attribution-ShareAlike 4.0. Set with Postext, postext.dev.

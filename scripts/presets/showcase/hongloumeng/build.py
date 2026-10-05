@@ -250,25 +250,38 @@ def zh_front_opener(f: ZhFaces) -> dict:
     }
 
 
+# The painted covers (covers.py, GPT Image 2.5): a gongbi painting of the
+# Grand View Garden in snow on silk, the four-hole stitching painted on an
+# indigo strip along the binding edge; the left-bound zh-Hans edition has it
+# mirrored. The paper slip is the design's.
+COVER_ART = {"zh-Hant": "cover-art", "zh-Hans": "cover-art-zh-Hans"}
+COVER_ALT = {
+    "zh-Hant": "封面畫：大觀園雪景，紅柱亭閣掩映於紅梅白雪之間，披紅斗篷的女子走過石橋；書脊一側是靛藍色的四眼線裝。",
+    "zh-Hans": "封面画：大观园雪景，红柱亭阁掩映于红梅白雪之间，披红斗篷的女子走过石桥；书脊一侧是靛蓝色的四眼线装。",
+}
+
+
+def cover_art_specs(rdir: str) -> list[dict]:
+    """The two paintings, copied from art/ into the bundle's resources."""
+    from PIL import Image
+
+    specs = []
+    for lang, rid in COVER_ART.items():
+        src = os.path.join(HERE, "art", "cover.jpg" if lang == "zh-Hant" else f"cover-{lang}.jpg")
+        shutil.copyfile(src, os.path.join(rdir, f"{rid}.jpg"))
+        w, h = Image.open(src).size
+        specs.append({"id": rid, "typeId": "ornament", "kind": "bitmap", "file": f"resources/{rid}.jpg", "width": w, "height": h, "caption": "封面", "altText": COVER_ALT[lang]})
+    return specs
+
+
 def zh_cover(lang: str, f: ZhFaces, binding: str) -> dict:
-    """A thread-bound cover: indigo cloth, four-hole stitching along the
-    binding edge and a paper title slip with the title set vertically, one
+    """A thread-bound cover: the painting, its stitching along the binding
+    edge, and a paper title slip with the title set vertically, one
     character under another, at the top of the free edge."""
     g = ZH
-    stitch_x = 9.0  # the stitching line, from the binding edge
-    holes = [g.height * r for r in (0.1, 0.36, 0.64, 0.9)]
     slip_w, slip_h, slip_top, slip_edge = 23.0, 92.0, 14.0, 11.0
     slip_x = slip_edge if binding == "right" else g.width - slip_edge - slip_w
-    line_x = g.width - stitch_x if binding == "right" else stitch_x
-    edge_x = g.width if binding == "right" else 0.0
-    els = [
-        box("cloth", anchor=at("bleed", "top-left"), fill="indigo"),
-        # The thread: along the stitching line between the outer holes, and
-        # from each hole round the spine edge.
-        {"kind": "rule", "id": "stitch-line", "direction": "vertical", "placement": {"anchor": at("page", "top-left"), "offset": {"x": mm(line_x), "y": mm(holes[0])}, "size": {"height": mm(holes[-1] - holes[0])}}, "color": col("thread"), "thickness": pt(1.5)},
-    ]
-    for i, y in enumerate(holes):
-        els.append(rule(f"stitch-{i}", anchor=at("page", "top-left"), offset=(min(line_x, edge_x), y), width=abs(edge_x - line_x) + 1, color="thread", thickness=1.5))
+    els = [_common.image_el("art", COVER_ART[lang], anchor=at("bleed", "top-left"), width=g.width, height=g.height)]
     els += [
         box("slip", anchor=at("page", "top-left"), offset=(slip_x, slip_top), width=slip_w, height=slip_h, fill="paper", style={"backgroundColor": col("paper"), "borderColor": col("ink"), "borderWidth": pt(0.6), "borderRadius": mm(0)}),
         box("slip-frame", anchor=at("#slip", "top-left"), offset=(1.4, 1.4), width=slip_w - 2.8, height=slip_h - 2.8, fill="paper", style={"borderColor": col("ink"), "borderWidth": pt(0.3), "borderRadius": mm(0)}),
@@ -414,6 +427,13 @@ def zh_resource_types(lang: str, f: ZhFaces) -> list[dict]:
 
 # --- Folio -------------------------------------------------------------------
 
+# The painted spine's paper slip (head, tail) and the stretch of plain cloth
+# under it that takes up each edition's height, as fractions of
+# art/spine.jpg's height.
+SPINE_SLIP = (0.058, 0.574)
+SPINE_CLOTH_BAND = (0.62, 0.95)
+SPINE_EN_TITLE_LENGTH = 0.28  # of the English spine's height: inside the slip
+
 # The spine (Folio's `binding.spineImage`), one picture per edition, sized for
 # about each edition's page count on its paper.
 SPINE = "spine"
@@ -435,9 +455,12 @@ def folio_config(lang: str) -> dict:
 
 
 def add_spines(out: str, shared: list[dict], wording: dict[str, list[dict]]) -> None:
-    """The spines: the title and the author in thread-coloured ink on the
-    indigo of the covers, between vermilion bands; upright characters on
-    the Chinese editions, Latin letters running down the English one."""
+    """The spines: indigo damask with a paper slip and vermilion bands at
+    head and tail, painted (covers.py, art/spine.jpg; the cloth under the
+    slip stretched to each edition's height). On the Chinese editions the
+    title and the author stand upright in ink on the slip; on the English
+    one the title runs down the slip and the author down the cloth below
+    it, in the thread's colour."""
     fonts = os.path.join(out, "fonts")
     serif = {"zh-Hant": "NotoSerifTC-Bold.woff2", "zh-Hans": "NotoSerifSC-Bold.woff2"}
     names = {"zh-Hant": ("紅樓夢", "曹雪芹"), "zh-Hans": ("红楼梦", "曹雪芹")}
@@ -448,20 +471,22 @@ def add_spines(out: str, shared: list[dict], wording: dict[str, list[dict]]) -> 
         common = {
             "height_mm": heights[lang],
             "thickness_mm": _common.spine_thickness_mm(SPINE_PAGES[lang], params["paper"]["grammage"], params["paper"]["bulk"], params["binding"]["type"]),
-            "ground": PALETTE["indigo"], "ink": PALETTE["thread"], "rules": PALETTE["vermilion"],
+            "ground": PALETTE["indigo"], "ink": PALETTE["ink"],
+            "background": {"file": os.path.join(HERE, "art", "spine.jpg"), "fit": "stretch", "band": SPINE_CLOTH_BAND},
         }
         if lang == "en":
             garamond = os.path.join(fonts, "EBGaramond-SemiBold.woff2")
             per_lang[lang] = {**common, "pieces": [
-                {"text": "The Dream of the Red Chamber", "font": garamond, "size": 0.2, "at": 0.37},
-                {"text": "Cao Xueqin", "font": os.path.join(fonts, "EBGaramond-Regular.woff2"), "size": 0.15, "at": 0.84},
+                {"text": "The Dream of the Red Chamber", "font": garamond, "size": 0.15, "at": sum(SPINE_SLIP) / 2, "onPicture": True, "maxLength": SPINE_EN_TITLE_LENGTH},
+                {"text": "Cao Xueqin", "font": os.path.join(fonts, "EBGaramond-Regular.woff2"), "size": 0.15, "at": 0.8, "color": PALETTE["thread"]},
             ]}
         else:
             title, author = names[lang]
             font = os.path.join(fonts, serif[lang])
+            top, foot = SPINE_SLIP
             per_lang[lang] = {**common, "vertical": True, "pieces": [
-                {"text": title, "font": font, "size": 0.34, "at": 0.3},
-                {"text": author, "font": font, "size": 0.2, "at": 0.72},
+                {"text": title, "font": font, "size": 0.2, "at": top + (foot - top) * 0.36, "onPicture": True, "step": 1.3},
+                {"text": author, "font": font, "size": 0.11, "at": top + (foot - top) * 0.82, "onPicture": True},
             ]}
     spec, words = _common.build_spines(out, SPINE, "ornament", "zh-Hant", per_lang)
     shared.append(spec)
@@ -744,25 +769,18 @@ def v_front_opener(f: ZhFaces) -> dict:
 
 
 def v_cover(lang: str, f: ZhFaces) -> dict:
-    """The thread-bound cover of the right-bound edition: indigo cloth,
-    four-hole stitching down the spine edge (the right, the flow's top) and
+    """The thread-bound cover of the right-bound edition: the painting, its
+    four-hole stitching down the spine edge (the right, the flow's top), and
     a paper title slip at the head of the free edge with 紅樓夢 set down it
     and 程乙本 small near its foot. Everything is placed from the bleed box
-    the cloth fills. The design reserves the page's whole width, as the
+    the painting fills. The design reserves the page's whole width, as the
     horizontal covers reserve its height: the HTML view then takes it for a
     cover and keeps the leaf's shape."""
     g = VG
     # Flow frame: x down from the head, y leftward from the spine.
-    stitch = 9.0
-    holes = [g.height * r for r in (0.1, 0.36, 0.64, 0.9)]
     slip_w, slip_h, slip_top, slip_edge = 23.0, 92.0, 14.0, 11.0
-    cloth = at("bleed", "top-left")
-    els = [
-        box("cloth", anchor=at("bleed", "top-left"), fill="indigo"),
-        rule("stitch-line", anchor=cloth, offset=(holes[0], stitch), width=holes[-1] - holes[0], color="thread", thickness=1.5),
-    ]
-    for i, x in enumerate(holes):
-        els.append({"kind": "rule", "id": f"stitch-{i}", "direction": "vertical", "placement": {"anchor": cloth, "offset": {"x": mm(x), "y": mm(-1)}, "size": {"height": mm(stitch + 1)}}, "color": col("thread"), "thickness": pt(1.5)})
+    # The picture stands upright on the sheet: its size runs down the page.
+    els = [{"kind": "image", "id": "art", "resourceId": COVER_ART[lang], "placement": {"anchor": at("bleed", "top-left"), "offset": {"x": mm(0), "y": mm(0)}, "size": {"width": mm(g.height), "height": "auto"}}}]
     els += [
         # The slip 11 mm from the free edge (the flow's foot).
         box("slip", anchor=at("bleed", "bottom-left"), offset=(slip_top, -slip_edge), width=slip_h, height=slip_w, fill="paper", style={"backgroundColor": col("paper"), "borderColor": col("ink"), "borderWidth": pt(0.6), "borderRadius": mm(0)}),
@@ -1570,6 +1588,7 @@ def resources(out: str, pictures: dict) -> tuple[list[dict], dict[str, list[dict
     shared.append({"id": ORNAMENT_ID, "typeId": "ornament", "kind": "svg", "file": rel, "width": 100, "height": 64, "caption": ORNAMENT_CAPTION["zh-Hant"]})
     for lang in LANGS:
         wording[lang].append({"id": ORNAMENT_ID, "caption": ORNAMENT_CAPTION[lang]})
+    shared += cover_art_specs(os.path.join(out, "resources"))
     return shared, wording
 
 
@@ -1731,6 +1750,13 @@ category "Portraits of the Dream of the Red Chamber by Gai Qi".
 | id | name | source | licence |
 | --- | --- | --- | --- |
 {portraits}
+
+## Cover and spines
+
+The covers of the two Chinese editions (`cover-art`, `cover-art-zh-Hans`, the
+same painting mirrored for the left-bound edition) and the cloth of the three
+spines: Generated With Diffusion Models (`covers.py`). Their lettering is set
+by the bundle.
 
 ## Fonts
 

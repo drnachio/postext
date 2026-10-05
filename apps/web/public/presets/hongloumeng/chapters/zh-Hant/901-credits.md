@@ -9,6 +9,8 @@
 
 繡像：改琦繪《紅樓夢圖詠》（一八七九），維基共享資源分類「Portraits of the Dream of the Red Chamber by Gai Qi」。公有領域。
 
+封面、書脊：Generated With Diffusion Models。
+
 字型：思源宋體、思源黑體（Noto Serif TC、Noto Sans TC），霞鶩文楷（LXGW WenKai TC），均按 SIL 開源字型授權 1.1 釋出；個別缺字補自 Noto Serif SC、Chiron Sung HK（SIL 開源字型授權 1.1）與字雲 Jigmo（CC0 1.0）。授權全文見本書 fonts 目錄。
 
 出版說明、繡像說明、索引、本頁等編者文字按知識共享「姓名標示—相同方式分享」4.0授權釋出。排版：Postext，postext.dev。

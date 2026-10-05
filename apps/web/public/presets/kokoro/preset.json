@@ -315,8 +315,9 @@
      "slot": {
       "elements": [
        {
-        "kind": "box",
-        "id": "cloth",
+        "kind": "image",
+        "id": "art",
+        "resourceId": "cover-art",
         "placement": {
          "anchor": {
           "to": "bleed",
@@ -333,8 +334,41 @@
           }
          },
          "size": {
-          "width": "fill",
-          "height": "fill"
+          "width": {
+           "value": 188,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        }
+       },
+       {
+        "kind": "box",
+        "id": "slip",
+        "placement": {
+         "anchor": {
+          "to": "page",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 15.0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 95.0,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 86.0,
+           "unit": "mm"
+          },
+          "height": {
+           "value": 19.0,
+           "unit": "mm"
+          }
          }
         },
         "style": {
@@ -351,7 +385,7 @@
        },
        {
         "kind": "box",
-        "id": "label-ground",
+        "id": "slip-frame",
         "placement": {
          "anchor": {
           "to": "page",
@@ -359,107 +393,38 @@
          },
          "offset": {
           "x": {
-           "value": 27.8,
+           "value": 16.3,
            "unit": "mm"
           },
           "y": {
-           "value": 15.3,
+           "value": 96.3,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 73.147,
+           "value": 83.4,
            "unit": "mm"
           },
           "height": {
-           "value": 96.4,
-           "unit": "mm"
-          }
-         }
-        },
-        "style": {
-         "backgroundColor": {
-          "hex": "#f4ebd8",
-          "model": "hex",
-          "paletteId": "paper"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "box",
-        "id": "label-frame",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 28.7,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 16.2,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 71.347,
-           "unit": "mm"
-          },
-          "height": {
-           "value": 94.6,
+           "value": 16.4,
            "unit": "mm"
           }
          }
         },
         "style": {
          "borderColor": {
-          "hex": "#1d1916",
+          "hex": "#f4ebd8",
           "model": "hex",
-          "paletteId": "main-color"
+          "paletteId": "paper"
          },
          "borderWidth": {
-          "value": 0.6,
+          "value": 0.5,
           "unit": "pt"
          },
          "borderRadius": {
           "value": 0,
           "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "image",
-        "id": "label",
-        "resourceId": "kokoro-1914-cover-label",
-        "placement": {
-         "anchor": {
-          "to": "page",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 30.0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 17.5,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": {
-           "value": 68.747,
-           "unit": "mm"
-          },
-          "height": "auto"
          }
         }
        },
@@ -473,11 +438,11 @@
          },
          "offset": {
           "x": {
-           "value": 120.747,
+           "value": 24.0,
            "unit": "mm"
           },
           "y": {
-           "value": 50.652,
+           "value": 97.092,
            "unit": "mm"
           }
          },
@@ -524,21 +489,21 @@
          },
          "offset": {
           "x": {
-           "value": 136.975,
+           "value": 71.833,
            "unit": "mm"
           },
           "y": {
-           "value": 69.469,
+           "value": 101.325,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 23.578,
+           "value": 22.167,
            "unit": "mm"
           },
           "height": {
-           "value": 6.879,
+           "value": 6.35,
            "unit": "mm"
           }
          }
@@ -546,7 +511,7 @@
         "content": "夏目漱石",
         "fontFamily": "Shippori Mincho B1",
         "fontSize": {
-         "value": 13,
+         "value": 12,
          "unit": "pt"
         },
         "fontWeight": 700,
@@ -1424,7 +1389,7 @@
           }
          }
         },
-        "content": "本文　青空文庫（底本　集英社文庫、一九九一年）\n入力　j.utiyama　校正　伊藤時也\n序・予告・広告文　入力　砂場清隆　校正　小林繁雄\n装幀・口絵　夏目漱石（国立国会図書館所蔵本より）\n挿絵　Generated With Diffusion Models\n書体　しっぽり明朝 B1・しっぽりアンチック B1",
+        "content": "本文　青空文庫（底本　集英社文庫、一九九一年）\n入力　j.utiyama　校正　伊藤時也\n序・予告・広告文　入力　砂場清隆　校正　小林繁雄\n扉・見返し・口絵　夏目漱石（国立国会図書館所蔵本より）\n表紙・挿絵　Generated With Diffusion Models\n書体　しっぽり明朝 B1・しっぽりアンチック B1",
         "fontFamily": "Shippori Mincho B1",
         "fontSize": {
          "value": 7.5,
@@ -2829,16 +2794,6 @@
    "altText": "印影「ars longa, vita brevis」。"
   },
   {
-   "id": "kokoro-1914-cover-label",
-   "typeId": "design",
-   "kind": "bitmap",
-   "file": "resources/kokoro-1914-cover-label.jpg",
-   "width": 910,
-   "height": 680,
-   "caption": "表紙　題簽",
-   "altText": "表紙の題簽。康熙字典の「心」の項を写した文字の枠。"
-  },
-  {
    "id": "kokoro-1917-colophon-frame",
    "typeId": "design",
    "kind": "bitmap",
@@ -2997,6 +2952,16 @@
    "height": 1806,
    "caption": "見返し",
    "altText": "見返しの模様。立ち姿の人物と蓮の葉を描いた円紋が並ぶ。"
+  },
+  {
+   "id": "cover-art",
+   "typeId": "design",
+   "kind": "bitmap",
+   "file": "resources/cover-art.jpg",
+   "width": 1351,
+   "height": 2000,
+   "caption": "表紙",
+   "altText": "表紙の絵。晩夏の鎌倉の浜。右手の砂丘に傾く松、霞む海と岬、波打ち際に着物の人がひとり立って沖を見ている。"
   },
   {
    "id": "spine",

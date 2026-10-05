@@ -1728,8 +1728,9 @@
      "slot": {
       "elements": [
        {
-        "kind": "box",
-        "id": "cloth",
+        "kind": "image",
+        "id": "art",
+        "resourceId": "cover-art",
         "placement": {
          "anchor": {
           "to": "bleed",
@@ -1742,204 +1743,16 @@
           },
           "y": {
            "value": 0,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "width": "fill",
-          "height": "fill"
-         }
-        },
-        "style": {
-         "backgroundColor": {
-          "hex": "#34405a",
-          "model": "hex",
-          "paletteId": "indigo"
-         },
-         "borderRadius": {
-          "value": 0,
-          "unit": "mm"
-         }
-        }
-       },
-       {
-        "kind": "rule",
-        "id": "stitch-line",
-        "direction": "horizontal",
-        "placement": {
-         "anchor": {
-          "to": "bleed",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 21.0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": 9.0,
            "unit": "mm"
           }
          },
          "size": {
           "width": {
-           "value": 168.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "color": {
-         "hex": "#e9e1cf",
-         "model": "hex",
-         "paletteId": "thread"
-        },
-        "thickness": {
-         "value": 1.5,
-         "unit": "pt"
-        }
-       },
-       {
-        "kind": "rule",
-        "id": "stitch-0",
-        "direction": "vertical",
-        "placement": {
-         "anchor": {
-          "to": "bleed",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 21.0,
+           "value": 210,
            "unit": "mm"
           },
-          "y": {
-           "value": -1,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "height": {
-           "value": 10.0,
-           "unit": "mm"
-          }
+          "height": "auto"
          }
-        },
-        "color": {
-         "hex": "#e9e1cf",
-         "model": "hex",
-         "paletteId": "thread"
-        },
-        "thickness": {
-         "value": 1.5,
-         "unit": "pt"
-        }
-       },
-       {
-        "kind": "rule",
-        "id": "stitch-1",
-        "direction": "vertical",
-        "placement": {
-         "anchor": {
-          "to": "bleed",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 75.6,
-           "unit": "mm"
-          },
-          "y": {
-           "value": -1,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "height": {
-           "value": 10.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "color": {
-         "hex": "#e9e1cf",
-         "model": "hex",
-         "paletteId": "thread"
-        },
-        "thickness": {
-         "value": 1.5,
-         "unit": "pt"
-        }
-       },
-       {
-        "kind": "rule",
-        "id": "stitch-2",
-        "direction": "vertical",
-        "placement": {
-         "anchor": {
-          "to": "bleed",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 134.4,
-           "unit": "mm"
-          },
-          "y": {
-           "value": -1,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "height": {
-           "value": 10.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "color": {
-         "hex": "#e9e1cf",
-         "model": "hex",
-         "paletteId": "thread"
-        },
-        "thickness": {
-         "value": 1.5,
-         "unit": "pt"
-        }
-       },
-       {
-        "kind": "rule",
-        "id": "stitch-3",
-        "direction": "vertical",
-        "placement": {
-         "anchor": {
-          "to": "bleed",
-          "edge": "top-left"
-         },
-         "offset": {
-          "x": {
-           "value": 189.0,
-           "unit": "mm"
-          },
-          "y": {
-           "value": -1,
-           "unit": "mm"
-          }
-         },
-         "size": {
-          "height": {
-           "value": 10.0,
-           "unit": "mm"
-          }
-         }
-        },
-        "color": {
-         "hex": "#e9e1cf",
-         "model": "hex",
-         "paletteId": "thread"
-        },
-        "thickness": {
-         "value": 1.5,
-         "unit": "pt"
         }
        },
        {
@@ -7536,8 +7349,8 @@
        "slot": {
         "elements": [
          {
-          "kind": "box",
-          "id": "cloth",
+          "kind": "image",
+          "id": "art",
           "placement": {
            "anchor": {
             "to": "bleed",
@@ -7554,201 +7367,17 @@
             }
            },
            "size": {
-            "width": "fill",
-            "height": "fill"
-           }
-          },
-          "style": {
-           "backgroundColor": {
-            "hex": "#34405a",
-            "model": "hex",
-            "paletteId": "indigo"
-           },
-           "borderRadius": {
-            "value": 0,
-            "unit": "mm"
-           }
-          }
-         },
-         {
-          "kind": "rule",
-          "id": "stitch-line",
-          "direction": "vertical",
-          "placement": {
-           "anchor": {
-            "to": "page",
-            "edge": "top-left"
-           },
-           "offset": {
-            "x": {
-             "value": 9.0,
+            "width": {
+             "value": 140,
              "unit": "mm"
             },
-            "y": {
-             "value": 20.3,
-             "unit": "mm"
-            }
-           },
-           "size": {
             "height": {
-             "value": 162.4,
+             "value": 203,
              "unit": "mm"
             }
            }
           },
-          "color": {
-           "hex": "#e9e1cf",
-           "model": "hex",
-           "paletteId": "thread"
-          },
-          "thickness": {
-           "value": 1.5,
-           "unit": "pt"
-          }
-         },
-         {
-          "kind": "rule",
-          "id": "stitch-0",
-          "direction": "horizontal",
-          "placement": {
-           "anchor": {
-            "to": "page",
-            "edge": "top-left"
-           },
-           "offset": {
-            "x": {
-             "value": 0.0,
-             "unit": "mm"
-            },
-            "y": {
-             "value": 20.3,
-             "unit": "mm"
-            }
-           },
-           "size": {
-            "width": {
-             "value": 10.0,
-             "unit": "mm"
-            }
-           }
-          },
-          "color": {
-           "hex": "#e9e1cf",
-           "model": "hex",
-           "paletteId": "thread"
-          },
-          "thickness": {
-           "value": 1.5,
-           "unit": "pt"
-          }
-         },
-         {
-          "kind": "rule",
-          "id": "stitch-1",
-          "direction": "horizontal",
-          "placement": {
-           "anchor": {
-            "to": "page",
-            "edge": "top-left"
-           },
-           "offset": {
-            "x": {
-             "value": 0.0,
-             "unit": "mm"
-            },
-            "y": {
-             "value": 73.08,
-             "unit": "mm"
-            }
-           },
-           "size": {
-            "width": {
-             "value": 10.0,
-             "unit": "mm"
-            }
-           }
-          },
-          "color": {
-           "hex": "#e9e1cf",
-           "model": "hex",
-           "paletteId": "thread"
-          },
-          "thickness": {
-           "value": 1.5,
-           "unit": "pt"
-          }
-         },
-         {
-          "kind": "rule",
-          "id": "stitch-2",
-          "direction": "horizontal",
-          "placement": {
-           "anchor": {
-            "to": "page",
-            "edge": "top-left"
-           },
-           "offset": {
-            "x": {
-             "value": 0.0,
-             "unit": "mm"
-            },
-            "y": {
-             "value": 129.92,
-             "unit": "mm"
-            }
-           },
-           "size": {
-            "width": {
-             "value": 10.0,
-             "unit": "mm"
-            }
-           }
-          },
-          "color": {
-           "hex": "#e9e1cf",
-           "model": "hex",
-           "paletteId": "thread"
-          },
-          "thickness": {
-           "value": 1.5,
-           "unit": "pt"
-          }
-         },
-         {
-          "kind": "rule",
-          "id": "stitch-3",
-          "direction": "horizontal",
-          "placement": {
-           "anchor": {
-            "to": "page",
-            "edge": "top-left"
-           },
-           "offset": {
-            "x": {
-             "value": 0.0,
-             "unit": "mm"
-            },
-            "y": {
-             "value": 182.7,
-             "unit": "mm"
-            }
-           },
-           "size": {
-            "width": {
-             "value": 10.0,
-             "unit": "mm"
-            }
-           }
-          },
-          "color": {
-           "hex": "#e9e1cf",
-           "model": "hex",
-           "paletteId": "thread"
-          },
-          "thickness": {
-           "value": 1.5,
-           "unit": "pt"
-          }
+          "resourceId": "cover-art-zh-Hans"
          },
          {
           "kind": "box",
@@ -16155,6 +15784,26 @@
    "width": 100,
    "height": 64,
    "caption": "魚尾"
+  },
+  {
+   "id": "cover-art",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/cover-art.jpg",
+   "width": 1409,
+   "height": 2000,
+   "caption": "封面",
+   "altText": "封面畫：大觀園雪景，紅柱亭閣掩映於紅梅白雪之間，披紅斗篷的女子走過石橋；書脊一側是靛藍色的四眼線裝。"
+  },
+  {
+   "id": "cover-art-zh-Hans",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/cover-art-zh-Hans.jpg",
+   "width": 1380,
+   "height": 2000,
+   "caption": "封面",
+   "altText": "封面画：大观园雪景，红柱亭阁掩映于红梅白雪之间，披红斗篷的女子走过石桥；书脊一侧是靛蓝色的四眼线装。"
   },
   {
    "id": "spine",

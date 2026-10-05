@@ -9,6 +9,8 @@
 
 绣像：改琦绘《红楼梦图咏》（1879），维基共享资源分类“Portraits of the Dream of the Red Chamber by Gai Qi”。公有领域。
 
+封面、书脊：Generated With Diffusion Models。
+
 字体：思源宋体、思源黑体（Noto Serif SC、Noto Sans SC），霞鹜文楷（LXGW WenKai），均按 SIL 开源字体许可证 1.1 发布；个别缺字补自 Chiron Sung HK（SIL 开源字体许可证 1.1）与字云 Jigmo（CC0 1.0）。许可证全文见本书 fonts 目录。
 
 出版说明、绣像说明、索引、本页等编者文字按知识共享“署名—相同方式共享”4.0协议发布。排版：Postext，postext.dev。

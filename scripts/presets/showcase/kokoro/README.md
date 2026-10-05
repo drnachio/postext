@@ -20,7 +20,13 @@ python3 build.py             # the bundle (--out DIR: a draft elsewhere, not reg
 ```
 
 `thumbnail.jpg` is the cover as laid out: page 1 rendered with the
-postext-port skill's `render.mjs --jpeg … --pages '#1' --dpi 96`.
+postext-port skill's `render.mjs --jpeg … --pages '#1' --dpi 120` (600 px).
+
+The cover and the spine are paintings (GPT Image 2.5 through fal.ai, no
+lettering): `../covers.py generate` paints them from `../covers.json`,
+`../covers.py process` crops them into `art/` (committed); build.py sets the
+title over them. `../patch_covers.py` splices a changed design or spine into
+the committed bundle without a rebuild.
 
 `source/` and `work/` are git-ignored. Python 3.10+ with Pillow, NumPy and
 fontTools.
