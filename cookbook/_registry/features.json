@@ -11510,6 +11510,7 @@
       "api": [
         "youtubePosterUrls",
         "parseVideoUrl",
+        "videoWatchUrl",
         "resourceVideoLink",
         "bundleVideoUrl"
       ]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, Film, Loader2, RefreshCw } from 'lucide-react';
 import { parseVideoUrl, type Resource, type ResourceVideo, type ResourceVideoPoster, type VideoPlayerOptions, type VideoSource } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext';
@@ -79,7 +79,7 @@ interface VideoEditorProps {
  *  poster frame, the part that plays and this video's player options. */
 export function VideoEditor({ resource, onChange }: VideoEditorProps) {
   const labels = useSandboxLabels();
-  const video: ResourceVideo = resource.video ?? { source: 'youtube' };
+  const video: ResourceVideo = useMemo(() => resource.video ?? { source: 'youtube' }, [resource.video]);
   const source = video.source;
   const setVideo = useCallback(
     (partial: Partial<ResourceVideo>, extra: Partial<Resource> = {}) => {
@@ -268,7 +268,7 @@ function FileVideo({ video, setVideo }: PartProps) {
     }
   };
 
-  const useFrame = async () => {
+  const takeFrame = async () => {
     const el = playerRef.current;
     if (!el || el.readyState < 2) return;
     el.pause();
@@ -339,7 +339,7 @@ function FileVideo({ video, setVideo }: PartProps) {
             }}
           />
           <div className="mt-1">
-            <Button variant="outline" size="xs" icon={<Camera size={12} />} onClick={() => void useFrame()}>
+            <Button variant="outline" size="xs" icon={<Camera size={12} />} onClick={() => void takeFrame()}>
               {labels.resourceVideoUseFrame}
             </Button>
           </div>

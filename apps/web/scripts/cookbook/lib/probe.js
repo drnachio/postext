@@ -1322,7 +1322,11 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
     return null;
   };
   for (const r of resources) {
-    const wanted = [[r.svg?.fileId, 'svg'], [r.svg?.pdfFileId, 'pdf'], [r.bitmap?.fileId, r.bitmap?.format]];
+    const wanted = [
+      [r.svg?.fileId, 'svg'], [r.svg?.pdfFileId, 'pdf'], [r.bitmap?.fileId, r.bitmap?.format],
+      // A video: its poster, and its own file when the pen has its bytes.
+      [r.video?.poster?.fileId, r.video?.poster?.format], [r.video?.fileId, 'video'],
+    ];
     for (const [fileId, format] of wanted) {
       if (!fileId || files.has(fileId)) continue;
       const data = await find(fileId, format);
@@ -1331,6 +1335,10 @@ export async function sandboxBundle({ select = 'last', id, name, description, lo
         // A print master the pen hands renderToPdf only: the SVG stays.
         delete r.svg.pdfFileId;
         notes.push(`${r.id}: print master ${fileId} left out (the SVG stays)`);
+      } else if (format === 'video') {
+        // The Sandbox plays it from its production address (video.url).
+        delete r.video.fileId;
+        notes.push(`${r.id}: video file ${fileId} left out (it plays from video.url)`);
       } else missing.push(`${r.id}: ${fileId}`);
     }
   }
