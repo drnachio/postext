@@ -8719,7 +8719,6 @@
         "pinyin",
         "zhuyin",
         "bopomofo",
-        "furigana",
         "readings over characters",
         "interlinear readings",
         "注音",
@@ -8731,7 +8730,6 @@
         "pinyin",
         "zhuyin",
         "bopomofo",
-        "furigana",
         "lecturas sobre los caracteres",
         "lecturas interlineales",
         "注音",
@@ -8743,7 +8741,6 @@
         "pinyin",
         "zhuyin",
         "bopomofo",
-        "furigana",
         "lectures sobre els caràcters",
         "lectures interlineals",
         "注音",
@@ -8759,14 +8756,12 @@
         "字上注音",
         "ruby",
         "pinyin",
-        "zhuyin",
-        "furigana"
+        "zhuyin"
       ],
       "ar": [
         "ruby",
         "pinyin",
         "zhuyin",
-        "furigana",
         "قراءات فوق المحارف",
         "注音"
       ]
@@ -8955,6 +8950,978 @@
       }
     },
     "since": "1.9.0"
+  },
+  "japanese-kinsoku": {
+    "label": {
+      "en": "Japanese line breaking (kinsoku)",
+      "es": "Corte de líneas japonés (kinsoku)",
+      "ca": "Tall de línies japonès (kinsoku)",
+      "zh": "日文禁则处理",
+      "ar": "كسر الأسطر الياباني (kinsoku)"
+    },
+    "definition": {
+      "en": "Japanese breaks a line between any two characters except where JLReq forbids it: no closing bracket, 、。, small kana (ぁ ッ ャ), ー, iteration mark (々 ゝ) or 〜 at the start of a line, no opening bracket at its end, and ―― or …… never split. A document tagged ja takes the strictest level; cjk.lineBreak picks 'ja-strict' or 'ja-loose' for books that let small kana and ー start a line.",
+      "es": "El japonés corta la línea entre dos caracteres cualesquiera salvo donde la JLReq lo prohíbe: ningún cierre de paréntesis o comillas, 、。, kana pequeño (ぁ ッ ャ), ー, signo de repetición (々 ゝ) ni 〜 al principio de línea, ninguna apertura al final, y ―― y …… nunca se parten. Un documento etiquetado ja usa el nivel más estricto; cjk.lineBreak elige 'ja-strict' o 'ja-loose' para los libros que dejan empezar línea al kana pequeño y a ー.",
+      "ca": "El japonès talla la línia entre dos caràcters qualssevol excepte on la JLReq ho prohibeix: cap tancament de parèntesi o cometes, 、。, kana petit (ぁ ッ ャ), ー, signe de repetició (々 ゝ) ni 〜 a l'inici de línia, cap obertura al final, i ―― i …… no es parteixen mai. Un document etiquetat ja fa servir el nivell més estricte; cjk.lineBreak tria 'ja-strict' o 'ja-loose' per als llibres que deixen començar línia al kana petit i a ー.",
+      "zh": "日文可以在任意两个字之间断行，JLReq禁止的位置除外：行首不能是闭括号、、。、小假名（ぁ ッ ャ）、ー、叠字符（々 ゝ）或〜，行末不能是开括号，――和……不能拆开。标记为ja的文档采用最严格的一级；允许小假名和ー出现在行首的书，可以用cjk.lineBreak选'ja-strict'或'ja-loose'。",
+      "ar": "تكسر اليابانية السطر بين أي حرفين إلا حيث تمنع ذلك JLReq: لا يبدأ السطر بقوس أو علامة تنصيص مغلقة، ولا بـ 、。، ولا بكانا صغيرة (ぁ ッ ャ)، ولا بـ ー، ولا بعلامة تكرار (々 ゝ)، ولا بـ 〜، ولا ينتهي بقوس مفتوح، ولا تنقسم ―― و…… أبدًا. يأخذ المستند الموسوم ja أشد المستويات؛ ويختار cjk.lineBreak القيمة 'ja-strict' أو 'ja-loose' للكتب التي تسمح ببدء السطر بالكانا الصغيرة وبـ ー."
+    },
+    "aliases": {
+      "en": [
+        "kinsoku",
+        "kinsoku shori",
+        "禁則処理",
+        "禁則",
+        "Japanese line breaking",
+        "small kana at the line start",
+        "JLReq",
+        "oikomi",
+        "oidashi"
+      ],
+      "es": [
+        "kinsoku",
+        "禁則処理",
+        "禁則",
+        "corte de líneas japonés",
+        "kana pequeño al principio de línea",
+        "JLReq",
+        "oikomi",
+        "oidashi"
+      ],
+      "ca": [
+        "kinsoku",
+        "禁則処理",
+        "禁則",
+        "tall de línies japonès",
+        "kana petit a l'inici de línia",
+        "JLReq",
+        "oikomi",
+        "oidashi"
+      ],
+      "zh": [
+        "禁则",
+        "禁則処理",
+        "日文断行",
+        "日文禁则",
+        "小假名行首",
+        "JLReq",
+        "kinsoku"
+      ],
+      "ar": [
+        "kinsoku",
+        "禁則処理",
+        "كسر الأسطر الياباني",
+        "JLReq"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "East Asian typography",
+        "es": "Tipografía de Asia oriental",
+        "ca": "Tipografia de l'Àsia oriental",
+        "zh": "东亚排版",
+        "ar": "تنضيد نصوص شرق آسيا"
+      }
+    },
+    "since": "1.16.0"
+  },
+  "yakumono": {
+    "label": {
+      "en": "Japanese punctuation spacing (yakumono)",
+      "es": "Espaciado de la puntuación japonesa (yakumono)",
+      "ca": "Espaiat de la puntuació japonesa (yakumono)",
+      "zh": "日文标点间距（約物）",
+      "ar": "تباعد علامات الترقيم اليابانية (yakumono)"
+    },
+    "definition": {
+      "en": "Japanese punctuation is set full width and squeezed by JLReq's rules: two marks that meet share the half-em blank of 、。「」, the last mark of a line gives its blank up first, ・：； take a quarter em on each side, ？！ are followed by an em of space inside a paragraph, and an opening bracket at a paragraph start sits half an em in. cjk.spaceAfterQuestion and cjk.paragraphStartBracket change the last two; burasagari (、。 hanging past the line end) comes from cjk.hangingPunctuation.",
+      "es": "La puntuación japonesa se compone a ancho completo y se aprieta según las reglas de la JLReq: dos signos que se encuentran comparten el blanco de medio cuadratín de 、。「」, el último signo de la línea es el primero en perder el suyo, ・：； llevan un cuarto de cuadratín a cada lado, tras ？！ va un cuadratín de espacio dentro del párrafo y el corchete de apertura que empieza un párrafo entra medio cuadratín. cjk.spaceAfterQuestion y cjk.paragraphStartBracket cambian los dos últimos; el burasagari (、。 colgando tras el final de la línea) depende de cjk.hangingPunctuation.",
+      "ca": "La puntuació japonesa es compon a amplada completa i s'estreny segons les regles de la JLReq: dos signes que es troben comparteixen el blanc de mig quadratí de 、。「」, el darrer signe de la línia és el primer a perdre el seu, ・：； porten un quart de quadratí a cada costat, després de ？！ va un quadratí d'espai dins el paràgraf i el claudàtor d'obertura que comença un paràgraf entra mig quadratí. cjk.spaceAfterQuestion i cjk.paragraphStartBracket canvien els dos darrers; el burasagari (、。 penjant després del final de la línia) depèn de cjk.hangingPunctuation.",
+      "zh": "日文标点按全角排，并按JLReq的规则挤压：相邻的两个标点共用、。「」的半个字空白，行末的标点最先让出空白，・：；两侧各留四分之一字，段落中的？！后面空一个字，段首的开括号缩进半个字。cjk.spaceAfterQuestion和cjk.paragraphStartBracket可以改变后两条；行末悬挂、。（ぶら下げ）由cjk.hangingPunctuation控制。",
+      "ar": "تُنضَّد علامات الترقيم اليابانية بعرض كامل وتُضغط وفق قواعد JLReq: تتقاسم العلامتان المتجاورتان فراغ نصف المربع في 、。「」، وتتخلى آخر علامة في السطر عن فراغها أولًا، وتأخذ ・：； ربع مربع على كل جانب، ويليها مربع كامل من الفراغ بعد ？！ داخل الفقرة، ويدخل القوس المفتوح في أول الفقرة نصف مربع. يغيّر cjk.spaceAfterQuestion وcjk.paragraphStartBracket القاعدتين الأخيرتين؛ أما burasagari (تعليق 、。 بعد نهاية السطر) فيتبع cjk.hangingPunctuation."
+    },
+    "aliases": {
+      "en": [
+        "yakumono",
+        "約物",
+        "aki",
+        "アキ",
+        "burasagari",
+        "ぶら下げ",
+        "Japanese punctuation",
+        "punctuation compression",
+        "天付き"
+      ],
+      "es": [
+        "yakumono",
+        "約物",
+        "aki",
+        "burasagari",
+        "ぶら下げ",
+        "puntuación japonesa",
+        "compresión de la puntuación",
+        "天付き"
+      ],
+      "ca": [
+        "yakumono",
+        "約物",
+        "aki",
+        "burasagari",
+        "ぶら下げ",
+        "puntuació japonesa",
+        "compressió de la puntuació",
+        "天付き"
+      ],
+      "zh": [
+        "約物",
+        "日文标点",
+        "标点挤压",
+        "ぶら下げ",
+        "行末悬挂",
+        "天付き",
+        "yakumono"
+      ],
+      "ar": [
+        "yakumono",
+        "約物",
+        "علامات الترقيم اليابانية",
+        "burasagari"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Punctuation widths",
+        "es": "Anchos de la puntuación",
+        "ca": "Amplades de la puntuació",
+        "zh": "标点宽度",
+        "ar": "عروض علامات الترقيم"
+      }
+    },
+    "since": "1.16.0"
+  },
+  "furigana": {
+    "label": {
+      "en": "Furigana: kana readings over kanji",
+      "es": "Furigana: lecturas en kana sobre los kanji",
+      "ca": "Furigana: lectures en kana sobre els kanji",
+      "zh": "振假名：汉字上的假名注音",
+      "ar": "فوريغانا: قراءات الكانا فوق الكانجي"
+    },
+    "definition": {
+      "en": "Kana readings set over horizontal kanji and right of vertical ones. {漢字|かん|じ} gives each character its own reading and lets the line break between them (jukugo ruby), {夕方|ゆうがた} one reading for the word (group ruby), and :ruby[…]{mode align} chooses either way. In a document tagged ja the readings are spaced 1:2:1 (JIS), may overhang the kana beside them by one ruby character but never a kanji, and keep their small kana.",
+      "es": "Lecturas en kana sobre los kanji del texto horizontal y a la derecha de los del vertical. {漢字|かん|じ} da a cada carácter su lectura y deja cortar la línea entre ellos (ruby jukugo), {夕方|ゆうがた} pone una lectura para toda la palabra (ruby de grupo) y :ruby[…]{mode align} elige una u otra. En un documento etiquetado ja las lecturas se reparten 1:2:1 (JIS), pueden montar un carácter de ruby sobre el kana vecino pero nunca sobre un kanji, y conservan su kana pequeño.",
+      "ca": "Lectures en kana damunt dels kanji del text horitzontal i a la dreta dels del vertical. {漢字|かん|じ} dona a cada caràcter la seva lectura i deixa tallar la línia entre ells (ruby jukugo), {夕方|ゆうがた} posa una lectura per a tota la paraula (ruby de grup) i :ruby[…]{mode align} tria l'una o l'altra. En un document etiquetat ja les lectures es reparteixen 1:2:1 (JIS), poden muntar un caràcter de ruby sobre el kana veí però mai sobre un kanji, i conserven el seu kana petit.",
+      "zh": "横排时假名读音排在汉字上方，竖排时排在右侧。{漢字|かん|じ}给每个字各自的读音，允许在字间断行（熟語ルビ）；{夕方|ゆうがた}给整个词一个读音（グループルビ）；:ruby[…]{mode align}可以任选一种。在标记为ja的文档中，读音按1:2:1（JIS）分布，可以伸出到相邻假名上方最多一个注音字，但不能压到汉字上，小假名保持原样。",
+      "ar": "قراءات بالكانا فوق الكانجي في النص الأفقي وعلى يمينها في النص العمودي. يعطي {漢字|かん|じ} كل حرف قراءته ويسمح بكسر السطر بينها (ruby jukugo)، ويضع {夕方|ゆうがた} قراءة واحدة للكلمة كلها (ruby المجموعة)، ويختار :ruby[…]{mode align} أيًّا منهما. في المستند الموسوم ja تتوزع القراءات بنسبة 1:2:1 (JIS)، ويجوز أن تمتد حرفًا واحدًا من حروف ruby فوق الكانا المجاورة لا فوق الكانجي أبدًا، وتحتفظ بالكانا الصغيرة."
+    },
+    "aliases": {
+      "en": [
+        "furigana",
+        "ふりがな",
+        "振り仮名",
+        "ルビ",
+        "jukugo ruby",
+        "熟語ルビ",
+        "group ruby",
+        "mono ruby",
+        "kana readings",
+        "readings over kanji"
+      ],
+      "es": [
+        "furigana",
+        "ふりがな",
+        "振り仮名",
+        "ルビ",
+        "ruby jukugo",
+        "熟語ルビ",
+        "ruby de grupo",
+        "lecturas en kana",
+        "lecturas sobre los kanji"
+      ],
+      "ca": [
+        "furigana",
+        "ふりがな",
+        "振り仮名",
+        "ルビ",
+        "ruby jukugo",
+        "熟語ルビ",
+        "ruby de grup",
+        "lectures en kana",
+        "lectures sobre els kanji"
+      ],
+      "zh": [
+        "振假名",
+        "ふりがな",
+        "振り仮名",
+        "ルビ",
+        "熟語ルビ",
+        "假名注音",
+        "日文注音",
+        "furigana"
+      ],
+      "ar": [
+        "furigana",
+        "فوريغانا",
+        "ふりがな",
+        "ルビ",
+        "قراءات الكانا"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu",
+        "ca": "Marques xineses, ruby i warichu",
+        "zh": "中文标记、注音和双行夹注",
+        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "config": [
+        "cjk.ruby.overhang",
+        "cjk.ruby.align",
+        "cjk.ruby.smallKana"
+      ],
+      "markdown": [
+        ":ruby\\[[^\\]]*\\]\\{[^}]*\\bmode=",
+        "\\{[\\u3400-\\u9fff々〆ヶ]+\\|[\\u3041-\\u30ff|]+\\}"
+      ]
+    }
+  },
+  "kenten": {
+    "label": {
+      "en": "Japanese emphasis marks (bōten)",
+      "es": "Marcas de énfasis japonesas (bōten)",
+      "ca": "Marques d'èmfasi japoneses (bōten)",
+      "zh": "日文着重号（傍点）",
+      "ar": "علامات التوكيد اليابانية (bōten)"
+    },
+    "definition": {
+      "en": "Japanese emphasises with a mark beside each character, never italics: *…* or :dots[…] in a document tagged ja sets a sesame dot ﹅ over horizontal text and right of vertical text. cjk.emphasisMark changes its shape (sesame, dot, circle, triangle…), fills it or leaves it open, and moves it to the other side.",
+      "es": "El japonés enfatiza con una marca junto a cada carácter, nunca con cursiva: *…* o :dots[…] en un documento etiquetado ja ponen un punto de sésamo ﹅ encima del texto horizontal y a la derecha del vertical. cjk.emphasisMark cambia su forma (sésamo, punto, círculo, triángulo…), la rellena o la deja hueca y la pasa al otro lado.",
+      "ca": "El japonès emfasitza amb una marca al costat de cada caràcter, mai amb cursiva: *…* o :dots[…] en un document etiquetat ja posen un punt de sèsam ﹅ damunt del text horitzontal i a la dreta del vertical. cjk.emphasisMark en canvia la forma (sèsam, punt, cercle, triangle…), l'omple o la deixa buida i la passa a l'altre costat.",
+      "zh": "日文用字旁的标记表示强调，不用斜体：在标记为ja的文档中，*…*或:dots[…]会在横排文字上方、竖排文字右侧加芝麻点﹅。cjk.emphasisMark可以改变形状（芝麻点、圆点、圆圈、三角……）、实心或空心，以及所在的一侧。",
+      "ar": "تؤكد اليابانية بعلامة بجانب كل حرف، لا بالمائل أبدًا: يضع *…* أو :dots[…] في المستند الموسوم ja نقطة سمسم ﹅ فوق النص الأفقي وعلى يمين النص العمودي. ويغيّر cjk.emphasisMark شكلها (سمسم، نقطة، دائرة، مثلث…)، ويملؤها أو يتركها مفرغة، وينقلها إلى الجهة الأخرى."
+    },
+    "aliases": {
+      "en": [
+        "bōten",
+        "boten",
+        "傍点",
+        "圏点",
+        "kenten",
+        "sesame dots",
+        "ゴマ点",
+        "Japanese emphasis",
+        ":dots"
+      ],
+      "es": [
+        "bōten",
+        "傍点",
+        "圏点",
+        "kenten",
+        "puntos de sésamo",
+        "énfasis japonés",
+        ":dots"
+      ],
+      "ca": [
+        "bōten",
+        "傍点",
+        "圏点",
+        "kenten",
+        "punts de sèsam",
+        "èmfasi japonès",
+        ":dots"
+      ],
+      "zh": [
+        "傍点",
+        "圏点",
+        "日文着重号",
+        "芝麻点",
+        "ゴマ点",
+        "kenten",
+        ":dots"
+      ],
+      "ar": [
+        "bōten",
+        "傍点",
+        "kenten",
+        "نقاط السمسم",
+        ":dots"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu",
+        "ca": "Marques xineses, ruby i warichu",
+        "zh": "中文标记、注音和双行夹注",
+        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "config": [
+        "cjk.emphasisMark"
+      ]
+    }
+  },
+  "sideline": {
+    "label": {
+      "en": "Side lines (bōsen)",
+      "es": "Líneas laterales (bōsen)",
+      "ca": "Línies laterals (bōsen)",
+      "zh": "日文旁线（傍線）",
+      "ar": "الخطوط الجانبية (bōsen)"
+    },
+    "definition": {
+      "en": "A line beside the text: under it in horizontal setting, right of it in vertical, with :sideline[…]{style=solid|double|wavy|dotted pos=over|under}. Japanese books use it for emphasis and to mark the passage a question or a note refers to.",
+      "es": "Una línea junto al texto: debajo en la composición horizontal y a su derecha en la vertical, con :sideline[…]{style=solid|double|wavy|dotted pos=over|under}. Los libros japoneses la usan para enfatizar y para señalar el pasaje al que remite una pregunta o una nota.",
+      "ca": "Una línia al costat del text: a sota en la composició horitzontal i a la dreta en la vertical, amb :sideline[…]{style=solid|double|wavy|dotted pos=over|under}. Els llibres japonesos la fan servir per emfasitzar i per assenyalar el passatge al qual remet una pregunta o una nota.",
+      "zh": "加在文字旁边的线：横排时在字下，竖排时在字右，写法是:sideline[…]{style=solid|double|wavy|dotted pos=over|under}。日文书用它表示强调，也用来标出习题或注释所指的段落。",
+      "ar": "خط بجانب النص: تحته في التنضيد الأفقي وعلى يمينه في العمودي، بالتوجيه :sideline[…]{style=solid|double|wavy|dotted pos=over|under}. تستعمله الكتب اليابانية للتوكيد ولتمييز المقطع الذي يحيل إليه سؤال أو حاشية."
+    },
+    "aliases": {
+      "en": [
+        "bōsen",
+        "傍線",
+        "side line",
+        "sideline",
+        "double side line",
+        "二重傍線",
+        "wavy line",
+        "波線",
+        "underline in vertical text",
+        ":sideline"
+      ],
+      "es": [
+        "bōsen",
+        "傍線",
+        "línea lateral",
+        "subrayado en texto vertical",
+        "línea ondulada",
+        "二重傍線",
+        ":sideline"
+      ],
+      "ca": [
+        "bōsen",
+        "傍線",
+        "línia lateral",
+        "subratllat en text vertical",
+        "línia ondulada",
+        "二重傍線",
+        ":sideline"
+      ],
+      "zh": [
+        "傍線",
+        "旁线",
+        "二重傍線",
+        "波浪线",
+        "竖排下划线",
+        ":sideline"
+      ],
+      "ar": [
+        "bōsen",
+        "傍線",
+        "خط جانبي",
+        ":sideline"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu",
+        "ca": "Marques xineses, ruby i warichu",
+        "zh": "中文标记、注音和双行夹注",
+        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "markdown": [
+        ":sideline\\["
+      ]
+    }
+  },
+  "japanese-numerals": {
+    "label": {
+      "en": "Japanese numerals and kana counters",
+      "es": "Numerales japoneses y contadores en kana",
+      "ca": "Numerals japonesos i comptadors en kana",
+      "zh": "日文数字与假名序号",
+      "ar": "الأعداد اليابانية وعدّادات الكانا"
+    },
+    "definition": {
+      "en": "Counters in Japanese styles: japanese-informal (百一, 二千二十六, with no 一 before 十 百 千), japanese-formal (壱 弐 参 拾), hiragana and katakana (あいう, アイウ) and the iroha orders (いろは, イロハ). The token 一 reads japanese-informal in a document tagged ja, so 第{1:一}章 prints 第十二章; あ, ア, い, イ and 壱 pick the other styles in page numbers, lists, notes and resource counters.",
+      "es": "Contadores en estilos japoneses: japanese-informal (百一, 二千二十六, sin 一 delante de 十 百 千), japanese-formal (壱 弐 参 拾), hiragana y katakana (あいう, アイウ) y los órdenes iroha (いろは, イロハ). En un documento etiquetado ja el token 一 se lee como japanese-informal, así que 第{1:一}章 imprime 第十二章; あ, ア, い, イ y 壱 eligen los demás estilos en folios, listas, notas y contadores de recursos.",
+      "ca": "Comptadors en estils japonesos: japanese-informal (百一, 二千二十六, sense 一 davant de 十 百 千), japanese-formal (壱 弐 参 拾), hiragana i katakana (あいう, アイウ) i els ordres iroha (いろは, イロハ). En un document etiquetat ja el token 一 es llegeix com a japanese-informal, de manera que 第{1:一}章 imprimeix 第十二章; あ, ア, い, イ i 壱 trien els altres estils en folis, llistes, notes i comptadors de recursos.",
+      "zh": "日文风格的编号：japanese-informal（百一、二千二十六，十百千前不加一）、japanese-formal（壱弐参拾）、平假名和片假名（あいう、アイウ）以及伊吕波顺序（いろは、イロハ）。在标记为ja的文档中，标记一按japanese-informal读，所以第{1:一}章印出第十二章；あ、ア、い、イ和壱在页码、列表、注释和资源编号中选用其他样式。",
+      "ar": "عدّادات بالأساليب اليابانية: japanese-informal (百一، 二千二十六، بلا 一 قبل 十 百 千)، وjapanese-formal (壱 弐 参 拾)، والهيراغانا والكاتاكانا (あいう، アイウ)، وترتيبا iroha (いろは، イロハ). في المستند الموسوم ja يُقرأ الرمز 一 على أنه japanese-informal، فيطبع 第{1:一}章 العنوان 第十二章؛ وتختار あ وア وい وイ و壱 الأساليب الأخرى في أرقام الصفحات والقوائم والحواشي وعدّادات الموارد."
+    },
+    "aliases": {
+      "en": [
+        "kanji numerals",
+        "漢数字",
+        "japanese-informal",
+        "japanese-formal",
+        "大字",
+        "daiji",
+        "iroha",
+        "いろは",
+        "イロハ",
+        "hiragana counters",
+        "katakana counters",
+        "第一章"
+      ],
+      "es": [
+        "numerales kanji",
+        "漢数字",
+        "japanese-informal",
+        "japanese-formal",
+        "大字",
+        "iroha",
+        "いろは",
+        "イロハ",
+        "contadores en hiragana",
+        "第一章"
+      ],
+      "ca": [
+        "numerals kanji",
+        "漢数字",
+        "japanese-informal",
+        "japanese-formal",
+        "大字",
+        "iroha",
+        "いろは",
+        "イロハ",
+        "comptadors en hiragana",
+        "第一章"
+      ],
+      "zh": [
+        "日文数字",
+        "漢数字",
+        "大字",
+        "伊吕波",
+        "いろは",
+        "イロハ",
+        "假名编号",
+        "japanese-informal",
+        "第一章"
+      ],
+      "ar": [
+        "الأعداد اليابانية",
+        "漢数字",
+        "iroha",
+        "いろは",
+        "japanese-informal"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Numbering",
+        "es": "Numeración",
+        "ca": "Numeració",
+        "zh": "页码编号",
+        "ar": "ترقيم الصفحات"
+      }
+    },
+    "since": "1.16.0"
+  },
+  "gyodori-headings": {
+    "label": {
+      "en": "Headings over body lines (gyōdori)",
+      "es": "Títulos que ocupan líneas del texto (gyōdori)",
+      "ca": "Títols que ocupen línies del text (gyōdori)",
+      "zh": "占行标题（行取り）",
+      "ar": "عناوين تشغل أسطرًا من المتن (gyōdori)"
+    },
+    "definition": {
+      "en": "A Japanese heading takes a whole number of body lines and sits centred in them: lineSpan: 3 on a heading level is 3行取り, so the text after it stays on the grid. Alongside: indents counted in body ems (字下げ), lines set flush with the foot or raised from it (地付き, 地からN字上げ) for dates and signatures, and short headings spread to a fixed width (序　章).",
+      "es": "Un título japonés ocupa un número entero de líneas del texto y queda centrado en ellas: lineSpan: 3 en un nivel de título es el 3行取り, así que el texto que sigue no sale de la retícula. Con él: sangrías contadas en cuadratines del texto (字下げ), líneas alineadas al pie o levantadas desde él (地付き, 地からN字上げ) para fechas y firmas, y títulos cortos repartidos a un ancho fijo (序　章).",
+      "ca": "Un títol japonès ocupa un nombre enter de línies del text i queda centrat en elles: lineSpan: 3 en un nivell de títol és el 3行取り, de manera que el text que segueix no surt de la retícula. Amb ell: sagnats comptats en quadratins del text (字下げ), línies alineades al peu o aixecades des d'ell (地付き, 地からN字上げ) per a dates i signatures, i títols curts repartits a una amplada fixa (序　章).",
+      "zh": "日文标题占用整数个正文行，并在其中居中：标题级别上的lineSpan: 3就是3行取り，所以后面的正文仍在网格上。相关的还有：以正文字数计的缩进（字下げ）、用于日期和署名的齐地脚或离地脚若干字（地付き、地からN字上げ），以及把短标题撑到固定宽度（序　章）。",
+      "ar": "يشغل العنوان الياباني عددًا صحيحًا من أسطر المتن ويتوسطها: lineSpan: 3 على مستوى عنوان هو 3行取り، فيبقى النص بعده على الشبكة. ومعه: إزاحات تُعدّ بمربعات المتن (字下げ)، وأسطر تُصفّ عند ذيل الصفحة أو ترتفع عنه (地付き، 地からN字上げ) للتواريخ والتواقيع، وعناوين قصيرة تُوزَّع على عرض ثابت (序　章)."
+    },
+    "aliases": {
+      "en": [
+        "gyōdori",
+        "gyodori",
+        "行取り",
+        "3行取り",
+        "heading line span",
+        "字下げ",
+        "地付き",
+        "字上げ",
+        "jidori",
+        "字取り"
+      ],
+      "es": [
+        "gyōdori",
+        "行取り",
+        "3行取り",
+        "título en varias líneas",
+        "字下げ",
+        "地付き",
+        "jidori"
+      ],
+      "ca": [
+        "gyōdori",
+        "行取り",
+        "3行取り",
+        "títol en diverses línies",
+        "字下げ",
+        "地付き",
+        "jidori"
+      ],
+      "zh": [
+        "行取り",
+        "占行",
+        "标题占行",
+        "字下げ",
+        "地付き",
+        "字取り"
+      ],
+      "ar": [
+        "gyōdori",
+        "行取り",
+        "字下げ",
+        "地付き"
+      ]
+    },
+    "group": "headings",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Per-level overrides",
+        "es": "Configuración por nivel",
+        "ca": "Configuració per nivell",
+        "zh": "按级别覆盖",
+        "ar": "تجاوزات كل مستوى"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "config": [
+        "headings.levels[].lineSpan"
+      ]
+    }
+  },
+  "gojuon-index": {
+    "label": {
+      "en": "Index in gojūon order",
+      "es": "Índice en orden gojūon",
+      "ca": "Índex en ordre gojūon",
+      "zh": "按五十音排序的索引",
+      "ar": "فهرس بترتيب gojūon"
+    },
+    "definition": {
+      "en": "A Japanese index sorted by reading, not by code point: :index[漱石]{yomi=\"そうせき\"} gives the reading (else the marked word's ruby), the entries follow JIS X 4061 (voiced after unvoiced, katakana with hiragana, ー by the vowel before it) and group under あ か さ た な は ま や ら わ, the rows of the kana table. index.groupBy: 'kana' heads each initial instead.",
+      "es": "Un índice japonés ordenado por la lectura y no por el punto de código: :index[漱石]{yomi=\"そうせき\"} da la lectura (si no, el ruby de la palabra marcada), las entradas siguen la JIS X 4061 (la sonora tras la sorda, el katakana con el hiragana, ー según la vocal anterior) y se agrupan bajo あ か さ た な は ま や ら わ, las filas de la tabla de kana. index.groupBy: 'kana' pone un encabezado por inicial.",
+      "ca": "Un índex japonès ordenat per la lectura i no pel punt de codi: :index[漱石]{yomi=\"そうせき\"} dona la lectura (si no, el ruby de la paraula marcada), les entrades segueixen la JIS X 4061 (la sonora després de la sorda, el katakana amb l'hiragana, ー segons la vocal anterior) i s'agrupen sota あ か さ た な は ま や ら わ, les files de la taula de kana. index.groupBy: 'kana' posa un encapçalament per inicial.",
+      "zh": "日文索引按读音排序，不按码位：:index[漱石]{yomi=\"そうせき\"}给出读音（没有时取被标词的注音），条目遵循JIS X 4061（浊音排在清音后，片假名与平假名同列，ー按前一个元音），并归入假名表的あかさたなはまやらわ各行。index.groupBy: 'kana'改为按首字分组。",
+      "ar": "فهرس ياباني مرتّب بحسب القراءة لا بحسب نقطة الترميز: يعطي :index[漱石]{yomi=\"そうせき\"} القراءة (وإلا فـ ruby الكلمة المعلَّمة)، وتتبع المداخل JIS X 4061 (المجهور بعد المهموس، والكاتاكانا مع الهيراغانا، وー بحسب الصائت الذي قبلها)، وتُجمع تحت あ か さ た な は ま や ら わ، صفوف جدول الكانا. ويجعل index.groupBy: 'kana' عنوانًا لكل حرف أول."
+    },
+    "aliases": {
+      "en": [
+        "gojūon",
+        "gojuon",
+        "五十音",
+        "五十音順",
+        "yomi",
+        "読み",
+        "Japanese index",
+        "索引",
+        "あかさたな",
+        "JIS X 4061"
+      ],
+      "es": [
+        "gojūon",
+        "五十音",
+        "五十音順",
+        "yomi",
+        "índice japonés",
+        "索引",
+        "あかさたな",
+        "JIS X 4061"
+      ],
+      "ca": [
+        "gojūon",
+        "五十音",
+        "五十音順",
+        "yomi",
+        "índex japonès",
+        "索引",
+        "あかさたな",
+        "JIS X 4061"
+      ],
+      "zh": [
+        "五十音",
+        "五十音顺序",
+        "日文索引",
+        "读音排序",
+        "yomi",
+        "JIS X 4061"
+      ],
+      "ar": [
+        "gojūon",
+        "五十音",
+        "فهرس ياباني",
+        "yomi"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Back-of-book index",
+        "es": "Índice analítico",
+        "ca": "Índex analític",
+        "zh": "索引",
+        "ar": "الفهرس الأبجدي"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "markdown": [
+        "(?<![:\\\\]):index\\[[^\\]]*\\]\\{[^}]*\\byomi="
+      ]
+    }
+  },
+  "japanese-notes": {
+    "label": {
+      "en": "Notes in Japanese books",
+      "es": "Notas de los libros japoneses",
+      "ca": "Notes dels llibres japonesos",
+      "zh": "日文书的注释",
+      "ar": "الحواشي في الكتب اليابانية"
+    },
+    "definition": {
+      "en": "Notes as Japanese books set them. In vertical text the marker is （1） with upright digits at the right of the line and the notes gather at the chapter end (後注); in horizontal text they sit at the page foot, numbered per page under a rule a third of the measure. footnotes.placement: 'spread' sets sidenotes (傍注) at the fore edge of each spread's left page, and footnotes.markerPosition: 'side' puts a small interlinear marker beside the word (合印).",
+      "es": "Las notas como las componen los libros japoneses. En el texto vertical la llamada es （1） con cifras derechas a la derecha de la línea y las notas se reúnen al final del capítulo (後注); en el horizontal van al pie, numeradas por página bajo un filete de un tercio de la medida. footnotes.placement: 'spread' pone notas laterales (傍注) en el corte delantero de la página izquierda de cada doble página, y footnotes.markerPosition: 'side' coloca una llamada pequeña entre líneas junto a la palabra (合印).",
+      "ca": "Les notes com les componen els llibres japonesos. En el text vertical la crida és （1） amb xifres dretes a la dreta de la línia i les notes s'apleguen al final del capítol (後注); en l'horitzontal van al peu, numerades per pàgina sota un filet d'un terç de la mesura. footnotes.placement: 'spread' posa notes laterals (傍注) al tall davanter de la pàgina esquerra de cada doble pàgina, i footnotes.markerPosition: 'side' col·loca una crida petita entre línies al costat de la paraula (合印).",
+      "zh": "按日文书的方式排注释。竖排时注号为（1），数字直立，排在行的右侧，注文集中在章末（後注）；横排时注文在页脚，每页重新编号，上面有占版心宽度三分之一的线。footnotes.placement: 'spread'把旁注（傍注）排在每个跨页左页的切口一侧，footnotes.markerPosition: 'side'把小号注号排在词旁的行间（合印）。",
+      "ar": "الحواشي كما تنضدها الكتب اليابانية. في النص العمودي تكون العلامة （1） بأرقام قائمة على يمين السطر، وتجتمع الحواشي في آخر الفصل (後注)؛ وفي النص الأفقي تكون في ذيل الصفحة، مرقّمة لكل صفحة تحت خط بطول ثلث عرض السطر. ويضع footnotes.placement: 'spread' حواشي جانبية (傍注) عند الحافة الخارجية لصفحة اليسار في كل صفحتين متقابلتين، ويضع footnotes.markerPosition: 'side' علامة صغيرة بين السطور بجانب الكلمة (合印)."
+    },
+    "aliases": {
+      "en": [
+        "後注",
+        "傍注",
+        "合印",
+        "Japanese footnotes",
+        "chapter-end notes",
+        "sidenotes across the spread",
+        "interlinear note marker",
+        "（1）"
+      ],
+      "es": [
+        "後注",
+        "傍注",
+        "合印",
+        "notas japonesas",
+        "notas al final del capítulo",
+        "notas laterales",
+        "（1）"
+      ],
+      "ca": [
+        "後注",
+        "傍注",
+        "合印",
+        "notes japoneses",
+        "notes al final del capítol",
+        "notes laterals",
+        "（1）"
+      ],
+      "zh": [
+        "後注",
+        "傍注",
+        "合印",
+        "日文注释",
+        "章末注",
+        "旁注",
+        "（1）"
+      ],
+      "ar": [
+        "後注",
+        "傍注",
+        "حواشي يابانية",
+        "حواشي آخر الفصل"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Footnotes",
+        "es": "Notas al pie",
+        "ca": "Notes a peu de pàgina",
+        "zh": "脚注",
+        "ar": "الحواشي السفلية"
+      }
+    },
+    "since": "1.16.0"
+  },
+  "kanbun-kunten": {
+    "label": {
+      "en": "Kanbun reading marks (kunten)",
+      "es": "Marcas de lectura del kanbun (kunten)",
+      "ca": "Marques de lectura del kanbun (kunten)",
+      "zh": "汉文训读符号（训点）",
+      "ar": "علامات قراءة الكانبون (kunten)"
+    },
+    "definition": {
+      "en": "Classical Chinese read as Japanese (漢文訓読) carries small marks beside its characters: :kunten[字]{kaeri=レ okuri=ヲ} sets the return mark (返り点: レ, 一 二 三, 上 下) small at the character's lower left and the okurigana at its lower right in vertical text. The text keeps its Chinese order: the reader follows the marks.",
+      "es": "El chino clásico leído en japonés (漢文訓読) lleva marcas pequeñas junto a sus caracteres: :kunten[字]{kaeri=レ okuri=ヲ} pone la marca de retorno (返り点: レ, 一 二 三, 上 下) pequeña abajo a la izquierda del carácter y el okurigana abajo a la derecha, en texto vertical. El texto conserva el orden chino: el lector sigue las marcas.",
+      "ca": "El xinès clàssic llegit en japonès (漢文訓読) porta marques petites al costat dels seus caràcters: :kunten[字]{kaeri=レ okuri=ヲ} posa la marca de retorn (返り点: レ, 一 二 三, 上 下) petita a baix a l'esquerra del caràcter i l'okurigana a baix a la dreta, en text vertical. El text conserva l'ordre xinès: el lector segueix les marques.",
+      "zh": "按日文训读的古汉语（漢文訓読）在字旁加小号符号：:kunten[字]{kaeri=レ okuri=ヲ}在竖排中把返点（返り点：レ、一二三、上下）小字排在该字左下，送假名排在右下。正文保持汉语语序，读者按符号读。",
+      "ar": "تحمل الصينية الكلاسيكية المقروءة باليابانية (漢文訓読) علامات صغيرة بجانب حروفها: يضع :kunten[字]{kaeri=レ okuri=ヲ} علامة الرجوع (返り点: レ، 一 二 三، 上 下) صغيرة أسفل يسار الحرف، والـ okurigana أسفل يمينه، في النص العمودي. يحتفظ النص بترتيبه الصيني، ويتبع القارئ العلامات."
+    },
+    "aliases": {
+      "en": [
+        "kanbun",
+        "漢文",
+        "kunten",
+        "訓点",
+        "返り点",
+        "kaeriten",
+        "送り仮名",
+        "okurigana",
+        "レ点",
+        "一二点",
+        ":kunten"
+      ],
+      "es": [
+        "kanbun",
+        "漢文",
+        "kunten",
+        "訓点",
+        "返り点",
+        "kaeriten",
+        "送り仮名",
+        "okurigana",
+        ":kunten"
+      ],
+      "ca": [
+        "kanbun",
+        "漢文",
+        "kunten",
+        "訓点",
+        "返り点",
+        "kaeriten",
+        "送り仮名",
+        "okurigana",
+        ":kunten"
+      ],
+      "zh": [
+        "汉文训读",
+        "漢文",
+        "训点",
+        "返点",
+        "返り点",
+        "送假名",
+        "送り仮名",
+        ":kunten"
+      ],
+      "ar": [
+        "kanbun",
+        "漢文",
+        "kunten",
+        "返り点",
+        ":kunten"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Chinese marks, ruby and warichu",
+        "es": "Marcas chinas, ruby y warichu",
+        "ca": "Marques xineses, ruby i warichu",
+        "zh": "中文标记、注音和双行夹注",
+        "ar": "العلامات الصينية والقراءات (ruby) والتعليقات السطرية (warichu)"
+      }
+    },
+    "since": "1.16.0",
+    "detect": {
+      "markdown": [
+        ":kunten\\["
+      ]
+    }
+  },
+  "aozora-import": {
+    "label": {
+      "en": "Aozora Bunko import",
+      "es": "Importar textos de Aozora Bunko",
+      "ca": "Importar textos d'Aozora Bunko",
+      "zh": "导入青空文库文本",
+      "ar": "استيراد نصوص Aozora Bunko"
+    },
+    "definition": {
+      "en": "aozora.py, in the postext-port skill, turns an Aozora Bunko text file into Postext Markdown: it reads the file as CP932, turns ｜漢字《かんじ》 into ruby and the ［＃…］ notes into headings, indents, emphasis marks, page breaks and tate-chū-yoko, replaces gaiji notes with their JIS X 0213 characters and ／＼ with 〳〵.",
+      "es": "aozora.py, de la skill postext-port, convierte un archivo de texto de Aozora Bunko en Markdown de Postext: lo lee como CP932, convierte ｜漢字《かんじ》 en ruby y las notas ［＃…］ en títulos, sangrías, marcas de énfasis, saltos de página y tate-chū-yoko, y sustituye las notas de gaiji por sus caracteres JIS X 0213 y ／＼ por 〳〵.",
+      "ca": "aozora.py, de la skill postext-port, converteix un fitxer de text d'Aozora Bunko en Markdown de Postext: el llegeix com a CP932, converteix ｜漢字《かんじ》 en ruby i les notes ［＃…］ en títols, sagnats, marques d'èmfasi, salts de pàgina i tate-chū-yoko, i substitueix les notes de gaiji pels seus caràcters JIS X 0213 i ／＼ per 〳〵.",
+      "zh": "postext-port技能中的aozora.py把青空文库的文本文件转换为Postext Markdown：按CP932读取文件，把｜漢字《かんじ》转为注音，把［＃…］注记转为标题、缩进、着重号、分页和纵中横，用JIS X 0213字符替换外字注记，把／＼替换为〳〵。",
+      "ar": "يحوّل aozora.py، من مهارة postext-port، ملف نص من Aozora Bunko إلى Markdown خاص بـ Postext: يقرأ الملف بترميز CP932، ويحوّل ｜漢字《かんじ》 إلى ruby، وملاحظات ［＃…］ إلى عناوين وإزاحات وعلامات توكيد وفواصل صفحات وtate-chū-yoko، ويستبدل بملاحظات gaiji محارفها في JIS X 0213، وبـ ／＼ العلامة 〳〵."
+    },
+    "aliases": {
+      "en": [
+        "Aozora Bunko",
+        "青空文庫",
+        "aozora.py",
+        "Shift_JIS",
+        "CP932",
+        "gaiji",
+        "外字",
+        "注記",
+        "public-domain Japanese texts"
+      ],
+      "es": [
+        "Aozora Bunko",
+        "青空文庫",
+        "aozora.py",
+        "Shift_JIS",
+        "CP932",
+        "gaiji",
+        "外字",
+        "textos japoneses de dominio público"
+      ],
+      "ca": [
+        "Aozora Bunko",
+        "青空文庫",
+        "aozora.py",
+        "Shift_JIS",
+        "CP932",
+        "gaiji",
+        "外字",
+        "textos japonesos de domini públic"
+      ],
+      "zh": [
+        "青空文库",
+        "青空文庫",
+        "aozora.py",
+        "Shift_JIS",
+        "CP932",
+        "外字",
+        "注記"
+      ],
+      "ar": [
+        "Aozora Bunko",
+        "青空文庫",
+        "aozora.py",
+        "CP932"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "skill",
+      "heading": {
+        "en": "Scripts",
+        "es": "Scripts",
+        "ca": "Scripts",
+        "zh": "脚本",
+        "ar": "البرامج النصية"
+      }
+    },
+    "since": "1.16.0"
+  },
+  "kana-scripts": {
+    "label": {
+      "en": "Kana, kanji and rōmaji",
+      "es": "Kana, kanji y rōmaji",
+      "ca": "Kana, kanji i rōmaji",
+      "zh": "假名、汉字与罗马字",
+      "ar": "الكانا والكانجي والروماجي"
+    },
+    "definition": {
+      "en": "Japanese mixes four scripts on one line: kanji, hiragana, katakana and Latin letters and digits (rōmaji). A document tagged ja sets them with no space between Japanese words and a quarter em between Japanese and Latin, full-width Ａ１ upright in vertical text, and the kanji in their Japanese forms (the font's locl) when the face is Japanese, such as Noto Serif JP or Shippori Mincho; rōmaji macrons (ō ū) need a face that has them.",
+      "es": "El japonés mezcla cuatro escrituras en una línea: kanji, hiragana, katakana y letras y cifras latinas (rōmaji). Un documento etiquetado ja las compone sin espacio entre palabras japonesas y con un cuarto de cuadratín entre japonés y latín, con Ａ１ de ancho completo derechos en el texto vertical y los kanji en sus formas japonesas (el locl de la fuente) si la fuente es japonesa, como Noto Serif JP o Shippori Mincho; los macrones del rōmaji (ō ū) piden una fuente que los tenga.",
+      "ca": "El japonès barreja quatre escriptures en una línia: kanji, hiragana, katakana i lletres i xifres llatines (rōmaji). Un document etiquetat ja les compon sense espai entre paraules japoneses i amb un quart de quadratí entre japonès i llatí, amb Ａ１ d'amplada completa drets en el text vertical i els kanji en les seves formes japoneses (el locl de la font) si la font és japonesa, com Noto Serif JP o Shippori Mincho; els macrons del rōmaji (ō ū) demanen una font que els tingui.",
+      "zh": "日文在一行里混用四种文字：汉字、平假名、片假名以及拉丁字母和数字（罗马字）。标记为ja的文档在日文词之间不加空格，日文与拉丁文之间留四分之一字，竖排中的全角Ａ１直立；字体是Noto Serif JP或Shippori Mincho这样的日文字体时，汉字采用日文字形（字体的locl）。罗马字的长音符号（ō ū）需要字体里有这些字。",
+      "ar": "تمزج اليابانية أربع كتابات في السطر الواحد: الكانجي والهيراغانا والكاتاكانا والحروف والأرقام اللاتينية (الروماجي). ينضّدها المستند الموسوم ja بلا فراغ بين الكلمات اليابانية وبربع مربع بين اليابانية واللاتينية، ويقيم Ａ１ العريضة في النص العمودي، ويرسم الكانجي بأشكاله اليابانية (locl في الخط) إن كان الخط يابانيًّا مثل Noto Serif JP أو Shippori Mincho؛ أما مدّات الروماجي (ō ū) فتحتاج خطًّا يحويها."
+    },
+    "aliases": {
+      "en": [
+        "kana",
+        "hiragana",
+        "katakana",
+        "ひらがな",
+        "カタカナ",
+        "kanji",
+        "漢字",
+        "rōmaji",
+        "romaji",
+        "ローマ字",
+        "Hepburn",
+        "Japanese scripts"
+      ],
+      "es": [
+        "kana",
+        "hiragana",
+        "katakana",
+        "ひらがな",
+        "カタカナ",
+        "kanji",
+        "漢字",
+        "rōmaji",
+        "romaji",
+        "escrituras japonesas"
+      ],
+      "ca": [
+        "kana",
+        "hiragana",
+        "katakana",
+        "ひらがな",
+        "カタカナ",
+        "kanji",
+        "漢字",
+        "rōmaji",
+        "romaji",
+        "escriptures japoneses"
+      ],
+      "zh": [
+        "假名",
+        "平假名",
+        "片假名",
+        "ひらがな",
+        "カタカナ",
+        "日文汉字",
+        "罗马字",
+        "ローマ字"
+      ],
+      "ar": [
+        "الكانا",
+        "الهيراغانا",
+        "الكاتاكانا",
+        "الكانجي",
+        "الروماجي",
+        "ひらがな",
+        "カタカナ"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Chinese, Japanese and Korean fonts",
+        "es": "Fuentes chinas, japonesas y coreanas",
+        "ca": "Fonts xineses, japoneses i coreanes",
+        "zh": "中文、日文和韩文字体",
+        "ar": "خطوط الصينية واليابانية والكورية"
+      }
+    },
+    "since": "1.16.0"
   },
   "text-direction": {
     "label": {

@@ -1760,11 +1760,11 @@
       "ar": "اوسم المستند بـ zh-Hans أو zh-Hant، لا بـ LANG"
     },
     "body": {
-      "en": "A recipe's editions are en and es, but a Chinese sample is Chinese in both: `locale: LANG` would tag it English or Spanish, hyphenate its Latin words, label its figures Figure or Figura and give the PDF the wrong language. Write the tag yourself: 'zh-Hans' (mainland conventions: GB line breaking, Kaiming punctuation) or 'zh-Hant' (Taiwan: full-width centred punctuation); 'zh-HK' for Hong Kong. A bare 'zh' reads as Simplified, mainland.",
-      "es": "Las ediciones de una receta son en y es, pero una muestra china es china en las dos: `locale: LANG` la etiquetaría como inglés o español, separaría sus palabras latinas, llamaría Figure o Figura a sus figuras y daría al PDF un idioma equivocado. Escribe tú la etiqueta: 'zh-Hans' (convenciones de la China continental: corte GB, puntuación Kaiming) o 'zh-Hant' (Taiwán: puntuación de ancho completo centrada); 'zh-HK' para Hong Kong. Un 'zh' a secas se lee como chino simplificado continental.",
-      "ca": "Les edicions d'una recepta són en i es, però una mostra xinesa és xinesa en totes dues: `locale: LANG` l'etiquetaria com a anglès o castellà, separaria les seves paraules llatines, anomenaria Figure o Figura les seves figures i donaria al PDF una llengua equivocada. Escriu tu l'etiqueta: 'zh-Hans' (convencions de la Xina continental: tall GB, puntuació Kaiming) o 'zh-Hant' (Taiwan: puntuació d'amplada completa centrada); 'zh-HK' per a Hong Kong. Un 'zh' tot sol es llegeix com a xinès simplificat continental.",
-      "zh": "食谱的版本是en和es，但中文示例在两个版本里都是中文：`locale: LANG`会把它标记为英文或西班牙文，给其中的拉丁文词断词，把图标注为Figure或Figura，并给PDF标上错误的语言。自己写出标记：'zh-Hans'（大陆规范：GB断行规则、开明式标点）或'zh-Hant'（台湾：全角居中标点）；香港用'zh-HK'。单写'zh'按简体、大陆规范处理。",
-      "ar": "نسختا الوصفة هما en وes، لكن المثال الصيني صيني في كلتيهما: `locale: LANG` سيسمه بالإنجليزية أو الإسبانية، فيقسّم كلماته اللاتينية بالواصلة، ويسمّي أشكاله Figure أو Figura، ويعطي PDF لغة خاطئة. اكتب الوسم بنفسك: 'zh-Hans' (أعراف البر الرئيسي: كسر الأسطر وفق GB، وترقيم Kaiming) أو 'zh-Hant' (تايوان: ترقيم بعرض كامل متمركز)؛ و'zh-HK' لهونغ كونغ. أما 'zh' المجرّد فيُقرأ صينية مبسطة على أعراف البر الرئيسي."
+      "en": "A recipe's editions are en and es, but a Chinese sample is Chinese in both: `locale: LANG` would tag it English or Spanish, hyphenate its Latin words, label its figures Figure or Figura and give the PDF the wrong language. Write the tag yourself: 'zh-Hans' (mainland conventions: GB line breaking, Kaiming punctuation) or 'zh-Hant' (Taiwan: full-width centred punctuation); 'zh-HK' for Hong Kong. A bare 'zh' reads as Simplified, mainland. A Japanese sample takes 'ja' (gotcha ja-locale-tag).",
+      "es": "Las ediciones de una receta son en y es, pero una muestra china es china en las dos: `locale: LANG` la etiquetaría como inglés o español, separaría sus palabras latinas, llamaría Figure o Figura a sus figuras y daría al PDF un idioma equivocado. Escribe tú la etiqueta: 'zh-Hans' (convenciones de la China continental: corte GB, puntuación Kaiming) o 'zh-Hant' (Taiwán: puntuación de ancho completo centrada); 'zh-HK' para Hong Kong. Un 'zh' a secas se lee como chino simplificado continental. Una muestra japonesa lleva 'ja' (gotcha ja-locale-tag).",
+      "ca": "Les edicions d'una recepta són en i es, però una mostra xinesa és xinesa en totes dues: `locale: LANG` l'etiquetaria com a anglès o castellà, separaria les seves paraules llatines, anomenaria Figure o Figura les seves figures i donaria al PDF una llengua equivocada. Escriu tu l'etiqueta: 'zh-Hans' (convencions de la Xina continental: tall GB, puntuació Kaiming) o 'zh-Hant' (Taiwan: puntuació d'amplada completa centrada); 'zh-HK' per a Hong Kong. Un 'zh' tot sol es llegeix com a xinès simplificat continental. Una mostra japonesa porta 'ja' (gotcha ja-locale-tag).",
+      "zh": "食谱的版本是en和es，但中文示例在两个版本里都是中文：`locale: LANG`会把它标记为英文或西班牙文，给其中的拉丁文词断词，把图标注为Figure或Figura，并给PDF标上错误的语言。自己写出标记：'zh-Hans'（大陆规范：GB断行规则、开明式标点）或'zh-Hant'（台湾：全角居中标点）；香港用'zh-HK'。单写'zh'按简体、大陆规范处理。日文示例写'ja'（见gotcha ja-locale-tag）。",
+      "ar": "نسختا الوصفة هما en وes، لكن المثال الصيني صيني في كلتيهما: `locale: LANG` سيسمه بالإنجليزية أو الإسبانية، فيقسّم كلماته اللاتينية بالواصلة، ويسمّي أشكاله Figure أو Figura، ويعطي PDF لغة خاطئة. اكتب الوسم بنفسك: 'zh-Hans' (أعراف البر الرئيسي: كسر الأسطر وفق GB، وترقيم Kaiming) أو 'zh-Hant' (تايوان: ترقيم بعرض كامل متمركز)؛ و'zh-HK' لهونغ كونغ. أما 'zh' المجرّد فيُقرأ صينية مبسطة على أعراف البر الرئيسي. أما المثال الياباني فيُوسم بـ 'ja' (gotcha ja-locale-tag)."
     },
     "feature": "cjk-line-breaking"
   },
@@ -2107,5 +2107,56 @@
       "ar": "الخطوط التي حمّلها المتصفح ليست ملفات تستطيع postext-epub قراءتها: مرّر في options.fonts بايتات كل خط تستخدمه الصفحات (ملفات woff2 نفسها من Fontsource التي حمّلتها الصفحة). يُبلَّغ عن الخط الناقص بتحذير missingFont، ويُنضّد نظام القراءة ذلك النص بخط من عنده، وهو في التخطيط الثابت لا يتسع للأسطر التي نُضّدت بها الصفحة. لا تضمّن إلا الخطوط التي تسمح رخصتها بذلك."
     },
     "feature": "epub-export"
+  },
+  "ja-locale-tag": {
+    "title": {
+      "en": "Tag a Japanese text 'ja', never zh-Hans or LANG",
+      "es": "Etiqueta un texto japonés 'ja', nunca zh-Hans ni LANG",
+      "ca": "Etiqueta un text japonès 'ja', mai zh-Hans ni LANG",
+      "zh": "日文文本标记为'ja'，不要用zh-Hans或LANG",
+      "ar": "اوسم النص الياباني بـ 'ja'، لا بـ zh-Hans ولا بـ LANG"
+    },
+    "body": {
+      "en": "A recipe's editions are en and es, but a Japanese sample is Japanese in both: `locale: LANG` would tag it English or Spanish, and a Chinese tag would set it by the Chinese rules (Kaiming punctuation, small kana free to start a line, 图 for 図, Chinese glyph forms in the PDF). Write 'ja': it picks the Japan region (JLReq line breaking and punctuation, sesame emphasis marks, furigana spacing, 図 and 表 labels) and turns hyphenation off. The lint fails a text with kana under a zh or ko tag.",
+      "es": "Las ediciones de una receta son en y es, pero una muestra japonesa es japonesa en las dos: `locale: LANG` la etiquetaría como inglés o español, y una etiqueta china la compondría con las reglas chinas (puntuación Kaiming, kana pequeño libre de empezar línea, 图 en lugar de 図, formas chinas de los caracteres en el PDF). Escribe 'ja': elige la región de Japón (corte y puntuación de la JLReq, puntos de sésamo, reparto de los furigana, etiquetas 図 y 表) y desactiva la separación silábica. El lint falla un texto con kana bajo una etiqueta zh o ko.",
+      "ca": "Les edicions d'una recepta són en i es, però una mostra japonesa és japonesa en totes dues: `locale: LANG` l'etiquetaria com a anglès o castellà, i una etiqueta xinesa la compondria amb les regles xineses (puntuació Kaiming, kana petit lliure de començar línia, 图 en lloc de 図, formes xineses dels caràcters al PDF). Escriu 'ja': tria la regió del Japó (tall i puntuació de la JLReq, punts de sèsam, repartiment dels furigana, etiquetes 図 i 表) i desactiva la partició de mots. El lint falla un text amb kana sota una etiqueta zh o ko.",
+      "zh": "食谱的版本是en和es，但日文示例在两个版本里都是日文：`locale: LANG`会把它标记为英文或西班牙文，中文标记则会按中文规则排它（开明式标点、小假名可以出现在行首、图代替図、PDF中用中文字形）。写'ja'：它选用日本地区（JLReq断行和标点、芝麻着重号、振假名的分布、図和表标签），并关闭断词。lint会让带假名却标记为zh或ko的文本失败。",
+      "ar": "نسختا الوصفة هما en وes، لكن المثال الياباني ياباني في كلتيهما: `locale: LANG` سيسمه بالإنجليزية أو الإسبانية، والوسم الصيني سينضّده بالقواعد الصينية (ترقيم Kaiming، وكانا صغيرة يجوز أن تبدأ بها الأسطر، و图 بدل 図، وأشكال صينية للحروف في PDF). اكتب 'ja': يختار منطقة اليابان (كسر الأسطر والترقيم وفق JLReq، ونقاط السمسم، وتوزيع الفوريغانا، وتسميتي 図 و表) ويوقف تقسيم الكلمات. ويُفشل الفحصُ نصًّا فيه كانا موسومًا بـ zh أو ko."
+    },
+    "feature": "japanese-kinsoku"
+  },
+  "ja-fonts-kana": {
+    "title": {
+      "en": "Set Japanese in a Japanese face",
+      "es": "Compón el japonés con una fuente japonesa",
+      "ca": "Compon el japonès amb una font japonesa",
+      "zh": "日文要用日文字体排",
+      "ar": "انضد اليابانية بخط ياباني"
+    },
+    "body": {
+      "en": "Noto Serif SC and TC have kana, but they draw the kanji in Chinese forms (直, 骨 and 角 differ) and the kana in a Chinese design. Set the text in Noto Serif JP or Shippori Mincho B1 and the heads in Noto Sans JP, loaded with loadCjkFonts. Fontsource's Japanese files hold no hentaigana or other historic kana (U+1B000–1B16F): loadCjkFonts fails on them and the PDF prints boxes, so write the modern kana or ship a face that has them in the recipe's assets. Shippori Mincho also lacks the macron vowels ō and ū: set rōmaji in a Latin face.",
+      "es": "Noto Serif SC y TC tienen kana, pero dibujan los kanji con formas chinas (直, 骨 y 角 cambian) y el kana con un diseño chino. Compón el texto en Noto Serif JP o Shippori Mincho B1 y los títulos en Noto Sans JP, cargadas con loadCjkFonts. Los archivos japoneses de Fontsource no tienen hentaigana ni otros kana históricos (U+1B000–1B16F): loadCjkFonts falla con ellos y el PDF imprime cajas, así que escribe el kana moderno o lleva en los recursos de la receta una fuente que los tenga. Shippori Mincho tampoco tiene las vocales con macrón ō y ū: compón el rōmaji con una fuente latina.",
+      "ca": "Noto Serif SC i TC tenen kana, però dibuixen els kanji amb formes xineses (直, 骨 i 角 canvien) i el kana amb un disseny xinès. Compon el text en Noto Serif JP o Shippori Mincho B1 i els títols en Noto Sans JP, carregades amb loadCjkFonts. Els fitxers japonesos de Fontsource no tenen hentaigana ni altres kana històrics (U+1B000–1B16F): loadCjkFonts hi falla i el PDF imprimeix caixes, així que escriu el kana modern o porta als recursos de la recepta una font que els tingui. Shippori Mincho tampoc no té les vocals amb macró ō i ū: compon el rōmaji amb una font llatina.",
+      "zh": "Noto Serif SC和TC里有假名，但汉字是中文字形（直、骨、角都不同），假名也是中文字体的设计。正文用Noto Serif JP或Shippori Mincho B1，标题用Noto Sans JP，用loadCjkFonts加载。Fontsource的日文文件里没有变体假名等历史假名（U+1B000–1B16F）：loadCjkFonts遇到它们会失败，PDF里印出空框，所以要写现代假名，或者把含有这些字的字体放进食谱的assets。Shippori Mincho也没有带长音符号的ō和ū：罗马字要用拉丁字体排。",
+      "ar": "في Noto Serif SC وTC كانا، لكنهما ترسمان الكانجي بأشكال صينية (يختلف 直 و骨 و角) والكانا بتصميم صيني. انضد النص بـ Noto Serif JP أو Shippori Mincho B1 والعناوين بـ Noto Sans JP، محمَّلة بـ loadCjkFonts. لا تحوي ملفات Fontsource اليابانية الهينتايغانا ولا غيرها من الكانا التاريخية (U+1B000–1B16F): يفشل loadCjkFonts عندها ويطبع PDF مربعات، فاكتب الكانا الحديثة أو ضع في أصول الوصفة خطًّا يحويها. ولا يحوي Shippori Mincho أيضًا الصائتين ō وū بالمدّة: انضد الروماجي بخط لاتيني."
+    },
+    "feature": "kana-scripts"
+  },
+  "aozora-cp932": {
+    "title": {
+      "en": "Read Aozora files as CP932, not Shift_JIS",
+      "es": "Lee los archivos de Aozora como CP932, no como Shift_JIS",
+      "ca": "Llegeix els fitxers d'Aozora com a CP932, no com a Shift_JIS",
+      "zh": "按CP932而不是Shift_JIS读取青空文库文件",
+      "ar": "اقرأ ملفات Aozora بترميز CP932 لا Shift_JIS"
+    },
+    "body": {
+      "en": "Aozora Bunko's text files are Windows-31J (CP932). Decoded as plain Shift_JIS, the dash ―― comes out as em dashes (U+2014), ～ as the wave dash 〜, and a few NEC and IBM characters fail. Read them as cp932, then convert the markup: ruby in 《》, the ［＃…］ notes and the ※［＃…］ gaiji are not Markdown and print as they are if left in. The skill's aozora.py does both.",
+      "es": "Los archivos de texto de Aozora Bunko están en Windows-31J (CP932). Leídos como Shift_JIS a secas, la raya ―― sale como rayas U+2014, ～ como el guion ondulado 〜, y algunos caracteres de NEC e IBM fallan. Léelos como cp932 y convierte después el marcado: el ruby entre 《》, las notas ［＃…］ y los gaiji ※［＃…］ no son Markdown y se imprimen tal cual si se dejan. aozora.py, de la skill, hace las dos cosas.",
+      "ca": "Els fitxers de text d'Aozora Bunko són en Windows-31J (CP932). Llegits com a Shift_JIS a seques, el guió ―― surt com a guions U+2014, ～ com el guió ondulat 〜, i alguns caràcters de NEC i IBM fallen. Llegeix-los com a cp932 i després converteix el marcatge: el ruby entre 《》, les notes ［＃…］ i els gaiji ※［＃…］ no són Markdown i s'imprimeixen tal qual si s'hi deixen. aozora.py, de la skill, fa totes dues coses.",
+      "zh": "青空文库的文本文件是Windows-31J（CP932）编码。如果按普通Shift_JIS解码，――会变成U+2014的破折号，～会变成波浪号〜，一些NEC和IBM扩展字符会出错。要按cp932读取，再转换标记：《》中的注音、［＃…］注记和※［＃…］外字都不是Markdown，留着就会原样印出来。技能中的aozora.py两件事都做。",
+      "ar": "ملفات نصوص Aozora Bunko بترميز Windows-31J (CP932). إذا فُكّت بـ Shift_JIS العادي خرجت الشرطة ―― شرطات U+2014، و～ شرطة متموجة 〜، وفشلت بعض محارف NEC وIBM. اقرأها بـ cp932، ثم حوّل الترميز: ruby بين 《》 وملاحظات ［＃…］ ومحارف gaiji ※［＃…］ ليست Markdown، وتُطبع كما هي إن بقيت. ويقوم aozora.py في المهارة بالأمرين."
+    },
+    "feature": "aozora-import"
   }
 }

@@ -126,5 +126,16 @@
       "chinese-official-document", "tang-poems-facing-english", "vertical-newspaper-tiers", "woodblock-leaf",
       "chinese-dictionary-page"
     ]
+  },
+  "japanese-layout": {
+    "title": { "en": "Japanese layout", "es": "Composición japonesa", "ca": "Composició japonesa", "zh": "日文排版", "ar": "التنضيد الياباني" },
+    "summary": {
+      "en": "Japanese set as Japanese books set it: kinsoku and punctuation spacing, vertical text bound on the right, furigana and emphasis marks, kanji numerals, notes and a gojūon index, from a bunko novel to a textbook, a letter and a page of kanbun.",
+      "es": "El japonés compuesto como lo componen los libros japoneses: kinsoku y espaciado de la puntuación, texto vertical encuadernado por la derecha, furigana y marcas de énfasis, numerales kanji, notas y un índice gojūon, de una novela bunko a un libro de texto, una carta y una página de kanbun.",
+      "ca": "El japonès compost com el componen els llibres japonesos: kinsoku i espaiat de la puntuació, text vertical enquadernat per la dreta, furigana i marques d'èmfasi, numerals kanji, notes i un índex gojūon, d'una novel·la bunko a un llibre de text, una carta i una pàgina de kanbun.",
+      "zh": "按日文书的规矩排日文：禁则和标点间距，右侧装订的竖排，振假名和着重号，汉字数字，注释和五十音索引；从文库本小说到教科书、书信和汉文书页。",
+      "ar": "اليابانية منضَّدة كما تنضدها الكتب اليابانية: kinsoku وتباعد الترقيم، والنص العمودي المجلَّد من اليمين، والفوريغانا وعلامات التوكيد، والأعداد الكانجية، والحواشي وفهرس gojūon، من رواية bunko إلى كتاب مدرسي ورسالة وصفحة من الكانبون."
+    },
+    "recipes": []
   }
 }
