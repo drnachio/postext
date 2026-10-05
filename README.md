@@ -109,13 +109,14 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-Everything below ships today in `postext` and `postext-pdf` 1.4, except what is marked **(1.5)**, which arrives with the next minor release.
+Everything below ships today in `postext` 1.15 and its companion packages (`postext-pdf`, `postext-epub`, `postext-folio`, `postext-citeproc`). A fuller list, with a link to the page that explains each part, is on the wiki's [Features](https://github.com/drnachio/postext/wiki/Features) page.
 
 ### Column-based layouts
 
 - Single, double, and column-and-a-half layouts (`layoutType: 'single' | 'double' | 'oneAndHalf'`) with configurable gutter width, an optional column rule, mirrored margins, a page-wide baseline grid, and crop marks with bleed for print production.
 - The column-and-a-half layout can turn its side column into a channel for figures, tables and callouts (`sideColumnRole: 'floats'`), placed at the outer edge of every page — the marginal column of a textbook — with side captions set level with their figure.
-- `:::columns` switches the column count mid-page, and `:::pagebreak` forces a break with parity control.
+- `:::columns` switches the column count mid-page, `:::pagebreak` forces a break with parity control, `:::space` adds explicit vertical space, and `:::paper` changes the paper stock for a run of pages.
+- Left- and right-bound books (`page.binding`), with the PDF asking viewers for right-to-left spreads, and vertical writing (`layout.writingMode: 'vertical-rl'`) for Chinese and Japanese books.
 - Headings span a column or the full page, with parity-aware page breaks (`'odd'`, `'even'`, `'always-odd'`, …) for chapter openings.
 
 ### Column balancing
@@ -127,7 +128,7 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 ### Optimal justification
 
 - Knuth-Plass optimal line breaking — whole paragraphs are broken globally, not greedily line by line.
-- TeX-pattern hyphenation in 8 locales (English, Spanish, French, German, Italian, Portuguese, Catalan, Dutch); overlong words are divided by syllable, then by character.
+- TeX-pattern hyphenation in 8 locales (English, Spanish, French, German, Italian, Portuguese, Catalan with the IEC rule for *l·l*, Dutch); overlong words are divided by syllable, then by character.
 - Orphan, widow, and runt control, plus keep-together rules (a heading with its first lines, a colon with the list it introduces).
 
 ### Resources as first-class citizens
@@ -144,7 +145,22 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 - `:::callout` boxes with named `calloutStyles`: fill, frame, radius, title, icon marker column, and their own paragraph typography — sidebars, key concepts, activities, pull quotes.
 - Callouts can nest, float to the top or bottom of the page (`placement`), sit in the side channel, and split across columns and pages when they cannot be kept together, with a continuation that drops the title and icon.
 - Named `paragraphStyles` applied with `:::paragraphs{style="…"}` for bibliographies, glossaries, notes and hanging-indent entries; tables and figures carry their own notes and source lines.
+- `:::verse` blocks for poetry, including Arabic verse set as two hemistichs.
 - Inline chips, `:chip[text]{style="…"}`: boxed words (word banks, keys, tags) that wrap as one unit, painted as real text in every backend.
+
+### Notes, citations and indexes
+
+- Footnotes (`[^id]`) set at the foot of the column that cites them, or gathered at the end of the chapter; numbered per chapter, through the book, per page or per column, in decimal, roman or circled numbers (①).
+- Cross-references to headings, figures, tables and anchors (`{#id}`), clickable in the PDF.
+- Citations in Pandoc syntax (`[@garcia2020, p. 33]`) formatted in a CSL style (APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714, OSCOLA, …) with a generated bibliography, from BibTeX, CSL-JSON or CSL-YAML. With a note style each citation becomes a footnote. The styles are applied by `postext-citeproc`.
+- A back-of-book index built from `:index[…]` marks and printed with `:::index`: sub-entries, sort keys, principal pages in bold and several indexes per book. The page numbers are found after layout, so they follow the text.
+
+### Languages and scripts
+
+- A document language (`locale`) drives hyphenation, built-in strings, numerals, text direction and the language tagged in the PDF.
+- Chinese (Simplified, Traditional, Hong Kong), horizontal or vertical: line breaking, punctuation widths and hanging punctuation, Han–Latin spacing, the character grid, emphasis dots, proper-name and book-title marks, ruby (pinyin, zhuyin) and warichu. See [Chinese layout](https://postext.dev/en/docs/chinese-layout).
+- Arabic (Modern Standard and Classical): the bidirectional algorithm, right-bound books with right-to-left spreads, words shaped whole through HarfBuzz in the PDF, kashida justification instead of letter-spacing, vowel marks, Arabic-Indic digits and number words, and classical verse. See [Arabic layout](https://postext.dev/en/docs/arabic-layout).
+- Japanese: the `ja` locale, the `japan` CJK region and Japanese numerals are in place; the rest of the programme is in progress (see the roadmap).
 
 ### Books, parts and front matter
 
@@ -161,37 +177,42 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 
 ### Math
 
-- LaTeX math, inline (`$…$`) and display (`$$…$$`), rendered to crisp SVG via MathJax in every backend, loaded on demand (`await initMathEngine()`). **(1.5)** MathJax ships pre-bundled, so it loads the same from a bundler, Node or a CDN.
+- LaTeX math, inline (`$…$`) and display (`$$…$$`), rendered to crisp SVG via MathJax in every backend, loaded on demand (`await initMathEngine()`). MathJax ships pre-bundled, so it loads the same from a bundler, Node or a CDN.
 
 ### Headers & footers
 
 - Design slots composed of text, rule, box, and image elements with precise placement, painted in array order and bounded to the trim box.
 - Placeholders resolve page numbers, chapter numbers and titles, part titles, and document metadata at layout time.
+- Page numbers in arabic, roman, letters, Chinese, Arabic-Indic and other styles, restarted with `:::numbering`, with PDF page labels that match the printed folios.
 - Page-parity control — different designs for odd and even pages.
 
 ### Multi-format output
 
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
-- **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF.
-- **EPUB 3 writer** (`postext-epub`). The whole book as an EPUB 3.3 file, written in the browser or in Node: a **fixed layout** (`pre-paginated`) that keeps every printed page with real, selectable text, or a **reflowable** book in semantic XHTML (paragraphs rebuilt from the lines, notes, figures and tables in reading order, print page markers) styled from the same configuration. Fonts embedded, with navigation, print page numbers and accessibility metadata; validated with W3C EPUBCheck.
+- **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, HarfBuzz shaping for Arabic, page labels, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF. `postext-pdf/worker` writes long books off the main thread.
+- **EPUB 3 writer** (`postext-epub`). The whole book as an EPUB 3.3 file, written in the browser or in Node: a **fixed layout** (`pre-paginated`) that keeps every printed page with real, selectable text, or a **reflowable** book in semantic XHTML (paragraphs rebuilt from the lines, notes, figures and tables in reading order, print page markers) styled from the same configuration. Fonts embedded, with navigation, print page numbers, right-to-left books and accessibility metadata; validated with W3C EPUBCheck.
 - **3D book viewer** (`postext-folio`). Spreads whose leaves curl in three.js, with real shadows, turned by hand or by key; a right-bound book lies mirrored. Pages are painted on demand, at the size they are shown, around the open spread only.
-- **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation; **(1.5)** also straight from esm.sh.
-- **React.** **(1.5)** `postext/react` shows a document's pages in a component; the main entry never loads React.
+- **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation, also loaded straight from esm.sh.
+- **React.** `postext/react` shows a document's pages in a component; the main entry never loads React.
 - **Format-agnostic core.** The engine computes geometry; renderers translate it.
 
 ### Sandbox
 
-- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book, a Checks panel, and permalinks to any page.
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book, a Checks panel, permalinks to any page, and a phone layout.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
-- Bilingual showcase bundles — a magazine, a literary edition, an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual — plus a built-in guide to Postext, itself set as a book.
+- Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦) and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext, itself set as a book in English, Spanish, Catalan, Chinese (vertical) and Arabic (right to left).
 
 ### Cookbook
 
-- A gallery of complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
+- More than a hundred complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
 - Every recipe page shows the captured pages and the whole pen, with Copy, Open in CodePen, an `.html` download and, where it applies, the PDF; a write-up explains the method step by step, with excerpts of the real code, and the pitfalls. The same content is available as Markdown for agents (`/en/cookbook/<slug>.md`, and in `llms.txt`).
 - Recipes live in [`cookbook/`](cookbook/README.md), one folder each (metadata, bilingual write-ups, the pen and its sample text); `pnpm cookbook new | dev | lint | capture` scaffolds, previews, checks and captures them against the released engine.
+
+### Website
+
+- [postext.dev](https://postext.dev/) in English, Spanish, Catalan, Simplified Chinese and Arabic, built to WCAG 2.2 AAA, with a Markdown version of every page for agents (`<page>.md`, `llms.txt`).
 
 ### Configuration-driven
 
@@ -210,15 +231,16 @@ Everything below ships today in `postext` and `postext-pdf` 1.4, except what is 
 ```
 postext/
 ├── apps/
-│   └── web/                      # Next.js docs site, landing page & hosted sandbox
+│   └── web/                      # Next.js site: landing, docs, sandbox, cookbook
 ├── packages/
 │   ├── postext/                  # Core layout engine library
 │   ├── postext-pdf/              # PDF rendering backend
 │   ├── postext-folio/            # 3D book viewer (three.js)
 │   ├── postext-epub/             # EPUB 3 writer (fixed layout and reflowable)
+│   ├── postext-citeproc/         # CSL citations and bibliographies (citeproc-js)
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
-├── docs/                         # Bilingual MDX documentation (<topic>-en.mdx / <topic>-es.mdx)
+├── docs/                         # MDX documentation, <topic>-<locale>.mdx in en, es, ca, zh, ar
 ├── cookbook/                     # Cookbook recipes (one folder each), registries and pen kit
 ├── plugins/postext/              # Agent skill `postext-port` (Claude Code plugin + skills.sh)
 ├── .claude-plugin/               # Claude Code plugin marketplace manifest
@@ -230,14 +252,15 @@ postext/
 | Package | Purpose |
 |---|---|
 | `packages/postext` | The core library. Semantic content in, layout geometry out. Zero DOM dependencies. Published to npm as `postext`. |
-| `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready PDF (outlines, links, font embedding, color spaces). |
+| `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready, tagged PDF (outlines, links, font embedding, color spaces). Published to npm as `postext-pdf`. |
 | `packages/postext-folio` | The 3D book viewer: a laid-out document (or any page images) as spreads whose leaves turn in three.js. Published to npm as `postext-folio`. |
 | `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
+| `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 19 bundled CSL styles and 12 CSL locales. Published to npm as `postext-citeproc`. |
 | `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports — embedded by the web app. |
-| `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, and hosted sandbox at [postext.dev](https://postext.dev). |
+| `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in five languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
 
-Documentation lives in the top-level `docs/` folder as bilingual MDX pairs (`<topic>-en.mdx` / `<topic>-es.mdx`) rendered by `apps/web`.
+Documentation lives in the top-level `docs/` folder as one MDX file per topic and locale (`<topic>-<locale>.mdx`, in `en`, `es`, `ca`, `zh` and `ar`), rendered by `apps/web`. The doc pages of the [GitHub wiki](https://github.com/drnachio/postext/wiki) are generated from the English files.
 
 **Tech stack:** pnpm workspaces, Turborepo 2.9, TypeScript 5.9, ESM-only, Node.js 20+, Next.js 16, Tailwind CSS 4.
 
@@ -324,6 +347,12 @@ const epub = await renderToEpub([doc], {
 });
 ```
 
+Documents that cite (`[@key]`) need the citation engine from `postext-citeproc` (`npm install postext-citeproc`). Register it once before laying out:
+
+```ts
+import 'postext-citeproc/register';
+```
+
 ### Asynchronous layout in a Web Worker (recommended for UIs)
 
 For interactive integrations — live previews, editors, anything that rebuilds
@@ -359,7 +388,21 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration#inte
 
 ## Roadmap
 
-Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF.
+Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF, EPUB 3 and a 3D book. Work continues in programmes tracked as GitHub issues; the wiki's [Roadmap](https://github.com/drnachio/postext/wiki/Roadmap) page follows them.
+
+### In progress: Japanese typesetting (日本語組版)
+
+Tracking issue: [#440](https://github.com/drnachio/postext/issues/440).
+
+- [x] The `ja` document locale, the `japan` CJK region and Japanese built-in strings ([#416](https://github.com/drnachio/postext/issues/416))
+- [x] Japanese numeral and counter styles ([#420](https://github.com/drnachio/postext/issues/420))
+- [x] Japanese on the website: search, fonts, glossary ([#432](https://github.com/drnachio/postext/issues/432))
+- [ ] Line breaking (kinsoku shori, JLReq levels), yakumono spacing, vertical orientation of small kana and marks
+- [ ] Emphasis marks, side lines, furigana (jukugo ruby), warichu
+- [ ] Notes, headings in line units (行取り), indented and bottom-aligned blocks
+- [ ] A gojūon index with readings, Japanese citations (SIST 02)
+- [ ] PDF glyph forms, semantic ruby in HTML and reflowable EPUB, kanbun
+- [ ] Sandbox support, Cookbook recipes, a Japanese edition of the guide and the *Kokoro* showcase
 
 ### Phase 1: Foundation ✅
 
@@ -384,7 +427,7 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] Typed resource numbering and cross-references (figures, tables, custom types)
 - [x] LaTeX math rendering (inline and display, MathJax SVG)
 - [x] Custom font loading and embedding (woff2/woff/ttf/otf)
-- [x] Notes (resource and table notes, note paragraph styles, marginal glosses in the side channel)
+- [x] Notes (footnotes, resource and table notes, note paragraph styles, marginal glosses in the side channel)
 - [x] Pull quotes and margin notes (callout styles, side-channel boxes)
 - [x] Fine-grained spacing rules (configurable spacing scale)
 - [x] Rag optimization
@@ -407,8 +450,15 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] Tagged, accessible PDF/UA-1 output and vector figures in PDF
 - [x] `.postext` book bundles and bilingual showcase presets
 - [x] EPUB 3 output, fixed layout and reflowable, checked with W3C EPUBCheck
+- [x] Folio, the 3D book viewer
+- [x] Footnotes ([#162](https://github.com/drnachio/postext/issues/162)), CSL citations and bibliographies (`postext-citeproc`), a back-of-book index ([#165](https://github.com/drnachio/postext/issues/165))
+- [x] Chinese typesetting, horizontal and vertical ([#203](https://github.com/drnachio/postext/issues/203))
+- [x] Arabic typesetting, Modern Standard and Classical
+- [x] The Cookbook, the showcase books and the built-in guide in five languages
+- [x] The `postext-port` agent skill
+- [x] The website in five languages, at WCAG 2.2 AAA
 
-What comes next is driven by the community — open an issue to propose it.
+Beyond the Japanese programme, what comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
 
 ---
 
